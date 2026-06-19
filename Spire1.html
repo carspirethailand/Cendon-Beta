@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SpireONE — ผู้ช่วยซ่อมรถอัจฉริยะ</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css" />
+<style>
+  :root {
+    --sky-top:#9fd9ff; --sky-mid:#cdeeff; --sky-bot:#eafaf0;
+    --grass:#8ed16a; --grass-2:#6fbd4c; --grass-d:#4f9e38;
+    --ink:#1f3018; --ink-dim:#56684e; --ink-faint:#8a9a82;
+    --card:rgba(255,255,255,.74); --card-solid:#ffffff;
+    --border:rgba(110,150,95,.22);
+    --accent:#3aab57; --accent-d:#2d8c45; --accent-2:#f6a623; --sun:#ffd25e;
+    --danger:#e35454;
+    --radius:20px;
+    --shadow:0 18px 44px rgba(50,100,40,.16);
+    --shadow-sm:0 6px 18px rgba(50,100,40,.12);
+    --font:'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', sans-serif;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body { height:100%; }
+  body {
+    font-family:var(--font); color:var(--ink); line-height:1.55; overflow-x:hidden;
+    background:linear-gradient(180deg,var(--sky-top) 0%, var(--sky-mid) 32%, var(--sky-bot) 60%, #f3fbf0 100%);
+    background-attachment:fixed; -webkit-font-smoothing:antialiased;
+  }
+  a { color:inherit; text-decoration:none; }
+  button { font-family:inherit; cursor:pointer; border:none; background:none; }
+  .ti { line-height:1; }
+  ::selection { background:var(--accent); color:#fff; }
+
+  /* ===== Ambient meadow scene (fixed background) ===== */
+  .scene { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+  .sun {
+    position:absolute; top:8%; right:12%; width:120px; height:120px; border-radius:50%;
+    background:radial-gradient(circle, #fff3c4 0%, var(--sun) 55%, rgba(255,210,94,0) 72%);
+    animation:sunPulse 7s ease-in-out infinite;
+  }
+  @keyframes sunPulse { 0%,100%{ transform:scale(1); opacity:.95;} 50%{ transform:scale(1.08); opacity:1;} }
+  .cloud { position:absolute; background:#fff; border-radius:100px; opacity:.85; filter:blur(.3px);
+    box-shadow:0 8px 30px rgba(120,160,200,.18); }
+  .cloud::before, .cloud::after { content:""; position:absolute; background:#fff; border-radius:50%; }
+  .c1 { width:130px; height:38px; top:14%; left:-160px; animation:drift1 38s linear infinite; }
+  .c1::before { width:60px; height:60px; top:-26px; left:22px; }
+  .c1::after  { width:46px; height:46px; top:-18px; left:66px; }
+  .c2 { width:170px; height:46px; top:26%; left:-220px; animation:drift2 52s linear infinite; opacity:.7; transform:scale(.9); }
+  .c2::before { width:74px; height:74px; top:-32px; left:30px; }
+  .c2::after  { width:54px; height:54px; top:-20px; left:90px; }
+  .c3 { width:110px; height:32px; top:9%; left:-140px; animation:drift3 30s linear infinite; opacity:.6; }
+  .c3::before { width:50px; height:50px; top:-22px; left:18px; }
+  .c3::after  { width:38px; height:38px; top:-14px; left:54px; }
+  @keyframes drift1 { to { transform:translateX(calc(100vw + 360px)); } }
+  @keyframes drift2 { to { transform:translateX(calc(100vw + 440px)) scale(.9); } }
+  @keyframes drift3 { to { transform:translateX(calc(100vw + 320px)); } }
+
+  .hills { position:absolute; bottom:0; left:-5%; width:110%; will-change:transform; }
+  .hills svg { display:block; width:100%; }
+  .h1 { z-index:1; } .h2 { z-index:2; } .h3 { z-index:3; }
+
+  /* floating pollen dots */
+  .pollen { position:absolute; width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,.8);
+    box-shadow:0 0 8px rgba(255,240,180,.9); animation:float-up linear infinite; }
+  @keyframes float-up { 0%{ transform:translateY(0) translateX(0); opacity:0; } 10%{opacity:.9;} 90%{opacity:.7;} 100%{ transform:translateY(-90vh) translateX(40px); opacity:0; } }
+
+  /* ===== Top pill nav ===== */
+  .navwrap { position:fixed; top:18px; left:0; right:0; z-index:50; display:flex; justify-content:center; padding:0 16px; }
+  .nav {
+    display:flex; align-items:center; gap:6px; padding:8px 8px 8px 16px;
+    background:rgba(255,255,255,.78); backdrop-filter:blur(18px) saturate(1.4);
+    border:1px solid rgba(255,255,255,.7); border-radius:100px; box-shadow:var(--shadow);
+    max-width:760px; width:100%;
+  }
+  .brand { display:flex; align-items:center; gap:9px; padding-right:8px; margin-right:4px; }
+  .brand .mark {
+    width:34px; height:34px; border-radius:11px; display:grid; place-items:center; color:#fff; font-size:19px;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2)); box-shadow:0 5px 14px rgba(58,171,87,.4);
+  }
+  .brand b { font-size:17px; font-weight:800; letter-spacing:.2px; }
+  .brand b span { color:var(--accent); }
+  .nav-links { display:flex; gap:2px; flex:1; justify-content:center; }
+  .nav-links a {
+    display:flex; align-items:center; gap:7px; padding:9px 15px; border-radius:100px;
+    font-weight:600; font-size:14px; color:var(--ink-dim); transition:.18s; white-space:nowrap;
+  }
+  .nav-links a .ti { font-size:18px; }
+  .nav-links a:hover { background:rgba(110,189,76,.14); color:var(--accent-d); }
+  .nav-links a.active { background:linear-gradient(135deg,var(--accent),var(--accent-d)); color:#fff; box-shadow:0 5px 14px rgba(58,171,87,.35); }
+  .nav-right { display:flex; align-items:center; gap:8px; position:relative; }
+  .btn-login {
+    display:flex; align-items:center; gap:7px; padding:9px 16px; border-radius:100px; font-weight:700; font-size:14px;
+    background:linear-gradient(135deg,var(--accent),var(--accent-d)); color:#fff; box-shadow:0 5px 14px rgba(58,171,87,.35); transition:.18s;
+  }
+  .btn-login:hover { transform:translateY(-1px); }
+  .avatar-btn { width:40px; height:40px; border-radius:50%; overflow:hidden; border:2px solid #fff; box-shadow:var(--shadow-sm); display:none; }
+  .avatar-btn img { width:100%; height:100%; object-fit:cover; }
+  .avatar-btn .fallback { width:100%; height:100%; display:grid; place-items:center; font-weight:800; color:#fff;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2)); }
+
+  .dropdown {
+    position:absolute; top:52px; right:0; width:240px; background:#fff; border-radius:16px; box-shadow:var(--shadow);
+    border:1px solid var(--border); padding:8px; opacity:0; transform:translateY(-8px); pointer-events:none; transition:.18s;
+  }
+  .dropdown.show { opacity:1; transform:none; pointer-events:auto; }
+  .dropdown .dd-head { display:flex; gap:11px; align-items:center; padding:10px; }
+  .dropdown .dd-head .nm { font-weight:700; font-size:14px; line-height:1.2; }
+  .dropdown .dd-head .em { font-size:11.5px; color:var(--ink-faint); word-break:break-all; }
+  .dropdown .role { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.5px; color:var(--accent-2); }
+  .dropdown hr { border:none; border-top:1px solid var(--border); margin:6px 4px; }
+  .dropdown button {
+    display:flex; align-items:center; gap:11px; width:100%; padding:10px; border-radius:10px;
+    font-weight:600; font-size:14px; color:var(--ink-dim); transition:.15s; text-align:left;
+  }
+  .dropdown button .ti { font-size:19px; }
+  .dropdown button:hover { background:rgba(110,189,76,.12); color:var(--accent-d); }
+  .dropdown button.danger:hover { background:rgba(227,84,84,.1); color:var(--danger); }
+
+  /* ===== Main / views ===== */
+  .main { position:relative; z-index:10; padding-top:96px; }
+  .container { max-width:1080px; margin:0 auto; padding:0 22px 80px; }
+  .view { display:none; animation:fade .4s ease; }
+  .view.active { display:block; }
+  @keyframes fade { from { opacity:0; transform:translateY(10px);} to { opacity:1; transform:none; } }
+
+  /* ===== Home hero ===== */
+  .hero { text-align:center; padding:30px 0 50px; }
+  .hero .eyebrow {
+    display:inline-flex; align-items:center; gap:7px; padding:7px 16px; border-radius:100px; font-size:13px; font-weight:700;
+    background:rgba(255,255,255,.7); color:var(--accent-d); box-shadow:var(--shadow-sm); margin-bottom:18px;
+    animation:floaty 5s ease-in-out infinite;
+  }
+  .hero h1 { font-size:46px; font-weight:800; line-height:1.12; letter-spacing:-.5px; margin-bottom:16px; }
+  .hero h1 .hl { background:linear-gradient(135deg,var(--accent),var(--accent-2)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .hero p { font-size:17px; color:var(--ink-dim); max-width:560px; margin:0 auto 26px; }
+  .hero-cta { display:inline-flex; align-items:center; gap:9px; padding:15px 28px; border-radius:100px; font-weight:800; font-size:16px;
+    background:linear-gradient(135deg,var(--accent),var(--accent-d)); color:#fff; box-shadow:0 12px 30px rgba(58,171,87,.4); transition:.2s; }
+  .hero-cta:hover { transform:translateY(-3px) scale(1.02); }
+  @keyframes floaty { 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(-7px);} }
+
+  /* ===== Today's Brief collapsible ===== */
+  .brief-shell { margin:6px auto 40px; max-width:880px; }
+  .brief-bar {
+    display:flex; align-items:center; justify-content:space-between; gap:14px; padding:18px 24px;
+    background:var(--card); backdrop-filter:blur(14px); border:1px solid rgba(255,255,255,.7);
+    border-radius:var(--radius); box-shadow:var(--shadow-sm); cursor:pointer; transition:.2s;
+  }
+  .brief-bar:hover { box-shadow:var(--shadow); }
+  .brief-bar .left { display:flex; align-items:center; gap:14px; }
+  .brief-bar .ic-big { width:46px; height:46px; border-radius:14px; display:grid; place-items:center; color:#fff; font-size:24px;
+    background:linear-gradient(135deg,var(--accent-2),#ff8c42); box-shadow:0 6px 16px rgba(246,166,35,.35); }
+  .brief-bar h3 { font-size:18px; font-weight:800; }
+  .brief-bar .sub { font-size:13px; color:var(--ink-faint); }
+  .brief-bar .chev { font-size:26px; color:var(--accent-d); transition:transform .35s ease; }
+  .brief-shell.open .chev { transform:rotate(180deg); }
+  .brief-lock { font-size:12px; font-weight:700; color:var(--accent-2); display:flex; align-items:center; gap:6px; }
+  .brief-body { max-height:0; overflow:hidden; transition:max-height .5s cubic-bezier(.4,0,.2,1); }
+  .brief-shell.open .brief-body { max-height:1400px; }
+  .brief-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:18px 2px 4px; }
+
+  /* ===== Cards ===== */
+  .card { background:var(--card); backdrop-filter:blur(14px); border:1px solid rgba(255,255,255,.7);
+    border-radius:var(--radius); padding:22px; box-shadow:var(--shadow-sm); }
+  .tilt { transition:transform .25s ease, box-shadow .25s ease; }
+  .tilt:hover { box-shadow:var(--shadow); }
+  .pill { font-size:11px; font-weight:800; padding:4px 11px; border-radius:100px; text-transform:uppercase; letter-spacing:.4px; }
+  .p-hot { background:rgba(227,84,84,.14); color:#d23c3c; }
+  .p-ev  { background:rgba(58,140,230,.14); color:#2f7fd6; }
+  .p-tech{ background:rgba(58,171,87,.16); color:var(--accent-d); }
+  .p-tip { background:rgba(246,166,35,.18); color:#d98a0e; }
+  .brief-card .meta { display:flex; justify-content:space-between; align-items:center; margin-bottom:11px; }
+  .brief-card .time { font-size:11px; color:var(--ink-faint); }
+  .brief-card h4 { font-size:16px; font-weight:700; margin-bottom:6px; }
+  .brief-card p { font-size:13.5px; color:var(--ink-dim); }
+
+  .section-title { font-size:24px; font-weight:800; margin-bottom:4px; }
+  .section-sub { color:var(--ink-dim); font-size:14.5px; margin-bottom:22px; }
+  .grid { display:grid; gap:18px; }
+  .g3 { grid-template-columns:repeat(3,1fr); }
+  .g2 { grid-template-columns:1fr 1fr; }
+
+  .feature-card { text-align:left; cursor:pointer; }
+  .feature-card .fic { width:54px; height:54px; border-radius:16px; display:grid; place-items:center; font-size:28px; color:#fff; margin-bottom:14px; }
+  .fic.g { background:linear-gradient(135deg,var(--accent),var(--accent-d)); }
+  .fic.o { background:linear-gradient(135deg,var(--accent-2),#ff8c42); }
+  .fic.b { background:linear-gradient(135deg,#3a8ce6,#2f6fd6); }
+  .feature-card h4 { font-size:17px; font-weight:700; margin-bottom:6px; }
+  .feature-card p { font-size:13.5px; color:var(--ink-dim); }
+
+  /* ===== Magazine ===== */
+  .mag-feature { position:relative; border-radius:24px; overflow:hidden; min-height:300px; display:flex; align-items:flex-end;
+    padding:32px; color:#fff; margin-bottom:24px; cursor:pointer; box-shadow:var(--shadow); }
+  .mag-feature .bg { position:absolute; inset:0; background:linear-gradient(135deg,#2d8c45,#1f6b32); }
+  .mag-feature .ov { position:absolute; inset:0; background:linear-gradient(transparent,rgba(15,45,20,.85)); }
+  .mag-feature .tx { position:relative; z-index:2; }
+  .mag-feature h2 { font-size:30px; font-weight:800; margin:10px 0 8px; max-width:600px; }
+  .mag-feature p { color:#e3f3e6; max-width:560px; }
+  .mag-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+  .mag-item { cursor:pointer; }
+  .mag-cover { height:170px; border-radius:16px; display:grid; place-items:center; font-size:52px; color:#fff; margin-bottom:13px; box-shadow:var(--shadow-sm); }
+  .mag-item h4 { font-size:15.5px; font-weight:700; margin-bottom:5px; }
+  .mag-item p { font-size:13px; color:var(--ink-dim); }
+  .mag-item .issue { font-size:11px; color:var(--ink-faint); margin-top:8px; font-weight:600; }
+
+  /* ===== Diagnostics ===== */
+  .diag-layout { display:grid; grid-template-columns:1.25fr 1fr; gap:22px; align-items:start; }
+  label.field { display:block; margin-bottom:16px; }
+  label.field .lbl { display:block; font-size:13px; font-weight:700; margin-bottom:7px; }
+  label.field .lbl span { color:var(--ink-faint); font-weight:500; }
+  .input,.select,.textarea { width:100%; background:#fff; border:1.5px solid var(--border); border-radius:12px;
+    padding:12px 14px; color:var(--ink); font-size:14px; font-family:inherit; transition:.15s; }
+  .input:focus,.select:focus,.textarea:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 4px rgba(58,171,87,.13); }
+  .textarea { resize:vertical; min-height:110px; }
+  .row2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
+  .chip { display:inline-flex; align-items:center; gap:6px; font-size:12.5px; padding:8px 13px; border-radius:100px; background:#fff;
+    border:1.5px solid var(--border); color:var(--ink-dim); font-weight:600; transition:.15s; }
+  .chip .ti { font-size:15px; }
+  .chip:hover { border-color:var(--accent); color:var(--accent-d); }
+  .chip.on { background:rgba(58,171,87,.14); border-color:var(--accent); color:var(--accent-d); }
+  .dropzone { border:2px dashed var(--border); border-radius:14px; padding:26px 20px; text-align:center; cursor:pointer; transition:.2s; background:#fff; }
+  .dropzone:hover,.dropzone.drag { border-color:var(--accent); background:rgba(58,171,87,.05); }
+  .dropzone .ti { font-size:36px; color:var(--accent); display:block; margin-bottom:6px; }
+  .dropzone .t { font-weight:700; font-size:14px; }
+  .dropzone .s { font-size:12px; color:var(--ink-faint); margin-top:4px; }
+  .video-preview { margin-top:14px; border-radius:12px; overflow:hidden; display:none; }
+  .video-preview video { width:100%; display:block; border-radius:12px; }
+  .video-preview .vname { font-size:12px; color:var(--ink-dim); padding:8px 4px 0; }
+  .btn-diag { width:100%; margin-top:4px; padding:15px; border-radius:14px; color:#fff; font-weight:800; font-size:15.5px;
+    background:linear-gradient(135deg,var(--accent),var(--accent-d)); box-shadow:0 10px 26px rgba(58,171,87,.35); transition:.2s;
+    display:flex; align-items:center; justify-content:center; gap:9px; }
+  .btn-diag:hover { transform:translateY(-2px); }
+  .btn-diag:disabled { opacity:.6; cursor:not-allowed; transform:none; }
+  .result-panel { min-height:220px; }
+  .result-empty { color:var(--ink-faint); text-align:center; padding:46px 20px; }
+  .result-empty .ti { font-size:50px; display:block; margin-bottom:12px; opacity:.5; }
+  .spinner { width:44px; height:44px; border:4px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; margin:28px auto 16px; }
+  @keyframes spin { to { transform:rotate(360deg);} }
+  .diag-out h3 { font-size:18px; font-weight:800; margin-bottom:3px; }
+  .severity { display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:700; padding:6px 13px; border-radius:100px; margin:9px 0 14px; }
+  .sev { background:rgba(246,166,35,.16); color:#d98a0e; }
+  .diag-block { padding:14px 0; border-top:1px solid var(--border); }
+  .diag-block .h { font-size:11.5px; text-transform:uppercase; letter-spacing:.6px; color:var(--ink-faint); font-weight:700; margin-bottom:9px; }
+  .cause { display:flex; gap:10px; align-items:center; font-size:14px; }
+  .cause .pct { font-weight:800; color:var(--accent-2); min-width:44px; }
+  .bar { height:6px; border-radius:4px; background:rgba(120,150,110,.18); overflow:hidden; margin:6px 0 11px; }
+  .bar i { display:block; height:100%; background:linear-gradient(90deg,var(--accent),var(--accent-2)); }
+  ul.steps { list-style:none; }
+  ul.steps li { font-size:14px; padding:7px 0 7px 27px; position:relative; color:var(--ink-dim); }
+  ul.steps li .ti { position:absolute; left:0; top:8px; color:var(--accent); font-size:17px; }
+  .disclaimer { font-size:12px; color:var(--ink-faint); margin-top:16px; padding:12px 14px; background:rgba(246,166,35,.08); border-radius:10px; border:1px solid rgba(246,166,35,.25); }
+
+  /* ===== Profile ===== */
+  .profile-head { display:flex; align-items:center; gap:20px; margin-bottom:26px; flex-wrap:wrap; }
+  .profile-head .pic { width:88px; height:88px; border-radius:50%; overflow:hidden; border:4px solid #fff; box-shadow:var(--shadow); }
+  .profile-head .pic img { width:100%; height:100%; object-fit:cover; }
+  .profile-head .pic .fb { width:100%; height:100%; display:grid; place-items:center; font-size:34px; font-weight:800; color:#fff; background:linear-gradient(135deg,var(--accent),var(--accent-2)); }
+  .profile-head h2 { font-size:26px; font-weight:800; }
+  .profile-head .em { color:var(--ink-dim); }
+  .role-badge { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:800; padding:5px 12px; border-radius:100px; margin-top:6px;
+    background:linear-gradient(135deg,var(--accent-2),#ff8c42); color:#fff; }
+  .settings-grid { display:grid; grid-template-columns:210px 1fr; gap:26px; align-items:start; }
+  .set-nav { display:flex; flex-direction:column; gap:4px; position:sticky; top:96px; }
+  .set-nav button { display:flex; align-items:center; gap:10px; text-align:left; padding:11px 15px; border-radius:12px; color:var(--ink-dim); font-weight:600; font-size:14px; transition:.15s; }
+  .set-nav button .ti { font-size:19px; }
+  .set-nav button:hover { background:rgba(110,189,76,.12); color:var(--accent-d); }
+  .set-nav button.active { background:linear-gradient(135deg,var(--accent),var(--accent-d)); color:#fff; box-shadow:var(--shadow-sm); }
+  .set-panel { display:none; }
+  .set-panel.active { display:block; }
+  .set-card { margin-bottom:18px; }
+  .set-card h3 { font-size:16px; font-weight:700; margin-bottom:3px; }
+  .set-card .desc { font-size:13px; color:var(--ink-dim); margin-bottom:16px; }
+  .set-row { display:flex; justify-content:space-between; align-items:center; gap:14px; padding:14px 0; border-top:1px solid var(--border); }
+  .set-row:first-of-type { border-top:none; }
+  .set-row .info .t { font-weight:600; font-size:14px; }
+  .set-row .info .s { font-size:12.5px; color:var(--ink-faint); }
+  .toggle { width:46px; height:26px; border-radius:20px; background:rgba(120,150,110,.3); position:relative; transition:.2s; flex-shrink:0; }
+  .toggle::after { content:""; position:absolute; width:20px; height:20px; border-radius:50%; background:#fff; top:3px; left:3px; transition:.2s; box-shadow:0 1px 3px rgba(0,0,0,.2); }
+  .toggle.on { background:var(--accent); } .toggle.on::after { left:23px; }
+  .btn { display:inline-flex; align-items:center; gap:8px; padding:10px 18px; border-radius:11px; font-weight:700; font-size:14px; transition:.15s;
+    background:#fff; color:var(--ink); border:1.5px solid var(--border); }
+  .btn:hover { border-color:var(--accent); color:var(--accent-d); }
+  .btn.primary { background:linear-gradient(135deg,var(--accent),var(--accent-d)); color:#fff; border:none; }
+  .btn.primary:hover { transform:translateY(-1px); color:#fff; }
+  .btn.danger { background:rgba(227,84,84,.1); color:var(--danger); border-color:rgba(227,84,84,.3); }
+  .btn.danger:hover { background:var(--danger); color:#fff; border-color:var(--danger); }
+
+  /* admin table */
+  .admin-table { width:100%; border-collapse:collapse; font-size:13.5px; }
+  .admin-table th { text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--ink-faint); padding:8px 10px; border-bottom:1px solid var(--border); }
+  .admin-table td { padding:11px 10px; border-bottom:1px solid var(--border); }
+  .admin-table tr:last-child td { border-bottom:none; }
+  .mini-av { width:28px; height:28px; border-radius:50%; object-fit:cover; vertical-align:middle; margin-right:8px; }
+  .stat-row { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:18px; }
+  .stat { background:#fff; border:1px solid var(--border); border-radius:14px; padding:16px; text-align:center; }
+  .stat .n { font-size:28px; font-weight:800; color:var(--accent-d); }
+  .stat .l { font-size:12px; color:var(--ink-faint); font-weight:600; }
+
+  /* gate / login required */
+  .gate { text-align:center; padding:60px 20px; }
+  .gate .ti { font-size:60px; color:var(--accent); margin-bottom:14px; }
+  .gate h2 { font-size:22px; font-weight:800; margin-bottom:8px; }
+  .gate p { color:var(--ink-dim); margin-bottom:22px; }
+
+  /* ===== Auth modal ===== */
+  .modal-bg { position:fixed; inset:0; background:rgba(20,40,15,.45); backdrop-filter:blur(8px); display:none; place-items:center; z-index:100; padding:20px; }
+  .modal-bg.show { display:grid; }
+  .modal { width:100%; max-width:400px; background:#fff; border-radius:24px; padding:36px 32px; box-shadow:var(--shadow); animation:pop .25s ease; text-align:center; }
+  @keyframes pop { from { transform:scale(.94); opacity:0;} to { transform:scale(1); opacity:1;} }
+  .modal .logo-lg { width:62px; height:62px; border-radius:18px; margin:0 auto 16px; display:grid; place-items:center; font-size:32px; color:#fff;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2)); box-shadow:0 8px 20px rgba(58,171,87,.4); }
+  .modal h2 { font-size:22px; font-weight:800; }
+  .modal .sub { color:var(--ink-dim); font-size:14px; margin:8px 0 24px; }
+  .google-btn { display:flex; align-items:center; justify-content:center; gap:11px; width:100%; padding:14px; border-radius:14px;
+    background:#fff; border:1.5px solid var(--border); font-weight:700; font-size:15px; color:var(--ink); transition:.18s; }
+  .google-btn:hover { box-shadow:var(--shadow-sm); border-color:var(--accent); transform:translateY(-1px); }
+  .google-btn .ti { font-size:22px; color:#ea4335; }
+  .modal .note { font-size:12px; color:var(--ink-faint); margin-top:18px; line-height:1.5; }
+  .modal .closeb { margin-top:16px; font-size:13px; color:var(--ink-faint); }
+  .auth-err { background:rgba(227,84,84,.1); color:#c93838; font-size:13px; padding:11px 13px; border-radius:11px; margin-bottom:16px; display:none; text-align:left; }
+  .auth-err.show { display:block; }
+
+  .toast { position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(120px); background:#fff; border:1px solid var(--border);
+    color:var(--ink); padding:13px 22px; border-radius:14px; font-weight:600; font-size:14px; box-shadow:var(--shadow); z-index:200; transition:.3s;
+    display:flex; gap:9px; align-items:center; }
+  .toast.show { transform:translateX(-50%) translateY(0); }
+  .toast .ti { font-size:20px; color:var(--accent); }
+
+  @media (max-width:880px) {
+    .nav-links { display:none; }
+    .g3,.g2,.diag-layout,.mag-grid,.settings-grid,.brief-grid,.stat-row { grid-template-columns:1fr; }
+    .set-nav { position:static; flex-direction:row; flex-wrap:wrap; }
+    .hero h1 { font-size:34px; }
+    .sun { width:80px; height:80px; }
+    .mobile-tabs { display:flex !important; }
+  }
+  /* mobile bottom tabs */
+  .mobile-tabs { display:none; position:fixed; bottom:14px; left:50%; transform:translateX(-50%); z-index:50; gap:4px; padding:7px;
+    background:rgba(255,255,255,.85); backdrop-filter:blur(16px); border-radius:100px; box-shadow:var(--shadow); border:1px solid rgba(255,255,255,.7); }
+  .mobile-tabs a { width:46px; height:46px; border-radius:50%; display:grid; place-items:center; font-size:22px; color:var(--ink-dim); }
+  .mobile-tabs a.active { background:linear-gradient(135deg,var(--accent),var(--accent-d)); color:#fff; }
+</style>
+</head>
+<body>
+
+<!-- Ambient meadow scene -->
+<div class="scene">
+  <div class="sun"></div>
+  <div class="cloud c1"></div>
+  <div class="cloud c2"></div>
+  <div class="cloud c3"></div>
+  <div class="hills h1" data-depth="0.6">
+    <svg viewBox="0 0 1440 320" preserveAspectRatio="none"><path fill="#bfe89a" d="M0,224L80,213.3C160,203,320,181,480,186.7C640,192,800,224,960,224C1120,224,1280,192,1360,176L1440,160L1440,320L0,320Z"/></svg>
+  </div>
+  <div class="hills h2" data-depth="1.1">
+    <svg viewBox="0 0 1440 320" preserveAspectRatio="none"><path fill="#8ed16a" d="M0,256L60,245.3C120,235,240,213,360,224C480,235,600,277,720,282.7C840,288,960,256,1080,234.7C1200,213,1320,203,1380,197.3L1440,192L1440,320L0,320Z"/></svg>
+  </div>
+  <div class="hills h3" data-depth="1.8">
+    <svg viewBox="0 0 1440 320" preserveAspectRatio="none"><path fill="#5aa83f" d="M0,288L48,277.3C96,267,192,245,288,250.7C384,256,480,288,576,293.3C672,299,768,277,864,266.7C960,256,1056,256,1152,261.3C1248,267,1344,277,1392,282.7L1440,288L1440,320L0,320Z"/></svg>
+  </div>
+</div>
+
+<!-- Pill nav -->
+<div class="navwrap">
+  <nav class="nav">
+    <div class="brand">
+      <div class="mark"><i class="ti ti-spiral"></i></div>
+      <b>Spire<span>ONE</span></b>
+    </div>
+    <div class="nav-links">
+      <a data-view="home" class="active"><i class="ti ti-home"></i> หน้าแรก</a>
+      <a data-view="magazine"><i class="ti ti-book-2"></i> นิตยสาร</a>
+      <a data-view="diagnostics"><i class="ti ti-stethoscope"></i> วินิจฉัย</a>
+    </div>
+    <div class="nav-right">
+      <button class="btn-login" id="loginBtn"><i class="ti ti-brand-google"></i> เข้าสู่ระบบ</button>
+      <button class="avatar-btn" id="avatarBtn"><span class="fallback" id="navFallback">?</span></button>
+      <div class="dropdown" id="dropdown">
+        <div class="dd-head">
+          <div style="width:42px;height:42px;border-radius:50%;overflow:hidden;flex-shrink:0" id="ddPic"></div>
+          <div>
+            <div class="nm" id="ddName">—</div>
+            <div class="em" id="ddEmail">—</div>
+            <div class="role" id="ddRole" style="display:none"><i class="ti ti-shield-check"></i> ADMIN</div>
+          </div>
+        </div>
+        <hr/>
+        <button data-view="profile"><i class="ti ti-user"></i> โปรไฟล์ & ตั้งค่า</button>
+        <button data-view="profile" data-set="admin" id="ddAdmin" style="display:none"><i class="ti ti-shield-lock"></i> Admin Panel</button>
+        <hr/>
+        <button class="danger" id="logoutBtn"><i class="ti ti-logout"></i> ออกจากระบบ</button>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<div class="main">
+  <div class="container">
+
+    <!-- ===== HOME ===== -->
+    <section class="view active" id="view-home">
+      <div class="hero">
+        <span class="eyebrow"><i class="ti ti-sparkles"></i> ผู้ช่วยซ่อมรถด้วย AI</span>
+        <h1>ดูแลรถของคุณ<br/>ให้ <span class="hl">ง่ายและสบายใจ</span></h1>
+        <p>SpireONE ช่วยวินิจฉัยอาการรถยนต์เบื้องต้นด้วย AI พร้อมข่าวสารและนิตยสารยานยนต์ที่คัดมาให้คุณทุกวัน</p>
+        <a class="hero-cta" data-view="diagnostics"><i class="ti ti-stethoscope"></i> เริ่มวินิจฉัยรถของคุณ</a>
+      </div>
+
+      <!-- Today's Brief (collapsible + gated) -->
+      <div class="brief-shell" id="briefShell">
+        <div class="brief-bar" id="briefBar">
+          <div class="left">
+            <div class="ic-big"><i class="ti ti-news"></i></div>
+            <div>
+              <h3>Today's Brief</h3>
+              <div class="sub" id="briefSub">ข่าวสารยานยนต์ประจำวัน</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:14px">
+            <span class="brief-lock" id="briefLock"><i class="ti ti-lock"></i> เข้าสู่ระบบเพื่อดู</span>
+            <i class="ti ti-chevron-down chev"></i>
+          </div>
+        </div>
+        <div class="brief-body">
+          <div class="brief-grid" id="briefGrid"></div>
+        </div>
+      </div>
+
+      <h3 class="section-title">เข้าถึงเร็ว</h3>
+      <p class="section-sub">ฟีเจอร์หลักของ SpireONE</p>
+      <div class="grid g3">
+        <div class="card tilt feature-card" data-view="diagnostics">
+          <div class="fic g"><i class="ti ti-stethoscope"></i></div>
+          <h4>วินิจฉัยปัญหารถ</h4>
+          <p>กรอกอาการ + อัปโหลดวิดีโอ ให้ AI ช่วยวิเคราะห์สาเหตุเบื้องต้น</p>
+        </div>
+        <div class="card tilt feature-card" data-view="magazine">
+          <div class="fic o"><i class="ti ti-book-2"></i></div>
+          <h4>นิตยสารรถ</h4>
+          <p>อ่านรีวิว เทรนด์ และบทความเชิงลึกเหมือนนิตยสารรถระดับโลก</p>
+        </div>
+        <div class="card tilt feature-card" data-view="profile">
+          <div class="fic b"><i class="ti ti-user-cog"></i></div>
+          <h4>โปรไฟล์ & ตั้งค่า</h4>
+          <p>จัดการบัญชี รถของคุณ และการตั้งค่าทั้งหมดในที่เดียว</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== MAGAZINE ===== -->
+    <section class="view" id="view-magazine">
+      <h3 class="section-title">Car Magazine</h3>
+      <p class="section-sub">นิตยสารรถยนต์ดิจิทัล — รีวิว เทรนด์ และเทคโนโลยี ฉบับเดือนนี้</p>
+      <div class="mag-feature">
+        <div class="bg"></div><div class="ov"></div>
+        <div class="tx">
+          <span class="pill p-ev">ฉบับพิเศษ</span>
+          <h2>ยุคใหม่ของรถ EV ในไทย: คุ้มจริงไหมในปี 2026?</h2>
+          <p>เจาะลึกต้นทุนการเป็นเจ้าของ ระยะทาง และเครือข่ายชาร์จที่กำลังเปลี่ยนเกมตลาดรถยนต์ไทย</p>
+        </div>
+      </div>
+      <div class="mag-grid" id="magGrid"></div>
+    </section>
+
+    <!-- ===== DIAGNOSTICS ===== -->
+    <section class="view" id="view-diagnostics">
+      <h3 class="section-title">Car Diagnostics</h3>
+      <p class="section-sub">กรอกข้อมูลรถและอาการที่พบ ให้ AI ช่วยวินิจฉัยสาเหตุเบื้องต้น (เวอร์ชัน Demo)</p>
+      <div class="diag-layout">
+        <div class="card">
+          <div class="row2">
+            <label class="field"><span class="lbl">ยี่ห้อรถ</span>
+              <select class="select" id="dBrand">
+                <option value="">— เลือกยี่ห้อ —</option>
+                <option>Toyota</option><option>Honda</option><option>Isuzu</option><option>Mazda</option>
+                <option>Mitsubishi</option><option>Nissan</option><option>Ford</option><option>BMW</option>
+                <option>Mercedes-Benz</option><option>BYD</option><option>Tesla</option><option>อื่นๆ</option>
+              </select>
+            </label>
+            <label class="field"><span class="lbl">รุ่น <span>(เช่น Camry)</span></span><input class="input" id="dModel" placeholder="พิมพ์รุ่นรถ" /></label>
+          </div>
+          <div class="row2">
+            <label class="field"><span class="lbl">ปี <span>(ค.ศ.)</span></span><input class="input" id="dYear" placeholder="เช่น 2019" /></label>
+            <label class="field"><span class="lbl">เลขไมล์ <span>(กม.)</span></span><input class="input" id="dMileage" placeholder="เช่น 85000" /></label>
+          </div>
+          <label class="field"><span class="lbl">อาการที่พบ</span>
+            <textarea class="textarea" id="dSymptom" placeholder="อธิบายอาการ เช่น มีเสียงดังตอนเบรก, เครื่องสั่นตอนติด, ไฟเตือนเครื่องยนต์ขึ้น..."></textarea>
+          </label>
+          <div class="field"><span class="lbl">อาการที่พบบ่อย <span>(แตะเพื่อเพิ่ม)</span></span>
+            <div class="chips" id="symptomChips">
+              <span class="chip" data-t="มีเสียงดังผิดปกติ"><i class="ti ti-volume"></i> เสียงดังผิดปกติ</span>
+              <span class="chip" data-t="ความร้อนขึ้นสูง"><i class="ti ti-temperature"></i> ความร้อนขึ้นสูง</span>
+              <span class="chip" data-t="ไฟเตือนขึ้น"><i class="ti ti-alert-triangle"></i> ไฟเตือนขึ้น</span>
+              <span class="chip" data-t="มีควันผิดปกติ"><i class="ti ti-cloud"></i> ควันผิดปกติ</span>
+              <span class="chip" data-t="สตาร์ทไม่ติด"><i class="ti ti-battery-2"></i> สตาร์ทไม่ติด</span>
+              <span class="chip" data-t="รถสั่นหรือดึงข้าง"><i class="ti ti-steering-wheel"></i> รถสั่น/ดึง</span>
+              <span class="chip" data-t="เบรกมีปัญหา"><i class="ti ti-disc"></i> เบรกมีปัญหา</span>
+              <span class="chip" data-t="กินน้ำมันผิดปกติ"><i class="ti ti-gas-station"></i> กินน้ำมัน</span>
+            </div>
+          </div>
+          <div class="field"><span class="lbl">อัปโหลดวิดีโออาการ <span>(ช่วยให้ AI เห็นอาการชัดขึ้น)</span></span>
+            <div class="dropzone" id="dropzone">
+              <i class="ti ti-video"></i>
+              <span class="t">ลากวิดีโอมาวาง หรือคลิกเพื่อเลือกไฟล์</span>
+              <span class="s">รองรับ MP4, MOV, WEBM</span>
+              <input type="file" id="videoInput" accept="video/*" hidden />
+            </div>
+            <div class="video-preview" id="videoPreview"><video id="videoEl" controls></video><div class="vname" id="videoName"></div></div>
+          </div>
+          <button class="btn-diag" id="diagBtn"><i class="ti ti-bolt"></i> เริ่มวินิจฉัยด้วย AI</button>
+        </div>
+        <div class="card result-panel" id="resultPanel">
+          <div class="result-empty" id="resultEmpty"><i class="ti ti-robot"></i>ผลการวินิจฉัยจะแสดงที่นี่<br/>กรอกข้อมูลแล้วกดปุ่ม "เริ่มวินิจฉัย"</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PROFILE / SETTINGS ===== -->
+    <section class="view" id="view-profile">
+      <div id="profileGate" class="gate">
+        <i class="ti ti-user-shield"></i>
+        <h2>เข้าสู่ระบบเพื่อดูโปรไฟล์</h2>
+        <p>เข้าสู่ระบบด้วย Google เพื่อจัดการบัญชีและการตั้งค่าของคุณ</p>
+        <button class="btn primary" onclick="openAuth()"><i class="ti ti-brand-google"></i> เข้าสู่ระบบด้วย Google</button>
+      </div>
+
+      <div id="profileBody" style="display:none">
+        <div class="profile-head">
+          <div class="pic" id="profilePic"></div>
+          <div>
+            <h2 id="profileName">—</h2>
+            <div class="em" id="profileEmail">—</div>
+            <span class="role-badge" id="profileRole" style="display:none"><i class="ti ti-shield-check"></i> ผู้ดูแลระบบ</span>
+          </div>
+        </div>
+
+        <div class="settings-grid">
+          <div class="set-nav" id="setNav">
+            <button class="active" data-set="account"><i class="ti ti-user"></i> บัญชี</button>
+            <button data-set="garage"><i class="ti ti-car"></i> รถของฉัน</button>
+            <button data-set="notif"><i class="ti ti-bell"></i> การแจ้งเตือน</button>
+            <button data-set="app"><i class="ti ti-palette"></i> แอป</button>
+            <button data-set="admin" id="navAdmin" style="display:none"><i class="ti ti-shield-lock"></i> Admin</button>
+            <button data-set="danger"><i class="ti ti-alert-octagon"></i> ขั้นสูง</button>
+          </div>
+          <div>
+            <!-- account -->
+            <div class="set-panel active" data-set="account">
+              <div class="card set-card">
+                <h3>ข้อมูลบัญชี</h3>
+                <p class="desc">บัญชีของคุณเชื่อมต่อกับ Google และจะถูกจำไว้ตลอด จนกว่าคุณจะปิดการใช้งานบัญชี</p>
+                <label class="field"><span class="lbl">ชื่อที่แสดง</span><input class="input" id="setName" placeholder="ชื่อของคุณ" /></label>
+                <label class="field"><span class="lbl">อีเมล (Google)</span><input class="input" id="setEmail" disabled /></label>
+                <button class="btn primary" id="saveProfile"><i class="ti ti-device-floppy"></i> บันทึกข้อมูล</button>
+              </div>
+            </div>
+            <!-- garage -->
+            <div class="set-panel" data-set="garage">
+              <div class="card set-card">
+                <h3>รถของฉัน</h3>
+                <p class="desc">บันทึกรถไว้เพื่อให้วินิจฉัยได้เร็วขึ้น</p>
+                <div id="garageList"></div>
+                <div class="row2" style="margin-top:14px">
+                  <input class="input" id="garageBrand" placeholder="ยี่ห้อ + รุ่น เช่น Honda Civic" />
+                  <input class="input" id="garageYear" placeholder="ปี เช่น 2020" />
+                </div>
+                <button class="btn primary" id="addCar" style="margin-top:12px"><i class="ti ti-plus"></i> เพิ่มรถ</button>
+              </div>
+            </div>
+            <!-- notif -->
+            <div class="set-panel" data-set="notif">
+              <div class="card set-card">
+                <h3>การแจ้งเตือน</h3>
+                <p class="desc">เลือกสิ่งที่ต้องการให้แจ้งเตือน</p>
+                <div class="set-row"><div class="info"><div class="t">Today's Brief รายวัน</div><div class="s">สรุปข่าวรถทุกเช้า</div></div><div class="toggle on" data-toggle></div></div>
+                <div class="set-row"><div class="info"><div class="t">นิตยสารฉบับใหม่</div><div class="s">แจ้งเมื่อมีฉบับใหม่</div></div><div class="toggle on" data-toggle></div></div>
+                <div class="set-row"><div class="info"><div class="t">เตือนเช็กระยะรถ</div><div class="s">ตามเลขไมล์ที่บันทึก</div></div><div class="toggle" data-toggle></div></div>
+              </div>
+            </div>
+            <!-- app -->
+            <div class="set-panel" data-set="app">
+              <div class="card set-card">
+                <h3>การตั้งค่าแอป</h3>
+                <p class="desc">ปรับแต่งการแสดงผล</p>
+                <div class="set-row"><div class="info"><div class="t">เอฟเฟกต์เคลื่อนไหว</div><div class="s">เมฆลอย + พารัลแลกซ์</div></div><div class="toggle on" data-toggle id="tgMotion"></div></div>
+                <div class="set-row"><div class="info"><div class="t">ภาษาไทย</div><div class="s">ภาษาของเนื้อหา</div></div><div class="toggle on" data-toggle></div></div>
+                <div class="set-row"><div class="info"><div class="t">บันทึกประวัติวินิจฉัย</div><div class="s">เก็บผลไว้ดูภายหลัง</div></div><div class="toggle on" data-toggle></div></div>
+              </div>
+            </div>
+            <!-- admin -->
+            <div class="set-panel" data-set="admin">
+              <div class="card set-card">
+                <h3><i class="ti ti-shield-lock"></i> Admin Panel</h3>
+                <p class="desc">ภาพรวมผู้ใช้งานและการจัดการระบบ (เฉพาะผู้ดูแล)</p>
+                <div class="stat-row" id="adminStats"></div>
+                <div style="overflow-x:auto">
+                  <table class="admin-table" id="adminTable">
+                    <thead><tr><th>ผู้ใช้</th><th>อีเมล</th><th>สิทธิ์</th><th>เข้าใช้ล่าสุด</th></tr></thead>
+                    <tbody id="adminRows"></tbody>
+                  </table>
+                </div>
+                <button class="btn" id="refreshUsers" style="margin-top:14px"><i class="ti ti-refresh"></i> รีเฟรชรายชื่อ</button>
+              </div>
+            </div>
+            <!-- danger -->
+            <div class="set-panel" data-set="danger">
+              <div class="card set-card">
+                <h3>การจัดการขั้นสูง</h3>
+                <p class="desc">การกระทำเหล่านี้ไม่สามารถย้อนกลับได้</p>
+                <div class="set-row"><div class="info"><div class="t">ล้างข้อมูลในเครื่อง</div><div class="s">ลบรถและการตั้งค่าที่บันทึกไว้</div></div><button class="btn danger" id="clearData">ล้างข้อมูล</button></div>
+                <div class="set-row"><div class="info"><div class="t">ออกจากระบบ</div><div class="s">ออกจากบัญชี (ข้อมูลบัญชียังอยู่)</div></div><button class="btn" id="logoutBtn2"><i class="ti ti-logout"></i> ออกจากระบบ</button></div>
+                <div class="set-row"><div class="info"><div class="t" style="color:var(--danger)">ปิดการใช้งานบัญชี (Deactivate)</div><div class="s">ลบบัญชีถาวร — ข้อมูลจะหายทั้งหมด</div></div><button class="btn danger" id="deactivateBtn"><i class="ti ti-user-x"></i> Deactivate</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- mobile bottom tabs -->
+<div class="mobile-tabs">
+  <a data-view="home" class="active"><i class="ti ti-home"></i></a>
+  <a data-view="magazine"><i class="ti ti-book-2"></i></a>
+  <a data-view="diagnostics"><i class="ti ti-stethoscope"></i></a>
+  <a data-view="profile"><i class="ti ti-user"></i></a>
+</div>
+
+<!-- Auth modal -->
+<div class="modal-bg" id="authModal">
+  <div class="modal">
+    <div class="logo-lg"><i class="ti ti-spiral"></i></div>
+    <h2>ยินดีต้อนรับสู่ SpireONE</h2>
+    <p class="sub">เข้าสู่ระบบด้วยบัญชี Google ของคุณ<br/>ไม่ต้องตั้งรหัสผ่าน ปลอดภัยกว่า</p>
+    <div class="auth-err" id="authErr"></div>
+    <button class="google-btn" id="googleBtn"><i class="ti ti-brand-google"></i> ดำเนินการต่อด้วย Google</button>
+    <p class="note"><i class="ti ti-lock"></i> เราใช้การยืนยันตัวตนของ Google ทั้งหมด จึงไม่มีรหัสผ่านให้ถูกแฮ็ก บัญชีของคุณจะถูกจำไว้ตลอดจนกว่าจะออกจากระบบหรือปิดบัญชีเอง</p>
+    <div class="closeb"><a href="#" onclick="closeAuth();return false">ปิด</a></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+/* ============================================================
+   FIREBASE
+   ============================================================ */
+const fbConfig = {
+  apiKey: "AIzaSyDDtvz4d4FRG_KOq5EQHmlDijU-x1FDZlQ",
+  authDomain: "sp1p-82396.firebaseapp.com",
+  databaseURL: "https://sp1p-82396-default-rtdb.firebaseio.com",
+  projectId: "sp1p-82396",
+  storageBucket: "sp1p-82396.appspot.com",
+  messagingSenderId: "924479207020",
+  appId: "1:924479207020:web:ec64428a61403e1ad48a49"
+};
+const ADMINS = ["anapatmaliwong@gmail.com", "carspirethailand@gmail.com"];
+
+let auth=null, db=null, useFirebase=false;
+try {
+  firebase.initializeApp(fbConfig);
+  auth = firebase.auth();
+  db = firebase.database();
+  // remember the account forever until explicit sign-out / deactivate
+  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});
+  useFirebase = true;
+} catch(e){ console.warn("Firebase init failed:", e); }
+
+let currentUser = null;
+const $ = id => document.getElementById(id);
+
+/* ============================================================
+   DEMO DATA
+   ============================================================ */
+const briefs = [
+  { pill:"p-hot", tag:"ข่าวเด่น", time:"2 ชม. ที่แล้ว", title:"ยอดขายรถ EV ในไทยพุ่ง 40% ต้นปี 2026", body:"แรงหนุนจากมาตรการรัฐและรุ่นใหม่ราคาเข้าถึงง่าย ทำให้ค่ายจีนและญี่ปุ่นแข่งเดือด" },
+  { pill:"p-tech", tag:"เทคโนโลยี", time:"5 ชม. ที่แล้ว", title:"ระบบ ADAS รุ่นใหม่ลดอุบัติเหตุได้ถึง 27%", body:"งานวิจัยล่าสุดชี้ระบบช่วยขับขั้นสูงช่วยลดการชนท้ายอย่างมีนัยสำคัญ" },
+  { pill:"p-tip", tag:"เคล็ดลับ", time:"เมื่อวาน", title:"5 สัญญาณบอกว่าผ้าเบรกใกล้หมด", body:"เสียงเอี๊ยด แป้นเบรกลึกผิดปกติ ระยะเบรกยาวขึ้น — เช็กก่อนเป็นอันตราย" },
+  { pill:"p-ev", tag:"EV", time:"เมื่อวาน", title:"เครือข่ายสถานีชาร์จทะลุ 12,000 หัวจ่าย", body:"ครอบคลุมทุกจังหวัด พร้อมหัวจ่ายเร็ว 150kW เพิ่มขึ้นต่อเนื่อง" }
+];
+const mags = [
+  { ic:"ti-car-4wd", bg:"linear-gradient(135deg,#3a8c52,#1f6b32)", pill:"p-hot", tag:"รีวิว", title:"สปอร์ตซีดานสายพันธุ์ใหม่", body:"ทดสอบสมรรถนะรอบสนาม พร้อมรีวิวการใช้งานจริง", issue:"ฉบับที่ 142" },
+  { ic:"ti-battery-charging", bg:"linear-gradient(135deg,#2f9e7a,#1a7a5e)", pill:"p-ev", tag:"EV", title:"แบตเตอรี่ Solid-State มาแล้ว", body:"เทคโนโลยีที่จะเปลี่ยนระยะทางและเวลาชาร์จไปตลอดกาล", issue:"ฉบับที่ 142" },
+  { ic:"ti-tools", bg:"linear-gradient(135deg,#c98a2e,#9e6a1a)", pill:"p-tip", tag:"DIY", title:"ดูแลรถหน้าฝนด้วยตัวเอง", body:"เช็กลิสต์ 10 จุดที่ต้องดูก่อนลุยฝน", issue:"ฉบับที่ 142" },
+  { ic:"ti-car-suv", bg:"linear-gradient(135deg,#3a7ce6,#2f5fd6)", pill:"p-tech", tag:"SUV", title:"เปรียบเทียบ SUV ครอบครัว 2026", body:"5 รุ่นยอดนิยม คันไหนคุ้มที่สุด", issue:"ฉบับที่ 141" },
+  { ic:"ti-engine", bg:"linear-gradient(135deg,#8c5a3a,#6b3f2f)", pill:"p-tech", tag:"เครื่องยนต์", title:"ไฮบริดยังน่าซื้อไหมในปี 2026?", body:"เทียบต้นทุน-ความคุ้มกับ EV เต็มรูปแบบ", issue:"ฉบับที่ 141" },
+  { ic:"ti-circle-dot", bg:"linear-gradient(135deg,#555,#333)", pill:"p-tip", tag:"ยาง", title:"เลือกยางให้ถูกกับการใช้งาน", body:"ยางเงียบ ยางลุย ยางประหยัด เลือกยังไงให้คุ้ม", issue:"ฉบับที่ 141" }
+];
+
+/* ============================================================
+   STORAGE (local cars/settings)
+   ============================================================ */
+const LS = {
+  get:(k,d)=>{ try{ return JSON.parse(localStorage.getItem("spireone_"+k)) ?? d; }catch{ return d; } },
+  set:(k,v)=>localStorage.setItem("spireone_"+k, JSON.stringify(v)),
+  del:k=>localStorage.removeItem("spireone_"+k)
+};
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function renderBriefs(){
+  $("briefGrid").innerHTML = briefs.map(b=>`
+    <div class="card brief-card tilt">
+      <div class="meta"><span class="pill ${b.pill}">${b.tag}</span><span class="time">${b.time}</span></div>
+      <h4>${b.title}</h4><p>${b.body}</p>
+    </div>`).join("");
+}
+function renderMags(){
+  $("magGrid").innerHTML = mags.map(m=>`
+    <div class="mag-item tilt">
+      <div class="mag-cover" style="background:${m.bg}"><i class="ti ${m.ic}"></i></div>
+      <span class="pill ${m.pill}">${m.tag}</span>
+      <h4 style="margin-top:8px">${m.title}</h4><p>${m.body}</p>
+      <div class="issue">${m.issue}</div>
+    </div>`).join("");
+}
+function setDate(){
+  const d = new Date().toLocaleDateString("th-TH",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  $("briefSub").textContent = "ข่าวสารยานยนต์ประจำวัน " + d;
+}
+
+/* ============================================================
+   VIEW SWITCH
+   ============================================================ */
+const crumb = { home:"หน้าแรก", magazine:"นิตยสาร", diagnostics:"วินิจฉัย", profile:"โปรไฟล์" };
+function switchView(v, set){
+  document.querySelectorAll(".view").forEach(s=>s.classList.toggle("active", s.id==="view-"+v));
+  document.querySelectorAll(".nav-links a, .mobile-tabs a").forEach(a=>a.classList.toggle("active", a.dataset.view===v));
+  if (v==="profile") { refreshProfile(); if(set) setTimeout(()=>selectSet(set),50); }
+  closeDropdown();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+document.addEventListener("click", e=>{
+  const nav = e.target.closest("[data-view]");
+  if (nav){ e.preventDefault(); switchView(nav.dataset.view, nav.dataset.set); }
+});
+
+/* ============================================================
+   TODAY'S BRIEF (collapse + gate)
+   ============================================================ */
+$("briefBar").addEventListener("click", ()=>{
+  if (!currentUser){ openAuth(); toast("เข้าสู่ระบบก่อนเพื่อดู Today's Brief", "ti-lock"); return; }
+  $("briefShell").classList.toggle("open");
+});
+function updateBriefGate(){
+  $("briefLock").style.display = currentUser ? "none" : "flex";
+  if (!currentUser) $("briefShell").classList.remove("open");
+}
+
+/* ============================================================
+   AUTH (Google only)
+   ============================================================ */
+function openAuth(){ $("authModal").classList.add("show"); $("authErr").classList.remove("show"); }
+function closeAuth(){ $("authModal").classList.remove("show"); }
+$("authModal").addEventListener("click", e=>{ if(e.target.id==="authModal") closeAuth(); });
+$("loginBtn").onclick = ()=> currentUser ? toggleDropdown() : openAuth();
+$("avatarBtn").onclick = toggleDropdown;
+function toggleDropdown(){ $("dropdown").classList.toggle("show"); }
+function closeDropdown(){ $("dropdown").classList.remove("show"); }
+document.addEventListener("click", e=>{ if(!e.target.closest(".nav-right")) closeDropdown(); });
+
+async function googleSignIn(){
+  if(!useFirebase){ showAuthErr("ระบบยังไม่ได้เชื่อม Firebase"); return; }
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt:"select_account" });
+  try{ await auth.signInWithPopup(provider); closeAuth(); }
+  catch(err){
+    if(err.code==="auth/popup-closed-by-user") return;
+    if(err.code==="auth/operation-not-allowed")
+      showAuthErr("ยังไม่ได้เปิด Google Sign-in ใน Firebase Console (Authentication → Sign-in method → Google → Enable)");
+    else showAuthErr("เข้าสู่ระบบไม่สำเร็จ: " + err.code);
+  }
+}
+$("googleBtn").onclick = googleSignIn;
+function showAuthErr(m){ const e=$("authErr"); e.textContent=m; e.classList.add("show"); }
+
+const isAdmin = email => ADMINS.includes((email||"").toLowerCase());
+
+if (useFirebase){
+  auth.onAuthStateChanged(u=>{
+    if (u){
+      currentUser = { uid:u.uid, name:u.displayName||u.email.split("@")[0], email:u.email, photo:u.photoURL||"", admin:isAdmin(u.email) };
+      db.ref("users/"+u.uid).update({
+        name: currentUser.name, email: u.email, photo: currentUser.photo,
+        role: currentUser.admin?"admin":"user", lastLogin: Date.now()
+      }).catch(()=>{});
+      onLogin();
+    } else { currentUser=null; onLogout(); }
+  });
+}
+
+function picHTML(u, size){
+  return u.photo
+    ? `<img src="${u.photo}" style="width:100%;height:100%;object-fit:cover" referrerpolicy="no-referrer"/>`
+    : `<div class="fallback">${u.name.charAt(0).toUpperCase()}</div>`;
+}
+function onLogin(){
+  const u = currentUser;
+  $("loginBtn").style.display = "none";
+  $("avatarBtn").style.display = "block";
+  $("avatarBtn").innerHTML = picHTML(u);
+  $("navFallback") && ($("navFallback").textContent = u.name.charAt(0).toUpperCase());
+  $("ddName").textContent = u.name; $("ddEmail").textContent = u.email;
+  $("ddPic").innerHTML = picHTML(u);
+  $("ddRole").style.display = u.admin?"flex":"none";
+  $("ddAdmin").style.display = u.admin?"flex":"none";
+  $("navAdmin").style.display = u.admin?"flex":"none";
+  updateBriefGate();
+  refreshProfile();
+  toast("ยินดีต้อนรับ คุณ"+u.name, "ti-mood-smile");
+}
+function onLogout(){
+  $("loginBtn").style.display = "flex";
+  $("avatarBtn").style.display = "none";
+  $("ddAdmin").style.display="none"; $("navAdmin").style.display="none";
+  updateBriefGate();
+  refreshProfile();
+}
+async function doLogout(){ if(useFirebase) await auth.signOut(); closeDropdown(); switchView("home"); toast("ออกจากระบบแล้ว","ti-logout"); }
+$("logoutBtn").onclick = doLogout;
+$("logoutBtn2") && ($("logoutBtn2").onclick = doLogout);
+
+/* deactivate = delete account permanently */
+$("deactivateBtn").onclick = async ()=>{
+  if(!currentUser){ return; }
+  if(!confirm("ปิดการใช้งานบัญชีถาวร? ข้อมูลบัญชีจะถูกลบทั้งหมดและไม่สามารถย้อนกลับได้")) return;
+  try{
+    await db.ref("users/"+currentUser.uid).remove();
+    await auth.currentUser.delete();
+    toast("ปิดการใช้งานบัญชีแล้ว","ti-user-x");
+    switchView("home");
+  }catch(err){
+    if(err.code==="auth/requires-recent-login"){
+      try{
+        const provider = new firebase.auth.GoogleAuthProvider();
+        await auth.currentUser.reauthenticateWithPopup(provider);
+        await db.ref("users/"+currentUser.uid).remove();
+        await auth.currentUser.delete();
+        toast("ปิดการใช้งานบัญชีแล้ว","ti-user-x");
+        switchView("home");
+      }catch(e2){ toast("ยกเลิกการปิดบัญชี","ti-x"); }
+    } else toast("ไม่สำเร็จ: "+err.code,"ti-x");
+  }
+};
+
+/* ============================================================
+   PROFILE / SETTINGS
+   ============================================================ */
+function refreshProfile(){
+  const has = !!currentUser;
+  $("profileGate").style.display = has?"none":"block";
+  $("profileBody").style.display = has?"block":"none";
+  if(!has) return;
+  const u = currentUser;
+  $("profilePic").innerHTML = u.photo ? `<img src="${u.photo}" referrerpolicy="no-referrer"/>` : `<div class="fb">${u.name.charAt(0).toUpperCase()}</div>`;
+  $("profileName").textContent = u.name;
+  $("profileEmail").textContent = u.email;
+  $("profileRole").style.display = u.admin?"inline-flex":"none";
+  $("setName").value = u.name;
+  $("setEmail").value = u.email;
+  renderGarage();
+  if(u.admin) loadAdmin();
+}
+function selectSet(set){
+  document.querySelectorAll("#setNav button").forEach(b=>b.classList.toggle("active", b.dataset.set===set));
+  document.querySelectorAll(".set-panel").forEach(p=>p.classList.toggle("active", p.dataset.set===set));
+}
+$("setNav").addEventListener("click", e=>{ const b=e.target.closest("button"); if(b) selectSet(b.dataset.set); });
+
+$("saveProfile").onclick = async ()=>{
+  const name = $("setName").value.trim();
+  if(!name){ toast("กรุณากรอกชื่อ","ti-alert-triangle"); return; }
+  if(useFirebase && auth.currentUser){
+    await auth.currentUser.updateProfile({ displayName:name });
+    await db.ref("users/"+currentUser.uid+"/name").set(name);
+  }
+  currentUser.name = name; onLoginLite();
+  toast("บันทึกข้อมูลแล้ว","ti-check");
+};
+function onLoginLite(){ // refresh name displays without toast
+  const u=currentUser;
+  $("ddName").textContent=u.name; $("profileName").textContent=u.name;
+  if(!u.photo){ $("avatarBtn").innerHTML=`<span class="fallback">${u.name.charAt(0).toUpperCase()}</span>`; }
+}
+
+/* garage */
+function getGarage(){ return LS.get("garage", []); }
+function renderGarage(){
+  const cars = getGarage(), list=$("garageList");
+  list.innerHTML = cars.length ? cars.map((c,i)=>`
+    <div class="set-row"><div class="info"><div class="t"><i class="ti ti-car"></i> ${c.name}</div><div class="s">ปี ${c.year||"-"}</div></div>
+    <button class="btn danger" onclick="removeCar(${i})">ลบ</button></div>`).join("")
+    : '<p style="color:var(--ink-faint);font-size:13px">ยังไม่มีรถที่บันทึก</p>';
+}
+$("addCar").onclick = ()=>{
+  const name=$("garageBrand").value.trim(), year=$("garageYear").value.trim();
+  if(!name){ toast("กรอกยี่ห้อ/รุ่นรถ","ti-alert-triangle"); return; }
+  const cars=getGarage(); cars.push({name,year}); LS.set("garage",cars);
+  $("garageBrand").value=""; $("garageYear").value="";
+  renderGarage(); toast("เพิ่มรถแล้ว","ti-check");
+};
+window.removeCar = i=>{ const cars=getGarage(); cars.splice(i,1); LS.set("garage",cars); renderGarage(); toast("ลบรถแล้ว","ti-trash"); };
+
+/* toggles, clear */
+document.addEventListener("click", e=>{ const t=e.target.closest("[data-toggle]"); if(t) t.classList.toggle("on"); });
+$("tgMotion") && $("tgMotion").addEventListener("click", ()=>{ document.body.classList.toggle("no-motion", !$("tgMotion").classList.contains("on")); });
+$("clearData").onclick = ()=>{ if(confirm("ล้างข้อมูลรถและการตั้งค่าในเครื่องนี้?")){ LS.del("garage"); renderGarage(); toast("ล้างข้อมูลแล้ว","ti-trash"); } };
+
+/* ============================================================
+   ADMIN PANEL
+   ============================================================ */
+async function loadAdmin(){
+  if(!currentUser || !currentUser.admin || !useFirebase) return;
+  try{
+    const snap = await db.ref("users").once("value");
+    const users = snap.val() || {};
+    const arr = Object.values(users);
+    const admins = arr.filter(u=>u.role==="admin").length;
+    $("adminStats").innerHTML = `
+      <div class="stat"><div class="n">${arr.length}</div><div class="l">ผู้ใช้ทั้งหมด</div></div>
+      <div class="stat"><div class="n">${admins}</div><div class="l">ผู้ดูแลระบบ</div></div>
+      <div class="stat"><div class="n">${arr.filter(u=>Date.now()-(u.lastLogin||0)<86400000).length}</div><div class="l">ใช้งานวันนี้</div></div>`;
+    $("adminRows").innerHTML = arr.sort((a,b)=>(b.lastLogin||0)-(a.lastLogin||0)).map(u=>`
+      <tr>
+        <td>${u.photo?`<img class="mini-av" src="${u.photo}" referrerpolicy="no-referrer"/>`:""}${u.name||"-"}</td>
+        <td>${u.email||"-"}</td>
+        <td>${u.role==="admin"?'<span class="pill p-tech">ADMIN</span>':'<span class="pill p-ev">USER</span>'}</td>
+        <td>${u.lastLogin? new Date(u.lastLogin).toLocaleString("th-TH",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"-"}</td>
+      </tr>`).join("") || '<tr><td colspan="4" style="color:var(--ink-faint)">ยังไม่มีผู้ใช้</td></tr>';
+  }catch(err){
+    $("adminRows").innerHTML = `<tr><td colspan="4" style="color:var(--danger)">อ่านข้อมูลไม่ได้: ${err.code||err.message}<br/>ตรวจสอบ Database Rules ใน Firebase</td></tr>`;
+  }
+}
+$("refreshUsers").onclick = loadAdmin;
+
+/* ============================================================
+   DIAGNOSTICS
+   ============================================================ */
+$("symptomChips").addEventListener("click", e=>{
+  const chip=e.target.closest(".chip"); if(!chip) return;
+  chip.classList.toggle("on");
+  const ta=$("dSymptom"), txt=chip.dataset.t;
+  if(chip.classList.contains("on")) ta.value = ta.value ? ta.value+", "+txt : txt;
+});
+const dz=$("dropzone"), vi=$("videoInput");
+dz.addEventListener("click",()=>vi.click());
+["dragover","dragenter"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add("drag");}));
+["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove("drag");}));
+dz.addEventListener("drop",e=>{ if(e.dataTransfer.files[0]) handleVideo(e.dataTransfer.files[0]); });
+vi.addEventListener("change",e=>{ if(e.target.files[0]) handleVideo(e.target.files[0]); });
+function handleVideo(f){
+  if(!f.type.startsWith("video/")){ toast("กรุณาเลือกไฟล์วิดีโอ","ti-alert-triangle"); return; }
+  $("videoEl").src = URL.createObjectURL(f);
+  $("videoName").textContent = "📎 "+f.name+" ("+(f.size/1048576).toFixed(1)+" MB)";
+  $("videoPreview").style.display="block";
+}
+$("diagBtn").onclick = ()=>{
+  const brand=$("dBrand").value, model=$("dModel").value.trim(), symptom=$("dSymptom").value.trim();
+  if(!brand && !model){ toast("กรุณาเลือกยี่ห้อหรือกรอกรุ่นรถ","ti-alert-triangle"); return; }
+  if(!symptom){ toast("กรุณากรอกอาการที่พบ","ti-alert-triangle"); return; }
+  const panel=$("resultPanel"), btn=$("diagBtn");
+  btn.disabled=true; btn.innerHTML='<i class="ti ti-loader"></i> กำลังวิเคราะห์...';
+  panel.innerHTML=`<div style="text-align:center"><div class="spinner"></div>
+    <div style="color:var(--ink-dim);font-weight:600">AI กำลังวิเคราะห์อาการ...</div>
+    <div style="color:var(--ink-faint);font-size:13px;margin-top:6px">${brand} ${model} · ประมวลผลข้อมูล</div></div>`;
+  setTimeout(()=>{ panel.innerHTML=buildResult(brand,model,symptom); btn.disabled=false; btn.innerHTML='<i class="ti ti-bolt"></i> เริ่มวินิจฉัยด้วย AI'; }, 2200);
+};
+function buildResult(brand,model,symptom){
+  const dx=pickDx(symptom.toLowerCase());
+  const car=(brand+" "+model).trim()||"รถของคุณ";
+  return `<div class="diag-out">
+    <h3>ผลวินิจฉัยเบื้องต้น</h3>
+    <div style="color:var(--ink-faint);font-size:13px">${car}</div>
+    <div class="severity sev"><i class="ti ti-alert-triangle"></i> ระดับความเร่งด่วน: ${dx.sev}</div>
+    <p style="font-size:14px;color:var(--ink-dim)">${dx.summary}</p>
+    <div class="diag-block"><div class="h">สาเหตุที่เป็นไปได้</div>
+      ${dx.causes.map(c=>`<div class="cause"><span class="pct">${c.pct}%</span><span>${c.name}</span></div><div class="bar"><i style="width:${c.pct}%"></i></div>`).join("")}
+    </div>
+    <div class="diag-block"><div class="h">คำแนะนำเบื้องต้น</div>
+      <ul class="steps">${dx.steps.map(s=>`<li><i class="ti ti-circle-check"></i>${s}</li>`).join("")}</ul>
+    </div>
+    <div class="diag-block"><div class="h">ประมาณการค่าใช้จ่าย</div>
+      <div style="font-size:18px;font-weight:800;color:var(--accent-2)">${dx.cost}</div>
+      <div style="font-size:12px;color:var(--ink-faint)">*ประมาณการคร่าวๆ ขึ้นกับอู่และอะไหล่</div>
+    </div>
+    <div class="disclaimer"><i class="ti ti-info-circle"></i> นี่เป็นผลจาก Demo AI เพื่อการอ้างอิงเบื้องต้นเท่านั้น ไม่ใช่การวินิจฉัยจากช่างผู้เชี่ยวชาญ กรุณานำรถเข้าตรวจที่ศูนย์/อู่เพื่อความปลอดภัย</div>
+  </div>`;
+}
+function pickDx(s){
+  if(s.includes("เบรก")||s.includes("เอี๊ยด")) return {sev:"สูง — ควรตรวจเร็ว", summary:"อาการบ่งชี้ว่าระบบเบรกอาจมีปัญหา ซึ่งเกี่ยวข้องกับความปลอดภัยโดยตรง",
+    causes:[{name:"ผ้าเบรกสึก/หมด",pct:72},{name:"จานเบรกเป็นร่อง",pct:48},{name:"น้ำมันเบรกต่ำ/รั่ว",pct:25}],
+    steps:["หลีกเลี่ยงการขับเร็วจนกว่าจะตรวจเสร็จ","ตรวจระดับน้ำมันเบรก","นำเข้าตรวจระบบเบรกที่อู่โดยเร็ว"], cost:"800 – 3,500 บาท"};
+  if(s.includes("ร้อน")||s.includes("น้ำ")) return {sev:"สูง — ระวังเครื่องน็อค", summary:"ความร้อนขึ้นสูงอาจเกิดจากระบบหล่อเย็น ควรหยุดรถหากเข็มขึ้นแดง",
+    causes:[{name:"น้ำหล่อเย็นต่ำ/รั่ว",pct:64},{name:"พัดลม/ปั๊มน้ำเสีย",pct:42},{name:"วาล์วน้ำค้าง",pct:30}],
+    steps:["ดับเครื่องทันทีหากความร้อนขึ้นแดง","ห้ามเปิดฝาหม้อน้ำขณะร้อน","เติม/ตรวจน้ำหล่อเย็นเมื่อเครื่องเย็น","ตรวจรอยรั่วและพัดลม"], cost:"500 – 4,000 บาท"};
+  if(s.includes("สตาร์ท")||s.includes("แบต")) return {sev:"ปานกลาง", summary:"อาการสตาร์ทไม่ติดมักเกี่ยวกับแบตเตอรี่หรือระบบสตาร์ท",
+    causes:[{name:"แบตเตอรี่เสื่อม/หมด",pct:68},{name:"ไดสตาร์ทมีปัญหา",pct:38},{name:"ขั้วแบตหลวม/สกปรก",pct:30}],
+    steps:["ตรวจไฟหน้าปัด หากหรี่แสดงว่าแบตอ่อน","ลองพ่วงแบต","ตรวจอายุแบต (ปกติ 2-3 ปี)","เช็กขั้วแบตและไดชาร์จ"], cost:"2,500 – 5,000 บาท"};
+  if(s.includes("สั่น")||s.includes("ดึง")||s.includes("ยาง")) return {sev:"ปานกลาง", summary:"อาการสั่นหรือรถดึงข้างมักเกี่ยวกับล้อ ยาง หรือช่วงล่าง",
+    causes:[{name:"ถ่วงล้อ/ตั้งศูนย์ไม่ได้",pct:60},{name:"ยางสึกไม่เท่ากัน",pct:44},{name:"ลูกหมาก/ช่วงล่างหลวม",pct:28}],
+    steps:["ตรวจลมยางให้ได้มาตรฐาน","ดูดอกยางว่าสึกผิดปกติไหม","เข้าตั้งศูนย์-ถ่วงล้อ","ตรวจช่วงล่างหากยังสั่น"], cost:"400 – 2,500 บาท"};
+  if(s.includes("ควัน")) return {sev:"สูง", summary:"ควันผิดปกติบ่งบอกปัญหาเครื่องยนต์ สีของควันช่วยระบุสาเหตุได้",
+    causes:[{name:"ซีล/แหวนลูกสูบรั่ว (ควันน้ำเงิน)",pct:55},{name:"ปะเก็นฝาสูบ (ควันขาว)",pct:45},{name:"หัวฉีด/จูนผิด (ควันดำ)",pct:35}],
+    steps:["สังเกตสีควัน (ขาว/ดำ/น้ำเงิน)","ตรวจระดับน้ำมันเครื่องและน้ำหล่อเย็น","นำเข้าอู่ตรวจเครื่องยนต์"], cost:"1,500 – 15,000 บาท"};
+  return {sev:"ปานกลาง — ควรตรวจเพิ่มเติม", summary:"จากอาการที่ระบุ AI วิเคราะห์ความเป็นไปได้เบื้องต้น แนะนำให้ตรวจสอบเพิ่มเติมที่อู่",
+    causes:[{name:"ระบบเครื่องยนต์/เซนเซอร์",pct:50},{name:"ระบบไฟฟ้า",pct:38},{name:"การสึกหรอตามอายุ",pct:30}],
+    steps:["สแกนกล่อง ECU เพื่อดูรหัสปัญหา (OBD-II)","สังเกตว่าอาการเกิดตอนไหนบ่อยสุด","บันทึกวิดีโออาการเพิ่มเติม","ปรึกษาช่างพร้อมข้อมูลที่กรอก"], cost:"ขึ้นกับผลตรวจ"};
+}
+
+/* ============================================================
+   PARALLAX 3D + tilt + pollen
+   ============================================================ */
+const layers = [...document.querySelectorAll(".hills")];
+let px=0,py=0,tx=0,ty=0;
+document.addEventListener("mousemove", e=>{
+  if(document.body.classList.contains("no-motion")) return;
+  tx = (e.clientX/window.innerWidth - .5);
+  ty = (e.clientY/window.innerHeight - .5);
+});
+function animateParallax(){
+  px += (tx-px)*0.06; py += (ty-py)*0.06;
+  layers.forEach(l=>{ const d=parseFloat(l.dataset.depth); l.style.transform=`translate(${-px*d*22}px, ${-py*d*10}px)`; });
+  requestAnimationFrame(animateParallax);
+}
+animateParallax();
+// card tilt
+document.addEventListener("mousemove", e=>{
+  if(document.body.classList.contains("no-motion")) return;
+  const card=e.target.closest(".tilt"); if(!card) return;
+  const r=card.getBoundingClientRect(); const cx=(e.clientX-r.left)/r.width-.5, cy=(e.clientY-r.top)/r.height-.5;
+  card.style.transform=`perspective(700px) rotateY(${cx*6}deg) rotateX(${-cy*6}deg) translateY(-3px)`;
+});
+document.addEventListener("mouseout", e=>{ const card=e.target.closest(".tilt"); if(card) card.style.transform=""; });
+// pollen
+(function pollen(){
+  const scene=document.querySelector(".scene");
+  for(let i=0;i<14;i++){
+    const p=document.createElement("div"); p.className="pollen";
+    p.style.left=Math.random()*100+"%"; p.style.bottom=(-10+Math.random()*30)+"%";
+    p.style.animationDuration=(10+Math.random()*12)+"s"; p.style.animationDelay=(-Math.random()*15)+"s";
+    p.style.opacity=.3+Math.random()*.5; p.style.transform=`scale(${.5+Math.random()})`;
+    scene.appendChild(p);
+  }
+})();
+
+/* INIT */
+setDate(); renderBriefs(); renderMags(); renderGarage(); updateBriefGate();
+if(!useFirebase) onLogout();
+</script>
+</body>
+</html>

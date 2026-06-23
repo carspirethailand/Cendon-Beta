@@ -1,0 +1,233 @@
+/* ==========================================================================
+   BASE & TYPOGRAPHY STYLES (css/base.css)
+   ========================================================================== */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font);
+  color: var(--ink);
+  font-size: 15.5px;
+  line-height: 1.55;
+  letter-spacing: .002em;
+  overflow-x: hidden;
+  background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 34%, var(--sky-bot) 62%);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  transition: color 0.5s;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+.ti {
+  line-height: 1;
+}
+
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* ---- Typography ---- */
+h1, h2, h3, h4,
+.section-title,
+.brand b,
+.hero h1,
+.phead h2,
+.w-card h1,
+.mag-feature h2,
+.feature-card h4,
+.brief-bar h3,
+.set-card h3 {
+  font-family: var(--font-display);
+  letter-spacing: -.012em;
+}
+
+/* Impeccable typography & scrollbar */
+.section-title {
+  font-size: clamp(26px, 3.4vw, 35px);
+  font-weight: 600;
+  letter-spacing: -.022em;
+  line-height: 1.08;
+}
+
+.section-sub {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-faint);
+  max-width: 600px;
+  margin-bottom: 32px;
+}
+
+.hero h1 {
+  font-size: clamp(42px, 6.6vw, 74px);
+  font-weight: 600;
+  line-height: 1.03;
+  letter-spacing: -.028em;
+}
+
+.hero p {
+  font-size: 18px;
+  line-height: 1.65;
+  max-width: 600px;
+  color: var(--ink-dim);
+}
+
+.eyebrow {
+  background: transparent;
+  box-shadow: none;
+  border: 1px solid var(--border);
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  letter-spacing: .22em;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 9px 18px;
+  margin-bottom: 28px;
+}
+
+/* Scrollbar styles */
+*::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 10px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-faint);
+}
+
+/* ==========================================================================
+   THEME SPECIFIC BASE OVERRIDES
+   ========================================================================== */
+
+/* Neo-Kinpaku Typography overrides */
+body[data-theme="kinpaku"],
+body[data-theme="patina"] {
+  background: var(--ks-lacquer) !important;
+  color: var(--ks-body);
+  font-family: var(--kb);
+  font-size: 15px;
+  letter-spacing: 0;
+}
+
+body[data-theme="kinpaku"] h1, body[data-theme="kinpaku"] h2, body[data-theme="kinpaku"] .hero h1, body[data-theme="kinpaku"] .section-title, body[data-theme="kinpaku"] .phead h2, body[data-theme="kinpaku"] .mag-feature h2, body[data-theme="kinpaku"] .w-card h1,
+body[data-theme="patina"] h1, body[data-theme="patina"] h2, body[data-theme="patina"] .hero h1, body[data-theme="patina"] .section-title, body[data-theme="patina"] .phead h2, body[data-theme="patina"] .mag-feature h2, body[data-theme="patina"] .w-card h1 {
+  font-family: var(--kd);
+  color: var(--ks-champagne);
+  font-weight: 400;
+  letter-spacing: -.01em;
+}
+
+body[data-theme="kinpaku"] h3, body[data-theme="kinpaku"] h4, body[data-theme="kinpaku"] .feature-card h4, body[data-theme="kinpaku"] .set-card h3, body[data-theme="kinpaku"] .brief-bar h3,
+body[data-theme="patina"] h3, body[data-theme="patina"] h4, body[data-theme="patina"] .feature-card h4, body[data-theme="patina"] .set-card h3, body[data-theme="patina"] .brief-bar h3 {
+  font-family: var(--kb);
+  color: var(--ks-champagne);
+}
+
+body[data-theme="kinpaku"] .hero h1,
+body[data-theme="patina"] .hero h1 {
+  font-weight: 300;
+  line-height: 1.02;
+}
+
+body[data-theme="kinpaku"] .hero h1 .hl,
+body[data-theme="patina"] .hero h1 .hl {
+  background: none;
+  -webkit-text-fill-color: var(--ks-accent);
+  color: var(--ks-accent);
+}
+
+body[data-theme="kinpaku"] .eyebrow,
+body[data-theme="patina"] .eyebrow {
+  background: transparent;
+  border: 1px solid var(--ks-rule);
+  color: var(--ks-muted);
+  font-family: var(--km);
+  text-transform: uppercase;
+  letter-spacing: .22em;
+  font-size: 10px;
+  border-radius: 2px;
+  box-shadow: none;
+  font-weight: 500;
+}
+
+body[data-theme="kinpaku"] .section-sub,
+body[data-theme="patina"] .section-sub {
+  color: var(--ks-muted);
+}
+
+/* Aurum Theme Base overrides */
+body[data-bg="aurora"],
+body[data-bg="sunrise"],
+body[data-bg="ocean"],
+body[data-bg="candy"],
+body[data-bg="forest"],
+body[data-bg="default"] {
+  /* Aurum fonts are loaded when body bg changes if chosen */
+}
+
+/* If aurum class is used */
+body[data-theme="aurum"] {
+  background: #F4EFE3 !important;
+  color: var(--ks-body);
+  font-family: var(--kb);
+}
+
+body[data-theme="aurum"] h1, body[data-theme="aurum"] h2, body[data-theme="aurum"] .hero h1, body[data-theme="aurum"] .section-title, body[data-theme="aurum"] .phead h2, body[data-theme="aurum"] .mag-feature h2, body[data-theme="aurum"] .w-card h1,
+body[data-theme="aurum"] h3, body[data-theme="aurum"] h4, body[data-theme="aurum"] .feature-card h4, body[data-theme="aurum"] .set-card h3, body[data-theme="aurum"] .brief-bar h3 {
+  font-family: var(--kd);
+  color: var(--ks-champagne);
+  letter-spacing: -.02em;
+}
+
+body[data-theme="aurum"] .hero h1 {
+  font-weight: 700;
+  line-height: 1.04;
+}
+
+body[data-theme="aurum"] .section-title {
+  font-weight: 700;
+}
+
+body[data-theme="aurum"] .hero h1 .hl {
+  -webkit-text-fill-color: var(--ks-accent);
+  color: var(--ks-accent);
+  background: none;
+}
+
+body[data-theme="aurum"] .eyebrow {
+  color: var(--ks-muted);
+  border-color: var(--ks-rule);
+  background: rgba(252, 250, 243, .6);
+}
+
+body[data-theme="aurum"] .section-sub,
+body[data-theme="aurum"] .hero p {
+  color: var(--ks-muted);
+}

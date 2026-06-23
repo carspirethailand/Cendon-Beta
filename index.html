@@ -937,10 +937,11 @@ body[data-motion="0"] .greet .g-wave{animation:none}
   <!-- DIAGNOSE -->
   <section class="view" id="view-diagnose">
     <h3 class="section-title">Car Diagnostics</h3>
-    <p class="section-sub">วินิจฉัยปัญหารถได้ 4 วิธี — ขับเคลื่อนด้วย Claude AI</p>
+    <p class="section-sub">วินิจฉัยได้ 5 วิธี: พิมพ์ · ภาพ · วิดีโอ · เสียง · OBD — ขับเคลื่อนด้วย Gemini AI จริง</p>
     <div class="subtabs" id="diagTabs">
       <button data-sub="describe" class="active"><i class="ti ti-message-2"></i> อธิบายอาการ</button>
       <button data-sub="photo"><i class="ti ti-camera"></i> ถ่ายภาพ</button>
+      <button data-sub="video"><i class="ti ti-video"></i> วิดีโอ</button>
       <button data-sub="sound"><i class="ti ti-microphone-2"></i> ฟังเสียง</button>
       <button data-sub="obd"><i class="ti ti-plug-connected"></i> OBD-II</button>
     </div>
@@ -982,6 +983,17 @@ body[data-motion="0"] .greet .g-wave{animation:none}
           <label class="field" style="margin-top:14px"><span class="lbl">บอกบริบทเพิ่ม <span>(ไม่บังคับ)</span></span>
             <input class="input" id="photoNote" placeholder="เช่น ไฟนี้ขึ้นตอนสตาร์ท / รุ่นรถ"/></label>
           <button class="btn-go" id="goPhoto"><i class="ti ti-scan"></i> วิเคราะห์ภาพด้วย AI</button>
+        </div></div>
+        <!-- video -->
+        <div class="subpanel" data-sub="video"><div class="card">
+          <p style="font-size:13.5px;color:var(--ink-dim);margin-bottom:14px">อัปโหลดคลิปสั้นๆ อาการรถ (เช่น เสียง/ควัน/การสั่น) — AI จะ<b>ดูวิดีโอจริง</b> แล้ววิเคราะห์ให้</p>
+          <div class="dropzone" id="vidDrop"><i class="ti ti-movie"></i>
+            <span class="t">เลือกหรือถ่ายวิดีโอ</span><span class="s">MP4, MOV, WEBM · คลิปสั้น ~5-10 วิ (&lt;10MB)</span>
+            <input type="file" id="vidInput" accept="video/*" capture="environment" hidden/></div>
+          <div class="preview" id="vidPrev" style="display:none"><video id="vidEl" controls playsinline style="width:100%;border-radius:18px"></video><div class="nm" id="vidName"></div></div>
+          <label class="field" style="margin-top:14px"><span class="lbl">บอกบริบทเพิ่ม <span>(ไม่บังคับ)</span></span>
+            <input class="input" id="vidNote" placeholder="เช่น อาการตอนออกตัว / เสียงตอนเร่ง"/></label>
+          <button class="btn-go" id="goVideo"><i class="ti ti-eye"></i> ให้ AI ดูวิดีโอ + วิเคราะห์</button>
         </div></div>
         <!-- sound -->
         <div class="subpanel" data-sub="sound"><div class="card">
@@ -1147,9 +1159,25 @@ const fbConfig={apiKey:"AIzaSyDDtvz4d4FRG_KOq5EQHmlDijU-x1FDZlQ",authDomain:"sp1
   databaseURL:"https://sp1p-82396-default-rtdb.firebaseio.com",projectId:"sp1p-82396",
   storageBucket:"sp1p-82396.appspot.com",messagingSenderId:"924479207020",appId:"1:924479207020:web:ec64428a61403e1ad48a49"};
 const ADMINS=["anapatmaliwong@gmail.com","carspirethailand@gmail.com"];
-/* Claude AI backend endpoint (Firebase Function). ว่าง = ใช้ระบบจำลอง.
-   เติม URL หลัง deploy function เช่น "https://us-central1-sp1p-82396.cloudfunctions.net/spireAI" */
 const AI_ENDPOINT="";
+/* ===== Google Gemini (works directly from the browser, no backend) =====
+   ⚠️ คีย์ฝังในไฟล์ = เห็นได้จาก source — ควรจำกัด HTTP referrer ของคีย์ใน Google Cloud Console */
+const GEMINI_KEY="AIzaSyB1P_3zw1f27UqavxyW4WW_yhFWWUJAo8c";
+const GEMINI_MODEL="gemini-2.5-flash";
+async function geminiCall(parts,opts){opts=opts||{};
+  const body={contents:[{role:"user",parts}],generationConfig:{temperature:opts.temp!=null?opts.temp:0.4}};
+  if(opts.search)body.tools=[{google_search:{}}];
+  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_KEY}`,
+    {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+  if(!r.ok)throw new Error("gemini "+r.status+": "+(await r.text()).slice(0,200));
+  const d=await r.json(),cand=d.candidates&&d.candidates[0]||{};
+  const text=((cand.content&&cand.content.parts)||[]).map(p=>p.text||"").join("");
+  const links=[];const gm=cand.groundingMetadata;
+  if(gm&&gm.groundingChunks)gm.groundingChunks.forEach(c=>{if(c.web&&c.web.uri)links.push({title:c.web.title||c.web.uri,uri:c.web.uri})});
+  return {text,links};}
+function gParse(t){if(!t)return null;let s=t.replace(/```json/gi,"").replace(/```/g,"").trim();
+  const m=s.match(/[\[{][\s\S]*[\]}]/);if(m)s=m[0];try{return JSON.parse(s)}catch{return null}}
+async function blobToB64(blob){return new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result.split(",")[1]);r.readAsDataURL(blob)});}
 
 let auth=null,db=null,useFirebase=false;
 try{ firebase.initializeApp(fbConfig); auth=firebase.auth(); db=firebase.database();
@@ -1197,14 +1225,14 @@ const bbSlides=[
   {tag:"TIP",icon:"ti-bulb",acc:"gold",title:"5 สัญญาณบอกว่าผ้าเบรกใกล้หมด",body:"เสียงเอี๊ยด แป้นเบรกลึก ระยะเบรกยาวขึ้น — เช็กก่อนเป็นอันตราย"}];
 let bbIdx=0,bbTimer=null;
 function renderBillboard(){const tr=$("bbTrack");if(!tr)return;
-  tr.innerHTML=bbSlides.map(s=><div class="bb-slide acc-${s.acc}"><span class="bb-tag"><i class="ti ${s.icon}"></i> ${s.tag}</span><h2>${s.title}</h2><p>${s.body}</p></div>).join("");
-  $("bbDots").innerHTML=bbSlides.map((_,i)=><button class="bb-dot${i?'':' on'}" data-bb="${i}"></button>).join("");
+  tr.innerHTML=bbSlides.map(s=>`<div class="bb-slide acc-${s.acc}"><span class="bb-tag"><i class="ti ${s.icon}"></i> ${s.tag}</span><h2>${s.title}</h2><p>${s.body}</p></div>`).join("");
+  $("bbDots").innerHTML=bbSlides.map((_,i)=>`<button class="bb-dot${i?'':' on'}" data-bb="${i}"></button>`).join("");
   bbGo(0);bbAuto();}
 function bbGo(i){bbIdx=(i+bbSlides.length)%bbSlides.length;const tr=$("bbTrack");if(!tr)return;
-  tr.style.transform=translateX(${-bbIdx*100}%);
+  tr.style.transform=`translateX(${-bbIdx*100}%)`;
   document.querySelectorAll(".bb-dot").forEach((d,j)=>d.classList.toggle("on",j===bbIdx));}
 function bbAuto(){clearInterval(bbTimer);if(document.body.dataset.motion==="0")return;bbTimer=setInterval(()=>bbGo(bbIdx+1),5500);}
-function renderMags(){$("magGrid").innerHTML=mags.map(m=><div class="mag-item tilt"><div class="mag-cover" style="background:${m.bg}"><i class="ti ${m.ic}"></i></div><span class="pill ${m.pill}">${m.tag}</span><h4 style="margin-top:8px">${m.title}</h4><p>${m.body}</p><div class="issue">${m.issue}</div></div>).join("")}
+function renderMags(){$("magGrid").innerHTML=mags.map(m=>`<div class="mag-item tilt"><div class="mag-cover" style="background:${m.bg}"><i class="ti ${m.ic}"></i></div><span class="pill ${m.pill}">${m.tag}</span><h4 style="margin-top:8px">${m.title}</h4><p>${m.body}</p><div class="issue">${m.issue}</div></div>`).join("")}
 function setDate(){const el=$("briefSub");if(!el)return;const d=new Date().toLocaleDateString("th-TH",{weekday:"long",day:"numeric",month:"long",year:"numeric"});el.textContent="ข่าวสารยานยนต์ประจำวัน "+d}
 
 /* ===== VIEW SWITCH ===== */
@@ -1231,7 +1259,7 @@ $("bbDots")&&$("bbDots").addEventListener("click",e=>{const b=e.target.closest("
   window.addEventListener("mouseup",de);t.addEventListener("touchend",de);})();
 document.addEventListener("mousemove",e=>{const wr=$("wRobot");if(!wr||document.body.dataset.motion==="0"||!$("welcome").classList.contains("show"))return;
   const x=e.clientX/innerWidth-.5,y=e.clientY/innerHeight-.5;
-  wr.style.transform=perspective(1300px) rotateY(${x*9}deg) rotateX(${-y*6}deg) scale(1.05);});
+  wr.style.transform=`perspective(1300px) rotateY(${x*9}deg) rotateX(${-y*6}deg) scale(1.05)`;});
 
 /* ===== AUTH ===== */
 function openAuth(){$("authModal").classList.add("show");$("authErr").classList.remove("show")}
@@ -1275,7 +1303,7 @@ if(useFirebase){
   auth.getRedirectResult().then(r=>{if(r&&r.user){closeAuth();hideWelcome()}}).catch(err=>{showErr(authErrMsg(err.code))});
 }
 
-function picHTML(u){return u.photo?<img src="${u.photo}" style="width:100%;height:100%;object-fit:cover" referrerpolicy="no-referrer"/>:<span class="fb">${u.name.charAt(0).toUpperCase()}</span>}
+function picHTML(u){return u.photo?`<img src="${u.photo}" style="width:100%;height:100%;object-fit:cover" referrerpolicy="no-referrer"/>`:`<span class="fb">${u.name.charAt(0).toUpperCase()}</span>`}
 function onLogin(){const u=currentUser;
   $("loginBtn").style.display="none";$("avatarBtn").style.display="block";$("avatarBtn").innerHTML=picHTML(u);
   $("ddName").textContent=u.name;$("ddEmail").textContent=u.email;$("ddPic").innerHTML=picHTML(u);
@@ -1292,21 +1320,21 @@ $("deactivateBtn").onclick=async()=>{if(!currentUser)return;if(!confirm("ปิ�
 /* ===== PROFILE/SETTINGS ===== */
 function refreshProfile(){const has=!!currentUser;$("profileGate").style.display=has?"none":"block";$("profileBody").style.display=has?"block":"none";
   if(!has)return;const u=currentUser;
-  $("profilePic").innerHTML=u.photo?<img src="${u.photo}" referrerpolicy="no-referrer"/>:<div class="fb">${u.name.charAt(0).toUpperCase()}</div>;
+  $("profilePic").innerHTML=u.photo?`<img src="${u.photo}" referrerpolicy="no-referrer"/>`:`<div class="fb">${u.name.charAt(0).toUpperCase()}</div>`;
   $("profileName").textContent=u.name;$("profileEmail").textContent=u.email;$("profileRole").style.display=u.admin?"inline-flex":"none";
   $("setName").value=u.name;$("setEmail").value=u.email;if(u.admin)loadAdmin()}
 function selectSet(s){document.querySelectorAll("#setNav button").forEach(b=>b.classList.toggle("active",b.dataset.set===s));document.querySelectorAll(".set-panel").forEach(p=>p.classList.toggle("active",p.dataset.set===s))}
 $("setNav").addEventListener("click",e=>{const b=e.target.closest("button");if(b)selectSet(b.dataset.set)});
 $("saveProfile").onclick=async()=>{const name=$("setName").value.trim();if(!name){toast("กรอกชื่อ","ti-alert-triangle");return}
   if(useFirebase&&auth.currentUser){await auth.currentUser.updateProfile({displayName:name});await db.ref("users/"+currentUser.uid+"/name").set(name)}
-  currentUser.name=name;$("ddName").textContent=name;$("profileName").textContent=name;if(!currentUser.photo){$("avatarBtn").innerHTML=<span class="fb">${name.charAt(0).toUpperCase()}</span>}toast("บันทึกแล้ว","ti-check")};
+  currentUser.name=name;$("ddName").textContent=name;$("profileName").textContent=name;if(!currentUser.photo){$("avatarBtn").innerHTML=`<span class="fb">${name.charAt(0).toUpperCase()}</span>`}toast("บันทึกแล้ว","ti-check")};
 $("resetWelcome").onclick=()=>{LS.del("onboarded");toast("รีเซ็ตแล้ว — รีเฟรชหน้าเพื่อดู Welcome","ti-refresh")};
 document.querySelectorAll(".toggle").forEach(t=>{if(t.id!=="tgMotion")t.addEventListener("click",()=>t.classList.toggle("on"))});
 $("tgMotion").addEventListener("click",()=>{$("tgMotion").classList.toggle("on");const on=$("tgMotion").classList.contains("on");document.body.dataset.motion=on?"1":"0";LS.set("motion",on)});
 
 /* theme pickers */
 function renderThemeMini(){if(!$("themeMini"))return;const cur=document.body.dataset.theme;$("themeMini").innerHTML=Object.entries(THEMES).map(([k,t])=>
-  <button data-theme-key="${k}" class="${k===cur?'sel':''}" style="background:${t.accent};color:#0a0a0a">${t.name}</button>).join("")}
+  `<button data-theme-key="${k}" class="${k===cur?'sel':''}" style="background:${t.accent};color:#0a0a0a">${t.name}</button>`).join("")}
 $("themeMini").addEventListener("click",e=>{const b=e.target.closest("[data-theme-key]");if(!b)return;applyTheme(b.dataset.themeKey);
   if(useFirebase&&currentUser)db.ref("users/"+currentUser.uid+"/theme").set(b.dataset.themeKey).catch(()=>{});toast("เปลี่ยนธีมแล้ว","ti-palette")});
 
@@ -1318,19 +1346,34 @@ async function loadAdmin(){if(!currentUser||!currentUser.admin||!useFirebase)ret
       <div class="stat"><div class="n">${admins}</div><div class="l">ผู้ดูแล</div></div>
       <div class="stat"><div class="n">${arr.filter(u=>Date.now()-(u.lastLogin||0)<864e5).length}</div><div class="l">ใช้งานวันนี้</div></div>`;
     $("adminRows").innerHTML=arr.sort((a,b)=>(b.lastLogin||0)-(a.lastLogin||0)).map(u=>`<tr>
-      <td>${u.photo?<img class="mini-av" src="${u.photo}" referrerpolicy="no-referrer"/>:""}${u.name||"-"}</td>
+      <td>${u.photo?`<img class="mini-av" src="${u.photo}" referrerpolicy="no-referrer"/>`:""}${u.name||"-"}</td>
       <td>${u.email||"-"}</td><td>${u.role==="admin"?'<span class="pill p-tech">ADMIN</span>':'<span class="pill p-ev">USER</span>'}</td>
       <td>${u.lastLogin?new Date(u.lastLogin).toLocaleString("th-TH",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"-"}</td></tr>`).join("")||'<tr><td colspan="4" style="color:var(--ink-faint)">ยังไม่มีผู้ใช้</td></tr>';
-  }catch(err){$("adminRows").innerHTML=<tr><td colspan="4" style="color:var(--danger)">อ่านไม่ได้: ${err.code||err.message}<br/>ตรวจ Database Rules</td></tr>}}
+  }catch(err){$("adminRows").innerHTML=`<tr><td colspan="4" style="color:var(--danger)">อ่านไม่ได้: ${err.code||err.message}<br/>ตรวจ Database Rules</td></tr>`}}
 $("refreshUsers").onclick=loadAdmin;
 
 /* ===== AI CALL (Claude via backend, demo fallback) ===== */
-async function callAI(mode,payload){
-  if(AI_ENDPOINT){
-    try{const r=await fetch(AI_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mode,...payload})});
-      if(r.ok)return await r.json();}catch(e){console.warn("AI endpoint fail, fallback",e)}
+async function callAI(mode,p){
+  p=p||{};
+  if(GEMINI_KEY){
+    try{
+      let instr=`คุณเป็นช่างยนต์ผู้เชี่ยวชาญของ SpireONE วิเคราะห์ปัญหารถยนต์อย่างมืออาชีพเป็นภาษาไทย\nรถ: ${p.brand||""} ${p.model||""} ปี ${p.year||"-"} เลขไมล์ ${p.mileage||"-"} กม.\n`;
+      if(mode==="photo")instr+="ผู้ใช้แนบรูป (ไฟเตือน/ชิ้นส่วน) — ดูรูปแล้ววินิจฉัย บริบทเพิ่ม: "+(p.note||"-");
+      else if(mode==="video")instr+="ผู้ใช้แนบวิดีโออาการรถ — ดูวิดีโอ (ภาพ+เสียง) แล้ววิเคราะห์อาการที่สังเกตได้ บริบท: "+(p.note||"-");
+      else if(mode==="sound")instr+="ผู้ใช้แนบไฟล์เสียงเครื่องยนต์ — ฟังเสียงแล้ววิเคราะห์อาการจากลักษณะเสียง";
+      else if(mode==="obd")instr+="ค่าที่อ่านจากกล่อง OBD-II: "+JSON.stringify(p.obd||{})+" — แปลผลรหัส DTC และวินิจฉัย";
+      else instr+="อาการที่ผู้ใช้แจ้ง: "+(p.symptom||"-");
+      instr+=`\nตอบกลับเป็น JSON เท่านั้น ห้ามมีข้อความอื่น:\n{"severity":"ระดับความเร่งด่วน","summary":"สรุปสั้นๆ","causes":[{"name":"สาเหตุที่เป็นไปได้","pct":ความน่าจะเป็น0ถึง100}],"steps":["คำแนะนำเบื้องต้น"],"cost":"ช่วงราคาประมาณการเป็นบาท"}`;
+      const parts=[{text:instr}];
+      if(mode==="photo"&&p.imageBase64)parts.push({inline_data:{mime_type:p.imageMediaType||"image/jpeg",data:p.imageBase64}});
+      if(mode==="video"&&p.videoB64)parts.push({inline_data:{mime_type:p.videoMime||"video/mp4",data:p.videoB64}});
+      if(mode==="sound"&&p.audioB64)parts.push({inline_data:{mime_type:p.audioMime||"audio/webm",data:p.audioB64}});
+      const {text}=await geminiCall(parts,{temp:0.3});
+      const j=gParse(text);
+      if(j&&j.causes){j.source="ai";return j;}
+    }catch(e){console.warn("gemini diag fail",e);toast("AI ขัดข้อง ใช้ระบบจำลองแทน","ti-alert-triangle");}
   }
-  return demoAI(mode,payload);
+  return demoAI(mode,p);
 }
 function demoAI(mode,p){
   if(mode==="photo")return{source:"demo",severity:"ปานกลาง — ควรตรวจเพิ่ม",summary:"จากภาพ AI สันนิษฐานว่าเป็นไฟเตือนระบบเครื่องยนต์/เซนเซอร์ แนะนำสแกน OBD-II เพื่อยืนยัน",
@@ -1364,17 +1407,17 @@ function demoDx(s){s=s.toLowerCase();
 function showResult(dx){
   const ai=dx.source!=="demo";
   $("result").innerHTML=`<div>
-    <div class="ai-badge"><i class="ti ti-${ai?'sparkles':'robot'}"></i> ${ai?'Claude AI':'ระบบจำลอง (Demo)'}</div>
+    <div class="ai-badge"><i class="ti ti-${ai?'sparkles':'robot'}"></i> ${ai?'Gemini AI':'ระบบจำลอง (Demo)'}</div>
     <h3 style="font-size:18px;font-weight:800">ผลวินิจฉัยเบื้องต้น</h3>
     <div class="sev"><i class="ti ti-alert-triangle"></i> ความเร่งด่วน: ${dx.severity}</div>
     <p style="font-size:14px;color:var(--ink-dim)">${dx.summary}</p>
     <div class="block"><div class="h">สาเหตุที่เป็นไปได้</div>
-      ${(dx.causes||[]).map(c=><div class="cause"><span class="pct">${c.pct}%</span><span>${c.name}</span></div><div class="bar"><i style="width:${c.pct}%"></i></div>).join("")}</div>
-    <div class="block"><div class="h">คำแนะนำ</div><ul class="steps">${(dx.steps||[]).map(s=><li><i class="ti ti-circle-check"></i>${s}</li>).join("")}</ul></div>
+      ${(dx.causes||[]).map(c=>`<div class="cause"><span class="pct">${c.pct}%</span><span>${c.name}</span></div><div class="bar"><i style="width:${c.pct}%"></i></div>`).join("")}</div>
+    <div class="block"><div class="h">คำแนะนำ</div><ul class="steps">${(dx.steps||[]).map(s=>`<li><i class="ti ti-circle-check"></i>${s}</li>`).join("")}</ul></div>
     <div class="block"><div class="h">ประมาณการค่าใช้จ่าย</div><div style="font-size:18px;font-weight:800;color:var(--accent-2)">${dx.cost||"-"}</div></div>
     <div class="disclaimer"><i class="ti ti-info-circle"></i> ผลเบื้องต้นเพื่ออ้างอิงเท่านั้น กรุณานำรถเข้าตรวจที่ศูนย์/อู่เพื่อความปลอดภัย</div></div>`;
 }
-function loading(label,sub){$("result").innerHTML=<div style="text-align:center"><div class="spinner"></div><div style="color:var(--ink-dim);font-weight:600">${label}</div><div style="color:var(--ink-faint);font-size:13px;margin-top:6px">${sub||""}</div></div>}
+function loading(label,sub){$("result").innerHTML=`<div style="text-align:center"><div class="spinner"></div><div style="color:var(--ink-dim);font-weight:600">${label}</div><div style="color:var(--ink-faint);font-size:13px;margin-top:6px">${sub||""}</div></div>`}
 
 /* ===== DIAGNOSE tabs ===== */
 function selectDiagTab(s){document.querySelectorAll("#diagTabs button").forEach(b=>b.classList.toggle("active",b.dataset.sub===s));document.querySelectorAll(".subpanel").forEach(p=>p.classList.toggle("active",p.dataset.sub===s))}
@@ -1382,7 +1425,7 @@ $("diagTabs").addEventListener("click",e=>{const b=e.target.closest("button");if
 $("chips").addEventListener("click",e=>{const c=e.target.closest(".chip");if(!c)return;c.classList.toggle("on");const ta=$("dSymptom");if(c.classList.contains("on"))ta.value=ta.value?ta.value+", "+c.dataset.t:c.dataset.t});
 $("goDescribe").onclick=async()=>{const brand=$("dBrand").value,model=$("dModel").value.trim(),symptom=$("dSymptom").value.trim();
   if(!brand&&!model){toast("เลือกยี่ห้อหรือกรอกรุ่น","ti-alert-triangle");return}if(!symptom){toast("กรอกอาการ","ti-alert-triangle");return}
-  loading("AI กำลังวิเคราะห์อาการ...",${brand} ${model});
+  loading("AI กำลังวิเคราะห์อาการ...",`${brand} ${model}`);
   const dx=await callAI("describe",{brand,model,year:$("dYear").value,mileage:$("dMileage").value,symptom});showResult(dx)};
 
 /* photo */
@@ -1397,7 +1440,22 @@ function handlePhoto(f){if(!f.type.startsWith("image/")){toast("เลือก�
     $("photoName").textContent="📎 "+f.name;$("photoPrev").style.display="block"};r.readAsDataURL(f)}
 $("goPhoto").onclick=async()=>{if(!photoB64){toast("เลือกรูปก่อน","ti-alert-triangle");return}
   loading("AI กำลังดูภาพ...","วิเคราะห์ด้วย vision");
-  const dx=await callAI("photo",{imageBase64:photoB64,imageMediaType:photoMime,note:$("photoNote").value});showResult(dx)};
+  const dx=await callAI("photo",{imageBase64:photoB64,imageMediaType:photoMime,note:$("photoNote").value,brand:$("dBrand").value,model:$("dModel").value,year:$("dYear").value,mileage:$("dMileage").value});showResult(dx)};
+
+/* video (Gemini watches the clip) */
+const vd=$("vidDrop"),vfi=$("vidInput");let videoB64=null,videoMime=null;
+vd&&vd.addEventListener("click",()=>vfi.click());
+vfi&&vfi.addEventListener("change",e=>{if(e.target.files[0])handleVid(e.target.files[0])});
+["dragover","dragenter"].forEach(ev=>vd&&vd.addEventListener(ev,e=>{e.preventDefault();vd.classList.add("drag")}));
+["dragleave","drop"].forEach(ev=>vd&&vd.addEventListener(ev,e=>{e.preventDefault();vd.classList.remove("drag")}));
+vd&&vd.addEventListener("drop",e=>{if(e.dataTransfer.files[0])handleVid(e.dataTransfer.files[0])});
+function handleVid(f){if(!f.type.startsWith("video/")){toast("เลือกไฟล์วิดีโอ","ti-alert-triangle");return}
+  if(f.size>10*1024*1024){toast("คลิปใหญ่ไป (<10MB) ลองคลิปสั้นลง ~5-10 วิ","ti-alert-triangle");return}
+  videoMime=f.type;$("vidEl").src=URL.createObjectURL(f);$("vidName").textContent="🎬 "+f.name;$("vidPrev").style.display="block";
+  const r=new FileReader();r.onload=()=>{videoB64=r.result.split(",")[1]};r.readAsDataURL(f);}
+$("goVideo").onclick=async()=>{if(!videoB64){toast("เลือกวิดีโอก่อน","ti-alert-triangle");return}
+  loading("AI กำลังดูวิดีโอ...","Gemini วิเคราะห์ภาพ+เสียงในคลิป");
+  const dx=await callAI("video",{videoB64,videoMime,note:$("vidNote").value,brand:$("dBrand").value,model:$("dModel").value,year:$("dYear").value,mileage:$("dMileage").value});showResult(dx)};
 
 /* sound recorder */
 let mediaRec=null,chunks=[],audioBlob=null;
@@ -1410,12 +1468,13 @@ $("recBtn").onclick=async()=>{
       $("recBtn").innerHTML='<i class="ti ti-microphone"></i>';$("recStatus").textContent="อัดเสร็จแล้ว — แตะอัดใหม่ได้";stream.getTracks().forEach(t=>t.stop())};
     mediaRec.start();$("recBtn").classList.add("recording");$("recBtn").innerHTML='<i class="ti ti-player-stop"></i>';
     $("recStatus").textContent="กำลังอัด... แตะเพื่อหยุด";$("wave").style.display="flex";
-    $("wave").innerHTML=Array.from({length:9}).map((_,i)=><i style="animation-delay:${i*.1}s"></i>).join("");
+    $("wave").innerHTML=Array.from({length:9}).map((_,i)=>`<i style="animation-delay:${i*.1}s"></i>`).join("");
   }catch(err){toast("ไม่สามารถใช้ไมโครโฟน","ti-microphone-off")}
 };
 $("goSound").onclick=async()=>{if(!audioBlob){toast("อัดเสียงก่อน","ti-alert-triangle");return}
-  loading("AI กำลังวิเคราะห์เสียง...","ประมวลผลคลื่นเสียงเครื่องยนต์");
-  const dx=await callAI("sound",{});showResult(dx)};
+  loading("AI กำลังฟังเสียง...","Gemini วิเคราะห์เสียงเครื่องยนต์จริง");
+  const audioB64=await blobToB64(audioBlob);
+  const dx=await callAI("sound",{audioB64,audioMime:"audio/webm",brand:$("dBrand").value,model:$("dModel").value});showResult(dx)};
 
 /* OBD (simulated live data) */
 let obdData=null;
@@ -1426,7 +1485,7 @@ $("obdConnect").onclick=()=>{const sc=$("obdScreen");sc.style.display="block";sc
       <div class="obd-line"><span>อุณหภูมิน้ำ (°C)</span><span class="v">${obdData.coolant}</span></div>
       <div class="obd-line"><span>โหลดเครื่อง (%)</span><span class="v">${obdData.load}</span></div>
       <div class="obd-line"><span>ไฟแบต (V)</span><span class="v">${obdData.voltage}</span></div>
-      ${obdData.dtc.map(d=><div class="dtc"><i class="ti ti-alert-triangle"></i> ${d}</div>).join("")}`;
+      ${obdData.dtc.map(d=>`<div class="dtc"><i class="ti ti-alert-triangle"></i> ${d}</div>`).join("")}`;
     $("goObd").style.display="flex";toast("เชื่อม OBD-II สำเร็จ (จำลอง)","ti-plug-connected");},1800)};
 $("goObd").onclick=async()=>{loading("AI กำลังแปลผล OBD...","วิเคราะห์รหัส DTC");
   const dx=await callAI("obd",{obd:obdData,symptom:"พบรหัส "+(obdData?obdData.dtc.join(", "):"")});
@@ -1460,7 +1519,7 @@ function renderGarage(){
         <div class="gs" style="margin-top:4px">สุขภาพรถ ${h}%</div></div>
       <button class="btn danger" onclick="rmCar(${i})" style="padding:7px 12px"><i class="ti ti-trash"></i></button></div>
       <div class="block" style="border-top:1px solid var(--border);padding-top:12px"><div class="h"><i class="ti ti-brain"></i> AI ทำนายการบำรุงรักษา</div>
-        <div class="timeline">${pr.slice(0,4).map(p=><div class="tl-item ${p.cls}"><div class="t">${p.name} — ${p.txt}</div><div class="s">รอบหน้า ~${p.next.toLocaleString()} กม. (อีก ${p.left.toLocaleString()} กม.)</div></div>).join("")}</div></div>
+        <div class="timeline">${pr.slice(0,4).map(p=>`<div class="tl-item ${p.cls}"><div class="t">${p.name} — ${p.txt}</div><div class="s">รอบหน้า ~${p.next.toLocaleString()} กม. (อีก ${p.left.toLocaleString()} กม.)</div></div>`).join("")}</div></div>
     </div>`}).join("")}
 $("gAdd").onclick=()=>{if(!currentUser){openAuth();return}const name=$("gName").value.trim();if(!name){toast("กรอกยี่ห้อ/รุ่น","ti-alert-triangle");return}
   const cars=getGarage();cars.push({name,year:$("gYear").value.trim(),mileage:$("gMileage").value.trim()});LS.set("garage",cars);
@@ -1479,12 +1538,17 @@ function renderShop(list){$("shopGrid").innerHTML=list.map(p=>`<div class="card 
   <div class="pimg" style="background:${p.bg}"><i class="ti ${p.ic}"></i></div>
   <div class="src"><i class="ti ti-world"></i> ${p.src}</div><h4>${p.name}</h4>
   <div style="display:flex;justify-content:space-between;align-items:center"><span class="price">${p.price}</span><span class="rate">${p.rate}</span></div>
-  <button class="buy"><i class="ti ti-external-link"></i> ดูสินค้า</button></div>`).join("")}
-$("shopGo").onclick=async()=>{const q=$("shopQuery").value.trim();
-  $("shopGrid").innerHTML='<div class="card" style="grid-column:1/-1;text-align:center"><div class="spinner"></div>AI กำลังค้นหาสินค้าจากอินเทอร์เน็ต...</div>';
-  await new Promise(r=>setTimeout(r,1400));
-  let list=shopDemo;if(q){const k=q.toLowerCase();const f=shopDemo.filter(p=>p.name.toLowerCase().includes(k));list=f.length?f:shopDemo}
-  renderShop(list);toast("แนะนำสินค้าจากอินเทอร์เน็ต","ti-world-search")};
+  ${p.url?`<a class="buy" href="${p.url}" target="_blank" rel="noopener"><i class="ti ti-external-link"></i> ดูสินค้า</a>`:`<button class="buy"><i class="ti ti-external-link"></i> ดูสินค้า</button>`}</div>`).join("")}
+$("shopGo").onclick=async()=>{const q=$("shopQuery").value.trim()||"อะไหล่และอุปกรณ์รถยนต์ยอดนิยม";
+  $("shopGrid").innerHTML='<div class="card" style="grid-column:1/-1;text-align:center"><div class="spinner"></div>Gemini กำลังค้นหาสินค้าจริงจากอินเทอร์เน็ต...</div>';
+  if(GEMINI_KEY){try{
+    const {text}=await geminiCall([{text:`ค้นหาสินค้า/อะไหล่รถยนต์จริงจากร้านค้าออนไลน์ในไทย (Lazada, Shopee, ฯลฯ) ตามคำค้น: "${q}" แนะนำ 6 รายการที่มีขายจริง ตอบเป็น JSON array เท่านั้น ไม่มีข้อความอื่น: [{"name":"ชื่อสินค้า","price":"฿ราคาโดยประมาณ","src":"ร้าน/แพลตฟอร์ม","rate":"★คะแนน","url":"ลิงก์สินค้า/ค้นหา"}]`}],{search:true,temp:0.5});
+    const arr=gParse(text);
+    if(Array.isArray(arr)&&arr.length){const ics=["ti-disc","ti-oil","ti-battery","ti-engine","ti-bulb","ti-air-conditioning"],bgs=["linear-gradient(135deg,#3a8ce6,#2f6fd6)","linear-gradient(135deg,#c98a2e,#9e6a1a)","linear-gradient(135deg,#2f9e7a,#1a7a5e)","linear-gradient(135deg,#9b5de5,#7048c4)","linear-gradient(135deg,#8c5a3a,#6b3f2f)","linear-gradient(135deg,#3ab4d6,#2f7fb8)"];
+      renderShop(arr.slice(0,6).map((p,i)=>({ic:ics[i%6],bg:bgs[i%6],name:p.name||"-",price:p.price||"-",src:p.src||"ออนไลน์",rate:p.rate||"",url:p.url})));
+      toast("แนะนำสินค้าจริงจากเน็ต (Gemini)","ti-world-search");return;}
+  }catch(e){console.warn("shop gemini",e);toast("ค้นไม่สำเร็จ ใช้รายการตัวอย่าง","ti-alert-triangle");}}
+  let list=shopDemo;if(q){const k=q.toLowerCase();const f=shopDemo.filter(p=>p.name.toLowerCase().includes(k));list=f.length?f:shopDemo}renderShop(list);};
 
 /* ===== WELCOME (language) + i18n ===== */
 const LANGS=[{code:"th",flag:"🇹🇭",ln:"ไทย",ls:"Thai"},{code:"en",flag:"🇬🇧",ln:"English",ls:"English"}];
@@ -1502,9 +1566,9 @@ function applyLang(lang){
   renderLangMini();
 }
 function renderLangCards(){if(!$("langCards"))return;$("langCards").innerHTML=LANGS.map(l=>
-  <div class="lang-card ${l.code===selectedLang?'sel':''}" data-lang="${l.code}"><span class="flag">${l.flag}</span><div class="ln">${l.ln}</div><div class="ls">${l.ls}</div></div>).join("")}
+  `<div class="lang-card ${l.code===selectedLang?'sel':''}" data-lang="${l.code}"><span class="flag">${l.flag}</span><div class="ln">${l.ln}</div><div class="ls">${l.ls}</div></div>`).join("")}
 function renderLangMini(){if(!$("langMini"))return;$("langMini").innerHTML=LANGS.map(l=>
-  <button data-lang2="${l.code}" class="${l.code===selectedLang?'sel':''}" style="background:var(--ks-graphite);color:var(--ks-champagne)">${l.flag} ${l.ln}</button>).join("")}
+  `<button data-lang2="${l.code}" class="${l.code===selectedLang?'sel':''}" style="background:var(--ks-graphite);color:var(--ks-champagne)">${l.flag} ${l.ln}</button>`).join("")}
 document.addEventListener("click",e=>{const c=e.target.closest("[data-lang]");if(c){applyLang(c.dataset.lang);renderLangCards()}const b=e.target.closest("[data-lang2]");if(b){applyLang(b.dataset.lang2);renderLangMini()}});
 $("wNext").onclick=()=>{$("wStep1").classList.remove("active");$("wStep2").classList.add("active")};
 function hideWelcome(){$("welcome").classList.remove("show")}
@@ -1513,7 +1577,7 @@ function showWelcome(){renderLangCards();$("wStep1").classList.add("active");$("
 /* ===== 3D parallax + tilt + particles ===== */
 const layers=[...document.querySelectorAll("#scene .hills")];let px=0,py=0,tx=0,ty=0;
 document.addEventListener("mousemove",e=>{if(document.body.dataset.motion==="0")return;tx=(e.clientX/innerWidth-.5);ty=(e.clientY/innerHeight-.5)});
-(function loop(){px+=(tx-px)*.06;py+=(ty-py)*.06;layers.forEach(l=>{const d=parseFloat(l.dataset.depth);l.style.transform=translate(${-px*d*22}px,${-py*d*10}px)});requestAnimationFrame(loop)})();
+(function loop(){px+=(tx-px)*.06;py+=(ty-py)*.06;layers.forEach(l=>{const d=parseFloat(l.dataset.depth);l.style.transform=`translate(${-px*d*22}px,${-py*d*10}px)`});requestAnimationFrame(loop)})();
 /* smooth tilt — card slowly turns toward cursor (eased, never abrupt) */
 let tActive=null,tLast=null,tcx=0,tcy=0,ttx=0,tty=0;
 document.addEventListener("mousemove",e=>{
@@ -1527,22 +1591,22 @@ document.addEventListener("mousemove",e=>{
   tcx+=(ttx-tcx)*0.06; tcy+=(tty-tcy)*0.06;   // low factor = slow, graceful follow
   const el=tActive||tLast;
   if(el){const lift=(Math.abs(tcx)+Math.abs(tcy))>0.25?-5:0;
-    el.style.transform=perspective(900px) rotateY(${tcx.toFixed(2)}deg) rotateX(${tcy.toFixed(2)}deg) translateY(${lift}px);
+    el.style.transform=`perspective(900px) rotateY(${tcx.toFixed(2)}deg) rotateX(${tcy.toFixed(2)}deg) translateY(${lift}px)`;
     if(!tActive&&Math.abs(tcx)<0.04&&Math.abs(tcy)<0.04){el.style.transform="";tLast=null;}}
   requestAnimationFrame(tiltLoop);
 })();
 function spawnParticles(sel,n){const s=document.querySelector(sel);if(!s)return;for(let i=0;i<n;i++){const p=document.createElement("div");p.className="particle";
   p.style.left=Math.random()*100+"%";p.style.bottom=(-10+Math.random()*30)+"%";p.style.animationDuration=(10+Math.random()*12)+"s";
-  p.style.animationDelay=(-Math.random()*15)+"s";p.style.opacity=.3+Math.random()*.5;p.style.transform=scale(${.5+Math.random()});s.appendChild(p)}}
+  p.style.animationDelay=(-Math.random()*15)+"s";p.style.opacity=.3+Math.random()*.5;p.style.transform=`scale(${.5+Math.random()})`;s.appendChild(p)}}
 spawnParticles("#scene",14);spawnParticles(".w-scene",10);
 
 /* ===== TOAST ===== */
-let tt;function toast(msg,ic){const el=$("toast");el.innerHTML=<i class="ti ${ic||'ti-check'}"></i>${msg};el.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("show"),2600)}
+let tt;function toast(msg,ic){const el=$("toast");el.innerHTML=`<i class="ti ${ic||'ti-check'}"></i>${msg}`;el.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("show"),2600)}
 
 /* ===== CREATIVE: brands · nav indicator · quiz · backgrounds ===== */
 const BRANDS=["Toyota","Honda","Isuzu","Mazda","Mitsubishi","Nissan","Suzuki","Subaru","Daihatsu","Lexus","Ford","Chevrolet","BMW","Mercedes-Benz","Audi","Volkswagen","Porsche","Volvo","MG","BYD","Tesla","Hyundai","Kia","Peugeot","Citroen","Renault","Fiat","Jeep","Land Rover","Jaguar","Mini","Aston Martin","Bentley","Rolls-Royce","Ferrari","Lamborghini","Maserati","Alfa Romeo","Bugatti","McLaren","Lotus","Opel","Skoda","SEAT","Dacia","Chery","Great Wall","Haval","GWM","GAC","Geely","Ora","Neta","Aion","Wuling","Changan","Dongfeng","FAW","Hongqi","Nio","Xpeng","Li Auto","Zeekr","Polestar","Genesis","Acura","Infiniti","Cadillac","GMC","Buick","Chrysler","Dodge","Ram","Lincoln","Tata","Mahindra","Proton","Perodua","VinFast","Smart","Saab","Hummer","Rivian","Lucid","Koenigsegg","Pagani","อื่นๆ"];
-function fillBrands(){const dl=$("brandList");if(dl)dl.innerHTML=BRANDS.map(b=><option value="${b}">).join("");}
-function moveNavInd(){const ind=$("navInd"),a=document.querySelector(".nav-links a.active");if(!ind||!a)return;ind.style.width=a.offsetWidth+"px";ind.style.transform=translate(${a.offsetLeft}px,-50%);}
+function fillBrands(){const dl=$("brandList");if(dl)dl.innerHTML=BRANDS.map(b=>`<option value="${b}">`).join("");}
+function moveNavInd(){const ind=$("navInd"),a=document.querySelector(".nav-links a.active");if(!ind||!a)return;ind.style.width=a.offsetWidth+"px";ind.style.transform=`translate(${a.offsetLeft}px,-50%)`;}
 window.addEventListener("resize",moveNavInd);
 const QUIZ=[
   {q:"ไฟเตือนรูปเครื่องยนต์สีส้มบนหน้าปัด ควรทำอะไร?",o:["ขับต่อได้ปกติ ไม่ต้องสน","รีบตรวจ/สแกน OBD","เติมน้ำมันให้เต็มถัง"],a:1,e:"ไฟเช็กเครื่องยนต์ = ระบบพบความผิดปกติ ควรสแกนหาสาเหตุ"},
@@ -1553,8 +1617,8 @@ let qi=0,qscore=0;
 function renderQuiz(){qi=0;qscore=0;showQ();}
 function showQ(){const b=$("qBody");if(!b)return;const bar=$("qBar");if(bar)bar.style.width=(qi/QUIZ.length*100)+"%";
   if(qi>=QUIZ.length){const pct=Math.round(qscore/QUIZ.length*100);
-    b.innerHTML=<div class="qres"><div class="big">${qscore}/${QUIZ.length}</div><p style="margin:8px 0 2px;font-size:15px">${pct>=75?"เก่งมาก! รู้จักรถดีเลย 🚗":pct>=50?"ดีนะ รู้พอตัว 👍":"ไม่เป็นไร เดี๋ยว SpireONE ดูแลรถให้เอง 😉"}</p><button class="qbtn" onclick="renderQuiz()"><i class="ti ti-rotate"></i> เล่นอีกครั้ง</button></div>;return;}
-  const it=QUIZ[qi];b.innerHTML=<div class="qq">${qi+1}. ${it.q}</div><div class="qopts">${it.o.map((o,i)=><div class="qopt" data-qo="${i}">${o}</div>).join("")}</div>;}
+    b.innerHTML=`<div class="qres"><div class="big">${qscore}/${QUIZ.length}</div><p style="margin:8px 0 2px;font-size:15px">${pct>=75?"เก่งมาก! รู้จักรถดีเลย 🚗":pct>=50?"ดีนะ รู้พอตัว 👍":"ไม่เป็นไร เดี๋ยว SpireONE ดูแลรถให้เอง 😉"}</p><button class="qbtn" onclick="renderQuiz()"><i class="ti ti-rotate"></i> เล่นอีกครั้ง</button></div>`;return;}
+  const it=QUIZ[qi];b.innerHTML=`<div class="qq">${qi+1}. ${it.q}</div><div class="qopts">${it.o.map((o,i)=>`<div class="qopt" data-qo="${i}">${o}</div>`).join("")}</div>`;}
 $("qBody")&&$("qBody").addEventListener("click",e=>{const opt=e.target.closest("[data-qo]");if(!opt)return;
   if(document.querySelector(".qopt.right"))return;const it=QUIZ[qi],pick=+opt.dataset.qo;
   document.querySelectorAll(".qopt").forEach((el,i)=>{if(i===it.a)el.classList.add("right")});
@@ -1562,23 +1626,23 @@ $("qBody")&&$("qBody").addEventListener("click",e=>{const opt=e.target.closest("
   toast(it.e,"ti-bulb");setTimeout(()=>{qi++;showQ()},1500);});
 const BGS={default:["#f3ecdd","#d9b25a"],sunrise:["#fbf1e5","#ff9a5a"],ocean:["#e9f2f4","#3ab4d6"],candy:["#f7eef6","#e06ac4"],forest:["#ecf4ea","#5aa860"],aurora:["#eef0f5","#8a6ae0"]};
 function applyBg(k){if(!BGS[k])k="default";document.body.dataset.bg=k;LS.set("bg",k);renderBgPick();}
-function renderBgPick(){const el=$("bgPick");if(!el)return;const cur=document.body.dataset.bg;el.innerHTML=Object.entries(BGS).map(([k,c])=><button data-bgk="${k}" class="${k===cur?'sel':''}" title="${k}" style="background:linear-gradient(135deg,${c[0]},${c[1]})"></button>).join("");}
+function renderBgPick(){const el=$("bgPick");if(!el)return;const cur=document.body.dataset.bg;el.innerHTML=Object.entries(BGS).map(([k,c])=>`<button data-bgk="${k}" class="${k===cur?'sel':''}" title="${k}" style="background:linear-gradient(135deg,${c[0]},${c[1]})"></button>`).join("");}
 document.addEventListener("click",e=>{const b=e.target.closest("[data-bgk]");if(b)applyBg(b.dataset.bgk)});
 /* realtime news + magazine via Claude (active only when AI_ENDPOINT is set) */
 async function loadLiveNews(){
-  if(!AI_ENDPOINT)return;
-  try{const r=await fetch(AI_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mode:"news"})});
-    if(r.ok){const d=await r.json();if(d.items&&d.items.length){const accs=["gold","cyan","green","gold"];bbSlides.length=0;
-      d.items.forEach((it,i)=>bbSlides.push({tag:(it.tag||"NEWS").toUpperCase(),icon:"ti-news",acc:accs[i%4],title:it.title||"",body:it.body||""}));renderBillboard();}}}catch(e){console.warn("live news",e)}
-  try{const r=await fetch(AI_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mode:"magazine"})});
-    if(r.ok){const d=await r.json();if(d.items&&d.items.length){const ics=["ti-news","ti-car","ti-bolt","ti-tools"],bgs=["linear-gradient(135deg,#3a8c52,#1f6b32)","linear-gradient(135deg,#2f9e7a,#1a7a5e)","linear-gradient(135deg,#3a7ce6,#2f5fd6)","linear-gradient(135deg,#8c5a3a,#6b3f2f)"];mags.length=0;
-      d.items.forEach((it,i)=>mags.push({ic:ics[i%4],bg:bgs[i%4],pill:"p-tech",tag:it.tag||"ข่าว",title:it.title||"",body:it.body||"",issue:"LIVE"}));renderMags();}}}catch(e){console.warn("live mag",e)}
+  if(!GEMINI_KEY)return;
+  try{const {text}=await geminiCall([{text:`ค้นเว็บหาข่าวยานยนต์/รถยนต์ในไทยล่าสุด 4 ข่าว แล้วตอบเป็น JSON array เท่านั้น ไม่มีข้อความอื่น: [{"tag":"หมวด","title":"พาดหัวสั้น","body":"สรุป 1 ประโยค"}]`}],{search:true,temp:0.4});
+    const arr=gParse(text);if(Array.isArray(arr)&&arr.length){const accs=["gold","cyan","green","gold"];bbSlides.length=0;
+      arr.slice(0,4).forEach((it,i)=>bbSlides.push({tag:(it.tag||"NEWS").toUpperCase(),icon:"ti-news",acc:accs[i%4],title:it.title||"",body:it.body||""}));renderBillboard();}}catch(e){console.warn("live news",e)}
+  try{const {text}=await geminiCall([{text:`ค้นเว็บหาบทความรีวิว/เชิงลึกเกี่ยวกับรถยนต์ล่าสุด 4 เรื่อง ตอบเป็น JSON array เท่านั้น: [{"tag":"หมวด","title":"ชื่อบทความ","body":"สรุปสั้น"}]`}],{search:true,temp:0.4});
+    const arr=gParse(text);if(Array.isArray(arr)&&arr.length){const ics=["ti-news","ti-car","ti-bolt","ti-tools"],bgs=["linear-gradient(135deg,#3a8c52,#1f6b32)","linear-gradient(135deg,#2f9e7a,#1a7a5e)","linear-gradient(135deg,#3a7ce6,#2f5fd6)","linear-gradient(135deg,#8c5a3a,#6b3f2f)"];mags.length=0;
+      arr.slice(0,4).forEach((it,i)=>mags.push({ic:ics[i%4],bg:bgs[i%4],pill:"p-tech",tag:it.tag||"ข่าว",title:it.title||"",body:it.body||"",issue:"LIVE"}));renderMags();}}catch(e){console.warn("live mag",e)}
 }
 /* ===== greeting + scroll-reveal (artful fade between sections) ===== */
 function updateGreeting(){const el=$("greet");if(!el)return;const h=new Date().getHours();
   const g=h<11?"สวัสดีตอนเช้า":h<16?"สวัสดีตอนบ่าย":h<19?"สวัสดีตอนเย็น":"สวัสดีตอนค่ำ";
   const em=h<11?"☀️":h<16?"🌤️":h<19?"🌇":"🌙";const name=currentUser?currentUser.name:"";
-  el.innerHTML=<span class="g-em">${em}</span> ${g}${name?", คุณ "+name:""} <span class="g-wave">👋</span>;}
+  el.innerHTML=`<span class="g-em">${em}</span> ${g}${name?", คุณ "+name:""} <span class="g-wave">👋</span>`;}
 const revObs=("IntersectionObserver"in window)?new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");revObs.unobserve(e.target)}})},{threshold:.06,rootMargin:"0px 0px -4% 0px"}):null;
 function revealActive(){if(!revObs||document.body.dataset.motion==="0")return;const v=document.querySelector(".view.active");if(!v)return;
   v.querySelectorAll(".greet,.billboard,.hub,.quiz,.section-title,.section-sub,.mag-feature,.brief-bar,.phead,.subtabs,.diag-layout,.settings-grid,.shop-grid,.mag-grid").forEach(el=>{if(el.dataset.rv)return;el.dataset.rv="1";el.classList.add("reveal");revObs.observe(el)});}
@@ -1595,4 +1659,3 @@ if(!useFirebase)onLogout();
 </script>
 </body>
 </html>
-ลอง redesign ใหม่โดยเป็นแนว skill artistic

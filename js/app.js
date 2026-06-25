@@ -93,9 +93,13 @@ export function switchView(v, sub) {
   }
   if (v === "garage") renderGarage();
   if (v === "diagnose" && sub) selectDiagTab(sub);
-  
+
   moveNavInd();
-  if (v === "home") updateGreeting();
+  if (v === "home") {
+    updateGreeting();
+    renderHomeCars();
+    renderHomeDiagHistory();
+  }
   setTimeout(revealActive, 40);
   closeDropdown();
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -115,9 +119,11 @@ function onLogin() {
   $("navAdmin").style.display = u.admin ? "flex" : "none";
   refreshProfile();
   renderGarage();
+  renderHomeCars();
   updateGreeting();
   hideWelcome();
   toast("ยินดีต้อนรับ คุณ" + u.name, "ti-mood-smile");
+  setTimeout(moveNavInd, 50);
 }
 
 function onLogout() {
@@ -128,6 +134,7 @@ function onLogout() {
   refreshProfile();
   renderGarage();
   showWelcome();
+  setTimeout(moveNavInd, 50);
 }
 
 // Bind auth changes listener
@@ -174,6 +181,7 @@ function applyTheme(key) {
   document.body.dataset.theme = key;
   LS.set("theme", key);
   renderThemeMini();
+  setTimeout(moveNavInd, 50);
 }
 
 function applyBg(k) {
@@ -233,7 +241,8 @@ function loading(label, sub) {
     </div>`;
 }
 
-function showResult(dx) {
+function showResult(dx, meta) {
+  saveDiagHistory(dx, meta);
   const ai = dx.source !== "demo";
   $("result").innerHTML = `
     <div>
@@ -273,8 +282,10 @@ function moveNavInd() {
   const ind = $("navInd");
   const a = document.querySelector(".nav-links a.active");
   if (!ind || !a) return;
-  ind.style.width = a.offsetWidth + "px";
-  ind.style.transform = `translate(${a.offsetLeft}px,-50%)`;
+  const rectA = a.getBoundingClientRect();
+  const rectParent = a.parentElement.getBoundingClientRect();
+  ind.style.width = rectA.width + "px";
+  ind.style.transform = `translate(${rectA.left - rectParent.left}px,-50%)`;
 }
 
 /* ===== CAR-CARE QUIZ GAME ===== */
@@ -395,7 +406,98 @@ function rmCar(i) {
   c.splice(i, 1);
   LS.set("garage", c);
   renderGarage();
+  renderHomeCars();
   toast("ลบรถแล้ว", "ti-trash");
+}
+
+/* ===== HOME: status overview (cars + latest AI diagnoses) ===== */
+function renderHomeCars() {
+  const wrap = $("homeCars");
+  if (!wrap) return;
+  const cars = getGarage().slice(0, 4);
+  if (!cars.length) {
+    wrap.innerHTML = `<div class="hs-empty"><i class="ti ti-car-garage"></i>ยังไม่มีรถในระบบ<br/><a data-view="garage" style="color:var(--accent-d);font-weight:700">+ เพิ่มรถของคุณ</a></div>`;
+    return;
+  }
+  wrap.innerHTML = cars.map(c => {
+    const h = health(c);
+    const hc = h > 70 ? "var(--accent)" : h > 50 ? "var(--accent-2)" : "var(--danger)";
+    const top = predict(c)[0];
+    const flagCls = top.cls || "ok";
+    const flagIcon = flagCls === "ok" ? "circle-check" : "alert-triangle";
+    const flagTxt = flagCls === "due" ? `ควรตรวจ${top.name}ด่วน` : flagCls === "warn" ? `ใกล้ถึงรอบ${top.name}` : "สุขภาพรถปกติ";
+    return `
+      <div class="gcar car-row">
+        <div class="gicon"><i class="ti ti-car"></i></div>
+        <div style="flex:1;min-width:0">
+          <h4>${c.name}</h4>
+          <div class="gs">ปี ${c.year || "-"} · ${(c.mileage || "-")} กม.</div>
+          <div class="health"><i style="width:${h}%;background:${hc}"></i></div>
+          <span class="car-flag ${flagCls}"><i class="ti ti-${flagIcon}"></i> ${flagTxt}</span>
+        </div>
+      </div>`;
+  }).join("");
+}
+
+const DX_METHODS = {
+  describe: { ic: "message-2", label: "อธิบายอาการ" },
+  photo: { ic: "camera", label: "ภาพถ่าย" },
+  video: { ic: "video", label: "วิดีโอ" },
+  sound: { ic: "microphone-2", label: "เสียงเครื่อง" },
+  obd: { ic: "plug-connected", label: "OBD-II" }
+};
+
+function timeAgo(ts) {
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if (s < 60) return "เมื่อสักครู่";
+  if (s < 3600) return Math.floor(s / 60) + " นาทีที่แล้ว";
+  if (s < 86400) return Math.floor(s / 3600) + " ชั่วโมงที่แล้ว";
+  return Math.floor(s / 86400) + " วันที่แล้ว";
+}
+
+function sevClass(sev) {
+  sev = sev || "";
+  if (sev.includes("สูง")) return "p-hot";
+  if (sev.includes("ต่ำ")) return "p-tech";
+  return "p-tip";
+}
+
+function saveDiagHistory(dx, meta) {
+  meta = meta || {};
+  const hist = LS.get("diagHistory", []);
+  hist.unshift({
+    ts: Date.now(),
+    method: meta.method || "describe",
+    brand: meta.brand || "",
+    model: meta.model || "",
+    severity: (dx.severity || "-").split(/[—-]/)[0].trim(),
+    summary: dx.summary || ""
+  });
+  LS.set("diagHistory", hist.slice(0, 20));
+  renderHomeDiagHistory();
+}
+
+function renderHomeDiagHistory() {
+  const wrap = $("homeDiagHistory");
+  if (!wrap) return;
+  const hist = LS.get("diagHistory", []).slice(0, 5);
+  if (!hist.length) {
+    wrap.innerHTML = `<div class="hs-empty"><i class="ti ti-stethoscope"></i>ยังไม่มีประวัติการวินิจฉัย<br/><a data-view="diagnose" style="color:var(--accent-d);font-weight:700">+ วินิจฉัยรถของคุณ</a></div>`;
+    return;
+  }
+  wrap.innerHTML = hist.map(d => {
+    const m = DX_METHODS[d.method] || DX_METHODS.describe;
+    const car = [d.brand, d.model].filter(Boolean).join(" ") || "ไม่ระบุรุ่นรถ";
+    return `
+      <div class="dx-row">
+        <div class="dx-ic"><i class="ti ti-${m.ic}"></i></div>
+        <div class="dx-body">
+          <h5>${car}</h5>
+          <p>${d.summary}</p>
+          <div class="dx-meta"><span class="pill ${sevClass(d.severity)}">${d.severity}</span><span>${m.label} · ${timeAgo(d.ts)}</span></div>
+        </div>
+      </div>`;
+  }).join("");
 }
 
 /* ===== E-SHOP RECOMMENDER ===== */
@@ -446,6 +548,7 @@ function applyLang(lang) {
   if (hp) hp.textContent = en ? "Diagnose by photo, engine sound and real OBD-II. Predict issues early. Find parts online — powered by Claude AI." : "วินิจฉัยด้วยภาพ เสียงเครื่อง และ OBD-II จริง · ทำนายอาการล่วงหน้า · แนะนำอะไหล่จากอินเทอร์เน็ต — ขับเคลื่อนด้วย Claude AI";
   langTxt(document.querySelector("#view-home .hero-cta"), en ? "Start diagnosing" : "เริ่มวินิจฉัยรถของคุณ");
   renderLangMini();
+  setTimeout(moveNavInd, 50);
 }
 
 function renderLangCards() {
@@ -648,7 +751,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const dx = await callAI("describe", {
       brand, model, year: $("dYear").value, mileage: $("dMileage").value, symptom
     });
-    showResult(dx);
+    showResult(dx, { method: "describe", brand, model });
   };
 
   // Diagnostic Photo Upload handlers
@@ -688,7 +791,7 @@ document.addEventListener("DOMContentLoaded", () => {
       imageBase64: photoB64, imageMediaType: photoMime, note: $("photoNote").value,
       brand: $("dBrand").value, model: $("dModel").value, year: $("dYear").value, mileage: $("dMileage").value
     });
-    showResult(dx);
+    showResult(dx, { method: "photo", brand: $("dBrand").value, model: $("dModel").value });
   };
 
   // Diagnostic Video Upload handlers
@@ -729,7 +832,7 @@ document.addEventListener("DOMContentLoaded", () => {
       videoB64, videoMime, note: $("vidNote").value, brand: $("dBrand").value, model:
       $("dModel").value, year: $("dYear").value, mileage: $("dMileage").value
     });
-    showResult(dx);
+    showResult(dx, { method: "video", brand: $("dBrand").value, model: $("dModel").value });
   };
 
   // Sound Recording Handler
@@ -773,7 +876,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loading("AI กำลังฟังเสียง...", "Gemini วิเคราะห์เสียงเครื่องยนต์จริง");
     const audioB64 = await blobToB64(audioBlob);
     const dx = await callAI("sound", { audioB64, audioMime: "audio/webm", brand: $("dBrand").value, model: $("dModel").value });
-    showResult(dx);
+    showResult(dx, { method: "sound", brand: $("dBrand").value, model: $("dModel").value });
   };
 
   // OBD-II simulated device connection
@@ -813,7 +916,7 @@ document.addEventListener("DOMContentLoaded", () => {
       dx.severity = "ปานกลาง-สูง";
       dx.cost = "800 – 12,000 บาท";
     }
-    showResult(dx);
+    showResult(dx, { method: "obd", brand: $("dBrand").value, model: $("dModel").value });
   };
 
   // GARAGE Add Car event
@@ -834,6 +937,7 @@ document.addEventListener("DOMContentLoaded", () => {
     $("gYear").value = "";
     $("gMileage").value = "";
     renderGarage();
+    renderHomeCars();
     toast("เพิ่มรถแล้ว — AI ประเมินให้", "ti-check");
   };
 
@@ -946,6 +1050,101 @@ document.addEventListener("DOMContentLoaded", () => {
     $("wPreview").onclick = () => hideWelcome();
   }
 
+  // Close Auth Modal on clicking outside the content
+  if ($("authModal")) {
+    $("authModal").addEventListener("click", e => {
+      if (e.target.id === "authModal") closeAuth();
+    });
+  }
+
+  // Login Button triggers openAuth or toggles dropdown if logged in
+  if ($("loginBtn")) {
+    $("loginBtn").onclick = () => {
+      if (state.currentUser) toggleDropdown();
+      else openAuth();
+    };
+  }
+
+  // Avatar Button toggles dropdown
+  if ($("avatarBtn")) {
+    $("avatarBtn").onclick = toggleDropdown;
+  }
+
+  // Close dropdown on clicking outside nav-right
+  document.addEventListener("click", e => {
+    if (!e.target.closest(".nav-right")) closeDropdown();
+  });
+
+  // Google Login buttons click handlers
+  if ($("authGoogle")) {
+    $("authGoogle").onclick = () => googleSignIn(() => closeAuth());
+  }
+  if ($("wGoogle")) {
+    $("wGoogle").onclick = () => googleSignIn();
+  }
+
+  // Logout Buttons click handlers
+  if ($("logoutBtn")) $("logoutBtn").onclick = doLogout;
+  if ($("logoutBtn2")) $("logoutBtn2").onclick = doLogout;
+
+  // Billboard Slider navigation buttons
+  if ($("bbPrev")) {
+    $("bbPrev").onclick = () => {
+      bbGo(bbIdx - 1);
+      bbAuto();
+    };
+  }
+  if ($("bbNext")) {
+    $("bbNext").onclick = () => {
+      bbGo(bbIdx + 1);
+      bbAuto();
+    };
+  }
+  if ($("bbDots")) {
+    $("bbDots").addEventListener("click", e => {
+      const b = e.target.closest("[data-bb]");
+      if (b) {
+        bbGo(+b.dataset.bb);
+        bbAuto();
+      }
+    });
+  }
+
+  // Diagnostic tab routing buttons
+  if ($("diagTabs")) {
+    $("diagTabs").addEventListener("click", e => {
+      const b = e.target.closest("button");
+      if (b) selectDiagTab(b.dataset.sub);
+    });
+  }
+
+  // Quiz Option selections
+  if ($("qBody")) {
+    $("qBody").addEventListener("click", e => {
+      const opt = e.target.closest("[data-qo]");
+      if (!opt) return;
+      if (document.querySelector(".qopt.right")) return;
+      const it = QUIZ[qi], pick = +opt.dataset.qo;
+      document.querySelectorAll(".qopt").forEach((el, i) => {
+        if (i === it.a) el.classList.add("right");
+      });
+      if (pick === it.a) qscore++;
+      else opt.classList.add("wrong");
+      toast(it.e, "ti-bulb");
+      setTimeout(() => {
+        qi++;
+        showQ();
+      }, 1500);
+    });
+  }
+
+  // Adjust indicator on window resize, load, and font ready
+  window.addEventListener("resize", moveNavInd);
+  window.addEventListener("load", moveNavInd);
+  if (document.fonts) {
+    document.fonts.ready.then(moveNavInd);
+  }
+
   // --- INITIALIZE & START SYSTEM ---
   applyTheme(LS.get("theme", "kinpaku"));
   applyBg(LS.get("bg", "default"));
@@ -963,6 +1162,8 @@ document.addEventListener("DOMContentLoaded", () => {
   renderMags();
   renderShop(shopDemo);
   renderGarage();
+  renderHomeCars();
+  renderHomeDiagHistory();
   renderLangMini();
   renderBgPick();
   updateGreeting();

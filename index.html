@@ -348,7 +348,6 @@ a{color:inherit;text-decoration:none}button{font-family:inherit;cursor:pointer;b
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
 "use strict";
 const $=id=>document.getElementById(id);
@@ -356,13 +355,14 @@ const esc=s=>(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"
 const LS={get:(k,d)=>{try{return JSON.parse(localStorage.getItem("spire_"+k))??d}catch{return d}},set:(k,v)=>localStorage.setItem("spire_"+k,JSON.stringify(v)),del:k=>localStorage.removeItem("spire_"+k)};
 
 /* ===== CONFIG ===== */
+const BACKEND_URL = "http://localhost:8787";
 const fbConfig={apiKey:"AIzaSyDDtvz4d4FRG_KOq5EQHmlDijU-x1FDZlQ",authDomain:"sp1p-82396.firebaseapp.com",databaseURL:"https://sp1p-82396-default-rtdb.firebaseio.com",projectId:"sp1p-82396",storageBucket:"sp1p-82396.appspot.com",messagingSenderId:"924479207020",appId:"1:924479207020:web:ec64428a61403e1ad48a49"};
 const ADMINS=["anapatmaliwong@gmail.com","carspirethailand@gmail.com"];
 /* Gemini — works directly from the browser. ⚠️ key is visible in source; restrict by HTTP referrer in Google Cloud Console */
 const GEMINI_KEY="AIzaSyB1P_3zw1f27UqavxyW4WW_yhFWWUJAo8c";
 const GEMINI_MODEL="gemini-2.5-flash";
-let auth=null,db=null,useFb=false;
-try{firebase.initializeApp(fbConfig);auth=firebase.auth();db=firebase.database();auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});useFb=true;}catch(e){console.warn("fb",e)}
+let auth=null,useFb=false;
+try{firebase.initializeApp(fbConfig);auth=firebase.auth();auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});useFb=true;}catch(e){console.warn("fb",e)}
 let currentUser=null,lang=LS.get("lang","th");
 
 /* ===== GEMINI ===== */
@@ -566,11 +566,45 @@ async function signIn(){
 window.signIn=signIn;
 $("signinBtn").onclick=signIn;
 $("logoutBtn").onclick=async()=>{if(useFb)await auth.signOut();$("dd").classList.remove("show");switchView("home");toast(lang==="en"?"Logged out":"ออกจากระบบแล้ว","ti-logout")};
-if(useFb)auth.onAuthStateChanged(u=>{
-  if(u){currentUser={uid:u.uid,name:u.displayName||u.email.split("@")[0],email:u.email,photo:u.photoURL||"",admin:isAdmin(u.email)};
-    db.ref("users/"+u.uid).update({name:currentUser.name,email:u.email,photo:currentUser.photo,role:currentUser.admin?"admin":"user",lastLogin:Date.now()}).catch(()=>{});}
-  else currentUser=null;
-  renderAuthUI();renderProfile();renderDashboard();});
+if(useFb)auth.onAuthStateChanged(async u=>{
+  if(u){
+    try {
+      const idToken = await u.getIdToken();
+      const r = await fetch(`${BACKEND_URL}/api/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + idToken
+        },
+        body: JSON.stringify({
+          name: u.displayName || u.email.split("@")[0],
+          photo: u.photoURL || ""
+        })
+      });
+      if (!r.ok) throw new Error(r.status + " " + r.statusText);
+      const res = await r.json();
+      currentUser = {
+        uid: res.uid,
+        name: res.name,
+        email: res.email,
+        photo: res.photo,
+        admin: res.role === "admin"
+      };
+    } catch (e) {
+      console.warn("backend login error", e);
+      currentUser = {
+        uid: u.uid,
+        name: u.displayName || u.email.split("@")[0],
+        email: u.email,
+        photo: u.photoURL || "",
+        admin: isAdmin(u.email)
+      };
+    }
+  } else {
+    currentUser = null;
+  }
+  renderAuthUI();renderProfile();renderDashboard();
+});
 function renderAuthUI(){const u=currentUser;
   $("signinBtn").style.display=u?"none":"flex";
   $("avatarBtn").style.display=u?"block":"none";
@@ -592,14 +626,22 @@ async function loadAdmin(){
   if(!useFb){$("adRows").innerHTML=`<tr><td colspan="4">Firebase ไม่พร้อม</td></tr>`;return}
   $("adRows").innerHTML=`<tr><td colspan="4" style="color:var(--muted)">${lang==="en"?"Loading...":"กำลังโหลด..."}</td></tr>`;
   try{
-    const snap=await db.ref("users").once("value");const obj=snap.val()||{};const arr=Object.values(obj);
-    const admins=arr.filter(x=>x.role==="admin").length,today=arr.filter(x=>Date.now()-(x.lastLogin||0)<864e5).length;
+    const idToken = await auth.currentUser.getIdToken();
+    const r = await fetch(`${BACKEND_URL}/api/admin/users`, {
+      headers: {
+        "Authorization": "Bearer " + idToken
+      }
+    });
+    if (!r.ok) throw new Error(r.status + " " + r.statusText);
+    const arr = await r.json();
+    const admins = arr.filter(x=>x.role==="admin").length;
+    const today = arr.filter(x=>Date.now()-(x.last_login||0)<864e5).length;
+    
     $("adStats").innerHTML=`<div class="stat"><div class="n">${arr.length}</div><div class="l">${lang==="en"?"Users":"ผู้ใช้ทั้งหมด"}</div></div><div class="stat"><div class="n">${admins}</div><div class="l">${lang==="en"?"Admins":"ผู้ดูแล"}</div></div><div class="stat"><div class="n">${today}</div><div class="l">${lang==="en"?"Active today":"ใช้งานวันนี้"}</div></div>`;
-    $("adRows").innerHTML=arr.sort((a,b)=>(b.lastLogin||0)-(a.lastLogin||0)).map(x=>`<tr><td>${x.photo?`<img class="mini-av" src="${x.photo}" referrerpolicy="no-referrer">`:""}${esc(x.name||"-")}</td><td>${esc(x.email||"-")}</td><td>${x.role==="admin"?'<span style="color:var(--accent);font-weight:700">ADMIN</span>':'USER'}</td><td>${x.lastLogin?new Date(x.lastLogin).toLocaleString(lang==="en"?"en-US":"th-TH",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"-"}</td></tr>`).join("")||`<tr><td colspan="4" style="color:var(--muted)">${lang==="en"?"No users":"ยังไม่มีผู้ใช้"}</td></tr>`;
+    $("adRows").innerHTML=arr.map(x=>`<tr><td>${x.photo?`<img class="mini-av" src="${x.photo}" referrerpolicy="no-referrer">`:""}${esc(x.name||"-")}</td><td>${esc(x.email||"-")}</td><td>${x.role==="admin"?'<span style="color:var(--accent);font-weight:700">ADMIN</span>':'USER'}</td><td>${x.last_login?new Date(x.last_login).toLocaleString(lang==="en"?"en-US":"th-TH",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"-"}</td></tr>`).join("")||`<tr><td colspan="4" style="color:var(--muted)">${lang==="en"?"No users":"ยังไม่มีผู้ใช้"}</td></tr>`;
   }catch(e){
     $("adStats").innerHTML="";
-    $("adRows").innerHTML=`<tr><td colspan="4" style="color:var(--danger)">${lang==="en"?"Cannot read":"อ่านข้อมูลไม่ได้"}: ${esc(e.code||e.message)}</td></tr>`;
-    if(!$("adHint"))$("adminCard").insertAdjacentHTML("beforeend",`<div class="note" id="adHint"><i class="ti ti-alert-triangle"></i> ต้องตั้ง Realtime Database Rules ให้แอดมินอ่าน /users ได้ เช่น:<br><code style="font-size:11px;display:block;margin-top:6px;white-space:pre-wrap;word-break:break-all">{"rules":{"users":{".read":"auth!=null && root.child('users').child(auth.uid).child('role').val()=='admin'","$u":{".write":"$u===auth.uid"}}}}</code></div>`);
+    $("adRows").innerHTML=`<tr><td colspan="4" style="color:var(--danger)">${lang==="en"?"Cannot read":"อ่านข้อมูลไม่ได้"}: ${esc(e.message)}</td></tr>`;
   }
 }
 $("adRefresh").onclick=loadAdmin;

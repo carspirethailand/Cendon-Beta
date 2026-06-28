@@ -8,12 +8,37 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=Anuphan:wght@300;400;500;600;700&family=Trirong:wght@400;500;600&display=swap">
 <style>
-:root{
+:root, [data-theme="warm"] {
   --bg:#F6F3EC;--surface:#FFFFFF;--surface-2:#FBF8F1;--ink:#22201A;--muted:#6E685B;--faint:#A8A192;
   --line:rgba(40,34,18,.12);--line-2:rgba(40,34,18,.07);
   --accent:#D9733C;--accent-2:#E8A23C;--accent-d:#B85A2A;--grad:linear-gradient(135deg,#E8943C,#D95E3C);
   --ok:#3E9E6E;--danger:#D64A4A;--radius:20px;--shadow:0 18px 50px -22px rgba(60,40,15,.32);--shadow-sm:0 6px 20px -10px rgba(60,40,15,.22);
   --kd:'Fraunces','Trirong',Georgia,serif;--kb:'Inter','Anuphan',system-ui,sans-serif;
+  --wireframe-opacity: 0.15;
+}
+[data-theme="cyber"] {
+  --bg:#0A0D1A;--surface:#12162B;--surface-2:#1A1F3D;--ink:#E2E6F2;--muted:#8F9BB3;--faint:#56617A;
+  --line:rgba(143,155,179,.16);--line-2:rgba(143,155,179,.08);
+  --accent:#9B5DE5;--accent-2:#00F5D4;--accent-d:#7B2CBF;--grad:linear-gradient(135deg,#9B5DE5,#00F5D4);
+  --ok:#00F5D4;--danger:#FF007F;--radius:20px;--shadow:0 18px 50px -22px rgba(0,0,0,.6);--shadow-sm:0 6px 20px -10px rgba(0,0,0,.4);
+  --kd:'Fraunces','Trirong',Georgia,serif;--kb:'Inter','Anuphan',system-ui,sans-serif;
+  --wireframe-opacity: 0.22;
+}
+[data-theme="emerald"] {
+  --bg:#EDF4F2;--surface:#FFFFFF;--surface-2:#F4FAF8;--ink:#1B3B32;--muted:#4E7065;--faint:#8EABA0;
+  --line:rgba(27,59,50,.12);--line-2:rgba(27,59,50,.07);
+  --accent:#3E9E6E;--accent-2:#5BC28C;--accent-d:#2D7D54;--grad:linear-gradient(135deg, #3E9E6E, #8FE388);
+  --ok:#3E9E6E;--danger:#D64A4A;--radius:20px;--shadow:0 18px 50px -22px rgba(27,59,50,.2);--shadow-sm:0 6px 20px -10px rgba(27,59,50,.1);
+  --kd:'Fraunces','Trirong',Georgia,serif;--kb:'Inter','Anuphan',system-ui,sans-serif;
+  --wireframe-opacity: 0.15;
+}
+[data-theme="carbon"] {
+  --bg:#1A1A1E;--surface:#242429;--surface-2:#2E2E35;--ink:#E5E5E7;--muted:#9A9A9F;--faint:#5F5F64;
+  --line:rgba(255,255,255,.08);--line-2:rgba(255,255,255,.04);
+  --accent:#E53E3E;--accent-2:#ED8936;--accent-d:#C53030;--grad:linear-gradient(135deg,#E53E3E,#ED8936);
+  --ok:#48BB78;--danger:#E53E3E;--radius:20px;--shadow:0 18px 50px -22px rgba(0,0,0,.8);--shadow-sm:0 6px 20px -10px rgba(0,0,0,.5);
+  --kd:'Fraunces','Trirong',Georgia,serif;--kb:'Inter','Anuphan',system-ui,sans-serif;
+  --wireframe-opacity: 0.18;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
@@ -226,6 +251,341 @@ a{color:inherit;text-decoration:none}button{font-family:inherit;cursor:pointer;b
   .grid2,.mag-grid,.statrow{grid-template-columns:1fr}
   .view{max-width:100%}.qa-grid{grid-template-columns:repeat(2,1fr)}.cars-grid{grid-template-columns:1fr}
 }
+
+/* ===== CUSTOM WIDGETS ===== */
+.widget-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+}
+.widget {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  overflow: hidden;
+}
+.widget.dragging {
+  opacity: 0.4;
+  border: 2px dashed var(--accent) !important;
+}
+.widget-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  position: relative;
+  z-index: 2;
+}
+.widget-header h3 {
+  font-family: var(--kd);
+  font-size: 19px;
+  font-weight: 600;
+  flex: 1;
+  color: var(--ink);
+}
+.widget-drag-handle {
+  display: none;
+  font-size: 16px;
+  cursor: grab;
+  color: var(--muted);
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+.widget-drag-handle:active {
+  cursor: grabbing;
+}
+.widget-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.widget-nav-btn {
+  display: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  transition: .15s;
+}
+.widget-nav-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.widget-grid.edit-mode .widget {
+  border: 2px dashed var(--accent);
+  animation: widgetWiggle 0.3s ease infinite alternate;
+}
+.widget-grid.edit-mode .widget-drag-handle, 
+.widget-grid.edit-mode .widget-nav-btn {
+  display: inline-flex;
+}
+@keyframes widgetWiggle {
+  from { transform: rotate(-0.3deg); }
+  to { transform: rotate(0.3deg); }
+}
+
+/* ===== CUSTOM SELECT DROPDOWNS ===== */
+.custom-select {
+  position: relative;
+  width: 100%;
+}
+.custom-select-trigger {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  padding: 12px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: .15s;
+  color: var(--ink);
+}
+.custom-select-trigger:hover {
+  border-color: var(--accent);
+}
+.custom-select-trigger.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: var(--surface-2);
+}
+.custom-select-options {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  margin-top: 5px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: var(--shadow);
+  padding: 8px;
+}
+.custom-select.active .custom-select-options {
+  display: block;
+}
+.custom-select-search {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin-bottom: 6px;
+  outline: none;
+  font-size: 13px;
+  background: var(--surface-2);
+  color: var(--ink);
+}
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.option-item {
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13.5px;
+  transition: .15s;
+  color: var(--muted);
+  text-align: left;
+}
+.option-item:hover {
+  background: var(--surface-2);
+  color: var(--accent);
+}
+.option-item.selected {
+  background: var(--grad);
+  color: #fff;
+}
+
+/* ===== WIREFRAME BACKGROUNDS ===== */
+.gcar-wireframe-bg {
+  position: absolute;
+  right: -14px;
+  bottom: -14px;
+  width: 180px;
+  height: 120px;
+  pointer-events: none;
+  z-index: 0;
+  color: var(--accent);
+  transition: opacity .3s;
+  opacity: var(--wireframe-opacity);
+}
+.ccard .gcar-wireframe-bg {
+  width: 140px;
+  height: 90px;
+  right: -8px;
+  bottom: -8px;
+}
+
+/* ===== CUSTOM SLIDER ===== */
+.slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--line);
+  outline: none;
+}
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--grad);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  border: none;
+}
+
+/* ===== THEME CHOOSER ===== */
+.theme-btn, .theme-btn-p {
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: var(--shadow-sm);
+  border: 2px solid var(--line) !important;
+}
+.theme-btn:hover, .theme-btn-p:hover {
+  transform: scale(1.05);
+}
+.theme-btn.active, .theme-btn-p.active {
+  box-shadow: 0 0 0 3px var(--accent) !important;
+  border-color: var(--accent) !important;
+}
+
+/* ===== CHAT EXPANDED & DRAG / SNAPPING ===== */
+.drawer.fullscreen {
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  border-radius: 0 !important;
+  transform: none !important;
+}
+.fullscreen-navbar {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+  padding: 10px 16px;
+  width: 100%;
+  flex-shrink: 0;
+  z-index: 102;
+}
+.drawer.fullscreen .fullscreen-navbar {
+  display: flex;
+}
+.drawer.fullscreen .drawer-head {
+  display: none;
+}
+.fs-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 13.5px;
+  padding: 8px 14px;
+  border-radius: 30px;
+  transition: .15s;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+.fs-nav-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.fs-nav-btn.close {
+  background: var(--danger);
+  color: #fff;
+  border: none;
+}
+.fs-nav-btn.close:hover {
+  background: #c53030;
+}
+
+/* Modal inside full screen */
+.fs-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.fs-modal.show {
+  display: flex;
+}
+
+/* Symptom Workflow */
+.chat-starter-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 30px 24px;
+  flex: 1;
+  overflow-y: auto;
+}
+.chat-suboptions-view {
+  flex: 1;
+  overflow-y: auto;
+}
+.starter-card {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 32px 24px;
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
+}
+.toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--muted);
+}
+.toggle-label input {
+  accent-color: var(--accent);
+}
 </style>
 </head>
 <body>
@@ -257,16 +617,114 @@ a{color:inherit;text-decoration:none}button{font-family:inherit;cursor:pointer;b
     <!-- HOME / DASHBOARD -->
     <section class="view active" id="v-home">
       <div class="scroll">
-        <div class="greet" id="greet"></div>
-        <p class="dash-sub" data-i18n="dash.sub">เลือกวิธีวินิจฉัย หรือกดวินิจฉัยรถในการาจของคุณได้เลย</p>
-        <div class="qa-grid">
-          <button class="qa" data-open="text"><i class="ti ti-message-2 qa-deco" aria-hidden="true"></i><div class="qa-ic"><i class="ti ti-message-2"></i></div><div class="qa-t" data-i18n="qa.text">พิมพ์ถาม</div></button>
-          <button class="qa" data-open="image"><i class="ti ti-camera qa-deco" aria-hidden="true"></i><div class="qa-ic"><i class="ti ti-camera"></i></div><div class="qa-t" data-i18n="qa.image">ถ่ายรูป</div></button>
-          <button class="qa" data-open="video"><i class="ti ti-video qa-deco" aria-hidden="true"></i><div class="qa-ic"><i class="ti ti-video"></i></div><div class="qa-t" data-i18n="qa.video">วิดีโอ</div></button>
-          <button class="qa" data-open="mic"><i class="ti ti-microphone qa-deco" aria-hidden="true"></i><div class="qa-ic"><i class="ti ti-microphone"></i></div><div class="qa-t" data-i18n="qa.mic">อัดเสียง</div></button>
+        <div class="greet-wrap" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:10px;">
+          <div class="greet" id="greet"></div>
+          <button class="btn" id="customizeBtn" onclick="toggleEditMode()"><i class="ti ti-adjustments-alt"></i> <span data-i18n="dash.customize">แต่งหน้าหลัก</span></button>
         </div>
-        <div class="dash-head"><h3 data-i18n="dash.cars">รถของฉัน</h3><span class="dash-link" data-view="garage" data-i18n="dash.manage">จัดการ →</span></div>
-        <div class="cars-grid" id="dashCars"></div>
+        <p class="dash-sub" data-i18n="dash.sub">เลือกวิธีวินิจฉัย หรือกดวินิจฉัยรถในการาจของคุณได้เลย</p>
+        
+        <!-- Customize Panel (Visible only in edit mode) -->
+        <div class="customize-panel" id="customizePanel" style="display:none; background:var(--surface-2); border:1px dashed var(--accent); border-radius:18px; padding:16px; margin-bottom:20px;">
+          <h4 style="font-weight:700; margin-bottom:10px; color:var(--ink);"><i class="ti ti-settings"></i> เปิด/ปิดวิดเจ็ตหน้าหลัก</h4>
+          <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:12px;">
+            <label class="toggle-label"><input type="checkbox" id="chk-ai" onchange="toggleWidget('w-ai', this.checked)"> <span data-i18n="dash.widget_ai">ผู้ช่วย AI (ด่วน)</span></label>
+            <label class="toggle-label"><input type="checkbox" id="chk-magazine" onchange="toggleWidget('w-magazine', this.checked)"> <span data-i18n="dash.widget_news">ข่าวสารล่าสุด</span></label>
+            <label class="toggle-label"><input type="checkbox" id="chk-settings" onchange="toggleWidget('w-settings', this.checked)"> <span data-i18n="dash.widget_settings">ตั้งค่าธีมและสี</span></label>
+          </div>
+          <p style="font-size:12px; color:var(--muted);"><i class="ti ti-info-circle"></i> คุณสามารถลากย้ายสลับตำแหน่งวิดเจ็ตต่างๆ ด้านล่างได้เลยโดยใช้เมาส์ หรือใช้ปุ่มลูกศรควบคุมตำแหน่ง</p>
+        </div>
+
+        <div class="widget-grid" id="widgetGrid">
+          <!-- Widget 1: Cars List -->
+          <div class="widget" id="w-cars" draggable="true">
+            <div class="widget-header">
+              <span class="widget-drag-handle"><i class="ti ti-hand-grab"></i></span>
+              <h3 data-i18n="dash.cars">รถของฉัน</h3>
+              <div class="widget-actions">
+                <button class="widget-nav-btn" onclick="moveWidget('w-cars', -1); event.stopPropagation();"><i class="ti ti-arrow-narrow-up"></i></button>
+                <button class="widget-nav-btn" onclick="moveWidget('w-cars', 1); event.stopPropagation();"><i class="ti ti-arrow-narrow-down"></i></button>
+                <span class="dash-link" data-view="garage" data-i18n="dash.manage">จัดการ →</span>
+              </div>
+            </div>
+            <div class="cars-grid" id="dashCars"></div>
+          </div>
+
+          <!-- Widget 2: Quick Diagnostic Tools -->
+          <div class="widget" id="w-quick-actions" draggable="true">
+            <div class="widget-header">
+              <span class="widget-drag-handle"><i class="ti ti-hand-grab"></i></span>
+              <h3 data-i18n="dash.diagnose_opt">วินิจฉัยปัญหาด่วน</h3>
+              <div class="widget-actions">
+                <button class="widget-nav-btn" onclick="moveWidget('w-quick-actions', -1); event.stopPropagation();"><i class="ti ti-arrow-narrow-up"></i></button>
+                <button class="widget-nav-btn" onclick="moveWidget('w-quick-actions', 1); event.stopPropagation();"><i class="ti ti-arrow-narrow-down"></i></button>
+              </div>
+            </div>
+            <div class="qa-grid">
+              <button class="qa" data-open="text"><i class="ti ti-message-2 qa-deco" aria-hidden="true"></i><div class="qa-ic"><i class="ti ti-message-2"></i></div><div class="qa-t" data-i18n="qa.text">พิมพ์ถาม</div></button>
+              <button class="qa" data-open="image"><i class="ti ti-camera qa-deco" aria-hidden="true"></i><div class="qa-ic"><i class="ti ti-camera"></i></div><div class="qa-t" data-i18n="qa.image">ถ่ายรูป</div></button>
+              <button class="qa" data-open="video"><i class="ti ti-video qa-deco" aria-hidden="true"></i><div class="qa-ic"><i class="ti ti-video"></i></div><div class="qa-t" data-i18n="qa.video">วิดีโอ</div></button>
+              <button class="qa" data-open="mic"><i class="ti ti-microphone qa-deco" aria-hidden="true"></i><div class="qa-ic"><i class="ti ti-microphone"></i></div><div class="qa-t" data-i18n="qa.mic">อัดเสียง</div></button>
+            </div>
+          </div>
+
+          <!-- Widget 3: Quick AI Chatbot Widget (Optional) -->
+          <div class="widget" id="w-ai" draggable="true" style="display:none;">
+            <div class="widget-header">
+              <span class="widget-drag-handle"><i class="ti ti-hand-grab"></i></span>
+              <h3 data-i18n="dash.widget_ai">ผู้ช่วย AI (ด่วน)</h3>
+              <div class="widget-actions">
+                <button class="widget-nav-btn" onclick="moveWidget('w-ai', -1); event.stopPropagation();"><i class="ti ti-arrow-narrow-up"></i></button>
+                <button class="widget-nav-btn" onclick="moveWidget('w-ai', 1); event.stopPropagation();"><i class="ti ti-arrow-narrow-down"></i></button>
+              </div>
+            </div>
+            <div class="card" style="padding:16px; display:flex; flex-direction:column; gap:10px;">
+              <p style="font-size:13.5px; color:var(--muted)">เริ่มต้นการวินิจฉัยปัญหาของรถยนต์ร่วมกับ AI ผู้เชี่ยวชาญแบบส่วนตัว</p>
+              <button class="btn primary" onclick="openChat({})" style="width:fit-content; padding:8px 16px;"><i class="ti ti-message-chatbot"></i> เปิดห้องแชตผู้ช่วย</button>
+            </div>
+          </div>
+
+          <!-- Widget 4: Magazine feed (Optional) -->
+          <div class="widget" id="w-magazine" draggable="true" style="display:none;">
+            <div class="widget-header">
+              <span class="widget-drag-handle"><i class="ti ti-hand-grab"></i></span>
+              <h3 data-i18n="dash.widget_news">ข่าวสารล่าสุด</h3>
+              <div class="widget-actions">
+                <button class="widget-nav-btn" onclick="moveWidget('w-magazine', -1); event.stopPropagation();"><i class="ti ti-arrow-narrow-up"></i></button>
+                <button class="widget-nav-btn" onclick="moveWidget('w-magazine', 1); event.stopPropagation();"><i class="ti ti-arrow-narrow-down"></i></button>
+              </div>
+            </div>
+            <div id="w-magBody" class="card" style="padding:16px; border:none; box-shadow:none; background:transparent;">
+              <div style="text-align:center;color:var(--muted);padding:20px"><i class="ti ti-loader" style="font-size:24px"></i><br/><span data-i18n="mag.loading">กำลังโหลดข่าว...</span></div>
+            </div>
+          </div>
+
+          <!-- Widget 5: Theme settings (Optional) -->
+          <div class="widget" id="w-settings" draggable="true" style="display:none;">
+            <div class="widget-header">
+              <span class="widget-drag-handle"><i class="ti ti-hand-grab"></i></span>
+              <h3 data-i18n="dash.widget_settings">ตั้งค่าธีมและสี</h3>
+              <div class="widget-actions">
+                <button class="widget-nav-btn" onclick="moveWidget('w-settings', -1); event.stopPropagation();"><i class="ti ti-arrow-narrow-up"></i></button>
+                <button class="widget-nav-btn" onclick="moveWidget('w-settings', 1); event.stopPropagation();"><i class="ti ti-arrow-narrow-down"></i></button>
+              </div>
+            </div>
+            <div class="card" style="padding:16px; display:flex; flex-direction:column; gap:12px;">
+              <div>
+                <h4 style="font-size:13.5px; font-weight:700; margin-bottom:6px; color:var(--ink);" data-i18n="set.theme">ธีมระบบ</h4>
+                <div class="theme-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;">
+                  <button class="theme-btn warm" onclick="setTheme('warm')" style="background:#F6F3EC; height:36px; border-radius:10px;" title="Warm Clay"></button>
+                  <button class="theme-btn cyber" onclick="setTheme('cyber')" style="background:#0A0D1A; height:36px; border-radius:10px;" title="Deep Cyber"></button>
+                  <button class="theme-btn emerald" onclick="setTheme('emerald')" style="background:#EDF4F2; height:36px; border-radius:10px;" title="Emerald Mint"></button>
+                  <button class="theme-btn carbon" onclick="setTheme('carbon')" style="background:#1A1A1E; height:36px; border-radius:10px;" title="Carbon Red"></button>
+                </div>
+              </div>
+              <div>
+                <h4 style="font-size:13.5px; font-weight:700; margin-bottom:4px; color:var(--ink);" data-i18n="set.opacity">ความชัดเจนพื้นหลังการาจ</h4>
+                <input type="range" class="slider" min="0" max="0.6" step="0.05" id="wireframeOpacitySlider" oninput="setWireframeOpacity(this.value)" style="width:100%;">
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -276,11 +734,52 @@ a{color:inherit;text-decoration:none}button{font-family:inherit;cursor:pointer;b
         <h2 class="section-title" data-i18n="garage.title">การาจของฉัน</h2>
         <p class="section-sub" data-i18n="garage.sub">บันทึกรถของคุณ — ประวัติอาการที่เคยวินิจฉัยจะถูกเก็บไว้ในแต่ละคัน</p>
         <div id="garageList"></div>
-        <div class="card" style="margin-top:6px">
-          <h3 style="font-weight:700;margin-bottom:12px"><i class="ti ti-plus"></i> <span data-i18n="garage.add">เพิ่มรถ</span></h3>
-          <div class="grid2"><input class="input" id="gName" data-i18n-ph="garage.name" placeholder="ยี่ห้อ + รุ่น เช่น Honda Civic"/><input class="input" id="gYear" data-i18n-ph="garage.year" placeholder="ปี เช่น 2020"/></div>
-          <input class="input" id="gMileage" data-i18n-ph="garage.km" placeholder="เลขไมล์ปัจจุบัน (กม.)" style="margin-top:12px"/>
-          <button class="btn primary" id="gAdd" style="margin-top:12px"><i class="ti ti-plus"></i> <span data-i18n="garage.add">เพิ่มรถ</span></button>
+        <div class="card" style="margin-top:6px; overflow:visible;">
+          <h3 style="font-weight:700;margin-bottom:14px"><i class="ti ti-plus"></i> <span data-i18n="garage.add">เพิ่มรถ</span></h3>
+          
+          <div class="grid2" style="overflow:visible; margin-bottom:12px;">
+            <!-- Custom Dropdown: Make -->
+            <div class="custom-select" id="gMakeSelect">
+              <div class="custom-select-trigger" onclick="toggleCustomSelect('gMakeSelect')">
+                <span class="val" data-i18n="select.make">เลือกยี่ห้อ...</span>
+                <i class="ti ti-chevron-down"></i>
+              </div>
+              <div class="custom-select-options">
+                <input type="text" class="custom-select-search" placeholder="ค้นหายี่ห้อ..." oninput="filterCustomSelect('gMakeSelect', this.value)">
+                <div class="options-list" id="gMakeList"></div>
+              </div>
+            </div>
+
+            <!-- Custom Dropdown: Model -->
+            <div class="custom-select" id="gModelSelect">
+              <div class="custom-select-trigger disabled" id="gModelTrigger" onclick="toggleCustomSelect('gModelSelect')">
+                <span class="val" data-i18n="select.model">เลือกรุ่น...</span>
+                <i class="ti ti-chevron-down"></i>
+              </div>
+              <div class="custom-select-options">
+                <input type="text" class="custom-select-search" placeholder="ค้นหารุ่น..." oninput="filterCustomSelect('gModelSelect', this.value)">
+                <div class="options-list" id="gModelList"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid2" style="overflow:visible;">
+            <!-- Year Dropdown -->
+            <div class="custom-select" id="gYearSelect">
+              <div class="custom-select-trigger disabled" id="gYearTrigger" onclick="toggleCustomSelect('gYearSelect')">
+                <span class="val" data-i18n="select.year">เลือกปี...</span>
+                <i class="ti ti-chevron-down"></i>
+              </div>
+              <div class="custom-select-options">
+                <input type="text" class="custom-select-search" placeholder="ค้นหาปี..." oninput="filterCustomSelect('gYearSelect', this.value)">
+                <div class="options-list" id="gYearList"></div>
+              </div>
+            </div>
+            
+            <input class="input" id="gMileage" data-i18n-ph="garage.km" placeholder="เลขไมล์ปัจจุบัน (กม.)"/>
+          </div>
+
+          <button class="btn primary" id="gAdd" style="margin-top:14px"><i class="ti ti-plus"></i> <span data-i18n="garage.add">เพิ่มรถ</span></button>
         </div>
       </div>
     </section>
@@ -302,8 +801,35 @@ a{color:inherit;text-decoration:none}button{font-family:inherit;cursor:pointer;b
           <div><h2 id="pName" data-i18n="profile.guest">ผู้มาเยือน</h2><div class="em" id="pEmail" data-i18n="profile.guestsub">ยังไม่ได้เข้าสู่ระบบ</div>
             <span class="rolechip" id="pRole" style="display:none"><i class="ti ti-shield-check"></i> ผู้ดูแลระบบ</span></div>
         </div>
-        <div class="card set-card"><h3 data-i18n="set.lang">ภาษา / Language</h3><p class="d" data-i18n="set.langd">เลือกภาษาที่ใช้ในเว็บไซต์ (มีผลกับข้อความและ AI)</p>
-          <div class="seg" id="langSeg"><button data-l="th">ไทย</button><button data-l="en">English</button></div></div>
+        <div class="card set-card">
+          <h3 data-i18n="set.lang">ภาษา / Language</h3>
+          <p class="d" data-i18n="set.langd">เลือกภาษาที่ใช้ในเว็บไซต์ (มีผลกับข้อความและ AI)</p>
+          <div class="lang-grid" id="langSeg" style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px;">
+            <button class="btn" data-l="th">ไทย</button>
+            <button class="btn" data-l="en">English</button>
+            <button class="btn" data-l="ja">日本語</button>
+            <button class="btn" data-l="zh">中文</button>
+            <button class="btn" data-l="de">Deutsch</button>
+            <button class="btn" data-l="es">Español</button>
+          </div>
+        </div>
+        
+        <div class="card set-card">
+          <h3 data-i18n="set.theme">ธีมและสีของระบบ</h3>
+          <p class="d" data-i18n="set.themed">เลือกธีมสีที่ต้องการเปลี่ยนสำหรับเว็บไซต์</p>
+          <div class="theme-grid-profile" style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px; max-width:320px;">
+            <button class="btn theme-btn-p warm" onclick="setTheme('warm')" style="height:45px; border-radius:12px; background:#F6F3EC;" title="Warm Clay"></button>
+            <button class="btn theme-btn-p cyber" onclick="setTheme('cyber')" style="height:45px; border-radius:12px; background:#0A0D1A;" title="Deep Cyber"></button>
+            <button class="btn theme-btn-p emerald" onclick="setTheme('emerald')" style="height:45px; border-radius:12px; background:#EDF4F2;" title="Emerald Mint"></button>
+            <button class="btn theme-btn-p carbon" onclick="setTheme('carbon')" style="height:45px; border-radius:12px; background:#1A1A1E;" title="Carbon Red"></button>
+          </div>
+        </div>
+        
+        <div class="card set-card">
+          <h3 data-i18n="set.opacity">ความชัดเจนของพื้นหลังการาจ</h3>
+          <p class="d" data-i18n="set.opacityd">ปรับระดับความ visible ของเส้นโครงสร้างรถ 3D</p>
+          <input type="range" class="slider" min="0" max="0.6" step="0.05" id="profileOpacitySlider" oninput="setWireframeOpacity(this.value)" style="width:100%; margin-top:8px;">
+        </div>
         <div class="card set-card"><h3 data-i18n="set.account">บัญชี</h3><p class="d" data-i18n="set.accountd">เข้าสู่ระบบด้วย Google เพื่อใช้ Admin และจดจำข้อมูล</p>
           <div id="accountBox"></div></div>
         <div class="card set-card" id="adminCard" style="display:none">
@@ -321,17 +847,81 @@ a{color:inherit;text-decoration:none}button{font-family:inherit;cursor:pointer;b
 <button class="fab" id="fab"><i class="ti ti-message-chatbot"></i></button>
 <div class="drawer-bg" id="drawerBg"></div>
 <div class="drawer" id="drawer">
+  <!-- Fullscreen Navbar -->
+  <div class="fullscreen-navbar" id="fullscreenNavbar">
+    <button class="fs-nav-btn" onclick="openFullscreenModal('project')"><i class="ti ti-car-garage"></i> <span data-i18n="nav.garage">เลือกรถในการาจ</span></button>
+    <button class="fs-nav-btn" onclick="openFullscreenModal('settings')"><i class="ti ti-settings"></i> <span data-i18n="chat.clear_history">ล้างประวัติสนทนา</span></button>
+    <button class="fs-nav-btn close" onclick="toggleChatFullscreen()"><i class="ti ti-arrows-minimize"></i> <span data-i18n="dash.custom_done">ย่อจอ</span></button>
+  </div>
+
   <div class="drawer-head">
     <div class="dh-title"><i class="ti ti-sparkles"></i> <span data-i18n="chat.title">ผู้ช่วย AI</span></div>
     <select class="dh-car" id="carSel"></select>
+    <button class="dh-btn" id="chatExpand" onclick="toggleChatFullscreen()" style="font-size:18px; margin-right:4px; color:var(--muted);"><i class="ti ti-arrows-maximize"></i></button>
     <button class="dh-x" id="chatClose"><i class="ti ti-x"></i></button>
   </div>
+
   <div class="chat empty" id="chat">
-    <div class="rotating" id="rotating"></div>
-    <div class="thread" id="thread"></div>
-    <div class="suggests" id="suggests"></div>
+    <!-- Chat Starter View -->
+    <div class="chat-starter-view" id="chatStarterView">
+      <div class="starter-card">
+        <i class="ti ti-sparkles" style="font-size:42px; color:var(--accent);"></i>
+        <h3 style="font-family:var(--kd); font-weight:700; font-size:20px; margin-top:8px;" data-i18n="chat.title">ผู้ช่วย AI SpireONE</h3>
+        <p style="color:var(--muted); font-size:13.5px; margin-top:6px;" id="starterPromptText" data-i18n="chat.select_car_prompt">กรุณาเลือกรถในการเริ่มคุยเพื่อวิเคราะห์ปัญหา</p>
+        
+        <!-- Car Selector Trigger -->
+        <div id="starterCarBox" style="margin-top:16px; width:100%;"></div>
+
+        <!-- Two starter option buttons -->
+        <div id="starterOptionsBox" style="display:none; width:100%; margin-top:16px; flex-direction:column; gap:10px;">
+          <button class="btn primary" onclick="showChatInputOptions('diag')" style="justify-content:center; width:100%;"><i class="ti ti-stethoscope"></i> <span data-i18n="chat.diagnose_opt">วินิจฉัยปัญหาด่วน</span></button>
+          <button class="btn" onclick="showChatInputOptions('symptoms')" style="justify-content:center; width:100%; border-color:var(--accent); color:var(--accent);"><i class="ti ti-alert-triangle"></i> <span data-i18n="chat.symptom_opt">บอกอาการหรือปัญหา</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Diagnostic Suboptions View -->
+    <div class="chat-suboptions-view" id="chatDiagOptions" style="display:none; padding:20px; text-align:center;">
+      <button class="btn" onclick="backToStarter()" style="float:left; font-size:13px; padding:6px 12px; margin-bottom:14px;"><i class="ti ti-arrow-left"></i> ย้อนกลับ</button>
+      <div style="clear:both;"></div>
+      <h4 style="font-weight:700; margin-bottom:16px; color:var(--ink);" data-i18n="chat.diagnose_opt">เลือกวิธีวินิจฉัยปัญหารถด่วน</h4>
+      <div class="qa-grid" style="grid-template-columns:repeat(2,1fr); gap:12px; margin-bottom:0;">
+        <button class="qa" onclick="startChatMode('text')"><i class="ti ti-message-2 qa-deco" aria-hidden="true"></i><div class="qa-ic"><i class="ti ti-message-2"></i></div><div class="qa-t" data-i18n="qa.text">พิมพ์ถาม</div></button>
+        <button class="qa" onclick="startChatMode('image')"><i class="ti ti-camera qa-deco" aria-hidden="true"></i><div class="qa-ic"><i class="ti ti-camera"></i></div><div class="qa-t" data-i18n="qa.image">ถ่ายรูป</div></button>
+        <button class="qa" onclick="startChatMode('video')"><i class="ti ti-video qa-deco" aria-hidden="true"></i><div class="qa-ic"><i class="ti ti-video"></i></div><div class="qa-t" data-i18n="qa.video">วิดีโอ</div></button>
+        <button class="qa" onclick="startChatMode('mic')"><i class="ti ti-microphone qa-deco" aria-hidden="true"></i><div class="qa-ic"><i class="ti ti-microphone"></i></div><div class="qa-t" data-i18n="qa.mic">อัดเสียง</div></button>
+      </div>
+    </div>
+
+    <!-- Symptom Category Chooser View -->
+    <div class="chat-suboptions-view" id="chatSymptomCategories" style="display:none; padding:20px; text-align:center;">
+      <button class="btn" onclick="backToStarter()" style="float:left; font-size:13px; padding:6px 12px; margin-bottom:14px;"><i class="ti ti-arrow-left"></i> ย้อนกลับ</button>
+      <div style="clear:both;"></div>
+      <h4 style="font-weight:700; margin-bottom:16px; color:var(--ink);" data-i18n="chat.symptom_opt">กรุณาเลือกหมวดหมู่ของอาการ</h4>
+      <div class="symptom-category-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <button class="qa" onclick="showSymptomList('engine')"><div class="qa-ic" style="background:var(--accent);"><i class="ti ti-engine"></i></div><div class="qa-t" data-i18n="sym.engine">เครื่องยนต์</div></button>
+        <button class="qa" onclick="showSymptomList('ac')"><div class="qa-ic" style="background:#3A8CC5;"><i class="ti ti-wind"></i></div><div class="qa-t" data-i18n="sym.ac">ระบบแอร์</div></button>
+        <button class="qa" onclick="showSymptomList('gear')"><div class="qa-ic" style="background:#9B5DE0;"><i class="ti ti-settings-2"></i></div><div class="qa-t" data-i18n="sym.gear">ระบบเกียร์</div></button>
+        <button class="qa" onclick="showSymptomList('wheels')"><div class="qa-ic" style="background:#3E9E6E;"><i class="ti ti-steering-wheel"></i></div><div class="qa-t" data-i18n="sym.wheels">ล้อและยาง</div></button>
+      </div>
+    </div>
+
+    <!-- Specific Symptom List View -->
+    <div class="chat-suboptions-view" id="chatSymptomList" style="display:none; padding:20px;">
+      <button class="btn" onclick="backToSymptomCategories()" style="font-size:13px; padding:6px 12px; margin-bottom:14px;"><i class="ti ti-arrow-left"></i> ย้อนกลับ</button>
+      <h4 style="font-weight:700; margin-bottom:12px; color:var(--ink);" id="symptomListTitle">อาการยอดนิยม</h4>
+      <div class="symptom-buttons" id="symptomButtonsList" style="display:flex; flex-direction:column; gap:8px;"></div>
+    </div>
+
+    <!-- Active Chat Thread View -->
+    <div class="chat-thread-view" id="chatThreadView" style="display:none; flex:1; flex-direction:column; overflow:hidden;">
+      <div class="rotating" id="rotating"></div>
+      <div class="thread" id="thread"></div>
+      <div class="suggests" id="suggests"></div>
+    </div>
   </div>
-  <div class="composer" id="composer">
+
+  <div class="composer" id="composer" style="display:none;">
     <div class="atts" id="atts"></div>
     <div class="crow">
       <button class="att-btn" id="attImg" title="รูป"><i class="ti ti-photo"></i></button>
@@ -340,6 +930,15 @@ a{color:inherit;text-decoration:none}button{font-family:inherit;cursor:pointer;b
       <textarea id="chatInput" rows="1" data-i18n-ph="composer.ph" placeholder="พิมพ์อาการรถ หรือถามอะไรก็ได้..."></textarea>
       <button class="send-btn" id="sendBtn" disabled><i class="ti ti-arrow-up"></i></button>
     </div>
+  </div>
+</div>
+
+<!-- Fullscreen Overlay Modal -->
+<div class="fs-modal" id="fsModal" onclick="if(event.target===this) closeFsModal()">
+  <div class="card" style="width:100%; max-width:400px; padding:24px; position:relative; background:var(--surface); overflow:visible;">
+    <button style="position:absolute; top:12px; right:12px; font-size:20px; color:var(--muted);" onclick="closeFsModal()"><i class="ti ti-x"></i></button>
+    <h3 style="font-family:var(--kd); font-weight:700; margin-bottom:16px; color:var(--ink);" id="fsModalTitle">หัวข้อ</h3>
+    <div id="fsModalBody" style="display:flex; flex-direction:column; gap:10px;"></div>
   </div>
 </div>
 
@@ -364,6 +963,170 @@ const GEMINI_MODEL="gemini-2.5-flash";
 let auth=null,useFb=false;
 try{firebase.initializeApp(fbConfig);auth=firebase.auth();auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});useFb=true;}catch(e){console.warn("fb",e)}
 let currentUser=null,lang=LS.get("lang","th");
+let currentTheme = LS.get("theme", "warm");
+let wireframeOpacity = LS.get("opacity", 0.15);
+
+/* ===== VEHICLE CATALOG & SVGs ===== */
+const CAR_DATABASE = {
+  "Toyota": [
+    { name: "Corolla", type: "sedan", startYear: 1990 },
+    { name: "Fortuner", type: "suv", startYear: 2005 },
+    { name: "Hilux Revo", type: "pickup", startYear: 2015 },
+    { name: "Yaris", type: "hatchback", startYear: 2006 }
+  ],
+  "Honda": [
+    { name: "Civic", type: "sedan", startYear: 1990 },
+    { name: "CR-V", type: "suv", startYear: 1995 },
+    { name: "City", type: "sedan", startYear: 1996 },
+    { name: "Jazz", type: "hatchback", startYear: 2001 }
+  ],
+  "Mazda": [
+    { name: "Mazda 3", type: "sedan", startYear: 2004 },
+    { name: "CX-5", type: "suv", startYear: 2012 },
+    { name: "Mazda 2", type: "hatchback", startYear: 2007 }
+  ],
+  "Ford": [
+    { name: "Ranger", type: "pickup", startYear: 1998 },
+    { name: "Everest", type: "suv", startYear: 2003 }
+  ],
+  "BYD": [
+    { name: "Atto 3", type: "suv", startYear: 2022 },
+    { name: "Dolphin", type: "hatchback", startYear: 2021 }
+  ]
+};
+
+const WIREFRAME_SVGs = {
+  sedan: `<svg class="gcar-wireframe-bg" viewBox="0 0 100 60" fill="none" stroke="currentColor" stroke-width="0.8">
+    <path d="M10 42 L25 42 M25 42 A 8 8 0 0 1 41 42 L59 42 A 8 8 0 0 1 75 42 L90 42 M25 42 L32 28 L68 28 L75 42" stroke-dasharray="2 1" />
+    <circle cx="33" cy="42" r="8" stroke-dasharray="1 1" />
+    <circle cx="67" cy="42" r="8" stroke-dasharray="1 1" />
+    <path d="M15 45 L30 45 L35 30 L65 30 L70 45 L85 45" />
+    <path d="M32 28 L35 30 M68 28 L65 30" />
+    <path d="M10 42 L15 45 M90 42 L85 45" />
+    <line x1="0" y1="52" x2="100" y2="52" />
+    <line x1="20" y1="52" x2="15" y2="60" />
+    <line x1="40" y1="52" x2="38" y2="60" />
+    <line x1="60" y1="52" x2="62" y2="60" />
+    <line x1="80" y1="52" x2="85" y2="60" />
+  </svg>`,
+  suv: `<svg class="gcar-wireframe-bg" viewBox="0 0 100 60" fill="none" stroke="currentColor" stroke-width="0.8">
+    <path d="M8 42 L22 42 A 9 9 0 0 1 40 42 L60 42 A 9 9 0 0 1 78 42 L92 42 L92 24 L72 20 L30 20 L20 32 L8 36 Z" stroke-dasharray="2 1" />
+    <circle cx="31" cy="42" r="9" stroke-dasharray="1 1" />
+    <circle cx="69" cy="42" r="9" stroke-dasharray="1 1" />
+    <path d="M12 45 L27 45 A 9 9 0 0 1 45 45 L63 45 A 9 9 0 0 1 81 45 L88 45 L88 27 L69 23 L28 23 L20 35 M8 36 L12 40 M92 24 L88 27 M30 20 L28 23" />
+    <line x1="35" y1="18" x2="68" y2="18" />
+    <line x1="35" y1="18" x2="35" y2="20" />
+    <line x1="68" y1="18" x2="68" y2="20" />
+    <line x1="0" y1="53" x2="100" y2="53" />
+    <line x1="20" y1="53" x2="15" y2="60" />
+    <line x1="40" y1="53" x2="38" y2="60" />
+    <line x1="60" y1="53" x2="62" y2="60" />
+    <line x1="80" y1="53" x2="85" y2="60" />
+  </svg>`,
+  pickup: `<svg class="gcar-wireframe-bg" viewBox="0 0 100 60" fill="none" stroke="currentColor" stroke-width="0.8">
+    <path d="M8 42 L22 42 A 9 9 0 0 1 40 42 L60 42 A 9 9 0 0 1 78 42 L92 42 L92 30 L64 30 L58 20 L28 20 L20 32 L8 34 Z" stroke-dasharray="2 1" />
+    <circle cx="31" cy="42" r="9" stroke-dasharray="1 1" />
+    <circle cx="69" cy="42" r="9" stroke-dasharray="1 1" />
+    <path d="M12 45 L27 45 A 9 9 0 0 1 45 45 L63 45 A 9 9 0 0 1 81 45 L88 45 L88 33 L62 33 L57 23 L28 23 L20 35" />
+    <line x1="64" y1="30" x2="64" y2="42" stroke-dasharray="2 1" />
+    <line x1="62" y1="33" x2="62" y2="45" />
+    <line x1="0" y1="53" x2="100" y2="53" />
+    <line x1="20" y1="53" x2="15" y2="60" />
+    <line x1="40" y1="53" x2="38" y2="60" />
+    <line x1="60" y1="53" x2="62" y2="60" />
+    <line x1="80" y1="53" x2="85" y2="60" />
+  </svg>`,
+  hatchback: `<svg class="gcar-wireframe-bg" viewBox="0 0 100 60" fill="none" stroke="currentColor" stroke-width="0.8">
+    <path d="M10 42 L24 42 A 8 8 0 0 1 40 42 L60 42 A 8 8 0 0 1 76 42 L90 42 L88 28 L66 24 L34 24 L22 32 L10 36 Z" stroke-dasharray="2 1" />
+    <circle cx="32" cy="42" r="8" stroke-dasharray="1 1" />
+    <circle cx="68" cy="42" r="8" stroke-dasharray="1 1" />
+    <path d="M14 45 L28 45 A 8 8 0 0 1 44 45 L64 45 A 8 8 0 0 1 80 45 L86 45 L84 31 L64 27 L34 27 L22 35" />
+    <line x1="0" y1="52" x2="100" y2="52" />
+    <line x1="20" y1="52" x2="15" y2="60" />
+    <line x1="40" y1="52" x2="38" y2="60" />
+    <line x1="60" y1="52" x2="62" y2="60" />
+    <line x1="80" y1="52" x2="85" y2="60" />
+  </svg>`
+};
+
+function getBodyStyle(name) {
+  const lower = name.toLowerCase();
+  for (const make in CAR_DATABASE) {
+    for (const model of CAR_DATABASE[make]) {
+      if (lower.includes(model.name.toLowerCase())) {
+        return model.type;
+      }
+    }
+  }
+  return "sedan";
+}
+
+/* ===== SYMPTOMS DATABASE ===== */
+const SYMPTOMS_DATABASE = {
+  engine: {
+    title: ["อาการผิดปกติของเครื่องยนต์", "Engine Problems", "エンジン異常", "发动机异常", "Motorprobleme", "Problemas del motor"],
+    list: [
+      ["เครื่องสั่นสะท้านตอนเดินเบา", "Engine vibrates at idle", "アイドリング時にエンジンが振動する", "怠速时发动机抖动", "Motor vibriert im Leerlauf", "El motor vibra al ralentí"],
+      ["ควันไอเสียมีสีดำหรือขาวผิดปกติ", "Black or white exhaust smoke", "排気ガスが異常に黒または白である", "尾气呈异常黑烟或白烟", "Schwarzer oder weißer Auspuffrauch", "Humo de escape negro o blanco anormal"],
+      ["ความร้อนขึ้นเกินครึ่ง/เครื่องยนต์ร้อนจัด", "Engine overheating", "オーバーヒート気味/エンジン過熱", "发动机过热", "Motorüberhitzung", "Sobrecalentamiento del motor"],
+      ["สตาร์ทติดยากหรือสตาร์ทยาวผิดปกติ", "Hard to start or crank", "エンジンの始動が困難", "启动困难/打火时间过长", "Schwer zu starten", "Dificultad para arrancar"],
+      ["อาการอื่นๆ ของเครื่องยนต์", "Other engine symptoms", "その他のエンジン症状", "其他发动机症状", "Andere Motorsymptome", "Otros síntomas del motor"]
+    ]
+  },
+  ac: {
+    title: ["อาการผิดปกติของระบบแอร์", "A/C Problems", "エアコン異常", "空调系统异常", "Klimaanlagenprobleme", "Problemas del aire acondicionado"],
+    list: [
+      ["แอร์ไม่เย็น มีแต่ลมร้อนออก", "A/C not cold, only hot air", "エアコンが冷えない、温風が出る", "空调不制冷，只有热风", "Klimaanlage kühlt nicht, nur warme Luft", "El aire no enfría, solo sale aire caliente"],
+      ["แอร์มีกลิ่นอับชื้นหรือกลิ่นเหม็นไหม้", "Musty or burning A/C smell", "エアコンからカビ臭または焦げ臭がする", "空调有霉味或焦糊味", "Muffiger oder brandiger Geruch", "Olor a humedad o quemado"],
+      ["มีเสียงดังแก๊กๆ ตอนเปิดคอมแอร์", "Loud clicking noise when A/C turns on", "コンプレッサー始動時に異音がする", "开启空调时有异响", "Lautes Klicken beim Einschalten", "Ruido de clic fuerte al encender"],
+      ["มีลมแรงแต่ไม่สม่ำเสมอ", "Weak or inconsistent airflow", "風量が不安定", "风速不均匀", "Schwacher oder unregelmäßiger Luftstrom", "Flujo de aire débil o inconsistente"],
+      ["อาการอื่นๆ ของระบบแอร์", "Other A/C symptoms", "その他のエアコン症状", "其他空调症状", "Andere Klimasymptome", "Otros síntomas de aire acondicionado"]
+    ]
+  },
+  gear: {
+    title: ["อาการผิดปกติของระบบเกียร์", "Gearbox Problems", "ギアボックス異常", "变速箱异常", "Getriebeprobleme", "Problemas de la caja de cambios"],
+    list: [
+      ["เกียร์กระตุกเวลาจอดนิ่งรอเปลี่ยนเกียร์", "Gearbox jerking at idle", "停車中のギアシフト時に衝撃がある", "换挡时变速箱顿挫", "Getriebestöße im Stillstand", "Tirones de la caja al ralentí"],
+      ["เข้าเกียร์ยาก หรือเกียร์ไม่ยอมเปลี่ยน", "Hard to shift gears or no shifting", "ギアが入りにくい、変速しない", "挂挡困难或不自动换挡", "Schwer zu schalten oder kein Gangwechsel", "Dificultad para cambiar de marcha o no cambia"],
+      ["มีเสียงหอนดังขณะเร่งความเร็ว", "Whining sound when accelerating", "加速時にうなり音がする", "加速时有呼啸声", "Jaulendes Geräusch beim Beschleunigen", "Zumbido al acelerar"],
+      ["มีคราบน้ำมันเกียร์หยดรั่วซึมใต้ท้องรถ", "Gearbox oil leaking", "ギアオイル漏れの跡がある", "车底有变速箱油渗漏痕迹", "Getriebeöl leckt", "Fuga de aceite de la caja de cambios"],
+      ["อาการอื่นๆ ของระบบเกียร์", "Other gearbox symptoms", "その他のギアボックス症状", "其他变速箱症状", "Andere Getriebesymptome", "Otros síntomas de caja de cambios"]
+    ]
+  },
+  wheels: {
+    title: ["อาการผิดปกติของล้อและยาง", "Wheels & Tires Problems", "ホイール＆タイヤ異常", "车轮与轮胎异常", "Räder- & Reifenprobleme", "Problemas de ruedas y neumáticos"],
+    list: [
+      ["พวงมาลัยสั่นรุนแรงที่ความเร็วสูง", "Steering wheel vibrates at high speed", "高速走行時にハンドルが激しく振動する", "高速行驶时方向盘剧烈抖动", "Lenkrad vibriert bei hoher Geschwindigkeit", "El volante vibra a alta velocidad"],
+      ["มีเสียงดังเอี๊ยดหรือเสียงเหล็กเสียดสีเวลาเบรก", "Squeaking sound when braking", "ブレーキ時にキーキー音がする", "刹车时有尖锐摩擦声", "Quietschen beim Bremsen", "Chirrido al frenar"],
+      ["รถมีอาการเลื้อยหรือดึงพวงมาลัยไปข้างใดข้างหนึ่ง", "Car pulling to one side", "車が左右どちらかに流れる", "车辆行驶跑偏", "Auto zieht zu einer Seite", "El coche se desvía hacia un lado"],
+      ["แก้มยางบวม ร้าว หรือยางแบนแบนซึม", "Flat tire or cracked sidewall", "タイヤの側面が膨らんでいる、またはひび割れ", "轮胎鼓包、裂纹或慢漏气", "Platter Reifen oder Riss in der Seitenwand", "Neumático desinflado o grieta lateral"],
+      ["อาการอื่นๆ ของล้อและยาง", "Other wheel & tire symptoms", "その他のタイヤ症状", "其他轮胎症状", "Andere Reifen-Symptome", "Otros síntomas de neumáticos"]
+    ]
+  }
+};
+
+const CONTEXTUAL_SUGGESTIONS = {
+  suv: [
+    ["ตรวจเช็กช่วงล่างและโช้คอัพของรถ SUV", "Check SUV suspension and shock absorbers", "SUVのサスペンションとショックアブソーバーを点検する", "检查SUV的悬挂和避震器", "SUV-Aufhängung und Stoßdämpfer prüfen", "Verificar la suspensión y los amortiguadores del SUV"],
+    ["แนะนำยางสำหรับลุย/Offroad", "Recommend offroad tires for SUV", "SUV用オフロードタイヤの推奨", "推荐SUV越野轮胎", "Offroad-Reifen für SUV empfehlen", "Recomendar neumáticos todoterreno para SUV"],
+    ["ระบบขับเคลื่อน 4 ล้อบำรุงรักษาอย่างไร?", "How to maintain the 4WD system?", "4輪駆動システムのメンテナンス方法は？", "如何保养四驱系统？", "Wie wartet man das Allradsystem?", "¿Cómo mantener el sistema 4WD?"]
+  ],
+  sedan: [
+    ["ช่วงล่างหน้ามีเสียงดังกุกกักขณะเลี้ยว", "Front suspension clunks when turning", "コーナリング時にフロントサスペンションから異音がする", "转向时前悬挂有异响", "Vorderaufhängung klappert beim Abbiegen", "La suspensión delantera golpea al girar"],
+    ["พวงมาลัยสั่นเฉพะตอนเหยียบเบรก", "Steering vibrates only when braking", "ブレーキ時のみハンドルが振動する", "仅在刹车时方向盘抖动", "Lenkrad vibriert nur beim Bremsen", "El volante vibra solo al frenar"],
+    ["อาการรถเครื่องสั่นเวลาเหยียบคันเร่ง", "Engine shaking when pressing gas pedal", "アクセルペダルを踏むとエンジンが振動する", "踩油门时发动机抖动", "Motor vibriert beim Gasgeben", "El motor vibra al pisar el acelerador"]
+  ],
+  pickup: [
+    ["แหนบหลังมีเสียงดังเมื่อบรรทุกของหนัก", "Rear leaf springs squeak under heavy load", "積載時にリアの板バネから音がする", "重载时后钢板弹簧异响", "Hintere Blattfedern quietschen unter schwerer Last", "Las ballestas traseras chirrían bajo carga pesada"],
+    ["ความดันลมยางสำหรับรถกระบะบรรทุกหนัก", "Tire pressure for heavy load pickup", "過積載時のタイヤ空気圧の目安", "载重皮卡的轮胎气压建议", "Reifendruck für schwere Lasten am Pickup", "Presión de neumáticos para camioneta de carga pesada"],
+    ["วิธีตรวจอาการควันดำและการทำงานของเทอร์โบ", "Check black smoke and turbo charger function", "黒煙の確認とターボチャージャーの動作チェック", "如何检查黑烟与涡轮增压工作状态", "Schwarzen Rauch und Turboladerfunktion prüfen", "Comprobar el humo negro y la función del turbocompresor"]
+  ],
+  hatchback: [
+    ["วิธีช่วยประหยัดน้ำมันสำหรับขับในเมือง", "Fuel economy tips for city driving", "街乗りでの燃費向上テクニック", "市区行驶省油技巧", "Spritspartipps für den Stadtverkehr", "Consejos de ahorro de combustible para ciudad"],
+    ["อาการเกียร์อัตโนมัติ CVT กระตุกบ่อย", "CVT automatic gearbox jerking frequently", "CVTオートマチックトランスミッションの頻繁なショック", "无级变速箱（CVT）频繁抖动问题", "CVT-Automatikgetriebe ruckelt häufig", "Tirones frecuentes en la caja automática CVT"],
+    ["เช็กระยะเปลี่ยนผ้าเบรกและน้ำมันเบรก", "Check brake pads and fluid interval", "ブレーキパッドとフルードの交換時期", "刹车片与刹车油更换周期", "Bremsbeläge und Bremsflüssigkeitsintervall prüfen", "Intervalo de cambio de pastillas y líquido de frenos"]
+  ]
+};
 
 /* ===== GEMINI ===== */
 async function gemini(contents,opts){opts=opts||{};
@@ -379,31 +1142,122 @@ function gParse(t){if(!t)return null;let s=t.replace(/```json/gi,"").replace(/``
 const blobB64=b=>new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result.split(",")[1]);r.readAsDataURL(b)});
 
 /* ===== i18n ===== */
+const LANG_INDEXES = { th: 0, en: 1, ja: 2, zh: 3, de: 4, es: 5 };
 const T={
- "nav.home":["หน้าหลัก","Home"],"nav.garage":["การาจ","Garage"],"nav.magazine":["นิตยสาร","Magazine"],
- "signin":["เข้าสู่ระบบ","Sign in"],"menu.profile":["โปรไฟล์ & ตั้งค่า","Profile & Settings"],"menu.logout":["ออกจากระบบ","Log out"],
- "dash.sub":["เลือกวิธีวินิจฉัย หรือกดวินิจฉัยรถในการาจของคุณได้เลย","Pick a way to diagnose, or tap a car in your garage"],
- "dash.cars":["รถของฉัน","My cars"],"dash.manage":["จัดการ →","Manage →"],
- "qa.text":["พิมพ์ถาม","Type"],"qa.image":["ถ่ายรูป","Photo"],"qa.video":["วิดีโอ","Video"],"qa.mic":["อัดเสียง","Voice"],
- "chat.title":["ผู้ช่วย AI","AI Assistant"],"composer.ph":["พิมพ์อาการรถ หรือถามอะไรก็ได้...","Describe a car issue or ask anything..."],
- "garage.title":["การาจของฉัน","My Garage"],"garage.sub":["บันทึกรถของคุณ — ประวัติอาการที่เคยวินิจฉัยจะถูกเก็บไว้ในแต่ละคัน","Save your cars — past diagnosis history is kept per car"],
- "garage.add":["เพิ่มรถ","Add car"],"garage.name":["ยี่ห้อ + รุ่น เช่น Honda Civic","Make + model e.g. Honda Civic"],"garage.year":["ปี เช่น 2020","Year e.g. 2020"],"garage.km":["เลขไมล์ปัจจุบัน (กม.)","Current mileage (km)"],
- "garage.empty":["ยังไม่มีรถ — เพิ่มคันแรกด้านล่าง","No cars yet — add your first below"],"garage.hist":["ประวัติการวินิจฉัย","Diagnosis history"],"garage.nohist":["ยังไม่มีประวัติ ลองถาม AI ดู","No history yet — ask the AI"],
- "mag.title":["นิตยสารรถยนต์","Car Magazine"],"mag.sub":["ข่าวสารและบทความรถยนต์ล่าสุด — ดึงสดด้วย Gemini","Latest car news & articles — live via Gemini"],"mag.loading":["กำลังโหลดข่าวล่าสุด...","Loading latest..."],
- "profile.guest":["ผู้มาเยือน","Guest"],"profile.guestsub":["ยังไม่ได้เข้าสู่ระบบ","Not signed in"],
- "set.lang":["ภาษา / Language","Language"],"set.langd":["เลือกภาษาที่ใช้ในเว็บไซต์ (มีผลกับข้อความและ AI)","Choose the site & AI language"],
- "set.account":["บัญชี","Account"],"set.accountd":["เข้าสู่ระบบด้วย Google เพื่อใช้ Admin และจดจำข้อมูล","Sign in with Google for Admin & sync"],
- "set.admind":["ภาพรวมผู้ใช้งานทั้งหมด (เฉพาะผู้ดูแล)","All users overview (admins only)"]
+ "nav.home":["หน้าหลัก","Home","ホーム","首页","Startseite","Inicio"],
+ "nav.garage":["การาจ","Garage","ガレージ","车库","Garage","Garaje"],
+ "nav.magazine":["นิตยสาร","Magazine","マガジン","杂志","Magazin","Revista"],
+ "signin":["เข้าสู่ระบบ","Sign in","ログイン","登录","Einloggen","Iniciar Sesión"],
+ "menu.profile":["โปรไฟล์ & ตั้งค่า","Profile & Settings","プロファイル & 設定","个人资料 & 设置","Profil & Einstellungen","Perfil & Configuración"],
+ "menu.logout":["ออกจากระบบ","Log out","ログアウト","退出登录","Abmelden","Cerrar Sesión"],
+ "dash.sub":["เลือกวิธีวินิจฉัย หรือกดวินิจฉัยรถในการาจของคุณได้เลย","Pick a way to diagnose, or tap a car in your garage","診断方法を選択するか、ガレージの車をタップしてください","选择诊断方式，或点击车库中的车辆","Wählen Sie eine Diagnosemethode oder tippen Sie auf ein Auto in Ihrer Garage","Elija un método de diagnóstico o toque un automóvil en su garaje"],
+ "dash.cars":["รถของฉัน","My cars","マイカー","我的车辆","Meine Autos","Mis coches"],
+ "dash.manage":["จัดการ →","Manage →","管理 →","管理 →","Verwalten →","Administrar →"],
+ "dash.customize":["แต่งหน้าหลัก","Customize Layout","レイアウト編集","自定义布局","Layout anpassen","Personalizar diseño"],
+ "dash.custom_done":["เสร็จสิ้น","Done","完了","完成","Fertig","Hecho"],
+ "dash.widget_ai":["ผู้ช่วย AI (ด่วน)","Quick AI Assistant","クイックAIアシスタント","快捷AI助手","Schneller KI-Assistent","Asistente rápido de IA"],
+ "dash.widget_news":["ข่าวสารล่าสุด","Latest News","最新ニュース","最新消息","Neueste Nachrichten","Últimas Noticias"],
+ "dash.widget_settings":["ตั้งค่าธีมและสี","Theme & Settings","テーマ & 設定","主题 & 设置","Design & Einstellungen","Temas y Ajustes"],
+ "qa.text":["พิมพ์ถาม","Type","テキスト入力","文字输入","Tippen","Escribir"],
+ "qa.image":["ถ่ายรูป","Photo","写真撮影","照片上传","Foto","Foto"],
+ "qa.video":["วิดีโอ","Video","動画撮影","视频上传","Video","Video"],
+ "qa.mic":["อัดเสียง","Voice","音声録音","语音输入","Sprachaufnahme","Voz"],
+ "chat.title":["ผู้ช่วย AI","AI Assistant","AIアシスタント","AI助手","KI-Assistent","Asistente de IA"],
+ "composer.ph":["พิมพ์อาการรถ หรือถามอะไรก็ได้...","Describe a car issue or ask anything...","車の症状を入力するか、何でも質問してください...","描述车辆症状或提问...","Beschreiben Sie ein Autoproblem oder fragen Sie etwas...","Describa un problema del automóvil o pregunte algo..."],
+ "chat.select_car_prompt":["กรุณาเลือกรถในการาจเพื่อเริ่มคุยกับ AI","Please select a car in your garage to chat with AI","AIと対話するにはガレージから車を選択してください","请在车库中选择一辆车以与AI对话","Bitte wählen Sie ein Auto in Ihrer Garage aus, um mit der KI zu chatten","Seleccione un automóvil en su garaje para chatear con la IA"],
+ "chat.diagnose_opt":["วินิจฉัยปัญหารถ","Diagnose Car","車を診断する","诊断车辆","Auto diagnostizieren","Diagnosticar coche"],
+ "chat.symptom_opt":["บอกอาการหรือปัญหา","Report Symptoms","症状を報告する","报告症状","Symptome melden","Reportar síntomas"],
+ "chat.clear_history":["ล้างประวัติคุย","Clear History","履歴を消去","清除历史","Verlauf löschen","Limpiar historial"],
+ "chat.clear_confirm":["ยืนยันล้างประวัติสำหรับรถคันนี้หรือไม่?","Are you sure you want to clear chat history for this car?","この車のチャット履歴を消去してもよろしいですか？","您确定要清除这辆车的聊天历史吗？","Sind Sie sicher, dass Sie den Chatverlauf für dieses Auto löschen möchten?","¿Está seguro de que desea borrar el historial de chat de este automóvil?"],
+ "garage.title":["การาจของฉัน","My Garage","マイガレージ","我的车库","Meine Garage","Mi Garaje"],
+ "garage.sub":["บันทึกรถของคุณ — ประวัติอาการที่เคยวินิจฉัยจะถูกเก็บไว้ในแต่ละคัน","Save your cars — past diagnosis history is kept per car","車を登録する — 過去の診断履歴は車ごとに保存されます","保存您的车辆 — 历史诊断记录将按车保存","Speichern Sie Ihre Autos — die bisherige Diagnosehistorie wird pro Auto gespeichert","Guarde sus autos: el historial de diagnóstico anterior se guarda por auto"],
+ "garage.add":["เพิ่มรถ","Add car","車を追加","添加车辆","Auto hinzufügen","Añadir coche"],
+ "garage.name":["ยี่ห้อ + รุ่น เช่น Honda Civic","Make + model e.g. Honda Civic","メーカー＋車種（例：ホンダ・シビック）","品牌+车型，例如 本田思域","Marke + Modell, z. B. Honda Civic","Marca + modelo p. ej. Honda Civic"],
+ "garage.year":["ปี เช่น 2020","Year e.g. 2020","年式（例：2020）","年份，例如 2020","Jahr, z. B. 2020","Año, p. ej. 2020"],
+ "garage.km":["เลขไมล์ปัจจุบัน (กม.)","Current mileage (km)","現在の走行距離 (km)","当前里程（公里）","Aktueller Kilometerstand (km)","Kilometraje actual (km)"],
+ "garage.empty":["ยังไม่มีรถ — เพิ่มคันแรกด้านล่าง","No cars yet — add your first below","車が登録されていません。以下から追加してください","暂无车辆 — 在下方添加您的第一辆车","Noch keine Autos — fügen Sie unten Ihr erstes hinzu","Aún no hay autos: agregue el primero a continuación"],
+ "garage.hist":["ประวัติการวินิจฉัย","Diagnosis history","診断履歴","诊断历史","Diagnosehistorie","Historial de diagnóstico"],
+ "garage.nohist":["ยังไม่มีประวัติ ลองถาม AI ดู","No history yet — ask the AI","履歴がありません。AIに質問してみましょう","暂无历史 — 咨询AI试试","Noch kein Verlauf — fragen Sie die KI","Aún no hay historial — pregúntele a la IA"],
+ "mag.title":["นิตยสารรถยนต์","Car Magazine","カーマガジン","汽车杂志","Automagazin","Revista de Coches"],
+ "mag.sub":["ข่าวสารและบทความรถยนต์ล่าสุด — ดึงสดด้วย Gemini","Latest car news & articles — live via Gemini","最新の自動車ニュース＆記事 — Geminiでリアルタイム取得","最新汽车新闻与文章 — 通过Gemini实时获取","Aktuelle Autonews & Artikel — live via Gemini","Últimas noticias y artículos de automóviles: en vivo a través de Gemini"],
+ "mag.loading":["กำลังโหลดข่าวล่าสุด...","Loading latest...","最新情報を読み込み中...","正在加载最新消息...","Lade aktuelle Nachrichten...","Cargando últimas noticias..."],
+ "profile.guest":["ผู้มาเยือน","Guest","ゲスト","访客","Gast","Invitado"],
+ "profile.guestsub":["ยังไม่ได้เข้าสู่ระบบ","Not signed in","未ログイン","未登录","Nicht angemeldet","No ha iniciado sesión"],
+ "set.lang":["ภาษา / Language","Language","言語 / Language","语言 / Language","Sprache / Language","Idioma / Language"],
+ "set.langd":["เลือกภาษาที่ใช้ในเว็บไซต์ (มีผลกับข้อความและ AI)","Choose the site & AI language","サイトとAIの言語を選択します","选择网站和AI语言","Wählen Sie die Website- & KI-Sprache","Elija el idioma del sitio y de la IA"],
+ "set.theme":["ธีมและสีของระบบ","System Theme & Color","システムテーマとカラー","系统主题与颜色","System-Design & Farbe","Tema y color del sistema"],
+ "set.themed":["เลือกธีมสีที่ต้องการเปลี่ยนสำหรับเว็บไซต์","Choose your preferred layout color theme","お好みのカラーテーマを選択してください","选择您喜欢的色彩主题","Wählen Sie Ihr bevorzugt Farbedesign","Elija su tema de color preferido"],
+ "set.opacity":["ความชัดเจนของพื้นหลังการาจ","Garage Card Wireframe Opacity","ガレージカード背景の不透明度","车库卡片背景不透明度","Deckkraft der Garagenkarten-Drahtgitter","Opacidad de la estructura de la tarjeta de garaje"],
+ "set.opacityd":["ปรับระดับความ visible ของเส้นโครงสร้างรถ 3D","Adjust visibility level of the 3D car outlines","3D車のワイヤーフレームの視認性を調整します","调整3D车辆轮廓的可见度","Stellen Sie die Sichtbarkeit der 3D-Autoumrisse ein","Ajuste el nivel de visibilidad de los contornos 3D del coche"],
+ "set.account":["บัญชี","Account","アカウント","账户","Konto","Cuenta"],
+ "set.accountd":["เข้าสู่ระบบด้วย Google เพื่อใช้ Admin และจดจำข้อมูล","Sign in with Google for Admin & sync","管理機能と同期を使用するにはGoogleでサインインしてください","使用Google登录以获得管理员功能和同步","Melden Sie sich mit Google für Admin & Synchronisierung an","Inicie sesión con Google para administración y sincronización"],
+ "set.admind":["ภาพรวมผู้ใช้งานทั้งหมด (เฉพาะผู้ดูแล)","All users overview (admins only)","全ユーザーの概要（管理者のみ）","所有用户概览（仅限管理员）","Gesamtübersicht der Benutzer (nur Admins)","Descripción general de todos los usuarios (solo administradores)"],
+ "select.make":["เลือกยี่ห้อ...","Select Make...","メーカーを選択...","选择品牌...","Marke wählen...","Seleccionar Marca..."],
+ "select.model":["เลือกรุ่น...","Select Model...","車種を選択...","选择车型...","Modell wählen...","Seleccionar Modelo..."],
+ "select.year":["เลือกปี...","Select Year...","年式を選択...","选择年份...","Jahr wählen...","Seleccionar Año..."],
+ "sym.engine":["เครื่องยนต์","Engine","エンジン","发动机","Motor","Motor"],
+ "sym.ac":["ระบบแอร์","A/C System","エアコン","空调系统","Klimaanlage","Aire Acondicionado"],
+ "sym.gear":["ระบบเกียร์","Gearbox","ギアボックス","变速箱","Getriebe","Caja de cambios"],
+ "sym.wheels":["ล้อและยาง","Wheels & Tires","ホイール & タイヤ","车轮与轮胎","Räder & Reifen","Ruedas y Llantas"]
 };
-const HEADS={th:["วันนี้รถเป็นยังไงบ้าง?","มีอาการอะไรให้ช่วยดูไหม?","อยากรู้อะไรเกี่ยวกับรถ?","เล่าปัญหารถให้ฟังหน่อย"],en:["What's your mood?","Any problem to solve?","How's your car today?","Tell me what's wrong"]};
-const SUGS={th:["ไฟเตือนเครื่องยนต์ขึ้น","มีเสียงดังตอนเบรก","สตาร์ทไม่ติด","เครื่องสั่นตอนเดินเบา"],en:["Check-engine light is on","Squeak when braking","Won't start","Idle vibration"]};
-function tr(k){const v=T[k];return v?v[lang==="en"?1:0]:k}
-function applyLang(l){lang=l;LS.set("lang",l);document.documentElement.lang=l;const i=l==="en"?1:0;
-  document.querySelectorAll("[data-i18n]").forEach(e=>{const v=T[e.dataset.i18n];if(v)e.textContent=v[i]});
-  document.querySelectorAll("[data-i18n-ph]").forEach(e=>{const v=T[e.dataset.i18nPh];if(v)e.placeholder=v[i]});
-  renderSugs();renderCarSel();renderLangSeg();renderGarage();renderDashboard();}
-function renderLangSeg(){document.querySelectorAll("#langSeg button").forEach(b=>b.classList.toggle("on",b.dataset.l===lang))}
-$("langSeg").addEventListener("click",e=>{const b=e.target.closest("[data-l]");if(b)applyLang(b.dataset.l)});
+const HEADS={
+  th:["วันนี้รถเป็นยังไงบ้าง?","มีอาการอะไรให้ช่วยดูไหม?","อยากรู้อะไรเกี่ยวกับรถ?","เล่าปัญหารถให้ฟังหน่อย"],
+  en:["What's your mood?","Any problem to solve?","How's your car today?","Tell me what's wrong"],
+  ja:["今日の愛車の調子はいかがですか？","何かお困りのことはありますか？","車について何が知りたいですか？","車のトラブルを教えてください"],
+  zh:["今天您的爱车怎么样？","有什么问题需要解决吗？","想了解关于汽车的什么？","能告诉我您的车辆有什么问题吗"],
+  de:["Wie geht es Ihrem Auto heute?","Gibt es ein Problem zu lösen?","Was möchten Sie wissen?","Erzählen Sie mir, was nicht stimmt"],
+  es:["¿Cómo está su coche hoy?","¿Algún problema que resolver?","¿Qué desea saber sobre su coche?","Dígame qué le ocurre a su vehículo"]
+};
+const SUGS={
+  th:["ไฟเตือนเครื่องยนต์ขึ้น","มีเสียงดังตอนเบรก","สตาร์ทไม่ติด","เครื่องสั่นตอนเดินเบา"],
+  en:["Check-engine light is on","Squeak when braking","Won't start","Idle vibration"],
+  ja:["エンジン警告灯が点灯した","ブレーキ時に異音がする","エンジンがかからない","アイドリング時の振動"],
+  zh:["发动机故障灯亮起","刹车时有异响","无法启动","怠速时抖动"],
+  de:["Motorkontrollleuchte leuchtet","Quietschen beim Bremsen","Startet nicht","Vibrationen im Leerlauf"],
+  es:["Luz de motor encendida","Chirrido al frenar","No arranca","Vibración en ralentí"]
+};
+
+function tr(k) {
+  const v = T[k];
+  if (!v) return k;
+  const idx = LANG_INDEXES[lang] ?? 0;
+  return v[idx] || v[0] || k;
+}
+
+function applyLang(l){
+  lang = l;
+  LS.set("lang", l);
+  document.documentElement.lang = l;
+  const i = LANG_INDEXES[l] ?? 0;
+  
+  document.querySelectorAll("[data-i18n]").forEach(e=>{
+    const v = T[e.dataset.i18n];
+    if (v) e.textContent = v[i];
+  });
+  
+  document.querySelectorAll("[data-i18n-ph]").forEach(e=>{
+    const v = T[e.dataset.i18nPh];
+    if (v) e.placeholder = v[i];
+  });
+  
+  renderSugs();
+  renderCarSel();
+  renderLangSeg();
+  renderGarage();
+  renderDashboard();
+  updateChatUIState();
+}
+
+function renderLangSeg(){
+  document.querySelectorAll("#langSeg button").forEach(b => {
+    b.classList.toggle("active", b.dataset.l === lang);
+  });
+}
+
+$("langSeg").addEventListener("click", e => {
+  const b = e.target.closest("[data-l]");
+  if (b) applyLang(b.dataset.l);
+});
 
 /* ===== NAV / VIEW ===== */
 function moveInd(){const ind=$("navInd"),a=document.querySelector(".nav-links a.active");if(!ind||!a)return;ind.style.width=a.offsetWidth+"px";ind.style.transform=`translate(${a.offsetLeft}px,-50%)`}
@@ -421,34 +1275,622 @@ document.addEventListener("click",e=>{const n=e.target.closest("[data-view]");if
 $("avatarBtn").onclick=e=>{e.stopPropagation();$("dd").classList.toggle("show")};
 document.addEventListener("click",e=>{if(!e.target.closest(".nav-right"))$("dd").classList.remove("show")});
 
+/* ===== CUSTOM WIDGETS LAYOUT ===== */
+let widgetOrder = LS.get("widgetOrder", ["w-cars", "w-quick-actions", "w-ai", "w-magazine", "w-settings"]);
+let widgetToggles = LS.get("widgetToggles", { "w-ai": false, "w-magazine": true, "w-settings": true });
+let editMode = false;
+
+function applyWidgetLayout() {
+  const grid = $("widgetGrid");
+  if (!grid) return;
+  
+  // Sort widgets in DOM
+  const widgets = Array.from(grid.children);
+  widgetOrder.forEach(id => {
+    const w = widgets.find(x => x.id === id);
+    if (w) grid.appendChild(w);
+  });
+  
+  // Apply toggles
+  for (const id in widgetToggles) {
+    const el = $(id);
+    if (el) el.style.display = widgetToggles[id] ? "block" : "none";
+    const chk = $("chk-" + id.replace("w-", ""));
+    if (chk) chk.checked = widgetToggles[id];
+  }
+}
+
+function saveWidgetLayout() {
+  const grid = $("widgetGrid");
+  if (!grid) return;
+  const order = Array.from(grid.children).map(x => x.id);
+  LS.set("widgetOrder", order);
+  widgetOrder = order;
+}
+
+function toggleWidget(id, show) {
+  widgetToggles[id] = show;
+  LS.set("widgetToggles", widgetToggles);
+  const el = $(id);
+  if (el) el.style.display = show ? "block" : "none";
+}
+
+function toggleEditMode() {
+  editMode = !editMode;
+  const grid = $("widgetGrid");
+  const btn = $("customizeBtn");
+  const panel = $("customizePanel");
+  
+  if (grid) grid.classList.toggle("edit-mode", editMode);
+  if (panel) panel.style.display = editMode ? "block" : "none";
+  
+  if (btn) {
+    btn.innerHTML = editMode 
+      ? `<i class="ti ti-check"></i> <span data-i18n="dash.custom_done">เสร็จสิ้น</span>` 
+      : `<i class="ti ti-adjustments-alt"></i> <span data-i18n="dash.customize">แต่งหน้าหลัก</span>`;
+    applyLang(lang);
+  }
+}
+
+function moveWidget(id, dir) {
+  const grid = $("widgetGrid");
+  const el = $(id);
+  if (!grid || !el) return;
+  
+  const children = Array.from(grid.children);
+  const idx = children.indexOf(el);
+  const newIdx = idx + dir;
+  
+  if (newIdx >= 0 && newIdx < children.length) {
+    if (dir === 1) {
+      grid.insertBefore(el, children[newIdx].nextSibling);
+    } else {
+      grid.insertBefore(el, children[newIdx]);
+    }
+    saveWidgetLayout();
+  }
+}
+
+function initWidgetDragging() {
+  const grid = $("widgetGrid");
+  if (!grid) return;
+  
+  let dragEl = null;
+  grid.addEventListener("dragstart", e => {
+    if (!editMode) {
+      e.preventDefault();
+      return;
+    }
+    const widget = e.target.closest(".widget");
+    if (!widget) return;
+    dragEl = widget;
+    widget.classList.add("dragging");
+    e.dataTransfer.effectAllowed = "move";
+  });
+  
+  grid.addEventListener("dragover", e => {
+    if (!editMode || !dragEl) return;
+    e.preventDefault();
+    const widget = e.target.closest(".widget");
+    if (!widget || widget === dragEl) return;
+    
+    const rect = widget.getBoundingClientRect();
+    const next = (e.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
+    grid.insertBefore(dragEl, next ? widget.nextSibling : widget);
+  });
+  
+  grid.addEventListener("dragend", e => {
+    if (dragEl) {
+      dragEl.classList.remove("dragging");
+      dragEl = null;
+      saveWidgetLayout();
+    }
+  });
+}
+
+/* ===== CUSTOM SEARCHABLE SELECT DROPDOWNS ===== */
+let selectedMake = "";
+let selectedModel = null;
+let selectedYear = "";
+
+function initCustomSelects() {
+  const makeList = $("gMakeList");
+  if (!makeList) return;
+  
+  makeList.innerHTML = Object.keys(CAR_DATABASE).map(make => 
+    `<div class="option-item" onclick="selectMake('${make}')">${esc(make)}</div>`
+  ).join("");
+  
+  document.addEventListener("click", e => {
+    if (!e.target.closest(".custom-select")) {
+      document.querySelectorAll(".custom-select").forEach(el => el.classList.remove("active"));
+    }
+  });
+}
+
+function toggleCustomSelect(id) {
+  const el = $(id);
+  const trigger = el.querySelector(".custom-select-trigger");
+  if (trigger.classList.contains("disabled")) return;
+  
+  document.querySelectorAll(".custom-select").forEach(other => {
+    if (other.id !== id) other.classList.remove("active");
+  });
+  
+  el.classList.toggle("active");
+  if (el.classList.contains("active")) {
+    const searchInput = el.querySelector(".custom-select-search");
+    if (searchInput) {
+      searchInput.value = "";
+      filterCustomSelect(id, "");
+      searchInput.focus();
+    }
+  }
+}
+
+function filterCustomSelect(id, query) {
+  const el = $(id);
+  const items = el.querySelectorAll(".option-item");
+  items.forEach(item => {
+    const matches = item.textContent.toLowerCase().includes(query.toLowerCase());
+    item.style.display = matches ? "block" : "none";
+  });
+}
+
+function selectMake(make) {
+  selectedMake = make;
+  selectedModel = null;
+  selectedYear = "";
+  
+  const makeSelect = $("gMakeSelect");
+  makeSelect.querySelector(".val").textContent = make;
+  makeSelect.classList.remove("active");
+  
+  const modelTrigger = $("gModelTrigger");
+  modelTrigger.classList.remove("disabled");
+  modelTrigger.querySelector(".val").textContent = tr("select.model");
+  
+  const yearTrigger = $("gYearTrigger");
+  yearTrigger.classList.add("disabled");
+  yearTrigger.querySelector(".val").textContent = tr("select.year");
+  
+  const modelList = $("gModelList");
+  modelList.innerHTML = CAR_DATABASE[make].map(model => 
+    `<div class="option-item" onclick="selectModel('${model.name}', '${model.type}', ${model.startYear})">${esc(model.name)}</div>`
+  ).join("");
+}
+
+function selectModel(modelName, type, startYear) {
+  selectedModel = { name: modelName, type: type, startYear: startYear };
+  selectedYear = "";
+  
+  const modelSelect = $("gModelSelect");
+  modelSelect.querySelector(".val").textContent = modelName;
+  modelSelect.classList.remove("active");
+  
+  const yearTrigger = $("gYearTrigger");
+  yearTrigger.classList.remove("disabled");
+  yearTrigger.querySelector(".val").textContent = tr("select.year");
+  
+  const currentYear = new Date().getFullYear();
+  const years = [];
+  for (let y = currentYear; y >= startYear; y--) {
+    years.push(y);
+  }
+  
+  const yearList = $("gYearList");
+  yearList.innerHTML = years.map(y => 
+    `<div class="option-item" onclick="selectYear(${y})">${y}</div>`
+  ).join("");
+}
+
+function selectYear(year) {
+  selectedYear = year.toString();
+  const yearSelect = $("gYearSelect");
+  yearSelect.querySelector(".val").textContent = year;
+  yearSelect.classList.remove("active");
+}
+
+/* ===== SYSTEM THEME & COLOR SETTINGS ===== */
+function setTheme(theme) {
+  currentTheme = theme;
+  LS.set("theme", theme);
+  document.documentElement.setAttribute("data-theme", theme);
+  
+  document.querySelectorAll(".theme-btn, .theme-btn-p").forEach(btn => {
+    btn.classList.toggle("active", btn.classList.contains(theme));
+  });
+}
+
+function setWireframeOpacity(val) {
+  wireframeOpacity = val;
+  LS.set("opacity", val);
+  document.documentElement.style.setProperty("--wireframe-opacity", val);
+  
+  const s1 = $("wireframeOpacitySlider");
+  const s2 = $("profileOpacitySlider");
+  if (s1) s1.value = val;
+  if (s2) s2.value = val;
+}
+
 /* ===== GREETING + DASHBOARD ===== */
 function updateGreeting(){const el=$("greet");if(!el)return;const h=new Date().getHours();
   const g=lang==="en"?(h<12?"Good morning":h<17?"Good afternoon":"Good evening"):(h<11?"สวัสดีตอนเช้า":h<16?"สวัสดีตอนบ่าย":h<19?"สวัสดีตอนเย็น":"สวัสดีตอนค่ำ");
   const name=currentUser?currentUser.name:"";
   el.innerHTML=`${g}${name?(lang==="en"?", "+esc(name):" คุณ "+esc(name)):""} <span class="w">👋</span>`}
-function renderDashboard(){updateGreeting();renderDashCars()}
+
+function renderDashboard(){
+  updateGreeting();
+  renderDashCars();
+  applyWidgetLayout();
+  // Sync the magazine preview widget if visible
+  if (widgetToggles["w-magazine"] && typeof loadMag === "function") {
+    // Render widget body using the main loadMag data or a preview
+    setTimeout(() => {
+      const wMag = $("w-magBody");
+      const mainMag = $("magBody");
+      if (wMag && mainMag && mainMag.innerHTML !== "") {
+        wMag.innerHTML = mainMag.innerHTML;
+      } else {
+        loadMag();
+      }
+    }, 100);
+  }
+}
+
 function renderDashCars(){const w=$("dashCars");if(!w)return;const g=garage();
+  if(!g.length) {
+    w.innerHTML = `<div class="cadd" data-view="garage"><i class="ti ti-plus" style="font-size:26px"></i><span>${lang==="en"?"Add a car":"เพิ่มรถ"}</span></div>`;
+    return;
+  }
   let html=g.map(c=>{const last=(c.history&&c.history[0])||null;
+    const style = getBodyStyle(c.name);
+    const wireframe = WIREFRAME_SVGs[style] || WIREFRAME_SVGs.sedan;
     const stat=last?`<div class="cstatus"><span class="dot"></span>${lang==="en"?"Last checked":"ตรวจล่าสุด"}: ${new Date(last.t).toLocaleDateString(lang==="en"?"en-US":"th-TH",{day:"numeric",month:"short"})}</div>`
       :`<div class="cstatus warn"><span class="dot"></span>${lang==="en"?"Never diagnosed":"ยังไม่เคยวินิจฉัย"}</div>`;
-    return `<div class="ccard"><div class="top"><div class="ci"><i class="ti ti-car"></i></div><div><h4>${esc(c.name)}</h4><div class="cs">${esc(c.year||"-")} · ${esc(c.mileage||"-")} กม.</div></div></div>${stat}<button class="cdiag" data-diag="${c.id}"><i class="ti ti-stethoscope"></i> ${lang==="en"?"Diagnose":"วินิจฉัย"}</button></div>`}).join("");
+    return `<div class="ccard">${wireframe}<div class="top" style="position:relative; z-index:1;"><div class="ci"><i class="ti ti-car"></i></div><div><h4>${esc(c.name)}</h4><div class="cs">${esc(c.year||"-")} · ${esc(c.mileage||"-")} กม.</div></div></div><div style="position:relative; z-index:1;">${stat}<button class="cdiag" data-diag="${c.id}"><i class="ti ti-stethoscope"></i> ${lang==="en"?"Diagnose":"วินิจฉัย"}</button></div></div>`}).join("");
   html+=`<div class="cadd" data-view="garage"><i class="ti ti-plus" style="font-size:26px"></i><span>${lang==="en"?"Add a car":"เพิ่มรถ"}</span></div>`;
   w.innerHTML=html}
-document.querySelector(".qa-grid").addEventListener("click",e=>{const b=e.target.closest("[data-open]");if(b)openChat({attach:b.dataset.open})});
+
+document.querySelector("#v-home").addEventListener("click",e=>{
+  const b=e.target.closest("[data-open]");
+  if(b) openChat({attach:b.dataset.open});
+});
 $("dashCars").addEventListener("click",e=>{const d=e.target.closest("[data-diag]");if(d)openChat({car:d.dataset.diag,starter:true})});
 
-/* ===== CHAT DRAWER ===== */
+/* ===== CHAT DRAWER DETAILED WORKFLOW ===== */
+let chatModeActive = false; // Indicates if in message thread view
+let isDraggingDrawer = false;
+let startX, startY;
+let initialLeft, initialTop;
+
+function toggleChatFullscreen() {
+  const drawer = $("drawer");
+  const icon = $("chatExpand").querySelector("i");
+  drawer.classList.toggle("fullscreen");
+  
+  if (drawer.classList.contains("fullscreen")) {
+    icon.className = "ti ti-arrows-minimize";
+    drawer.style.left = "0";
+    drawer.style.top = "0";
+    drawer.style.transform = "none";
+    drawer.style.width = "100vw";
+    drawer.style.height = "100vh";
+  } else {
+    icon.className = "ti ti-arrows-maximize";
+    drawer.style.width = "";
+    drawer.style.height = "";
+    drawer.style.top = "";
+    drawer.style.bottom = "20px";
+    drawer.style.left = "auto";
+    drawer.style.right = "20px";
+    drawer.style.transform = "";
+  }
+}
+
+function initDrawerDragging() {
+  const header = document.querySelector(".drawer-head");
+  const drawer = $("drawer");
+  if (!header || !drawer) return;
+  
+  header.addEventListener("mousedown", dragStart);
+  header.addEventListener("touchstart", dragStart, { passive: true });
+  
+  function dragStart(e) {
+    if (drawer.classList.contains("fullscreen")) return;
+    if (e.target.closest("button") || e.target.closest("select")) return;
+    
+    isDraggingDrawer = true;
+    const clientX = e.clientX || e.touches[0].clientX;
+    const clientY = e.clientY || e.touches[0].clientY;
+    
+    const rect = drawer.getBoundingClientRect();
+    startX = clientX;
+    startY = clientY;
+    initialLeft = rect.left;
+    initialTop = rect.top;
+    
+    drawer.style.transition = "none";
+    drawer.style.bottom = "auto";
+    drawer.style.right = "auto";
+    drawer.style.left = initialLeft + "px";
+    drawer.style.top = initialTop + "px";
+    
+    document.addEventListener("mousemove", dragMove);
+    document.addEventListener("touchmove", dragMove, { passive: false });
+    document.addEventListener("mouseup", dragEnd);
+    document.addEventListener("touchend", dragEnd);
+  }
+  
+  function dragMove(e) {
+    if (!isDraggingDrawer) return;
+    if (e.cancelable) e.preventDefault();
+    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+    
+    const dx = clientX - startX;
+    const dy = clientY - startY;
+    
+    drawer.style.left = (initialLeft + dx) + "px";
+    drawer.style.top = (initialTop + dy) + "px";
+  }
+  
+  function dragEnd(e) {
+    if (!isDraggingDrawer) return;
+    isDraggingDrawer = false;
+    
+    document.removeEventListener("mousemove", dragMove);
+    document.removeEventListener("touchmove", dragMove);
+    document.removeEventListener("mouseup", dragEnd);
+    document.removeEventListener("touchend", dragEnd);
+    
+    drawer.style.transition = "all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)";
+    const screenWidth = window.innerWidth;
+    const rect = drawer.getBoundingClientRect();
+    const midX = rect.left + rect.width / 2;
+    
+    if (midX < screenWidth / 3) {
+      drawer.style.left = "20px";
+      drawer.style.right = "auto";
+    } else if (midX > (screenWidth * 2) / 3) {
+      drawer.style.left = "auto";
+      drawer.style.right = "20px";
+    } else {
+      drawer.style.left = "50%";
+      drawer.style.right = "auto";
+      drawer.style.transform = "translateX(-50%)";
+    }
+    
+    const screenHeight = window.innerHeight;
+    if (rect.bottom > screenHeight - 100) {
+      drawer.style.top = "auto";
+      drawer.style.bottom = "20px";
+    } else if (rect.top < 20) {
+      drawer.style.top = "20px";
+      drawer.style.bottom = "auto";
+    }
+  }
+}
+
+function updateChatUIState() {
+  const car = selCar();
+  const starter = $("chatStarterView");
+  const diagOpts = $("chatDiagOptions");
+  const symCats = $("chatSymptomCategories");
+  const symList = $("chatSymptomList");
+  const threadView = $("chatThreadView");
+  const composer = $("composer");
+  
+  // Hide all screens
+  starter.style.display = "none";
+  diagOpts.style.display = "none";
+  symCats.style.display = "none";
+  symList.style.display = "none";
+  threadView.style.display = "none";
+  composer.style.display = "none";
+  
+  if (!car) {
+    starter.style.display = "flex";
+    $("starterPromptText").textContent = tr("chat.select_car_prompt");
+    $("starterOptionsBox").style.display = "none";
+    renderStarterCarBox();
+    return;
+  }
+  
+  if (chatModeActive) {
+    threadView.style.display = "flex";
+    composer.style.display = "block";
+    renderMessages();
+  } else {
+    starter.style.display = "flex";
+    $("starterPromptText").innerHTML = tr("nav.garage") + `: <strong>${esc(car.name)}</strong>`;
+    $("starterOptionsBox").style.display = "flex";
+    $("starterCarBox").innerHTML = "";
+  }
+}
+
+function renderStarterCarBox() {
+  const box = $("starterCarBox");
+  const g = garage();
+  if (!g.length) {
+    box.innerHTML = `<div style="color:var(--muted); font-size:13.5px;">${tr("garage.empty")}</div>`;
+    return;
+  }
+  box.innerHTML = `<div style="font-size:13.5px; font-weight:600; margin-bottom:8px; color:var(--ink);">เลือกรถที่ต้องการวินิจฉัย:</div>` + g.map(c => 
+    `<button class="btn" style="width:100%; margin-bottom:6px; justify-content:flex-start;" onclick="selectStarterCar('${c.id}')"><i class="ti ti-car"></i> ${esc(c.name)}</button>`
+  ).join("");
+}
+
+function selectStarterCar(id) {
+  LS.set("selCar", id);
+  renderCarSel();
+  updateChatUIState();
+}
+
+function showChatInputOptions(type) {
+  $("chatStarterView").style.display = "none";
+  if (type === 'diag') {
+    $("chatDiagOptions").style.display = "block";
+  } else if (type === 'symptoms') {
+    $("chatSymptomCategories").style.display = "block";
+  }
+}
+
+function startChatMode(tool) {
+  chatModeActive = true;
+  updateChatUIState();
+  
+  if (tool === 'text') {
+    $("chatInput").focus();
+  } else if (tool === 'image') {
+    $("fileImg").click();
+  } else if (tool === 'video') {
+    $("fileVid").click();
+  } else if (tool === 'mic') {
+    $("micBtn").click();
+  }
+}
+
+let activeSymptomCategory = "";
+function showSymptomList(cat) {
+  activeSymptomCategory = cat;
+  $("chatSymptomCategories").style.display = "none";
+  $("chatSymptomList").style.display = "block";
+  
+  const dbEntry = SYMPTOMS_DATABASE[cat];
+  const title = dbEntry.title[LANG_INDEXES[lang] ?? 0];
+  $("symptomListTitle").textContent = title;
+  
+  const list = dbEntry.list;
+  const btnList = $("symptomButtonsList");
+  btnList.innerHTML = list.map((item, idx) => {
+    const label = item[LANG_INDEXES[lang] ?? 0];
+    return `<button class="btn" style="text-align:left; justify-content:flex-start; width:100%;" onclick="selectSymptomPrompt(${idx})">${esc(label)}</button>`;
+  }).join("");
+}
+
+function selectSymptomPrompt(idx) {
+  const dbEntry = SYMPTOMS_DATABASE[activeSymptomCategory];
+  const symptom = dbEntry.list[idx][LANG_INDEXES[lang] ?? 0];
+  const catName = dbEntry.title[LANG_INDEXES[lang] ?? 0];
+  
+  const prompt = lang === "en" 
+    ? `Diagnose symptom: "${symptom}" in category [${catName}]`
+    : `ตรวจสอบอาการผิดปกติ: "${symptom}" ในหมวด [${catName}]`;
+  
+  $("chatInput").value = prompt;
+  autoSize();
+  
+  chatModeActive = true;
+  updateChatUIState();
+  sendMsg();
+}
+
+function backToStarter() {
+  $("chatDiagOptions").style.display = "none";
+  $("chatSymptomCategories").style.display = "none";
+  $("chatStarterView").style.display = "flex";
+  updateChatUIState();
+}
+
+function backToSymptomCategories() {
+  $("chatSymptomList").style.display = "none";
+  $("chatSymptomCategories").style.display = "block";
+}
+
+/* ===== FULLSCREEN OVERLAY MODAL FOR NAVBAR ===== */
+function openFullscreenModal(type) {
+  const modal = $("fsModal");
+  const title = $("fsModalTitle");
+  const body = $("fsModalBody");
+  
+  if (type === 'project') {
+    title.textContent = tr("nav.garage");
+    const g = garage();
+    if (!g.length) {
+      body.innerHTML = `<div style="color:var(--muted);">${tr("garage.empty")}</div>`;
+    } else {
+      body.innerHTML = g.map(c => 
+        `<button class="btn" style="width:100%; text-align:left; justify-content:flex-start;" onclick="selectStarterCar('${c.id}'); closeFsModal();"><i class="ti ti-car"></i> ${esc(c.name)}</button>`
+      ).join("");
+    }
+  } else if (type === 'settings') {
+    title.textContent = tr("chat.clear_history");
+    body.innerHTML = `
+      <p style="font-size:14px; color:var(--muted); margin-bottom:12px;">${tr("chat.clear_confirm")}</p>
+      <div style="display:flex; gap:10px;">
+        <button class="btn danger" onclick="clearChatHistory(); closeFsModal();" style="flex:1;"><i class="ti ti-trash"></i> ล้างประวัติ</button>
+        <button class="btn" onclick="closeFsModal()" style="flex:1;">ยกเลิก</button>
+      </div>
+    `;
+  }
+  modal.classList.add("show");
+}
+
+function closeFsModal() {
+  $("fsModal").classList.remove("show");
+}
+
+function clearChatHistory() {
+  const car = selCar();
+  if (!car) return;
+  
+  car.history = [];
+  saveGarage(garage());
+  messages = [];
+  renderMessages();
+  chatModeActive = false;
+  updateChatUIState();
+  toast(lang === "en" ? "Chat history cleared" : "ล้างประวัติการสนทนาแล้ว", "ti-trash");
+}
+
 function openChat(opts){opts=opts||{};$("drawer").classList.add("show");$("drawerBg").classList.add("show");$("fab").classList.add("hidden");
   if(opts.car){LS.set("selCar",opts.car);renderCarSel()}
-  if(!messages.length)rotate(true);
+  
+  // Reset active screen unless opts.car is specifically opened (e.g. from Diagnose click)
+  chatModeActive = !!opts.starter;
+  updateChatUIState();
+  
+  if(!messages.length) rotate(true);
   setTimeout(()=>{
-    if(opts.attach==="image")$("fileImg").click();
-    else if(opts.attach==="video")$("fileVid").click();
-    else if(opts.attach==="mic")$("micBtn").click();
-    else if(opts.starter&&!messages.length){const c=selCar();$("chatInput").value=lang==="en"?`Please check my ${c?c.name:"car"} — any issues to look at?`:`ช่วยตรวจรถ ${c?c.name:""} ให้หน่อย มีอะไรต้องดูไหม?`;autoSize();updateSend();$("chatInput").focus()}
-    else $("chatInput").focus();
+    if(opts.attach === "image") {
+      chatModeActive = true;
+      updateChatUIState();
+      $("fileImg").click();
+    } else if(opts.attach === "video") {
+      chatModeActive = true;
+      updateChatUIState();
+      $("fileVid").click();
+    } else if(opts.attach === "mic") {
+      chatModeActive = true;
+      updateChatUIState();
+      $("micBtn").click();
+    } else if(opts.starter && !messages.length){
+      const c=selCar();
+      $("chatInput").value=lang==="en" ? `Please check my ${c?c.name:"car"} — any issues to look at?` : `ช่วยตรวจรถ ${c?c.name:""} ให้หน่อย มีอะไรต้องดูไหม?`;
+      autoSize();
+      updateSend();
+      $("chatInput").focus();
+    }
   },220)}
-function closeChat(){$("drawer").classList.remove("show");$("drawerBg").classList.remove("show");$("fab").classList.remove("hidden")}
+
+function closeChat(){
+  const drawer = $("drawer");
+  drawer.classList.remove("fullscreen");
+  drawer.classList.remove("show");
+  $("chatExpand").querySelector("i").className = "ti ti-arrows-maximize";
+  drawer.style.width = "";
+  drawer.style.height = "";
+  drawer.style.top = "";
+  drawer.style.bottom = "20px";
+  drawer.style.left = "auto";
+  drawer.style.right = "20px";
+  drawer.style.transform = "";
+  
+  $("drawerBg").classList.remove("show");
+  $("fab").classList.remove("hidden");
+}
+
 $("fab").onclick=()=>openChat({});
 $("chatClose").onclick=closeChat;$("drawerBg").onclick=closeChat;
 
@@ -459,7 +1901,22 @@ function rotate(reset){const el=$("rotating");if(!el)return;if(reset)hi=0;const 
 setInterval(()=>{if($("drawer").classList.contains("show")&&$("chat").classList.contains("empty"))rotate()},3400);
 
 /* ===== SUGGESTS ===== */
-function renderSugs(){$("suggests").innerHTML=SUGS[lang].map(s=>`<button class="sug">${esc(s)}</button>`).join("")}
+function renderSugs(){
+  const suggests = $("suggests");
+  if (!suggests) return;
+  
+  const car = selCar();
+  let sugs = SUGS[lang] || [];
+  if (car) {
+    const style = getBodyStyle(car.name);
+    const contextual = CONTEXTUAL_SUGGESTIONS[style];
+    if (contextual) {
+      sugs = contextual.map(item => item[LANG_INDEXES[lang] ?? 0]);
+    }
+  }
+  suggests.innerHTML = sugs.map(s => `<button class="sug">${esc(s)}</button>`).join("");
+}
+
 $("suggests").addEventListener("click",e=>{const b=e.target.closest(".sug");if(b){$("chatInput").value=b.textContent;autoSize();$("chatInput").focus();updateSend()}});
 
 /* ===== CHAT CORE ===== */
@@ -514,27 +1971,61 @@ async function sendMsg(){
   sending=false;updateSend()
 }
 
-/* ===== GARAGE ===== */
+/* ===== GARAGE CONTROL ===== */
 function garage(){return LS.get("garage",[])}
 function saveGarage(g){LS.set("garage",g)}
 function selCar(){const id=LS.get("selCar","");return garage().find(c=>c.id===id)||null}
 function renderCarSel(){const g=garage(),cur=LS.get("selCar","");
   $("carSel").innerHTML=`<option value="">${lang==="en"?"No car":"ไม่ระบุรถ"}</option>`+g.map(c=>`<option value="${c.id}" ${c.id===cur?"selected":""}>${esc(c.name)}</option>`).join("")}
-$("carSel").onchange=e=>LS.set("selCar",e.target.value);
-function addHistory(carId,q,a){const g=garage();const c=g.find(x=>x.id===carId);if(!c)return;c.history=c.history||[];c.history.unshift({t:Date.now(),q,a:(a||"").slice(0,200)});if(c.history.length>30)c.history.length=30;saveGarage(g);if($("v-garage").classList.contains("active"))renderGarage();if($("v-home").classList.contains("active"))renderDashCars()}
+$("carSel").onchange=e=>{
+  LS.set("selCar",e.target.value);
+  updateChatUIState();
+};
+function addHistory(carId,q,a){const g=garage();const c=g.find(x=>x.id===carId);if(!c)return;c.history=c.history||[];c.history.unshift({t:Date.now(),q,a:(a||"").slice(0,200)});if(c.history.length>30)c.history.length=30;saveGarage(g);if($("v-garage").classList.contains("active"))renderGarage();if($("v-home").classList.contains("active"))renderDashboard()}
+
 function renderGarage(){const g=garage();const w=$("garageList");if(!w)return;
-  if(!g.length){w.innerHTML=`<div class="card" style="text-align:center;color:var(--muted);margin-bottom:6px">${tr("garage.empty")}</div>`;renderCarSel();return}
-  w.innerHTML=g.map(c=>`<div class="card" style="margin-bottom:14px"><div class="gcar"><div class="gi"><i class="ti ti-car"></i></div>
-    <div style="flex:1"><h4>${esc(c.name)}</h4><div class="gs">${esc(c.year||"-")} · ${esc(c.mileage||"-")} กม.</div></div>
-    <button class="btn primary" data-diag2="${c.id}" style="padding:8px 14px"><i class="ti ti-stethoscope"></i> ${lang==="en"?"Diagnose":"วินิจฉัย"}</button>
-    <button class="btn danger" data-del="${c.id}" style="padding:8px 12px"><i class="ti ti-trash"></i></button></div>
-    <div class="ghist"><div class="h">${tr("garage.hist")}</div>${(c.history&&c.history.length)?c.history.slice(0,8).map(h=>`<div class="hrow"><div class="q">${esc(h.q)}</div><div class="a">${esc(h.a)}</div><div class="t">${new Date(h.t).toLocaleString(lang==="en"?"en-US":"th-TH",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</div></div>`).join(""):`<div style="color:var(--faint);font-size:13px">${tr("garage.nohist")}</div>`}</div></div>`).join("");
+  if(!g.length){
+    w.innerHTML=`<div class="card" style="text-align:center;color:var(--muted);margin-bottom:6px">${tr("garage.empty")}</div>`;
+    renderCarSel();
+    return;
+  }
+  w.innerHTML=g.map(c=>{
+    const bodyStyle = getBodyStyle(c.name);
+    const wireframeSvg = WIREFRAME_SVGs[bodyStyle] || WIREFRAME_SVGs.sedan;
+    return `<div class="card" style="margin-bottom:14px;">${wireframeSvg}
+      <div class="gcar" style="position:relative; z-index:1;"><div class="gi"><i class="ti ti-car"></i></div>
+      <div style="flex:1"><h4>${esc(c.name)}</h4><div class="gs">${esc(c.year||"-")} · ${esc(c.mileage||"-")} กม.</div></div>
+      <button class="btn primary" data-diag2="${c.id}" style="padding:8px 14px"><i class="ti ti-stethoscope"></i> ${lang==="en"?"Diagnose":"วินิจฉัย"}</button>
+      <button class="btn danger" data-del="${c.id}" style="padding:8px 12px"><i class="ti ti-trash"></i></button></div>
+      <div class="ghist" style="position:relative; z-index:1;"><div class="h">${tr("garage.hist")}</div>${(c.history&&c.history.length)?c.history.slice(0,8).map(h=>`<div class="hrow"><div class="q">${esc(h.q)}</div><div class="a">${esc(h.a)}</div><div class="t">${new Date(h.t).toLocaleString(lang==="en"?"en-US":"th-TH",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</div></div>`).join(""):`<div style="color:var(--faint);font-size:13px">${tr("garage.nohist")}</div>`}</div></div>`
+  }).join("");
   renderCarSel()}
+
 $("garageList").addEventListener("click",e=>{const dg=e.target.closest("[data-diag2]");if(dg){openChat({car:dg.dataset.diag2,starter:true});return}
-  const d=e.target.closest("[data-del]");if(d){const g=garage().filter(c=>c.id!==d.dataset.del);saveGarage(g);renderGarage();renderDashCars();toast(lang==="en"?"Car removed":"ลบรถแล้ว","ti-trash")}});
-$("gAdd").onclick=()=>{const name=$("gName").value.trim();if(!name){toast(lang==="en"?"Enter make/model":"กรอกยี่ห้อ/รุ่น","ti-alert-triangle");return}
-  const g=garage();g.push({id:"c"+Date.now(),name,year:$("gYear").value.trim(),mileage:$("gMileage").value.trim(),history:[]});saveGarage(g);
-  $("gName").value="";$("gYear").value="";$("gMileage").value="";renderGarage();renderDashCars();toast(lang==="en"?"Car added":"เพิ่มรถแล้ว","ti-check")};
+  const d=e.target.closest("[data-del]");if(d){const g=garage().filter(c=>c.id!==d.dataset.del);saveGarage(g);renderGarage();renderDashboard();toast(lang==="en"?"Car removed":"ลบรถแล้ว","ti-trash")}});
+
+$("gAdd").onclick=()=>{
+  if(!selectedMake || !selectedModel){toast(lang==="en"?"Please select Make and Model":"กรุณาเลือกยี่ห้อและรุ่นรถ","ti-alert-triangle");return}
+  if(!selectedYear){toast(lang==="en"?"Please select Year":"กรุณาเลือกปีรถ","ti-alert-triangle");return}
+  const name = `${selectedMake} ${selectedModel.name}`;
+  const year = selectedYear;
+  const mileage = $("gMileage").value.trim() || "-";
+  
+  const g = garage();
+  g.push({id:"c"+Date.now(),name,year,mileage,history:[]});
+  saveGarage(g);
+  
+  selectedMake = "";
+  selectedModel = null;
+  selectedYear = "";
+  $("gMakeSelect").querySelector(".val").textContent = tr("select.make");
+  $("gModelTrigger").classList.add("disabled");
+  $("gModelTrigger").querySelector(".val").textContent = tr("select.model");
+  $("gYearTrigger").classList.add("disabled");
+  $("gYearTrigger").querySelector(".val").textContent = tr("select.year");
+  $("gMileage").value = "";
+  
+  renderGarage();renderDashboard();toast(lang==="en"?"Car added":"เพิ่มรถแล้ว","ti-check")};
 
 /* ===== MAGAZINE ===== */
 let magLoaded=false;
@@ -650,6 +2141,11 @@ $("adRefresh").onclick=loadAdmin;
 let tt;function toast(m,ic){const el=$("toast");el.innerHTML=`<i class="ti ${ic||"ti-check"}"></i>${esc(m)}`;el.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("show"),3200)}
 
 /* ===== INIT ===== */
+initCustomSelects();
+initWidgetDragging();
+initDrawerDragging();
+setTheme(currentTheme);
+setWireframeOpacity(wireframeOpacity);
 applyLang(lang);renderAuthUI();renderProfile();renderCarSel();renderDashboard();
 setTimeout(moveInd,150);window.addEventListener("load",()=>setTimeout(moveInd,80));
 if(document.fonts)document.fonts.ready.then(moveInd);

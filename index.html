@@ -41,6 +41,8 @@
   --wireframe-opacity: 0.18;
 }
 *{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-user-select:none;-moz-user-select:none;user-select:none}
+input,textarea,select,[contenteditable="true"]{-webkit-user-select:text;-moz-user-select:text;user-select:text}
 html,body{height:100%}
 body{font-family:var(--kb);color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;overflow:hidden;line-height:1.55}
 body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.8;
@@ -420,22 +422,26 @@ a{color:inherit;text-decoration:none}button{font-family:inherit;cursor:pointer;b
   color: #fff;
 }
 
-/* ===== WIREFRAME BACKGROUNDS ===== */
+/* ===== 3/4 WIREFRAME CARD BACKGROUNDS ===== */
+.gcard-wrap{position:relative;overflow:hidden}
+.ccard{position:relative;overflow:hidden}
 .gcar-wireframe-bg {
   position: absolute;
   right: -14px;
-  bottom: -14px;
-  width: 180px;
-  height: 120px;
+  bottom: -12px;
+  height: 150%;
+  width: auto;
+  max-width: none;
   pointer-events: none;
   z-index: 0;
   color: var(--accent);
   transition: opacity .3s;
   opacity: var(--wireframe-opacity);
+  -webkit-mask-image: linear-gradient(95deg, transparent 0%, rgba(0,0,0,.28) 32%, #000 70%);
+  mask-image: linear-gradient(95deg, transparent 0%, rgba(0,0,0,.28) 32%, #000 70%);
 }
 .ccard .gcar-wireframe-bg {
-  width: 140px;
-  height: 90px;
+  height: 138%;
   right: -8px;
   bottom: -8px;
 }
@@ -779,6 +785,22 @@ a{color:inherit;text-decoration:none}button{font-family:inherit;cursor:pointer;b
             <input class="input" id="gMileage" data-i18n-ph="garage.km" placeholder="เลขไมล์ปัจจุบัน (กม.)"/>
           </div>
 
+          <div id="gCustomBox" style="display:none; margin-top:12px; overflow:visible;">
+            <div class="grid2" style="overflow:visible; margin-bottom:12px;">
+              <input class="input" id="gCustomMake" placeholder="ยี่ห้อ (พิมพ์เอง)"/>
+              <input class="input" id="gCustomModel" placeholder="รุ่น (พิมพ์เอง)"/>
+            </div>
+            <div class="custom-select" id="gBodySelect">
+              <div class="custom-select-trigger" onclick="toggleCustomSelect('gBodySelect')">
+                <span class="val">ประเภทตัวถัง...</span>
+                <i class="ti ti-chevron-down"></i>
+              </div>
+              <div class="custom-select-options">
+                <div class="options-list" id="gBodyList"></div>
+              </div>
+            </div>
+          </div>
+
           <button class="btn primary" id="gAdd" style="margin-top:14px"><i class="ti ti-plus"></i> <span data-i18n="garage.add">เพิ่มรถ</span></button>
         </div>
       </div>
@@ -967,87 +989,130 @@ let currentTheme = LS.get("theme", "warm");
 let wireframeOpacity = LS.get("opacity", 0.15);
 
 /* ===== VEHICLE CATALOG & SVGs ===== */
+/* compact catalog: "Model|bodytype|startYear" — body ∈ sedan,suv,pickup,hatchback,coupe,van,mpv,ev */
+function M(s){return s.split(",").map(x=>{const p=x.trim().split("|");return{name:p[0].trim(),type:(p[1]||"sedan").trim(),startYear:+(p[2]||1990)}})}
 const CAR_DATABASE = {
-  "Toyota": [
-    { name: "Corolla", type: "sedan", startYear: 1990 },
-    { name: "Fortuner", type: "suv", startYear: 2005 },
-    { name: "Hilux Revo", type: "pickup", startYear: 2015 },
-    { name: "Yaris", type: "hatchback", startYear: 2006 }
-  ],
-  "Honda": [
-    { name: "Civic", type: "sedan", startYear: 1990 },
-    { name: "CR-V", type: "suv", startYear: 1995 },
-    { name: "City", type: "sedan", startYear: 1996 },
-    { name: "Jazz", type: "hatchback", startYear: 2001 }
-  ],
-  "Mazda": [
-    { name: "Mazda 3", type: "sedan", startYear: 2004 },
-    { name: "CX-5", type: "suv", startYear: 2012 },
-    { name: "Mazda 2", type: "hatchback", startYear: 2007 }
-  ],
-  "Ford": [
-    { name: "Ranger", type: "pickup", startYear: 1998 },
-    { name: "Everest", type: "suv", startYear: 2003 }
-  ],
-  "BYD": [
-    { name: "Atto 3", type: "suv", startYear: 2022 },
-    { name: "Dolphin", type: "hatchback", startYear: 2021 }
-  ]
+ "Toyota":M("Corolla|sedan|1990, Corolla Altis|sedan|2001, Corolla Cross|suv|2020, Camry|sedan|1990, Vios|sedan|2003, Yaris|hatchback|2006, Yaris Ativ|sedan|2017, Yaris Cross|suv|2023, C-HR|suv|2018, Fortuner|suv|2005, Hilux|pickup|1990, Hilux Revo|pickup|2015, Hilux Champ|pickup|2023, Innova|mpv|2004, Innova Zenix|mpv|2023, Veloz|mpv|2022, Avanza|mpv|2004, Sienta|mpv|2016, Alphard|van|2008, Vellfire|van|2008, Majesty|van|2019, Commuter|van|2005, Granvia|van|2019, Supra|coupe|2019, GR86|coupe|2022, GR Yaris|hatchback|2020, Prius|hatchback|2009, bZ4X|ev|2022, Land Cruiser|suv|1998, Land Cruiser Prado|suv|2003, Rush|suv|2018, Raize|suv|2021, Crown|sedan|2003, Wish|mpv|2003, 86|coupe|2012"),
+ "Honda":M("City|sedan|1996, City Hatchback|hatchback|2021, Civic|sedan|1990, Civic Type R|hatchback|2008, Accord|sedan|1990, Jazz|hatchback|2003, Fit|hatchback|2003, HR-V|suv|2015, CR-V|suv|1996, BR-V|suv|2016, WR-V|suv|2023, e:N1|ev|2023, Mobilio|mpv|2014, Freed|mpv|2008, Odyssey|van|2002, StepWGN|van|2009, Brio|hatchback|2011, Elysion|van|2004, Stream|mpv|2000"),
+ "Isuzu":M("D-Max|pickup|2002, D-Max V-Cross|pickup|2012, D-Max Spark|pickup|2020, MU-X|suv|2014, MU-7|suv|2004"),
+ "Mitsubishi":M("Mirage|hatchback|2012, Attrage|sedan|2013, Lancer|sedan|1992, Lancer EX|sedan|2008, Triton|pickup|2005, Pajero Sport|suv|2008, Outlander|suv|2003, Outlander PHEV|suv|2014, Xpander|mpv|2017, Xpander Cross|mpv|2019, Xforce|suv|2023, Space Wagon|mpv|2003"),
+ "Nissan":M("Almera|sedan|2011, March|hatchback|2010, Note|hatchback|2005, Sylphy|sedan|2008, Teana|sedan|2004, Kicks|suv|2016, X-Trail|suv|2003, Terra|suv|2018, Navara|pickup|2014, Frontier|pickup|1998, Juke|suv|2010, Leaf|ev|2010, GT-R|coupe|2007, 370Z|coupe|2009, Z|coupe|2022, Serena|mpv|2010, Livina|mpv|2007"),
+ "Mazda":M("Mazda 2|hatchback|2007, Mazda 2 Sedan|sedan|2015, Mazda 3|sedan|2004, Mazda 6|sedan|2002, CX-3|suv|2015, CX-30|suv|2019, CX-5|suv|2012, CX-8|suv|2018, CX-60|suv|2023, CX-9|suv|2016, BT-50|pickup|2006, MX-5|coupe|1998"),
+ "Ford":M("Ranger|pickup|1998, Ranger Raptor|pickup|2018, Everest|suv|2003, Mustang|coupe|1990, Mustang Mach-E|ev|2021, Focus|hatchback|2004, Fiesta|hatchback|2008, EcoSport|suv|2013, Territory|suv|2023, Escape|suv|2001, Explorer|suv|2011"),
+ "Suzuki":M("Swift|hatchback|2005, Celerio|hatchback|2014, Ciaz|sedan|2014, Ertiga|mpv|2012, XL7|suv|2020, Jimny|suv|1998, Carry|pickup|2005, Vitara|suv|2015, S-Presso|hatchback|2020, Fronx|suv|2023"),
+ "MG":M("MG3|hatchback|2014, MG4 Electric|ev|2022, MG5|sedan|2013, MG ZS|suv|2017, MG HS|suv|2019, MG GT|sedan|2021, MG VS HEV|suv|2022, MG Extender|pickup|2019, MG Maxus 9|van|2022, MG Cyberster|coupe|2024, MG ES|ev|2019, MG EP|ev|2020"),
+ "BYD":M("Atto 3|suv|2022, Dolphin|hatchback|2022, Seal|sedan|2022, Seal U|suv|2023, Sealion 6|suv|2023, Sealion 7|suv|2024, M6|mpv|2024, Han|sedan|2020, Tang|suv|2018, Song Plus|suv|2020"),
+ "Tesla":M("Model 3|sedan|2017, Model Y|suv|2020, Model S|sedan|2012, Model X|suv|2015, Cybertruck|pickup|2023"),
+ "BMW":M("1 Series|hatchback|2004, 2 Series|coupe|2014, 2 Series Gran Coupe|sedan|2020, 3 Series|sedan|1990, 4 Series|coupe|2014, 5 Series|sedan|1990, 7 Series|sedan|1994, 8 Series|coupe|2018, X1|suv|2009, X3|suv|2003, X4|suv|2014, X5|suv|1999, X6|suv|2008, X7|suv|2019, Z4|coupe|2002, i3|ev|2013, i4|ev|2021, i5|ev|2023, i7|ev|2022, iX|ev|2021, iX1|ev|2022, iX3|ev|2021, M3|sedan|1990, M4|coupe|2014"),
+ "Mercedes-Benz":M("A-Class|hatchback|2013, A-Class Sedan|sedan|2018, C-Class|sedan|1993, E-Class|sedan|1995, S-Class|sedan|1991, CLA|sedan|2013, CLS|coupe|2004, GLA|suv|2014, GLB|suv|2019, GLC|suv|2015, GLE|suv|2015, GLS|suv|2016, G-Class|suv|2000, V-Class|van|2014, Vito|van|2014, EQA|ev|2021, EQB|ev|2021, EQE|ev|2022, EQS|ev|2021, EQE SUV|ev|2022, AMG GT|coupe|2015, SL|coupe|1990"),
+ "Audi":M("A1|hatchback|2010, A3|sedan|1996, A4|sedan|1994, A5|coupe|2007, A6|sedan|1994, A7|coupe|2010, A8|sedan|1994, Q2|suv|2016, Q3|suv|2011, Q5|suv|2008, Q7|suv|2005, Q8|suv|2018, TT|coupe|1998, R8|coupe|2006, e-tron GT|ev|2021, Q4 e-tron|ev|2021, Q8 e-tron|ev|2019"),
+ "Volkswagen":M("Polo|hatchback|2002, Golf|hatchback|1990, Golf GTI|hatchback|2004, Jetta|sedan|1992, Passat|sedan|1990, Tiguan|suv|2008, Touareg|suv|2003, T-Cross|suv|2019, T-Roc|suv|2017, ID.3|ev|2020, ID.4|ev|2021, ID.Buzz|van|2022, Caravelle|van|2003, Arteon|coupe|2017"),
+ "Hyundai":M("i10|hatchback|2008, i20|hatchback|2009, i30|hatchback|2007, Accent|sedan|2010, Elantra|sedan|1992, Sonata|sedan|1990, Creta|suv|2015, Tucson|suv|2004, Santa Fe|suv|2001, Palisade|suv|2019, Venue|suv|2019, Staria|van|2021, H-1|van|2007, Ioniq 5|ev|2021, Ioniq 6|ev|2022, Kona|suv|2017, Kona Electric|ev|2018"),
+ "Kia":M("Picanto|hatchback|2004, Rio|hatchback|2005, Cerato|sedan|2004, K3|sedan|2018, K5|sedan|2010, Soul|hatchback|2009, Seltos|suv|2019, Sportage|suv|1995, Sorento|suv|2002, Carnival|van|1999, Carens|mpv|2006, EV6|ev|2021, EV9|ev|2023, Niro|suv|2016, Stinger|coupe|2017"),
+ "Volvo":M("S60|sedan|2001, S90|sedan|2016, V60|hatchback|2010, V90|hatchback|2016, XC40|suv|2018, XC60|suv|2008, XC90|suv|2002, C40 Recharge|ev|2021, EX30|ev|2023, EX90|ev|2024"),
+ "Lexus":M("IS|sedan|1999, ES|sedan|1990, LS|sedan|1990, GS|sedan|1993, UX|suv|2018, NX|suv|2014, RX|suv|1998, GX|suv|2002, LX|suv|2007, RZ|ev|2022, RC|coupe|2014, LC|coupe|2017, LM|van|2020"),
+ "Subaru":M("Impreza|hatchback|1992, WRX|sedan|1992, Legacy|sedan|1990, XV|suv|2012, Crosstrek|suv|2023, Forester|suv|1997, Outback|suv|1995, BRZ|coupe|2012, Levorg|hatchback|2014"),
+ "Chevrolet":M("Cruze|sedan|2008, Colorado|pickup|2003, Trailblazer|suv|2012, Captiva|suv|2006, Camaro|coupe|1990, Corvette|coupe|1990, Spark|hatchback|2010, Aveo|sedan|2004, Sonic|hatchback|2011"),
+ "Porsche":M("911|coupe|1990, 718 Cayman|coupe|2005, 718 Boxster|coupe|1996, Panamera|sedan|2009, Macan|suv|2014, Cayenne|suv|2002, Taycan|ev|2019"),
+ "MINI":M("Cooper|hatchback|2001, Cooper S|hatchback|2002, Clubman|hatchback|2007, Countryman|suv|2010, Cooper Convertible|coupe|2004, Cooper SE|ev|2020"),
+ "GWM":M("Haval H6|suv|2011, Haval Jolion|suv|2021, Haval H6 PHEV|suv|2021, Tank 300|suv|2021, Tank 500|suv|2023, Ora Good Cat|ev|2020, Ora 07|ev|2023, Cannon|pickup|2021"),
+ "NETA":M("Neta V|suv|2020, Neta X|suv|2022, Neta S|sedan|2022, Neta GT|coupe|2023, Neta Aya|suv|2023"),
+ "Changan":M("Deepal S07|suv|2023, Deepal L07|sedan|2023, Deepal S05|suv|2024, CS35 Plus|suv|2018, CS55|suv|2017, Hunter|pickup|2022, Lumin|ev|2022, Alsvin|sedan|2018, UNI-T|suv|2020, UNI-K|suv|2021"),
+ "AION":M("Aion Y Plus|suv|2021, Aion ES|sedan|2023, Aion V|suv|2023, Aion S|sedan|2019, Aion Hyptec HT|suv|2023"),
+ "GAC":M("GAC GS3|suv|2017, GAC GS8|suv|2018, GAC M8|mpv|2017, GAC Emkoo|suv|2022"),
+ "Zeekr":M("Zeekr 001|hatchback|2021, Zeekr 009|van|2022, Zeekr X|suv|2023, Zeekr 007|sedan|2023"),
+ "XPeng":M("P7|sedan|2020, P5|sedan|2021, G6|suv|2023, G9|suv|2022, X9|van|2023"),
+ "NIO":M("ET5|sedan|2022, ET7|sedan|2021, ES6|suv|2018, ES8|suv|2018, EL7|suv|2022"),
+ "Geely":M("Coolray|suv|2018, Okavango|suv|2020, Emgrand|sedan|2009, Geometry C|ev|2020, Galaxy E5|suv|2024"),
+ "Lynk & Co":M("01|suv|2017, 03|sedan|2018, 05|suv|2019, 06|suv|2023, 09|suv|2021"),
+ "Wuling":M("Air EV|ev|2022, Bingo|hatchback|2023, Almaz|suv|2019, Cortez|mpv|2018, Hongguang|van|2010"),
+ "Land Rover":M("Defender|suv|1990, Discovery|suv|1990, Discovery Sport|suv|2014, Range Rover|suv|1990, Range Rover Sport|suv|2005, Range Rover Evoque|suv|2011, Range Rover Velar|suv|2017"),
+ "Jaguar":M("XE|sedan|2015, XF|sedan|2008, F-Type|coupe|2013, E-Pace|suv|2017, F-Pace|suv|2016, I-Pace|ev|2018"),
+ "Jeep":M("Wrangler|suv|1990, Grand Cherokee|suv|1992, Compass|suv|2007, Renegade|suv|2014, Gladiator|pickup|2019, Cherokee|suv|1990"),
+ "Peugeot":M("208|hatchback|2012, 308|hatchback|2007, 2008|suv|2013, 3008|suv|2008, 5008|suv|2009, 408|sedan|2010, Partner|van|1996, Expert|van|1995, e-2008|ev|2020"),
+ "Renault":M("Clio|hatchback|1990, Megane|hatchback|1995, Captur|suv|2013, Koleos|suv|2008, Duster|suv|2010, Kwid|hatchback|2015, Zoe|ev|2012, Triber|mpv|2019"),
+ "Skoda":M("Octavia|sedan|1996, Fabia|hatchback|1999, Superb|sedan|2001, Kodiaq|suv|2016, Karoq|suv|2017, Kamiq|suv|2019, Enyaq|ev|2020"),
+ "Fiat":M("500|hatchback|2007, 500X|suv|2014, Panda|hatchback|1990, Tipo|sedan|2015, 500e|ev|2020"),
+ "Acura":M("Integra|sedan|2022, TLX|sedan|2014, MDX|suv|2000, RDX|suv|2006, NSX|coupe|1990"),
+ "Infiniti":M("Q50|sedan|2013, Q60|coupe|2016, QX50|suv|2013, QX60|suv|2012, QX80|suv|2010"),
+ "Genesis":M("G70|sedan|2017, G80|sedan|2016, G90|sedan|2015, GV60|ev|2021, GV70|suv|2020, GV80|suv|2020"),
+ "Cadillac":M("CT4|sedan|2019, CT5|sedan|2019, Escalade|suv|1998, XT4|suv|2018, XT5|suv|2016, Lyriq|ev|2022"),
+ "GMC":M("Sierra|pickup|1998, Canyon|pickup|2003, Yukon|suv|1992, Acadia|suv|2006, Hummer EV|ev|2021"),
+ "Dodge":M("Charger|sedan|2005, Challenger|coupe|2008, Durango|suv|1997"),
+ "RAM":M("1500|pickup|1994, 2500|pickup|1994"),
+ "Chrysler":M("300|sedan|2004, Pacifica|van|2016"),
+ "Alfa Romeo":M("Giulia|sedan|2015, Stelvio|suv|2016, Tonale|suv|2022, 4C|coupe|2013"),
+ "Maserati":M("Ghibli|sedan|2013, Quattroporte|sedan|1990, Levante|suv|2016, Grecale|suv|2022, MC20|coupe|2020"),
+ "Aston Martin":M("DB11|coupe|2016, DB12|coupe|2023, Vantage|coupe|2005, DBX|suv|2020"),
+ "Ferrari":M("Roma|coupe|2020, 296 GTB|coupe|2021, SF90|coupe|2019, Purosangue|suv|2022, F8|coupe|2019"),
+ "Lamborghini":M("Huracan|coupe|2014, Aventador|coupe|2011, Urus|suv|2018, Revuelto|coupe|2023"),
+ "Bentley":M("Continental GT|coupe|2003, Flying Spur|sedan|2005, Bentayga|suv|2015"),
+ "Rolls-Royce":M("Phantom|sedan|1990, Ghost|sedan|2009, Cullinan|suv|2018, Spectre|ev|2023"),
+ "McLaren":M("720S|coupe|2017, Artura|coupe|2021, GT|coupe|2019"),
+ "Lotus":M("Emira|coupe|2021, Eletre|ev|2022, Evora|coupe|2009"),
+ "Polestar":M("Polestar 2|ev|2020, Polestar 3|ev|2023, Polestar 4|ev|2024"),
+ "Rivian":M("R1T|pickup|2021, R1S|suv|2022"),
+ "Lucid":M("Air|sedan|2021, Gravity|suv|2024"),
+ "VinFast":M("VF 3|suv|2024, VF 5|suv|2023, VF 6|suv|2023, VF 7|suv|2023, VF 8|suv|2022, VF 9|suv|2023, VF e34|ev|2021"),
+ "Smart":M("Smart #1|ev|2022, Smart #3|ev|2023, Fortwo|hatchback|1998"),
+ "DS":M("DS 3|suv|2015, DS 4|hatchback|2021, DS 7|suv|2017, DS 9|sedan|2020"),
+ "Cupra":M("Leon|hatchback|2020, Formentor|suv|2020, Born|ev|2021, Tavascan|ev|2024"),
+ "SEAT":M("Ibiza|hatchback|1990, Leon|hatchback|1999, Ateca|suv|2016, Arona|suv|2017"),
+ "Proton":M("Saga|sedan|1990, Persona|sedan|2007, X50|suv|2020, X70|suv|2018"),
+ "Perodua":M("Myvi|hatchback|2005, Axia|hatchback|2014, Bezza|sedan|2016, Ativa|suv|2021"),
+ "Tata":M("Nexon|suv|2017, Punch|suv|2021, Harrier|suv|2019, Tiago|hatchback|2016"),
+ "Mahindra":M("Scorpio|suv|2002, XUV700|suv|2021, Thar|suv|2010, Bolero|suv|2000"),
+ "KGM":M("Tivoli|suv|2015, Korando|suv|1996, Rexton|suv|2001, Musso|pickup|2018"),
+ "Daihatsu":M("Terios|suv|2006, Sirion|hatchback|2004, Ayla|hatchback|2013, Gran Max|van|2007"),
+ "Chery":M("Tiggo 4|suv|2017, Tiggo 7 Pro|suv|2020, Tiggo 8 Pro|suv|2021, Omoda 5|suv|2022"),
+ "JAC":M("JAC T9|pickup|2023, JAC e-JS4|ev|2021, JAC Sehol|sedan|2020"),
+ "Maxus":M("T60|pickup|2017, G50|mpv|2019, Mifa 9|ev|2022, D90|suv|2017"),
+ "Leapmotor":M("C10|suv|2024, T03|ev|2020, C01|sedan|2022"),
+ "Li Auto":M("Li L7|suv|2023, Li L8|suv|2022, Li L9|suv|2022, Li Mega|van|2024"),
+ "Opel":M("Corsa|hatchback|1990, Astra|hatchback|1991, Mokka|suv|2012, Grandland|suv|2017")
 };
+const BODY_TYPES=[
+ {k:"sedan",th:"รถเก๋ง (Sedan)",en:"Sedan"},
+ {k:"hatchback",th:"แฮทช์แบ็ก (Hatchback)",en:"Hatchback"},
+ {k:"suv",th:"เอสยูวี (SUV)",en:"SUV"},
+ {k:"pickup",th:"กระบะ (Pickup)",en:"Pickup"},
+ {k:"mpv",th:"อเนกประสงค์ (MPV)",en:"MPV"},
+ {k:"van",th:"รถตู้ (Van)",en:"Van"},
+ {k:"coupe",th:"คูเป้/สปอร์ต",en:"Coupe / Sport"},
+ {k:"ev",th:"รถไฟฟ้า (EV)",en:"Electric"}
+];
+function bodyLabel(k){const b=BODY_TYPES.find(x=>x.k===k)||BODY_TYPES[0];return lang==="th"?b.th:b.en}
 
-const WIREFRAME_SVGs = {
-  sedan: `<svg class="gcar-wireframe-bg" viewBox="0 0 100 60" fill="none" stroke="currentColor" stroke-width="0.8">
-    <path d="M10 42 L25 42 M25 42 A 8 8 0 0 1 41 42 L59 42 A 8 8 0 0 1 75 42 L90 42 M25 42 L32 28 L68 28 L75 42" stroke-dasharray="2 1" />
-    <circle cx="33" cy="42" r="8" stroke-dasharray="1 1" />
-    <circle cx="67" cy="42" r="8" stroke-dasharray="1 1" />
-    <path d="M15 45 L30 45 L35 30 L65 30 L70 45 L85 45" />
-    <path d="M32 28 L35 30 M68 28 L65 30" />
-    <path d="M10 42 L15 45 M90 42 L85 45" />
-    <line x1="0" y1="52" x2="100" y2="52" />
-    <line x1="20" y1="52" x2="15" y2="60" />
-    <line x1="40" y1="52" x2="38" y2="60" />
-    <line x1="60" y1="52" x2="62" y2="60" />
-    <line x1="80" y1="52" x2="85" y2="60" />
-  </svg>`,
-  suv: `<svg class="gcar-wireframe-bg" viewBox="0 0 100 60" fill="none" stroke="currentColor" stroke-width="0.8">
-    <path d="M8 42 L22 42 A 9 9 0 0 1 40 42 L60 42 A 9 9 0 0 1 78 42 L92 42 L92 24 L72 20 L30 20 L20 32 L8 36 Z" stroke-dasharray="2 1" />
-    <circle cx="31" cy="42" r="9" stroke-dasharray="1 1" />
-    <circle cx="69" cy="42" r="9" stroke-dasharray="1 1" />
-    <path d="M12 45 L27 45 A 9 9 0 0 1 45 45 L63 45 A 9 9 0 0 1 81 45 L88 45 L88 27 L69 23 L28 23 L20 35 M8 36 L12 40 M92 24 L88 27 M30 20 L28 23" />
-    <line x1="35" y1="18" x2="68" y2="18" />
-    <line x1="35" y1="18" x2="35" y2="20" />
-    <line x1="68" y1="18" x2="68" y2="20" />
-    <line x1="0" y1="53" x2="100" y2="53" />
-    <line x1="20" y1="53" x2="15" y2="60" />
-    <line x1="40" y1="53" x2="38" y2="60" />
-    <line x1="60" y1="53" x2="62" y2="60" />
-    <line x1="80" y1="53" x2="85" y2="60" />
-  </svg>`,
-  pickup: `<svg class="gcar-wireframe-bg" viewBox="0 0 100 60" fill="none" stroke="currentColor" stroke-width="0.8">
-    <path d="M8 42 L22 42 A 9 9 0 0 1 40 42 L60 42 A 9 9 0 0 1 78 42 L92 42 L92 30 L64 30 L58 20 L28 20 L20 32 L8 34 Z" stroke-dasharray="2 1" />
-    <circle cx="31" cy="42" r="9" stroke-dasharray="1 1" />
-    <circle cx="69" cy="42" r="9" stroke-dasharray="1 1" />
-    <path d="M12 45 L27 45 A 9 9 0 0 1 45 45 L63 45 A 9 9 0 0 1 81 45 L88 45 L88 33 L62 33 L57 23 L28 23 L20 35" />
-    <line x1="64" y1="30" x2="64" y2="42" stroke-dasharray="2 1" />
-    <line x1="62" y1="33" x2="62" y2="45" />
-    <line x1="0" y1="53" x2="100" y2="53" />
-    <line x1="20" y1="53" x2="15" y2="60" />
-    <line x1="40" y1="53" x2="38" y2="60" />
-    <line x1="60" y1="53" x2="62" y2="60" />
-    <line x1="80" y1="53" x2="85" y2="60" />
-  </svg>`,
-  hatchback: `<svg class="gcar-wireframe-bg" viewBox="0 0 100 60" fill="none" stroke="currentColor" stroke-width="0.8">
-    <path d="M10 42 L24 42 A 8 8 0 0 1 40 42 L60 42 A 8 8 0 0 1 76 42 L90 42 L88 28 L66 24 L34 24 L22 32 L10 36 Z" stroke-dasharray="2 1" />
-    <circle cx="32" cy="42" r="8" stroke-dasharray="1 1" />
-    <circle cx="68" cy="42" r="8" stroke-dasharray="1 1" />
-    <path d="M14 45 L28 45 A 8 8 0 0 1 44 45 L64 45 A 8 8 0 0 1 80 45 L86 45 L84 31 L64 27 L34 27 L22 35" />
-    <line x1="0" y1="52" x2="100" y2="52" />
-    <line x1="20" y1="52" x2="15" y2="60" />
-    <line x1="40" y1="52" x2="38" y2="60" />
-    <line x1="60" y1="52" x2="62" y2="60" />
-    <line x1="80" y1="52" x2="85" y2="60" />
-  </svg>`
+/* ===== 3/4-ANGLE BLUEPRINT WIREFRAMES (generated) ===== */
+const _WF_OFF=[26,-18], _WF_GROUND=100;
+function _wfO(p){return [p[0]+_WF_OFF[0],p[1]+_WF_OFF[1]]}
+function _wfPath(pts){return "M"+pts.map(p=>p[0]+" "+p[1]).join(" L")}
+function buildWire(d){
+  const far=d.side.map(_wfO); let s="";
+  s+=`<path d="${_wfPath(far)} Z" stroke-dasharray="3 2" opacity="0.4"/>`;
+  for(let i=1;i<d.side.length-1;i++){const p=d.side[i],q=_wfO(p);s+=`<line x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}" opacity="0.38"/>`}
+  const fb=d.side[0],ft=d.side[1],fbo=_wfO(fb),fto=_wfO(ft);
+  s+=`<path d="M${fb[0]} ${fb[1]} L${fbo[0]} ${fbo[1]} L${fto[0]} ${fto[1]} L${ft[0]} ${ft[1]} Z"/>`;
+  s+=`<path d="${_wfPath(d.side)} Z"/>`;
+  if(d.win){s+=`<path d="${_wfPath(d.win)}"/>`;s+=`<path d="${_wfPath(d.win.map(_wfO))}" stroke-dasharray="3 2" opacity="0.4"/>`}
+  (d.extra||[]).forEach(e=>{s+=`<path d="${_wfPath(e)}"/>`});
+  d.wheels.forEach(w=>{const f=_wfO([w.x,_WF_GROUND]);
+    s+=`<circle cx="${f[0]}" cy="${f[1]}" r="${(w.r*0.78).toFixed(1)}" stroke-dasharray="3 2" opacity="0.4"/>`;
+    s+=`<circle cx="${w.x}" cy="${_WF_GROUND}" r="${w.r}"/><circle cx="${w.x}" cy="${_WF_GROUND}" r="${(w.r*0.42).toFixed(1)}"/>`});
+  return `<svg class="gcar-wireframe-bg" viewBox="0 0 252 152" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round">${s}</svg>`;
+}
+const CARDEF={
+ sedan:{side:[[16,100],[16,86],[60,80],[92,54],[150,54],[178,78],[214,82],[214,100]],win:[[88,78],[98,56],[148,56],[170,78]],wheels:[{x:58,r:18},{x:178,r:18}]},
+ suv:{side:[[14,100],[14,82],[56,78],[82,48],[176,48],[198,56],[206,74],[206,100]],win:[[80,76],[90,50],[170,50],[190,72]],wheels:[{x:56,r:19},{x:178,r:19}]},
+ pickup:{side:[[12,100],[12,84],[52,80],[74,50],[120,50],[134,72],[214,72],[214,100]],win:[[70,76],[80,52],[116,52],[128,72]],extra:[[[134,72],[134,86],[210,86]]],wheels:[{x:52,r:19},{x:182,r:19}]},
+ hatchback:{side:[[16,100],[16,86],[60,80],[88,54],[150,54],[174,62],[182,82],[182,100]],win:[[84,78],[94,56],[148,56],[170,76]],wheels:[{x:58,r:18},{x:156,r:18}]},
+ coupe:{side:[[16,100],[16,90],[58,84],[100,58],[150,58],[198,80],[210,90],[210,100]],win:[[92,80],[104,60],[148,60],[188,80]],wheels:[{x:56,r:18},{x:182,r:18}]},
+ van:{side:[[12,100],[12,70],[36,44],[64,40],[208,40],[214,48],[214,100]],win:[[44,68],[44,48],[204,48],[204,68]],extra:[[[110,48],[110,68]],[[160,48],[160,68]]],wheels:[{x:54,r:18},{x:186,r:18}]},
+ mpv:{side:[[14,100],[14,76],[44,50],[80,44],[196,46],[210,60],[212,74],[212,100]],win:[[60,72],[80,48],[190,50],[202,72]],extra:[[[128,49],[128,72]]],wheels:[{x:56,r:18},{x:184,r:18}]},
+ ev:{side:[[16,100],[16,84],[58,78],[104,56],[156,56],[200,76],[210,84],[210,100]],win:[[96,76],[108,58],[152,58],[190,76]],wheels:[{x:58,r:18},{x:182,r:18}]}
 };
+const WIREFRAME_SVGs={};
+for(const _k in CARDEF)WIREFRAME_SVGs[_k]=buildWire(CARDEF[_k]);
 
 function getBodyStyle(name) {
   const lower = name.toLowerCase();
@@ -1392,14 +1457,17 @@ function initWidgetDragging() {
 let selectedMake = "";
 let selectedModel = null;
 let selectedYear = "";
+let customMode = false;
+let selectedBody = "sedan";
 
 function initCustomSelects() {
   const makeList = $("gMakeList");
   if (!makeList) return;
-  
-  makeList.innerHTML = Object.keys(CAR_DATABASE).map(make => 
-    `<div class="option-item" onclick="selectMake('${make}')">${esc(make)}</div>`
-  ).join("");
+
+  makeList.innerHTML = Object.keys(CAR_DATABASE).sort().map(make =>
+    `<div class="option-item" onclick="selectMake('${make.replace(/'/g,"\\'")}')">${esc(make)}</div>`
+  ).join("") + `<div class="option-item" style="color:var(--accent);font-weight:600" onclick="selectMake('__other')">${lang==="th"?"➕ อื่นๆ (พิมพ์เอง)":"➕ Other (type it)"}</div>`;
+  initBodySelect();
   
   document.addEventListener("click", e => {
     if (!e.target.closest(".custom-select")) {
@@ -1437,51 +1505,62 @@ function filterCustomSelect(id, query) {
   });
 }
 
+function fillYears(startYear){
+  const currentYear = new Date().getFullYear();
+  const years = [];
+  for (let y = currentYear; y >= startYear; y--) years.push(y);
+  $("gYearList").innerHTML = years.map(y => `<div class="option-item" onclick="selectYear(${y})">${y}</div>`).join("");
+}
+
 function selectMake(make) {
+  if (make === "__other") {
+    customMode = true; selectedMake = "__other"; selectedModel = null; selectedYear = "";
+    const ms = $("gMakeSelect");
+    ms.querySelector(".val").textContent = (lang==="th"?"อื่นๆ (พิมพ์เอง)":"Other (custom)");
+    ms.classList.remove("active");
+    $("gModelTrigger").classList.add("disabled");
+    $("gModelTrigger").querySelector(".val").textContent = tr("select.model");
+    $("gCustomBox").style.display = "block";
+    $("gYearTrigger").classList.remove("disabled");
+    $("gYearTrigger").querySelector(".val").textContent = tr("select.year");
+    fillYears(1980);
+    return;
+  }
+  customMode = false; $("gCustomBox").style.display = "none";
   selectedMake = make;
   selectedModel = null;
   selectedYear = "";
-  
+
   const makeSelect = $("gMakeSelect");
   makeSelect.querySelector(".val").textContent = make;
   makeSelect.classList.remove("active");
-  
+
   const modelTrigger = $("gModelTrigger");
   modelTrigger.classList.remove("disabled");
   modelTrigger.querySelector(".val").textContent = tr("select.model");
-  
+
   const yearTrigger = $("gYearTrigger");
   yearTrigger.classList.add("disabled");
   yearTrigger.querySelector(".val").textContent = tr("select.year");
-  
+
   const modelList = $("gModelList");
-  modelList.innerHTML = CAR_DATABASE[make].map(model => 
-    `<div class="option-item" onclick="selectModel('${model.name}', '${model.type}', ${model.startYear})">${esc(model.name)}</div>`
+  modelList.innerHTML = CAR_DATABASE[make].map(model =>
+    `<div class="option-item" onclick="selectModel('${model.name.replace(/'/g,"\\'")}', '${model.type}', ${model.startYear})">${esc(model.name)}</div>`
   ).join("");
 }
 
 function selectModel(modelName, type, startYear) {
   selectedModel = { name: modelName, type: type, startYear: startYear };
   selectedYear = "";
-  
+
   const modelSelect = $("gModelSelect");
   modelSelect.querySelector(".val").textContent = modelName;
   modelSelect.classList.remove("active");
-  
+
   const yearTrigger = $("gYearTrigger");
   yearTrigger.classList.remove("disabled");
   yearTrigger.querySelector(".val").textContent = tr("select.year");
-  
-  const currentYear = new Date().getFullYear();
-  const years = [];
-  for (let y = currentYear; y >= startYear; y--) {
-    years.push(y);
-  }
-  
-  const yearList = $("gYearList");
-  yearList.innerHTML = years.map(y => 
-    `<div class="option-item" onclick="selectYear(${y})">${y}</div>`
-  ).join("");
+  fillYears(startYear);
 }
 
 function selectYear(year) {
@@ -1489,6 +1568,17 @@ function selectYear(year) {
   const yearSelect = $("gYearSelect");
   yearSelect.querySelector(".val").textContent = year;
   yearSelect.classList.remove("active");
+}
+
+function initBodySelect(){
+  const l = $("gBodyList"); if(!l) return;
+  l.innerHTML = BODY_TYPES.map(b=>`<div class="option-item" onclick="selectBody('${b.k}')">${esc(lang==="th"?b.th:b.en)}</div>`).join("");
+}
+function selectBody(k){
+  selectedBody = k;
+  const bs = $("gBodySelect");
+  bs.querySelector(".val").textContent = bodyLabel(k);
+  bs.classList.remove("active");
 }
 
 /* ===== SYSTEM THEME & COLOR SETTINGS ===== */
@@ -1544,7 +1634,7 @@ function renderDashCars(){const w=$("dashCars");if(!w)return;const g=garage();
     return;
   }
   let html=g.map(c=>{const last=(c.history&&c.history[0])||null;
-    const style = getBodyStyle(c.name);
+    const style = c.type || getBodyStyle(c.name);
     const wireframe = WIREFRAME_SVGs[style] || WIREFRAME_SVGs.sedan;
     const stat=last?`<div class="cstatus"><span class="dot"></span>${lang==="en"?"Last checked":"ตรวจล่าสุด"}: ${new Date(last.t).toLocaleDateString(lang==="en"?"en-US":"th-TH",{day:"numeric",month:"short"})}</div>`
       :`<div class="cstatus warn"><span class="dot"></span>${lang==="en"?"Never diagnosed":"ยังไม่เคยวินิจฉัย"}</div>`;
@@ -1974,6 +2064,27 @@ async function sendMsg(){
 /* ===== GARAGE CONTROL ===== */
 function garage(){return LS.get("garage",[])}
 function saveGarage(g){LS.set("garage",g)}
+/* ===== BACKEND CAR SYNC (Cloudflare D1 via /api/cars) ===== */
+function carsAreRemote(){return !!(currentUser && useFb && auth && auth.currentUser && location.protocol!=="file:")}
+async function carTok(){return await auth.currentUser.getIdToken()}
+async function syncCars(){
+  if(!carsAreRemote())return;
+  try{
+    const r=await fetch(`${BACKEND_URL}/api/cars`,{headers:{"Authorization":"Bearer "+await carTok()}});
+    if(!r.ok)throw new Error(r.status+" "+r.statusText);
+    const arr=await r.json(); if(!Array.isArray(arr))return;
+    const local=garage();
+    const merged=arr.map(c=>{
+      const name=`${c.make||""} ${c.model||""}`.trim();
+      const prev=local.find(x=>x.id===c.id)||{};
+      return {id:c.id,make:c.make||"",model:c.model||"",name,year:(c.year!=null?String(c.year):""),mileage:(c.mileage!=null?String(c.mileage):""),type:prev.type||getBodyStyle(name),history:prev.history||[]};
+    });
+    saveGarage(merged);
+    if($("v-garage").classList.contains("active"))renderGarage();
+    if($("v-home").classList.contains("active"))renderDashboard();
+    renderCarSel();
+  }catch(e){console.warn("syncCars failed",e)}
+}
 function selCar(){const id=LS.get("selCar","");return garage().find(c=>c.id===id)||null}
 function renderCarSel(){const g=garage(),cur=LS.get("selCar","");
   $("carSel").innerHTML=`<option value="">${lang==="en"?"No car":"ไม่ระบุรถ"}</option>`+g.map(c=>`<option value="${c.id}" ${c.id===cur?"selected":""}>${esc(c.name)}</option>`).join("")}
@@ -1990,9 +2101,9 @@ function renderGarage(){const g=garage();const w=$("garageList");if(!w)return;
     return;
   }
   w.innerHTML=g.map(c=>{
-    const bodyStyle = getBodyStyle(c.name);
+    const bodyStyle = c.type || getBodyStyle(c.name);
     const wireframeSvg = WIREFRAME_SVGs[bodyStyle] || WIREFRAME_SVGs.sedan;
-    return `<div class="card" style="margin-bottom:14px;">${wireframeSvg}
+    return `<div class="card gcard-wrap" style="margin-bottom:14px;">${wireframeSvg}
       <div class="gcar" style="position:relative; z-index:1;"><div class="gi"><i class="ti ti-car"></i></div>
       <div style="flex:1"><h4>${esc(c.name)}</h4><div class="gs">${esc(c.year||"-")} · ${esc(c.mileage||"-")} กม.</div></div>
       <button class="btn primary" data-diag2="${c.id}" style="padding:8px 14px"><i class="ti ti-stethoscope"></i> ${lang==="en"?"Diagnose":"วินิจฉัย"}</button>
@@ -2001,30 +2112,53 @@ function renderGarage(){const g=garage();const w=$("garageList");if(!w)return;
   }).join("");
   renderCarSel()}
 
-$("garageList").addEventListener("click",e=>{const dg=e.target.closest("[data-diag2]");if(dg){openChat({car:dg.dataset.diag2,starter:true});return}
-  const d=e.target.closest("[data-del]");if(d){const g=garage().filter(c=>c.id!==d.dataset.del);saveGarage(g);renderGarage();renderDashboard();toast(lang==="en"?"Car removed":"ลบรถแล้ว","ti-trash")}});
+$("garageList").addEventListener("click",async e=>{const dg=e.target.closest("[data-diag2]");if(dg){openChat({car:dg.dataset.diag2,starter:true});return}
+  const d=e.target.closest("[data-del]");if(d){const id=d.dataset.del;
+    if(carsAreRemote()){try{await fetch(`${BACKEND_URL}/api/cars/${encodeURIComponent(id)}`,{method:"DELETE",headers:{"Authorization":"Bearer "+await carTok()}})}catch(err){console.warn("delete car failed",err)}}
+    const g=garage().filter(c=>c.id!==id);saveGarage(g);renderGarage();renderDashboard();toast(lang==="en"?"Car removed":"ลบรถแล้ว","ti-trash")}});
 
-$("gAdd").onclick=()=>{
-  if(!selectedMake || !selectedModel){toast(lang==="en"?"Please select Make and Model":"กรุณาเลือกยี่ห้อและรุ่นรถ","ti-alert-triangle");return}
+$("gAdd").onclick=async()=>{
+  let make,model,type;
+  if(customMode){
+    make=($("gCustomMake").value||"").trim();
+    model=($("gCustomModel").value||"").trim();
+    if(!make||!model){toast(lang==="en"?"Please type Make and Model":"กรุณาพิมพ์ยี่ห้อและรุ่นรถ","ti-alert-triangle");return}
+    type=selectedBody||"sedan";
+  }else{
+    if(!selectedMake || !selectedModel){toast(lang==="en"?"Please select Make and Model":"กรุณาเลือกยี่ห้อและรุ่นรถ","ti-alert-triangle");return}
+    make=selectedMake; model=selectedModel.name; type=selectedModel.type;
+  }
   if(!selectedYear){toast(lang==="en"?"Please select Year":"กรุณาเลือกปีรถ","ti-alert-triangle");return}
-  const name = `${selectedMake} ${selectedModel.name}`;
-  const year = selectedYear;
+  const name = `${make} ${model}`.trim();
+  const year = String(selectedYear);
   const mileage = $("gMileage").value.trim() || "-";
-  
+
+  $("gAdd").disabled=true;
+  let id = "c"+Date.now();
+  if(carsAreRemote()){
+    try{
+      const r=await fetch(`${BACKEND_URL}/api/cars`,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+await carTok()},body:JSON.stringify({make,model,year,mileage})});
+      if(!r.ok)throw new Error(r.status+" "+r.statusText);
+      const res=await r.json(); if(res&&res.id)id=res.id;
+    }catch(err){toast((lang==="en"?"Saved locally (server error): ":"บันทึกในเครื่องแทน (เซิร์ฟเวอร์ผิดพลาด): ")+err.message,"ti-cloud-off")}
+  }
+
   const g = garage();
-  g.push({id:"c"+Date.now(),name,year,mileage,history:[]});
+  g.push({id,make,model,name,year,mileage,type,history:[]});
   saveGarage(g);
-  
-  selectedMake = "";
-  selectedModel = null;
-  selectedYear = "";
+
+  selectedMake = ""; selectedModel = null; selectedYear = ""; customMode = false; selectedBody = "sedan";
   $("gMakeSelect").querySelector(".val").textContent = tr("select.make");
   $("gModelTrigger").classList.add("disabled");
   $("gModelTrigger").querySelector(".val").textContent = tr("select.model");
   $("gYearTrigger").classList.add("disabled");
   $("gYearTrigger").querySelector(".val").textContent = tr("select.year");
+  $("gCustomBox").style.display = "none";
+  $("gCustomMake").value=""; $("gCustomModel").value="";
+  $("gBodySelect").querySelector(".val").textContent = (lang==="th"?"ประเภทตัวถัง...":"Body type...");
   $("gMileage").value = "";
-  
+  $("gAdd").disabled=false;
+
   renderGarage();renderDashboard();toast(lang==="en"?"Car added":"เพิ่มรถแล้ว","ti-check")};
 
 /* ===== MAGAZINE ===== */
@@ -2094,7 +2228,7 @@ if(useFb)auth.onAuthStateChanged(async u=>{
   } else {
     currentUser = null;
   }
-  renderAuthUI();renderProfile();renderDashboard();
+  renderAuthUI();renderProfile();renderDashboard();syncCars();
 });
 function renderAuthUI(){const u=currentUser;
   $("signinBtn").style.display=u?"none":"flex";

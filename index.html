@@ -1,0 +1,1751 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SpireONE — ผู้ช่วย AI ดูแลรถ</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap">
+<style>
+:root, [data-theme="warm"] {
+  --bg:#F6F3EC;--surface:#FFFFFF;--surface-2:#FBF8F1;--ink:#22201A;--muted:#6E685B;--faint:#A8A192;
+  --line:rgba(40,34,18,.12);--line-2:rgba(40,34,18,.07);
+  --accent:#D9733C;--accent-2:#E8A23C;--accent-d:#B85A2A;--grad:linear-gradient(135deg,#E8943C,#D95E3C);
+  --ok:#3E9E6E;--danger:#D64A4A;--radius:20px;--shadow:0 18px 50px -22px rgba(60,40,15,.32);--shadow-sm:0 6px 20px -10px rgba(60,40,15,.22);
+  --kd:'Kanit',system-ui,sans-serif;--kb:'Kanit',system-ui,sans-serif;
+  --wireframe-opacity: 0.15;--nav-bg:rgba(255,255,255,.84);--nav-link:#6E685B;
+}
+[data-theme="cyber"] {
+  --bg:#0A0D1A;--surface:#12162B;--surface-2:#1A1F3D;--ink:#E2E6F2;--muted:#8F9BB3;--faint:#56617A;
+  --line:rgba(143,155,179,.16);--line-2:rgba(143,155,179,.08);
+  --accent:#9B5DE5;--accent-2:#00F5D4;--accent-d:#7B2CBF;--grad:linear-gradient(135deg,#9B5DE5,#00F5D4);
+  --ok:#00F5D4;--danger:#FF007F;--radius:20px;--shadow:0 18px 50px -22px rgba(0,0,0,.6);--shadow-sm:0 6px 20px -10px rgba(0,0,0,.4);
+  --kd:'Kanit',system-ui,sans-serif;--kb:'Kanit',system-ui,sans-serif;
+  --wireframe-opacity: 0.22;--nav-bg:rgba(18,22,43,.92);--nav-link:#8F9BB3;
+}
+[data-theme="emerald"] {
+  --bg:#EDF4F2;--surface:#FFFFFF;--surface-2:#F4FAF8;--ink:#1B3B32;--muted:#4E7065;--faint:#8EABA0;
+  --line:rgba(27,59,50,.12);--line-2:rgba(27,59,50,.07);
+  --accent:#3E9E6E;--accent-2:#5BC28C;--accent-d:#2D7D54;--grad:linear-gradient(135deg, #3E9E6E, #8FE388);
+  --ok:#3E9E6E;--danger:#D64A4A;--radius:20px;--shadow:0 18px 50px -22px rgba(27,59,50,.2);--shadow-sm:0 6px 20px -10px rgba(27,59,50,.1);
+  --kd:'Kanit',system-ui,sans-serif;--kb:'Kanit',system-ui,sans-serif;
+  --wireframe-opacity: 0.15;--nav-bg:rgba(255,255,255,.84);--nav-link:#4E7065;
+}
+[data-theme="carbon"] {
+  --bg:#1A1A1E;--surface:#242429;--surface-2:#2E2E35;--ink:#E5E5E7;--muted:#9A9A9F;--faint:#5F5F64;
+  --line:rgba(255,255,255,.08);--line-2:rgba(255,255,255,.04);
+  --accent:#E53E3E;--accent-2:#ED8936;--accent-d:#C53030;--grad:linear-gradient(135deg,#E53E3E,#ED8936);
+  --ok:#48BB78;--danger:#E53E3E;--radius:20px;--shadow:0 18px 50px -22px rgba(0,0,0,.8);--shadow-sm:0 6px 20px -10px rgba(0,0,0,.5);
+  --kd:'Kanit',system-ui,sans-serif;--kb:'Kanit',system-ui,sans-serif;
+  --wireframe-opacity: 0.18;--nav-bg:rgba(36,36,41,.92);--nav-link:#9A9A9F;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-user-select:none;-moz-user-select:none;user-select:none}
+input,textarea,select,[contenteditable="true"]{-webkit-user-select:text;-moz-user-select:text;user-select:text}
+html,body{height:100%}
+body{font-family:var(--kb);color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;overflow:hidden;line-height:1.55}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.8;
+  background:radial-gradient(50% 55% at 12% 10%,rgba(232,162,60,.16),transparent 60%),radial-gradient(45% 50% at 90% 8%,rgba(217,94,60,.12),transparent 60%),radial-gradient(55% 55% at 80% 95%,rgba(232,148,60,.12),transparent 60%)}
+a{color:inherit;text-decoration:none}button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+.ti{line-height:1}::selection{background:var(--accent);color:#fff}
+.app{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column}
+::-webkit-scrollbar{width:10px}::-webkit-scrollbar-thumb{background:var(--line);border-radius:10px;border:3px solid transparent;background-clip:padding-box}
+
+/* ===== NAV ===== */
+.navwrap{position:relative;z-index:20;display:flex;justify-content:center;padding:14px 14px 6px;flex-shrink:0}
+.nav{display:flex;align-items:center;gap:6px;width:100%;max-width:820px;padding:8px 8px 8px 16px;border-radius:30px;
+  background:var(--nav-bg,rgba(255,255,255,.84));backdrop-filter:blur(18px) saturate(1.3);-webkit-backdrop-filter:blur(18px) saturate(1.3);
+  border:1px solid var(--line);box-shadow:var(--shadow-sm)}
+.nav-links a{position:relative;z-index:1;display:flex;align-items:center;gap:7px;padding:9px 16px;border-radius:30px;font-weight:600;font-size:14px;color:var(--nav-link,var(--muted));transition:color .3s;white-space:nowrap}
+.brand{display:flex;align-items:center;gap:9px;cursor:pointer;padding-right:6px}
+.brand .mark{width:34px;height:34px;border-radius:11px;background:#22201A;color:#fff;display:grid;place-items:center}
+.brand .mark svg{width:54%;height:54%}.brand .mark path{fill:currentColor}
+.brand b{font-size:17px;font-weight:700;letter-spacing:.2px;font-family:var(--kd)}
+.nav-links{display:flex;gap:3px;flex:1;justify-content:center;position:relative}
+.nav-ind{position:absolute;top:50%;left:0;height:38px;width:0;transform:translateY(-50%);border-radius:30px;z-index:0;pointer-events:none;
+  background:var(--grad);box-shadow:0 8px 20px -8px rgba(217,94,60,.6);transition:transform .42s cubic-bezier(.5,0,.1,1),width .42s cubic-bezier(.5,0,.1,1)}
+.nav-links a .ti{font-size:18px}
+.nav-links a:hover{color:var(--ink)}.nav-links a.active{color:#fff}
+.nav-right{display:flex;align-items:center;gap:8px;position:relative}
+.btn-signin{display:flex;align-items:center;gap:7px;padding:9px 16px;border-radius:30px;font-weight:600;font-size:13.5px;background:var(--grad);color:#fff;box-shadow:0 8px 18px -8px rgba(217,94,60,.6)}
+.avatar{width:40px;height:40px;border-radius:50%;overflow:hidden;border:2px solid #fff;box-shadow:var(--shadow-sm);display:none;cursor:pointer}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.avatar .fb{width:100%;height:100%;display:grid;place-items:center;font-weight:700;color:#fff;background:var(--grad)}
+
+/* ===== VIEWS ===== */
+.main{flex:1;min-height:0;display:flex;justify-content:center;overflow:hidden}
+.view{display:none;width:100%;max-width:920px;height:100%;flex-direction:column;animation:fade .4s ease}
+.view.active{display:flex}
+.scroll{flex:1;overflow-y:auto;padding:18px 22px 110px}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ===== DASHBOARD ===== */
+.greet{font-family:var(--kd);font-size:clamp(26px,3.6vw,34px);font-weight:600;line-height:1.12;margin:2px 2px 2px;letter-spacing:-.01em;
+  background:linear-gradient(100deg,#2a2620,#D9633C);-webkit-background-clip:text;background-clip:text;color:transparent}
+.greet .w{-webkit-text-fill-color:initial;display:inline-block;transform-origin:70% 80%;animation:wave 2.8s ease-in-out infinite}
+@keyframes wave{0%,55%,100%{transform:rotate(0)}18%{transform:rotate(16deg)}36%{transform:rotate(-8deg)}}
+.dash-sub{color:var(--muted);font-size:14.5px;margin:6px 2px 24px}
+.qa-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:30px}
+.qa{position:relative;display:flex;flex-direction:column;align-items:center;gap:12px;padding:24px 10px 20px;border-radius:20px;
+  background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow-sm);transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s,border-color .35s;
+  overflow:hidden;isolation:isolate}
+.qa::after{content:"";position:absolute;inset:0;z-index:0;opacity:0;transition:opacity .4s;
+  background:radial-gradient(120% 100% at 18% -10%,var(--qc-soft,rgba(217,115,60,.16)),transparent 60%)}
+.qa:hover{transform:translateY(-5px);border-color:var(--qc,var(--accent));box-shadow:0 18px 34px -16px var(--qc-shadow,rgba(217,94,60,.4))}
+.qa:hover::after{opacity:1}
+.qa:active{transform:translateY(-2px) scale(.98)}
+.qa-deco{position:absolute;right:-16px;top:-14px;font-size:96px;line-height:1;color:var(--qc,var(--accent));opacity:.1;
+  transform:rotate(20deg);transition:transform .5s cubic-bezier(.2,.8,.2,1),opacity .4s;z-index:0;pointer-events:none}
+.qa:hover .qa-deco{transform:rotate(9deg) scale(1.14) translate(-5px,5px);opacity:.18}
+.qa-ic{position:relative;z-index:1;width:52px;height:52px;border-radius:16px;display:grid;place-items:center;font-size:24px;color:#fff;
+  background:linear-gradient(135deg,var(--qc,var(--accent)),var(--qc2,var(--accent-2)));transform:rotate(-8deg);
+  transition:transform .4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 10px 22px -9px var(--qc-shadow,rgba(217,94,60,.5))}
+.qa:hover .qa-ic{transform:rotate(0deg) scale(1.08)}
+.qa-t{position:relative;z-index:1;font-weight:600;font-size:13.5px}
+.qa[data-open="text"]{--qc:#D9733C;--qc2:#E8943C;--qc-soft:rgba(217,115,60,.16);--qc-shadow:rgba(217,115,60,.45)}
+.qa[data-open="image"]{--qc:#3A8CC5;--qc2:#62B6DE;--qc-soft:rgba(58,140,197,.16);--qc-shadow:rgba(58,140,197,.45)}
+.qa[data-open="video"]{--qc:#9B5DE0;--qc2:#C470DB;--qc-soft:rgba(155,93,224,.16);--qc-shadow:rgba(155,93,224,.45)}
+.qa[data-open="mic"]{--qc:#3E9E6E;--qc2:#5BC28C;--qc-soft:rgba(62,158,110,.16);--qc-shadow:rgba(62,158,110,.45)}
+.dash-head{display:flex;align-items:center;justify-content:space-between;margin:6px 2px 14px}
+.dash-head h3{font-family:var(--kd);font-size:21px;font-weight:600}
+.dash-link{color:var(--accent);font-weight:600;font-size:13.5px;cursor:pointer}
+.cars-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.ccard{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow-sm);transition:.18s}
+.ccard:hover{box-shadow:var(--shadow)}
+.ccard .top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.ccard .ci{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:24px;color:#fff;background:#22201A;flex-shrink:0}
+.ccard h4{font-weight:700;font-family:var(--kd);font-size:16px}.ccard .cs{font-size:12px;color:var(--muted)}
+.cstatus{font-size:12.5px;color:var(--muted);margin-bottom:13px;display:flex;align-items:center;gap:7px}
+.cstatus .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);flex-shrink:0}.cstatus.warn .dot{background:var(--accent-2)}
+.cdiag{width:100%;padding:11px;border-radius:13px;background:var(--grad);color:#fff;font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;transition:.15s}
+.cdiag:hover{transform:translateY(-1px)}
+.cadd{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:150px;border:2px dashed var(--line);border-radius:18px;color:var(--muted);cursor:pointer;transition:.15s}
+.cadd:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ===== generic ===== */
+.section-title{font-family:var(--kd);font-size:28px;font-weight:600;letter-spacing:-.01em;margin-bottom:3px}
+.section-sub{color:var(--muted);font-size:14.5px;margin-bottom:22px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow-sm)}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:14px;font-weight:600;font-size:14px;transition:.15s;background:var(--surface);border:1px solid var(--line);color:var(--ink)}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--grad);color:#fff;border:none;box-shadow:0 10px 24px -10px rgba(217,94,60,.6)}
+.btn.primary:hover{transform:translateY(-2px);color:#fff}
+.btn.danger{background:rgba(214,74,74,.1);color:var(--danger);border-color:rgba(214,74,74,.3)}
+.btn.danger:hover{background:var(--danger);color:#fff}
+.input{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:12px 14px;font-family:inherit;font-size:14px;color:var(--ink);outline:none;transition:.15s}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(217,115,60,.12)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+/* ===== GARAGE ===== */
+.gcar{display:flex;align-items:flex-start;gap:16px;margin-bottom:14px}
+.gcar .gi{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;font-size:28px;color:#fff;background:var(--grad);flex-shrink:0}
+.gcar h4{font-size:17px;font-weight:700;font-family:var(--kd)}.gcar .gs{font-size:12.5px;color:var(--muted)}
+.ghist{margin-top:4px;border-top:1px solid var(--line);padding-top:12px}
+.ghist .h{font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--faint);font-weight:700;margin-bottom:8px}
+.hrow{padding:8px 0;border-bottom:1px dashed var(--line-2);font-size:13.5px}
+.hrow:last-child{border:none}.hrow .q{font-weight:600}.hrow .a{color:var(--muted);font-size:13px}.hrow .t{font-size:11px;color:var(--faint)}
+
+/* ===== MAGAZINE ===== */
+.mag-hero{position:relative;border-radius:24px;overflow:hidden;min-height:280px;display:flex;align-items:flex-end;padding:30px;color:#fff;margin-bottom:20px;box-shadow:var(--shadow)}
+.mag-hero .bg{position:absolute;inset:0;background:linear-gradient(135deg,#3a2a20,#171210)}
+.mag-hero .ov{position:absolute;inset:0;background:radial-gradient(120% 130% at 85% 10%,rgba(232,148,60,.4),transparent 55%)}
+.mag-hero .tx{position:relative;z-index:2}
+.mag-hero .k{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent-2);font-weight:700}
+.mag-hero h2{font-family:var(--kd);font-size:30px;font-weight:600;margin:8px 0;max-width:560px;line-height:1.1}
+.mag-hero p{color:rgba(255,255,255,.8);max-width:520px;font-size:14px}
+.mag-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.mag-card{cursor:pointer;transition:.2s;display:block}.mag-card:hover{transform:translateY(-4px)}
+.mag-cover{height:150px;border-radius:16px;display:grid;place-items:center;font-size:44px;color:#fff;margin-bottom:12px}
+.mag-card .k{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.mag-card h4{font-size:16px;font-weight:700;font-family:var(--kd);margin:4px 0 4px}.mag-card p{font-size:13px;color:var(--muted)}
+
+/* ===== MAGAZINE MODAL ===== */
+.mag-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.52);backdrop-filter:blur(8px);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .28s}
+.mag-modal-backdrop.show{opacity:1;pointer-events:auto}
+.mag-modal-sheet{background:var(--surface);border-radius:24px;width:100%;max-width:580px;max-height:82vh;display:flex;flex-direction:column;transform:scale(.93) translateY(12px);transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .28s;box-shadow:0 24px 70px -16px rgba(0,0,0,.5),0 0 0 1px var(--line)}
+.mag-modal-backdrop.show .mag-modal-sheet{transform:none}
+.mag-modal-handle{display:none}
+.mag-modal-head{display:flex;align-items:flex-start;gap:12px;padding:16px 24px 0;flex-shrink:0}
+.mag-modal-tag{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);font-weight:700;padding:4px 10px;background:rgba(217,115,60,.1);border-radius:20px}
+.mag-modal-close{margin-left:auto;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:var(--muted);flex-shrink:0}.mag-modal-close:hover{background:var(--surface-2)}
+.mag-modal-body{padding:12px 24px 32px;overflow-y:auto;flex:1}
+.mag-modal-body h2{font-family:var(--kd);font-size:clamp(20px,3vw,26px);font-weight:700;line-height:1.2;margin-bottom:14px}
+.mag-modal-body .full-text{color:var(--muted);line-height:1.75;white-space:pre-line;font-size:15px}
+.mag-modal-actions{padding:0 24px 24px;flex-shrink:0;display:flex;gap:10px;justify-content:flex-end}
+.mag-hero,.mag-card{cursor:pointer}
+
+/* ===== MAGAZINE WIDGET (dashboard compact) ===== */
+.mag-widget-list{display:flex;flex-direction:column}
+.mag-widget-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line-2);cursor:pointer;transition:opacity .2s}
+.mag-widget-item:last-child{border-bottom:none}
+.mag-widget-item:hover{opacity:.7}
+.mag-widget-icon{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;flex-shrink:0;font-size:17px;color:#fff}
+.mag-widget-text{flex:1;min-width:0}
+.mag-widget-tag{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.mag-widget-title{font-size:13.5px;font-weight:600;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
+.mag-widget-arrow{color:var(--faint);font-size:15px;flex-shrink:0}
+.mag-widget-btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;margin-top:14px;padding:10px 16px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line);font-size:13px;font-weight:600;color:var(--muted);transition:color .2s,border-color .2s;cursor:pointer}
+.mag-widget-btn:hover{color:var(--ink);border-color:var(--accent)}
+
+/* ===== PROFILE ===== */
+.phead{display:flex;align-items:center;gap:18px;margin-bottom:24px}
+.phead .pic{width:78px;height:78px;border-radius:50%;overflow:hidden;border:3px solid #fff;box-shadow:var(--shadow-sm)}
+.phead .pic img{width:100%;height:100%;object-fit:cover}.phead .pic .fb{width:100%;height:100%;display:grid;place-items:center;font-size:30px;font-weight:700;color:#fff;background:var(--grad)}
+.phead h2{font-family:var(--kd);font-size:24px;font-weight:600}.phead .em{color:var(--muted);font-size:13.5px}
+.rolechip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:4px 11px;border-radius:30px;background:var(--grad);color:#fff;margin-top:5px}
+.seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:30px;padding:4px;gap:2px}
+.seg button{padding:8px 18px;border-radius:30px;font-weight:600;font-size:13.5px;color:var(--muted)}
+.seg button.on{background:var(--grad);color:#fff}
+.set-card{margin-bottom:16px}.set-card h3{font-size:16px;font-weight:700;margin-bottom:3px}.set-card .d{font-size:13px;color:var(--muted);margin-bottom:14px}
+.atbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.atbl th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--faint);padding:8px 10px;border-bottom:1px solid var(--line)}
+.atbl td{padding:11px 10px;border-bottom:1px solid var(--line-2)}.atbl tr:last-child td{border:none}
+.mini-av{width:26px;height:26px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:8px}
+.statrow{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.stat{background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center}
+.stat .n{font-size:26px;font-weight:800;color:var(--accent);font-family:var(--kd)}.stat .l{font-size:12px;color:var(--muted)}
+.note{font-size:12.5px;color:var(--muted);background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin-top:10px}
+
+/* dropdown */
+.dd{position:absolute;top:54px;right:0;width:210px;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:8px;opacity:0;transform:translateY(-8px);pointer-events:none;transition:.18s;z-index:30}
+.dd.show{opacity:1;transform:none;pointer-events:auto}
+.dd button{display:flex;align-items:center;gap:11px;width:100%;padding:10px;border-radius:10px;font-weight:600;font-size:14px;color:var(--muted);text-align:left}
+.dd button .ti{font-size:19px}.dd button:hover{background:var(--surface-2);color:var(--ink)}
+.dd hr{border:none;border-top:1px solid var(--line);margin:6px 4px}
+
+/* ===== CHAT — moved to chat.html (FAB styles in FAB DOCK section) ===== */
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120px);background:#22201A;color:#fff;padding:13px 20px;border-radius:14px;font-weight:600;font-size:14px;box-shadow:var(--shadow);z-index:200;transition:.3s;display:flex;gap:9px;align-items:center;max-width:90vw}
+.toast.show{transform:translateX(-50%) translateY(0)}.toast .ti{font-size:19px;color:var(--accent-2)}
+
+@media(max-width:780px){
+  .nav-links a span{display:none}.nav-links a{padding:9px 13px}
+  .grid2,.mag-grid,.statrow{grid-template-columns:1fr}
+  .view{max-width:100%}.qa-grid{grid-template-columns:repeat(2,1fr)}.cars-grid{grid-template-columns:1fr}
+}
+
+/* ===== CUSTOM WIDGETS ===== */
+.widget-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+}
+.widget {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  overflow: hidden;
+}
+.widget.dragging {
+  opacity: 0.4;
+  border: 2px dashed var(--accent) !important;
+}
+.widget-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  position: relative;
+  z-index: 2;
+}
+.widget-header h3 {
+  font-family: var(--kd);
+  font-size: 19px;
+  font-weight: 600;
+  flex: 1;
+  color: var(--ink);
+}
+.widget-drag-handle {
+  display: none;
+  font-size: 16px;
+  cursor: grab;
+  color: var(--muted);
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+.widget-drag-handle:active {
+  cursor: grabbing;
+}
+.widget-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.widget-nav-btn {
+  display: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  transition: .15s;
+}
+.widget-nav-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.widget-grid.edit-mode .widget {
+  border: 2px dashed var(--accent);
+  animation: widgetWiggle 0.3s ease infinite alternate;
+}
+.widget-grid.edit-mode .widget-drag-handle, 
+.widget-grid.edit-mode .widget-nav-btn {
+  display: inline-flex;
+}
+@keyframes widgetWiggle {
+  from { transform: rotate(-0.3deg); }
+  to { transform: rotate(0.3deg); }
+}
+
+/* ===== CUSTOM SELECT DROPDOWNS ===== */
+.custom-select {
+  position: relative;
+  width: 100%;
+}
+.custom-select-trigger {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  padding: 12px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: .15s;
+  color: var(--ink);
+}
+.custom-select-trigger:hover {
+  border-color: var(--accent);
+}
+.custom-select-trigger.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: var(--surface-2);
+}
+.custom-select-options {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  margin-top: 5px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: var(--shadow);
+  padding: 8px;
+}
+.custom-select.active .custom-select-options {
+  display: block;
+}
+.custom-select-search {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin-bottom: 6px;
+  outline: none;
+  font-size: 13px;
+  background: var(--surface-2);
+  color: var(--ink);
+}
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.option-item {
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13.5px;
+  transition: .15s;
+  color: var(--muted);
+  text-align: left;
+}
+.option-item:hover {
+  background: var(--surface-2);
+  color: var(--accent);
+}
+.option-item.selected {
+  background: var(--grad);
+  color: #fff;
+}
+
+/* ===== 3/4 WIREFRAME CARD BACKGROUNDS ===== */
+.gcard-wrap{position:relative;overflow:hidden}
+.ccard{position:relative;overflow:hidden}
+.gcar-wireframe-bg {
+  position: absolute;
+  right: -14px;
+  bottom: -12px;
+  height: 150%;
+  width: auto;
+  max-width: none;
+  pointer-events: none;
+  z-index: 0;
+  color: var(--accent);
+  transition: opacity .3s;
+  opacity: var(--wireframe-opacity);
+  -webkit-mask-image: linear-gradient(95deg, transparent 0%, rgba(0,0,0,.28) 32%, #000 70%);
+  mask-image: linear-gradient(95deg, transparent 0%, rgba(0,0,0,.28) 32%, #000 70%);
+}
+.ccard .gcar-wireframe-bg {
+  height: 138%;
+  right: -8px;
+  bottom: -8px;
+}
+
+/* ===== CUSTOM SLIDER ===== */
+.slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--line);
+  outline: none;
+}
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--grad);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  border: none;
+}
+
+/* ===== THEME CHOOSER ===== */
+.theme-btn, .theme-btn-p {
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: var(--shadow-sm);
+  border: 2px solid var(--line) !important;
+}
+.theme-btn:hover, .theme-btn-p:hover {
+  transform: scale(1.05);
+}
+.theme-btn.active, .theme-btn-p.active {
+  box-shadow: 0 0 0 3px var(--accent) !important;
+  border-color: var(--accent) !important;
+}
+
+.toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--muted);
+}
+.toggle-label input {
+  accent-color: var(--accent);
+}
+
+/* ===== FAB DOCK + STATUS ===== */
+.fab-dock{position:fixed;right:22px;bottom:22px;display:flex;flex-direction:column;align-items:flex-end;gap:8px;z-index:90}
+.fab{position:static;width:60px;height:60px;border-radius:50%;background:var(--grad);color:#fff;font-size:27px;display:grid;place-items:center;box-shadow:0 16px 34px -10px rgba(217,94,60,.7);transition:.22s;position:relative}
+.fab:hover{transform:scale(1.07)}
+.fab.hidden{transform:scale(0);opacity:0;pointer-events:none}
+.fab-badge{position:absolute;top:2px;right:2px;width:12px;height:12px;border-radius:50%;background:#E53E3E;border:2px solid var(--bg);display:none;z-index:1}
+.fab-badge.show{display:block}
+
+/* ===== BUTTON ANIMATIONS ===== */
+.btn.primary{background-size:200% 200%;animation:gradFlow 4s ease infinite}
+@keyframes gradFlow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@media(prefers-reduced-motion:reduce){.btn.primary{animation:none!important}}
+
+/* ===== KANIT HEADINGS — balanced weights (stay last to win the cascade) ===== */
+.greet,.section-title,.mag-hero h2,.mag-modal-body h2,.phead h2{font-weight:600;letter-spacing:.01em}
+.dash-head h3,.widget-header h3,.brand b{font-weight:700;letter-spacing:.02em}
+
+/* ===== PAGE TRANSITION — staggered slide-up (faint start, sharp finish) ===== */
+@keyframes riseUp{0%{opacity:0;transform:translateY(30px)}45%{opacity:.35}100%{opacity:1;transform:none}}
+.view.active .scroll>*{animation:riseUp .6s cubic-bezier(.16,.84,.28,1) backwards}
+.view.active .scroll>*:nth-child(1){animation-delay:.03s}
+.view.active .scroll>*:nth-child(2){animation-delay:.1s}
+.view.active .scroll>*:nth-child(3){animation-delay:.17s}
+.view.active .scroll>*:nth-child(4){animation-delay:.24s}
+.view.active .scroll>*:nth-child(n+5){animation-delay:.3s}
+.view.active .widget{animation:riseUp .65s cubic-bezier(.16,.84,.28,1) backwards}
+.view.active .widget:nth-child(1){animation-delay:.14s}
+.view.active .widget:nth-child(2){animation-delay:.24s}
+.view.active .widget:nth-child(3){animation-delay:.34s}
+.view.active .widget:nth-child(4){animation-delay:.44s}
+.view.active .widget:nth-child(n+5){animation-delay:.54s}
+.widget-grid.edit-mode .widget{animation:widgetWiggle .3s ease infinite alternate}
+
+/* ===== SKELETON LOADER (magazine) ===== */
+.sk{position:relative;overflow:hidden;background:var(--surface-2);border:1px solid var(--line-2);border-radius:14px}
+.sk::after{content:"";position:absolute;inset:0;transform:translateX(-100%);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,var(--sk-glow,.55)),transparent);animation:skSweep 1.4s ease infinite}
+[data-theme="cyber"],[data-theme="carbon"]{--sk-glow:.07}
+@keyframes skSweep{to{transform:translateX(100%)}}
+.mag-skel-hero{height:280px;border-radius:24px;margin-bottom:20px}
+.mag-skel-cover{height:150px;border-radius:16px;margin-bottom:12px}
+.sk-line{height:12px;border-radius:6px}
+.mag-in{animation:riseUp .55s cubic-bezier(.16,.84,.28,1) backwards}
+
+/* ===== BUTTON PRESS BOUNCE ===== */
+.btn,.cdiag,.fab,.mag-widget-btn,.theme-btn,.theme-btn-p,.widget-nav-btn{transition:transform .38s cubic-bezier(.3,1.6,.4,1),box-shadow .3s,border-color .2s,color .2s,background .2s}
+.btn:active,.cdiag:active,.fab:active,.mag-widget-btn:active,.theme-btn:active,.theme-btn-p:active,.widget-nav-btn:active{transform:scale(.93)}
+.qa:active{transform:translateY(-1px) scale(.95)}
+.mag-widget-item:active{transform:scale(.98);opacity:.6}
+
+/* ===== THEME CROSSFADE ===== */
+html.theme-fade,html.theme-fade *,html.theme-fade *::before,html.theme-fade *::after{transition:background .5s ease,background-color .5s ease,color .5s ease,border-color .5s ease,box-shadow .5s ease,fill .5s ease!important}
+
+/* ===== SOFT-3D BUTTONS (light top edge) + SITE CONFIG UI ===== */
+.btn.primary,.cdiag,.fab,.btn-signin{box-shadow:inset 0 1.5px 0 rgba(255,255,255,.42),inset 0 -2px 3px rgba(0,0,0,.16),0 10px 24px -10px rgba(217,94,60,.55)}
+.btn.primary:active,.cdiag:active,.fab:active,.btn-signin:active{box-shadow:inset 0 2px 6px rgba(0,0,0,.25)}
+.site-announce{position:relative;z-index:30;display:flex;align-items:center;justify-content:center;gap:8px;padding:9px 16px;font-size:13.5px;font-weight:600;background:var(--grad);color:#fff;text-align:center;flex-shrink:0}
+.site-announce.warn{background:linear-gradient(135deg,#E8A23C,#D64A4A)}
+.maint-overlay{position:fixed;inset:0;z-index:400;background:var(--bg);display:grid;place-items:center;padding:20px}
+.maint-card{text-align:center;max-width:420px;background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:38px 30px;box-shadow:var(--shadow)}
+.maint-card h2{font-family:var(--kd);font-weight:600;font-size:24px;margin:12px 0 8px}
+.maint-card p{color:var(--muted);font-size:14.5px}
+
+@media(prefers-reduced-motion:reduce){
+  .view.active .scroll>*,.view.active .widget,.mag-in{animation:none!important}
+  .sk::after{animation:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- NAV -->
+  <div class="navwrap">
+    <nav class="nav">
+      <div class="brand" data-view="home"><div class="mark"><svg viewBox="0 0 100 100"><path d="M66 9 L21 41.5 L37.5 41.5 L37.5 95 L66 95 Z"/></svg></div><b>SpireONE</b></div>
+      <div class="nav-links">
+        <span class="nav-ind" id="navInd"></span>
+        <a data-view="home" class="active"><i class="ti ti-layout-dashboard"></i> <span data-i18n="nav.home">หน้าหลัก</span></a>
+        <a data-view="garage"><i class="ti ti-car-garage"></i> <span data-i18n="nav.garage">การาจ</span></a>
+        <a data-view="magazine"><i class="ti ti-book-2"></i> <span data-i18n="nav.magazine">นิตยสาร</span></a>
+      </div>
+      <div class="nav-right">
+        <button class="btn-signin" id="signinBtn"><i class="ti ti-brand-google"></i> <span data-i18n="signin">เข้าสู่ระบบ</span></button>
+        <button class="avatar" id="avatarBtn"><span class="fb" id="navFb">?</span></button>
+        <div class="dd" id="dd">
+          <button data-view="profile"><i class="ti ti-user"></i> <span data-i18n="menu.profile">โปรไฟล์ & ตั้งค่า</span></button>
+          <button id="ddAdmin" style="display:none" onclick="location.href='admin.html'"><i class="ti ti-shield-lock"></i> <span data-i18n="menu.admin">แผงควบคุมแอดมิน</span></button>
+          <hr/>
+          <button id="logoutBtn"><i class="ti ti-logout"></i> <span data-i18n="menu.logout">ออกจากระบบ</span></button>
+        </div>
+      </div>
+    </nav>
+  </div>
+
+  <div class="main">
+    <!-- HOME / DASHBOARD -->
+    <section class="view active" id="v-home">
+      <div class="scroll">
+        <div class="greet-wrap" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:10px;">
+          <div class="greet" id="greet"></div>
+          <button class="btn" id="customizeBtn" onclick="toggleEditMode()"><i class="ti ti-adjustments-alt"></i> <span data-i18n="dash.customize">แต่งหน้าหลัก</span></button>
+        </div>
+        <p class="dash-sub" data-i18n="dash.sub">เลือกวิธีวินิจฉัย หรือกดวินิจฉัยรถในการาจของคุณได้เลย</p>
+        
+        <!-- Customize Panel (Visible only in edit mode) -->
+        <div class="customize-panel" id="customizePanel" style="display:none; background:var(--surface-2); border:1px dashed var(--accent); border-radius:18px; padding:16px; margin-bottom:20px;">
+          <h4 style="font-weight:700; margin-bottom:10px; color:var(--ink);"><i class="ti ti-settings"></i> เปิด/ปิดวิดเจ็ตหน้าหลัก</h4>
+          <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:12px;">
+            <label class="toggle-label"><input type="checkbox" id="chk-ai" onchange="toggleWidget('w-ai', this.checked)"> <span data-i18n="dash.widget_ai">ผู้ช่วย AI (ด่วน)</span></label>
+            <label class="toggle-label"><input type="checkbox" id="chk-magazine" onchange="toggleWidget('w-magazine', this.checked)"> <span data-i18n="dash.widget_news">ข่าวสารล่าสุด</span></label>
+            <label class="toggle-label"><input type="checkbox" id="chk-settings" onchange="toggleWidget('w-settings', this.checked)"> <span data-i18n="dash.widget_settings">ตั้งค่าธีมและสี</span></label>
+          </div>
+          <p style="font-size:12px; color:var(--muted);"><i class="ti ti-info-circle"></i> คุณสามารถลากย้ายสลับตำแหน่งวิดเจ็ตต่างๆ ด้านล่างได้เลยโดยใช้เมาส์ หรือใช้ปุ่มลูกศรควบคุมตำแหน่ง</p>
+        </div>
+
+        <div class="widget-grid" id="widgetGrid">
+          <!-- Widget 1: Cars List -->
+          <div class="widget" id="w-cars" draggable="true">
+            <div class="widget-header">
+              <span class="widget-drag-handle"><i class="ti ti-hand-grab"></i></span>
+              <h3 data-i18n="dash.cars">รถของฉัน</h3>
+              <div class="widget-actions">
+                <button class="widget-nav-btn" onclick="moveWidget('w-cars', -1); event.stopPropagation();"><i class="ti ti-arrow-narrow-up"></i></button>
+                <button class="widget-nav-btn" onclick="moveWidget('w-cars', 1); event.stopPropagation();"><i class="ti ti-arrow-narrow-down"></i></button>
+                <span class="dash-link" data-view="garage" data-i18n="dash.manage">จัดการ →</span>
+              </div>
+            </div>
+            <div class="cars-grid" id="dashCars"></div>
+          </div>
+
+          <!-- Widget 2: Quick Diagnostic Tools -->
+          <div class="widget" id="w-quick-actions" draggable="true">
+            <div class="widget-header">
+              <span class="widget-drag-handle"><i class="ti ti-hand-grab"></i></span>
+              <h3 data-i18n="dash.diagnose_opt">วินิจฉัยปัญหาด่วน</h3>
+              <div class="widget-actions">
+                <button class="widget-nav-btn" onclick="moveWidget('w-quick-actions', -1); event.stopPropagation();"><i class="ti ti-arrow-narrow-up"></i></button>
+                <button class="widget-nav-btn" onclick="moveWidget('w-quick-actions', 1); event.stopPropagation();"><i class="ti ti-arrow-narrow-down"></i></button>
+              </div>
+            </div>
+            <div class="qa-grid">
+              <button class="qa" data-open="text"><i class="ti ti-message-2 qa-deco" aria-hidden="true"></i><div class="qa-ic"><i class="ti ti-message-2"></i></div><div class="qa-t" data-i18n="qa.text">พิมพ์ถาม</div></button>
+              <button class="qa" data-open="image"><i class="ti ti-camera qa-deco" aria-hidden="true"></i><div class="qa-ic"><i class="ti ti-camera"></i></div><div class="qa-t" data-i18n="qa.image">ถ่ายรูป</div></button>
+              <button class="qa" data-open="video"><i class="ti ti-video qa-deco" aria-hidden="true"></i><div class="qa-ic"><i class="ti ti-video"></i></div><div class="qa-t" data-i18n="qa.video">วิดีโอ</div></button>
+              <button class="qa" data-open="mic"><i class="ti ti-microphone qa-deco" aria-hidden="true"></i><div class="qa-ic"><i class="ti ti-microphone"></i></div><div class="qa-t" data-i18n="qa.mic">อัดเสียง</div></button>
+            </div>
+          </div>
+
+          <!-- Widget 3: Quick AI Chatbot Widget (Optional) -->
+          <div class="widget" id="w-ai" draggable="true" style="display:none;">
+            <div class="widget-header">
+              <span class="widget-drag-handle"><i class="ti ti-hand-grab"></i></span>
+              <h3 data-i18n="dash.widget_ai">ผู้ช่วย AI (ด่วน)</h3>
+              <div class="widget-actions">
+                <button class="widget-nav-btn" onclick="moveWidget('w-ai', -1); event.stopPropagation();"><i class="ti ti-arrow-narrow-up"></i></button>
+                <button class="widget-nav-btn" onclick="moveWidget('w-ai', 1); event.stopPropagation();"><i class="ti ti-arrow-narrow-down"></i></button>
+              </div>
+            </div>
+            <div class="card" style="padding:16px; display:flex; flex-direction:column; gap:10px;">
+              <p style="font-size:13.5px; color:var(--muted)">เริ่มต้นการวินิจฉัยปัญหาของรถยนต์ร่วมกับ AI ผู้เชี่ยวชาญแบบส่วนตัว</p>
+              <button class="btn primary" onclick="openChat({})" style="width:fit-content; padding:8px 16px;"><i class="ti ti-message-chatbot"></i> เปิดห้องแชตผู้ช่วย</button>
+            </div>
+          </div>
+
+          <!-- Widget 4: Magazine feed (Optional) -->
+          <div class="widget" id="w-magazine" draggable="true" style="display:none;">
+            <div class="widget-header">
+              <span class="widget-drag-handle"><i class="ti ti-hand-grab"></i></span>
+              <h3 data-i18n="dash.widget_news">ข่าวสารล่าสุด</h3>
+              <div class="widget-actions">
+                <button class="widget-nav-btn" onclick="moveWidget('w-magazine', -1); event.stopPropagation();"><i class="ti ti-arrow-narrow-up"></i></button>
+                <button class="widget-nav-btn" onclick="moveWidget('w-magazine', 1); event.stopPropagation();"><i class="ti ti-arrow-narrow-down"></i></button>
+              </div>
+            </div>
+            <div id="w-magBody" class="card" style="padding:16px; border:none; box-shadow:none; background:transparent;">
+              <div style="text-align:center;color:var(--muted);padding:20px"><i class="ti ti-loader" style="font-size:24px"></i><br/><span data-i18n="mag.loading">กำลังโหลดข่าว...</span></div>
+            </div>
+          </div>
+
+          <!-- Widget 5: Theme settings (Optional) -->
+          <div class="widget" id="w-settings" draggable="true" style="display:none;">
+            <div class="widget-header">
+              <span class="widget-drag-handle"><i class="ti ti-hand-grab"></i></span>
+              <h3 data-i18n="dash.widget_settings">ตั้งค่าธีมและสี</h3>
+              <div class="widget-actions">
+                <button class="widget-nav-btn" onclick="moveWidget('w-settings', -1); event.stopPropagation();"><i class="ti ti-arrow-narrow-up"></i></button>
+                <button class="widget-nav-btn" onclick="moveWidget('w-settings', 1); event.stopPropagation();"><i class="ti ti-arrow-narrow-down"></i></button>
+              </div>
+            </div>
+            <div class="card" style="padding:16px; display:flex; flex-direction:column; gap:12px;">
+              <div>
+                <h4 style="font-size:13.5px; font-weight:700; margin-bottom:6px; color:var(--ink);" data-i18n="set.theme">ธีมระบบ</h4>
+                <div class="theme-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;">
+                  <button class="theme-btn warm" onclick="setTheme('warm')" style="background:#F6F3EC; height:36px; border-radius:10px;" title="Warm Clay"></button>
+                  <button class="theme-btn cyber" onclick="setTheme('cyber')" style="background:#0A0D1A; height:36px; border-radius:10px;" title="Deep Cyber"></button>
+                  <button class="theme-btn emerald" onclick="setTheme('emerald')" style="background:#EDF4F2; height:36px; border-radius:10px;" title="Emerald Mint"></button>
+                  <button class="theme-btn carbon" onclick="setTheme('carbon')" style="background:#1A1A1E; height:36px; border-radius:10px;" title="Carbon Red"></button>
+                </div>
+              </div>
+              <div>
+                <h4 style="font-size:13.5px; font-weight:700; margin-bottom:4px; color:var(--ink);" data-i18n="set.opacity">ความชัดเจนพื้นหลังการาจ</h4>
+                <input type="range" class="slider" min="0" max="0.6" step="0.05" id="wireframeOpacitySlider" oninput="setWireframeOpacity(this.value)" style="width:100%;">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GARAGE -->
+    <section class="view" id="v-garage">
+      <div class="scroll">
+        <h2 class="section-title" data-i18n="garage.title">การาจของฉัน</h2>
+        <p class="section-sub" data-i18n="garage.sub">บันทึกรถของคุณ — ประวัติอาการที่เคยวินิจฉัยจะถูกเก็บไว้ในแต่ละคัน</p>
+        <div id="garageList"></div>
+        <div class="card" style="margin-top:6px; overflow:visible;">
+          <h3 style="font-weight:700;margin-bottom:14px"><i class="ti ti-plus"></i> <span data-i18n="garage.add">เพิ่มรถ</span></h3>
+          
+          <div class="grid2" style="overflow:visible; margin-bottom:12px;">
+            <!-- Custom Dropdown: Make -->
+            <div class="custom-select" id="gMakeSelect">
+              <div class="custom-select-trigger" onclick="toggleCustomSelect('gMakeSelect')">
+                <span class="val" data-i18n="select.make">เลือกยี่ห้อ...</span>
+                <i class="ti ti-chevron-down"></i>
+              </div>
+              <div class="custom-select-options">
+                <input type="text" class="custom-select-search" placeholder="ค้นหายี่ห้อ..." oninput="filterCustomSelect('gMakeSelect', this.value)">
+                <div class="options-list" id="gMakeList"></div>
+              </div>
+            </div>
+
+            <!-- Custom Dropdown: Model -->
+            <div class="custom-select" id="gModelSelect">
+              <div class="custom-select-trigger disabled" id="gModelTrigger" onclick="toggleCustomSelect('gModelSelect')">
+                <span class="val" data-i18n="select.model">เลือกรุ่น...</span>
+                <i class="ti ti-chevron-down"></i>
+              </div>
+              <div class="custom-select-options">
+                <input type="text" class="custom-select-search" placeholder="ค้นหารุ่น..." oninput="filterCustomSelect('gModelSelect', this.value)">
+                <div class="options-list" id="gModelList"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid2" style="overflow:visible;">
+            <!-- Year Dropdown -->
+            <div class="custom-select" id="gYearSelect">
+              <div class="custom-select-trigger disabled" id="gYearTrigger" onclick="toggleCustomSelect('gYearSelect')">
+                <span class="val" data-i18n="select.year">เลือกปี...</span>
+                <i class="ti ti-chevron-down"></i>
+              </div>
+              <div class="custom-select-options">
+                <input type="text" class="custom-select-search" placeholder="ค้นหาปี..." oninput="filterCustomSelect('gYearSelect', this.value)">
+                <div class="options-list" id="gYearList"></div>
+              </div>
+            </div>
+            
+            <input class="input" id="gMileage" data-i18n-ph="garage.km" placeholder="เลขไมล์ปัจจุบัน (กม.)"/>
+          </div>
+
+          <div id="gCustomBox" style="display:none; margin-top:12px; overflow:visible;">
+            <div class="grid2" style="overflow:visible; margin-bottom:12px;">
+              <input class="input" id="gCustomMake" placeholder="ยี่ห้อ (พิมพ์เอง)"/>
+              <input class="input" id="gCustomModel" placeholder="รุ่น (พิมพ์เอง)"/>
+            </div>
+            <div class="custom-select" id="gBodySelect">
+              <div class="custom-select-trigger" onclick="toggleCustomSelect('gBodySelect')">
+                <span class="val">ประเภทตัวถัง...</span>
+                <i class="ti ti-chevron-down"></i>
+              </div>
+              <div class="custom-select-options">
+                <div class="options-list" id="gBodyList"></div>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn primary" id="gAdd" style="margin-top:14px"><i class="ti ti-plus"></i> <span data-i18n="garage.add">เพิ่มรถ</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- MAGAZINE -->
+    <section class="view" id="v-magazine">
+      <div class="scroll">
+        <h2 class="section-title" data-i18n="mag.title">นิตยสารรถยนต์</h2>
+        <p class="section-sub" data-i18n="mag.sub">ข่าวสารและบทความรถยนต์ล่าสุด — ดึงสดด้วย Gemini</p>
+        <div id="magBody"><div style="text-align:center;color:var(--muted);padding:40px"><i class="ti ti-loader" style="font-size:30px"></i><br/><span data-i18n="mag.loading">กำลังโหลดข่าวล่าสุด...</span></div></div>
+      </div>
+    </section>
+
+    <!-- PROFILE -->
+    <section class="view" id="v-profile">
+      <div class="scroll">
+        <div class="phead">
+          <div class="pic" id="pPic"></div>
+          <div><h2 id="pName" data-i18n="profile.guest">ผู้มาเยือน</h2><div class="em" id="pEmail" data-i18n="profile.guestsub">ยังไม่ได้เข้าสู่ระบบ</div>
+            <span class="rolechip" id="pRole" style="display:none"><i class="ti ti-shield-check"></i> ผู้ดูแลระบบ</span></div>
+        </div>
+        <div class="card set-card">
+          <h3 data-i18n="set.lang">ภาษา / Language</h3>
+          <p class="d" data-i18n="set.langd">เลือกภาษาที่ใช้ในเว็บไซต์ (มีผลกับข้อความและ AI)</p>
+          <div class="lang-grid" id="langSeg" style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px;">
+            <button class="btn" data-l="th">ไทย</button>
+            <button class="btn" data-l="en">English</button>
+            <button class="btn" data-l="ja">日本語</button>
+            <button class="btn" data-l="zh">中文</button>
+            <button class="btn" data-l="de">Deutsch</button>
+            <button class="btn" data-l="es">Español</button>
+          </div>
+        </div>
+        
+        <div class="card set-card">
+          <h3 data-i18n="set.theme">ธีมและสีของระบบ</h3>
+          <p class="d" data-i18n="set.themed">เลือกธีมสีที่ต้องการเปลี่ยนสำหรับเว็บไซต์</p>
+          <div class="theme-grid-profile" style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px; max-width:320px;">
+            <button class="btn theme-btn-p warm" onclick="setTheme('warm')" style="height:45px; border-radius:12px; background:#F6F3EC;" title="Warm Clay"></button>
+            <button class="btn theme-btn-p cyber" onclick="setTheme('cyber')" style="height:45px; border-radius:12px; background:#0A0D1A;" title="Deep Cyber"></button>
+            <button class="btn theme-btn-p emerald" onclick="setTheme('emerald')" style="height:45px; border-radius:12px; background:#EDF4F2;" title="Emerald Mint"></button>
+            <button class="btn theme-btn-p carbon" onclick="setTheme('carbon')" style="height:45px; border-radius:12px; background:#1A1A1E;" title="Carbon Red"></button>
+          </div>
+        </div>
+        
+        <div class="card set-card">
+          <h3 data-i18n="set.opacity">ความชัดเจนของพื้นหลังการาจ</h3>
+          <p class="d" data-i18n="set.opacityd">ปรับระดับความ visible ของเส้นโครงสร้างรถ 3D</p>
+          <input type="range" class="slider" min="0" max="0.6" step="0.05" id="profileOpacitySlider" oninput="setWireframeOpacity(this.value)" style="width:100%; margin-top:8px;">
+        </div>
+        <div class="card set-card"><h3 data-i18n="set.account">บัญชี</h3><p class="d" data-i18n="set.accountd">เข้าสู่ระบบด้วย Google เพื่อใช้ Admin และจดจำข้อมูล</p>
+          <div id="accountBox"></div></div>
+        <div class="card set-card" id="adminCard" style="display:none">
+          <h3><i class="ti ti-shield-lock"></i> <span data-i18n="menu.admin">แผงควบคุมแอดมิน</span></h3>
+          <p class="d" data-i18n="set.admind">จัดการผู้ใช้ ยศ นิตยสาร สถิติ และตั้งค่าเว็บทั้งหมด</p>
+          <button class="btn primary" onclick="location.href='admin.html'"><i class="ti ti-external-link"></i> <span data-i18n="set.openadmin">เปิดแผงควบคุม</span></button>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- MAGAZINE DETAIL MODAL -->
+<div class="mag-modal-backdrop" id="magModal" onclick="if(event.target===this)closeMagModal()">
+  <div class="mag-modal-sheet">
+    <div class="mag-modal-handle"></div>
+    <div class="mag-modal-head">
+      <span class="mag-modal-tag" id="mmTag"></span>
+      <button class="mag-modal-close" onclick="closeMagModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="mag-modal-body">
+      <h2 id="mmTitle"></h2>
+      <div class="full-text" id="mmFull"></div>
+    </div>
+    <div class="mag-modal-actions">
+      <a id="mmUrl" class="btn primary" target="_blank" rel="noopener" style="display:none"><i class="ti ti-external-link"></i> อ่านต้นฉบับ</a>
+      <button class="btn" onclick="closeMagModal()">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHAT FAB — opens the standalone SpireONE chat app (chat.html) -->
+<div class="fab-dock" id="fabDock">
+  <button class="fab" id="fab"><i class="ti ti-message-chatbot"></i><span class="fab-badge" id="fabBadge"></span></button>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const esc=s=>(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const LS={get:(k,d)=>{try{return JSON.parse(localStorage.getItem("spire_"+k))??d}catch{return d}},set:(k,v)=>localStorage.setItem("spire_"+k,JSON.stringify(v)),del:k=>localStorage.removeItem("spire_"+k)};
+
+/* ===== CONFIG ===== */
+const BACKEND_URL = "https://spireonebackend.carspirethailand.workers.dev";
+const fbConfig={apiKey:"AIzaSyDDtvz4d4FRG_KOq5EQHmlDijU-x1FDZlQ",authDomain:"sp1p-82396.firebaseapp.com",databaseURL:"https://sp1p-82396-default-rtdb.firebaseio.com",projectId:"sp1p-82396",storageBucket:"sp1p-82396.appspot.com",messagingSenderId:"924479207020",appId:"1:924479207020:web:ec64428a61403e1ad48a49"};
+const ADMINS=["anapatmaliwong@gmail.com","carspirethailand@gmail.com"];
+/* AI + secrets live on the backend only — nothing sensitive ships in this file */
+let auth=null,useFb=false;
+try{firebase.initializeApp(fbConfig);auth=firebase.auth();auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});useFb=true;}catch(e){console.warn("fb",e)}
+let currentUser=null,lang=LS.get("lang","th");
+let currentTheme = LS.get("theme", "warm");
+let wireframeOpacity = LS.get("opacity", 0.15);
+
+/* ===== VEHICLE CATALOG & SVGs ===== */
+/* compact catalog: "Model|bodytype|startYear" — body ∈ sedan,suv,pickup,hatchback,coupe,van,mpv,ev */
+function M(s){return s.split(",").map(x=>{const p=x.trim().split("|");return{name:p[0].trim(),type:(p[1]||"sedan").trim(),startYear:+(p[2]||1990)}})}
+const CAR_DATABASE = {
+ "Toyota":M("Corolla|sedan|1990, Corolla Altis|sedan|2001, Corolla Cross|suv|2020, Camry|sedan|1990, Vios|sedan|2003, Yaris|hatchback|2006, Yaris Ativ|sedan|2017, Yaris Cross|suv|2023, C-HR|suv|2018, Fortuner|suv|2005, Hilux|pickup|1990, Hilux Revo|pickup|2015, Hilux Champ|pickup|2023, Innova|mpv|2004, Innova Zenix|mpv|2023, Veloz|mpv|2022, Avanza|mpv|2004, Sienta|mpv|2016, Alphard|van|2008, Vellfire|van|2008, Majesty|van|2019, Commuter|van|2005, Granvia|van|2019, Supra|coupe|2019, GR86|coupe|2022, GR Yaris|hatchback|2020, Prius|hatchback|2009, bZ4X|ev|2022, Land Cruiser|suv|1998, Land Cruiser Prado|suv|2003, Rush|suv|2018, Raize|suv|2021, Crown|sedan|2003, Wish|mpv|2003, 86|coupe|2012"),
+ "Honda":M("City|sedan|1996, City Hatchback|hatchback|2021, Civic|sedan|1990, Civic Type R|hatchback|2008, Accord|sedan|1990, Jazz|hatchback|2003, Fit|hatchback|2003, HR-V|suv|2015, CR-V|suv|1996, BR-V|suv|2016, WR-V|suv|2023, e:N1|ev|2023, Mobilio|mpv|2014, Freed|mpv|2008, Odyssey|van|2002, StepWGN|van|2009, Brio|hatchback|2011, Elysion|van|2004, Stream|mpv|2000"),
+ "Isuzu":M("D-Max|pickup|2002, D-Max V-Cross|pickup|2012, D-Max Spark|pickup|2020, MU-X|suv|2014, MU-7|suv|2004"),
+ "Mitsubishi":M("Mirage|hatchback|2012, Attrage|sedan|2013, Lancer|sedan|1992, Lancer EX|sedan|2008, Triton|pickup|2005, Pajero Sport|suv|2008, Outlander|suv|2003, Outlander PHEV|suv|2014, Xpander|mpv|2017, Xpander Cross|mpv|2019, Xforce|suv|2023, Space Wagon|mpv|2003"),
+ "Nissan":M("Almera|sedan|2011, March|hatchback|2010, Note|hatchback|2005, Sylphy|sedan|2008, Teana|sedan|2004, Kicks|suv|2016, X-Trail|suv|2003, Terra|suv|2018, Navara|pickup|2014, Frontier|pickup|1998, Juke|suv|2010, Leaf|ev|2010, GT-R|coupe|2007, 370Z|coupe|2009, Z|coupe|2022, Serena|mpv|2010, Livina|mpv|2007"),
+ "Mazda":M("Mazda 2|hatchback|2007, Mazda 2 Sedan|sedan|2015, Mazda 3|sedan|2004, Mazda 6|sedan|2002, CX-3|suv|2015, CX-30|suv|2019, CX-5|suv|2012, CX-8|suv|2018, CX-60|suv|2023, CX-9|suv|2016, BT-50|pickup|2006, MX-5|coupe|1998"),
+ "Ford":M("Ranger|pickup|1998, Ranger Raptor|pickup|2018, Everest|suv|2003, Mustang|coupe|1990, Mustang Mach-E|ev|2021, Focus|hatchback|2004, Fiesta|hatchback|2008, EcoSport|suv|2013, Territory|suv|2023, Escape|suv|2001, Explorer|suv|2011"),
+ "Suzuki":M("Swift|hatchback|2005, Celerio|hatchback|2014, Ciaz|sedan|2014, Ertiga|mpv|2012, XL7|suv|2020, Jimny|suv|1998, Carry|pickup|2005, Vitara|suv|2015, S-Presso|hatchback|2020, Fronx|suv|2023"),
+ "MG":M("MG3|hatchback|2014, MG4 Electric|ev|2022, MG5|sedan|2013, MG ZS|suv|2017, MG HS|suv|2019, MG GT|sedan|2021, MG VS HEV|suv|2022, MG Extender|pickup|2019, MG Maxus 9|van|2022, MG Cyberster|coupe|2024, MG ES|ev|2019, MG EP|ev|2020"),
+ "BYD":M("Atto 3|suv|2022, Dolphin|hatchback|2022, Seal|sedan|2022, Seal U|suv|2023, Sealion 6|suv|2023, Sealion 7|suv|2024, M6|mpv|2024, Han|sedan|2020, Tang|suv|2018, Song Plus|suv|2020"),
+ "Tesla":M("Model 3|sedan|2017, Model Y|suv|2020, Model S|sedan|2012, Model X|suv|2015, Cybertruck|pickup|2023"),
+ "BMW":M("1 Series|hatchback|2004, 2 Series|coupe|2014, 2 Series Gran Coupe|sedan|2020, 3 Series|sedan|1990, 4 Series|coupe|2014, 5 Series|sedan|1990, 7 Series|sedan|1994, 8 Series|coupe|2018, X1|suv|2009, X3|suv|2003, X4|suv|2014, X5|suv|1999, X6|suv|2008, X7|suv|2019, Z4|coupe|2002, i3|ev|2013, i4|ev|2021, i5|ev|2023, i7|ev|2022, iX|ev|2021, iX1|ev|2022, iX3|ev|2021, M3|sedan|1990, M4|coupe|2014"),
+ "Mercedes-Benz":M("A-Class|hatchback|2013, A-Class Sedan|sedan|2018, C-Class|sedan|1993, E-Class|sedan|1995, S-Class|sedan|1991, CLA|sedan|2013, CLS|coupe|2004, GLA|suv|2014, GLB|suv|2019, GLC|suv|2015, GLE|suv|2015, GLS|suv|2016, G-Class|suv|2000, V-Class|van|2014, Vito|van|2014, EQA|ev|2021, EQB|ev|2021, EQE|ev|2022, EQS|ev|2021, EQE SUV|ev|2022, AMG GT|coupe|2015, SL|coupe|1990"),
+ "Audi":M("A1|hatchback|2010, A3|sedan|1996, A4|sedan|1994, A5|coupe|2007, A6|sedan|1994, A7|coupe|2010, A8|sedan|1994, Q2|suv|2016, Q3|suv|2011, Q5|suv|2008, Q7|suv|2005, Q8|suv|2018, TT|coupe|1998, R8|coupe|2006, e-tron GT|ev|2021, Q4 e-tron|ev|2021, Q8 e-tron|ev|2019"),
+ "Volkswagen":M("Polo|hatchback|2002, Golf|hatchback|1990, Golf GTI|hatchback|2004, Jetta|sedan|1992, Passat|sedan|1990, Tiguan|suv|2008, Touareg|suv|2003, T-Cross|suv|2019, T-Roc|suv|2017, ID.3|ev|2020, ID.4|ev|2021, ID.Buzz|van|2022, Caravelle|van|2003, Arteon|coupe|2017"),
+ "Hyundai":M("i10|hatchback|2008, i20|hatchback|2009, i30|hatchback|2007, Accent|sedan|2010, Elantra|sedan|1992, Sonata|sedan|1990, Creta|suv|2015, Tucson|suv|2004, Santa Fe|suv|2001, Palisade|suv|2019, Venue|suv|2019, Staria|van|2021, H-1|van|2007, Ioniq 5|ev|2021, Ioniq 6|ev|2022, Kona|suv|2017, Kona Electric|ev|2018"),
+ "Kia":M("Picanto|hatchback|2004, Rio|hatchback|2005, Cerato|sedan|2004, K3|sedan|2018, K5|sedan|2010, Soul|hatchback|2009, Seltos|suv|2019, Sportage|suv|1995, Sorento|suv|2002, Carnival|van|1999, Carens|mpv|2006, EV6|ev|2021, EV9|ev|2023, Niro|suv|2016, Stinger|coupe|2017"),
+ "Volvo":M("S60|sedan|2001, S90|sedan|2016, V60|hatchback|2010, V90|hatchback|2016, XC40|suv|2018, XC60|suv|2008, XC90|suv|2002, C40 Recharge|ev|2021, EX30|ev|2023, EX90|ev|2024"),
+ "Lexus":M("IS|sedan|1999, ES|sedan|1990, LS|sedan|1990, GS|sedan|1993, UX|suv|2018, NX|suv|2014, RX|suv|1998, GX|suv|2002, LX|suv|2007, RZ|ev|2022, RC|coupe|2014, LC|coupe|2017, LM|van|2020"),
+ "Subaru":M("Impreza|hatchback|1992, WRX|sedan|1992, Legacy|sedan|1990, XV|suv|2012, Crosstrek|suv|2023, Forester|suv|1997, Outback|suv|1995, BRZ|coupe|2012, Levorg|hatchback|2014"),
+ "Chevrolet":M("Cruze|sedan|2008, Colorado|pickup|2003, Trailblazer|suv|2012, Captiva|suv|2006, Camaro|coupe|1990, Corvette|coupe|1990, Spark|hatchback|2010, Aveo|sedan|2004, Sonic|hatchback|2011"),
+ "Porsche":M("911|coupe|1990, 718 Cayman|coupe|2005, 718 Boxster|coupe|1996, Panamera|sedan|2009, Macan|suv|2014, Cayenne|suv|2002, Taycan|ev|2019"),
+ "MINI":M("Cooper|hatchback|2001, Cooper S|hatchback|2002, Clubman|hatchback|2007, Countryman|suv|2010, Cooper Convertible|coupe|2004, Cooper SE|ev|2020"),
+ "GWM":M("Haval H6|suv|2011, Haval Jolion|suv|2021, Haval H6 PHEV|suv|2021, Tank 300|suv|2021, Tank 500|suv|2023, Ora Good Cat|ev|2020, Ora 07|ev|2023, Cannon|pickup|2021"),
+ "NETA":M("Neta V|suv|2020, Neta X|suv|2022, Neta S|sedan|2022, Neta GT|coupe|2023, Neta Aya|suv|2023"),
+ "Changan":M("Deepal S07|suv|2023, Deepal L07|sedan|2023, Deepal S05|suv|2024, CS35 Plus|suv|2018, CS55|suv|2017, Hunter|pickup|2022, Lumin|ev|2022, Alsvin|sedan|2018, UNI-T|suv|2020, UNI-K|suv|2021"),
+ "AION":M("Aion Y Plus|suv|2021, Aion ES|sedan|2023, Aion V|suv|2023, Aion S|sedan|2019, Aion Hyptec HT|suv|2023"),
+ "GAC":M("GAC GS3|suv|2017, GAC GS8|suv|2018, GAC M8|mpv|2017, GAC Emkoo|suv|2022"),
+ "Zeekr":M("Zeekr 001|hatchback|2021, Zeekr 009|van|2022, Zeekr X|suv|2023, Zeekr 007|sedan|2023"),
+ "XPeng":M("P7|sedan|2020, P5|sedan|2021, G6|suv|2023, G9|suv|2022, X9|van|2023"),
+ "NIO":M("ET5|sedan|2022, ET7|sedan|2021, ES6|suv|2018, ES8|suv|2018, EL7|suv|2022"),
+ "Geely":M("Coolray|suv|2018, Okavango|suv|2020, Emgrand|sedan|2009, Geometry C|ev|2020, Galaxy E5|suv|2024"),
+ "Lynk & Co":M("01|suv|2017, 03|sedan|2018, 05|suv|2019, 06|suv|2023, 09|suv|2021"),
+ "Wuling":M("Air EV|ev|2022, Bingo|hatchback|2023, Almaz|suv|2019, Cortez|mpv|2018, Hongguang|van|2010"),
+ "Land Rover":M("Defender|suv|1990, Discovery|suv|1990, Discovery Sport|suv|2014, Range Rover|suv|1990, Range Rover Sport|suv|2005, Range Rover Evoque|suv|2011, Range Rover Velar|suv|2017"),
+ "Jaguar":M("XE|sedan|2015, XF|sedan|2008, F-Type|coupe|2013, E-Pace|suv|2017, F-Pace|suv|2016, I-Pace|ev|2018"),
+ "Jeep":M("Wrangler|suv|1990, Grand Cherokee|suv|1992, Compass|suv|2007, Renegade|suv|2014, Gladiator|pickup|2019, Cherokee|suv|1990"),
+ "Peugeot":M("208|hatchback|2012, 308|hatchback|2007, 2008|suv|2013, 3008|suv|2008, 5008|suv|2009, 408|sedan|2010, Partner|van|1996, Expert|van|1995, e-2008|ev|2020"),
+ "Renault":M("Clio|hatchback|1990, Megane|hatchback|1995, Captur|suv|2013, Koleos|suv|2008, Duster|suv|2010, Kwid|hatchback|2015, Zoe|ev|2012, Triber|mpv|2019"),
+ "Skoda":M("Octavia|sedan|1996, Fabia|hatchback|1999, Superb|sedan|2001, Kodiaq|suv|2016, Karoq|suv|2017, Kamiq|suv|2019, Enyaq|ev|2020"),
+ "Fiat":M("500|hatchback|2007, 500X|suv|2014, Panda|hatchback|1990, Tipo|sedan|2015, 500e|ev|2020"),
+ "Acura":M("Integra|sedan|2022, TLX|sedan|2014, MDX|suv|2000, RDX|suv|2006, NSX|coupe|1990"),
+ "Infiniti":M("Q50|sedan|2013, Q60|coupe|2016, QX50|suv|2013, QX60|suv|2012, QX80|suv|2010"),
+ "Genesis":M("G70|sedan|2017, G80|sedan|2016, G90|sedan|2015, GV60|ev|2021, GV70|suv|2020, GV80|suv|2020"),
+ "Cadillac":M("CT4|sedan|2019, CT5|sedan|2019, Escalade|suv|1998, XT4|suv|2018, XT5|suv|2016, Lyriq|ev|2022"),
+ "GMC":M("Sierra|pickup|1998, Canyon|pickup|2003, Yukon|suv|1992, Acadia|suv|2006, Hummer EV|ev|2021"),
+ "Dodge":M("Charger|sedan|2005, Challenger|coupe|2008, Durango|suv|1997"),
+ "RAM":M("1500|pickup|1994, 2500|pickup|1994"),
+ "Chrysler":M("300|sedan|2004, Pacifica|van|2016"),
+ "Alfa Romeo":M("Giulia|sedan|2015, Stelvio|suv|2016, Tonale|suv|2022, 4C|coupe|2013"),
+ "Maserati":M("Ghibli|sedan|2013, Quattroporte|sedan|1990, Levante|suv|2016, Grecale|suv|2022, MC20|coupe|2020"),
+ "Aston Martin":M("DB11|coupe|2016, DB12|coupe|2023, Vantage|coupe|2005, DBX|suv|2020"),
+ "Ferrari":M("Roma|coupe|2020, 296 GTB|coupe|2021, SF90|coupe|2019, Purosangue|suv|2022, F8|coupe|2019"),
+ "Lamborghini":M("Huracan|coupe|2014, Aventador|coupe|2011, Urus|suv|2018, Revuelto|coupe|2023"),
+ "Bentley":M("Continental GT|coupe|2003, Flying Spur|sedan|2005, Bentayga|suv|2015"),
+ "Rolls-Royce":M("Phantom|sedan|1990, Ghost|sedan|2009, Cullinan|suv|2018, Spectre|ev|2023"),
+ "McLaren":M("720S|coupe|2017, Artura|coupe|2021, GT|coupe|2019"),
+ "Lotus":M("Emira|coupe|2021, Eletre|ev|2022, Evora|coupe|2009"),
+ "Polestar":M("Polestar 2|ev|2020, Polestar 3|ev|2023, Polestar 4|ev|2024"),
+ "Rivian":M("R1T|pickup|2021, R1S|suv|2022"),
+ "Lucid":M("Air|sedan|2021, Gravity|suv|2024"),
+ "VinFast":M("VF 3|suv|2024, VF 5|suv|2023, VF 6|suv|2023, VF 7|suv|2023, VF 8|suv|2022, VF 9|suv|2023, VF e34|ev|2021"),
+ "Smart":M("Smart #1|ev|2022, Smart #3|ev|2023, Fortwo|hatchback|1998"),
+ "DS":M("DS 3|suv|2015, DS 4|hatchback|2021, DS 7|suv|2017, DS 9|sedan|2020"),
+ "Cupra":M("Leon|hatchback|2020, Formentor|suv|2020, Born|ev|2021, Tavascan|ev|2024"),
+ "SEAT":M("Ibiza|hatchback|1990, Leon|hatchback|1999, Ateca|suv|2016, Arona|suv|2017"),
+ "Proton":M("Saga|sedan|1990, Persona|sedan|2007, X50|suv|2020, X70|suv|2018"),
+ "Perodua":M("Myvi|hatchback|2005, Axia|hatchback|2014, Bezza|sedan|2016, Ativa|suv|2021"),
+ "Tata":M("Nexon|suv|2017, Punch|suv|2021, Harrier|suv|2019, Tiago|hatchback|2016"),
+ "Mahindra":M("Scorpio|suv|2002, XUV700|suv|2021, Thar|suv|2010, Bolero|suv|2000"),
+ "KGM":M("Tivoli|suv|2015, Korando|suv|1996, Rexton|suv|2001, Musso|pickup|2018"),
+ "Daihatsu":M("Terios|suv|2006, Sirion|hatchback|2004, Ayla|hatchback|2013, Gran Max|van|2007"),
+ "Chery":M("Tiggo 4|suv|2017, Tiggo 7 Pro|suv|2020, Tiggo 8 Pro|suv|2021, Omoda 5|suv|2022"),
+ "JAC":M("JAC T9|pickup|2023, JAC e-JS4|ev|2021, JAC Sehol|sedan|2020"),
+ "Maxus":M("T60|pickup|2017, G50|mpv|2019, Mifa 9|ev|2022, D90|suv|2017"),
+ "Leapmotor":M("C10|suv|2024, T03|ev|2020, C01|sedan|2022"),
+ "Li Auto":M("Li L7|suv|2023, Li L8|suv|2022, Li L9|suv|2022, Li Mega|van|2024"),
+ "Opel":M("Corsa|hatchback|1990, Astra|hatchback|1991, Mokka|suv|2012, Grandland|suv|2017")
+};
+const BODY_TYPES=[
+ {k:"sedan",th:"รถเก๋ง (Sedan)",en:"Sedan"},
+ {k:"hatchback",th:"แฮทช์แบ็ก (Hatchback)",en:"Hatchback"},
+ {k:"suv",th:"เอสยูวี (SUV)",en:"SUV"},
+ {k:"pickup",th:"กระบะ (Pickup)",en:"Pickup"},
+ {k:"mpv",th:"อเนกประสงค์ (MPV)",en:"MPV"},
+ {k:"van",th:"รถตู้ (Van)",en:"Van"},
+ {k:"coupe",th:"คูเป้/สปอร์ต",en:"Coupe / Sport"},
+ {k:"ev",th:"รถไฟฟ้า (EV)",en:"Electric"}
+];
+function bodyLabel(k){const b=BODY_TYPES.find(x=>x.k===k)||BODY_TYPES[0];return lang==="th"?b.th:b.en}
+
+/* ===== 3/4-ANGLE BLUEPRINT WIREFRAMES (generated) ===== */
+const _WF_OFF=[26,-18], _WF_GROUND=100;
+function _wfO(p){return [p[0]+_WF_OFF[0],p[1]+_WF_OFF[1]]}
+function _wfPath(pts){return "M"+pts.map(p=>p[0]+" "+p[1]).join(" L")}
+function buildWire(d){
+  const far=d.side.map(_wfO); let s="";
+  s+=`<path d="${_wfPath(far)} Z" stroke-dasharray="3 2" opacity="0.4"/>`;
+  for(let i=1;i<d.side.length-1;i++){const p=d.side[i],q=_wfO(p);s+=`<line x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}" opacity="0.38"/>`}
+  const fb=d.side[0],ft=d.side[1],fbo=_wfO(fb),fto=_wfO(ft);
+  s+=`<path d="M${fb[0]} ${fb[1]} L${fbo[0]} ${fbo[1]} L${fto[0]} ${fto[1]} L${ft[0]} ${ft[1]} Z"/>`;
+  s+=`<path d="${_wfPath(d.side)} Z"/>`;
+  if(d.win){s+=`<path d="${_wfPath(d.win)}"/>`;s+=`<path d="${_wfPath(d.win.map(_wfO))}" stroke-dasharray="3 2" opacity="0.4"/>`}
+  (d.extra||[]).forEach(e=>{s+=`<path d="${_wfPath(e)}"/>`});
+  d.wheels.forEach(w=>{const f=_wfO([w.x,_WF_GROUND]);
+    s+=`<circle cx="${f[0]}" cy="${f[1]}" r="${(w.r*0.78).toFixed(1)}" stroke-dasharray="3 2" opacity="0.4"/>`;
+    s+=`<circle cx="${w.x}" cy="${_WF_GROUND}" r="${w.r}"/><circle cx="${w.x}" cy="${_WF_GROUND}" r="${(w.r*0.42).toFixed(1)}"/>`});
+  return `<svg class="gcar-wireframe-bg" viewBox="0 0 252 152" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round">${s}</svg>`;
+}
+const CARDEF={
+ sedan:{side:[[16,100],[16,86],[60,80],[92,54],[150,54],[178,78],[214,82],[214,100]],win:[[88,78],[98,56],[148,56],[170,78]],wheels:[{x:58,r:18},{x:178,r:18}]},
+ suv:{side:[[14,100],[14,82],[56,78],[82,48],[176,48],[198,56],[206,74],[206,100]],win:[[80,76],[90,50],[170,50],[190,72]],wheels:[{x:56,r:19},{x:178,r:19}]},
+ pickup:{side:[[12,100],[12,84],[52,80],[74,50],[120,50],[134,72],[214,72],[214,100]],win:[[70,76],[80,52],[116,52],[128,72]],extra:[[[134,72],[134,86],[210,86]]],wheels:[{x:52,r:19},{x:182,r:19}]},
+ hatchback:{side:[[16,100],[16,86],[60,80],[88,54],[150,54],[174,62],[182,82],[182,100]],win:[[84,78],[94,56],[148,56],[170,76]],wheels:[{x:58,r:18},{x:156,r:18}]},
+ coupe:{side:[[16,100],[16,90],[58,84],[100,58],[150,58],[198,80],[210,90],[210,100]],win:[[92,80],[104,60],[148,60],[188,80]],wheels:[{x:56,r:18},{x:182,r:18}]},
+ van:{side:[[12,100],[12,70],[36,44],[64,40],[208,40],[214,48],[214,100]],win:[[44,68],[44,48],[204,48],[204,68]],extra:[[[110,48],[110,68]],[[160,48],[160,68]]],wheels:[{x:54,r:18},{x:186,r:18}]},
+ mpv:{side:[[14,100],[14,76],[44,50],[80,44],[196,46],[210,60],[212,74],[212,100]],win:[[60,72],[80,48],[190,50],[202,72]],extra:[[[128,49],[128,72]]],wheels:[{x:56,r:18},{x:184,r:18}]},
+ ev:{side:[[16,100],[16,84],[58,78],[104,56],[156,56],[200,76],[210,84],[210,100]],win:[[96,76],[108,58],[152,58],[190,76]],wheels:[{x:58,r:18},{x:182,r:18}]}
+};
+const WIREFRAME_SVGs={};
+for(const _k in CARDEF)WIREFRAME_SVGs[_k]=buildWire(CARDEF[_k]);
+
+function getBodyStyle(name) {
+  const lower = name.toLowerCase();
+  for (const make in CAR_DATABASE) {
+    for (const model of CAR_DATABASE[make]) {
+      if (lower.includes(model.name.toLowerCase())) {
+        return model.type;
+      }
+    }
+  }
+  return "sedan";
+}
+
+/* ===== SITE CONFIG (announcement / maintenance from backend) ===== */
+let siteMaint=null;
+async function loadSiteConfig(){
+  try{
+    const r=await fetch(`${BACKEND_URL}/api/config`);if(!r.ok)return;
+    const cfg=await r.json();
+    if(cfg.announcement&&cfg.announcement.enabled&&cfg.announcement.text){
+      const b=document.createElement("div");
+      b.className="site-announce"+(cfg.announcement.type==="warn"?" warn":"");
+      b.innerHTML=`<i class="ti ${cfg.announcement.type==="warn"?"ti-alert-triangle":"ti-speakerphone"}"></i> ${esc(cfg.announcement.text)}`;
+      document.querySelector(".app").prepend(b);
+    }
+    siteMaint=cfg.maintenance||null;
+    updateMaintOverlay();
+  }catch(e){}
+}
+function updateMaintOverlay(){
+  const staff=currentUser&&["owner","admin","moderator"].includes(currentUser.role);
+  const o=$("maintOverlay");
+  if(siteMaint&&siteMaint.enabled&&!staff){
+    if(o)return;
+    const el=document.createElement("div");el.id="maintOverlay";el.className="maint-overlay";
+    el.innerHTML=`<div class="maint-card"><i class="ti ti-tool" style="font-size:42px;color:var(--accent)"></i>
+      <h2>ปิดปรับปรุงชั่วคราว</h2><p>${esc(siteMaint.message||"ระบบกำลังปรับปรุง กลับมาเร็วๆ นี้ครับ")}</p></div>`;
+    document.body.appendChild(el);
+  }else if(o)o.remove();
+}
+
+/* ===== i18n ===== */
+const LANG_INDEXES = { th: 0, en: 1, ja: 2, zh: 3, de: 4, es: 5 };
+const T={
+ "nav.home":["หน้าหลัก","Home","ホーム","首页","Startseite","Inicio"],
+ "nav.garage":["การาจ","Garage","ガレージ","车库","Garage","Garaje"],
+ "nav.magazine":["นิตยสาร","Magazine","マガジン","杂志","Magazin","Revista"],
+ "signin":["เข้าสู่ระบบ","Sign in","ログイン","登录","Einloggen","Iniciar Sesión"],
+ "menu.profile":["โปรไฟล์ & ตั้งค่า","Profile & Settings","プロファイル & 設定","个人资料 & 设置","Profil & Einstellungen","Perfil & Configuración"],
+ "menu.logout":["ออกจากระบบ","Log out","ログアウト","退出登录","Abmelden","Cerrar Sesión"],
+ "menu.admin":["แผงควบคุมแอดมิน","Admin Panel","管理パネル","管理面板","Admin-Panel","Panel de Admin"],
+ "set.openadmin":["เปิดแผงควบคุม","Open dashboard","ダッシュボードを開く","打开控制面板","Dashboard öffnen","Abrir panel"],
+ "dash.sub":["เลือกวิธีวินิจฉัย หรือกดวินิจฉัยรถในการาจของคุณได้เลย","Pick a way to diagnose, or tap a car in your garage","診断方法を選択するか、ガレージの車をタップしてください","选择诊断方式，或点击车库中的车辆","Wählen Sie eine Diagnosemethode oder tippen Sie auf ein Auto in Ihrer Garage","Elija un método de diagnóstico o toque un automóvil en su garaje"],
+ "dash.cars":["รถของฉัน","My cars","マイカー","我的车辆","Meine Autos","Mis coches"],
+ "dash.manage":["จัดการ →","Manage →","管理 →","管理 →","Verwalten →","Administrar →"],
+ "dash.customize":["แต่งหน้าหลัก","Customize Layout","レイアウト編集","自定义布局","Layout anpassen","Personalizar diseño"],
+ "dash.custom_done":["เสร็จสิ้น","Done","完了","完成","Fertig","Hecho"],
+ "dash.widget_ai":["ผู้ช่วย AI (ด่วน)","Quick AI Assistant","クイックAIアシスタント","快捷AI助手","Schneller KI-Assistent","Asistente rápido de IA"],
+ "dash.widget_news":["ข่าวสารล่าสุด","Latest News","最新ニュース","最新消息","Neueste Nachrichten","Últimas Noticias"],
+ "dash.widget_settings":["ตั้งค่าธีมและสี","Theme & Settings","テーマ & 設定","主题 & 设置","Design & Einstellungen","Temas y Ajustes"],
+ "qa.text":["พิมพ์ถาม","Type","テキスト入力","文字输入","Tippen","Escribir"],
+ "qa.image":["ถ่ายรูป","Photo","写真撮影","照片上传","Foto","Foto"],
+ "qa.video":["วิดีโอ","Video","動画撮影","视频上传","Video","Video"],
+ "qa.mic":["อัดเสียง","Voice","音声録音","语音输入","Sprachaufnahme","Voz"],
+ "chat.title":["SpireONE","SpireONE","SpireONE","SpireONE","SpireONE","SpireONE"],
+ "composer.ph":["พิมพ์อาการรถ หรือถามอะไรก็ได้...","Describe a car issue or ask anything...","車の症状を入力するか、何でも質問してください...","描述车辆症状或提问...","Beschreiben Sie ein Autoproblem oder fragen Sie etwas...","Describa un problema del automóvil o pregunte algo..."],
+ "chat.select_car_prompt":["กรุณาเลือกรถในการาจเพื่อเริ่มคุยกับ AI","Please select a car in your garage to chat with AI","AIと対話するにはガレージから車を選択してください","请在车库中选择一辆车以与AI对话","Bitte wählen Sie ein Auto in Ihrer Garage aus, um mit der KI zu chatten","Seleccione un automóvil en su garaje para chatear con la IA"],
+ "chat.diagnose_opt":["วินิจฉัยปัญหารถ","Diagnose Car","車を診断する","诊断车辆","Auto diagnostizieren","Diagnosticar coche"],
+ "chat.symptom_opt":["บอกอาการหรือปัญหา","Report Symptoms","症状を報告する","报告症状","Symptome melden","Reportar síntomas"],
+ "chat.clear_history":["ล้างประวัติคุย","Clear History","履歴を消去","清除历史","Verlauf löschen","Limpiar historial"],
+ "chat.clear_confirm":["ยืนยันล้างประวัติสำหรับรถคันนี้หรือไม่?","Are you sure you want to clear chat history for this car?","この車のチャット履歴を消去してもよろしいですか？","您确定要清除这辆车的聊天历史吗？","Sind Sie sicher, dass Sie den Chatverlauf für dieses Auto löschen möchten?","¿Está seguro de que desea borrar el historial de chat de este automóvil?"],
+ "garage.title":["การาจของฉัน","My Garage","マイガレージ","我的车库","Meine Garage","Mi Garaje"],
+ "garage.sub":["บันทึกรถของคุณ — ประวัติอาการที่เคยวินิจฉัยจะถูกเก็บไว้ในแต่ละคัน","Save your cars — past diagnosis history is kept per car","車を登録する — 過去の診断履歴は車ごとに保存されます","保存您的车辆 — 历史诊断记录将按车保存","Speichern Sie Ihre Autos — die bisherige Diagnosehistorie wird pro Auto gespeichert","Guarde sus autos: el historial de diagnóstico anterior se guarda por auto"],
+ "garage.add":["เพิ่มรถ","Add car","車を追加","添加车辆","Auto hinzufügen","Añadir coche"],
+ "garage.name":["ยี่ห้อ + รุ่น เช่น Honda Civic","Make + model e.g. Honda Civic","メーカー＋車種（例：ホンダ・シビック）","品牌+车型，例如 本田思域","Marke + Modell, z. B. Honda Civic","Marca + modelo p. ej. Honda Civic"],
+ "garage.year":["ปี เช่น 2020","Year e.g. 2020","年式（例：2020）","年份，例如 2020","Jahr, z. B. 2020","Año, p. ej. 2020"],
+ "garage.km":["เลขไมล์ปัจจุบัน (กม.)","Current mileage (km)","現在の走行距離 (km)","当前里程（公里）","Aktueller Kilometerstand (km)","Kilometraje actual (km)"],
+ "garage.empty":["ยังไม่มีรถ — เพิ่มคันแรกด้านล่าง","No cars yet — add your first below","車が登録されていません。以下から追加してください","暂无车辆 — 在下方添加您的第一辆车","Noch keine Autos — fügen Sie unten Ihr erstes hinzu","Aún no hay autos: agregue el primero a continuación"],
+ "garage.hist":["ประวัติการวินิจฉัย","Diagnosis history","診断履歴","诊断历史","Diagnosehistorie","Historial de diagnóstico"],
+ "garage.nohist":["ยังไม่มีประวัติ ลองถาม AI ดู","No history yet — ask the AI","履歴がありません。AIに質問してみましょう","暂无历史 — 咨询AI试试","Noch kein Verlauf — fragen Sie die KI","Aún no hay historial — pregúntele a la IA"],
+ "mag.title":["นิตยสารรถยนต์","Car Magazine","カーマガジン","汽车杂志","Automagazin","Revista de Coches"],
+ "mag.sub":["ข่าวสารและบทความรถยนต์ล่าสุด — ดึงสดด้วย Gemini","Latest car news & articles — live via Gemini","最新の自動車ニュース＆記事 — Geminiでリアルタイム取得","最新汽车新闻与文章 — 通过Gemini实时获取","Aktuelle Autonews & Artikel — live via Gemini","Últimas noticias y artículos de automóviles: en vivo a través de Gemini"],
+ "mag.loading":["กำลังโหลดข่าวล่าสุด...","Loading latest...","最新情報を読み込み中...","正在加载最新消息...","Lade aktuelle Nachrichten...","Cargando últimas noticias..."],
+ "profile.guest":["ผู้มาเยือน","Guest","ゲスト","访客","Gast","Invitado"],
+ "profile.guestsub":["ยังไม่ได้เข้าสู่ระบบ","Not signed in","未ログイン","未登录","Nicht angemeldet","No ha iniciado sesión"],
+ "set.lang":["ภาษา / Language","Language","言語 / Language","语言 / Language","Sprache / Language","Idioma / Language"],
+ "set.langd":["เลือกภาษาที่ใช้ในเว็บไซต์ (มีผลกับข้อความและ AI)","Choose the site & AI language","サイトとAIの言語を選択します","选择网站和AI语言","Wählen Sie die Website- & KI-Sprache","Elija el idioma del sitio y de la IA"],
+ "set.theme":["ธีมและสีของระบบ","System Theme & Color","システムテーマとカラー","系统主题与颜色","System-Design & Farbe","Tema y color del sistema"],
+ "set.themed":["เลือกธีมสีที่ต้องการเปลี่ยนสำหรับเว็บไซต์","Choose your preferred layout color theme","お好みのカラーテーマを選択してください","选择您喜欢的色彩主题","Wählen Sie Ihr bevorzugt Farbedesign","Elija su tema de color preferido"],
+ "set.opacity":["ความชัดเจนของพื้นหลังการาจ","Garage Card Wireframe Opacity","ガレージカード背景の不透明度","车库卡片背景不透明度","Deckkraft der Garagenkarten-Drahtgitter","Opacidad de la estructura de la tarjeta de garaje"],
+ "set.opacityd":["ปรับระดับความ visible ของเส้นโครงสร้างรถ 3D","Adjust visibility level of the 3D car outlines","3D車のワイヤーフレームの視認性を調整します","调整3D车辆轮廓的可见度","Stellen Sie die Sichtbarkeit der 3D-Autoumrisse ein","Ajuste el nivel de visibilidad de los contornos 3D del coche"],
+ "set.account":["บัญชี","Account","アカウント","账户","Konto","Cuenta"],
+ "set.accountd":["เข้าสู่ระบบด้วย Google เพื่อใช้ Admin และจดจำข้อมูล","Sign in with Google for Admin & sync","管理機能と同期を使用するにはGoogleでサインインしてください","使用Google登录以获得管理员功能和同步","Melden Sie sich mit Google für Admin & Synchronisierung an","Inicie sesión con Google para administración y sincronización"],
+ "set.admind":["ภาพรวมผู้ใช้งานทั้งหมด (เฉพาะผู้ดูแล)","All users overview (admins only)","全ユーザーの概要（管理者のみ）","所有用户概览（仅限管理员）","Gesamtübersicht der Benutzer (nur Admins)","Descripción general de todos los usuarios (solo administradores)"],
+ "select.make":["เลือกยี่ห้อ...","Select Make...","メーカーを選択...","选择品牌...","Marke wählen...","Seleccionar Marca..."],
+ "select.model":["เลือกรุ่น...","Select Model...","車種を選択...","选择车型...","Modell wählen...","Seleccionar Modelo..."],
+ "select.year":["เลือกปี...","Select Year...","年式を選択...","选择年份...","Jahr wählen...","Seleccionar Año..."],
+ "sym.engine":["เครื่องยนต์","Engine","エンジン","发动机","Motor","Motor"],
+ "sym.ac":["ระบบแอร์","A/C System","エアコン","空调系统","Klimaanlage","Aire Acondicionado"],
+ "sym.gear":["ระบบเกียร์","Gearbox","ギアボックス","变速箱","Getriebe","Caja de cambios"],
+ "sym.wheels":["ล้อและยาง","Wheels & Tires","ホイール & タイヤ","车轮与轮胎","Räder & Reifen","Ruedas y Llantas"]
+};
+function tr(k) {
+  const v = T[k];
+  if (!v) return k;
+  const idx = LANG_INDEXES[lang] ?? 0;
+  return v[idx] || v[0] || k;
+}
+
+function applyLang(l){
+  lang = l;
+  LS.set("lang", l);
+  document.documentElement.lang = l;
+  const i = LANG_INDEXES[l] ?? 0;
+  
+  document.querySelectorAll("[data-i18n]").forEach(e=>{
+    const v = T[e.dataset.i18n];
+    if (v) e.textContent = v[i];
+  });
+  
+  document.querySelectorAll("[data-i18n-ph]").forEach(e=>{
+    const v = T[e.dataset.i18nPh];
+    if (v) e.placeholder = v[i];
+  });
+  
+  renderCarSel();
+  renderLangSeg();
+  renderGarage();
+  renderDashboard();
+}
+
+function renderLangSeg(){
+  document.querySelectorAll("#langSeg button").forEach(b => {
+    b.classList.toggle("active", b.dataset.l === lang);
+  });
+}
+
+$("langSeg").addEventListener("click", e => {
+  const b = e.target.closest("[data-l]");
+  if (b) applyLang(b.dataset.l);
+});
+
+/* ===== NAV / VIEW ===== */
+function moveInd(){const ind=$("navInd"),a=document.querySelector(".nav-links a.active");if(!ind||!a)return;ind.style.width=a.offsetWidth+"px";ind.style.transform=`translate(${a.offsetLeft}px,-50%)`}
+window.addEventListener("resize",moveInd);
+function switchView(v){
+  document.querySelectorAll(".view").forEach(s=>s.classList.toggle("active",s.id==="v-"+v));
+  document.querySelectorAll(".nav-links a").forEach(a=>a.classList.toggle("active",a.dataset.view===v));
+  if(v==="home")renderDashboard();
+  if(v==="magazine")loadMag();
+  if(v==="garage")renderGarage();
+  if(v==="profile")renderProfile();
+  $("dd").classList.remove("show");moveInd();
+}
+document.addEventListener("click",e=>{const n=e.target.closest("[data-view]");if(n)switchView(n.dataset.view)});
+$("avatarBtn").onclick=e=>{e.stopPropagation();$("dd").classList.toggle("show")};
+document.addEventListener("click",e=>{if(!e.target.closest(".nav-right"))$("dd").classList.remove("show")});
+
+/* ===== CUSTOM WIDGETS LAYOUT ===== */
+let widgetOrder = LS.get("widgetOrder", ["w-cars", "w-quick-actions", "w-ai", "w-magazine", "w-settings"]);
+let widgetToggles = LS.get("widgetToggles", { "w-ai": false, "w-magazine": true, "w-settings": true });
+let editMode = false;
+
+function applyWidgetLayout() {
+  const grid = $("widgetGrid");
+  if (!grid) return;
+  
+  // Sort widgets in DOM
+  const widgets = Array.from(grid.children);
+  widgetOrder.forEach(id => {
+    const w = widgets.find(x => x.id === id);
+    if (w) grid.appendChild(w);
+  });
+  
+  // Apply toggles
+  for (const id in widgetToggles) {
+    const el = $(id);
+    if (el) el.style.display = widgetToggles[id] ? "block" : "none";
+    const chk = $("chk-" + id.replace("w-", ""));
+    if (chk) chk.checked = widgetToggles[id];
+  }
+}
+
+function saveWidgetLayout() {
+  const grid = $("widgetGrid");
+  if (!grid) return;
+  const order = Array.from(grid.children).map(x => x.id);
+  LS.set("widgetOrder", order);
+  widgetOrder = order;
+}
+
+function toggleWidget(id, show) {
+  widgetToggles[id] = show;
+  LS.set("widgetToggles", widgetToggles);
+  const el = $(id);
+  if (el) el.style.display = show ? "block" : "none";
+}
+
+function toggleEditMode() {
+  editMode = !editMode;
+  const grid = $("widgetGrid");
+  const btn = $("customizeBtn");
+  const panel = $("customizePanel");
+  
+  if (grid) grid.classList.toggle("edit-mode", editMode);
+  if (panel) panel.style.display = editMode ? "block" : "none";
+  
+  if (btn) {
+    btn.innerHTML = editMode 
+      ? `<i class="ti ti-check"></i> <span data-i18n="dash.custom_done">เสร็จสิ้น</span>` 
+      : `<i class="ti ti-adjustments-alt"></i> <span data-i18n="dash.customize">แต่งหน้าหลัก</span>`;
+    applyLang(lang);
+  }
+}
+
+function moveWidget(id, dir) {
+  const grid = $("widgetGrid");
+  const el = $(id);
+  if (!grid || !el) return;
+  
+  const children = Array.from(grid.children);
+  const idx = children.indexOf(el);
+  const newIdx = idx + dir;
+  
+  if (newIdx >= 0 && newIdx < children.length) {
+    if (dir === 1) {
+      grid.insertBefore(el, children[newIdx].nextSibling);
+    } else {
+      grid.insertBefore(el, children[newIdx]);
+    }
+    saveWidgetLayout();
+  }
+}
+
+function initWidgetDragging() {
+  const grid = $("widgetGrid");
+  if (!grid) return;
+  
+  let dragEl = null;
+  grid.addEventListener("dragstart", e => {
+    if (!editMode) {
+      e.preventDefault();
+      return;
+    }
+    const widget = e.target.closest(".widget");
+    if (!widget) return;
+    dragEl = widget;
+    widget.classList.add("dragging");
+    e.dataTransfer.effectAllowed = "move";
+  });
+  
+  grid.addEventListener("dragover", e => {
+    if (!editMode || !dragEl) return;
+    e.preventDefault();
+    const widget = e.target.closest(".widget");
+    if (!widget || widget === dragEl) return;
+    
+    const rect = widget.getBoundingClientRect();
+    const next = (e.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
+    grid.insertBefore(dragEl, next ? widget.nextSibling : widget);
+  });
+  
+  grid.addEventListener("dragend", e => {
+    if (dragEl) {
+      dragEl.classList.remove("dragging");
+      dragEl = null;
+      saveWidgetLayout();
+    }
+  });
+}
+
+/* ===== CUSTOM SEARCHABLE SELECT DROPDOWNS ===== */
+let selectedMake = "";
+let selectedModel = null;
+let selectedYear = "";
+let customMode = false;
+let selectedBody = "sedan";
+
+function initCustomSelects() {
+  const makeList = $("gMakeList");
+  if (!makeList) return;
+
+  makeList.innerHTML = Object.keys(CAR_DATABASE).sort().map(make =>
+    `<div class="option-item" onclick="selectMake('${make.replace(/'/g,"\\'")}')">${esc(make)}</div>`
+  ).join("") + `<div class="option-item" style="color:var(--accent);font-weight:600" onclick="selectMake('__other')">${lang==="th"?"➕ อื่นๆ (พิมพ์เอง)":"➕ Other (type it)"}</div>`;
+  initBodySelect();
+  
+  document.addEventListener("click", e => {
+    if (!e.target.closest(".custom-select")) {
+      document.querySelectorAll(".custom-select").forEach(el => el.classList.remove("active"));
+    }
+  });
+}
+
+function toggleCustomSelect(id) {
+  const el = $(id);
+  const trigger = el.querySelector(".custom-select-trigger");
+  if (trigger.classList.contains("disabled")) return;
+  
+  document.querySelectorAll(".custom-select").forEach(other => {
+    if (other.id !== id) other.classList.remove("active");
+  });
+  
+  el.classList.toggle("active");
+  if (el.classList.contains("active")) {
+    const searchInput = el.querySelector(".custom-select-search");
+    if (searchInput) {
+      searchInput.value = "";
+      filterCustomSelect(id, "");
+      searchInput.focus();
+    }
+  }
+}
+
+function filterCustomSelect(id, query) {
+  const el = $(id);
+  const items = el.querySelectorAll(".option-item");
+  items.forEach(item => {
+    const matches = item.textContent.toLowerCase().includes(query.toLowerCase());
+    item.style.display = matches ? "block" : "none";
+  });
+}
+
+function fillYears(startYear){
+  const currentYear = new Date().getFullYear();
+  const years = [];
+  for (let y = currentYear; y >= startYear; y--) years.push(y);
+  $("gYearList").innerHTML = years.map(y => `<div class="option-item" onclick="selectYear(${y})">${y}</div>`).join("");
+}
+
+function selectMake(make) {
+  if (make === "__other") {
+    customMode = true; selectedMake = "__other"; selectedModel = null; selectedYear = "";
+    const ms = $("gMakeSelect");
+    ms.querySelector(".val").textContent = (lang==="th"?"อื่นๆ (พิมพ์เอง)":"Other (custom)");
+    ms.classList.remove("active");
+    $("gModelTrigger").classList.add("disabled");
+    $("gModelTrigger").querySelector(".val").textContent = tr("select.model");
+    $("gCustomBox").style.display = "block";
+    $("gYearTrigger").classList.remove("disabled");
+    $("gYearTrigger").querySelector(".val").textContent = tr("select.year");
+    fillYears(1980);
+    return;
+  }
+  customMode = false; $("gCustomBox").style.display = "none";
+  selectedMake = make;
+  selectedModel = null;
+  selectedYear = "";
+
+  const makeSelect = $("gMakeSelect");
+  makeSelect.querySelector(".val").textContent = make;
+  makeSelect.classList.remove("active");
+
+  const modelTrigger = $("gModelTrigger");
+  modelTrigger.classList.remove("disabled");
+  modelTrigger.querySelector(".val").textContent = tr("select.model");
+
+  const yearTrigger = $("gYearTrigger");
+  yearTrigger.classList.add("disabled");
+  yearTrigger.querySelector(".val").textContent = tr("select.year");
+
+  const modelList = $("gModelList");
+  modelList.innerHTML = CAR_DATABASE[make].map(model =>
+    `<div class="option-item" onclick="selectModel('${model.name.replace(/'/g,"\\'")}', '${model.type}', ${model.startYear})">${esc(model.name)}</div>`
+  ).join("");
+}
+
+function selectModel(modelName, type, startYear) {
+  selectedModel = { name: modelName, type: type, startYear: startYear };
+  selectedYear = "";
+
+  const modelSelect = $("gModelSelect");
+  modelSelect.querySelector(".val").textContent = modelName;
+  modelSelect.classList.remove("active");
+
+  const yearTrigger = $("gYearTrigger");
+  yearTrigger.classList.remove("disabled");
+  yearTrigger.querySelector(".val").textContent = tr("select.year");
+  fillYears(startYear);
+}
+
+function selectYear(year) {
+  selectedYear = year.toString();
+  const yearSelect = $("gYearSelect");
+  yearSelect.querySelector(".val").textContent = year;
+  yearSelect.classList.remove("active");
+}
+
+function initBodySelect(){
+  const l = $("gBodyList"); if(!l) return;
+  l.innerHTML = BODY_TYPES.map(b=>`<div class="option-item" onclick="selectBody('${b.k}')">${esc(lang==="th"?b.th:b.en)}</div>`).join("");
+}
+function selectBody(k){
+  selectedBody = k;
+  const bs = $("gBodySelect");
+  bs.querySelector(".val").textContent = bodyLabel(k);
+  bs.classList.remove("active");
+}
+
+/* ===== SYSTEM THEME & COLOR SETTINGS ===== */
+function setTheme(theme) {
+  currentTheme = theme;
+  LS.set("theme", theme);
+  const root = document.documentElement;
+  root.classList.add("theme-fade");
+  clearTimeout(setTheme._t);
+  setTheme._t = setTimeout(() => root.classList.remove("theme-fade"), 560);
+  root.setAttribute("data-theme", theme);
+  
+  document.querySelectorAll(".theme-btn, .theme-btn-p").forEach(btn => {
+    btn.classList.toggle("active", btn.classList.contains(theme));
+  });
+}
+
+function setWireframeOpacity(val) {
+  wireframeOpacity = val;
+  LS.set("opacity", val);
+  document.documentElement.style.setProperty("--wireframe-opacity", val);
+  
+  const s1 = $("wireframeOpacitySlider");
+  const s2 = $("profileOpacitySlider");
+  if (s1) s1.value = val;
+  if (s2) s2.value = val;
+}
+
+/* ===== GREETING + DASHBOARD ===== */
+function updateGreeting(){const el=$("greet");if(!el)return;const h=new Date().getHours();
+  const GREET={
+    th:[h<11?"สวัสดีตอนเช้า":h<16?"สวัสดีตอนบ่าย":h<19?"สวัสดีตอนเย็น":"สวัสดีตอนค่ำ", n=>n?" คุณ "+esc(n):""],
+    en:[h<12?"Good morning":h<17?"Good afternoon":"Good evening", n=>n?", "+esc(n):""],
+    ja:[h<11?"おはようございます":h<18?"こんにちは":"こんばんは", n=>n?"、"+esc(n)+"さん":""],
+    zh:[h<11?"早上好":h<18?"下午好":"晚上好", n=>n?"，"+esc(n):""],
+    de:[h<12?"Guten Morgen":h<18?"Guten Tag":"Guten Abend", n=>n?", "+esc(n):""],
+    es:[h<12?"Buenos días":h<19?"Buenas tardes":"Buenas noches", n=>n?", "+esc(n):""],
+    ko:[h<11?"좋은 아침이에요":h<18?"안녕하세요":"안녕하세요", n=>n?", "+esc(n)+"님":""]
+  };
+  const entry=GREET[lang]||GREET.th;
+  const name=currentUser?currentUser.name:"";
+  el.innerHTML=`${entry[0]}${entry[1](name)} <span class="w">👋</span>`}
+
+function renderDashboard(){
+  updateGreeting();
+  renderDashCars();
+  applyWidgetLayout();
+  // Sync the magazine preview widget if visible
+  if (widgetToggles["w-magazine"]) {
+    setTimeout(() => { if (magLoaded && magItems.length) renderMagWidget(); else loadMag(); }, 100);
+  }
+}
+
+function renderDashCars(){const w=$("dashCars");if(!w)return;const g=garage();
+  if(!g.length) {
+    w.innerHTML = `<div class="cadd" data-view="garage"><i class="ti ti-plus" style="font-size:26px"></i><span>${lang==="en"?"Add a car":"เพิ่มรถ"}</span></div>`;
+    return;
+  }
+  let html=g.map(c=>{const last=(c.history&&c.history[0])||null;
+    const style = c.type || getBodyStyle(c.name);
+    const wireframe = WIREFRAME_SVGs[style] || WIREFRAME_SVGs.sedan;
+    const stat=last?`<div class="cstatus"><span class="dot"></span>${lang==="en"?"Last checked":"ตรวจล่าสุด"}: ${new Date(last.t).toLocaleDateString(lang==="en"?"en-US":"th-TH",{day:"numeric",month:"short"})}</div>`
+      :`<div class="cstatus warn"><span class="dot"></span>${lang==="en"?"Never diagnosed":"ยังไม่เคยวินิจฉัย"}</div>`;
+    return `<div class="ccard">${wireframe}<div class="top" style="position:relative; z-index:1;"><div class="ci"><i class="ti ti-car"></i></div><div><h4>${esc(c.name)}</h4><div class="cs">${esc(c.year||"-")} · ${esc(c.mileage||"-")} กม.</div></div></div><div style="position:relative; z-index:1;">${stat}<button class="cdiag" data-diag="${c.id}"><i class="ti ti-stethoscope"></i> ${lang==="en"?"Diagnose":"วินิจฉัย"}</button></div></div>`}).join("");
+  html+=`<div class="cadd" data-view="garage"><i class="ti ti-plus" style="font-size:26px"></i><span>${lang==="en"?"Add a car":"เพิ่มรถ"}</span></div>`;
+  w.innerHTML=html}
+
+document.querySelector("#v-home").addEventListener("click",e=>{
+  const b=e.target.closest("[data-open]");
+  if(b) openChat({attach:b.dataset.open});
+});
+$("dashCars").addEventListener("click",e=>{const d=e.target.closest("[data-diag]");if(d)openChat({car:d.dataset.diag,starter:true})});
+
+/* ===== CHAT — moved to standalone app (chat.html) ===== */
+function openChat(opts){opts=opts||{};
+  if(opts.car)LS.set("selCar",opts.car);
+  const p=new URLSearchParams();
+  if(opts.attach)p.set("attach",opts.attach);
+  if(opts.starter)p.set("starter","1");
+  location.href="chat.html"+(p.toString()?"?"+p.toString():"");
+}
+function updateFabBadge(){
+  const badge=$("fabBadge");if(!badge)return;
+  const c=selCar();let has=false;
+  if(c){const sess=LS.get("sess_"+c.id,[]);has=Array.isArray(sess)&&sess.some(s=>s.msgs&&s.msgs.length);
+    if(!has){const legacy=LS.get("chatMsgs_"+c.id,[]);has=!!(legacy&&legacy.length)}}
+  badge.classList.toggle("show",has);
+}
+$("fab").onclick=()=>openChat({});
+
+/* ===== GARAGE CONTROL ===== */
+function garage(){return LS.get("garage",[])}
+function saveGarage(g){LS.set("garage",g)}
+/* ===== BACKEND CAR SYNC (Cloudflare D1 via /api/cars) ===== */
+function carsAreRemote(){return !!(currentUser && useFb && auth && auth.currentUser && location.protocol!=="file:")}
+async function carTok(){return await auth.currentUser.getIdToken()}
+async function syncCars(){
+  if(!carsAreRemote())return;
+  try{
+    const r=await fetch(`${BACKEND_URL}/api/cars`,{headers:{"Authorization":"Bearer "+await carTok()}});
+    if(!r.ok)throw new Error(r.status+" "+r.statusText);
+    const arr=await r.json(); if(!Array.isArray(arr))return;
+    const local=garage();
+    const merged=arr.map(c=>{
+      const name=`${c.make||""} ${c.model||""}`.trim();
+      const prev=local.find(x=>x.id===c.id)||{};
+      return {id:c.id,make:c.make||"",model:c.model||"",name,year:(c.year!=null?String(c.year):""),mileage:(c.mileage!=null?String(c.mileage):""),type:prev.type||getBodyStyle(name),history:prev.history||[]};
+    });
+    saveGarage(merged);
+    if($("v-garage").classList.contains("active"))renderGarage();
+    if($("v-home").classList.contains("active"))renderDashboard();
+    renderCarSel();
+  }catch(e){console.warn("syncCars failed",e)}
+}
+function selCar(){const id=LS.get("selCar","");return garage().find(c=>c.id===id)||null}
+function renderCarSel(){const el=$("carSel");if(!el)return;const g=garage(),cur=LS.get("selCar","");
+  el.innerHTML=`<option value="">${lang==="en"?"No car":"ไม่ระบุรถ"}</option>`+g.map(c=>`<option value="${c.id}" ${c.id===cur?"selected":""}>${esc(c.name)}</option>`).join("")}
+
+function renderGarage(){const g=garage();const w=$("garageList");if(!w)return;
+  if(!g.length){
+    w.innerHTML=`<div class="card" style="text-align:center;color:var(--muted);margin-bottom:6px">${tr("garage.empty")}</div>`;
+    renderCarSel();
+    return;
+  }
+  w.innerHTML=g.map(c=>{
+    const bodyStyle = c.type || getBodyStyle(c.name);
+    const wireframeSvg = WIREFRAME_SVGs[bodyStyle] || WIREFRAME_SVGs.sedan;
+    return `<div class="card gcard-wrap" style="margin-bottom:14px;">${wireframeSvg}
+      <div class="gcar" style="position:relative; z-index:1;"><div class="gi"><i class="ti ti-car"></i></div>
+      <div style="flex:1"><h4>${esc(c.name)}</h4><div class="gs">${esc(c.year||"-")} · ${esc(c.mileage||"-")} กม.</div></div>
+      <button class="btn primary" data-diag2="${c.id}" style="padding:8px 14px"><i class="ti ti-stethoscope"></i> ${lang==="en"?"Diagnose":"วินิจฉัย"}</button>
+      <button class="btn danger" data-del="${c.id}" style="padding:8px 12px"><i class="ti ti-trash"></i></button></div>
+      <div class="ghist" style="position:relative; z-index:1;"><div class="h">${tr("garage.hist")}</div>${(c.history&&c.history.length)?c.history.slice(0,8).map(h=>`<div class="hrow"><div class="q">${esc(h.q)}</div><div class="a">${esc(h.a)}</div><div class="t">${new Date(h.t).toLocaleString(lang==="en"?"en-US":"th-TH",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</div></div>`).join(""):`<div style="color:var(--faint);font-size:13px">${tr("garage.nohist")}</div>`}</div></div>`
+  }).join("");
+  renderCarSel()}
+
+$("garageList").addEventListener("click",async e=>{const dg=e.target.closest("[data-diag2]");if(dg){openChat({car:dg.dataset.diag2,starter:true});return}
+  const d=e.target.closest("[data-del]");if(d){const id=d.dataset.del;
+    if(carsAreRemote()){try{await fetch(`${BACKEND_URL}/api/cars/${encodeURIComponent(id)}`,{method:"DELETE",headers:{"Authorization":"Bearer "+await carTok()}})}catch(err){console.warn("delete car failed",err)}}
+    const g=garage().filter(c=>c.id!==id);saveGarage(g);renderGarage();renderDashboard();toast(lang==="en"?"Car removed":"ลบรถแล้ว","ti-trash")}});
+
+$("gAdd").onclick=async()=>{
+  let make,model,type;
+  if(customMode){
+    make=($("gCustomMake").value||"").trim();
+    model=($("gCustomModel").value||"").trim();
+    if(!make||!model){toast(lang==="en"?"Please type Make and Model":"กรุณาพิมพ์ยี่ห้อและรุ่นรถ","ti-alert-triangle");return}
+    type=selectedBody||"sedan";
+  }else{
+    if(!selectedMake || !selectedModel){toast(lang==="en"?"Please select Make and Model":"กรุณาเลือกยี่ห้อและรุ่นรถ","ti-alert-triangle");return}
+    make=selectedMake; model=selectedModel.name; type=selectedModel.type;
+  }
+  if(!selectedYear){toast(lang==="en"?"Please select Year":"กรุณาเลือกปีรถ","ti-alert-triangle");return}
+  const name = `${make} ${model}`.trim();
+  const year = String(selectedYear);
+  const mileage = $("gMileage").value.trim() || "-";
+
+  $("gAdd").disabled=true;
+  let id = "c"+Date.now();
+  if(carsAreRemote()){
+    try{
+      const r=await fetch(`${BACKEND_URL}/api/cars`,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+await carTok()},body:JSON.stringify({make,model,year,mileage})});
+      if(!r.ok)throw new Error(r.status+" "+r.statusText);
+      const res=await r.json(); if(res&&res.id)id=res.id;
+    }catch(err){toast((lang==="en"?"Saved locally (server error): ":"บันทึกในเครื่องแทน (เซิร์ฟเวอร์ผิดพลาด): ")+err.message,"ti-cloud-off")}
+  }
+
+  const g = garage();
+  g.push({id,make,model,name,year,mileage,type,history:[]});
+  saveGarage(g);
+
+  selectedMake = ""; selectedModel = null; selectedYear = ""; customMode = false; selectedBody = "sedan";
+  $("gMakeSelect").querySelector(".val").textContent = tr("select.make");
+  $("gModelTrigger").classList.add("disabled");
+  $("gModelTrigger").querySelector(".val").textContent = tr("select.model");
+  $("gYearTrigger").classList.add("disabled");
+  $("gYearTrigger").querySelector(".val").textContent = tr("select.year");
+  $("gCustomBox").style.display = "none";
+  $("gCustomMake").value=""; $("gCustomModel").value="";
+  $("gBodySelect").querySelector(".val").textContent = (lang==="th"?"ประเภทตัวถัง...":"Body type...");
+  $("gMileage").value = "";
+  $("gAdd").disabled=false;
+
+  renderGarage();renderDashboard();toast(lang==="en"?"Car added":"เพิ่มรถแล้ว","ti-check")};
+
+/* ===== MAGAZINE ===== */
+let magLoaded=false, magItems=[];
+const MAG_COVERS=["linear-gradient(135deg,#3a8c52,#1f6b32)","linear-gradient(135deg,#2f7fb8,#2f5fd6)","linear-gradient(135deg,#c98a2e,#9e6a1a)","linear-gradient(135deg,#8c3a52,#6b1f3a)"];
+const MAG_ICONS=["ti-car","ti-bolt","ti-engine","ti-news"];
+function renderMagSkeleton(){
+  const card=`<div><div class="sk mag-skel-cover"></div><div class="sk sk-line" style="width:38%;margin-bottom:8px"></div><div class="sk sk-line" style="width:86%;height:16px;margin-bottom:7px"></div><div class="sk sk-line" style="width:60%"></div></div>`;
+  const mb=$("magBody");if(mb)mb.innerHTML=`<div class="sk mag-skel-hero"></div><div class="mag-grid">${card.repeat(4)}</div>`;
+  const wb=$("w-magBody");if(wb)wb.innerHTML=`<div class="mag-widget-list">`+Array.from({length:5},()=>`<div class="mag-widget-item" style="pointer-events:none"><div class="sk" style="width:38px;height:38px;border-radius:11px;flex-shrink:0"></div><div style="flex:1"><div class="sk sk-line" style="width:30%;height:9px;margin-bottom:6px"></div><div class="sk sk-line" style="width:85%"></div></div></div>`).join("")+`</div>`;
+}
+function renderMagArticles(){
+  const items=magItems;if(!items.length)return;
+  const hero=items[0],rest=items.slice(1);
+  const magHtml=`<div class="mag-hero mag-in" onclick="openMagModal(0)"><div class="bg"></div><div class="ov"></div>
+    <div class="tx"><div class="k">${esc(hero.tag||"FEATURED")}</div><h2>${esc(hero.title)}</h2><p>${esc(hero.body)}</p></div></div>
+    <div class="mag-grid">${rest.map((m,i)=>`<div class="mag-card mag-in" style="animation-delay:${(0.12+i*0.09).toFixed(2)}s" onclick="openMagModal(${i+1})">
+      <div class="mag-cover" style="background:${MAG_COVERS[i%4]}"><i class="ti ${MAG_ICONS[i%4]}"></i></div>
+      <div class="k">${esc(m.tag||"ข่าว")}</div><h4>${esc(m.title)}</h4><p>${esc(m.body)}</p></div>`).join("")}</div>`;
+  const mb=$("magBody");if(mb)mb.innerHTML=magHtml;
+}
+function renderMagWidget(){
+  const wm=$("w-magBody");if(!wm||!magItems.length)return;
+  const widgetItems=magItems.slice(0,5);
+  wm.innerHTML=`<div class="mag-widget-list">${widgetItems.map((m,i)=>`<div class="mag-widget-item mag-in" style="animation-delay:${(i*0.07).toFixed(2)}s" onclick="openMagModal(${i})">
+      <div class="mag-widget-icon" style="background:${MAG_COVERS[i%4]}"><i class="ti ${MAG_ICONS[i%4]}"></i></div>
+      <div class="mag-widget-text"><div class="mag-widget-tag">${esc(m.tag||"ข่าว")}</div><div class="mag-widget-title">${esc(m.title)}</div></div>
+      <i class="ti ti-chevron-right mag-widget-arrow"></i></div>`).join("")}</div>
+    <button class="mag-widget-btn mag-in" style="animation-delay:.4s" onclick="switchView('magazine')"><i class="ti ti-book-2"></i> ดูทั้งหมด <i class="ti ti-arrow-right" style="font-size:12px"></i></button>`;
+}
+async function loadMag(){if(magLoaded)return;magLoaded=true;
+  renderMagSkeleton();
+  let items=null;
+
+  // 1) Backend D1
+  try{
+    const r=await fetch(`${BACKEND_URL}/api/magazine`);
+    if(r.ok){const arr=await r.json();
+      if(Array.isArray(arr)&&arr.length)
+        items=arr.map(n=>({tag:n.type||"ข่าว",title:n.title||"",body:n.short_description||"",full:n.full_description||"",url:""}));
+    }
+  }catch(e){console.warn("mag backend",e)}
+
+  // 2) Demo fallback
+  if(!items)items=[
+    {tag:"รีวิว",title:"ยุคใหม่ของรถ EV ในไทย คุ้มจริงไหม?",body:"เจาะลึกต้นทุน ระยะทาง และเครือข่ายชาร์จที่กำลังเปลี่ยนเกมตลาดรถ",full:"รถ EV กำลังเป็นที่นิยมอย่างรวดเร็วในไทย โดยเฉพาะแบรนด์จากจีนอย่าง BYD และ MG ที่มีราคาเข้าถึงง่าย ต้นทุนการชาร์จไฟต่ำกว่าการเติมน้ำมันถึง 60-70% ต่อระยะทาง อย่างไรก็ตาม สถานีชาร์จยังกระจุกตัวในเมืองใหญ่ ผู้ใช้ต้องวางแผนการเดินทางระยะไกลอย่างรอบคอบ รัฐบาลมีมาตรการอุดหนุนลดภาษีและส่วนลดค่ารถเพื่อกระตุ้นตลาด",url:""},
+    {tag:"ข่าวเด่น",title:"ยอดขายรถ EV พุ่ง 40% ต้นปี",body:"แรงหนุนจากมาตรการรัฐและรุ่นใหม่ราคาเข้าถึงง่าย",full:"ยอดจดทะเบียนรถ EV ใหม่ในไทยช่วงไตรมาสแรกของปีนี้เพิ่มขึ้นกว่า 40% เมื่อเทียบกับปีก่อน โดยมีปัจจัยหลักจากการลดภาษีนำเข้าและการผลิตในประเทศของแบรนด์จีน ราคาเฉลี่ยลดลงมาอยู่ที่ประมาณ 800,000 บาท ทำให้ผู้บริโภคทั่วไปเข้าถึงได้มากขึ้น",url:""},
+    {tag:"เคล็ดลับ",title:"5 สัญญาณผ้าเบรกใกล้หมด",body:"เสียงเอี๊ยด แป้นเบรกลึก ระยะเบรกยาวขึ้น เช็กก่อนอันตราย",full:"1. มีเสียงเอี๊ยดหรือเสียงโลหะขณะเบรก\n2. แป้นเบรกต้องกดลึกกว่าปกติ\n3. รถสั่นหรือดึงไปด้านใดด้านหนึ่งขณะเบรก\n4. ระยะเบรกยาวขึ้นผิดปกติ\n5. ไฟเตือน Brake Pad ติดบนหน้าปัด\n\nหากพบสัญญาณเหล่านี้ควรนำรถเข้าศูนย์ตรวจสอบโดยด่วน เพราะผ้าเบรกหมดอาจทำให้เกิดอุบัติเหตุได้",url:""},
+    {tag:"เทคโนโลยี",title:"ADAS รุ่นใหม่ลดอุบัติเหตุ 27%",body:"ระบบช่วยขับขั้นสูงช่วยลดการชนท้ายอย่างมีนัยสำคัญ",full:"ระบบ ADAS (Advanced Driver-Assistance Systems) ในรถรุ่นปี 2025 ได้รับการพัฒนาให้ฉลาดขึ้นมาก ทั้งการเบรกอัตโนมัติฉุกเฉิน การเตือนออกนอกเลน และการตรวจจับจุดอับสายตา ข้อมูลจาก Euro NCAP แสดงให้เห็นว่าอุบัติเหตุชนท้ายลดลง 27% ในรถที่ติดตั้ง AEB รุ่นใหม่",url:""}
+  ];
+
+  magItems=items;
+  renderMagArticles();
+  renderMagWidget();
+}
+
+function openMagModal(i){
+  const m=magItems[i];if(!m)return;
+  $("mmTag").textContent=m.tag||"ข่าว";
+  $("mmTitle").textContent=m.title||"";
+  $("mmFull").textContent=m.full||m.body||"";
+  const ua=$("mmUrl");
+  if(m.url){ua.href=m.url;ua.style.display="inline-flex"}else{ua.style.display="none"}
+  $("magModal").classList.add("show");
+}
+function closeMagModal(){$("magModal").classList.remove("show")}
+
+/* ===== AUTH ===== */
+const isAdmin=e=>ADMINS.includes((e||"").toLowerCase());
+function picHTML(u){return u.photo?`<img src="${u.photo}" referrerpolicy="no-referrer">`:`<span class="fb">${(u.name||"?").charAt(0).toUpperCase()}</span>`}
+async function signIn(){
+  if(!useFb){toast(lang==="en"?"Auth unavailable":"ระบบล็อกอินไม่พร้อม","ti-alert-triangle");return}
+  if(location.protocol==="file:"){toast("ล็อกอิน Google ต้องเปิดผ่าน localhost/เว็บจริง (file:// ใช้ไม่ได้) — แต่ใช้แชต/การาจได้เลย","ti-info-circle");return}
+  const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:"select_account"});
+  try{await auth.signInWithPopup(p)}catch(e){if(e.code==="auth/popup-closed-by-user")return;toast("ล็อกอินไม่สำเร็จ: "+e.code,"ti-alert-triangle")}}
+window.signIn=signIn;
+$("signinBtn").onclick=signIn;
+$("logoutBtn").onclick=async()=>{if(useFb)await auth.signOut();$("dd").classList.remove("show");switchView("home");toast(lang==="en"?"Logged out":"ออกจากระบบแล้ว","ti-logout")};
+if(useFb)auth.onAuthStateChanged(async u=>{
+  if(u){
+    try {
+      const idToken = await u.getIdToken();
+      const r = await fetch(`${BACKEND_URL}/api/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + idToken
+        },
+        body: JSON.stringify({
+          name: u.displayName || u.email.split("@")[0],
+          photo: u.photoURL || ""
+        })
+      });
+      if (r.status === 403) {
+        toast("บัญชีนี้ถูกระงับการใช้งาน — ติดต่อผู้ดูแลระบบ", "ti-ban");
+        currentUser = null;
+        await auth.signOut();
+        return;
+      }
+      if (!r.ok) throw new Error(r.status + " " + r.statusText);
+      const res = await r.json();
+      currentUser = {
+        uid: res.uid,
+        name: res.name,
+        email: res.email,
+        photo: res.photo,
+        role: res.role || "user",
+        admin: res.role === "admin" || res.role === "owner"
+      };
+    } catch (e) {
+      console.warn("backend login error", e);
+      currentUser = {
+        uid: u.uid,
+        name: u.displayName || u.email.split("@")[0],
+        email: u.email,
+        photo: u.photoURL || "",
+        admin: isAdmin(u.email)
+      };
+    }
+  } else {
+    currentUser = null;
+  }
+  renderAuthUI();renderProfile();renderDashboard();syncCars();updateMaintOverlay();
+});
+function renderAuthUI(){const u=currentUser;
+  $("signinBtn").style.display=u?"none":"flex";
+  $("avatarBtn").style.display=u?"block":"none";
+  if(u){$("avatarBtn").innerHTML=picHTML(u);$("ddAdmin").style.display=["owner","admin","moderator"].includes(u.role)?"flex":"none"}}
+
+/* ===== PROFILE ===== */
+function renderProfile(){const u=currentUser;
+  $("pPic").innerHTML=u?picHTML(u):`<div class="fb">?</div>`;
+  $("pName").textContent=u?u.name:tr("profile.guest");
+  $("pEmail").textContent=u?u.email:tr("profile.guestsub");
+  const staff=u&&["owner","admin","moderator"].includes(u.role);
+  $("pRole").style.display=staff?"inline-flex":"none";
+  if(staff){const rt={owner:"เจ้าของระบบ",admin:"ผู้ดูแลระบบ",moderator:"ผู้ควบคุม"};$("pRole").innerHTML=`<i class="ti ti-shield-check"></i> ${rt[u.role]||"ผู้ดูแล"}`}
+  $("accountBox").innerHTML=u
+    ?`<button class="btn danger" onclick="document.getElementById('logoutBtn').click()"><i class="ti ti-logout"></i> ${lang==="en"?"Log out":"ออกจากระบบ"}</button>`
+    :`<button class="btn primary" onclick="signIn()"><i class="ti ti-brand-google"></i> ${lang==="en"?"Sign in with Google":"เข้าสู่ระบบด้วย Google"}</button>${location.protocol==="file:"?`<div class="note"><i class="ti ti-info-circle"></i> เปิดไฟล์แบบ double-click จะล็อกอินไม่ได้ (Google บล็อก file://) — เปิดผ่าน localhost หรือเว็บจริงเพื่อล็อกอิน + ใช้ Admin</div>`:""}`;
+  $("adminCard").style.display=staff?"block":"none";
+  renderLangSeg()}
+
+/* ===== TOAST ===== */
+let tt;function toast(m,ic){const el=$("toast");el.innerHTML=`<i class="ti ${ic||"ti-check"}"></i>${esc(m)}`;el.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("show"),3200)}
+
+/* ===== INIT ===== */
+initCustomSelects();
+initWidgetDragging();
+setTheme(currentTheme);
+setWireframeOpacity(wireframeOpacity);
+applyLang(lang);renderAuthUI();renderProfile();renderCarSel();renderDashboard();
+updateFabBadge();
+loadSiteConfig();
+(function(){
+  const v=new URLSearchParams(location.search).get("view");
+  if(v){switchView(v);history.replaceState(null,"",location.pathname);return}
+  // Auto-resume: if the selected car has a saved conversation, jump straight into chat.html
+  try{
+    if(sessionStorage.getItem("spire_stayHome"))return;
+    const c=selCar();if(!c)return;
+    const sess=LS.get("sess_"+c.id,[]);
+    const legacy=LS.get("chatMsgs_"+c.id,[]);
+    if((Array.isArray(sess)&&sess.some(s=>s.msgs&&s.msgs.length))||(legacy&&legacy.length))location.replace("chat.html");
+  }catch(e){}
+})();
+/* Card hover 3D tilt — desktop pointers only */
+(function(){
+  if(!window.matchMedia("(hover:hover) and (pointer:fine)").matches)return;
+  if(window.matchMedia("(prefers-reduced-motion:reduce)").matches)return;
+  const SEL=".ccard,.mag-card,.mag-hero";
+  let raf=null;
+  document.addEventListener("pointermove",e=>{
+    const el=e.target.closest(SEL);if(!el||raf)return;
+    raf=requestAnimationFrame(()=>{raf=null;
+      const r=el.getBoundingClientRect();
+      const rx=((e.clientY-r.top)/r.height-.5)*-6;
+      const ry=((e.clientX-r.left)/r.width-.5)*6;
+      el.style.transition="transform .12s ease-out";
+      el.style.transform=`perspective(900px) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) translateY(-3px)`;
+    });
+  },{passive:true});
+  document.addEventListener("pointerout",e=>{
+    const el=e.target.closest(SEL);if(!el)return;
+    if(e.relatedTarget&&el.contains(e.relatedTarget))return;
+    el.style.transition="transform .55s cubic-bezier(.2,.9,.3,1.2)";
+    el.style.transform="";
+  });
+})();
+setTimeout(moveInd,150);window.addEventListener("load",()=>setTimeout(moveInd,80));
+if(document.fonts)document.fonts.ready.then(moveInd);
+</script>
+</body>
+</html>

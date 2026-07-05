@@ -438,6 +438,10 @@ body[data-phase="thread"] .composer{display:block;animation:compIn .5s cubic-bez
 .sym-item:active{transform:translateX(4px) scale(.97)}
 .send:active:not(:disabled){transform:scale(.88)}
 .hist-new:active{transform:scale(.96)}
+/* soft-3D buttons — light top edge, shaded bottom (modern dimensional style) */
+.act-btn.primary,.send,.hist-new{box-shadow:inset 0 1.5px 0 rgba(255,255,255,.42),inset 0 -2px 3px rgba(0,0,0,.18),0 14px 30px -12px var(--c-acc)}
+.act-btn.primary:active,.send:active:not(:disabled),.hist-new:active{box-shadow:inset 0 2px 6px rgba(0,0,0,.3)}
+.act-btn.ghost,.tile,.gate-car{box-shadow:inset 0 1px 0 rgba(255,255,255,.09)}
 html.theme-fade,html.theme-fade *,html.theme-fade *::before,html.theme-fade *::after{transition:background .5s ease,background-color .5s ease,color .5s ease,border-color .5s ease,box-shadow .5s ease!important}
 
 /* toast */
@@ -498,6 +502,27 @@ html.theme-fade,html.theme-fade *,html.theme-fade *::before,html.theme-fade *::a
 
 <!-- MAIN -->
 <main class="wrap">
+
+  <!-- LOGIN GATE: sign-in required before chatting -->
+  <section class="pane pane-center" id="v-login">
+    <div class="pane-inner">
+      <div class="logo-halo"><div class="big-logo"><svg viewBox="0 0 100 100"><path d="M66 9 L21 41.5 L37.5 41.5 L37.5 95 L66 95 Z"/></svg></div></div>
+      <div class="w-greet" data-t="login.title">เข้าสู่ระบบเพื่อใช้ SpireONE</div>
+      <div class="w-sub" data-t="login.sub">ล็อกอินด้วย Google เพื่อคุยกับ AI อย่างปลอดภัย ประวัติและโควตาผูกกับบัญชีของคุณ</div>
+      <div class="w-actions">
+        <button class="act-btn primary" id="loginBtn" onclick="signIn()" style="display:none">
+          <span class="ic"><i class="ti ti-brand-google"></i></span>
+          <span><span data-t="login.google">เข้าสู่ระบบด้วย Google</span><small data-t="login.gsub">ปลอดภัย · ไม่มีรหัสผ่าน</small></span>
+        </button>
+        <div id="loginStatus" style="text-align:center;color:var(--c-mut);font-size:13.5px;padding:6px 0">
+          <i class="ti ti-loader-2" style="font-size:18px"></i> <span data-t="login.checking">กำลังตรวจสอบการเข้าสู่ระบบ...</span>
+        </div>
+        <div id="loginNote" style="display:none;text-align:center;color:var(--c-faint);font-size:12.5px;line-height:1.6">
+          เปิดไฟล์แบบ double-click (file://) จะล็อกอิน Google ไม่ได้<br>กรุณาเปิดผ่านเว็บจริงของ SpireONE
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- GATE: no car selected -->
   <section class="pane pane-center" id="v-gate">
@@ -652,6 +677,12 @@ document.documentElement.lang=lang;
 /* ===== i18n ===== */
 const LX={th:0,en:1,ja:2,zh:3,de:4,es:5};
 const T={
+ "login.title":["เข้าสู่ระบบเพื่อใช้ SpireONE","Sign in to use SpireONE","SpireONEを使うにはログイン","登录以使用SpireONE","Anmelden für SpireONE","Inicie sesión para usar SpireONE"],
+ "login.sub":["ล็อกอินด้วย Google เพื่อคุยกับ AI อย่างปลอดภัย ประวัติและโควตาผูกกับบัญชีของคุณ","Sign in with Google to chat securely — history & quota follow your account","Googleでログインして安全にチャット","使用Google登录以安全聊天","Mit Google anmelden für sicheren Chat","Inicie sesión con Google para chatear de forma segura"],
+ "login.google":["เข้าสู่ระบบด้วย Google","Sign in with Google","Googleでログイン","使用Google登录","Mit Google anmelden","Iniciar sesión con Google"],
+ "login.gsub":["ปลอดภัย · ไม่มีรหัสผ่าน","Secure · passwordless","安全・パスワード不要","安全·无需密码","Sicher · ohne Passwort","Seguro · sin contraseña"],
+ "login.checking":["กำลังตรวจสอบการเข้าสู่ระบบ...","Checking sign-in...","ログイン確認中...","正在检查登录...","Anmeldung wird geprüft...","Comprobando sesión..."],
+ "login.banned":["บัญชีนี้ถูกระงับการใช้งาน — ติดต่อผู้ดูแลระบบ","This account is suspended — contact an admin","このアカウントは停止されています","此账户已被停用","Dieses Konto ist gesperrt","Esta cuenta está suspendida"],
  "gate.title":["เลือกรถของคุณ","Choose your car","車を選択","选择您的车","Wählen Sie Ihr Auto","Elija su coche"],
  "gate.sub":["SpireONE จะวิเคราะห์ได้แม่นยำขึ้นเมื่อรู้จักรถของคุณ","SpireONE analyzes better when it knows your car","車を登録するとより正確に分析できます","了解您的车后分析更精准","SpireONE analysiert besser, wenn es Ihr Auto kennt","SpireONE analiza mejor conociendo su coche"],
  "gate.empty":["ยังไม่มีรถในการาจ","No cars in your garage yet","ガレージに車がありません","车库中还没有车辆","Noch keine Autos in der Garage","Aún no hay coches en el garaje"],
@@ -811,9 +842,45 @@ async function syncCars(){
     saveGarage(merged);renderCarUI();
   }catch(e){console.warn("syncCars",e)}
 }
-if(useFb)auth.onAuthStateChanged(u=>{
+/* ===== AUTH GATE (login required before chat) ===== */
+async function signIn(){
+  if(!useFb){toast(lang==="en"?"Auth unavailable":"ระบบล็อกอินไม่พร้อม","ti-alert-triangle");return}
+  if(location.protocol==="file:"){toast("ล็อกอิน Google ต้องเปิดผ่านเว็บจริง (file:// ใช้ไม่ได้)","ti-info-circle");return}
+  const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:"select_account"});
+  try{await auth.signInWithPopup(p)}catch(e){if(e.code!=="auth/popup-closed-by-user")toast("ล็อกอินไม่สำเร็จ: "+e.code,"ti-alert-triangle")}
+}
+async function backendLogin(u){
+  try{
+    const tok=await u.getIdToken();
+    const r=await fetch(`${BACKEND_URL}/api/login`,{method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok},
+      body:JSON.stringify({name:u.displayName||"",photo:u.photoURL||""})});
+    if(r.status===403){isBanned=true;return}
+    if(r.ok){const d=await r.json();myRole=d.role||"user";isBanned=false}
+  }catch(e){console.warn("login",e)}
+}
+function showLoginGate(){
+  entered=false;
+  $("loginStatus").style.display="none";
+  $("loginBtn").style.display="flex";
+  if(location.protocol==="file:")$("loginNote").style.display="block";
+  setPhase("login");
+}
+function showBanned(){
+  $("loginBtn").style.display="none";
+  $("loginNote").style.display="none";
+  const s=$("loginStatus");s.style.display="block";
+  s.innerHTML=`<i class="ti ti-ban" style="font-size:18px;color:#F26D6D"></i> ${tr("login.banned")}`;
+  setPhase("login");
+}
+if(useFb)auth.onAuthStateChanged(async u=>{
   currentUser=u?{uid:u.uid,name:u.displayName||(u.email||"").split("@")[0],email:u.email,photo:u.photoURL||""}:null;
-  updateGreeting();syncCars();
+  updateGreeting();
+  if(!u){showLoginGate();return}
+  await backendLogin(u);
+  if(isBanned){showBanned();return}
+  syncCars();
+  runEntry();
 });
 
 /* ===== SESSIONS (multi-conversation per car) ===== */
@@ -889,13 +956,14 @@ function clearCurrent(){
 }
 
 /* ===== PHASES ===== */
-const PANES=["gate","welcome","choices","symcats","symlist","thread"];
+const PANES=["login","gate","welcome","choices","symcats","symlist","thread"];
 function setPhase(p){
   document.body.dataset.phase=p;
   PANES.forEach(x=>$("v-"+x).classList.toggle("on",x===p));
   if(p==="thread"){updateHint();renderChips();scrollBottom(true)}
 }
 function decideStart(){
+  if(useFb&&!currentUser){setPhase("login");return}
   const c=selCar();
   if(!c){renderGate();setPhase("gate");return}
   loadSession();
@@ -1278,29 +1346,40 @@ let tt;function toast(m,ic){const el=$("toast");el.innerHTML=`<i class="ti ${ic|
 setChatTheme(LS.get("chatTheme","midnight"));
 applyT();
 updateGreeting();
+/* Parse entry params, then wait for auth before showing anything */
+let pendingEntry=null,entered=false;
 (function(){
   const q=new URLSearchParams(location.search);
   const car=q.get("car");if(car)LS.set("selCar",car);
-  decideStart();
-  const attach=q.get("attach");
-  const starter=q.get("starter");
-  if(selCar()){
-    if(attach==="text"){enterThread({focus:true})}
-    else if(attach){
-      enterThread({});
-      if(attach==="image")hintAttach("attImg",()=>{});
-      else if(attach==="video")hintAttach("attVid",()=>{});
-      else if(attach==="mic")hintAttach("micBtn",()=>{});
-      toast(lang==="en"?"Tap the highlighted button to attach":"แตะปุ่มที่กะพริบเพื่อแนบไฟล์","ti-hand-click");
-    }else if(starter&&!messages.length){
-      enterThread({});
-      const c=selCar();
-      $("inp").value=lang==="en"?`Please check my ${c?c.name:"car"} — any issues to look at?`:`ช่วยตรวจรถ ${c?c.name:""} ให้หน่อย มีอะไรต้องดูไหม?`;
-      autoSize();updateSend();setTimeout(()=>$("inp").focus(),150);
-    }
-  }
+  pendingEntry={attach:q.get("attach"),starter:q.get("starter")};
   if(location.search)history.replaceState(null,"",location.pathname);
+  if(useFb){setPhase("login")} // onAuthStateChanged will route us onward
+  else{
+    // Firebase unavailable — cannot authenticate, show the gate with an error
+    setPhase("login");
+    $("loginStatus").innerHTML='<i class="ti ti-alert-triangle" style="font-size:18px"></i> ระบบล็อกอินไม่พร้อมใช้งาน';
+  }
 })();
+function runEntry(){
+  if(entered){decideStart();return}
+  entered=true;
+  decideStart();
+  const p=pendingEntry||{};pendingEntry=null;
+  if(!selCar())return;
+  if(p.attach==="text"){enterThread({focus:true})}
+  else if(p.attach){
+    enterThread({});
+    if(p.attach==="image")hintAttach("attImg",()=>{});
+    else if(p.attach==="video")hintAttach("attVid",()=>{});
+    else if(p.attach==="mic")hintAttach("micBtn",()=>{});
+    toast(lang==="en"?"Tap the highlighted button to attach":"แตะปุ่มที่กะพริบเพื่อแนบไฟล์","ti-hand-click");
+  }else if(p.starter&&!messages.length){
+    enterThread({});
+    const c=selCar();
+    $("inp").value=lang==="en"?`Please check my ${c?c.name:"car"} — any issues to look at?`:`ช่วยตรวจรถ ${c?c.name:""} ให้หน่อย มีอะไรต้องดูไหม?`;
+    autoSize();updateSend();setTimeout(()=>$("inp").focus(),150);
+  }
+}
 </script>
 </body>
 </html>

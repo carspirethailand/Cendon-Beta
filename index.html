@@ -520,6 +520,16 @@ a{color:inherit;text-decoration:none}button{font-family:inherit;cursor:pointer;b
 /* ===== THEME CROSSFADE ===== */
 html.theme-fade,html.theme-fade *,html.theme-fade *::before,html.theme-fade *::after{transition:background .5s ease,background-color .5s ease,color .5s ease,border-color .5s ease,box-shadow .5s ease,fill .5s ease!important}
 
+/* ===== SOFT-3D BUTTONS (light top edge) + SITE CONFIG UI ===== */
+.btn.primary,.cdiag,.fab,.btn-signin{box-shadow:inset 0 1.5px 0 rgba(255,255,255,.42),inset 0 -2px 3px rgba(0,0,0,.16),0 10px 24px -10px rgba(217,94,60,.55)}
+.btn.primary:active,.cdiag:active,.fab:active,.btn-signin:active{box-shadow:inset 0 2px 6px rgba(0,0,0,.25)}
+.site-announce{position:relative;z-index:30;display:flex;align-items:center;justify-content:center;gap:8px;padding:9px 16px;font-size:13.5px;font-weight:600;background:var(--grad);color:#fff;text-align:center;flex-shrink:0}
+.site-announce.warn{background:linear-gradient(135deg,#E8A23C,#D64A4A)}
+.maint-overlay{position:fixed;inset:0;z-index:400;background:var(--bg);display:grid;place-items:center;padding:20px}
+.maint-card{text-align:center;max-width:420px;background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:38px 30px;box-shadow:var(--shadow)}
+.maint-card h2{font-family:var(--kd);font-weight:600;font-size:24px;margin:12px 0 8px}
+.maint-card p{color:var(--muted);font-size:14.5px}
+
 @media(prefers-reduced-motion:reduce){
   .view.active .scroll>*,.view.active .widget,.mag-in{animation:none!important}
   .sk::after{animation:none}
@@ -543,7 +553,7 @@ html.theme-fade,html.theme-fade *,html.theme-fade *::before,html.theme-fade *::a
         <button class="avatar" id="avatarBtn"><span class="fb" id="navFb">?</span></button>
         <div class="dd" id="dd">
           <button data-view="profile"><i class="ti ti-user"></i> <span data-i18n="menu.profile">โปรไฟล์ & ตั้งค่า</span></button>
-          <button data-view="profile" data-set="admin" id="ddAdmin" style="display:none"><i class="ti ti-shield-lock"></i> Admin Panel</button>
+          <button id="ddAdmin" style="display:none" onclick="location.href='admin.html'"><i class="ti ti-shield-lock"></i> <span data-i18n="menu.admin">แผงควบคุมแอดมิน</span></button>
           <hr/>
           <button id="logoutBtn"><i class="ti ti-logout"></i> <span data-i18n="menu.logout">ออกจากระบบ</span></button>
         </div>
@@ -787,10 +797,9 @@ html.theme-fade,html.theme-fade *,html.theme-fade *::before,html.theme-fade *::a
         <div class="card set-card"><h3 data-i18n="set.account">บัญชี</h3><p class="d" data-i18n="set.accountd">เข้าสู่ระบบด้วย Google เพื่อใช้ Admin และจดจำข้อมูล</p>
           <div id="accountBox"></div></div>
         <div class="card set-card" id="adminCard" style="display:none">
-          <h3><i class="ti ti-shield-lock"></i> Admin Panel</h3><p class="d" data-i18n="set.admind">ภาพรวมผู้ใช้งานทั้งหมด (เฉพาะผู้ดูแล)</p>
-          <div class="statrow" id="adStats"></div>
-          <div style="overflow-x:auto"><table class="atbl"><thead><tr><th>ผู้ใช้</th><th>อีเมล</th><th>สิทธิ์</th><th>ล่าสุด</th></tr></thead><tbody id="adRows"></tbody></table></div>
-          <button class="btn" id="adRefresh" style="margin-top:12px"><i class="ti ti-refresh"></i> รีเฟรช</button>
+          <h3><i class="ti ti-shield-lock"></i> <span data-i18n="menu.admin">แผงควบคุมแอดมิน</span></h3>
+          <p class="d" data-i18n="set.admind">จัดการผู้ใช้ ยศ นิตยสาร สถิติ และตั้งค่าเว็บทั้งหมด</p>
+          <button class="btn primary" onclick="location.href='admin.html'"><i class="ti ti-external-link"></i> <span data-i18n="set.openadmin">เปิดแผงควบคุม</span></button>
         </div>
       </div>
     </section>
@@ -834,9 +843,7 @@ const LS={get:(k,d)=>{try{return JSON.parse(localStorage.getItem("spire_"+k))??d
 const BACKEND_URL = "https://spireonebackend.carspirethailand.workers.dev";
 const fbConfig={apiKey:"AIzaSyDDtvz4d4FRG_KOq5EQHmlDijU-x1FDZlQ",authDomain:"sp1p-82396.firebaseapp.com",databaseURL:"https://sp1p-82396-default-rtdb.firebaseio.com",projectId:"sp1p-82396",storageBucket:"sp1p-82396.appspot.com",messagingSenderId:"924479207020",appId:"1:924479207020:web:ec64428a61403e1ad48a49"};
 const ADMINS=["anapatmaliwong@gmail.com","carspirethailand@gmail.com"];
-/* Gemini — works directly from the browser. ⚠️ key is visible in source; restrict by HTTP referrer in Google Cloud Console */
-const GEMINI_KEY="";
-const GEMINI_MODEL="gemini-2.5-flash";
+/* AI + secrets live on the backend only — nothing sensitive ships in this file */
 let auth=null,useFb=false;
 try{firebase.initializeApp(fbConfig);auth=firebase.auth();auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});useFb=true;}catch(e){console.warn("fb",e)}
 let currentUser=null,lang=LS.get("lang","th");
@@ -981,18 +988,33 @@ function getBodyStyle(name) {
   return "sedan";
 }
 
-/* ===== GEMINI ===== */
-async function gemini(contents,opts){opts=opts||{};
-  const body={contents,generationConfig:{temperature:opts.temp!=null?opts.temp:0.5}};
-  if(opts.system)body.systemInstruction={parts:[{text:opts.system}]};
-  if(opts.search)body.tools=[{google_search:{}}];
-  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_KEY}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
-  if(!r.ok)throw new Error((r.status)+" "+(await r.text()).slice(0,150));
-  const d=await r.json(),c=(d.candidates&&d.candidates[0])||{};
-  return ((c.content&&c.content.parts)||[]).map(p=>p.text||"").join("").trim();
+/* ===== SITE CONFIG (announcement / maintenance from backend) ===== */
+let siteMaint=null;
+async function loadSiteConfig(){
+  try{
+    const r=await fetch(`${BACKEND_URL}/api/config`);if(!r.ok)return;
+    const cfg=await r.json();
+    if(cfg.announcement&&cfg.announcement.enabled&&cfg.announcement.text){
+      const b=document.createElement("div");
+      b.className="site-announce"+(cfg.announcement.type==="warn"?" warn":"");
+      b.innerHTML=`<i class="ti ${cfg.announcement.type==="warn"?"ti-alert-triangle":"ti-speakerphone"}"></i> ${esc(cfg.announcement.text)}`;
+      document.querySelector(".app").prepend(b);
+    }
+    siteMaint=cfg.maintenance||null;
+    updateMaintOverlay();
+  }catch(e){}
 }
-function gParse(t){if(!t)return null;let s=t.replace(/```json/gi,"").replace(/```/g,"").trim();const m=s.match(/[\[{][\s\S]*[\]}]/);if(m)s=m[0];try{return JSON.parse(s)}catch{return null}}
-const blobB64=b=>new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result.split(",")[1]);r.readAsDataURL(b)});
+function updateMaintOverlay(){
+  const staff=currentUser&&["owner","admin","moderator"].includes(currentUser.role);
+  const o=$("maintOverlay");
+  if(siteMaint&&siteMaint.enabled&&!staff){
+    if(o)return;
+    const el=document.createElement("div");el.id="maintOverlay";el.className="maint-overlay";
+    el.innerHTML=`<div class="maint-card"><i class="ti ti-tool" style="font-size:42px;color:var(--accent)"></i>
+      <h2>ปิดปรับปรุงชั่วคราว</h2><p>${esc(siteMaint.message||"ระบบกำลังปรับปรุง กลับมาเร็วๆ นี้ครับ")}</p></div>`;
+    document.body.appendChild(el);
+  }else if(o)o.remove();
+}
 
 /* ===== i18n ===== */
 const LANG_INDEXES = { th: 0, en: 1, ja: 2, zh: 3, de: 4, es: 5 };
@@ -1003,6 +1025,8 @@ const T={
  "signin":["เข้าสู่ระบบ","Sign in","ログイン","登录","Einloggen","Iniciar Sesión"],
  "menu.profile":["โปรไฟล์ & ตั้งค่า","Profile & Settings","プロファイル & 設定","个人资料 & 设置","Profil & Einstellungen","Perfil & Configuración"],
  "menu.logout":["ออกจากระบบ","Log out","ログアウト","退出登录","Abmelden","Cerrar Sesión"],
+ "menu.admin":["แผงควบคุมแอดมิน","Admin Panel","管理パネル","管理面板","Admin-Panel","Panel de Admin"],
+ "set.openadmin":["เปิดแผงควบคุม","Open dashboard","ダッシュボードを開く","打开控制面板","Dashboard öffnen","Abrir panel"],
  "dash.sub":["เลือกวิธีวินิจฉัย หรือกดวินิจฉัยรถในการาจของคุณได้เลย","Pick a way to diagnose, or tap a car in your garage","診断方法を選択するか、ガレージの車をタップしてください","选择诊断方式，或点击车库中的车辆","Wählen Sie eine Diagnosemethode oder tippen Sie auf ein Auto in Ihrer Garage","Elija un método de diagnóstico o toque un automóvil en su garaje"],
  "dash.cars":["รถของฉัน","My cars","マイカー","我的车辆","Meine Autos","Mis coches"],
  "dash.manage":["จัดการ →","Manage →","管理 →","管理 →","Verwalten →","Administrar →"],
@@ -1105,7 +1129,7 @@ function switchView(v){
   if(v==="profile")renderProfile();
   $("dd").classList.remove("show");moveInd();
 }
-document.addEventListener("click",e=>{const n=e.target.closest("[data-view]");if(n){const set=n.dataset.set;switchView(n.dataset.view);if(set==="admin")setTimeout(loadAdmin,50)}});
+document.addEventListener("click",e=>{const n=e.target.closest("[data-view]");if(n)switchView(n.dataset.view)});
 $("avatarBtn").onclick=e=>{e.stopPropagation();$("dd").classList.toggle("show")};
 document.addEventListener("click",e=>{if(!e.target.closest(".nav-right"))$("dd").classList.remove("show")});
 
@@ -1574,13 +1598,7 @@ async function loadMag(){if(magLoaded)return;magLoaded=true;
     }
   }catch(e){console.warn("mag backend",e)}
 
-  // 2) Client-side Gemini
-  if(!items&&GEMINI_KEY){try{
-    const txt=await gemini([{role:"user",parts:[{text:"ค้นเว็บหาข่าว/บทความรถยนต์ในไทยล่าสุด 5 เรื่อง ตอบเป็น JSON array เท่านั้น: [{\"tag\":\"หมวด\",\"title\":\"พาดหัว\",\"body\":\"สรุปสั้น 1-2 ประโยค\",\"full\":\"เนื้อหาขยายไม่เกิน 6 บรรทัด\",\"url\":\"ลิงก์\"}]"}]}],{search:true,temp:0.4});
-    const arr=gParse(txt);if(Array.isArray(arr)&&arr.length)items=arr.slice(0,5);
-  }catch(e){console.warn("mag gemini",e)}}
-
-  // 3) Demo fallback
+  // 2) Demo fallback
   if(!items)items=[
     {tag:"รีวิว",title:"ยุคใหม่ของรถ EV ในไทย คุ้มจริงไหม?",body:"เจาะลึกต้นทุน ระยะทาง และเครือข่ายชาร์จที่กำลังเปลี่ยนเกมตลาดรถ",full:"รถ EV กำลังเป็นที่นิยมอย่างรวดเร็วในไทย โดยเฉพาะแบรนด์จากจีนอย่าง BYD และ MG ที่มีราคาเข้าถึงง่าย ต้นทุนการชาร์จไฟต่ำกว่าการเติมน้ำมันถึง 60-70% ต่อระยะทาง อย่างไรก็ตาม สถานีชาร์จยังกระจุกตัวในเมืองใหญ่ ผู้ใช้ต้องวางแผนการเดินทางระยะไกลอย่างรอบคอบ รัฐบาลมีมาตรการอุดหนุนลดภาษีและส่วนลดค่ารถเพื่อกระตุ้นตลาด",url:""},
     {tag:"ข่าวเด่น",title:"ยอดขายรถ EV พุ่ง 40% ต้นปี",body:"แรงหนุนจากมาตรการรัฐและรุ่นใหม่ราคาเข้าถึงง่าย",full:"ยอดจดทะเบียนรถ EV ใหม่ในไทยช่วงไตรมาสแรกของปีนี้เพิ่มขึ้นกว่า 40% เมื่อเทียบกับปีก่อน โดยมีปัจจัยหลักจากการลดภาษีนำเข้าและการผลิตในประเทศของแบรนด์จีน ราคาเฉลี่ยลดลงมาอยู่ที่ประมาณ 800,000 บาท ทำให้ผู้บริโภคทั่วไปเข้าถึงได้มากขึ้น",url:""},
@@ -1630,6 +1648,12 @@ if(useFb)auth.onAuthStateChanged(async u=>{
           photo: u.photoURL || ""
         })
       });
+      if (r.status === 403) {
+        toast("บัญชีนี้ถูกระงับการใช้งาน — ติดต่อผู้ดูแลระบบ", "ti-ban");
+        currentUser = null;
+        await auth.signOut();
+        return;
+      }
       if (!r.ok) throw new Error(r.status + " " + r.statusText);
       const res = await r.json();
       currentUser = {
@@ -1637,7 +1661,8 @@ if(useFb)auth.onAuthStateChanged(async u=>{
         name: res.name,
         email: res.email,
         photo: res.photo,
-        admin: res.role === "admin"
+        role: res.role || "user",
+        admin: res.role === "admin" || res.role === "owner"
       };
     } catch (e) {
       console.warn("backend login error", e);
@@ -1652,48 +1677,26 @@ if(useFb)auth.onAuthStateChanged(async u=>{
   } else {
     currentUser = null;
   }
-  renderAuthUI();renderProfile();renderDashboard();syncCars();
+  renderAuthUI();renderProfile();renderDashboard();syncCars();updateMaintOverlay();
 });
 function renderAuthUI(){const u=currentUser;
   $("signinBtn").style.display=u?"none":"flex";
   $("avatarBtn").style.display=u?"block":"none";
-  if(u){$("avatarBtn").innerHTML=picHTML(u);$("ddAdmin").style.display=u.admin?"flex":"none"}}
+  if(u){$("avatarBtn").innerHTML=picHTML(u);$("ddAdmin").style.display=["owner","admin","moderator"].includes(u.role)?"flex":"none"}}
 
 /* ===== PROFILE ===== */
 function renderProfile(){const u=currentUser;
   $("pPic").innerHTML=u?picHTML(u):`<div class="fb">?</div>`;
   $("pName").textContent=u?u.name:tr("profile.guest");
   $("pEmail").textContent=u?u.email:tr("profile.guestsub");
-  $("pRole").style.display=u&&u.admin?"inline-flex":"none";
+  const staff=u&&["owner","admin","moderator"].includes(u.role);
+  $("pRole").style.display=staff?"inline-flex":"none";
+  if(staff){const rt={owner:"เจ้าของระบบ",admin:"ผู้ดูแลระบบ",moderator:"ผู้ควบคุม"};$("pRole").innerHTML=`<i class="ti ti-shield-check"></i> ${rt[u.role]||"ผู้ดูแล"}`}
   $("accountBox").innerHTML=u
     ?`<button class="btn danger" onclick="document.getElementById('logoutBtn').click()"><i class="ti ti-logout"></i> ${lang==="en"?"Log out":"ออกจากระบบ"}</button>`
     :`<button class="btn primary" onclick="signIn()"><i class="ti ti-brand-google"></i> ${lang==="en"?"Sign in with Google":"เข้าสู่ระบบด้วย Google"}</button>${location.protocol==="file:"?`<div class="note"><i class="ti ti-info-circle"></i> เปิดไฟล์แบบ double-click จะล็อกอินไม่ได้ (Google บล็อก file://) — เปิดผ่าน localhost หรือเว็บจริงเพื่อล็อกอิน + ใช้ Admin</div>`:""}`;
-  $("adminCard").style.display=u&&u.admin?"block":"none";
+  $("adminCard").style.display=staff?"block":"none";
   renderLangSeg()}
-async function loadAdmin(){
-  if(!currentUser||!currentUser.admin)return;
-  if(!useFb){$("adRows").innerHTML=`<tr><td colspan="4">Firebase ไม่พร้อม</td></tr>`;return}
-  $("adRows").innerHTML=`<tr><td colspan="4" style="color:var(--muted)">${lang==="en"?"Loading...":"กำลังโหลด..."}</td></tr>`;
-  try{
-    const idToken = await auth.currentUser.getIdToken();
-    const r = await fetch(`${BACKEND_URL}/api/admin/users`, {
-      headers: {
-        "Authorization": "Bearer " + idToken
-      }
-    });
-    if (!r.ok) throw new Error(r.status + " " + r.statusText);
-    const arr = await r.json();
-    const admins = arr.filter(x=>x.role==="admin").length;
-    const today = arr.filter(x=>Date.now()-(x.last_login||0)<864e5).length;
-    
-    $("adStats").innerHTML=`<div class="stat"><div class="n">${arr.length}</div><div class="l">${lang==="en"?"Users":"ผู้ใช้ทั้งหมด"}</div></div><div class="stat"><div class="n">${admins}</div><div class="l">${lang==="en"?"Admins":"ผู้ดูแล"}</div></div><div class="stat"><div class="n">${today}</div><div class="l">${lang==="en"?"Active today":"ใช้งานวันนี้"}</div></div>`;
-    $("adRows").innerHTML=arr.map(x=>`<tr><td>${x.photo?`<img class="mini-av" src="${x.photo}" referrerpolicy="no-referrer">`:""}${esc(x.name||"-")}</td><td>${esc(x.email||"-")}</td><td>${x.role==="admin"?'<span style="color:var(--accent);font-weight:700">ADMIN</span>':'USER'}</td><td>${x.last_login?new Date(x.last_login).toLocaleString(lang==="en"?"en-US":"th-TH",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"-"}</td></tr>`).join("")||`<tr><td colspan="4" style="color:var(--muted)">${lang==="en"?"No users":"ยังไม่มีผู้ใช้"}</td></tr>`;
-  }catch(e){
-    $("adStats").innerHTML="";
-    $("adRows").innerHTML=`<tr><td colspan="4" style="color:var(--danger)">${lang==="en"?"Cannot read":"อ่านข้อมูลไม่ได้"}: ${esc(e.message)}</td></tr>`;
-  }
-}
-$("adRefresh").onclick=loadAdmin;
 
 /* ===== TOAST ===== */
 let tt;function toast(m,ic){const el=$("toast");el.innerHTML=`<i class="ti ${ic||"ti-check"}"></i>${esc(m)}`;el.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("show"),3200)}
@@ -1705,6 +1708,7 @@ setTheme(currentTheme);
 setWireframeOpacity(wireframeOpacity);
 applyLang(lang);renderAuthUI();renderProfile();renderCarSel();renderDashboard();
 updateFabBadge();
+loadSiteConfig();
 (function(){
   const v=new URLSearchParams(location.search).get("view");
   if(v){switchView(v);history.replaceState(null,"",location.pathname);return}

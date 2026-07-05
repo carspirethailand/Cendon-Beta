@@ -322,6 +322,20 @@ body[data-phase="thread"] .meteor{display:none}
 .urg.low{background:rgba(62,158,110,.16);color:#4CC287}
 .urg.medium{background:rgba(232,162,60,.16);color:#E8A23C}
 .urg.high{background:rgba(214,74,74,.16);color:#F26D6D}
+/* backend diagnosis card (POST /api/diagnose) */
+.diag-card .sum-head .urg{margin-left:auto;margin-top:0}
+.dg-causes{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.dg-cause{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:13px;background:var(--c-glass);border:1px solid var(--c-line2)}
+.dg-cause .lk{flex-shrink:0;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;margin-top:1px;white-space:nowrap}
+.dg-cause .lk.low{background:rgba(62,158,110,.16);color:#4CC287}
+.dg-cause .lk.medium{background:rgba(232,162,60,.16);color:#E8A23C}
+.dg-cause .lk.high{background:rgba(214,74,74,.16);color:#F26D6D}
+.dg-cause b{display:block;font-size:13.5px}
+.dg-cause small{display:block;color:var(--c-mut);font-size:12.5px;margin-top:2px;line-height:1.5}
+.dg-mech{display:flex;align-items:center;gap:9px;padding:10px 13px;border-radius:13px;font-size:13px;font-weight:600;
+  background:var(--c-acc-soft);color:var(--c-acc);border:1px solid var(--c-line2)}
+.dg-mech i{font-size:16px;flex-shrink:0}
+.dg-disc{font-size:11.5px;color:var(--c-faint);border-top:1px dashed var(--c-line);padding-top:10px;line-height:1.5}
 
 /* ============ CHIPS ============ */
 .chip-row{position:relative;z-index:20;display:none;flex-wrap:wrap;gap:8px;justify-content:center;
@@ -628,8 +642,7 @@ const LS={get:(k,d)=>{try{return JSON.parse(localStorage.getItem("spire_"+k))??d
 
 /* ===== CONFIG (same as index.html — do not change) ===== */
 const BACKEND_URL="https://spireonebackend.carspirethailand.workers.dev";
-const fbConfig={apiKey:"AIzaSyDDtvz4d4FRG_KOq5EQHmlDijU-x1FDZlQ",authDomain:"sp1p-82396.firebaseapp.com",databaseURL:"https://sp1p-82396-default-rtdb.firebaseio.com",projectId:"sp1p-82396",storageBucket:"sp1p-82396.appspot.com",messagingSenderId:"924479207020",appId:"1:924479207020:web:ec64428a61403e1ad48a49"};
-const GEMINI_KEY="AIzaSyB1P_3zw1f27UqavxyW4WW_yhFWWUJAo8c";
+const GEMINI_KEY="";
 const GEMINI_MODEL="gemini-2.5-flash";
 let auth=null,useFb=false,currentUser=null;
 try{firebase.initializeApp(fbConfig);auth=firebase.auth();auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});useFb=true}catch(e){console.warn("fb",e)}
@@ -682,7 +695,11 @@ const T={
  "urg.low":["ไม่เร่งด่วน","Not urgent","急ぎではない","不紧急","Nicht dringend","No urgente"],
  "urg.medium":["ควรตรวจเร็วๆ นี้","Check soon","早めに点検を","尽快检查","Bald prüfen","Revisar pronto"],
  "urg.high":["เร่งด่วน — ควรตรวจทันที","Urgent — check now","緊急 — すぐに点検","紧急 — 立即检查","Dringend — sofort prüfen","Urgente — revisar ya"],
- "hint.sub":["SpireONE พร้อมช่วยเสมอ — พิมพ์ด้านล่างได้เลย","SpireONE is ready — type below to start","下に入力して開始","在下方输入即可开始","Unten tippen zum Starten","Escriba abajo para empezar"]
+ "hint.sub":["SpireONE พร้อมช่วยเสมอ — พิมพ์ด้านล่างได้เลย","SpireONE is ready — type below to start","下に入力して開始","在下方输入即可开始","Unten tippen zum Starten","Escriba abajo para empezar"],
+ "dg.title":["ผลวินิจฉัยเบื้องต้น","Preliminary Diagnosis","初期診断結果","初步诊断","Vorläufige Diagnose","Diagnóstico preliminar"],
+ "dg.car":["รถ","Car","車","车辆","Auto","Coche"],
+ "dg.sum":["สรุปอาการ","Summary","概要","症状摘要","Zusammenfassung","Resumen"],
+ "dg.mech":["แนะนำให้นำรถเข้าตรวจกับช่างผู้เชี่ยวชาญ","We recommend a professional inspection","専門の整備士による点検をお勧めします","建议送专业技师检查","Professionelle Inspektion empfohlen","Se recomienda una inspección profesional"]
 };
 const tr=k=>{const v=T[k];if(!v)return k;return v[LX[lang]??0]||v[0]};
 function applyT(){document.querySelectorAll("[data-t]").forEach(e=>{e.textContent=tr(e.dataset.t)});$("inp").placeholder=tr("comp.ph")}
@@ -740,15 +757,35 @@ const SYMPTOMS_DATABASE={
       ["แก้มยางบวม ร้าว หรือยางแบนซึม","Flat tire or cracked sidewall","タイヤの膨らみ/ひび","轮胎鼓包或裂纹","Riss in der Seitenwand","Neumático agrietado"],
       ["อาการอื่นๆ ของล้อและยาง","Other wheel & tire symptoms","その他のタイヤ症状","其他轮胎症状","Andere Reifen-Symptome","Otros síntomas de ruedas"]]}};
 
-/* ===== GEMINI ===== */
-async function gemini(contents,opts){opts=opts||{};
-  const body={contents,generationConfig:{temperature:opts.temp!=null?opts.temp:0.5}};
-  if(opts.system)body.systemInstruction={parts:[{text:opts.system}]};
-  if(opts.search)body.tools=[{google_search:{}}];
-  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_KEY}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
-  if(!r.ok)throw new Error(r.status+" "+(await r.text()).slice(0,150));
-  const d=await r.json(),c=(d.candidates&&d.candidates[0])||{};
-  return ((c.content&&c.content.parts)||[]).map(p=>p.text||"").join("").trim();
+/* ===== GEMINI (BACKEND PROXY) ===== */
+async function callBackendAI(body) {
+  const tok = currentUser && useFb && auth && auth.currentUser ? await auth.currentUser.getIdToken() : null;
+  const headers = { "Content-Type": "application/json" };
+  if (tok) headers["Authorization"] = "Bearer " + tok;
+
+  const r = await fetch(`${BACKEND_URL}/api/diagnose`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) {
+    let m = ""; try { m = (await r.json()).error || "" } catch {}
+    throw new Error(m || ("HTTP " + r.status));
+  }
+  return r.json();
+}
+
+async function gemini(contents,opts){
+  const c = selCar();
+  const body = {
+    mode: "chat",
+    messages: messages.filter(m => !m.typing && m.role !== "sum").slice(-12)
+  };
+  if (c) {
+    body.carId = c.id;
+  }
+  const res = await callBackendAI(body);
+  return res.text || "";
 }
 function gParse(t){if(!t)return null;let s=t.replace(/```json/gi,"").replace(/```/g,"").trim();const m=s.match(/[\[{][\s\S]*[\]}]/);if(m)s=m[0];try{return JSON.parse(s)}catch{return null}}
 const blobB64=b=>new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result.split(",")[1]);r.readAsDataURL(b)});
@@ -972,13 +1009,13 @@ setInterval(()=>{
 function renderChips(){
   const row=$("chipRow");
   const real=messages.filter(m=>!m.typing);
-  const hasAi=real.some(m=>m.role==="ai"&&m.text);
+  const hasAi=real.some(m=>(m.role==="ai"&&m.text)||m.role==="diag");
   if(!real.length){
     const c=selCar();
     let sugs=SUGS[lang]||SUGS.th;
     if(c){const ctx=CONTEXTUAL_SUGGESTIONS[c.type||"sedan"];if(ctx)sugs=ctx.map(x=>x[LX[lang]??0])}
     row.innerHTML=sugs.map(s=>`<button class="chip" onclick="useChip(this)">${esc(s)}</button>`).join("");
-  }else if(hasAi&&!sending&&real[real.length-1].role!=="sum"){
+  }else if(hasAi&&!sending&&!["sum","diag"].includes(real[real.length-1].role)){
     row.innerHTML=`<button class="chip sumchip" onclick="makeSummary()"><i class="ti ti-clipboard-heart"></i>${tr("sum.btn")}</button>`;
   }else row.innerHTML="";
 }
@@ -1000,6 +1037,7 @@ function userAv(){return currentUser&&currentUser.photo?`<img src="${currentUser
 function msgHTML(m){
   if(m.role==="user")return`<div class="msg me"><div class="av">${userAv()}</div><div class="bubble">${attHTML(m.atts)}${esc(m.text)||""}</div></div>`;
   if(m.role==="sum")return sumHTML(m.data);
+  if(m.role==="diag")return diagHTML(m.data);
   if(m.typing)return`<div class="msg ai"><div class="av">${LOGO_SVG}</div><div class="think"><div class="inner"><div class="typing"><i></i><i></i><i></i></div></div></div></div>`;
   return`<div class="msg ai"><div class="av">${LOGO_SVG}</div><div class="bubble">${md(m.text)}</div></div>`;
 }
@@ -1032,6 +1070,49 @@ function typewrite(fullText,done){
   step();
 }
 
+/* ===== BACKEND DIAGNOSIS (POST /api/diagnose — Gemma 3 27B via Cloudflare Worker) ===== */
+async function diagnoseAPI(symptoms){
+  const c=selCar();
+  const tok=await auth.currentUser.getIdToken();
+  const call=async body=>{
+    const r=await fetch(`${BACKEND_URL}/api/diagnose`,{method:"POST",headers:{Authorization:"Bearer "+tok,"Content-Type":"application/json"},body:JSON.stringify(body)});
+    if(!r.ok){let m="";try{m=(await r.json()).error||""}catch{}const err=new Error(m||("HTTP "+r.status));err.status=r.status;throw err}
+    return r.json()};
+  const specs={};
+  if(c){
+    const p=(c.name||"").trim().split(/\s+/);
+    specs.make=c.make||p[0]||"";
+    specs.model=c.model||p.slice(1).join(" ")||p[0]||"";
+    if(c.year)specs.year=String(c.year);
+    if(c.mileage)specs.mileage=String(c.mileage);
+  }
+  try{return await call({carId:c.id,symptoms})}
+  catch(e){
+    /* car not yet synced to backend (stale local id) → retry with explicit specs */
+    if(e.status===404&&specs.make&&specs.model)return call({...specs,symptoms});
+    throw e;
+  }
+}
+function diagPlain(res){const d=(res&&res.diagnosis)||{};
+  return[d.summary,...(d.possibleCauses||[]).map(x=>`- ${x.cause||""}${x.likelihood?" ("+x.likelihood+")":""}`),d.recommendedAction].filter(Boolean).join("\n")}
+const sevBucket=s=>/สูง|วิกฤต|เร่งด่วน|high|critical|urgent/i.test(s||"")?"high":/ต่ำ|เล็กน้อย|low|minor/i.test(s||"")?"low":"medium";
+function diagHTML(res){
+  const d=(res&&res.diagnosis)||{},ci=(res&&res.carInfo)||{};
+  const sv=sevBucket(d.severity);
+  const svIc=sv==="low"?"ti-circle-check":sv==="medium"?"ti-alert-circle":"ti-alert-triangle";
+  return`<div class="sum-card diag-card">
+    <div class="sum-head"><span class="ic"><i class="ti ti-stethoscope"></i></span><b>${tr("dg.title")}</b>${d.severity?`<span class="urg ${sv}"><i class="ti ${svIc}"></i>${esc(d.severity)}</span>`:""}</div>
+    <div class="sum-body">
+      ${(ci.make||ci.model)?`<div class="sum-row"><i class="ti ti-car"></i><div><span class="k">${tr("dg.car")}</span>${esc([ci.make,ci.model,ci.year].filter(Boolean).join(" "))}${ci.mileage?` · ${esc(String(ci.mileage))} กม.`:""}</div></div>`:""}
+      ${d.summary?`<div class="sum-row"><i class="ti ti-activity"></i><div><span class="k">${tr("dg.sum")}</span>${esc(d.summary)}</div></div>`:""}
+      ${(d.possibleCauses&&d.possibleCauses.length)?`<div class="sum-row"><i class="ti ti-list-search"></i><div style="flex:1"><span class="k">${tr("sum.causes")}</span>
+        <div class="dg-causes">${d.possibleCauses.map(x=>`<div class="dg-cause"><span class="lk ${sevBucket(x.likelihood)}">${esc(x.likelihood||"-")}</span><div><b>${esc(x.cause||"")}</b>${x.explanation?`<small>${esc(x.explanation)}</small>`:""}</div></div>`).join("")}</div></div></div>`:""}
+      ${d.recommendedAction?`<div class="sum-row"><i class="ti ti-bulb"></i><div><span class="k">${tr("sum.advice")}</span>${esc(d.recommendedAction)}</div></div>`:""}
+      ${d.shouldVisitMechanic?`<div class="dg-mech"><i class="ti ti-tool"></i>${tr("dg.mech")}</div>`:""}
+      ${d.disclaimer?`<div class="dg-disc">${esc(d.disclaimer)}</div>`:""}
+    </div></div>`;
+}
+
 /* ===== SUMMARY CARD ===== */
 function sumHTML(d){
   if(!d)return"";
@@ -1052,20 +1133,14 @@ async function makeSummary(){
   sending=true;renderChips();
   messages.push({role:"ai",typing:true});renderMessages();
   try{
-    const convo=messages.filter(m=>!m.typing&&m.role!=="sum").slice(-14)
-      .map(m=>(m.role==="user"?"USER: ":"AI: ")+(m.text||"")).join("\n");
-    const langName={th:"ไทย",en:"English",ja:"日本語",zh:"中文",de:"Deutsch",es:"Español"}[lang]||"ไทย";
-    const txt=await gemini([{role:"user",parts:[{text:
-`จากบทสนทนาวินิจฉัยรถต่อไปนี้ สรุปผลเป็น JSON เท่านั้น ห้ามมีข้อความอื่น:
-{"symptom":"อาการหลักโดยย่อ","causes":["สาเหตุที่เป็นไปได้ เรียงจากน่าจะเป็นมากสุด 2-4 ข้อ"],"urgency":"low|medium|high","cost":"ช่วงค่าซ่อมโดยประมาณ (ระบุสกุลเงินบาท)","advice":"คำแนะนำขั้นตอนถัดไป 1-2 ประโยค"}
-เขียนค่าทุกฟิลด์เป็นภาษา${langName}
-
-บทสนทนา:
-${convo}`}]}],{temp:0.3});
-    const d=gParse(txt);
+    const res = await callBackendAI({
+      mode: "summarize",
+      messages: messages.filter(m => !m.typing && m.role !== "sum").slice(-14)
+    });
+    const d = res.summary;
     messages.pop();
     if(d&&d.symptom){messages.push({role:"sum",data:d});renderMessages();saveSession()}
-    else{messages.push({role:"ai",text:txt||"(สรุปไม่สำเร็จ)"});renderMessages();saveSession()}
+    else{messages.push({role:"ai",text:JSON.stringify(d)||"(สรุปไม่สำเร็จ)"});renderMessages();saveSession()}
   }catch(e){
     messages.pop();
     messages.push({role:"ai",text:(lang==="en"?"Summary failed 🙏 ":"สรุปผลไม่สำเร็จ 🙏 ")+e.message});
@@ -1101,10 +1176,26 @@ async function sendMsg(){
   const text=$("inp").value.trim();
   if(!text&&pending.length===0)return;
   const atts=pending.slice();pending=[];renderAtts();
+  const firstTurn=!messages.some(m=>!m.typing&&m.role!=="user");
   messages.push({role:"user",text,atts});
   $("inp").value="";autoSize();sending=true;updateSend();
   updateHint();renderMessages();renderChips();
   messages.push({role:"ai",typing:true});renderMessages();
+  /* opening symptom report (text only, signed in) → structured diagnosis from backend; follow-ups stay conversational */
+  if(firstTurn&&text&&!atts.length&&carsAreRemote()&&selCar()){
+    try{
+      const res=await diagnoseAPI(text);
+      messages.pop();
+      messages.push({role:"diag",data:res,text:diagPlain(res)});
+      renderMessages();saveSession();
+      addHistory(selCar().id,text,((res&&res.diagnosis)||{}).summary||"");
+      sending=false;updateSend();renderChips();
+      return;
+    }catch(e){
+      console.warn("diagnose api",e);
+      toast(lang==="en"?"Diagnosis server unavailable — using fallback AI":"เซิร์ฟเวอร์วินิจฉัยไม่พร้อม ใช้ AI สำรองแทน","ti-cloud-off");
+    }
+  }
   try{
     const hasMedia=messages.some(m=>m.atts&&m.atts.some(a=>a.b64));
     const contents=messages.filter(m=>!m.typing&&m.role!=="sum").slice(-12).map(m=>{

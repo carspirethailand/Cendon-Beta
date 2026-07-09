@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="robots" content="noindex,nofollow"/>
+<meta name="theme-color" content="#0B0F1A"/>
+<title>SpireONE — Admin Control</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap">
+<style>
+:root{
+  --bg:#0A0E18; --bg2:#0E1424; --surface:#131A2E; --surface2:#182136; --line:rgba(255,255,255,.09); --line2:rgba(255,255,255,.05);
+  --ink:#EAF0FB; --mut:#8C99B5; --faint:#5A6683;
+  --acc:#E8943C; --acc2:#D95E3C; --grad:linear-gradient(135deg,#E8943C,#D95E3C); --acc-soft:rgba(232,148,60,.14);
+  --ok:#3FCf8E; --warn:#E8B24C; --danger:#F2685F; --info:#4FA9E8; --purple:#9B7BF0;
+  --kd:'Kanit',system-ui,sans-serif; --kb:'Kanit',system-ui,sans-serif;
+  --shadow:0 20px 50px -22px rgba(0,0,0,.7); --shadow-sm:0 8px 22px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-tap-highlight-color:transparent}
+body{font-family:var(--kb);background:var(--bg);color:var(--ink);line-height:1.55;min-height:100dvh;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(60% 50% at 100% 0,rgba(232,148,60,.08),transparent 60%),radial-gradient(55% 45% at 0 100%,rgba(84,110,255,.08),transparent 60%)}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit}
+a{color:inherit;text-decoration:none}
+.ti{line-height:1}
+::selection{background:var(--acc);color:#fff}
+::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:var(--line);border-radius:9px}
+h1,h2,h3{font-weight:600;letter-spacing:.01em}
+
+/* soft-3D buttons */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;font-weight:600;font-size:13.5px;
+  background:var(--surface2);border:1px solid var(--line);color:var(--ink);transition:transform .3s cubic-bezier(.3,1.5,.4,1),border-color .18s,background .18s,box-shadow .2s;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
+.btn:hover{border-color:var(--acc)}
+.btn:active{transform:scale(.94)}
+.btn.primary{background:var(--grad);color:#fff;border:none;box-shadow:inset 0 1.5px 0 rgba(255,255,255,.4),inset 0 -2px 3px rgba(0,0,0,.18),0 10px 24px -10px rgba(217,94,60,.6)}
+.btn.primary:active{box-shadow:inset 0 2px 6px rgba(0,0,0,.28)}
+.btn.danger{background:rgba(242,104,95,.12);color:var(--danger);border-color:rgba(242,104,95,.3)}
+.btn.danger:hover{background:var(--danger);color:#fff}
+.btn.sm{padding:7px 12px;font-size:12.5px;border-radius:10px}
+.btn.ghost{background:transparent}
+.input{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:11px;padding:11px 14px;font-size:14px;color:var(--ink);outline:none;transition:.15s}
+.input:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-soft)}
+
+/* ===== SHELL ===== */
+.shell{display:grid;grid-template-columns:248px 1fr;min-height:100dvh}
+.side{background:var(--bg2);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:18px 14px;position:sticky;top:0;height:100dvh}
+.brand{display:flex;align-items:center;gap:11px;padding:6px 8px 20px}
+.brand .mark{width:38px;height:38px;border-radius:12px;background:var(--grad);color:#fff;display:grid;place-items:center;box-shadow:0 8px 20px -8px var(--acc)}
+.brand .mark svg{width:54%;height:54%}.brand .mark path{fill:currentColor}
+.brand b{font-size:17px;font-weight:800;letter-spacing:.03em}
+.brand small{display:block;font-size:10.5px;color:var(--faint);font-weight:500;letter-spacing:.14em;text-transform:uppercase}
+.nav{display:flex;flex-direction:column;gap:3px;flex:1}
+.nav a{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:12px;color:var(--mut);font-weight:600;font-size:14px;transition:.16s;cursor:pointer}
+.nav a .ti{font-size:20px}
+.nav a:hover{background:var(--surface);color:var(--ink)}
+.nav a.on{background:var(--acc-soft);color:var(--acc)}
+.nav a.locked{opacity:.4;pointer-events:none}
+.side-foot{border-top:1px solid var(--line);padding-top:12px;margin-top:8px}
+.me{display:flex;align-items:center;gap:10px;padding:8px}
+.me img,.me .fb{width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.me .fb{display:grid;place-items:center;font-weight:700;background:var(--grad);color:#fff}
+.me .info{flex:1;min-width:0}
+.me b{display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.me small{font-size:11px;color:var(--faint)}
+.rolechip{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.04em}
+.rolechip.owner{background:rgba(232,148,60,.16);color:var(--acc)}
+.rolechip.admin{background:rgba(155,123,240,.16);color:var(--purple)}
+.rolechip.moderator{background:rgba(79,169,232,.16);color:var(--info)}
+
+.main{padding:26px 30px 60px;max-width:1180px;width:100%}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+.page-head h1{font-family:var(--kd);font-size:26px;font-weight:600}
+.page-head p{color:var(--mut);font-size:13.5px;margin-top:3px}
+.view{display:none;animation:fade .4s cubic-bezier(.16,.84,.28,1)}
+.view.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:var(--shadow-sm)}
+.card+.card{margin-top:16px}
+.card h3{font-size:16px;font-weight:600;margin-bottom:4px}
+.card .sub{color:var(--mut);font-size:13px;margin-bottom:16px}
+
+/* ===== STATS ===== */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:20px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;position:relative;overflow:hidden;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);animation:fade .5s backwards}
+.stat:nth-child(2){animation-delay:.05s}.stat:nth-child(3){animation-delay:.1s}.stat:nth-child(4){animation-delay:.15s}
+.stat:nth-child(5){animation-delay:.2s}.stat:nth-child(6){animation-delay:.25s}
+.stat .ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:20px;color:#fff;margin-bottom:12px;background:var(--grad)}
+.stat .ic.b{background:linear-gradient(135deg,#4FA9E8,#5A6BF0)}
+.stat .ic.g{background:linear-gradient(135deg,#3FCf8E,#2FA872)}
+.stat .ic.p{background:linear-gradient(135deg,#9B7BF0,#C470DB)}
+.stat .ic.r{background:linear-gradient(135deg,#F2685F,#D9433C)}
+.stat .n{font-size:30px;font-weight:800;font-family:var(--kd);line-height:1}
+.stat .l{font-size:12.5px;color:var(--mut);margin-top:5px}
+
+/* mini bar chart */
+.chart{display:flex;align-items:flex-end;gap:5px;height:120px;padding-top:10px}
+.chart .bar{flex:1;background:var(--grad);border-radius:5px 5px 0 0;min-height:3px;position:relative;transition:height .6s cubic-bezier(.2,.9,.3,1);opacity:.85}
+.chart .bar:hover{opacity:1}
+.chart .bar span{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--mut);opacity:0;transition:.15s;white-space:nowrap}
+.chart .bar:hover span{opacity:1}
+.chart-x{display:flex;gap:5px;margin-top:6px}
+.chart-x div{flex:1;text-align:center;font-size:9.5px;color:var(--faint);overflow:hidden}
+
+/* ===== TABLE ===== */
+.tbl-wrap{overflow-x:auto;border-radius:14px;border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:640px}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);font-weight:700;padding:12px 14px;background:var(--bg2);border-bottom:1px solid var(--line)}
+td{padding:12px 14px;border-bottom:1px solid var(--line2);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr.banned-row{opacity:.5}
+.u-cell{display:flex;align-items:center;gap:10px}
+.u-cell img,.u-cell .fb{width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.u-cell .fb{display:grid;place-items:center;font-weight:700;background:var(--grad);color:#fff;font-size:13px}
+.role-pill{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
+.role-pill.owner{background:rgba(232,148,60,.16);color:var(--acc)}
+.role-pill.admin{background:rgba(155,123,240,.16);color:var(--purple)}
+.role-pill.moderator{background:rgba(79,169,232,.16);color:var(--info)}
+.role-pill.user{background:rgba(140,153,181,.14);color:var(--mut)}
+.row-actions{display:flex;gap:6px;flex-wrap:wrap}
+.mini-select{background:var(--bg2);border:1px solid var(--line);border-radius:9px;padding:6px 8px;font-size:12.5px;color:var(--ink);outline:none;cursor:pointer}
+.mini-select:focus{border-color:var(--acc)}
+
+/* toggle */
+.switch{position:relative;display:inline-block;width:46px;height:26px;flex-shrink:0}
+.switch input{display:none}
+.switch .sl{position:absolute;inset:0;background:var(--surface2);border:1px solid var(--line);border-radius:20px;transition:.25s}
+.switch .sl::before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:var(--mut);border-radius:50%;transition:.25s}
+.switch input:checked+.sl{background:var(--grad);border-color:transparent}
+.switch input:checked+.sl::before{transform:translateX(20px);background:#fff}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:13px;font-weight:600;margin-bottom:7px}
+.field .hint{font-size:12px;color:var(--faint);margin-top:6px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid var(--line2)}
+.toggle-row:last-of-type{border-bottom:none}
+.toggle-row b{font-size:14px;font-weight:600}
+.toggle-row small{display:block;font-size:12px;color:var(--mut);margin-top:2px}
+
+/* segmented */
+.seg{display:inline-flex;background:var(--bg2);border:1px solid var(--line);border-radius:11px;padding:3px;gap:2px}
+.seg button{padding:7px 14px;border-radius:9px;font-size:12.5px;font-weight:600;color:var(--mut)}
+.seg button.on{background:var(--grad);color:#fff}
+
+/* audit */
+.audit-item{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--line2);font-size:13px}
+.audit-item:last-child{border:none}
+.audit-item .ai{width:32px;height:32px;border-radius:10px;background:var(--surface2);display:grid;place-items:center;color:var(--acc);flex-shrink:0}
+.audit-item .at{flex:1;min-width:0}
+.audit-item .at b{font-weight:600}
+.audit-item .at small{display:block;color:var(--faint);font-size:11.5px;margin-top:1px}
+.audit-item .time{color:var(--faint);font-size:11.5px;white-space:nowrap}
+
+/* mag admin cards */
+.mag-admin{display:flex;gap:12px;padding:13px;border:1px solid var(--line);border-radius:14px;margin-bottom:10px;background:var(--bg2)}
+.mag-admin .tag{font-size:10px;font-weight:700;color:var(--acc);text-transform:uppercase;letter-spacing:.08em}
+.mag-admin .tx{flex:1;min-width:0}
+.mag-admin b{display:block;font-size:14px;margin:2px 0}
+.mag-admin p{font-size:12.5px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+
+.empty{text-align:center;color:var(--faint);padding:30px;font-size:13.5px}
+.skel{background:linear-gradient(90deg,var(--surface) 25%,var(--surface2) 50%,var(--surface) 75%);background-size:200% 100%;animation:sk 1.3s infinite;border-radius:10px}
+@keyframes sk{to{background-position:-200% 0}}
+
+/* gate */
+.gate{min-height:100dvh;display:grid;place-items:center;padding:24px}
+.gate-card{text-align:center;max-width:420px;background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:40px 32px;box-shadow:var(--shadow)}
+.gate-card .mark{width:64px;height:64px;border-radius:20px;background:var(--grad);color:#fff;display:grid;place-items:center;margin:0 auto 18px;box-shadow:0 16px 34px -12px var(--acc)}
+.gate-card .mark svg{width:52%;height:52%}.gate-card .mark path{fill:currentColor}
+.gate-card h1{font-size:23px;font-weight:600;margin-bottom:8px}
+.gate-card p{color:var(--mut);font-size:14px;margin-bottom:22px}
+
+/* toast + modal */
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(130px);background:var(--surface2);border:1px solid var(--line);
+  color:var(--ink);padding:13px 20px;border-radius:14px;font-weight:600;font-size:13.5px;box-shadow:var(--shadow);z-index:300;
+  transition:.32s cubic-bezier(.2,.9,.3,1);display:flex;gap:9px;align-items:center;max-width:90vw}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast .ti{font-size:18px;color:var(--acc)}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);z-index:200;display:grid;place-items:center;padding:20px;opacity:0;pointer-events:none;transition:.28s}
+.modal-bg.show{opacity:1;pointer-events:auto}
+.modal{background:var(--surface);border:1px solid var(--line);border-radius:20px;width:100%;max-width:520px;max-height:88dvh;overflow-y:auto;padding:24px;transform:scale(.94);transition:.3s cubic-bezier(.2,.9,.3,1.2)}
+.modal-bg.show .modal{transform:none}
+.modal h3{font-size:19px;margin-bottom:16px}
+
+.mobile-top{display:none}
+@media(max-width:820px){
+  .shell{grid-template-columns:1fr}
+  .side{position:fixed;left:0;top:0;z-index:150;width:250px;transform:translateX(-100%);transition:transform .3s cubic-bezier(.2,.9,.3,1)}
+  .side.open{transform:none;box-shadow:0 0 60px rgba(0,0,0,.6)}
+  .mobile-top{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg2);z-index:100}
+  .mobile-top b{font-weight:800;letter-spacing:.03em}
+  .scrim{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:140;opacity:0;pointer-events:none;transition:.3s}
+  .scrim.show{opacity:1;pointer-events:auto}
+  .main{padding:18px 16px 50px}
+}
+</style>
+</head>
+<body>
+
+<!-- ACCESS GATE -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="mark"><svg viewBox="0 0 100 100"><path d="M66 9 L21 41.5 L37.5 41.5 L37.5 95 L66 95 Z"/></svg></div>
+    <h1 id="gateTitle">SpireONE Admin</h1>
+    <p id="gateMsg"><i class="ti ti-loader-2"></i> กำลังตรวจสอบสิทธิ์...</p>
+    <div id="gateActions"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="shell" id="app" style="display:none">
+  <!-- mobile top bar -->
+  <aside class="side" id="side">
+    <div class="brand">
+      <div class="mark"><svg viewBox="0 0 100 100"><path d="M66 9 L21 41.5 L37.5 41.5 L37.5 95 L66 95 Z"/></svg></div>
+      <div><b>SpireONE</b><small>Admin Control</small></div>
+    </div>
+    <nav class="nav" id="nav">
+      <a data-tab="overview" class="on"><i class="ti ti-layout-dashboard"></i> ภาพรวม</a>
+      <a data-tab="users"><i class="ti ti-users"></i> ผู้ใช้ & ยศ</a>
+      <a data-tab="magazine"><i class="ti ti-news"></i> นิตยสาร</a>
+      <a data-tab="config" data-min="admin"><i class="ti ti-settings"></i> ตั้งค่าเว็บ</a>
+      <a data-tab="audit" data-min="admin"><i class="ti ti-history"></i> บันทึกการทำงาน</a>
+    </nav>
+    <div class="side-foot">
+      <div class="me" id="me"></div>
+      <button class="btn ghost sm" style="width:100%;margin-top:8px;justify-content:center" onclick="location.href='index.html'"><i class="ti ti-arrow-left"></i> กลับหน้าเว็บ</button>
+      <button class="btn ghost sm" style="width:100%;margin-top:6px;justify-content:center;color:var(--danger)" onclick="doLogout()"><i class="ti ti-logout"></i> ออกจากระบบ</button>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim" onclick="toggleSide(false)"></div>
+
+  <main>
+    <div class="mobile-top">
+      <button class="btn sm ghost" onclick="toggleSide(true)"><i class="ti ti-menu-2" style="font-size:20px"></i></button>
+      <b>SpireONE Admin</b>
+    </div>
+    <div class="main">
+
+      <!-- OVERVIEW -->
+      <section class="view on" id="v-overview">
+        <div class="page-head"><div><h1>ภาพรวมระบบ</h1><p>สถิติการใช้งาน SpireONE แบบเรียลไทม์</p></div>
+          <button class="btn sm" onclick="loadStats()"><i class="ti ti-refresh"></i> รีเฟรช</button></div>
+        <div class="stat-grid" id="statGrid"></div>
+        <div class="card">
+          <h3>การใช้งาน AI ย้อนหลัง 14 วัน</h3><div class="sub">จำนวนข้อความที่ส่งถึง SpireONE ต่อวัน</div>
+          <div class="chart" id="aiChart"></div><div class="chart-x" id="aiChartX"></div>
+        </div>
+        <div class="card">
+          <h3>ผู้ใช้ใหม่ 14 วัน</h3><div class="sub">จำนวนบัญชีที่สมัครเข้าใช้งานต่อวัน</div>
+          <div class="chart" id="signupChart"></div><div class="chart-x" id="signupChartX"></div>
+        </div>
+      </section>
+
+      <!-- USERS -->
+      <section class="view" id="v-users">
+        <div class="page-head"><div><h1>ผู้ใช้ & การให้ยศ</h1><p>ค้นหา จัดการสิทธิ์ และแบน/ปลดแบนบัญชี</p></div></div>
+        <div class="card">
+          <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+            <input class="input" id="userSearch" placeholder="ค้นหาชื่อหรืออีเมล..." style="flex:1;min-width:200px" onkeydown="if(event.key==='Enter')loadUsers()">
+            <button class="btn primary" onclick="loadUsers()"><i class="ti ti-search"></i> ค้นหา</button>
+          </div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>ผู้ใช้</th><th>ยศ</th><th>เข้าใช้ล่าสุด</th><th>จัดการ</th></tr></thead>
+            <tbody id="userRows"><tr><td colspan="4" class="empty">กำลังโหลด...</td></tr></tbody>
+          </table></div>
+        </div>
+      </section>
+
+      <!-- MAGAZINE -->
+      <section class="view" id="v-magazine">
+        <div class="page-head"><div><h1>จัดการนิตยสาร</h1><p>เพิ่ม แก้ไข ลบข่าว หรือให้ AI ดึงข่าวใหม่</p></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn" onclick="syncShop()" id="syncShopBtn" style="color:var(--warn)"><i class="ti ti-sparkles"></i> AI หาสินค้า Shop</button>
+            <button class="btn" onclick="syncMag()" id="syncBtn"><i class="ti ti-sparkles"></i> ให้ AI ดึงข่าวใหม่</button>
+            <button class="btn primary" onclick="openMagEditor()"><i class="ti ti-plus"></i> เพิ่มข่าว</button>
+          </div></div>
+        <div class="card"><div id="magList"><div class="empty">กำลังโหลด...</div></div></div>
+      </section>
+
+      <!-- CONFIG -->
+      <section class="view" id="v-config">
+        <div class="page-head"><div><h1>ตั้งค่าเว็บไซต์</h1><p>ประกาศบนหน้าเว็บ และโหมดปิดปรับปรุง</p></div></div>
+        <div class="card">
+          <h3><i class="ti ti-speakerphone"></i> ประกาศบนหน้าเว็บ</h3>
+          <div class="sub">แถบข้อความที่แสดงบนสุดของหน้าเว็บให้ผู้ใช้ทุกคนเห็น</div>
+          <div class="toggle-row"><div><b>เปิดใช้งานประกาศ</b><small>แสดงแถบประกาศบนหน้าหลัก</small></div>
+            <label class="switch"><input type="checkbox" id="annEnabled"><span class="sl"></span></label></div>
+          <div class="field" style="margin-top:16px">
+            <label>ข้อความประกาศ</label>
+            <input class="input" id="annText" placeholder="เช่น เปิดตัวฟีเจอร์ใหม่วันนี้!" maxlength="300">
+          </div>
+          <div class="field">
+            <label>ระดับความสำคัญ</label>
+            <div class="seg" id="annType">
+              <button data-v="info" class="on">ทั่วไป</button>
+              <button data-v="warn">สำคัญ/เตือน</button>
+            </div>
+          </div>
+          <button class="btn primary" onclick="saveAnnouncement()"><i class="ti ti-device-floppy"></i> บันทึกประกาศ</button>
+        </div>
+        <div class="card">
+          <h3><i class="ti ti-tool"></i> โหมดปิดปรับปรุง</h3>
+          <div class="sub">เมื่อเปิด ผู้ใช้ทั่วไปจะเข้าเว็บไม่ได้และใช้ AI ไม่ได้ (แอดมิน/ผู้ควบคุมยังเข้าได้)</div>
+          <div class="toggle-row"><div><b>เปิดโหมดปิดปรับปรุง</b><small>ปิดการใช้งานสำหรับผู้ใช้ทั่วไป</small></div>
+            <label class="switch"><input type="checkbox" id="maintEnabled"><span class="sl"></span></label></div>
+          <div class="field" style="margin-top:16px">
+            <label>ข้อความแจ้งผู้ใช้</label>
+            <input class="input" id="maintMsg" placeholder="ระบบกำลังปรับปรุง กลับมาเร็วๆ นี้ครับ" maxlength="300">
+          </div>
+          <button class="btn primary" onclick="saveMaintenance()"><i class="ti ti-device-floppy"></i> บันทึก</button>
+        </div>
+      </section>
+
+      <!-- AUDIT -->
+      <section class="view" id="v-audit">
+        <div class="page-head"><div><h1>บันทึกการทำงาน</h1><p>ประวัติการกระทำของผู้ดูแลระบบล่าสุด</p></div>
+          <button class="btn sm" onclick="loadAudit()"><i class="ti ti-refresh"></i> รีเฟรช</button></div>
+        <div class="card"><div id="auditList"><div class="empty">กำลังโหลด...</div></div></div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- MAG EDITOR MODAL -->
+<div class="modal-bg" id="magModal" onclick="if(event.target===this)closeMagEditor()">
+  <div class="modal">
+    <h3 id="magModalTitle">เพิ่มข่าว</h3>
+    <input type="hidden" id="magId">
+    <div class="field"><label>พาดหัวข่าว</label><input class="input" id="magTitle" maxlength="300"></div>
+    <div class="field"><label>ประเภท</label>
+      <select class="input" id="magType">
+        <option>ข่าวเด่น</option><option>รีวิว</option><option>เทคโนโลยี</option><option>เคล็ดลับ</option>
+        <option>EV</option><option>ราคา</option><option>อุบัติเหตุ</option><option>นโยบาย</option>
+      </select></div>
+    <div class="field"><label>สรุปสั้น (แสดงในการ์ด)</label><textarea class="input" id="magShort" rows="2" maxlength="1000"></textarea></div>
+    <div class="field"><label>เนื้อหาเต็ม</label><textarea class="input" id="magFull" rows="6" maxlength="20000"></textarea></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn ghost" onclick="closeMagEditor()">ยกเลิก</button>
+      <button class="btn primary" id="magSaveBtn" onclick="saveMag()"><i class="ti ti-device-floppy"></i> บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const esc=s=>(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+const BACKEND_URL="https://spireonebackend.carspirethailand.workers.dev";
+const fbConfig={apiKey:"AIzaSyDDtvz4d4FRG_KOq5EQHmlDijU-x1FDZlQ",authDomain:"sp1p-82396.firebaseapp.com",databaseURL:"https://sp1p-82396-default-rtdb.firebaseio.com",projectId:"sp1p-82396",storageBucket:"sp1p-82396.appspot.com",messagingSenderId:"924479207020",appId:"1:924479207020:web:ec64428a61403e1ad48a49"};
+const ROLE_RANK={owner:4,admin:3,moderator:2,user:1};
+let auth=null,useFb=false,me=null;
+try{firebase.initializeApp(fbConfig);auth=firebase.auth();auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});useFb=true}catch(e){console.warn("fb",e)}
+
+let tt;function toast(m,ic){const el=$("toast");el.innerHTML=`<i class="ti ${ic||"ti-check"}"></i>${esc(m)}`;el.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("show"),3200)}
+function rank(r){return ROLE_RANK[r]||0}
+async function tok(){return await auth.currentUser.getIdToken()}
+async function api(path,opts){
+  opts=opts||{};
+  const headers=Object.assign({"Authorization":"Bearer "+await tok()},opts.headers||{});
+  if(opts.body)headers["Content-Type"]="application/json";
+  const r=await fetch(BACKEND_URL+path,{method:opts.method||"GET",headers,body:opts.body?JSON.stringify(opts.body):undefined});
+  let d=null;try{d=await r.json()}catch(e){}
+  if(!r.ok)throw new Error((d&&d.error)||("Error "+r.status));
+  return d;
+}
+
+/* ===== AUTH GATE ===== */
+function gateMsg(html,actions){$("gateMsg").innerHTML=html;$("gateActions").innerHTML=actions||""}
+async function signIn(){
+  if(location.protocol==="file:"){gateMsg("เปิดผ่านเว็บจริงเพื่อล็อกอิน (file:// ใช้ไม่ได้)");return}
+  const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:"select_account"});
+  try{await auth.signInWithPopup(p)}catch(e){if(e.code!=="auth/popup-closed-by-user")gateMsg("ล็อกอินไม่สำเร็จ: "+e.code)}
+}
+function doLogout(){if(useFb)auth.signOut();location.href="index.html"}
+
+if(useFb)auth.onAuthStateChanged(async u=>{
+  if(!u){
+    gateMsg("เข้าสู่ระบบด้วยบัญชีผู้ดูแลเพื่อเข้าใช้แผงควบคุม",
+      `<button class="btn primary" style="width:100%;justify-content:center" onclick="signIn()"><i class="ti ti-brand-google"></i> เข้าสู่ระบบด้วย Google</button>`);
+    return;
+  }
+  gateMsg('<i class="ti ti-loader-2"></i> กำลังยืนยันสิทธิ์...');
+  try{
+    const d=await api("/api/login",{method:"POST",body:{name:u.displayName||"",photo:u.photoURL||""}});
+    me={uid:d.uid,name:d.name,email:d.email,photo:d.photo,role:d.role||"user"};
+    if(rank(me.role)<rank("moderator")){
+      gateMsg(`บัญชี <b>${esc(me.email)}</b> ไม่มีสิทธิ์เข้าแผงควบคุม<br><small style="color:var(--faint)">ต้องเป็นผู้ควบคุมขึ้นไป</small>`,
+        `<button class="btn" style="width:100%;justify-content:center" onclick="doLogout()">ออกจากระบบ</button>`);
+      return;
+    }
+    enterAdmin();
+  }catch(e){
+    if((e.message||"").includes("suspended")){
+      gateMsg("บัญชีนี้ถูกระงับการใช้งาน",`<button class="btn" style="width:100%;justify-content:center" onclick="doLogout()">ออกจากระบบ</button>`);
+    }else gateMsg("เกิดข้อผิดพลาด: "+esc(e.message),`<button class="btn" style="width:100%;justify-content:center" onclick="location.reload()">ลองใหม่</button>`);
+  }
+});
+else gateMsg("ระบบล็อกอินไม่พร้อมใช้งาน");
+
+function enterAdmin(){
+  $("gate").style.display="none";
+  $("app").style.display="grid";
+  // role chip + me
+  const rl={owner:["owner","เจ้าของระบบ"],admin:["admin","ผู้ดูแลระบบ"],moderator:["moderator","ผู้ควบคุม"]}[me.role]||["user","ผู้ใช้"];
+  $("me").innerHTML=`${me.photo?`<img src="${esc(me.photo)}" referrerpolicy="no-referrer">`:`<div class="fb">${esc((me.name||"?")[0].toUpperCase())}</div>`}
+    <div class="info"><b>${esc(me.name)}</b><span class="rolechip ${rl[0]}"><i class="ti ti-shield-check"></i> ${rl[1]}</span></div>`;
+  // lock admin-only tabs for moderators
+  document.querySelectorAll("[data-min='admin']").forEach(a=>{if(rank(me.role)<rank("admin"))a.classList.add("locked")});
+  loadStats();loadUsers();loadMag();
+  if(rank(me.role)>=rank("admin")){loadConfig();loadAudit()}
+}
+
+/* ===== TABS ===== */
+$("nav").addEventListener("click",e=>{
+  const a=e.target.closest("[data-tab]");if(!a||a.classList.contains("locked"))return;
+  document.querySelectorAll("#nav a").forEach(x=>x.classList.remove("on"));
+  a.classList.add("on");
+  const t=a.dataset.tab;
+  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on",v.id==="v-"+t));
+  toggleSide(false);
+});
+function toggleSide(open){$("side").classList.toggle("open",open);$("scrim").classList.toggle("show",open)}
+
+/* ===== OVERVIEW ===== */
+function bars(el,elx,data,fmt){
+  const max=Math.max(1,...data.map(d=>d.c));
+  el.innerHTML=data.map(d=>`<div class="bar" style="height:${Math.round(d.c/max*100)}%"><span>${d.c}</span></div>`).join("")||`<div class="empty" style="width:100%">ยังไม่มีข้อมูล</div>`;
+  elx.innerHTML=data.map(d=>`<div>${fmt(d)}</div>`).join("");
+}
+async function loadStats(){
+  $("statGrid").innerHTML=Array.from({length:6},()=>`<div class="stat"><div class="skel" style="height:78px"></div></div>`).join("");
+  try{
+    const s=await api("/api/admin/stats");
+    const cards=[
+      {ic:"ti-users",cls:"",n:s.totalUsers,l:"ผู้ใช้ทั้งหมด"},
+      {ic:"ti-user-check",cls:"g",n:s.activeToday,l:"ใช้งานวันนี้"},
+      {ic:"ti-message-2",cls:"b",n:s.aiToday,l:"ข้อความ AI วันนี้"},
+      {ic:"ti-messages",cls:"p",n:s.aiTotal,l:"ข้อความ AI รวม"},
+      {ic:"ti-car",cls:"",n:s.totalCars,l:"รถในระบบ"},
+      {ic:"ti-ban",cls:"r",n:s.banned,l:"บัญชีถูกแบน"},
+    ];
+    $("statGrid").innerHTML=cards.map(c=>`<div class="stat"><div class="ic ${c.cls}"><i class="ti ${c.ic}"></i></div><div class="n">${c.n}</div><div class="l">${c.l}</div></div>`).join("");
+    const dfmt=d=>{const p=(d.day||d.d||"").split("-");return p.length===3?p[2]+"/"+p[1]:""};
+    bars($("aiChart"),$("aiChartX"),(s.aiDaily||[]).map(x=>({c:x.c,day:x.day})),dfmt);
+    bars($("signupChart"),$("signupChartX"),(s.signups||[]).map(x=>({c:x.c,d:x.d})),dfmt);
+  }catch(e){$("statGrid").innerHTML=`<div class="empty">โหลดสถิติไม่ได้: ${esc(e.message)}</div>`}
+}
+
+/* ===== USERS ===== */
+function roleLabel(r){return {owner:"เจ้าของ",admin:"แอดมิน",moderator:"ผู้ควบคุม",user:"ผู้ใช้"}[r]||r}
+async function loadUsers(){
+  const q=$("userSearch").value.trim();
+  $("userRows").innerHTML=`<tr><td colspan="4" class="empty">กำลังโหลด...</td></tr>`;
+  try{
+    const arr=await api("/api/admin/users"+(q?"?q="+encodeURIComponent(q):""));
+    if(!arr.length){$("userRows").innerHTML=`<tr><td colspan="4" class="empty">ไม่พบผู้ใช้</td></tr>`;return}
+    const amOwner=me.role==="owner";
+    $("userRows").innerHTML=arr.map(u=>{
+      const isOwner=u.role==="owner";
+      const isTargetAdmin=u.role==="admin";
+      // Can I edit this user's role? owners edit anyone but owners; admins edit only moderators/users
+      const canEdit=!isOwner && (amOwner || (!isTargetAdmin && u.uid!==me.uid));
+      const canBan=!isOwner && u.uid!==me.uid && (amOwner || !isTargetAdmin);
+      const av=u.photo?`<img src="${esc(u.photo)}" referrerpolicy="no-referrer">`:`<div class="fb">${esc((u.name||"?")[0].toUpperCase())}</div>`;
+      let ctrl="";
+      if(canEdit){
+        const opts=["moderator","user"];if(amOwner)opts.unshift("admin");
+        ctrl=`<select class="mini-select" onchange="setRole('${u.uid}',this.value,this)">
+          ${opts.map(o=>`<option value="${o}" ${u.role===o?"selected":""}>${roleLabel(o)}</option>`).join("")}
+        </select>`;
+      }
+      let banBtn="";
+      if(canBan)banBtn=u.banned
+        ?`<button class="btn sm" onclick="banUser('${u.uid}',false,this)"><i class="ti ti-lock-open"></i> ปลดแบน</button>`
+        :`<button class="btn sm danger" onclick="banUser('${u.uid}',true,this)"><i class="ti ti-ban"></i> แบน</button>`;
+      return `<tr class="${u.banned?'banned-row':''}">
+        <td><div class="u-cell">${av}<div style="min-width:0"><div style="font-weight:600">${esc(u.name||"-")}</div><div style="font-size:11.5px;color:var(--faint)">${esc(u.email||"")}</div></div></div></td>
+        <td><span class="role-pill ${u.role}">${roleLabel(u.role)}</span>${u.banned?' <span class="role-pill" style="background:rgba(242,104,95,.16);color:var(--danger)">ถูกแบน</span>':''}</td>
+        <td style="color:var(--mut);font-size:12.5px">${u.last_login?new Date(u.last_login).toLocaleString("th-TH",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"-"}</td>
+        <td><div class="row-actions">${ctrl}${banBtn}${!canEdit&&!canBan?'<span style="color:var(--faint);font-size:12px">—</span>':''}</div></td>
+      </tr>`;
+    }).join("");
+  }catch(e){$("userRows").innerHTML=`<tr><td colspan="4" class="empty">โหลดไม่ได้: ${esc(e.message)}</td></tr>`}
+}
+async function setRole(uid,role,el){
+  el.disabled=true;
+  try{await api("/api/admin/users/role",{method:"POST",body:{uid,role}});toast("อัปเดตยศแล้ว","ti-shield-check");loadUsers();loadStats()}
+  catch(e){toast(e.message,"ti-alert-triangle");el.disabled=false}
+}
+async function banUser(uid,banned,el){
+  el.disabled=true;
+  try{await api("/api/admin/users/ban",{method:"POST",body:{uid,banned}});toast(banned?"แบนผู้ใช้แล้ว":"ปลดแบนแล้ว",banned?"ti-ban":"ti-lock-open");loadUsers();loadStats()}
+  catch(e){toast(e.message,"ti-alert-triangle");el.disabled=false}
+}
+
+/* ===== MAGAZINE ===== */
+let magItems=[];
+async function loadMag(){
+  $("magList").innerHTML=`<div class="empty">กำลังโหลด...</div>`;
+  try{
+    const arr=await fetch(BACKEND_URL+"/api/magazine").then(r=>r.json());
+    magItems=Array.isArray(arr)?arr:[];
+    if(!magItems.length){$("magList").innerHTML=`<div class="empty">ยังไม่มีข่าว — กด "ให้ AI ดึงข่าวใหม่" หรือเพิ่มเอง</div>`;return}
+    $("magList").innerHTML=magItems.map(m=>`<div class="mag-admin">
+      <div class="tx"><span class="tag">${esc(m.type||"ข่าว")}</span><b>${esc(m.title||"")}</b><p>${esc(m.short_description||"")}</p></div>
+      <div class="row-actions" style="align-items:flex-start">
+        <button class="btn sm" onclick="editMag(${m.id})"><i class="ti ti-edit"></i></button>
+        <button class="btn sm danger" onclick="delMag(${m.id})"><i class="ti ti-trash"></i></button>
+      </div></div>`).join("");
+  }catch(e){$("magList").innerHTML=`<div class="empty">โหลดไม่ได้: ${esc(e.message)}</div>`}
+}
+function openMagEditor(){$("magId").value="";$("magTitle").value="";$("magType").value="ข่าวเด่น";$("magShort").value="";$("magFull").value="";$("magModalTitle").textContent="เพิ่มข่าว";$("magModal").classList.add("show")}
+function editMag(id){const m=magItems.find(x=>x.id===id);if(!m)return;$("magId").value=id;$("magTitle").value=m.title||"";$("magType").value=m.type||"ข่าวเด่น";$("magShort").value=m.short_description||"";$("magFull").value=m.full_description||"";$("magModalTitle").textContent="แก้ไขข่าว";$("magModal").classList.add("show")}
+function closeMagEditor(){$("magModal").classList.remove("show")}
+async function saveMag(){
+  const id=$("magId").value;
+  const body={title:$("magTitle").value.trim(),type:$("magType").value,short_description:$("magShort").value.trim(),full_description:$("magFull").value.trim()};
+  if(!body.title){toast("กรุณาใส่พาดหัวข่าว","ti-alert-triangle");return}
+  $("magSaveBtn").disabled=true;
+  try{
+    if(id)await api("/api/admin/magazine/"+id,{method:"PUT",body});
+    else await api("/api/admin/magazine",{method:"POST",body});
+    toast("บันทึกข่าวแล้ว","ti-check");closeMagEditor();loadMag();
+  }catch(e){toast(e.message,"ti-alert-triangle")}
+  $("magSaveBtn").disabled=false;
+}
+async function delMag(id){
+  if(!confirm("ลบข่าวนี้?"))return;
+  try{await api("/api/admin/magazine/"+id,{method:"DELETE"});toast("ลบข่าวแล้ว","ti-trash");loadMag()}
+  catch(e){toast(e.message,"ti-alert-triangle")}
+}
+async function syncMag(){
+  $("syncBtn").disabled=true;$("syncBtn").innerHTML='<i class="ti ti-loader-2"></i> กำลังดึงข่าว...';
+  try{await api("/api/magazine/sync",{method:"POST"});toast("ดึงข่าวใหม่จาก AI สำเร็จ","ti-sparkles");loadMag()}
+  catch(e){toast("ดึงข่าวไม่สำเร็จ: "+e.message,"ti-alert-triangle")}
+  $("syncBtn").disabled=false;$("syncBtn").innerHTML='<i class="ti ti-sparkles"></i> ให้ AI ดึงข่าวใหม่';
+}
+async function syncShop(){
+  $("syncShopBtn").disabled=true;$("syncShopBtn").innerHTML='<i class="ti ti-loader-2"></i> กำลังหาสินค้า...';
+  try{await api("/api/shop/sync",{method:"POST"});toast("ดึงข้อมูล Shop ใหม่สำเร็จ","ti-sparkles")}
+  catch(e){toast("ดึง Shop ไม่สำเร็จ: "+e.message,"ti-alert-triangle")}
+  $("syncShopBtn").disabled=false;$("syncShopBtn").innerHTML='<i class="ti ti-sparkles"></i> AI หาสินค้า Shop';
+}
+
+/* ===== CONFIG ===== */
+let annType="info";
+document.querySelectorAll("#annType button").forEach(b=>b.onclick=()=>{annType=b.dataset.v;document.querySelectorAll("#annType button").forEach(x=>x.classList.toggle("on",x===b))});
+async function loadConfig(){
+  try{
+    const c=await fetch(BACKEND_URL+"/api/config").then(r=>r.json());
+    const a=c.announcement||{};$("annEnabled").checked=!!a.enabled;$("annText").value=a.text||"";
+    annType=a.type||"info";document.querySelectorAll("#annType button").forEach(x=>x.classList.toggle("on",x.dataset.v===annType));
+    const m=c.maintenance||{};$("maintEnabled").checked=!!m.enabled;$("maintMsg").value=m.message||"";
+  }catch(e){}
+}
+async function saveAnnouncement(){
+  try{await api("/api/admin/config",{method:"POST",body:{announcement:{enabled:$("annEnabled").checked,text:$("annText").value.trim(),type:annType}}});toast("บันทึกประกาศแล้ว","ti-speakerphone")}
+  catch(e){toast(e.message,"ti-alert-triangle")}
+}
+async function saveMaintenance(){
+  try{await api("/api/admin/config",{method:"POST",body:{maintenance:{enabled:$("maintEnabled").checked,message:$("maintMsg").value.trim()}}});toast("บันทึกการตั้งค่าแล้ว","ti-tool")}
+  catch(e){toast(e.message,"ti-alert-triangle")}
+}
+
+/* ===== AUDIT ===== */
+const AUDIT_IC={"user.role":"ti-shield","user.ban":"ti-ban","user.unban":"ti-lock-open","magazine.create":"ti-plus","magazine.edit":"ti-edit","magazine.delete":"ti-trash","magazine.clear":"ti-trash-x","magazine.sync":"ti-sparkles","config.announcement":"ti-speakerphone","config.maintenance":"ti-tool"};
+async function loadAudit(){
+  $("auditList").innerHTML=`<div class="empty">กำลังโหลด...</div>`;
+  try{
+    const arr=await api("/api/admin/audit");
+    if(!arr.length){$("auditList").innerHTML=`<div class="empty">ยังไม่มีบันทึก</div>`;return}
+    $("auditList").innerHTML=arr.map(a=>`<div class="audit-item">
+      <div class="ai"><i class="ti ${AUDIT_IC[a.action]||"ti-point"}"></i></div>
+      <div class="at"><b>${esc(a.actor||"-")}</b> · ${esc(a.action||"")} ${a.target?`→ <span style="color:var(--acc)">${esc(a.target)}</span>`:""}<small>${esc(a.detail||"")}</small></div>
+      <div class="time">${new Date(a.t).toLocaleString("th-TH",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</div>
+    </div>`).join("");
+  }catch(e){$("auditList").innerHTML=`<div class="empty">โหลดไม่ได้: ${esc(e.message)}</div>`}
+}
+</script>
+</body>
+</html>

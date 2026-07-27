@@ -881,9 +881,20 @@ const SYMPTOMS_DATABASE={
 async function gemini(contents,opts){opts=opts||{};
   if(!(useFb&&auth&&auth.currentUser))throw new Error(lang==="en"?"Please sign in first":"กรุณาเข้าสู่ระบบก่อนใช้งาน");
   const tok=await auth.currentUser.getIdToken();
+  const c=selCar();
   const r=await fetch(`${BACKEND_URL}/api/ai/chat`,{method:"POST",
     headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok},
-    body:JSON.stringify({contents,system:opts.system,search:!!opts.search,temp:opts.temp!=null?opts.temp:0.5})});
+    body:JSON.stringify({
+      contents,
+      carId: c ? c.id : undefined,
+      make: c ? c.make : undefined,
+      model: c ? c.model : undefined,
+      year: c ? c.year : undefined,
+      mileage: c ? c.mileage : undefined,
+      system:opts.system,
+      search:!!opts.search,
+      temp:opts.temp!=null?opts.temp:0.5
+    })});
   let d=null;try{d=await r.json()}catch(e){}
   if(!r.ok){
     const err=(d&&d.error)||"";
@@ -912,6 +923,18 @@ async function syncCars(){
   if(!carsAreRemote())return;
   try{
     const tok=await auth.currentUser.getIdToken();
+    // 1. Sync any local garage cars to remote backend D1
+    const localCars=garage();
+    for(const lc of localCars){
+      if(lc.make&&lc.model){
+        await fetch(`${BACKEND_URL}/api/cars`,{
+          method:"POST",
+          headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok},
+          body:JSON.stringify({id:lc.id,make:lc.make,model:lc.model,year:lc.year,mileage:lc.mileage})
+        }).catch(()=>{});
+      }
+    }
+    // 2. Fetch all cars for this user from remote backend D1
     const r=await fetch(`${BACKEND_URL}/api/cars`,{headers:{Authorization:"Bearer "+tok}});
     if(!r.ok)return;
     const arr=await r.json();if(!Array.isArray(arr))return;

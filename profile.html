@@ -3141,6 +3141,143 @@ html[data-level="basic"] .hfree{
   background:transparent;border:1px dashed var(--line);transition:.15s}
 .odo-done:hover{border-color:var(--ok,#3E9E6E);background:rgba(62,158,110,.08)}
 </style>
+<style id="parkmapcss">
+/* ══════════════════════════════════════════════════════════════════
+   จำที่จอด — แผนที่เต็มจอ + การ์ดบนหน้าหลัก + เข็มทิศพากลับไปหารถ
+   ══════════════════════════════════════════════════════════════════ */
+
+html.pm-lock,body.pm-lock{overflow:hidden}
+
+.pm-ov{position:fixed;inset:0;z-index:220;display:flex;flex-direction:column;
+  background:var(--bg,#0B0F17);opacity:0;transition:opacity .22s var(--ez,ease)}
+.pm-ov.on{opacity:1}
+.pm-wrap{display:flex;flex-direction:column;height:100%}
+
+.pm-bar{display:flex;align-items:center;gap:10px;flex-shrink:0;
+  padding:calc(11px + env(safe-area-inset-top)) 14px 11px;
+  background:var(--surface);border-bottom:1px solid var(--line)}
+.pm-bar b{flex:1;font-size:16px;font-weight:700;color:var(--ink)}
+.pm-x{width:36px;height:36px;flex-shrink:0;border-radius:11px;display:grid;
+  place-items:center;font-size:19px;cursor:pointer;font-family:inherit;
+  color:var(--ink);background:transparent;border:1px solid var(--line)}
+.pm-x:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ── แผนที่ ── */
+.pm-map{flex:1;min-height:0;position:relative;background:var(--surface-2)}
+.pm-map .leaflet-container{width:100%;height:100%;background:var(--surface-2)}
+/* แผนที่เป็นภาพสว่างเสมอ ธีมมืดจึงต้องลดความจ้าลงไม่ให้แสบตากลางคืน */
+html[data-theme="dark"] .pm-map .leaflet-tile-pane,
+html[data-theme="ocean"] .pm-map .leaflet-tile-pane,
+html[data-theme="magma"] .pm-map .leaflet-tile-pane{
+  filter:brightness(.72) saturate(.85) contrast(1.05)}
+
+.pm-loading{position:absolute;inset:0;z-index:500;display:flex;
+  flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  color:var(--muted);font-size:14px;background:var(--surface-2)}
+.pm-spin{width:34px;height:34px;border-radius:50%;
+  border:3px solid var(--line);border-top-color:var(--accent);
+  animation:pmSpin .8s linear infinite}
+@keyframes pmSpin{to{transform:rotate(360deg)}}
+
+.pm-fail{position:absolute;inset:0;z-index:500;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:12px;padding:28px;text-align:center;
+  color:var(--muted);background:var(--surface-2)}
+.pm-fail .ti{font-size:38px;color:var(--faint)}
+.pm-fail p{font-size:14px;line-height:1.6;max-width:280px}
+
+/* หมุดตรึงกลางจอ — ผู้ใช้เลื่อนแผนที่แทนการลากหมุด
+   บนมือถือการลากหมุดด้วยนิ้วบังจุดที่จะปักพอดี ซึ่งทำให้ปักพลาด */
+.pm-crosshair{position:absolute;left:50%;top:50%;z-index:450;
+  pointer-events:none;transform:translate(-50%,-100%)}
+.pm-pin{width:46px;height:46px;border-radius:50% 50% 50% 6px;
+  transform:rotate(-45deg);display:grid;place-items:center;
+  background:var(--grad);box-shadow:0 8px 20px -6px rgba(0,0,0,.5),
+  inset 0 1px 0 rgba(255,255,255,.3)}
+.pm-pin .ti{transform:rotate(45deg);font-size:21px;color:#fff}
+.pm-pin-stem{width:3px;height:12px;margin:1px auto 0;border-radius:2px;
+  background:rgba(0,0,0,.35)}
+/* จุดเล็ก ๆ ใต้ก้านหมุด บอกตำแหน่งที่จะปักจริงแบบไม่มีข้อสงสัย */
+.pm-crosshair::after{content:"";position:absolute;left:50%;bottom:-4px;
+  width:7px;height:7px;margin-left:-3.5px;border-radius:50%;
+  background:#fff;box-shadow:0 0 0 2px rgba(0,0,0,.4)}
+
+/* ── แผงล่าง ── */
+.pm-panel{flex-shrink:0;padding:14px 16px calc(16px + env(safe-area-inset-bottom));
+  background:var(--surface);border-top:1px solid var(--line);
+  box-shadow:0 -8px 24px -14px rgba(0,0,0,.5)}
+
+.pm-acc{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  padding:10px 12px;border-radius:13px;font-size:12.5px;margin-bottom:12px;
+  background:var(--bg);border:1px solid var(--line)}
+.pm-acc .ti{font-size:16px;flex-shrink:0}
+.pm-acc b{font-variant-numeric:tabular-nums}
+.pm-acc span{flex:1;min-width:140px;color:var(--muted);line-height:1.45}
+.pm-acc.ok{border-color:rgba(62,158,110,.4)} .pm-acc.ok .ti,.pm-acc.ok b{color:#3E9E6E}
+.pm-acc.mid{border-color:rgba(232,163,61,.4)} .pm-acc.mid .ti,.pm-acc.mid b{color:#B77A1C}
+.pm-acc.bad{border-color:rgba(217,94,60,.45)} .pm-acc.bad .ti,.pm-acc.bad b{color:#D9453C}
+
+.pm-fl{display:block;margin-bottom:10px}
+.pm-fl span{display:block;font-size:11px;font-weight:800;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.pm-fl input{width:100%;padding:12px 14px;border-radius:13px;font-family:inherit;
+  font-size:15px;color:var(--ink);background:var(--bg);
+  border:1px solid var(--line);outline:none;transition:border-color .15s}
+.pm-fl input:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(217,115,60,.12)}
+
+.pm-hint{font-size:12px;line-height:1.55;color:var(--muted);margin-bottom:12px}
+.pm-save{width:100%;justify-content:center;font-size:15px;padding:14px}
+
+/* ══════════════ การ์ดบนหน้าหลัก ══════════════ */
+.pk-card{background:var(--surface);border:1px solid var(--line);border-radius:22px;
+  padding:18px;margin-bottom:16px;box-shadow:var(--el-2,var(--shadow))}
+.pk-c-top{display:flex;align-items:flex-start;gap:13px}
+.pk-c-ic{width:44px;height:44px;flex-shrink:0;border-radius:14px;display:grid;
+  place-items:center;font-size:21px;color:#fff;background:var(--grad);
+  box-shadow:0 10px 22px -10px rgba(217,94,60,.6)}
+.pk-c-tx{flex:1;min-width:0}
+.pk-c-tx small{display:block;font-size:10.5px;font-weight:800;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.pk-c-tx b{display:block;font-family:var(--kd);font-size:19px;font-weight:700;
+  color:var(--ink);line-height:1.25;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.pk-c-tx>span{display:block;margin-top:2px;font-size:12.5px;color:var(--muted)}
+.pk-c-acts{display:flex;gap:9px;margin-top:15px}
+.pk-c-acts .btn{flex:1;justify-content:center}
+@media(max-width:420px){
+  .pk-c-acts{flex-direction:column}
+  .pk-c-acts .btn{width:100%}
+}
+
+/* ══════════════ เดินกลับไปหารถ ══════════════ */
+.pn-ov{position:fixed;inset:0;z-index:230;display:grid;place-items:center;
+  padding:18px;background:rgba(4,7,13,.72);opacity:0;
+  transition:opacity .22s var(--ez,ease)}
+.pn-ov.on{opacity:1}
+.pn-box{width:100%;max-width:360px;padding:24px;border-radius:26px;text-align:center;
+  background:var(--surface);border:1px solid var(--line);
+  box-shadow:var(--el-3,0 24px 60px -18px rgba(0,0,0,.7));
+  transform:translateY(14px) scale(.97);transition:transform .26s var(--ez,ease)}
+.pn-ov.on .pn-box{transform:none}
+.pn-h{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.pn-h b{flex:1;text-align:left;font-size:16px;font-weight:700;color:var(--ink)}
+
+/* ลูกศรหมุนตามเข็มทิศ — หน่วงนิดหน่อยไม่ให้กระตุกตามสัญญาณรบกวน */
+.pn-arrow{width:120px;height:120px;margin:0 auto 16px;border-radius:50%;
+  display:grid;place-items:center;background:var(--bg);
+  border:2px solid var(--line);transition:transform .28s cubic-bezier(.3,.9,.3,1)}
+.pn-arrow .ti{font-size:56px;color:var(--accent)}
+.pn-dist{font-family:var(--kd);font-size:38px;font-weight:700;color:var(--ink);
+  line-height:1;font-variant-numeric:tabular-nums}
+.pn-dir{margin-top:8px;font-size:14px;line-height:1.5;color:var(--muted)}
+.pn-floor{margin-top:12px;display:inline-flex;align-items:center;gap:6px;
+  padding:7px 13px;border-radius:11px;font-size:13px;font-weight:600;
+  color:var(--ink);background:var(--bg);border:1px solid var(--line)}
+.pn-done{width:100%;justify-content:center;margin-top:18px}
+
+@media(prefers-reduced-motion:reduce){
+  .pn-arrow{transition:none}
+}
+</style>
 <style id="depthcss">
 /* ══════════════════════════════════════════════════════════════════
    ความลึกกับการเคลื่อนไหวชุดเดียวของทั้งเว็บ
@@ -12087,8 +12224,15 @@ async function finishDrive(auto){
   const km=tripMetres(pts)/1000;
   const mins=Math.max(1,Math.round((Date.now()-dv.t0)/60000));
   const old=getPark()||{};
-  setPark({lat:last.lat,lng:last.lng,acc:last.acc,t:Date.now(),
-    note:old.note||"",photo:"",timerAt:0,auto:!!auto,km:+km.toFixed(1)});
+  /* หมุดที่ผู้ใช้ปักเองห้ามถูกเขียนทับเด็ดขาด — เขายืนอยู่ตรงนั้นตอนปัก
+     ส่วนนี่คือพิกัดสุดท้ายของ GPS ซึ่งในลานจอดเพี้ยนได้เป็นร้อยเมตร
+     ถ้าทับแล้วหมุดเลื่อน คนจะเลิกเชื่อแอปทันที */
+  if(old&&old.frozen){
+    setPark(Object.assign({},old,{km:+km.toFixed(1)}));
+  }else{
+    setPark({lat:last.lat,lng:last.lng,acc:last.acc,t:Date.now(),
+      note:old.note||"",photo:"",timerAt:0,auto:!!auto,km:+km.toFixed(1)});
+  }
   dv.saved={km,mins};
   /* สั่นเตือนสั้น ๆ ให้รู้ว่าบันทึกแล้ว โดยไม่ต้องมองจอ */
   try{ if(navigator.vibrate)navigator.vibrate([60,40,60]) }catch(e){}
@@ -12239,6 +12383,9 @@ function pkPos(opts){
   });
 }
 async function savePark(){
+  /* หน้าแผนที่เก็บค่าที่แม่นที่สุดแทนค่าแรกที่ได้ และให้ผู้ใช้เลื่อนเองได้
+     ซึ่งเป็นทางเดียวที่หมุดจะตรงจริงในลานจอดใต้ดินที่ GPS ใช้ไม่ได้ */
+  if(window.spireParkOpen){ window.spireParkOpen(); return }
   pk.busy=true; pk.err=""; renderTool();
   try{
     const pos=await pkPos();
@@ -12629,6 +12776,502 @@ function boot(){
 if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",boot); else boot();
 setTimeout(boot,700);
 setInterval(()=>{ mountEntry(); addRenewToggle(); renewWidget(true); renderNext() },5000);
+})();
+</script>
+<script id="parkmapjs">
+/* ══════════════════════════════════════════════════════════════════
+   จำที่จอด — แผนที่จริง ปักหมุดแล้วหมุดไม่ขยับ
+
+   ข้อกำหนดสำคัญที่สุด: หมุดต้องนิ่งสนิท ถ้าหมุดเลื่อนคนจะเลิกเชื่อแอปทันที
+   และการเดินหารถผิดที่ในลานจอดคือประสบการณ์ที่แย่ที่สุดที่แอปทำให้คนได้
+
+   สามอย่างที่ทำให้หมุดเพี้ยน และวิธีแก้:
+
+   1. ใช้ค่า GPS ครั้งแรกที่ได้ — ของเดิมเป็นแบบนี้ ค่าแรกมักเป็นค่าคร่าว ๆ
+      จากเสาสัญญาณ เพี้ยนได้เป็นร้อยเมตร โดยเฉพาะในลานจอดใต้ดิน
+      → เก็บหลายค่าแล้วเลือกค่าที่แม่นที่สุด ไม่ใช่ค่าที่มาถึงก่อน
+
+   2. GPS ในร่มใช้ไม่ได้จริง ๆ ไม่ว่าจะรอนานแค่ไหน
+      → ให้ผู้ใช้ลากหมุดเองได้ เขายืนอยู่ตรงนั้น เขารู้ดีกว่าดาวเทียม
+      และบอกความแม่นยำตรง ๆ เพื่อให้เขารู้ว่าควรลากหรือไม่
+
+   3. หมุดถูกเขียนทับหลังบันทึก
+      → บันทึกแล้วล็อกถาวร (frozen) ไม่มีโค้ดไหนแก้ได้อีกจนกว่าจะกดลบเอง
+
+   ชั้นจอดเป็นข้อความ ไม่ใช่พิกัด เพราะ GPS แยกชั้น 3 กับชั้น 5 ไม่ได้เลย
+   ══════════════════════════════════════════════════════════════════ */
+(function(){
+"use strict";
+const D=document,$=id=>D.getElementById(id);
+const T=(th,en)=>(window.spireT?window.spireT(th,en):((window.lang||"th")==="en"?en:th));
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>
+  ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+const LG=(k,d)=>{try{const v=localStorage.getItem("spire_"+k);return v?JSON.parse(v):d}catch(e){return d}};
+const LS=(k,v)=>{try{localStorage.setItem("spire_"+k,JSON.stringify(v))}catch(e){}};
+
+const carId=()=>{ try{ const c=window.selCar&&window.selCar(); return c?c.id:"none" }
+                  catch(e){ return "none" } };
+const KEY=()=>"park_"+carId();
+const getPark=()=>LG(KEY(),null);
+const setPark=v=>LS(KEY(),v);
+window.spireParkGet=getPark;
+
+/* ─────────── เรขาคณิต ───────────
+   Haversine — ระยะบนผิวโลก ที่ระยะเดินไม่กี่ร้อยเมตรแม่นเกินพอ */
+const R=6371000, rad=d=>d*Math.PI/180, deg=r=>r*180/Math.PI;
+function distance(a,b){
+  const p1=rad(a.lat),p2=rad(b.lat);
+  const dp=rad(b.lat-a.lat), dl=rad(b.lng-a.lng);
+  const h=Math.sin(dp/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;
+  return 2*R*Math.asin(Math.min(1,Math.sqrt(h)));
+}
+function bearing(a,b){
+  const p1=rad(a.lat),p2=rad(b.lat),dl=rad(b.lng-a.lng);
+  const y=Math.sin(dl)*Math.cos(p2);
+  const x=Math.cos(p1)*Math.sin(p2)-Math.sin(p1)*Math.cos(p2)*Math.cos(dl);
+  return (deg(Math.atan2(y,x))+360)%360;
+}
+window.spireParkGeo={distance,bearing};
+
+const COMPASS_TH=["เหนือ","ตะวันออกเฉียงเหนือ","ตะวันออก","ตะวันออกเฉียงใต้",
+  "ใต้","ตะวันตกเฉียงใต้","ตะวันตก","ตะวันตกเฉียงเหนือ"];
+const COMPASS_EN=["north","north-east","east","south-east",
+  "south","south-west","west","north-west"];
+const compassName=b=>{
+  const i=Math.round(((b%360)+360)%360/45)%8;
+  return T(COMPASS_TH[i],COMPASS_EN[i]);
+};
+const fmtDist=m=>m<1000?`${Math.round(m)} ${T("ม.","m")}`
+                      :`${(m/1000).toFixed(1)} ${T("กม.","km")}`;
+
+/* ─────────── หาพิกัดที่แม่นที่สุด ไม่ใช่ค่าแรกที่ได้ ───────────
+   นี่คือหัวใจของ "หมุดไม่เพี้ยน" — getCurrentPosition คืนค่าคร่าว ๆ
+   จากเสาสัญญาณมาก่อนเสมอ แล้วค่อยแม่นขึ้นเมื่อจับดาวเทียมได้
+   เก็บทุกค่าที่เข้ามา แล้วใช้ค่าที่ accuracy ต่ำสุด */
+function bestFix(ms,onProgress){
+  return new Promise((res,rej)=>{
+    if(!navigator.geolocation)
+      return rej(new Error(T("เครื่องนี้ไม่มีระบบระบุตำแหน่ง","No geolocation on this device")));
+    let best=null,done=false,watch=null;
+    const finish=()=>{
+      if(done)return; done=true;
+      if(watch!=null)navigator.geolocation.clearWatch(watch);
+      clearTimeout(timer);
+      best ? res(best) : rej(new Error("timeout"));
+    };
+    const timer=setTimeout(finish,ms||9000);
+    watch=navigator.geolocation.watchPosition(p=>{
+      const c=p.coords;
+      if(!best||c.accuracy<best.acc){
+        best={lat:c.latitude,lng:c.longitude,acc:Math.round(c.accuracy||0),t:Date.now()};
+        if(onProgress)try{onProgress(best)}catch(e){}
+      }
+      /* แม่นระดับ 8 เมตรถือว่าดีที่สุดที่มือถือทำได้แล้ว ไม่ต้องรอต่อ */
+      if(best.acc<=8)finish();
+    },e=>{ if(!best){ done=true; clearTimeout(timer); rej(e) } },
+    {enableHighAccuracy:true,maximumAge:0,timeout:(ms||9000)+1000});
+  });
+}
+window.spireParkBestFix=bestFix;
+
+/* ─────────── แผนที่ ───────────
+   โหลด Leaflet ตอนเปิดใช้จริงเท่านั้น ไม่ถ่วงการเปิดหน้าแรกของทุกคน */
+const LEAFLET_JS="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+const LEAFLET_CSS="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+let leafletP=null;
+function loadLeaflet(){
+  if(window.L)return Promise.resolve(window.L);
+  if(leafletP)return leafletP;
+  leafletP=new Promise((res,rej)=>{
+    const css=D.createElement("link");
+    css.rel="stylesheet"; css.href=LEAFLET_CSS; D.head.appendChild(css);
+    const s=D.createElement("script");
+    s.src=LEAFLET_JS;
+    s.onload=()=>res(window.L);
+    s.onerror=()=>rej(new Error("leaflet"));
+    D.head.appendChild(s);
+    /* เน็ตช้ามากก็ต้องยอมแพ้ ไม่ปล่อยให้ผู้ใช้จ้องจอเปล่า */
+    setTimeout(()=>{ if(!window.L)rej(new Error("leaflet-timeout")) },12000);
+  });
+  return leafletP;
+}
+
+/* ─────────── หน้าปักหมุด ─────────── */
+let map=null,accCircle=null,meMarker=null,picking=null;
+
+function pickerHTML(){
+  return `<div class="pm-wrap">
+    <div class="pm-bar">
+      <button class="pm-x" id="pmX" aria-label="${esc(T("ปิด","Close"))}">
+        <i class="ti ti-arrow-left"></i></button>
+      <b>${esc(T("ปักหมุดที่จอด","Drop your parking pin"))}</b>
+    </div>
+
+    <div class="pm-map" id="pmMap">
+      <div class="pm-loading" id="pmLoad">
+        <div class="pm-spin"></div>
+        <span>${esc(T("กำลังหาตำแหน่ง…","Finding your position…"))}</span>
+      </div>
+      <!-- หมุดตรึงกลางจอ ผู้ใช้เลื่อนแผนที่ให้ตรงจุด แม่นกว่าลากหมุดบนมือถือ -->
+      <div class="pm-crosshair" id="pmCross" hidden>
+        <div class="pm-pin"><i class="ti ti-car"></i></div>
+        <div class="pm-pin-stem"></div>
+      </div>
+    </div>
+
+    <div class="pm-panel">
+      <div class="pm-acc" id="pmAcc"></div>
+      <label class="pm-fl">
+        <span>${esc(T("ชั้น / โซน","Floor / zone"))}</span>
+        <input id="pmFloor" maxlength="24" autocomplete="off"
+          placeholder="${esc(T("เช่น B2 โซน C","e.g. B2, zone C"))}">
+      </label>
+      <p class="pm-hint">${esc(T(
+        "เลื่อนแผนที่ให้หมุดตรงจุดที่จอดจริง แล้วกดบันทึก — บันทึกแล้วหมุดจะอยู่ตรงนั้นถาวร",
+        "Move the map so the pin sits exactly where you parked, then save — it stays put for good"))}</p>
+      <button class="btn primary pm-save" id="pmSave" disabled>
+        <i class="ti ti-map-pin"></i>${esc(T("ปักหมุดตรงนี้","Pin it here"))}</button>
+    </div>
+  </div>`;
+}
+
+function open(){
+  if($("pmOv"))return;
+  const ov=D.createElement("div");
+  ov.id="pmOv"; ov.className="pm-ov"; ov.innerHTML=pickerHTML();
+  D.body.appendChild(ov);
+  D.documentElement.classList.add("pm-lock");
+  requestAnimationFrame(()=>ov.classList.add("on"));
+  ($("pmX")||{}).onclick=close;
+
+  const old=getPark();
+  if(old&&old.floor)($("pmFloor")||{}).value=old.floor;
+
+  picking={lat:null,lng:null,acc:null,source:"gps"};
+  boot();
+}
+function close(){
+  const ov=$("pmOv"); if(!ov)return;
+  ov.classList.remove("on");
+  D.documentElement.classList.remove("pm-lock");
+  setTimeout(()=>{
+    ov.remove();
+    if(map){ try{map.remove()}catch(e){} map=null; accCircle=null; meMarker=null }
+  },240);
+}
+window.spireParkOpen=open;
+window.spireParkClose=close;
+
+async function boot(){
+  let L;
+  try{ L=await loadLeaflet() }
+  catch(e){ return failMap(T("โหลดแผนที่ไม่ได้ ตรวจการเชื่อมต่อแล้วลองใหม่",
+                            "Couldn't load the map — check your connection and retry")) }
+  if(!$("pmOv"))return;                       /* ผู้ใช้ปิดไปแล้วระหว่างรอ */
+
+  /* แสดงแผนที่ทันทีที่ได้พิกัดแรก แล้วค่อยขยับให้แม่นขึ้นเมื่อค่าดีกว่าเข้ามา
+     ไม่รอจนครบเวลา เพราะคนเพิ่งจอดรถ ยืนรอเก้าวินาทีหน้าจอเปล่าคือนาน
+     ความแม่นไม่ได้เสียไป เพราะยังเก็บค่าที่ดีที่สุดอยู่เหมือนเดิม */
+  let best=null, userMoved=false, watch=null, settled=false;
+
+  const stop=()=>{ if(watch!=null&&navigator.geolocation)navigator.geolocation.clearWatch(watch);
+                   watch=null };
+
+  function firstPaint(fix){
+    const box=$("pmMap"); if(!box)return;
+    const load=$("pmLoad"); if(load)load.remove();
+    const cross=$("pmCross"); if(cross)cross.hidden=false;
+
+    map=L.map(box,{zoomControl:false,attributionControl:true})
+         .setView([fix.lat,fix.lng],19);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      {maxZoom:20,attribution:"© OpenStreetMap"}).addTo(map);
+    L.control.zoom({position:"bottomright"}).addTo(map);
+    accCircle=L.circle([fix.lat,fix.lng],{radius:fix.acc,color:"#3FC3D6",
+      weight:1,fillColor:"#3FC3D6",fillOpacity:.12}).addTo(map);
+    meMarker=L.circleMarker([fix.lat,fix.lng],{radius:5,color:"#fff",weight:2,
+      fillColor:"#3FC3D6",fillOpacity:1}).addTo(map);
+
+    const sv=$("pmSave"); if(sv)sv.disabled=false;   /* กดบันทึกได้ทันที */
+
+    /* ผู้ใช้เลื่อนแผนที่เมื่อไร ถือว่าเขาตัดสินใจเองแล้ว
+       ห้ามระบบดึงกลับไปที่ GPS อีก ไม่งั้นหมุดกระตุกหนีมือ */
+    map.on("dragstart",()=>{ userMoved=true; stop() });
+    map.on("move",()=>{
+      if(!map)return;
+      const c=map.getCenter();
+      const moved=best?distance(best,{lat:c.lat,lng:c.lng}):0;
+      picking={lat:c.lat,lng:c.lng,acc:best?best.acc:null,
+        source:moved>4?"manual":"gps"};
+      if(moved>4)showManual(Math.round(moved));
+    });
+  }
+
+  function better(fix){
+    best=fix;
+    picking={lat:fix.lat,lng:fix.lng,acc:fix.acc,source:"gps"};
+    if(!map){ firstPaint(fix); showAcc(fix.acc); return }
+    if(userMoved)return;                      /* เคารพการตัดสินใจของผู้ใช้ */
+    try{
+      map.setView([fix.lat,fix.lng],map.getZoom(),{animate:false});
+      if(accCircle){ accCircle.setLatLng([fix.lat,fix.lng]); accCircle.setRadius(fix.acc) }
+      if(meMarker)meMarker.setLatLng([fix.lat,fix.lng]);
+    }catch(e){}
+    showAcc(fix.acc);
+  }
+
+  if(!navigator.geolocation)
+    return failMap(T("เครื่องนี้ไม่มีระบบระบุตำแหน่ง","No geolocation on this device"));
+
+  watch=navigator.geolocation.watchPosition(pos=>{
+    const c=pos.coords;
+    const fix={lat:c.latitude,lng:c.longitude,acc:Math.round(c.accuracy||0),t:Date.now()};
+    if(!best||fix.acc<best.acc)better(fix);
+    settled=true;
+    if(fix.acc<=8)stop();                     /* ดีที่สุดที่มือถือทำได้แล้ว */
+  },e=>{
+    if(best)return;                           /* ได้ค่าไปแล้ว error ทีหลังไม่สำคัญ */
+    failMap(e&&e.code===1
+      ? T("ต้องอนุญาตให้ใช้ตำแหน่งก่อน ระบบถึงจะจำที่จอดได้",
+          "Location permission is needed to remember where you parked")
+      : T("ยังจับสัญญาณไม่ได้ ลองออกไปที่โล่งกว่านี้",
+          "No fix yet — try somewhere more open"));
+  },{enableHighAccuracy:true,maximumAge:0,timeout:20000});
+
+  /* หยุดตามหลังจากผ่านไปพอสมควร ไม่ปล่อยให้ GPS ทำงานค้างกินแบต */
+  setTimeout(stop,20000);
+  /* ไม่ได้อะไรเลยภายใน 15 วิ ค่อยบอกว่าล้ม */
+  setTimeout(()=>{ if(!settled&&!best)failMap(T(
+    "ยังจับสัญญาณไม่ได้ ลองออกไปที่โล่งกว่านี้",
+    "No fix yet — try somewhere more open")) },15000);
+
+  const sv=$("pmSave"); if(sv)sv.onclick=save;
+}
+
+function failMap(msg){
+  const box=$("pmMap"); if(!box)return;
+  box.innerHTML=`<div class="pm-fail"><i class="ti ti-map-off"></i>
+    <p>${esc(msg)}</p></div>`;
+  const a=$("pmAcc"); if(a)a.textContent="";
+}
+
+function showAcc(acc){
+  const a=$("pmAcc"); if(!a)return;
+  /* ต่ำกว่า 20 ม. ถือว่าเชื่อได้ในลานจอดกลางแจ้ง เกิน 50 ม. คือควรเลื่อนเอง */
+  const cls=acc<=20?"ok":acc<=50?"mid":"bad";
+  const note=acc<=20 ? T("สัญญาณดี หมุดน่าจะตรงแล้ว","Good signal — the pin should be right")
+           : acc<=50 ? T("สัญญาณพอใช้ ลองเลื่อนแผนที่ให้ตรงจุดจริง","Fair signal — nudge the map to be exact")
+           : T("สัญญาณอ่อน (อยู่ในร่ม?) เลื่อนแผนที่เองจะแม่นกว่ามาก",
+               "Weak signal (indoors?) — moving the map yourself will be far more accurate");
+  a.className="pm-acc "+cls;
+  a.innerHTML=`<i class="ti ti-target"></i><b>±${acc} ${esc(T("ม.","m"))}</b>
+    <span>${esc(note)}</span>`;
+}
+function showManual(m){
+  const a=$("pmAcc"); if(!a)return;
+  a.className="pm-acc ok";
+  a.innerHTML=`<i class="ti ti-hand-move"></i><b>${esc(T("ปักเอง","Placed by you"))}</b>
+    <span>${esc(T(`ห่างจากจุดที่ GPS จับได้ ${m} ม.`,`${m} m from the GPS reading`))}</span>`;
+}
+
+function save(){
+  if(!picking||picking.lat==null)return;
+  const floor=($("pmFloor")&&$("pmFloor").value||"").trim().slice(0,24);
+  const old=getPark()||{};
+  /* frozen = ห้ามโค้ดไหนแก้พิกัดนี้อีก จนกว่าผู้ใช้จะกดลบหรือปักใหม่เอง
+     นี่คือสัญญาที่ให้ไว้ว่า "ปักแล้วอยู่ตรงนั้น" */
+  setPark({
+    lat:picking.lat, lng:picking.lng,
+    acc:picking.source==="manual"?0:picking.acc,
+    source:picking.source, floor,
+    t:Date.now(), frozen:true,
+    note:old.note||"", photo:old.photo||"", timerAt:old.timerAt||0,
+  });
+  close();
+  try{ window.spireParkRefresh&&window.spireParkRefresh() }catch(e){}
+  try{ if(navigator.vibrate)navigator.vibrate([50,30,50]) }catch(e){}
+}
+
+function clear(){
+  setPark(null);
+  try{ window.spireParkRefresh&&window.spireParkRefresh() }catch(e){}
+}
+window.spireParkClear=clear;
+
+/* ══════════════ การ์ดบนหน้าหลัก ══════════════
+   จอดรถแล้วเปิดแอปมาต้องเห็นทันที ไม่ต้องไปหาในเมนู */
+function cardHTML(){
+  const p=getPark(); if(!p||p.lat==null)return "";
+  const mins=Math.round((Date.now()-(p.t||Date.now()))/60000);
+  const ago=mins<1?T("เมื่อครู่นี้","just now")
+    :mins<60?T(`${mins} นาทีที่แล้ว`,`${mins} min ago`)
+    :T(`${Math.floor(mins/60)} ชม.ที่แล้ว`,`${Math.floor(mins/60)} h ago`);
+  return `<div class="pk-card" id="pkCard">
+    <div class="pk-c-top">
+      <span class="pk-c-ic"><i class="ti ti-map-pin"></i></span>
+      <div class="pk-c-tx">
+        <small>${esc(T("รถจอดอยู่ที่","YOUR CAR IS PARKED"))}</small>
+        <b>${esc(p.floor||T("จุดที่ปักไว้","Your saved spot"))}</b>
+        <span id="pkCDist">${esc(ago)}</span>
+      </div>
+    </div>
+    <div class="pk-c-acts">
+      <button class="btn" data-pkact="find">
+        <i class="ti ti-navigation"></i>${esc(T("พาไปหารถ","Take me there"))}</button>
+      <button class="btn primary" data-pkact="done">
+        <i class="ti ti-check"></i>${esc(T("เจอแล้ว","Found it"))}</button>
+    </div>
+  </div>`;
+}
+window.spireParkCard=cardHTML;
+
+/* ══════════════ เดินกลับไปหารถ ══════════════
+   ลูกศรชี้ทิศจริงโดยหมุนตามเข็มทิศของเครื่อง
+   ถ้าเครื่องไม่มีเข็มทิศ ยังบอกทิศเป็นคำและระยะได้ ซึ่งใช้เดินได้จริง */
+let navWatch=null,orientOn=false,heading=null;
+
+function navHTML(){
+  return `<div class="pn-ov" id="pnOv"><div class="pn-box">
+    <div class="pn-h">
+      <b>${esc(T("เดินกลับไปหารถ","Walk back to your car"))}</b>
+      <button class="odo-x" id="pnX" aria-label="${esc(T("ปิด","Close"))}">
+        <i class="ti ti-x"></i></button>
+    </div>
+    <div class="pn-arrow" id="pnArrow"><i class="ti ti-arrow-up"></i></div>
+    <div class="pn-dist" id="pnDist">—</div>
+    <div class="pn-dir" id="pnDir">${esc(T("กำลังหาตำแหน่ง…","Finding you…"))}</div>
+    <div class="pn-floor" id="pnFloor"></div>
+    <button class="btn primary pn-done" id="pnDone">
+      <i class="ti ti-check"></i>${esc(T("เจอรถแล้ว","Found my car"))}</button>
+  </div></div>`;
+}
+
+async function openNav(){
+  const p=getPark(); if(!p||p.lat==null)return;
+  if($("pnOv"))return;
+  const ov=D.createElement("div"); ov.innerHTML=navHTML();
+  D.body.appendChild(ov.firstChild);
+  requestAnimationFrame(()=>$("pnOv").classList.add("on"));
+  ($("pnX")||{}).onclick=closeNav;
+  ($("pnDone")||{}).onclick=()=>{ clear(); closeNav() };
+  const f=$("pnFloor");
+  if(f&&p.floor)f.innerHTML=`<i class="ti ti-building"></i>${esc(p.floor)}`;
+
+  await askCompass();
+  startNav(p);
+}
+function closeNav(){
+  const ov=$("pnOv"); if(!ov)return;
+  ov.classList.remove("on");
+  setTimeout(()=>ov.remove(),240);
+  if(navWatch!=null&&navigator.geolocation)navigator.geolocation.clearWatch(navWatch);
+  navWatch=null;
+  if(orientOn){ removeEventListener("deviceorientationabsolute",onOrient,true);
+    removeEventListener("deviceorientation",onOrient,true); orientOn=false }
+}
+window.spireParkNav=openNav;
+
+function onOrient(e){
+  /* iOS ให้ webkitCompassHeading เป็นองศาจากทิศเหนือจริง ใช้ได้เลย
+     Android ให้ alpha ซึ่งนับกลับทาง ต้องแปลงก่อน */
+  let h=null;
+  if(typeof e.webkitCompassHeading==="number")h=e.webkitCompassHeading;
+  else if(e.absolute&&typeof e.alpha==="number")h=360-e.alpha;
+  if(h!=null&&isFinite(h))heading=(h+360)%360;
+}
+async function askCompass(){
+  try{
+    const DOE=window.DeviceOrientationEvent;
+    if(!DOE)return;
+    /* iOS 13+ ต้องขออนุญาตและต้องขอจากการกดของผู้ใช้เท่านั้น
+       ตรงนี้มาจากการกดปุ่ม "พาไปหารถ" จึงขอได้ */
+    if(typeof DOE.requestPermission==="function"){
+      const r=await DOE.requestPermission();
+      if(r!=="granted")return;
+    }
+    addEventListener("deviceorientationabsolute",onOrient,true);
+    addEventListener("deviceorientation",onOrient,true);
+    orientOn=true;
+  }catch(e){}
+}
+
+function startNav(p){
+  if(!navigator.geolocation)return;
+  navWatch=navigator.geolocation.watchPosition(pos=>{
+    const me={lat:pos.coords.latitude,lng:pos.coords.longitude};
+    const d=distance(me,p), b=bearing(me,p);
+    const dEl=$("pnDist"), dirEl=$("pnDir"), ar=$("pnArrow");
+    if(dEl)dEl.textContent=fmtDist(d);
+    if(dirEl){
+      dirEl.textContent = d<12
+        ? T("รถอยู่แถวนี้แล้ว มองรอบ ๆ ได้เลย","You're right by it — look around")
+        : (heading!=null
+            ? T(`เดินตามลูกศร · ทาง${compassName(b)}`,`Follow the arrow · head ${compassName(b)}`)
+            : T(`เดินไปทาง${compassName(b)}`,`Head ${compassName(b)}`));
+    }
+    /* ลูกศรหมุนตามเข็มทิศได้ก็ชี้ทิศจริง ถ้าไม่มีเข็มทิศให้ชี้ตามทิศเหนือ
+       ซึ่งยังใช้ได้ถ้าถือมือถือหันหน้าไปทางที่เดิน */
+    if(ar)ar.style.transform=`rotate(${heading!=null?(b-heading):b}deg)`;
+  },()=>{},{enableHighAccuracy:true,maximumAge:1000,timeout:20000});
+}
+
+/* ══════════════ ติดการ์ดบนหน้าหลัก ══════════════
+   จอดรถแล้วเปิดแอปมาต้องเห็นทันทีเป็นอย่างแรก ทั้งหน้าห้องนักบินและหน้าปกติ
+   วางไว้บนสุดของแดชบอร์ด เหนือทุกอย่าง เพราะตอนที่ยังหารถไม่เจอ
+   ไม่มีเรื่องไหนสำคัญกว่านี้เลย */
+function mountCard(){
+  const html=cardHTML();
+  let box=$("pkHome");
+  if(!html){ if(box)box.remove(); return }
+
+  if(!box){
+    const host=$("hfree")
+      ||(($("v-home")||{}).querySelector?$("v-home").querySelector(".scroll"):null)
+      ||D.querySelector(".pane-inner");
+    if(!host)return;
+    box=D.createElement("div"); box.id="pkHome";
+    host.insertBefore(box,host.firstChild);
+  }
+  box.innerHTML=html;
+}
+window.spireParkRefresh=mountCard;
+
+/* ระยะบนการ์ดควรสดเสมอ แต่ไม่ต้องถี่ — คนไม่ได้จ้องการ์ดนี้ตลอดเวลา */
+if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",mountCard);
+else mountCard();
+setTimeout(mountCard,900);
+setInterval(mountCard,60000);
+
+/* เข้าจากแชต ("จอดรถแล้ว") หรือจากปุ่มเครื่องมือ — ไปหน้าแผนที่ตรง ๆ
+   ครอบทีหลังเพื่อให้เครื่องมืออื่นใน ledger ยังทำงานเหมือนเดิมทุกอย่าง */
+(function grab(){
+  const o=window.openTool;
+  if(typeof o!=="function"){ setTimeout(grab,300); return }
+  if(o.__pm)return;
+  const f=function(k){
+    if(k==="park"){
+      const p=getPark();
+      /* ปักไว้แล้วให้พาไปหารถเลย ไม่ใช่เปิดหน้าปักใหม่ทับของเดิม */
+      if(p&&p.lat!=null)openNav(); else open();
+      return;
+    }
+    return o.apply(this,arguments);
+  };
+  f.__pm=true; window.openTool=f;
+})();
+
+/* ปุ่มบนการ์ดหน้าหลัก — ผูกครั้งเดียวที่ document ไม่ต้องผูกใหม่ทุกครั้งที่วาด */
+D.addEventListener("click",e=>{
+  const b=e.target.closest("[data-pkact]");
+  if(!b)return;
+  e.preventDefault();
+  const a=b.dataset.pkact;
+  if(a==="find")openNav();
+  else if(a==="done"){ clear();
+    try{ if(navigator.vibrate)navigator.vibrate(40) }catch(err){} }
+  else if(a==="pin")open();
+});
 })();
 </script>
 <script id="odosyncjs">

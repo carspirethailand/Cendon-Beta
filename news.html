@@ -3436,6 +3436,190 @@ button.lg-card:active,.cl-card:active{
   .lt-row:hover,.set-row:hover,.btn:hover,.tile:hover{transform:none}
 }
 </style>
+<style id="mobilecss">
+/* ══════════════════════════════════════════════════════════════════
+   MOBILE — ออกแบบใหม่สำหรับมือถือโดยเฉพาะ เตรียมไว้เป็นแอปในอนาคต
+
+   ปัญหาที่แก้ (จากหน้าจอจริง):
+     • ทุกอย่างใหญ่เกิน — วงแหวนตัวเลขเดียวกินพื้นที่หนึ่งในสามของจอ
+     • บีบ — ระยะขอบการ์ด 22px บนจอ 390px เหลือที่ให้เนื้อหาน้อยมาก
+     • ตัวอักษรไม่ย่อตามจอ — หัวเรื่อง 28px เท่ากับบนคอม
+     • แถบเมนูอยู่บน กดยาก นิ้วโป้งเอื้อมไม่ถึง และมีโลโก้กินที่ฟรี ๆ
+     • การ์ดในการาจข้อความทับกัน เพราะยัด 4 ชิ้นในแถวเดียว
+
+   หลักที่ยึด (มาจากแอปมือถือที่ใช้งานง่ายทั่วไป):
+     • แถบเมนูอยู่ล่าง อยู่ในระยะนิ้วโป้ง ปุ่มสูงอย่างน้อย 44px
+     • ระยะขอบจอ 14px · ระยะในการ์ด 15px · มุมโค้ง 18px
+     • ตัวเลขใหญ่ 30px ไม่ใช่ 48px — ใหญ่พอให้เด่น ไม่ใหญ่จนเปลืองจอ
+     • หัวข้อย่อย 10.5px ตัวหนา เว้นวรรคอักษรกว้าง อ่านออกแต่ไม่แย่งซีน
+   ══════════════════════════════════════════════════════════════════ */
+
+@media(max-width:760px){
+
+/* ══════════ 1. แถบเมนูย้ายลงล่าง ══════════
+   นิ้วโป้งเอื้อมถึงง่ายที่สุด และเป็นตำแหน่งที่คนคุ้นจากแอปอื่นอยู่แล้ว
+   ไม่มีโลโก้ เพราะบนมือถือทุกพิกเซลมีค่า และผู้ใช้รู้อยู่แล้วว่าเปิดแอปอะไรอยู่ */
+.navwrap{
+  position:fixed!important;top:auto!important;bottom:0!important;left:0;right:0;
+  z-index:120;padding:0!important;pointer-events:none}
+.navwrap>*{pointer-events:auto}
+
+.nav{
+  display:flex!important;align-items:stretch;gap:0!important;
+  width:100%;max-width:none!important;margin:0!important;
+  padding:6px 4px calc(6px + env(safe-area-inset-bottom))!important;
+  border-radius:0!important;border:none!important;
+  border-top:1px solid var(--line)!important;
+  background:var(--nav-bg,var(--surface))!important;
+  backdrop-filter:saturate(1.6) blur(18px);
+  box-shadow:0 -6px 24px -14px rgba(0,0,0,.45)!important}
+
+/* โลโก้หายไปบนมือถือตามที่ตั้งใจ */
+.nav .brand{display:none!important}
+
+.nav-links{
+  display:flex!important;gap:0!important;
+  /* สี่แท็บกับปุ่มบัญชีต้องกว้างเท่ากันทั้งห้าช่อง ไม่ใช่แบ่งครึ่งต่อครึ่ง */
+  flex:4 1 0;min-width:0;
+  justify-content:space-around;align-items:stretch;
+  overflow:visible!important;background:none!important;
+  padding:0!important;border:none!important;border-radius:0!important}
+
+/* แต่ละปุ่มเป็นแท็บเต็มตัว — ไอคอนบน ข้อความล่าง แตะได้ทั้งก้อน */
+.nav-links a{
+  flex:1 1 0;min-width:0;display:flex!important;flex-direction:column;
+  align-items:center;justify-content:center;gap:3px;
+  padding:7px 2px 5px!important;min-height:52px;
+  border-radius:14px;font-size:0;
+  color:var(--nav-link,var(--muted))!important;
+  transition:color .18s var(--ez,ease),transform .18s var(--ez,ease)}
+.nav-links a .ti{font-size:22px!important;line-height:1}
+.nav-links a span{
+  display:block!important;font-size:10.5px!important;font-weight:650;
+  line-height:1.1;letter-spacing:0;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.nav-links a.active{color:var(--accent)!important}
+.nav-links a.active .ti{transform:translateY(-1px)}
+.nav-links a:active{transform:scale(.92)}
+
+/* แถบไฟวิ่งใต้แท็บที่เลือก แทนพิลสีทึบที่กินพื้นที่และอ่านยากบนจอเล็ก */
+.nav-ind{
+  height:3px!important;top:0!important;bottom:auto!important;
+  border-radius:0 0 3px 3px!important;background:var(--grad)!important;
+  box-shadow:0 2px 10px -2px var(--accent)}
+
+/* บัญชีกลายเป็นแท็บสุดท้าย ไม่ใช่ปุ่มลอยข้าง ๆ */
+.nav-right{
+  flex:1 1 0;min-width:0;display:flex!important;gap:0!important;
+  align-items:center;justify-content:center;padding:0!important}
+.nav-right>*{width:100%}
+.btn-signin,.nav-right .btn,.nav-right button{
+  display:flex!important;flex-direction:column;gap:3px;align-items:center;
+  justify-content:center;padding:7px 2px 5px!important;
+  border:none!important;outline:none!important;
+  min-height:52px;width:100%;border-radius:14px!important;
+  background:none!important;background-image:none!important;
+  color:var(--nav-link,var(--muted))!important;
+  box-shadow:none!important;font-size:0!important;transition:transform .18s}
+.btn-signin::before,.btn-signin::after{display:none!important}
+.btn-signin:active{transform:scale(.92)}
+.btn-signin .ti{font-size:22px!important}
+.btn-signin span{display:block!important;font-size:10.5px!important;font-weight:650}
+.avatar{width:28px!important;height:28px!important;border-width:1.5px!important}
+
+/* เนื้อหาต้องเว้นที่ให้แถบล่าง ไม่งั้นบรรทัดสุดท้ายโดนบัง */
+.view>.scroll,#v-home>.scroll,.hfree{
+  padding-bottom:calc(84px + env(safe-area-inset-bottom))!important}
+/* แถบเมนูไม่ได้ลอยทับด้านบนแล้ว เนื้อหาจึงเริ่มจากขอบบนได้เลย */
+.view>.scroll{padding-top:16px}
+html[data-level="basic"] .hfree{padding-top:16px!important}
+.hfree{padding-top:16px}
+/* ปุ่มลอยกับแผงต่าง ๆ ต้องขยับขึ้นให้พ้นแถบล่าง */
+.fab-dock,.fab,#cpFab{bottom:calc(74px + env(safe-area-inset-bottom))!important}
+
+/* ══════════ 2. ระยะและขนาดตัวอักษร ══════════ */
+.hfree,#v-home>.scroll,.view>.scroll{padding-left:14px!important;padding-right:14px!important}
+
+.section-title,.sp-h1,.lt-head b{font-size:23px!important;line-height:1.2!important}
+.section-sub{font-size:13px!important;margin-bottom:16px!important}
+h1,.w-h1{font-size:25px!important;line-height:1.25!important}
+h2{font-size:20px!important}
+h3{font-size:17px!important}
+h4{font-size:15.5px!important}
+
+/* การ์ด: ระยะในกล่องบางลง มุมโค้งน้อยลง ได้พื้นที่เนื้อหาคืนมาเยอะ */
+.card,.lite,.lg-card,.sp-card,.set-card,.ccard,.su-card,.wcard,.kcard,.bpanel{
+  padding:15px!important;border-radius:18px!important;margin-bottom:12px!important}
+.hero-feat{margin-bottom:14px!important}
+
+/* ══════════ 3. ตัวเลขใหญ่ ══════════
+   วงแหวนเดิมกินพื้นที่หนึ่งในสามของจอเพื่อโชว์เลขตัวเดียว ไม่คุ้มเลย */
+.lt-badge b,.g-stat b,.stat-num{font-size:24px!important}
+.pn-dist{font-size:32px!important}
+#cpRing,.cp-ring,.ring-big{max-width:150px!important;max-height:150px!important}
+
+/* ══════════ 4. การ์ดรถในการาจ — แก้ข้อความทับกัน ══════════
+   ของเดิมยัดสี่ชิ้นในแถวเดียว (ไอคอน ชื่อ ปุ่มวินิจฉัย ปุ่มลบ)
+   บนจอ 390px ช่องชื่อโดนบีบจนคำแตกเป็นบรรทัดละคำ และปุ่มทับตัวหนังสือ
+   แยกเป็นสองแถว: ไอคอนกับชื่อบรรทัดบน ปุ่มเต็มความกว้างบรรทัดล่าง */
+.gcar{flex-wrap:wrap!important;gap:11px!important;align-items:center!important}
+.gcar>div[style*="flex:1"],.gcar>.gname{
+  flex:1 1 auto!important;min-width:0!important;order:2}
+.gcar>.gi{order:1;flex-shrink:0}
+.gcar h4{
+  font-size:16.5px!important;line-height:1.25!important;
+  overflow-wrap:anywhere;hyphens:auto}
+.gcar .gs{font-size:12.5px!important;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+/* ปุ่มลงไปอยู่แถวใหม่ กว้างเต็ม กดง่าย ไม่มีทางทับข้อความ */
+.gcar>.btn{order:3;min-height:44px}
+/* ปุ่มสองตัวอยู่แถวเดียวกันด้านล่าง วินิจฉัยกินที่เหลือทั้งหมด ลบเป็นสี่เหลี่ยม
+   บังคับขึ้นบรรทัดใหม่ด้วยตัวคั่นความกว้างศูนย์ ไม่ใช่ให้ปุ่มกินเต็มแถวเอง */
+.gcar::after{content:"";flex-basis:100%;height:0;order:2.5}
+.gcar>.btn.primary{flex:1 1 auto!important;justify-content:center;order:3}
+.gcar>.btn.danger{flex:0 0 46px!important;justify-content:center;
+  padding:8px!important;order:4}
+
+/* ══════════ 5. ปุ่มและช่องกรอก — แตะง่ายขึ้น ══════════ */
+.btn{min-height:44px;padding:11px 16px!important;font-size:14px!important}
+.btn.primary{font-weight:700}
+.input,.odo-i,.pm-fl input{min-height:46px;font-size:16px!important}
+/* 16px คือขนาดต่ำสุดที่ iOS ไม่ซูมหน้าจอเข้าอัตโนมัติตอนแตะช่องกรอก */
+
+/* ══════════ 6. แถวรายการ ══════════ */
+.lt-row,.set-row,.wrow,.spw-row,.tl-row{
+  padding:12px 13px!important;min-height:48px;border-radius:13px!important}
+.lt-t,.set-row b{font-size:14px!important}
+
+/* ══════════ 7. ตารางสถิติสองคอลัมน์ ══════════ */
+.grid2,.stat-grid{gap:9px!important}
+
+/* ══════════ 8. แผงเต็มจอต่าง ๆ ══════════ */
+.odo-box,.pn-box{padding:20px!important;border-radius:22px!important}
+.pl-menu{max-width:calc(100vw - 20px)!important}
+/* แผงเครื่องมือกับแผนที่กินเต็มจอ จึงต้องเว้นแถบล่างเองไม่ได้ — ทับได้เลย */
+.main.lg-host,.pm-ov{z-index:200}
+
+}
+
+/* ══════════ จอเล็กมาก ══════════ */
+@media(max-width:380px){
+  .nav-links a span,.btn-signin span{font-size:9.5px!important}
+  .nav-links a .ti,.btn-signin .ti{font-size:20px!important}
+  .section-title,.sp-h1{font-size:21px!important}
+  .card,.lite,.lg-card,.sp-card{padding:13px!important}
+  .hfree,#v-home>.scroll,.view>.scroll{padding-left:11px!important;padding-right:11px!important}
+}
+
+/* ══════════ แนวนอน ══════════
+   จอเตี้ยมาก แถบล่างกินที่มากเกินไป ย่อลงและซ่อนข้อความ */
+@media(max-width:900px) and (max-height:460px) and (orientation:landscape){
+  .nav-links a,.btn-signin{min-height:42px!important;padding:5px 2px!important}
+  .nav-links a span,.btn-signin span{display:none!important}
+  .view>.scroll,#v-home>.scroll,.hfree{
+    padding-bottom:calc(58px + env(safe-area-inset-bottom))!important}
+}
+</style>
 <style id="vtcss">
 @view-transition{navigation:auto}
 #navInd{view-transition-name:navind}

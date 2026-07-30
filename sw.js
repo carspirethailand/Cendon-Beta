@@ -4,7 +4,7 @@
    หน้าเว็บเป็นไฟล์เดียวที่เปลี่ยนบ่อย จึงใช้ network-first เสมอ
    ไม่งั้นผู้ใช้จะติดอยู่กับเวอร์ชันเก่าโดยไม่รู้ตัว
    ══════════════════════════════════════════════════════════════════ */
-const CACHE = 'spireone-v12';
+const CACHE = 'spireone-v14';
 /* แต่ละหน้าเป็นไฟล์เดี่ยวที่สมบูรณ์ในตัว โหลดล่วงหน้าไว้ทั้งชุด
    การเปิด URL ของหน้าไหนตรง ๆ จึงไม่ต้องรอเน็ต */
 const SHELL = ['./', './index.html', './garage.html', './news.html',
@@ -68,9 +68,18 @@ self.addEventListener('notificationclick', (e) => {
   e.waitUntil((async () => {
     const all = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     // มีแท็บเปิดอยู่แล้วให้โฟกัสแท็บนั้น ไม่ต้องเปิดใหม่ซ้อน
+    // แต่ต้องพาไปหน้าปลายทางด้วย — การเตือนบำรุงรักษาชี้ไปที่รถคันหนึ่งโดยเฉพาะ
+    // (/garage.html?car=..&due=..) ถ้าแค่โฟกัสเฉย ๆ ผู้ใช้จะเห็นหน้าเดิมที่ค้างอยู่
+    // แล้วงงว่ากดแจ้งเตือนไปทำไม
+    const abs = new URL(target, self.location.origin).href;
     for (const c of all) {
-      if (c.url.includes(self.location.origin)) { await c.focus(); return; }
+      if (!c.url.startsWith(self.location.origin)) continue;
+      await c.focus();
+      if (c.url !== abs && 'navigate' in c) {
+        try { await c.navigate(abs); } catch (err) { /* ข้ามเอกสารบางกรณีทำไม่ได้ */ }
+      }
+      return;
     }
-    await self.clients.openWindow(target);
+    await self.clients.openWindow(abs);
   })());
 });

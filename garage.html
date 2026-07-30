@@ -3109,6 +3109,38 @@ html[data-level="basic"] .hfree{
   .sk-head{padding:12px 14px}
 }
 </style>
+<style id="odosynccss">
+/* แผงยืนยันเลขไมล์ — เปิดจากการแตะแจ้งเตือนเท่านั้น ไม่เคยเด้งเอง */
+.odo-sheet{position:fixed;inset:0;z-index:200;display:grid;place-items:center;
+  padding:18px;background:rgba(4,7,13,.55);opacity:0;transition:opacity .22s var(--ez,ease)}
+.odo-sheet.on{opacity:1}
+.odo-box{width:100%;max-width:400px;padding:22px;border-radius:24px;
+  background:var(--surface,#15181F);border:1px solid var(--line,rgba(255,255,255,.1));
+  box-shadow:var(--el-3,0 24px 60px -18px rgba(0,0,0,.7));
+  transform:translateY(14px) scale(.97);transition:transform .26s var(--ez,ease)}
+.odo-sheet.on .odo-box{transform:none}
+.odo-h{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.odo-h b{flex:1;font-family:var(--kd);font-size:20px;font-weight:700;color:var(--ink)}
+.odo-x{width:32px;height:32px;flex-shrink:0;border-radius:10px;display:grid;place-items:center;
+  cursor:pointer;font-size:17px;color:var(--muted);background:transparent;
+  border:1px solid var(--line);font-family:inherit}
+.odo-x:hover{color:var(--accent);border-color:var(--accent)}
+.odo-p{font-size:13.5px;line-height:1.55;color:var(--muted);margin-bottom:14px}
+.odo-i{width:100%;padding:14px 16px;border-radius:14px;font-family:var(--kd),inherit;
+  font-size:26px;font-weight:700;text-align:center;letter-spacing:.02em;
+  color:var(--ink);background:var(--bg);border:1px solid var(--line);outline:none;
+  font-variant-numeric:tabular-nums;transition:border-color .15s}
+.odo-i:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(217,115,60,.12)}
+.odo-n{display:block;margin-top:8px;font-size:11.5px;line-height:1.5;
+  text-align:center;color:var(--faint,var(--muted))}
+.odo-acts{display:flex;gap:9px;margin-top:16px}
+.odo-acts .btn{flex:1;justify-content:center}
+.odo-done{width:100%;margin-top:10px;padding:11px;border-radius:13px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  font-family:inherit;font-size:13px;font-weight:600;color:var(--ok,#3E9E6E);
+  background:transparent;border:1px dashed var(--line);transition:.15s}
+.odo-done:hover{border-color:var(--ok,#3E9E6E);background:rgba(62,158,110,.08)}
+</style>
 <style id="depthcss">
 /* ══════════════════════════════════════════════════════════════════
    ความลึกกับการเคลื่อนไหวชุดเดียวของทั้งเว็บ
@@ -3588,7 +3620,7 @@ const ADMINS=["anapatmaliwong@gmail.com","carspirethailand@gmail.com"];
 let auth=null,useFb=false;
 try{firebase.initializeApp(fbConfig);auth=firebase.auth();auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});useFb=true;}catch(e){console.warn("fb",e)}
 let currentUser=LS.get("cachedUser",null),lang=LS.get("lang","th");
-try{window.BACKEND_URL=BACKEND_URL;Object.defineProperty(window,"spireAuth",{configurable:true,get:function(){return auth}});Object.defineProperty(window,"lang",{configurable:true,get:function(){return lang},set:function(v){lang=v}});Object.defineProperty(window,"currentUser",{configurable:true,get:function(){return currentUser},set:function(v){currentUser=v}});}catch(e){}
+try{window.BACKEND_URL=BACKEND_URL;Object.defineProperty(window,"spireAuth",{configurable:true,get:function(){return auth}});Object.defineProperty(window,"lang",{configurable:true,get:function(){return lang},set:function(v){lang=v}});Object.defineProperty(window,"currentUser",{configurable:true,get:function(){return currentUser},set:function(v){currentUser=v}});window.spireAwaitUser=function(ms){return new Promise(function(res){try{if(!auth)return res(null);if(auth.currentUser)return res(auth.currentUser);var done=false;var t=setTimeout(function(){if(done)return;done=true;res(auth.currentUser||null)},ms||8000);var un=auth.onAuthStateChanged(function(u){if(done)return;done=true;clearTimeout(t);try{un&&un()}catch(e){}res(u||null)});}catch(e){res(null)}})};}catch(e){}
 let currentTheme = LS.get("theme", "warm");
 let wireframeOpacity = LS.get("opacity", 0.15);
 
@@ -5820,7 +5852,11 @@ const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>
 
 /* ─────────── คุยกับเซิร์ฟเวอร์ ─────────── */
 async function api(path,opt){
-  const auth=window.spireAuth, u=auth&&auth.currentUser;
+  const auth=window.spireAuth;
+  /* Firebase คืนสถานะล็อกอินแบบ async — ต้องรอรอบแรกให้จบก่อน ไม่งั้นหน้าที่
+     เปิดมาแล้วยิง API ทันทีจะเห็นว่ายังไม่ล็อกอิน ทั้งที่ล็อกอินอยู่ */
+  let u=auth&&auth.currentUser;
+  if(!u&&window.spireAwaitUser)u=await window.spireAwaitUser();
   if(!u)throw new Error(L("ต้องเข้าสู่ระบบก่อน","Please sign in first"));
   const tok=await u.getIdToken();
   const r=await fetch((window.BACKEND_URL||"")+path,Object.assign({
@@ -10121,9 +10157,13 @@ async function fetchItems(refresh){
 }
 async function api(path,body){
   const auth=window.spireAuth;
-  if(!(auth&&auth.currentUser))
-    throw new Error(T("กรุณาเข้าสู่ระบบก่อน","Please sign in first"));
-  const tok=await auth.currentUser.getIdToken();
+  /* Firebase คืนสถานะล็อกอินแบบ async — หน้าที่ยิง API ทันทีที่เปิดจะเห็น
+     currentUser เป็น null ทั้งที่ผู้ใช้ล็อกอินอยู่ ต้องรอรอบแรกให้จบก่อน
+     ไม่งั้นขึ้น "กรุณาเข้าสู่ระบบก่อน" ทั้งที่รูปโปรไฟล์แสดงอยู่บนแถบเมนู */
+  let u=auth&&auth.currentUser;
+  if(!u&&window.spireAwaitUser)u=await window.spireAwaitUser();
+  if(!u)throw new Error(T("กรุณาเข้าสู่ระบบก่อน","Please sign in first"));
+  const tok=await u.getIdToken();
   const r=await fetch(window.BACKEND_URL+path,{method:"POST",
     headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok},
     body:JSON.stringify(body)});
@@ -10647,6 +10687,15 @@ async function runBulk(){
   });
   bulk.entries.sort((a,b)=>String(b.date).localeCompare(String(a.date)));
   bulk.odo=bulk.results.reduce((m,r)=>Math.max(m,r.odometer||0),0);
+  /* นำเข้าใบเก่าทีเดียวหลายใบ = ได้ประวัติเลขไมล์ย้อนหลังทั้งชุด
+     ส่งเข้าเป็นจุดยืนยันทุกใบที่มีทั้งเลขไมล์และวันที่ ระบบจะได้คำนวณ
+     อัตราการขับจริงของคันนี้ได้ทันทีตั้งแต่ครั้งแรก ไม่ต้องรอสะสมเป็นเดือน */
+  try{
+    const c0=car();
+    if(c0&&window.spireOdoAnchor)
+      bulk.results.forEach(r=>{ if(r&&r.odometer>0&&r.docDate)
+        window.spireOdoAnchor(c0,r.odometer,"receipt",r.docDate) });
+  }catch(e){}
   bulk.stage=bulk.entries.length||bulk.results.length?"review":"pick";
   if(!bulk.results.length)bulk.err=T("อ่านไม่ออกสักใบ ลองถ่ายใหม่ให้เห็นทั้งใบและตัวเลขชัด",
     "None could be read — retake them with the whole page in frame");
@@ -10721,6 +10770,13 @@ async function runQuote(){
     const d=await api("/api/quote",{
       image:qImg,mime:qMime,car:carParts(c),done,lang:window.lang||"th"});
     qRes=d; qSaved={odo:false,svc:false};
+    /* ใบเสร็จมีเลขไมล์จริงพิมพ์อยู่ — เก็บเป็นจุดยืนยันทันทีโดยไม่ต้องให้กดอะไร
+       นี่คือจุดยืนยันที่ได้มาฟรีจากสิ่งที่ผู้ใช้ทำอยู่แล้ว ไม่ได้เพิ่มภาระเลย
+       ปุ่ม "บันทึกเลขไมล์" ยังอยู่สำหรับคนที่อยากกดเอง แต่ไม่จำเป็นอีกต่อไป */
+    if(d&&d.odometer>0){
+      try{ window.spireOdoAnchor&&window.spireOdoAnchor(c,d.odometer,"receipt",d.docDate) }catch(e){}
+      qSaved.odo=true;
+    }
   }catch(e){
     qErr=String(e&&e.message||e).slice(0,240)||T("เชื่อมต่อไม่ได้","Connection failed");
   }
@@ -10729,9 +10785,13 @@ async function runQuote(){
 
 async function api(path,body){
   const auth=window.spireAuth;
-  if(!(auth&&auth.currentUser))
-    throw new Error(T("กรุณาเข้าสู่ระบบก่อน","Please sign in first"));
-  const tok=await auth.currentUser.getIdToken();
+  /* Firebase คืนสถานะล็อกอินแบบ async — หน้าที่ยิง API ทันทีที่เปิดจะเห็น
+     currentUser เป็น null ทั้งที่ผู้ใช้ล็อกอินอยู่ ต้องรอรอบแรกให้จบก่อน
+     ไม่งั้นขึ้น "กรุณาเข้าสู่ระบบก่อน" ทั้งที่รูปโปรไฟล์แสดงอยู่บนแถบเมนู */
+  let u=auth&&auth.currentUser;
+  if(!u&&window.spireAwaitUser)u=await window.spireAwaitUser();
+  if(!u)throw new Error(T("กรุณาเข้าสู่ระบบก่อน","Please sign in first"));
+  const tok=await u.getIdToken();
   const r=await fetch(window.BACKEND_URL+path,{method:"POST",
     headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok},
     body:JSON.stringify(body)});
@@ -12602,6 +12662,230 @@ function boot(){
 if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",boot); else boot();
 setTimeout(boot,700);
 setInterval(()=>{ mountEntry(); addRenewToggle(); renewWidget(true); renderNext() },5000);
+})();
+</script>
+<script id="odosyncjs">
+/* ══════════════════════════════════════════════════════════════════
+   ODO SYNC — สะพานระหว่างตัวประเมินในเครื่องกับเซิร์ฟเวอร์
+
+   เดิม SpireODO คำนวณเลขไมล์อยู่ในเครื่องล้วน ๆ ซึ่งมีข้อจำกัดที่แก้ไม่ได้
+   ด้วยโค้ดฝั่งหน้าเว็บ: เลขขยับเฉพาะตอนเปิดแอป และแจ้งเตือนตอนแอปปิดไม่ได้
+   ไฟล์นี้ส่งจุดยืนยันขึ้นเซิร์ฟเวอร์ แล้ว Cron ที่ Cloudflare เดินเลขให้ทุกวัน
+   และยิงแจ้งเตือนออกมาเองแม้ผู้ใช้ไม่ได้เปิดแอปเลยทั้งสัปดาห์
+
+   กฎที่ยึดไว้: ห้ามถามผู้ใช้ถ้าไม่จำเป็นจริง ๆ
+   การขอยืนยันเลขไมล์จึงไม่มีการเด้งถามเป็นรอบ ๆ มันแฝงอยู่ในการแจ้งเตือน
+   เรื่องบำรุงรักษาที่เขาจะได้รับอยู่แล้ว — แตะเข้ามาแล้วค่อยเห็นให้แก้ได้
+   ══════════════════════════════════════════════════════════════════ */
+(function(){
+"use strict";
+const D=document,$=id=>D.getElementById(id);
+const T=(th,en)=>(window.spireT?window.spireT(th,en):((window.lang||"th")==="en"?en:th));
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>
+  ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const num=n=>(n==null||isNaN(n))?"—":Math.round(n).toLocaleString("en-US");
+
+const LG=(k,d)=>{try{const v=localStorage.getItem("spire_"+k);return v?JSON.parse(v):d}catch(e){return d}};
+const LS=(k,v)=>{try{localStorage.setItem("spire_"+k,JSON.stringify(v))}catch(e){}};
+
+async function api(path,body){
+  const auth=window.spireAuth;
+  let u=auth&&auth.currentUser;
+  if(!u&&window.spireAwaitUser)u=await window.spireAwaitUser();
+  if(!u)throw new Error("noauth");
+  const tok=await u.getIdToken();
+  const r=await fetch(window.BACKEND_URL+path,{
+    method:body?"POST":"GET",
+    headers:Object.assign({Authorization:"Bearer "+tok},
+      body?{"Content-Type":"application/json"}:{}),
+    body:body?JSON.stringify(body):undefined});
+  let d=null; try{ d=await r.json() }catch(e){}
+  if(!r.ok)throw new Error((d&&d.error)||("Error "+r.status));
+  return d||{};
+}
+
+/* ─────────── คิวส่งออก ───────────
+   จุดยืนยันต้องไม่หายแม้ตอนบันทึกจะออฟไลน์หรือยังไม่ได้ล็อกอิน
+   เก็บใส่คิวในเครื่องก่อน แล้วค่อยส่งเมื่อส่งได้ — ใบเสร็จที่สแกนไปแล้ว
+   มีค่าเกินกว่าจะปล่อยให้หลุดเพราะเน็ตสะดุดวินาทีเดียว */
+const QK="odo_queue";
+const queue=()=>LG(QK,[])||[];
+const setQ=q=>LS(QK,q.slice(-200));
+
+function enqueue(carId,km,source,observedAt){
+  const v=Math.round(Number(km)||0);
+  if(!carId||!v||v<0)return;
+  const q=queue();
+  const sig=carId+"|"+source+"|"+v+"|"+(observedAt||0);
+  if(q.some(x=>x.sig===sig))return;             /* ใบเดิมสแกนซ้ำ ไม่ต้องส่งซ้ำ */
+  q.push({sig,carId,km:v,source,observedAt:observedAt||Date.now()});
+  setQ(q); flush();
+}
+
+let flushing=false;
+async function flush(){
+  if(flushing)return;
+  const q=queue(); if(!q.length)return;
+  flushing=true;
+  try{
+    for(const it of q.slice(0,20)){
+      try{
+        await api("/api/odo/anchor",{carId:it.carId,km:it.km,source:it.source,
+          observedAt:it.observedAt});
+        setQ(queue().filter(x=>x.sig!==it.sig));
+      }catch(e){
+        const m=String(e&&e.message||"");
+        /* ยังไม่ล็อกอินหรือเน็ตล่ม — เก็บไว้ก่อน เดี๋ยวรอบหน้าค่อยส่ง
+           แต่ถ้าเซิร์ฟเวอร์บอกว่าข้อมูลผิดเอง ทิ้งเลย ไม่งั้นค้างในคิวตลอดกาล */
+        if(m==="noauth"||m.indexOf("Error 5")===0||m==="Failed to fetch")break;
+        setQ(queue().filter(x=>x.sig!==it.sig));
+      }
+    }
+  }finally{ flushing=false }
+}
+
+/* ─────────── ทางเข้าที่โมดูลอื่นเรียก ───────────
+   วันที่บนใบเสร็จคือ "เวลาที่เลขนั้นเป็นจริง" ไม่ใช่เวลาที่สแกน
+   ใบเก่าจากปีที่แล้วจึงไปนั่งอยู่ในอดีตถูกที่ ทำให้คำนวณอัตราได้ถูกต้อง */
+window.spireOdoAnchor=function(car,km,source,dateStr){
+  const id=car&&(car.id||car);
+  let at=Date.now();
+  if(dateStr&&/^\d{4}-\d{2}-\d{2}$/.test(dateStr)){
+    const d=Date.parse(dateStr+"T12:00:00Z");
+    if(!isNaN(d))at=Math.min(d,Date.now());
+  }
+  enqueue(id,km,source||"manual",at);
+};
+
+/* ทุกครั้งที่ตัวประเมินในเครื่องรับค่ายืนยัน ให้ขึ้นเซิร์ฟเวอร์ด้วยเสมอ
+   ครอบทีหลังแทนการแก้ odo.js เพื่อให้ของเดิมยังทำงานได้ถ้าเลเยอร์นี้ไม่โหลด */
+(function hook(){
+  const O=window.SpireODO;
+  if(!O||O.__sync){ setTimeout(hook,400); return }
+  const orig=O.confirm;
+  O.confirm=function(c,v,src){
+    try{ window.spireOdoAnchor(c,v,src||"manual") }catch(e){}
+    return orig.apply(this,arguments);
+  };
+  O.__sync=true;
+})();
+
+/* ─────────── ดึงสถานะจากเซิร์ฟเวอร์ ───────────
+   เซิร์ฟเวอร์คือแหล่งความจริง เพราะมันคือตัวที่ตัดสินใจส่งแจ้งเตือน
+   ถ้าหน้าเว็บโชว์เลขคนละอันกับที่ระบบใช้เตือน ผู้ใช้จะไม่เชื่อทั้งสองอัน */
+let state=null,pulling=false;
+window.spireOdoState=()=>state;
+
+async function pull(){
+  if(pulling)return null;
+  pulling=true;
+  try{
+    const d=await api("/api/odo/state");
+    state=d; LS("odo_state_cache",{d,t:Date.now()});
+    paint();
+    return d;
+  }catch(e){
+    if(!state){ const c=LG("odo_state_cache",null);
+      if(c&&Date.now()-c.t<7*864e5){ state=c.d; paint() } }
+    return null;
+  }finally{ pulling=false }
+}
+window.spireOdoRefresh=pull;
+
+function forCar(id){
+  if(!state||!state.cars)return null;
+  return state.cars.find(x=>x.carId===id&&x.known)||null;
+}
+window.spireOdoFor=forCar;
+
+/* ─────────── แสดงผล ───────────
+   เลขไมล์ที่เป็นค่าประมาณต้องดูออกว่าเป็นค่าประมาณ ไม่ใช่ตัวเลขที่วัดมา
+   บอก ± ตรง ๆ ดีกว่าโชว์เลขเป๊ะแล้วผู้ใช้จับได้ทีหลังว่ามันเดา */
+function paint(){
+  D.querySelectorAll("[data-odo-car]").forEach(el=>{
+    const s=forCar(el.getAttribute("data-odo-car"));
+    if(!s)return;
+    el.textContent=num(s.km)+" "+T("กม.","km");
+    el.title=T(`ประมาณ ±${num(s.sigma)} กม. · เรียนรู้ ${s.kmPerDay} กม./วัน`,
+      `Estimated ±${num(s.sigma)} km · learned ${s.kmPerDay} km/day`);
+  });
+}
+
+/* ─────────── แผงยืนยันจากการแจ้งเตือน ───────────
+   เปิดจาก /garage.html?car=..&due=.. เท่านั้น — ไม่เคยเด้งขึ้นเอง
+   ผู้ใช้ที่ไม่เคยกดแจ้งเตือนจะไม่เจอหน้านี้เลยตลอดการใช้งาน */
+function sheet(carId,part){
+  const s=forCar(carId);
+  if($("odoSheet"))return;
+  const g=(window.garage&&window.garage())||[];
+  const c=g.find(x=>x.id===carId)||g[0];
+  const km=s?s.km:(c&&parseInt(c.mileage,10))||0;
+
+  const w=D.createElement("div");
+  w.id="odoSheet"; w.className="odo-sheet";
+  w.innerHTML=`<div class="odo-box">
+    <div class="odo-h">
+      <b>${esc(T("เลขไมล์ตอนนี้","Current mileage"))}</b>
+      <button class="odo-x" id="odoX" aria-label="${esc(T("ปิด","Close"))}">
+        <i class="ti ti-x"></i></button></div>
+    <p class="odo-p">${esc(c?(c.name||""):"")} — ${esc(T(
+      "ระบบประเมินจากอัตราการขับของคุณ ถ้าไม่ตรงแก้ได้เลย แล้วจะแม่นขึ้นทันที",
+      "We estimate this from how you drive. Correct it and everything sharpens up."))}</p>
+    <input class="odo-i" id="odoKm" type="number" inputmode="numeric" value="${km||""}">
+    ${s?`<small class="odo-n">${esc(T(
+      `ประมาณ ±${num(s.sigma)} กม. · ${s.basis==="learned"
+        ? `เรียนรู้จากรถคันนี้ ${s.kmPerDay} กม./วัน`
+        : `ยังใช้ค่าเฉลี่ยทั้งชีวิตรถ ${s.kmPerDay} กม./วัน`}`,
+      `±${num(s.sigma)} km · ${s.basis==="learned"
+        ? `learned from this car at ${s.kmPerDay} km/day`
+        : `still using a lifetime average of ${s.kmPerDay} km/day`}`))}</small>`:""}
+    <div class="odo-acts">
+      <button class="btn" id="odoSkip">${esc(T("ตรงแล้ว","Looks right"))}</button>
+      <button class="btn primary" id="odoSave">${esc(T("บันทึกเลขนี้","Save this"))}</button>
+    </div>
+    ${part?`<button class="odo-done" id="odoDone">
+      <i class="ti ti-check"></i>${esc(T("เพิ่งเปลี่ยนชิ้นนี้ไปแล้ว","I've already done this service"))}
+    </button>`:""}
+  </div>`;
+  D.body.appendChild(w);
+  requestAnimationFrame(()=>w.classList.add("on"));
+
+  const close=()=>{ w.classList.remove("on"); setTimeout(()=>w.remove(),240) };
+  ($("odoX")||{}).onclick=close;
+  ($("odoSkip")||{}).onclick=()=>{
+    /* "ตรงแล้ว" ก็เป็นจุดยืนยันเหมือนกัน — ยืนยันว่าค่าที่ประเมินถูก */
+    if(km)window.spireOdoAnchor(carId,km,"confirm");
+    close(); setTimeout(pull,900);
+  };
+  ($("odoSave")||{}).onclick=()=>{
+    const v=parseInt($("odoKm").value,10);
+    if(v>0)window.spireOdoAnchor(carId,v,"confirm");
+    close(); setTimeout(pull,900);
+  };
+  const dn=$("odoDone");
+  if(dn)dn.onclick=async()=>{
+    const v=parseInt($("odoKm").value,10)||km;
+    if(v>0)window.spireOdoAnchor(carId,v,"confirm");
+    try{ await api("/api/maint/done",{carId,part,km:v}) }catch(e){}
+    close(); setTimeout(pull,900);
+  };
+}
+window.spireOdoSheet=sheet;
+
+/* ─────────── บูต ─────────── */
+async function boot(){
+  flush();
+  const q=new URLSearchParams(location.search);
+  const car=q.get("car"), due=q.get("due");
+  /* ต้องได้สถานะจากเซิร์ฟเวอร์ก่อนเปิดแผง ไม่งั้นช่องเลขไมล์โชว์ค่าเก่าในเครื่อง
+     แล้วผู้ใช้กด "ตรงแล้ว" ทั้งที่มันไม่ตรง กลายเป็นยืนยันข้อมูลผิดเข้าระบบ */
+  await pull();
+  if(car)sheet(car,due||"");
+}
+if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",boot); else boot();
+/* ส่งคิวที่ค้างซ้ำเป็นระยะ เผื่อตอนบูตยังไม่ได้ล็อกอิน */
+setInterval(flush,60000);
+setInterval(pull,15*60000);
 })();
 </script>
 <script id="motionjs">

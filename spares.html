@@ -2467,7 +2467,7 @@ html[data-theme="light"]{
   --ok:#3E9E6E;--danger:#D64A4A;--radius:20px;
   --shadow:0 18px 50px -22px rgba(60,40,15,.30);--shadow-sm:0 6px 20px -10px rgba(60,40,15,.20);
   --wireframe-opacity:.15;--nav-bg:rgba(255,255,255,.86);--nav-link:#6C665A;
-  --gloss:.5;--gloss-card:.65;--edge-sh:rgba(40,34,18,.16);--sk-glow:.14;
+  --gloss:.5;--gloss-card:.65;--edge-sh:rgba(40,34,18,.16);--el-cast:rgba(60,40,15,.34);--sk-glow:.14;
 
   --c-bg0:#F4F1EB;--c-bg1:#FBF9F4;--c-bg2:#FFFFFF;
   --c-aura1:rgba(232,148,60,.10);--c-aura2:rgba(120,150,200,.07);--c-aura3:rgba(200,150,90,.06);
@@ -2490,7 +2490,7 @@ html[data-theme="dark"]{
   --ok:#4BB07C;--danger:#E05A54;--radius:20px;
   --shadow:0 18px 50px -22px rgba(0,0,0,.8);--shadow-sm:0 6px 20px -10px rgba(0,0,0,.5);
   --wireframe-opacity:.18;--nav-bg:rgba(29,29,33,.92);--nav-link:#9B9BA1;
-  --gloss:.13;--gloss-card:.07;--edge-sh:rgba(0,0,0,.5);--sk-glow:.07;
+  --gloss:.13;--gloss-card:.07;--edge-sh:rgba(0,0,0,.5);--el-cast:rgba(0,0,0,.75);--sk-glow:.07;
 
   --c-bg0:#0C0C0F;--c-bg1:#141418;--c-bg2:#1B1B21;
   --c-aura1:rgba(232,132,60,.12);--c-aura2:rgba(120,130,170,.08);--c-aura3:rgba(200,120,70,.07);
@@ -2513,7 +2513,7 @@ html[data-theme="ocean"]{
   --ok:#3FD6A8;--danger:#E0684F;--radius:20px;
   --shadow:0 18px 50px -22px rgba(0,10,25,.75);--shadow-sm:0 6px 20px -10px rgba(0,10,25,.5);
   --wireframe-opacity:.2;--nav-bg:rgba(19,32,47,.92);--nav-link:#8FA6BE;
-  --gloss:.14;--gloss-card:.08;--edge-sh:rgba(0,8,20,.5);--sk-glow:.08;
+  --gloss:.14;--gloss-card:.08;--edge-sh:rgba(0,8,20,.5);--el-cast:rgba(0,10,25,.7);--sk-glow:.08;
 
   --c-bg0:#050E18;--c-bg1:#0A1A28;--c-bg2:#0E2234;
   --c-aura1:rgba(63,214,195,.12);--c-aura2:rgba(47,143,214,.13);--c-aura3:rgba(90,160,220,.08);
@@ -2536,7 +2536,7 @@ html[data-theme="plant"]{
   --ok:#3E9E6E;--danger:#D64A4A;--radius:20px;
   --shadow:0 18px 50px -22px rgba(27,59,46,.24);--shadow-sm:0 6px 20px -10px rgba(27,59,46,.14);
   --wireframe-opacity:.15;--nav-bg:rgba(255,255,255,.86);--nav-link:#4E7062;
-  --gloss:.5;--gloss-card:.65;--edge-sh:rgba(27,59,46,.16);--sk-glow:.14;
+  --gloss:.5;--gloss-card:.65;--edge-sh:rgba(27,59,46,.16);--el-cast:rgba(27,59,46,.28);--sk-glow:.14;
 
   --c-bg0:#0A1A13;--c-bg1:#10281D;--c-bg2:#143324;
   --c-aura1:rgba(143,227,136,.12);--c-aura2:rgba(62,158,110,.13);--c-aura3:rgba(110,190,140,.08);
@@ -2559,7 +2559,7 @@ html[data-theme="magma"]{
   --ok:#5BC28C;--danger:#F04A4A;--radius:20px;
   --shadow:0 18px 50px -22px rgba(30,0,5,.8);--shadow-sm:0 6px 20px -10px rgba(30,0,5,.55);
   --wireframe-opacity:.2;--nav-bg:rgba(33,19,22,.92);--nav-link:#B08E8A;
-  --gloss:.14;--gloss-card:.08;--edge-sh:rgba(20,0,4,.55);--sk-glow:.08;
+  --gloss:.14;--gloss-card:.08;--edge-sh:rgba(20,0,4,.55);--el-cast:rgba(30,0,5,.72);--sk-glow:.08;
 
   --c-bg0:#0D0507;--c-bg1:#190A0E;--c-bg2:#231015;
   --c-aura1:rgba(240,144,60,.14);--c-aura2:rgba(217,60,94,.12);--c-aura3:rgba(200,80,60,.08);
@@ -3107,6 +3107,164 @@ html[data-level="basic"] .hfree{
   .sk-grid{grid-template-columns:1fr}
   .sk-wrap{padding:16px 14px 80px}
   .sk-head{padding:12px 14px}
+}
+</style>
+<style id="depthcss">
+/* ══════════════════════════════════════════════════════════════════
+   ความลึกกับการเคลื่อนไหวชุดเดียวของทั้งเว็บ
+
+   ต้นแบบคือการ์ดในแดชบอร์ดกับการาจ ซึ่งเป็นสามชั้นซ้อนกัน:
+     1. inset ขอบบนสีขาว — แสงตกกระทบขอบด้านบน ทำให้ผิวดูนูน
+     2. เงาสัมผัส 1-2px — บอกว่าวัตถุวางอยู่บนพื้น ไม่ได้ลอย
+     3. เงาทอด -12 ถึง -20px — ระยะห่างจากพื้นจริง ๆ
+   ของที่ทำทีหลังใส่แค่ box-shadow ชั้นเดียว เลยดูแบนกว่าเพื่อน
+   ไฟล์นี้เก็บสูตรไว้เป็นตัวแปร แล้วแจกให้ทุกเลเยอร์ใช้ร่วมกัน
+
+   ต้องโหลดเป็นชั้นสุดท้าย เพราะทับค่าที่แต่ละเลเยอร์ตั้งไว้เอง
+   ══════════════════════════════════════════════════════════════════ */
+
+:root{
+  /* ── ความลึกสามขั้น ──
+     ขั้น 1 แถวในรายการ · ขั้น 2 การ์ด · ขั้น 3 ของที่ลอยอยู่จริง */
+  --el-1:inset 0 1px 0 rgba(255,255,255,var(--gloss-card,.1)),
+         0 1px 2px var(--edge-sh,rgba(0,0,0,.3)),
+         0 6px 16px -12px var(--el-cast,rgba(20,15,5,.5));
+  --el-2:inset 0 1px 0 rgba(255,255,255,var(--gloss-card,.1)),
+         0 1px 2px var(--edge-sh,rgba(0,0,0,.3)),
+         0 12px 30px -16px var(--el-cast,rgba(20,15,5,.5));
+  --el-3:inset 0 1px 0 rgba(255,255,255,var(--gloss-card,.1)),
+         0 1px 2px var(--edge-sh,rgba(0,0,0,.3)),
+         0 24px 52px -20px var(--el-cast,rgba(20,15,5,.5));
+  /* ปุ่มมีเหลี่ยมล่างด้วย ทำให้ดูกดลงไปได้จริง ไม่ใช่แค่แผ่นสี่เหลี่ยม */
+  --el-btn:inset 0 1px 0 rgba(255,255,255,var(--gloss,.14)),
+           inset 0 -1px 0 rgba(0,0,0,.07),
+           0 1px 2px var(--edge-sh,rgba(0,0,0,.3)),
+           0 4px 10px -5px var(--el-cast,rgba(20,15,5,.5));
+  --el-btn-hi:inset 0 1px 0 rgba(255,255,255,var(--gloss,.14)),
+              inset 0 -1px 0 rgba(0,0,0,.07),
+              0 1px 2px var(--edge-sh,rgba(0,0,0,.3)),
+              0 10px 22px -8px var(--el-cast,rgba(20,15,5,.5));
+  /* กดแล้วเงายุบ เหลือแค่เงาสัมผัส เหมือนของถูกกดติดพื้น */
+  --el-press:inset 0 1px 3px rgba(0,0,0,.18),
+             0 1px 1px var(--edge-sh,rgba(0,0,0,.3));
+
+  /* ── จังหวะ ──
+     ease-out แบบหน่วงท้ายยาว ทำให้ของดูมีน้ำหนัก ไม่ใช่ดีดกลับทันที */
+  --ez:cubic-bezier(.22,1,.36,1);
+  --ez-soft:cubic-bezier(.4,.14,.3,1);
+  --t1:.15s;--t2:.26s;--t3:.42s;
+}
+
+/* ══════════════ การ์ด ══════════════ */
+.lg-card,.sp-card,.sk-card,.su-card,.hf-card,.lite,.wcard,.kcard,
+.bpanel,.set-card,.ccard,.lg-host .card,.chk-card,.od-card,.cl-card{
+  box-shadow:var(--el-2);
+  transition:box-shadow var(--t2) var(--ez),transform var(--t2) var(--ez),
+             border-color var(--t1) var(--ez)}
+
+/* การ์ดที่กดได้ต้องขยับตอนชี้ ส่วนการ์ดที่เป็นแค่กล่องข้อความอยู่นิ่ง ๆ
+   ไม่งั้นทั้งหน้าขยับตามเมาส์จนดูวุ่น */
+.hf-card:hover,.sp-card:hover,.sk-card:hover,.wcard:hover,.kcard:hover,
+button.lg-card:hover,a.lg-card:hover,.cl-card:hover{
+  box-shadow:var(--el-3);transform:translateY(-3px)}
+.hf-card:active,.sp-card:active,.sk-card:active,.wcard:active,.kcard:active,
+button.lg-card:active,.cl-card:active{
+  transform:translateY(-1px) scale(.994);box-shadow:var(--el-1);
+  transition-duration:var(--t1)}
+
+/* ══════════════ แถวในรายการ ══════════════ */
+.lt-row,.lg-item,.set-row,.sk-slugrow,.brow,.wrow,.tl-row,.dim-row,
+.spw-row,.lp-row,.plan-row,.gsum-row,.tile{
+  box-shadow:var(--el-1);
+  transition:box-shadow var(--t2) var(--ez),transform var(--t2) var(--ez),
+             border-color var(--t1) var(--ez)}
+.lt-row:hover,.set-row:hover,.wrow:hover,.tl-row:hover,.spw-row:hover,
+.lp-row:hover,.plan-row:hover,.gsum-row:hover,.tile:hover{
+  box-shadow:var(--el-2);transform:translateY(-2px)}
+.lt-row:active,.set-row:active,.wrow:active,.tl-row:active,.tile:active{
+  transform:none;box-shadow:var(--el-press);transition-duration:var(--t1)}
+
+/* ══════════════ ปุ่ม ══════════════ */
+.btn,.bbtn,.wbtn,.sk-btn,.set-btn,.act-btn,.gsum-btn,.lg-x,.sk-new,
+.lv-pick button,.hist-new,.side-new{
+  box-shadow:var(--el-btn);
+  transition:box-shadow var(--t2) var(--ez),transform var(--t2) var(--ez),
+             border-color var(--t1) var(--ez),color var(--t1) var(--ez)}
+.btn:hover,.bbtn:hover,.wbtn:hover,.sk-btn:hover,.set-btn:hover,.act-btn:hover,
+.gsum-btn:hover,.lg-x:hover,.sk-new:hover,.lv-pick button:hover,
+.hist-new:hover,.side-new:hover{
+  box-shadow:var(--el-btn-hi);transform:translateY(-2px)}
+.btn:active,.bbtn:active,.wbtn:active,.sk-btn:active,.set-btn:active,
+.act-btn:active,.gsum-btn:active,.lg-x:active,.sk-new:active,
+.lv-pick button:active,.hist-new:active,.side-new:active{
+  transform:translateY(1px);box-shadow:var(--el-press);
+  transition-duration:.08s}
+/* ปุ่มหลักมีสีของตัวเอง เงาจึงต้องเป็นสีเดียวกับปุ่ม ไม่ใช่สีดำกลาง ๆ */
+.btn.primary,.sk-new,.side-new{
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),
+             0 10px 24px -10px rgba(217,94,60,.6)}
+.btn.primary:hover,.sk-new:hover,.side-new:hover{
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),
+             0 16px 30px -10px rgba(217,94,60,.7)}
+
+/* ══════════════ ชิป ══════════════ */
+.sp-chip,.sk-chip,.cl-chip,.bw-chip,.pill,.pill-tag,.lg-tab,.set-tab,.sk-tab{
+  transition:box-shadow var(--t2) var(--ez),transform var(--t2) var(--ez),
+             background var(--t1) var(--ez),color var(--t1) var(--ez)}
+.sp-chip:hover,.cl-chip:hover,.pill:hover,.lg-tab:hover,.set-tab:hover,
+.sk-tab:hover{transform:translateY(-1px)}
+.lg-tab.on,.set-tab.on,.sk-tab.on{
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.2),
+             0 6px 14px -6px rgba(217,94,60,.55)}
+
+/* ══════════════ ของที่ลอยจริง ══════════════ */
+.pl-menu,.sheet,.modal,.su-wrap>.su-card,.cd-panel{box-shadow:var(--el-3)}
+
+/* ══════════════════════════════════════════════════════════════════
+   การเข้าฉาก — ของโผล่มาแล้วลอยขึ้นเล็กน้อยพร้อมจาง ๆ เข้ามา
+   ไม่ใช่ปรากฏตัวทันทีแบบตัดฉับ ซึ่งเป็นสาเหตุที่หน้าดูแข็ง
+   motion.js เป็นคนติดคลาส .is-in ให้ตอนของเลื่อนเข้ามาในจอ
+   ══════════════════════════════════════════════════════════════════ */
+@keyframes spRise{
+  from{opacity:0;transform:translateY(14px) scale(.985)}
+  to{opacity:1;transform:none}
+}
+@keyframes spFade{ from{opacity:0} to{opacity:1} }
+
+/* ตั้งต้นซ่อนไว้เฉพาะตัวที่ motion.js รับปากว่าจะปลุกให้ ถ้าสคริปต์ไม่ทำงาน
+   ของจะยังอยู่ครบเพราะคลาสนี้ถูกติดโดยสคริปต์เท่านั้น ไม่ได้ตั้งไว้ใน CSS */
+.sp-anim{opacity:0}
+/* opacity:1 ประกาศไว้ตรง ๆ ไม่ฝากไว้กับ keyframe อย่างเดียว
+   เพราะบางหน้ามีแอนิเมชันเข้าฉากของตัวเองอยู่ก่อน (เช่น riseUp ในหน้าโปรไฟล์)
+   ที่ใช้ fill:backwards แล้วไม่เคยได้เริ่มจริง การ์ดจึงค้างที่ opacity 0 ถาวร
+   ถ้าอันไหนชนะกฎนี้ก็ยังไม่เป็นไร เพราะบรรทัดนี้การันตีว่าของต้องมองเห็น */
+.sp-anim.is-in{opacity:1!important;
+  animation:spRise var(--t3) var(--ez) both;
+  animation-delay:var(--sp-d,0ms)}
+
+/* หัวเรื่องกับข้อความไม่ต้องลอย แค่จางเข้ามาก็พอ ลอยเยอะแล้วอ่านยาก */
+.sp-anim.sp-fade.is-in{animation-name:spFade}
+
+/* ══════════════ ส่วนที่เหลือให้นุ่มขึ้น ══════════════ */
+/* ของที่เปลี่ยนสถานะบ่อยแต่ไม่เคยมี transition เลย — เปลี่ยนแบบตัดฉับ
+   คือสิ่งที่ทำให้เว็บรู้สึกแข็ง แม้จะบอกไม่ถูกว่าอะไรผิด */
+.badge,.lt-badge,.lt-ic,.hf-ic,.sk-ic,.pl-it>i,.w-ic,.w-send{
+  transition:transform var(--t2) var(--ez),background var(--t2) var(--ez),
+             color var(--t2) var(--ez),box-shadow var(--t2) var(--ez)}
+.w-ic:hover,.w-send:not(:disabled):hover{transform:translateY(-1px) scale(1.06)}
+.w-ic:active,.w-send:not(:disabled):active{transform:scale(.94)}
+.hf-card:hover .hf-ic,.sk-card:hover .sk-ic{transform:scale(1.08) rotate(-3deg)}
+.lt-row:hover .lt-ic{transform:scale(1.1)}
+
+/* ══════════════ เคารพการตั้งค่าของผู้ใช้ ══════════════ */
+@media(prefers-reduced-motion:reduce){
+  .sp-anim{opacity:1}
+  .sp-anim.is-in{animation:none}
+  *,*::before,*::after{
+    animation-duration:.01ms!important;animation-iteration-count:1!important;
+    transition-duration:.01ms!important;scroll-behavior:auto!important}
+  .hf-card:hover,.sp-card:hover,.sk-card:hover,.wcard:hover,.kcard:hover,
+  .lt-row:hover,.set-row:hover,.btn:hover,.tile:hover{transform:none}
 }
 </style>
 <style id="vtcss">
@@ -12396,6 +12554,94 @@ function boot(){
 if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",boot); else boot();
 setTimeout(boot,700);
 setInterval(()=>{ mountEntry(); addRenewToggle(); renewWidget(true); renderNext() },5000);
+})();
+</script>
+<script id="motionjs">
+/* ══════════════════════════════════════════════════════════════════
+   ตัวปลุกแอนิเมชันเข้าฉาก
+
+   หน้าที่เดียว: ของชิ้นไหนเลื่อนเข้ามาในจอ ให้ติดคลาส .is-in
+   แล้ว depth.css จัดการท่าเข้าฉากเอง JS ไม่ยุ่งกับสไตล์เลย
+
+   ทำไมต้องมี JS: เนื้อหาเกือบทั้งเว็บถูกวาดด้วย innerHTML หลังโหลด
+   CSS อย่างเดียวจึงจับจังหวะ "เพิ่งโผล่มา" ไม่ได้ ต้องมี MutationObserver
+   คอยดู แล้วส่งต่อให้ IntersectionObserver ตัดสินว่าเห็นหรือยัง
+
+   ระวังสองอย่าง:
+     • ของที่อยู่ในจอตั้งแต่แรกต้องเข้าฉากไล่กันเป็นลำดับ ไม่ใช่พรึบเดียว
+     • ของที่วาดใหม่ระหว่างใช้งาน (กดแท็บ กดค้นหา) ต้องไม่หน่วง
+       ไม่งั้นกดแล้วรู้สึกช้า — ตัวที่มาทีหลังจึงหน่วงสั้นกว่ามาก
+   ══════════════════════════════════════════════════════════════════ */
+(function(){
+"use strict";
+const D=document;
+if(!("IntersectionObserver" in window)||!("MutationObserver" in window))return;
+try{ if(matchMedia("(prefers-reduced-motion:reduce)").matches)return }catch(e){}
+
+/* ของที่ควรเข้าฉาก — เลือกเฉพาะก้อนที่มีขอบเขตชัด
+   ไม่เอาข้อความลอย ๆ เพราะจะกลายเป็นทั้งหน้ากะพริบ */
+const SEL=[".lg-card",".sp-card",".sk-card",".su-card",".hf-card",".lite",
+  ".wcard",".kcard",".bpanel",".set-card",".ccard",".widget",".gcard",
+  ".lt-row",".lg-item",".set-row",".brow",".wrow",".tl-row",".spw-row",
+  ".plan-row",".gsum-row",".tile",".mag-card",".news-card"].join(",");
+
+const MAX_STAGGER=6;       /* หน่วงไล่กันแค่หกชิ้นแรกของแต่ละกลุ่ม */
+const STEP=45;             /* มิลลิวินาทีต่อชิ้น */
+let firstPaint=true;
+
+const io=new IntersectionObserver(es=>{
+  /* เรียงตามตำแหน่งบนจอก่อน ไม่งั้นลำดับไล่จะสุ่มตามที่ observer คืนมา
+     แล้วตาจะจับได้ว่ามันไม่เป็นระเบียบ ทั้งที่บอกไม่ถูกว่าอะไรผิด */
+  const on=es.filter(e=>e.isIntersecting)
+    .sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top);
+  on.forEach((e,i)=>{
+    const el=e.target;
+    io.unobserve(el);
+    el.style.setProperty("--sp-d",Math.min(i,MAX_STAGGER)*(firstPaint?STEP:18)+"ms");
+    el.classList.add("is-in");
+  });
+  if(on.length)firstPaint=false;
+},{rootMargin:"0px 0px -6% 0px",threshold:.01});
+
+function arm(root){
+  let list;
+  try{ list=(root.matches&&root.matches(SEL))?[root]:root.querySelectorAll(SEL) }
+  catch(e){ return }
+  for(const el of list){
+    if(el.__sp)continue;
+    /* ของที่ซ่อนอยู่ (อยู่ในแท็บที่ยังไม่เปิด) ยังไม่ต้องจับ ค่อยว่ากันตอนโผล่ */
+    el.__sp=true;
+    el.classList.add("sp-anim");
+    io.observe(el);
+  }
+}
+
+/* กันไว้ชั้นสุดท้าย: ถ้าด้วยเหตุใดก็ตาม observer ไม่เคยยิงให้ชิ้นไหน
+   (อยู่ในกล่องที่ overflow ซ้อนกันหลายชั้น หรือถูกย้ายที่ระหว่างทาง)
+   ของชิ้นนั้นจะจางหายไปถาวร ซึ่งแย่กว่าไม่มีแอนิเมชันเลยมาก
+   จึงกวาดบังคับให้โผล่ถี่ ๆ */
+setInterval(()=>{
+  D.querySelectorAll(".sp-anim:not(.is-in)").forEach(el=>{
+    const r=el.getBoundingClientRect();
+    if(r.width===0&&r.height===0)return;          /* ยังซ่อนอยู่จริง ปล่อยไว้ */
+    if(r.top<innerHeight&&r.bottom>0){ io.unobserve(el); el.classList.add("is-in") }
+  });
+},900);
+
+const mo=new MutationObserver(ms=>{
+  for(const m of ms)
+    for(const n of m.addedNodes)
+      if(n.nodeType===1)arm(n);
+});
+
+function start(){
+  arm(D.body);
+  mo.observe(D.body,{childList:true,subtree:true});
+  /* เนื้อหาชุดแรกมาช้ากว่า DOMContentLoaded เกือบทั้งหมด กวาดซ้ำอีกรอบ */
+  setTimeout(()=>{firstPaint=true;arm(D.body)},600);
+  setTimeout(()=>arm(D.body),1600);
+}
+if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",start); else start();
 })();
 </script>
 <script>

@@ -2625,16 +2625,16 @@ html[data-gate="1"]{overflow:hidden}
 html[data-level="basic"] #hstack{display:none}
 html[data-level="basic"] #cpRoom,
 html[data-level="basic"] #cpVeil{display:none!important}
-html[data-level="basic"] .hfree{padding-top:18px}
-/* ห้องนักบินตั้ง padding ของแถบเลื่อนเป็น 0 เพราะมันจัดระยะเอง
-   พอไม่มีห้องนักบินต้องคืนระยะเดิม ไม่งั้นหัวเรื่องไปซ้อนใต้แถบเมนู */
-/* ห้องนักบินยังทำให้แถบเมนูลอยทับเนื้อหา (position:fixed) เนื้อหาจึงต้องเว้น
-   ที่ให้เท่าความสูงของแถบ ไม่ใช่แค่ระยะขอบปกติ 18px */
-html[data-level="basic"] #v-home>.scroll{padding:92px 22px 110px}
+/* แถบเมนูลอยทับเนื้อหา (position:fixed) เนื้อหาจึงต้องเว้นที่ให้เท่าความสูง
+   ของแถบ ไม่ใช่ระยะขอบปกติ — เคยตั้งไว้ 18px แล้วหัวเรื่องมุดใต้แถบเมนู
+   จนเลื่อนขึ้นไปดูไม่ได้ อาการโผล่เฉพาะตอนสลับระดับลงมาจากระดับที่มี
+   ห้องนักบิน เพราะ .hfree ถูกสร้างไว้แล้วจากรอบก่อน
+   ระยะเว้นบนกับความกว้าง 920 มาจาก .hfree ทั้งคู่ ไม่ต้องแก้ที่ .scroll อีก */
+html[data-level="basic"] .hfree{
+  padding-top:calc(96px + env(safe-area-inset-top));
+  padding-bottom:110px}
 @media(max-width:640px){
-  html[data-level="basic"] .hfree{padding-top:calc(96px + env(safe-area-inset-top))}
-  html[data-level="basic"] #v-home>.scroll{
-    padding:calc(92px + env(safe-area-inset-top)) 14px 120px}
+  html[data-level="basic"] .hfree{padding-left:14px;padding-right:14px}
 }
 
 /* ══ การ์ดนำของหน้าแรกตอนไม่มีห้องนักบิน ══
@@ -9568,9 +9568,24 @@ function liteCard(){
     </div>
   </section>`;
 }
+/* ห่อเนื้อหาแดชบอร์ดด้วย .hfree เสมอ ไม่ว่าจะมีห้องนักบินหรือไม่
+   เพราะความกว้าง 920 และระยะเว้นใต้แถบเมนูลอยอยู่ในคลาสนั้น
+   เคยปล่อยให้ลูกของ .scroll ลอยเปล่า ๆ ตอนระดับพื้นฐาน แล้วเจอสองอาการ:
+   การ์ดกว้างเต็มจอ และหัวเรื่องมุดใต้แถบเมนูจนเลื่อนขึ้นไปดูไม่ได้ */
+function ensureFree(){
+  const view=$("v-home"); if(!view)return null;
+  const s=view.querySelector(".scroll"); if(!s)return null;
+  let free=$("hfree");
+  if(!free){
+    free=D.createElement("div"); free.className="hfree"; free.id="hfree";
+    while(s.firstChild)free.appendChild(s.firstChild);
+    s.appendChild(free);
+  }
+  return free;
+}
+
 function mountLite(){
-  const view=$("v-home"); if(!view)return;
-  const sc=view.querySelector(".scroll"); if(!sc)return;
+  const sc=ensureFree(); if(!sc)return;
   let box=$("hlite");
   if(!box){
     box=D.createElement("div"); box.id="hlite";
@@ -9636,8 +9651,7 @@ function heroCards(){
   </section>`;
 }
 function mountHero(){
-  const host=$("hfree")||(($("v-home")||{}).querySelector?$("v-home").querySelector(".scroll"):null);
-  if(!host)return;
+  const host=ensureFree(); if(!host)return;
   let box=$("hhero");
   if(!box){
     box=D.createElement("div"); box.id="hhero";
@@ -9657,17 +9671,12 @@ function mountHero(){
 }
 
 function build(){
-  if(!levelOK()){ mountLite(); mountHero(); return }
+  if(!levelOK()){ ensureFree(); mountLite(); mountHero(); return }
   unmountLite();
   const view=$("v-home"); if(!view)return;
   sc=view.querySelector(".scroll"); if(!sc)return;
   if(!$("hstack")){
-    let free=$("hfree");
-    if(!free){
-      free=D.createElement("div"); free.className="hfree"; free.id="hfree";
-      while(sc.firstChild)free.appendChild(sc.firstChild);
-      sc.appendChild(free);
-    }
+    const free=ensureFree(); if(!free)return;
     const stack=D.createElement("div"); stack.id="hstack";
     stack.innerHTML=shell();
     sc.insertBefore(stack,free);

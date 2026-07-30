@@ -3623,6 +3623,88 @@ html[data-theme="light"] .card .card,html[data-theme="light"] .lite .lt-row,
 html[data-theme="light"] .card .lt-badge,html[data-theme="light"] .card .stat{
   background:rgba(20,16,8,.04)!important}
 
+/* ══════════════════════════════════════════════════════════════
+   การ์ดรถ — ย่อให้เท่าวิดเจ็ตบนหน้าโฮมของมือถือ
+   ══════════════════════════════════════════════════════════════
+   ของเดิมสูง 417px และทั้งหน้าห้องนักบิน 952px บนจอสูง 844px
+   แปลว่าการ์ดใบเดียวกินเกินครึ่งจอเพื่อบอกข้อมูล 5 อย่าง
+   วิดเจ็ตบนหน้าโฮมของมือถือทำได้ใน ~200px และบอกได้พอ ๆ กัน
+
+   ตัดสิ่งที่ซ้ำและสิ่งที่ไม่ใช่คำตอบของ "รถฉันโอเคไหม":
+     • วงแหวนใหญ่ — บอกเลข overdue ซึ่งซ้ำกับ dial ที่อยู่ข้างล่างอยู่แล้ว
+       ย้ายไปเป็นชิปเล็กข้างชื่อรถแทน เห็นพร้อมกันในบรรทัดเดียว
+     • ป้าย VEHICLE / STATUS — ผู้ใช้เห็นชื่อรถก็รู้แล้วว่าการ์ดนี้เรื่องอะไร
+     • ค่าใช้จ่าย/กม. — เป็น "—" จนกว่าจะมีข้อมูลพอ ซ่อนไว้จนกว่าจะมีค่าจริง
+   เหลือสองไทล์ที่ตอบคำถามจริง: อีกกี่กิโลถึงกำหนด กับ ตรวจครั้งล่าสุดเมื่อไร */
+
+.scr-grid{
+  display:flex!important;flex-direction:column;
+  gap:var(--sp-3)!important;padding:0!important}
+.scr-col{
+  padding:0!important;border:none!important;
+  border-top:0!important;border-left:0!important;background:none!important}
+
+/* ป้ายหมวดในการ์ดไม่ต้องมี — ชื่อรถบอกตัวเองอยู่แล้ว */
+.scr-col .hud-eye{display:none!important}
+
+/* ชื่อรถ + ชิปสถานะบรรทัดเดียว */
+.scr-car{
+  font-size:var(--t-lg)!important;line-height:1.3!important;
+  font-weight:700;margin:0!important;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.scr-meta{font-size:var(--t-xs)!important;line-height:1.5!important;
+  margin:2px 0 0!important;opacity:.7}
+
+/* วงแหวนใหญ่ออกไป — ข้อมูลเดียวกันไปอยู่ในไทล์ด้านล่างแล้ว */
+.gring{display:none!important}
+
+/* สวิตช์รถเป็นชิปเล็ก เลื่อนแนวนอนได้ถ้ามีหลายคัน */
+.cswitch{
+  display:flex!important;gap:var(--sp-2)!important;
+  margin:var(--sp-3) 0 0!important;
+  overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.cswitch::-webkit-scrollbar{display:none}
+.cswitch button{
+  flex:0 0 auto;padding:6px var(--sp-3)!important;
+  font-size:var(--t-xs)!important;border-radius:var(--r-pill)!important;
+  min-height:32px}
+
+/* ไทล์สองช่องเรียงข้างกัน แบบวิดเจ็ต ไม่ใช่สี่ช่องซ้อนสองแถว */
+.dials{
+  display:grid!important;grid-template-columns:1fr 1fr!important;
+  gap:var(--sp-2)!important;margin:0!important}
+.dial{
+  padding:var(--sp-3)!important;border-radius:var(--r-sm)!important;
+  border:none!important;background:rgba(255,255,255,.05)!important;
+  min-height:0!important;display:flex;flex-direction:column;gap:2px}
+html[data-theme="light"] .dial{background:rgba(20,16,8,.05)!important}
+/* ป้ายไทล์: ตัวเล็กแต่ไม่ต่ำกว่า 12px และเลิก ALL CAPS ที่อ่านช้า */
+.dial small{
+  font-size:var(--t-xs)!important;text-transform:none!important;
+  letter-spacing:.01em!important;opacity:.65;order:2;font-weight:500!important}
+.dial b{
+  font-size:22px!important;line-height:1.15!important;order:1;
+  font-variant-numeric:tabular-nums}
+.dial b u{font-size:var(--t-xs)!important;text-decoration:none;
+  margin-left:3px;opacity:.6}
+
+/* ซ่อนสองไทล์ที่ไม่ตอบคำถาม "รถฉันโอเคไหม" บนจอเล็ก
+   ไทล์ที่ 2 คือจำนวนที่เลยกำหนด ซึ่งจะไปโผล่เป็นชิปข้างชื่อรถแทน
+   ไทล์ที่ 3 คือค่าใช้จ่าย/กม. ที่เป็น "—" จนกว่าจะมีข้อมูลพอ */
+.dials .dial:nth-child(2),.dials .dial:nth-child(3){display:none!important}
+
+/* แผนงานซ่อนบนมือถือ — มีการ์ด "งานที่ต้องทำ" อยู่ถัดลงไปอยู่แล้ว
+   โชว์สองที่ในหน้าเดียวคือการเปลืองจอเพื่อข้อมูลชุดเดิม */
+.plan{display:none!important}
+
+/* ห้องนักบินไม่ต้องกินเต็มจอบนมือถือ ให้สูงตามเนื้อหาจริง */
+.hpage[data-hp="cockpit"]{min-height:0!important}
+.cockpit{gap:var(--sp-3)!important;padding:0!important}
+.screen{padding:0!important;border:none!important;background:none!important}
+.scr-page{padding:0!important}
+/* ผนังซ้าย-ขวาของห้องนักบินเป็นของประดับสำหรับจอกว้าง มือถือไม่มีที่ให้ */
+.cockpit>.pane{display:none!important}
+
 /* ══════════════ 5. ตัวเลขเด่น ══════════════ */
 .lt-badge b,.g-stat b,.stat-num{font-size:var(--t-2xl)!important}
 .pn-dist{font-size:var(--t-3xl)!important}
@@ -3688,6 +3770,43 @@ html[data-theme="light"] .card .lt-badge,html[data-theme="light"] .card .stat{
 @media(prefers-reduced-motion:reduce){
   .nav-links a{transition:none}
   .nav-links a:active,.btn-signin:active{transform:none}
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   มือถือ: การ์ดอื่น ๆ ให้สั้นเท่าวิดเจ็ตหน้าโฮม
+   บนจอ 390px รายละเอียดยาว ๆ กลายเป็นข้อความ 4-5 บรรทัดต่อการ์ด
+   หน้าจึงยาวจนต้องเลื่อนหาของ — ตัดเหลือหัวข้อ + ปุ่มเดียว
+   ══════════════════════════════════════════════════════════════════ */
+@media(max-width:760px){
+
+  /* แถบ "สิ่งที่ต้องทำถัดไป" — เดิมสูงราว 130px เพราะคำอธิบายตัดบรรทัด */
+  .nx{display:grid!important;
+    grid-template-columns:auto 1fr auto;align-items:center;
+    gap:var(--sp-3)!important;padding:var(--sp-3) var(--sp-4)!important;
+    border-radius:var(--r-md)!important}
+  .nx .ic{width:34px!important;height:34px!important;font-size:17px!important;
+    border-radius:11px!important}
+  .nx .tx{min-width:0}
+  .nx .tx b{font-size:var(--t-base)!important;line-height:1.35!important;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+    overflow:hidden}
+  /* คำอธิบายรองซ้ำกับหัวข้ออยู่แล้ว บนมือถือไม่คุ้มพื้นที่ */
+  .nx .tx small{display:none!important}
+  .nx .go{flex-shrink:0;padding:9px 13px!important;font-size:var(--t-sm)!important;
+    white-space:nowrap}
+
+  /* แถบชูจุดเด่น — บนมือถือเป็นไทล์ 2 คอลัมน์ ไม่ใช่บทความ */
+  .hero-feat{margin-top:var(--sp-5)!important}
+  .hf-head{margin-bottom:var(--sp-3)!important}
+  .hf-head h2{font-size:var(--t-lg)!important;line-height:1.3!important}
+  .hf-grid{display:grid!important;grid-template-columns:1fr 1fr!important;
+    gap:var(--sp-2)!important}
+  .hf-card{padding:var(--sp-3)!important;border-radius:var(--r-md)!important;
+    gap:var(--sp-2)!important;min-height:0!important}
+  .hf-ic{width:32px!important;height:32px!important;font-size:16px!important;
+    border-radius:10px!important}
+  .hf-card b{font-size:var(--t-sm)!important;line-height:1.3!important}
+  .hf-card .hf-d,.hf-card .hf-w{display:none!important}
 }
 </style>
 <style id="vtcss">
@@ -9304,7 +9423,7 @@ function garageSummary(){
     const box=D.createElement("div"); box.className="gsum";
     box.innerHTML=`<div class="gsum-row">
         <div class="gsum-cell"><b style="color:${col}">${h?h.total:"—"}</b><span>${T("สุขภาพรถ","Health")}</span></div>
-        <div class="gsum-cell"><b>${num(km)}</b><span>${T("กม. (ประเมิน)","km est.")}</span></div>
+        <div class="gsum-cell"><b>${num(km<1000?Math.round(km):Math.round(km/100)*100)}</b><span>${T("กม. (ประเมิน)","km est.")}</span></div>
         <div class="gsum-cell"><b>${next?(next.d.left>0?num(next.d.left):T("เลย","Over")):"—"}<small>${
           next&&next.d.left>0?T(" กม."," km"):""}</small></b>
           <span>${next?esc(T(next.p.th,next.p.en)):T("กำหนดถัดไป","Next due")}</span></div>
@@ -9627,6 +9746,11 @@ function km(c){try{if(window.SpireODO)return window.SpireODO.value(c)}catch(e){}
 function health(c){try{return window.SpireCarLab&&window.SpireCarLab.health(c)}catch(e){return null}}
 function stat(c){try{return window.SpireCarLab&&window.SpireCarLab.status(c)}catch(e){return null}}
 
+/* ไมล์ที่แสดงเป็น "ค่าประเมิน" ไม่ใช่ค่าที่อ่านจากหน้าปัดจริง
+   ถ้าโชว์ถึงหลักหน่วยผู้ใช้จะเห็นเลขขยับทีละหลักแล้วนึกว่าระบบวัดได้เป๊ะ
+   ปัดเป็นหลักร้อยเพื่อสื่อความแม่นยำตามจริง */
+function km100(n){n=Number(n)||0; return n<1000?Math.round(n):Math.round(n/100)*100}
+
 /* ─────────── ชิ้นส่วน ─────────── */
 /* วงแหวนนี้เคยแสดงคะแนนสุขภาพ 0-100 ที่ระบบคิดขึ้นเอง
    เปลี่ยนมาแสดงจำนวนรายการที่เลยกำหนดจริงตามบันทึกของเจ้าของ
@@ -9780,7 +9904,7 @@ function leftPane(c){
 }
 
 function shell(){
-  const c=active(), list=cars(), h=c?health(c):null, k=c?km(c):0;
+  const c=active(), list=cars(), h=c?health(c):null, k=c?km100(km(c)):0;
   let eco=null; try{ if(window.SpireCarLab&&window.SpireCarLab.economy)eco=window.SpireCarLab.economy(c) }catch(e){}
   const items=h&&h.items?h.items.slice().sort((a,b)=>a.d.left-b.d.left):[];
   const nx=items[0]||null, left=nx?nx.d.left:null;
@@ -10019,7 +10143,7 @@ function levelOK(){
    ใช้ข้อมูลชุดเดียวกับแผงซ้ายของห้องนักบิน ตัวเลขจึงตรงกันเสมอ
    ═══════════════════════════════════════════════════════════════ */
 function liteCard(){
-  const c=active(), k=c?km(c):0;
+  const c=active(), k=c?km100(km(c)):0;
   const due=dueSoon(c), tasks=openTasks(c);
   const st=c?stat(c):null;
   const over=st?st.over.length:0;

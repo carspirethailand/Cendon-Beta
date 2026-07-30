@@ -2681,6 +2681,44 @@ html[data-level="basic"] #v-home>.scroll{padding:92px 22px 110px}
   .lite{padding:16px;border-radius:18px}
   .lt-acts .btn{min-width:0}
 }
+
+/* ══ แถบจุดเด่นสี่อย่าง ══
+   สิ่งแรกที่เห็นเมื่อเลื่อนพ้นห้องนักบิน — บอกว่าแอปนี้ต่างจากแชตบอตยังไง */
+.hero-feat{max-width:920px;width:100%;margin:0 auto 22px}
+.hf-head{margin-bottom:14px}
+.hf-head small{display:block;font-size:10.5px;font-weight:800;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.hf-head h2{font-family:var(--kd);font-size:clamp(20px,3.6vw,27px);font-weight:700;
+  color:var(--ink);margin:0;line-height:1.25}
+/* สี่ใบเรียงแถวเดียวบนจอกว้าง — auto-fit ที่ 215px ได้แค่สามใบในความกว้าง 920
+   แล้วใบที่สี่ตกลงมาอยู่โดดเดี่ยว ดูเหมือนลืมจัด */
+.hf-grid{display:grid;gap:11px;grid-template-columns:repeat(2,1fr)}
+@media(min-width:760px){.hf-grid{grid-template-columns:repeat(4,1fr)}}
+.hf-card{display:flex;flex-direction:column;align-items:flex-start;gap:9px;
+  text-align:left;padding:18px 17px 16px;border-radius:20px;cursor:pointer;
+  background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow-sm);
+  transition:transform .18s cubic-bezier(.22,1,.36,1),border-color .18s,box-shadow .18s}
+.hf-card:hover{transform:translateY(-3px);border-color:var(--c);box-shadow:var(--shadow)}
+.hf-ic{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;
+  font-size:21px;color:#fff;background:var(--c);
+  box-shadow:0 10px 22px -10px var(--c)}
+.hf-card b{font-size:16.5px;font-weight:700;color:var(--ink);line-height:1.25}
+.hf-d{font-size:13px;line-height:1.55;color:var(--muted)}
+/* บรรทัดนี้คือเหตุผลที่ต้องมาใช้ที่นี่ ทำให้เด่นกว่าคำอธิบายทั่วไป */
+.hf-w{display:flex;align-items:flex-start;gap:6px;margin-top:auto;padding-top:10px;
+  font-size:11.5px;font-weight:600;line-height:1.4;color:var(--c);width:100%;
+  border-top:1px solid var(--line-2)}
+.hf-w .ti{font-size:13px;flex-shrink:0;margin-top:1px}
+@media(max-width:640px){
+  .hero-feat{margin-bottom:16px}
+  .hf-grid{grid-template-columns:1fr 1fr;gap:8px}
+  .hf-card{padding:13px 12px;gap:7px;border-radius:16px}
+  .hf-ic{width:36px;height:36px;font-size:17px;border-radius:11px}
+  .hf-card b{font-size:14px}
+  .hf-d{font-size:11.5px;-webkit-line-clamp:3;display:-webkit-box;
+    -webkit-box-orient:vertical;overflow:hidden}
+  .hf-w{font-size:10.5px}
+}
 </style>
 <style id="setupcss">
 /* ══════════════════════════════════════════════════════════════════
@@ -9549,8 +9587,77 @@ function mountLite(){
 }
 function unmountLite(){ const b=$("hlite"); if(b)b.remove() }
 
+
+/* ═══════════════════════════════════════════════════════════════
+   จุดเด่นสี่อย่าง — สิ่งที่ SpireONE ทำได้แต่ผู้ช่วย AI ทั่วไปทำไม่ได้
+   วางไว้บนสุดของส่วนที่เลื่อนอิสระ คือสิ่งแรกที่เห็นเมื่อพ้นห้องนักบิน
+   แต่ละใบบอก "ทำอะไร" กับ "ทำไมที่อื่นทำไม่ได้" เพราะถ้าไม่บอก
+   ผู้ใช้จะนึกว่าเป็นแชตบอตธรรมดาแล้วไม่กดเข้าไปดูเลย
+   ═══════════════════════════════════════════════════════════════ */
+const HERO=[
+  {k:"shake", ic:"ti-activity", c:"#3FC3D6",
+   th:"วัดอาการสั่น", en:"Shake test",
+   thd:"จับรถสั่นด้วยเซ็นเซอร์ในมือถือ แล้วบอกว่ามาจากล้อ ยาง หรือเพลา",
+   end:"Feels the vibration with your phone's sensors and tells wheels from driveshaft",
+   thw:"ต้องมีเซ็นเซอร์จริง ถามเอาไม่ได้",
+   enw:"Needs real sensors — no chatbot can do this"},
+  {k:"listen", ic:"ti-ear", c:"#37C08A",
+   th:"ฟังเสียงเครื่อง", en:"Listen to the engine",
+   thd:"อัดเสียงจริงให้ AI ฟัง ไม่ต้องพยายามเลียนเสียงให้ช่างฟัง",
+   end:"Record the actual noise instead of trying to imitate it",
+   thw:"เสียงจริงบอกได้มากกว่าคำบรรยาย",
+   enw:"The real sound says more than any description"},
+  {k:"quote", ic:"ti-receipt-2", c:"#E8A33D",
+   th:"ตรวจใบเสนอราคา", en:"Check a garage quote",
+   thd:"ถ่ายใบที่อู่ยื่นให้ แล้วดูว่ารายการไหนควรจ่ายตอนนี้จริง",
+   end:"Photograph the quote and see which lines are actually needed now",
+   thw:"เทียบกับรถคุณและราคากลางในไทย",
+   enw:"Checked against your car and local prices"},
+  {k:"due", ic:"ti-bell-ringing", c:"#F0655C",
+   th:"เตือนก่อนถึงกำหนด", en:"Reminders before things lapse",
+   thd:"เตือนล่วงหน้าก่อนถึงระยะเปลี่ยนถ่าย ภาษี และ พ.ร.บ.",
+   end:"Warns you before a service interval, tax or insurance runs out",
+   thw:"เพราะมันจำรถคุณได้ ไม่ใช่ตอบทั่วไป",
+   enw:"Because it remembers your car, not a generic answer"}
+];
+function heroCards(){
+  return `<section class="hero-feat">
+    <div class="hf-head">
+      <small>${T("ทำไมต้อง SpireONE","Why SpireONE")}</small>
+      <h2>${T("สี่อย่างที่ถามแชตบอตทั่วไปไม่ได้","Four things a chatbot can't do for you")}</h2>
+    </div>
+    <div class="hf-grid">${HERO.map(f=>`
+      <button class="hf-card" data-hero="${f.k}" style="--c:${f.c}">
+        <span class="hf-ic"><i class="ti ${f.ic}"></i></span>
+        <b>${T(f.th,f.en)}</b>
+        <span class="hf-d">${T(f.thd,f.end)}</span>
+        <span class="hf-w"><i class="ti ti-sparkles"></i>${T(f.thw,f.enw)}</span>
+      </button>`).join("")}</div>
+  </section>`;
+}
+function mountHero(){
+  const host=$("hfree")||(($("v-home")||{}).querySelector?$("v-home").querySelector(".scroll"):null);
+  if(!host)return;
+  let box=$("hhero");
+  if(!box){
+    box=D.createElement("div"); box.id="hhero";
+    host.insertBefore(box,host.firstChild);
+    box.addEventListener("click",e=>{
+      const b=e.target.closest("[data-hero]"); if(!b)return;
+      const k=b.dataset.hero;
+      /* "เตือนก่อนถึงกำหนด" ไม่ใช่เครื่องมือที่เปิดได้ มันคือแผงรถ */
+      if(k==="due"){ const c=active();
+        if(c&&window.openCarDetail)window.openCarDetail(c.id);
+        else location.href="garage.html";
+        return }
+      try{ window.openTool&&window.openTool(k) }catch(e2){}
+    });
+  }
+  box.innerHTML=heroCards();
+}
+
 function build(){
-  if(!levelOK()){ mountLite(); return }
+  if(!levelOK()){ mountLite(); mountHero(); return }
   unmountLite();
   const view=$("v-home"); if(!view)return;
   sc=view.querySelector(".scroll"); if(!sc)return;
@@ -9580,7 +9687,7 @@ function build(){
       else if(b.dataset.hact==="down")toFree();
     });
   }
-  adopt(); wire();
+  adopt(); wire(); mountHero();
   initRoom(); if(room){running=true;room.start()} sizePage(); onScroll();
 
   if(!wired){
@@ -12400,6 +12507,23 @@ window.__SPIRE_FILES__={"home": "index.html", "garage": "garage.html", "magazine
    หลังหน้านิ่งแล้วเท่านั้น ก่อนหน้านั้นถือว่าไม่ต้องทำอะไร */
 var ready=false;
 addEventListener("load",function(){ setTimeout(function(){ready=true},1200) });
+/* ตัวเริ่มต้นของแต่ละหน้าถูกเรียกจาก switchView เท่านั้น (loadMag, loadShop,
+   renderGarage) แต่หน้าที่แยกไฟล์แล้วมี view ของตัวเอง active มาจากมาร์กอัป
+   switchView จึงไม่เคยถูกเรียก แล้วนิตยสารกับร้านค้าไม่โหลดข้อมูลเลย
+   เรียกครั้งเดียวตอนหน้าพร้อม โดยกดแถบใต้เมนูให้อยู่ที่เดิมไม่ให้ไถลมาจากศูนย์ */
+var inited=false;
+function spireInit(){
+  if(inited||typeof window.switchView!=="function")return;
+  inited=true;
+  var ind=document.getElementById("navInd"), tr=ind?ind.style.transition:null;
+  if(ind)ind.style.transition="none";
+  try{ window.switchView(window.__SPIRE_PAGE__) }catch(e){ inited=false }
+  if(ind){ void ind.offsetWidth; ind.style.transition=tr||"" }
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",spireInit);
+else spireInit();
+addEventListener("load",spireInit);
+setTimeout(spireInit,900); setTimeout(spireInit,2500);
 var orig=window.switchView;
 window.switchView=function(v){
   if(v===window.__SPIRE_PAGE__) return orig?orig.apply(this,arguments):undefined;

@@ -2382,72 +2382,6 @@ body[data-deck="1"] .nav::before{opacity:.2;mix-blend-mode:screen}
 .pk-attr{position:absolute;right:5px;bottom:4px;font-size:9.5px;padding:2px 6px;border-radius:6px;
   background:rgba(255,255,255,.82);color:#333;text-decoration:none}
 </style>
-<style id="mobilefix">
-/* ══════════════════════════════════════════════════════════════════
-   MOBILE FIT — แถบนำทางบนมือถือเคยล้นกรอบ ปุ่มหลุดออกนอกพิล
-   บีบระยะห่าง ซ่อนข้อความที่ไม่จำเป็น และห้ามล้นเด็ดขาด
-   ══════════════════════════════════════════════════════════════════ */
-/* ห้ามใช้ overflow:hidden กับ .nav — มันจะตัดเมนูบัญชีที่ห้อยลงมาทิ้ง
-   คุมความกว้างด้วย min-width:0 กับการย่อชิ้นส่วนแทน */
-.nav{min-width:0}
-.nav .brand,.nav-links,.nav-right{min-width:0}
-.nav-links{overflow:hidden}
-.nav-links a{min-width:0}
-.nav-right{flex-shrink:0}
-
-@media(max-width:720px){
-  .navwrap{padding:10px 10px 4px}
-  .nav{gap:2px;padding:6px 7px 6px 10px;border-radius:26px}
-  .brand{padding-right:2px;gap:6px}
-  .brand b{display:none}
-  .brand .mark{width:30px;height:30px;border-radius:9px}
-  .nav-links{gap:0;flex:1;justify-content:space-around}
-  .nav-links a{padding:8px 12px}
-  .nav-links a .ti{font-size:18px}
-  .nav-ind{height:34px}
-  .nav-right{gap:5px}
-  .btn-signin{padding:8px 12px;font-size:12.5px}
-  .btn-signin span{display:none}
-  .avatar{width:34px;height:34px;border-width:1.5px}
-}
-@media(max-width:400px){
-  .navwrap{padding:8px 8px 4px}
-  .nav{padding:5px 6px 5px 8px;gap:0}
-  .nav-links a{padding:7px 9px}
-  .nav-links a .ti{font-size:17px}
-  .nav-ind{height:32px}
-  .avatar{width:31px;height:31px}
-  .brand .mark{width:28px;height:28px}
-}
-
-/* เมนูผู้ใช้ไม่ควรโผล่พ้นขอบขวาบนจอแคบ */
-@media(max-width:480px){
-  .dd{right:0;left:auto;min-width:min(260px,calc(100vw - 28px))}
-}
-
-/* ปุ่มลอยกับแถบสรุปอย่าทับกันบนมือถือ */
-@media(max-width:520px){
-  .fab-dock{bottom:calc(16px + env(safe-area-inset-bottom))}
-
-}
-
-/* วิดเจ็ตในแดชบอร์ดอิสระ — ระยะขอบพอดีมือถือ */
-@media(max-width:480px){
-  .hfree{padding:calc(104px + env(safe-area-inset-top)) 14px 120px}
-  .widget{padding:16px;border-radius:20px}
-  .greet{font-size:clamp(23px,7vw,30px)}
-}
-
-/* ══ เมนูบน: ทุกปุ่มกว้างเท่ากัน ══
-   เดิมความกว้างขึ้นกับความยาวคำ (หน้าหลัก 92 · การาจ 79 · นิตยสาร 90 ·
-   ร้านค้า 81) แถบส้มจึงต้องหดหรือขยายทุกครั้งที่เลื่อน ดูเหมือนขนาดไม่นิ่ง
-   ให้ทุกปุ่มกว้างเท่ากันแล้วแถบจะเลื่อนอย่างเดียว ขนาดคงที่ตลอด */
-.nav-links a{flex:1 1 0;min-width:0;justify-content:center;text-align:center}
-@media(max-width:780px){
-  /* จอแคบซ่อนตัวหนังสือเหลือแต่ไอคอน ปุ่มก็ยังเท่ากันอยู่ดี */
-  .nav-links a{flex:1 1 0}
-}
-</style>
 <style id="themecss">
 /* ══════════════════════════════════════════════════════════════════
    ธีมชุดเดียวใช้ทั้งเว็บหลักและห้องแชต — Light · Dark · Ocean · Plant · Magma
@@ -3436,377 +3370,534 @@ button.lg-card:active,.cl-card:active{
   .lt-row:hover,.set-row:hover,.btn:hover,.tile:hover{transform:none}
 }
 </style>
-<style id="mobilecss">
+<style id="mcss">
 /* ══════════════════════════════════════════════════════════════════
-   MOBILE — ออกแบบใหม่ตามเอกสาร Mobile App Design Guide
+   SpireONE — ชั้นมือถือ (เขียนใหม่ทั้งหมด ไม่มีอะไรเหลือจากของเดิม)
 
-   คนใช้รถทุกวันและใช้บนมือถือเป็นหลัก ถ้ามือถือใช้ยากก็จบตั้งแต่ต้น
-   จึงยึดสเปกในเอกสารเป็นแหล่งความจริง ไม่ใช่ค่าที่กะเอาเอง
+   อ้างอิงจากแอปที่คนไทยใช้ทุกวัน: Grab และ Uber
+   สิ่งที่ทั้งสองแอปทำเหมือนกันและเราเอามาใช้:
+     • แถบล่างมีไอคอน "พร้อมชื่อ" ทุกแท็บ ไม่ให้เดา
+     • หน้าแรกมีของไม่กี่ชิ้น ชิ้นละไม่เกินสองบรรทัด
+     • เครื่องมือทั้งหมดเป็นตารางไอคอน 4 ช่อง ไม่ใช่การ์ดบรรยาย
+     • ตัวหนังสือเล็ก ระยะห่างสม่ำเสมอ ไม่มีเงาหนา ๆ
 
-   ที่แก้รอบนี้ (ตามลำดับผลกระทบ):
-     1. viewport-fit=cover (แก้ที่ build.py) — ก่อนหน้านี้ env(safe-area-inset-*)
-        คืนค่า 0 ทั้งโปรเจกต์ ทำให้ 30+ จุดที่พึ่งมันไม่ทำงานเลยสักจุด
-     2. ปลดกับดัก scroll-snap ที่ทำให้แผงควบคุมใช้ไม่ได้
-     3. แถบเมนูลอยเป็นเกาะตามสเปกหมวด 4.2
-     4. Sign in ออกจากแท็บ ไปอยู่ที่ avatar — เหลือ 4 แท็บ
-     5. token ระยะและตัวอักษรชุดเดียว เลิกใช้ค่ากระจัดกระจาย
-        (ของเดิม: font-size 39 ค่า · ระยะ 45 ค่า · 68% หลุดตาราง 8px)
-     6. line-height 1.6 ขั้นต่ำสำหรับไทย (ของเดิม 65% ต่ำกว่านั้น)
-     7. ลดกรอบซ้อนเหลือชั้นเดียว ใช้พื้นหลังต่างระดับแทนเส้น
+   โครงหน้าหลักบนมือถือ = สามจอ เลื่อนแล้วล็อกทีละจอ
+     จอ 1  ห้องนักบิน (ชื่อรถ · เลขที่ต้องรู้ · ช่องถาม AI)
+     จอ 2  สิ่งที่แชตบอตทั่วไปทำไม่ได้
+     จอ 3  เครื่องมือทั้งหมด + วิดเจ็ต
+
+   กติกาเหล็ก: ทุกอย่างในไฟล์นี้อยู่ใน @media(max-width:760px)
+   จอคอมต้องไม่ขยับแม้แต่พิกเซลเดียว
    ══════════════════════════════════════════════════════════════════ */
 
+@media(max-width:760px){
+
+/* ───────────── ค่าคงที่ (อยู่ในมีเดียคิวรี จอคอมมองไม่เห็น) ───────────── */
 :root{
-  /* ระยะ — ทุกค่ามาจากตาราง 4px ชุดเดียว ห้ามมี 9/11/13/17px กระจัดกระจาย */
-  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px;
-  --sp-5:20px; --sp-6:24px; --sp-8:32px;
-  --r-sm:12px; --r-md:20px; --r-pill:999px;
-  /* ตัวอักษร — line-height 1.6 เพราะไทยมีสระบนวรรณยุกต์ซ้อนและสระล่างห้อย
-     ถ้าใช้ 1.4 แบบอังกฤษ วรรณยุกต์บรรทัดล่างจะเกือบชนสระบรรทัดบน */
-  --t-xs:12px; --t-sm:14px; --t-base:16px;
-  --t-lg:20px; --t-2xl:28px; --t-3xl:36px;
-  --lh:1.6; --lh-tight:1.3;
-  --tap:44px;              /* Apple HIG 44pt · Material 48dp — ใช้ 44 เป็นพื้น */
-  --nav-h:60px; --nav-inset:16px;
+  --m-1:4px; --m-2:8px; --m-3:12px; --m-4:16px; --m-5:20px; --m-6:24px;
+  --m-r:14px;            /* รัศมีการ์ดมาตรฐาน */
+  --m-r-lg:20px;
+  --m-tap:44px;
+  --m-nav:64px;          /* สูงแถบล่าง */
+  --m-nav-gap:10px;      /* ระยะยกจากขอบจอ */
+  --m-pad:14px;          /* ขอบซ้ายขวาของหน้า */
+
+  /* ตัวอักษร — เทียบจาก Grab/Uber โดยตรง ไม่ใช่ย่อจากสเกลเดสก์ท็อป */
+  --m-t-lbl:10px;        /* ชื่อแท็บใต้ไอคอน */
+  --m-t-xs:11px;         /* ป้ายกำกับ */
+  --m-t-sm:12px;         /* คำอธิบายรอง */
+  --m-t:14px;            /* เนื้อความ */
+  --m-t-md:15px;         /* หัวข้อในแถว */
+  --m-t-lg:17px;         /* หัวการ์ด */
+  --m-t-xl:20px;         /* หัวจอ */
+  --m-num:22px;          /* ตัวเลขเด่น */
+
+  --m-line:rgba(255,255,255,.08);
+  --m-fill:rgba(255,255,255,.055);
+  --m-fill-2:rgba(255,255,255,.10);
+}
+html[data-theme="light"],html[data-theme="plant"]{
+  --m-line:rgba(20,16,8,.09);
+  --m-fill:rgba(20,16,8,.045);
+  --m-fill-2:rgba(20,16,8,.08);
 }
 
-@media(max-width:760px){
+/* ───────────── พื้นฐาน ───────────── */
+body{-webkit-text-size-adjust:100%}
+.navwrap{display:none!important}   /* แถบบนของเดสก์ท็อปไม่ใช้บนมือถือ */
 
 /* ══════════════════════════════════════════════════════════════
-   1. กับดัก scroll-snap — บั๊กที่ทำให้แผงควบคุมใช้งานไม่ได้จริง
+   1. แถบล่าง — 5 แท็บ ไอคอน + ชื่อ
    ══════════════════════════════════════════════════════════════
-   ของเดิม .hpage สูง 100vh + overflow:hidden แปลว่าเนื้อหาที่ยาวเกินจอ
-   ถูกตัดทิ้ง เลื่อนดูข้างในไม่ได้ ส่วน scroll-snap-type:y mandatory
-   บวก scroll-snap-stop:always บังคับให้กระโดดข้ามไปหน้าถัดไป
-   หยุดกลางทางไม่ได้ ผลคือเนื้อหาตรงกลางเข้าไม่ถึงถาวร
+   นิ้วโป้งเอื้อมถึงแค่ครึ่งล่างของจอ เมนูหลักจึงต้องอยู่ล่าง
+   แท็บที่เลือกอยู่ได้พื้นหลังทรงมนแบบ iOS ไม่ใช่แค่เปลี่ยนสี
+   เพราะรูปทรงบอกสถานะได้แม้คนตาบอดสีก็แยกออก */
+.mnav{
+  position:fixed;z-index:120;
+  left:var(--m-3);right:var(--m-3);
+  bottom:calc(var(--m-nav-gap) + env(safe-area-inset-bottom));
+  height:var(--m-nav);
+  display:grid;grid-auto-flow:column;grid-auto-columns:1fr;
+  align-items:center;
+  padding:0 var(--m-1);
+  border-radius:26px;
+  background:rgba(16,20,28,.80);
+  -webkit-backdrop-filter:blur(26px) saturate(180%);
+  backdrop-filter:blur(26px) saturate(180%);
+  border:1px solid var(--m-line);
+  box-shadow:0 8px 30px rgba(0,0,0,.44)}
+html[data-theme="light"] .mnav,html[data-theme="plant"] .mnav{
+  background:rgba(255,255,255,.86);
+  box-shadow:0 8px 30px rgba(70,48,20,.16)}
 
-   แก้สามจุด: ให้เลื่อนข้างในได้ · เปลี่ยนเป็น proximity ให้หยุดตรงไหนก็ได้ ·
-   ใช้ dvh แทน vh เพราะ vh บนมือถือไม่นับแถบ URL ของเบราว์เซอร์ */
-#v-home>.scroll.snapon{scroll-snap-type:y proximity!important}
-.hpage{
-  height:auto!important;min-height:auto!important;
-  max-height:none!important;
-  overflow:visible!important;
-  scroll-snap-stop:normal!important;
-  padding:var(--sp-5) var(--sp-4) var(--sp-6)!important}
-/* จอที่สูงพอค่อยให้เต็มจอ และยังต้องเลื่อนข้างในได้ถ้าเนื้อหาล้น */
-@supports(height:100dvh){
-  @media(min-height:620px){
-    .hpage{min-height:100dvh!important;overflow-y:auto!important;
-      -webkit-overflow-scrolling:touch}
-  }
+.mtab{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;height:100%;min-width:0;padding:0;
+  border:0;background:none;cursor:pointer;font-family:inherit;
+  color:var(--muted,rgba(190,205,225,.60));
+  -webkit-tap-highlight-color:transparent}
+.mtab .mt-i{
+  width:38px;height:26px;display:grid;place-items:center;
+  border-radius:13px;
+  transition:background .22s cubic-bezier(.4,0,.2,1),color .18s ease}
+.mtab .mt-i i{font-size:19px;line-height:1}
+.mtab .mt-i img,.mtab .mt-i .fb{
+  width:21px;height:21px;border-radius:50%;object-fit:cover;
+  display:grid;place-items:center;font-size:10px;font-weight:700}
+.mtab b{
+  font-size:var(--m-t-lbl);font-weight:600;line-height:1.1;letter-spacing:0;
+  max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* แท็บที่เลือก — เม็ดยาทรงมนหลังไอคอน สีเน้น ชื่อเข้มขึ้น */
+.mtab.on{color:var(--accent,#D9733C)}
+.mtab.on .mt-i{background:color-mix(in srgb,var(--accent,#D9733C) 20%,transparent)}
+@supports not (color:color-mix(in srgb,red 50%,blue)){
+  .mtab.on .mt-i{background:rgba(217,115,60,.20)}
 }
-.scr-deck{scroll-snap-type:x proximity!important}
-.scr-page{scroll-snap-stop:normal!important}
+.mtab:active .mt-i{transform:scale(.88)}
+.mtab.on b{font-weight:700}
+
+/* จุดแจ้งเตือนบนแท็บบัญชี */
+.mtab .mt-dot{position:absolute;top:9px;right:calc(50% - 13px);
+  width:7px;height:7px;border-radius:50%;background:var(--accent,#D9733C)}
+.mtab{position:relative}
 
 /* ══════════════════════════════════════════════════════════════
-   2. แถบเมนูลอยเป็นเกาะ (สเปกหมวด 4.2)
+   2. สามจอที่เลื่อนแล้วล็อก
    ══════════════════════════════════════════════════════════════
-   ลอยห่างขอบทุกด้าน มุมโค้งเต็ม พื้นหลังเบลอโปร่งแสง เงานุ่ม
-   ไม่ใช่แถบแบนติดขอบจอ */
-.navwrap{
-  position:fixed!important;top:auto!important;
-  left:var(--nav-inset)!important;right:var(--nav-inset)!important;
-  bottom:calc(var(--sp-3) + env(safe-area-inset-bottom))!important;
-  z-index:100;padding:0!important;pointer-events:none;
+   สองจอแรกสูงเท่าจอพอดี จึงล็อกได้จริง
+   จอสามสูงกว่าจอได้ — ตามสเปก CSS ถ้าพื้นที่ล็อกใหญ่กว่าช่องมอง
+   เบราว์เซอร์จะไม่บังคับล็อก เลื่อนอ่านข้างในได้ตามปกติ
+   (นี่คือเหตุผลที่ไม่ต้องกลัวกับดักเลื่อนแบบเวอร์ชันก่อน) */
+/* proximity ไม่ใช่ mandatory — ตัวล็อกจริงอยู่ใน m.js (settle)
+   ถ้าใช้ mandatory คู่กัน สองตัวจะแย่งกันคุมตำแหน่ง: CSS ดึงกลับระหว่างที่
+   JS กำลังพาไปจออื่น ผลคือปัดแล้วไม่ไปไหนเลย
+   proximity ทำหน้าที่แค่ "ช่วยเข้าที่" ส่วนกฎว่าจะไปจอไหนเป็นของ JS ล้วน */
+#v-home>.scroll{
+  scroll-snap-type:y proximity!important;
+  scroll-behavior:smooth;
+  overscroll-behavior-y:contain;
+  /* ปิดการยึดจุดเลื่อนอัตโนมัติ — ตอน m.js ย้าย #hhero ออกมาเป็นพี่น้อง
+     เบราว์เซอร์จะเลื่อนชดเชยให้ "ภาพเดิมอยู่ที่เดิม" ผลคือเปิดหน้ามาแล้ว
+     ค้างอยู่กลางจอแรกทันที 156px โดยไม่มีใครสั่ง */
+  overflow-anchor:none;
+  padding:0!important}
+#v-home>.scroll>*{overflow-anchor:none}
+
+.msnap{scroll-snap-align:start;scroll-snap-stop:always}
+.msnap-1,.msnap-2{
+  height:100vh;height:100dvh;
+  display:flex;flex-direction:column;justify-content:center;
+  padding:calc(env(safe-area-inset-top) + var(--m-4)) var(--m-pad)
+          calc(var(--m-nav) + var(--m-nav-gap) + env(safe-area-inset-bottom) + var(--m-4));
+  box-sizing:border-box}
+.msnap-3{
+  min-height:100vh;min-height:100dvh;
+  padding:var(--m-5) var(--m-pad)
+          calc(var(--m-nav) + var(--m-nav-gap) + env(safe-area-inset-bottom) + var(--m-5));
+  box-sizing:border-box}
+
+/* ลูกศรบอกว่ายังมีจอถัดไป — ถ้าไม่บอกจะไม่มีใครรู้ว่าต้องเลื่อน */
+.mhint{
+  position:absolute;left:0;right:0;
+  bottom:calc(var(--m-nav) + var(--m-nav-gap) + env(safe-area-inset-bottom) + var(--m-2));
+  display:flex;justify-content:center;pointer-events:none}
+.mhint i{font-size:20px;color:var(--muted);opacity:.4;
+  animation:mBob 2.2s ease-in-out infinite}
+@keyframes mBob{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+.msnap{position:relative}
+
+/* ══════════════════════════════════════════════════════════════
+   3. จอ 1 — ห้องนักบิน
+   ══════════════════════════════════════════════════════════════
+   เหลือสามอย่าง: รถคันไหน · เลขที่ต้องรู้ · ถามอะไรก็ได้
+   ที่ตัดออกเพราะซ้ำหรือไม่ตอบคำถาม "รถฉันโอเคไหม":
+     วงแหวนสุขภาพ (ซ้ำกับไทล์) · ป้าย VEHICLE/STATUS (ชื่อรถบอกเองแล้ว)
+     ค่าใช้จ่าย/กม. (เป็น "—" จนกว่าจะมีข้อมูลพอ) · แผนงาน (มีในจอ 3) */
+.msnap-1 .hpage{
+  height:auto!important;min-height:0!important;max-height:none!important;
+  overflow:visible!important;padding:0!important;background:none!important}
+.msnap-1 .cockpit{
+  display:block!important;gap:0!important;padding:0!important;
+  perspective:none!important}
+.msnap-1 .cockpit>.pane{display:none!important}
+.msnap-1 .screen{
+  padding:0!important;border:0!important;background:none!important;
+  box-shadow:none!important;transform:none!important;overflow:visible!important}
+/* จอ cockpit ของเดสก์ท็อปมีแผ่นฟิล์มเส้นสแกนแบบจอ CRT ปูทับทั้งผืน
+   (repeating-linear-gradient ที่ z-index 3) บนจอใหญ่มันคือของตกแต่ง
+   แต่บนมือถือที่ตัวหนังสือใหญ่เต็มความกว้าง มันพาดขวางตัวอักษรพอดี
+   จนชื่อรถอ่านแล้วเหมือนมีเส้นบัง — เอาออกทั้งแผ่น
+   .control::after ก็เป็นฟิล์มไล่สีอีกชั้นที่ทำให้ตัวหนังสือจม */
+.msnap-1 .screen::after,
+.msnap-1 .control::after,
+.msnap-1 .scr-col::after,
+.msnap-1 .scr-col::before{display:none!important;content:none!important}
+.msnap-1 .scr-deck{
+  overflow:visible!important;scroll-snap-type:none!important;display:block!important}
+.msnap-1 .scr-page{padding:0!important;width:100%!important}
+.msnap-1 .scr-grid{
+  display:flex!important;flex-direction:column;gap:var(--m-4)!important;
+  padding:0!important;border:0!important;background:none!important}
+.msnap-1 .scr-col{
+  padding:0!important;border:0!important;background:none!important;
   display:block!important}
-.navwrap>*{pointer-events:auto}
+.msnap-1 .hud-eye,.msnap-1 .gring,.msnap-1 .plan{display:none!important}
 
-.nav{
-  display:flex!important;align-items:center;justify-content:space-around;
-  width:100%;max-width:none!important;margin:0!important;
-  height:var(--nav-h);padding:0 var(--sp-2)!important;
-  gap:var(--sp-1)!important;
-  border-radius:var(--r-pill)!important;
-  background:var(--nav-glass,rgba(18,22,32,.72))!important;
-  -webkit-backdrop-filter:blur(24px) saturate(160%);
-  backdrop-filter:blur(24px) saturate(160%);
-  border:1px solid rgba(255,255,255,.10)!important;
-  box-shadow:0 8px 32px rgba(0,0,0,.45)!important}
-/* ธีมสว่างต้องใช้กระจกสีอ่อน ไม่งั้นไอคอนดำบนพื้นดำอ่านไม่ออก */
-html[data-theme="light"] .nav,html[data-theme="plant"] .nav{
-  background:rgba(255,255,255,.78)!important;
-  border-color:rgba(0,0,0,.08)!important;
-  box-shadow:0 8px 32px rgba(60,40,15,.18)!important}
+.msnap-1 .scr-car{
+  font-size:22px!important;line-height:1.15!important;font-weight:700!important;
+  letter-spacing:-.02em;margin:0!important;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.msnap-1 .scr-meta{
+  font-size:var(--m-t-sm)!important;line-height:1.4!important;
+  margin:var(--m-1) 0 0!important;opacity:.6}
 
-.nav .brand{display:none!important}      /* ไม่มีโลโก้บนมือถือ */
+/* ชิปเลือกรถ — เลื่อนแนวนอนได้ ท้ายแถวจางเพื่อบอกว่ายังมีต่อ */
+.msnap-1 .cswitch{
+  display:flex!important;gap:var(--m-2)!important;
+  margin:var(--m-3) 0 0!important;
+  overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  -webkit-mask-image:linear-gradient(to right,#000 calc(100% - 20px),transparent);
+  mask-image:linear-gradient(to right,#000 calc(100% - 20px),transparent)}
+.msnap-1 .cswitch::-webkit-scrollbar{display:none}
+.msnap-1 .cswitch button{
+  flex:0 0 auto;min-height:32px;padding:0 var(--m-4)!important;
+  font-size:var(--m-t-sm)!important;font-weight:600!important;
+  border-radius:999px!important;
+  border:1px solid var(--m-line)!important;background:var(--m-fill)!important;
+  color:var(--ink)!important;box-shadow:none!important}
+/* คันที่เลือกอยู่ต้องอ่านออกชัดที่สุดในแถว — ของเดิมสีตัวหนังสือเป็น #04212B
+   ซึ่งออกแบบมาคู่กับพื้นฟ้าสว่างของเดสก์ท็อป พอพื้นเปลี่ยนเป็นโปร่ง
+   ตัวหนังสือกรมท่าเข้มก็จมหายไปกับพื้นดำจนมองไม่เห็นว่าเลือกคันไหนอยู่ */
+.msnap-1 .cswitch button.on{
+  background:var(--accent,#D9733C)!important;color:#fff!important;
+  border-color:transparent!important}
 
-.nav-links{
-  display:flex!important;flex:1;gap:var(--sp-1)!important;
-  justify-content:space-around;align-items:center;min-width:0;
-  overflow:visible!important;background:none!important;
-  padding:0!important;border:none!important;border-radius:0!important}
+/* ไทล์ตัวเลขสองช่อง — เหมือนวิดเจ็ตหน้าโฮมมือถือ ค่าอยู่บน ป้ายอยู่ล่าง */
+.msnap-1 .dials{
+  display:grid!important;grid-template-columns:1fr 1fr!important;
+  gap:var(--m-2)!important;margin:0!important}
+.msnap-1 .dial{
+  display:flex!important;flex-direction:column;gap:2px;
+  padding:var(--m-3)!important;min-height:0!important;
+  border:0!important;border-radius:var(--m-r)!important;
+  background:var(--m-fill)!important;box-shadow:none!important}
+.msnap-1 .dial b{
+  order:1;font-size:var(--m-num)!important;line-height:1.1!important;
+  letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.msnap-1 .dial b u{
+  font-size:var(--m-t-xs)!important;text-decoration:none;
+  margin-left:3px;opacity:.5;letter-spacing:0}
+.msnap-1 .dial small{
+  order:2;font-size:var(--m-t-xs)!important;opacity:.55;
+  text-transform:none!important;letter-spacing:0!important;font-weight:500!important}
+/* ช่อง 2 (จำนวนที่เลยกำหนด) กับช่อง 3 (ค่าใช้จ่าย/กม.) ไม่ขึ้นบนมือถือ
+   ช่อง 2 ซ้ำกับสีของไทล์แรกอยู่แล้ว ช่อง 3 ยังไม่มีข้อมูลพอจะมีความหมาย */
+.msnap-1 .dials .dial:nth-child(2),
+.msnap-1 .dials .dial:nth-child(3){display:none!important}
 
-/* สี่แท็บ ไอคอนอย่างเดียว — พื้นที่กดเต็ม 44px ตามมาตรฐาน
-   ไม่ใส่ label เพราะสี่คำยาวไม่เท่ากัน ("Magazine" ยาวกว่าเพื่อนจนบีบช่องไฟ) */
-.nav-links a{
-  flex:0 0 auto;display:grid!important;place-items:center;
-  width:var(--tap);height:var(--tap);min-width:var(--tap);
-  padding:0!important;border-radius:var(--r-pill);font-size:0;
-  color:var(--nav-link,rgba(200,215,235,.62))!important;
-  transition:background 180ms ease,color 180ms ease}
-.nav-links a .ti{font-size:23px!important;line-height:1}
-.nav-links a span{display:none!important}
-/* สถานะ active บอกด้วยทั้งรูปทรงและสี ไม่ใช่สีอย่างเดียว
-   เพราะคนตาบอดสีต้องแยกออกด้วย */
-.nav-links a.active{
-  background:var(--accent)!important;color:#fff!important}
-.nav-links a:active{transform:scale(.9)}
-.nav-ind{display:none!important}         /* ตัวชี้เดิมไม่ใช้แล้ว */
+/* แถบงานถัดไป — แถวเดียว ไอคอน + หัวข้อ + ปุ่ม
+   คำอธิบายรองพูดเรื่องเดียวกับหัวข้อ แค่ยาวกว่า จึงไม่คุ้มพื้นที่บนจอเล็ก */
+.msnap-1 .nx{
+  display:grid!important;grid-template-columns:auto 1fr auto;align-items:center;
+  gap:var(--m-3)!important;padding:var(--m-2) var(--m-3)!important;
+  border-radius:var(--m-r)!important;margin:0 0 var(--m-3)!important}
+.msnap-1 .nx .ic{
+  width:30px!important;height:30px!important;font-size:15px!important;
+  border-radius:9px!important;flex-shrink:0}
+.msnap-1 .nx .tx{min-width:0}
+.msnap-1 .nx .tx b{
+  font-size:var(--m-t)!important;line-height:1.3!important;font-weight:600;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.msnap-1 .nx .tx small{display:none!important}
+.msnap-1 .nx .go{
+  flex-shrink:0;white-space:nowrap;min-height:32px!important;
+  padding:0 var(--m-3)!important;font-size:var(--m-t-sm)!important}
 
-/* บัญชีอยู่ขวาสุดเป็น avatar — ไม่ใช่แท็บระดับเดียวกับหน้าหลัก
-   เพราะการล็อกอินไม่ใช่ปลายทางที่คนกดบ่อยเท่าหน้าหลัก */
-.nav-right{
-  flex:0 0 auto;display:flex!important;align-items:center;
-  gap:0!important;padding:0!important;margin-left:var(--sp-1)}
-.btn-signin,.nav-right .btn,.nav-right button{
-  display:grid!important;place-items:center;
-  width:var(--tap);height:var(--tap);min-width:var(--tap);
-  padding:0!important;border:none!important;outline:none!important;
-  border-radius:var(--r-pill)!important;
-  background:rgba(255,255,255,.08)!important;background-image:none!important;
-  color:var(--nav-link,rgba(200,215,235,.62))!important;
-  box-shadow:none!important;font-size:0!important}
-.btn-signin .ti{font-size:21px!important}
-.btn-signin span{display:none!important}
-.avatar{width:32px!important;height:32px!important;border-width:2px!important}
+/* ช่องถาม AI */
+/* ระยะเว้นก่อนช่องพิมพ์ — ถ้าไม่เว้น ขอบบนของกล่องจะไปแตะก้นไทล์ตัวเลขพอดี
+   กลายเป็นเส้นคาดใต้ตัวเลขที่ดูเหมือนเส้นหลงมา ไม่ใช่ขอบกล่อง
+   หมายเหตุ: ต้องเขียน margin ตัวย่อก่อน margin-top เสมอ
+   ไม่งั้นตัวย่อที่มาทีหลังจะลบค่าที่เพิ่งตั้งไปทิ้ง (เคยพลาดตรงนี้มาแล้ว) */
+.msnap-1 .control{
+  margin:0!important;margin-top:var(--m-5)!important;
+  padding:var(--m-4) var(--m-3) var(--m-3)!important;
+  border-radius:var(--m-r-lg)!important;
+  border:1px solid var(--m-line)!important;background:var(--m-fill)!important;
+  box-shadow:none!important;
+  /* เดสก์ท็อปเอียงกล่องนี้ 15 องศาให้ดูเหมือนแผงหน้าปัดรถ
+     บนจอเล็กมันทำให้ตัวหนังสือบรรทัดบนเบลอและกดยาก */
+  transform:none!important}
+.msnap-1 .ctl-head,.msnap-1 .ctl-eye{
+  font-size:var(--m-t-xs)!important;text-transform:none!important;
+  letter-spacing:0!important;margin-bottom:var(--m-2)!important}
+/* เส้นคั่นประดับข้างหัวกล่อง — บนจอกว้างมันคือเส้นบาง ๆ ที่ทอดยาวสวยงาม
+   บนจอ 390px มันเหลือแค่ขีดสั้น ๆ ลอยอยู่ ดูเหมือนเส้นหลงมามากกว่าของตกแต่ง */
+.msnap-1 .ctl-head .rule{display:none!important}
+.msnap-1 .ctl-lnk{font-size:var(--m-t-sm)!important}
+.msnap-1 .ctl-ask{
+  padding:var(--m-2)!important;border-radius:var(--m-r)!important;
+  border:0!important;background:var(--m-fill)!important;min-height:0!important}
+.msnap-1 .ctl-ask textarea{font-size:16px!important;min-height:38px!important}
+.msnap-1 .ctl-seeds{
+  display:flex!important;gap:var(--m-2)!important;
+  margin-top:var(--m-2)!important;padding-bottom:2px;
+  overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  -webkit-mask-image:linear-gradient(to right,#000 calc(100% - 22px),transparent);
+  mask-image:linear-gradient(to right,#000 calc(100% - 22px),transparent)}
+.msnap-1 .ctl-seeds::-webkit-scrollbar{display:none}
+.msnap-1 .ctl-seed{
+  flex:0 0 auto;white-space:nowrap;min-height:30px;
+  padding:0 var(--m-3)!important;font-size:var(--m-t-sm)!important;
+  border-radius:999px!important;box-shadow:none!important}
 
-/* เนื้อหาเว้นที่ให้เกาะลอย = สูงเกาะ + ระยะยก + safe area + ระยะหายใจ */
-.view>.scroll,#v-home>.scroll,.hfree,.pane-inner{
-  padding-bottom:calc(var(--nav-h) + var(--sp-4)
-    + env(safe-area-inset-bottom) + var(--sp-6))!important}
-.view>.scroll,.hfree{padding-top:var(--sp-5)}
-html[data-level="basic"] .hfree{padding-top:var(--sp-5)!important}
-/* ปุ่มลอยต้องอยู่เหนือเกาะ */
-.fab-dock,.fab,#cpFab{
-  bottom:calc(var(--nav-h) + var(--sp-5) + env(safe-area-inset-bottom))!important}
-/* toast ต้องลอยเหนือเกาะเสมอ ไม่ทับการ์ดเนื้อหา */
-.toast,#toast,.toast-wrap{
-  bottom:calc(var(--nav-h) + var(--sp-5) + env(safe-area-inset-bottom))!important;
-  z-index:150!important}
-
-/* ══════════════ 3. ระยะขอบจอและตัวอักษร ══════════════ */
-.hfree,#v-home>.scroll,.view>.scroll{
-  padding-left:var(--sp-5)!important;padding-right:var(--sp-5)!important}
-
-body,p,li,td{line-height:var(--lh)}
-.section-title,.sp-h1,.lt-head b,h1,.w-h1{
-  font-size:var(--t-2xl)!important;line-height:var(--lh-tight)!important}
-h2{font-size:var(--t-lg)!important;line-height:1.4!important}
-h3,h4,.gcar h4{font-size:var(--t-lg)!important;line-height:1.4!important}
-.section-sub,.gs,.lt-t,.hf-d{
-  font-size:var(--t-sm)!important;line-height:var(--lh)!important}
-/* ห้ามเล็กกว่า 12px บนมือถือ — ของเดิมมี 9/9.5/10/10.5/11/11.5px รวม 126 ครั้ง */
-small,.lt-badge small,.lt-head small,.pk-c-tx small,.hf-w,.pm-acc,.odo-n{
-  font-size:var(--t-xs)!important;line-height:1.5!important}
-
-/* ลด ALL CAPS + letterspacing — อ่านช้ากว่าตัวปกติ
-   เหลือไว้เฉพาะ label สั้นจริง ๆ ไม่กี่จุดต่อหน้า */
-.lt-lbl,.hf-head small,.pk-c-tx small,.lt-head small{
-  text-transform:none!important;letter-spacing:.02em!important;
-  font-size:var(--t-xs)!important;font-weight:700!important}
-
-/* ══════════════ 4. การ์ด — กรอบชั้นเดียว ══════════════
-   ของเดิมซ้อนกรอบสามชั้น (card > section > tile) ทุกชั้นมีเส้นของตัวเอง
-   แต่ละเส้นกินความกว้างและทำให้สายตาสะดุด ชั้นในเปลี่ยนไปใช้พื้นหลัง
-   ต่างระดับแทน แยกกลุ่มข้อมูลได้เหมือนเดิมโดยไม่เพิ่มเส้น */
-.card,.lite,.lg-card,.sp-card,.set-card,.ccard,.su-card,.wcard,.kcard,
-.bpanel,.pk-card,.hf-card{
-  padding:var(--sp-4)!important;border-radius:var(--r-md)!important;
-  margin-bottom:var(--sp-3)!important}
-/* ชั้นในของการ์ด: ไม่มีเส้น ใช้พื้นหลังสว่างขึ้นแทน */
-.card .card,.lite .lt-row,.card .lt-badge,.lg-card .lg-item,
-.card .stat,.card .g-stat,.wcard .wrow,.set-card .set-row{
-  border-color:transparent!important;
-  background:rgba(255,255,255,.045)!important;
-  border-radius:var(--r-sm)!important}
-html[data-theme="light"] .card .card,html[data-theme="light"] .lite .lt-row,
-html[data-theme="light"] .card .lt-badge,html[data-theme="light"] .card .stat{
-  background:rgba(20,16,8,.04)!important}
+/* ห้อง 3 มิติหลังจอ — บนมือถือกินแบตและบังตัวหนังสือ ปิดไปเลย */
+#cpRoom,#cpVeil{display:none!important}
 
 /* ══════════════════════════════════════════════════════════════
-   การ์ดรถ — ย่อให้เท่าวิดเจ็ตบนหน้าโฮมของมือถือ
-   ══════════════════════════════════════════════════════════════
-   ของเดิมสูง 417px และทั้งหน้าห้องนักบิน 952px บนจอสูง 844px
-   แปลว่าการ์ดใบเดียวกินเกินครึ่งจอเพื่อบอกข้อมูล 5 อย่าง
-   วิดเจ็ตบนหน้าโฮมของมือถือทำได้ใน ~200px และบอกได้พอ ๆ กัน
-
-   ตัดสิ่งที่ซ้ำและสิ่งที่ไม่ใช่คำตอบของ "รถฉันโอเคไหม":
-     • วงแหวนใหญ่ — บอกเลข overdue ซึ่งซ้ำกับ dial ที่อยู่ข้างล่างอยู่แล้ว
-       ย้ายไปเป็นชิปเล็กข้างชื่อรถแทน เห็นพร้อมกันในบรรทัดเดียว
-     • ป้าย VEHICLE / STATUS — ผู้ใช้เห็นชื่อรถก็รู้แล้วว่าการ์ดนี้เรื่องอะไร
-     • ค่าใช้จ่าย/กม. — เป็น "—" จนกว่าจะมีข้อมูลพอ ซ่อนไว้จนกว่าจะมีค่าจริง
-   เหลือสองไทล์ที่ตอบคำถามจริง: อีกกี่กิโลถึงกำหนด กับ ตรวจครั้งล่าสุดเมื่อไร */
-
-.scr-grid{
-  display:flex!important;flex-direction:column;
-  gap:var(--sp-3)!important;padding:0!important}
-.scr-col{
-  padding:0!important;border:none!important;
-  border-top:0!important;border-left:0!important;background:none!important}
-
-/* ป้ายหมวดในการ์ดไม่ต้องมี — ชื่อรถบอกตัวเองอยู่แล้ว */
-.scr-col .hud-eye{display:none!important}
-
-/* ชื่อรถ + ชิปสถานะบรรทัดเดียว */
-.scr-car{
-  font-size:var(--t-lg)!important;line-height:1.3!important;
-  font-weight:700;margin:0!important;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.scr-meta{font-size:var(--t-xs)!important;line-height:1.5!important;
-  margin:2px 0 0!important;opacity:.7}
-
-/* วงแหวนใหญ่ออกไป — ข้อมูลเดียวกันไปอยู่ในไทล์ด้านล่างแล้ว */
-.gring{display:none!important}
-
-/* สวิตช์รถเป็นชิปเล็ก เลื่อนแนวนอนได้ถ้ามีหลายคัน */
-.cswitch{
-  display:flex!important;gap:var(--sp-2)!important;
-  margin:var(--sp-3) 0 0!important;
-  overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.cswitch::-webkit-scrollbar{display:none}
-.cswitch button{
-  flex:0 0 auto;padding:6px var(--sp-3)!important;
-  font-size:var(--t-xs)!important;border-radius:var(--r-pill)!important;
-  min-height:32px}
-
-/* ไทล์สองช่องเรียงข้างกัน แบบวิดเจ็ต ไม่ใช่สี่ช่องซ้อนสองแถว */
-.dials{
+   4. จอ 2 — สิ่งที่แชตบอตทั่วไปทำไม่ได้
+   ══════════════════════════════════════════════════════════════ */
+.msnap-2 .hero-feat{margin:0!important}
+.msnap-2 .hf-head{margin-bottom:var(--m-4)!important;text-align:center}
+.msnap-2 .hf-head small{
+  font-size:var(--m-t-xs)!important;text-transform:none!important;
+  letter-spacing:0!important;font-weight:600!important}
+.msnap-2 .hf-head h2{
+  font-size:var(--m-t-xl)!important;line-height:1.3!important;
+  letter-spacing:-.02em;margin-top:var(--m-1)!important}
+.msnap-2 .hf-grid{
   display:grid!important;grid-template-columns:1fr 1fr!important;
-  gap:var(--sp-2)!important;margin:0!important}
-.dial{
-  padding:var(--sp-3)!important;border-radius:var(--r-sm)!important;
-  border:none!important;background:rgba(255,255,255,.05)!important;
-  min-height:0!important;display:flex;flex-direction:column;gap:2px}
-html[data-theme="light"] .dial{background:rgba(20,16,8,.05)!important}
-/* ป้ายไทล์: ตัวเล็กแต่ไม่ต่ำกว่า 12px และเลิก ALL CAPS ที่อ่านช้า */
-.dial small{
-  font-size:var(--t-xs)!important;text-transform:none!important;
-  letter-spacing:.01em!important;opacity:.65;order:2;font-weight:500!important}
-.dial b{
-  font-size:22px!important;line-height:1.15!important;order:1;
-  font-variant-numeric:tabular-nums}
-.dial b u{font-size:var(--t-xs)!important;text-decoration:none;
-  margin-left:3px;opacity:.6}
+  gap:var(--m-2)!important}
+.msnap-2 .hf-card{
+  display:flex!important;flex-direction:column;align-items:flex-start;
+  gap:var(--m-2)!important;text-align:left;
+  padding:var(--m-3)!important;min-height:0!important;margin:0!important;
+  border:1px solid var(--m-line)!important;border-radius:var(--m-r)!important;
+  background:var(--m-fill)!important;box-shadow:none!important}
+.msnap-2 .hf-ic{
+  width:32px!important;height:32px!important;font-size:16px!important;
+  border-radius:10px!important;box-shadow:none!important}
+.msnap-2 .hf-card b{
+  font-size:var(--m-t)!important;line-height:1.3!important;font-weight:600}
+.msnap-2 .hf-card .hf-d{
+  display:-webkit-box!important;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  overflow:hidden;font-size:var(--m-t-sm)!important;line-height:1.4!important;
+  opacity:.6}
+.msnap-2 .hf-card .hf-w{display:none!important}
 
-/* ซ่อนสองไทล์ที่ไม่ตอบคำถาม "รถฉันโอเคไหม" บนจอเล็ก
-   ไทล์ที่ 2 คือจำนวนที่เลยกำหนด ซึ่งจะไปโผล่เป็นชิปข้างชื่อรถแทน
-   ไทล์ที่ 3 คือค่าใช้จ่าย/กม. ที่เป็น "—" จนกว่าจะมีข้อมูลพอ */
-.dials .dial:nth-child(2),.dials .dial:nth-child(3){display:none!important}
+/* ══════════════════════════════════════════════════════════════
+   5. จอ 3 — ตารางเครื่องมือ + วิดเจ็ต
+   ══════════════════════════════════════════════════════════════
+   ตารางไอคอน 4 ช่องแบบ Grab: เห็นเครื่องมือครบในจอเดียว ไม่ต้องเลื่อน
+   ไม่มีคำอธิบายใต้ไอคอน เพราะชื่อสั้น ๆ บอกได้อยู่แล้ว
+   และคำอธิบายคือสิ่งที่ทำให้หน้าเดิมยาวเป็นเมตร */
+.mgrid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:var(--m-2) var(--m-1);margin-bottom:var(--m-5)}
+.mgrid-t{
+  font-size:var(--m-t-lg);font-weight:700;letter-spacing:-.01em;
+  margin:0 0 var(--m-3)}
+.mtool{
+  display:flex;flex-direction:column;align-items:center;gap:var(--m-2);
+  padding:var(--m-2) 2px;border:0;background:none;cursor:pointer;
+  font-family:inherit;color:var(--ink);
+  -webkit-tap-highlight-color:transparent}
+.mtool .mt-ic{
+  width:52px;height:52px;border-radius:17px;display:grid;place-items:center;
+  font-size:23px;color:#fff;
+  background:linear-gradient(160deg,var(--c) 0%,color-mix(in srgb,var(--c) 78%,#000) 100%);
+  transition:transform .16s cubic-bezier(.34,1.4,.5,1)}
+@supports not (color:color-mix(in srgb,red 50%,blue)){
+  .mtool .mt-ic{background:var(--c)}
+}
+.mtool:active .mt-ic{transform:scale(.9)}
+.mtool b{
+  font-size:var(--m-t-xs);font-weight:500;line-height:1.25;text-align:center;
+  width:100%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  overflow:hidden;opacity:.85}
 
-/* แผนงานซ่อนบนมือถือ — มีการ์ด "งานที่ต้องทำ" อยู่ถัดลงไปอยู่แล้ว
-   โชว์สองที่ในหน้าเดียวคือการเปลืองจอเพื่อข้อมูลชุดเดิม */
-.plan{display:none!important}
+/* แผ่นเลื่อนขึ้น "เครื่องมือทั้งหมด" */
+.msheet-bg{
+  position:fixed;inset:0;z-index:200;background:rgba(4,7,13,.55);
+  opacity:0;transition:opacity .24s ease}
+.msheet-bg.on{opacity:1}
+.msheet{
+  position:fixed;left:0;right:0;bottom:0;z-index:201;
+  padding:var(--m-4) var(--m-4) calc(var(--m-5) + env(safe-area-inset-bottom));
+  border-radius:24px 24px 0 0;
+  background:var(--surface,#141821);border-top:1px solid var(--m-line);
+  transform:translateY(101%);transition:transform .3s cubic-bezier(.32,.72,0,1)}
+.msheet.on{transform:none}
+.msheet-h{width:36px;height:4px;border-radius:2px;margin:0 auto var(--m-4);
+  background:var(--m-fill-2)}
+.msheet .mgrid{margin-bottom:0}
 
-/* ห้องนักบินไม่ต้องกินเต็มจอบนมือถือ ให้สูงตามเนื้อหาจริง */
-.hpage[data-hp="cockpit"]{min-height:0!important}
-.cockpit{gap:var(--sp-3)!important;padding:0!important}
-.screen{padding:0!important;border:none!important;background:none!important}
-.scr-page{padding:0!important}
-/* ผนังซ้าย-ขวาของห้องนักบินเป็นของประดับสำหรับจอกว้าง มือถือไม่มีที่ให้ */
-.cockpit>.pane{display:none!important}
+/* วิดเจ็ตในจอ 3 */
+.msnap-3 .hfree{padding:0!important;max-width:none!important}
+.msnap-3 .greet-wrap,.msnap-3 .dash-sub{display:none!important}
+.msnap-3 .widget-grid{
+  display:flex!important;flex-direction:column;gap:var(--m-3)!important}
+.msnap-3 .widget,.msnap-3 .card,.msnap-3 .ccard,.msnap-3 .lite{
+  padding:var(--m-4)!important;border-radius:var(--m-r-lg)!important;
+  margin:0!important;box-shadow:none!important;
+  border:1px solid var(--m-line)!important}
 
-/* ══════════════ 5. ตัวเลขเด่น ══════════════ */
-.lt-badge b,.g-stat b,.stat-num{font-size:var(--t-2xl)!important}
-.pn-dist{font-size:var(--t-3xl)!important}
+/* ══════════════════════════════════════════════════════════════
+   6. ของที่ใช้ร่วมกันทุกหน้า
+   ══════════════════════════════════════════════════════════════ */
+/* เว้นที่ให้แถบล่างเสมอ ไม่งั้นของชิ้นสุดท้ายมุดใต้แถบจนกดไม่ได้ */
+.view>.scroll,.pane-inner,.setpane,.sp-wrap,.mag-wrap{
+  padding-bottom:calc(var(--m-nav) + var(--m-nav-gap)
+    + env(safe-area-inset-bottom) + var(--m-5))!important}
+.view>.scroll{
+  padding-left:var(--m-pad)!important;padding-right:var(--m-pad)!important;
+  padding-top:calc(env(safe-area-inset-top) + var(--m-4))!important}
+/* ปุ่มลอยไม่ต้องมีบนมือถือ — เครื่องมือมีตารางของตัวเองแล้ว
+   และแชตเป็นแท็บอยู่ในแถบล่าง ปุ่มลอยจึงเหลือแค่ของบังเนื้อหา */
+.fab-dock,.fab,#cpFab{display:none!important}
+.toast,#toast,.toast-wrap{
+  bottom:calc(var(--m-nav) + var(--m-nav-gap)
+    + env(safe-area-inset-bottom) + var(--m-3))!important;
+  z-index:180!important}
 
-/* ══════════════ 6. การ์ดรถในการาจ ══════════════
-   min-width:0 คือกุญแจ — flex item ตั้งต้นเป็น min-width:auto
-   จึงไม่ยอมหด แล้วข้อความถูกบังคับหักบรรทัดทุกช่องว่าง
-   ห้ามใช้ word-break:break-all กับไทย มันตัดกลางคำผิดหลักภาษา */
-.gcar{flex-wrap:wrap!important;gap:var(--sp-3)!important;align-items:center!important}
-.gcar>div[style*="flex:1"],.gcar>.gname{
-  flex:1 1 auto!important;min-width:0!important;order:2}
-.gcar>.gi{order:1;flex-shrink:0}
-.gcar h4{overflow-wrap:break-word;word-break:normal!important}
-.gcar .gs{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.gcar::after{content:"";flex-basis:100%;height:0;order:2.5}
-.gcar>.btn{order:3;min-height:var(--tap)}
-.gcar>.btn.primary{flex:1 1 auto!important;justify-content:center;order:3}
-/* ปุ่มลบต้องห่างจากปุ่มที่ใช้บ่อยอย่างน้อย 8px — ปุ่มทำลายข้อมูลไม่ควรอยู่ติดกัน */
-.gcar>.btn.danger{flex:0 0 var(--tap)!important;justify-content:center;
-  padding:0!important;order:4;margin-left:var(--sp-2)}
+/* กรอบซ้อนกรอบในวิดเจ็ต — ชั้นในใช้พื้นหลังต่างระดับแทนเส้น
+   ทุกเส้นกินความกว้างและทำให้สายตาสะดุดโดยไม่เพิ่มความเข้าใจ */
+.msnap-3 .widget .card,.msnap-3 .widget .wrow,.msnap-3 .widget .lt-row,
+.msnap-3 .widget .nrow,.msnap-3 .widget>.card{
+  border-color:transparent!important;background:var(--m-fill)!important;
+  border-radius:var(--m-r)!important;box-shadow:none!important}
 
-/* ══════════════ 7. ปุ่มและช่องกรอก ══════════════ */
-.btn{min-height:var(--tap);padding:var(--sp-3) var(--sp-4)!important;
-  font-size:var(--t-sm)!important;border-radius:var(--r-pill)!important}
-.btn.primary{font-weight:700}
-.input,.odo-i,.pm-fl input,input,select,textarea{
-  min-height:46px;font-size:var(--t-base)!important;
-  border-radius:var(--r-sm)!important}
+/* ตัวอักษรทั้งระบบ */
+body,p,li,td{line-height:1.5}
+h1,.section-title,.sp-h1,.w-h1{
+  font-size:var(--m-t-xl)!important;line-height:1.25!important;
+  letter-spacing:-.02em}
+h2{font-size:var(--m-t-lg)!important;line-height:1.3!important}
+h3,h4{font-size:var(--m-t-md)!important;line-height:1.35!important}
+.section-sub,.gs,p{font-size:var(--m-t)!important;line-height:1.5!important}
+small{font-size:var(--m-t-xs)!important;line-height:1.45!important}
+
+/* การ์ดมาตรฐาน — เส้นบางหนึ่งชั้น ไม่มีเงา ไม่มีกรอบซ้อนกรอบ */
+.card,.lite,.lg-card,.sp-card,.set-card,.ccard,.su-card,.wcard,.kcard,
+.bpanel,.pk-card,.sp-cfg,.mag-card,.widget{
+  padding:var(--m-4)!important;border-radius:var(--m-r-lg)!important;
+  margin-bottom:var(--m-3)!important;box-shadow:none!important}
+.card .card,.card .stat,.lite .lt-row,.lg-card .lg-item,
+.wcard .wrow,.set-card .set-row,.card .lt-badge{
+  border-color:transparent!important;background:var(--m-fill)!important;
+  border-radius:var(--m-r)!important}
+
+/* ปุ่มและช่องกรอก */
+.btn{
+  min-height:var(--m-tap);padding:var(--m-3) var(--m-4)!important;
+  font-size:var(--m-t)!important;border-radius:999px!important;
+  box-shadow:none!important}
 /* 16px คือขนาดต่ำสุดที่ iOS ไม่ซูมหน้าจอเข้าเองตอนแตะช่องกรอก */
+input,select,textarea,.input,.odo-i{
+  min-height:46px;font-size:16px!important;border-radius:var(--m-r)!important}
+.lt-row,.set-row,.wrow,.tl-row,.lg-item{
+  padding:var(--m-3)!important;min-height:46px;border-radius:var(--m-r)!important}
 
-/* ══════════════ 8. แถวรายการ ══════════════ */
-.lt-row,.set-row,.wrow,.spw-row,.tl-row,.lg-item{
-  padding:var(--sp-3)!important;min-height:48px;
-  border-radius:var(--r-sm)!important}
+/* การ์ดรถในการาจ — กริดตายตัว ทุกใบหน้าตาเหมือนกันไม่ว่าชื่อจะยาวแค่ไหน
+   ของเดิมเป็นแถวเดียวสี่ชิ้นที่ห่อเอง แล้วห่อไม่เหมือนกันในแต่ละใบ */
+.gcar{
+  display:grid!important;grid-template-columns:auto 1fr auto;
+  grid-template-areas:"ic name del" "act act act";
+  gap:var(--m-3)!important;align-items:center}
+.gcar>.gi{grid-area:ic}
+.gcar>div[style*="flex:1"],.gcar>.gname{grid-area:name;min-width:0!important}
+.gcar h4{margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gcar .gs{font-size:var(--m-t-sm)!important;margin-top:2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gcar>.btn.primary{grid-area:act;width:100%;justify-content:center}
+/* ปุ่มลบอยู่คนละแถวกับปุ่มหลัก ปุ่มทำลายข้อมูลไม่ควรกดพลาดได้ง่าย */
+.gcar>.btn.danger{grid-area:del;width:38px;min-width:38px;height:38px;
+  padding:0!important;justify-content:center;border-radius:999px!important}
+.gsum-cell{padding:var(--m-3) var(--m-2)!important;border-color:transparent!important;
+  border-radius:var(--m-r)!important}
+.gsum-cell b{font-size:var(--m-t-xl)!important;letter-spacing:-.02em}
+/* ป้ายเดิม 10px/1.3 ทำให้วรรณยุกต์ไทยโดนตัดหัว ("สุขภาพรถ" → "สุขภาพรก") */
+.gsum-cell span{font-size:var(--m-t-xs)!important;line-height:1.45!important}
 
-/* ══════════════ 9. ระยะระหว่างกลุ่ม ══════════════ */
-.grid2,.stat-grid,.hf-grid,.lt-list{gap:var(--sp-3)!important}
-.hero-feat{margin-bottom:var(--sp-4)!important}
-.odo-box,.pn-box{padding:var(--sp-5)!important;border-radius:var(--r-md)!important}
-.pl-menu{max-width:calc(100vw - var(--sp-5))!important}
-.main.lg-host,.pm-ov{z-index:200}
+/* หน้าตั้งค่า — แถบหมวดเลื่อนแนวนอน */
+.set-body{grid-template-columns:1fr!important;gap:var(--m-4)!important}
+.set-rail{
+  flex-direction:row!important;position:static!important;gap:var(--m-2)!important;
+  overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  -webkit-mask-image:linear-gradient(to right,#000 calc(100% - 24px),transparent);
+  mask-image:linear-gradient(to right,#000 calc(100% - 24px),transparent)}
+.set-rail::-webkit-scrollbar{display:none}
+.set-l{flex:0 0 auto;white-space:nowrap;min-height:38px;
+  border-radius:999px!important;font-size:var(--m-t)!important}
+.set-wrap{padding:var(--m-4) var(--m-pad)
+  calc(var(--m-nav) + var(--m-nav-gap) + env(safe-area-inset-bottom) + var(--m-5))!important}
+.su-danger .row{display:grid!important;grid-template-columns:1fr!important;
+  gap:var(--m-2)!important}
+.su-danger button{width:100%;min-height:var(--m-tap);border-radius:var(--m-r)!important}
+
+/* การ์ดนิตยสาร — ปกเตี้ยลง คำโปรยสองบรรทัด
+   หน้ารายการมีไว้ให้เลือกว่าจะอ่านอันไหน ไม่ใช่ให้อ่านจบตรงนั้น */
+.mag-cover{height:112px!important;border-radius:var(--m-r)!important}
+.mag-cover .ti{font-size:28px!important}
+.mag-card h4{font-size:var(--m-t-md)!important;margin:var(--m-2) 0 var(--m-1)!important;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mag-card p{font-size:var(--m-t-sm)!important;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mag-grid{gap:var(--m-3)!important}
+
+/* หน้าเริ่มแชต — ปุ่มตัวอย่างเดิมเห็นพื้นตอน hover เท่านั้น
+   บนมือถือไม่มี hover ผู้ใช้จึงไม่รู้ว่ากดได้ */
+.w-h1{font-size:var(--m-t-xl)!important}
+.w-box{border-radius:var(--m-r-lg)!important;padding:var(--m-3)!important}
+.w-box textarea{font-size:16px!important}
+.w-q{min-height:46px;padding:var(--m-3) var(--m-4)!important;
+  font-size:var(--m-t)!important;border-radius:var(--m-r)!important;
+  background:var(--m-fill)!important}
+
+/* แผงเต็มจอ (แผนที่ที่จอด ฯลฯ) ต้องอยู่เหนือแถบล่าง */
+.pm-ov,.pn-ov,.main.lg-host{z-index:210}
 
 }
 
-/* ══════════════ จอเล็กมาก ══════════════ */
-@media(max-width:380px){
-  :root{--nav-inset:12px}
-  .nav-links a,.btn-signin{width:42px!important;min-width:42px!important;height:42px!important}
-  .nav-links a .ti{font-size:21px!important}
-  .hfree,#v-home>.scroll,.view>.scroll{
-    padding-left:var(--sp-4)!important;padding-right:var(--sp-4)!important}
-  .section-title,.sp-h1,h1,.w-h1{font-size:24px!important}
+/* ───────────── จอเล็กมาก ───────────── */
+@media(max-width:360px){
+  :root{--m-pad:12px;--m-nav:60px}
+  .mtool .mt-ic{width:46px;height:46px;border-radius:15px;font-size:20px}
+  .msnap-1 .scr-car{font-size:22px!important}
 }
 
-/* ══════════════ แนวนอน ══════════════ */
-@media(max-width:900px) and (max-height:460px) and (orientation:landscape){
-  :root{--nav-h:48px}
-  .nav-links a,.btn-signin{width:40px!important;height:40px!important;min-width:40px!important}
-  .hpage{min-height:auto!important}
+/* ───────────── แนวนอน ───────────── */
+@media(max-width:900px) and (max-height:500px) and (orientation:landscape){
+  :root{--m-nav:52px}
+  .msnap-1,.msnap-2{height:auto;min-height:100dvh}
+  .mgrid{grid-template-columns:repeat(6,1fr)}
 }
 
-/* ══════════════ เคารพการตั้งค่าผู้ใช้ ══════════════ */
+/* ───────────── เคารพการตั้งค่าผู้ใช้ ───────────── */
 @media(prefers-reduced-motion:reduce){
-  .nav-links a{transition:none}
-  .nav-links a:active,.btn-signin:active{transform:none}
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   มือถือ: การ์ดอื่น ๆ ให้สั้นเท่าวิดเจ็ตหน้าโฮม
-   บนจอ 390px รายละเอียดยาว ๆ กลายเป็นข้อความ 4-5 บรรทัดต่อการ์ด
-   หน้าจึงยาวจนต้องเลื่อนหาของ — ตัดเหลือหัวข้อ + ปุ่มเดียว
-   ══════════════════════════════════════════════════════════════════ */
-@media(max-width:760px){
-
-  /* แถบ "สิ่งที่ต้องทำถัดไป" — เดิมสูงราว 130px เพราะคำอธิบายตัดบรรทัด */
-  .nx{display:grid!important;
-    grid-template-columns:auto 1fr auto;align-items:center;
-    gap:var(--sp-3)!important;padding:var(--sp-3) var(--sp-4)!important;
-    border-radius:var(--r-md)!important}
-  .nx .ic{width:34px!important;height:34px!important;font-size:17px!important;
-    border-radius:11px!important}
-  .nx .tx{min-width:0}
-  .nx .tx b{font-size:var(--t-base)!important;line-height:1.35!important;
-    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
-    overflow:hidden}
-  /* คำอธิบายรองซ้ำกับหัวข้ออยู่แล้ว บนมือถือไม่คุ้มพื้นที่ */
-  .nx .tx small{display:none!important}
-  .nx .go{flex-shrink:0;padding:9px 13px!important;font-size:var(--t-sm)!important;
-    white-space:nowrap}
-
-  /* แถบชูจุดเด่น — บนมือถือเป็นไทล์ 2 คอลัมน์ ไม่ใช่บทความ */
-  .hero-feat{margin-top:var(--sp-5)!important}
-  .hf-head{margin-bottom:var(--sp-3)!important}
-  .hf-head h2{font-size:var(--t-lg)!important;line-height:1.3!important}
-  .hf-grid{display:grid!important;grid-template-columns:1fr 1fr!important;
-    gap:var(--sp-2)!important}
-  .hf-card{padding:var(--sp-3)!important;border-radius:var(--r-md)!important;
-    gap:var(--sp-2)!important;min-height:0!important}
-  .hf-ic{width:32px!important;height:32px!important;font-size:16px!important;
-    border-radius:10px!important}
-  .hf-card b{font-size:var(--t-sm)!important;line-height:1.3!important}
-  .hf-card .hf-d,.hf-card .hf-w{display:none!important}
+  .mhint i{animation:none}
+  .mtab .mt-i,.mtool .mt-ic,.msheet{transition:none}
+  #v-home>.scroll{scroll-behavior:auto}
 }
 </style>
 <style id="vtcss">
@@ -4687,7 +4778,7 @@ function renderDashCars(){const w=$("dashCars");if(!w)return;const g=garage();
     const wireframe = WIREFRAME_SVGs[style] || WIREFRAME_SVGs.sedan;
     const stat=last?`<div class="cstatus"><span class="dot"></span>${(window.spireT?window.spireT("ตรวจล่าสุด","Last checked"):(lang==="en"?"Last checked":"ตรวจล่าสุด"))}: ${new Date(last.t).toLocaleDateString((window.spireT?window.spireT("th-TH","en-US"):(lang==="en"?"en-US":"th-TH")),{day:"numeric",month:"short"})}</div>`
       :`<div class="cstatus warn"><span class="dot"></span>${(window.spireT?window.spireT("ยังไม่เคยวินิจฉัย","Never diagnosed"):(lang==="en"?"Never diagnosed":"ยังไม่เคยวินิจฉัย"))}</div>`;
-    return `<div class="ccard">${wireframe}<div class="top" style="position:relative; z-index:1;"><div class="ci"><i class="ti ti-car"></i></div><div><h4>${esc(c.name)}</h4><div class="cs">${esc(c.year||"-")} · ${esc(c.mileage||"-")} กม.</div></div></div><div style="position:relative; z-index:1;">${stat}<button class="cdiag" data-diag="${c.id}"><i class="ti ti-stethoscope"></i> ${(window.spireT?window.spireT("วินิจฉัย","Diagnose"):(lang==="en"?"Diagnose":"วินิจฉัย"))}</button></div></div>`}).join("");
+    return `<div class="ccard">${wireframe}<div class="top" style="position:relative; z-index:1;"><div class="ci"><i class="ti ti-car"></i></div><div><h4>${esc(c.name)}</h4><div class="cs">${esc(c.year||"-")} · ${c.mileage?Number(c.mileage).toLocaleString("en-US"):"-"} กม.</div></div></div><div style="position:relative; z-index:1;">${stat}<button class="cdiag" data-diag="${c.id}"><i class="ti ti-stethoscope"></i> ${(window.spireT?window.spireT("วินิจฉัย","Diagnose"):(lang==="en"?"Diagnose":"วินิจฉัย"))}</button></div></div>`}).join("");
   html+=`<div class="cadd" data-view="garage"><i class="ti ti-plus" style="font-size:26px"></i><span>${(window.spireT?window.spireT("เพิ่มรถ","Add a car"):(lang==="en"?"Add a car":"เพิ่มรถ"))}</span></div>`;
   w.innerHTML=html}
 
@@ -4753,7 +4844,7 @@ function renderGarage(){if(!document.getElementById("garageList"))return;const g
     const wireframeSvg = WIREFRAME_SVGs[bodyStyle] || WIREFRAME_SVGs.sedan;
     return `<div class="card gcard-wrap" style="margin-bottom:14px;">${wireframeSvg}
       <div class="gcar" style="position:relative; z-index:1;"><div class="gi"><i class="ti ti-car"></i></div>
-      <div style="flex:1"><h4>${esc(c.name)}</h4><div class="gs">${esc(c.year||"-")} · ${esc(c.mileage||"-")} กม.</div></div>
+      <div style="flex:1"><h4>${esc(c.name)}</h4><div class="gs">${esc(c.year||"-")} · ${c.mileage?Number(c.mileage).toLocaleString("en-US"):"-"} กม.</div></div>
       <button class="btn primary" data-diag2="${c.id}" style="padding:8px 14px"><i class="ti ti-stethoscope"></i> ${(window.spireT?window.spireT("วินิจฉัย","Diagnose"):(lang==="en"?"Diagnose":"วินิจฉัย"))}</button>
       <button class="btn danger" data-del="${c.id}" style="padding:8px 12px"><i class="ti ti-trash"></i></button></div>
       <div class="ghist" style="position:relative; z-index:1;"><div class="h">${tr("garage.hist")}</div>${(c.history&&c.history.length)?c.history.slice(0,8).map(h=>`<div class="hrow"><div class="q">${esc(h.q)}</div><div class="a">${esc(h.a)}</div><div class="t">${new Date(h.t).toLocaleString((window.spireT?window.spireT("th-TH","en-US"):(lang==="en"?"en-US":"th-TH")),{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</div></div>`).join(""):`<div style="color:var(--faint);font-size:13px">${tr("garage.nohist")}</div>`}</div></div>`
@@ -13962,6 +14053,336 @@ function start(){
   setTimeout(()=>arm(D.body),1600);
 }
 if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",start); else start();
+})();
+</script>
+<script id="mjs">
+/* ══════════════════════════════════════════════════════════════════
+   SpireONE — ตัวประกอบหน้าจอมือถือ (เขียนใหม่ทั้งหมด)
+
+   ไฟล์นี้ทำสามอย่าง แล้วหยุด:
+     1. สร้างแถบล่าง 5 แท็บ (ไอคอน + ชื่อ) แทนแถบบนของเดสก์ท็อป
+     2. จัดหน้าหลักเป็นสามจอที่เลื่อนแล้วล็อก
+        จอ 1 ห้องนักบิน · จอ 2 สิ่งที่แชตบอตทำไม่ได้ · จอ 3 เครื่องมือ+วิดเจ็ต
+     3. สร้างตารางเครื่องมือ 4 ช่องแบบ Grab พร้อมแผ่นเลื่อน "ทั้งหมด"
+
+   กติกาเหล็กสองข้อ:
+     • จอคอมต้องไม่ขยับ — ทุกอย่างทำงานเมื่อ matchMedia ตรงเท่านั้น
+       และถอนคืนให้ครบเมื่อหน้าจอกว้างขึ้น (หมุนเครื่อง / เปิดบนแท็บเล็ต)
+     • ไม่เขียนตัวนำทางเอง — เรียก window.switchView ที่มีอยู่แล้ว
+       เพราะมันรู้เรื่องการข้ามไฟล์ (index/garage/news/…) ซึ่งถ้าเขียนใหม่
+       จะพลาดเรื่องที่มองไม่เห็น เช่นการรอ auth ก่อนเปลี่ยนหน้า
+   ══════════════════════════════════════════════════════════════════ */
+(function(){
+"use strict";
+const D=document,$=id=>D.getElementById(id);
+const T=(th,en)=>(window.spireT?window.spireT(th,en):"th"===(window.spireLang?window.spireLang():"th")?th:en);
+const MQ=matchMedia("(max-width:760px)");
+
+/* ─────────── 1. แถบล่าง 5 แท็บ ─────────── */
+/* ร้านค้าไม่ได้เป็นแท็บแล้ว — มันย้ายไปเป็นไอคอนในตารางเครื่องมือ
+   ห้าแท็บคือเพดานที่นิ้วยังกดแม่นบนจอ 360px ถ้ามีหกจะเริ่มกดพลาด */
+const TABS=[
+  {k:"home",     ic:"ti-home",      th:"หน้าหลัก", en:"Home"},
+  {k:"garage",   ic:"ti-car",       th:"การาจ",    en:"Garage"},
+  {k:"chat",     ic:"ti-message-2", th:"แชต",      en:"Chat"},
+  {k:"magazine", ic:"ti-book-2",    th:"นิตยสาร",  en:"Magazine"},
+  {k:"account",  ic:"ti-user",      th:"บัญชี",    en:"Account"}
+];
+
+function page(){
+  try{ if(window.__SPIRE_PAGE__)return window.__SPIRE_PAGE__ }catch(e){}
+  const f=(location.pathname.split("/").pop()||"index.html").toLowerCase();
+  return ({"garage.html":"garage","news.html":"magazine","spares.html":"shop",
+           "profile.html":"profile","chat.html":"chat"})[f]||"home";
+}
+
+/* เข้าสู่ระบบแล้วหรือยัง — อ่านจากปุ่มของเดิมที่ renderAuthUI คุมอยู่
+   ไม่ไปแตะ currentUser เพราะมันเป็นตัวแปรระดับบนสุดใน <script> ธรรมดา
+   ซึ่ง "ไม่" ผูกกับ window (ต่างจาก function declaration) จึงอ่านไม่ได้ */
+function signedIn(){
+  const a=$("avatarBtn");
+  return !!(a&&getComputedStyle(a).display!=="none");
+}
+
+function navHTML(){
+  const cur=page();
+  return TABS.map(t=>{
+    /* หน้าอะไหล่ไม่มีแท็บของตัวเองแล้ว (ย้ายไปอยู่ในตารางเครื่องมือ)
+       แต่ต้องมีแท็บสว่างอยู่หนึ่งอันเสมอ ไม่งั้นผู้ใช้จะไม่รู้ว่าตัวเองอยู่ตรงไหน
+       — ชี้กลับไปที่หน้าหลัก ซึ่งเป็นทางที่เขาเดินเข้ามาจริง */
+    const on=(t.k===cur)||(t.k==="account"&&cur==="profile")
+             ||(t.k==="home"&&cur==="shop");
+    return `<button class="mtab${on?" on":""}" data-mnav="${t.k}"
+      aria-label="${T(t.th,t.en)}"${on?' aria-current="page"':""}>
+      <span class="mt-i" data-mslot="${t.k}"><i class="ti ${t.ic}"></i></span>
+      <b>${T(t.th,t.en)}</b></button>`;
+  }).join("");
+}
+
+function mountNav(){
+  /* หน้าแชตมีแถบเครื่องมือและช่องพิมพ์ของตัวเองที่ขอบล่างอยู่แล้ว
+     ใส่แถบซ้อนลงไปจะทับกันพอดี — ดูจากว่าหน้านั้นมีแถบเดสก์ท็อปไหม */
+  if(!D.querySelector(".navwrap"))return;
+  let n=$("mnav");
+  if(!n){
+    n=D.createElement("nav"); n.className="mnav"; n.id="mnav";
+    n.setAttribute("role","navigation");
+    D.body.appendChild(n);
+    n.addEventListener("click",e=>{
+      const b=e.target.closest("[data-mnav]"); if(!b)return;
+      go(b.dataset.mnav);
+    });
+  }
+  n.innerHTML=navHTML();
+  paintAvatar();
+}
+
+function go(k){
+  if(k==="chat"){ location.href="chat.html"; return }
+  if(k==="account"){
+    /* ยังไม่ได้เข้าระบบ → กดปุ่มเดิมของหน้า ซึ่งผูกกับ Firebase ไว้แล้ว */
+    if(!signedIn()){ const b=$("signinBtn"); if(b){b.click();return} }
+    k="profile";
+  }
+  try{ if(typeof window.switchView==="function"){window.switchView(k);return} }catch(e){}
+  const f=({home:"index.html",garage:"garage.html",magazine:"news.html",
+            shop:"spares.html",profile:"profile.html"})[k];
+  if(f)location.href=f;
+}
+
+/* แท็บบัญชีโชว์รูปโปรไฟล์จริงเมื่อเข้าระบบแล้ว เหมือน Grab กับ Uber
+   คนจำหน้าตัวเองได้เร็วกว่าจำไอคอนคนทั่วไป */
+function paintAvatar(){
+  const slot=D.querySelector('[data-mslot="account"]'); if(!slot)return;
+  const a=$("avatarBtn");
+  if(signedIn()&&a&&a.innerHTML.trim()){
+    if(slot.dataset.av!==a.innerHTML){slot.dataset.av=a.innerHTML;slot.innerHTML=a.innerHTML}
+  }else if(slot.dataset.av!==undefined||!slot.querySelector("i")){
+    delete slot.dataset.av;
+    slot.innerHTML='<i class="ti ti-user"></i>';
+  }
+}
+
+/* ─────────── 2. สามจอที่เลื่อนแล้วล็อก ─────────── */
+/* โครงเดิมของหน้าหลักคือ  .scroll > [#hstack, #hfree]  โดย #hhero อยู่ใน #hfree
+   สิ่งที่ต้องทำมีอย่างเดียว: ยก #hhero ออกมาเป็นพี่น้อง แล้วติดคลาสให้ทั้งสาม
+   ไม่ต้องย้ายอย่างอื่นเลย — ยิ่งย้ายน้อย ยิ่งพังยาก */
+function arrange(){
+  const view=$("v-home"); if(!view)return;
+  const sc=view.querySelector(".scroll"); if(!sc)return;
+  const stack=$("hstack"),hero=$("hhero"),free=$("hfree");
+  if(!free)return;
+
+  if(hero&&hero.parentElement!==sc)sc.insertBefore(hero,free);
+
+  if(stack){stack.classList.add("msnap","msnap-1")}
+  if(hero){hero.classList.add("msnap","msnap-2")}
+  free.classList.add("msnap","msnap-3");
+
+  /* ระดับพื้นฐานไม่มีห้องนักบิน (#hstack) จอแรกจึงเป็นจอฮีโร่แทน
+     ไม่งั้นจะเหลือสองจอโดยจอแรกว่างเปล่า */
+  if(!stack&&hero){hero.classList.remove("msnap-2");hero.classList.add("msnap-1")}
+
+  hint(stack||hero);
+  hint(stack?hero:null);
+  tools();
+
+  /* ครั้งแรกที่จัดเสร็จ ต้องอยู่ที่จอแรกพอดี
+     การย้าย #hhero ทำให้ความสูงเหนือจุดเลื่อนเปลี่ยน เบราว์เซอร์บางตัว
+     จึงชดเชยจนค้างกลางจอ — เห็นเป็นหน้าที่ "เปิดมาแล้วเลื่อนไปเองแล้ว" */
+  /* เปิดหน้ามาต้องอยู่จอแรกเสมอ
+     ระหว่างบูตมีทั้งการย้าย #hhero และ scroll-snap ที่เข้าที่เอง
+     ทำให้บางจังหวะหน้าเด้งไปค้างที่จอ 2 ตั้งแต่ยังไม่มีใครแตะ */
+  if(!arrange.done){
+    arrange.done=true; at=0;
+    if(sc.scrollTop)sc.scrollTop=0;
+  }
+  wireSnap(sc);
+}
+
+/* ─────────── ตัวบังคับล็อกจอ ───────────
+   scroll-snap ของ CSS อาศัย "การปัดจบ" ของเบราว์เซอร์ ซึ่งแต่ละตัวตัดสินใจ
+   ไม่เหมือนกัน — บางเครื่องปัดสั้น ๆ แล้วค้างกลางจอ เห็นสองจอครึ่ง ๆ พร้อมกัน
+   ซึ่งเป็นภาพที่แย่กว่าไม่ล็อกเลย จึงมีตัวเก็บกวาดหลังเลื่อนหยุดอีกชั้น
+   ทำงานเฉพาะสองจอแรกเท่านั้น จอ 3 สูงกว่าจอ ต้องเลื่อนอ่านได้อิสระ */
+let settling=false,at=0;
+/* เกณฑ์ 20% ของความสูงจอ — เท่ากับที่แอปอ่านนิยาย/สไลด์ใช้กัน
+   ต่ำกว่านี้ปัดโดนโดยไม่ตั้งใจก็เปลี่ยนจอ สูงกว่านี้ต้องออกแรงปัดยาวจนเมื่อย */
+const STEP=.20;
+function settle(sc){
+  if(settling)return;
+  const h=sc.clientHeight; if(h<200)return;
+  const t=sc.scrollTop;
+  if(t>=h*2-6){at=2;return}                 /* เข้าจอ 3 แล้ว ปล่อยเลื่อนอิสระ */
+  const d=t-at*h;
+  let to=at;
+  if(d>h*STEP)to=Math.min(at+1,2);
+  else if(d<-h*STEP)to=Math.max(at-1,0);
+  at=to;
+  const target=to*h;
+  if(Math.abs(t-target)<3)return;
+  settling=true;
+  sc.scrollTo({top:target,behavior:"smooth"});
+  setTimeout(()=>{settling=false},520);
+}
+/* ยังไม่มีใครแตะจอ = ต้องอยู่จอแรก
+   ระหว่างบูต เลเยอร์อื่นวาดของเพิ่มเรื่อย ๆ (ห้องนักบิน ข่าว วิดเจ็ต)
+   ความสูงเปลี่ยนทีไรตำแหน่งเลื่อนขยับตาม จนหน้าเปิดมาค้างที่จอ 2 เอง
+   ล็อกไว้จนกว่าจะมีการปัด/แตะ/กดปุ่มจริง แล้วค่อยปล่อยให้ผู้ใช้คุม */
+let touched=false;
+function wireSnap(sc){
+  if(sc.__msnap)return; sc.__msnap=true;
+  let e=null;
+  /* ต้องรอให้ผู้ใช้แตะก่อนถึงจะเริ่มล็อกจอ
+     ระหว่างบูตความสูงยังโตอยู่ (ห้องนักบิน · ข่าว · วิดเจ็ตทยอยมา)
+     ทุกครั้งที่โตจะมี scroll event หลุดออกมาหนึ่งครั้ง ถ้าล็อกทันที
+     ระบบจะคิดว่า "ผู้ใช้ปัดลงมาแล้ว" แล้วพาไปจอ 2 ตั้งแต่ยังไม่มีใครแตะ */
+  const end=()=>{ if(MQ.matches&&touched)settle(sc) };
+  if("onscrollend" in sc)sc.addEventListener("scrollend",end);
+  else sc.addEventListener("scroll",()=>{clearTimeout(e);e=setTimeout(end,140)},{passive:true});
+
+  const mark=()=>{touched=true};
+  ["wheel","touchstart","keydown","pointerdown"].forEach(t=>
+    addEventListener(t,mark,{passive:true,once:true}));
+  sc.addEventListener("scroll",()=>{
+    if(touched||settling||!MQ.matches)return;
+    if(sc.scrollTop)sc.scrollTop=0;
+  },{passive:true});
+}
+
+/* ลูกศรกระพริบใต้จอ บอกว่ายังมีจอถัดไป */
+function hint(el){
+  if(!el||el.querySelector(".mhint"))return;
+  const h=D.createElement("div"); h.className="mhint"; h.setAttribute("aria-hidden","true");
+  h.innerHTML='<i class="ti ti-chevron-down"></i>';
+  el.appendChild(h);
+}
+
+/* ─────────── 3. ตารางเครื่องมือแบบ Grab ─────────── */
+/* เจ็ดตัวที่ใช้บ่อยขึ้นหน้าแรก ที่เหลืออยู่ในแผ่น "ทั้งหมด"
+   สองแถวคือเพดานก่อนที่ตารางจะเริ่มดูเป็นกำแพงไอคอน */
+const FEATS=[
+  {k:"text",  ic:"ti-message-2",    c:"#4F8FF7", th:"พิมพ์ถาม",       en:"Ask"},
+  {k:"image", ic:"ti-camera",       c:"#A46BF5", th:"ถ่ายรูป",        en:"Photo"},
+  {k:"video", ic:"ti-video",        c:"#E85DA6", th:"วิดีโอ",         en:"Video"},
+  {k:"listen",ic:"ti-ear",          c:"#37C08A", th:"ฟังเสียง",       en:"Listen"},
+  {k:"quote", ic:"ti-receipt-2",    c:"#E8A33D", th:"เช็กราคา",       en:"Quote"},
+  {k:"shake", ic:"ti-activity",     c:"#3FC3D6", th:"วัดการสั่น",     en:"Shake"},
+  {k:"park",  ic:"ti-map-pin",      c:"#F0655C", th:"จำที่จอด",       en:"Parking"},
+  {k:"own",   ic:"ti-report-money", c:"#7B8CF0", th:"ต้นทุน",         en:"Costs"},
+  {k:"spares",ic:"ti-package",      c:"#F08A3D", th:"อะไหล่",         en:"Spares"}
+];
+const HOME7=["text","image","listen","quote","shake","park","spares"];
+
+const tile=f=>`<button class="mtool" data-mfeat="${f.k}">
+  <span class="mt-ic" style="--c:${f.c}"><i class="ti ${f.ic}"></i></span>
+  <b>${T(f.th,f.en)}</b></button>`;
+
+function tools(){
+  const free=$("hfree"); if(!free)return;
+  let g=$("mtools");
+  if(!g){
+    g=D.createElement("section"); g.id="mtools";
+    free.insertBefore(g,free.firstChild);
+    g.addEventListener("click",e=>{
+      const all=e.target.closest("[data-mall]"); if(all){sheet();return}
+      const b=e.target.closest("[data-mfeat]"); if(b)run(b.dataset.mfeat);
+    });
+  }
+  g.innerHTML=`<h2 class="mgrid-t">${T("เครื่องมือ","Tools")}</h2>
+    <div class="mgrid">
+      ${HOME7.map(k=>tile(FEATS.find(f=>f.k===k))).join("")}
+      <button class="mtool" data-mall="1">
+        <span class="mt-ic" style="--c:#6B7A90"><i class="ti ti-layout-grid"></i></span>
+        <b>${T("ทั้งหมด","All")}</b></button>
+    </div>`;
+}
+
+function run(k){
+  close();
+  const f=FEATS.find(x=>x.k===k); if(!f)return;
+  if(k==="spares"){ try{window.switchView("shop")}catch(e){location.href="spares.html"} return }
+  if(k==="text"||k==="image"||k==="video"){
+    try{ if(typeof window.openChat==="function"){window.openChat({attach:k});return} }catch(e){}
+    location.href="chat.html?attach="+encodeURIComponent(k); return;
+  }
+  try{ if(typeof window.openTool==="function"){window.openTool(k);return} }catch(e){}
+  location.href="chat.html?attach="+encodeURIComponent(k);
+}
+
+/* แผ่นเลื่อนขึ้น "เครื่องมือทั้งหมด" */
+let bg=null,sh=null;
+function sheet(){
+  if(sh)return;
+  bg=D.createElement("div"); bg.className="msheet-bg";
+  sh=D.createElement("div"); sh.className="msheet";
+  sh.setAttribute("role","dialog"); sh.setAttribute("aria-modal","true");
+  sh.innerHTML=`<div class="msheet-h"></div>
+    <h2 class="mgrid-t">${T("เครื่องมือทั้งหมด","All tools")}</h2>
+    <div class="mgrid">${FEATS.map(tile).join("")}</div>`;
+  D.body.appendChild(bg); D.body.appendChild(sh);
+  requestAnimationFrame(()=>{bg.classList.add("on");sh.classList.add("on")});
+  bg.addEventListener("click",close);
+  sh.addEventListener("click",e=>{
+    const b=e.target.closest("[data-mfeat]"); if(b)run(b.dataset.mfeat);
+  });
+  addEventListener("keydown",esc);
+}
+function esc(e){ if(e.key==="Escape")close() }
+function close(){
+  if(!sh)return;
+  removeEventListener("keydown",esc);
+  const a=bg,b=sh; bg=sh=null;
+  a.classList.remove("on"); b.classList.remove("on");
+  setTimeout(()=>{a.remove();b.remove()},320);
+}
+
+/* ─────────── ถอนคืนเมื่อกลับไปจอกว้าง ─────────── */
+/* หมุนเครื่องเป็นแนวนอนหรือเปิดบนแท็บเล็ตแล้วต้องได้หน้าเดิมของเดสก์ท็อปกลับมา
+   ครบทุกชิ้น ไม่ใช่ครึ่ง ๆ กลาง ๆ — จึงต้องเก็บทุกอย่างที่เราสร้าง */
+function teardown(){
+  close();
+  const n=$("mnav"); if(n)n.remove();
+  const g=$("mtools"); if(g)g.remove();
+  D.querySelectorAll(".mhint").forEach(h=>h.remove());
+  D.querySelectorAll(".msnap").forEach(el=>
+    el.classList.remove("msnap","msnap-1","msnap-2","msnap-3"));
+  /* #hhero ต้องกลับเข้า #hfree ตำแหน่งเดิม ไม่งั้นเดสก์ท็อปจะเห็นมันลอยผิดที่ */
+  const hero=$("hhero"),free=$("hfree");
+  if(hero&&free&&hero.parentElement!==free)free.insertBefore(hero,free.firstChild);
+}
+
+/* ─────────── วงจรชีวิต ─────────── */
+/* แอปวาดใหม่ตลอด (เปลี่ยนรถ · เข้าระบบเสร็จ · โหลดข่าวเสร็จ · เปลี่ยนภาษา)
+   ทุกครั้งที่วาดใหม่ #hhero จะถูกยัดกลับเข้า #hfree และแท็บจะหายรูปโปรไฟล์
+   จึงต้องเฝ้า ไม่ใช่ทำครั้งเดียว — หน่วงไว้ไม่ให้วิ่งทุก mutation */
+let t=null;
+const kick=()=>{clearTimeout(t);t=setTimeout(apply,140)};
+
+function apply(){
+  if(!MQ.matches){teardown();return}
+  mountNav(); arrange();
+}
+
+function boot(){
+  apply();
+  new MutationObserver(m=>{
+    for(const r of m){
+      /* ของที่เราสร้างเองก็เป็น mutation ถ้าไม่กรองจะวนไม่จบ */
+      const t=r.target;
+      if(t&&t.closest&&t.closest("#mnav,#mtools,.msheet,.mhint"))continue;
+      kick(); return;
+    }
+  }).observe(D.body,{childList:true,subtree:true,attributes:true,
+    attributeFilter:["style","class"]});
+  MQ.addEventListener?MQ.addEventListener("change",apply):MQ.addListener(apply);
+  addEventListener("spire:lang",kick);
+  try{ window.spireOnLang&&window.spireOnLang(kick) }catch(e){}
+  /* เข้าระบบเสร็จรูปโปรไฟล์เพิ่งมา — เก็บตกอีกสองจังหวะ */
+  setTimeout(apply,1200); setTimeout(apply,3000);
+}
+if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",boot);
+else boot();
 })();
 </script>
 <script>

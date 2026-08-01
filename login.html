@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0A0D12">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>เข้าสู่ระบบ · SpireONE</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon-192.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.11.0/dist/tabler-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;500;600&display=swap">
+
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   หน้าเข้าสู่ระบบ SpireONE
+   ══════════════════════════════════════════════════════════════════
+   โครงสองฝั่ง: ซ้ายคือเรื่องงาน (ปุ่มล็อกอิน) ขวาคือเรื่องแบรนด์ (เสา 1)
+   บนมือถือฝั่งขวายุบเป็นแถบเตี้ย ๆ ด้านบน เพราะปุ่มต้องอยู่ในระยะนิ้วโป้ง
+
+   เสา "1" ถ้ามีไฟล์ login-profile.png จะใช้ไฟล์นั้น ถ้าไม่มีก็ตกไปใช้ฉาก
+   ที่วาดด้วย CSS ล้วนซึ่งอยู่ข้างหลัง — หน้าเว็บจึงไม่เคยว่างเปล่า
+   ══════════════════════════════════════════════════════════════════ */
+:root{
+  --bg:#0A0D12; --panel:#0E1218; --ink:#EEF1F6; --muted:#8B95A5;
+  --faint:#5A6474; --line:#1C2229; --accent:#D9733C; --gold:#E2C998;
+  --r:14px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:Anuphan,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-weight:400;-webkit-font-smoothing:antialiased;
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.06fr);
+}
+
+/* ── ฝั่งซ้าย: ฟอร์ม ───────────────────────────────────────────── */
+.side{
+  display:flex;flex-direction:column;min-height:100dvh;
+  padding:34px clamp(24px,5vw,64px) 30px;position:relative;
+}
+.brandbar{display:flex;align-items:center;gap:11px}
+.brandbar .mk{
+  width:30px;height:30px;border-radius:9px;display:grid;place-items:center;
+  background:linear-gradient(150deg,var(--gold),var(--accent));
+  color:#12161C;font-weight:600;font-size:17px;line-height:1;
+}
+.brandbar b{font-weight:600;letter-spacing:.055em;font-size:14.5px}
+.brandbar b span{color:var(--accent)}
+
+.mid{flex:1;display:flex;flex-direction:column;justify-content:center;
+     max-width:392px;width:100%;margin:0 auto;padding:38px 0}
+h1{margin:0 0 9px;font-size:clamp(28px,4vw,36px);font-weight:500;letter-spacing:-.01em}
+.sub{margin:0 0 30px;color:var(--muted);font-size:15px;line-height:1.65}
+
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:11px;
+  width:100%;padding:14px 18px;margin-bottom:11px;
+  border:1px solid var(--line);border-radius:var(--r);
+  background:#141922;color:var(--ink);
+  font:inherit;font-size:15px;font-weight:500;cursor:pointer;
+  transition:border-color .16s,background .16s,transform .1s;
+}
+.btn:hover{background:#19202A;border-color:#2A323C}
+.btn:active{transform:translateY(1px)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn[disabled]{opacity:.5;cursor:default;transform:none}
+.btn .ti{font-size:19px}
+.btn.g-primary{
+  background:linear-gradient(180deg,#1B222C,#141922);border-color:#2E3742;
+}
+.btn.ghost{background:transparent}
+
+.or{display:flex;align-items:center;gap:14px;margin:18px 0;
+    color:var(--faint);font-size:12.5px;letter-spacing:.12em}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+
+.foot{color:var(--faint);font-size:12.5px;line-height:1.7}
+.foot a{color:var(--muted);text-decoration:underline;text-underline-offset:2px}
+.note{
+  display:flex;gap:9px;margin-top:16px;padding:12px 13px;border-radius:11px;
+  background:rgba(217,115,60,.09);border:1px solid rgba(217,115,60,.24);
+  color:var(--muted);font-size:12.5px;line-height:1.6;
+}
+.note i{color:var(--accent);font-size:16px;flex:none;margin-top:1px}
+.note[hidden]{display:none}
+
+/* ── ฝั่งขวา: ฉากแบรนด์ ─────────────────────────────────────────── */
+.stage{position:relative;overflow:hidden;background:#080A0E;
+       border-left:1px solid var(--line)}
+/* ท้องฟ้ากับหมอก — ชั้นล่างสุด มีเสมอแม้ยังไม่มีไฟล์รูป */
+.stage::before{
+  content:"";position:absolute;inset:0;
+  background:
+    radial-gradient(58% 40% at 50% 30%, rgba(226,201,152,.15), transparent 70%),
+    radial-gradient(120% 55% at 50% 100%, rgba(150,170,200,.16), transparent 62%),
+    linear-gradient(180deg,#070910 0%,#0B1018 55%,#151A22 100%);
+}
+/* ดาว — จุดเล็ก ๆ กระจายด้วย gradient ซ้อน ไม่ต้องใช้ไฟล์ */
+.stage::after{
+  content:"";position:absolute;inset:0;opacity:.5;
+  background-image:
+    radial-gradient(1.4px 1.4px at 18% 14%, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 72% 9%,  #fff, transparent),
+    radial-gradient(1.6px 1.6px at 86% 26%, #fff, transparent),
+    radial-gradient(1.1px 1.1px at 34% 31%, #fff, transparent),
+    radial-gradient(1.3px 1.3px at 61% 20%, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 8%  36%, #fff, transparent);
+}
+.art{position:absolute;inset:0;display:grid;place-items:center;padding:6% 8%}
+/* รูปจริงถ้ามี — object-fit:contain กันเสาถูกครอบตัดหัวท้าย */
+.art img{
+  max-width:min(78%,560px);max-height:82%;object-fit:contain;
+  filter:drop-shadow(0 40px 90px rgba(0,0,0,.65));
+  opacity:0;transition:opacity .5s ease;
+}
+.art img.ok{opacity:1}
+/* ── เสาสำรอง — วาดเป็น SVG อิงสัดส่วนจากเรนเดอร์จริง ──
+   เสาเป็นแท่งสองหน้า: หน้าซ้ายรับแสงอุ่น หน้าขวาจมเงา
+   ปีกด้านบนกวาดขึ้นไปทางขวาจบที่ปลายแหลม — นั่นคือส่วนที่อ่านเป็นเลข 1
+   ใช้เมื่อยังไม่มีไฟล์ login-profile.png เท่านั้น พอมีไฟล์จะถูกซ่อนทันที  */
+.mono{position:absolute;height:min(74%,560px);width:auto;filter:
+  drop-shadow(0 50px 90px rgba(0,0,0,.72))}
+.mono[hidden]{display:none}
+/* หมอกที่โคนเสา วางทับทุกอย่างให้ดูเหมือนยืนอยู่ในหมอก */
+.haze{position:absolute;left:0;right:0;bottom:0;height:46%;pointer-events:none;
+  background:linear-gradient(180deg,transparent,rgba(196,206,220,.20) 45%,rgba(214,222,234,.30));
+  filter:blur(2px)}
+
+.tag{position:absolute;left:clamp(22px,4vw,44px);bottom:clamp(22px,4vw,40px);
+  color:rgba(238,241,246,.72);font-size:13px;letter-spacing:.16em;
+  text-transform:uppercase;text-shadow:0 2px 14px rgba(0,0,0,.7)}
+.tag b{display:block;text-transform:none;letter-spacing:0;font-size:19px;
+  font-weight:500;color:#fff;margin-top:5px}
+
+/* ── มือถือ ────────────────────────────────────────────────────── */
+@media(max-width:860px){
+  /* ฉากแบรนด์ต้องขึ้นก่อนบนมือถือ ทั้งที่อยู่หลังในโครงสร้าง HTML
+     — วางลำดับด้วย grid-row ไม่ใช่สลับ HTML เพราะลำดับการอ่านของ
+     screen reader และลำดับ Tab ต้องเริ่มที่ฟอร์มเสมอ */
+  body{grid-template-columns:1fr;grid-template-rows:32vh auto}
+  .stage{grid-row:1;border-left:0;border-bottom:1px solid var(--line)}
+  .side{grid-row:2}
+  .side{min-height:auto;padding:26px 22px calc(26px + env(safe-area-inset-bottom))}
+  .mid{padding:20px 0 12px;max-width:none}
+  .tag{font-size:11.5px}.tag b{font-size:16px}
+  .mono{height:74%}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ══ ฝั่งซ้าย ══════════════════════════════════════════════════ -->
+<main class="side">
+  <div class="brandbar">
+    <div class="mk">1</div><b>SPIRE<span>ONE</span></b>
+  </div>
+
+  <div class="mid">
+    <h1 id="h1">เข้าสู่ระบบ</h1>
+    <p class="sub" id="sub">ดูแลรถของคุณ เตือนก่อนถึงกำหนด และตรวจใบเสนอราคาจากอู่</p>
+
+    <button class="btn g-primary" id="bGoogle">
+      <i class="ti ti-brand-google"></i><span>เข้าสู่ระบบด้วย Google</span>
+    </button>
+
+    <div class="or">หรือ</div>
+
+    <button class="btn ghost" id="bGuest">
+      <i class="ti ti-arrow-right"></i><span>ใช้งานแบบไม่ล็อกอิน</span>
+    </button>
+
+    <div class="note" id="warn" hidden><i class="ti ti-info-circle"></i><span id="warnTx"></span></div>
+
+    <p class="foot" style="margin-top:26px">
+      การเข้าใช้งานถือว่าคุณยอมรับ
+      <a href="./index.html">เงื่อนไขการใช้งาน</a> และ
+      <a href="./index.html">นโยบายความเป็นส่วนตัว</a> ของ SpireONE
+    </p>
+  </div>
+
+  <p class="foot">© SpireONE · Car Spire Thailand</p>
+</main>
+
+<!-- ══ ฝั่งขวา ══════════════════════════════════════════════════ -->
+<aside class="stage" aria-hidden="true">
+  <div class="art">
+    <svg class="mono" id="mono" viewBox="0 0 300 560" fill="none"
+         xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="mFace" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0"   stop-color="#8A7A5E"/>
+          <stop offset=".34" stop-color="#E8D6AE"/>
+          <stop offset=".72" stop-color="#C6B189"/>
+          <stop offset="1"   stop-color="#6E6045"/>
+        </linearGradient>
+        <linearGradient id="mGlow" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0"   stop-color="#fff" stop-opacity="0"/>
+          <stop offset=".62" stop-color="#FFF3D6" stop-opacity=".55"/>
+          <stop offset="1"   stop-color="#fff" stop-opacity="0"/>
+        </linearGradient>
+        <linearGradient id="mDark" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2A2419"/><stop offset="1" stop-color="#0E0C08"/>
+        </linearGradient>
+        <linearGradient id="mWing" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0" stop-color="#F6EAD0"/><stop offset="1" stop-color="#9C8E70"/>
+        </linearGradient>
+      </defs>
+      <!-- หน้ามืดด้านขวาของแท่ง -->
+      <path d="M186 150 L232 118 L232 520 L186 540 Z" fill="url(#mDark)"/>
+      <!-- หน้ารับแสงด้านหน้า -->
+      <path d="M112 168 L186 150 L186 540 L112 540 Z" fill="url(#mFace)"/>
+      <!-- แสงที่ไล่ขึ้นกลางเสา -->
+      <path d="M112 168 L186 150 L186 540 L112 540 Z" fill="url(#mGlow)"/>
+      <!-- ปีกบน กวาดขึ้นไปจบที่ปลายแหลมทางขวา -->
+      <path d="M112 168 L232 60 L232 118 L186 150 Z" fill="url(#mWing)"/>
+      <path d="M112 168 L232 60 L186 150 Z" fill="#EFE2C6" opacity=".55"/>
+    </svg>
+    <img id="hero" src="./login-profile.png" alt="">
+  </div>
+  <div class="haze"></div>
+  <div class="tag">Your car is telling you something<b>เราแค่ทำให้คุณได้ยินมัน</b></div>
+</aside>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   ตรรกะหน้าเข้าสู่ระบบ
+   ══════════════════════════════════════════════════════════════════ */
+(function(){
+  var $ = function(id){ return document.getElementById(id) };
+
+  /* ── ภาพเสา: ใช้ไฟล์ถ้ามี ไม่มีก็ใช้ฉาก CSS ที่วาดไว้ ──
+     ทำแบบนี้เพราะไฟล์รูปอาจยังไม่ถูกอัปโหลด หน้าเว็บต้องไม่โชว์
+     ไอคอนรูปแตก และต้องไม่ว่างเปล่า                                */
+  var hero = $("hero"), mono = $("mono");
+  function useHero(){
+    if(hero.naturalWidth > 1){ hero.classList.add("ok"); mono.hidden = true }
+  }
+  /* ถ้ารูปอยู่ในแคชอยู่แล้ว มันจะโหลดเสร็จก่อนสคริปต์นี้ทำงาน
+     เหตุการณ์ load จึงยิงไปแล้วและจะไม่ยิงอีก — ต้องเช็ก .complete เอง
+     ไม่งั้นคนที่เคยเข้าเว็บแล้วจะเห็นเสาสำรองแทนรูปจริงตลอด */
+  if(hero.complete) useHero();
+  hero.addEventListener("load", useHero);
+  hero.addEventListener("error", function(){ hero.remove() });
+
+  /* ── ภาษา — อ่านค่าที่ผู้ใช้เลือกไว้จากหน้าหลัก ── */
+  var lang = "th";
+  try{ lang = JSON.parse(localStorage.getItem("lang")) || "th" }catch(e){}
+  if(lang === "en"){
+    $("h1").textContent  = "Log into your account";
+    $("sub").textContent = "Look after your car, get warned before it's due, and check any garage quote.";
+    $("bGoogle").querySelector("span").textContent = "Login with Google";
+    $("bGuest").querySelector("span").textContent  = "Continue without an account";
+    document.querySelector(".or").textContent = "or";
+  }
+  var T = function(th, en){ return lang === "en" ? en : th };
+
+  function warn(msg){ $("warnTx").textContent = msg; $("warn").hidden = false }
+
+  /* ── ปลายทางหลังล็อกอินสำเร็จ ──
+     รับ ?next= มาได้ แต่ยอมเฉพาะเส้นทางภายในเว็บนี้เท่านั้น
+     ถ้าปล่อยให้ใส่ URL เต็มได้ จะกลายเป็นช่องทางพาผู้ใช้ไปเว็บอื่น
+     หลังล็อกอิน (open redirect)                                     */
+  function nextUrl(){
+    var raw = new URLSearchParams(location.search).get("next") || "";
+    return /^[A-Za-z0-9._-]+\.html$/.test(raw) ? "./" + raw : "./index.html";
+  }
+
+  var fbConfig = {apiKey:"AIzaSyDDtvz4d4FRG_KOq5EQHmlDijU-x1FDZlQ",authDomain:"sp1p-82396.firebaseapp.com",databaseURL:"https://sp1p-82396-default-rtdb.firebaseio.com",projectId:"sp1p-82396",storageBucket:"sp1p-82396.appspot.com",messagingSenderId:"924479207020",appId:"1:924479207020:web:ec64428a61403e1ad48a49"};
+  var auth = null;
+  try{
+    firebase.initializeApp(fbConfig);
+    auth = firebase.auth();
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(){});
+  }catch(e){ console.warn("firebase", e) }
+
+  /* เปิดไฟล์แบบ double-click จะล็อกอินไม่ได้ Google บล็อก file://
+     บอกไว้ตรงนี้เลย ดีกว่าปล่อยให้กดแล้วเงียบ */
+  if(location.protocol === "file:"){
+    warn(T("เปิดไฟล์ตรง ๆ จะล็อกอิน Google ไม่ได้ (Google บล็อก file://) — เปิดผ่าน localhost หรือเว็บจริง",
+           "Google sign-in is blocked on file:// — open this over localhost or the live site."));
+    $("bGoogle").disabled = true;
+  }else if(!auth){
+    warn(T("ระบบล็อกอินยังไม่พร้อม ลองใหม่อีกครั้ง","Sign-in is unavailable right now."));
+    $("bGoogle").disabled = true;
+  }
+
+  /* ล็อกอินอยู่แล้วก็ไม่ต้องให้กดซ้ำ พาเข้าแอปเลย */
+  if(auth) auth.onAuthStateChanged(function(u){ if(u) location.replace(nextUrl()) });
+
+  $("bGoogle").onclick = async function(){
+    if(!auth) return;
+    var b = this, tx = b.querySelector("span"), old = tx.textContent;
+    b.disabled = true; tx.textContent = T("กำลังเปิดหน้าต่าง…","Opening…");
+    try{
+      var p = new firebase.auth.GoogleAuthProvider();
+      p.setCustomParameters({ prompt:"select_account" });
+      await auth.signInWithPopup(p);
+      location.replace(nextUrl());          /* onAuthStateChanged อาจมาช้ากว่า */
+    }catch(e){
+      b.disabled = false; tx.textContent = old;
+      if(e && e.code === "auth/popup-closed-by-user") return;
+      /* บางเบราว์เซอร์บล็อก popup — ถอยไปใช้ redirect ซึ่งไม่โดนบล็อก */
+      if(e && (e.code === "auth/popup-blocked" || e.code === "auth/cancelled-popup-request")){
+        try{ return await auth.signInWithRedirect(new firebase.auth.GoogleAuthProvider()) }catch(e2){}
+      }
+      warn(T("ล็อกอินไม่สำเร็จ: ","Sign-in failed: ") + ((e && e.code) || e));
+    }
+  };
+
+  $("bGuest").onclick = function(){ location.href = nextUrl() };
+})();
+</script>
+</body>
+</html>

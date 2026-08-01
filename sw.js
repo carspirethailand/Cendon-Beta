@@ -8,7 +8,7 @@ const CACHE = 'spireone-v21';
 /* แต่ละหน้าเป็นไฟล์เดี่ยวที่สมบูรณ์ในตัว โหลดล่วงหน้าไว้ทั้งชุด
    การเปิด URL ของหน้าไหนตรง ๆ จึงไม่ต้องรอเน็ต */
 const SHELL = ['./', './index.html', './garage.html', './news.html',
-  './spares.html', './profile.html', './chat.html'];
+  './spares.html', './profile.html', './chat.html', './login.html'];
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();

@@ -4514,9 +4514,20 @@ const SYMPTOMS_DATABASE={
 async function gemini(contents,opts){opts=opts||{};
   if(!(useFb&&auth&&auth.currentUser))throw new Error(lang==="en"?"Please sign in first":"กรุณาเข้าสู่ระบบก่อนใช้งาน");
   const tok=await auth.currentUser.getIdToken();
+  const c=(typeof selCar==="function"?selCar():null)||(typeof car==="function"?car():null);
   const r=await fetch(`${BACKEND_URL}/api/ai/chat`,{method:"POST",
     headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok},
-    body:JSON.stringify({contents,system:opts.system,search:!!opts.search,temp:opts.temp!=null?opts.temp:0.5})});
+    body:JSON.stringify({
+      contents,
+      carId: c ? c.id : undefined,
+      make: c ? c.make : undefined,
+      model: c ? c.model : undefined,
+      year: c ? (c.year!=null?String(c.year):undefined) : undefined,
+      mileage: c ? (c.mileage!=null?String(c.mileage):undefined) : undefined,
+      system:opts.system,
+      search:!!opts.search,
+      temp:opts.temp!=null?opts.temp:0.5
+    })});
   let d=null;try{d=await r.json()}catch(e){}
   if(!r.ok){
     const err=(d&&d.error)||"";

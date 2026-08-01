@@ -4,11 +4,11 @@
    หน้าเว็บเป็นไฟล์เดียวที่เปลี่ยนบ่อย จึงใช้ network-first เสมอ
    ไม่งั้นผู้ใช้จะติดอยู่กับเวอร์ชันเก่าโดยไม่รู้ตัว
    ══════════════════════════════════════════════════════════════════ */
-const CACHE = 'spireone-v22';
+const CACHE = 'spireone-v23';
 /* แต่ละหน้าเป็นไฟล์เดี่ยวที่สมบูรณ์ในตัว โหลดล่วงหน้าไว้ทั้งชุด
    การเปิด URL ของหน้าไหนตรง ๆ จึงไม่ต้องรอเน็ต */
 const SHELL = ['./', './index.html', './garage.html', './news.html',
-  './spares.html', './profile.html', './chat.html', './login.html'];
+  './spares.html', './profile.html', './chat.html'];
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();

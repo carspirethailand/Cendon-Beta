@@ -5043,12 +5043,8 @@ function picHTML(u){return u.photo?`<img src="${u.photo}" referrerpolicy="no-ref
 async function signIn(){
   if(!useFb){toast((window.spireT?window.spireT("ระบบล็อกอินไม่พร้อม","Auth unavailable"):(lang==="en"?"Auth unavailable":"ระบบล็อกอินไม่พร้อม")),"ti-alert-triangle");return}
   if(location.protocol==="file:"){toast("ล็อกอิน Google ต้องเปิดผ่าน localhost/เว็บจริง (file:// ใช้ไม่ได้) — แต่ใช้แชต/การาจได้เลย","ti-info-circle");return}
-  /* ส่งชื่อไฟล์หน้าปัจจุบันไปด้วย ล็อกอินเสร็จจะได้กลับมาที่เดิม
-     ไม่ใช่เด้งไปหน้าแรกทุกครั้งจนผู้ใช้หลงว่ากดอะไรไป */
-  var here=(location.pathname.split("/").pop()||"index.html");
-  if(!/^[A-Za-z0-9._-]+\.html$/.test(here))here="index.html";
-  location.href="./login.html?next="+encodeURIComponent(here);
-}
+  const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:"select_account"});
+  try{await auth.signInWithPopup(p)}catch(e){if(e.code==="auth/popup-closed-by-user")return;toast("ล็อกอินไม่สำเร็จ: "+e.code,"ti-alert-triangle")}}
 window.signIn=signIn;
 ($("signinBtn")||{}).onclick=signIn;
 ($("logoutBtn")||{}).onclick=async()=>{if(useFb)await auth.signOut();$("dd").classList.remove("show");switchView("home");toast((window.spireT?window.spireT("ออกจากระบบแล้ว","Logged out"):(lang==="en"?"Logged out":"ออกจากระบบแล้ว")),"ti-logout")};

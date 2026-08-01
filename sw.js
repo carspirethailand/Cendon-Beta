@@ -4,7 +4,7 @@
    หน้าเว็บเป็นไฟล์เดียวที่เปลี่ยนบ่อย จึงใช้ network-first เสมอ
    ไม่งั้นผู้ใช้จะติดอยู่กับเวอร์ชันเก่าโดยไม่รู้ตัว
    ══════════════════════════════════════════════════════════════════ */
-const CACHE = 'spireone-v21';
+const CACHE = 'spireone-v22';
 /* แต่ละหน้าเป็นไฟล์เดี่ยวที่สมบูรณ์ในตัว โหลดล่วงหน้าไว้ทั้งชุด
    การเปิด URL ของหน้าไหนตรง ๆ จึงไม่ต้องรอเน็ต */
 const SHELL = ['./', './index.html', './garage.html', './news.html',
@@ -28,9 +28,16 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;   // API และ CDN ปล่อยผ่าน
+  /* หน้าเว็บเป็นไฟล์เดียวขนาดใหญ่ที่เปลี่ยนทุกครั้งที่อัปเดต
+     GitHub Pages ส่ง Cache-Control มาให้เก็บได้ เบราว์เซอร์จึงอาจตอบ fetch()
+     ด้วยของเก่าจาก HTTP cache เอง ทั้งที่เซิร์ฟเวอร์มีของใหม่แล้ว
+     ผู้ใช้จะเห็น UI เก่าค้างอยู่โดยไม่มีทางรู้ตัว — บังคับให้ไปถามเซิร์ฟเวอร์จริง */
+  const isPage = req.mode === 'navigate' || /\.html$/.test(url.pathname);
   e.respondWith((async () => {
     try {
-      const fresh = await fetch(req);
+      const fresh = isPage
+        ? await fetch(req.url, { cache: 'reload', credentials: 'same-origin' })
+        : await fetch(req);
       if (fresh && fresh.ok) {
         const c = await caches.open(CACHE);
         c.put(req, fresh.clone());

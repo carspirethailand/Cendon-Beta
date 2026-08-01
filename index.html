@@ -2740,6 +2740,87 @@ html[data-level="basic"] .hfree{
   background:radial-gradient(58% 44% at 50% 42%,rgba(217,94,60,.16),transparent 70%)}
 .su-in{position:relative;z-index:2;width:100%;display:grid;place-items:center}
 
+/* ══ หน้าเข้าสู่ระบบ ══
+   เต็มจอแบ่งครึ่ง ซ้ายเป็นฟอร์ม ขวาเป็นรูป ไม่มีการ์ด ไม่มีขอบมน
+   ขาวดำล้วน ไม่มีสีแบรนด์ — ความสะอาดมาจากการที่ไม่มีอะไรเลยนอกจากปุ่ม
+   ใช้เฉพาะตอนเป็นหน้าล็อกอิน (คลาส .auth) ตัวช่วยตั้งค่าหลายขั้น
+   กับหน้ากรอกเบอร์โทรยังเป็นการ์ดกลางจอเหมือนเดิม                     */
+.su-wrap.auth{padding:0;background:#0A0A0B;place-items:stretch;overflow:hidden}
+.su-wrap.auth::after{display:none}          /* ไม่เอาแสงเรืองสีส้ม */
+.su-wrap.auth #suSky{display:none}          /* ไม่เอาดาวเลข 1 ลอย */
+.su-wrap.auth .su-in{height:100%;display:grid;grid-template-columns:1fr 1fr;
+  place-items:stretch}
+
+/* ── ฝั่งซ้าย ── */
+.su-wrap.auth .su-card{width:100%;height:100%;max-width:none;padding:0;
+  border:0;border-radius:0;background:none;backdrop-filter:none;box-shadow:none;
+  transform:none;display:grid;align-content:center;justify-items:center;
+  overflow-y:auto}
+.su-pane{width:min(392px,calc(100% - 48px));padding:56px 0}
+.su-wrap.auth .su-mark{width:38px;height:38px;border-radius:11px;margin:0 0 30px;
+  background:#fff;box-shadow:none}
+.su-wrap.auth .su-mark svg{width:19px;height:19px;fill:#0A0A0B}
+.su-wrap.auth .su-h{text-align:left;margin-bottom:34px}
+.su-wrap.auth .su-h h1{font-size:31px;font-weight:600;letter-spacing:-.02em;
+  color:#F2F2F2}
+.su-wrap.auth .su-h p{color:rgba(255,255,255,.44)}
+
+/* ปุ่มผู้ให้บริการ: เส้นขอบบาง พื้นโปร่ง ตัวหนังสือขาว เหมือนกันหมดทุกปุ่ม
+   โลโก้ Google เก็บสีไว้ตัวเดียว เพราะเป็นข้อกำหนดแบรนด์ของ Google */
+.su-wrap.auth .su-prov{gap:11px}
+.su-wrap.auth .su-p,.su-wrap.auth .su-p.dark,.su-wrap.auth .su-p.fb,
+.su-wrap.auth .su-p.ghost{background:transparent;color:#EDEDED;font-weight:500;
+  border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:13px 18px;
+  font-size:14.5px}
+.su-wrap.auth .su-p:hover{transform:none;box-shadow:none;
+  background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.3)}
+.su-wrap.auth .su-or{color:rgba(255,255,255,.3);margin:20px 0}
+.su-wrap.auth .su-or::before,.su-wrap.auth .su-or::after{
+  background:rgba(255,255,255,.12)}
+.su-wrap.auth .su-i{background:rgba(255,255,255,.04);border-radius:12px;
+  border-color:rgba(255,255,255,.15);color:#EDEDED}
+.su-wrap.auth .su-i::placeholder{color:rgba(255,255,255,.32)}
+.su-wrap.auth .su-i:focus{border-color:rgba(255,255,255,.45);
+  background:rgba(255,255,255,.07);box-shadow:none}
+/* ปุ่มยืนยันเป็นสีขาวทึบ ตัวหนังสือดำ — จุดเดียวในหน้าที่สว่างที่สุด
+   สายตาจึงรู้เองว่าต้องกดอันไหน โดยไม่ต้องใช้สี */
+.su-wrap.auth .su-go{background:#fff;color:#0A0A0B;border-radius:999px;
+  font-weight:600;box-shadow:none}
+.su-wrap.auth .su-go:hover{transform:none;background:#E4E4E4}
+.su-wrap.auth .su-note{color:rgba(255,255,255,.44);margin-top:18px}
+.su-wrap.auth .su-link{color:#F2F2F2}
+.su-wrap.auth .su-skip{color:rgba(255,255,255,.44)}
+.su-wrap.auth .su-skip:hover{color:#F2F2F2}
+.su-wrap.auth .su-err{color:#F2F2F2;background:rgba(255,255,255,.07);
+  border-color:rgba(255,255,255,.2)}
+/* ข้อความกฎหมายลงไปติดขอบล่างของฝั่งซ้าย ไม่ลอยตามฟอร์ม */
+.su-wrap.auth .su-legal{position:absolute;left:0;right:0;bottom:26px;
+  margin:0;padding:0 24px;color:rgba(255,255,255,.34);font-size:12px}
+.su-wrap.auth .su-card{position:relative}
+
+/* ── ฝั่งขวา: รูปเต็มพื้นที่ ── */
+.su-stage{position:relative;overflow:hidden;display:grid;place-items:center;
+  background:#08090B}
+.su-stage img{width:100%;height:100%;position:absolute;inset:0;object-fit:cover;
+  opacity:0;transition:opacity .7s ease}
+.su-stage img.ok{opacity:1}
+/* ถ้าไฟล์รูปยังไม่ขึ้นเซิร์ฟเวอร์ ต้องไม่เหลือครึ่งจอดำเปล่า ๆ
+   วาดเลข 1 ขาวจาง ๆ ไว้แทน ยังอยู่ในโทนขาวดำเหมือนกัน */
+.su-mono{position:relative;z-index:1;font-size:270px;line-height:.82;font-weight:600;
+  letter-spacing:-.05em;color:transparent;
+  background:linear-gradient(150deg,rgba(255,255,255,.16),rgba(255,255,255,.03));
+  -webkit-background-clip:text;background-clip:text}
+.su-stage img.ok ~ .su-mono{display:none}
+
+@media(max-width:900px){
+  /* จอแคบไม่มีที่พอจะแบ่งครึ่ง ตัดรูปทิ้งไปเลย เหลือแต่ฟอร์มเต็มจอ
+     ดีกว่ายัดแถบรูปเตี้ย ๆ มาเบียดปุ่มให้ต้องเลื่อนหา */
+  .su-wrap.auth .su-in{grid-template-columns:1fr}
+  .su-stage{display:none}
+  .su-wrap.auth .su-h h1{font-size:26px}
+  .su-pane{padding:40px 0 72px}
+}
+
 /* ── การ์ดกลาง ── */
 .su-card{width:min(430px,100%);padding:30px 28px 26px;border-radius:24px;
   background:linear-gradient(168deg,rgba(20,27,44,.93),rgba(9,13,23,.95));
@@ -5707,7 +5788,11 @@ const GOOGLE_SVG='<svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0
 
 function authHTML(){
   const up=mode==="up";
+  /* ฟอร์มมาก่อนฉากแบรนด์ทั้งในลำดับ HTML และในการแสดงผล
+     ลำดับ Tab กับลำดับการอ่านของ screen reader จึงเริ่มที่ช่องกรอกทันที
+     ไม่ต้องข้ามรูปตกแต่งก่อน */
   return `<div class="su-card">
+    <div class="su-pane">
     <div class="su-mark">${MARK}</div>
     <div class="su-h">
       <h1>${up?L("สร้างบัญชี SpireONE","Create your SpireONE account")
@@ -5753,15 +5838,16 @@ function authHTML(){
       : L("ยังไม่มีบัญชี?","New to SpireONE?")+
         ` <span class="su-link" id="suSwap">${L("สร้างบัญชี","Create one")}</span>`}</div>
 
-    <div class="su-trust">
-      <span><i class="ti ti-lock"></i>${L("เข้ารหัสตลอดการเชื่อมต่อ","Encrypted end to end")}</span>
-      <span><i class="ti ti-shield-check"></i>${L("ไม่ขายข้อมูลของคุณ","We never sell your data")}</span>
-      <span><i class="ti ti-download"></i>${L("ดาวน์โหลดข้อมูลได้ทุกเมื่อ","Export any time")}</span>
     </div>
     <div class="su-legal">${L(
       "การใช้งานถือว่าคุณยอมรับเงื่อนไขการให้บริการและนโยบายความเป็นส่วนตัวของเรา",
       "By continuing you agree to our Terms of Service and Privacy Policy")}</div>
-  </div>`;
+  </div>
+
+  <aside class="su-stage" aria-hidden="true">
+    <img id="suHero" src="./login-profile.png" alt="">
+    <div class="su-mono">1</div>
+  </aside>`;
 }
 
 async function providerSignIn(kind){
@@ -6015,6 +6101,9 @@ let phase="auth";   /* auth · phone · wizard */
 
 function render(){
   const w=$("suWrap"); if(!w)return;
+  /* หน้าล็อกอินกินเต็มจอแบ่งครึ่ง ส่วนตัวช่วยตั้งค่ากับหน้าเบอร์โทร
+     ยังเป็นการ์ดกลางจอเหมือนเดิม แยกด้วยคลาสเดียวไม่ต้องมี CSS ซ้ำสองชุด */
+  w.classList.toggle("auth", phase==="auth");
   const host=w.querySelector(".su-in"); if(!host)return;
   host.innerHTML=phase==="phone"?phoneHTML():phase==="wizard"?stepHTML():authHTML();
   wire();
@@ -6027,6 +6116,17 @@ function wire(){
     if(b.dataset.prov==="phone"){ phase="phone"; phoneStage=0; authErr=""; render(); return }
     providerSignIn(b.dataset.prov);
   });
+  /* รูปโมโนลิธจะโผล่ก็ต่อเมื่อโหลดสำเร็จจริง ถ้าไฟล์ยังไม่ขึ้นเซิร์ฟเวอร์
+     ให้ทิ้งไว้เป็นเลข 1 ที่วาดด้วย CSS แทน จะได้ไม่เหลือกรอบดำเปล่า ๆ
+     ต้องเช็ก .complete ด้วย เพราะถ้ารูปอยู่ในแคชอยู่แล้วมันจะโหลดเสร็จ
+     ก่อนบรรทัดนี้ทำงาน เหตุการณ์ load ยิงไปแล้วและจะไม่ยิงอีก */
+  const hero=$("suHero");
+  if(hero){
+    const okHero=()=>{ if(hero.naturalWidth>1)hero.classList.add("ok") };
+    if(hero.complete)okHero();
+    hero.addEventListener("load",okHero);
+    hero.addEventListener("error",()=>hero.remove());
+  }
   const go=$("suGo"); if(go)go.onclick=emailSubmit;
   const sw=$("suSwap"); if(sw)sw.onclick=()=>{ mode=mode==="up"?"in":"up"; authErr=""; render() };
   const fg=$("suForgot"); if(fg)fg.onclick=forgot;

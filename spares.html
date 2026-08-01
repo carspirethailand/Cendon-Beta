@@ -629,6 +629,7 @@ html.theme-fade,html.theme-fade *,html.theme-fade *::before,html.theme-fade *::a
 </script>
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#D95E3C">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SpireONE">
@@ -2077,6 +2078,68 @@ body[data-deck="1"] .nav::before{opacity:.2;mix-blend-mode:screen}
   .sp-cfg{padding:17px 16px}
   .sp-apps{grid-template-columns:repeat(auto-fill,minmax(136px,1fr))}
   .sp-grid{grid-template-columns:1fr}
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   ฉากหลัง — โถงเสาคอรินเทียน
+   ══════════════════════════════════════════════════════════════════
+   วาดด้วย CSS ล้วน ไม่มีไฟล์รูป จึงไม่กินเน็ตและคมทุกความละเอียด
+   เสาหนึ่งต้น = ไล่เฉดแนวนอนสามชั้น (ขอบเงา · ลำเสาสว่าง · ขอบเงา)
+   ร่องเสา (fluting) = ไล่เฉดซ้ำถี่ ๆ ทับบนลำเสาอีกที
+   หัวเสากับฐานใช้ ::before / ::after เป็นแถบแนวนอนพาดทั้งโถง        */
+#v-shop .scroll{position:relative;isolation:isolate}
+#v-shop .scroll::before{
+  content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:
+    /* แสงจากโดมกลางโถง */
+    radial-gradient(120% 62% at 50% -8%, rgba(224,196,142,.20), transparent 62%),
+    radial-gradient(90% 50% at 50% 108%, rgba(0,0,0,.55), transparent 70%),
+    #0B0E15;
+}
+#v-shop .scroll::after{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  opacity:.5;
+  background:
+    /* หัวเสา — แถบบัวคว่ำพาดทั้งโถง */
+    linear-gradient(180deg,
+      transparent 0 6%, rgba(226,201,152,.16) 6% 7.6%,
+      rgba(0,0,0,.34) 7.6% 8.4%, rgba(226,201,152,.10) 8.4% 11%,
+      transparent 11%) ,
+    /* ฐานเสา */
+    linear-gradient(0deg,
+      transparent 0 4%, rgba(226,201,152,.12) 4% 5.4%,
+      rgba(0,0,0,.40) 5.4% 6.2%, transparent 6.2%),
+    /* ร่องเสา — ถี่ ๆ อยู่ในกรอบของลำเสาเท่านั้น */
+    repeating-linear-gradient(90deg,
+      transparent 0 3px, rgba(255,255,255,.045) 3px 4px,
+      transparent 4px 7px, rgba(0,0,0,.20) 7px 8px),
+    /* ลำเสา — เว้นช่องว่างระหว่างต้นให้เห็นความลึกของโถง */
+    repeating-linear-gradient(90deg,
+      transparent 0 118px,
+      rgba(0,0,0,.42) 118px 124px,
+      rgba(214,190,146,.13) 124px 150px,
+      rgba(236,216,178,.20) 150px 178px,
+      rgba(214,190,146,.13) 178px 204px,
+      rgba(0,0,0,.42) 204px 210px,
+      transparent 210px 300px);
+  -webkit-mask-image:linear-gradient(180deg,#000 0 46%,rgba(0,0,0,.25) 70%,transparent 90%);
+          mask-image:linear-gradient(180deg,#000 0 46%,rgba(0,0,0,.25) 70%,transparent 90%);
+}
+/* เนื้อหาต้องลอยเหนือฉาก และการ์ดต้องทึบพอให้อ่านออกบนลายเสา */
+#v-shop #spWrap{position:relative;z-index:1}
+#v-shop .sp-card{backdrop-filter:blur(6px)}
+
+/* แถบบอกว่าเป็นรายการที่ระบบจัดเอง */
+.sp-offline{display:flex;gap:12px;align-items:flex-start;margin:0 0 16px;
+  padding:14px 16px;border-radius:14px;
+  background:linear-gradient(180deg,rgba(226,201,152,.10),rgba(226,201,152,.04));
+  border:1px solid rgba(226,201,152,.28);color:var(--muted);font-size:13px;line-height:1.6}
+.sp-offline i{font-size:19px;color:#E2C998;flex:none;margin-top:1px}
+.sp-offline b{display:block;color:var(--ink);font-size:14px;margin-bottom:3px}
+@media(max-width:760px){
+  .sp-offline{padding:12px 13px;font-size:12.5px;border-radius:12px}
+  #v-shop .scroll::after{opacity:.34;background-size:auto,auto,auto,auto}
 }
 </style>
 <style id="ledgercss">
@@ -4809,8 +4872,9 @@ async function syncCars(){
       return {id:c.id,make:c.make||"",model:c.model||"",name,year:(c.year!=null?String(c.year):""),mileage:(c.mileage!=null?String(c.mileage):""),type:prev.type||getBodyStyle(name),history:prev.history||[]};
     });
     saveGarage(merged);
-    if($("v-garage").classList.contains("active"))renderGarage();
-    if($("v-home").classList.contains("active"))renderDashboard();
+    const _act=id=>{const e=$(id);return !!e&&e.classList.contains("active")};
+    if(_act("v-garage"))renderGarage();
+    if(_act("v-home"))renderDashboard();
     renderCarSel();
   }catch(e){console.warn("syncCars failed",e)}
 }
@@ -10528,7 +10592,7 @@ const artOf=c=>ART[c]||["linear-gradient(150deg,#334155,#64748B)","ti-package"];
 const LSg=(k,d)=>{try{const v=localStorage.getItem("spire_"+k);return v?JSON.parse(v):d}catch(e){return d}};
 const LSs=(k,v)=>{try{localStorage.setItem("spire_"+k,JSON.stringify(v))}catch(e){}};
 let picked=LSg("sparesApps",null);      /* null = ยังไม่เคยตั้งค่า */
-let items=null,loading=false,lastErr="",cachedAt=0,forCar="",stale=false;
+let items=null,loading=false,lastErr="",cachedAt=0,forCar="",stale=false,offline=false;
 
 function car(){ try{const c=window.selCar&&window.selCar(); return c||(window.garage()||[])[0]||null}
   catch(e){ return null } }
@@ -10656,6 +10720,13 @@ function resultView(c,cp){
       ${T("หาใหม่","Refresh")}</button>
   </div>`;
 
+  /* แถบบอกว่าตอนนี้เป็นรายการที่ระบบจัดเอง ไม่ได้ผ่าน AI — พูดตรง ๆ
+     ดีกว่าปล่อยให้เข้าใจว่าราคาที่เห็นคือราคาที่ AI ไปสำรวจมาจริง */
+  const off=offline?`<div class="sp-offline"><i class="ti ti-list-check"></i>
+    <div><b>${T("รายการมาตรฐานตามระยะของรถคุณ","Standard list for your car's mileage")}</b>
+    ${T("ตอนนี้ผู้ช่วย AI ไม่ว่าง ระบบจึงจัดรายการจากรอบบำรุงรักษาของรถคันนี้ให้ก่อน — ลิงก์ร้านใช้ได้ปกติ ราคาเป็นช่วงอ้างอิงตลาด กด \u201cหาใหม่\u201d เพื่อให้ AI ลองอีกครั้ง",
+       "The AI assistant is busy, so this list is built from your car's own service schedule. Store links work normally; prices are market ranges. Hit Refresh to let the AI try again.")}</div></div>`:"";
+
   if(loading)return bar+`<div class="sp-grid">${
     Array.from({length:6},()=>`<div class="sp-skel"></div>`).join("")}</div>`;
   if(lastErr)return bar+`<div class="sp-empty"><i class="ti ti-alert-triangle"></i>
@@ -10665,7 +10736,7 @@ function resultView(c,cp){
     ${T("ยังไม่มีรายการ — กดหาใหม่เพื่อให้ SpireONE ลองอีกครั้ง",
         "Nothing yet — hit Refresh to let SpireONE try again")}</div>`;
 
-  return bar+`<div class="sp-grid">${items.map((x,i)=>{
+  return bar+off+`<div class="sp-grid">${items.map((x,i)=>{
     const [g,ic]=artOf(x.category);
     const price=(x.priceLow||x.priceHigh)
       ? (x.priceLow&&x.priceHigh&&x.priceLow!==x.priceHigh
@@ -10682,7 +10753,7 @@ function resultView(c,cp){
         <div class="sp-title">${esc(x.title)}</div>
         ${x.fit?`<div class="sp-fit"><i class="ti ti-circle-check"></i>${esc(x.fit)}</div>`:""}
         <div class="sp-why">${esc(x.why||"")}</div>
-        <div class="sp-price">${price}<small>${T("ประมาณการ","estimated")}</small></div>
+        <div class="sp-price">${price}<small>${offline?T("ช่วงราคาตลาด","market range"):T("ประมาณการ","estimated")}</small></div>
         <div class="sp-links">${(picked||[]).map(k=>{const a=appOf(k); if(!a)return"";
           const q=a.local?(x.query||x.title):(x.queryEn||x.query||x.title);
           return `<a class="sp-link" href="${esc(a.url(q))}" target="_blank" rel="noopener noreferrer">
@@ -10701,15 +10772,18 @@ function wireResults(){
 /* ── เรียกข้อมูลจากหลังบ้าน ── */
 async function fetchItems(refresh){
   const c=car(); if(!c||!picked||!picked.length)return;
-  loading=true; lastErr=""; render();
+  loading=true; lastErr=""; offline=false; render();
   try{
     const cp=carParts(c);
     const body={car:cp,apps:picked,needs:needs(c),lang:window.lang||"th",refresh:!!refresh};
     const d=await api("/api/spares",body);
-    items=d.items||[]; cachedAt=d.cachedAt||Date.now(); stale=!!d.stale; forCar=c.id;
+    items=d.items||[]; cachedAt=d.cachedAt||Date.now(); stale=!!d.stale; forCar=c.id; offline=false;
   }catch(e){
-    lastErr=String(e&&e.message||e).slice(0,200)||T("เชื่อมต่อไม่ได้","Connection failed");
-    items=null;
+    /* AI ล่มหรือโควตาหมด ก็ยังต้องมีอะไหล่ให้กดซื้อ — สลับไปใช้แคตตาล็อก
+       ที่คำนวณเองจากรอบบำรุงรักษาของรถคันนี้ ไม่ต้องรอ AI กลับมา */
+    const why=String(e&&e.message||e);
+    if(/เข้าสู่ระบบ|sign in/i.test(why)){ lastErr=why.slice(0,200); items=null }
+    else { items=offlineItems(c); offline=true; lastErr=""; cachedAt=Date.now(); stale=false; forCar=c.id }
   }
   loading=false; render();
 }
@@ -10849,6 +10923,92 @@ setInterval(()=>{
   if(sig!==wsig){ wsig=sig; widget(true) }
 },2500);
 })();
+
+
+/* ══════════════════════════════════════════════════════════════════
+   โหมดไม่ง้อ AI — แคตตาล็อกอะไหล่ที่คำนวณจากตัวรถเอง
+   ══════════════════════════════════════════════════════════════════
+   ทำไมต้องมี: /api/spares เรียก Gemini ทุกครั้ง ถ้าโควตาโมเดลหมด
+   หลังบ้านจะคืนแคชเก่าให้ — แต่รถที่ยังไม่เคยค้นสำเร็จเลยจะไม่มีแคช
+   ผู้ใช้เลยเจอหน้าจอ error ทุกครั้ง รอเป็นวัน ๆ ก็ยังไม่ได้อะไร
+
+   ชั้นนี้ไม่เรียก AI เลย ประกอบรายการจาก "รอบบำรุงรักษาที่ใกล้ถึง"
+   ซึ่งเรารู้อยู่แล้วจากเลขไมล์ แล้วสร้างลิงก์ค้นหาของแต่ละร้านตรง ๆ
+   ราคาเป็นช่วงอ้างอิงตลาดไทย ติดป้ายชัดเจนว่าไม่ใช่ราคาที่ AI ประเมิน
+   ผลคือหน้า Spares ใช้งานได้เสมอ AI กลายเป็นของแถมไม่ใช่เงื่อนไข        */
+
+/* ช่วงราคาอะไหล่รถยนต์นั่ง/กระบะทั่วไปในไทย (บาท) — อัปเดตด้วยมือได้ */
+const SP_CAT = [
+  {key:"engineoil", th:"น้ำมันเครื่อง", en:"Engine oil", cat:"ของเหลว",
+   q:"น้ำมันเครื่อง", qe:"engine oil", lo:800, hi:2500, diy:true,
+   why:["เปลี่ยนตามรอบเพื่อรักษาอายุเครื่องยนต์","Regular changes protect the engine"]},
+  {key:"oilfilter", th:"กรองน้ำมันเครื่อง", en:"Oil filter", cat:"กรอง",
+   q:"กรองน้ำมันเครื่อง", qe:"oil filter", lo:150, hi:600, diy:true, oem:true,
+   why:["เปลี่ยนพร้อมน้ำมันเครื่องทุกครั้ง","Replace with every oil change"]},
+  {key:"airfilter", th:"กรองอากาศ", en:"Air filter", cat:"กรอง",
+   q:"กรองอากาศ", qe:"air filter", lo:250, hi:900, diy:true,
+   why:["กรองตันทำให้กินน้ำมันและเร่งไม่ขึ้น","A clogged filter costs fuel and power"]},
+  {key:"cabinfilter", th:"กรองแอร์ในห้องโดยสาร", en:"Cabin filter", cat:"กรอง",
+   q:"กรองแอร์", qe:"cabin air filter", lo:200, hi:800, diy:true,
+   why:["แอร์ไม่เย็นและมีกลิ่นมักมาจากกรองตัวนี้","Weak, smelly A/C usually starts here"]},
+  {key:"brakepad", th:"ผ้าเบรกหน้า", en:"Front brake pads", cat:"เบรก",
+   q:"ผ้าเบรกหน้า", qe:"front brake pads", lo:900, hi:3500, oem:true,
+   why:["ชิ้นส่วนความปลอดภัย อย่ารอจนมีเสียงดัง","Safety part — don't wait for the squeal"]},
+  {key:"brakedisc", th:"จานเบรกหน้า", en:"Front brake discs", cat:"เบรก",
+   q:"จานเบรกหน้า", qe:"front brake disc rotor", lo:2200, hi:7000, oem:true,
+   why:["เปลี่ยนคู่กับผ้าเบรกถ้าจานเป็นร่องลึก","Change with the pads if scored"]},
+  {key:"battery", th:"แบตเตอรี่", en:"Battery", cat:"ไฟฟ้า",
+   q:"แบตเตอรี่รถยนต์", qe:"car battery", lo:2200, hi:6500,
+   why:["อายุใช้งานทั่วไป 2–3 ปี สตาร์ตอืดคือสัญญาณ","2–3 years typical; slow cranking is the sign"]},
+  {key:"sparkplug", th:"หัวเทียน", en:"Spark plugs", cat:"เครื่องยนต์",
+   q:"หัวเทียน", qe:"spark plugs", lo:400, hi:2400, diy:true,
+   why:["เดินเบาสั่นหรือกินน้ำมันขึ้น ลองดูตัวนี้ก่อน","Rough idle or thirst — check these first"]},
+  {key:"wiper", th:"ใบปัดน้ำฝน", en:"Wiper blades", cat:"ภายนอก",
+   q:"ใบปัดน้ำฝน", qe:"wiper blades", lo:250, hi:1200, diy:true,
+   why:["ยางแข็งจะครูดกระจกเป็นรอยถาวร","Hardened rubber scratches the glass"]},
+  {key:"coolant", th:"น้ำยาหล่อเย็น", en:"Coolant", cat:"ของเหลว",
+   q:"น้ำยาหล่อเย็น", qe:"engine coolant", lo:250, hi:1200, diy:true,
+   why:["ป้องกันสนิมในระบบระบายความร้อน","Stops corrosion in the cooling system"]},
+  {key:"brakefluid", th:"น้ำมันเบรก DOT4", en:"Brake fluid DOT4", cat:"ของเหลว",
+   q:"น้ำมันเบรก DOT4", qe:"DOT4 brake fluid", lo:180, hi:700, diy:true,
+   why:["ดูดความชื้นตามเวลา ทำให้เบรกหยุ่น","Absorbs moisture and softens the pedal"]},
+  {key:"tyre", th:"ยางรถยนต์", en:"Tyres", cat:"ยาง",
+   q:"ยางรถยนต์", qe:"tyres", lo:1800, hi:9000,
+   why:["ดอกยางตื้นหรือยางเกิน 5 ปีควรเปลี่ยน","Shallow tread or over 5 years old"]},
+];
+
+/* จับคู่ชื่อรอบบำรุงรักษาของ CarLab เข้ากับรายการในแคตตาล็อก */
+const SP_MATCH = [
+  [/น้ำมันเครื่อง|engine oil/i, "engineoil"], [/กรองน้ำมัน|oil filter/i, "oilfilter"],
+  [/กรองอากาศ|air filter/i, "airfilter"],     [/กรองแอร์|cabin/i, "cabinfilter"],
+  [/ผ้าเบรก|brake pad/i, "brakepad"],          [/จานเบรก|disc|rotor/i, "brakedisc"],
+  [/แบตเตอ|battery/i, "battery"],              [/หัวเทียน|spark/i, "sparkplug"],
+  [/ปัดน้ำฝน|wiper/i, "wiper"],                [/หล่อเย็น|coolant/i, "coolant"],
+  [/น้ำมันเบรก|brake fluid/i, "brakefluid"],   [/ยาง|tyre|tire/i, "tyre"],
+];
+
+function offlineItems(c){
+  const p = carParts(c);
+  const tag = [p.make, p.model].filter(Boolean).join(" ").trim();
+  const yr  = p.year ? " " + p.year : "";
+  const due = needs(c);                      // รายการที่ใกล้ถึงกำหนดจริง ๆ
+  const hot = new Set();
+  due.forEach(n => { const m = SP_MATCH.find(([re]) => re.test(n)); if (m) hot.add(m[1]) });
+
+  // เรียงของที่ถึงกำหนดขึ้นก่อน ที่เหลือตามลำดับแคตตาล็อก
+  const order = SP_CAT.slice().sort((a, b) => (hot.has(b.key) ? 1 : 0) - (hot.has(a.key) ? 1 : 0));
+  return order.map(x => ({
+    title: T(x.th, x.en) + (tag ? " — " + tag : ""),
+    category: x.cat,
+    why: T(x.why[0], x.why[1]) + (hot.has(x.key)
+      ? T(" · ใกล้ถึงกำหนดของรถคันนี้", " · due soon on this car") : ""),
+    fit: tag ? T("ค้นด้วยรุ่น ", "Searched for ") + tag + yr : "",
+    oem: !!x.oem, diy: !!x.diy,
+    priceLow: x.lo, priceHigh: x.hi,
+    query:   (tag + yr + " " + x.q).trim(),
+    queryEn: (tag + yr + " " + x.qe).trim(),
+  }));
+}
 </script>
 <script id="ledgerjs">
 /* ══════════════════════════════════════════════════════════════════

@@ -633,7 +633,7 @@ html.theme-fade,html.theme-fade *,html.theme-fade *::before,html.theme-fade *::a
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SpireONE">
-<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon192.png">
 <style id="dimension">
 /* ══════════════════════════════════════════════════════════════════
    DIMENSION — ชั้นเสริม: ธีมใหม่ 4 โลก + ระบบแสง 3 มิติ + พื้นหลังมีชีวิต
@@ -2758,8 +2758,14 @@ html[data-level="basic"] .hfree{
   overflow-y:auto}
 .su-pane{width:min(392px,calc(100% - 48px));padding:56px 0}
 .su-wrap.auth .su-mark{width:38px;height:38px;border-radius:11px;margin:0 0 30px;
-  background:#fff;box-shadow:none}
-.su-wrap.auth .su-mark svg{width:19px;height:19px;fill:#0A0A0B}
+  background:none;box-shadow:none}
+/* ใช้รูปโลโก้จริงเมื่อโหลดได้ ตราที่วาดด้วย SVG จะถูกซ่อนไว้เป็นตัวสำรอง
+   ถ้ารูปโหลดไม่ได้ onerror จะติดคลาส fb กลับมา แล้วตราเดิมโผล่แทน */
+.su-wrap.auth .su-mark img{width:100%;height:100%;object-fit:contain;display:block}
+.su-wrap.auth .su-mark svg{display:none}
+.su-wrap.auth .su-mark.fb{background:#fff}
+.su-wrap.auth .su-mark.fb svg{display:block;width:19px;height:19px;fill:#0A0A0B;
+  margin:auto}
 .su-wrap.auth .su-h{text-align:left;margin-bottom:34px}
 .su-wrap.auth .su-h h1{font-size:31px;font-weight:600;letter-spacing:-.02em;
   color:#F2F2F2}
@@ -5704,7 +5710,7 @@ function authHTML(){
      ไม่ต้องข้ามรูปตกแต่งก่อน */
   return `<div class="su-card">
     <div class="su-pane">
-    <div class="su-mark">${MARK}</div>
+    <div class="su-mark"><img src="./ONE1.png" alt="SpireONE" onerror="this.parentNode.classList.add('fb');this.outerHTML=''">${MARK}</div>
     <div class="su-h">
       <h1>${up?L("สร้างบัญชี SpireONE","Create your SpireONE account")
               :L("เข้าสู่ระบบ SpireONE","Sign in to SpireONE")}</h1>
@@ -5832,7 +5838,7 @@ async function forgot(){
 let phoneStage=0, phoneConfirm=null;
 function phoneHTML(){
   return `<div class="su-card">
-    <div class="su-mark">${MARK}</div>
+    <div class="su-mark"><img src="./ONE1.png" alt="SpireONE" onerror="this.parentNode.classList.add('fb');this.outerHTML=''">${MARK}</div>
     <div class="su-h">
       <h1>${phoneStage===0?L("เข้าสู่ระบบด้วยเบอร์โทร","Sign in with your phone")
                           :L("กรอกรหัสยืนยัน","Enter the code")}</h1>
@@ -13003,7 +13009,7 @@ async function finishDrive(auto){
       const reg=await navigator.serviceWorker.getRegistration();
       if(reg)reg.showNotification(T("บันทึกจุดจอดแล้ว","Parking spot saved"),
         {body:T(`ขับมา ${km.toFixed(1)} กม.`,`${km.toFixed(1)} km driven`),
-         icon:"./icon-192.png",tag:"park"});
+         icon:"./icon192.png",tag:"park"});
     }
   }catch(e){}
   startPkWatch();

@@ -4,7 +4,7 @@
    หน้าเว็บเป็นไฟล์เดียวที่เปลี่ยนบ่อย จึงใช้ network-first เสมอ
    ไม่งั้นผู้ใช้จะติดอยู่กับเวอร์ชันเก่าโดยไม่รู้ตัว
    ══════════════════════════════════════════════════════════════════ */
-const CACHE = 'spireone-v25';
+const CACHE = 'spireone-v26';
 /* แต่ละหน้าเป็นไฟล์เดี่ยวที่สมบูรณ์ในตัว โหลดล่วงหน้าไว้ทั้งชุด
    การเปิด URL ของหน้าไหนตรง ๆ จึงไม่ต้องรอเน็ต */
 const SHELL = ['./', './index.html', './garage.html', './news.html',
@@ -62,8 +62,8 @@ self.addEventListener('push', (e) => {
   }
   e.waitUntil(self.registration.showNotification(d.title, {
     body: d.body,
-    icon: './icon-192.png',
-    badge: './icon-192.png',
+    icon: './icon192.png',
+    badge: './icon192.png',
     tag: d.tag || 'spireone',
     renotify: true,
     data: { url: d.url || '/' },

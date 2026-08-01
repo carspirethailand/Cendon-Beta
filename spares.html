@@ -10922,93 +10922,88 @@ setInterval(()=>{
   const c=car(), sig=(c?c.id+"|"+c.mileage:"-")+"|"+(picked||[]).join(",");
   if(sig!==wsig){ wsig=sig; widget(true) }
 },2500);
+
+  /* ── แคตตาล็อกสำรอง ต้องอยู่ในขอบเขตเดียวกับ carParts/needs/T ── */
+  /* ══════════════════════════════════════════════════════════════════
+     โหมดไม่ง้อ AI — แคตตาล็อกอะไหล่ที่คำนวณจากตัวรถเอง
+     ══════════════════════════════════════════════════════════════════
+     ทำไมต้องมี: /api/spares เรียก Gemini ทุกครั้ง ถ้าโควตาโมเดลหมด
+     หลังบ้านจะคืนแคชเก่าให้ — แต่รถที่ยังไม่เคยค้นสำเร็จเลยจะไม่มีแคช
+     ผู้ใช้เลยเจอหน้าจอ error ทุกครั้ง รอเป็นวัน ๆ ก็ยังไม่ได้อะไร
+     ชั้นนี้ไม่เรียก AI เลย ประกอบรายการจาก "รอบบำรุงรักษาที่ใกล้ถึง"
+     ซึ่งเรารู้อยู่แล้วจากเลขไมล์ แล้วสร้างลิงก์ค้นหาของแต่ละร้านตรง ๆ
+     ราคาเป็นช่วงอ้างอิงตลาดไทย ติดป้ายชัดเจนว่าไม่ใช่ราคาที่ AI ประเมิน
+     ผลคือหน้า Spares ใช้งานได้เสมอ AI กลายเป็นของแถมไม่ใช่เงื่อนไข        */
+  /* ช่วงราคาอะไหล่รถยนต์นั่ง/กระบะทั่วไปในไทย (บาท) — อัปเดตด้วยมือได้ */
+  const SP_CAT = [
+    {key:"engineoil", th:"น้ำมันเครื่อง", en:"Engine oil", cat:"ของเหลว",
+     q:"น้ำมันเครื่อง", qe:"engine oil", lo:800, hi:2500, diy:true,
+     why:["เปลี่ยนตามรอบเพื่อรักษาอายุเครื่องยนต์","Regular changes protect the engine"]},
+    {key:"oilfilter", th:"กรองน้ำมันเครื่อง", en:"Oil filter", cat:"กรอง",
+     q:"กรองน้ำมันเครื่อง", qe:"oil filter", lo:150, hi:600, diy:true, oem:true,
+     why:["เปลี่ยนพร้อมน้ำมันเครื่องทุกครั้ง","Replace with every oil change"]},
+    {key:"airfilter", th:"กรองอากาศ", en:"Air filter", cat:"กรอง",
+     q:"กรองอากาศ", qe:"air filter", lo:250, hi:900, diy:true,
+     why:["กรองตันทำให้กินน้ำมันและเร่งไม่ขึ้น","A clogged filter costs fuel and power"]},
+    {key:"cabinfilter", th:"กรองแอร์ในห้องโดยสาร", en:"Cabin filter", cat:"กรอง",
+     q:"กรองแอร์", qe:"cabin air filter", lo:200, hi:800, diy:true,
+     why:["แอร์ไม่เย็นและมีกลิ่นมักมาจากกรองตัวนี้","Weak, smelly A/C usually starts here"]},
+    {key:"brakepad", th:"ผ้าเบรกหน้า", en:"Front brake pads", cat:"เบรก",
+     q:"ผ้าเบรกหน้า", qe:"front brake pads", lo:900, hi:3500, oem:true,
+     why:["ชิ้นส่วนความปลอดภัย อย่ารอจนมีเสียงดัง","Safety part — don't wait for the squeal"]},
+    {key:"brakedisc", th:"จานเบรกหน้า", en:"Front brake discs", cat:"เบรก",
+     q:"จานเบรกหน้า", qe:"front brake disc rotor", lo:2200, hi:7000, oem:true,
+     why:["เปลี่ยนคู่กับผ้าเบรกถ้าจานเป็นร่องลึก","Change with the pads if scored"]},
+    {key:"battery", th:"แบตเตอรี่", en:"Battery", cat:"ไฟฟ้า",
+     q:"แบตเตอรี่รถยนต์", qe:"car battery", lo:2200, hi:6500,
+     why:["อายุใช้งานทั่วไป 2–3 ปี สตาร์ตอืดคือสัญญาณ","2–3 years typical; slow cranking is the sign"]},
+    {key:"sparkplug", th:"หัวเทียน", en:"Spark plugs", cat:"เครื่องยนต์",
+     q:"หัวเทียน", qe:"spark plugs", lo:400, hi:2400, diy:true,
+     why:["เดินเบาสั่นหรือกินน้ำมันขึ้น ลองดูตัวนี้ก่อน","Rough idle or thirst — check these first"]},
+    {key:"wiper", th:"ใบปัดน้ำฝน", en:"Wiper blades", cat:"ภายนอก",
+     q:"ใบปัดน้ำฝน", qe:"wiper blades", lo:250, hi:1200, diy:true,
+     why:["ยางแข็งจะครูดกระจกเป็นรอยถาวร","Hardened rubber scratches the glass"]},
+    {key:"coolant", th:"น้ำยาหล่อเย็น", en:"Coolant", cat:"ของเหลว",
+     q:"น้ำยาหล่อเย็น", qe:"engine coolant", lo:250, hi:1200, diy:true,
+     why:["ป้องกันสนิมในระบบระบายความร้อน","Stops corrosion in the cooling system"]},
+    {key:"brakefluid", th:"น้ำมันเบรก DOT4", en:"Brake fluid DOT4", cat:"ของเหลว",
+     q:"น้ำมันเบรก DOT4", qe:"DOT4 brake fluid", lo:180, hi:700, diy:true,
+     why:["ดูดความชื้นตามเวลา ทำให้เบรกหยุ่น","Absorbs moisture and softens the pedal"]},
+    {key:"tyre", th:"ยางรถยนต์", en:"Tyres", cat:"ยาง",
+     q:"ยางรถยนต์", qe:"tyres", lo:1800, hi:9000,
+     why:["ดอกยางตื้นหรือยางเกิน 5 ปีควรเปลี่ยน","Shallow tread or over 5 years old"]},
+  ];
+  /* จับคู่ชื่อรอบบำรุงรักษาของ CarLab เข้ากับรายการในแคตตาล็อก */
+  const SP_MATCH = [
+    [/น้ำมันเครื่อง|engine oil/i, "engineoil"], [/กรองน้ำมัน|oil filter/i, "oilfilter"],
+    [/กรองอากาศ|air filter/i, "airfilter"],     [/กรองแอร์|cabin/i, "cabinfilter"],
+    [/ผ้าเบรก|brake pad/i, "brakepad"],          [/จานเบรก|disc|rotor/i, "brakedisc"],
+    [/แบตเตอ|battery/i, "battery"],              [/หัวเทียน|spark/i, "sparkplug"],
+    [/ปัดน้ำฝน|wiper/i, "wiper"],                [/หล่อเย็น|coolant/i, "coolant"],
+    [/น้ำมันเบรก|brake fluid/i, "brakefluid"],   [/ยาง|tyre|tire/i, "tyre"],
+  ];
+  function offlineItems(c){
+    const p = carParts(c);
+    const tag = [p.make, p.model].filter(Boolean).join(" ").trim();
+    const yr  = p.year ? " " + p.year : "";
+    const due = needs(c);                      // รายการที่ใกล้ถึงกำหนดจริง ๆ
+    const hot = new Set();
+    due.forEach(n => { const m = SP_MATCH.find(([re]) => re.test(n)); if (m) hot.add(m[1]) });
+    // เรียงของที่ถึงกำหนดขึ้นก่อน ที่เหลือตามลำดับแคตตาล็อก
+    const order = SP_CAT.slice().sort((a, b) => (hot.has(b.key) ? 1 : 0) - (hot.has(a.key) ? 1 : 0));
+    return order.map(x => ({
+      title: T(x.th, x.en) + (tag ? " — " + tag : ""),
+      category: x.cat,
+      why: T(x.why[0], x.why[1]) + (hot.has(x.key)
+        ? T(" · ใกล้ถึงกำหนดของรถคันนี้", " · due soon on this car") : ""),
+      fit: tag ? T("ค้นด้วยรุ่น ", "Searched for ") + tag + yr : "",
+      oem: !!x.oem, diy: !!x.diy,
+      priceLow: x.lo, priceHigh: x.hi,
+      query:   (tag + yr + " " + x.q).trim(),
+      queryEn: (tag + yr + " " + x.qe).trim(),
+    }));
+  }
 })();
-
-
-/* ══════════════════════════════════════════════════════════════════
-   โหมดไม่ง้อ AI — แคตตาล็อกอะไหล่ที่คำนวณจากตัวรถเอง
-   ══════════════════════════════════════════════════════════════════
-   ทำไมต้องมี: /api/spares เรียก Gemini ทุกครั้ง ถ้าโควตาโมเดลหมด
-   หลังบ้านจะคืนแคชเก่าให้ — แต่รถที่ยังไม่เคยค้นสำเร็จเลยจะไม่มีแคช
-   ผู้ใช้เลยเจอหน้าจอ error ทุกครั้ง รอเป็นวัน ๆ ก็ยังไม่ได้อะไร
-
-   ชั้นนี้ไม่เรียก AI เลย ประกอบรายการจาก "รอบบำรุงรักษาที่ใกล้ถึง"
-   ซึ่งเรารู้อยู่แล้วจากเลขไมล์ แล้วสร้างลิงก์ค้นหาของแต่ละร้านตรง ๆ
-   ราคาเป็นช่วงอ้างอิงตลาดไทย ติดป้ายชัดเจนว่าไม่ใช่ราคาที่ AI ประเมิน
-   ผลคือหน้า Spares ใช้งานได้เสมอ AI กลายเป็นของแถมไม่ใช่เงื่อนไข        */
-
-/* ช่วงราคาอะไหล่รถยนต์นั่ง/กระบะทั่วไปในไทย (บาท) — อัปเดตด้วยมือได้ */
-const SP_CAT = [
-  {key:"engineoil", th:"น้ำมันเครื่อง", en:"Engine oil", cat:"ของเหลว",
-   q:"น้ำมันเครื่อง", qe:"engine oil", lo:800, hi:2500, diy:true,
-   why:["เปลี่ยนตามรอบเพื่อรักษาอายุเครื่องยนต์","Regular changes protect the engine"]},
-  {key:"oilfilter", th:"กรองน้ำมันเครื่อง", en:"Oil filter", cat:"กรอง",
-   q:"กรองน้ำมันเครื่อง", qe:"oil filter", lo:150, hi:600, diy:true, oem:true,
-   why:["เปลี่ยนพร้อมน้ำมันเครื่องทุกครั้ง","Replace with every oil change"]},
-  {key:"airfilter", th:"กรองอากาศ", en:"Air filter", cat:"กรอง",
-   q:"กรองอากาศ", qe:"air filter", lo:250, hi:900, diy:true,
-   why:["กรองตันทำให้กินน้ำมันและเร่งไม่ขึ้น","A clogged filter costs fuel and power"]},
-  {key:"cabinfilter", th:"กรองแอร์ในห้องโดยสาร", en:"Cabin filter", cat:"กรอง",
-   q:"กรองแอร์", qe:"cabin air filter", lo:200, hi:800, diy:true,
-   why:["แอร์ไม่เย็นและมีกลิ่นมักมาจากกรองตัวนี้","Weak, smelly A/C usually starts here"]},
-  {key:"brakepad", th:"ผ้าเบรกหน้า", en:"Front brake pads", cat:"เบรก",
-   q:"ผ้าเบรกหน้า", qe:"front brake pads", lo:900, hi:3500, oem:true,
-   why:["ชิ้นส่วนความปลอดภัย อย่ารอจนมีเสียงดัง","Safety part — don't wait for the squeal"]},
-  {key:"brakedisc", th:"จานเบรกหน้า", en:"Front brake discs", cat:"เบรก",
-   q:"จานเบรกหน้า", qe:"front brake disc rotor", lo:2200, hi:7000, oem:true,
-   why:["เปลี่ยนคู่กับผ้าเบรกถ้าจานเป็นร่องลึก","Change with the pads if scored"]},
-  {key:"battery", th:"แบตเตอรี่", en:"Battery", cat:"ไฟฟ้า",
-   q:"แบตเตอรี่รถยนต์", qe:"car battery", lo:2200, hi:6500,
-   why:["อายุใช้งานทั่วไป 2–3 ปี สตาร์ตอืดคือสัญญาณ","2–3 years typical; slow cranking is the sign"]},
-  {key:"sparkplug", th:"หัวเทียน", en:"Spark plugs", cat:"เครื่องยนต์",
-   q:"หัวเทียน", qe:"spark plugs", lo:400, hi:2400, diy:true,
-   why:["เดินเบาสั่นหรือกินน้ำมันขึ้น ลองดูตัวนี้ก่อน","Rough idle or thirst — check these first"]},
-  {key:"wiper", th:"ใบปัดน้ำฝน", en:"Wiper blades", cat:"ภายนอก",
-   q:"ใบปัดน้ำฝน", qe:"wiper blades", lo:250, hi:1200, diy:true,
-   why:["ยางแข็งจะครูดกระจกเป็นรอยถาวร","Hardened rubber scratches the glass"]},
-  {key:"coolant", th:"น้ำยาหล่อเย็น", en:"Coolant", cat:"ของเหลว",
-   q:"น้ำยาหล่อเย็น", qe:"engine coolant", lo:250, hi:1200, diy:true,
-   why:["ป้องกันสนิมในระบบระบายความร้อน","Stops corrosion in the cooling system"]},
-  {key:"brakefluid", th:"น้ำมันเบรก DOT4", en:"Brake fluid DOT4", cat:"ของเหลว",
-   q:"น้ำมันเบรก DOT4", qe:"DOT4 brake fluid", lo:180, hi:700, diy:true,
-   why:["ดูดความชื้นตามเวลา ทำให้เบรกหยุ่น","Absorbs moisture and softens the pedal"]},
-  {key:"tyre", th:"ยางรถยนต์", en:"Tyres", cat:"ยาง",
-   q:"ยางรถยนต์", qe:"tyres", lo:1800, hi:9000,
-   why:["ดอกยางตื้นหรือยางเกิน 5 ปีควรเปลี่ยน","Shallow tread or over 5 years old"]},
-];
-
-/* จับคู่ชื่อรอบบำรุงรักษาของ CarLab เข้ากับรายการในแคตตาล็อก */
-const SP_MATCH = [
-  [/น้ำมันเครื่อง|engine oil/i, "engineoil"], [/กรองน้ำมัน|oil filter/i, "oilfilter"],
-  [/กรองอากาศ|air filter/i, "airfilter"],     [/กรองแอร์|cabin/i, "cabinfilter"],
-  [/ผ้าเบรก|brake pad/i, "brakepad"],          [/จานเบรก|disc|rotor/i, "brakedisc"],
-  [/แบตเตอ|battery/i, "battery"],              [/หัวเทียน|spark/i, "sparkplug"],
-  [/ปัดน้ำฝน|wiper/i, "wiper"],                [/หล่อเย็น|coolant/i, "coolant"],
-  [/น้ำมันเบรก|brake fluid/i, "brakefluid"],   [/ยาง|tyre|tire/i, "tyre"],
-];
-
-function offlineItems(c){
-  const p = carParts(c);
-  const tag = [p.make, p.model].filter(Boolean).join(" ").trim();
-  const yr  = p.year ? " " + p.year : "";
-  const due = needs(c);                      // รายการที่ใกล้ถึงกำหนดจริง ๆ
-  const hot = new Set();
-  due.forEach(n => { const m = SP_MATCH.find(([re]) => re.test(n)); if (m) hot.add(m[1]) });
-
-  // เรียงของที่ถึงกำหนดขึ้นก่อน ที่เหลือตามลำดับแคตตาล็อก
-  const order = SP_CAT.slice().sort((a, b) => (hot.has(b.key) ? 1 : 0) - (hot.has(a.key) ? 1 : 0));
-  return order.map(x => ({
-    title: T(x.th, x.en) + (tag ? " — " + tag : ""),
-    category: x.cat,
-    why: T(x.why[0], x.why[1]) + (hot.has(x.key)
-      ? T(" · ใกล้ถึงกำหนดของรถคันนี้", " · due soon on this car") : ""),
-    fit: tag ? T("ค้นด้วยรุ่น ", "Searched for ") + tag + yr : "",
-    oem: !!x.oem, diy: !!x.diy,
-    priceLow: x.lo, priceHigh: x.hi,
-    query:   (tag + yr + " " + x.q).trim(),
-    queryEn: (tag + yr + " " + x.qe).trim(),
-  }));
-}
 </script>
 <script id="ledgerjs">
 /* ══════════════════════════════════════════════════════════════════

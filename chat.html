@@ -378,6 +378,25 @@ body[data-phase="thread"] .composer{display:block;animation:compIn .5s cubic-bez
   font-size:19px;flex-shrink:0;transition:.2s;box-shadow:0 10px 22px -8px var(--c-acc)}
 .send:hover:not(:disabled){transform:translateY(-2px) scale(1.05)}
 .send:disabled{opacity:.4;box-shadow:none;cursor:default}
+/* ตอนเป็นปุ่มโทรใช้สีจาง ๆ  ปุ่มส่งถึงจะเป็นสีเต็มของแบรนด์
+   ผู้ใช้จะได้เห็นความต่างทันทีว่าตอนนี้กดแล้วจะเกิดอะไร */
+.send[data-mode="call"]{background:var(--c-glass2);color:var(--c-acc);
+  border:1px solid var(--c-line);box-shadow:none}
+.send[data-mode="call"]:hover{background:var(--c-acc-soft)}
+
+/* ── สไตล์การพูดกับโควตา token ในแผ่นตั้งค่าของแชท ── */
+.style-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:4px}
+.st-opt{padding:9px 14px;border-radius:13px;font-size:13.5px;font-weight:600;
+  background:var(--c-glass);border:1px solid var(--c-line);color:var(--c-mut);
+  cursor:pointer;transition:.16s}
+.st-opt:hover{color:var(--c-ink);border-color:var(--c-acc)}
+.st-opt[aria-pressed="true"]{background:var(--c-acc-soft);border-color:var(--c-acc);color:var(--c-acc)}
+.tok-box{background:var(--c-glass);border:1px solid var(--c-line);border-radius:14px;padding:12px 13px}
+.tok-bar{height:7px;border-radius:99px;background:var(--c-glass2);overflow:hidden}
+.tok-bar span{display:block;height:100%;width:0;border-radius:99px;
+  background:var(--c-grad);transition:width .5s cubic-bezier(.3,1,.3,1)}
+.tok-bar.warn span{background:linear-gradient(90deg,#E8A23C,#D64A4A)}
+.tok-txt{margin-top:8px;font-size:12.5px;color:var(--c-mut);line-height:1.5}
 
 /* ============ SHEETS ============ */
 .sheet-bg{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);
@@ -756,11 +775,30 @@ body[data-phase="login"] .side-burger,body[data-phase="gate"] .side-burger{displ
   .p-car{padding:6px 9px;font-size:12px;max-width:38vw;min-width:0}
   .p-btn{width:32px;height:32px;font-size:15px}
   .side-burger{width:30px;height:30px;font-size:17px}
+  /* ปุ่มปิดซ้ำกับเมนูด้านซ้ายที่มีทางกลับหน้าหลักอยู่แล้ว
+     ตัดออกจากมือถือเพื่อคืนที่ให้ชื่อรถและปุ่มที่ใช้บ่อยกว่า */
+  .p-close{display:none}
+  .p-car{max-width:34vw}
 }
 @media(max-width:380px){
   .pill{padding:4px 5px}
   .p-btn{width:29px;height:29px}
   .p-car{max-width:30vw;padding:6px 7px}
+}
+/* ── แถบพิมพ์บนมือถือ ──
+   ของเดิมวางปุ่มเรียงกันสามปุ่มก่อนถึงช่องพิมพ์ ที่เหลือให้พิมพ์จึงแคบมาก
+   ยุบรูปกับวิดีโอไว้หลังปุ่มบวก เหลือเห็นแค่บวกกับไมค์ ตามแบบที่ออกแบบไว้
+   บนจอใหญ่ไม่ต้องยุบ เพราะมีที่พอและกดตรง ๆ เร็วกว่า */
+.att-btn.plus{display:none}
+@media(max-width:560px){
+  .att-btn.plus{display:grid}
+  #attImg,#attVid{display:none}
+  .crow.open #attImg,.crow.open #attVid{display:grid}
+  .crow.open .att-btn.plus i{transform:rotate(45deg)}
+  .att-btn.plus i{transition:transform .22s cubic-bezier(.3,1.4,.4,1)}
+  .att-btn{width:36px;height:36px;font-size:17px}
+  .send{width:40px;height:40px}
+  #inp{font-size:16px;padding:9px 4px}
 }
 /* ช่องพิมพ์และชิปบนมือถือ */
 @media(max-width:480px){
@@ -4192,7 +4230,6 @@ window.spireSetupVersion=SETUP_VERSION;
     <div class="p-drop" id="carDrop"></div>
   </button>
   <div class="p-sep"></div>
-  <button class="p-btn" onclick="startCall()" title="โทรคุยกับ Cendon"><i class="ti ti-phone"></i></button>
   <button class="p-btn" onclick="openSheet('hist')" title="ประวัติบทสนทนา"><i class="ti ti-history"></i></button>
   <button class="p-btn" onclick="openSheet('set')" title="ตั้งค่า"><i class="ti ti-settings"></i></button>
   <button class="p-btn p-close" onclick="goHome()" title="กลับหน้าหลัก"><i class="ti ti-x"></i></button>
@@ -4318,11 +4355,13 @@ window.spireSetupVersion=SETUP_VERSION;
 <footer class="composer" id="composer">
   <div class="atts" id="atts"></div>
   <div class="crow">
+    <button class="att-btn plus" id="attPlus" title="แนบไฟล์" aria-expanded="false"><i class="ti ti-plus"></i></button>
     <button class="att-btn" id="attImg" title="รูป"><i class="ti ti-photo"></i></button>
     <button class="att-btn" id="attVid" title="วิดีโอ"><i class="ti ti-video"></i></button>
     <button class="att-btn" id="micBtn" title="อัดเสียง"><i class="ti ti-microphone"></i></button>
     <textarea id="inp" rows="1" placeholder="พิมพ์อาการรถ หรือถามอะไรก็ได้..."></textarea>
-    <button class="send" id="sendBtn" disabled><i class="ti ti-arrow-up"></i></button>
+    <button class="send" id="sendBtn" data-mode="call" title="โทรคุยกับ Cendon">
+      <i class="ti ti-phone"></i></button>
   </div>
 </footer>
 
@@ -4331,6 +4370,14 @@ window.spireSetupVersion=SETUP_VERSION;
 <div class="sheet" id="sheetSet">
   <div class="sheet-head"><b data-t="s.title">ตั้งค่า</b><button class="p-btn" onclick="closeSheets()"><i class="ti ti-x"></i></button></div>
   <div class="sheet-body">
+    <!-- ตั้งค่าเฉพาะของแชทบอท ไม่ใช่ของโปรไฟล์ -->
+    <div class="sheet-label" data-t="s.style">สไตล์การพูด</div>
+    <div class="style-row" id="styleRow"></div>
+    <div class="sheet-label" data-t="s.tokens">โควตาการใช้งานวันนี้</div>
+    <div class="tok-box" id="tokBox">
+      <div class="tok-bar"><span id="tokFill"></span></div>
+      <div class="tok-txt" id="tokTxt">…</div>
+    </div>
     <div class="sheet-label" data-t="s.lang">ภาษา / Language</div>
     <div class="lang-row">
       <button class="lang-opt" data-l="th" onclick="setLang('th')">ไทย</button>
@@ -4386,6 +4433,79 @@ const LS={get:(k,d)=>{try{return JSON.parse(localStorage.getItem("spire_"+k))??d
 
 /* ===== CONFIG (same as index.html — do not change) ===== */
 const BACKEND_URL="https://spireonebackend.carspirethailand.workers.dev";
+
+/* ตัวช่วยแปลภาษาสำหรับสคริปต์ก้อนนี้
+   T กับ t ถูกประกาศเป็น const ในสคริปต์คนละก้อน จึงเรียกจากที่นี่ไม่ได้
+   มีแต่ window.spireT ที่ผูกไว้ระดับหน้าจริง ๆ */
+const TT=(th,en)=>(window.spireT?window.spireT(th,en):((window.lang||"th")==="en"?en:th));
+
+/* ===== การตั้งค่าของแชทและโควตา token =====
+ * โควตาคิดจาก token ที่โมเดลใช้จริง ไม่ใช่จำนวนครั้งที่พิมพ์
+ * ข้อความสั้นกับบทสนทนายาวจึงกินโควตาไม่เท่ากัน ซึ่งตรงกับต้นทุนจริง
+ */
+let chatPrefs={style:"precise"},chatStyles=[],tokState=null;
+
+async function authFetch(path,opts){
+  const u=auth&&auth.currentUser; if(!u||!BACKEND_URL) throw new Error("not signed in");
+  const tok=await u.getIdToken();
+  return fetch(BACKEND_URL+path,Object.assign({},opts,{
+    headers:Object.assign({"Content-Type":"application/json","Authorization":"Bearer "+tok},
+                          (opts&&opts.headers)||{}),
+  }));
+}
+
+async function loadChatPrefs(){
+  try{
+    const r=await authFetch("/api/chat/prefs");
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    const d=await r.json();
+    chatPrefs=d.prefs||chatPrefs; chatStyles=d.styles||[]; tokState=d.tokens||null;
+  }catch(e){
+    /* ออฟไลน์หรือยังไม่ล็อกอินก็ยังต้องเปิดแผ่นตั้งค่าได้
+       ใช้รายการสำรองที่ตรงกับฝั่งเซิร์ฟเวอร์ */
+    if(!chatStyles.length) chatStyles=[
+      {key:"precise",th:"เป็นระเบียบ",en:"Precise"},
+      {key:"natural",th:"เหมือนคนทั่วไป",en:"Natural"},
+      {key:"playful",th:"ติดเล่น",en:"Playful"},
+      {key:"funny",th:"ตลก",en:"Funny"}];
+  }
+  renderChatPrefs();
+}
+
+function renderChatPrefs(){
+  const row=$("styleRow");
+  if(row) row.innerHTML=chatStyles.map(st=>
+    `<button class="st-opt" aria-pressed="${st.key===chatPrefs.style}" `+
+    `onclick="setChatStyle('${st.key}')">${(window.lang||"th")==="th"?st.th:st.en}</button>`).join("");
+  const fill=$("tokFill"),txt=$("tokTxt"),bar=fill&&fill.parentNode;
+  if(!fill||!txt) return;
+  if(!tokState){ txt.textContent=TT("ดูโควตาได้เมื่อเข้าสู่ระบบ","Sign in to see your quota"); fill.style.width="0"; return; }
+  if(tokState.unlimited){
+    fill.style.width="100%"; if(bar) bar.classList.remove("warn");
+    txt.textContent=TT("ไม่จำกัด (ผู้ดูแลระบบ)","Unlimited (admin)"); return;
+  }
+  const pct=Math.min(100,Math.round(tokState.used/Math.max(1,tokState.limit)*100));
+  fill.style.width=pct+"%";
+  if(bar) bar.classList.toggle("warn",pct>=80);
+  const n=x=>x.toLocaleString((window.lang||"th")==="th"?"th-TH":"en-US");
+  txt.textContent=TT(
+    `ใช้ไป ${n(tokState.used)} จาก ${n(tokState.limit)} โทเคน (${pct}%) · เหลือ ${n(tokState.left)}`,
+    `${n(tokState.used)} of ${n(tokState.limit)} tokens used (${pct}%) · ${n(tokState.left)} left`);
+}
+
+async function setChatStyle(key){
+  const prev=chatPrefs.style; chatPrefs={style:key}; renderChatPrefs();
+  try{
+    const r=await authFetch("/api/chat/prefs",{method:"PUT",body:JSON.stringify({style:key})});
+    if(!r.ok) throw new Error("HTTP "+r.status);
+  }catch(e){
+    /* เขียนไม่สำเร็จต้องย้อนปุ่มกลับ ไม่งั้นผู้ใช้เห็นว่าเลือกแล้ว
+       แต่เซิร์ฟเวอร์ยังใช้ค่าเดิม แล้วงงว่าทำไมน้ำเสียงไม่เปลี่ยน */
+    chatPrefs={style:prev}; renderChatPrefs();
+    window.toast&&window.toast(TT("บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง","Could not save — try again"));
+  }
+}
+window.setChatStyle=setChatStyle;
 const fbConfig={apiKey:"AIzaSyDDtvz4d4FRG_KOq5EQHmlDijU-x1FDZlQ",authDomain:"sp1p-82396.firebaseapp.com",databaseURL:"https://sp1p-82396-default-rtdb.firebaseio.com",projectId:"sp1p-82396",storageBucket:"sp1p-82396.appspot.com",messagingSenderId:"924479207020",appId:"1:924479207020:web:ec64428a61403e1ad48a49"};
 /* AI calls go through the backend proxy — no API key in the browser */
 let auth=null,useFb=false,currentUser=LS.get("cachedUser",null),myRole="user",isBanned=false;
@@ -4952,11 +5072,38 @@ ${convo}`}]}],{temp:0.3});
 function addAtt(kind,mime,b64,name){pending.push({kind,mime,b64,name});renderAtts();updateSend()}
 function renderAtts(){$("atts").innerHTML=pending.map((a,i)=>`<div class="att-chip">${a.kind==="image"?`<img src="data:${a.mime};base64,${a.b64}">`:a.kind==="video"?`<video src="data:${a.mime};base64,${a.b64}"></video>`:`<i class="ti ti-microphone"></i>`}<span>${esc(a.name||a.kind)}</span><span class="x" data-rm="${i}"><i class="ti ti-x"></i></span></div>`).join("")}
 $("atts").addEventListener("click",e=>{const x=e.target.closest("[data-rm]");if(x){pending.splice(+x.dataset.rm,1);renderAtts();updateSend()}});
-function updateSend(){$("sendBtn").disabled=sending||(!$("inp").value.trim()&&pending.length===0)}
+/* ปุ่มเดียวทำสองหน้าที่ เหมือน AI เจ้าอื่น
+   ยังไม่พิมพ์อะไร = ปุ่มโทร  พิมพ์แล้วหรือแนบไฟล์แล้ว = ปุ่มส่ง
+   ไม่ปิดการใช้งานปุ่มอีกต่อไป เพราะตอนว่างมันมีงานของตัวเองอยู่ */
+function updateSend(){
+  const b=$("sendBtn"); if(!b) return;
+  const has=!!$("inp").value.trim()||pending.length>0;
+  const mode=has?"send":"call";
+  if(b.dataset.mode!==mode){
+    b.dataset.mode=mode;
+    b.innerHTML=has?'<i class="ti ti-arrow-up"></i>':'<i class="ti ti-phone"></i>';
+    b.title=has?TT("ส่ง","Send"):TT("โทรคุยกับ Cendon","Call Cendon");
+  }
+  b.disabled=sending&&has;
+}
 function autoSize(){const t=$("inp");t.style.height="auto";t.style.height=Math.min(t.scrollHeight,140)+"px"}
 $("inp").addEventListener("input",()=>{autoSize();updateSend()});
 $("inp").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMsg()}});
-$("sendBtn").onclick=sendMsg;
+/* ปุ่มบวกกางเมนูแนบไฟล์บนมือถือ  บนจอใหญ่ปุ่มนี้ถูกซ่อนอยู่แล้ว */
+(function(){
+  const plus=$("attPlus"); if(!plus) return;
+  plus.onclick=()=>{
+    const row=plus.closest(".crow"); if(!row) return;
+    const open=row.classList.toggle("open");
+    plus.setAttribute("aria-expanded",open?"true":"false");
+  };
+})();
+
+$("sendBtn").onclick=()=>{
+  /* อ่านสถานะจากปุ่มตอนกด ไม่ใช่ตอนผูก event
+     ไม่งั้นปุ่มจะทำหน้าที่เดิมค้างอยู่ตลอดอายุของหน้า */
+  if($("sendBtn").dataset.mode==="send") sendMsg(); else startCall();
+};
 $("attImg").onclick=()=>$("fileImg").click();
 $("attVid").onclick=()=>$("fileVid").click();
 $("fileImg").onchange=e=>{const f=e.target.files[0];if(f){if(f.size>7e6){toast(lang==="en"?"Image too big (<7MB)":"รูปใหญ่ไป (<7MB)","ti-alert-triangle")}else{const r=new FileReader();r.onload=()=>addAtt("image",f.type,r.result.split(",")[1],f.name);r.readAsDataURL(f)}}e.target.value=""};
@@ -5010,7 +5157,12 @@ async function sendMsg(){
 function openSheet(which){
   closeSheets();
   $("sheetBg").classList.add("show");
-  if(which==="set"){$("sheetSet").classList.add("show");markTheme();markLang()}
+  if(which==="set"){
+    $("sheetSet").classList.add("show");markTheme();markLang();
+    /* โหลดทุกครั้งที่เปิด ไม่ใช่โหลดครั้งเดียวตอนเริ่ม
+       เพราะยอด token เปลี่ยนทุกครั้งที่คุย ถ้าแคชไว้จะเห็นเลขเก่า */
+    loadChatPrefs();
+  }
   else{renderHist();$("sheetHist").classList.add("show")}
 }
 function closeSheets(){$("sheetBg").classList.remove("show");$("sheetSet").classList.remove("show");$("sheetHist").classList.remove("show")}

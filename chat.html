@@ -129,9 +129,10 @@ body[data-phase="thread"] .meteor{display:none}
   border:1px solid var(--c-line);box-shadow:0 14px 40px -14px rgba(0,0,0,.5);animation:pillIn .6s cubic-bezier(.2,.9,.25,1)}
 @keyframes pillIn{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:none}}
 .p-brand{display:flex;align-items:center;gap:8px;padding:2px 8px 2px 4px}
-.p-mark{width:30px;height:30px;border-radius:9px;background:var(--c-grad);color:#fff;display:grid;place-items:center;
-  box-shadow:0 6px 16px -6px var(--c-acc)}
-.p-mark svg{width:56%;height:56%}.p-mark path{fill:currentColor}
+/* ตราตัว C เป็นโลโก้ในตัวเอง ไม่ต้องมีแผ่นสีรอง วางบนพื้นแถบได้เลย */
+.p-mark{width:auto;height:28px;display:grid;place-items:center}
+.p-mark .cmk{height:100%;width:auto;display:block}
+.p-brand .wm{height:15px;width:auto;display:block}
 .p-brand b{font-size:14.5px;font-weight:800;font-family:var(--kd);letter-spacing:.4px;white-space:nowrap}
 .p-sep{width:1px;height:22px;background:var(--c-line);flex-shrink:0}
 .p-car{display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:30px;font-weight:600;font-size:13px;
@@ -408,7 +409,7 @@ body[data-phase="thread"] .composer{display:block;animation:compIn .5s cubic-bez
 /* Kanit headings — balanced weights */
 .w-greet,.center-txt,.pane-title{font-weight:600;letter-spacing:.01em}
 .sheet-head b,.sum-head b{font-weight:700;letter-spacing:.02em}
-.p-brand b{font-weight:700;letter-spacing:.04em}
+
 .sheet-btn{display:flex;align-items:center;gap:10px;width:100%;padding:13px 15px;border-radius:14px;font-size:14px;font-weight:600;
   background:var(--c-glass);border:1px solid var(--c-line);color:var(--c-ink);transition:.16s;text-align:left}
 .sheet-btn:hover{border-color:var(--c-acc)}
@@ -483,7 +484,7 @@ html.theme-fade,html.theme-fade *,html.theme-fade *::before,html.theme-fade *::a
 .toast .ti{font-size:18px;color:var(--c-acc)}
 
 @media(max-width:480px){
-  .p-brand b{display:none}
+  .p-brand .wm{display:none}
   .p-car{max-width:130px}
   .tile-grid{gap:11px}
   .bubble{max-width:84%}
@@ -559,11 +560,10 @@ body{flex-direction:row}
 .side>*{position:relative;z-index:1}
 
 .side-top{display:flex;align-items:center;gap:9px;padding:4px 6px 2px}
-.side-mark{width:28px;height:28px;border-radius:8px;flex-shrink:0;display:grid;place-items:center;
-  background:var(--c-grad);
-  box-shadow:0 6px 16px -8px var(--c-acc)}
-.side-mark svg{width:15px;height:15px;fill:#fff}
-.side-top b{font-family:var(--kd);font-size:14.5px;font-weight:700;letter-spacing:.04em;flex:1}
+/* ตราตัว C เป็นโลโก้ในตัวเอง ไม่ต้องมีแผ่นสีรอง */
+.side-mark{width:auto;height:26px;flex-shrink:0;display:grid;place-items:center}
+.side-mark svg{height:100%;width:auto;fill:currentColor}
+.side-top .wm{height:14px;width:auto;display:block;flex:1}
 .side-x{display:none;width:32px;height:32px;border-radius:9px;color:var(--c-mut);font-size:18px;
   align-items:center;justify-content:center}
 
@@ -709,7 +709,7 @@ body[data-phase="login"] .side-burger,body[data-phase="gate"] .side-burger{displ
 .side::before{content:"";position:absolute;top:0;bottom:0;right:-1px;width:1px;
   background:linear-gradient(180deg,transparent,var(--c-acc),transparent);opacity:.55}
 .side-lbl,.pane-lbl{letter-spacing:.2em}
-.side-top b::after{content:"";display:block;font-size:0}
+
 
 /* ── แถบหัวเรื่อง = แถบเครื่องมือ ── */
 .tbar{position:relative;background:linear-gradient(180deg,rgba(255,255,255,.055),transparent)}
@@ -741,7 +741,7 @@ body[data-phase="login"] .side-burger,body[data-phase="gate"] .side-burger{displ
 @media(max-width:560px){
   .pill{gap:1px;padding:5px 6px;max-width:calc(100vw - 16px);overflow:hidden;min-width:0}
   .p-brand{padding:2px 4px 2px 2px;gap:6px;flex-shrink:0}
-  .p-brand b{display:none}
+  .p-brand .wm{display:none}
   .p-mark{width:26px;height:26px;border-radius:8px}
   .p-sep{display:none}
   .p-car{padding:6px 9px;font-size:12px;max-width:38vw;min-width:0}
@@ -1298,7 +1298,7 @@ html[data-level="basic"] .hfree{
 .su-mark{width:54px;height:54px;margin:0 auto 18px;border-radius:16px;
   display:grid;place-items:center;background:var(--grad,linear-gradient(160deg,#F0894F,#D95E3C));
   box-shadow:0 16px 38px -14px rgba(217,94,60,.9)}
-.su-mark svg{width:25px;height:25px;fill:#fff}
+.su-mark .cmk{height:26px;width:auto;color:#fff}
 .su-h{text-align:center;margin-bottom:22px}
 .su-h h1{font-size:25px;font-weight:700;color:#EDF4FF;margin:0 0 7px;line-height:1.25}
 .su-h p{margin:0;font-size:13.5px;line-height:1.6;color:rgba(186,214,245,.7)}
@@ -3382,13 +3382,13 @@ const L=(th,en)=>(window.spireT?window.spireT(th,en):((window.lang||"th")==="en"
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>
   ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
-const MARK='<svg viewBox="0 0 100 100" aria-hidden="true">'+
-  '<path d="M50 8 A42 42 0 1 1 49.9 8 Z M50 26 A24 24 0 1 0 50.1 26 Z"/></svg>';
+const MARK='<svg class="cmk" aria-hidden="true" viewBox="-6.0 -6.0 94.8 112.0" role="img" aria-label="Cendon"><title>Cendon</title><path fill="currentColor" d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg>';
 
 /* ════════════ พื้นหลัง: โลโก้เลขหนึ่งลอยเหมือนดาวในอวกาศ ════════════ */
 /* วาดด้วย canvas ตัวเดียว ไม่ใช่โหนดหลายร้อยอัน — ลื่นกว่ามากบนมือถือ
    ดาวมีค่าความลึก z ยิ่งใกล้ยิ่งใหญ่และสว่าง ทำให้รู้สึกเป็นอวกาศจริง */
-const LOGO_PATH="M50 8 A42 42 0 1 1 49.9 8 Z M50 26 A24 24 0 1 0 50.1 26 Z";
+/* ดาวในพื้นหลังเป็นรูปตราของแบรนด์ ไม่ใช่จุดกลม ๆ */
+const LOGO_PATH="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z";
 let sky=null,skyRaf=0,stars=[],skyPath=null;
 
 function startSky(){
@@ -3443,7 +3443,7 @@ function startSky(){
       if(skyPath){
         const k=size/100;
         ctx.scale(k,k);
-        ctx.translate(-50,-52);
+        ctx.translate(-41.4,-50);
         /* ดาวใกล้ ๆ ออกโทนส้มของแบรนด์ ดาวไกลเป็นสีขาวอมฟ้า */
         ctx.fillStyle=s.z>.68?"#F0894F":(s.z>.45?"#9FC6F0":"#DCE9F8");
         ctx.fill(skyPath);
@@ -4159,7 +4159,7 @@ window.spireSetupVersion=SETUP_VERSION;
   <span style="--a:156deg;--d:.02s"></span><span style="--a:182deg;--d:.1s"></span><span style="--a:208deg;--d:.05s"></span>
   <span style="--a:234deg;--d:.13s"></span><span style="--a:260deg;--d:.01s"></span><span style="--a:286deg;--d:.08s"></span>
   <span style="--a:312deg;--d:.04s"></span><span style="--a:338deg;--d:.11s"></span>
-  <div class="warp-core"><svg viewBox="0 0 100 100"><path d="M50 8 A42 42 0 1 1 49.9 8 Z M50 26 A24 24 0 1 0 50.1 26 Z"/></svg></div>
+  <div class="warp-core"><svg viewBox="-6.0 -6.0 94.8 112.0"><path d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg></div>
 </div>
 
 <!-- BACKGROUND STAGE -->
@@ -4173,8 +4173,8 @@ window.spireSetupVersion=SETUP_VERSION;
 <!-- PILL NAV -->
 <header class="pill">
   <div class="p-brand">
-    <div class="p-mark"><svg viewBox="0 0 100 100"><path d="M50 8 A42 42 0 1 1 49.9 8 Z M50 26 A24 24 0 1 0 50.1 26 Z"/></svg></div>
-    <b>Cendon</b>
+    <div class="p-mark"><svg class="cmk" viewBox="-6.0 -6.0 94.8 112.0" role="img" aria-label="Cendon"><title>Cendon</title><path fill="currentColor" d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg></div>
+    <svg class="wm" viewBox="-44 -744.0 4857.0 788.0" role="img" aria-label="Cendon"><title>Cendon</title><g fill="currentColor"><path transform="translate(0.0 0) scale(1 -1)" d="M614 632V564L521 591L476 609L428 620L380 622L332 615L286 600L243 576L205 546L174 509L149 468L132 422L123 374V326L132 278L149 232L174 191L205 154L243 124L286 100L332 85L380 78L428 80L476 91L521 109L614 136V68L561 33L502 9L439 -5L376 -8L312 1L252 22L195 52L146 92L104 140L71 195L49 255L37 318V382L49 445L71 505L104 560L146 608L195 648L252 678L312 699L376 708L439 705L502 691L561 667Z"/><path transform="translate(712.0 0)" d="M49 -624L619 -624L619 -700L49 -700Z M49 -312L619 -312L619 -388L49 -388Z M49 0L619 0L619 -76L49 -76Z"/><path transform="translate(2240.0 0) scale(-1 -1)" d="M59 0V700H145V0ZM653 0V700H739V0ZM49 700H155L749 0H643Z"/><path transform="translate(2300.0 0) scale(1 -1)" d="M49 0V700H135V0ZM359 700 384 699 409 696 434 692 458 686 482 678 505 668 527 657 549 644 569 630 589 615 607 597 624 579 640 560 654 539 667 518 678 495 687 472 695 449 701 424 706 400 709 375V350V325L706 300L701 276L695 251L687 228L678 205L667 182L654 161L640 140L624 121L607 103L589 85L569 70L549 56L527 43L505 32L482 22L458 14L434 8L409 4L384 1L359 0V76L378 77L397 79L416 82L434 87L452 93L469 101L486 110L502 119L518 131L532 143L546 156L559 171L571 186L581 202L591 219L600 236L607 254L613 273L617 292L621 311L623 330V350V370L621 389L617 408L613 427L607 446L600 464L591 481L581 498L571 514L559 529L546 544L532 557L518 569L502 581L486 590L469 599L452 607L434 613L416 618L397 621L378 623L359 624ZM49 624V700H359V624ZM49 0V76H359V0Z"/><path transform="translate(3119.0 0) scale(1 -1)" d="M753 350Q753 291 735.0 237.0Q717 183 684.5 138.5Q652 94 607.0 61.0Q562 28 508.5 10.0Q455 -8 395 -8Q336 -8 282.5 10.0Q229 28 184.0 61.0Q139 94 106.5 138.5Q74 183 55.5 237.0Q37 291 37 350Q37 409 55.5 463.0Q74 517 106.5 561.5Q139 606 184.0 639.0Q229 672 282.5 690.0Q336 708 395 708Q455 708 508.5 690.0Q562 672 607.0 639.0Q652 606 684.5 561.5Q717 517 735.0 463.0Q753 409 753 350ZM667 350Q667 408 646.0 459.5Q625 511 587.5 549.5Q550 588 501.0 610.0Q452 632 395 632Q339 632 290.0 610.0Q241 588 203.5 549.5Q166 511 144.5 459.5Q123 408 123 350Q123 292 144.5 240.5Q166 189 203.5 150.5Q241 112 290.0 90.0Q339 68 395 68Q452 68 501.0 90.0Q550 112 587.5 150.5Q625 189 646.0 240.5Q667 292 667 350Z"/><path transform="translate(3970.0 0) scale(1 -1)" d="M59 0V700H145V0ZM653 0V700H739V0ZM49 700H155L749 0H643Z"/></g></svg>
   </div>
   <div class="p-sep"></div>
   <button class="p-car" id="pCar" onclick="toggleCarDrop(event)">
@@ -4194,7 +4194,7 @@ window.spireSetupVersion=SETUP_VERSION;
   <!-- LOGIN GATE: sign-in required before chatting -->
   <section class="pane pane-center" id="v-login">
     <div class="pane-inner">
-      <div class="logo-halo"><div class="big-logo"><svg viewBox="0 0 100 100"><path d="M50 8 A42 42 0 1 1 49.9 8 Z M50 26 A24 24 0 1 0 50.1 26 Z"/></svg></div></div>
+      <div class="logo-halo"><div class="big-logo"><svg viewBox="-6.0 -6.0 94.8 112.0"><path d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg></div></div>
       <div class="w-greet" data-t="login.title">เข้าสู่ระบบเพื่อใช้ Cendon</div>
       <div class="w-sub" data-t="login.sub">ล็อกอินด้วย Google เพื่อคุยกับ AI อย่างปลอดภัย ประวัติและโควตาผูกกับบัญชีของคุณ</div>
       <div class="w-actions">
@@ -4215,7 +4215,7 @@ window.spireSetupVersion=SETUP_VERSION;
   <!-- GATE: no car selected -->
   <section class="pane pane-center" id="v-gate">
     <div class="pane-inner">
-      <div class="logo-halo"><div class="big-logo"><svg viewBox="0 0 100 100"><path d="M50 8 A42 42 0 1 1 49.9 8 Z M50 26 A24 24 0 1 0 50.1 26 Z"/></svg></div></div>
+      <div class="logo-halo"><div class="big-logo"><svg viewBox="-6.0 -6.0 94.8 112.0"><path d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg></div></div>
       <div class="w-greet" data-t="gate.title">เลือกรถของคุณ</div>
       <div class="w-sub" data-t="gate.sub">Cendon จะวิเคราะห์ได้แม่นยำขึ้นเมื่อรู้จักรถของคุณ</div>
       <div class="gate-list" id="gateList"></div>
@@ -4293,7 +4293,7 @@ window.spireSetupVersion=SETUP_VERSION;
   <!-- THREAD -->
   <section class="pane" id="v-thread">
     <div class="center-hint" id="centerHint">
-      <div class="hint-logo"><svg viewBox="0 0 100 100"><path d="M50 8 A42 42 0 1 1 49.9 8 Z M50 26 A24 24 0 1 0 50.1 26 Z"/></svg></div>
+      <div class="hint-logo"><svg viewBox="-6.0 -6.0 94.8 112.0"><path d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg></div>
       <div class="center-txt" id="centerTxt"></div>
       <div class="center-sub" id="centerSub"></div>
     </div>
@@ -4352,7 +4352,7 @@ window.spireSetupVersion=SETUP_VERSION;
   <div class="call-cam" id="callCamWrap"><video id="callCam" muted playsinline></video></div>
   <canvas id="camCanvas" hidden></canvas>
   <div class="call-status" id="callStatus">กำลังเชื่อมต่อ...</div>
-  <div class="call-logo" id="callLogo"><svg viewBox="0 0 100 100"><path d="M50 8 A42 42 0 1 1 49.9 8 Z M50 26 A24 24 0 1 0 50.1 26 Z"/></svg></div>
+  <div class="call-logo" id="callLogo"><svg viewBox="-6.0 -6.0 94.8 112.0"><path d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg></div>
   <div class="call-caption" id="callCaption"></div>
   <div class="call-timer" id="callTimer">00:00</div>
   <div class="call-btns">
@@ -4840,7 +4840,7 @@ function renderChips(){
 function useChip(b){$("inp").value=b.textContent;autoSize();updateSend();$("inp").focus()}
 
 /* ===== MESSAGES ===== */
-const LOGO_SVG=`<svg viewBox="0 0 100 100"><path d="M50 8 A42 42 0 1 1 49.9 8 Z M50 26 A24 24 0 1 0 50.1 26 Z"/></svg>`;
+const LOGO_SVG=`<svg viewBox="-6.0 -6.0 94.8 112.0"><path d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg>`;
 const sysPrompt=()=>`คุณคือ Cendon ผู้ช่วย AI ดูแลรถยนต์ พูดจาเป็นกันเองอบอุ่นเหมือนเพื่อนช่างมืออาชีพ ตอบเป็นภาษา${lang==="en"?"อังกฤษ":lang==="ja"?"ญี่ปุ่น":lang==="zh"?"จีน":lang==="de"?"เยอรมัน":lang==="es"?"สเปน":"ไทย"}. ช่วยวินิจฉัยอาการรถ ให้คำแนะนำเป็นขั้นตอน ประเมินค่าใช้จ่ายคร่าวๆ และตอบคำถามเรื่องรถทุกอย่าง. ถ้ามีรูป/วิดีโอ/เสียงแนบมา ให้วิเคราะห์จากสื่อนั้นจริงๆ. ตอบกระชับ อ่านง่าย ใช้หัวข้อย่อย (ขึ้นต้นด้วย "- ") เมื่อเหมาะสม. ย้ำเสมอว่าเป็นการประเมินเบื้องต้น ควรให้ช่างตรวจจริงเพื่อความปลอดภัย.`+(selCar()?`\nรถของผู้ใช้: ${selCar().name} ปี ${selCar().year||"-"} เลขไมล์ ${selCar().mileage||"-"} กม.`:"");
 function md(t){let s=esc(t);const lines=s.split("\n");let out="",inList=false;
   lines.forEach(l=>{if(/^\s*[-*]\s+/.test(l)){if(!inList){out+="<ul>";inList=true}out+="<li>"+l.replace(/^\s*[-*]\s+/,"")+"</li>"}else{if(inList){out+="</ul>";inList=false}out+=l+"<br>"}});
@@ -5301,7 +5301,7 @@ const D=document,$=id=>D.getElementById(id);
 const L=()=>window.lang||"th";
 const t=(th,en)=>(window.spireT?window.spireT(th,en):((window.lang||"th")==="en"?en:th));
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const MARK='<svg viewBox="0 0 100 100"><path d="M50 8 A42 42 0 1 1 49.9 8 Z M50 26 A24 24 0 1 0 50.1 26 Z"/></svg>';
+const MARK='<svg viewBox="-6.0 -6.0 94.8 112.0"><path d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg>';
 
 /* เมนูหลักของแอปอยู่บนสุดของลิ้นชัก ประวัติแชตอยู่ล่าง — โครงเดียวกับ Claude
    เดิมลิ้นชักมีแต่ประวัติแชต ทำให้ต้องกลับไปหน้าหลักทุกครั้งที่จะไปที่อื่น */
@@ -5362,7 +5362,7 @@ function wrap(){
   aside.innerHTML=`
     <div class="side-top">
       <div class="side-mark">${MARK}</div>
-      <b>Cendon</b>
+      <svg class="wm" viewBox="-44 -744.0 4857.0 788.0" role="img" aria-label="Cendon"><title>Cendon</title><g fill="currentColor"><path transform="translate(0.0 0) scale(1 -1)" d="M614 632V564L521 591L476 609L428 620L380 622L332 615L286 600L243 576L205 546L174 509L149 468L132 422L123 374V326L132 278L149 232L174 191L205 154L243 124L286 100L332 85L380 78L428 80L476 91L521 109L614 136V68L561 33L502 9L439 -5L376 -8L312 1L252 22L195 52L146 92L104 140L71 195L49 255L37 318V382L49 445L71 505L104 560L146 608L195 648L252 678L312 699L376 708L439 705L502 691L561 667Z"/><path transform="translate(712.0 0)" d="M49 -624L619 -624L619 -700L49 -700Z M49 -312L619 -312L619 -388L49 -388Z M49 0L619 0L619 -76L49 -76Z"/><path transform="translate(2240.0 0) scale(-1 -1)" d="M59 0V700H145V0ZM653 0V700H739V0ZM49 700H155L749 0H643Z"/><path transform="translate(2300.0 0) scale(1 -1)" d="M49 0V700H135V0ZM359 700 384 699 409 696 434 692 458 686 482 678 505 668 527 657 549 644 569 630 589 615 607 597 624 579 640 560 654 539 667 518 678 495 687 472 695 449 701 424 706 400 709 375V350V325L706 300L701 276L695 251L687 228L678 205L667 182L654 161L640 140L624 121L607 103L589 85L569 70L549 56L527 43L505 32L482 22L458 14L434 8L409 4L384 1L359 0V76L378 77L397 79L416 82L434 87L452 93L469 101L486 110L502 119L518 131L532 143L546 156L559 171L571 186L581 202L591 219L600 236L607 254L613 273L617 292L621 311L623 330V350V370L621 389L617 408L613 427L607 446L600 464L591 481L581 498L571 514L559 529L546 544L532 557L518 569L502 581L486 590L469 599L452 607L434 613L416 618L397 621L378 623L359 624ZM49 624V700H359V624ZM49 0V76H359V0Z"/><path transform="translate(3119.0 0) scale(1 -1)" d="M753 350Q753 291 735.0 237.0Q717 183 684.5 138.5Q652 94 607.0 61.0Q562 28 508.5 10.0Q455 -8 395 -8Q336 -8 282.5 10.0Q229 28 184.0 61.0Q139 94 106.5 138.5Q74 183 55.5 237.0Q37 291 37 350Q37 409 55.5 463.0Q74 517 106.5 561.5Q139 606 184.0 639.0Q229 672 282.5 690.0Q336 708 395 708Q455 708 508.5 690.0Q562 672 607.0 639.0Q652 606 684.5 561.5Q717 517 735.0 463.0Q753 409 753 350ZM667 350Q667 408 646.0 459.5Q625 511 587.5 549.5Q550 588 501.0 610.0Q452 632 395 632Q339 632 290.0 610.0Q241 588 203.5 549.5Q166 511 144.5 459.5Q123 408 123 350Q123 292 144.5 240.5Q166 189 203.5 150.5Q241 112 290.0 90.0Q339 68 395 68Q452 68 501.0 90.0Q550 112 587.5 150.5Q625 189 646.0 240.5Q667 292 667 350Z"/><path transform="translate(3970.0 0) scale(1 -1)" d="M59 0V700H145V0ZM653 0V700H739V0ZM49 700H155L749 0H643Z"/></g></svg>
       <button class="side-x" id="sideX" aria-label="${t("ปิด","Close")}"><i class="ti ti-x"></i></button>
     </div>
     <button class="side-new" id="sideNew"><i class="ti ti-plus"></i><span></span></button>

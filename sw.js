@@ -1,10 +1,10 @@
 /* ══════════════════════════════════════════════════════════════════
-   SpireONE service worker
+   Cendon service worker
    หน้าที่หลักคือรับการแจ้งเตือน ส่วนแคชทำแบบระวังตัว
    หน้าเว็บเป็นไฟล์เดียวที่เปลี่ยนบ่อย จึงใช้ network-first เสมอ
    ไม่งั้นผู้ใช้จะติดอยู่กับเวอร์ชันเก่าโดยไม่รู้ตัว
    ══════════════════════════════════════════════════════════════════ */
-const CACHE = 'spireone-v26';
+const CACHE = 'cendon-v27';
 /* แต่ละหน้าเป็นไฟล์เดี่ยวที่สมบูรณ์ในตัว โหลดล่วงหน้าไว้ทั้งชุด
    การเปิด URL ของหน้าไหนตรง ๆ จึงไม่ต้องรอเน็ต */
 const SHELL = ['./', './index.html', './garage.html', './news.html',
@@ -56,7 +56,7 @@ self.addEventListener('fetch', (e) => {
 });
 
 self.addEventListener('push', (e) => {
-  let d = { title: 'SpireONE', body: '', url: '/' };
+  let d = { title: 'Cendon', body: '', url: '/' };
   try { if (e.data) d = Object.assign(d, e.data.json()); } catch (err) {
     try { d.body = e.data.text(); } catch (e2) {}
   }
@@ -64,7 +64,7 @@ self.addEventListener('push', (e) => {
     body: d.body,
     icon: './icon192.png',
     badge: './icon192.png',
-    tag: d.tag || 'spireone',
+    tag: d.tag || 'cendon',
     renotify: true,
     data: { url: d.url || '/' },
   }));

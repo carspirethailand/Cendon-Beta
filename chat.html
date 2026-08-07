@@ -114,18 +114,32 @@ body[data-phase="thread"] .meteor{display:none}
 
 /* ============ WARP INTRO (opening loader) ============ */
 .warp{position:fixed;inset:0;z-index:500;display:grid;place-items:center;overflow:hidden;
-  background:radial-gradient(120% 100% at 50% 45%,var(--c-bg1),var(--c-bg0) 72%);transition:opacity .5s ease}
+  /* ใช้สีพื้นเดียวกับห้องแชทตรง ๆ ไม่ใส่ลวดลายอะไรทับ
+     ตอนหน้าโหลดหายไป ภาพจึงต่อกับห้องแชทสนิท ไม่มีรอยสะดุดของพื้นหลัง */
+  background:var(--c-bg0);transition:opacity .45s ease}
 .warp.done{opacity:0;pointer-events:none}
-.warp span{position:absolute;left:50%;top:50%;width:2px;height:120px;margin-top:-60px;border-radius:2px;
-  background:linear-gradient(180deg,transparent,rgba(var(--star-c),.95));
-  transform:rotate(var(--a)) translateY(5vmax) scaleY(.15);opacity:0;will-change:transform,opacity;
-  animation:warpLine .95s cubic-bezier(.5,.05,.85,.4) var(--d,0s) infinite}
 @keyframes warpLine{12%{opacity:.95}100%{transform:rotate(var(--a)) translateY(80vmax) scaleY(5);opacity:0}}
-.warp-core{position:relative;width:74px;height:74px;border-radius:22px;background:var(--c-grad);color:#fff;
-  display:grid;place-items:center;animation:corePulse 1s ease-in-out infinite;
-  box-shadow:0 0 70px -4px var(--c-acc),inset 0 1px 0 rgba(255,255,255,.35)}
-.warp-core svg{width:52%;height:52%}.warp-core path{fill:currentColor}
-@keyframes corePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+/* หน้าโหลดแสดงตราล้วน ไม่มีกล่องรอง
+   กล่องสีทำให้ดูเป็นไอคอนแอปในกรอบ ไม่ใช่โลโก้ที่ลอยอยู่จริง
+   ไล่สีจึงย้ายไปอยู่ในตัวรูป ไม่ใช่ทาที่พื้นหลังแล้วเจาะตราเป็นสีขาว
+   เงาเรืองใช้ drop-shadow ซึ่งตามรูปทรงจริงของตรา ต่างจาก box-shadow
+   ที่เรืองตามกรอบสี่เหลี่ยม */
+/* ขนาดยืดตามจอ  บนมือถือแนวตั้งได้ราว 100 บนแท็บเล็ตขึ้นไปเต็ม 128
+   vmin ทำให้ไม่ล้นทั้งตอนจอเตี้ยและจอแคบ */
+.warp-core{position:relative;width:clamp(92px,24vmin,128px);height:auto;
+  background:none;box-shadow:none;
+  display:grid;place-items:center;
+  animation:coreIn .5s cubic-bezier(.2,.9,.25,1) both,corePulse 1.7s ease-in-out .5s infinite;
+  /* เงาสองชั้น  ชั้นแรกเป็นแสงสีเดียวกับตรา ชั้นสองเป็นเงาตกกระทบ
+     ใช้ drop-shadow ซึ่งตามรูปทรงจริง ไม่ใช่ box-shadow ที่เรืองตามกรอบสี่เหลี่ยม
+     ค่าความทึบตั้งไว้กลาง ๆ ให้อ่านได้ทั้งธีมสว่างและธีมมืด
+     ถ้าเรืองแรงกว่านี้ บนพื้นสว่างจะกลายเป็นฝ้าเทา ๆ รอบตรา */
+  filter:drop-shadow(0 6px 18px rgba(210,81,47,.32)) drop-shadow(0 2px 4px rgba(0,0,0,.14))}
+.warp-core svg{width:100%;height:auto;display:block}
+/* โผล่ขึ้นมาแล้วค่อยหายใจ  ไม่ใช่ปรากฏทันทีแล้วเต้นเลย
+   ครึ่งวินาทีแรกเป็นการเข้า จากนั้นวนหายใจไปเรื่อย ๆ */
+@keyframes coreIn{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:scale(1)}}
+@keyframes corePulse{0%,100%{transform:scale(1);opacity:.94}50%{transform:scale(1.05);opacity:1}}
 @media(prefers-reduced-motion:reduce){.warp{display:none}}
 
 /* ============ PILL NAV ============ */
@@ -378,11 +392,9 @@ body[data-phase="thread"] .composer{display:block;animation:compIn .5s cubic-bez
   font-size:19px;flex-shrink:0;transition:.2s;box-shadow:0 10px 22px -8px var(--c-acc)}
 .send:hover:not(:disabled){transform:translateY(-2px) scale(1.05)}
 .send:disabled{opacity:.4;box-shadow:none;cursor:default}
-/* ตอนเป็นปุ่มโทรใช้สีจาง ๆ  ปุ่มส่งถึงจะเป็นสีเต็มของแบรนด์
-   ผู้ใช้จะได้เห็นความต่างทันทีว่าตอนนี้กดแล้วจะเกิดอะไร */
-.send[data-mode="call"]{background:var(--c-glass2);color:var(--c-acc);
-  border:1px solid var(--c-line);box-shadow:none}
-.send[data-mode="call"]:hover{background:var(--c-acc-soft)}
+/* โทรกับส่งใช้สีเต็มของแบรนด์เหมือนกัน ต่างกันที่ไอคอน
+   คลื่นเสียง = ยังไม่พิมพ์ กดแล้วโทร   ลูกศรขึ้น = พิมพ์แล้ว กดแล้วส่ง */
+.send .wv{width:52%;height:52%}
 
 /* ── สไตล์การพูดกับโควตา token ในแผ่นตั้งค่าของแชท ── */
 .style-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:4px}
@@ -553,7 +565,9 @@ html.theme-fade,html.theme-fade *,html.theme-fade *::before,html.theme-fade *::a
 }
 
 /* 3D logo / icon squircles */
-.msg.ai .av,.p-mark,.big-logo,.hint-logo,.warp-core{
+/* warp-core ไม่อยู่ในรายการนี้แล้ว เพราะไม่มีพื้นหลังให้เคลือบ
+   ถ้าปล่อยไว้ กล่องสีจะกลับมาทับตราอีกครั้ง */
+.msg.ai .av,.p-mark,.big-logo,.hint-logo{
   background-image:linear-gradient(180deg,rgba(255,255,255,.30),rgba(255,255,255,.04) 48%,rgba(0,0,0,.14)),var(--c-grad);
 }
 .tile .ic{background-image:linear-gradient(180deg,rgba(255,255,255,.32),rgba(255,255,255,.05) 50%,rgba(0,0,0,.16)),linear-gradient(135deg,var(--tc,var(--c-acc)),var(--tc2,var(--c-acc)));
@@ -805,6 +819,66 @@ body[data-phase="login"] .side-burger,body[data-phase="gate"] .side-burger{displ
   .composer{width:calc(100% - 16px)}
   .chip-row{padding-left:10px;padding-right:10px}
   .side{width:min(84vw,300px)}
+}
+
+/* ══════════════════════════════════════════════════════════════
+   หน้าแชตบนมือถือ — ผังตามแบบที่วางไว้
+     บนสุด   ปุ่มกลมสามปุ่มลอยอยู่บนพื้น ไม่มีแถบรองอีกแล้ว
+             ซ้ายคือเมนู กลางคือชื่อบทสนทนา ขวาคือแชตใหม่กับตั้งค่า
+     กลาง    ฟองผู้ใช้สีส้มชิดขวาพร้อมรูปประจำตัว
+             ฟองของ AI สีเทาชิดซ้าย แล้วตราวางอยู่ใต้ฟอง
+     ล่างสุด ชิปสรุปหนึ่งใบ แล้วแถบพิมพ์ทรงแคปซูล
+   ตราตรงกลางถูกถอดออก ชื่อบทสนทนาบอกได้ตรงกว่าว่าอยู่ห้องไหน
+   ทั้งบล็อกนี้อยู่ใต้ 900px ลงมาเท่านั้น จอคอมไม่ถูกแตะเลย
+   ══════════════════════════════════════════════════════════════ */
+.p-title{display:none}
+.p-new{display:none}
+@media(max-width:899px){
+  /* แถบใสไม่มีพื้น ปุ่มแต่ละปุ่มมีพื้นกลมของตัวเอง */
+  header.pill{background:none;border:none;box-shadow:none;backdrop-filter:none;
+    -webkit-backdrop-filter:none;max-width:none;width:100%;
+    padding:0 var(--m-4,14px);gap:8px;border-radius:0;overflow:visible}
+  header.pill .p-brand,header.pill .p-sep,header.pill .p-car,
+  header.pill .p-close,header.pill #pHist{display:none}
+  .p-title{display:block;flex:1;min-width:0;text-align:center;
+    font-family:var(--kd);font-style:italic;font-weight:600;
+    font-size:19px;letter-spacing:.2px;color:var(--c-ink);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .p-new{display:grid}
+  .side-burger,header.pill .p-btn{width:42px;height:42px;border-radius:50%;
+    font-size:19px;flex-shrink:0;color:var(--c-ink);
+    background:var(--c-glass2);border:1px solid var(--c-line);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,calc(var(--gloss)*.7)),
+               0 6px 16px -8px rgba(0,0,0,.5)}
+  .side-burger{order:-1;margin-right:2px}
+
+  /* ตราใต้ฟองข้อความของ AI ให้ใหญ่ขึ้นและเยื้องเท่ากับฟอง */
+  .ai-sig{margin-left:1px}
+  .ai-sig .mark{width:34px;height:34px;border-radius:11px}
+  .bubble{padding:13px 17px;border-radius:20px;font-size:15.5px}
+  .msg.ai .bubble{max-width:88%}
+  .msg.me .bubble{max-width:72%}
+
+  /* ชิปแนะนำเรียงแถวเดียว เลื่อนข้างได้ ไม่ตกบรรทัดจนดันแถบพิมพ์ */
+  .chip-row{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;
+    justify-content:flex-start;padding-bottom:12px}
+  .chip-row::-webkit-scrollbar{display:none}
+  .chip-row:has(.chip:only-child){justify-content:center}
+  .chip{flex-shrink:0;padding:11px 18px;font-size:13px}
+
+  /* แถบพิมพ์ทรงแคปซูล ปุ่มกลมสองปุ่มซ้าย ปุ่มสีแบรนด์กลมใหญ่ขวา */
+  .composer{border-radius:34px;padding:6px}
+  .crow{gap:6px;align-items:center}
+  .att-btn{width:42px;height:42px;font-size:20px;
+    background:var(--c-glass);border:1px solid var(--c-line)}
+  #inp{font-size:16px;padding:11px 6px}
+  .send{width:50px;height:50px;font-size:21px}
+}
+@media(max-width:380px){
+  .p-title{font-size:17px}
+  .side-burger,header.pill .p-btn{width:38px;height:38px;font-size:18px}
+  .att-btn{width:38px;height:38px}
+  .send{width:46px;height:46px}
 }
 </style>
 <style id="workspace">
@@ -4202,12 +4276,7 @@ window.spireSetupVersion=SETUP_VERSION;
 
 <!-- WARP INTRO -->
 <div class="warp" id="warp">
-  <span style="--a:0deg;--d:0s"></span><span style="--a:26deg;--d:.09s"></span><span style="--a:52deg;--d:.03s"></span>
-  <span style="--a:78deg;--d:.12s"></span><span style="--a:104deg;--d:.06s"></span><span style="--a:130deg;--d:.14s"></span>
-  <span style="--a:156deg;--d:.02s"></span><span style="--a:182deg;--d:.1s"></span><span style="--a:208deg;--d:.05s"></span>
-  <span style="--a:234deg;--d:.13s"></span><span style="--a:260deg;--d:.01s"></span><span style="--a:286deg;--d:.08s"></span>
-  <span style="--a:312deg;--d:.04s"></span><span style="--a:338deg;--d:.11s"></span>
-  <div class="warp-core"><svg viewBox="-6.0 -6.0 94.8 112.0"><path d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg></div>
+  <div class="warp-core"><svg viewBox="-6.0 -6.0 94.8 112.0" aria-hidden="true"><defs><linearGradient id="wgrad" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#F5A05E"/><stop offset=".55" stop-color="#EE7C43"/><stop offset="1" stop-color="#D2512F"/></linearGradient></defs><path fill="url(#wgrad)" d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg></div>
 </div>
 
 <!-- BACKGROUND STAGE -->
@@ -4229,7 +4298,10 @@ window.spireSetupVersion=SETUP_VERSION;
     <i class="ti ti-car"></i><span id="pCarName">เลือกรถ</span><i class="ti ti-chevron-down" style="font-size:11px;color:var(--c-faint)"></i>
     <div class="p-drop" id="carDrop"></div>
   </button>
+  <!-- ชื่อบทสนทนากลางแถบ — ใช้แทนโลโก้บนมือถือ ตามแบบที่วางไว้ -->
+  <div class="p-title" id="pTitle"></div>
   <div class="p-sep"></div>
+  <button class="p-btn p-new" onclick="newSession()" title="บทสนทนาใหม่"><i class="ti ti-message-2-plus"></i></button>
   <button class="p-btn" onclick="openSheet('hist')" title="ประวัติบทสนทนา"><i class="ti ti-history"></i></button>
   <button class="p-btn" onclick="openSheet('set')" title="ตั้งค่า"><i class="ti ti-settings"></i></button>
   <button class="p-btn p-close" onclick="goHome()" title="กลับหน้าหลัก"><i class="ti ti-x"></i></button>
@@ -4361,7 +4433,7 @@ window.spireSetupVersion=SETUP_VERSION;
     <button class="att-btn" id="micBtn" title="อัดเสียง"><i class="ti ti-microphone"></i></button>
     <textarea id="inp" rows="1" placeholder="พิมพ์อาการรถ หรือถามอะไรก็ได้..."></textarea>
     <button class="send" id="sendBtn" data-mode="call" title="โทรคุยกับ Cendon">
-      <i class="ti ti-phone"></i></button>
+      <svg class="wv" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 10v4"/><path d="M9 6v12"/><path d="M15 8.5v7"/><path d="M20 10.5v3"/></g></svg></button>
   </div>
 </footer>
 
@@ -4558,6 +4630,8 @@ const T={
  "sym.ac":["ระบบแอร์","A/C System","エアコン","空调","Klimaanlage","Aire Acondicionado"],
  "sym.gear":["ระบบเกียร์","Gearbox","ギア","变速箱","Getriebe","Caja de cambios"],
  "sym.wheels":["ล้อและยาง","Wheels & Tires","タイヤ","车轮轮胎","Räder & Reifen","Ruedas"],
+ /* ข้อความสั้นสำหรับจอแคบ ของเดิมยาวเกินช่องจนตกบรรทัดแล้วถูกตัดหาย */
+ "comp.phs":["บอกอาการรถ","Describe a car issue","車の症状を入力","描述车辆症状","Autoproblem beschreiben","Describa un problema"],
  "comp.ph":["พิมพ์อาการรถ หรือถามอะไรก็ได้...","Describe a car issue or ask anything...","車の症状を入力、または質問...","描述车辆症状或提问...","Autoproblem beschreiben oder fragen...","Describa un problema o pregunte..."],
  "s.title":["ตั้งค่า","Settings","設定","设置","Einstellungen","Ajustes"],
  "s.lang":["ภาษา / Language","Language","言語","语言","Sprache","Idioma"],
@@ -4585,7 +4659,10 @@ const tr=k=>{const v=T[k];if(!v)return k;
      ภาษาที่เจ็ดขึ้นไปจึงใช้ได้ทันทีโดยไม่ต้องแก้โครงพจนานุกรมเดิม */
   if(window.spireT)return window.spireT(v[0],v[1]||v[0]);
   return v[LX[lang]??0]||v[0]};
-function applyT(){document.querySelectorAll("[data-t]").forEach(e=>{e.textContent=tr(e.dataset.t)});$("inp").placeholder=tr("comp.ph")}
+function applyT(){document.querySelectorAll("[data-t]").forEach(e=>{e.textContent=tr(e.dataset.t)});
+  $("inp").placeholder=tr(window.matchMedia("(max-width:560px)").matches?"comp.phs":"comp.ph")}
+/* จอหมุนหรือย่อขยาย ข้อความชวนพิมพ์ต้องเปลี่ยนตาม ไม่งั้นจะค้างอยู่แบบเดิม */
+window.matchMedia("(max-width:560px)").addEventListener("change",()=>{try{applyT()}catch(e){}});
 
 const HEADS={
   th:["วันนี้รถเป็นยังไงบ้าง?","มีอาการอะไรให้ช่วยดูไหม?","อยากรู้อะไรเกี่ยวกับรถ?","เล่าปัญหารถให้ฟังหน่อย"],
@@ -5075,13 +5152,16 @@ $("atts").addEventListener("click",e=>{const x=e.target.closest("[data-rm]");if(
 /* ปุ่มเดียวทำสองหน้าที่ เหมือน AI เจ้าอื่น
    ยังไม่พิมพ์อะไร = ปุ่มโทร  พิมพ์แล้วหรือแนบไฟล์แล้ว = ปุ่มส่ง
    ไม่ปิดการใช้งานปุ่มอีกต่อไป เพราะตอนว่างมันมีงานของตัวเองอยู่ */
+/* ไอคอนคลื่นเสียงสำหรับโหมดโทร วาดเป็น SVG เองเพื่อให้ตรงกับแบบที่วางไว้
+   ไม่ได้ใช้ไอคอนสำเร็จรูป เพราะชุดที่มีไม่มีแท่งสี่แท่งแบบนี้ */
+const WAVE_ICON='<svg class="wv" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 10v4"/><path d="M9 6v12"/><path d="M15 8.5v7"/><path d="M20 10.5v3"/></g></svg>';
 function updateSend(){
   const b=$("sendBtn"); if(!b) return;
   const has=!!$("inp").value.trim()||pending.length>0;
   const mode=has?"send":"call";
   if(b.dataset.mode!==mode){
     b.dataset.mode=mode;
-    b.innerHTML=has?'<i class="ti ti-arrow-up"></i>':'<i class="ti ti-phone"></i>';
+    b.innerHTML=has?'<i class="ti ti-arrow-up"></i>':WAVE_ICON;
     b.title=has?TT("ส่ง","Send"):TT("โทรคุยกับ Cendon","Call Cendon");
   }
   b.disabled=sending&&has;
@@ -5912,6 +5992,11 @@ function paint(){
     $("tbarK").textContent=c?[c.name,c.year].filter(Boolean).join(" · "):t("ยังไม่ได้เลือกรถ","No car selected");
     $("tbarT").textContent=(s&&s.title)||t("บทสนทนาใหม่","New conversation");
     /* ปุ่มเป็นไอคอนล้วนแล้ว ข้อความอยู่ใน title/aria-label ตั้งแต่ตอนสร้าง */
+  }
+  /* ชื่อกลางแถบบนมือถือ ใช้ชื่อบทสนทนาเดียวกับแถบหัวเรื่องของจอกว้าง */
+  if($("pTitle")){
+    const s=ss.find(x=>x.id===cur);
+    $("pTitle").textContent=(s&&s.title)||t("บทสนทนาใหม่","New conversation");
   }
   list.innerHTML=ss.length?ss.map(s=>`<button class="side-item${s.id===cur?" cur":""}" data-sess="${s.id}">
       <span class="tx"><b>${esc(s.title||t("แชตใหม่","New chat"))}</b>

@@ -4928,6 +4928,7 @@ if(useFb)auth.onAuthStateChanged(async u=>{
 
 /* ===== SESSIONS (multi-conversation per car) ===== */
 let messages=[],pending=[],mediaRec=null,recChunks=[],sending=false;
+window.pending=pending;
 function sessKey(){const c=selCar();return c?"sess_"+c.id:null}
 function curKey(){const c=selCar();return c?"cursess_"+c.id:null}
 function getSessions(){const k=sessKey();return k?LS.get(k,[]):[]}
@@ -5112,11 +5113,14 @@ function wireWelcomeAsk(){
   const ta=$("wAsk"),btn=$("wSend");
   if(!ta||!btn||ta.dataset.on)return;
   ta.dataset.on="1";
-  const sync=()=>{ btn.disabled=!ta.value.trim();
+  const sync=()=>{ btn.disabled=!ta.value.trim()&&!(window.pending&&window.pending.length);
     ta.style.height="auto"; ta.style.height=Math.min(ta.scrollHeight,120)+"px" };
   ta.addEventListener("input",sync);
   const go=()=>{
-    const v=ta.value.trim(); if(!v)return;
+    const v=ta.value.trim();
+    /* แนบรูปมาอย่างเดียวโดยไม่พิมพ์อะไรก็ต้องส่งได้ เหมือนผู้ช่วยตัวอื่น
+       ของเดิมเช็กแต่ข้อความ คนที่แนบรูปแล้วกดส่งจึงเจอปุ่มที่กดแล้วเงียบ */
+    if(!v&&!(window.pending&&window.pending.length))return;
     ta.value=""; sync(); enterThread();
     const inp=$("inp");
     if(inp){ inp.value=v; inp.dispatchEvent(new Event("input",{bubbles:true}));
@@ -5269,7 +5273,9 @@ ${convo}`}]}],{temp:0.3});
 }
 
 /* ===== COMPOSER ===== */
-function addAtt(kind,mime,b64,name){pending.push({kind,mime,b64,name});renderAtts();updateSend()}
+function addAtt(kind,mime,b64,name){pending.push({kind,mime,b64,name});renderAtts();updateSend();
+  /* หน้าเริ่มต้นกับเมนูปุ่มบวกอยู่คนละสโคป ต้องมีทางอ่านรายการที่แนบไว้ */
+  window.pending=pending;}
 function renderAtts(){$("atts").innerHTML=pending.map((a,i)=>`<div class="att-chip">${a.kind==="image"?`<img src="data:${a.mime};base64,${a.b64}">`:a.kind==="video"?`<video src="data:${a.mime};base64,${a.b64}"></video>`:`<i class="ti ti-microphone"></i>`}<span>${esc(a.name||a.kind)}</span><span class="x" data-rm="${i}"><i class="ti ti-x"></i></span></div>`).join("")}
 $("atts").addEventListener("click",e=>{const x=e.target.closest("[data-rm]");if(x){pending.splice(+x.dataset.rm,1);renderAtts();updateSend()}});
 /* ปุ่มเดียวทำสองหน้าที่ เหมือน AI เจ้าอื่น
@@ -5324,7 +5330,7 @@ async function sendMsg(){
   if(sending)return;
   const text=$("inp").value.trim();
   if(!text&&pending.length===0)return;
-  const atts=pending.slice();pending=[];renderAtts();
+  const atts=pending.slice();pending=[];window.pending=pending;renderAtts();
   messages.push({role:"user",text,atts});
   $("inp").value="";autoSize();sending=true;updateSend();
   updateHint();renderMessages();renderChips();
@@ -7500,6 +7506,14 @@ function row(x){
 }
 function pick(k){
   closeMenu();
+  /* แนบไฟล์: เข้าห้องแชตก่อนเสมอ เพราะแถบไฟล์ที่แนบแล้วอยู่เหนือช่องพิมพ์
+     ถ้าปล่อยให้อยู่หน้าเริ่มต้น ผู้ใช้จะเลือกรูปแล้วไม่เห็นว่ามีอะไรเกิดขึ้น */
+  if(k==="__img"||k==="__vid"||k==="__aud"){
+    try{ if(D.body.dataset.phase!=="thread"&&window.enterThread)window.enterThread() }catch(e){}
+    const id=k==="__img"?"fileImg":k==="__vid"?"fileVid":"micBtn";
+    setTimeout(()=>{ const el=$(id); if(el)el.click(); },60);
+    return;
+  }
   if(k==="__desk"){ try{ window.openWorkspace&&window.openWorkspace() }catch(e){} return }
   if(k==="__skills"){ try{ window.spireSkillsOpen&&window.spireSkillsOpen() }catch(e){} return }
   if(k==="__level"){ try{ window.openSettings&&window.openSettings("general") }catch(e){} return }
@@ -7514,13 +7528,25 @@ function pick(k){
 function openMenu(anchor){
   if(menu){ closeMenu(); return }
   const items=TOOLS.concat(EXTRA).filter(x=>okFeat(x.feat));
+  /* แนบไฟล์ต้องอยู่ในเมนูนี้ด้วย ไม่ใช่มีแต่เครื่องมือของแอป
+     คนที่เคยใช้ผู้ช่วยตัวอื่นมาจะมองหาปุ่มบวกเป็นที่แรกเมื่ออยากส่งรูป */
+  const ATT=[
+    {k:"__img", ic:"ti-photo",      c:"#5B9BD5", th:"รูปภาพ",  en:"Photo",
+     thd:"ถ่ายหรือเลือกจากเครื่อง", end:"Take one or pick from your device"},
+    {k:"__vid", ic:"ti-video",      c:"#9B6BD8", th:"วิดีโอ",  en:"Video",
+     thd:"คลิปสั้น ๆ ตอนอาการกำลังเกิด", end:"A short clip while it happens"},
+    {k:"__aud", ic:"ti-microphone", c:"#3E9E6E", th:"อัดเสียง", en:"Record audio",
+     thd:"อัดเสียงเครื่องแทนการเลียนเสียง", end:"Record the engine instead of imitating it"},
+  ];
   veil=D.createElement("div"); veil.className="pl-veil";
   menu=D.createElement("div"); menu.className="pl-menu";
   /* ระดับพื้นฐานยังไม่ปลดล็อกเครื่องมือสักอัน ห้ามปล่อยให้ปุ่มกดแล้วเงียบ
      เพราะคนจะคิดว่าปุ่มเสีย ไม่ใช่ว่ายังไม่ถึงระดับ */
+  const attHtml=`<small class="pl-grp">${esc(T("แนบ","Attach"))}</small>`
+    +ATT.map(row).join("")+`<hr class="pl-sep">`;
   menu.innerHTML=items.length
-    ? `<small>${esc(T("เครื่องมือ Cendon","Cendon tools"))}</small>`+items.map(row).join("")
-    : `<small>${esc(T("ยังไม่ปลดล็อก","Locked"))}</small>
+    ? attHtml+`<small class="pl-grp">${esc(T("เครื่องมือ Cendon","Cendon tools"))}</small>`+items.map(row).join("")
+    : attHtml+`<small class="pl-grp">${esc(T("ยังไม่ปลดล็อก","Locked"))}</small>
        <button class="pl-it" data-tk="__level" style="--plc:#B77A1C">
          <i class="ti ti-lock-open"></i>
          <span><b>${esc(T("เปิดเครื่องมือทั้งหมด","Unlock the tools"))}</b>
@@ -11149,5 +11175,105 @@ else boot();
   }
 })();
 </script>
+
+<style id="chatui2">
+/* ══════════════════════════════════════════════════════════════
+   หน้าแชต รอบปรับสายตา
+   1 ฝั่ง AI ไม่มีกรอบ  ข้อความลอยบนพื้นเหมือนหน้ากระดาษ
+   2 ฝั่งผู้ใช้เป็นสีเทากลาง ๆ ไม่ใช่สีส้ม
+   3 ลดความจัดของพื้นหลังกับตัวอักษรลงให้จ้องได้นาน
+   บล็อกนี้อยู่ท้ายเอกสารเพื่อให้ทับของเดิมได้โดยไม่ต้องแก้หลายที่
+   และไม่มีการเปลี่ยนความกว้าง ความสูง หรือ layout ของจอคอมเลย
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── 1 · ฝั่ง AI ไม่มีกล่อง ─────────────────────────────────── */
+.msg.ai .bubble{
+  background:none !important; background-image:none !important;
+  border:0 !important; box-shadow:none !important;
+  backdrop-filter:none !important; -webkit-backdrop-filter:none !important;
+  border-radius:0 !important;
+  padding:1px 0 0 !important;
+  /* จำกัดความยาวบรรทัดไว้ที่ราว ๆ 68 ตัวอักษร
+     พอถอดกล่องออก ข้อความจะยืดเต็มความกว้างจอคอมทันที บรรทัดยาวเกิน
+     ทำให้ตาหาบรรทัดถัดไปไม่เจอ ซึ่งเหนื่อยกว่าการมีกล่องเสียอีก
+     ใช้ min() จึงไม่กระทบจอแคบและไม่เปลี่ยนขนาดของ layout เดิม */
+  max-width:min(100%,68ch) !important;
+  color:var(--c-ink);
+}
+/* กล่องเคยเป็นตัวคั่นสายตาระหว่างข้อความ พอถอดออกต้องเพิ่มระยะแทน
+   ไม่งั้นคำตอบยาว ๆ จะกองติดกันจนหาจุดเริ่มไม่เจอ */
+.msg.ai{margin-bottom:4px}
+.msg.ai + .msg.me{margin-top:6px}
+.msg.me + .msg.ai{margin-top:6px}
+.msg.ai .bubble > :first-child{margin-top:0}
+/* ของที่เคยอาศัยพื้นกล่องเป็นฉากหลัง ต้องมีพื้นของตัวเองแทน */
+.msg.ai .bubble .matt .au{background:var(--c-glass2)}
+
+/* ── 2 · ฝั่งผู้ใช้เป็นเทา ─────────────────────────────────── */
+:root,[data-ctheme]{--c-me:rgba(255,255,255,.085);--c-me-line:rgba(255,255,255,.12)}
+[data-ctheme="pearl"]{--c-me:rgba(38,34,27,.065);--c-me-line:rgba(38,34,27,.11)}
+.msg.me .bubble{
+  background:var(--c-me) !important; background-image:none !important;
+  color:var(--c-ink) !important;
+  border:1px solid var(--c-me-line) !important;
+  box-shadow:none !important;
+}
+.msg.me .bubble li::before{color:var(--c-mut)}
+.msg.me .bubble .matt .au{background:rgba(0,0,0,.16)}
+
+/* ── 3 · พื้นหลังและตัวอักษรที่สบายตาขึ้น ──────────────────
+   ออร่าสีเดิมสว่างจัดจนตาต้องปรับตลอดเวลาระหว่างอ่านคำตอบยาว
+   ลดความเข้มลงครึ่งหนึ่ง แล้วดันตัวอักษรรองให้สว่างขึ้นเล็กน้อย
+   เพื่อให้ระยะห่างระหว่างหลัก-รองแคบลง ตาจึงไม่ต้องกระโดด */
+body[data-phase] .aura{opacity:.55}
+.thread-scroll{scroll-behavior:smooth}
+.msg .bubble{line-height:1.72}
+:root,[data-ctheme="midnight"]{--c-ink:#E9EDF6;--c-mut:#A6B0C4}
+[data-ctheme="pearl"]{--c-ink:#2B261E;--c-mut:#6B665A}
+
+/* ── เมนูปุ่มบวก: หัวข้อกลุ่ม ─────────────────────────────── */
+.pl-menu small.pl-grp{display:block;padding:9px 14px 5px;font-size:10.5px;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--c-faint);font-weight:700}
+.pl-menu small.pl-grp + .pl-it{margin-top:0}
+.pl-menu hr.pl-sep{border:0;border-top:1px solid var(--c-line2);margin:6px 0}
+
+/* ── 4 · ตราของ AI: ตัวโลโก้เปล่า ๆ ไม่มีกล่องรอง ────────────
+   เดิมเป็นสี่เหลี่ยมมนไล่สีส้มพร้อมเงา ซึ่งกลายเป็นกล่องอีกใบ
+   ทั้งที่เพิ่งถอดกล่องข้อความออกไป */
+.msg.ai .av,
+.ai-sig .mark{
+  background:none !important; background-image:none !important;
+  box-shadow:none !important; border:0 !important; border-radius:0 !important;
+  color:var(--c-acc) !important;
+}
+.msg.ai .av svg,
+.ai-sig .mark svg{width:100% !important;height:100% !important}
+.msg.ai .av{width:26px;height:26px;margin-top:3px}
+.ai-sig .mark{width:22px;height:22px}
+
+/* ── 5 · ตอนกำลังคิด หมุนเร็วจนกลายเป็นวง ─────────────────
+   ของเดิมหมุนรอบละ 1.1 วินาที ตายังตามใบพัดทันจึงเห็นเป็นโลโก้บิด ๆ
+   เร่งเป็นรอบละ 0.3 วินาที บวกเบลอบาง ๆ ตาจะรวมภาพเป็นวงกลมเอง
+   ซึ่งเป็นภาพ "กำลังทำงาน" ที่อ่านออกทันทีโดยไม่ต้องมีวงโหลดเพิ่ม */
+.ai-sig.thinking .mark{
+  animation:sigSpin .3s linear infinite !important;
+  filter:blur(.5px);
+  will-change:transform;
+}
+@media (prefers-reduced-motion:reduce){
+  .ai-sig.thinking .mark{animation:none !important;filter:none}
+}
+
+/* ── 6 · รูปโปรไฟล์ผู้ใช้เป็นวงกลม ───────────────────────── */
+.msg.me .av{border-radius:50% !important;overflow:hidden}
+
+/* ── 7 · มือถือไม่ต้องมีตราของ AI ─────────────────────────
+   จอแคบมีที่ให้ข้อความน้อยอยู่แล้ว ตราขนาด 26px กินไปทั้งคอลัมน์
+   แต่ตัวที่ใช้บอกว่ากำลังคิดยังต้องอยู่ ไม่งั้นจะไม่รู้ว่าระบบทำงานอยู่ */
+@media (max-width:899px){
+  .msg.ai .av{display:none !important}
+  .ai-sig:not(.thinking){display:none !important}
+}
+</style>
 </body>
 </html>

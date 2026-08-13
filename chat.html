@@ -4722,7 +4722,11 @@ let lang=LS.get("lang","th");
    ตลอดกาล — เปิด getter ให้อ่านค่าจริงได้ เหมือนที่ index.html ทำไว้แล้ว */
 try{
   window.BACKEND_URL=BACKEND_URL;
-  Object.defineProperty(window,"spireAuth",{configurable:true,get:function(){return auth}});window.spireAwaitUser=function(ms){return new Promise(function(res){try{if(!auth)return res(null);if(auth.currentUser)return res(auth.currentUser);var done=false;var t=setTimeout(function(){if(done)return;done=true;res(auth.currentUser||null)},ms||8000);var un=auth.onAuthStateChanged(function(u){if(done)return;done=true;clearTimeout(t);try{un&&un()}catch(e){}res(u||null)});}catch(e){res(null)}})};
+  Object.defineProperty(window,"spireAuth",{configurable:true,get:function(){return auth}});
+  /* โค้ดที่เขียนทีหลังเรียกชื่อ window.auth ตรง ๆ ตามชื่อตัวแปรในไฟล์นี้
+     ถ้าไม่เปิดชื่อนี้ไว้ด้วย ตัวซิงก์คลาวด์กับตัวส่งความเห็นจะมองไม่เห็นผู้ใช้เลย
+     แล้วเงียบไปทั้งระบบโดยไม่มีข้อความผิดพลาดใด ๆ */
+  Object.defineProperty(window,"auth",{configurable:true,get:function(){return auth}});window.spireAwaitUser=function(ms){return new Promise(function(res){try{if(!auth)return res(null);if(auth.currentUser)return res(auth.currentUser);var done=false;var t=setTimeout(function(){if(done)return;done=true;res(auth.currentUser||null)},ms||8000);var un=auth.onAuthStateChanged(function(u){if(done)return;done=true;clearTimeout(t);try{un&&un()}catch(e){}res(u||null)});}catch(e){res(null)}})};
   Object.defineProperty(window,"lang",{configurable:true,
     get:function(){return lang},set:function(v){lang=v}});
   Object.defineProperty(window,"currentUser",{configurable:true,
@@ -6364,7 +6368,7 @@ function wireSettings(){
     const item={kind:fbk,message:txt.slice(0,2000),page:location.pathname,at:Date.now()};
     let sent=false;
     try{
-      const u=window.auth&&window.auth.currentUser;
+      const A=window.auth||window.spireAuth; const u=A&&A.currentUser;
       if(u&&window.BACKEND_URL){
         const tok=await u.getIdToken();
         const r=await fetch(window.BACKEND_URL+"/api/feedback",{method:"POST",
@@ -11761,7 +11765,7 @@ function collect(){
 }
 
 async function req(path,opt){
-  const u=window.auth&&window.auth.currentUser;
+  const A=window.auth||window.spireAuth; const u=A&&A.currentUser;
   if(!u||!window.BACKEND_URL)throw new Error("offline");
   const tok=await u.getIdToken();
   const r=await fetch(window.BACKEND_URL+path,Object.assign({},opt,{
@@ -11771,6 +11775,13 @@ async function req(path,opt){
   return await r.json();
 }
 
+/* บันทึกสถานะไว้ให้ตรวจได้ ของเดิมกลืนข้อผิดพลาดทั้งหมดจนไม่รู้ว่าพังตรงไหน
+   พิมพ์ cloudStatus() ใน console เพื่อดูว่าซิงก์ล่าสุดสำเร็จหรือไม่ เพราะอะไร */
+const St={pulled:null,pushed:null,error:null,keys:0,user:null,url:null};
+window.cloudStatus=()=>Object.assign({},St,{
+  user:(()=>{const A=window.auth||window.spireAuth;return A&&A.currentUser?A.currentUser.email||"signed-in":"NOT SIGNED IN"})(),
+  url:window.BACKEND_URL||"(missing)"});
+
 async function push(){
   if(busy)return; busy=true;
   try{
@@ -11778,9 +11789,14 @@ async function push(){
     if(Object.keys(state).length){
       await req("/api/state",{method:"PUT",body:JSON.stringify({state})});
       dirty.clear();
+      St.pushed=new Date().toISOString(); St.keys=Object.keys(state).length; St.error=null;
     }
     await flushFeedback();
-  }catch(e){ /* ส่งไม่ได้ก็ไม่เป็นไร ของยังอยู่ในเครื่องครบ รอบหน้าค่อยส่งใหม่ */ }
+  }catch(e){
+    St.error=String(e&&e.message||e);
+    console.warn("[cloud] ส่งข้อมูลขึ้นคลาวด์ไม่สำเร็จ:",St.error,
+      "— ถ้าเป็น HTTP 404 แปลว่า Worker ยังไม่ได้ deploy เวอร์ชันใหม่");
+  }
   busy=false;
 }
 
@@ -11799,6 +11815,7 @@ async function flushFeedback(){
 /* ดึงลงมารวม — เทียบทีละคีย์ ของที่แก้ทีหลังชนะ ไม่ต้องถามผู้ใช้ว่าจะเอาอันไหน */
 async function pull(){
   const d=await req("/api/state");
+  St.pulled=new Date().toISOString(); St.error=null;
   const m=meta(), st=d.state||{};
   let touched=[];
   Object.keys(st).forEach(k=>{
@@ -11841,18 +11858,25 @@ function apply(keys){
    ล็อกอินเสร็จ → ดึงลงหนึ่งครั้ง แล้วส่งขึ้นทุกครั้งที่มีการแก้
    สลับแท็บกลับมา / ก่อนปิดหน้า → ซิงก์อีกรอบ กันของหายตอนปิดเครื่อง */
 async function boot(){
-  const u=window.auth&&window.auth.currentUser;
+  const A=window.auth||window.spireAuth; const u=A&&A.currentUser;
   if(!u){ pulled=false; return }
   if(pulled)return;
   pulled=true;
-  try{ await pull() }catch(e){ pulled=false; return }
+  try{ await pull() }catch(e){
+    pulled=false;
+    St.error=String(e&&e.message||e);
+    console.warn("[cloud] ดึงข้อมูลจากคลาวด์ไม่สำเร็จ:",St.error,
+      "— HTTP 404 = Worker ยังเป็นเวอร์ชันเก่า, HTTP 401 = ยังไม่ล็อกอิน");
+    return;
+  }
   await push();
 }
 window.cloudSync=()=>{ pulled=false; boot() };
 
 let tries=0;
 const wait=setInterval(()=>{
-  if(window.auth&&window.auth.currentUser){ clearInterval(wait); boot() }
+  const A=window.auth||window.spireAuth;
+  if(A&&A.currentUser){ clearInterval(wait); boot() }
   else if(++tries>60)clearInterval(wait);      /* รอสูงสุดหนึ่งนาที */
 },1000);
 setInterval(()=>{ if(dirty.size)push() },45000);

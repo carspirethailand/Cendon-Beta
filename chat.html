@@ -5024,6 +5024,9 @@ if(useFb)auth.onAuthStateChanged(async u=>{
 
 /* ===== SESSIONS (multi-conversation per car) ===== */
 let messages=[],pending=[],mediaRec=null,recChunks=[],sending=false;
+/* ตัวซิงก์คลาวด์อยู่คนละบล็อกสคริปต์ ต้องอ่านสถานะ "กำลังส่งอยู่" ผ่าน window
+   เพื่อไม่ให้วาดห้องแชตทับตอนผู้ใช้กำลังคุยอยู่ */
+try{ Object.defineProperty(window,"sending",{configurable:true,get:()=>sending}) }catch(e){}
 window.pending=pending;
 function sessKey(){const c=selCar();return c?"sess_"+c.id:null}
 function curKey(){const c=selCar();return c?"cursess_"+c.id:null}
@@ -5509,6 +5512,8 @@ async function sendMsg(){
   /* เลื่อนให้ข้อความที่เพิ่งพิมพ์ไปอยู่บนสุดของจอ จะได้เห็นชัดว่าถามอะไรไป
      แล้วคำตอบค่อย ๆ ไหลลงมาข้างล่าง เหมือน AI เจ้าอื่น */
   try{ window.slideToLast&&window.slideToLast() }catch(e){}
+  /* บันทึกและซิงก์ทันทีที่กดส่ง ถ้าปิดแอปก่อน AI ตอบ ข้อความที่พิมพ์ไปจะได้ไม่หาย */
+  try{ saveSession() }catch(e){}
   messages.push({role:"ai",typing:true});renderMessages();
   try{
     const hasMedia=messages.some(m=>m.atts&&m.atts.some(a=>a.b64));
@@ -11791,13 +11796,24 @@ const L=(th,en)=>(window.spireT?window.spireT(th,en):((window.lang||"th")==="en"
 const META="spire___meta";                 /* เวลาแก้ล่าสุดของแต่ละคีย์ */
 const PULLED="spire___pulled";             /* บัญชีที่ดึงลงมาแล้วรอบนี้ */
 /* คีย์ที่ต้องเหมือนกันทุกเครื่อง — sess_/cursess_ ต่อท้ายด้วยรหัสรถ */
-const FIXED=["theme","chatTheme","lang","chatStyle","garage","selCar","skills","skillcat"];
-const isTracked=k=>FIXED.indexOf(k)>=0||/^(sess|cursess)_/.test(k);
+/* setup = ก้อนการตั้งค่าบัญชีทั้งหมด (ระดับการใช้งาน ภาษา ธีม หน่วย การแจ้งเตือน)
+   ไม่เคยอยู่ในรายการซิงก์มาก่อน จึงเป็นอีกสาเหตุที่เข้าเครื่องใหม่แล้วต้องตั้งค่าใหม่ */
+const FIXED=["setup","theme","chatTheme","lang","chatStyle","garage","selCar",
+             "skills","skillcat","chatSessions","units","notify"];
+const isTracked=k=>FIXED.indexOf(k)>=0||/^(sess|cursess|chatMsgs)_/.test(k);
 
 const SYNCED="spire___synced";             /* ส่งขึ้นสำเร็จถึงเวลาไหนแล้ว ต่อคีย์ */
 const meta=()=>{ try{ return JSON.parse(localStorage.getItem(META))||{} }catch(e){ return {} } };
 const setMeta=m=>{ try{ localStorage.setItem(META,JSON.stringify(m)) }catch(e){} };
 const synced=()=>{ try{ return JSON.parse(localStorage.getItem(SYNCED))||{} }catch(e){ return {} } };
+/* ลายเซ็นสั้น ๆ ของค่าในคีย์ ใช้จับว่า "เนื้อข้อมูลเปลี่ยนจริงไหม"
+   บางคีย์ (เช่น setup, theme) ถูกเขียนด้วย localStorage ตรง ๆ ไม่ผ่าน LS.set
+   ตัวแจ้งเตือน cloudMark จึงไม่เคยทำงาน ถ้าดูแต่เวลาที่จดไว้จะพลาดตลอด */
+function sig(str){
+  let h=5381;
+  for(let i=0;i<str.length;i++)h=((h*33)^str.charCodeAt(i))>>>0;
+  return str.length+":"+h.toString(36);
+}
 const setSynced=m=>{ try{ localStorage.setItem(SYNCED,JSON.stringify(m)) }catch(e){} };
 const raw=k=>localStorage.getItem("spire_"+k);
 
@@ -11824,8 +11840,12 @@ function collect(){
     if(!full||full.indexOf("spire_")!==0)continue;
     const k=full.slice(6);
     if(!isTracked(k))continue;
-    if(!m[k])m[k]=Date.now();          /* ของที่มีอยู่ก่อนระบบซิงก์จะเกิด */
-    if(!(sy[k]>=m[k]))keys.add(k);     /* ยังส่งไม่ถึงรุ่นล่าสุด ต้องส่ง */
+    const v=localStorage.getItem(full);
+    if(v===null)continue;
+    const now=sig(v), rec=sy[k]||{};
+    /* เนื้อข้อมูลต่างจากที่ส่งไปล่าสุด = ถือว่าเพิ่งแก้ ไม่ว่าจะถูกเขียนด้วยวิธีไหน */
+    if(rec.h!==now){ if(!m[k]||rec.h!==undefined)m[k]=Date.now(); keys.add(k) }
+    if(!m[k])m[k]=Date.now();
   }
   setMeta(m);
   keys.forEach(k=>{
@@ -11865,7 +11885,10 @@ async function push(){
       /* จดไว้ว่าคีย์ไหนไปถึงเซิร์ฟเวอร์แล้ว รอบหน้าจะได้ไม่ส่งซ้ำ
          และถ้ารอบนี้พลาด รอบหน้ามันจะถูกหยิบมาส่งใหม่เองอัตโนมัติ */
       const sy=synced();
-      Object.keys(state).forEach(k=>{ sy[k]=state[k].t });
+      Object.keys(state).forEach(k=>{
+        const v=localStorage.getItem("spire_"+k);
+        sy[k]={t:state[k].t,h:v===null?null:sig(v)};
+      });
       setSynced(sy);
       St.pushed=new Date().toISOString(); St.keys=Object.keys(state).length;
     }
@@ -11906,35 +11929,73 @@ async function pull(){
     if(!isTracked(k))return;
     const remote=st[k], mine=m[k]||0;
     if(!(remote.t>mine))return;
-    try{ localStorage.setItem("spire_"+k,JSON.stringify(remote.v)) }catch(e){ return }
+    const str=JSON.stringify(remote.v);
+    try{ localStorage.setItem("spire_"+k,str) }catch(e){ return }
     m[k]=remote.t; touched.push(k);
+    /* ของที่เพิ่งรับมา ถือว่าตรงกับเซิร์ฟเวอร์แล้ว ไม่ต้องส่งกลับไปอีก */
+    const sy=synced(); sy[k]={t:remote.t,h:sig(str)}; setSynced(sy);
   });
   setMeta(m);
   if(touched.length)apply(touched);
   return touched;
 }
 
-/* วาดหน้าใหม่เฉพาะส่วนที่ค่าเปลี่ยนจริง จะได้ไม่กระพริบทั้งหน้า */
+/* วาดหน้าใหม่เฉพาะส่วนที่ค่าเปลี่ยนจริง จะได้ไม่กระพริบทั้งหน้า
+   ทุกอย่างที่นี่คือ "อีกเครื่องเปลี่ยนแล้วเครื่องนี้ต้องเปลี่ยนตามทันที" */
 function apply(keys){
   const has=x=>keys.indexOf(x)>=0;
+  const rd=k=>{ try{ return JSON.parse(localStorage.getItem("spire_"+k)) }catch(e){ return null } };
   try{
-    if(has("theme")||has("chatTheme")){
-      let t=null; try{ t=JSON.parse(localStorage.getItem("spire_chatTheme")) }catch(e){}
-      if(t){ D.documentElement.setAttribute("data-ctheme",t);
-             D.documentElement.setAttribute("data-theme",t);
-             window.markTheme&&window.markTheme() }
+    /* ธีม — ก้อน setup ก็เก็บธีมไว้ด้วย เปลี่ยนที่ไหนก็ต้องตามทั้งคู่ */
+    if(has("theme")||has("chatTheme")||has("setup")){
+      const su=rd("setup")||{};
+      const t=rd("chatTheme")||rd("theme")||su.theme;
+      if(t){
+        D.documentElement.setAttribute("data-ctheme",t);
+        D.documentElement.setAttribute("data-theme",t);
+        /* เขียนกลับให้ทั้งสองคีย์ตรงกัน โค้ดเก่าบางส่วนยังอ่านคีย์เดิมอยู่ */
+        try{ localStorage.setItem("spire_chatTheme",JSON.stringify(t));
+             localStorage.setItem("spire_theme",JSON.stringify(t)) }catch(e){}
+        window.markTheme&&window.markTheme();
+        try{ const mt=D.querySelector('meta[name="theme-color"]');
+             if(mt){ const c=getComputedStyle(D.documentElement).getPropertyValue("--c-bg0").trim();
+                     if(c)mt.setAttribute("content",c) } }catch(e){}
+      }
     }
-    if(has("lang")){ let l=null; try{ l=JSON.parse(localStorage.getItem("spire_lang")) }catch(e){}
-                     if(l&&window.setLang)window.setLang(l) }
+    /* ภาษา */
+    if(has("lang")||has("setup")){
+      const l=rd("lang")||(rd("setup")||{}).lang;
+      if(l&&l!==window.lang){
+        if(window.spireSetLang)window.spireSetLang(l);
+        else if(window.setLang)window.setLang(l);
+      }
+    }
+    /* ระดับการใช้งานและหน่วยวัด อยู่ในก้อน setup */
+    if(has("setup")){
+      const su=rd("setup")||{};
+      if(su.level&&window.spireLevel&&window.spireLevel()!==su.level){
+        D.documentElement.dataset.level=su.level;
+        try{ window.spireApplySetup&&window.spireApplySetup() }catch(e){}
+      }
+    }
     if(has("garage")||has("selCar"))window.renderCarUI&&window.renderCarUI();
-    if(keys.some(k=>/^(sess|cursess)_/.test(k))){
-      window.loadSession&&window.loadSession();
-      window.renderMessages&&window.renderMessages();
+    /* บทสนทนา — ห้ามวาดทับตอนผู้ใช้กำลังพิมพ์หรือกำลังรอคำตอบอยู่
+       ไม่งั้นข้อความที่เพิ่งพิมพ์จะหายไปต่อหน้าต่อตา */
+    if(keys.some(k=>/^(sess|cursess|chatMsgs)_/.test(k))){
+      const typing=(()=>{ try{
+        const el=D.getElementById("inp");
+        return (window.sending===true)||!!(el&&el.value.trim());
+      }catch(e){ return false } })();
       window.renderHist&&window.renderHist();
       window.paintSide&&window.paintSide();
+      if(!typing){
+        window.loadSession&&window.loadSession();
+        window.renderMessages&&window.renderMessages();
+      }
     }
     if(has("chatStyle"))window.renderChatPrefs&&window.renderChatPrefs();
-  }catch(e){}
+    if(window.paintSync)window.paintSync();
+  }catch(e){ console.warn("[cloud] apply",e) }
   try{ window.spireSkillsRefresh&&window.spireSkillsRefresh() }catch(e){}
 }
 
@@ -11945,8 +12006,16 @@ async function boot(){
   const A=window.auth||window.spireAuth; const u=A&&A.currentUser;
   if(!u){ pulled=false; return }
   if(busy)return;
-  /* ดึงลงครั้งเดียวพอ แต่ส่งขึ้นต้องได้ทุกครั้งที่ยังมีของค้าง */
-  if(pulled){ await push(); return }
+  /* ต้องดึงลงซ้ำเรื่อย ๆ ไม่ใช่ครั้งเดียวตอนเปิดหน้า
+     ไม่งั้นอีกเครื่องเปลี่ยนธีมหรือภาษาแล้วเครื่องนี้จะไม่มีวันรู้เลย
+     จนกว่าจะปิดเปิดหน้าใหม่ */
+  if(pulled){
+    busy=true;
+    try{ await pull() }catch(e){ St.error=String(e&&e.message||e) }
+    busy=false;
+    await push();
+    return;
+  }
   pulled=true;
   try{ await pull() }catch(e){
     pulled=false;
@@ -11969,8 +12038,27 @@ setInterval(()=>{
   const uid=u?u.uid:null;
   if(uid!==lastUid){ lastUid=uid; pulled=false; if(uid)boot() }
 },1500);
-/* เดินตรวจเองทุก 20 วินาที ถ้ามีอะไรค้างส่งก็ส่งให้เสร็จ ผู้ใช้ไม่ต้องกดปุ่ม */
-setInterval(()=>{ boot() },20000);
+/* จังหวะการตรวจปรับตามการใช้งานจริง
+   กำลังใช้อยู่ตอนนี้ = ตรวจถี่ 5 วินาที เปลี่ยนธีมอีกเครื่องแล้วตามทันแทบจะทันที
+   เปิดค้างไว้เฉย ๆ = 20 วินาที · สลับไปแท็บอื่น = 60 วินาที
+   ไม่งั้นเปิดทิ้งไว้ทั้งวันจะยิงเข้าเซิร์ฟเวอร์เป็นพันครั้งโดยไม่มีใครดู */
+let beat=null, lastAct=Date.now();
+["pointerdown","keydown","touchstart","focus"].forEach(ev=>
+  addEventListener(ev,()=>{ lastAct=Date.now() },{passive:true,capture:true}));
+function gap(){
+  if(D.hidden)return 60000;
+  return (Date.now()-lastAct<120000)?5000:20000;
+}
+function heart(){
+  clearTimeout(beat);
+  beat=setTimeout(function tick(){
+    boot();
+    clearTimeout(beat);
+    beat=setTimeout(tick,gap());
+  },gap());
+}
+heart();
+D.addEventListener("visibilitychange",()=>{ lastAct=Date.now(); heart() });
 D.addEventListener("visibilitychange",()=>{ if(!D.hidden){ pulled=false; boot() } });
 addEventListener("online",()=>{ pulled=false; fails=0; boot() });
 addEventListener("pagehide",()=>{ push() });

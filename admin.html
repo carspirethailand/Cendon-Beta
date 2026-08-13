@@ -8,9 +8,11 @@
 <meta name="robots" content="noindex,nofollow"/>
 <meta name="theme-color" content="#0B0F1A"/>
 <title>Cendon — Admin Control</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css" media="print" onload="this.media='all'"/>
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css"/></noscript>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
 <style>
 /* Spire09 เฉพาะอักษรละติน  ฝังมาในไฟล์เพื่อไม่ต้องพึ่งโฟลเดอร์ fonts
    ที่ไม่เคยถูกอัปขึ้นเซิร์ฟเวอร์  ภาษาไทยไม่อยู่ในช่วงนี้ จึงยังใช้ Kanit เหมือนเดิม
@@ -265,6 +267,167 @@ tr.banned-row{opacity:.5}
   .main{padding:18px 16px 50px}
 }
 </style>
+<!-- นำทางแบบไม่ต้องรอโหลด
+     เบราว์เซอร์จะเตรียมหน้าถัดไปไว้ล่วงหน้าตอนผู้ใช้เล็งจะกด พอกดจริงจึงขึ้นทันที
+     eagerness moderate คือเริ่มเตรียมตอนเมาส์ค้างหรือแตะค้าง ไม่ใช่เตรียมทุกลิงก์ทิ้งไว้
+     ตัวไหนไม่รองรับ speculation rules จะตกไปใช้ prefetch ข้างล่างแทน -->
+<script type="speculationrules">
+{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}],
+ "prefetch":[{"where":{"href_matches":"/*.html"},"eagerness":"conservative"}]}
+</script>
+<link rel="prefetch" href="./index.html">
+<link rel="prefetch" href="./garage.html">
+<link rel="prefetch" href="./spares.html">
+<link rel="prefetch" href="./news.html">
+<link rel="prefetch" href="./profile.html">
+<link rel="prefetch" href="./chat.html">
+<script id="perfraf">
+/* ══════════════════════════════════════════════════════════════════
+   ตัวคุมจังหวะการวาดของ canvas
+
+   หน้าเดียวมีลูปวาดภาพเดินพร้อมกันสี่ตัว  ฉากพื้นหลัง  การ์ดสรุปประจำวัน
+   ดาวในหน้าตั้งค่าเริ่มต้น  และห้องนักบินสามมิติที่วาดด้วย WebGL
+   ทุกตัววาดต่อเนื่อง 60 ครั้งต่อวินาทีไม่ว่าจะมองเห็นอยู่หรือไม่
+   นี่คือสาเหตุหลักที่เครื่องร้อนและภาพกระตุกบนมือถือ
+
+   spireAwake คืนค่าจริงเฉพาะตอนที่ควรวาดจริง ๆ คือแท็บเปิดอยู่
+   และ canvas ตัวนั้นยังอยู่ในสายตา  ลูปยังหมุนอยู่เหมือนเดิมทุกตัว
+   แต่ข้ามงานวาดตอนไม่มีใครดู พอเลื่อนกลับมาก็วาดต่อทันที ไม่มีสะดุด
+   ══════════════════════════════════════════════════════════════════ */
+(function(){
+  var io=null, sup=("IntersectionObserver" in window);
+  if(sup) io=new IntersectionObserver(function(es){
+    es.forEach(function(e){ e.target.__awake=e.isIntersecting })
+  },{rootMargin:"20% 0px"});
+  window.spireAwake=function(el){
+    if(document.hidden)return false;
+    if(!el||!sup)return true;
+    if(el.__awake===undefined){ el.__awake=true; try{io.observe(el)}catch(e){} }
+    return el.__awake!==false;
+  };
+})();
+</script>
+<style id="perfcss">
+/* ══════════════════════════════════════════════════════════════════
+   ชั้นประสิทธิภาพ — วางท้าย head จึงทับกฎอื่นได้โดยไม่ต้องแข่ง specificity
+
+   หลักที่ใช้ตัดสินว่าอะไรควรแก้
+     สมบัติที่เบราว์เซอร์ขยับได้บนการ์ดจอ  transform กับ opacity  ราคาเกือบศูนย์
+     สมบัติที่ต้องวาดใหม่ทุกเฟรม  background-position, box-shadow, filter  แพง
+     สมบัติที่ต้องคำนวณผังใหม่ทุกเฟรม  left, top, width, height  แพงที่สุด
+   ของเดิมมีอนิเมชันวนไม่จบที่ใช้สองกลุ่มหลังอยู่หลายจุด จึงย้ายมาใช้ transform
+
+   backdrop-filter คือตัวที่หนักที่สุดบนมือถือ เพราะบังคับให้เบลอพื้นหลัง
+   ใหม่ทุกเฟรมต่อหนึ่งชิ้น ของเดิมใส่ไว้กับฟองข้อความและชิปซึ่งมีเป็นสิบชิ้น
+   พอเลื่อนจอจึงเบลอพร้อมกันสิบรอบต่อเฟรม ตรงนี้คือเหตุที่เลื่อนแล้วสะดุด
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── 1. เลิกไล่สีพื้นหลังแบบวนไม่จบ ──
+   ปุ่มหลักทุกปุ่มในหน้าเคยขยับ background-position ตลอดเวลา
+   หนึ่งปุ่มคือหนึ่งการวาดใหม่ต่อเฟรม หน้าหนึ่งมีปุ่มแบบนี้หลายสิบปุ่ม
+   ตอนนี้ไล่สีอยู่นิ่ง ๆ จะไหลเฉพาะตอนเอาเมาส์ไปวางหรือกดค้าง */
+.btn.primary{animation:none}
+.btn.primary:hover,.btn.primary:focus-visible,.btn.primary:active{
+  animation:gradFlow 4s ease infinite}
+@media(hover:none){.btn.primary:hover{animation:none}}
+
+/* ── 2. เส้นแบ่งเลนถนนกับรถในการ์ดพยากรณ์อากาศ ──
+   เลนเคยขยับ background-position  รถเคยขยับ left ซึ่งต้องคำนวณผังใหม่ทุกเฟรม
+   เปลี่ยนเป็น transform ทั้งคู่ ภาพที่เห็นเหมือนเดิมทุกประการ
+   ระยะวิ่งของรถอิงความกว้างการ์ดจริงด้วยหน่วย cqw จึงยังวิ่งพอดีขอบเหมือนเดิม */
+.bw{container-type:inline-size}
+.bw-lane{background-position:0 0!important;overflow:hidden}
+.bw-lane::after{content:"";position:absolute;inset:0 -34px 0 0;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.4) 0 16px,transparent 16px 34px);
+  animation:bwLaneT 1.6s linear infinite}
+@keyframes bwLane{to{background-position:0 0}}   /* ปิดของเดิม */
+@keyframes bwLaneT{to{transform:translateX(-34px)}}
+@keyframes bwDrive{from{transform:translateX(-120px)}to{transform:translateX(100cqw)}}
+
+/* ── 3. วงกระเพื่อมตอนอัดเสียงและตอนโทร ──
+   ของเดิมขยายเงา box-shadow ซึ่งวาดใหม่ทุกเฟรม
+   เปลี่ยนเป็นวงแยกที่ขยายด้วย transform ซึ่งการ์ดจอทำให้ฟรี */
+@keyframes lgPulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.45)}}
+@keyframes recPulse{0%,100%{box-shadow:0 0 0 0 rgba(214,74,74,.5)}}
+@keyframes callPulse{0%,100%{box-shadow:none}}
+.lg-mic.rec,.att-btn.rec,.call-dot{position:relative}
+.lg-mic.rec::after,.att-btn.rec::after{content:"";position:absolute;inset:0;border-radius:inherit;
+  border:2px solid currentColor;opacity:.5;pointer-events:none;
+  animation:ringOut 1.3s ease-out infinite;will-change:transform,opacity}
+@keyframes ringOut{from{transform:scale(1);opacity:.5}to{transform:scale(1.7);opacity:0}}
+
+/* ── 4. โครงร่างตอนกำลังโหลด ──
+   แถบแสงวิ่งเคยขยับ background-position บนทุกใบพร้อมกัน */
+.sp-skel{background-position:0 0!important;position:relative;overflow:hidden}
+@keyframes spShine{to{background-position:0 0}}
+.sp-skel::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.14) 50%,transparent 70%);
+  animation:skelSweep 1.3s linear infinite;will-change:transform}
+@keyframes skelSweep{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+
+/* ── 5. เบลอพื้นหลัง ──
+   ชิ้นที่มีซ้ำ ๆ หลายสิบชิ้นไม่ต้องเบลอ ใช้สีทึบบาง ๆ แทนแล้วดูไม่ต่าง
+   ส่วนบนมือถือปิดทั้งหมด เหลือไว้แค่บนจอคอมที่มีแรงพอ */
+.msg.ai .bubble,.chip,.sk-chip,.cl-chip,.sp-chip,.pill-tag,.att-chip,
+.sp-art .badge,.spw-row,#v-shop .sp-card,.bp-ico,.nx{
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+/* บนมือถือปิดหมด ยกเว้นแถบหลักไม่กี่ชิ้นที่ต้องอ่านทะลุพื้นหลังจริง ๆ
+   ชิ้นพวกนั้นมีหน้าละไม่เกินสองสามชิ้น ราคาจึงไม่ใช่ปัญหา */
+@media(max-width:900px){
+  *:not(.nav):not(.pill):not(.sheet):not(.side):not(.sheet-bg):not(.side-scrim)
+   :not(.p-drop):not(.acct-drop):not(.bpanel):not(.composer):not(.mnav):not(.su-card){
+    backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+}
+
+/* ── 6. อนิเมชันที่มองไม่เห็นไม่ต้องเดิน ──
+   การ์ดที่เลื่อนพ้นจอ กับตอนสลับไปแท็บอื่น หยุดไว้ก่อน
+   ธง data-idle ตั้งโดยสคริปต์ท้ายไฟล์ */
+[data-anim="off"],[data-anim="off"] *{animation-play-state:paused!important}
+html[data-idle="1"] *{animation-play-state:paused!important}
+
+/* ── 7. ส่วนที่ยังไม่ถูกเลื่อนไปถึง ไม่ต้องคิดผังและไม่ต้องวาด ──
+   contain-intrinsic-size บอกความสูงคร่าว ๆ ไว้ก่อน แถบเลื่อนจึงไม่กระโดด */
+.widget-grid>*,.sp-card,.news-card,.hist-item{content-visibility:auto;
+  contain-intrinsic-size:auto 320px}
+
+/* ── 8. ผู้ใช้ที่ตั้งเครื่องว่าไม่เอาการเคลื่อนไหว ให้เงียบทั้งหมด ── */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;
+    transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+</style>
+<style id="fbcss">
+.nav-badge{margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:999px;
+  display:none;place-items:center;font-size:11px;font-weight:700;
+  background:var(--danger,#D64A4A);color:#fff}
+.nav-badge.on{display:grid}
+.fb-filter{display:flex;flex-wrap:wrap;gap:7px}
+.fb-filter button{padding:7px 13px;border-radius:999px;border:1px solid var(--line,rgba(255,255,255,.12));
+  background:none;color:inherit;font:inherit;font-size:13px;cursor:pointer}
+.fb-filter button.on{background:var(--acc,#E08A3C);border-color:transparent;color:#1A1204;font-weight:600}
+.fb-item{display:flex;gap:12px;padding:14px 4px;border-bottom:1px solid var(--line,rgba(255,255,255,.08))}
+.fb-item:last-child{border-bottom:0}
+.fb-ic{width:36px;height:36px;flex-shrink:0;border-radius:11px;display:grid;place-items:center;font-size:18px}
+.fb-ic.bug{background:rgba(214,74,74,.15);color:#F26D6D}
+.fb-ic.idea{background:rgba(224,138,60,.15);color:#E08A3C}
+.fb-ic.praise{background:rgba(62,158,110,.15);color:#4FBF88}
+.fb-ic.other{background:rgba(127,127,127,.15);color:var(--faint,#888)}
+.fb-bd{flex:1;min-width:0}
+.fb-hd{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;margin-bottom:3px}
+.fb-hd b{font-size:14px}
+.fb-hd small{font-size:11.5px;color:var(--faint,#888)}
+.fb-msg{font-size:13.5px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+.fb-meta{margin-top:5px;font-size:11.5px;color:var(--faint,#888)}
+.fb-act{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.fb-act button{padding:5px 11px;border-radius:9px;border:1px solid var(--line,rgba(255,255,255,.12));
+  background:none;color:inherit;font:inherit;font-size:12px;cursor:pointer}
+.fb-act button:hover{background:rgba(127,127,127,.14)}
+.fb-st{padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600}
+.fb-st.new{background:rgba(224,138,60,.18);color:#E08A3C}
+.fb-st.read{background:rgba(127,127,127,.16);color:var(--faint,#999)}
+.fb-st.done{background:rgba(62,158,110,.16);color:#4FBF88}
+.fb-st.spam{background:rgba(214,74,74,.16);color:#F26D6D}
+</style>
 </head>
 <body>
 
@@ -290,6 +453,7 @@ tr.banned-row{opacity:.5}
       <a data-tab="overview" class="on"><i class="ti ti-layout-dashboard"></i> ภาพรวม</a>
       <a data-tab="users"><i class="ti ti-users"></i> ผู้ใช้ & ยศ</a>
       <a data-tab="cars"><i class="ti ti-car"></i> รถในระบบ</a>
+      <a data-tab="feedback"><i class="ti ti-message-2-heart"></i> ความเห็นผู้ใช้ <span class="nav-badge" id="fbBadge"></span></a>
       <a data-tab="magazine"><i class="ti ti-news"></i> นิตยสาร</a>
       <a data-tab="shop"><i class="ti ti-shopping-bag"></i> ร้านค้า</a>
       <a data-tab="config" data-min="admin"><i class="ti ti-settings"></i> ตั้งค่าเว็บ</a>
@@ -465,6 +629,22 @@ tr.banned-row{opacity:.5}
         <div id="healthBody"><div class="card"><div class="empty">กำลังตรวจ...</div></div></div>
       </section>
 
+      <!-- FEEDBACK -->
+      <section class="view" id="v-feedback">
+        <div class="page-head"><div><h1>ความเห็นผู้ใช้</h1><p>ข้อความที่ผู้ใช้ส่งมาจากหน้าแชต</p></div>
+          <button class="btn sm" onclick="loadFeedback()"><i class="ti ti-refresh"></i> รีเฟรช</button></div>
+        <div class="card" style="margin-bottom:12px">
+          <div class="fb-filter" id="fbFilter">
+            <button data-st="" class="on">ทั้งหมด</button>
+            <button data-st="new">ใหม่</button>
+            <button data-st="read">อ่านแล้ว</button>
+            <button data-st="done">จัดการแล้ว</button>
+            <button data-st="spam">สแปม</button>
+          </div>
+        </div>
+        <div class="card"><div id="fbList"><div class="empty">กำลังโหลด...</div></div></div>
+      </section>
+
       <!-- AUDIT -->
       <section class="view" id="v-audit">
         <div class="page-head"><div><h1>บันทึกการทำงาน</h1><p>ประวัติการกระทำของผู้ดูแลระบบล่าสุด</p></div>
@@ -521,8 +701,9 @@ tr.banned-row{opacity:.5}
 
 <div class="toast" id="toast"></div>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<!-- defer: ตัวแปลภาษาเดินต่อได้เลย ไม่ต้องหยุดรอสองไฟล์นี้จากเซิร์ฟเวอร์ของ Google -->
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
 "use strict";
 const $=id=>document.getElementById(id);
@@ -532,7 +713,35 @@ const BACKEND_URL="https://spireonebackend.carspirethailand.workers.dev";
 const fbConfig={apiKey:"AIzaSyDDtvz4d4FRG_KOq5EQHmlDijU-x1FDZlQ",authDomain:"sp1p-82396.firebaseapp.com",databaseURL:"https://sp1p-82396-default-rtdb.firebaseio.com",projectId:"sp1p-82396",storageBucket:"sp1p-82396.appspot.com",messagingSenderId:"924479207020",appId:"1:924479207020:web:ec64428a61403e1ad48a49"};
 const ROLE_RANK={owner:4,admin:3,moderator:2,user:1};
 let auth=null,useFb=false,me=null;
-try{firebase.initializeApp(fbConfig);auth=firebase.auth();auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});useFb=true}catch(e){console.warn("fb",e)}
+/* firebase โหลดแบบ defer แล้ว ตัวแปลภาษาจึงไม่ต้องหยุดรอเซิร์ฟเวอร์ของ Google กลางคัน
+   ผลคือหน้าเว็บวาดและกดใช้งานได้ก่อน ระบบล็อกอินตามมาทีหลังไม่กี่ร้อยมิลลิวินาที
+   ตอนบรรทัดนี้ทำงานยังไม่มีตัว firebase จึงวางตัวแทนไว้ก่อน
+   ตัวแทนรับ onAuthStateChanged เก็บเข้าคิว พอของจริงมาถึงค่อยลงทะเบียนให้ครบ
+   จุดอื่นในไฟล์อ่านค่า auth ตอนผู้ใช้กด ซึ่งเป็นตอนที่ของจริงมาแล้วเสมอ */
+(function(){
+  var q=[];
+  auth={currentUser:null,
+    onAuthStateChanged:function(cb){var e={cb:cb,un:null,dead:false};q.push(e);
+      return function(){e.dead=true;if(e.un)try{e.un()}catch(x){}}},
+    /* ยังไม่ทันโหลดเสร็จก็กดออกจากระบบได้ รอของจริงแล้วค่อยสั่ง */
+    signOut:function(){var stub=this;return window.spireFbReady.then(function(){
+      return (auth&&auth!==stub)?auth.signOut():null})}};
+  useFb=true;
+  window.spireFbReady=new Promise(function(res){
+    function go(){
+      try{
+        firebase.initializeApp(fbConfig);
+        var real=firebase.auth();
+        real.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(){});
+        auth=real; useFb=true;
+        q.forEach(function(e){if(e.dead)return;try{e.un=real.onAuthStateChanged(e.cb)}catch(x){}});
+      }catch(e){console.warn("fb",e);auth=null;useFb=false}
+      res(useFb);
+    }
+    if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",go,{once:true});
+    else go();
+  });
+})();
 
 let tt;function toast(m,ic){const el=$("toast");el.innerHTML=`<i class="ti ${ic||"ti-check"}"></i>${esc(m)}`;el.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("show"),3200)}
 function rank(r){return ROLE_RANK[r]||0}
@@ -977,14 +1186,127 @@ async function loadHealth(){
 }
 
 /* ═══════════ โหลดข้อมูลตามแท็บ ═══════════ */
+/* ═══════════ ความเห็นผู้ใช้ ═══════════ */
+let fbStatus="";
+const FB_IC={bug:"ti-bug",idea:"ti-bulb",praise:"ti-heart",other:"ti-message-2"};
+const FB_TH={bug:"แจ้งปัญหา",idea:"ข้อเสนอแนะ",praise:"ชมเชย",other:"อื่น ๆ"};
+const FB_STTH={new:"ใหม่",read:"อ่านแล้ว",done:"จัดการแล้ว",spam:"สแปม"};
+
+async function loadFeedback(){
+  $("fbList").innerHTML=`<div class="empty">กำลังโหลด...</div>`;
+  try{
+    const res=await api("/api/admin/feedback"+(fbStatus?"?status="+fbStatus:""));
+    const arr=res.feedback||[];
+    /* ป้ายตัวเลขข้างเมนู นับเฉพาะที่ยังไม่มีใครอ่าน */
+    const nw=(res.counts||[]).find(c=>c.status==="new");
+    const badge=$("fbBadge");
+    if(badge){ badge.textContent=nw?nw.n:""; badge.classList.toggle("on",!!(nw&&nw.n)) }
+    if(!arr.length){ $("fbList").innerHTML=`<div class="empty">ยังไม่มีความเห็น</div>`; return }
+    $("fbList").innerHTML=arr.map(f=>{
+      const k=FB_IC[f.kind]?f.kind:"other";
+      return `<div class="fb-item" id="fb-${esc(f.id)}">
+        <div class="fb-ic ${k}"><i class="ti ${FB_IC[k]}"></i></div>
+        <div class="fb-bd">
+          <div class="fb-hd"><b>${esc(f.name||"ผู้ใช้")}</b>
+            <span class="fb-st ${esc(f.status)}">${esc(FB_STTH[f.status]||f.status)}</span>
+            <small>${esc(FB_TH[k])} · ${new Date(f.created_at).toLocaleString("th-TH",
+              {day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</small></div>
+          <div class="fb-msg">${esc(f.message||"")}</div>
+          <div class="fb-meta">${esc(f.email||"-")}${f.page?" · "+esc(f.page):""}${
+            f.ua?" · "+esc(String(f.ua).slice(0,70)):""}</div>
+          <div class="fb-act">
+            <button onclick="fbSet('${esc(f.id)}','read')">อ่านแล้ว</button>
+            <button onclick="fbSet('${esc(f.id)}','done')">จัดการแล้ว</button>
+            <button onclick="fbSet('${esc(f.id)}','spam')">สแปม</button>
+          </div>
+        </div></div>`;
+    }).join("");
+  }catch(e){
+    $("fbList").innerHTML=`<div class="empty">โหลดไม่ได้: ${esc(e.message)}<br>
+      <small style="color:var(--faint)">ถ้าขึ้น 404 แปลว่ายังไม่ได้ deploy Worker ตัวใหม่</small></div>`;
+  }
+}
+async function fbSet(id,status){
+  try{
+    await api("/api/admin/feedback",{method:"POST",body:{id,status}});
+    loadFeedback();
+  }catch(e){ alert("ทำไม่สำเร็จ: "+e.message) }
+}
+document.addEventListener("click",e=>{
+  const b=e.target.closest("#fbFilter [data-st]"); if(!b)return;
+  document.querySelectorAll("#fbFilter button").forEach(x=>x.classList.toggle("on",x===b));
+  fbStatus=b.dataset.st; loadFeedback();
+});
+
 const TAB_LOAD={overview:loadStats,users:loadUsers,cars:loadCars,magazine:loadMag,
-  shop:loadShop,config:loadConfig,audit:loadAudit,system:loadHealth};
+  shop:loadShop,config:loadConfig,audit:loadAudit,system:loadHealth,feedback:loadFeedback};
 document.getElementById("nav").addEventListener("click",e=>{
   const a=e.target.closest("[data-tab]");
   if(!a||a.classList.contains("locked"))return;
   const fn=TAB_LOAD[a.dataset.tab];
   if(fn)try{fn()}catch(err){}
 });
+</script>
+<script id="perfjs">
+/* ══════════════════════════════════════════════════════════════════
+   ชั้นประสิทธิภาพ ฝั่งสคริปต์ — ทำสามอย่าง ไม่ยุ่งกับตรรกะของแอปเลย
+
+   1. สลับไปแท็บอื่นแล้วหยุดอนิเมชันทุกตัว
+      ของเดิมยังวาดต่อทั้งที่ไม่มีใครดู กินแบตและกิน CPU ฟรี ๆ
+   2. การ์ดที่เลื่อนพ้นจอแล้ว หยุดอนิเมชันในนั้นไว้ก่อน
+      การ์ดพยากรณ์อากาศใบเดียวมีอนิเมชันวนไม่จบเป็นสิบตัว (เมฆ ฝน ดาว รถ)
+      ถ้าไม่หยุด มันเดินอยู่ตลอดแม้ผู้ใช้เลื่อนผ่านไปนานแล้ว
+   3. กดลิงก์แล้วไปทันที
+      เบราว์เซอร์ที่รองรับ speculation rules เตรียมหน้าถัดไปให้อยู่แล้ว
+      ตัวที่ไม่รองรับ ใช้การแตะค้างหรือเอาเมาส์ไปวางเป็นสัญญาณโหลดล่วงหน้า
+   ══════════════════════════════════════════════════════════════════ */
+(function(){
+  "use strict";
+  var D=document,H=D.documentElement;
+
+  /* 1 — ไม่ได้ดูอยู่ก็ไม่ต้องวาด */
+  function idle(){H.dataset.idle=D.hidden?"1":"0"}
+  D.addEventListener("visibilitychange",idle); idle();
+
+  /* 2 — พ้นจอแล้วพัก  เข้าจอแล้วเดินต่อ
+        rootMargin เผื่อไว้หนึ่งจอ อนิเมชันจึงเดินก่อนผู้ใช้เลื่อนมาถึงจริง
+        ไม่งั้นจะเห็นภาพค้างอยู่เสี้ยววินาทีตอนเลื่อนเข้ามาพอดี */
+  if("IntersectionObserver" in window){
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(e.isIntersecting)e.target.removeAttribute("data-anim");
+        else e.target.dataset.anim="off";
+      });
+    },{rootMargin:"100% 0px"});
+    var watch=function(){
+      D.querySelectorAll(".bw,.widget-grid>*,.croom,.sp-card,.news-card")
+       .forEach(function(el){ if(!el.__animWatched){el.__animWatched=true;io.observe(el)} });
+    };
+    watch();
+    /* การ์ดถูกสร้างทีหลังด้วยสคริปต์ จึงต้องคอยมองหาของใหม่ด้วย */
+    if("MutationObserver" in window){
+      var mo=new MutationObserver(function(){ if(mo.__t)return;
+        mo.__t=setTimeout(function(){mo.__t=0;watch()},400)});
+      mo.observe(D.body||H,{childList:true,subtree:true});
+    }
+  }
+
+  /* 3 — โหลดหน้าถัดไปล่วงหน้าตอนผู้ใช้เล็งจะกด
+        ทำเฉพาะตัวที่ไม่รองรับ speculation rules จะได้ไม่โหลดซ้ำสองรอบ */
+  if(!(HTMLScriptElement.supports&&HTMLScriptElement.supports("speculationrules"))){
+    var done=Object.create(null);
+    var warm=function(ev){
+      var a=ev.target.closest&&ev.target.closest('a[href$=".html"]');
+      if(!a)return;
+      var u=a.getAttribute("href");
+      if(!u||u[0]==="#"||done[u])return;
+      done[u]=1;
+      var l=D.createElement("link"); l.rel="prefetch"; l.href=u; D.head.appendChild(l);
+    };
+    D.addEventListener("pointerenter",warm,{capture:true,passive:true});
+    D.addEventListener("touchstart",warm,{capture:true,passive:true});
+  }
+})();
 </script>
 </body>
 </html>

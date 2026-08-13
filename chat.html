@@ -4585,7 +4585,14 @@ window.spireSetupVersion=SETUP_VERSION;
 "use strict";
 const $=id=>document.getElementById(id);
 const esc=s=>(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const LS={get:(k,d)=>{try{return JSON.parse(localStorage.getItem("spire_"+k))??d}catch{return d}},set:(k,v)=>localStorage.setItem("spire_"+k,JSON.stringify(v)),del:k=>localStorage.removeItem("spire_"+k)};
+const LS={
+  get:(k,d)=>{try{return JSON.parse(localStorage.getItem("spire_"+k))??d}catch{return d}},
+  /* ทุกการเขียนแจ้งตัวซิงก์คลาวด์ให้รู้ ค่าจึงเดินทางไปเครื่องอื่นเองโดยผู้ใช้ไม่ต้องกดอะไร */
+  set:(k,v)=>{localStorage.setItem("spire_"+k,JSON.stringify(v));
+              try{window.cloudMark&&window.cloudMark(k)}catch(e){}},
+  del:k=>{localStorage.removeItem("spire_"+k);
+          try{window.cloudMark&&window.cloudMark(k)}catch(e){}}};
+window.LS=LS;
 
 /* ===== CONFIG (same as index.html — do not change) ===== */
 const BACKEND_URL="https://spireonebackend.carspirethailand.workers.dev";
@@ -4852,18 +4859,36 @@ async function gemini(contents,opts){opts=opts||{};
   const tok=await auth.currentUser.getIdToken();
   const r=await fetch(`${BACKEND_URL}/api/ai/chat`,{method:"POST",
     headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok},
-    body:JSON.stringify({contents,system:opts.system,search:!!opts.search,temp:opts.temp!=null?opts.temp:0.5})});
+    body:JSON.stringify({contents,system:opts.system,search:!!opts.search,
+      temp:opts.temp!=null?opts.temp:0.5,
+      /* หลังบ้านต้องได้ carId เพื่อไปดึงข้อมูลรถจริงจากฐานข้อมูล
+         และ skillIds เพื่อไปต่อคำสั่งสกิลเข้ากับ system prompt
+         ของเดิมส่งแต่ contents ข้อมูลรถกับสกิลจึงไม่เคยไปถึงโมเดลเลย */
+      carId:(opts.carId!==undefined?opts.carId:(selCar()?selCar().id:null)),
+      make:(selCar()||{}).make||(selCar()||{}).name||"",
+      model:(selCar()||{}).model||"",
+      year:(selCar()||{}).year||"",
+      mileage:(selCar()||{}).mileage||"",
+      skillIds:opts.skillIds||[]})});
   let d=null;try{d=await r.json()}catch(e){}
   if(!r.ok){
     const err=(d&&d.error)||"";
     if(err==="ai_busy")throw new Error(lang==="en"?"AI is busy right now — try again in a moment":"ตอนนี้คนใช้ AI เยอะมาก รอสักครู่แล้วส่งอีกครั้งนะครับ");
     if(err==="ai_region")throw new Error(lang==="en"?"AI server region restriction — admin must enable billing":"เซิร์ฟเวอร์ AI ติดข้อจำกัดภูมิภาค — แอดมินต้องเปิด billing ใน Google AI Studio");
-    if(r.status===429||err==="quota")throw new Error(lang==="en"?"Daily AI quota reached — try again tomorrow":"ใช้โควตา AI ของวันนี้ครบแล้ว ลองใหม่พรุ่งนี้ครับ");
+    if(r.status===429||err==="quota"){
+      /* โควตาหมด — เด้งกล่องบอกเวลาที่จะได้ใช้ต่อ พร้อมแผนเติม
+         แล้วล็อกช่องพิมพ์ไว้จนกว่าจะถึงเวลานั้น เหมือน AI เจ้าอื่น */
+      try{ window.quotaHit&&window.quotaHit((d&&d.quota)||null) }catch(e){}
+      throw new Error(lang==="en"?"You've used up this window's quota"
+                                 :"ใช้โควตาช่วงนี้ครบแล้ว");
+    }
     if(r.status===503||err==="maintenance")throw new Error(lang==="en"?"System is under maintenance":"ระบบกำลังปิดปรับปรุงชั่วคราว");
     if(r.status===403)throw new Error(lang==="en"?"Account suspended":"บัญชีถูกระงับการใช้งาน");
     if(r.status===401)throw new Error(lang==="en"?"Please sign in again":"กรุณาเข้าสู่ระบบใหม่");
     throw new Error(err||("AI error "+r.status));
   }
+  /* ทุกคำตอบพ่วงยอดโควตาล่าสุดกลับมาด้วย เก็บไว้ให้หน้าอื่นใช้ต่อ */
+  try{ if(d&&d.usage)window.quotaUpdate&&window.quotaUpdate(d.usage) }catch(e){}
   return ((d&&d.text)||"").trim();
 }
 function gParse(t){if(!t)return null;let s=t.replace(/```json/gi,"").replace(/```/g,"").trim();const m=s.match(/[\[{][\s\S]*[\]}]/);if(m)s=m[0];try{return JSON.parse(s)}catch{return null}}
@@ -5214,9 +5239,31 @@ function msgHTML(m){
   if(m.typing)return""; /* thinking renders as the spinning mark below (Claude-style) */
   return`<div class="msg ai"><div class="bubble">${md(m.text)}</div></div>`;
 }
-function aiSig(thinking){
-  return`<div class="ai-sig${thinking?" thinking":""}"><span class="mark">${LOGO_SVG}</span>${thinking?`<span class="st">${lang==="en"?"Thinking...":"กำลังคิด..."}</span>`:""}</div>`;
+/* คำบอกสถานะตอนกำลังคิด สลับไปเรื่อย ๆ ตามเวลาที่รอ
+   นิ่งอยู่คำเดียวนาน ๆ ทำให้รู้สึกเหมือนแอปค้าง ทั้งที่มันทำงานอยู่ */
+const THINK_TH=["กำลังคิด","ไล่ดูอาการที่เล่ามา","เทียบกับข้อมูลรถของคุณ",
+                "ตรวจสาเหตุที่เป็นไปได้","เรียบเรียงคำตอบ","อีกนิดเดียว"];
+const THINK_EN=["Thinking","Reading the symptoms","Matching your car's data",
+                "Checking likely causes","Writing it up","Almost there"];
+let thinkAt=0;
+function thinkWord(){
+  const arr=lang==="en"?THINK_EN:THINK_TH;
+  const i=Math.min(arr.length-1,Math.floor((Date.now()-thinkAt)/2600));
+  return arr[thinkAt?i:0];
 }
+function aiSig(thinking){
+  if(thinking&&!thinkAt)thinkAt=Date.now();
+  if(!thinking)thinkAt=0;
+  return`<div class="ai-sig${thinking?" thinking":""}"><span class="mark">${LOGO_SVG}</span>${
+    thinking?`<span class="st">${esc(thinkWord())}</span>`
+            +`<span class="dots"><i></i><i></i><i></i></span>`:""}</div>`;
+}
+/* อัปเดตเฉพาะตัวหนังสือ ไม่วาดห้องแชตใหม่ทั้งห้อง จะได้ไม่กระตุก */
+setInterval(()=>{
+  if(!thinkAt)return;
+  const el=document.querySelector(".ai-sig.thinking .st");
+  if(el){ const w=thinkWord(); if(el.textContent!==w)el.textContent=w }
+},900);
 function renderMessages(){
   const real=messages.filter(m=>!m.typing);
   const thinking=messages.some(m=>m.typing);
@@ -5224,7 +5271,9 @@ function renderMessages(){
   if(thinking)sig=aiSig(true);
   else if(real.length&&real[real.length-1].role!=="user")sig=aiSig(false);
   $("thread").innerHTML=real.map(msgHTML).join("")+sig;
-  scrollBottom(true);
+  /* ระหว่างรอคำตอบ ปล่อยให้จอค้างอยู่ที่คำถามล่าสุดตามที่ slideToLast จัดไว้
+     ถ้าลากลงล่างสุดทุกครั้ง ผู้ใช้จะไม่เห็นว่าตัวเองเพิ่งถามอะไรไป */
+  if(!thinking)scrollBottom(true); else scrollBottom(false);
 }
 function scrollBottom(force){
   const sc=$("threadScroll");
@@ -5356,6 +5405,9 @@ async function sendMsg(){
   messages.push({role:"user",text,atts});
   $("inp").value="";autoSize();sending=true;updateSend();
   updateHint();renderMessages();renderChips();
+  /* เลื่อนให้ข้อความที่เพิ่งพิมพ์ไปอยู่บนสุดของจอ จะได้เห็นชัดว่าถามอะไรไป
+     แล้วคำตอบค่อย ๆ ไหลลงมาข้างล่าง เหมือน AI เจ้าอื่น */
+  try{ window.slideToLast&&window.slideToLast() }catch(e){}
   messages.push({role:"ai",typing:true});renderMessages();
   try{
     const hasMedia=messages.some(m=>m.atts&&m.atts.some(a=>a.b64));
@@ -5367,19 +5419,22 @@ async function sendMsg(){
     /* สกิลที่ผู้ใช้เลือกไว้ (ชิป /ชื่อ) ถูกแนบเข้ากับคำสั่งระบบของรอบนี้
        ไม่ใช่ยัดเข้าไปในข้อความของผู้ใช้ ประวัติแชตจะได้อ่านรู้เรื่องเหมือนเดิม */
     let sys=sysPrompt();
-    try{ const pre=window.spireSkillsPreamble&&window.spireSkillsPreamble();
-         if(pre)sys=pre+sys }catch(e){}
-    const ans=await gemini(contents,{system:sys,search:!hasMedia,temp:0.5});
+    let skillIds=[];
+    try{ skillIds=(window.spireSkillsAttached&&window.spireSkillsAttached()||[])
+           .map(x=>x.id||x.slug).filter(Boolean) }catch(e){}
+    const ans=await gemini(contents,{system:sys,search:!hasMedia,temp:0.5,skillIds});
     typewrite(ans||"(ไม่มีคำตอบ)",()=>{
       saveSession();
       if(selCar())addHistory(selCar().id,text||(lang==="en"?"media":"แนบสื่อ"),ans);
       try{ window.spireSkillsClear&&window.spireSkillsClear() }catch(e){}
+      try{ window.slideRelease&&window.slideRelease() }catch(e){}
       sending=false;updateSend();renderChips();
     });
   }catch(e){
     messages.pop();
     messages.push({role:"ai",text:(lang==="en"?"Sorry, AI error 🙏\n":"ขออภัย AI ขัดข้อง 🙏\n")+e.message+(location.protocol==="file:"?"\n\n(เปิดผ่าน localhost ถ้า AI ไม่ทำงานบน file://)":"")});
     renderMessages();saveSession();
+    try{ window.slideRelease&&window.slideRelease() }catch(e){}
     sending=false;updateSend();renderChips();
   }
 }
@@ -5472,6 +5527,9 @@ function sessMenu(id,ev){
   },0);
 }
 window.sessMenu=sessMenu; window.renameSession=renameSession;
+/* ตัวซิงก์คลาวด์อยู่คนละบล็อกสคริปต์ ต้องเรียกผ่าน window เท่านั้น */
+window.markTheme=markTheme; window.loadSession=loadSession;
+window.renderMessages=renderMessages; window.setChatTheme=setChatTheme;
 
 /* ===== THEME ===== */
 function setChatTheme(t){
@@ -6082,27 +6140,56 @@ function setBody(){
       ${(window.spireDangerHTML&&window.spireDangerHTML())||""}`;
   }
   if(setTab==="usage"){
-    const used=LS.get("aiUsedToday",0)||0;
-    return `<h2>${t("โควตาวันนี้","Today's usage")}</h2>
-      <div class="set-meter"><i style="width:${Math.min(100,used/60*100)}%"></i></div>
-      <p class="set-note">${t(`ใช้ไปแล้ว ${used} จาก 60 ครั้งต่อวัน · รีเซ็ตเที่ยงคืน`,
-        `${used} of 60 calls today · resets at midnight`)}</p>
-      ${setRow("ti-message-2",t("คุยกับ AI","Chat message"),t("1 ครั้งต่อข้อความ","1 call each"))}
-      ${setRow("ti-receipt-2",t("อ่านใบเสนอราคา","Reading a quote"),t("3 ครั้งต่อใบ","3 calls each"))}
-      ${setRow("ti-ear",t("วิเคราะห์เสียง","Listening to the car"),t("3 ครั้งต่อคลิป","3 calls each"))}
-      ${setRow("ti-package",t("ค้นอะไหล่","Finding parts"),t("2 ครั้งต่อการค้น","2 calls each"))}
+    /* ตัวเลขจริงมาจากเซิร์ฟเวอร์ ไม่ใช่ตัวนับในเครื่องแบบเดิม
+       เพราะโควตาผูกกับบัญชี ใช้จากเครื่องไหนก็หักก้อนเดียวกัน */
+    const q=window.__quota||{};
+    const n=x=>Number(x||0).toLocaleString(lang==="en"?"en-US":"th-TH");
+    const pct=q.limit?Math.min(100,Math.round(q.used/q.limit*100)):0;
+    const mins=q.resetAt?Math.max(0,Math.round((q.resetAt-Date.now())/60000)):0;
+    const hh=Math.floor(mins/60), mm=mins%60;
+    const when=hh?t(`${hh} ชม. ${mm} นาที`,`${hh}h ${mm}m`):t(`${mm} นาที`,`${mm}m`);
+    return `<h2>${t("โควตาของคุณ","Your quota")}</h2>
+      <div class="set-meter"><i style="width:${q.unlimited?100:pct}%"></i></div>
+      <p class="set-note">${q.unlimited
+        ? t("ไม่จำกัด (ผู้ดูแลระบบ)","Unlimited (admin)")
+        : (q.limit
+          ? t(`ใช้ไปแล้ว ${n(q.used)} จาก ${n(q.limit)} โทเคน (${pct}%) · เติมใหม่อัตโนมัติในอีก ${when}`,
+              `${n(q.used)} of ${n(q.limit)} tokens (${pct}%) · refills automatically in ${when}`)
+          : t("คุยกับ AI สักครั้งแล้วตัวเลขจะขึ้นที่นี่",
+              "Chat with the AI once and your numbers will show up here"))}</p>
       <p class="set-note">${t(
-        "โควตามีไว้กันค่าใช้จ่ายพุ่ง ไม่ได้มีไว้กันคุณใช้งาน ถ้าชนบ่อยบอกเราได้",
-        "The cap exists to control cost, not to limit you. Tell us if you keep hitting it.")}</p>`;
+        "โควตาเติมใหม่เองทุก 5 ชั่วโมง ไม่ต้องรอข้ามวัน และนับตามบัญชี ไม่ใช่ตามเครื่อง",
+        "Quota refills every 5 hours — no waiting for midnight — and follows your account, not this device.")}</p>
+      ${setRow("ti-message-2",t("ข้อความสั้น","Short message"),t("ราว 300-800 โทเคน","~300-800 tokens"))}
+      ${setRow("ti-messages",t("คุยยาวหลายรอบ","Long back-and-forth"),t("ยิ่งคุยยาว ยิ่งใช้มากขึ้น","Grows as the thread grows"))}
+      ${setRow("ti-photo",t("แนบรูปหรือวิดีโอ","Photo or video"),t("ราว 1,500-4,000 โทเคน","~1,500-4,000 tokens"))}
+      ${setRow("ti-search",t("ค้นข้อมูลจากเว็บ","Web lookup"),t("บวกเพิ่มอีกเล็กน้อย","A little extra on top"))}
+      <p class="set-note">${t(
+        "หักตามความยาวจริงของบทสนทนา ถามสั้นก็หักน้อย ไม่ได้นับเป็นครั้ง โควตามีไว้กันค่าใช้จ่ายพุ่ง ไม่ได้มีไว้กันคุณใช้งาน ถ้าชนบ่อยบอกเราได้",
+        "Charged by the real length of the conversation, not per message — short questions cost little. The cap exists to control cost, not to limit you. Tell us if you keep hitting it.")}</p>`;
   }
   if(setTab==="plan"){
+    /* ชื่อแผนต้องตรงกับกล่องที่เด้งตอนโควตาหมด ไม่งั้นผู้ใช้จะงงว่าคนละอย่างกัน */
+    const q=window.__quota||{};
+    const cur=q.plan||"free";
+    const n=x=>Number(x||0).toLocaleString(lang==="en"?"en-US":"th-TH");
+    const plans=(q.plans&&q.plans.length?q.plans:[
+      {key:"light",th:"Light",en:"Light",price:99,cur:"THB",tokens:60000,
+       th_desc:"โควตามากขึ้น ใช้ต่อได้สบาย ๆ ทุกวัน",
+       en_desc:"More headroom for everyday questions."},
+      {key:"gourmet",th:"Gourmet",en:"Gourmet",price:299,cur:"THB",tokens:250000,
+       th_desc:"โควตาก้อนใหญ่ วิเคราะห์รูป วิดีโอ และคุยยาวได้เต็มที่",
+       en_desc:"A large pool for media analysis and long conversations."}]);
     return `<div class="set-plan">
-        <div class="pl now"><small>${t("แพ็กเกจปัจจุบัน","Current")}</small><b>Beta</b>
-          <p>${t("ใช้ได้ทุกฟีเจอร์ฟรีระหว่างช่วงทดสอบ","Everything, free during the beta")}</p></div>
-        <div class="pl soon"><small>${t("กำลังจะมา","Coming")}</small><b>Pro</b>
-          <p>${t("โควตามากขึ้น เก็บประวัติไม่จำกัด และเชื่อมกับอู่ในเครือ",
-                 "Higher limits, unlimited history, and partner-garage links")}</p>
-          <button class="set-btn" data-do="notify">${t("แจ้งฉันเมื่อเปิด","Notify me")}</button></div>
+        <div class="pl now"><small>${t("แพ็กเกจปัจจุบัน","Current")}</small>
+          <b>${cur==="free"?"Free":esc(cur.charAt(0).toUpperCase()+cur.slice(1))}</b>
+          <p>${t("โควตาเติมใหม่ให้ฟรีทุก 5 ชั่วโมง","Free quota, refilled every 5 hours")}</p></div>
+        ${plans.map(pl=>`<div class="pl soon"><small>${n(pl.price)} ${esc(pl.cur||"THB")}/${
+          t("เดือน","month")}</small><b>${esc(lang==="en"?(pl.en||pl.key):(pl.th||pl.key))}</b>
+          <p>${esc(lang==="en"?(pl.en_desc||pl.th_desc||""):(pl.th_desc||pl.en_desc||""))}<br>
+             <span style="display:inline-block;margin-top:4px;font-size:12.5px;opacity:.75">${
+               n(pl.tokens)} ${t("โทเคนต่อรอบ","tokens per window")}</span></p>
+          <button class="set-btn" data-do="notify">${t("สนใจแผนนี้","I'm interested")}</button></div>`).join("")}
       </div>
       <p class="set-note">${t(
         "ตอนนี้ยังไม่มีการเก็บเงิน และเราจะบอกล่วงหน้าก่อนเสมอถ้าจะเริ่มเก็บ",
@@ -6176,17 +6263,28 @@ function wireSettings(){
     send.disabled=true; send.textContent=t("กำลังส่ง…","Sending…");
     /* ยังไม่มีปลายทางเก็บ feedback บนเซิร์ฟเวอร์ จึงเก็บไว้ในเครื่องก่อน
        และบอกผู้ใช้ตรง ๆ ว่ายังไม่ได้ส่งออกไป ดีกว่าแกล้งบอกว่าส่งแล้ว */
+    /* ส่งขึ้นเซิร์ฟเวอร์จริง เข้าหน้าแอดมินทันที
+       ถ้าส่งไม่ผ่าน (ออฟไลน์/ยังไม่ล็อกอิน) เก็บเข้าคิวในเครื่อง
+       แล้วตัวซิงก์จะลองส่งซ้ำให้เองรอบหน้า ผู้ใช้ไม่ต้องพิมพ์ใหม่ */
+    const item={kind:fbk,message:txt.slice(0,2000),page:location.pathname,at:Date.now()};
+    let sent=false;
     try{
-      const all=LS.get("feedback",[])||[];
-      all.unshift({kind:fbk,text:txt.slice(0,2000),at:Date.now(),
-        ua:navigator.userAgent.slice(0,120)});
-      LS.set("feedback",all.slice(0,50));
+      const u=window.auth&&window.auth.currentUser;
+      if(u&&window.BACKEND_URL){
+        const tok=await u.getIdToken();
+        const r=await fetch(window.BACKEND_URL+"/api/feedback",{method:"POST",
+          headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok},
+          body:JSON.stringify(item)});
+        sent=r.ok;
+      }
     }catch(e){}
-    setTimeout(()=>{
-      ta.value=""; send.disabled=false; send.textContent=t("ส่งความเห็น","Send feedback");
-      msg.textContent=t("บันทึกไว้ในเครื่องแล้ว — ระบบส่งขึ้นเซิร์ฟเวอร์ยังไม่เปิด เราจะส่งให้อัตโนมัติเมื่อเปิดใช้",
-        "Saved on this device — server delivery isn't live yet; it'll be sent automatically once it is");
-    },500);
+    if(!sent){ try{ const q=LS.get("fbQueue",[])||[]; q.unshift(item);
+                    LS.set("fbQueue",q.slice(0,50)) }catch(e){} }
+    ta.value=""; send.disabled=false; send.textContent=t("ส่งความเห็น","Send feedback");
+    msg.textContent=sent
+      ? t("ส่งถึงทีมงานแล้ว ขอบคุณมากครับ","Sent to the team — thank you!")
+      : t("ยังส่งไม่ได้ตอนนี้ เก็บไว้ให้แล้ว จะส่งให้อัตโนมัติเมื่อออนไลน์",
+          "Couldn't send right now — saved, and we'll deliver it automatically when you're back online");
   };
 }
 function exportMyData(){
@@ -7374,8 +7472,42 @@ function close(){
    ตัวคำสั่งจะถูกแนบไปกับข้อความตอนกดส่ง ไม่ไปเกะกะสิ่งที่ผู้ใช้พิมพ์ */
 let picked=[], pop=null, popIdx=0;
 
+/* ── คลังสกิลสำหรับช่องพิมพ์ ──
+   ของเดิมอ่านจาก local() อย่างเดียว คือเฉพาะสกิลที่กดติดตั้งจาก Hub
+   ผู้ใช้ใหม่จึงพิมพ์ / แล้วไม่มีอะไรขึ้นเลย ทั้งที่ Cendon มีสกิลมาตรฐานอยู่แล้ว
+   ตอนนี้รวมสามแหล่ง: สกิลมาตรฐานจาก Worker, สกิลที่ผู้ใช้สร้างเอง, และที่ติดตั้งไว้ */
+const CATKEY="spire_skillcat";
+function cat(){ try{ const v=JSON.parse(localStorage.getItem(CATKEY)); return Array.isArray(v)?v:[] }
+  catch(e){ return [] } }
+function catalog(){
+  const seen=new Set(), out=[];
+  cat().concat(local()).forEach(x=>{
+    if(!x||!x.slug||seen.has(x.slug))return;
+    seen.add(x.slug); out.push(x);
+  });
+  return out;
+}
+async function loadCatalog(){
+  try{
+    const r=await api("/api/skills/all");
+    if(r&&Array.isArray(r.skills))
+      localStorage.setItem(CATKEY,JSON.stringify(r.skills.slice(0,120)));
+  }catch(e){ /* ออฟไลน์ก็ยังใช้ชุดที่แคชไว้รอบก่อนได้ */ }
+}
+window.spireSkillsRefresh=loadCatalog;
+
 function attached(){ return picked.slice() }
 function clearAttached(){ picked=[]; paintChips() }
+
+/* เปิดรายการสกิลจากที่อื่น เช่น ปุ่มในเมนู + โดยไม่ต้องพิมพ์ / เอง */
+function openPicker(){
+  const inp=$("inp"); if(!inp)return;
+  inp.focus();
+  if(!/(^|\s)\/$/.test(inp.value))inp.value=(inp.value?inp.value.replace(/\s*$/,"")+" ":"")+"/";
+  try{ inp.dispatchEvent(new Event("input")) }catch(e){}
+  showPop("");
+}
+window.spireSkillsPicker=openPicker;
 
 function paintChips(){
   const inp=$("inp"); if(!inp)return;
@@ -7395,7 +7527,7 @@ function closePop(){ if(pop){ pop.remove(); pop=null } popIdx=0 }
 
 function showPop(term){
   const inp=$("inp"); if(!inp)return;
-  const list=local().filter(s=>!term||s.slug.startsWith(term)||
+  const list=catalog().filter(s=>!term||s.slug.startsWith(term)||
     (s.name||"").toLowerCase().includes(term)).slice(0,8);
   if(!list.length){ closePop(); return }
   if(!pop){
@@ -7414,7 +7546,7 @@ function showPop(term){
 }
 
 function pick(slug){
-  const s=local().find(x=>x.slug===slug); if(!s)return;
+  const s=catalog().find(x=>x.slug===slug); if(!s)return;
   if(!picked.some(x=>x.slug===slug))picked.push(s);
   const inp=$("inp");
   if(inp){
@@ -7464,7 +7596,11 @@ window.spireSkillsAttached=attached;
 window.spireSkillsPreamble=preamble;
 window.spireSkillsClear=clearAttached;
 
-function boot(){ hookComposer(); setTimeout(hookComposer,1200); setTimeout(hookComposer,3000) }
+function boot(){
+  hookComposer(); setTimeout(hookComposer,1200); setTimeout(hookComposer,3000);
+  /* ดึงคลังสกิลหลังล็อกอินเสร็จ ถ้ายังไม่พร้อมก็ลองใหม่อีกสองรอบ */
+  setTimeout(loadCatalog,1500); setTimeout(loadCatalog,6000);
+}
 if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",boot); else boot();
 })();
 </script>
@@ -11381,5 +11517,429 @@ body[data-phase] .aura{opacity:.55}
 .sess-pop-i.danger{color:#F26D6D}
 .sess-pop-i.danger:hover{background:rgba(214,74,74,.14)}
 </style>
+<style id="cendon-cloud">
+/* ── แถบเตือนโควตาเหนือช่องพิมพ์ ── */
+.quota-bar{display:flex;align-items:center;gap:9px;margin:0 auto 8px;
+  max-width:min(100%,760px);padding:10px 12px;border-radius:14px;
+  background:rgba(224,138,60,.14);border:1px solid rgba(224,138,60,.32);
+  color:#E8A867;font-size:13.5px;line-height:1.35}
+.quota-bar b{color:#F3C48E}
+.quota-bar i{font-size:18px;color:#E08A3C;flex-shrink:0}
+.quota-bar b{font-variant-numeric:tabular-nums}
+.quota-bar button{margin-left:auto;flex-shrink:0;border:0;cursor:pointer;
+  padding:6px 12px;border-radius:999px;font:inherit;font-size:12.5px;font-weight:600;
+  background:#E08A3C;color:#1A1204}
+.composer.quota-locked{opacity:.55;pointer-events:none}
+
+/* ── กล่องโควตาหมด ── */
+/* กล่องนี้ลอยอยู่บนฉากมืดเสมอ จึงกำหนดสีของตัวเองให้ครบ
+   ไม่ไปยืมตัวแปรสีของธีมแอป เพราะบางธีมไม่ได้นิยาม --c-ink ไว้
+   แล้วตัวหนังสือจะกลายเป็นสีเข้มบนพื้นเข้มจนอ่านไม่ออก */
+.qp-bg{--qi:#F3F5FA;--qm:#A9B2C4;--qf:#7C8598;--qc:#171C26;--ql:rgba(255,255,255,.13);
+  position:fixed;inset:0;z-index:12000;display:grid;place-items:center;padding:18px;
+  background:rgba(4,6,12,.62);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+  opacity:0;transition:opacity .2s ease}
+.qp-bg.on{opacity:1}
+.qp{position:relative;width:min(100%,460px);max-height:88vh;overflow:auto;
+  padding:26px 22px 20px;border-radius:24px;text-align:center;color:var(--qi);
+  background:var(--qc);border:1px solid var(--ql);
+  box-shadow:0 30px 80px rgba(0,0,0,.5);
+  transform:translateY(10px) scale(.97);transition:transform .26s cubic-bezier(.2,.9,.3,1.2)}
+.qp-bg.on .qp{transform:none}
+.qp-x{position:absolute;top:12px;right:12px;width:32px;height:32px;border:0;cursor:pointer;
+  border-radius:50%;display:grid;place-items:center;background:none;color:var(--qm);font-size:17px}
+.qp-x:hover{background:rgba(127,127,127,.15)}
+.qp-ic{width:60px;height:60px;margin:0 auto 12px;border-radius:20px;display:grid;place-items:center;
+  font-size:28px;color:#E08A3C;background:rgba(224,138,60,.14);
+  animation:qpPulse 2.4s ease-in-out infinite}
+@keyframes qpPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.qp h3{margin:0 0 6px;font-size:20px;color:var(--qi)}
+.qp-sub{margin:0 0 16px;font-size:13.5px;line-height:1.55;color:var(--qm)}
+.qp-sub b{color:var(--qi);font-variant-numeric:tabular-nums}
+.qp-plans{display:grid;gap:10px;margin-bottom:14px}
+.qp-card{padding:13px 14px;border-radius:16px;text-align:left;
+  background:rgba(255,255,255,.05);border:1px solid var(--ql)}
+.qp-card:hover{border-color:rgba(224,138,60,.45)}
+.qp-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.qp-top b{font-size:15.5px;color:var(--qi)}
+.qp-price{font-size:15px;font-weight:700;color:#E08A3C;white-space:nowrap}
+.qp-price small{font-size:11px;font-weight:500;color:var(--qm)}
+.qp-tok{margin:5px 0 4px;font-size:12.5px;color:var(--qi);opacity:.9}
+.qp-tok i{color:#E08A3C}
+.qp-card p{margin:0;font-size:12.5px;line-height:1.5;color:var(--qm)}
+.qp-note{margin:0 0 14px;font-size:12px;line-height:1.5;color:var(--qf)}
+.qp-act{display:flex;gap:9px}
+.qp-act button{flex:1;padding:12px;border-radius:14px;border:0;cursor:pointer;
+  font:inherit;font-size:14px;font-weight:600}
+.qp-b1{background:linear-gradient(135deg,#E08A3C,#D2603C);color:#fff}
+.qp-b2{background:rgba(255,255,255,.1);color:var(--qi)}
+@media (max-width:520px){ .qp{padding:22px 16px 16px;border-radius:20px} }
+
+/* ── ตอน AI คิด — ให้มีชีวิตชีวากว่าหมุนเฉย ๆ ── */
+.ai-sig.thinking{position:relative}
+.ai-sig.thinking .mark{position:relative;z-index:1}
+/* วงแหวนจาง ๆ กระเพื่อมออกจากโลโก้ */
+.ai-sig.thinking::before{content:"";position:absolute;left:-4px;top:50%;
+  width:30px;height:30px;margin-top:-15px;border-radius:50%;pointer-events:none;
+  border:1.5px solid var(--c-acc,#E08A3C);opacity:.5;
+  animation:sigRipple 1.8s cubic-bezier(.2,.7,.4,1) infinite}
+@keyframes sigRipple{0%{transform:scale(.55);opacity:.55}70%{opacity:0}100%{transform:scale(1.5);opacity:0}}
+/* ข้อความสถานะไล่แสงวิ่งผ่าน อ่านออกแต่ไม่นิ่งจนน่าเบื่อ */
+.ai-sig.thinking .st{
+  background:linear-gradient(90deg,var(--c-mut) 0%,var(--c-mut) 35%,
+    var(--c-acc,#E08A3C) 50%,var(--c-mut) 65%,var(--c-mut) 100%);
+  background-size:220% 100%;
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+  animation:sigSweep 2.1s linear infinite}
+@keyframes sigSweep{from{background-position:120% 0}to{background-position:-120% 0}}
+/* จุดเต้นสามจุดท้ายข้อความ */
+.ai-sig.thinking .dots{display:inline-flex;gap:3px;margin-left:5px;vertical-align:middle}
+.ai-sig.thinking .dots i{width:4px;height:4px;border-radius:50%;background:var(--c-acc,#E08A3C);
+  opacity:.4;animation:sigDot 1.1s ease-in-out infinite}
+.ai-sig.thinking .dots i:nth-child(2){animation-delay:.16s}
+.ai-sig.thinking .dots i:nth-child(3){animation-delay:.32s}
+@keyframes sigDot{0%,100%{opacity:.25;transform:translateY(0)}45%{opacity:1;transform:translateY(-3px)}}
+@media (prefers-reduced-motion:reduce){
+  .ai-sig.thinking::before,.ai-sig.thinking .st,.ai-sig.thinking .dots i{animation:none !important}
+  .ai-sig.thinking .st{-webkit-text-fill-color:currentColor;color:var(--c-mut)}
+}
+/* บนมือถือซ่อนโลโก้ไว้ แต่ตอนกำลังคิดต้องเห็น ไม่งั้นจอจะนิ่งเหมือนแอปค้าง */
+@media (max-width:899px){
+  .ai-sig.thinking{display:flex !important}
+  .ai-sig.thinking .mark{display:grid !important}
+}
+
+</style>
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   CENDON CLOUD — ข้อมูลผู้ใช้ตามบัญชี ไม่ใช่ตามเครื่อง
+   ───────────────────────────────────────────────────────────────────
+   เดิมทุกอย่างอยู่ใน localStorage ล้วน ๆ เข้าบัญชีเดียวกันจากมือถือกับ
+   คอมจึงเห็นธีมคนละสีและบทสนทนาคนละชุด ตัวนี้ทำหน้าที่:
+     • ดึงของบนคลาวด์ลงมารวมกับของในเครื่องตอนล็อกอิน (ของใหม่กว่าชนะ)
+     • ส่งทุกการเปลี่ยนแปลงขึ้นคลาวด์ให้เองแบบหน่วงสั้น ๆ
+   ผู้ใช้ไม่ต้องกดปุ่มซิงก์ ไม่ต้องตั้งค่าอะไรเลย
+   ═══════════════════════════════════════════════════════════════════ */
+(function(){
+const D=document, $=id=>D.getElementById(id);
+const L=(th,en)=>(window.spireT?window.spireT(th,en):((window.lang||"th")==="en"?en:th));
+
+const META="spire___meta";                 /* เวลาแก้ล่าสุดของแต่ละคีย์ */
+const PULLED="spire___pulled";             /* บัญชีที่ดึงลงมาแล้วรอบนี้ */
+/* คีย์ที่ต้องเหมือนกันทุกเครื่อง — sess_/cursess_ ต่อท้ายด้วยรหัสรถ */
+const FIXED=["theme","chatTheme","lang","chatStyle","garage","selCar","skills","skillcat"];
+const isTracked=k=>FIXED.indexOf(k)>=0||/^(sess|cursess)_/.test(k);
+
+const meta=()=>{ try{ return JSON.parse(localStorage.getItem(META))||{} }catch(e){ return {} } };
+const setMeta=m=>{ try{ localStorage.setItem(META,JSON.stringify(m)) }catch(e){} };
+const raw=k=>localStorage.getItem("spire_"+k);
+
+let dirty=new Set(), timer=null, busy=false, pulled=false;
+
+window.cloudMark=function(k){
+  if(!isTracked(k))return;
+  const m=meta(); m[k]=Date.now(); setMeta(m);
+  dirty.add(k);
+  clearTimeout(timer);
+  timer=setTimeout(push,1500);            /* หน่วงไว้ พิมพ์รัว ๆ จะได้ไม่ยิงทุกตัวอักษร */
+};
+
+/* คีย์ที่ต้องส่งขึ้น = ที่ถูกทำเครื่องหมายไว้ + ที่มีในเครื่องแต่ยังไม่เคยส่ง */
+function collect(){
+  const m=meta(), out={};
+  const keys=new Set(dirty);
+  for(let i=0;i<localStorage.length;i++){
+    const full=localStorage.key(i);
+    if(!full||full.indexOf("spire_")!==0)continue;
+    const k=full.slice(6);
+    if(isTracked(k)&&!m[k]){ m[k]=Date.now(); keys.add(k) }   /* ของเก่าที่มีอยู่ก่อนระบบซิงก์ */
+  }
+  setMeta(m);
+  keys.forEach(k=>{
+    const v=raw(k);
+    if(v===null)return;
+    let parsed=null; try{ parsed=JSON.parse(v) }catch(e){ parsed=v }
+    out[k]={v:parsed,t:m[k]||Date.now()};
+  });
+  return out;
+}
+
+async function req(path,opt){
+  const u=window.auth&&window.auth.currentUser;
+  if(!u||!window.BACKEND_URL)throw new Error("offline");
+  const tok=await u.getIdToken();
+  const r=await fetch(window.BACKEND_URL+path,Object.assign({},opt,{
+    headers:Object.assign({"Content-Type":"application/json","Authorization":"Bearer "+tok},
+                          (opt&&opt.headers)||{})}));
+  if(!r.ok)throw new Error("HTTP "+r.status);
+  return await r.json();
+}
+
+async function push(){
+  if(busy)return; busy=true;
+  try{
+    const state=collect();
+    if(Object.keys(state).length){
+      await req("/api/state",{method:"PUT",body:JSON.stringify({state})});
+      dirty.clear();
+    }
+    await flushFeedback();
+  }catch(e){ /* ส่งไม่ได้ก็ไม่เป็นไร ของยังอยู่ในเครื่องครบ รอบหน้าค่อยส่งใหม่ */ }
+  busy=false;
+}
+
+/* ความเห็นที่ส่งไม่สำเร็จตอนออฟไลน์ ค้างอยู่ในคิว ลองส่งใหม่ทุกครั้งที่ซิงก์ */
+async function flushFeedback(){
+  let q=[]; try{ q=JSON.parse(localStorage.getItem("spire_fbQueue"))||[] }catch(e){}
+  if(!q.length)return;
+  const left=[];
+  for(const item of q){
+    try{ await req("/api/feedback",{method:"POST",body:JSON.stringify(item)}) }
+    catch(e){ left.push(item) }
+  }
+  try{ localStorage.setItem("spire_fbQueue",JSON.stringify(left)) }catch(e){}
+}
+
+/* ดึงลงมารวม — เทียบทีละคีย์ ของที่แก้ทีหลังชนะ ไม่ต้องถามผู้ใช้ว่าจะเอาอันไหน */
+async function pull(){
+  const d=await req("/api/state");
+  const m=meta(), st=d.state||{};
+  let touched=[];
+  Object.keys(st).forEach(k=>{
+    if(!isTracked(k))return;
+    const remote=st[k], mine=m[k]||0;
+    if(!(remote.t>mine))return;
+    try{ localStorage.setItem("spire_"+k,JSON.stringify(remote.v)) }catch(e){ return }
+    m[k]=remote.t; touched.push(k);
+  });
+  setMeta(m);
+  if(touched.length)apply(touched);
+  return touched;
+}
+
+/* วาดหน้าใหม่เฉพาะส่วนที่ค่าเปลี่ยนจริง จะได้ไม่กระพริบทั้งหน้า */
+function apply(keys){
+  const has=x=>keys.indexOf(x)>=0;
+  try{
+    if(has("theme")||has("chatTheme")){
+      let t=null; try{ t=JSON.parse(localStorage.getItem("spire_chatTheme")) }catch(e){}
+      if(t){ D.documentElement.setAttribute("data-ctheme",t);
+             D.documentElement.setAttribute("data-theme",t);
+             window.markTheme&&window.markTheme() }
+    }
+    if(has("lang")){ let l=null; try{ l=JSON.parse(localStorage.getItem("spire_lang")) }catch(e){}
+                     if(l&&window.setLang)window.setLang(l) }
+    if(has("garage")||has("selCar"))window.renderCarUI&&window.renderCarUI();
+    if(keys.some(k=>/^(sess|cursess)_/.test(k))){
+      window.loadSession&&window.loadSession();
+      window.renderMessages&&window.renderMessages();
+      window.renderHist&&window.renderHist();
+      window.paintSide&&window.paintSide();
+    }
+    if(has("chatStyle"))window.renderChatPrefs&&window.renderChatPrefs();
+  }catch(e){}
+  try{ window.spireSkillsRefresh&&window.spireSkillsRefresh() }catch(e){}
+}
+
+/* ── จังหวะการทำงาน ──
+   ล็อกอินเสร็จ → ดึงลงหนึ่งครั้ง แล้วส่งขึ้นทุกครั้งที่มีการแก้
+   สลับแท็บกลับมา / ก่อนปิดหน้า → ซิงก์อีกรอบ กันของหายตอนปิดเครื่อง */
+async function boot(){
+  const u=window.auth&&window.auth.currentUser;
+  if(!u){ pulled=false; return }
+  if(pulled)return;
+  pulled=true;
+  try{ await pull() }catch(e){ pulled=false; return }
+  await push();
+}
+window.cloudSync=()=>{ pulled=false; boot() };
+
+let tries=0;
+const wait=setInterval(()=>{
+  if(window.auth&&window.auth.currentUser){ clearInterval(wait); boot() }
+  else if(++tries>60)clearInterval(wait);      /* รอสูงสุดหนึ่งนาที */
+},1000);
+setInterval(()=>{ if(dirty.size)push() },45000);
+D.addEventListener("visibilitychange",()=>{ if(!D.hidden){ boot(); if(dirty.size)push() } });
+addEventListener("pagehide",()=>{ if(dirty.size)push() });
+})();
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   โควตาหมด — กล่องบอกเวลา + แผนเติม + ล็อกช่องพิมพ์จนถึงเวลารีเซ็ต
+   ═══════════════════════════════════════════════════════════════════ */
+(function(){
+const D=document, $=id=>D.getElementById(id);
+const L=(th,en)=>(window.spireT?window.spireT(th,en):((window.lang||"th")==="en"?en:th));
+const esc=t=>String(t==null?"":t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let tick=null;
+
+const lockUntil=()=>{ try{ return Number(JSON.parse(localStorage.getItem("spire_quotaLock")))||0 }
+                      catch(e){ return 0 } };
+const setLock=t=>{ try{ localStorage.setItem("spire_quotaLock",JSON.stringify(t||0)) }catch(e){} };
+
+function fmt(ms){
+  if(ms<=0)return "0:00";
+  const s=Math.ceil(ms/1000), h=Math.floor(s/3600), m=Math.floor(s%3600/60), ss=s%60;
+  return h?`${h}:${String(m).padStart(2,"0")}:${String(ss).padStart(2,"0")}`
+          :`${m}:${String(ss).padStart(2,"0")}`;
+}
+
+/* ล็อกช่องพิมพ์แต่ไม่ซ่อน ผู้ใช้จะได้เห็นว่าเหลืออีกนานเท่าไรตลอดเวลา */
+function paintLock(){
+  const until=lockUntil(), left=until-Date.now();
+  const inp=$("inp"), send=$("send"), bar=D.querySelector(".composer");
+  if(left<=0){
+    setLock(0);
+    if(inp){ inp.disabled=false; inp.placeholder=inp.dataset.ph0||inp.placeholder }
+    if(send)send.disabled=false;
+    if(bar)bar.classList.remove("quota-locked");
+    const t=$("quotaBar"); if(t)t.remove();
+    if(tick){ clearInterval(tick); tick=null }
+    return;
+  }
+  if(inp){
+    if(!inp.dataset.ph0)inp.dataset.ph0=inp.placeholder||"";
+    inp.disabled=true;
+    inp.placeholder=L("โควตาหมด — ใช้ต่อได้ในอีก ","Quota used up — back in ")+fmt(left);
+  }
+  if(send)send.disabled=true;
+  if(bar){
+    bar.classList.add("quota-locked");
+    let t=$("quotaBar");
+    if(!t){ t=D.createElement("div"); t.id="quotaBar"; t.className="quota-bar";
+            bar.parentNode.insertBefore(t,bar) }
+    t.innerHTML=`<i class="ti ti-hourglass-high"></i>
+      <span>${L("โควตาหมดแล้ว ใช้ต่อได้ในอีก","Quota used up — you can chat again in")}
+      <b>${fmt(left)}</b></span>
+      <button type="button" id="quotaMore">${L("ดูแผน","See plans")}</button>`;
+    const b=$("quotaMore"); if(b)b.onclick=()=>show(window.__quota||null);
+  }
+  if(!tick)tick=setInterval(paintLock,1000);
+}
+
+function planCard(p){
+  const en=(window.lang||"th")==="en";
+  const n=x=>Number(x||0).toLocaleString(en?"en-US":"th-TH");
+  return `<div class="qp-card">
+    <div class="qp-top"><b>${esc(en?(p.en||p.key):(p.th||p.key))}</b>
+      <span class="qp-price">${n(p.price)} ${esc(p.cur||"THB")}<small>/${
+      esc(en?(p.per_en||"month"):(p.per||"เดือน"))}</small></span></div>
+    <div class="qp-tok"><i class="ti ti-bolt"></i> ${n(p.tokens)} ${L("โทเคนต่อรอบ","tokens per window")}</div>
+    <p>${esc(en?(p.en_desc||p.th_desc||""):(p.th_desc||p.en_desc||""))}</p>
+  </div>`;
+}
+
+function show(q){
+  q=q||window.__quota||{};
+  window.__quota=q;
+  let el=$("quotaPop");
+  if(!el){
+    el=D.createElement("div"); el.id="quotaPop"; el.className="qp-bg";
+    D.body.appendChild(el);
+  }
+  const plans=(q.plans&&q.plans.length?q.plans:[
+    {key:"light",th:"Light",en:"Light",price:99,cur:"THB",tokens:60000,
+     th_desc:"ใช้ต่อได้สบาย ๆ ทุกวัน",en_desc:"Comfortable everyday headroom."},
+    {key:"gourmet",th:"Gourmet",en:"Gourmet",price:299,cur:"THB",tokens:250000,
+     th_desc:"โควตาก้อนใหญ่ คุยยาวและวิเคราะห์รูปได้เต็มที่",
+     en_desc:"A large pool for long chats and media analysis."}]);
+  const left=(q.resetAt||0)-Date.now();
+  el.innerHTML=`<div class="qp" role="dialog" aria-modal="true">
+    <button class="qp-x" id="qpX" aria-label="${L("ปิด","Close")}"><i class="ti ti-x"></i></button>
+    <div class="qp-ic"><i class="ti ti-bolt-off"></i></div>
+    <h3>${L("โทเคนหมดแล้ว","You're out of tokens")}</h3>
+    <p class="qp-sub">${left>0
+      ? L("โควตารอบนี้ใช้ครบแล้ว ระบบจะเติมให้ใหม่อัตโนมัติในอีก ",
+           "This window's quota is used up. It refills automatically in ")
+        +`<b id="qpLeft">${fmt(left)}</b>`
+      : L("โควตากำลังจะเติมให้ใหม่","Your quota is refilling now")}</p>
+    <div class="qp-plans">${plans.map(planCard).join("")}</div>
+    <p class="qp-note">${L("อยากใช้ต่อเลยไม่ต้องรอ เลือกแผนที่ชอบได้ หรือรอให้ระบบเติมให้ฟรีตามเวลาข้างบน",
+                            "Pick a plan to keep going now, or just wait for the free refill above.")}</p>
+    <div class="qp-act">
+      <button class="qp-b2" id="qpWait">${L("เดี๋ยวค่อยว่ากัน","Maybe later")}</button>
+      <button class="qp-b1" id="qpBuy">${L("สนใจเติมโควตา","I want more quota")}</button>
+    </div>
+  </div>`;
+  requestAnimationFrame(()=>el.classList.add("on"));
+  const close=()=>{ el.classList.remove("on"); setTimeout(()=>el.remove(),200) };
+  $("qpX").onclick=close; $("qpWait").onclick=close;
+  $("qpBuy").onclick=()=>{
+    /* ยังไม่มีระบบตัดเงิน จึงส่งเป็นคำขอเข้าหน้าแอดมินแทน ไม่หลอกว่าจ่ายได้แล้ว */
+    try{
+      const q2=JSON.parse(localStorage.getItem("spire_fbQueue"))||[];
+      q2.unshift({kind:"idea",message:"[ขอเติมโควตา] ผู้ใช้กดสนใจแผนเติมโทเคนจากกล่องโควตาหมด",
+                  page:location.pathname,at:Date.now()});
+      localStorage.setItem("spire_fbQueue",JSON.stringify(q2.slice(0,50)));
+    }catch(e){}
+    close();
+    window.toast&&window.toast(L("รับเรื่องแล้ว ทีมงานจะติดต่อกลับ","Noted — the team will follow up"),"ti-check");
+  };
+  const lt=$("qpLeft");
+  if(lt){
+    const iv=setInterval(()=>{
+      if(!D.body.contains(lt)){ clearInterval(iv); return }
+      const l=(q.resetAt||0)-Date.now();
+      lt.textContent=fmt(l);
+      if(l<=0)clearInterval(iv);
+    },1000);
+  }
+}
+
+window.quotaHit=function(q){
+  window.__quota=q||window.__quota||{};
+  const until=(q&&q.resetAt)||(Date.now()+5*3600000);
+  setLock(until);
+  paintLock();
+  show(q);
+};
+/* ทุกคำตอบพ่วงยอดล่าสุดมา ถ้าใกล้หมดให้เตือนล่วงหน้าครั้งเดียว */
+window.quotaUpdate=function(u){
+  if(!u)return;
+  window.__quota=u;
+  if(u.unlimited)return;
+  if(u.left<=0){ setLock(u.resetAt||Date.now()+5*3600000); paintLock(); return }
+  const pct=u.limit?u.used/u.limit:0;
+  if(pct>=0.9&&!window.__quotaWarned){
+    window.__quotaWarned=true;
+    window.toast&&window.toast(L("โควตาเหลือไม่ถึง 10% แล้ว","Less than 10% of your quota left"),"ti-alert-triangle");
+  }
+  if(pct<0.9)window.__quotaWarned=false;
+};
+addEventListener("load",()=>{ if(lockUntil()>Date.now())paintLock() });
+setTimeout(()=>{ if(lockUntil()>Date.now())paintLock() },800);
+})();
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   เลื่อนจอไปที่คำถามล่าสุด — เห็นชัดว่าเพิ่งถามอะไรไป
+   ═══════════════════════════════════════════════════════════════════ */
+(function(){
+const D=document, $=id=>D.getElementById(id);
+window.slideToLast=function(){
+  const sc=$("threadScroll"), th=$("thread");
+  if(!sc||!th)return;
+  requestAnimationFrame(()=>{
+    const mine=th.querySelectorAll(".msg.me");
+    const last=mine[mine.length-1];
+    if(!last)return;
+    /* เผื่อที่ว่างข้างล่างให้ข้อความสุดท้ายเลื่อนขึ้นไปอยู่บนสุดได้จริง
+       ไม่งั้นถ้าเนื้อหายังสั้น มันจะเลื่อนไม่ขึ้นเลย */
+    const room=Math.max(0,sc.clientHeight-last.offsetHeight-96);
+    th.style.paddingBottom=room+"px";
+    const top=last.offsetTop-th.offsetTop-12;
+    try{ sc.scrollTo({top,behavior:"smooth"}) }catch(e){ sc.scrollTop=top }
+  });
+};
+/* คำตอบจบแล้วค่อยคืนที่ว่าง เพื่อไม่ให้มีช่องโหว่ค้างท้ายห้อง */
+window.slideRelease=function(){
+  const th=$("thread"); if(!th)return;
+  setTimeout(()=>{ th.style.paddingBottom="" },400);
+};
+})();
+
+</script>
 </body>
 </html>

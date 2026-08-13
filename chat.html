@@ -6201,7 +6201,7 @@ function paintSync(){
     sub=t("กดปุ่มซิงก์เดี๋ยวนี้เพื่อลองเลย","Tap Sync now to try it");
   }
   box.innerHTML=setRow(ic,esc(head),esc(sub),
-    `<button class="set-btn" data-do="syncnow">${t("ซิงก์เดี๋ยวนี้","Sync now")}</button>`)
+    tone==="ok"?`<span class="sync-dot" aria-hidden="true"></span>`:"")
     .replace('class="set-row"','class="set-row sync-'+tone+'"');
 }
 window.paintSync=paintSync;
@@ -6401,19 +6401,12 @@ function wireSettings(){
         {window.clearCurrent();setPhase("welcome")}}
     else if(a==="export")exportMyData();
     else if(a==="notify"){b.disabled=true;b.textContent=t("จะแจ้งให้ทราบ","We'll let you know")}
-    else if(a==="syncnow"){
-      b.disabled=true; b.textContent=t("กำลังซิงก์…","Syncing…");
-      Promise.resolve(window.cloudSync&&window.cloudSync())
-        .then(()=>new Promise(r=>setTimeout(r,1400)))
-        .then(()=>{ try{ window.syncCars&&window.syncCars() }catch(e){} })
-        .then(()=>new Promise(r=>setTimeout(r,600)))
-        .catch(()=>{})
-        .then(()=>{ paintSync(); });
-    }
   });
   /* วาดสถานะทันทีที่เปิดหน้า แล้วอัปเดตตามจนกว่าจะออกจากหน้านี้ */
   if(setTab==="general"){
     paintSync();
+    /* เปิดหน้านี้ = จังหวะที่ผู้ใช้อยากรู้ว่าซิงก์หรือยัง กระตุ้นให้ลองเลยหนึ่งรอบ */
+    try{ window.cloudSync&&window.cloudSync(); window.syncCars&&window.syncCars() }catch(e){}
     clearInterval(renderSettings._sy);
     renderSettings._sy=setInterval(()=>{
       if(!document.getElementById("syncBox")){clearInterval(renderSettings._sy);return}
@@ -11801,11 +11794,14 @@ const PULLED="spire___pulled";             /* บัญชีที่ดึง�
 const FIXED=["theme","chatTheme","lang","chatStyle","garage","selCar","skills","skillcat"];
 const isTracked=k=>FIXED.indexOf(k)>=0||/^(sess|cursess)_/.test(k);
 
+const SYNCED="spire___synced";             /* ส่งขึ้นสำเร็จถึงเวลาไหนแล้ว ต่อคีย์ */
 const meta=()=>{ try{ return JSON.parse(localStorage.getItem(META))||{} }catch(e){ return {} } };
 const setMeta=m=>{ try{ localStorage.setItem(META,JSON.stringify(m)) }catch(e){} };
+const synced=()=>{ try{ return JSON.parse(localStorage.getItem(SYNCED))||{} }catch(e){ return {} } };
+const setSynced=m=>{ try{ localStorage.setItem(SYNCED,JSON.stringify(m)) }catch(e){} };
 const raw=k=>localStorage.getItem("spire_"+k);
 
-let dirty=new Set(), timer=null, busy=false, pulled=false;
+let dirty=new Set(), timer=null, busy=false, pulled=false, fails=0, retryT=null;
 
 window.cloudMark=function(k){
   if(!isTracked(k))return;
@@ -11815,15 +11811,21 @@ window.cloudMark=function(k){
   timer=setTimeout(push,1500);            /* หน่วงไว้ พิมพ์รัว ๆ จะได้ไม่ยิงทุกตัวอักษร */
 };
 
-/* คีย์ที่ต้องส่งขึ้น = ที่ถูกทำเครื่องหมายไว้ + ที่มีในเครื่องแต่ยังไม่เคยส่ง */
+/* คีย์ที่ต้องส่งขึ้น = ทุกคีย์ที่ยัง "ส่งไม่ถึง" เวลาแก้ล่าสุดของมัน
+   ของเดิมดูจาก dirty ซึ่งเป็นตัวแปรในหน่วยความจำ พอรีเฟรชหน้าก็ว่างเปล่า
+   บวกกับ meta ที่ถูกตั้งไว้ตั้งแต่รอบก่อน ทำให้ไม่มีคีย์ไหนเข้าเงื่อนไขเลย
+   ผลคือหลังจากส่งพลาดครั้งแรก มันจะไม่พยายามส่งอะไรอีกเลยตลอดไป
+   ต่อให้ deploy เซิร์ฟเวอร์เสร็จแล้วก็ตาม */
 function collect(){
-  const m=meta(), out={};
+  const m=meta(), sy=synced(), out={};
   const keys=new Set(dirty);
   for(let i=0;i<localStorage.length;i++){
     const full=localStorage.key(i);
     if(!full||full.indexOf("spire_")!==0)continue;
     const k=full.slice(6);
-    if(isTracked(k)&&!m[k]){ m[k]=Date.now(); keys.add(k) }   /* ของเก่าที่มีอยู่ก่อนระบบซิงก์ */
+    if(!isTracked(k))continue;
+    if(!m[k])m[k]=Date.now();          /* ของที่มีอยู่ก่อนระบบซิงก์จะเกิด */
+    if(!(sy[k]>=m[k]))keys.add(k);     /* ยังส่งไม่ถึงรุ่นล่าสุด ต้องส่ง */
   }
   setMeta(m);
   keys.forEach(k=>{
@@ -11860,13 +11862,24 @@ async function push(){
     if(Object.keys(state).length){
       await req("/api/state",{method:"PUT",body:JSON.stringify({state})});
       dirty.clear();
-      St.pushed=new Date().toISOString(); St.keys=Object.keys(state).length; St.error=null;
+      /* จดไว้ว่าคีย์ไหนไปถึงเซิร์ฟเวอร์แล้ว รอบหน้าจะได้ไม่ส่งซ้ำ
+         และถ้ารอบนี้พลาด รอบหน้ามันจะถูกหยิบมาส่งใหม่เองอัตโนมัติ */
+      const sy=synced();
+      Object.keys(state).forEach(k=>{ sy[k]=state[k].t });
+      setSynced(sy);
+      St.pushed=new Date().toISOString(); St.keys=Object.keys(state).length;
     }
+    St.error=null; fails=0;
     await flushFeedback();
   }catch(e){
     St.error=String(e&&e.message||e);
+    fails++;
     console.warn("[cloud] ส่งข้อมูลขึ้นคลาวด์ไม่สำเร็จ:",St.error,
       "— ถ้าเป็น HTTP 404 แปลว่า Worker ยังไม่ได้ deploy เวอร์ชันใหม่");
+    /* ลองใหม่เองโดยถอยห่างขึ้นเรื่อย ๆ 15 วิ → 30 → 60 → 120 → สูงสุด 5 นาที
+       ผู้ใช้ไม่ต้องกดอะไร พอ deploy เสร็จเมื่อไรมันจะไปเองในรอบถัดไป */
+    clearTimeout(retryT);
+    retryT=setTimeout(()=>{ busy=false; boot() },Math.min(300000,15000*Math.pow(2,Math.min(fails,5))));
   }
   busy=false;
 }
@@ -11931,28 +11944,36 @@ function apply(keys){
 async function boot(){
   const A=window.auth||window.spireAuth; const u=A&&A.currentUser;
   if(!u){ pulled=false; return }
-  if(pulled)return;
+  if(busy)return;
+  /* ดึงลงครั้งเดียวพอ แต่ส่งขึ้นต้องได้ทุกครั้งที่ยังมีของค้าง */
+  if(pulled){ await push(); return }
   pulled=true;
   try{ await pull() }catch(e){
     pulled=false;
     St.error=String(e&&e.message||e);
     console.warn("[cloud] ดึงข้อมูลจากคลาวด์ไม่สำเร็จ:",St.error,
       "— HTTP 404 = Worker ยังเป็นเวอร์ชันเก่า, HTTP 401 = ยังไม่ล็อกอิน");
-    return;
+    /* ดึงลงไม่ได้ไม่ได้แปลว่าส่งขึ้นไม่ได้ ให้ push ลองต่อ
+       และตัว push มีตัวนับถอยกลับไปลองใหม่ให้เองอยู่แล้ว */
   }
   await push();
 }
 window.cloudSync=()=>{ pulled=false; boot() };
 
-let tries=0;
-const wait=setInterval(()=>{
+/* เฝ้ารอผู้ใช้ล็อกอินตลอดอายุของหน้า ไม่เลิกรอหลังหนึ่งนาทีเหมือนเดิม
+   เพราะบางคนเปิดหน้าค้างไว้แล้วค่อยกดเข้าสู่ระบบทีหลัง */
+let lastUid=null;
+setInterval(()=>{
   const A=window.auth||window.spireAuth;
-  if(A&&A.currentUser){ clearInterval(wait); boot() }
-  else if(++tries>60)clearInterval(wait);      /* รอสูงสุดหนึ่งนาที */
-},1000);
-setInterval(()=>{ if(dirty.size)push() },45000);
-D.addEventListener("visibilitychange",()=>{ if(!D.hidden){ boot(); if(dirty.size)push() } });
-addEventListener("pagehide",()=>{ if(dirty.size)push() });
+  const u=A&&A.currentUser;
+  const uid=u?u.uid:null;
+  if(uid!==lastUid){ lastUid=uid; pulled=false; if(uid)boot() }
+},1500);
+/* เดินตรวจเองทุก 20 วินาที ถ้ามีอะไรค้างส่งก็ส่งให้เสร็จ ผู้ใช้ไม่ต้องกดปุ่ม */
+setInterval(()=>{ boot() },20000);
+D.addEventListener("visibilitychange",()=>{ if(!D.hidden){ pulled=false; boot() } });
+addEventListener("online",()=>{ pulled=false; fails=0; boot() });
+addEventListener("pagehide",()=>{ push() });
 })();
 
 
@@ -12187,6 +12208,12 @@ window.slideRelease=function(){
 .set-row.sync-bad i{color:#F26D6D}
 .set-row.sync-bad .tx small,.set-row.sync-warn .tx small{opacity:.95}
 #syncBox .set-btn{white-space:nowrap}
+</style>
+<style id="syncdot">
+.sync-dot{width:9px;height:9px;border-radius:50%;background:#4FBF88;flex-shrink:0;
+  box-shadow:0 0 0 0 rgba(79,191,136,.6);animation:syncPulse 2.4s ease-out infinite}
+@keyframes syncPulse{0%{box-shadow:0 0 0 0 rgba(79,191,136,.5)}70%{box-shadow:0 0 0 9px rgba(79,191,136,0)}100%{box-shadow:0 0 0 0 rgba(79,191,136,0)}}
+@media (prefers-reduced-motion:reduce){.sync-dot{animation:none}}
 </style>
 </body>
 </html>

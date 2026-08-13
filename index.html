@@ -5245,6 +5245,21 @@ function saveGarage(g){LS.set("garage",g)}
 /* ===== BACKEND CAR SYNC (Cloudflare D1 via /api/cars) ===== */
 function carsAreRemote(){return !!(currentUser && useFb && auth && auth.currentUser && location.protocol!=="file:")}
 async function carTok(){return await auth.currentUser.getIdToken()}
+async function pushCar(c){
+  const r=await fetch(`${BACKEND_URL}/api/cars`,{method:"POST",
+    headers:{"Content-Type":"application/json","Authorization":"Bearer "+await carTok()},
+    body:JSON.stringify({id:c.id,make:c.make||c.name||"",model:c.model||"",
+                         year:c.year||"",mileage:c.mileage||""})});
+  if(!r.ok)throw new Error("HTTP "+r.status);
+  return await r.json();
+}
+/* ═══ ซิงก์รถกับ D1 แบบสองทาง ═══
+ * ของเดิมอ่านรายการจากเซิร์ฟเวอร์แล้ว saveGarage(ผลลัพธ์) ทันที
+ * ถ้าเซิร์ฟเวอร์ตอบว่าง (บัญชีใหม่ / รถถูกเพิ่มไว้ตอนยังไม่ล็อกอิน /
+ * เน็ตสะดุดจนได้ลิสต์เปล่า) มันจะเขียนทับการาจในเครื่องให้ว่างไปด้วย
+ * นั่นคือสาเหตุที่เข้าใหม่ทีไรต้องตั้งค่ารถใหม่ทุกครั้ง
+ * ตอนนี้รวมสองฝั่งด้วย id แล้วดันคันที่เซิร์ฟเวอร์ยังไม่มีขึ้นไป ไม่ลบของในเครื่อง
+ */
 async function syncCars(){
   if(!carsAreRemote())return;
   try{
@@ -5252,12 +5267,35 @@ async function syncCars(){
     if(!r.ok)throw new Error(r.status+" "+r.statusText);
     const arr=await r.json(); if(!Array.isArray(arr))return;
     const local=garage();
-    const merged=arr.map(c=>{
+    const byId={};
+    local.forEach(c=>{ if(c&&c.id)byId[c.id]=Object.assign({},c) });
+    arr.forEach(c=>{
       const name=`${c.make||""} ${c.model||""}`.trim();
-      const prev=local.find(x=>x.id===c.id)||{};
-      return {id:c.id,make:c.make||"",model:c.model||"",name,year:(c.year!=null?String(c.year):""),mileage:(c.mileage!=null?String(c.mileage):""),type:prev.type||getBodyStyle(name),history:prev.history||[]};
+      const prev=byId[c.id]||{};
+      byId[c.id]=Object.assign({},prev,{
+        id:c.id,make:c.make||"",model:c.model||"",name:name||prev.name||"",
+        year:(c.year!=null?String(c.year):""),
+        mileage:(c.mileage!=null?String(c.mileage):""),
+        type:prev.type||getBodyStyle(name),history:prev.history||[]});
     });
+    const remoteIds=new Set(arr.map(c=>c.id));
+    for(const c of local){
+      if(!c||!c.id||remoteIds.has(c.id))continue;
+      if(!(c.make||c.model||c.name))continue;
+      try{
+        const saved=await pushCar(c);
+        if(saved&&saved.id&&saved.id!==c.id){
+          byId[saved.id]=Object.assign({},byId[c.id],{id:saved.id});
+          delete byId[c.id];
+          if(LS.get("selCar","")===c.id)LS.set("selCar",saved.id);
+        }
+      }catch(e){ console.warn("pushCar",c.id,e) }
+    }
+    const merged=Object.keys(byId).map(k=>byId[k]);
+    if(!merged.length&&local.length)return;   /* ไม่ล้างของที่มีอยู่เด็ดขาด */
     saveGarage(merged);
+    const sel=LS.get("selCar","");
+    if(merged.length&&!merged.some(c=>c.id===sel))LS.set("selCar",merged[0].id);
     const _act=id=>{const e=$(id);return !!e&&e.classList.contains("active")};
     if(_act("v-garage"))renderGarage();
     if(_act("v-home"))renderDashboard();

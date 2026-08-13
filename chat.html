@@ -753,17 +753,15 @@ body[data-phase="login"] .side-burger,body[data-phase="gate"] .side-burger{displ
 @media(max-width:899px){
   aside.side{background:var(--c-bg1)}
 }
+/* เส้นส้มเรืองแสงที่ขอบแถบซ้ายถูกถอดออก ใช้เส้นบาง ๆ กลาง ๆ แทน */
 .side::before{content:"";position:absolute;top:0;bottom:0;right:-1px;width:1px;
-  background:linear-gradient(180deg,transparent,var(--c-acc),transparent);opacity:.55}
+  background:var(--c-line);opacity:.7}
 .side-lbl,.pane-lbl{letter-spacing:.2em}
 
 
 /* ── แถบหัวเรื่อง = แถบเครื่องมือ ── */
 .tbar{position:relative;background:linear-gradient(180deg,rgba(255,255,255,.055),transparent)}
-.tbar::before,.tbar::after{content:"";position:absolute;width:14px;height:14px;pointer-events:none;
-  border:1.4px solid var(--c-acc);opacity:.5}
-.tbar::before{left:8px;top:7px;border-right:0;border-bottom:0}
-.tbar::after{right:8px;top:7px;border-left:0;border-bottom:0}
+/* มุมส้มสี่มุมถูกถอดออก มันดูเหมือนกรอบเล็งกล้องมากกว่าหัวเรื่องบทสนทนา */
 .tbar-tx small{letter-spacing:.2em}
 
 /* ── ช่องพิมพ์: แบนเรียบ ไม่มีเครื่องประดับห้องนักบินแล้ว ── */
@@ -808,13 +806,12 @@ body[data-phase="login"] .side-burger,body[data-phase="gate"] .side-burger{displ
    ของเดิมวางปุ่มเรียงกันสามปุ่มก่อนถึงช่องพิมพ์ ที่เหลือให้พิมพ์จึงแคบมาก
    ยุบรูปกับวิดีโอไว้หลังปุ่มบวก เหลือเห็นแค่บวกกับไมค์ ตามแบบที่ออกแบบไว้
    บนจอใหญ่ไม่ต้องยุบ เพราะมีที่พอและกดตรง ๆ เร็วกว่า */
-.att-btn.plus{display:none}
+/* ปุ่มบวกปุ่มเดียวทุกขนาดจอ ที่เหลืออยู่ในเมนูลอย */
+.att-btn.plus{display:grid}
+.att-hidden{display:none !important}
+.att-btn.plus[aria-expanded="true"] i{transform:rotate(45deg)}
+.att-btn.plus i{transition:transform .22s cubic-bezier(.3,1.4,.4,1)}
 @media(max-width:560px){
-  .att-btn.plus{display:grid}
-  #attImg,#attVid{display:none}
-  .crow.open #attImg,.crow.open #attVid{display:grid}
-  .crow.open .att-btn.plus i{transform:rotate(45deg)}
-  .att-btn.plus i{transition:transform .22s cubic-bezier(.3,1.4,.4,1)}
   .att-btn{width:36px;height:36px;font-size:17px}
   .send{width:40px;height:40px}
   #inp{font-size:16px;padding:9px 4px}
@@ -960,7 +957,7 @@ body[data-phase="work"] .colwrap>.tbar{display:none!important}
   border:1px solid transparent;background:transparent;color:var(--c-mut);
   font-size:17px;cursor:pointer;transition:.15s}
 .tbar-ic:hover{background:rgba(255,255,255,.07);color:var(--c-ink)}
-#tbarSide{display:none}
+#tbarSide{display:grid}
 
 /* ── หน้าเริ่มแชต ── */
 .w-h1 .w-hi{display:block;font-family:inherit;font-size:13px;font-weight:600;
@@ -4383,8 +4380,6 @@ window.spireSetupVersion=SETUP_VERSION;
   <div class="p-sep"></div>
   <!-- ปุ่มนี้เคยเป็นเปิดแชตใหม่ ซึ่งซ้ำกับปุ่มในลิ้นชักอยู่แล้ว
        เปลี่ยนเป็นเปิด Chat Flow ซึ่งเป็นที่เดียวที่สรุปผลจากบทสนทนาให้อ่าน -->
-  <button class="p-btn p-new" onclick="window.openChatFlow&&window.openChatFlow()"
-          title="สรุปจากบทสนทนา" aria-label="Chat Flow"><i class="ti ti-list-search"></i></button>
   <button class="p-btn" onclick="openSheet('hist')" title="ประวัติบทสนทนา"><i class="ti ti-history"></i></button>
   <button class="p-btn" onclick="openSheet('set')" title="ตั้งค่า"><i class="ti ti-settings"></i></button>
   <button class="p-btn p-close" onclick="goHome()" title="กลับหน้าหลัก"><i class="ti ti-x"></i></button>
@@ -4511,9 +4506,11 @@ window.spireSetupVersion=SETUP_VERSION;
   <div class="atts" id="atts"></div>
   <div class="crow">
     <button class="att-btn plus" id="attPlus" title="แนบไฟล์" aria-expanded="false"><i class="ti ti-plus"></i></button>
-    <button class="att-btn" id="attImg" title="รูป"><i class="ti ti-photo"></i></button>
-    <button class="att-btn" id="attVid" title="วิดีโอ"><i class="ti ti-video"></i></button>
-    <button class="att-btn" id="micBtn" title="อัดเสียง"><i class="ti ti-microphone"></i></button>
+    <!-- สามปุ่มนี้ยังอยู่ในหน้า แต่ซ่อนไว้ เพราะโค้ดอัดเสียงและเลือกไฟล์
+         ผูกกับมันโดยตรง เมนูของปุ่มบวกสั่งงานผ่านการกดปุ่มพวกนี้อีกที -->
+    <button class="att-btn att-hidden" id="attImg" title="รูป" tabindex="-1" aria-hidden="true"><i class="ti ti-photo"></i></button>
+    <button class="att-btn att-hidden" id="attVid" title="วิดีโอ" tabindex="-1" aria-hidden="true"><i class="ti ti-video"></i></button>
+    <button class="att-btn att-hidden" id="micBtn" title="อัดเสียง" tabindex="-1" aria-hidden="true"><i class="ti ti-microphone"></i></button>
     <textarea id="inp" rows="1" placeholder="พิมพ์อาการรถ หรือถามอะไรก็ได้..."></textarea>
     <button class="send" id="sendBtn" data-mode="call" title="โทรคุยกับ Cendon">
       <svg class="wv" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 10v4"/><path d="M9 6v12"/><path d="M15 8.5v7"/><path d="M20 10.5v3"/></g></svg></button>
@@ -4902,19 +4899,81 @@ function addHistory(carId,q,a){const g=garage();const c=g.find(x=>x.id===carId);
   c.history=c.history||[];c.history.unshift({t:Date.now(),q,a:(a||"").slice(0,200)});
   if(c.history.length>30)c.history.length=30;saveGarage(g)}
 function carsAreRemote(){return !!(currentUser&&useFb&&auth&&auth.currentUser&&location.protocol!=="file:")}
+/* ═══ ซิงก์รถกับฐานข้อมูล D1 ═══
+ * ของเดิมเป็นการ "ดึงลงมาทับ" ทางเดียว: อ่านรายการจากเซิร์ฟเวอร์แล้ว
+ * saveGarage(ผลลัพธ์) ทันที  ถ้าเซิร์ฟเวอร์ยังไม่มีรถของบัญชีนั้น
+ * (เพราะรถถูกเพิ่มไว้ในเครื่องตอนยังไม่ล็อกอิน หรือเพิ่มจากหน้าแชต
+ * ซึ่งไม่เคยส่งขึ้นเลย) ผลลัพธ์คือ [] แล้วมันเขียนทับการาจให้ว่างเปล่า
+ * นั่นคือสาเหตุที่เข้าใหม่ทีไรต้องตั้งค่ารถใหม่ทุกครั้ง
+ *
+ * แก้เป็นสองทาง: รวมของทั้งสองฝั่งด้วย id แล้วดันคันที่เซิร์ฟเวอร์ยังไม่มีขึ้นไป
+ * ห้ามลบของในเครื่องเพราะเซิร์ฟเวอร์ตอบว่าง เด็ดขาด
+ */
+async function pushCar(c,tok){
+  const r=await fetch(`${BACKEND_URL}/api/cars`,{method:"POST",
+    headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok},
+    body:JSON.stringify({id:c.id,make:c.make||c.name||"",model:c.model||"",
+                         year:c.year||"",mileage:c.mileage||""})});
+  if(!r.ok)throw new Error("HTTP "+r.status);
+  return await r.json();
+}
 async function syncCars(){
   if(!carsAreRemote())return;
   try{
     const tok=await auth.currentUser.getIdToken();
     const r=await fetch(`${BACKEND_URL}/api/cars`,{headers:{Authorization:"Bearer "+tok}});
     if(!r.ok)return;
-    const arr=await r.json();if(!Array.isArray(arr))return;
+    const arr=await r.json();
+    if(!Array.isArray(arr))return;
+
     const local=garage();
-    const merged=arr.map(c=>{const name=`${c.make||""} ${c.model||""}`.trim();const prev=local.find(x=>x.id===c.id)||{};
-      return{id:c.id,make:c.make||"",model:c.model||"",name,year:c.year!=null?String(c.year):"",mileage:c.mileage!=null?String(c.mileage):"",type:prev.type||"sedan",history:prev.history||[]}});
-    saveGarage(merged);renderCarUI();
+    const byId={};
+    /* ของในเครื่องลงก่อน เพื่อไม่ให้ประวัติกับชนิดรถหาย */
+    local.forEach(c=>{ if(c&&c.id)byId[c.id]=Object.assign({},c) });
+    /* ของบนเซิร์ฟเวอร์ทับข้อมูลหลัก แต่เก็บ history/type ของเดิมไว้ */
+    arr.forEach(c=>{
+      const prev=byId[c.id]||{};
+      byId[c.id]=Object.assign({},prev,{
+        id:c.id, make:c.make||"", model:c.model||"",
+        name:`${c.make||""} ${c.model||""}`.trim()||prev.name||"",
+        year:c.year!=null?String(c.year):"",
+        mileage:c.mileage!=null?String(c.mileage):"",
+        type:prev.type||"sedan", history:prev.history||[]});
+    });
+
+    /* คันที่มีแต่ในเครื่อง ต้องดันขึ้นเซิร์ฟเวอร์ ไม่ใช่โดนลบทิ้ง */
+    const remoteIds=new Set(arr.map(c=>c.id));
+    for(const c of local){
+      if(!c||!c.id||remoteIds.has(c.id))continue;
+      if(!(c.make||c.model||c.name))continue;
+      try{
+        const saved=await pushCar(c,tok);
+        if(saved&&saved.id&&saved.id!==c.id){
+          /* เซิร์ฟเวอร์ออก id ใหม่ให้ ต้องย้ายบทสนทนาของรถคันนั้นตามไปด้วย
+             ไม่งั้นประวัติแชตจะกลายเป็นของรถที่ไม่มีอยู่จริง */
+          byId[saved.id]=Object.assign({},byId[c.id],{id:saved.id});
+          delete byId[c.id];
+          try{
+            const sess=LS.get("sess_"+c.id,null);
+            if(sess){ LS.set("sess_"+saved.id,sess); LS.del("sess_"+c.id) }
+            const cur=LS.get("cursess_"+c.id,null);
+            if(cur){ LS.set("cursess_"+saved.id,cur); LS.del("cursess_"+c.id) }
+            if(LS.get("selCar","")===c.id)LS.set("selCar",saved.id);
+          }catch(e){}
+        }
+      }catch(e){ console.warn("pushCar",c.id,e) }
+    }
+
+    const merged=Object.keys(byId).map(k=>byId[k]);
+    if(!merged.length&&local.length)return;   /* กันพลาดซ้ำอีกชั้น ไม่ล้างของที่มีอยู่ */
+    saveGarage(merged);
+    /* รถที่เลือกไว้ต้องยังมีอยู่จริง ไม่งั้นหน้าแชตจะกลายเป็น "ยังไม่เลือกรถ" */
+    const sel=LS.get("selCar","");
+    if(merged.length&&!merged.some(c=>c.id===sel))LS.set("selCar",merged[0].id);
+    renderCarUI();
   }catch(e){console.warn("syncCars",e)}
 }
+window.syncCars=syncCars;
 /* ===== AUTH GATE (login required before chat) ===== */
 async function signIn(){
   /* firebase มาแบบ defer ถ้าผู้ใช้กดเร็วกว่าที่มันมาถึง ให้รอก่อนแล้วค่อยทำ */
@@ -5372,11 +5431,49 @@ $("inp").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preve
 /* ปุ่มบวกกางเมนูแนบไฟล์บนมือถือ  บนจอใหญ่ปุ่มนี้ถูกซ่อนอยู่แล้ว */
 (function(){
   const plus=$("attPlus"); if(!plus) return;
-  plus.onclick=()=>{
-    const row=plus.closest(".crow"); if(!row) return;
-    const open=row.classList.toggle("open");
-    plus.setAttribute("aria-expanded",open?"true":"false");
+  /* เมนูลอยขึ้นเหนือปุ่ม ไม่ใช่ปุ่มเลื่อนออกมาต่อกันเป็นแถว
+     แบบเดิมกินที่ของช่องพิมพ์ และบนจอแคบทำให้พิมพ์ได้แค่ไม่กี่ตัวอักษร */
+  const D=document;
+  let menu=null;
+  function close(){
+    if(!menu)return;
+    menu.classList.remove("on");
+    const m=menu; menu=null;
+    setTimeout(()=>m.remove(),160);
+    plus.setAttribute("aria-expanded","false");
+    D.removeEventListener("click",away,true);
+  }
+  function away(e){ if(menu&&!menu.contains(e.target)&&e.target!==plus&&!plus.contains(e.target))close() }
+  const ITEMS=[
+    ["ti-photo",      "รูปภาพ",  "Photo",       "#5B9BD5", ()=>$("attImg").click()],
+    ["ti-video",      "วิดีโอ",  "Video",       "#9B6BD8", ()=>$("attVid").click()],
+    ["ti-microphone", "อัดเสียง","Record audio","#3E9E6E", ()=>$("micBtn").click()],
+    ["ti-sparkles",   "ใช้สกิล", "Use a skill", "#E08A3C", ()=>window.spireSkillsPicker&&window.spireSkillsPicker()],
+  ];
+  plus.onclick=e=>{
+    e.stopPropagation();
+    if(menu){ close(); return }
+    const en=(window.lang||"th")==="en";
+    menu=D.createElement("div"); menu.className="att-pop";
+    menu.innerHTML=ITEMS.map(([ic,th,enn,c],i)=>
+      `<button type="button" data-i="${i}"><span class="ic" style="color:${c}"><i class="ti ${ic}"></i></span>${en?enn:th}</button>`).join("");
+    D.body.appendChild(menu);
+    const r=plus.getBoundingClientRect();
+    const w=menu.offsetWidth||210, h=menu.offsetHeight||190;
+    menu.style.left=Math.max(10,Math.min(r.left,innerWidth-w-10))+"px";
+    /* วางเหนือปุ่มเสมอ ถ้าข้างบนไม่พอค่อยลงข้างล่าง */
+    menu.style.top=(r.top-h-10>=10 ? r.top-h-10 : Math.min(r.bottom+10,innerHeight-h-10))+"px";
+    menu.querySelectorAll("[data-i]").forEach(b=>b.onclick=ev=>{
+      ev.stopPropagation();
+      const fn=ITEMS[+b.dataset.i][4];
+      close();
+      setTimeout(()=>{ try{ fn() }catch(e){} },40);
+    });
+    requestAnimationFrame(()=>menu&&menu.classList.add("on"));
+    plus.setAttribute("aria-expanded","true");
+    setTimeout(()=>D.addEventListener("click",away,true),0);
   };
+  addEventListener("resize",close);
 })();
 
 $("sendBtn").onclick=()=>{
@@ -5836,7 +5933,6 @@ const MARK='<svg viewBox="-6.0 -6.0 94.8 112.0"><path d="M 79.33 0.29 Q 79.62 0.
    เดิมลิ้นชักมีแต่ประวัติแชต ทำให้ต้องกลับไปหน้าหลักทุกครั้งที่จะไปที่อื่น */
 const NAVI=[
   {k:"tools",   ic:"ti-tool",           th:"เครื่องมือ",   en:"Tools"},
-  {k:"flow",    ic:"ti-list-search",    th:"สรุปบทสนทนา", en:"Chat Flow"},
   {k:"skills",  ic:"ti-sparkles",       th:"Skills",      en:"Skills", tag:"ใหม่"},
   {k:"garage",  ic:"ti-car-garage",     th:"การาจ",       en:"Garage"},
   {k:"spares",  ic:"ti-package",        th:"อะไหล่",      en:"Spares"},
@@ -5929,18 +6025,17 @@ function wrap(){
       <i class="ti ti-layout-sidebar"></i></button>
     <div class="tbar-tx"><small id="tbarK"></small><b id="tbarT"></b></div>
     <div class="tbar-act">
-      <button class="tbar-ic" id="tbarDesk" title="${t("สรุปจากบทสนทนา","Chat Flow")}" aria-label="Chat Flow">
-        <i class="ti ti-list-search"></i></button>
-      <button class="tbar-ic" id="tbarCall" title="${t("โทรคุย","Call")}" aria-label="${t("โทรคุย","Call")}">
-        <i class="ti ti-phone"></i></button>
-      <button class="tbar-ic" id="tbarNew" title="${t("แชตใหม่","New chat")}" aria-label="${t("แชตใหม่","New chat")}">
-        <i class="ti ti-edit"></i></button>
     </div>`;
   col.insertBefore(bar,col.firstChild);
-  bar.querySelector("#tbarSide").onclick=()=>{ D.body.dataset.side=D.body.dataset.side==="1"?"0":"1" };
-  bar.querySelector("#tbarDesk").onclick=()=>window.openChatFlow&&window.openChatFlow();
-  bar.querySelector("#tbarCall").onclick=()=>window.startCall&&window.startCall();
-  bar.querySelector("#tbarNew").onclick=()=>window.newSession&&window.newSession();
+  /* ปุ่มเดียวใช้ได้ทั้งสองขนาดจอ: จอแคบเลื่อนลิ้นชักเข้าออก
+     จอกว้างพับแถบซ้ายเก็บไปเลยเพื่อคืนพื้นที่ให้ห้องแชต จำค่าไว้ด้วย */
+  bar.querySelector("#tbarSide").onclick=()=>{
+    const on=D.body.dataset.side==="1";
+    D.body.dataset.side=on?"0":"1";
+    if(innerWidth>=900){ try{ LS.set("sideOpen",!on) }catch(e){} }
+  };
+  try{ if(innerWidth>=900) D.body.dataset.side=LS.get("sideOpen",true)?"1":"0" }catch(e){}
+
 
   const scrim=D.createElement("div"); scrim.className="side-scrim"; scrim.id="sideScrim";
   col.parentNode.insertBefore(scrim,col);
@@ -11927,10 +12022,19 @@ window.slideToLast=function(){
     if(!last)return;
     /* เผื่อที่ว่างข้างล่างให้ข้อความสุดท้ายเลื่อนขึ้นไปอยู่บนสุดได้จริง
        ไม่งั้นถ้าเนื้อหายังสั้น มันจะเลื่อนไม่ขึ้นเลย */
-    const room=Math.max(0,sc.clientHeight-last.offsetHeight-96);
+    const pad=innerWidth<900?46:60;      /* ให้พ้นแถบจางด้านบนพอดี ไม่ชนขอบ */
+    const room=Math.max(0,sc.clientHeight-last.offsetHeight-pad);
     th.style.paddingBottom=room+"px";
-    const top=last.offsetTop-th.offsetTop-12;
-    try{ sc.scrollTo({top,behavior:"smooth"}) }catch(e){ sc.scrollTop=top }
+    const top=sc.scrollTop
+      +(last.getBoundingClientRect().top-sc.getBoundingClientRect().top)-pad;
+    /* ต้องกระโดดทันที ไม่ใช่ค่อย ๆ ไหล ผู้ใช้จะได้เห็นคำถามตัวเองทันทีที่กดส่ง */
+    const prev=sc.style.scrollBehavior;
+    sc.style.scrollBehavior="auto";
+    sc.scrollTop=top;
+    /* วัดซ้ำแล้วแก้ให้ตรงอีกครั้ง เพราะความสูงของข้อความเปลี่ยนหลังใส่ที่ว่างท้ายห้อง */
+    const delta=(last.getBoundingClientRect().top-sc.getBoundingClientRect().top)-pad;
+    if(Math.abs(delta)>2)sc.scrollTop+=delta;
+    requestAnimationFrame(()=>{ sc.style.scrollBehavior=prev||"" });
   });
 };
 /* คำตอบจบแล้วค่อยคืนที่ว่าง เพื่อไม่ให้มีช่องโหว่ค้างท้ายห้อง */
@@ -11941,5 +12045,46 @@ window.slideRelease=function(){
 })();
 
 </script>
+<style id="chatui3">
+/* ══ เมนูลอยของปุ่มบวก ══ */
+.att-pop{position:fixed;z-index:11000;min-width:210px;padding:6px;
+  background:#171C26;border:1px solid rgba(255,255,255,.13);border-radius:16px;
+  box-shadow:0 22px 54px rgba(0,0,0,.45);
+  opacity:0;transform:translateY(6px) scale(.97);transform-origin:bottom left;
+  transition:opacity .16s ease,transform .18s cubic-bezier(.2,.9,.3,1.3)}
+.att-pop.on{opacity:1;transform:none}
+.att-pop button{display:flex;align-items:center;gap:11px;width:100%;
+  padding:10px 11px;border:0;background:none;border-radius:11px;cursor:pointer;
+  font:inherit;font-size:14px;color:#EDF0F6;text-align:left}
+.att-pop button:hover{background:rgba(255,255,255,.08)}
+.att-pop .ic{position:relative;width:30px;height:30px;flex-shrink:0;border-radius:9px;
+  display:grid;place-items:center;font-size:17px;background:transparent}
+.att-pop .ic::before{content:"";position:absolute;inset:0;border-radius:9px;
+  background:currentColor;opacity:.18}
+.att-pop .ic i{position:relative;color:inherit}
+
+/* ══ แถบซ้ายพับเก็บได้บนจอกว้าง ══ */
+@media(min-width:900px){
+  .side{transition:margin-left .28s cubic-bezier(.2,.9,.25,1),opacity .2s}
+  body[data-side="0"] .side{margin-left:calc(-1 * var(--rail));opacity:0;pointer-events:none}
+  body[data-side="0"] .side::before{opacity:0}
+}
+
+/* ══ จางที่ขอบบนของห้องแชต และเหนือช่องพิมพ์ ══
+   ข้อความไม่ควรถูกตัดขาดกลางคัน ให้มันค่อย ๆ จางหายเข้าไปในพื้นหลังแทน */
+.thread-scroll{position:relative;
+  -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 46px,#000 calc(100% - 34px),transparent 100%);
+  mask-image:linear-gradient(180deg,transparent 0,#000 46px,#000 calc(100% - 34px),transparent 100%)}
+@media(max-width:899px){
+  .thread-scroll{
+    -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 30px,#000 calc(100% - 26px),transparent 100%);
+    mask-image:linear-gradient(180deg,transparent 0,#000 30px,#000 calc(100% - 26px),transparent 100%)}
+}
+/* ม่านจาง ๆ หลังช่องพิมพ์ ให้ข้อความที่เลื่อนผ่านไม่ชนขอบกล่องตรง ๆ */
+.composer::before{content:"";position:absolute;left:-14px;right:-14px;bottom:-14px;
+  top:-46px;z-index:-1;pointer-events:none;
+  background:linear-gradient(180deg,transparent,var(--c-bg0,#05070F) 62%)}
+@media(prefers-reduced-motion:reduce){.side{transition:none}}
+</style>
 </body>
 </html>

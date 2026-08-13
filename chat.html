@@ -6159,6 +6159,53 @@ function renderSettings(){
   });
   wireSettings();
 }
+/* สถานะการซิงก์ต้องดูได้จากในแอป ไม่ใช่ให้ผู้ใช้ไปเปิด console พิมพ์คำสั่งเอง
+   ถ้ามันพัง ต้องบอกให้ชัดว่าพังเพราะอะไร และจะแก้ยังไง */
+function paintSync(){
+  const box=document.getElementById("syncBox"); if(!box)return;
+  const st=(window.cloudStatus&&window.cloudStatus())||{};
+  const signed=st.user&&st.user!=="NOT SIGNED IN";
+  const err=String(st.error||"");
+  let ic="ti-cloud-check",tone="ok",head,sub;
+  if(!signed){
+    ic="ti-cloud-off"; tone="warn";
+    head=t("ยังไม่ได้เข้าสู่ระบบ","Not signed in");
+    sub=t("เข้าสู่ระบบก่อน ข้อมูลถึงจะตามไปทุกเครื่อง",
+          "Sign in and your data follows you to every device");
+  }else if(/404/.test(err)){
+    ic="ti-cloud-x"; tone="bad";
+    head=t("เซิร์ฟเวอร์ยังเป็นเวอร์ชันเก่า","Server is running an old version");
+    sub=t("ต้องอัปเดตเซิร์ฟเวอร์ก่อน (wrangler deploy) ระหว่างนี้ข้อมูลยังอยู่ในเครื่องครบ",
+          "The backend needs redeploying. Your data is still safe on this device.");
+  }else if(/401|403/.test(err)){
+    ic="ti-cloud-x"; tone="bad";
+    head=t("เซิร์ฟเวอร์ไม่รับสิทธิ์","Server rejected the sign-in");
+    sub=t("ลองออกจากระบบแล้วเข้าใหม่อีกครั้ง","Try signing out and back in");
+  }else if(/Failed to fetch|NetworkError|CORS|offline/i.test(err)){
+    ic="ti-cloud-off"; tone="bad";
+    head=t("ต่อเซิร์ฟเวอร์ไม่ได้","Can't reach the server");
+    sub=t("เช็กอินเทอร์เน็ต หรือโดเมนของเว็บยังไม่ได้รับอนุญาตที่เซิร์ฟเวอร์",
+          "Check your connection, or the site's domain isn't allowed by the server yet");
+  }else if(err){
+    ic="ti-cloud-x"; tone="bad";
+    head=t("ซิงก์ไม่สำเร็จ","Sync failed"); sub=err.slice(0,120);
+  }else if(st.pushed||st.pulled){
+    const d=new Date(st.pushed||st.pulled);
+    head=t("ซิงก์เรียบร้อย","Synced");
+    sub=t("ล่าสุด ","Last synced ")+d.toLocaleString(lang==="en"?"en-US":"th-TH",
+      {day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})+
+      " · "+(st.user||"");
+  }else{
+    ic="ti-cloud"; tone="warn";
+    head=t("ยังไม่ได้ซิงก์","Not synced yet");
+    sub=t("กดปุ่มซิงก์เดี๋ยวนี้เพื่อลองเลย","Tap Sync now to try it");
+  }
+  box.innerHTML=setRow(ic,esc(head),esc(sub),
+    `<button class="set-btn" data-do="syncnow">${t("ซิงก์เดี๋ยวนี้","Sync now")}</button>`)
+    .replace('class="set-row"','class="set-row sync-'+tone+'"');
+}
+window.paintSync=paintSync;
+
 function setRow(ic,title,sub,right){
   return `<div class="set-row"><i class="ti ${ic}"></i>
     <span class="tx"><b>${title}</b>${sub?`<small>${sub}</small>`:""}</span>
@@ -6195,6 +6242,12 @@ function setBody(){
       <p class="set-note">${t(
         "ธีมเดียวใช้ทั้งหน้าหลักและห้องแชต เปลี่ยนที่ไหนก็เปลี่ยนพร้อมกัน",
         "One theme for both the dashboard and the chat — change it anywhere.")}</p>
+
+      <h2>${t("การซิงก์ข้อมูล","Sync")}</h2>
+      <div id="syncBox"></div>
+      <p class="set-note">${t(
+        "ธีม ภาษา รถ และบทสนทนาทั้งหมดเก็บไว้กับบัญชี เข้าจากเครื่องไหนก็เห็นเหมือนกัน",
+        "Theme, language, cars and every conversation live with your account — same on every device.")}</p>
 
       <h2>${t("บทสนทนา","Conversations")}</h2>
       ${setRow("ti-plus",t("เริ่มแชตใหม่","Start a new chat"),
@@ -6348,7 +6401,25 @@ function wireSettings(){
         {window.clearCurrent();setPhase("welcome")}}
     else if(a==="export")exportMyData();
     else if(a==="notify"){b.disabled=true;b.textContent=t("จะแจ้งให้ทราบ","We'll let you know")}
+    else if(a==="syncnow"){
+      b.disabled=true; b.textContent=t("กำลังซิงก์…","Syncing…");
+      Promise.resolve(window.cloudSync&&window.cloudSync())
+        .then(()=>new Promise(r=>setTimeout(r,1400)))
+        .then(()=>{ try{ window.syncCars&&window.syncCars() }catch(e){} })
+        .then(()=>new Promise(r=>setTimeout(r,600)))
+        .catch(()=>{})
+        .then(()=>{ paintSync(); });
+    }
   });
+  /* วาดสถานะทันทีที่เปิดหน้า แล้วอัปเดตตามจนกว่าจะออกจากหน้านี้ */
+  if(setTab==="general"){
+    paintSync();
+    clearInterval(renderSettings._sy);
+    renderSettings._sy=setInterval(()=>{
+      if(!document.getElementById("syncBox")){clearInterval(renderSettings._sy);return}
+      paintSync();
+    },2500);
+  }
   let fbk="idea";
   v.querySelectorAll("[data-fbk]").forEach(b=>b.onclick=()=>{
     fbk=b.dataset.fbk;
@@ -12109,6 +12180,13 @@ window.slideRelease=function(){
   top:-46px;z-index:-1;pointer-events:none;
   background:linear-gradient(180deg,transparent,var(--c-bg0,#05070F) 62%)}
 @media(prefers-reduced-motion:reduce){.side{transition:none}}
+</style>
+<style id="syncrow">
+.set-row.sync-ok i{color:#4FBF88}
+.set-row.sync-warn i{color:#E08A3C}
+.set-row.sync-bad i{color:#F26D6D}
+.set-row.sync-bad .tx small,.set-row.sync-warn .tx small{opacity:.95}
+#syncBox .set-btn{white-space:nowrap}
 </style>
 </body>
 </html>

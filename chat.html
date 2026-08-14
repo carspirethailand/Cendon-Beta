@@ -4948,6 +4948,10 @@ async function gemini(contents,opts){opts=opts||{};
       year:(selCar()||{}).year||"",
       mileage:(selCar()||{}).mileage||"",
       skillIds:opts.skillIds||[],
+      userName:(()=>{ try{
+        const su=JSON.parse(localStorage.getItem("spire_setup")||"null");
+        return (su&&su.name)||(currentUser&&currentUser.name)||"";
+      }catch(e){ return "" } })(),
       /* fresh = ห้ามหยิบคำตอบเก่ามาใช้ ต้องถาม AI ใหม่จริง ๆ */
       fresh:!!opts.fresh})});
   let d=null;try{d=await r.json()}catch(e){}

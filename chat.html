@@ -4936,7 +4936,11 @@ function parseAsk(txt){
 async function gemini(contents,opts){opts=opts||{};
   if(!(useFb&&auth&&auth.currentUser))throw new Error(lang==="en"?"Please sign in first":"กรุณาเข้าสู่ระบบก่อนใช้งาน");
   const tok=await auth.currentUser.getIdToken();
+  /* ผูกตัวยกเลิกไว้ที่ window เพื่อให้ปุ่มหยุดเรียกถึงได้จากทุกที่ */
+  const ac=(typeof AbortController!=="undefined")?new AbortController():null;
+  window.__aiAbort=ac;
   const r=await fetch(`${BACKEND_URL}/api/ai/chat`,{method:"POST",
+    signal:ac?ac.signal:undefined,
     headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok},
     body:JSON.stringify({contents,system:opts.system,search:!!opts.search,
       temp:opts.temp!=null?opts.temp:0.5,
@@ -5513,6 +5517,7 @@ function typewrite(fullText,done){
   const words=fullText.split(/(\s+)/);
   let i=0;
   function step(){
+    if(window.__stopped)return;      /* ผู้ใช้กดหยุดระหว่างข้อความกำลังไหลออกมา */
     if(i>=words.length){renderMessages();if(done)done();return}
     i=Math.min(words.length,i+2);
     bubble.innerHTML=md(words.slice(0,i).join(""))+`<span class="cursor"></span>`;
@@ -5578,6 +5583,17 @@ $("atts").addEventListener("click",e=>{const x=e.target.closest("[data-rm]");if(
 const WAVE_ICON='<svg class="wv" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 10v4"/><path d="M9 6v12"/><path d="M15 8.5v7"/><path d="M20 10.5v3"/></g></svg>';
 function updateSend(){
   const b=$("sendBtn"); if(!b) return;
+  /* ระหว่าง AI ทำงาน ปุ่มนี้ต้องกลายเป็นปุ่มหยุด ไม่ใช่ปุ่มที่กดไม่ได้
+     ของเดิมแค่ disable ผู้ใช้จึงได้แต่นั่งรอ ยกเลิกอะไรไม่ได้เลย */
+  if(sending){
+    if(b.dataset.mode!=="stop"){
+      b.dataset.mode="stop";
+      b.innerHTML='<i class="ti ti-player-stop-filled"></i>';
+      b.title=TT("หยุด","Stop");
+    }
+    b.disabled=false;
+    return;
+  }
   const has=!!$("inp").value.trim()||pending.length>0;
   const mode=has?"send":"call";
   if(b.dataset.mode!==mode){
@@ -5585,7 +5601,7 @@ function updateSend(){
     b.innerHTML=has?'<i class="ti ti-arrow-up"></i>':WAVE_ICON;
     b.title=has?TT("ส่ง","Send"):TT("โทรคุยกับ Cendon","Call Cendon");
   }
-  b.disabled=sending&&has;
+  b.disabled=false;
 }
 function autoSize(){const t=$("inp");t.style.height="auto";t.style.height=Math.min(t.scrollHeight,140)+"px"}
 $("inp").addEventListener("input",()=>{autoSize();updateSend()});
@@ -5641,8 +5657,24 @@ $("inp").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preve
 $("sendBtn").onclick=()=>{
   /* อ่านสถานะจากปุ่มตอนกด ไม่ใช่ตอนผูก event
      ไม่งั้นปุ่มจะทำหน้าที่เดิมค้างอยู่ตลอดอายุของหน้า */
-  if($("sendBtn").dataset.mode==="send") sendMsg(); else startCall();
+  const m=$("sendBtn").dataset.mode;
+  if(m==="stop") stopGen(); else if(m==="send") sendMsg(); else startCall();
 };
+
+/* ── หยุดการทำงานของ AI กลางคัน ──
+   ยกเลิกคำขอที่ยิงไปหลังบ้านจริง ๆ ด้วย AbortController
+   แล้วเก็บกวาดหน้าจอให้เรียบร้อย ไม่ทิ้งตัวหมุนค้างไว้ */
+function stopGen(){
+  try{ if(window.__aiAbort) window.__aiAbort.abort() }catch(e){}
+  window.__stopped=true;
+  /* เอาตัวยึดที่กำลังพิมพ์ออก แล้วบอกให้รู้ว่าหยุดเพราะผู้ใช้สั่ง */
+  try{ if(messages.length&&messages[messages.length-1].typing)messages.pop() }catch(e){}
+  messages.push({role:"ai",text:lang==="en"?"Stopped.":"หยุดแล้วครับ"});
+  sending=false;
+  renderMessages(); saveSession(); updateSend(); renderChips();
+  try{ window.slideRelease&&window.slideRelease() }catch(e){}
+}
+window.stopGen=stopGen;
 $("attImg").onclick=()=>$("fileImg").click();
 $("attVid").onclick=()=>$("fileVid").click();
 $("fileImg").onchange=e=>{const f=e.target.files[0];if(f){if(f.size>7e6){toast(lang==="en"?"Image too big (<7MB)":"รูปใหญ่ไป (<7MB)","ti-alert-triangle")}else{const r=new FileReader();r.onload=()=>addAtt("image",f.type,r.result.split(",")[1],f.name);r.readAsDataURL(f)}}e.target.value=""};
@@ -5662,6 +5694,7 @@ async function sendMsg(){
   if(!text&&pending.length===0)return;
   const atts=pending.slice();pending=[];window.pending=pending;renderAtts();
   messages.push({role:"user",text,atts});
+  window.__stopped=false;
   $("inp").value="";autoSize();sending=true;updateSend();
   updateHint();renderMessages();renderChips();
   /* เลื่อนให้ข้อความที่เพิ่งพิมพ์ไปอยู่บนสุดของจอ จะได้เห็นชัดว่าถามอะไรไป
@@ -5699,6 +5732,8 @@ async function sendMsg(){
       sending=false;updateSend();renderChips();
     });
   }catch(e){
+    /* ผู้ใช้กดหยุดเอง ไม่ใช่ระบบพัง stopGen จัดการหน้าจอไปแล้ว */
+    if(window.__stopped||(e&&e.name==="AbortError")){ window.__stopped=false; return }
     messages.pop();
     messages.push({role:"ai",text:(lang==="en"?"Sorry, AI error 🙏\n":"ขออภัย AI ขัดข้อง 🙏\n")+e.message+(location.protocol==="file:"?"\n\n(เปิดผ่าน localhost ถ้า AI ไม่ทำงานบน file://)":"")});
     renderMessages();saveSession();

@@ -657,7 +657,13 @@ html[data-idle="1"] *{animation-play-state:paused!important}
       <section class="view" id="v-kb">
         <div class="page-head"><div><h1>สอน AI</h1>
           <p>ความรู้ที่ใส่ตรงนี้ AI จะหยิบไปใช้ตอบผู้ใช้ทุกคน — ใส่แล้วมีผลทันที ไม่ต้อง deploy</p></div>
-          <button class="btn sm" onclick="kbNew()"><i class="ti ti-plus"></i> เพิ่มความรู้</button></div>
+          <div style="display:flex;gap:8px">
+            <label class="btn sm ghost" style="cursor:pointer">
+              <i class="ti ti-upload"></i> นำเข้าชุดความรู้
+              <input type="file" id="kbFile" accept=".json,application/json" hidden onchange="kbImport(this)">
+            </label>
+            <button class="btn sm" onclick="kbNew()"><i class="ti ti-plus"></i> เพิ่มความรู้</button>
+          </div></div>
         <div class="card" style="margin-bottom:12px">
           <input class="input" id="kbSearch" placeholder="ค้นหาจากหัวข้อ คำสำคัญ หรือรุ่นรถ" oninput="loadKb()">
         </div>
@@ -1362,6 +1368,26 @@ async function kbSave(){
   catch(e){ alert("บันทึกไม่สำเร็จ: "+e.message) }
   btn.disabled=false;
 }
+/* นำเข้าไฟล์ชุดความรู้ทีเดียวทั้งก้อน ไม่ต้องพิมพ์ทีละหัวข้อ
+   กดซ้ำได้ หัวข้อเดิมจะถูกอัปเดต ไม่เกิดของซ้ำ */
+async function kbImport(el){
+  const f=el.files&&el.files[0]; el.value="";
+  if(!f)return;
+  let data=null;
+  try{ data=JSON.parse(await f.text()) }
+  catch(e){ alert("ไฟล์ไม่ใช่ JSON ที่อ่านได้: "+e.message); return }
+  const items=Array.isArray(data)?data:(data.items||[]);
+  if(!items.length){ alert("ไม่พบรายการความรู้ในไฟล์นี้"); return }
+  if(!confirm(`นำเข้าความรู้ ${items.length} หัวข้อ?\n${data.pack||""}`))return;
+  $("kbList").innerHTML=`<div class="empty">กำลังนำเข้า...</div>`;
+  try{
+    const r=await api("/api/kb/bulk",{method:"POST",body:{items}});
+    alert(`นำเข้าเสร็จแล้ว\nเพิ่มใหม่ ${r.added} · อัปเดต ${r.updated}`+
+          (r.skipped?` · ข้าม ${r.skipped}`:""));
+    loadKb();
+  }catch(e){ alert("นำเข้าไม่สำเร็จ: "+e.message); loadKb() }
+}
+
 async function kbDel(id){
   if(!confirm("ลบความรู้ชิ้นนี้?"))return;
   try{ await api("/api/kb/"+id,{method:"DELETE"}); loadKb() }

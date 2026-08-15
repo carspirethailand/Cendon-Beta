@@ -4955,7 +4955,7 @@ async function streamAnswer(contents,opts){
     while(true){
       const {done,value}=await rd.read();
       if(done)break;
-      if(window.__stopped){ try{ rd.cancel() }catch(e){} break }
+      if(window.__stopped){ try{ rd.cancel() }catch(e){} liveDone(nodes); break }
       buf+=dec.decode(value,{stream:true});
       const lines=buf.split("\n"); buf=lines.pop()||"";
       for(const line of lines){
@@ -4976,8 +4976,9 @@ async function streamAnswer(contents,opts){
   }
 
   m.streaming=false; m.status="";
-  if(!m.text.trim()&&failed){ messages.pop(); throw new Error(failed) }
-  if(!m.text.trim()){ messages.pop(); return null }   /* ไม่ได้อะไรเลย ลองทางเดิม */
+  liveDone(nodes);
+  if(!m.text.trim()&&failed){ messages.pop(); renderMessages(); throw new Error(failed) }
+  if(!m.text.trim()){ messages.pop(); renderMessages(); return null }   /* ไม่ได้อะไรเลย ลองทางเดิม */
 
   /* แกะฟอร์มที่ AI ขอ ออกจากข้อความก่อนแสดงผลจริง */
   const parsed=parseAsk(m.text);
@@ -4987,28 +4988,82 @@ async function streamAnswer(contents,opts){
   return m.text;
 }
 
-/* หา element ที่ต้องอัปเดตระหว่างสตรีม จะได้ไม่ต้องวาดห้องแชตใหม่ทุกตัวอักษร */
+/* ── โครงของข้อความที่กำลังไหล ──
+   สร้าง element ครั้งเดียวแล้วอัปเดตเฉพาะเนื้อข้างใน
+   ของเดิมเขียน innerHTML ใหม่ทั้งก้อนทุกตัวอักษร ภาพเลยกระพริบ
+   และยังเรียกเลื่อนจอทุกครั้ง จอจึงถูกกระชากตลอดเวลา */
 function liveNodes(){
   const th=$("thread");
-  const b=[...th.querySelectorAll(".msg.ai .bubble")].pop();
-  return {bubble:b};
-}
-function paintLive(n,m){
-  if(!n.bubble)return;
+  const bubble=[...th.querySelectorAll(".msg.ai .bubble")].pop();
+  if(!bubble)return {};
   const en=lang==="en";
-  const think=m.reasoning
-    ? `<details class="think-box live"${m.streaming?" open":""}>
-         <summary><i class="ti ti-brain"></i><span>${m.streaming?(en?"Thinking":"กำลังคิด"):(en?"Show thinking":"ดูความคิด")}</span>
-         <i class="ti ti-chevron-down ch"></i></summary>
-         <div class="think-in">${esc(m.reasoning).replace(/\n/g,"<br>")}</div></details>`
-    : "";
-  const st=(m.streaming&&m.status&&!m.text)
-    ? `<div class="live-status"><span class="ls-dot"></span>${esc(m.status)}</div>` : "";
-  n.bubble.innerHTML=think+st+md(m.text)+(m.streaming&&m.text?'<span class="cursor"></span>':"");
-  /* ถ้าเปิดกล่องความคิดอยู่ ให้เลื่อนตามข้อความใหม่ที่ไหลเข้ามา */
-  const box=n.bubble.querySelector(".think-in");
-  if(box&&m.streaming)box.scrollTop=box.scrollHeight;
-  scrollBottom();
+  bubble.innerHTML=
+    `<details class="think-box live" style="display:none">
+       <summary><i class="ti ti-brain"></i><span class="tl">${en?"Thinking":"กำลังคิด"}</span>
+       <i class="ti ti-chevron-down ch"></i></summary>
+       <div class="think-in"></div></details>
+     <div class="live-status" style="display:none"><span class="ls-dot"></span><span class="lt"></span></div>
+     <div class="live-body"></div>`;
+  /* ตัวหมุนของ Cendon ต้องหมุนอยู่ตลอดที่ยังทำงาน เหมือนทางเดิม
+     ของเดิมในโหมดสตรีมไม่มีเลย ผู้ใช้จึงไม่รู้ว่ามันยังทำงานอยู่ไหม */
+  const sig=document.createElement("div");
+  sig.innerHTML=aiSig(true);
+  const sigEl=sig.firstElementChild;
+  th.appendChild(sigEl);
+  return {
+    bubble,
+    box:bubble.querySelector(".think-box"),
+    label:bubble.querySelector(".think-box .tl"),
+    think:bubble.querySelector(".think-in"),
+    status:bubble.querySelector(".live-status"),
+    stext:bubble.querySelector(".live-status .lt"),
+    body:bubble.querySelector(".live-body"),
+    sig:sigEl,
+  };
+}
+
+let _liveScroll=0;
+function paintLive(n,m){
+  if(!n||!n.bubble)return;
+  const en=lang==="en";
+  /* ความคิด — เติมเฉพาะส่วนที่ยังไม่ได้วาด ไม่เขียนทับทั้งก้อน */
+  if(n.think&&m.reasoning){
+    if(n.box.style.display==="none"){ n.box.style.display=""; n.box.open=true }
+    if(n.think.dataset.len!==String(m.reasoning.length)){
+      n.think.textContent=m.reasoning;
+      n.think.dataset.len=String(m.reasoning.length);
+      n.think.scrollTop=n.think.scrollHeight;
+    }
+  }
+  /* สถานะ — ซ่อนทันทีที่คำตอบเริ่มไหล */
+  if(n.status){
+    const show=m.streaming&&m.status&&!m.text;
+    n.status.style.display=show?"":"none";
+    if(show&&n.stext.textContent!==m.status)n.stext.textContent=m.status;
+  }
+  /* ตัวคำตอบ */
+  if(n.body&&n.body.dataset.len!==String(m.text.length)){
+    n.body.innerHTML=md(m.text)+(m.streaming&&m.text?'<span class="cursor"></span>':"");
+    n.body.dataset.len=String(m.text.length);
+  }
+  /* เลื่อนจอแบบมีมารยาท ถี่สุดครึ่งวินาที และเฉพาะตอนผู้ใช้อยู่ใกล้ท้ายห้องอยู่แล้ว
+     ถ้าเขาเลื่อนขึ้นไปอ่านของเก่า ห้ามดึงกลับลงมา */
+  const now=Date.now();
+  if(now-_liveScroll>500){
+    _liveScroll=now;
+    const sc=$("threadScroll");
+    if(sc&&sc.scrollHeight-sc.scrollTop-sc.clientHeight<220)scrollBottom();
+  }
+}
+/* จบแล้วเก็บกวาด: ยุบกล่องความคิด เอาตัวหมุนออก */
+function liveDone(n){
+  if(!n)return;
+  try{ if(n.sig&&n.sig.parentNode)n.sig.parentNode.removeChild(n.sig) }catch(e){}
+  try{
+    if(n.box){ n.box.open=false; n.box.classList.remove("live");
+      if(n.label)n.label.textContent=(lang==="en")?"Show thinking":"ดูความคิด" }
+    if(n.status)n.status.style.display="none";
+  }catch(e){}
 }
 
 /* ===== AI (secure backend proxy) ===== */

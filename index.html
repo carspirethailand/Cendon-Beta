@@ -4622,7 +4622,7 @@ let auth=null,useFb=false;
   });
 })();
 let currentUser=LS.get("cachedUser",null),lang=LS.get("lang","th");
-try{window.BACKEND_URL=BACKEND_URL;Object.defineProperty(window,"spireAuth",{configurable:true,get:function(){return auth}});Object.defineProperty(window,"lang",{configurable:true,get:function(){return lang},set:function(v){lang=v}});Object.defineProperty(window,"currentUser",{configurable:true,get:function(){return currentUser},set:function(v){currentUser=v}});window.spireAwaitUser=function(ms){return new Promise(function(res){try{if(!auth)return res(null);if(auth.currentUser)return res(auth.currentUser);var done=false;var t=setTimeout(function(){if(done)return;done=true;res(auth.currentUser||null)},ms||8000);var un=auth.onAuthStateChanged(function(u){if(done)return;done=true;clearTimeout(t);try{un&&un()}catch(e){}res(u||null)});}catch(e){res(null)}})};}catch(e){}
+try{window.BACKEND_URL=BACKEND_URL;Object.defineProperty(window,"spireAuth",{configurable:true,get:function(){return auth}});Object.defineProperty(window,"auth",{configurable:true,get:function(){return auth}});Object.defineProperty(window,"lang",{configurable:true,get:function(){return lang},set:function(v){lang=v}});Object.defineProperty(window,"currentUser",{configurable:true,get:function(){return currentUser},set:function(v){currentUser=v}});window.spireAwaitUser=function(ms){return new Promise(function(res){try{if(!auth)return res(null);if(auth.currentUser)return res(auth.currentUser);var done=false;var t=setTimeout(function(){if(done)return;done=true;res(auth.currentUser||null)},ms||8000);var un=auth.onAuthStateChanged(function(u){if(done)return;done=true;clearTimeout(t);try{un&&un()}catch(e){}res(u||null)});}catch(e){res(null)}})};}catch(e){}
 let currentTheme = LS.get("theme", "warm");
 let wireframeOpacity = LS.get("opacity", 0.15);
 
@@ -5598,12 +5598,11 @@ const EN=()=>(window.lang||"th")==="en";
 const T=(th,en)=>(window.spireT?window.spireT(th,en):((window.lang||"th")==="en"?en:th));
 const KEY="spire_theme";
 
+/* ธีมคุมแค่โครงสีพื้นหลังกับตัวหนังสือ ส่วนสีปุ่มแยกไปเป็น "สีหลัก" เลือกได้อิสระ
+   ของเดิมผูกสีปุ่มติดมากับธีม อยากได้ปุ่มสีฟ้าก็ต้องยอมเปลี่ยนพื้นหลังทั้งแอปไปด้วย */
 const THEMES=[
-  {k:"light", th:"สว่าง",   en:"Light"},
-  {k:"dark",  th:"มืด",     en:"Dark"},
-  {k:"ocean", th:"มหาสมุทร",en:"Ocean"},
-  {k:"plant", th:"ต้นไม้",  en:"Plant"},
-  {k:"magma", th:"ลาวา",    en:"Magma"}
+  {k:"light", th:"สว่าง", en:"Light"},
+  {k:"dark",  th:"มืด",   en:"Dark"}
 ];
 const KEYS=THEMES.map(x=>x.k);
 
@@ -5611,9 +5610,11 @@ const KEYS=THEMES.map(x=>x.k);
    ไม่งั้นคนที่เคยตั้งไว้จะเปิดมาเจอธีมผิดโดยไม่รู้ว่าทำไม */
 const OLD={warm:"light",pearl:"light",
            carbon:"dark",night:"dark",midnight:"dark",cyber:"dark",
-           aurora:"ocean",
-           emerald:"plant",moss:"plant",
-           sunset:"magma"};
+           /* สามธีมสีที่เลิกใช้ ให้ตกลงมาที่โครงสีที่ใกล้ที่สุด
+              สีเด่นของมันย้ายไปอยู่ในตัวเลือกสีหลักแทน */
+           aurora:"dark",ocean:"dark",
+           emerald:"light",plant:"light",moss:"light",
+           sunset:"dark",magma:"dark"};
 
 function read(){
   let v=null;
@@ -6333,13 +6334,25 @@ function stepHTML(){
 /* ════════════ ประกอบหน้าจอ ════════════ */
 let phase="auth";   /* auth · phone · wizard */
 
+function restoreHTML(){
+  return `<div class="su-card sp-anim is-in" style="text-align:center">
+    <div class="su-mark"><svg class="cmk" viewBox="-6.0 -6.0 94.8 112.0"><path d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg></div>
+    <div class="su-h">
+      <h1>${L("กำลังดึงการตั้งค่าของคุณ","Restoring your setup")}</h1>
+      <p>${L("รอสักครู่ ระบบกำลังดูว่าบัญชีนี้เคยตั้งค่าไว้แล้วหรือยัง",
+             "One moment — checking whether this account is already set up")}</p>
+    </div>
+    <div class="su-dots"><i></i><i></i><i></i></div>
+  </div>`;
+}
 function render(){
   const w=$("suWrap"); if(!w)return;
   /* หน้าล็อกอินกินเต็มจอแบ่งครึ่ง ส่วนตัวช่วยตั้งค่ากับหน้าเบอร์โทร
      ยังเป็นการ์ดกลางจอเหมือนเดิม แยกด้วยคลาสเดียวไม่ต้องมี CSS ซ้ำสองชุด */
   w.classList.toggle("auth", phase==="auth");
   const host=w.querySelector(".su-in"); if(!host)return;
-  host.innerHTML=phase==="phone"?phoneHTML():phase==="wizard"?stepHTML():authHTML();
+  host.innerHTML=phase==="phone"?phoneHTML():phase==="wizard"?stepHTML()
+    :phase==="restore"?restoreHTML():authHTML();
   wire();
 }
 
@@ -6555,10 +6568,31 @@ window.spireWireDanger=root=>{
 };
 
 /* ════════════ ทางเข้า ════════════ */
+/* idle = ยังไม่เคยถามคลาวด์ · busy = กำลังถาม · done = ถามแล้ว */
+let cloudTry="idle";
 function gate(){
   /* ยังไม่ล็อกอิน = ยังไม่ให้เข้าแอป ตามที่ตกลงไว้ว่าต้องล็อกอินก่อน */
-  if(!user()){ if(!$("suWrap")||phase!=="auth"&&phase!=="phone")open("auth"); return }
+  if(!user()){
+    cloudTry="idle";
+    if(!$("suWrap")||phase!=="auth"&&phase!=="phone")open("auth");
+    return;
+  }
   if(!done()){
+    /* บัญชีนี้อาจตั้งค่าไว้แล้วจากเครื่องอื่น ต้องไปถามคลาวด์ก่อนเสมอ
+       ไม่ใช่ผลักให้ตั้งค่าใหม่ทันทีที่ไม่เจอข้อมูลในเครื่อง */
+    if(cloudTry==="idle"){
+      cloudTry="busy";
+      open("restore");
+      (async()=>{
+        for(let i=0;i<40&&!window.cloudPullNow;i++)
+          await new Promise(r=>setTimeout(r,250));
+        try{ if(window.cloudPullNow)await window.cloudPullNow(9000) }catch(e){}
+        cloudTry="done"; gate();
+      })();
+      return;
+    }
+    if(cloudTry==="busy")return;
+    if(done()){ close(); return }
     if(phase!=="wizard"||!$("suWrap")){
       const u=user()||{}, cur=read()||{};
       step=0;
@@ -6569,6 +6603,7 @@ function gate(){
     }
     return;
   }
+  cloudTry="done";
   close();
 }
 
@@ -15132,5 +15167,503 @@ window.switchView=function(v){
   }
 })();
 </script>
+<style id="sudots">
+.su-dots{display:flex;gap:6px;justify-content:center;margin-top:4px}
+.su-dots i{width:7px;height:7px;border-radius:50%;background:#F0894F;opacity:.35;
+  animation:suDot 1.1s ease-in-out infinite}
+.su-dots i:nth-child(2){animation-delay:.16s}
+.su-dots i:nth-child(3){animation-delay:.32s}
+@keyframes suDot{0%,100%{opacity:.3;transform:translateY(0)}45%{opacity:1;transform:translateY(-4px)}}
+@media (prefers-reduced-motion:reduce){.su-dots i{animation:none;opacity:.7}}
+</style>
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   CENDON CLOUD — ข้อมูลผู้ใช้ตามบัญชี ไม่ใช่ตามเครื่อง
+   ───────────────────────────────────────────────────────────────────
+   เดิมทุกอย่างอยู่ใน localStorage ล้วน ๆ เข้าบัญชีเดียวกันจากมือถือกับ
+   คอมจึงเห็นธีมคนละสีและบทสนทนาคนละชุด ตัวนี้ทำหน้าที่:
+     • ดึงของบนคลาวด์ลงมารวมกับของในเครื่องตอนล็อกอิน (ของใหม่กว่าชนะ)
+     • ส่งทุกการเปลี่ยนแปลงขึ้นคลาวด์ให้เองแบบหน่วงสั้น ๆ
+   ผู้ใช้ไม่ต้องกดปุ่มซิงก์ ไม่ต้องตั้งค่าอะไรเลย
+   ═══════════════════════════════════════════════════════════════════ */
+(function(){
+const D=document, $=id=>D.getElementById(id);
+const L=(th,en)=>(window.spireT?window.spireT(th,en):((window.lang||"th")==="en"?en:th));
+
+const META="spire___meta";                 /* เวลาแก้ล่าสุดของแต่ละคีย์ */
+const PULLED="spire___pulled";             /* บัญชีที่ดึงลงมาแล้วรอบนี้ */
+/* คีย์ที่ต้องเหมือนกันทุกเครื่อง — sess_/cursess_ ต่อท้ายด้วยรหัสรถ */
+/* setup = ก้อนการตั้งค่าบัญชีทั้งหมด (ระดับการใช้งาน ภาษา ธีม หน่วย การแจ้งเตือน)
+   ไม่เคยอยู่ในรายการซิงก์มาก่อน จึงเป็นอีกสาเหตุที่เข้าเครื่องใหม่แล้วต้องตั้งค่าใหม่ */
+const FIXED=["setup","theme","chatTheme","primary","lang","chatStyle","garage","selCar",
+             "skills","skillcat","chatSessions","units","notify"];
+const isTracked=k=>FIXED.indexOf(k)>=0||/^(sess|cursess|chatMsgs)_/.test(k);
+
+const SYNCED="spire___synced";             /* ส่งขึ้นสำเร็จถึงเวลาไหนแล้ว ต่อคีย์ */
+const SEEN="spire___seen";                 /* ลายเซ็นที่เห็นครั้งก่อน ใช้จับว่าแก้บนเครื่องนี้จริงไหม */
+const meta=()=>{ try{ return JSON.parse(localStorage.getItem(META))||{} }catch(e){ return {} } };
+const setMeta=m=>{ try{ localStorage.setItem(META,JSON.stringify(m)) }catch(e){} };
+const synced=()=>{ try{ return JSON.parse(localStorage.getItem(SYNCED))||{} }catch(e){ return {} } };
+/* ลายเซ็นสั้น ๆ ของค่าในคีย์ ใช้จับว่า "เนื้อข้อมูลเปลี่ยนจริงไหม"
+   บางคีย์ (เช่น setup, theme) ถูกเขียนด้วย localStorage ตรง ๆ ไม่ผ่าน LS.set
+   ตัวแจ้งเตือน cloudMark จึงไม่เคยทำงาน ถ้าดูแต่เวลาที่จดไว้จะพลาดตลอด */
+function sig(str){
+  let h=5381;
+  for(let i=0;i<str.length;i++)h=((h*33)^str.charCodeAt(i))>>>0;
+  return str.length+":"+h.toString(36);
+}
+const setSynced=m=>{ try{ localStorage.setItem(SYNCED,JSON.stringify(m)) }catch(e){} };
+const seen=()=>{ try{ return JSON.parse(localStorage.getItem(SEEN))||{} }catch(e){ return {} } };
+const setSeen=m=>{ try{ localStorage.setItem(SEEN,JSON.stringify(m)) }catch(e){} };
+const raw=k=>localStorage.getItem("spire_"+k);
+
+let dirty=new Set(), timer=null, busy=false, pulled=false, fails=0, retryT=null;
+
+window.cloudMark=function(k){
+  if(!isTracked(k))return;
+  const m=meta(); m[k]=Date.now(); setMeta(m);
+  dirty.add(k);
+  clearTimeout(timer);
+  timer=setTimeout(push,1500);            /* หน่วงไว้ พิมพ์รัว ๆ จะได้ไม่ยิงทุกตัวอักษร */
+};
+
+/* คีย์ที่ต้องส่งขึ้น = ทุกคีย์ที่ยัง "ส่งไม่ถึง" เวลาแก้ล่าสุดของมัน
+   ของเดิมดูจาก dirty ซึ่งเป็นตัวแปรในหน่วยความจำ พอรีเฟรชหน้าก็ว่างเปล่า
+   บวกกับ meta ที่ถูกตั้งไว้ตั้งแต่รอบก่อน ทำให้ไม่มีคีย์ไหนเข้าเงื่อนไขเลย
+   ผลคือหลังจากส่งพลาดครั้งแรก มันจะไม่พยายามส่งอะไรอีกเลยตลอดไป
+   ต่อให้ deploy เซิร์ฟเวอร์เสร็จแล้วก็ตาม */
+function collect(){
+  const m=meta(), sy=synced(), sn=seen(), out={};
+  const keys=new Set(dirty);
+  for(let i=0;i<localStorage.length;i++){
+    const full=localStorage.key(i);
+    if(!full||full.indexOf("spire_")!==0)continue;
+    const k=full.slice(6);
+    if(!isTracked(k))continue;
+    const v=localStorage.getItem(full);
+    if(v===null)continue;
+    const now=sig(v), rec=sy[k]||{};
+    /* ── เวลาแก้ล่าสุด ต้องหมายถึง "ผู้ใช้แก้บนเครื่องนี้" จริง ๆ เท่านั้น ──
+       ของเดิมประทับเวลาปัจจุบันให้ทุกคีย์ที่ยังไม่เคยส่งสำเร็จ
+       ค่าเก่าที่วางอยู่เฉย ๆ จึงดูใหม่กว่าค่าที่อีกเครื่องเพิ่งเปลี่ยนจริง
+       ผลคือเครื่องนี้ไม่ยอมรับของใหม่ แถมยังดันของเก่าทับกลับไป
+       ธีมที่เปลี่ยนในมือถือจึงเด้งกลับเป็นของเดิมตามคอม
+       แก้โดยจำ "ลายเซ็นที่เห็นครั้งก่อน" ไว้ แล้วขยับเวลาเฉพาะตอนที่มันต่างจริง */
+    if(sn[k]===undefined){
+      /* เห็นครั้งแรก ยังไม่รู้ว่าใครแก้ทีหลัง อย่าเพิ่งอ้างว่าเป็นของใหม่ */
+      sn[k]=now;
+      if(!m[k])m[k]=1;
+    }else if(sn[k]!==now){
+      sn[k]=now; m[k]=Date.now();        /* ผู้ใช้แก้บนเครื่องนี้จริง */
+    }
+    if(rec.h!==now)keys.add(k);          /* ยังส่งไม่ถึงเซิร์ฟเวอร์ ต้องส่ง */
+  }
+  setMeta(m); setSeen(sn);
+  keys.forEach(k=>{
+    const v=raw(k);
+    if(v===null)return;
+    let parsed=null; try{ parsed=JSON.parse(v) }catch(e){ parsed=v }
+    out[k]={v:parsed,t:m[k]||Date.now()};
+  });
+  return out;
+}
+
+async function req(path,opt){
+  const A=window.auth||window.spireAuth; const u=A&&A.currentUser;
+  if(!u||!window.BACKEND_URL)throw new Error("offline");
+  const tok=await u.getIdToken();
+  const r=await fetch(window.BACKEND_URL+path,Object.assign({},opt,{
+    headers:Object.assign({"Content-Type":"application/json","Authorization":"Bearer "+tok},
+                          (opt&&opt.headers)||{})}));
+  if(!r.ok)throw new Error("HTTP "+r.status);
+  return await r.json();
+}
+
+/* บันทึกสถานะไว้ให้ตรวจได้ ของเดิมกลืนข้อผิดพลาดทั้งหมดจนไม่รู้ว่าพังตรงไหน
+   พิมพ์ cloudStatus() ใน console เพื่อดูว่าซิงก์ล่าสุดสำเร็จหรือไม่ เพราะอะไร */
+const St={pulled:null,pushed:null,error:null,keys:0,user:null,url:null};
+window.cloudStatus=()=>Object.assign({},St,{
+  user:(()=>{const A=window.auth||window.spireAuth;return A&&A.currentUser?A.currentUser.email||"signed-in":"NOT SIGNED IN"})(),
+  url:window.BACKEND_URL||"(missing)"});
+
+async function push(){
+  if(busy)return; busy=true;
+  try{
+    const state=collect();
+    if(Object.keys(state).length){
+      await req("/api/state",{method:"PUT",body:JSON.stringify({state})});
+      dirty.clear();
+      /* จดไว้ว่าคีย์ไหนไปถึงเซิร์ฟเวอร์แล้ว รอบหน้าจะได้ไม่ส่งซ้ำ
+         และถ้ารอบนี้พลาด รอบหน้ามันจะถูกหยิบมาส่งใหม่เองอัตโนมัติ */
+      const sy=synced();
+      Object.keys(state).forEach(k=>{
+        const v=localStorage.getItem("spire_"+k);
+        sy[k]={t:state[k].t,h:v===null?null:sig(v)};
+      });
+      setSynced(sy);
+      St.pushed=new Date().toISOString(); St.keys=Object.keys(state).length;
+    }
+    St.error=null; fails=0;
+    await flushFeedback();
+  }catch(e){
+    St.error=String(e&&e.message||e);
+    fails++;
+    console.warn("[cloud] ส่งข้อมูลขึ้นคลาวด์ไม่สำเร็จ:",St.error,
+      "— ถ้าเป็น HTTP 404 แปลว่า Worker ยังไม่ได้ deploy เวอร์ชันใหม่");
+    /* ลองใหม่เองโดยถอยห่างขึ้นเรื่อย ๆ 15 วิ → 30 → 60 → 120 → สูงสุด 5 นาที
+       ผู้ใช้ไม่ต้องกดอะไร พอ deploy เสร็จเมื่อไรมันจะไปเองในรอบถัดไป */
+    clearTimeout(retryT);
+    retryT=setTimeout(()=>{ busy=false; boot() },Math.min(300000,15000*Math.pow(2,Math.min(fails,5))));
+  }
+  busy=false;
+}
+
+/* ความเห็นที่ส่งไม่สำเร็จตอนออฟไลน์ ค้างอยู่ในคิว ลองส่งใหม่ทุกครั้งที่ซิงก์ */
+async function flushFeedback(){
+  let q=[]; try{ q=JSON.parse(localStorage.getItem("spire_fbQueue"))||[] }catch(e){}
+  if(!q.length)return;
+  const left=[];
+  for(const item of q){
+    try{ await req("/api/feedback",{method:"POST",body:JSON.stringify(item)}) }
+    catch(e){ left.push(item) }
+  }
+  try{ localStorage.setItem("spire_fbQueue",JSON.stringify(left)) }catch(e){}
+}
+
+/* ดึงลงมารวม — เทียบทีละคีย์ ของที่แก้ทีหลังชนะ ไม่ต้องถามผู้ใช้ว่าจะเอาอันไหน */
+async function pull(){
+  const d=await req("/api/state");
+  St.pulled=new Date().toISOString(); St.error=null;
+  const m=meta(), st=d.state||{};
+  let touched=[];
+  Object.keys(st).forEach(k=>{
+    if(!isTracked(k))return;
+    const remote=st[k], mine=m[k]||0;
+    if(!(remote.t>mine))return;
+    const str=JSON.stringify(remote.v);
+    try{ localStorage.setItem("spire_"+k,str) }catch(e){ return }
+    m[k]=remote.t; touched.push(k);
+    /* ของที่เพิ่งรับมา ถือว่าตรงกับเซิร์ฟเวอร์แล้ว ไม่ต้องส่งกลับไปอีก */
+    const sy=synced(); sy[k]={t:remote.t,h:sig(str)}; setSynced(sy);
+    const sn=seen(); sn[k]=sig(str); setSeen(sn);
+  });
+  setMeta(m);
+  if(touched.length)apply(touched);
+  return touched;
+}
+
+/* วาดหน้าใหม่เฉพาะส่วนที่ค่าเปลี่ยนจริง จะได้ไม่กระพริบทั้งหน้า
+   ทุกอย่างที่นี่คือ "อีกเครื่องเปลี่ยนแล้วเครื่องนี้ต้องเปลี่ยนตามทันที" */
+function apply(keys){
+  const has=x=>keys.indexOf(x)>=0;
+  const rd=k=>{ try{ return JSON.parse(localStorage.getItem("spire_"+k)) }catch(e){ return null } };
+  try{
+    /* ธีม — ก้อน setup ก็เก็บธีมไว้ด้วย เปลี่ยนที่ไหนก็ต้องตามทั้งคู่ */
+    if(has("theme")||has("chatTheme")||has("setup")){
+      const su=rd("setup")||{};
+      const t=rd("chatTheme")||rd("theme")||su.theme;
+      if(t){
+        D.documentElement.setAttribute("data-ctheme",t);
+        D.documentElement.setAttribute("data-theme",t);
+        /* เขียนกลับให้ทั้งสองคีย์ตรงกัน โค้ดเก่าบางส่วนยังอ่านคีย์เดิมอยู่ */
+        try{ localStorage.setItem("spire_chatTheme",JSON.stringify(t));
+             localStorage.setItem("spire_theme",JSON.stringify(t)) }catch(e){}
+        window.markTheme&&window.markTheme();
+        try{ const mt=D.querySelector('meta[name="theme-color"]');
+             if(mt){ const c=getComputedStyle(D.documentElement).getPropertyValue("--c-bg0").trim();
+                     if(c)mt.setAttribute("content",c) } }catch(e){}
+      }
+    }
+    /* ภาษา */
+    if(has("lang")||has("setup")){
+      const l=rd("lang")||(rd("setup")||{}).lang;
+      if(l&&l!==window.lang){
+        if(window.spireSetLang)window.spireSetLang(l);
+        else if(window.setLang)window.setLang(l);
+      }
+    }
+    /* ระดับการใช้งานและหน่วยวัด อยู่ในก้อน setup */
+    if(has("setup")){
+      const su=rd("setup")||{};
+      if(su.level&&window.spireLevel&&window.spireLevel()!==su.level){
+        D.documentElement.dataset.level=su.level;
+        try{ window.spireApplySetup&&window.spireApplySetup() }catch(e){}
+      }
+    }
+    /* สีหลักที่เปลี่ยนจากอีกเครื่อง ต้องทาทับทันทีเหมือนธีม */
+    if(has("primary"))window.spireApplyPrimary&&window.spireApplyPrimary();
+    if(has("garage")||has("selCar"))window.renderCarUI&&window.renderCarUI();
+    /* บทสนทนา — ห้ามวาดทับตอนผู้ใช้กำลังพิมพ์หรือกำลังรอคำตอบอยู่
+       ไม่งั้นข้อความที่เพิ่งพิมพ์จะหายไปต่อหน้าต่อตา */
+    if(keys.some(k=>/^(sess|cursess|chatMsgs)_/.test(k))){
+      const typing=(()=>{ try{
+        const el=D.getElementById("inp");
+        return (window.sending===true)||!!(el&&el.value.trim());
+      }catch(e){ return false } })();
+      window.renderHist&&window.renderHist();
+      window.paintSide&&window.paintSide();
+      if(!typing){
+        window.loadSession&&window.loadSession();
+        window.renderMessages&&window.renderMessages();
+      }
+    }
+    if(has("chatStyle"))window.renderChatPrefs&&window.renderChatPrefs();
+    if(window.paintSync)window.paintSync();
+  }catch(e){ console.warn("[cloud] apply",e) }
+  try{ window.spireSkillsRefresh&&window.spireSkillsRefresh() }catch(e){}
+}
+
+/* ── จังหวะการทำงาน ──
+   ล็อกอินเสร็จ → ดึงลงหนึ่งครั้ง แล้วส่งขึ้นทุกครั้งที่มีการแก้
+   สลับแท็บกลับมา / ก่อนปิดหน้า → ซิงก์อีกรอบ กันของหายตอนปิดเครื่อง */
+async function boot(){
+  const A=window.auth||window.spireAuth; const u=A&&A.currentUser;
+  if(!u){ pulled=false; return }
+  if(busy)return;
+  /* ต้องดึงลงซ้ำเรื่อย ๆ ไม่ใช่ครั้งเดียวตอนเปิดหน้า
+     ไม่งั้นอีกเครื่องเปลี่ยนธีมหรือภาษาแล้วเครื่องนี้จะไม่มีวันรู้เลย
+     จนกว่าจะปิดเปิดหน้าใหม่ */
+  if(pulled){
+    busy=true;
+    try{ await pull() }catch(e){ St.error=String(e&&e.message||e) }
+    busy=false;
+    await push();
+    return;
+  }
+  pulled=true;
+  try{ await pull() }catch(e){
+    pulled=false;
+    St.error=String(e&&e.message||e);
+    console.warn("[cloud] ดึงข้อมูลจากคลาวด์ไม่สำเร็จ:",St.error,
+      "— HTTP 404 = Worker ยังเป็นเวอร์ชันเก่า, HTTP 401 = ยังไม่ล็อกอิน");
+    /* ดึงลงไม่ได้ไม่ได้แปลว่าส่งขึ้นไม่ได้ ให้ push ลองต่อ
+       และตัว push มีตัวนับถอยกลับไปลองใหม่ให้เองอยู่แล้ว */
+  }
+  await push();
+}
+window.cloudSync=()=>{ pulled=false; return boot() };
+/* ดึงจากคลาวด์เดี๋ยวนี้แล้วรอผล ใช้ตอนตัดสินใจว่าต้องให้ผู้ใช้ตั้งค่าใหม่ไหม
+   คืนค่า true ถ้าได้ข้อมูลลงมาจริง ไม่ว่าจะสำเร็จหรือไม่ก็ไม่ค้างเกินเวลาที่กำหนด */
+window.cloudPullNow=async function(ms){
+  const A=window.auth||window.spireAuth;
+  if(!A||!A.currentUser)return false;
+  try{
+    await Promise.race([pull(),new Promise((_,rj)=>setTimeout(()=>rj(new Error("timeout")),ms||7000))]);
+    return true;
+  }catch(e){ St.error=String(e&&e.message||e); return false }
+};
+
+/* เฝ้ารอผู้ใช้ล็อกอินตลอดอายุของหน้า ไม่เลิกรอหลังหนึ่งนาทีเหมือนเดิม
+   เพราะบางคนเปิดหน้าค้างไว้แล้วค่อยกดเข้าสู่ระบบทีหลัง */
+let lastUid=null;
+setInterval(()=>{
+  const A=window.auth||window.spireAuth;
+  const u=A&&A.currentUser;
+  const uid=u?u.uid:null;
+  if(uid!==lastUid){ lastUid=uid; pulled=false; if(uid)boot() }
+},1500);
+/* จังหวะการตรวจปรับตามการใช้งานจริง
+   กำลังใช้อยู่ตอนนี้ = ตรวจถี่ 5 วินาที เปลี่ยนธีมอีกเครื่องแล้วตามทันแทบจะทันที
+   เปิดค้างไว้เฉย ๆ = 20 วินาที · สลับไปแท็บอื่น = 60 วินาที
+   ไม่งั้นเปิดทิ้งไว้ทั้งวันจะยิงเข้าเซิร์ฟเวอร์เป็นพันครั้งโดยไม่มีใครดู */
+let beat=null, lastAct=Date.now();
+["pointerdown","keydown","touchstart","focus"].forEach(ev=>
+  addEventListener(ev,()=>{ lastAct=Date.now() },{passive:true,capture:true}));
+function gap(){
+  if(D.hidden)return 60000;
+  return (Date.now()-lastAct<120000)?5000:20000;
+}
+function heart(){
+  clearTimeout(beat);
+  beat=setTimeout(function tick(){
+    boot();
+    clearTimeout(beat);
+    beat=setTimeout(tick,gap());
+  },gap());
+}
+heart();
+D.addEventListener("visibilitychange",()=>{ lastAct=Date.now(); heart() });
+D.addEventListener("visibilitychange",()=>{ if(!D.hidden){ pulled=false; boot() } });
+addEventListener("online",()=>{ pulled=false; fails=0; boot() });
+addEventListener("pagehide",()=>{ push() });
+})();
+</script>
+<style id="primcss">
+/* ── ตัวเลือกสีหลัก ── */
+.pri-wrap{display:flex;flex-wrap:wrap;gap:9px;align-items:center}
+.pri-sw{width:38px;height:38px;border-radius:12px;cursor:pointer;padding:0;position:relative;
+  border:2px solid transparent;box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
+.pri-sw.on{border-color:var(--c-ink,#fff);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 0 0 3px var(--c-acc-soft,rgba(232,148,60,.2))}
+.pri-sw.on::after{content:"";position:absolute;inset:0;margin:auto;width:11px;height:6px;
+  border-left:2.5px solid #fff;border-bottom:2.5px solid #fff;transform:rotate(-45deg) translate(1px,-2px);
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+.pri-any{width:38px;height:38px;border-radius:12px;cursor:pointer;display:grid;place-items:center;
+  border:1px dashed var(--c-line2,rgba(255,255,255,.25));color:var(--c-mut);font-size:17px;
+  background:conic-gradient(from 0deg,#E2574C,#E8943C,#B08A3C,#3E9E6E,#2FA8C7,#4F8FF7,#8E63D6,#D9548E,#E2574C);
+  position:relative;overflow:hidden}
+.pri-any input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;border:0;padding:0}
+.pri-now{display:flex;align-items:center;gap:9px;margin-top:10px;font-size:12.5px;color:var(--c-mut)}
+.pri-now b{font-family:ui-monospace,monospace;font-size:12.5px;color:var(--c-ink);
+  padding:3px 9px;border-radius:7px;background:rgba(127,127,127,.12)}
+.pri-dot{width:15px;height:15px;border-radius:50%;flex-shrink:0}
+</style>
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   สีหลักของแอป — เลือกได้ทุกสี ไม่จำกัด
+   ───────────────────────────────────────────────────────────────────
+   ธีมเหลือแค่สว่างกับมืด ซึ่งคุมโครงสี พื้นหลัง และตัวหนังสือ
+   ส่วน "สีหลัก" คือสีปุ่มและตัวเน้น แยกออกมาให้เลือกอิสระ
+   ทำงานด้วยการเขียนตัวแปร CSS ทับลงที่ <html> ตรง ๆ
+   ค่าที่เขียนแบบนี้ชนะสไตล์ชีทเสมอ จึงใช้ได้กับทุกธีมโดยไม่ต้องแก้ CSS เดิม
+   ═══════════════════════════════════════════════════════════════════ */
+(function(){
+const D=document, KEY="spire_primary", DEF="#E8943C";
+
+const PRESETS=[
+  {k:"#E8943C",th:"ส้มอบอุ่น",en:"Warm orange"},
+  {k:"#E2574C",th:"แดงอิฐ",   en:"Brick red"},
+  {k:"#D9548E",th:"ชมพู",     en:"Pink"},
+  {k:"#8E63D6",th:"ม่วง",     en:"Purple"},
+  {k:"#4F8FF7",th:"น้ำเงิน",  en:"Blue"},
+  {k:"#2FA8C7",th:"ฟ้าคราม",  en:"Teal"},
+  {k:"#3E9E6E",th:"เขียว",    en:"Green"},
+  {k:"#B08A3C",th:"ทอง",      en:"Gold"},
+  {k:"#6B7280",th:"เทา",      en:"Graphite"},
+];
+
+/* ── สีเลข ── */
+function hex2rgb(h){
+  h=String(h||"").trim().replace(/^#/,"");
+  if(h.length===3)h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+  if(!/^[0-9a-f]{6}$/i.test(h))return null;
+  return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];
+}
+const rgb2hex=(r,g,b)=>"#"+[r,g,b].map(x=>Math.max(0,Math.min(255,Math.round(x)))
+  .toString(16).padStart(2,"0")).join("");
+function rgb2hsl(r,g,b){
+  r/=255;g/=255;b/=255;
+  const mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;
+  let h=0;
+  if(d){ h=mx===r?((g-b)/d+(g<b?6:0)):mx===g?((b-r)/d+2):((r-g)/d+4); h*=60 }
+  const l=(mx+mn)/2;
+  const s=d?d/(1-Math.abs(2*l-1)):0;
+  return [h,s,l];
+}
+function hsl2rgb(h,s,l){
+  h=((h%360)+360)%360;
+  const c=(1-Math.abs(2*l-1))*s, x=c*(1-Math.abs((h/60)%2-1)), m=l-c/2;
+  let t=[0,0,0];
+  if(h<60)t=[c,x,0]; else if(h<120)t=[x,c,0]; else if(h<180)t=[0,c,x];
+  else if(h<240)t=[0,x,c]; else if(h<300)t=[x,0,c]; else t=[c,0,x];
+  return [(t[0]+m)*255,(t[1]+m)*255,(t[2]+m)*255];
+}
+const shift=(hex,dl,dh)=>{
+  const c=hex2rgb(hex); if(!c)return hex;
+  let [h,s,l]=rgb2hsl(c[0],c[1],c[2]);
+  l=Math.max(0,Math.min(1,l+dl));
+  return rgb2hex(...hsl2rgb(h+(dh||0),s,l));
+};
+
+/* สีอ่อนเกินไปจะทำให้ตัวหนังสือสีขาวบนปุ่มอ่านไม่ออก
+   จึงหรี่ความสว่างลงมาให้อยู่ในระดับที่ยังอ่านได้เสมอ */
+function safe(hex){
+  const c=hex2rgb(hex); if(!c)return DEF;
+  let [h,s,l]=rgb2hsl(c[0],c[1],c[2]);
+  if(l>0.62)l=0.62;
+  if(l<0.18)l=0.18;
+  if(s>0.95)s=0.95;
+  return rgb2hex(...hsl2rgb(h,s,l));
+}
+
+function read(){
+  try{ const v=JSON.parse(localStorage.getItem(KEY)); if(hex2rgb(v))return v }catch(e){}
+  return DEF;
+}
+
+const listeners=[];
+function apply(raw){
+  const base=safe(raw);
+  const c=hex2rgb(base)||hex2rgb(DEF);
+  const soft=(a)=>`rgba(${c[0]},${c[1]},${c[2]},${a})`;
+  const light=shift(base,.10,10), dark=shift(base,-.12,-6);
+  const st=D.documentElement.style;
+  const set=(k,v)=>st.setProperty(k,v);
+  /* ชื่อตัวแปรของหน้าแดชบอร์ดกับห้องแชตไม่เหมือนกัน ตั้งให้ครบทั้งสองชุด */
+  set("--accent",base); set("--accent-2",light); set("--accent-d",dark);
+  set("--grad",`linear-gradient(135deg,${light},${dark})`);
+  set("--c-acc",base); set("--c-acc-soft",soft(.16));
+  set("--c-grad",`linear-gradient(135deg,${light},${dark})`);
+  set("--c-user",`linear-gradient(135deg,${light},${dark})`);
+  set("--c-aura1",soft(.12));
+  /* สีตัวหนังสือบนพื้นสีหลัก คำนวณจากความสว่างจริง ไม่ใช่เดา */
+  const lum=(0.299*c[0]+0.587*c[1]+0.114*c[2])/255;
+  set("--on-acc",lum>0.62?"#1A1204":"#ffffff");
+  try{
+    const mt=D.querySelector('meta[name="theme-color"]');
+    if(mt){ const bg=getComputedStyle(D.documentElement).getPropertyValue("--c-bg0").trim()
+                 ||getComputedStyle(D.documentElement).getPropertyValue("--bg").trim();
+            if(bg)mt.setAttribute("content",bg) }
+  }catch(e){}
+  listeners.forEach(fn=>{ try{ fn(base) }catch(e){} });
+}
+
+function set(hex){
+  if(!hex2rgb(hex))return;
+  try{ localStorage.setItem(KEY,JSON.stringify(hex)) }catch(e){}
+  try{ window.cloudMark&&window.cloudMark("primary") }catch(e){}
+  apply(hex);
+}
+
+apply(read());                         /* ทาสีทันทีตั้งแต่สคริปต์ถูกอ่าน */
+if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",()=>apply(read()));
+
+window.spirePrimary=read;
+window.spireSetPrimary=set;
+window.spirePrimaryPresets=()=>PRESETS.slice();
+window.spireOnPrimary=fn=>{ if(typeof fn==="function")listeners.push(fn) };
+/* ให้ตัวซิงก์คลาวด์เรียกได้เมื่อค่ามาจากเครื่องอื่น */
+window.spireApplyPrimary=()=>apply(read());
+})();
+
+</script>
+<style id="primfix">
+/* ── ให้ทุกที่ที่เคยฝังสีส้มไว้ ไปตามสีหลักที่ผู้ใช้เลือกแทน ──
+   ของเดิมเขียนค่า rgba สีส้มไว้ตรง ๆ หลายสิบจุด เลือกสีอื่นแล้วจะเหลือคราบส้ม
+   ตรงนี้เขียนทับเฉพาะจุดที่ผู้ใช้เห็นจริง โดยอ้างตัวแปรแทนค่าคงที่ */
+.set-l.on{background:var(--c-acc-soft) !important;color:var(--c-acc) !important}
+.set-opt.on{border-color:var(--c-acc) !important;background:var(--c-acc-soft) !important;color:var(--c-acc) !important}
+.set-btn{background:var(--c-acc) !important;color:var(--on-acc,#fff) !important}
+.pl.now{border-color:var(--c-acc) !important;background:var(--c-acc-soft) !important}
+.wbtn.ai:hover{background:var(--c-acc-soft) !important}
+.w-box:focus-within{border-color:var(--c-acc) !important;
+  box-shadow:0 20px 50px -24px var(--c-acc-soft) !important}
+.think .typing i:nth-child(1){background:var(--c-acc) !important}
+.w-q i{color:var(--c-acc) !important}
+/* กล่องโควตาและแถบเตือน */
+.quota-bar{background:var(--c-acc-soft) !important;border-color:var(--c-acc) !important;color:var(--c-acc) !important}
+.quota-bar i{color:var(--c-acc) !important}
+.quota-bar b{color:var(--c-ink) !important}
+.quota-bar button{background:var(--c-acc) !important;color:var(--on-acc,#fff) !important}
+.qp-ic{color:var(--c-acc) !important;background:var(--c-acc-soft) !important}
+.qp-price,.qp-tok i{color:var(--c-acc) !important}
+.qp-card:hover{border-color:var(--c-acc) !important}
+.qp-b1{background:var(--c-grad) !important;color:var(--on-acc,#fff) !important}
+/* ฟอร์มที่ AI ถามกลับ */
+.ask-card{background:var(--c-acc-soft) !important}
+.ask-h i{color:var(--c-acc) !important}
+.ask-o.on{background:var(--c-acc) !important;color:var(--on-acc,#1A1204) !important}
+.ask-o:hover{border-color:var(--c-acc) !important}
+.ask-send{background:var(--c-grad) !important;color:var(--on-acc,#fff) !important}
+.ask-in input:focus{border-color:var(--c-acc) !important}
+.ask-warn{color:var(--c-acc) !important}
+/* สกิล ชิป และจุดกระพริบตอนกำลังโหลด */
+.sk-chip{background:var(--c-acc-soft) !important;color:var(--c-acc) !important}
+.su-dots i{background:var(--c-acc) !important}
+.ai-sig.thinking .dots i{background:var(--c-acc) !important}
+.ai-sig.thinking::before{border-color:var(--c-acc) !important}
+/* ปุ่มหลักและโลโก้ */
+.send,.w-send,.hist-new,.side-new{background:var(--c-grad) !important;color:var(--on-acc,#fff) !important}
+.p-mark,.hint-logo,.side-mark{color:var(--c-acc)}
+</style>
 </body>
 </html>

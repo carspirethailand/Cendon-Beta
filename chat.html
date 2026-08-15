@@ -3341,12 +3341,11 @@ const EN=()=>(window.lang||"th")==="en";
 const T=(th,en)=>(window.spireT?window.spireT(th,en):((window.lang||"th")==="en"?en:th));
 const KEY="spire_theme";
 
+/* ธีมคุมแค่โครงสีพื้นหลังกับตัวหนังสือ ส่วนสีปุ่มแยกไปเป็น "สีหลัก" เลือกได้อิสระ
+   ของเดิมผูกสีปุ่มติดมากับธีม อยากได้ปุ่มสีฟ้าก็ต้องยอมเปลี่ยนพื้นหลังทั้งแอปไปด้วย */
 const THEMES=[
-  {k:"light", th:"สว่าง",   en:"Light"},
-  {k:"dark",  th:"มืด",     en:"Dark"},
-  {k:"ocean", th:"มหาสมุทร",en:"Ocean"},
-  {k:"plant", th:"ต้นไม้",  en:"Plant"},
-  {k:"magma", th:"ลาวา",    en:"Magma"}
+  {k:"light", th:"สว่าง", en:"Light"},
+  {k:"dark",  th:"มืด",   en:"Dark"}
 ];
 const KEYS=THEMES.map(x=>x.k);
 
@@ -3354,9 +3353,11 @@ const KEYS=THEMES.map(x=>x.k);
    ไม่งั้นคนที่เคยตั้งไว้จะเปิดมาเจอธีมผิดโดยไม่รู้ว่าทำไม */
 const OLD={warm:"light",pearl:"light",
            carbon:"dark",night:"dark",midnight:"dark",cyber:"dark",
-           aurora:"ocean",
-           emerald:"plant",moss:"plant",
-           sunset:"magma"};
+           /* สามธีมสีที่เลิกใช้ ให้ตกลงมาที่โครงสีที่ใกล้ที่สุด
+              สีเด่นของมันย้ายไปอยู่ในตัวเลือกสีหลักแทน */
+           aurora:"dark",ocean:"dark",
+           emerald:"light",plant:"light",moss:"light",
+           sunset:"dark",magma:"dark"};
 
 function read(){
   let v=null;
@@ -6394,8 +6395,23 @@ function setBody(){
           data-theme="${x.k}"><span class="thsw" data-t="${x.k}"></span>${t(x.th,x.en)}</button>`
         ).join("")}</div>
       <p class="set-note">${t(
-        "ธีมเดียวใช้ทั้งหน้าหลักและห้องแชต เปลี่ยนที่ไหนก็เปลี่ยนพร้อมกัน",
-        "One theme for both the dashboard and the chat — change it anywhere.")}</p>
+        "ธีมคุมพื้นหลังกับตัวหนังสือ ส่วนสีปุ่มเลือกแยกได้ข้างล่าง",
+        "The theme sets the background and text. Pick your button colour below.")}</p>
+
+      <h2>${t("สีหลัก","Accent colour")}</h2>
+      <div class="pri-wrap">${((window.spirePrimaryPresets&&window.spirePrimaryPresets())||[]).map(x=>
+        `<button class="pri-sw" data-pri="${x.k}" style="background:${x.k}"
+          title="${t(x.th,x.en)}" aria-label="${t(x.th,x.en)}"></button>`).join("")}
+        <label class="pri-any" title="${t("เลือกสีเอง","Pick any colour")}">
+          <i class="ti ti-color-picker"></i>
+          <input type="color" id="priAny" value="${(window.spirePrimary&&window.spirePrimary())||"#E8943C"}">
+        </label>
+      </div>
+      <div class="pri-now"><span class="pri-dot" style="background:var(--c-acc)"></span>
+        ${t("สีที่ใช้อยู่","Current")} <b id="priHex">${(window.spirePrimary&&window.spirePrimary())||"#E8943C"}</b></div>
+      <p class="set-note">${t(
+        "เลือกได้ทุกสีไม่จำกัด ถ้าสีสว่างเกินจนตัวหนังสือบนปุ่มอ่านไม่ออก ระบบจะหรี่ลงให้เอง",
+        "Any colour you like. If it's too bright to read text on, we dim it just enough.")}</p>
 
       <h2>${t("การซิงก์ข้อมูล","Sync")}</h2>
       <div id="syncBox"></div>
@@ -6547,6 +6563,20 @@ function wireSettings(){
   try{ window.spireWireDanger&&window.spireWireDanger(v) }catch(e){}
   v.querySelectorAll("[data-theme]").forEach(b=>b.onclick=()=>{
     if(window.spireSetTheme)window.spireSetTheme(b.dataset.theme); renderSettings() });
+  /* สีหลัก — กดสีสำเร็จรูป หรือเลือกเองจากจานสีของเครื่อง */
+  const markPri=()=>{
+    const cur=((window.spirePrimary&&window.spirePrimary())||"").toLowerCase();
+    v.querySelectorAll("[data-pri]").forEach(b=>
+      b.classList.toggle("on",b.dataset.pri.toLowerCase()===cur));
+    const hx=$("priHex"); if(hx)hx.textContent=cur.toUpperCase();
+  };
+  markPri();
+  try{ if(!renderSettings.__pri){ renderSettings.__pri=true;
+    window.spireOnPrimary&&window.spireOnPrimary(()=>{ try{ markPri() }catch(e){} }) } }catch(e){}
+  v.querySelectorAll("[data-pri]").forEach(b=>b.onclick=()=>{
+    if(window.spireSetPrimary)window.spireSetPrimary(b.dataset.pri); markPri() });
+  const any=$("priAny");
+  if(any)any.oninput=()=>{ if(window.spireSetPrimary)window.spireSetPrimary(any.value); markPri() };
   v.querySelectorAll("[data-do]").forEach(b=>b.onclick=()=>{
     const a=b.dataset.do;
     if(a==="new"&&window.newSession){window.newSession();setPhase("welcome")}
@@ -11947,7 +11977,7 @@ const PULLED="spire___pulled";             /* บัญชีที่ดึง�
 /* คีย์ที่ต้องเหมือนกันทุกเครื่อง — sess_/cursess_ ต่อท้ายด้วยรหัสรถ */
 /* setup = ก้อนการตั้งค่าบัญชีทั้งหมด (ระดับการใช้งาน ภาษา ธีม หน่วย การแจ้งเตือน)
    ไม่เคยอยู่ในรายการซิงก์มาก่อน จึงเป็นอีกสาเหตุที่เข้าเครื่องใหม่แล้วต้องตั้งค่าใหม่ */
-const FIXED=["setup","theme","chatTheme","lang","chatStyle","garage","selCar",
+const FIXED=["setup","theme","chatTheme","primary","lang","chatStyle","garage","selCar",
              "skills","skillcat","chatSessions","units","notify"];
 const isTracked=k=>FIXED.indexOf(k)>=0||/^(sess|cursess|chatMsgs)_/.test(k);
 
@@ -12142,6 +12172,8 @@ function apply(keys){
         try{ window.spireApplySetup&&window.spireApplySetup() }catch(e){}
       }
     }
+    /* สีหลักที่เปลี่ยนจากอีกเครื่อง ต้องทาทับทันทีเหมือนธีม */
+    if(has("primary"))window.spireApplyPrimary&&window.spireApplyPrimary();
     if(has("garage")||has("selCar"))window.renderCarUI&&window.renderCarUI();
     /* บทสนทนา — ห้ามวาดทับตอนผู้ใช้กำลังพิมพ์หรือกำลังรอคำตอบอยู่
        ไม่งั้นข้อความที่เพิ่งพิมพ์จะหายไปต่อหน้าต่อตา */
@@ -12628,5 +12660,182 @@ D.addEventListener("click",e=>{
 })();
 
 </script>
+<style id="primcss">
+/* ── ตัวเลือกสีหลัก ── */
+.pri-wrap{display:flex;flex-wrap:wrap;gap:9px;align-items:center}
+.pri-sw{width:38px;height:38px;border-radius:12px;cursor:pointer;padding:0;position:relative;
+  border:2px solid transparent;box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
+.pri-sw.on{border-color:var(--c-ink,#fff);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 0 0 3px var(--c-acc-soft,rgba(232,148,60,.2))}
+.pri-sw.on::after{content:"";position:absolute;inset:0;margin:auto;width:11px;height:6px;
+  border-left:2.5px solid #fff;border-bottom:2.5px solid #fff;transform:rotate(-45deg) translate(1px,-2px);
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+.pri-any{width:38px;height:38px;border-radius:12px;cursor:pointer;display:grid;place-items:center;
+  border:1px dashed var(--c-line2,rgba(255,255,255,.25));color:var(--c-mut);font-size:17px;
+  background:conic-gradient(from 0deg,#E2574C,#E8943C,#B08A3C,#3E9E6E,#2FA8C7,#4F8FF7,#8E63D6,#D9548E,#E2574C);
+  position:relative;overflow:hidden}
+.pri-any input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;border:0;padding:0}
+.pri-now{display:flex;align-items:center;gap:9px;margin-top:10px;font-size:12.5px;color:var(--c-mut)}
+.pri-now b{font-family:ui-monospace,monospace;font-size:12.5px;color:var(--c-ink);
+  padding:3px 9px;border-radius:7px;background:rgba(127,127,127,.12)}
+.pri-dot{width:15px;height:15px;border-radius:50%;flex-shrink:0}
+</style>
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   สีหลักของแอป — เลือกได้ทุกสี ไม่จำกัด
+   ───────────────────────────────────────────────────────────────────
+   ธีมเหลือแค่สว่างกับมืด ซึ่งคุมโครงสี พื้นหลัง และตัวหนังสือ
+   ส่วน "สีหลัก" คือสีปุ่มและตัวเน้น แยกออกมาให้เลือกอิสระ
+   ทำงานด้วยการเขียนตัวแปร CSS ทับลงที่ <html> ตรง ๆ
+   ค่าที่เขียนแบบนี้ชนะสไตล์ชีทเสมอ จึงใช้ได้กับทุกธีมโดยไม่ต้องแก้ CSS เดิม
+   ═══════════════════════════════════════════════════════════════════ */
+(function(){
+const D=document, KEY="spire_primary", DEF="#E8943C";
+
+const PRESETS=[
+  {k:"#E8943C",th:"ส้มอบอุ่น",en:"Warm orange"},
+  {k:"#E2574C",th:"แดงอิฐ",   en:"Brick red"},
+  {k:"#D9548E",th:"ชมพู",     en:"Pink"},
+  {k:"#8E63D6",th:"ม่วง",     en:"Purple"},
+  {k:"#4F8FF7",th:"น้ำเงิน",  en:"Blue"},
+  {k:"#2FA8C7",th:"ฟ้าคราม",  en:"Teal"},
+  {k:"#3E9E6E",th:"เขียว",    en:"Green"},
+  {k:"#B08A3C",th:"ทอง",      en:"Gold"},
+  {k:"#6B7280",th:"เทา",      en:"Graphite"},
+];
+
+/* ── สีเลข ── */
+function hex2rgb(h){
+  h=String(h||"").trim().replace(/^#/,"");
+  if(h.length===3)h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+  if(!/^[0-9a-f]{6}$/i.test(h))return null;
+  return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];
+}
+const rgb2hex=(r,g,b)=>"#"+[r,g,b].map(x=>Math.max(0,Math.min(255,Math.round(x)))
+  .toString(16).padStart(2,"0")).join("");
+function rgb2hsl(r,g,b){
+  r/=255;g/=255;b/=255;
+  const mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;
+  let h=0;
+  if(d){ h=mx===r?((g-b)/d+(g<b?6:0)):mx===g?((b-r)/d+2):((r-g)/d+4); h*=60 }
+  const l=(mx+mn)/2;
+  const s=d?d/(1-Math.abs(2*l-1)):0;
+  return [h,s,l];
+}
+function hsl2rgb(h,s,l){
+  h=((h%360)+360)%360;
+  const c=(1-Math.abs(2*l-1))*s, x=c*(1-Math.abs((h/60)%2-1)), m=l-c/2;
+  let t=[0,0,0];
+  if(h<60)t=[c,x,0]; else if(h<120)t=[x,c,0]; else if(h<180)t=[0,c,x];
+  else if(h<240)t=[0,x,c]; else if(h<300)t=[x,0,c]; else t=[c,0,x];
+  return [(t[0]+m)*255,(t[1]+m)*255,(t[2]+m)*255];
+}
+const shift=(hex,dl,dh)=>{
+  const c=hex2rgb(hex); if(!c)return hex;
+  let [h,s,l]=rgb2hsl(c[0],c[1],c[2]);
+  l=Math.max(0,Math.min(1,l+dl));
+  return rgb2hex(...hsl2rgb(h+(dh||0),s,l));
+};
+
+/* สีอ่อนเกินไปจะทำให้ตัวหนังสือสีขาวบนปุ่มอ่านไม่ออก
+   จึงหรี่ความสว่างลงมาให้อยู่ในระดับที่ยังอ่านได้เสมอ */
+function safe(hex){
+  const c=hex2rgb(hex); if(!c)return DEF;
+  let [h,s,l]=rgb2hsl(c[0],c[1],c[2]);
+  if(l>0.62)l=0.62;
+  if(l<0.18)l=0.18;
+  if(s>0.95)s=0.95;
+  return rgb2hex(...hsl2rgb(h,s,l));
+}
+
+function read(){
+  try{ const v=JSON.parse(localStorage.getItem(KEY)); if(hex2rgb(v))return v }catch(e){}
+  return DEF;
+}
+
+const listeners=[];
+function apply(raw){
+  const base=safe(raw);
+  const c=hex2rgb(base)||hex2rgb(DEF);
+  const soft=(a)=>`rgba(${c[0]},${c[1]},${c[2]},${a})`;
+  const light=shift(base,.10,10), dark=shift(base,-.12,-6);
+  const st=D.documentElement.style;
+  const set=(k,v)=>st.setProperty(k,v);
+  /* ชื่อตัวแปรของหน้าแดชบอร์ดกับห้องแชตไม่เหมือนกัน ตั้งให้ครบทั้งสองชุด */
+  set("--accent",base); set("--accent-2",light); set("--accent-d",dark);
+  set("--grad",`linear-gradient(135deg,${light},${dark})`);
+  set("--c-acc",base); set("--c-acc-soft",soft(.16));
+  set("--c-grad",`linear-gradient(135deg,${light},${dark})`);
+  set("--c-user",`linear-gradient(135deg,${light},${dark})`);
+  set("--c-aura1",soft(.12));
+  /* สีตัวหนังสือบนพื้นสีหลัก คำนวณจากความสว่างจริง ไม่ใช่เดา */
+  const lum=(0.299*c[0]+0.587*c[1]+0.114*c[2])/255;
+  set("--on-acc",lum>0.62?"#1A1204":"#ffffff");
+  try{
+    const mt=D.querySelector('meta[name="theme-color"]');
+    if(mt){ const bg=getComputedStyle(D.documentElement).getPropertyValue("--c-bg0").trim()
+                 ||getComputedStyle(D.documentElement).getPropertyValue("--bg").trim();
+            if(bg)mt.setAttribute("content",bg) }
+  }catch(e){}
+  listeners.forEach(fn=>{ try{ fn(base) }catch(e){} });
+}
+
+function set(hex){
+  if(!hex2rgb(hex))return;
+  try{ localStorage.setItem(KEY,JSON.stringify(hex)) }catch(e){}
+  try{ window.cloudMark&&window.cloudMark("primary") }catch(e){}
+  apply(hex);
+}
+
+apply(read());                         /* ทาสีทันทีตั้งแต่สคริปต์ถูกอ่าน */
+if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",()=>apply(read()));
+
+window.spirePrimary=read;
+window.spireSetPrimary=set;
+window.spirePrimaryPresets=()=>PRESETS.slice();
+window.spireOnPrimary=fn=>{ if(typeof fn==="function")listeners.push(fn) };
+/* ให้ตัวซิงก์คลาวด์เรียกได้เมื่อค่ามาจากเครื่องอื่น */
+window.spireApplyPrimary=()=>apply(read());
+})();
+
+</script>
+<style id="primfix">
+/* ── ให้ทุกที่ที่เคยฝังสีส้มไว้ ไปตามสีหลักที่ผู้ใช้เลือกแทน ──
+   ของเดิมเขียนค่า rgba สีส้มไว้ตรง ๆ หลายสิบจุด เลือกสีอื่นแล้วจะเหลือคราบส้ม
+   ตรงนี้เขียนทับเฉพาะจุดที่ผู้ใช้เห็นจริง โดยอ้างตัวแปรแทนค่าคงที่ */
+.set-l.on{background:var(--c-acc-soft) !important;color:var(--c-acc) !important}
+.set-opt.on{border-color:var(--c-acc) !important;background:var(--c-acc-soft) !important;color:var(--c-acc) !important}
+.set-btn{background:var(--c-acc) !important;color:var(--on-acc,#fff) !important}
+.pl.now{border-color:var(--c-acc) !important;background:var(--c-acc-soft) !important}
+.wbtn.ai:hover{background:var(--c-acc-soft) !important}
+.w-box:focus-within{border-color:var(--c-acc) !important;
+  box-shadow:0 20px 50px -24px var(--c-acc-soft) !important}
+.think .typing i:nth-child(1){background:var(--c-acc) !important}
+.w-q i{color:var(--c-acc) !important}
+/* กล่องโควตาและแถบเตือน */
+.quota-bar{background:var(--c-acc-soft) !important;border-color:var(--c-acc) !important;color:var(--c-acc) !important}
+.quota-bar i{color:var(--c-acc) !important}
+.quota-bar b{color:var(--c-ink) !important}
+.quota-bar button{background:var(--c-acc) !important;color:var(--on-acc,#fff) !important}
+.qp-ic{color:var(--c-acc) !important;background:var(--c-acc-soft) !important}
+.qp-price,.qp-tok i{color:var(--c-acc) !important}
+.qp-card:hover{border-color:var(--c-acc) !important}
+.qp-b1{background:var(--c-grad) !important;color:var(--on-acc,#fff) !important}
+/* ฟอร์มที่ AI ถามกลับ */
+.ask-card{background:var(--c-acc-soft) !important}
+.ask-h i{color:var(--c-acc) !important}
+.ask-o.on{background:var(--c-acc) !important;color:var(--on-acc,#1A1204) !important}
+.ask-o:hover{border-color:var(--c-acc) !important}
+.ask-send{background:var(--c-grad) !important;color:var(--on-acc,#fff) !important}
+.ask-in input:focus{border-color:var(--c-acc) !important}
+.ask-warn{color:var(--c-acc) !important}
+/* สกิล ชิป และจุดกระพริบตอนกำลังโหลด */
+.sk-chip{background:var(--c-acc-soft) !important;color:var(--c-acc) !important}
+.su-dots i{background:var(--c-acc) !important}
+.ai-sig.thinking .dots i{background:var(--c-acc) !important}
+.ai-sig.thinking::before{border-color:var(--c-acc) !important}
+/* ปุ่มหลักและโลโก้ */
+.send,.w-send,.hist-new,.side-new{background:var(--c-grad) !important;color:var(--on-acc,#fff) !important}
+.p-mark,.hint-logo,.side-mark{color:var(--c-acc)}
+</style>
 </body>
 </html>

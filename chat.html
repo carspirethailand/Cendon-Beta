@@ -4906,6 +4906,111 @@ const SYMPTOMS_DATABASE={
       ["แก้มยางบวม ร้าว หรือยางแบนซึม","Flat tire or cracked sidewall","タイヤの膨らみ/ひび","轮胎鼓包或裂纹","Riss in der Seitenwand","Neumático agrietado"],
       ["อาการอื่นๆ ของล้อและยาง","Other wheel & tire symptoms","その他のタイヤ症状","其他轮胎症状","Andere Reifen-Symptome","Otros síntomas de ruedas"]]}};
 
+/* ═══════════════════════════════════════════════════════════════════
+   อ่านคำตอบแบบสตรีม — ความคิดไหลออกมาสด ๆ ระหว่างที่ AI กำลังคิด
+   ───────────────────────────────────────────────────────────────────
+   ของเดิมรอจนคิดเสร็จแล้วค่อยแสดงทีเดียว ผู้ใช้เห็นความคิดตอนที่มันคิดจบแล้ว
+   ตรงนี้อ่านทีละก้อนจากเซิร์ฟเวอร์แล้ววาดทันที ทั้งสถานะที่กำลังทำ
+   ความคิด และตัวคำตอบ  ถ้าเซิร์ฟเวอร์ยังไม่รองรับ จะตกไปใช้ทางเดิมเอง
+   ═══════════════════════════════════════════════════════════════════ */
+async function streamAnswer(contents,opts){
+  opts=opts||{};
+  if(!(useFb&&auth&&auth.currentUser))throw new Error(lang==="en"?"Please sign in first":"กรุณาเข้าสู่ระบบก่อนใช้งาน");
+  if(typeof ReadableStream==="undefined"||!window.TextDecoder)return null;   /* เบราว์เซอร์เก่า ใช้ทางเดิม */
+  const tok=await auth.currentUser.getIdToken();
+  const ac=(typeof AbortController!=="undefined")?new AbortController():null;
+  window.__aiAbort=ac;
+  const car=selCar()||{};
+  const r=await fetch(`${BACKEND_URL}/api/ai/stream`,{method:"POST",
+    signal:ac?ac.signal:undefined,
+    headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok},
+    body:JSON.stringify({contents,
+      carId:car.id||null,make:car.make||car.name||"",model:car.model||"",
+      year:car.year||"",mileage:car.mileage||"",
+      skillIds:opts.skillIds||[],
+      userName:(()=>{ try{ const su=JSON.parse(localStorage.getItem("spire_setup")||"null");
+        return (su&&su.name)||(currentUser&&currentUser.name)||"" }catch(e){ return "" } })()})});
+
+  if(r.status===404)return null;                 /* เซิร์ฟเวอร์ยังเป็นรุ่นเก่า */
+  if(!r.ok){
+    let d=null; try{ d=await r.json() }catch(e){}
+    if(r.status===429||(d&&d.error==="quota")){
+      try{ window.quotaHit&&window.quotaHit((d&&d.quota)||null) }catch(e){}
+      throw new Error(lang==="en"?"You've used up this window's quota":"ใช้โควตาช่วงนี้ครบแล้ว");
+    }
+    return null;
+  }
+  if(!r.body)return null;
+
+  /* เตรียมข้อความของ AI ที่จะโตขึ้นเรื่อย ๆ ระหว่างสตรีม */
+  const m={role:"ai",text:"",reasoning:"",streaming:true,status:""};
+  messages.pop();                                /* เอาตัวยึด typing ออก */
+  messages.push(m);
+  renderMessages();
+  const nodes=liveNodes();
+
+  const rd=r.body.getReader(), dec=new TextDecoder();
+  let buf="",usage=null,failed=null;
+  try{
+    while(true){
+      const {done,value}=await rd.read();
+      if(done)break;
+      if(window.__stopped){ try{ rd.cancel() }catch(e){} break }
+      buf+=dec.decode(value,{stream:true});
+      const lines=buf.split("\n"); buf=lines.pop()||"";
+      for(const line of lines){
+        const t=line.trim();
+        if(!t.startsWith("data:"))continue;
+        let d=null; try{ d=JSON.parse(t.slice(5).trim()) }catch(e){ continue }
+        if(d.type==="status"){ m.status=d.text; paintLive(nodes,m) }
+        else if(d.type==="reasoning"){ m.reasoning+=d.delta; paintLive(nodes,m) }
+        else if(d.type==="text"){ m.text+=d.delta; paintLive(nodes,m) }
+        else if(d.type==="text_done"){ m.text=d.text||m.text; paintLive(nodes,m) }
+        else if(d.type==="done"){ usage=d.usage }
+        else if(d.type==="error"){ failed=d.message }
+      }
+    }
+  }catch(e){
+    if(window.__stopped||(e&&e.name==="AbortError"))throw e;
+    failed=failed||String(e&&e.message||e);
+  }
+
+  m.streaming=false; m.status="";
+  if(!m.text.trim()&&failed){ messages.pop(); throw new Error(failed) }
+  if(!m.text.trim()){ messages.pop(); return null }   /* ไม่ได้อะไรเลย ลองทางเดิม */
+
+  /* แกะฟอร์มที่ AI ขอ ออกจากข้อความก่อนแสดงผลจริง */
+  const parsed=parseAsk(m.text);
+  m.text=parsed.text; if(parsed.ask)m.ask=parsed.ask;
+  try{ if(usage)window.quotaUpdate&&window.quotaUpdate(usage) }catch(e){}
+  renderMessages();
+  return m.text;
+}
+
+/* หา element ที่ต้องอัปเดตระหว่างสตรีม จะได้ไม่ต้องวาดห้องแชตใหม่ทุกตัวอักษร */
+function liveNodes(){
+  const th=$("thread");
+  const b=[...th.querySelectorAll(".msg.ai .bubble")].pop();
+  return {bubble:b};
+}
+function paintLive(n,m){
+  if(!n.bubble)return;
+  const en=lang==="en";
+  const think=m.reasoning
+    ? `<details class="think-box live"${m.streaming?" open":""}>
+         <summary><i class="ti ti-brain"></i><span>${m.streaming?(en?"Thinking":"กำลังคิด"):(en?"Show thinking":"ดูความคิด")}</span>
+         <i class="ti ti-chevron-down ch"></i></summary>
+         <div class="think-in">${esc(m.reasoning).replace(/\n/g,"<br>")}</div></details>`
+    : "";
+  const st=(m.streaming&&m.status&&!m.text)
+    ? `<div class="live-status"><span class="ls-dot"></span>${esc(m.status)}</div>` : "";
+  n.bubble.innerHTML=think+st+md(m.text)+(m.streaming&&m.text?'<span class="cursor"></span>':"");
+  /* ถ้าเปิดกล่องความคิดอยู่ ให้เลื่อนตามข้อความใหม่ที่ไหลเข้ามา */
+  const box=n.bubble.querySelector(".think-in");
+  if(box&&m.streaming)box.scrollTop=box.scrollHeight;
+  scrollBottom();
+}
+
 /* ===== AI (secure backend proxy) ===== */
 let lastMeta={cached:false,cacheId:""};
 
@@ -5716,6 +5821,24 @@ async function sendMsg(){
     let skillIds=[];
     try{ skillIds=(window.spireSkillsAttached&&window.spireSkillsAttached()||[])
            .map(x=>x.id||x.slug).filter(Boolean) }catch(e){}
+    /* ลองแบบสตรีมก่อน จะได้เห็นความคิดสด ๆ ถ้าไม่ได้ค่อยใช้ทางเดิม */
+    let streamed=null;
+    try{ streamed=await streamAnswer(contents,{skillIds}) }
+    catch(e){
+      if(window.__stopped||(e&&e.name==="AbortError")){ window.__stopped=false; return }
+      if(/โควตา|quota/i.test(e.message||""))throw e;
+      streamed=null;
+    }
+    if(streamed!==null){
+      saveSession();
+      if(selCar())addHistory(selCar().id,text||(lang==="en"?"media":"แนบสื่อ"),streamed);
+      try{ window.spireSkillsClear&&window.spireSkillsClear() }catch(e){}
+      try{ window.slideRelease&&window.slideRelease() }catch(e){}
+      sending=false;updateSend();renderChips();
+      return;
+    }
+    messages.push({role:"ai",typing:true});renderMessages();
+
     const raw=await gemini(contents,{system:sys,search:!hasMedia,temp:0.5,skillIds,
       fresh:window.__freshOnce===true});
     window.__freshOnce=false;
@@ -12908,6 +13031,18 @@ window.spireApplyPrimary=()=>apply(read());
 .msg.ai .bubble{color:var(--c-ink)}
 .msg.ai .bubble>.think-box+*{color:var(--c-ink)}
 @media (prefers-reduced-motion:reduce){.think-in{animation:none}}
+</style>
+<style id="livecss">
+.live-status{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--c-mut);
+  padding:2px 0 4px;animation:lsIn .2s ease-out}
+@keyframes lsIn{from{opacity:0}to{opacity:1}}
+.ls-dot{width:7px;height:7px;border-radius:50%;background:var(--c-acc,#E08A3C);flex-shrink:0;
+  animation:lsPulse 1.1s ease-in-out infinite}
+@keyframes lsPulse{0%,100%{opacity:.3;transform:scale(.85)}50%{opacity:1;transform:scale(1.15)}}
+/* กล่องความคิดตอนกำลังไหล ให้ดูมีชีวิตและอ่านตามได้ */
+.think-box.live summary{color:var(--c-acc,#E08A3C);background:var(--c-acc-soft,rgba(224,138,60,.12))}
+.think-box.live .think-in{max-height:200px}
+@media (prefers-reduced-motion:reduce){.ls-dot{animation:none}}
 </style>
 </body>
 </html>

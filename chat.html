@@ -4975,7 +4975,7 @@ async function gemini(contents,opts){opts=opts||{};
   /* ทุกคำตอบพ่วงยอดโควตาล่าสุดกลับมาด้วย เก็บไว้ให้หน้าอื่นใช้ต่อ */
   try{ if(d&&d.usage)window.quotaUpdate&&window.quotaUpdate(d.usage) }catch(e){}
   /* คำตอบที่หยิบมาจากคลังคำตอบเก่าจะมีธงนี้ ใช้บอกผู้ใช้และให้กดติชมได้ */
-  lastMeta={cached:!!(d&&d.cached),cacheId:(d&&d.cacheId)||""};
+  lastMeta={cached:!!(d&&d.cached),cacheId:(d&&d.cacheId)||"",reasoning:(d&&d.reasoning)||""};
   return ((d&&d.text)||"").trim();
 }
 function gParse(t){if(!t)return null;let s=t.replace(/```json/gi,"").replace(/```/g,"").trim();const m=s.match(/[\[{][\s\S]*[\]}]/);if(m)s=m[0];try{return JSON.parse(s)}catch{return null}}
@@ -5391,8 +5391,20 @@ function msgHTML(m){
   if(m.role==="user")return`<div class="msg me"><div class="av">${userAv()}</div><div class="bubble">${attHTML(m.atts)}${esc(m.text)||""}</div></div>`;
   if(m.role==="sum")return sumHTML(m.data);
   if(m.typing)return""; /* thinking renders as the spinning mark below (Claude-style) */
-  return`<div class="msg ai"><div class="bubble">${md(m.text)}${
-    m.cached?cachedHTML(m):""}${m.ask?askHTML(m):""}</div></div>`;
+  return`<div class="msg ai"><div class="bubble">${m.reasoning?thinkHTML(m):""}${
+    md(m.text)}${m.cached?cachedHTML(m):""}${m.ask?askHTML(m):""}</div></div>`;
+}
+
+/* ── กระบวนการคิดของ AI ──
+   ย่อไว้เป็นบรรทัดเดียว กดแล้วค่อยกางออกมาดู
+   ของเดิมความคิดถูกส่งมาเป็นคำตอบเลย ผู้ใช้จึงเจอบทที่โมเดลคิดกับตัวเองเต็มหน้าจอ */
+function thinkHTML(m){
+  const en=lang==="en";
+  return`<details class="think-box">
+    <summary><i class="ti ti-brain"></i><span>${en?"Show thinking":"ดูความคิด"}</span>
+      <i class="ti ti-chevron-down ch"></i></summary>
+    <div class="think-in">${esc(m.reasoning).replace(/\n{2,}/g,"<br><br>").replace(/\n/g,"<br>")}</div>
+  </details>`;
 }
 
 /* ป้ายบอกว่าคำตอบนี้หยิบมาจากคลัง ไม่ได้ถาม AI ใหม่ จึงไม่หักโควตา
@@ -5490,6 +5502,7 @@ function typewrite(fullText,done){
   const extra={};
   if(pendingAsk){ extra.ask=pendingAsk; pendingAsk=null }
   if(pendingMeta&&pendingMeta.cached){ extra.cached=true; extra.cacheId=pendingMeta.cacheId }
+  if(pendingMeta&&pendingMeta.reasoning)extra.reasoning=pendingMeta.reasoning;
   pendingMeta=null;
   messages.push(Object.assign({role:"ai",text:fullText},extra));
   const real=messages.filter(m=>!m.typing);
@@ -12836,6 +12849,30 @@ window.spireApplyPrimary=()=>apply(read());
 /* ปุ่มหลักและโลโก้ */
 .send,.w-send,.hist-new,.side-new{background:var(--c-grad) !important;color:var(--on-acc,#fff) !important}
 .p-mark,.hint-logo,.side-mark{color:var(--c-acc)}
+</style>
+<style id="thinkcss">
+/* ── บล็อกความคิด ── */
+.think-box{margin:0 0 10px;max-width:min(100%,64ch)}
+.think-box summary{display:inline-flex;align-items:center;gap:7px;cursor:pointer;list-style:none;
+  padding:5px 11px;border-radius:999px;font-size:12px;color:var(--c-mut);
+  background:rgba(127,127,127,.10);border:1px solid var(--c-line2,rgba(255,255,255,.08));
+  transition:color .15s,background .15s;user-select:none}
+.think-box summary::-webkit-details-marker{display:none}
+.think-box summary:hover{color:var(--c-ink);background:rgba(127,127,127,.16)}
+.think-box summary i{font-size:14px}
+.think-box summary .ch{transition:transform .2s;font-size:13px;opacity:.7}
+.think-box[open] summary .ch{transform:rotate(180deg)}
+.think-in{margin-top:9px;padding:11px 13px;border-radius:12px;
+  border-left:2px solid var(--c-line2,rgba(255,255,255,.14));
+  background:rgba(127,127,127,.06);
+  font-size:12.5px;line-height:1.65;color:var(--c-mut);
+  max-height:340px;overflow:auto;white-space:normal;word-break:break-word;
+  animation:thinkIn .2s ease-out}
+@keyframes thinkIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+/* คำตอบหลักต้องเด่นกว่าความคิดชัดเจน */
+.msg.ai .bubble{color:var(--c-ink)}
+.msg.ai .bubble>.think-box+*{color:var(--c-ink)}
+@media (prefers-reduced-motion:reduce){.think-in{animation:none}}
 </style>
 </body>
 </html>

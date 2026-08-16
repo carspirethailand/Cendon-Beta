@@ -651,6 +651,10 @@ html[data-idle="1"] *{animation-play-state:paused!important}
         <div class="page-head"><div><h1>สุขภาพระบบ</h1><p>ตรวจว่าฐานข้อมูลและการตั้งค่าเซิร์ฟเวอร์ครบถ้วนหรือยัง</p></div>
           <button class="btn sm" onclick="loadHealth()"><i class="ti ti-refresh"></i> ตรวจใหม่</button></div>
         <div id="healthBody"><div class="card"><div class="empty">กำลังตรวจ...</div></div></div>
+        <div class="page-head" style="margin-top:22px"><div><h1 style="font-size:19px">ตรวจการค้นข้อมูลของ AI</h1>
+          <p>เช็กว่า AI ค้นเน็ตได้จริงไหม ถ้าไม่ได้จะบอกว่าติดตรงไหน</p></div>
+          <button class="btn sm" onclick="loadDiag()"><i class="ti ti-stethoscope"></i> ตรวจเดี๋ยวนี้</button></div>
+        <div class="card"><div id="diagBody"><div class="empty">กดปุ่มตรวจเดี๋ยวนี้เพื่อเริ่ม</div></div></div>
       </section>
 
       <!-- KB: สอน AI -->
@@ -1259,6 +1263,35 @@ async function loadHealth(){
   }catch(e){
     $("healthBody").innerHTML=`<div class="card"><div class="empty">ตรวจไม่ได้: ${esc(e.message)}<br>
       <small style="color:var(--faint)">ถ้าขึ้น 404 แปลว่าเซิร์ฟเวอร์ยังเป็นเวอร์ชันเก่า — deploy Worker ใหม่ก่อน</small></div></div>`;
+  }
+}
+
+/* ═══════════ ตรวจการค้นข้อมูล ═══════════ */
+async function loadDiag(){
+  $("diagBody").innerHTML=`<div class="empty">กำลังตรวจ... อาจใช้เวลาสักครู่</div>`;
+  try{
+    const d=await api("/api/admin/diag");
+    const ok=d.search&&d.search.ok;
+    const rows=(d.models||[]).map(m=>`<div class="kb-item">
+      <div class="kb-bd"><div class="kb-h">
+        <b>${esc(m.model)}</b>
+        <span class="kb-tag${m.ok?"":" all"}">${esc(m.tool)}</span>
+        <span class="fb-st ${m.ok?"done":"spam"}">${m.ok?"ใช้ได้":"ไม่ผ่าน"+(m.status?" ("+m.status+")":"")}</span>
+        ${m.grounded?`<small>ค้นเว็บจริง</small>`:(m.ok?`<small>ตอบจากความจำ ไม่ได้ค้นเว็บ</small>`:"")}
+      </div>
+      <div class="kb-body">${esc(m.sample||m.error||"")}</div></div></div>`).join("");
+    $("diagBody").innerHTML=
+      `<div class="kb-item"><div class="kb-bd"><div class="kb-h">
+         <b>สรุป</b><span class="fb-st ${ok?"done":"spam"}">${ok?"ค้นได้":"ค้นไม่ได้"}</span></div>
+         <div class="kb-body">${esc((d.search&&d.search.reason)||"")}</div>
+         <div class="kb-keys">GEMINI_KEY: ${d.keys.gemini?"ตั้งแล้ว":"ยังไม่ได้ตั้ง"} ·
+           OPENROUTER_API_KEY: ${d.keys.openrouter?"ตั้งแล้ว":"ยังไม่ได้ตั้ง"} ·
+           GEMINI_MODEL: ${esc(d.keys.geminiModel)} ·
+           GEMINI_SEARCH_MODEL: ${esc(d.keys.searchModel)}</div>
+       </div></div>`+rows;
+  }catch(e){
+    $("diagBody").innerHTML=`<div class="empty">ตรวจไม่ได้: ${esc(e.message)}<br>
+      <small style="color:var(--faint)">ถ้าขึ้น 404 แปลว่ายังไม่ได้ deploy Worker ตัวใหม่</small></div>`;
   }
 }
 

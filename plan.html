@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>แพ็กเกจ · Cendon</title>
+<meta name="description" content="แพ็กเกจการใช้งาน Cendon — ผู้ช่วยดูแลรถยนต์ด้วย AI">
+<meta name="theme-color" content="#0A0A0B">
+<link rel="icon" type="image/png" href="./favicon.png">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.7.0/dist/tabler-icons.min.css">
+
+<!-- ตั้งธีมก่อนวาดหน้า ไม่งั้นจะเห็นจอขาวแวบหนึ่งก่อนเปลี่ยนเป็นธีมมืด -->
+<script>(function(){try{
+  var r=localStorage.getItem("spire_theme"),t=r?JSON.parse(r):"warm";
+  document.documentElement.setAttribute("data-theme",t);
+}catch(e){}})();</script>
+
+<style>
+/* Spire09 มีเฉพาะอักษรละติน ไม่มีตัวไทย
+   ถ้าไม่จำกัด unicode-range เบราว์เซอร์จะพยายามใช้มันวาดตัวไทยด้วย
+   แล้วได้อักขระเพี้ยนทั้งหน้า — ทั้งแอปจึงจำกัดช่วงไว้แบบนี้เหมือนกันหมด
+   ตัวไทยตกไปที่ Kanit หรือฟอนต์ระบบ ซึ่งวาดได้ถูกต้อง */
+@font-face{font-family:"Spire09";src:url("./fonts/Spire09-Medium.woff2") format("woff2");
+  font-weight:400 600;font-style:normal;font-display:swap;unicode-range:U+0000-002F,U+003A-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AB-20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Spire09";src:url("./fonts/Spire09-Bold.woff2") format("woff2");
+  font-weight:700 900;font-style:normal;font-display:swap;unicode-range:U+0000-002F,U+003A-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AB-20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+
+/* ── โทนสี ──
+   ใช้ชื่อตัวแปรชุดเดียวกับทั้งแอป หน้านี้จึงเปลี่ยนธีมตามที่ผู้ใช้ตั้งไว้
+   และรับสีหลักที่เขาเลือกเองได้ทันทีโดยไม่ต้องแก้อะไรตรงนี้ */
+:root{
+  --c-bg0:#08090C;--c-bg1:#0E1014;--c-bg2:#14171D;
+  --c-ink:#F2F0EC;--c-mut:#A8A79F;--c-faint:#6E6D67;
+  --c-line:rgba(255,255,255,.11);--c-line2:rgba(255,255,255,.06);
+  --c-card:rgba(255,255,255,.035);--c-card2:rgba(255,255,255,.055);
+  --c-acc:#E8943C;--c-acc-2:#D95E3C;
+  --c-grad:linear-gradient(135deg,#E8943C,#D95E3C);
+  --on-acc:#fff;
+  --kd:'Spire09','Kanit',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+html[data-theme="light"],html[data-theme="plant"]{
+  --c-bg0:#F4F1EB;--c-bg1:#FBF9F4;--c-bg2:#FFFFFF;
+  --c-ink:#221F1A;--c-mut:#6C665A;--c-faint:#A6A093;
+  --c-line:rgba(40,34,18,.13);--c-line2:rgba(40,34,18,.07);
+  --c-card:rgba(40,34,18,.028);--c-card2:rgba(40,34,18,.05);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{
+  background:var(--c-bg0);color:var(--c-ink);
+  font-family:var(--kd);font-size:15px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  padding:0 20px 80px;
+  overflow-x:hidden;
+}
+
+/* แสงเรืองอ่อน ๆ หลังหัวเรื่อง ให้หน้าไม่แบนจนเกินไป */
+.glow{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(760px 420px at 50% 4%,var(--c-acc) 0%,transparent 68%);
+  opacity:.10}
+html[data-theme="light"] .glow,html[data-theme="plant"] .glow{opacity:.13}
+
+.wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto}
+
+/* ── แถบบน ── */
+.top{display:flex;align-items:center;gap:12px;padding:20px 0 0}
+.back{display:inline-flex;align-items:center;gap:8px;padding:9px 15px;border-radius:999px;
+  border:1px solid var(--c-line);background:var(--c-card);color:var(--c-ink);
+  font:inherit;font-size:13.5px;cursor:pointer;text-decoration:none;
+  transition:border-color .2s,background .2s,transform .2s}
+.back:hover{border-color:var(--c-acc);transform:translateX(-2px)}
+.back i{font-size:16px}
+
+/* ── หัวเรื่อง ── */
+.head{text-align:center;padding:44px 0 34px}
+.mark{width:56px;height:56px;margin:0 auto 18px;color:var(--c-acc)}
+.mark svg{width:100%;height:100%;display:block}
+h1{font-size:clamp(30px,5vw,44px);font-weight:800;letter-spacing:-.02em;line-height:1.15}
+.sub{margin-top:12px;color:var(--c-mut);font-size:clamp(14px,2vw,16.5px);
+  max-width:520px;margin-left:auto;margin-right:auto}
+.head>*{animation:up .5s cubic-bezier(.2,.9,.3,1.05) both}
+.head .mark{animation-delay:.02s}
+.head h1{animation-delay:.08s}
+.head .sub{animation-delay:.14s}
+@keyframes up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+/* ── ตารางแพ็กเกจ ── */
+.tiers{display:grid;gap:16px;align-items:stretch;
+  grid-template-columns:repeat(auto-fit,minmax(248px,1fr))}
+
+.tier{position:relative;display:flex;flex-direction:column;
+  padding:26px 24px 24px;border-radius:20px;
+  border:1px solid var(--c-line);background:var(--c-card);
+  animation:up .55s cubic-bezier(.2,.9,.3,1.05) both;
+  animation-delay:calc(.18s + var(--i,0) * .09s);
+  transition:transform .3s cubic-bezier(.2,.9,.3,1.15),border-color .3s,box-shadow .3s,background .3s}
+.tier:hover{transform:translateY(-6px);border-color:var(--c-acc);
+  background:var(--c-card2);box-shadow:0 26px 54px -26px var(--c-acc)}
+
+/* แผนเด่นได้ขอบสีและแสงในตัว เหมือนที่เว็บขายของทำกัน
+   คนกวาดตาผ่านแล้วรู้ทันทีว่าควรดูใบไหนก่อน */
+.tier.hero{border-color:var(--c-acc);
+  background:linear-gradient(180deg,var(--c-acc-soft,rgba(232,148,60,.10)),transparent 62%),var(--c-card)}
+.tier.hero::before{content:"";position:absolute;inset:-1px;border-radius:20px;pointer-events:none;
+  background:radial-gradient(420px 180px at 50% 0%,var(--c-acc) 0%,transparent 70%);opacity:.16}
+
+.badge{position:absolute;top:-11px;left:50%;transform:translateX(-50%);
+  padding:5px 13px;border-radius:999px;background:var(--c-grad);color:var(--on-acc);
+  font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;
+  box-shadow:0 8px 20px -8px var(--c-acc)}
+
+.tier h2{font-size:20px;font-weight:700;letter-spacing:-.01em}
+.price{display:flex;align-items:baseline;gap:7px;margin:12px 0 6px;flex-wrap:wrap}
+.price b{font-size:38px;font-weight:800;letter-spacing:-.03em;line-height:1;
+  font-variant-numeric:tabular-nums}
+.price span{font-size:12.5px;color:var(--c-mut);font-weight:600}
+.tag{color:var(--c-mut);font-size:13.5px;min-height:40px}
+
+.cta{width:100%;margin:18px 0 20px;padding:12px 16px;border-radius:12px;
+  border:1px solid var(--c-line);background:var(--c-card2);color:var(--c-ink);
+  font:inherit;font-size:14px;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  transition:transform .2s,border-color .2s,background .2s,box-shadow .2s}
+.cta:hover:not(:disabled){transform:translateY(-2px);border-color:var(--c-acc)}
+.cta.solid{background:var(--c-grad);border-color:transparent;color:var(--on-acc);
+  box-shadow:0 12px 26px -12px var(--c-acc)}
+.cta.solid:hover:not(:disabled){box-shadow:0 18px 34px -14px var(--c-acc)}
+.cta:disabled{opacity:.55;cursor:default;transform:none}
+.cta.done{border-color:var(--c-acc);color:var(--c-acc);background:transparent;
+  animation:pop .42s cubic-bezier(.2,.9,.3,1.5)}
+@keyframes pop{0%{transform:scale(1)}45%{transform:scale(1.05)}100%{transform:scale(1)}}
+
+.feat{list-style:none;display:flex;flex-direction:column;gap:13px;margin-top:auto}
+.feat li{display:flex;gap:11px;align-items:flex-start;font-size:13.5px;line-height:1.5}
+.feat i{flex-shrink:0;font-size:16px;color:var(--c-acc);margin-top:1px}
+.feat b{display:block;font-weight:600;color:var(--c-ink)}
+.feat small{display:block;color:var(--c-faint);font-size:12px;line-height:1.5;margin-top:1px}
+
+/* ── ท้ายหน้า ── */
+.note{text-align:center;margin-top:34px;color:var(--c-faint);font-size:13px;
+  max-width:620px;margin-left:auto;margin-right:auto;line-height:1.75}
+.qa{margin-top:52px;display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.qa div{padding:18px 20px;border-radius:16px;border:1px solid var(--c-line2);background:var(--c-card)}
+.qa b{display:block;margin-bottom:6px;font-size:14.5px}
+.qa p{color:var(--c-mut);font-size:13px;line-height:1.7}
+
+/* toast ยืนยันตอนกดสนใจ */
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);z-index:20;
+  padding:13px 20px;border-radius:14px;background:var(--c-bg2);color:var(--c-ink);
+  border:1px solid var(--c-line);box-shadow:0 20px 44px -20px rgba(0,0,0,.6);
+  font-size:13.5px;display:flex;align-items:center;gap:9px;
+  opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;max-width:calc(100vw - 40px)}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.toast i{color:var(--c-acc);font-size:17px;flex-shrink:0}
+
+@media (max-width:560px){
+  body{padding:0 14px 60px}
+  .head{padding:32px 0 26px}
+  .tier{padding:24px 20px 20px}
+}
+@media (prefers-reduced-motion:reduce){
+  .head>*,.tier,.cta.done{animation:none}
+  .tier:hover,.back:hover,.cta:hover{transform:none}
+}
+</style>
+</head>
+<body>
+<div class="glow"></div>
+
+<div class="wrap">
+  <div class="top">
+    <a class="back" href="./chat.html"><i class="ti ti-arrow-left"></i><span id="backTx">กลับ</span></a>
+  </div>
+
+  <header class="head">
+    <div class="mark" aria-hidden="true">
+      <svg viewBox="-6 -6 94.8 112" fill="currentColor"><path d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 Z"/></svg>
+    </div>
+    <h1 id="hTitle">เลือกแพ็กเกจที่พอดีกับคุณ</h1>
+    <p class="sub" id="hSub">โควตาคิดตามความยาวจริงของบทสนทนา ถามสั้นก็หักน้อย ไม่ได้นับเป็นครั้ง</p>
+  </header>
+
+  <main class="tiers" id="tiers"></main>
+
+  <p class="note" id="foot"></p>
+
+  <section class="qa" id="qa"></section>
+</div>
+
+<div class="toast" id="toast"><i class="ti ti-bell-check"></i><span></span></div>
+
+<script>
+const D=document, $=id=>D.getElementById(id);
+const BACKEND_URL="https://spireonebackend.carspirethailand.workers.dev";
+const lang=(()=>{ try{ return JSON.parse(localStorage.getItem("lang")||'"th"') }catch(e){ return "th" } })();
+const en=lang==="en";
+const L=(th,e)=>en?e:th;
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const nf=x=>Number(x||0).toLocaleString(en?"en-US":"th-TH");
+
+/* ── สีหลักที่ผู้ใช้เลือกไว้ ──
+   ทั้งแอปให้เลือกสีได้ไม่จำกัด หน้านี้ต้องตามไปด้วย ไม่งั้นจะดูเหมือนคนละแอป
+   สีอ่อนเกินไปทำให้ตัวหนังสือบนปุ่มอ่านไม่ออก จึงหนีบความสว่างไว้เหมือนที่แอปทำ */
+(function(){
+  const hex2rgb=h=>{h=String(h||"").trim().replace(/^#/,"");
+    if(h.length===3)h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+    return /^[0-9a-f]{6}$/i.test(h)?[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]:null};
+  const rgb2hex=(r,g,b)=>"#"+[r,g,b].map(x=>Math.max(0,Math.min(255,Math.round(x))).toString(16).padStart(2,"0")).join("");
+  function rgb2hsl(r,g,b){r/=255;g/=255;b/=255;
+    const mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;let h=0;
+    if(d){h=mx===r?((g-b)/d+(g<b?6:0)):mx===g?((b-r)/d+2):((r-g)/d+4);h*=60}
+    const l=(mx+mn)/2;return [h,d?d/(1-Math.abs(2*l-1)):0,l]}
+  function hsl2rgb(h,s,l){h=((h%360)+360)%360;
+    const c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs((h/60)%2-1)),m=l-c/2;let t=[0,0,0];
+    if(h<60)t=[c,x,0];else if(h<120)t=[x,c,0];else if(h<180)t=[0,c,x];
+    else if(h<240)t=[0,x,c];else if(h<300)t=[x,0,c];else t=[c,0,x];
+    return [(t[0]+m)*255,(t[1]+m)*255,(t[2]+m)*255]}
+  let raw=null;
+  try{ raw=JSON.parse(localStorage.getItem("spire_primary")||"null") }catch(e){}
+  /* ถ้าผู้ใช้ไม่ได้ตั้งสีเอง ก็ยังต้องคำนวณสีตัวหนังสือบนปุ่มอยู่ดี
+     ของเดิม return ทิ้งตรงนี้ สีส้มค่าเริ่มต้นจึงไม่เคยผ่านการตรวจ
+     แล้วได้ตัวขาวบนส้มที่ contrast แค่ 2.4:1 ซึ่งอ่านยากจริงบนจอกลางแดด */
+  const c=hex2rgb(raw)||hex2rgb("#E8943C");
+  let [h,s,l]=rgb2hsl(c[0],c[1],c[2]);
+  l=Math.min(.62,Math.max(.18,l)); s=Math.min(.95,s);
+  const acc=rgb2hex(...hsl2rgb(h,s,l));
+  const acc2=rgb2hex(...hsl2rgb(h-14,s,Math.max(.16,l-.08)));
+  const rs=D.documentElement.style;
+  rs.setProperty("--c-acc",acc);
+  rs.setProperty("--c-acc-2",acc2);
+  rs.setProperty("--c-grad","linear-gradient(135deg,"+acc+","+acc2+")");
+  rs.setProperty("--c-acc-soft",`rgba(${hex2rgb(acc).join(",")},.12)`);
+  /* ตัวหนังสือบนปุ่มสีต้องอ่านออกทั้งสีอ่อนและสีเข้ม */
+  const [r2,g2,b2]=hex2rgb(acc);
+  rs.setProperty("--on-acc",(0.299*r2+0.587*g2+0.114*b2)/255>0.62?"#1A1712":"#fff");
+})();
+
+/* ── แผนสำรอง ใช้เมื่อเรียกหลังบ้านไม่ได้ ──
+   ต้องมีชื่อและราคาตรงกับที่แสดงในแอป ไม่งั้นผู้ใช้จะงงว่าคนละอย่างกัน */
+const FALLBACK=[
+  {key:"light",th:"Light",en:"Light",price:99,cur:"THB",tokens:60000,
+   th_desc:"โควตามากขึ้น ใช้ต่อได้สบาย ๆ ทุกวัน",
+   en_desc:"More headroom for everyday questions."},
+  {key:"gourmet",th:"Gourmet",en:"Gourmet",price:299,cur:"THB",tokens:250000,
+   th_desc:"โควตาก้อนใหญ่ วิเคราะห์รูป วิดีโอ และคุยยาวได้เต็มที่",
+   en_desc:"A large pool for media analysis and long conversations."}
+];
+
+/* คุณสมบัติของแต่ละระดับ — อธิบายจากสิ่งที่ระบบทำได้จริงเท่านั้น
+   ไม่ใส่ของที่ยังไม่มี เพราะหน้านี้คือสิ่งที่ผู้ใช้จะใช้ตัดสินใจจ่ายเงิน */
+function feats(pl,isFree){
+  if(isFree)return [
+    ["ti-message-circle",L("ถาม-ตอบเรื่องรถได้ทุกวัน","Ask about your car every day"),
+      L("โควตาเติมใหม่ให้ฟรีทุก 5 ชั่วโมง","Free quota, refilled every 5 hours")],
+    ["ti-car",L("เก็บรถได้ไม่จำกัดคัน","Unlimited cars in your garage"),""],
+    ["ti-bell",L("เตือนเช็กระยะตามเลขไมล์จริง","Service reminders from your real mileage"),""],
+    ["ti-cloud",L("ข้อมูลซิงก์ทุกอุปกรณ์","Synced across your devices"),""],
+  ];
+  const base=[
+    ["ti-bolt",L(nf(pl.tokens)+" โทเคนต่อรอบ",nf(pl.tokens)+" tokens per window"),
+      L("มากกว่าแผนฟรีหลายเท่า","Many times the free allowance")],
+    ["ti-message-2",L("คุยยาวได้ต่อเนื่อง","Longer conversations"),
+      L("ไม่ต้องคอยตัดบทเพราะโควตาใกล้หมด","No stopping mid-diagnosis")],
+  ];
+  if(pl.key==="gourmet")base.push(
+    ["ti-photo-scan",L("วิเคราะห์รูปและวิดีโออาการรถ","Photo & video diagnosis"),
+      L("ถ่ายรอยรั่ว ฟังเสียงเครื่อง ส่งให้ดูได้เลย","Send a leak, a noise, a warning light")],
+    ["ti-history",L("จำบริบทได้ยาวขึ้น","Remembers more of your history"),""]
+  );
+  base.push(["ti-headset",L("ช่วยเหลือก่อนใคร","Priority support"),""]);
+  return base;
+}
+
+let quota=null;
+
+function render(){
+  const plans=(quota&&quota.plans&&quota.plans.length)?quota.plans:FALLBACK;
+  const cur=(quota&&quota.plan)||"free";
+
+  /* แผนที่ได้โทเคนต่อบาทมากที่สุดคือแผนที่ควรเน้น คำนวณจากข้อมูลจริง
+     เปลี่ยนราคาวันหลังป้ายก็ย้ายตามเอง ไม่ต้องกลับมาแก้โค้ด */
+  let heroKey="",best=0;
+  plans.forEach(pl=>{ const r=(Number(pl.tokens)||0)/(Number(pl.price)||1);
+    if(r>best){ best=r; heroKey=pl.key } });
+
+  const card=(o)=>`
+    <article class="tier${o.hero?" hero":""}" style="--i:${o.i}">
+      ${o.badge?`<span class="badge">${esc(o.badge)}</span>`:""}
+      <h2>${esc(o.name)}</h2>
+      <div class="price"><b>${o.priceText}</b><span>${esc(o.priceSub||"")}</span></div>
+      <p class="tag">${esc(o.tag||"")}</p>
+      <button class="cta${o.solid?" solid":""}"${o.disabled?" disabled":""}
+        ${o.plan?`data-plan="${esc(o.plan)}"`:""}>${o.cta}</button>
+      <ul class="feat">${o.feats.map(f=>`<li><i class="ti ${f[0]}"></i><span>
+        <b>${esc(f[1])}</b>${f[2]?`<small>${esc(f[2])}</small>`:""}</span></li>`).join("")}</ul>
+    </article>`;
+
+  const cards=[card({
+    i:0, name:"Free",
+    priceText:L("ฟรี","Free"), priceSub:L("ใช้ได้ตลอด","forever"),
+    tag:L("เริ่มต้นดูแลรถได้ทันที ไม่ต้องใส่บัตร","Start looking after your car — no card needed"),
+    cta:cur==="free"?`<i class="ti ti-check"></i> ${L("แพ็กเกจปัจจุบัน","Your current plan")}`:L("แผนพื้นฐาน","Basic plan"),
+    disabled:true, feats:feats(null,true),
+    badge:cur==="free"?L("ใช้อยู่","current"):""
+  })];
+
+  plans.forEach((pl,idx)=>{
+    const isCur=cur===pl.key;
+    cards.push(card({
+      i:idx+1,
+      name:en?(pl.en||pl.key):(pl.th||pl.key),
+      priceText:nf(pl.price),
+      priceSub:`${esc(pl.cur||"THB")} / ${L("เดือน","month")}`,
+      tag:en?(pl.en_desc||pl.th_desc||""):(pl.th_desc||pl.en_desc||""),
+      cta:isCur?`<i class="ti ti-check"></i> ${L("แพ็กเกจปัจจุบัน","Your current plan")}`
+                :L("สนใจแผนนี้","I'm interested"),
+      disabled:isCur, solid:pl.key===heroKey&&!isCur,
+      hero:pl.key===heroKey, plan:pl.key,
+      badge:isCur?L("ใช้อยู่","current"):(pl.key===heroKey?L("คุ้มที่สุด","best value"):""),
+      feats:feats(pl,false)
+    }));
+  });
+
+  $("tiers").innerHTML=cards.join("");
+
+  $("foot").textContent=L(
+    "ตอนนี้ยังไม่มีการเก็บเงิน กดสนใจไว้ได้เลย เราจะแจ้งให้ทราบก่อนเสมอถ้าจะเริ่มเก็บ และจะไม่ตัดเงินโดยไม่ได้รับอนุญาตจากคุณ",
+    "Nothing is charged today. Register your interest and we'll tell you well before that changes — we will never charge without your say-so.");
+
+  $("qa").innerHTML=[
+    [L("โควตาหักยังไง","How is quota counted?"),
+     L("หักตามความยาวจริงของบทสนทนา ถามสั้นก็หักน้อย ไม่ได้นับเป็นครั้ง โควตามีไว้กันค่าใช้จ่ายพุ่ง ไม่ได้มีไว้กันคุณใช้งาน",
+       "By the real length of the conversation, not per message. Short questions cost little. The cap exists to control cost, not to limit you.")],
+    [L("โควตาฟรีเติมเมื่อไหร่","When does the free quota refill?"),
+     L("ทุก 5 ชั่วโมง ระบบเติมให้ใหม่อัตโนมัติ ไม่ต้องทำอะไร",
+       "Every 5 hours, automatically. Nothing for you to do.")],
+    [L("ถ้าชนโควตาบ่อยล่ะ","What if I keep hitting the cap?"),
+     L("บอกเราได้เลยผ่านช่องส่งความเห็นในแอป เราอ่านทุกอัน",
+       "Tell us through Feedback in the app — we read every one.")],
+  ].map(x=>`<div><b>${esc(x[0])}</b><p>${esc(x[1])}</p></div>`).join("");
+
+  wire();
+}
+
+function wire(){
+  D.querySelectorAll("[data-plan]").forEach(b=>b.onclick=()=>{
+    /* ยังไม่มีระบบเก็บเงิน ปุ่มนี้จึงเป็นการลงชื่อความสนใจ ไม่ใช่การซื้อ
+       ต้องพูดให้ตรงกับสิ่งที่เกิดขึ้นจริง ไม่ให้ผู้ใช้เข้าใจว่าโดนตัดเงินไปแล้ว */
+    b.disabled=true;
+    b.classList.add("done");
+    b.innerHTML='<i class="ti ti-check"></i> '+L("บันทึกความสนใจแล้ว","Interest noted");
+    toast(L("บันทึกไว้แล้ว เปิดขายเมื่อไหร่เราจะบอกก่อนใคร",
+            "Noted — we'll tell you the moment it opens"));
+    try{ localStorage.setItem("spire_plan_interest",JSON.stringify(
+      {plan:b.dataset.plan,at:Date.now()})) }catch(e){}
+  });
+}
+
+let toastT=0;
+function toast(msg){
+  const el=$("toast");
+  el.querySelector("span").textContent=msg;
+  el.classList.add("on");
+  clearTimeout(toastT);
+  toastT=setTimeout(()=>el.classList.remove("on"),3600);
+}
+
+/* กลับไปหน้าที่มาจริง ๆ ถ้ารู้ ไม่งั้นกลับห้องแชต */
+(function(){
+  $("backTx").textContent=L("กลับ","Back");
+  const from=new URLSearchParams(location.search).get("from");
+  if(from&&/^[a-z-]+\.html$/.test(from))D.querySelector(".back").setAttribute("href","./"+from);
+  if(en){
+    $("hTitle").textContent="Pick the plan that fits";
+    $("hSub").textContent="Quota is charged by the real length of the conversation — short questions cost little.";
+    D.documentElement.lang="en";
+    D.title="Plans · Cendon";
+  }
+})();
+
+/* วาดด้วยค่าสำรองก่อน หน้าจะได้ไม่ว่างระหว่างรอเครือข่าย
+   แล้วค่อยวาดทับเมื่อได้ข้อมูลจริง (ราคา/แผนปัจจุบันของบัญชีนี้) */
+render();
+
+(async function(){
+  try{
+    const fb=window.firebase;
+    let tok=null;
+    if(fb&&fb.auth&&fb.auth().currentUser)tok=await fb.auth().currentUser.getIdToken();
+    const r=await fetch(BACKEND_URL+"/api/quota",
+      tok?{headers:{Authorization:"Bearer "+tok}}:{});
+    if(!r.ok)return;
+    const d=await r.json();
+    if(d&&(d.plans||d.plan)){ quota=d; render() }
+  }catch(e){ /* ออฟไลน์หรือยังไม่ล็อกอิน — ค่าสำรองใช้ได้อยู่แล้ว */ }
+})();
+</script>
+</body>
+</html>

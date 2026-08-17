@@ -1050,11 +1050,55 @@ body[data-phase="work"] .colwrap>.tbar{display:none!important}
 .set-meter{height:10px;border-radius:20px;background:rgba(255,255,255,.07);overflow:hidden}
 .set-meter i{display:block;height:100%;border-radius:20px;background:var(--c-grad)}
 .set-plan{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:11px}
-.pl{padding:18px;border-radius:16px;border:1px solid var(--c-line);background:rgba(255,255,255,.03)}
+/* ── การ์ดแพ็กเกจ ──
+   ของเดิมเป็นกล่องนิ่งสนิท ไม่มี transition ไม่มี hover กดแล้วไม่รู้สึกว่ามีอะไรอยู่ใต้มือ
+   ที่เพิ่มเข้ามาทั้งหมดเป็น transform/opacity/box-shadow ล้วน ๆ
+   จึงไม่แตะการคำนวณ layout เลย ความกว้างบนจอคอมเท่าเดิมเป๊ะ */
+.pl{padding:18px;border-radius:16px;border:1px solid var(--c-line);background:rgba(255,255,255,.03);
+  position:relative;display:flex;flex-direction:column;
+  transition:transform .26s cubic-bezier(.2,.9,.3,1.15),border-color .26s,box-shadow .26s,background .26s;
+  animation:plIn .42s cubic-bezier(.2,.9,.3,1.05) both;
+  animation-delay:calc(var(--i,0) * 80ms)}
+/* ไล่ขึ้นมาทีละใบ ตาผู้ใช้จะได้กวาดไปตามลำดับ ไม่ใช่เจอทุกอย่างพรึบเดียว */
+@keyframes plIn{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+.pl:hover{transform:translateY(-4px);border-color:var(--c-acc);
+  box-shadow:0 16px 34px -18px var(--c-acc)}
 .pl.now{border-color:var(--c-acc);background:rgba(255,138,107,.08)}
+/* แผนที่ได้โทเคนต่อบาทมากที่สุด — เน้นให้เห็นโดยไม่ต้องอ่านเปรียบเทียบเอง */
+.pl.best{border-color:var(--c-acc)}
+/* ── แถวบนสุดของการ์ด: ราคา + ป้าย ──
+   เดิมป้ายลอยด้วย position:absolute แล้วไปทับข้อความราคาจนอ่านไม่ออก
+   การขยับ padding ไม่ช่วย เพราะ padding อยู่ในกล่อง กรอบยังทับเท่าเดิม
+   จับทั้งคู่มาอยู่แถวเดียวกันแบบ flex แล้วมันจะชนกันไม่ได้อีกเลย
+   ไม่ว่าข้อความจะยาวแค่ไหนหรือแปลเป็นภาษาอะไร */
+.pl-top{display:flex;align-items:center;gap:6px;justify-content:space-between;min-height:20px}
+/* ราคาห้ามตกบรรทัด ไม่งั้นหัวการ์ดสูงไม่เท่ากัน แล้วชื่อแผนจะเหลื่อมกันทั้งแถว */
+.pl-top small{white-space:nowrap}
+.pl-tag{flex-shrink:0;font-size:8.5px;font-weight:800;
+  letter-spacing:.06em;text-transform:uppercase;padding:3px 7px;border-radius:999px;
+  background:var(--c-grad);color:var(--on-acc,#fff);
+  animation:plTag .5s cubic-bezier(.2,.9,.3,1.4) both;animation-delay:calc(var(--i,0) * 80ms + .2s)}
+@keyframes plTag{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
 .pl small{font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--c-mut)}
+/* เว้นที่ให้ป้าย "คุ้มที่สุด" ที่ลอยอยู่มุมขวาบน ไม่งั้นมันทับราคาจนอ่านไม่ออก
+   ใส่ padding ที่ small ซึ่งเป็น inline จึงกินที่แนวนอนภายในการ์ด
+   ไม่ไปดันความกว้างของการ์ดหรือของกริด */
 .pl b{display:block;font-family:var(--kd);font-size:24px;font-weight:700;margin:4px 0 8px}
 .pl p{font-size:12.5px;color:var(--c-mut);line-height:1.75;margin:0}
+/* ตัวเลขโทเคนคือเหตุผลหลักที่คนจ่ายเงิน ให้มันเด่นกว่าคำบรรยาย */
+.pl-tok{display:block;margin-top:8px;font-family:var(--kd);font-size:15.5px;
+  font-weight:700;color:var(--c-acc);font-variant-numeric:tabular-nums}
+.pl-tok em{font-style:normal;font-size:11.5px;font-weight:600;color:var(--c-mut);margin-left:4px}
+.pl .set-btn{margin-top:auto;align-self:flex-start}
+/* กดแล้วต้องรู้สึกทันทีว่าระบบรับรู้แล้ว ไม่ใช่แค่ตัวหนังสือเปลี่ยนเงียบ ๆ */
+.pl .set-btn.done{border-color:var(--c-acc);color:var(--c-acc);
+  animation:plDone .42s cubic-bezier(.2,.9,.3,1.5)}
+@keyframes plDone{0%{transform:scale(1)}45%{transform:scale(1.07)}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){
+  .pl,.pl-tag,.pl .set-btn.done{animation:none}
+  .pl{transition:border-color .2s}
+  .pl:hover{transform:none;box-shadow:none}
+}
 .set-fbk{display:grid;grid-template-columns:repeat(auto-fit,minmax(124px,1fr));gap:8px;margin-bottom:12px}
 #fbTxt{width:100%;padding:13px 15px;border-radius:14px;border:1px solid var(--c-line);
   background:rgba(255,255,255,.03);color:var(--c-ink);font-family:inherit;font-size:14px;
@@ -6802,15 +6846,27 @@ function setBody(){
       {key:"gourmet",th:"Gourmet",en:"Gourmet",price:299,cur:"THB",tokens:250000,
        th_desc:"โควตาก้อนใหญ่ วิเคราะห์รูป วิดีโอ และคุยยาวได้เต็มที่",
        en_desc:"A large pool for media analysis and long conversations."}]);
+    /* หาแผนที่ได้โทเคนต่อบาทมากที่สุด แล้วติดป้ายให้ ผู้ใช้จะได้ไม่ต้องหารเอง
+       คิดจากข้อมูลจริงที่หลังบ้านส่งมา ไม่ได้ฮาร์ดโค้ดว่าแผนไหนคุ้ม
+       ถ้าวันหลังเปลี่ยนราคา ป้ายจะย้ายตามเอง */
+    let bestKey="", bestRate=0;
+    plans.forEach(pl=>{
+      const r=(Number(pl.tokens)||0)/(Number(pl.price)||1);
+      if(r>bestRate){ bestRate=r; bestKey=pl.key }
+    });
     return `<div class="set-plan">
-        <div class="pl now"><small>${t("แพ็กเกจปัจจุบัน","Current")}</small>
+        <div class="pl now" style="--i:0"><small>${t("แพ็กเกจปัจจุบัน","Current")}</small>
           <b>${cur==="free"?"Free":esc(cur.charAt(0).toUpperCase()+cur.slice(1))}</b>
           <p>${t("โควตาเติมใหม่ให้ฟรีทุก 5 ชั่วโมง","Free quota, refilled every 5 hours")}</p></div>
-        ${plans.map(pl=>`<div class="pl soon"><small>${n(pl.price)} ${esc(pl.cur||"THB")}/${
-          t("เดือน","month")}</small><b>${esc(lang==="en"?(pl.en||pl.key):(pl.th||pl.key))}</b>
-          <p>${esc(lang==="en"?(pl.en_desc||pl.th_desc||""):(pl.th_desc||pl.en_desc||""))}<br>
-             <span style="display:inline-block;margin-top:4px;font-size:12.5px;opacity:.75">${
-               n(pl.tokens)} ${t("โทเคนต่อรอบ","tokens per window")}</span></p>
+        ${plans.map((pl,i)=>`<div class="pl soon${pl.key===bestKey?" best":""}" style="--i:${i+1}">
+          <div class="pl-top">
+            <small>${n(pl.price)} ${esc(pl.cur||"THB")}/${t("เดือน","month")}</small>
+            ${pl.key===bestKey?`<span class="pl-tag">${t("คุ้มที่สุด","best value")}</span>`:""}
+          </div>
+          <b>${esc(lang==="en"?(pl.en||pl.key):(pl.th||pl.key))}</b>
+          <p>${esc(lang==="en"?(pl.en_desc||pl.th_desc||""):(pl.th_desc||pl.en_desc||""))}</p>
+          <span class="pl-tok" data-to="${Number(pl.tokens)||0}">0<em>${
+            t("โทเคนต่อรอบ","tokens per window")}</em></span>
           <button class="set-btn" data-do="notify">${t("สนใจแผนนี้","I'm interested")}</button></div>`).join("")}
       </div>
       <p class="set-note">${t(
@@ -6846,6 +6902,34 @@ function setBody(){
       "ทุกอย่างอิงข้อมูลรถของคุณจริง ๆ ไม่ใช่คำตอบทั่วไปที่ถามที่ไหนก็ได้",
       "All of it runs on your actual car, not generic answers you could get anywhere.")}</p>`;
 }
+/* ── ตัวเลขโทเคนวิ่งขึ้นตอนการ์ดปรากฏ ──
+   ตัวเลขหกหลักที่โผล่มานิ่ง ๆ สมองอ่านผ่านโดยไม่รู้สึกถึงขนาดของมัน
+   พอเห็นมันไต่ขึ้น ความรู้สึกว่า "เยอะ" จะติดมาด้วย
+   ใช้ requestAnimationFrame ไม่ใช่ setInterval จะได้ไม่แย่งเฟรมกับแอนิเมชันการ์ด */
+function planCountUp(root){
+  const els=(root||document).querySelectorAll(".pl-tok[data-to]");
+  if(!els.length)return;
+  const slow=window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+  const fmt=x=>Number(x).toLocaleString(lang==="en"?"en-US":"th-TH");
+  els.forEach((el,idx)=>{
+    const to=Number(el.dataset.to)||0;
+    const tail=el.querySelector("em");
+    const unit=tail?tail.outerHTML:"";
+    if(slow||!to){ el.innerHTML=fmt(to)+unit; return }
+    const dur=820, delay=(idx+1)*80+120;   /* ตามหลังการ์ดใบนั้นโผล่ */
+    let t0=0;
+    const step=now=>{
+      if(!t0)t0=now;
+      const k=Math.min(1,(now-t0)/dur);
+      /* ออกตัวเร็วแล้วค่อย ๆ หยุด อ่านเลขท้ายได้ทัน */
+      const e=1-Math.pow(1-k,3);
+      el.innerHTML=fmt(Math.round(to*e))+unit;
+      if(k<1)requestAnimationFrame(step);
+    };
+    setTimeout(()=>requestAnimationFrame(step),delay);
+  });
+}
+
 function wireSettings(){
   const v=$("v-settings"); if(!v)return;
   /* แท็บแชตบอทเพิ่งถูกวาด ช่องยังว่างอยู่ ต้องเติมค่าที่โหลดไว้แล้วลงไป
@@ -6884,8 +6968,18 @@ function wireSettings(){
       if(confirm(t("ล้างบทสนทนานี้ทั้งหมด?","Clear this whole conversation?")))
         {window.clearCurrent();setPhase("welcome")}}
     else if(a==="export")exportMyData();
-    else if(a==="notify"){b.disabled=true;b.textContent=t("จะแจ้งให้ทราบ","We'll let you know")}
+    else if(a==="notify"){
+      /* ของเดิมเปลี่ยนแค่ตัวหนังสือแล้วเงียบ กดแล้วไม่แน่ใจว่าระบบรับรู้หรือเปล่า
+         เพิ่มเครื่องหมายถูกกับจังหวะเด้งสั้น ๆ ให้รู้ทันทีว่าบันทึกความสนใจแล้ว */
+      b.disabled=true;
+      b.classList.add("done");
+      b.innerHTML='<i class="ti ti-check"></i> '+t("จะแจ้งให้ทราบ","We'll let you know");
+      try{ window.toast&&window.toast(
+        t("บันทึกไว้แล้ว เปิดขายเมื่อไหร่เราจะบอกก่อนใคร","Noted — we'll tell you the moment it opens"),
+        "ti-bell-check") }catch(e){}
+    }
   });
+  if(setTab==="plan")planCountUp(v);
   /* วาดสถานะทันทีที่เปิดหน้า แล้วอัปเดตตามจนกว่าจะออกจากหน้านี้ */
   if(setTab==="general"){
     paintSync();
@@ -12085,6 +12179,15 @@ else boot();
 /* ── 2 · ฝั่งผู้ใช้เป็นเทา ─────────────────────────────────── */
 :root,[data-ctheme]{--c-me:rgba(255,255,255,.085);--c-me-line:rgba(255,255,255,.12)}
 [data-ctheme="pearl"]{--c-me:rgba(38,34,27,.065);--c-me-line:rgba(38,34,27,.11)}
+/* ── กล่องข้อความของผู้ใช้ในธีมสว่าง ──
+   ค่าเริ่มต้นเป็นสีขาวโปร่ง 8.5% ซึ่งบนพื้นเข้มเห็นเป็นกล่องจาง ๆ พอดี
+   แต่พอเจอพื้นสว่าง (#FBF9F4) กลายเป็นขาวบนขาว กล่องหายสนิท
+   ผู้ใช้จึงมองไม่ออกว่าอันไหนคือสิ่งที่ตัวเองพิมพ์ไป
+   มีค่าที่ถูกต้องอยู่แล้วที่ [data-ctheme="pearl"] แต่ธีมสว่างใช้
+   html[data-theme="light"] คนละ attribute กัน มันจึงไม่เคยถูกใช้เลย */
+html[data-theme="light"],html[data-theme="plant"],
+html[data-theme="light"] [data-ctheme],html[data-theme="plant"] [data-ctheme]{
+  --c-me:rgba(38,34,27,.07);--c-me-line:rgba(38,34,27,.13)}
 .msg.me .bubble{
   background:var(--c-me) !important; background-image:none !important;
   color:var(--c-ink) !important;

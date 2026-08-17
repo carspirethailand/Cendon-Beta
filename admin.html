@@ -477,6 +477,7 @@ html[data-idle="1"] *{animation-play-state:paused!important}
       <a data-tab="cars"><i class="ti ti-car"></i> รถในระบบ</a>
       <a data-tab="kb"><i class="ti ti-school"></i> สอน AI</a>
       <a data-tab="cache"><i class="ti ti-bolt"></i> คำตอบที่ใช้ซ้ำ</a>
+      <a data-tab="vector"><i class="ti ti-topology-star-3"></i> สมองเวกเตอร์</a>
       <a data-tab="feedback"><i class="ti ti-message-2-heart"></i> ความเห็นผู้ใช้ <span class="nav-badge" id="fbBadge"></span></a>
       <a data-tab="magazine"><i class="ti ti-news"></i> นิตยสาร</a>
       <a data-tab="shop"><i class="ti ti-shopping-bag"></i> ร้านค้า</a>
@@ -655,6 +656,44 @@ html[data-idle="1"] *{animation-play-state:paused!important}
           <p>เช็กว่า AI ค้นเน็ตได้จริงไหม ถ้าไม่ได้จะบอกว่าติดตรงไหน</p></div>
           <button class="btn sm" onclick="loadDiag()"><i class="ti ti-stethoscope"></i> ตรวจเดี๋ยวนี้</button></div>
         <div class="card"><div id="diagBody"><div class="empty">กดปุ่มตรวจเดี๋ยวนี้เพื่อเริ่ม</div></div></div>
+      </section>
+
+      <!-- VECTORIZE -->
+      <section class="view" id="v-vector">
+        <div class="page-head"><div><h1>สมองเวกเตอร์</h1>
+          <p>ความรู้ที่สอนไว้ คำตอบที่ใช้ซ้ำ และความจำผู้ใช้ ถูกค้นด้วย “ความหมาย” ไม่ใช่การจับคำตรงตัว
+             — ถามคนละคำแต่เรื่องเดียวกัน ระบบก็หาเจอ</p></div>
+          <button class="btn sm" onclick="loadVector()"><i class="ti ti-refresh"></i> รีเฟรช</button></div>
+        <div class="card" id="vecStatus"><div class="empty">กำลังโหลด...</div></div>
+        <div class="card" style="margin-top:12px">
+          <div class="kb-h" style="margin-bottom:8px"><b>สร้างดัชนีย้อนหลัง</b></div>
+          <p style="color:var(--faint);font-size:13px;margin:0 0 10px">
+            ของที่มีอยู่ก่อนเปลี่ยนระบบยังไม่มีเวกเตอร์ กดปุ่มนี้ครั้งเดียวเพื่อสร้างให้ครบ
+            ทำเป็นรอบ ๆ อัตโนมัติ ปิดหน้าไม่ได้จนกว่าจะขึ้นว่าเสร็จ</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn sm" onclick="vecBackfill('kb')"><i class="ti ti-book"></i> ความรู้ที่สอนไว้</button>
+            <button class="btn sm ghost" onclick="vecBackfill('cache')"><i class="ti ti-recycle"></i> คำตอบที่ใช้ซ้ำ</button>
+            <button class="btn sm ghost" onclick="vecBackfill('memory')"><i class="ti ti-brain"></i> ความจำผู้ใช้</button>
+            <button class="btn sm ghost" onclick="vecBackfillAll()"><i class="ti ti-stack-2"></i> ทั้งหมด</button>
+          </div>
+          <div id="vecLog" style="margin-top:12px;font-size:13px;color:var(--faint);white-space:pre-wrap"></div>
+        </div>
+        <div class="card" style="margin-top:12px">
+          <div class="kb-h" style="margin-bottom:8px"><b>ทดลองค้น</b></div>
+          <p style="color:var(--faint);font-size:13px;margin:0 0 10px">
+            พิมพ์คำถามแบบที่ผู้ใช้จะถามจริง แล้วดูว่าดัชนีคืนอะไรมาบ้างและคะแนนเท่าไหร่
+            ใช้ปรับค่าคะแนนขั้นต่ำ (VEC_MIN_*) โดยดูของจริง ไม่ใช่เดา</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <input class="input" id="vecQ" style="flex:1;min-width:220px" placeholder="เช่น เหยียบเบรกแล้วดังเอี๊ยด">
+            <select class="input" id="vecKind" style="max-width:180px">
+              <option value="kb">ความรู้ที่สอนไว้</option>
+              <option value="cache">คำตอบที่ใช้ซ้ำ</option>
+              <option value="memory">ความจำผู้ใช้</option>
+            </select>
+            <button class="btn sm" onclick="vecProbe()"><i class="ti ti-search"></i> ค้น</button>
+          </div>
+          <div id="vecProbeOut" style="margin-top:12px"></div>
+        </div>
       </section>
 
       <!-- KB: สอน AI -->
@@ -842,7 +881,21 @@ function gateMsg(html,actions){$("gateMsg").innerHTML=html;$("gateActions").inne
 async function signIn(){
   if(location.protocol==="file:"){gateMsg("เปิดผ่านเว็บจริงเพื่อล็อกอิน (file:// ใช้ไม่ได้)");return}
   const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:"select_account"});
-  try{await auth.signInWithPopup(p)}catch(e){if(e.code!=="auth/popup-closed-by-user")gateMsg("ล็อกอินไม่สำเร็จ: "+e.code)}
+  try{await auth.signInWithPopup(p)}catch(e){
+    const code=(e&&e.code)||"unknown";
+    if(code==="auth/popup-closed-by-user"||code==="auth/cancelled-popup-request")return;
+    /* ของเดิมต่อ e.code ดิบ ๆ error ที่ไม่ใช่ของ Firebase ไม่มี .code
+       หน้าจอจึงขึ้นว่า "ล็อกอินไม่สำเร็จ: undefined" ซึ่งไม่ช่วยอะไรเลย
+       หน้านี้เป็นของทีมงาน จึงบอกสาเหตุกับทางแก้ไปตรง ๆ ได้ */
+    const M={
+      "auth/operation-not-allowed":"ยังไม่ได้เปิดวิธีเข้าระบบนี้ — เปิดที่ Firebase Console → Authentication → Sign-in method",
+      "auth/unauthorized-domain":"โดเมนนี้ยังไม่ได้รับอนุญาต — เพิ่มที่ Firebase Console → Authentication → Settings → Authorized domains",
+      "auth/popup-blocked":"เบราว์เซอร์บล็อกหน้าต่างล็อกอิน กรุณาอนุญาตป๊อปอัปแล้วลองใหม่",
+      "auth/network-request-failed":"เชื่อมต่อไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองใหม่",
+      "auth/user-disabled":"บัญชีนี้ถูกระงับอยู่"
+    };
+    gateMsg((M[code]||"เข้าสู่ระบบไม่สำเร็จ")+"  ("+code+")");
+  }
 }
 function doLogout(){if(useFb)auth.signOut();location.href="index.html"}
 
@@ -890,6 +943,9 @@ $("nav").addEventListener("click",e=>{
   a.classList.add("on");
   const t=a.dataset.tab;
   document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on",v.id==="v-"+t));
+  /* หน้าที่ต้องยิงถามหลังบ้าน โหลดตอนเปิดดูจริง ไม่ใช่ตอนเข้าเว็บ
+     จะได้ไม่หน่วงหน้าแรกด้วยงานที่ยังไม่มีใครขอดู */
+  if(t==="vector")loadVector();
   toggleSide(false);
 });
 function toggleSide(open){$("side").classList.toggle("open",open);$("scrim").classList.toggle("show",open)}
@@ -1267,31 +1323,168 @@ async function loadHealth(){
 }
 
 /* ═══════════ ตรวจการค้นข้อมูล ═══════════ */
+/* ── หน้าตรวจระบบค้นข้อมูล ──
+   หน้านี้เรียก /api/admin/diag ซึ่งตอนนี้ยิงผ่านทางเดียวกับที่ผู้ใช้ใช้จริง
+   จึงเชื่อผลได้ ต่างจากเดิมที่ทดสอบคนละทาง แล้วขึ้นว่าปกติทั้งที่พังอยู่ */
 async function loadDiag(){
   $("diagBody").innerHTML=`<div class="empty">กำลังตรวจ... อาจใช้เวลาสักครู่</div>`;
   try{
     const d=await api("/api/admin/diag");
-    const ok=d.search&&d.search.ok;
-    const rows=(d.models||[]).map(m=>`<div class="kb-item">
-      <div class="kb-bd"><div class="kb-h">
-        <b>${esc(m.model)}</b>
-        <span class="kb-tag${m.ok?"":" all"}">${esc(m.tool)}</span>
-        <span class="fb-st ${m.ok?"done":"spam"}">${m.ok?"ใช้ได้":"ไม่ผ่าน"+(m.status?" ("+m.status+")":"")}</span>
-        ${m.grounded?`<small>ค้นเว็บจริง</small>`:(m.ok?`<small>ตอบจากความจำ ไม่ได้ค้นเว็บ</small>`:"")}
+    const sc=d.search||{};
+    const ok=!!sc.ok;
+    const SRC={gemini:"Gemini + Google Search",openrouter:"OpenRouter (ค้นเว็บ)",
+               duckduckgo:"DuckDuckGo",wikipedia:"Wikipedia"};
+
+    /* ทุกทางที่ระบบลองไป เรียงตามลำดับที่ลองจริง */
+    const rows=(d.providers||[]).map(t=>{
+      const good=/:\s*ok\b|เจอ \d+ รายการ|ได้ \d+ หน้า/.test(t);
+      const name=String(t).split(":")[0];
+      const detail=String(t).slice(name.length+1).trim();
+      return `<div class="kb-item"><div class="kb-bd"><div class="kb-h">
+        <b>${esc(name)}</b>
+        <span class="fb-st ${good?"done":"spam"}">${good?"ผ่าน":"ไม่ผ่าน"}</span>
       </div>
-      <div class="kb-body">${esc(m.sample||m.error||"")}</div></div></div>`).join("");
-    $("diagBody").innerHTML=
+      <div class="kb-body">${esc(detail||"-")}</div></div></div>`;
+    }).join("");
+
+    const v=d.vector||{};
+    const vecCard=`<div class="kb-item"><div class="kb-bd"><div class="kb-h">
+        <b>สมองเวกเตอร์</b>
+        <span class="fb-st ${v.enabled?"done":"spam"}">${v.enabled?"เปิดใช้งาน":"ยังไม่เปิด"}</span>
+        ${v.enabled?`<span class="kb-tag">${esc(v.model||"")}</span>`:""}
+      </div>
+      <div class="kb-body">${v.enabled
+        ? `มีเวกเตอร์ในดัชนี <b>${v.vectors!=null?v.vectors:"?"}</b> ชิ้น · ${v.dimensions||"?"} มิติ
+           ${v.error?`<br><b>อ่านดัชนีไม่ได้: ${esc(v.error)}</b>`:""}`
+        : esc(v.hint||"ยังไม่ได้ผูก Vectorize")}</div>
+      </div></div>`;
+    $("diagBody").innerHTML=vecCard+
       `<div class="kb-item"><div class="kb-bd"><div class="kb-h">
-         <b>สรุป</b><span class="fb-st ${ok?"done":"spam"}">${ok?"ค้นได้":"ค้นไม่ได้"}</span></div>
-         <div class="kb-body">${esc((d.search&&d.search.reason)||"")}</div>
-         <div class="kb-keys">GEMINI_KEY: ${d.keys.gemini?"ตั้งแล้ว":"ยังไม่ได้ตั้ง"} ·
-           OPENROUTER_API_KEY: ${d.keys.openrouter?"ตั้งแล้ว":"ยังไม่ได้ตั้ง"} ·
-           GEMINI_MODEL: ${esc(d.keys.geminiModel)} ·
-           GEMINI_SEARCH_MODEL: ${esc(d.keys.searchModel)}</div>
-       </div></div>`+rows;
+         <b>สรุปการค้นอินเทอร์เน็ต</b><span class="fb-st ${ok?"done":"spam"}">${ok?"ค้นได้":"ค้นไม่ได้"}</span>
+         ${ok?`<span class="kb-tag">${esc(SRC[sc.source]||sc.source||"")}</span>`:""}
+         ${sc.grounded?`<small>ค้นเว็บจริง</small>`:""}
+       </div>
+       <div class="kb-body">
+         คำค้นที่ใช้ทดสอบ: <b>${esc(sc.query||"")}</b><br>
+         คำสำคัญที่ดึงออกมา: <b>${esc(sc.keywords||"")}</b> ·
+         ระบบตัดสินว่าต้องค้นข้อมูลสด: <b>${sc.needsFresh?"ใช่":"ไม่"}</b><br>
+         ใช้เวลา ${sc.ms||0} มิลลิวินาที · ได้เนื้อหา ${sc.length||0} ตัวอักษร
+         ${sc.model?` · โมเดล ${esc(sc.model)}`:""}
+         ${sc.hint?`<br><b>${esc(sc.hint)}</b>`:""}
+       </div>
+       ${sc.sample?`<div class="kb-body" style="white-space:pre-wrap;opacity:.85;margin-top:6px">${esc(sc.sample)}</div>`:""}
+       <div class="kb-keys">GEMINI_KEY: ${d.keys.gemini?"ตั้งแล้ว":"ยังไม่ได้ตั้ง"} ·
+         OPENROUTER_API_KEY: ${d.keys.openrouter?"ตั้งแล้ว":"ยังไม่ได้ตั้ง"} ·
+         GEMINI_MODEL: ${esc(d.keys.geminiModel)} ·
+         GEMINI_SEARCH_MODEL: ${esc(d.keys.searchModel)}</div>
+       </div></div>
+       <div class="page-head" style="margin:14px 0 8px"><div>
+         <h1 style="font-size:17px">ทางที่ระบบลองไล่ไปทีละทาง</h1>
+         <p>เจอทางไหนได้ผลก่อน ระบบจะหยุดที่ทางนั้น ทางที่เหลือจึงไม่ได้ลอง</p></div></div>`
+      +(rows||`<div class="empty">ไม่มีบันทึกการลอง</div>`);
   }catch(e){
     $("diagBody").innerHTML=`<div class="empty">ตรวจไม่ได้: ${esc(e.message)}<br>
       <small style="color:var(--faint)">ถ้าขึ้น 404 แปลว่ายังไม่ได้ deploy Worker ตัวใหม่</small></div>`;
+  }
+}
+
+/* ═══════════ สมองเวกเตอร์ ═══════════ */
+const VEC_KIND_TH={kb:"ความรู้ที่สอนไว้",cache:"คำตอบที่ใช้ซ้ำ",memory:"ความจำผู้ใช้"};
+
+async function loadVector(){
+  $("vecStatus").innerHTML=`<div class="empty">กำลังโหลด...</div>`;
+  try{
+    const d=await api("/api/admin/vectorize/status");
+    const idx=d.index||{};
+    const rows=d.rows||{};
+    /* เทียบ "แถวที่ควรมีเวกเตอร์" กับ "เวกเตอร์ที่มีจริง"
+       ถ้าต่างกันมาก แปลว่ายังสร้างย้อนหลังไม่ครบ บอกให้เห็นชัด ๆ ตรงนี้เลย */
+    const have=idx.vectors!=null?idx.vectors:null;
+    const want=rows.total||0;
+    const gap=(have!=null&&want)?want-have:null;
+    $("vecStatus").innerHTML=`
+      <div class="kb-item"><div class="kb-bd">
+        <div class="kb-h"><b>สถานะ</b>
+          <span class="fb-st ${d.enabled?"done":"spam"}">${d.enabled?"เปิดใช้งาน":"ยังไม่เปิด"}</span>
+          ${d.enabled?`<span class="kb-tag">${esc(d.model||"")}</span>`:""}
+        </div>
+        <div class="kb-body">
+          ${d.enabled?`
+            เวกเตอร์ในดัชนี <b>${have!=null?have:"?"}</b> ชิ้น · ${idx.dimensions||d.dim} มิติ · ${esc(idx.metric||"cosine")}<br>
+            ข้อมูลใน D1 ที่ควรมีเวกเตอร์: ความรู้ ${rows.kb||0} · คำตอบใช้ซ้ำ ${rows.cache||0} · ความจำ ${rows.memory||0}
+            (รวม <b>${want}</b>)
+            ${gap!=null&&gap>0?`<br><b style="color:var(--warn,#c98a2e)">ยังขาดอีกราว ${gap} ชิ้น — กดสร้างดัชนีย้อนหลังด้านล่าง</b>`:""}
+            ${gap!=null&&gap<=0?`<br><b style="color:var(--ok,#3d8f5f)">ครบแล้ว</b>`:""}
+            ${d.warn?`<br><b style="color:var(--danger)">${esc(d.warn)}</b>`:""}
+            ${d.describeError?`<br><b style="color:var(--danger)">อ่านดัชนีไม่ได้: ${esc(d.describeError)}</b>`:""}
+          `:esc(d.hint||"ยังไม่ได้ผูก Vectorize")}
+        </div>
+        <div class="kb-keys">Vectorize binding: ${d.bindings&&d.bindings.vectorize?"ผูกแล้ว":"ยังไม่ผูก"} ·
+          Workers AI binding: ${d.bindings&&d.bindings.ai?"ผูกแล้ว":"ยังไม่ผูก"}</div>
+      </div></div>`;
+  }catch(e){
+    $("vecStatus").innerHTML=`<div class="empty">โหลดไม่ได้: ${esc(e.message)}<br>
+      <small style="color:var(--faint)">ถ้าขึ้น 404 แปลว่ายังไม่ได้ deploy Worker ตัวใหม่</small></div>`;
+  }
+}
+
+let vecBusy=false;
+function vecLog(t){ const el=$("vecLog"); el.textContent=(el.textContent?el.textContent+"\n":"")+t }
+
+/* สร้างดัชนีย้อนหลัง — วนเรียกเป็นรอบจนกว่าหลังบ้านจะบอกว่าหมดแล้ว
+   ทำทีเดียวทั้งหมดในคำขอเดียวไม่ได้ เพราะ Worker มีเพดานเวลาต่อคำขอ */
+async function vecBackfill(kind){
+  if(vecBusy){ toast("กำลังทำอยู่ รอให้เสร็จก่อนครับ"); return }
+  vecBusy=true;
+  vecLog(`▶ เริ่ม ${VEC_KIND_TH[kind]||kind}`);
+  let after="",total=0,rounds=0;
+  try{
+    while(true){
+      /* api() แปลงเป็น JSON ให้เองอยู่แล้ว ส่งอ็อบเจ็กต์ดิบไปตรง ๆ
+         ถ้า stringify มาก่อน จะกลายเป็นสตริงซ้อนสตริงแล้วหลังบ้านอ่านไม่ออก */
+      const r=await api("/api/admin/vectorize/backfill",{method:"POST",
+        body:{kind,after,limit:100}});
+      total+=r.wrote||0; after=r.after||after; rounds++;
+      vecLog(`   รอบที่ ${rounds}: อ่าน ${r.read} เขียน ${r.wrote} (รวม ${total})`);
+      if(r.done)break;
+      if(rounds>200){ vecLog("   หยุดไว้ก่อน ทำไปหลายรอบมากผิดปกติ"); break }
+    }
+    vecLog(`✔ เสร็จ ${VEC_KIND_TH[kind]||kind} — ทั้งหมด ${total} ชิ้น`);
+  }catch(e){
+    vecLog(`✖ ล้มเหลว: ${e.message}`);
+  }
+  vecBusy=false;
+  loadVector();
+}
+
+async function vecBackfillAll(){
+  for(const k of ["kb","cache","memory"]){
+    if(vecBusy)return;
+    await vecBackfill(k);
+  }
+}
+
+async function vecProbe(){
+  const q=$("vecQ").value.trim();
+  if(!q){ toast("พิมพ์คำถามก่อนครับ"); return }
+  const kind=$("vecKind").value;
+  $("vecProbeOut").innerHTML=`<div class="empty">กำลังค้น...</div>`;
+  try{
+    const d=await api(`/api/admin/vectorize/probe?q=${encodeURIComponent(q)}&kind=${kind}`);
+    if(!d.ok){ $("vecProbeOut").innerHTML=`<div class="empty">${esc(d.error||"ค้นไม่ได้")}</div>`; return }
+    const rows=(d.matches||[]).map(m=>`
+      <div class="kb-item"><div class="kb-bd"><div class="kb-h">
+        <b>${esc((m.meta&&m.meta.title)||m.id)}</b>
+        <span class="fb-st ${m.pass?"done":"spam"}">${m.score.toFixed(3)}</span>
+        ${m.pass?`<small>ผ่านเกณฑ์</small>`:`<small>ต่ำกว่าเกณฑ์ ${d.minScore}</small>`}
+      </div>
+      <div class="kb-keys">${esc(JSON.stringify(m.meta||{}))}</div></div></div>`).join("");
+    $("vecProbeOut").innerHTML=
+      `<div class="kb-keys" style="margin-bottom:8px">แปลงคำถามเป็นเวกเตอร์ ${d.dim} มิติ ใน ${d.embedMs} มิลลิวินาที ·
+        เกณฑ์ผ่านของ ${VEC_KIND_TH[kind]||kind} คือ ${d.minScore}</div>`
+      +(rows||`<div class="empty">ไม่เจออะไรเลย — อาจยังไม่ได้สร้างดัชนีย้อนหลัง</div>`);
+  }catch(e){
+    $("vecProbeOut").innerHTML=`<div class="empty">ค้นไม่ได้: ${esc(e.message)}</div>`;
   }
 }
 

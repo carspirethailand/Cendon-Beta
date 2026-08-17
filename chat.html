@@ -1386,6 +1386,10 @@ html[data-level="basic"] .hfree{
 .su-p.ghost{background:rgba(255,255,255,.05);color:#DCE9F8;
   border-color:rgba(150,190,240,.22)}
 .su-p.ghost:hover{background:rgba(255,255,255,.1)}
+.su-p-off{opacity:.42;cursor:default;pointer-events:none}
+.su-p-off:hover{transform:none;box-shadow:none}
+.su-p-tag{margin-left:auto;font-size:10.5px;font-weight:700;letter-spacing:.04em;
+  text-transform:uppercase;opacity:.8}
 
 .su-or{display:flex;align-items:center;gap:12px;margin:16px 0;
   font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;
@@ -3731,6 +3735,21 @@ let authBusy=false, authErr="";
 
 /* ข้อความผิดพลาดของ Firebase เป็นรหัสภาษาอังกฤษล้วน แปลให้อ่านรู้เรื่อง
    ที่สำคัญคือบอกด้วยว่าต้องทำอะไรต่อ ไม่ใช่แค่บอกว่าผิด */
+/* ── จำวิธีเข้าระบบที่ยังไม่ได้เปิด ──
+   เก็บใน sessionStorage ไม่ใช่ localStorage เพราะถ้าเจ้าของระบบเพิ่งไปเปิด provider
+   ผู้ใช้แค่เปิดแท็บใหม่ก็ได้ปุ่มกลับมาครบ ไม่ต้องรอให้ใครมาบอกให้ล้างแคช */
+const AUTH_DEAD_KEY="spire_auth_off";
+function authDeadList(){
+  try{ return JSON.parse(sessionStorage.getItem(AUTH_DEAD_KEY)||"[]") }catch(e){ return [] }
+}
+function authDead(kind){ return authDeadList().indexOf(kind)>=0 }
+function authMarkDead(kind){
+  if(!kind||authDead(kind))return;
+  try{
+    const l=authDeadList(); l.push(kind);
+    sessionStorage.setItem(AUTH_DEAD_KEY,JSON.stringify(l));
+  }catch(e){}
+}
 function authMsg(code){
   const M={
     "auth/invalid-email":["อีเมลไม่ถูกต้อง","That email doesn't look right"],
@@ -3744,7 +3763,8 @@ function authMsg(code){
     "auth/popup-blocked":["เบราว์เซอร์บล็อกหน้าต่างล็อกอิน กรุณาอนุญาตป๊อปอัป","Your browser blocked the sign-in window — allow pop-ups"],
     "auth/too-many-requests":["ลองมากเกินไป รอสักครู่แล้วลองใหม่","Too many attempts — wait a moment and try again"],
     "auth/network-request-failed":["เชื่อมต่อไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองใหม่","Can't connect — check your internet and try again"],
-    "auth/operation-not-allowed":["วิธีนี้ยังไม่ได้เปิดใช้งานในระบบ","That sign-in method isn't enabled yet"],
+    "auth/operation-not-allowed":["วิธีนี้ยังเปิดให้ใช้ไม่ได้ ตอนนี้เข้าด้วย Google ได้เลย","That method isn't available yet — use Google for now"],
+    "auth/admin-restricted-operation":["วิธีนี้ยังเปิดให้ใช้ไม่ได้ ตอนนี้เข้าด้วย Google ได้เลย","That method isn't available yet — use Google for now"],
     "auth/invalid-phone-number":["เบอร์โทรไม่ถูกต้อง","That phone number isn't valid"],
     "auth/invalid-verification-code":["รหัสยืนยันไม่ถูกต้อง","That verification code is wrong"],
     "auth/unauthorized-domain":["โดเมนนี้ยังไม่ได้รับอนุญาตใน Firebase — เพิ่มโดเมนที่ Authentication → Settings → Authorized domains",
@@ -3848,7 +3868,12 @@ async function providerSignIn(kind){
       try{ await auth.signInWithRedirect(p); return }
       catch(err){ authErr=authMsg((err&&err.code)||code) }
     }
-    else if(code!=="auth/popup-closed-by-user"){ authErr=authMsg(code) }
+    else if(code!=="auth/popup-closed-by-user"){
+      /* ระบบยังไม่ได้เปิดวิธีนี้ — จำไว้ ผู้ใช้จะได้ไม่ต้องมากดซ้ำแล้วเจอกำแพงเดิม */
+      if(code==="auth/operation-not-allowed"||code==="auth/admin-restricted-operation")
+        authMarkDead(kind);
+      authErr=authMsg(code);
+    }
   }
   authBusy=false; render();
 }
@@ -3870,7 +3895,13 @@ async function emailSubmit(){
     }else{
       await auth.signInWithEmailAndPassword(mail.trim(),pass);
     }
-  }catch(e){ authErr=authMsg(e&&e.code||"unknown") }
+  }catch(e){
+    const code=(e&&e.code)||"unknown";
+    /* สมัครด้วยอีเมลถูกปิดอยู่ ก็ควรบอกให้ไปทางที่เปิดอยู่ แทนที่จะปล่อยให้ลองใหม่เรื่อย ๆ */
+    if(code==="auth/operation-not-allowed"||code==="auth/admin-restricted-operation")
+      authMarkDead("email");
+    authErr=authMsg(code);
+  }
   authBusy=false; render();
 }
 
@@ -3935,7 +3966,13 @@ async function phoneGo(){
       if(!phoneConfirm)throw {code:"auth/invalid-verification-code"};
       await phoneConfirm.confirm(code);
     }
-  }catch(e){ authErr=authMsg(e&&e.code||"unknown") }
+  }catch(e){
+    const pc=(e&&e.code)||"unknown";
+    if(pc==="auth/operation-not-allowed"||pc==="auth/admin-restricted-operation"){
+      authMarkDead("phone"); phase="auth";
+    }
+    authErr=authMsg(pc);
+  }
   authBusy=false; render();
 }
 
@@ -4096,9 +4133,27 @@ function render(){
 function wire(){
   const w=$("suWrap"); if(!w)return;
   /* ── หน้าเข้าสู่ระบบ ── */
-  w.querySelectorAll("[data-prov]").forEach(b=>b.onclick=()=>{
-    if(b.dataset.prov==="phone"){ phase="phone"; phoneStage=0; authErr=""; render(); return }
-    providerSignIn(b.dataset.prov);
+  /* ── ปุ่มที่ระบบยังไม่ได้เปิดให้ใช้ ──
+     Firebase ตอบ auth/operation-not-allowed เมื่อ provider นั้นยังไม่ถูกเปิดใน Console
+     ของเดิมปล่อยให้ผู้ใช้กดชนกำแพงทีละปุ่มจนครบ โดยไม่มีอะไรบอกว่าปุ่มไหนใช้ได้จริง
+     ตอนนี้จำไว้ว่าอันไหนตาย แล้วหรี่มันลงพร้อมป้ายกำกับ เหลือทางที่เดินได้ให้เห็นชัด */
+  w.querySelectorAll("[data-prov]").forEach(b=>{
+    const kind=b.dataset.prov;
+    if(authDead(kind)){
+      b.disabled=true;
+      b.classList.add("su-p-off");
+      if(!b.querySelector(".su-p-tag")){
+        const tag=document.createElement("span");
+        tag.className="su-p-tag";
+        tag.textContent=L("ยังไม่เปิด","not available");
+        b.appendChild(tag);
+      }
+      return;
+    }
+    b.onclick=()=>{
+      if(kind==="phone"){ phase="phone"; phoneStage=0; authErr=""; render(); return }
+      providerSignIn(kind);
+    };
   });
   const go=$("suGo"); if(go)go.onclick=emailSubmit;
   const sw=$("suSwap"); if(sw)sw.onclick=()=>{ mode=mode==="up"?"in":"up"; authErr=""; render() };
@@ -5004,12 +5059,9 @@ function liveNodes(){
        <div class="think-in"></div></details>
      <div class="live-status" style="display:none"><span class="ls-dot"></span><span class="lt"></span></div>
      <div class="live-body"></div>`;
-  /* ตัวหมุนของ Cendon ต้องหมุนอยู่ตลอดที่ยังทำงาน เหมือนทางเดิม
-     ของเดิมในโหมดสตรีมไม่มีเลย ผู้ใช้จึงไม่รู้ว่ามันยังทำงานอยู่ไหม */
-  const sig=document.createElement("div");
-  sig.innerHTML=aiSig(true);
-  const sigEl=sig.firstElementChild;
-  th.appendChild(sigEl);
+  /* โลโก้หมุนถูกวาดไปแล้วโดย renderMessages เพราะข้อความนี้ตั้ง streaming ไว้
+     ตรงนี้แค่หยิบตัวที่มีอยู่มาถือไว้ ห้ามสร้างใหม่เด็ดขาด ไม่งั้นได้สองอัน */
+  const sigEl=th.querySelector(".ai-sig");
   return {
     bubble,
     box:bubble.querySelector(".think-box"),
@@ -5055,10 +5107,19 @@ function paintLive(n,m){
     if(sc&&sc.scrollHeight-sc.scrollTop-sc.clientHeight<220)scrollBottom();
   }
 }
-/* จบแล้วเก็บกวาด: ยุบกล่องความคิด เอาตัวหมุนออก */
+/* จบแล้วเก็บกวาด: ยุบกล่องความคิด และหยุดโลโก้ให้นิ่ง
+   ไม่ลบทิ้ง เพราะโลโก้อันนี้เป็นของ renderMessages ไม่ใช่ของเรา
+   แค่ถอดสภาพ "กำลังคิด" ออก ให้เหลือหน้าตาเดียวกับตอนตอบเสร็จ */
 function liveDone(n){
   if(!n)return;
-  try{ if(n.sig&&n.sig.parentNode)n.sig.parentNode.removeChild(n.sig) }catch(e){}
+  try{
+    if(n.sig){
+      n.sig.classList.remove("thinking");
+      const st=n.sig.querySelector(".st"); if(st)st.remove();
+      const dt=n.sig.querySelector(".dots"); if(dt)dt.remove();
+    }
+    thinkAt=0;
+  }catch(e){}
   try{
     if(n.box){ n.box.open=false; n.box.classList.remove("live");
       if(n.label)n.label.textContent=(lang==="en")?"Show thinking":"ดูความคิด" }
@@ -5235,7 +5296,16 @@ async function signIn(){
   if(!useFb){toast(lang==="en"?"Auth unavailable":"ระบบล็อกอินไม่พร้อม","ti-alert-triangle");return}
   if(location.protocol==="file:"){toast("ล็อกอิน Google ต้องเปิดผ่านเว็บจริง (file:// ใช้ไม่ได้)","ti-info-circle");return}
   const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:"select_account"});
-  try{await auth.signInWithPopup(p)}catch(e){if(e.code!=="auth/popup-closed-by-user")toast("ล็อกอินไม่สำเร็จ: "+e.code,"ti-alert-triangle")}
+  try{await auth.signInWithPopup(p)}catch(e){
+    const code=(e&&e.code)||"unknown";
+    if(code==="auth/popup-closed-by-user"||code==="auth/cancelled-popup-request")return;
+    /* ของเดิมต่อ e.code ดิบ ๆ เข้าไปในข้อความ error ที่ไม่ใช่ของ Firebase ไม่มี .code
+       ผู้ใช้จึงเห็นคำว่า "ล็อกอินไม่สำเร็จ: undefined" ซึ่งไม่บอกอะไรเลย
+       ใช้ตัวแปลข้อความชุดเดียวกับหน้าล็อกอินหลัก จะได้พูดภาษาเดียวกันทั้งแอป */
+    if(code==="auth/operation-not-allowed"||code==="auth/admin-restricted-operation")
+      authMarkDead("google");
+    toast(authMsg(code)||L("เข้าสู่ระบบไม่สำเร็จ","Sign-in failed"),"ti-alert-triangle");
+  }
 }
 async function backendLogin(u){
   try{
@@ -5645,8 +5715,12 @@ setInterval(()=>{
 function renderMessages(){
   const real=messages.filter(m=>!m.typing);
   const thinking=messages.some(m=>m.typing);
+  /* ข้อความที่กำลังไหลอยู่ก็คือ "ยังคิดไม่จบ" เหมือนกัน ต้องได้โลโก้หมุน
+     ของเดิมนับว่าเสร็จแล้ว จึงวาดโลโก้นิ่ง แล้วตัวสตรีมไปแปะโลโก้หมุนเพิ่มอีกอัน
+     กลายเป็นสองอันซ้อนกัน — ที่นี่ตัดสินที่เดียวจบ ไม่มีใครแปะซ้ำอีก */
+  const live=real.length&&real[real.length-1].streaming;
   let sig="";
-  if(thinking)sig=aiSig(true);
+  if(thinking||live)sig=aiSig(true);
   else if(real.length&&real[real.length-1].role!=="user")sig=aiSig(false);
   $("thread").innerHTML=real.map(msgHTML).join("")+sig;
   /* ระหว่างรอคำตอบ ปล่อยให้จอค้างอยู่ที่คำถามล่าสุดตามที่ slideToLast จัดไว้
@@ -13099,63 +13173,5 @@ window.spireApplyPrimary=()=>apply(read());
 .think-box.live .think-in{max-height:200px}
 @media (prefers-reduced-motion:reduce){.ls-dot{animation:none}}
 </style>
-<style id="chat-motion-polish">
-/* Final visual layer: presentation only — chat state and handlers stay untouched. */
-:root{--motion-spring:cubic-bezier(.16,1,.3,1);--motion-soft:cubic-bezier(.22,.61,.36,1)}
-body{transition:opacity .28s ease,transform .34s var(--motion-spring)}
-body.page-leaving{opacity:0;transform:translateY(10px)}
-
-/* A calmer reading surface makes the conversation feel deliberate, not crowded. */
-.thread-scroll{padding:18px clamp(16px,3vw,28px) 12px;mask-image:linear-gradient(to bottom,transparent 0,#000 20px,#000 calc(100% - 18px),transparent 100%)}
-.thread-col{max-width:800px;gap:22px;padding:8px 0 18px}
-.msg{gap:12px;animation:chatMessageIn .52s var(--motion-spring) both}
-@keyframes chatMessageIn{from{opacity:0;transform:translateY(14px) scale(.975);filter:blur(3px)}to{opacity:1;transform:none;filter:none}}
-.msg .bubble{border-radius:20px;padding:13px 16px;letter-spacing:.002em}
-.msg.ai .bubble{background:linear-gradient(145deg,color-mix(in srgb,var(--c-ai-bubble) 94%,white 6%),var(--c-ai-bubble));box-shadow:0 14px 34px -26px rgba(0,0,0,.85),inset 0 1px 0 rgba(255,255,255,.12)}
-.msg.me .bubble{background:linear-gradient(135deg,color-mix(in srgb,var(--c-acc) 86%,white 14%),var(--c-acc));box-shadow:0 16px 30px -18px var(--c-acc)}
-.msg .av{transition:transform .3s var(--motion-spring),box-shadow .3s}
-.msg:hover .av{transform:translateY(-2px) scale(1.04)}
-
-/* Composer has a clear tactile focus state and keeps its visual weight low at rest. */
-.composer{border-radius:24px;padding:8px 9px;box-shadow:0 20px 50px -30px rgba(0,0,0,.9);transition:transform .3s var(--motion-spring),border-color .25s,box-shadow .25s,background .25s}
-.composer:focus-within{transform:translateY(-3px);background:color-mix(in srgb,var(--c-glass2) 90%,var(--c-acc) 10%);box-shadow:0 24px 60px -30px rgba(0,0,0,.88),0 0 0 4px var(--c-acc-soft)}
-.att-btn,.send,.p-btn,.chip,.set-l,.set-btn{transition:transform .22s var(--motion-spring),background .22s ease,color .22s ease,border-color .22s ease,box-shadow .22s ease}
-.send{width:44px;height:44px;box-shadow:0 12px 26px -10px var(--c-acc)}
-.send:hover:not(:disabled){transform:translateY(-2px) scale(1.08);box-shadow:0 16px 30px -10px var(--c-acc)}
-.send:active:not(:disabled),.att-btn:active,.chip:active,.set-btn:active{transform:scale(.94)}
-
-/* Settings tabs read as one product surface rather than a collection of cards. */
-.set-wrap{animation:settingsIn .48s var(--motion-spring) both}
-@keyframes settingsIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-.set-rail{background:color-mix(in srgb,var(--c-glass) 85%,transparent);border:1px solid var(--c-line2);border-radius:18px;padding:7px;backdrop-filter:blur(18px)}
-.set-l{border-radius:12px}.set-l.on{box-shadow:0 8px 20px -15px var(--c-acc)}
-
-/* Plan view: an editorial, premium hierarchy inspired by modern AI product pricing. */
-.set-main:has(.set-plan){max-width:960px;margin:auto}
-.set-plan{grid-template-columns:minmax(180px,.84fr) repeat(2,minmax(220px,1fr));gap:14px;align-items:stretch;margin-top:8px}
-.pl{position:relative;display:flex;flex-direction:column;min-height:280px;padding:22px 20px 18px;border-radius:22px;overflow:hidden;background:linear-gradient(155deg,color-mix(in srgb,var(--c-glass2) 64%,transparent),var(--c-glass));box-shadow:0 14px 34px -28px rgba(0,0,0,.9);transition:transform .32s var(--motion-spring),border-color .25s,box-shadow .32s}
-.pl::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(110% 70% at 100% 0,var(--c-acc-soft),transparent 58%);opacity:.75}
-.pl>*{position:relative}.pl:hover{transform:translateY(-5px);border-color:color-mix(in srgb,var(--c-acc) 65%,var(--c-line));box-shadow:0 24px 46px -30px rgba(0,0,0,.9)}
-.pl.now{background:linear-gradient(160deg,var(--c-acc-soft),var(--c-glass));border-color:color-mix(in srgb,var(--c-acc) 70%,transparent)}
-.pl small{display:flex;align-items:center;gap:7px;color:var(--c-acc);font-size:10px}.pl.now small::before{content:"•";font-size:20px;line-height:0;filter:drop-shadow(0 0 6px var(--c-acc))}
-.pl b{font-size:clamp(25px,3vw,31px);letter-spacing:-.035em;margin:14px 0 9px}.pl p{font-size:13px;line-height:1.7}.pl .set-btn{margin-top:auto;width:100%;padding:11px 13px;border-radius:13px;background:var(--c-grad);border:0;color:var(--on-acc,#fff);font-weight:700;box-shadow:0 12px 22px -16px var(--c-acc)}
-.pl.now .set-btn{display:none}
-.set-main:has(.set-plan)>.set-note{max-width:680px;margin:18px auto 0;text-align:center}
-
-@media (max-width:760px){.set-plan{grid-template-columns:1fr;gap:10px}.pl{min-height:0}.thread-scroll{padding-inline:14px}.msg .bubble{padding:12px 14px}.thread-col{gap:18px}}
-@media (prefers-reduced-motion:reduce){body,.msg,.set-wrap,.pl,.composer,.send,.att-btn,.p-btn,.chip,.set-l,.set-btn{animation:none!important;transition:none!important}.thread-scroll{scroll-behavior:auto;mask-image:none}}
-</style>
-<script>
-/* Animate normal same-tab links only; buttons and app functions retain their original behaviour. */
-document.addEventListener('click',function(event){
-  const link=event.target.closest('a[href]');
-  if(!link||event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||link.target||link.hasAttribute('download'))return;
-  const target=new URL(link.href,location.href);
-  if(target.origin!==location.origin||target.pathname===location.pathname&&target.search===location.search&&target.hash)return;
-  event.preventDefault();
-  document.body.classList.add('page-leaving');
-  window.setTimeout(()=>{location.href=target.href},230);
-},true);
-</script>
 </body>
 </html>

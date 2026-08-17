@@ -2870,6 +2870,10 @@ html[data-level="basic"] .hfree{
 .su-p.ghost{background:rgba(255,255,255,.05);color:#DCE9F8;
   border-color:rgba(150,190,240,.22)}
 .su-p.ghost:hover{background:rgba(255,255,255,.1)}
+.su-p-off{opacity:.42;cursor:default;pointer-events:none}
+.su-p-off:hover{transform:none;box-shadow:none}
+.su-p-tag{margin-left:auto;font-size:10.5px;font-weight:700;letter-spacing:.04em;
+  text-transform:uppercase;opacity:.8}
 
 .su-or{display:flex;align-items:center;gap:12px;margin:16px 0;
   font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;
@@ -5447,7 +5451,16 @@ async function signIn(){
   if(!useFb){toast((window.spireT?window.spireT("ระบบล็อกอินไม่พร้อม","Auth unavailable"):(lang==="en"?"Auth unavailable":"ระบบล็อกอินไม่พร้อม")),"ti-alert-triangle");return}
   if(location.protocol==="file:"){toast("ล็อกอิน Google ต้องเปิดผ่าน localhost/เว็บจริง (file:// ใช้ไม่ได้) — แต่ใช้แชต/การาจได้เลย","ti-info-circle");return}
   const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:"select_account"});
-  try{await auth.signInWithPopup(p)}catch(e){if(e.code==="auth/popup-closed-by-user")return;toast("ล็อกอินไม่สำเร็จ: "+e.code,"ti-alert-triangle")}}
+  try{await auth.signInWithPopup(p)}catch(e){
+    const code=(e&&e.code)||"unknown";
+    if(code==="auth/popup-closed-by-user"||code==="auth/cancelled-popup-request")return;
+    /* ของเดิมต่อ e.code ดิบ ๆ เข้าไปในข้อความ error ที่ไม่ใช่ของ Firebase ไม่มี .code
+       ผู้ใช้จึงเห็นคำว่า "ล็อกอินไม่สำเร็จ: undefined" ซึ่งไม่บอกอะไรเลย
+       ใช้ตัวแปลข้อความชุดเดียวกับหน้าล็อกอินหลัก จะได้พูดภาษาเดียวกันทั้งแอป */
+    if(code==="auth/operation-not-allowed"||code==="auth/admin-restricted-operation")
+      authMarkDead("google");
+    toast(authMsg(code)||L("เข้าสู่ระบบไม่สำเร็จ","Sign-in failed"),"ti-alert-triangle");
+  }}
 window.signIn=signIn;
 ($("signinBtn")||{}).onclick=signIn;
 ($("logoutBtn")||{}).onclick=async()=>{if(useFb)await auth.signOut();$("dd").classList.remove("show");switchView("home");toast((window.spireT?window.spireT("ออกจากระบบแล้ว","Logged out"):(lang==="en"?"Logged out":"ออกจากระบบแล้ว")),"ti-logout")};
@@ -5987,6 +6000,21 @@ let authBusy=false, authErr="";
 
 /* ข้อความผิดพลาดของ Firebase เป็นรหัสภาษาอังกฤษล้วน แปลให้อ่านรู้เรื่อง
    ที่สำคัญคือบอกด้วยว่าต้องทำอะไรต่อ ไม่ใช่แค่บอกว่าผิด */
+/* ── จำวิธีเข้าระบบที่ยังไม่ได้เปิด ──
+   เก็บใน sessionStorage ไม่ใช่ localStorage เพราะถ้าเจ้าของระบบเพิ่งไปเปิด provider
+   ผู้ใช้แค่เปิดแท็บใหม่ก็ได้ปุ่มกลับมาครบ ไม่ต้องรอให้ใครมาบอกให้ล้างแคช */
+const AUTH_DEAD_KEY="spire_auth_off";
+function authDeadList(){
+  try{ return JSON.parse(sessionStorage.getItem(AUTH_DEAD_KEY)||"[]") }catch(e){ return [] }
+}
+function authDead(kind){ return authDeadList().indexOf(kind)>=0 }
+function authMarkDead(kind){
+  if(!kind||authDead(kind))return;
+  try{
+    const l=authDeadList(); l.push(kind);
+    sessionStorage.setItem(AUTH_DEAD_KEY,JSON.stringify(l));
+  }catch(e){}
+}
 function authMsg(code){
   const M={
     "auth/invalid-email":["อีเมลไม่ถูกต้อง","That email doesn't look right"],
@@ -6000,7 +6028,8 @@ function authMsg(code){
     "auth/popup-blocked":["เบราว์เซอร์บล็อกหน้าต่างล็อกอิน กรุณาอนุญาตป๊อปอัป","Your browser blocked the sign-in window — allow pop-ups"],
     "auth/too-many-requests":["ลองมากเกินไป รอสักครู่แล้วลองใหม่","Too many attempts — wait a moment and try again"],
     "auth/network-request-failed":["เชื่อมต่อไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองใหม่","Can't connect — check your internet and try again"],
-    "auth/operation-not-allowed":["วิธีนี้ยังไม่ได้เปิดใช้งานในระบบ","That sign-in method isn't enabled yet"],
+    "auth/operation-not-allowed":["วิธีนี้ยังเปิดให้ใช้ไม่ได้ ตอนนี้เข้าด้วย Google ได้เลย","That method isn't available yet — use Google for now"],
+    "auth/admin-restricted-operation":["วิธีนี้ยังเปิดให้ใช้ไม่ได้ ตอนนี้เข้าด้วย Google ได้เลย","That method isn't available yet — use Google for now"],
     "auth/invalid-phone-number":["เบอร์โทรไม่ถูกต้อง","That phone number isn't valid"],
     "auth/invalid-verification-code":["รหัสยืนยันไม่ถูกต้อง","That verification code is wrong"],
     "auth/unauthorized-domain":["โดเมนนี้ยังไม่ได้รับอนุญาตใน Firebase — เพิ่มโดเมนที่ Authentication → Settings → Authorized domains",
@@ -6111,7 +6140,12 @@ async function providerSignIn(kind){
       try{ await auth.signInWithRedirect(p); return }
       catch(err){ authErr=authMsg((err&&err.code)||code) }
     }
-    else if(code!=="auth/popup-closed-by-user"){ authErr=authMsg(code) }
+    else if(code!=="auth/popup-closed-by-user"){
+      /* ระบบยังไม่ได้เปิดวิธีนี้ — จำไว้ ผู้ใช้จะได้ไม่ต้องมากดซ้ำแล้วเจอกำแพงเดิม */
+      if(code==="auth/operation-not-allowed"||code==="auth/admin-restricted-operation")
+        authMarkDead(kind);
+      authErr=authMsg(code);
+    }
   }
   authBusy=false; render();
 }
@@ -6133,7 +6167,13 @@ async function emailSubmit(){
     }else{
       await auth.signInWithEmailAndPassword(mail.trim(),pass);
     }
-  }catch(e){ authErr=authMsg(e&&e.code||"unknown") }
+  }catch(e){
+    const code=(e&&e.code)||"unknown";
+    /* สมัครด้วยอีเมลถูกปิดอยู่ ก็ควรบอกให้ไปทางที่เปิดอยู่ แทนที่จะปล่อยให้ลองใหม่เรื่อย ๆ */
+    if(code==="auth/operation-not-allowed"||code==="auth/admin-restricted-operation")
+      authMarkDead("email");
+    authErr=authMsg(code);
+  }
   authBusy=false; render();
 }
 
@@ -6198,7 +6238,13 @@ async function phoneGo(){
       if(!phoneConfirm)throw {code:"auth/invalid-verification-code"};
       await phoneConfirm.confirm(code);
     }
-  }catch(e){ authErr=authMsg(e&&e.code||"unknown") }
+  }catch(e){
+    const pc=(e&&e.code)||"unknown";
+    if(pc==="auth/operation-not-allowed"||pc==="auth/admin-restricted-operation"){
+      authMarkDead("phone"); phase="auth";
+    }
+    authErr=authMsg(pc);
+  }
   authBusy=false; render();
 }
 
@@ -6359,9 +6405,27 @@ function render(){
 function wire(){
   const w=$("suWrap"); if(!w)return;
   /* ── หน้าเข้าสู่ระบบ ── */
-  w.querySelectorAll("[data-prov]").forEach(b=>b.onclick=()=>{
-    if(b.dataset.prov==="phone"){ phase="phone"; phoneStage=0; authErr=""; render(); return }
-    providerSignIn(b.dataset.prov);
+  /* ── ปุ่มที่ระบบยังไม่ได้เปิดให้ใช้ ──
+     Firebase ตอบ auth/operation-not-allowed เมื่อ provider นั้นยังไม่ถูกเปิดใน Console
+     ของเดิมปล่อยให้ผู้ใช้กดชนกำแพงทีละปุ่มจนครบ โดยไม่มีอะไรบอกว่าปุ่มไหนใช้ได้จริง
+     ตอนนี้จำไว้ว่าอันไหนตาย แล้วหรี่มันลงพร้อมป้ายกำกับ เหลือทางที่เดินได้ให้เห็นชัด */
+  w.querySelectorAll("[data-prov]").forEach(b=>{
+    const kind=b.dataset.prov;
+    if(authDead(kind)){
+      b.disabled=true;
+      b.classList.add("su-p-off");
+      if(!b.querySelector(".su-p-tag")){
+        const tag=document.createElement("span");
+        tag.className="su-p-tag";
+        tag.textContent=L("ยังไม่เปิด","not available");
+        b.appendChild(tag);
+      }
+      return;
+    }
+    b.onclick=()=>{
+      if(kind==="phone"){ phase="phone"; phoneStage=0; authErr=""; render(); return }
+      providerSignIn(kind);
+    };
   });
   /* รูปโมโนลิธจะโผล่ก็ต่อเมื่อโหลดสำเร็จจริง ถ้าไฟล์ยังไม่ขึ้นเซิร์ฟเวอร์
      ให้ทิ้งไว้เป็นเลข 1 ที่วาดด้วย CSS แทน จะได้ไม่เหลือกรอบดำเปล่า ๆ

@@ -3013,11 +3013,19 @@ html[data-level="basic"] .hfree{
   background:var(--bg);display:none}
 #v-settings.setpane.on{display:block}
 .setpane{overflow-y:auto}
-.set-wrap{width:100%;max-width:940px;margin:0 auto;padding:22px 20px 60px}
+.set-wrap{width:100%;max-width:1000px;margin:0 auto;padding:26px 24px 60px}
+@media(max-width:699px){ .set-wrap{padding:18px 16px 48px} }
 .set-head{display:flex;align-items:center;gap:12px;margin-bottom:22px}
 .set-head h1{font-family:var(--kd);font-size:26px;font-weight:700;margin:0}
-.set-body{display:grid;grid-template-columns:210px minmax(0,1fr);gap:26px;align-items:start}
-.set-rail{display:flex;flex-direction:column;gap:1px;position:sticky;top:10px}
+/* เมนูซ้ายกับเนื้อหาอยู่ในกรอบเดียวกัน มีเส้นคั่นตรงกลางแทนที่จะลอยแยกกัน
+   ทำให้รู้สึกว่าเป็นแผงเดียว ไม่ใช่สองก้อนที่บังเอิญวางใกล้กัน
+   ค่าชุดนี้ต้องตรงกับหน้าตั้งค่าในแชต ไม่งั้นเข้าคนละทางแล้วเจอคนละหน้า */
+.set-body{display:grid;grid-template-columns:210px minmax(0,1fr);align-items:stretch;
+  border:1px solid var(--c-line2);border-radius:18px;overflow:hidden;
+  background:var(--c-glass)}
+.set-body>.set-rail{padding:12px 10px;border-right:1px solid var(--c-line2)}
+.set-body>.set-main{padding:22px 26px 26px;min-height:420px}
+.set-rail{display:flex;flex-direction:column;gap:1px;align-self:start;position:sticky;top:0}
 .set-l{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;border:0;
   background:transparent;color:var(--c-mut);font-family:inherit;font-size:13.5px;font-weight:600;
   cursor:pointer;text-align:left;transition:.15s}
@@ -3027,6 +3035,11 @@ html[data-level="basic"] .hfree{
 .set-main h2{font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
   color:var(--c-mut);margin:26px 0 11px}
 .set-main h2:first-child{margin-top:0}
+/* เส้นคั่นบาง ๆ ระหว่างหัวข้อ ทำให้กวาดตาหาของเจอเร็วขึ้น
+   โดยไม่ต้องตีกรอบรอบทุกกลุ่มซึ่งจะกลายเป็นกล่องซ้อนกล่อง */
+.set-main h2:not(:first-child){border-top:1px solid var(--c-line2);padding-top:22px}
+.set-up{display:inline-flex;align-items:center;gap:8px;margin-top:14px;text-decoration:none}
+.set-up i{font-size:16px}
 .set-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:8px}
 .set-opt{padding:12px 14px;border-radius:12px;border:1px solid var(--c-line);
   background:rgba(255,255,255,.03);color:var(--c-ink);font-family:inherit;font-size:13.5px;
@@ -3078,7 +3091,9 @@ html[data-level="basic"] .hfree{
 #fbTxt:focus{border-color:var(--c-acc)}
 @media(max-width:760px){
   .set-wrap{padding:16px 14px 50px}
-  .set-body{grid-template-columns:1fr;gap:16px}
+  .set-body{grid-template-columns:1fr;gap:0}
+  .set-body>.set-rail{border-right:0;border-bottom:1px solid var(--c-line2);padding:10px}
+  .set-body>.set-main{padding:18px 16px 22px;min-height:0}
   .set-rail{position:static;flex-direction:row;overflow-x:auto;gap:5px;
     padding-bottom:5px;scrollbar-width:none}
   .set-rail::-webkit-scrollbar{display:none}
@@ -4029,7 +4044,9 @@ input,select,textarea,.input,.odo-i{
 .gsum-cell span{font-size:var(--m-t-xs)!important;line-height:1.45!important}
 
 /* หน้าตั้งค่า — แถบหมวดเลื่อนแนวนอน */
-.set-body{grid-template-columns:1fr!important;gap:var(--m-4)!important}
+.set-body{grid-template-columns:1fr!important;gap:0!important}
+  .set-body>.set-rail{border-right:0;border-bottom:1px solid var(--c-line2);padding:10px}
+  .set-body>.set-main{padding:18px 16px 22px;min-height:0}
 .set-rail{
   flex-direction:row!important;position:static!important;gap:var(--m-2)!important;
   overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;
@@ -4625,7 +4642,9 @@ let auth=null,useFb=false;
     else go();
   });
 })();
-let currentUser=LS.get("cachedUser",null),lang=LS.get("lang","th");
+/* ค่าตั้งต้นต้องมาจากตัวเลือกภาษาชุดกลาง ไม่ใช่ "th" ตายตัว
+   ไม่งั้น applyLang() ตอนบูตจะเขียน "th" ทับสิ่งที่ชุดกลางเลือกไว้ */
+let currentUser=LS.get("cachedUser",null),lang=LS.get("lang",(["th","en","ja","zh","de","es"].indexOf((window.spireLang&&window.spireLang())||"")>=0?window.spireLang():"th"));
 try{window.BACKEND_URL=BACKEND_URL;Object.defineProperty(window,"spireAuth",{configurable:true,get:function(){return auth}});Object.defineProperty(window,"auth",{configurable:true,get:function(){return auth}});Object.defineProperty(window,"lang",{configurable:true,get:function(){return lang},set:function(v){lang=v}});Object.defineProperty(window,"currentUser",{configurable:true,get:function(){return currentUser},set:function(v){currentUser=v}});window.spireAwaitUser=function(ms){return new Promise(function(res){try{if(!auth)return res(null);if(auth.currentUser)return res(auth.currentUser);var done=false;var t=setTimeout(function(){if(done)return;done=true;res(auth.currentUser||null)},ms||8000);var un=auth.onAuthStateChanged(function(u){if(done)return;done=true;clearTimeout(t);try{un&&un()}catch(e){}res(u||null)});}catch(e){res(null)}})};}catch(e){}
 let currentTheme = LS.get("theme", "warm");
 let wireframeOpacity = LS.get("opacity", 0.15);
@@ -6742,7 +6761,8 @@ const SETS=[
   {k:"general", ic:"ti-adjustments", th:"ทั่วไป",       en:"General"},
   {k:"acct",    ic:"ti-user",        th:"บัญชี",        en:"Account"},
   {k:"usage",   ic:"ti-gauge",       th:"โควตา",        en:"Usage & credits"},
-  {k:"plan",    ic:"ti-rocket",      th:"แพ็กเกจ",      en:"Plan"},
+  /* แพ็กเกจย้ายไปเป็นหน้าของตัวเองแล้ว (plan.html)
+     ทางเข้าอยู่ในแท็บโควตา เหมือนกับหน้าตั้งค่าในแชต */
   {k:"fb",      ic:"ti-message-report",th:"ส่งความเห็น",en:"Feedback"},
   {k:"learn",   ic:"ti-help-circle", th:"เรียนรู้เพิ่มเติม",en:"Learn more"}
 ];
@@ -6808,34 +6828,36 @@ function body(){
       ${(window.spireDangerHTML&&window.spireDangerHTML())||""}`;
   }
   if(tab==="usage"){
-    let used=0; try{ used=JSON.parse(localStorage.getItem("spire_aiUsedToday"))||0 }catch(e){}
-    return `<h2>${t("โควตาวันนี้","Today's usage")}</h2>
-      <div class="set-meter"><i style="width:${Math.min(100,used/60*100)}%"></i></div>
-      <p class="set-note">${t(`ใช้ไปแล้ว ${used} จาก 60 ครั้งต่อวัน · รีเซ็ตเที่ยงคืน`,
-        `${used} of 60 calls today · resets at midnight`)}</p>
-      ${row("ti-message-2",t("คุยกับ AI","Chat message"),t("1 ครั้งต่อข้อความ","1 call each"))}
-      ${row("ti-receipt-2",t("อ่านใบเสนอราคา","Reading a quote"),t("3 ครั้งต่อใบ","3 calls each"))}
-      ${row("ti-ear",t("วิเคราะห์เสียง","Listening to the car"),t("3 ครั้งต่อคลิป","3 calls each"))}
-      ${row("ti-package",t("ค้นอะไหล่","Finding parts"),t("2 ครั้งต่อการค้น","2 calls each"))}
+    /* ตัวเลขมาจากเซิร์ฟเวอร์ ไม่ใช่ตัวนับในเครื่อง เพราะโควตาผูกกับบัญชี
+       ใช้จากเครื่องไหนก็หักก้อนเดียวกัน ค่าชุดนี้ต้องตรงกับที่แสดงในแชต */
+    const q=window.__quota||{};
+    const n=x=>Number(x||0).toLocaleString(t("th-TH","en-US"));
+    const pct=q.limit?Math.min(100,Math.round(q.used/q.limit*100)):0;
+    const mins=q.resetAt?Math.max(0,Math.round((q.resetAt-Date.now())/60000)):0;
+    const hh=Math.floor(mins/60), mm=mins%60;
+    const when=hh?t(`${hh} ชม. ${mm} นาที`,`${hh}h ${mm}m`):t(`${mm} นาที`,`${mm}m`);
+    return `<h2>${t("โควตาของคุณ","Your quota")}</h2>
+      <div class="set-meter"><i style="width:${q.unlimited?100:pct}%"></i></div>
+      <p class="set-note">${q.unlimited
+        ? t("ไม่จำกัด (ผู้ดูแลระบบ)","Unlimited (admin)")
+        : (q.limit
+          ? t(`ใช้ไปแล้ว ${n(q.used)} จาก ${n(q.limit)} โทเคน (${pct}%) · เติมใหม่อัตโนมัติในอีก ${when}`,
+              `${n(q.used)} of ${n(q.limit)} tokens (${pct}%) · refills automatically in ${when}`)
+          : t("คุยกับ AI สักครั้งแล้วตัวเลขจะขึ้นที่นี่",
+              "Chat with the AI once and your numbers will show up here"))}</p>
       <p class="set-note">${t(
-        "โควตามีไว้กันค่าใช้จ่ายพุ่ง ไม่ได้มีไว้กันคุณใช้งาน ถ้าชนบ่อยบอกเราได้",
-        "The cap exists to control cost, not to limit you. Tell us if you keep hitting it.")}</p>`;
-  }
-  if(tab==="plan"){
-    let plan="free"; try{ plan=(JSON.parse(localStorage.getItem("spire_setup"))||{}).plan||"free" }catch(e){}
-    const NAME={free:"Free",light:"Light",exclusive:"Exclusive"}[plan]||"Free";
-    return `<div class="set-plan">
-        <div class="pl now"><small>${t("แพ็กเกจปัจจุบัน","Current")}</small><b>${NAME}</b>
-          <p>${t("ช่วงเบต้ายังใช้ได้ทุกฟีเจอร์ ไม่มีการเก็บเงิน",
-                 "Everything is open during the beta — nothing is charged")}</p></div>
-        <div class="pl soon"><small>${t("กำลังจะมา","Coming")}</small><b>${t("ระบบชำระเงิน","Billing")}</b>
-          <p>${t("เราจะบอกล่วงหน้าก่อนเสมอถ้าจะเริ่มเก็บเงิน",
-                 "We'll tell you well before anything starts costing money")}</p>
-          <button class="set-btn" data-do="notify">${t("แจ้งฉันเมื่อเปิด","Notify me")}</button></div>
-      </div>
+        "โควตาเติมใหม่เองทุก 5 ชั่วโมง ไม่ต้องรอข้ามวัน และนับตามบัญชี ไม่ใช่ตามเครื่อง",
+        "Quota refills every 5 hours — no waiting for midnight — and follows your account, not this device.")}</p>
+      ${row("ti-message-2",t("ข้อความสั้น","Short message"),t("ราว 300-800 โทเคน","~300-800 tokens"))}
+      ${row("ti-messages",t("คุยยาวหลายรอบ","Long back-and-forth"),t("ยิ่งคุยยาว ยิ่งใช้มากขึ้น","Grows as the thread grows"))}
+      ${row("ti-photo",t("แนบรูปหรือวิดีโอ","Photo or video"),t("ราว 1,500-4,000 โทเคน","~1,500-4,000 tokens"))}
+      ${row("ti-search",t("ค้นข้อมูลจากเว็บ","Web lookup"),t("บวกเพิ่มอีกเล็กน้อย","A little extra on top"))}
       <p class="set-note">${t(
-        "เปลี่ยนแพ็กเกจได้ในหน้าตั้งค่าครั้งแรก หรือกดรีเซ็ตบัญชีเพื่อตั้งใหม่ทั้งหมด",
-        "Change your plan in first-time setup, or reset the account to start over.")}</p>`;
+        "หักตามความยาวจริงของบทสนทนา ถามสั้นก็หักน้อย ไม่ได้นับเป็นครั้ง โควตามีไว้กันค่าใช้จ่ายพุ่ง ไม่ได้มีไว้กันคุณใช้งาน ถ้าชนบ่อยบอกเราได้",
+        "Charged by the real length of the conversation, not per message — short questions cost little. The cap exists to control cost, not to limit you. Tell us if you keep hitting it.")}</p>
+      <!-- คนที่เปิดมาดูโควตาคือคนที่กำลังคิดเรื่องอัปเกรดพอดี ทางเข้าจึงควรอยู่ตรงนี้ -->
+      <a class="set-btn primary set-up" href="plan.html?from=index.html">
+        <i class="ti ti-rocket"></i>${t("ดูแพ็กเกจที่ใหญ่ขึ้น","See bigger plans")}</a>`;
   }
   if(tab==="fb"){
     return `<h2>${t("บอกเราหน่อย","Tell us")}</h2>
@@ -6906,6 +6928,31 @@ function render(){
     </div>
   </div>`;
   wire();
+  if(tab==="usage")pullQuota();
+}
+
+/* หน้าหลักไม่มีห้องแชต ยอดโควตาจึงไม่เคยถูกอัปเดตจากคำตอบของ AI เหมือนในแชต
+   ต้องถามเซิร์ฟเวอร์เองตอนเปิดแท็บ ไม่งั้นผู้ใช้เห็นช่องว่างทั้งที่มีข้อมูลอยู่
+   ล้มก็เงียบไป เพราะช่องนี้มีข้อความสำรองบอกอยู่แล้วว่ายังไม่มีตัวเลข */
+let quotaPulling=false;
+async function pullQuota(){
+  if(quotaPulling)return; quotaPulling=true;
+  try{
+    /* สคริปต์ก้อนนี้ถูกห่อไว้ใน IIFE ของตัวเอง จึงเรียก api() ของก้อน skills ไม่ได้
+       ยิงเองด้วยโทเคนจาก Firebase ตรง ๆ */
+    const a=window.spireAuth;
+    let u=a&&a.currentUser;
+    if(!u&&window.spireAwaitUser)u=await window.spireAwaitUser(4000);
+    if(!u)return;
+    const r=await fetch((window.BACKEND_URL||"")+"/api/quota",
+      {headers:{Authorization:"Bearer "+await u.getIdToken()}});
+    const d=r.ok?await r.json():null;
+    if(d&&(d.limit!=null||d.unlimited)){
+      window.__quota=d;
+      if(tab==="usage"){ const m=$("stMain"); if(m){ m.innerHTML=body(); wire() } }
+    }
+  }catch(e){}
+  finally{ quotaPulling=false }
 }
 
 

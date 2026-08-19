@@ -20,7 +20,9 @@
 /* ============ THEMES ============ */
 :root, [data-ctheme="midnight"]{
   --c-bg0:#05070F; --c-bg1:#0B1226; --c-bg2:#0E1530;
-  --c-aura1:rgba(232,148,60,.14); --c-aura2:rgba(84,110,255,.13); --c-aura3:rgba(155,93,229,.10);
+  --c-aura1:rgba(232,148,60,.12); --c-aura2:rgba(232,168,90,.09); --c-aura3:rgba(217,94,60,.07);
+  /* กล่องพิมพ์สว่างกว่ากล่องทั่วไป เพราะเป็นจุดที่ตาไปบ่อยที่สุด */
+  --c-compose:rgba(255,255,255,.075);
   --c-ink:#EEF2FB; --c-mut:#9AA6BE; --c-faint:#5E6B85;
   --c-glass:rgba(255,255,255,.055); --c-glass2:rgba(255,255,255,.10); --c-line:rgba(255,255,255,.10); --c-line2:rgba(255,255,255,.06);
   --c-grad:linear-gradient(135deg,#E8943C,#D95E3C); --c-acc:#E8943C; --c-acc-soft:rgba(232,148,60,.16);
@@ -374,8 +376,12 @@ body[data-phase="thread"] .chip-row{display:flex}
 /* ============ COMPOSER ============ */
 .composer{position:relative;z-index:20;display:none;flex-shrink:0;width:calc(100% - 28px);max-width:800px;
   margin:0 auto calc(14px + env(safe-area-inset-bottom));border-radius:26px;padding:7px;
-  background:var(--c-glass2);backdrop-filter:blur(24px) saturate(1.5);-webkit-backdrop-filter:blur(24px) saturate(1.5);
-  border:1px solid var(--c-line);box-shadow:0 18px 44px -14px rgba(0,0,0,.45);transition:border-color .25s,box-shadow .25s}
+  /* กล่องพิมพ์คือจุดที่ผู้ใช้มองบ่อยที่สุด ควรลอยขึ้นมาจากพื้นหลังชัดกว่านี้
+     ของเดิมใช้ค่าโปร่งเดียวกับกล่องทั่วไป เลยจมไปกับพื้น */
+  background:var(--c-compose,rgba(255,255,255,.075));
+  backdrop-filter:blur(26px) saturate(1.5);-webkit-backdrop-filter:blur(26px) saturate(1.5);
+  border:1px solid var(--c-line2);box-shadow:0 18px 44px -14px rgba(0,0,0,.45);
+  transition:border-color .25s,box-shadow .25s}
 body[data-phase="thread"] .composer{display:block;animation:compIn .5s cubic-bezier(.2,.9,.25,1)}
 @keyframes compIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
 .composer:focus-within{border-color:var(--c-acc);box-shadow:0 18px 44px -14px rgba(0,0,0,.45),0 0 0 3px var(--c-acc-soft)}
@@ -384,7 +390,12 @@ body[data-phase="thread"] .composer{display:block;animation:compIn .5s cubic-bez
 .att-chip img,.att-chip video{width:34px;height:34px;border-radius:8px;object-fit:cover}
 .att-chip .x{cursor:pointer;color:var(--c-faint);font-size:15px}.att-chip .x:hover{color:#F26D6D}
 .crow{display:flex;align-items:flex-end;gap:3px}
-.att-btn{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--c-mut);font-size:19px;flex-shrink:0;transition:.16s}
+/* ปุ่มแนบไฟล์เป็นไอคอนเปล่า ๆ ไม่มีวงกรอบล้อม
+   ในกล่องพิมพ์ที่มีกรอบอยู่แล้ว การมีวงซ้อนอยู่ข้างในทำให้รู้สึกอัด */
+.att-btn{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;
+  color:var(--c-mut);font-size:19px;flex-shrink:0;transition:.16s;
+  background:none;border:none;box-shadow:none}
+.att-btn:hover{background:var(--c-glass);color:var(--c-acc);box-shadow:none}
 .att-btn:hover{background:var(--c-glass2);color:var(--c-acc)}
 .att-btn.rec{background:#D64A4A;color:#fff;animation:recPulse 1.2s infinite}
 @keyframes recPulse{0%,100%{box-shadow:0 0 0 0 rgba(214,74,74,.5)}50%{box-shadow:0 0 0 10px rgba(214,74,74,0)}}
@@ -459,8 +470,8 @@ body[data-phase="thread"] .composer{display:block;animation:compIn .5s cubic-bez
 .sheet-btn.danger:hover{border-color:#F26D6D;background:rgba(214,74,74,.08)}
 /* history list */
 .hist-item{display:flex;align-items:center;gap:11px;width:100%;padding:13px 14px;border-radius:15px;text-align:left;
-  background:var(--c-glass);border:1px solid var(--c-line);transition:.16s}
-.hist-item:hover{border-color:var(--c-acc)}
+  background:var(--c-glass);border:1px solid transparent;transition:.16s}
+.hist-item:hover{background:var(--c-glass2)}
 .hist-item.cur{border-color:var(--c-acc);background:var(--c-acc-soft)}
 .hist-item .tx{flex:1;min-width:0}
 .hist-item b{display:block;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -603,7 +614,26 @@ body{flex-direction:row}
   background:linear-gradient(180deg,rgba(255,255,255,.05),transparent 30%)}
 .side>*{position:relative;z-index:1}
 
-.side-top{display:flex;align-items:center;gap:7px;padding:4px 6px 2px}
+.side-top{display:flex;align-items:center;gap:7px;padding:4px 6px 2px;min-height:34px}
+/* ── โลโก้สลับตามสถานะแถบ ──
+   กางอยู่ = โชว์ชื่อ Cendon อย่างเดียว ไม่ต้องมีตัว C ซ้ำ
+   ย่อแล้ว = เหลือแต่ตัว C เพราะชื่อยาวใส่ไม่ลง
+   ชี้เมาส์ที่ตัว C ตอนย่อ จะกลายเป็นไอคอนแถบเมนู บอกว่ากดแล้วกางออก */
+.side-mark{position:relative;cursor:pointer;width:26px;height:26px}
+.side-mark .sm-logo{display:grid;place-items:center;width:100%;height:100%;
+  transition:opacity .16s}
+.side-mark .sm-logo svg{height:24px;width:auto;fill:currentColor}
+.side-mark .sm-ic{position:absolute;inset:0;display:grid;place-items:center;
+  font-size:19px;opacity:0;transition:opacity .16s;pointer-events:none}
+.side-mark:hover .sm-logo,.side-mark:focus-visible .sm-logo{opacity:0}
+.side-mark:hover .sm-ic,.side-mark:focus-visible .sm-ic{opacity:1}
+
+.side-fold{margin-left:auto;width:30px;height:30px;flex-shrink:0;border-radius:9px;
+  display:grid;place-items:center;color:var(--c-mut);font-size:17px;transition:.15s}
+.side-fold:hover{background:var(--c-glass2);color:var(--c-ink)}
+/* กางอยู่ = ไม่มีตัว C · ย่อแล้ว = ไม่มีชื่อ Cendon
+   สองอันนี้ทำหน้าที่เดียวกัน โชว์พร้อมกันคือความซ้ำซ้อนที่กินที่เปล่า ๆ */
+body[data-side="1"] .side-mark{display:none}
 /* ตราตัว C เป็นโลโก้ในตัวเอง ไม่ต้องมีแผ่นสีรอง */
 .side-mark{width:auto;height:24px;flex-shrink:0;display:grid;place-items:center}
 .side-mark svg{height:100%;width:auto;fill:currentColor}
@@ -640,7 +670,9 @@ body{flex-direction:row}
 .side-item{display:flex;align-items:center;gap:9px;width:100%;padding:9px 11px;border-radius:11px;
   text-align:left;color:var(--c-mut);transition:.14s;border:1px solid transparent}
 .side-item:hover{background:rgba(255,255,255,.05);color:var(--c-ink)}
-.side-item.cur{background:rgba(255,255,255,.075);border-color:var(--c-line);color:var(--c-ink)}
+/* รายการที่กำลังเปิดอยู่ ใช้พื้นหลังบอกก็พอ ไม่ต้องตีกรอบซ้ำ
+   กรอบบาง ๆ รอบทุกรายการทำให้แถบซ้ายดูเป็นตารางแน่น ๆ แทนที่จะเป็นรายการที่อ่านลื่น */
+.side-item.cur{background:rgba(255,255,255,.075);border-color:transparent;color:var(--c-ink)}
 .side-item .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
 .side-item .tx b{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .side-item .tx small{font-size:10.5px;color:var(--c-faint)}
@@ -651,7 +683,10 @@ body{flex-direction:row}
 .side-empty{font-size:12.5px;color:var(--c-faint);padding:14px 10px;text-align:center;line-height:1.7}
 
 /* ── แถบล่าง: บัญชีผู้ใช้ + ปุ่มหน้าหลักไอคอนล้วน ── */
-.side-foot{display:flex;align-items:center;gap:6px;padding-top:10px;
+/* margin-top:auto ดันบัญชีลงล่างสุดเสมอ
+   ของเดิมไม่มี พอย่อแถบแล้วรายชื่อบทสนทนาถูกซ่อน ทุกอย่างจึงหดขึ้นไปกองข้างบน
+   รูปโปรไฟล์ลอยอยู่กลางแถบ ดูเหมือนหลุดตำแหน่ง */
+.side-foot{display:flex;align-items:center;gap:6px;padding-top:10px;margin-top:auto;
   border-top:1px solid var(--c-line);position:relative}
 .side-acct{flex:1;min-width:0;display:flex;align-items:center;gap:10px;
   padding:9px 10px;border-radius:13px;text-align:left;transition:.15s}
@@ -667,7 +702,12 @@ body{flex-direction:row}
   font-size:19px;color:var(--c-mut);border:1px solid var(--c-line);transition:.15s}
 .side-icon:hover{color:var(--c-acc);border-color:var(--c-acc)}
 /* เมนูบัญชี */
-.acct-drop{position:absolute;left:0;right:0;bottom:calc(100% + 8px);z-index:30;
+/* ── เมนูบัญชี ──
+   ของเดิมยืดเต็มความกว้างของแถบ (left:0;right:0) พอแถบย่อเหลือ 62px
+   เมนูก็เหลือ 62px ตาม ตัวหนังสือถูกบีบจนตัดบรรทัดละตัวอักษร อ่านไม่ได้เลย
+   ตอนนี้กำหนดความกว้างขั้นต่ำของตัวเอง ไม่ผูกกับแถบอีกต่อไป */
+.acct-drop{position:absolute;left:0;right:auto;min-width:230px;max-width:min(280px,calc(100vw - 24px));
+  bottom:calc(100% + 8px);z-index:30;
   display:flex;flex-direction:column;gap:2px;padding:6px;border-radius:14px;
   background:var(--sheet-bg,rgba(16,20,32,.98));border:1px solid var(--c-line);
   box-shadow:0 22px 54px -14px rgba(0,0,0,.6);backdrop-filter:blur(20px)}
@@ -676,6 +716,9 @@ body{flex-direction:row}
 .acct-drop button:hover{background:rgba(255,255,255,.07)}
 .acct-drop button i{font-size:16px;color:var(--c-faint)}
 .acct-drop button.danger{color:#F26D6D}
+/* ตอนแถบย่อ ให้เมนูโผล่ออกไปทางขวาแทน ไม่งั้นมันจะล้นออกนอกจอด้านซ้าย */
+body[data-side="0"] .acct-drop{left:calc(100% + 6px);bottom:0}
+.acct-drop button{white-space:nowrap}
 .acct-drop button.danger i{color:#F26D6D}
 .acct-drop hr{border:0;border-top:1px solid var(--c-line);margin:4px 2px}
 
@@ -692,9 +735,11 @@ body[data-phase="login"] .colwrap>.tbar,body[data-phase="gate"] .colwrap>.tbar,
 body[data-phase="login"] .side-burger,body[data-phase="gate"] .side-burger{display:none!important}
 
 /* ── แถบหัวเรื่องของบทสนทนา ── */
+/* เส้นขีดใต้แถบหัวเรื่องถูกถอดออก มันตัดหน้าจอเป็นสองท่อนโดยไม่จำเป็น
+   ตัวไล่สีอ่อน ๆ บอกขอบเขตได้อยู่แล้วโดยไม่ต้องลากเส้น */
 .tbar{display:none;align-items:center;gap:12px;flex-shrink:0;
-  padding:13px 22px 12px;border-bottom:1px solid var(--c-line);
-  background:linear-gradient(180deg,rgba(255,255,255,.03),transparent)}
+  padding:13px 22px 12px;
+  background:linear-gradient(180deg,rgba(255,255,255,.028),transparent)}
 .tbar-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
 .tbar-tx b{font-family:var(--kd);font-size:15px;font-weight:700;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -960,7 +1005,11 @@ body[data-phase="work"] .colwrap>.tbar{display:none!important}
   border:1px solid transparent;background:transparent;color:var(--c-mut);
   font-size:17px;cursor:pointer;transition:.15s}
 .tbar-ic:hover{background:rgba(255,255,255,.07);color:var(--c-ink)}
-#tbarSide{display:grid}
+/* ── ปุ่มเรียกแถบเมนูบนหัวเรื่อง ──
+   จอที่แถบเป็นลิ้นชักซ่อนสนิท (<700px) ต้องมีปุ่มข้างนอกไว้เรียกมันออกมา
+   จอที่มีแถบไอคอนค้างอยู่แล้ว ไม่ต้องมี เพราะกดที่โลโก้ในแถบได้เลย
+   ปุ่มลอยอยู่บนหน้าแชตทั้งที่มีทางเข้าอยู่แล้ว คือของซ้ำซ้อนที่รกเปล่า ๆ */
+#tbarSide{display:none}
 
 /* ── หน้าเริ่มแชต ── */
 .w-h1 .w-hi{display:block;font-family:inherit;font-size:13px;font-weight:600;
@@ -991,8 +1040,8 @@ body[data-phase="work"] .colwrap>.tbar{display:none!important}
 .w-q:hover{background:rgba(255,255,255,.05);color:var(--c-ink)}
 .w-q i{font-size:17px;color:var(--c-acc);flex-shrink:0}
 
+@media(max-width:699px){ #tbarSide{display:grid} }
 @media(max-width:899px){
-  #tbarSide{display:grid}
   .w-h1{font-size:23px}
   .w-box{border-radius:18px;padding:12px 13px 10px}
   .w-box textarea{font-size:14.5px}
@@ -1003,12 +1052,22 @@ body[data-phase="work"] .colwrap>.tbar{display:none!important}
 /* เต็มความกว้างของคอลัมน์ ไม่บีบเป็นแถบกลางจออีกแล้ว
    ของเดิมจำกัดที่ 940px ทำให้บนจอกว้างเหลือที่ว่างสองข้างมหาศาล
    ขณะที่เนื้อหาข้างในอัดกันจนอ่านยาก */
-.set-wrap{width:100%;max-width:none;margin:0;padding:26px 32px 60px}
+/* ── หน้าตั้งค่า ──
+   รอบก่อนผมถอด max-width ออกให้เต็มจอ แล้วมันกว้างเกินจนอ่านอึดอัด
+   บรรทัดยาวข้ามจอทำให้ตาต้องกวาดไกล และของที่ควรอยู่ด้วยกันดูกระจัดกระจาย
+   กลับมาเป็นกรอบเดียวที่มีขอบเขตชัด แบบเดียวกับหน้าตั้งค่าของแอปที่คนคุ้นอยู่แล้ว */
+.set-wrap{width:100%;max-width:1000px;margin:0 auto;padding:26px 24px 60px}
 @media(max-width:699px){ .set-wrap{padding:18px 16px 48px} }
 .set-head{display:flex;align-items:center;gap:12px;margin-bottom:22px}
 .set-head h1{font-family:var(--kd);font-size:26px;font-weight:700;margin:0}
-.set-body{display:grid;grid-template-columns:222px minmax(0,1fr);gap:34px;align-items:start}
-.set-rail{display:flex;flex-direction:column;gap:1px;position:sticky;top:10px}
+/* เมนูซ้ายกับเนื้อหาอยู่ในกรอบเดียวกัน มีเส้นคั่นตรงกลางแทนที่จะลอยแยกกัน
+   ทำให้รู้สึกว่าเป็นแผงเดียว ไม่ใช่สองก้อนที่บังเอิญวางใกล้กัน */
+.set-body{display:grid;grid-template-columns:210px minmax(0,1fr);align-items:stretch;
+  border:1px solid var(--c-line2);border-radius:18px;overflow:hidden;
+  background:var(--c-glass)}
+.set-body>.set-rail{padding:12px 10px;border-right:1px solid var(--c-line2)}
+.set-body>.set-main{padding:22px 26px 26px;min-height:420px}
+.set-rail{display:flex;flex-direction:column;gap:1px;align-self:start;position:sticky;top:0}
 .set-l{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;border:0;
   background:transparent;color:var(--c-mut);font-family:inherit;font-size:13.5px;font-weight:600;
   cursor:pointer;text-align:left;transition:.15s}
@@ -1018,6 +1077,9 @@ body[data-phase="work"] .colwrap>.tbar{display:none!important}
 .set-main h2{font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
   color:var(--c-mut);margin:26px 0 11px}
 .set-main h2:first-child{margin-top:0}
+/* เส้นคั่นบาง ๆ ระหว่างหัวข้อ ทำให้กวาดตาหาของเจอเร็วขึ้น
+   โดยไม่ต้องตีกรอบรอบทุกกลุ่มซึ่งจะกลายเป็นกล่องซ้อนกล่อง */
+.set-main h2:not(:first-child){border-top:1px solid var(--c-line2);padding-top:22px}
 .set-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:8px}
 .set-opt{padding:12px 14px;border-radius:12px;border:1px solid var(--c-line);
   background:rgba(255,255,255,.03);color:var(--c-ink);font-family:inherit;font-size:13.5px;
@@ -2066,6 +2128,7 @@ html[data-theme="light"]{
   --c-aura1:rgba(232,148,60,.10);--c-aura2:rgba(120,150,200,.07);--c-aura3:rgba(200,150,90,.06);
   --c-ink:#221F1A;--c-mut:#6C665A;--c-faint:#A6A093;
   --c-glass:rgba(40,34,18,.035);--c-glass2:rgba(40,34,18,.06);
+  --c-compose:rgba(255,255,255,.92);
   --c-line:rgba(40,34,18,.12);--c-line2:rgba(40,34,18,.07);
   --c-grad:linear-gradient(135deg,#E8943C,#D95E3C);--c-acc:#D9733C;
   --c-acc-soft:rgba(217,115,60,.14);
@@ -2085,8 +2148,13 @@ html[data-theme="dark"]{
   --wireframe-opacity:.18;--nav-bg:rgba(29,29,33,.92);--nav-link:#9B9BA1;
   --gloss:.13;--gloss-card:.07;--edge-sh:rgba(0,0,0,.5);--el-cast:rgba(0,0,0,.75);--sk-glow:.07;
 
-  --c-bg0:#0C0C0F;--c-bg1:#141418;--c-bg2:#1B1B21;
-  --c-aura1:rgba(232,132,60,.12);--c-aura2:rgba(120,130,170,.08);--c-aura3:rgba(200,120,70,.07);
+  /* ── ธีมมืด ──
+     ของเดิม #0C0C0F ยังออกเทาอยู่ ทำให้ทั้งหน้าดูหม่นแทนที่จะดูลึก
+     ดำลึกขึ้นทำให้สีหลักกับแสงเรืองเด่นขึ้นเองโดยไม่ต้องเพิ่มความสว่างของมัน
+     ระดับชั้น bg0 → bg1 → bg2 ยังไล่ขึ้นชัดพอให้แยกชั้นกล่องออกจากพื้น */
+  --c-bg0:#050506;--c-bg1:#0C0C0F;--c-bg2:#131317;
+  --c-aura1:rgba(232,132,60,.12);--c-aura2:rgba(232,160,90,.08);--c-aura3:rgba(200,120,70,.07);
+  --c-compose:rgba(255,255,255,.07);
   --c-ink:#E7E7EA;--c-mut:#9B9BA1;--c-faint:#616168;
   --c-glass:rgba(255,255,255,.05);--c-glass2:rgba(255,255,255,.09);
   --c-line:rgba(255,255,255,.09);--c-line2:rgba(255,255,255,.05);
@@ -2985,7 +3053,9 @@ input,select,textarea,.input,.odo-i{
 .gsum-cell span{font-size:var(--m-t-xs)!important;line-height:1.45!important}
 
 /* หน้าตั้งค่า — แถบหมวดเลื่อนแนวนอน */
-.set-body{grid-template-columns:1fr!important;gap:var(--m-4)!important}
+.set-body{grid-template-columns:1fr!important;gap:0!important}
+  .set-body>.set-rail{border-right:0;border-bottom:1px solid var(--c-line2);padding:10px}
+  .set-body>.set-main{padding:18px 16px 22px;min-height:0}
 .set-rail{
   flex-direction:row!important;position:static!important;gap:var(--m-2)!important;
   overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;
@@ -4827,7 +4897,9 @@ let auth=null,useFb=false,currentUser=LS.get("cachedUser",null),myRole="user",is
     else go();
   });
 })();
-let lang=LS.get("lang","th");
+/* ค่าตั้งต้นต้องมาจากตัวเลือกภาษาชุดกลาง ไม่ใช่ "th" ตายตัว
+   ไม่งั้น applyLang() ตอนบูตจะเขียน "th" ทับสิ่งที่ชุดกลางเลือกไว้ */
+let lang=LS.get("lang",(["th","en","ja","zh","de","es"].indexOf((window.spireLang&&window.spireLang())||"")>=0?window.spireLang():"th"));
 /* auth · currentUser · lang · BACKEND_URL ประกาศด้วย let/const ที่ระดับบนสุด
    ของสคริปต์ ซึ่งภาษาไม่เอาขึ้นไปไว้บน window เลเยอร์อื่น (หน้าเข้าสู่ระบบ
    และตัวช่วยตั้งค่า) จึงมองไม่เห็น แล้วขึ้นว่า "ระบบล็อกอินยังไม่พร้อม"
@@ -6452,9 +6524,16 @@ function wrap(){
     <div class="side-top">
       <div class="side-mark" id="sideMark" role="button" tabindex="0"
         data-tip="${t("เปิดแถบเมนู","Open sidebar")}"
-        aria-label="${t("เปิดหรือย่อแถบเมนู","Toggle sidebar")}">${MARK}</div>
+        aria-label="${t("เปิดหรือย่อแถบเมนู","Toggle sidebar")}"
+        ><span class="sm-logo">${MARK}</span
+        ><i class="ti ti-layout-sidebar sm-ic" aria-hidden="true"></i></div>
       <svg class="wm" viewBox="-44 -744.0 4817.0 788.0" role="img" aria-label="Cendon"><title>Cendon</title><g fill="currentColor"><path transform="translate(0.0 0) scale(1 -1)" d="M611 632V512L486 532L452 546L417 554L380 556L343 551L308 539L276 521L248 498L223 471L205 439L192 405L185 368V332L192 295L205 261L223 229L248 202L276 179L308 161L343 149L380 144L417 146L452 154L486 168L611 188V68L557 33L498 9L436 -5L372 -8L309 1L248 22L192 52L142 92L100 140L68 195L45 255L34 318V382L45 445L68 505L100 560L142 608L192 648L248 678L309 699L372 708L436 705L498 691L557 667Z"/><path transform="translate(705.0 0)" d="M45 -572L615 -572L615 -700L45 -700Z M45 -286L615 -286L615 -414L45 -414Z M45 0L615 0L615 -128L45 -128Z"/><path transform="translate(2220.0 0) scale(-1 -1)" d="M58 0V700H210V0ZM586 0V700H738V0ZM45 700H224L752 0H573Z"/><path transform="translate(2280.0 0) scale(1 -1)" d="M45 0V700H197V0ZM355 700 380 699 404 696 429 692 453 686 477 678 500 668 522 657 544 644 564 630 584 615 602 597 619 579 635 560 649 539 662 518 673 495 683 472 690 449 697 424 701 400 704 375 705 350 704 325 701 300 697 276 690 251 683 228 673 205 662 182 649 161 635 140 619 121 602 103 584 85 564 70 544 56 522 43 500 32 477 22 453 14 429 8 404 4 380 1 355 0V128L369 129L383 130L397 133L410 137L424 142L437 148L450 155L462 163L473 172L484 182L495 193L504 205L513 217L521 230L528 244L535 258L540 272L545 287L548 303L551 318L552 334L553 350L552 366L551 382L548 397L545 413L540 428L535 442L528 456L521 470L513 483L504 495L495 507L484 518L473 528L462 537L450 545L437 552L424 558L410 563L397 567L383 570L369 571L355 572ZM45 572V700H355V572ZM45 0V128H355V0Z"/><path transform="translate(3089.0 0) scale(1 -1)" d="M750 350Q750 291 732.0 237.0Q714 183 681.0 138.5Q648 94 603.0 61.0Q558 28 504.5 10.0Q451 -8 392 -8Q333 -8 279.0 10.0Q225 28 180.5 61.0Q136 94 103.0 138.5Q70 183 52.0 237.0Q34 291 34 350Q34 409 52.0 463.0Q70 517 103.0 561.5Q136 606 180.5 639.0Q225 672 279.0 690.0Q333 708 392 708Q451 708 504.5 690.0Q558 672 603.0 639.0Q648 606 681.0 561.5Q714 517 732.0 463.0Q750 409 750 350ZM598 350Q598 398 582.0 439.5Q566 481 537.5 512.5Q509 544 472.0 562.0Q435 580 392 580Q349 580 312.0 562.0Q275 544 246.5 512.5Q218 481 202.0 439.5Q186 398 186 350Q186 302 202.0 260.5Q218 219 246.5 187.5Q275 156 312.0 138.0Q349 120 392 120Q435 120 472.0 138.0Q509 156 537.5 187.5Q566 219 582.0 260.5Q598 302 598 350Z"/><path transform="translate(3933.0 0) scale(1 -1)" d="M58 0V700H210V0ZM586 0V700H738V0ZM45 700H224L752 0H573Z"/></g></svg>
       <button class="side-x" id="sideX" aria-label="${t("ปิด","Close")}"><i class="ti ti-x"></i></button>
+      <!-- ปุ่มย่อแถบอยู่ในแถบเอง ไม่ใช่ลอยอยู่บนหน้าแชต
+           ตอนย่อแล้วปุ่มนี้หายไป เพราะโลโก้ทำหน้าที่แทน (ชี้เมาส์แล้วกลายเป็นไอคอน) -->
+      <button class="side-fold" id="sideFold"
+        aria-label="${t("ย่อแถบเมนู","Collapse sidebar")}"
+        data-tip="${t("ย่อแถบเมนู","Collapse sidebar")}"><i class="ti ti-layout-sidebar"></i></button>
     </div>
     <button class="side-new" id="sideNew"><i class="ti ti-plus"></i><span></span></button>
 
@@ -6496,6 +6575,17 @@ function wrap(){
   /* ปุ่มเดียวใช้ได้ทั้งสองขนาดจอ: จอแคบเลื่อนลิ้นชักเข้าออก
      จอกว้างพับแถบซ้ายเก็บไปเลยเพื่อคืนพื้นที่ให้ห้องแชต จำค่าไว้ด้วย */
   /* ปุ่มเดียวใช้ได้ทั้งสองขนาดจอ และตอนนี้โลโก้ก็ทำหน้าที่เดียวกัน */
+  /* ── ปิดแถบเมื่อไหร่ ──
+     ตอนแถบเป็นลิ้นชักทับหน้าจอ (จอแคบ) การกดเมนูแล้วให้มันหลบไปคือสิ่งที่ถูก
+     เพราะไม่งั้นมันบังเนื้อหาที่ผู้ใช้เพิ่งกดไปดู
+     แต่บนจอกว้างที่แถบอยู่ข้าง ๆ ไม่ได้ทับอะไรเลย การหลบเองคือการรบกวน
+     ผู้ใช้กางไว้เพราะเขาอยากให้มันกางอยู่ ระบบไม่ควรไปตัดสินใจแทน
+     ของเดิมสั่งปิดทุกครั้งที่เปลี่ยนหน้า ทั้งที่ไม่มีเหตุผลบนจอกว้าง */
+  function closeSideIfDrawer(){
+    if(innerWidth<700)D.body.dataset.side="0";
+  }
+  window.spireCloseSideIfDrawer=closeSideIfDrawer;
+
   function sideToggle(){
     const on=D.body.dataset.side==="1";
     D.body.dataset.side=on?"0":"1";
@@ -6511,6 +6601,7 @@ function wrap(){
     m.dataset.tip=open?t("ย่อแถบเมนู","Collapse sidebar"):t("เปิดแถบเมนู","Open sidebar");
   }
   bar.querySelector("#tbarSide").onclick=sideToggle;
+  const fold=$("sideFold"); if(fold)fold.onclick=sideToggle;
   const mk=$("sideMark");
   if(mk){
     mk.onclick=sideToggle;
@@ -6541,7 +6632,7 @@ function wrap(){
   });
 
   $("sideX").onclick=()=>D.body.dataset.side="0";
-  $("sideNew").onclick=()=>{if(window.newSession)window.newSession();D.body.dataset.side="0"};
+  $("sideNew").onclick=()=>{if(window.newSession)window.newSession();closeSideIfDrawer()};
   $("sideCar").onclick=carMenu;
   $("sideAcct").onclick=acctMenu;
 }
@@ -6567,7 +6658,8 @@ function acctMenu(){
     <button data-a="out" class="danger"><i class="ti ti-logout"></i>${t("ออกจากระบบ","Sign out")}</button>`;
   d.onclick=e=>{
     const b=e.target.closest("[data-a]"); if(!b)return;
-    const a=b.dataset.a; d.remove(); D.body.dataset.side="0";
+    const a=b.dataset.a; d.remove();
+    try{ window.spireCloseSideIfDrawer&&window.spireCloseSideIfDrawer() }catch(err){}
     if(a==="out"){ try{window.firebase&&firebase.auth().signOut()}catch(err){}
       try{localStorage.removeItem("spire_cachedUser")}catch(err){}
       location.href="index.html"; return }
@@ -6731,16 +6823,12 @@ function setBody(){
       <div class="pri-wrap">${((window.spirePrimaryPresets&&window.spirePrimaryPresets())||[]).map(x=>
         `<button class="pri-sw" data-pri="${x.k}" style="background:${x.k}"
           title="${t(x.th,x.en)}" aria-label="${t(x.th,x.en)}"></button>`).join("")}
-        <label class="pri-any" title="${t("เลือกสีเอง","Pick any colour")}">
-          <i class="ti ti-color-picker"></i>
-          <input type="color" id="priAny" value="${(window.spirePrimary&&window.spirePrimary())||"#E8943C"}">
-        </label>
       </div>
       <div class="pri-now"><span class="pri-dot" style="background:var(--c-acc)"></span>
         ${t("สีที่ใช้อยู่","Current")} <b id="priHex">${(window.spirePrimary&&window.spirePrimary())||"#E8943C"}</b></div>
       <p class="set-note">${t(
-        "เลือกได้ทุกสีไม่จำกัด ถ้าสีสว่างเกินจนตัวหนังสือบนปุ่มอ่านไม่ออก ระบบจะหรี่ลงให้เอง",
-        "Any colour you like. If it's too bright to read text on, we dim it just enough.")}</p>
+        "ทุกสีในชุดนี้คัดมาให้เข้ากับพื้นหลังทั้งธีมสว่างและธีมมืด แสงเรืองด้านหลังจะเปลี่ยนตามสีที่เลือกด้วย",
+        "Every colour here is tuned to work on both light and dark backgrounds. The background glow follows your pick.")}</p>
 
       <h2>${t("การซิงก์ข้อมูล","Sync")}</h2>
       <div id="syncBox"></div>
@@ -6881,8 +6969,6 @@ function wireSettings(){
     window.spireOnPrimary&&window.spireOnPrimary(()=>{ try{ markPri() }catch(e){} }) } }catch(e){}
   v.querySelectorAll("[data-pri]").forEach(b=>b.onclick=()=>{
     if(window.spireSetPrimary)window.spireSetPrimary(b.dataset.pri); markPri() });
-  const any=$("priAny");
-  if(any)any.oninput=()=>{ if(window.spireSetPrimary)window.spireSetPrimary(any.value); markPri() };
   v.querySelectorAll("[data-do]").forEach(b=>b.onclick=()=>{
     const a=b.dataset.do;
     if(a==="new"&&window.newSession){window.newSession();setPhase("welcome")}
@@ -7026,7 +7112,9 @@ function paint(){
     const mn=e.target.closest("[data-menu]");
     if(mn){e.stopPropagation();e.preventDefault();if(window.sessMenu)window.sessMenu(mn.dataset.menu,e);return}
     const b=e.target.closest("[data-sess]");
-    if(b&&window.switchSession){window.switchSession(b.dataset.sess);D.body.dataset.side="0";setTimeout(paint,60)}
+    if(b&&window.switchSession){window.switchSession(b.dataset.sess);
+      try{ window.spireCloseSideIfDrawer&&window.spireCloseSideIfDrawer() }catch(err){}
+      setTimeout(paint,60)}
   };
 }
 
@@ -12808,6 +12896,7 @@ window.slideRelease=function(){
 
   /* ของที่เป็นตัวหนังสือล้วน ไม่มีรูปแทน — ซ่อนตอนย่อ */
   body[data-side="0"] .side .wm,
+  body[data-side="0"] .side-fold,
   body[data-side="0"] .side-x,
   body[data-side="0"] .side-new span,
   body[data-side="0"] .side-l span,
@@ -13056,16 +13145,21 @@ D.addEventListener("click",e=>{
 (function(){
 const D=document, KEY="spire_primary", DEF="#E8943C";
 
+/* ── สีหลักที่เลือกได้ ──
+   ของเดิมเปิดให้เลือกทุกสีไม่จำกัด ซึ่งฟังดูดีแต่ผลลัพธ์จริงคือ
+   ผู้ใช้เลือกสีที่ความสว่างหรือความอิ่มไม่เข้ากับพื้นหลังแล้วทั้งแอปดูเสีย
+   ชุดนี้คัดมาให้ความสว่างอยู่ในช่วง 52-62% และความอิ่มไม่เกิน 70%
+   ซึ่งเป็นช่วงที่อ่านออกบนพื้นดำลึก และแสงเรืองยังดูนุ่มไม่แสบตา */
 const PRESETS=[
-  {k:"#E8943C",th:"ส้มอบอุ่น",en:"Warm orange"},
-  {k:"#E2574C",th:"แดงอิฐ",   en:"Brick red"},
-  {k:"#D9548E",th:"ชมพู",     en:"Pink"},
-  {k:"#8E63D6",th:"ม่วง",     en:"Purple"},
-  {k:"#4F8FF7",th:"น้ำเงิน",  en:"Blue"},
-  {k:"#2FA8C7",th:"ฟ้าคราม",  en:"Teal"},
-  {k:"#3E9E6E",th:"เขียว",    en:"Green"},
-  {k:"#B08A3C",th:"ทอง",      en:"Gold"},
-  {k:"#6B7280",th:"เทา",      en:"Graphite"},
+  {k:"#E8943C",th:"ส้มอบอุ่น", en:"Amber"},
+  {k:"#E0704A",th:"ส้มอิฐ",    en:"Terracotta"},
+  {k:"#D65F72",th:"กุหลาบ",    en:"Rose"},
+  {k:"#B074D9",th:"ม่วงลาเวนเดอร์",en:"Lavender"},
+  {k:"#5B8FD9",th:"ฟ้าคราม",   en:"Azure"},
+  {k:"#3FA6A0",th:"เขียวน้ำทะเล",en:"Teal"},
+  {k:"#5AA86B",th:"เขียวใบไม้", en:"Sage"},
+  {k:"#C39A4E",th:"ทองอ่อน",   en:"Brass"},
+  {k:"#8A8F98",th:"เทาเงิน",   en:"Slate"},
 ];
 
 /* ── สีเลข ── */
@@ -13131,7 +13225,16 @@ function apply(raw){
   set("--c-acc",base); set("--c-acc-soft",soft(.16));
   set("--c-grad",`linear-gradient(135deg,${light},${dark})`);
   set("--c-user",`linear-gradient(135deg,${light},${dark})`);
-  set("--c-aura1",soft(.12));
+  /* ── แสงเรืองพื้นหลัง ──
+     ของเดิมตั้งแค่ aura1 ส่วน aura2/aura3 ยังเป็นค่าฮาร์ดโค้ดของธีม (ฟ้า/ม่วง/ส้มอิฐ)
+     เลือกสีเขียวแล้ว glow จึงยังออกส้มอยู่ ซึ่งคือสิ่งที่เจ้าของโปรเจกต์เจอ
+     ตอนนี้ได้มาจากสีหลักทั้งสามวง แต่หมุนเฉดต่างกันเล็กน้อย
+     ถ้าใช้สีเดียวกันเป๊ะทั้งสามวง แสงจะแบนเหมือนแผ่นสีทาบ ไม่มีมิติ */
+  const auraA=hex2rgb(shift(base,.02,26))||c;
+  const auraB=hex2rgb(shift(base,-.04,-30))||c;
+  set("--c-aura1",soft(.13));
+  set("--c-aura2",`rgba(${auraA[0]},${auraA[1]},${auraA[2]},.10)`);
+  set("--c-aura3",`rgba(${auraB[0]},${auraB[1]},${auraB[2]},.08)`);
   /* สีตัวหนังสือบนพื้นสีหลัก คำนวณจากความสว่างจริง ไม่ใช่เดา */
   const lum=(0.299*c[0]+0.587*c[1]+0.114*c[2])/255;
   set("--on-acc",lum>0.62?"#1A1204":"#ffffff");

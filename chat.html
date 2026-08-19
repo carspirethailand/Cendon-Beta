@@ -589,7 +589,7 @@ html.theme-fade,html.theme-fade *,html.theme-fade *::before,html.theme-fade *::a
    ย้ายรถ / ประวัติบทสนทนา / ตั้งค่า ออกมาอยู่ซ้ายมือตลอดเวลา
    ห้องแชตจึงไม่โล่ง และหาของเจอโดยไม่ต้องเปิดชีต
    ══════════════════════════════════════════════════════════════════ */
-:root{--rail:274px}
+:root{--rail:274px;--rail-mini:62px}
 
 body{flex-direction:row}
 .colwrap{flex:1;min-width:0;display:flex;flex-direction:column;height:100%;position:relative}
@@ -709,8 +709,11 @@ body[data-phase="login"] .side-burger,body[data-phase="gate"] .side-burger{displ
 .side-burger{width:34px;height:34px;border-radius:10px;align-items:center;justify-content:center;
   font-size:19px;color:var(--c-mut);display:none}
 
-/* ── มือถือ: แถบซ้ายเป็นลิ้นชัก ── */
-@media(max-width:899px){
+/* ── มือถือจริง ๆ เท่านั้น: แถบซ้ายเป็นลิ้นชักที่ซ่อนสนิท ──
+   จอ 700-899px (แท็บเล็ต โน้ตบุ๊กจอเล็ก หน้าต่างที่ย่อไว้) มีที่พอสำหรับแถบไอคอน
+   ของเดิมตัดที่ 900px ทำให้พอหน้าต่างแคบลงนิดเดียวแถบก็หายทั้งแถบ
+   ผู้ใช้เลยรู้สึกว่า "ย่อแล้วหายหมด" ทั้งที่ตั้งใจให้เหลือไอคอนไว้ */
+@media(max-width:699px){
   .side{position:fixed;top:0;left:0;bottom:0;transform:translateX(-100%);
     transition:transform .32s cubic-bezier(.2,.9,.25,1);
     background:var(--c-bg1,rgba(20,20,24,.98));backdrop-filter:blur(24px) saturate(1.2);
@@ -997,10 +1000,14 @@ body[data-phase="work"] .colwrap>.tbar{display:none!important}
 
 /* ── หน้าตั้งค่าแบบเต็มหน้า ── */
 .setpane{overflow-y:auto}
-.set-wrap{width:100%;max-width:940px;margin:0 auto;padding:22px 20px 60px}
+/* เต็มความกว้างของคอลัมน์ ไม่บีบเป็นแถบกลางจออีกแล้ว
+   ของเดิมจำกัดที่ 940px ทำให้บนจอกว้างเหลือที่ว่างสองข้างมหาศาล
+   ขณะที่เนื้อหาข้างในอัดกันจนอ่านยาก */
+.set-wrap{width:100%;max-width:none;margin:0;padding:26px 32px 60px}
+@media(max-width:699px){ .set-wrap{padding:18px 16px 48px} }
 .set-head{display:flex;align-items:center;gap:12px;margin-bottom:22px}
 .set-head h1{font-family:var(--kd);font-size:26px;font-weight:700;margin:0}
-.set-body{display:grid;grid-template-columns:210px minmax(0,1fr);gap:26px;align-items:start}
+.set-body{display:grid;grid-template-columns:222px minmax(0,1fr);gap:34px;align-items:start}
 .set-rail{display:flex;flex-direction:column;gap:1px;position:sticky;top:10px}
 .set-l{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;border:0;
   background:transparent;color:var(--c-mut);font-family:inherit;font-size:13.5px;font-weight:600;
@@ -1039,6 +1046,10 @@ body[data-phase="work"] .colwrap>.tbar{display:none!important}
 .set-btn.primary{background:var(--c-grad);border-color:transparent;color:#fff;margin-top:12px}
 .set-btn.danger:hover{border-color:#FF6B6B;color:#FF6B6B}
 .set-btn:disabled{opacity:.5;cursor:default}
+/* ปุ่มนี้เป็น <a> เพราะพาไปอีกหน้าจริง ๆ ไม่ใช่สั่งงานในหน้าเดิม
+   ผู้ใช้จึงเปิดแท็บใหม่หรือคัดลอกลิงก์ได้ตามที่เขาคาดหวังจากลิงก์ */
+.set-up{display:inline-flex;align-items:center;gap:8px;margin-top:14px;text-decoration:none}
+.set-up i{font-size:16px}
 .set-note{font-size:12px;color:var(--c-faint);line-height:1.8;margin-top:12px}
 .set-me{display:flex;align-items:center;gap:14px;padding:18px;border-radius:16px;
   border:1px solid var(--c-line);background:rgba(255,255,255,.03);margin-bottom:14px}
@@ -1049,56 +1060,6 @@ body[data-phase="work"] .colwrap>.tbar{display:none!important}
 .set-me .tx small{font-size:12.5px;color:var(--c-mut)}
 .set-meter{height:10px;border-radius:20px;background:rgba(255,255,255,.07);overflow:hidden}
 .set-meter i{display:block;height:100%;border-radius:20px;background:var(--c-grad)}
-.set-plan{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:11px}
-/* ── การ์ดแพ็กเกจ ──
-   ของเดิมเป็นกล่องนิ่งสนิท ไม่มี transition ไม่มี hover กดแล้วไม่รู้สึกว่ามีอะไรอยู่ใต้มือ
-   ที่เพิ่มเข้ามาทั้งหมดเป็น transform/opacity/box-shadow ล้วน ๆ
-   จึงไม่แตะการคำนวณ layout เลย ความกว้างบนจอคอมเท่าเดิมเป๊ะ */
-.pl{padding:18px;border-radius:16px;border:1px solid var(--c-line);background:rgba(255,255,255,.03);
-  position:relative;display:flex;flex-direction:column;
-  transition:transform .26s cubic-bezier(.2,.9,.3,1.15),border-color .26s,box-shadow .26s,background .26s;
-  animation:plIn .42s cubic-bezier(.2,.9,.3,1.05) both;
-  animation-delay:calc(var(--i,0) * 80ms)}
-/* ไล่ขึ้นมาทีละใบ ตาผู้ใช้จะได้กวาดไปตามลำดับ ไม่ใช่เจอทุกอย่างพรึบเดียว */
-@keyframes plIn{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
-.pl:hover{transform:translateY(-4px);border-color:var(--c-acc);
-  box-shadow:0 16px 34px -18px var(--c-acc)}
-.pl.now{border-color:var(--c-acc);background:rgba(255,138,107,.08)}
-/* แผนที่ได้โทเคนต่อบาทมากที่สุด — เน้นให้เห็นโดยไม่ต้องอ่านเปรียบเทียบเอง */
-.pl.best{border-color:var(--c-acc)}
-/* ── แถวบนสุดของการ์ด: ราคา + ป้าย ──
-   เดิมป้ายลอยด้วย position:absolute แล้วไปทับข้อความราคาจนอ่านไม่ออก
-   การขยับ padding ไม่ช่วย เพราะ padding อยู่ในกล่อง กรอบยังทับเท่าเดิม
-   จับทั้งคู่มาอยู่แถวเดียวกันแบบ flex แล้วมันจะชนกันไม่ได้อีกเลย
-   ไม่ว่าข้อความจะยาวแค่ไหนหรือแปลเป็นภาษาอะไร */
-.pl-top{display:flex;align-items:center;gap:6px;justify-content:space-between;min-height:20px}
-/* ราคาห้ามตกบรรทัด ไม่งั้นหัวการ์ดสูงไม่เท่ากัน แล้วชื่อแผนจะเหลื่อมกันทั้งแถว */
-.pl-top small{white-space:nowrap}
-.pl-tag{flex-shrink:0;font-size:8.5px;font-weight:800;
-  letter-spacing:.06em;text-transform:uppercase;padding:3px 7px;border-radius:999px;
-  background:var(--c-grad);color:var(--on-acc,#fff);
-  animation:plTag .5s cubic-bezier(.2,.9,.3,1.4) both;animation-delay:calc(var(--i,0) * 80ms + .2s)}
-@keyframes plTag{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
-.pl small{font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--c-mut)}
-/* เว้นที่ให้ป้าย "คุ้มที่สุด" ที่ลอยอยู่มุมขวาบน ไม่งั้นมันทับราคาจนอ่านไม่ออก
-   ใส่ padding ที่ small ซึ่งเป็น inline จึงกินที่แนวนอนภายในการ์ด
-   ไม่ไปดันความกว้างของการ์ดหรือของกริด */
-.pl b{display:block;font-family:var(--kd);font-size:24px;font-weight:700;margin:4px 0 8px}
-.pl p{font-size:12.5px;color:var(--c-mut);line-height:1.75;margin:0}
-/* ตัวเลขโทเคนคือเหตุผลหลักที่คนจ่ายเงิน ให้มันเด่นกว่าคำบรรยาย */
-.pl-tok{display:block;margin-top:8px;font-family:var(--kd);font-size:15.5px;
-  font-weight:700;color:var(--c-acc);font-variant-numeric:tabular-nums}
-.pl-tok em{font-style:normal;font-size:11.5px;font-weight:600;color:var(--c-mut);margin-left:4px}
-.pl .set-btn{margin-top:auto;align-self:flex-start}
-/* กดแล้วต้องรู้สึกทันทีว่าระบบรับรู้แล้ว ไม่ใช่แค่ตัวหนังสือเปลี่ยนเงียบ ๆ */
-.pl .set-btn.done{border-color:var(--c-acc);color:var(--c-acc);
-  animation:plDone .42s cubic-bezier(.2,.9,.3,1.5)}
-@keyframes plDone{0%{transform:scale(1)}45%{transform:scale(1.07)}100%{transform:scale(1)}}
-@media (prefers-reduced-motion:reduce){
-  .pl,.pl-tag,.pl .set-btn.done{animation:none}
-  .pl{transition:border-color .2s}
-  .pl:hover{transform:none;box-shadow:none}
-}
 .set-fbk{display:grid;grid-template-columns:repeat(auto-fit,minmax(124px,1fr));gap:8px;margin-bottom:12px}
 #fbTxt{width:100%;padding:13px 15px;border-radius:14px;border:1px solid var(--c-line);
   background:rgba(255,255,255,.03);color:var(--c-ink);font-family:inherit;font-size:14px;
@@ -6489,7 +6450,9 @@ function wrap(){
   aside.className="side"; aside.id="side";
   aside.innerHTML=`
     <div class="side-top">
-      <div class="side-mark">${MARK}</div>
+      <div class="side-mark" id="sideMark" role="button" tabindex="0"
+        data-tip="${t("เปิดแถบเมนู","Open sidebar")}"
+        aria-label="${t("เปิดหรือย่อแถบเมนู","Toggle sidebar")}">${MARK}</div>
       <svg class="wm" viewBox="-44 -744.0 4817.0 788.0" role="img" aria-label="Cendon"><title>Cendon</title><g fill="currentColor"><path transform="translate(0.0 0) scale(1 -1)" d="M611 632V512L486 532L452 546L417 554L380 556L343 551L308 539L276 521L248 498L223 471L205 439L192 405L185 368V332L192 295L205 261L223 229L248 202L276 179L308 161L343 149L380 144L417 146L452 154L486 168L611 188V68L557 33L498 9L436 -5L372 -8L309 1L248 22L192 52L142 92L100 140L68 195L45 255L34 318V382L45 445L68 505L100 560L142 608L192 648L248 678L309 699L372 708L436 705L498 691L557 667Z"/><path transform="translate(705.0 0)" d="M45 -572L615 -572L615 -700L45 -700Z M45 -286L615 -286L615 -414L45 -414Z M45 0L615 0L615 -128L45 -128Z"/><path transform="translate(2220.0 0) scale(-1 -1)" d="M58 0V700H210V0ZM586 0V700H738V0ZM45 700H224L752 0H573Z"/><path transform="translate(2280.0 0) scale(1 -1)" d="M45 0V700H197V0ZM355 700 380 699 404 696 429 692 453 686 477 678 500 668 522 657 544 644 564 630 584 615 602 597 619 579 635 560 649 539 662 518 673 495 683 472 690 449 697 424 701 400 704 375 705 350 704 325 701 300 697 276 690 251 683 228 673 205 662 182 649 161 635 140 619 121 602 103 584 85 564 70 544 56 522 43 500 32 477 22 453 14 429 8 404 4 380 1 355 0V128L369 129L383 130L397 133L410 137L424 142L437 148L450 155L462 163L473 172L484 182L495 193L504 205L513 217L521 230L528 244L535 258L540 272L545 287L548 303L551 318L552 334L553 350L552 366L551 382L548 397L545 413L540 428L535 442L528 456L521 470L513 483L504 495L495 507L484 518L473 528L462 537L450 545L437 552L424 558L410 563L397 567L383 570L369 571L355 572ZM45 572V700H355V572ZM45 0V128H355V0Z"/><path transform="translate(3089.0 0) scale(1 -1)" d="M750 350Q750 291 732.0 237.0Q714 183 681.0 138.5Q648 94 603.0 61.0Q558 28 504.5 10.0Q451 -8 392 -8Q333 -8 279.0 10.0Q225 28 180.5 61.0Q136 94 103.0 138.5Q70 183 52.0 237.0Q34 291 34 350Q34 409 52.0 463.0Q70 517 103.0 561.5Q136 606 180.5 639.0Q225 672 279.0 690.0Q333 708 392 708Q451 708 504.5 690.0Q558 672 603.0 639.0Q648 606 681.0 561.5Q714 517 732.0 463.0Q750 409 750 350ZM598 350Q598 398 582.0 439.5Q566 481 537.5 512.5Q509 544 472.0 562.0Q435 580 392 580Q349 580 312.0 562.0Q275 544 246.5 512.5Q218 481 202.0 439.5Q186 398 186 350Q186 302 202.0 260.5Q218 219 246.5 187.5Q275 156 312.0 138.0Q349 120 392 120Q435 120 472.0 138.0Q509 156 537.5 187.5Q566 219 582.0 260.5Q598 302 598 350Z"/><path transform="translate(3933.0 0) scale(1 -1)" d="M58 0V700H210V0ZM586 0V700H738V0ZM45 700H224L752 0H573Z"/></g></svg>
       <button class="side-x" id="sideX" aria-label="${t("ปิด","Close")}"><i class="ti ti-x"></i></button>
     </div>
@@ -6532,12 +6495,30 @@ function wrap(){
   col.insertBefore(bar,col.firstChild);
   /* ปุ่มเดียวใช้ได้ทั้งสองขนาดจอ: จอแคบเลื่อนลิ้นชักเข้าออก
      จอกว้างพับแถบซ้ายเก็บไปเลยเพื่อคืนพื้นที่ให้ห้องแชต จำค่าไว้ด้วย */
-  bar.querySelector("#tbarSide").onclick=()=>{
+  /* ปุ่มเดียวใช้ได้ทั้งสองขนาดจอ และตอนนี้โลโก้ก็ทำหน้าที่เดียวกัน */
+  function sideToggle(){
     const on=D.body.dataset.side==="1";
     D.body.dataset.side=on?"0":"1";
-    if(innerWidth>=900){ try{ LS.set("sideOpen",!on) }catch(e){} }
-  };
-  try{ if(innerWidth>=900) D.body.dataset.side=LS.get("sideOpen",true)?"1":"0" }catch(e){}
+    /* จำสถานะไว้ทุกจอที่มีแถบไอคอน ไม่ใช่เฉพาะจอใหญ่
+       ต้องตรงกับจุดตัดใน CSS (700px) ไม่งั้นจอ 700-899 จะจำไม่ได้ */
+    if(innerWidth>=700){ try{ LS.set("sideOpen",!on) }catch(e){} }
+    syncMarkTip();
+  }
+  /* คำบอกต้องตรงกับสิ่งที่จะเกิดขึ้นเมื่อกด ไม่ใช่ตรงกับสถานะตอนนี้ */
+  function syncMarkTip(){
+    const m=$("sideMark"); if(!m)return;
+    const open=D.body.dataset.side==="1";
+    m.dataset.tip=open?t("ย่อแถบเมนู","Collapse sidebar"):t("เปิดแถบเมนู","Open sidebar");
+  }
+  bar.querySelector("#tbarSide").onclick=sideToggle;
+  const mk=$("sideMark");
+  if(mk){
+    mk.onclick=sideToggle;
+    /* กดด้วยคีย์บอร์ดได้ด้วย เพราะมันเป็นปุ่มจริง ๆ แล้ว ไม่ใช่แค่รูป */
+    mk.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); sideToggle() } };
+  }
+  try{ if(innerWidth>=700) D.body.dataset.side=LS.get("sideOpen",true)?"1":"0" }catch(e){}
+  syncMarkTip();
 
 
   const scrim=D.createElement("div"); scrim.className="side-scrim"; scrim.id="sideScrim";
@@ -6590,6 +6571,8 @@ function acctMenu(){
     if(a==="out"){ try{window.firebase&&firebase.auth().signOut()}catch(err){}
       try{localStorage.removeItem("spire_cachedUser")}catch(err){}
       location.href="index.html"; return }
+    /* แพ็กเกจเป็นหน้าแยกแล้ว ส่ง from มาด้วยเพื่อให้ปุ่มกลับพากลับมาที่เดิม */
+    if(a==="plan"){ location.href="plan.html?from=chat.html"; return }
     openSettings(a==="set"?"general":a);
   };
   host.parentNode.insertBefore(d,host);
@@ -6610,7 +6593,9 @@ const SETS=[
   {k:"chat",    ic:"ti-message-2-cog",th:"แชตบอท",      en:"Chat assistant"},
   {k:"acct",    ic:"ti-user",        th:"บัญชี",        en:"Account"},
   {k:"usage",   ic:"ti-gauge",       th:"โควตา",        en:"Usage & credits"},
-  {k:"plan",    ic:"ti-rocket",      th:"แพ็กเกจ",      en:"Plan"},
+  /* แพ็กเกจย้ายไปเป็นหน้าของตัวเอง (plan.html) แล้ว
+     หน้าขายของควรมีที่ทางของมันเอง ไม่ใช่ซ่อนอยู่ในแท็บของหน้าตั้งค่า
+     ทางเข้าอยู่ที่เมนูบัญชี และปุ่มในแท็บโควตา */
   {k:"fb",      ic:"ti-message-report",th:"ส่งความเห็น",en:"Feedback"},
   {k:"learn",   ic:"ti-help-circle", th:"เรียนรู้เพิ่มเติม",en:"Learn more"}
 ];
@@ -6832,46 +6817,11 @@ function setBody(){
       ${setRow("ti-search",t("ค้นข้อมูลจากเว็บ","Web lookup"),t("บวกเพิ่มอีกเล็กน้อย","A little extra on top"))}
       <p class="set-note">${t(
         "หักตามความยาวจริงของบทสนทนา ถามสั้นก็หักน้อย ไม่ได้นับเป็นครั้ง โควตามีไว้กันค่าใช้จ่ายพุ่ง ไม่ได้มีไว้กันคุณใช้งาน ถ้าชนบ่อยบอกเราได้",
-        "Charged by the real length of the conversation, not per message — short questions cost little. The cap exists to control cost, not to limit you. Tell us if you keep hitting it.")}</p>`;
-  }
-  if(setTab==="plan"){
-    /* ชื่อแผนต้องตรงกับกล่องที่เด้งตอนโควตาหมด ไม่งั้นผู้ใช้จะงงว่าคนละอย่างกัน */
-    const q=window.__quota||{};
-    const cur=q.plan||"free";
-    const n=x=>Number(x||0).toLocaleString(lang==="en"?"en-US":"th-TH");
-    const plans=(q.plans&&q.plans.length?q.plans:[
-      {key:"light",th:"Light",en:"Light",price:99,cur:"THB",tokens:60000,
-       th_desc:"โควตามากขึ้น ใช้ต่อได้สบาย ๆ ทุกวัน",
-       en_desc:"More headroom for everyday questions."},
-      {key:"gourmet",th:"Gourmet",en:"Gourmet",price:299,cur:"THB",tokens:250000,
-       th_desc:"โควตาก้อนใหญ่ วิเคราะห์รูป วิดีโอ และคุยยาวได้เต็มที่",
-       en_desc:"A large pool for media analysis and long conversations."}]);
-    /* หาแผนที่ได้โทเคนต่อบาทมากที่สุด แล้วติดป้ายให้ ผู้ใช้จะได้ไม่ต้องหารเอง
-       คิดจากข้อมูลจริงที่หลังบ้านส่งมา ไม่ได้ฮาร์ดโค้ดว่าแผนไหนคุ้ม
-       ถ้าวันหลังเปลี่ยนราคา ป้ายจะย้ายตามเอง */
-    let bestKey="", bestRate=0;
-    plans.forEach(pl=>{
-      const r=(Number(pl.tokens)||0)/(Number(pl.price)||1);
-      if(r>bestRate){ bestRate=r; bestKey=pl.key }
-    });
-    return `<div class="set-plan">
-        <div class="pl now" style="--i:0"><small>${t("แพ็กเกจปัจจุบัน","Current")}</small>
-          <b>${cur==="free"?"Free":esc(cur.charAt(0).toUpperCase()+cur.slice(1))}</b>
-          <p>${t("โควตาเติมใหม่ให้ฟรีทุก 5 ชั่วโมง","Free quota, refilled every 5 hours")}</p></div>
-        ${plans.map((pl,i)=>`<div class="pl soon${pl.key===bestKey?" best":""}" style="--i:${i+1}">
-          <div class="pl-top">
-            <small>${n(pl.price)} ${esc(pl.cur||"THB")}/${t("เดือน","month")}</small>
-            ${pl.key===bestKey?`<span class="pl-tag">${t("คุ้มที่สุด","best value")}</span>`:""}
-          </div>
-          <b>${esc(lang==="en"?(pl.en||pl.key):(pl.th||pl.key))}</b>
-          <p>${esc(lang==="en"?(pl.en_desc||pl.th_desc||""):(pl.th_desc||pl.en_desc||""))}</p>
-          <span class="pl-tok" data-to="${Number(pl.tokens)||0}">0<em>${
-            t("โทเคนต่อรอบ","tokens per window")}</em></span>
-          <button class="set-btn" data-do="notify">${t("สนใจแผนนี้","I'm interested")}</button></div>`).join("")}
-      </div>
-      <p class="set-note">${t(
-        "ตอนนี้ยังไม่มีการเก็บเงิน และเราจะบอกล่วงหน้าก่อนเสมอถ้าจะเริ่มเก็บ",
-        "Nothing is charged today, and we'll tell you well before that changes.")}</p>`;
+        "Charged by the real length of the conversation, not per message — short questions cost little. The cap exists to control cost, not to limit you. Tell us if you keep hitting it.")}</p>
+      <!-- แท็บแพ็กเกจถูกย้ายออกไปเป็นหน้าของตัวเองแล้ว
+           แต่คนที่มาดูโควตาคือคนที่กำลังคิดเรื่องอัปเกรดพอดี ทางเข้าจึงควรอยู่ตรงนี้ -->
+      <a class="set-btn primary set-up" href="plan.html?from=chat.html">
+        <i class="ti ti-rocket"></i>${t("ดูแพ็กเกจที่ใหญ่ขึ้น","See bigger plans")}</a>`;
   }
   if(setTab==="fb"){
     return `<h2>${t("บอกเราหน่อย","Tell us")}</h2>
@@ -6902,34 +6852,6 @@ function setBody(){
       "ทุกอย่างอิงข้อมูลรถของคุณจริง ๆ ไม่ใช่คำตอบทั่วไปที่ถามที่ไหนก็ได้",
       "All of it runs on your actual car, not generic answers you could get anywhere.")}</p>`;
 }
-/* ── ตัวเลขโทเคนวิ่งขึ้นตอนการ์ดปรากฏ ──
-   ตัวเลขหกหลักที่โผล่มานิ่ง ๆ สมองอ่านผ่านโดยไม่รู้สึกถึงขนาดของมัน
-   พอเห็นมันไต่ขึ้น ความรู้สึกว่า "เยอะ" จะติดมาด้วย
-   ใช้ requestAnimationFrame ไม่ใช่ setInterval จะได้ไม่แย่งเฟรมกับแอนิเมชันการ์ด */
-function planCountUp(root){
-  const els=(root||document).querySelectorAll(".pl-tok[data-to]");
-  if(!els.length)return;
-  const slow=window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches;
-  const fmt=x=>Number(x).toLocaleString(lang==="en"?"en-US":"th-TH");
-  els.forEach((el,idx)=>{
-    const to=Number(el.dataset.to)||0;
-    const tail=el.querySelector("em");
-    const unit=tail?tail.outerHTML:"";
-    if(slow||!to){ el.innerHTML=fmt(to)+unit; return }
-    const dur=820, delay=(idx+1)*80+120;   /* ตามหลังการ์ดใบนั้นโผล่ */
-    let t0=0;
-    const step=now=>{
-      if(!t0)t0=now;
-      const k=Math.min(1,(now-t0)/dur);
-      /* ออกตัวเร็วแล้วค่อย ๆ หยุด อ่านเลขท้ายได้ทัน */
-      const e=1-Math.pow(1-k,3);
-      el.innerHTML=fmt(Math.round(to*e))+unit;
-      if(k<1)requestAnimationFrame(step);
-    };
-    setTimeout(()=>requestAnimationFrame(step),delay);
-  });
-}
-
 function wireSettings(){
   const v=$("v-settings"); if(!v)return;
   /* แท็บแชตบอทเพิ่งถูกวาด ช่องยังว่างอยู่ ต้องเติมค่าที่โหลดไว้แล้วลงไป
@@ -6979,7 +6901,6 @@ function wireSettings(){
         "ti-bell-check") }catch(e){}
     }
   });
-  if(setTab==="plan")planCountUp(v);
   /* วาดสถานะทันทีที่เปิดหน้า แล้วอัปเดตตามจนกว่าจะออกจากหน้านี้ */
   if(setTab==="general"){
     paintSync();
@@ -12876,11 +12797,52 @@ window.slideRelease=function(){
   background:currentColor;opacity:.18}
 .att-pop .ic i{position:relative;color:inherit}
 
-/* ══ แถบซ้ายพับเก็บได้บนจอกว้าง ══ */
-@media(min-width:900px){
-  .side{transition:margin-left .28s cubic-bezier(.2,.9,.25,1),opacity .2s}
-  body[data-side="0"] .side{margin-left:calc(-1 * var(--rail));opacity:0;pointer-events:none}
-  body[data-side="0"] .side::before{opacity:0}
+/* ══ แถบซ้ายย่อเป็นแถบไอคอนบนจอกว้าง ══
+   ของเดิมย่อแล้วเลื่อนหายไปทั้งแถบ ผู้ใช้จึงไม่เหลือทางลัดอะไรเลย
+   ต้องกางกลับมาทุกครั้งแม้แค่จะกดเริ่มแชตใหม่
+   แบบใหม่เหลือแถบไอคอนไว้ ของที่ใช้บ่อยยังกดได้ทันทีโดยไม่ต้องกาง
+   ส่วนที่ไม่มีรูปแทนได้ (รายชื่อบทสนทนา) ค่อยซ่อนไป */
+@media(min-width:700px){
+  .side{transition:width .28s cubic-bezier(.2,.9,.25,1),padding .28s}
+  body[data-side="0"] .side{width:var(--rail-mini);padding-left:8px;padding-right:8px}
+
+  /* ของที่เป็นตัวหนังสือล้วน ไม่มีรูปแทน — ซ่อนตอนย่อ */
+  body[data-side="0"] .side .wm,
+  body[data-side="0"] .side-x,
+  body[data-side="0"] .side-new span,
+  body[data-side="0"] .side-l span,
+  body[data-side="0"] .side-l em,
+  body[data-side="0"] .side-car .tx,
+  body[data-side="0"] .side-car>.ti-selector,
+  body[data-side="0"] .side-lbl,
+  body[data-side="0"] .side-list,
+  body[data-side="0"] .side-acct .tx,
+  body[data-side="0"] .side-acct>.ti-dots{display:none}
+
+  /* ปุ่มที่เหลือจัดให้ไอคอนอยู่กลางแถบพอดี */
+  body[data-side="0"] .side-new,
+  body[data-side="0"] .side-l,
+  body[data-side="0"] .side-car,
+  body[data-side="0"] .side-acct{
+    justify-content:center;gap:0;padding-left:0;padding-right:0}
+  body[data-side="0"] .side-top{justify-content:center;padding-left:0;padding-right:0}
+  body[data-side="0"] .side-foot{justify-content:center}
+
+  /* โลโก้กลายเป็นปุ่มกาง มีคำบอกตอนเอาเมาส์ไปวาง เหมือนที่ Gemini ทำ */
+  .side-mark{cursor:pointer;position:relative;border-radius:9px;
+    transition:transform .2s,opacity .2s}
+  .side-mark:hover{transform:scale(1.08)}
+  .side-mark::after{content:attr(data-tip);position:absolute;left:calc(100% + 12px);top:50%;
+    transform:translateY(-50%) translateX(-4px);white-space:nowrap;
+    padding:6px 10px;border-radius:8px;font-size:12px;font-weight:600;
+    background:var(--c-bg2,#14171D);color:var(--c-ink);border:1px solid var(--c-line);
+    box-shadow:0 10px 24px -12px rgba(0,0,0,.6);
+    opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;z-index:5}
+  .side-mark:hover::after{opacity:1;transform:translateY(-50%) translateX(0)}
+}
+@media(prefers-reduced-motion:reduce){
+  .side-mark,.side-mark::after{transition:none}
+  .side-mark:hover{transform:none}
 }
 
 /* ══ จางที่ขอบบนของห้องแชต และเหนือช่องพิมพ์ ══

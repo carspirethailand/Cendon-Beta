@@ -9,6 +9,10 @@
 <link rel="icon" type="image/png" href="./favicon.png">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Kanit ใช้ทั้งตัวไทยและตัวเลข หน้าอื่นในแอปโหลดตัวนี้อยู่แล้ว
+     หน้านี้ไม่ได้โหลด ตัวเลขจึงตกไปใช้ฟอนต์ระบบซึ่งหน้าตาคนละเรื่องกับทั้งแอป -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.7.0/dist/tabler-icons.min.css">
 
 <!-- ตั้งธีมก่อนวาดหน้า ไม่งั้นจะเห็นจอขาวแวบหนึ่งก่อนเปลี่ยนเป็นธีมมืด -->
@@ -39,6 +43,9 @@
   --c-grad:linear-gradient(135deg,#E8943C,#D95E3C);
   --on-acc:#fff;
   --kd:'Spire09','Kanit',system-ui,-apple-system,'Segoe UI',sans-serif;
+  /* ตัวเลขใช้ Kanit ล้วน ไม่ผ่าน Spire09
+     ตัวเลขของ Spire09 เป็นทรงเรขาคณิตจัด อ่านราคาเทียบกันหลายใบแล้วสับสน */
+  --num:'Kanit',system-ui,-apple-system,'Segoe UI',sans-serif;
 }
 html[data-theme="light"],html[data-theme="plant"]{
   --c-bg0:#F4F1EB;--c-bg1:#FBF9F4;--c-bg2:#FFFFFF;
@@ -48,25 +55,170 @@ html[data-theme="light"],html[data-theme="plant"]{
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
 html,body{min-height:100%}
 body{
   background:var(--c-bg0);color:var(--c-ink);
   font-family:var(--kd);font-size:15px;line-height:1.6;
   -webkit-font-smoothing:antialiased;
-  padding:0 20px 80px;
   overflow-x:hidden;
 }
 
-/* แสงเรืองอ่อน ๆ หลังหัวเรื่อง ให้หน้าไม่แบนจนเกินไป */
+/* ── สองช่วงที่ล็อกทีละหน้า ──
+   ช่วงบนคือแพ็กเกจ กินเต็มจอพอดี ไม่ต้องเลื่อนก็เห็นครบ
+   เลื่อนลงหนึ่งทีจะสแนปไปช่วงล่างซึ่งเป็นข้อมูลประกอบ
+   ใช้ scroll-snap ของเบราว์เซอร์ ไม่ได้ดักล้อเมาส์เอง
+   เพราะการดัก wheel จะไปพังการเลื่อนด้วยคีย์บอร์ดและ trackpad ของบางเครื่อง */
+.deck{scroll-snap-type:y mandatory;height:100dvh;overflow-y:auto;overflow-x:hidden;
+  position:relative;z-index:1}
+.pane{scroll-snap-align:start;scroll-snap-stop:always;min-height:100dvh;
+  padding:0 20px clamp(20px,3vh,40px);display:flex;flex-direction:column;justify-content:center;
+  position:relative;overflow:hidden}
+.pane-in{width:100%;max-width:1180px;margin:0 auto}
+/* จอเตี้ยมาก การบังคับสูงเต็มจอจะทำให้เนื้อหาล้นออกไปแล้วกดไม่ถึง
+   ปล่อยให้ช่วงนั้นสูงตามเนื้อหาแทน */
+/* จอเตี้ยหรือจอแคบ การบังคับสูงเต็มจอจะทำให้เนื้อหาล้นออกไปแล้วกดไม่ถึง
+   บนมือถือการ์ดเรียงลงเป็นคอลัมน์เดียว ช่วงบนจึงสูงเกินจอเสมอ
+   ปล่อยให้เลื่อนตามปกติดีกว่าบังคับสแนปแล้วผู้ใช้เลื่อนไม่ถึงปุ่ม */
+@media(max-height:900px),(max-width:760px){
+  .deck{scroll-snap-type:none;height:auto;overflow:visible}
+  .pane{min-height:auto;padding-top:28px;overflow:visible}
+  .more{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .deck{scroll-snap-type:none}
+}
+
+/* ปุ่มบอกให้เลื่อนลง — ไม่งั้นผู้ใช้ไม่รู้ว่ายังมีของข้างล่าง
+   เพราะช่วงบนกินเต็มจอพอดีจนไม่มีอะไรโผล่มาให้เห็น */
+.more{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:9px 18px 7px;border-radius:16px;
+  color:var(--c-mut);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;
+  background:var(--c-card2);border:1px solid var(--c-line2);
+  backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2);
+  cursor:pointer;font-family:inherit;
+  animation:bob 2.4s ease-in-out infinite}
+.more i{font-size:19px}
+.more:hover{color:var(--c-acc)}
+@keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,6px)}}
+@media(prefers-reduced-motion:reduce){.more{animation:none}}
+
+/* ── แสงพื้นหลัง ──
+   ซ้อนหลายวงที่ขนาดและความเข้มต่างกัน แสงจริงมี falloff ไม่เป็นเส้นตรง
+   ถ้าใช้วงเดียวจะได้ภาพแบนเหมือนแผ่นสีทาบ ไม่มีความลึก */
 .glow{position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:radial-gradient(760px 420px at 50% 4%,var(--c-acc) 0%,transparent 68%);
-  opacity:.10}
-html[data-theme="light"] .glow,html[data-theme="plant"] .glow{opacity:.13}
+  background:
+    radial-gradient(1200px 620px at 50% -6%,var(--c-acc) 0%,transparent 72%),
+    radial-gradient(560px 300px at 50% 2%,var(--c-acc) 0%,transparent 62%),
+    radial-gradient(900px 500px at 12% 26%,var(--c-acc-2,var(--c-acc)) 0%,transparent 70%);
+  opacity:.11}
+html[data-theme="light"] .glow,html[data-theme="plant"] .glow{opacity:.14}
+
+/* เม็ดฟิล์มบาง ๆ ทับพื้นหลัง แก้อาการไล่สีเป็นวงแหวน (banding)
+   และทำให้แสงดูเหมือนภาพถ่ายมากกว่าไล่สีที่คำนวณมา */
+.grain{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.035;
+  background-image:url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'>\
+<filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3'/></filter>\
+<rect width='180' height='180' filter='url(%23n)'/></svg>")}
+html[data-theme="light"] .grain{opacity:.05}
+
+/* ── ผิวน้ำใต้การ์ด ──
+   ระลอกมาจากตัวกรอง SVG จริง (feTurbulence ป้อนให้ feDisplacementMap)
+   ไม่ใช่ลายคลื่นซ้ำ ๆ ที่วาดไว้ตายตัว ซึ่งตาจับรูปแบบซ้ำได้ในไม่กี่วินาที
+   ค่า baseFrequency ค่อย ๆ เปลี่ยนใน 19 วินาที น้ำจึงไหลจริง ไม่ใช่ภาพนิ่ง */
+/* บ่อสูงเท่าเงา และหดตามจอเตี้ย ไม่งั้นช่วงบนล้นออกนอกจอจนกดปุ่มไม่ถึง */
+.pool{position:relative;height:clamp(74px,13vh,168px);margin-top:-4px}
+
+/* ผิวน้ำเริ่มที่หัวบ่อ (= ขอบล่างการ์ด) แล้วทอดลงไปจนพ้นจอ
+   กว้างเต็มจอเพราะน้ำไม่ได้มีขอบเท่าเนื้อหา */
+.water{position:absolute;top:0;left:calc(50% - 50vw);width:100vw;
+  height:calc(100% + 40vh);pointer-events:none;z-index:0;overflow:hidden}
+/* ตัวน้ำ: มืดลงตามความลึก ไม่ได้มืดเท่ากันทั้งผืน */
+.water::before{content:"";position:absolute;inset:0;
+  background:
+    linear-gradient(180deg,transparent,rgba(0,0,0,.14) 40%,rgba(0,0,0,.34) 74%,rgba(0,0,0,.48));
+  backdrop-filter:blur(1px);-webkit-backdrop-filter:blur(1px)}
+html[data-theme="light"] .water::before,html[data-theme="plant"] .water::before{
+  background:linear-gradient(180deg,transparent,rgba(40,34,18,.08) 30%,rgba(40,34,18,.15) 72%,rgba(40,34,18,.19))}
+
+/* เส้นแสงบาง ๆ ตรงรอยต่อระหว่างการ์ดกับพื้น
+   เป็นตัวเดียวที่บอกว่าตรงนี้คือ "ผิว" ของบางอย่าง ไม่ใช่แค่พื้นหลังที่มืดลง
+   โดนบิดด้วยตัวกรองระลอกเหมือนกัน เส้นจึงไม่ตรงเป๊ะแบบเส้นที่ลากด้วยไม้บรรทัด */
+.water .spec{position:absolute;left:50%;top:0;width:min(880px,94%);height:30px;
+  transform:translateX(-50%);filter:url(#rip);
+  background:radial-gradient(58% 100% at 50% 0%,var(--c-acc) 0%,transparent 74%);
+  opacity:.30;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 22%,#000 78%,transparent);
+  mask-image:linear-gradient(90deg,transparent,#000 22%,#000 78%,transparent)}
+
+/* ── เงาสะท้อนของการ์ด ──
+   ไม่ใช่แค่พลิกกลับแล้วหรี่ความทึบ ซึ่งเป็นสิ่งที่ทำให้ดูปลอมทันที
+   1) พลิกแนวตั้ง  2) จางลงแบบโค้ง ไม่ใช่เส้นตรง  3) เบลอเพิ่มตามความลึก
+   4) บิดด้วยตัวกรองระลอกตัวเดียวกับผิวน้ำ  5) สีหม่นและอิ่มน้อยลง */
+/* กล่องเงาต้องกว้างเท่าน้ำ ไม่ใช่เท่าเนื้อหา
+   ของเดิมกว้าง 1180px ขอบซ้าย-ขวาจึงเป็นเส้นตัดคมกลางผืนน้ำ
+   ซึ่งเป็นสิ่งที่ทำให้ดูเหมือนรูปที่เอามาแปะ ไม่ใช่เงาที่เกิดบนผิวจริง */
+.mirror{position:absolute;top:0;left:calc(50% - 50vw);width:100vw;height:100%;
+  z-index:1;overflow:hidden;pointer-events:none;mix-blend-mode:screen;
+  /* จางลงทั้งแนวตั้งและแนวนอน สองชั้นซ้อนกันด้วย mask-composite
+     ขอบทุกด้านจึงหายไปในน้ำ ไม่มีด้านไหนจบด้วยเส้นตรง */
+  -webkit-mask-image:
+    linear-gradient(180deg,#000,rgba(0,0,0,.62) 16%,rgba(0,0,0,.34) 34%,rgba(0,0,0,.16) 52%,rgba(0,0,0,.05) 68%,transparent 80%),
+    linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);
+  mask-image:
+    linear-gradient(180deg,#000,rgba(0,0,0,.62) 16%,rgba(0,0,0,.34) 34%,rgba(0,0,0,.16) 52%,rgba(0,0,0,.05) 68%,transparent 80%),
+    linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);
+  -webkit-mask-composite:source-in;mask-composite:intersect}
+/* เนื้อในยังต้องอยู่ตรงกับการ์ดจริง กล่องที่กว้างขึ้นไม่ควรทำให้เงาเลื่อนที่ */
+.mirror .tiers{max-width:1180px;margin:0 auto;padding:0 20px}
+/* ตัวกรอง SVG ต้องมาก่อนตัวกรอง CSS ในสายเดียวกัน ไม่งั้นจะบิดภาพที่เบลอไปแล้ว
+   ซึ่งได้ผลคนละอย่าง — ของจริงคือภาพบิดก่อน แล้วน้ำถึงทำให้มัว */
+.mirror .tiers{transform:scaleY(-1);
+  filter:url(#ripSoft) blur(1.3px) saturate(.66) brightness(.62) contrast(.95);
+  opacity:.95}
+.mirror .tier{animation:none;box-shadow:none;transition:none;backdrop-filter:none;
+  background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.20)}
+html[data-theme="light"] .mirror .tier,html[data-theme="plant"] .mirror .tier{
+  background:rgba(40,34,18,.12);border-color:rgba(40,34,18,.20)}
+.mirror .tier.hero{background:rgba(255,255,255,.17)}
+.mirror .tier::after{opacity:.5}
+.mirror .tier:hover{transform:none;box-shadow:none}
+
+/* ── เบลอไล่ระดับตามความลึก ──
+   ชั้นเดียวให้ความมัวเท่ากันทั้งผืน ซึ่งผิดกับน้ำจริงที่ยิ่งลึกยิ่งมัว
+   ซ้อนสี่ชั้น แต่ละชั้นเบลอแรงขึ้นและเริ่มลึกลงไปกว่าชั้นก่อน
+   ผลรวมคือความมัวที่เพิ่มต่อเนื่อง ไม่ใช่ขั้นบันได */
+/* ชั้นเบลอต้องกว้างเท่าน้ำและยืดพ้นก้นบ่อลงไป
+   ถ้าหยุดตรงก้นบ่อพอดี ความมัวจะจบด้วยเส้นตรงซึ่งตาจับได้ทันที */
+.mdepth{position:absolute;top:0;left:calc(50% - 50vw);width:100vw;
+  height:calc(100% + 26vh);z-index:2;pointer-events:none}
+.mdepth i{position:absolute;left:0;right:0;bottom:0;display:block}
+.mdepth i:nth-child(1){top:12%;backdrop-filter:blur(1px);-webkit-backdrop-filter:blur(1px);
+  -webkit-mask-image:linear-gradient(180deg,transparent,#000 24%);mask-image:linear-gradient(180deg,transparent,#000 24%)}
+.mdepth i:nth-child(2){top:32%;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
+  -webkit-mask-image:linear-gradient(180deg,transparent,#000 26%);mask-image:linear-gradient(180deg,transparent,#000 26%)}
+.mdepth i:nth-child(3){top:54%;backdrop-filter:blur(3.5px);-webkit-backdrop-filter:blur(3.5px);
+  -webkit-mask-image:linear-gradient(180deg,transparent,#000 28%);mask-image:linear-gradient(180deg,transparent,#000 28%)}
+.mdepth i:nth-child(4){top:74%;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  -webkit-mask-image:linear-gradient(180deg,transparent,#000 30%);mask-image:linear-gradient(180deg,transparent,#000 30%)}
+
+html[data-theme="light"] .mirror,html[data-theme="plant"] .mirror{mix-blend-mode:multiply}
+html[data-theme="light"] .mirror .tiers,html[data-theme="plant"] .mirror .tiers{
+  filter:url(#ripSoft) blur(1.3px) saturate(.5) brightness(1.3) contrast(.75);opacity:.72}
+@media(max-width:700px){.pool{display:none}}
+/* คนที่ตั้งค่าว่าไม่อยากเห็นการเคลื่อนไหว ต้องได้ภาพนิ่ง
+   ตัว SMIL ปิดด้วย CSS ไม่ได้ ต้องสั่งหยุดจากสคริปต์ (ดูท้ายไฟล์) */
+/* การหยุดเคลื่อนไหวทำที่สคริปต์ (pauseAnimations) ไม่ใช่ที่นี่
+   กฎนี้เคยตั้งค่าความสว่างของตัวเองไว้ต่างหาก คนที่ตั้งค่าลดการเคลื่อนไหว
+   เลยได้เงาจางกว่าคนอื่นโดยไม่มีเหตุผล — เขาขอให้ภาพนิ่ง ไม่ได้ขอให้ภาพแย่ลง */
 
 .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto}
 
 /* ── แถบบน ── */
-.top{display:flex;align-items:center;gap:12px;padding:20px 0 0}
+.top{display:flex;align-items:center;gap:12px;padding:clamp(10px,2vh,20px) 0 0}
 .back{display:inline-flex;align-items:center;gap:8px;padding:9px 15px;border-radius:999px;
   border:1px solid var(--c-line);background:var(--c-card);color:var(--c-ink);
   font:inherit;font-size:13.5px;cursor:pointer;text-decoration:none;
@@ -75,11 +227,12 @@ html[data-theme="light"] .glow,html[data-theme="plant"] .glow{opacity:.13}
 .back i{font-size:16px}
 
 /* ── หัวเรื่อง ── */
-.head{text-align:center;padding:44px 0 34px}
-.mark{width:56px;height:56px;margin:0 auto 18px;color:var(--c-acc)}
+.head{text-align:center;padding:clamp(16px,3.5vh,44px) 0 clamp(14px,2.7vh,34px)}
+.mark{width:clamp(38px,4.7vh,56px);height:clamp(38px,4.7vh,56px);
+  margin:0 auto clamp(8px,1.8vh,18px);color:var(--c-acc)}
 .mark svg{width:100%;height:100%;display:block}
 h1{font-size:clamp(30px,5vw,44px);font-weight:800;letter-spacing:-.02em;line-height:1.15}
-.sub{margin-top:12px;color:var(--c-mut);font-size:clamp(14px,2vw,16.5px);
+.sub{margin-top:clamp(6px,1.2vh,12px);color:var(--c-mut);font-size:clamp(14px,2vw,16.5px);
   max-width:520px;margin-left:auto;margin-right:auto}
 .head>*{animation:up .5s cubic-bezier(.2,.9,.3,1.05) both}
 .head .mark{animation-delay:.02s}
@@ -91,19 +244,51 @@ h1{font-size:clamp(30px,5vw,44px);font-weight:800;letter-spacing:-.02em;line-hei
 .tiers{display:grid;gap:16px;align-items:stretch;
   grid-template-columns:repeat(auto-fit,minmax(248px,1fr))}
 
+/* ── การ์ด ──
+   เงาก้อนเดียวคือสิ่งที่ทำให้การ์ดดูเหมือนสติกเกอร์แปะ
+   ของจริงมีทั้งเงาสั้นเข้มตรงที่ของวางอยู่ และเงายาวจางที่ทอดออกไป จึงใส่สองชั้น
+   fill-mode เดิมเป็น both ซึ่งค้างค่า transform:none ของเฟรมสุดท้ายไว้ตลอด
+   ทับ :hover ที่เขียนไว้จนการ์ดไม่ขยับเลยสักใบ — วัดด้วยเบราว์เซอร์แล้วถึงเห็น */
 .tier{position:relative;display:flex;flex-direction:column;
-  padding:26px 24px 24px;border-radius:20px;
+  padding:clamp(18px,2.2vh,26px) 24px clamp(16px,2vh,24px);border-radius:20px;
   border:1px solid var(--c-line);background:var(--c-card);
-  animation:up .55s cubic-bezier(.2,.9,.3,1.05) both;
+  backdrop-filter:blur(16px) saturate(1.25);-webkit-backdrop-filter:blur(16px) saturate(1.25);
+  box-shadow:0 1px 2px rgba(0,0,0,.30),0 28px 60px -34px rgba(0,0,0,.80);
+  animation:up .55s cubic-bezier(.2,.9,.3,1.05) backwards;
   animation-delay:calc(.18s + var(--i,0) * .09s);
+  transform:translateY(var(--lift,0));
   transition:transform .3s cubic-bezier(.2,.9,.3,1.15),border-color .3s,box-shadow .3s,background .3s}
-.tier:hover{transform:translateY(-6px);border-color:var(--c-acc);
-  background:var(--c-card2);box-shadow:0 26px 54px -26px var(--c-acc)}
+html[data-theme="light"] .tier,html[data-theme="plant"] .tier{
+  box-shadow:0 1px 2px rgba(40,34,18,.07),0 26px 54px -34px rgba(40,34,18,.30)}
+.tier:hover{--lift:-6px;border-color:var(--c-acc);
+  background:var(--c-card2);
+  box-shadow:0 2px 4px rgba(0,0,0,.34),0 34px 68px -30px var(--c-acc)}
+
+/* ── ขอบไล่สี ──
+   ขอบสีเดียวรอบใบทำให้การ์ดดูเป็นกรอบรูป ไม่ใช่วัตถุที่มีแสงตกกระทบ
+   ของจริงขอบบนรับแสงจึงสว่าง ขอบล่างอยู่ในเงาจึงมืด
+   วาดด้วยไล่สีบนวงแหวน 1px ที่ตัดไส้กลางออกด้วย mask */
+.tier::after{content:"";position:absolute;inset:-1px;border-radius:21px;padding:1px;
+  pointer-events:none;
+  background:linear-gradient(180deg,
+    rgba(255,255,255,.26),rgba(255,255,255,.07) 26%,
+    rgba(255,255,255,0) 58%,rgba(0,0,0,.26));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  mask-composite:exclude}
+html[data-theme="light"] .tier::after,html[data-theme="plant"] .tier::after{
+  background:linear-gradient(180deg,
+    rgba(255,255,255,.9),rgba(255,255,255,.35) 26%,
+    rgba(40,34,18,0) 58%,rgba(40,34,18,.14))}
 
 /* แผนเด่นได้ขอบสีและแสงในตัว เหมือนที่เว็บขายของทำกัน
    คนกวาดตาผ่านแล้วรู้ทันทีว่าควรดูใบไหนก่อน */
+/* แผนเด่นยกสูงกว่าอีกสองใบ ตาจะไปหยุดที่ใบนี้ก่อนโดยไม่ต้องอ่านป้าย
+   จอแคบการ์ดเรียงลงมาเป็นแถวเดียว การยกจะกลายเป็นช่องว่างแปลก ๆ จึงยกเฉพาะจอกว้าง */
 .tier.hero{border-color:var(--c-acc);
-  background:linear-gradient(180deg,var(--c-acc-soft,rgba(232,148,60,.10)),transparent 62%),var(--c-card)}
+  background:linear-gradient(180deg,var(--c-acc-soft,rgba(232,148,60,.10)),transparent 62%),var(--c-card);
+  box-shadow:0 1px 2px rgba(0,0,0,.30),0 34px 70px -34px var(--c-acc)}
+@media(min-width:760px){ .tier.hero{--lift:-14px} .tier.hero:hover{--lift:-20px} }
 .tier.hero::before{content:"";position:absolute;inset:-1px;border-radius:20px;pointer-events:none;
   background:radial-gradient(420px 180px at 50% 0%,var(--c-acc) 0%,transparent 70%);opacity:.16}
 
@@ -113,13 +298,14 @@ h1{font-size:clamp(30px,5vw,44px);font-weight:800;letter-spacing:-.02em;line-hei
   box-shadow:0 8px 20px -8px var(--c-acc)}
 
 .tier h2{font-size:20px;font-weight:700;letter-spacing:-.01em}
-.price{display:flex;align-items:baseline;gap:7px;margin:12px 0 6px;flex-wrap:wrap}
-.price b{font-size:38px;font-weight:800;letter-spacing:-.03em;line-height:1;
+.price{display:flex;align-items:baseline;gap:7px;margin:clamp(8px,1.2vh,12px) 0 6px;flex-wrap:wrap}
+.price b{font-family:var(--num);font-size:38px;font-weight:700;letter-spacing:-.02em;line-height:1;
   font-variant-numeric:tabular-nums}
 .price span{font-size:12.5px;color:var(--c-mut);font-weight:600}
-.tag{color:var(--c-mut);font-size:13.5px;min-height:40px}
+.tag{color:var(--c-mut);font-size:13.5px;min-height:clamp(26px,4vh,40px)}
 
-.cta{width:100%;margin:18px 0 20px;padding:12px 16px;border-radius:12px;
+.cta{width:100%;margin:clamp(12px,1.8vh,18px) 0 clamp(13px,2vh,20px);
+  padding:clamp(10px,1.5vh,12px) 16px;border-radius:12px;
   border:1px solid var(--c-line);background:var(--c-card2);color:var(--c-ink);
   font:inherit;font-size:14px;font-weight:700;cursor:pointer;
   display:flex;align-items:center;justify-content:center;gap:7px;
@@ -133,7 +319,7 @@ h1{font-size:clamp(30px,5vw,44px);font-weight:800;letter-spacing:-.02em;line-hei
   animation:pop .42s cubic-bezier(.2,.9,.3,1.5)}
 @keyframes pop{0%{transform:scale(1)}45%{transform:scale(1.05)}100%{transform:scale(1)}}
 
-.feat{list-style:none;display:flex;flex-direction:column;gap:13px;margin-top:auto}
+.feat{list-style:none;display:flex;flex-direction:column;gap:clamp(9px,1.15vh,13px);margin-top:auto}
 .feat li{display:flex;gap:11px;align-items:flex-start;font-size:13.5px;line-height:1.5}
 .feat i{flex-shrink:0;font-size:16px;color:var(--c-acc);margin-top:1px}
 .feat b{display:block;font-weight:600;color:var(--c-ink)}
@@ -168,26 +354,81 @@ h1{font-size:clamp(30px,5vw,44px);font-weight:800;letter-spacing:-.02em;line-hei
 </style>
 </head>
 <body>
+<!-- ── ตัวกรองระลอกน้ำ ──
+     feTurbulence สร้างสัญญาณรบกวนแบบ fractal แล้วส่งให้ feDisplacementMap
+     ใช้ค่าสีของสัญญาณนั้นดันพิกเซลของภาพจริงไปทีละนิด
+     ผลคือความบิดที่ไม่มีคาบซ้ำ ต่างจากลายคลื่นวาดมือที่ตาจับรูปแบบได้ในไม่กี่วินาที
+     baseFrequency แนวตั้งสูงกว่าแนวนอน เพราะระลอกน้ำยืดออกตามแนวราบ
+     ค่ามันค่อย ๆ เปลี่ยนไปกลับใน 19 วินาที ผิวน้ำจึงไหลช้า ๆ ไม่ใช่ภาพนิ่ง -->
+<svg width="0" height="0" aria-hidden="true" focusable="false"
+     style="position:absolute;pointer-events:none" id="fx">
+  <defs>
+    <filter id="rip" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.011 0.028" numOctaves="2" seed="7" result="n">
+        <animate attributeName="baseFrequency" dur="19s" repeatCount="indefinite"
+          values="0.011 0.028;0.015 0.036;0.010 0.024;0.011 0.028"/>
+      </feTurbulence>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="16"
+        xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <!-- ตัวเดียวกันแต่เบากว่า สำหรับเงาสะท้อน
+         ถ้าใช้ scale เท่าผิวน้ำ ตัวหนังสือในเงาจะแหลกจนดูเป็นรอยเปื้อน -->
+    <filter id="ripSoft" x="-12%" y="-12%" width="124%" height="124%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.010 0.022" numOctaves="2" seed="7" result="n2">
+        <animate attributeName="baseFrequency" dur="19s" repeatCount="indefinite"
+          values="0.010 0.022;0.013 0.029;0.009 0.019;0.010 0.022"/>
+      </feTurbulence>
+      <feDisplacementMap in="SourceGraphic" in2="n2" scale="7"
+        xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
 <div class="glow"></div>
+<div class="grain"></div>
 
-<div class="wrap">
-  <div class="top">
-    <a class="back" href="./chat.html"><i class="ti ti-arrow-left"></i><span id="backTx">กลับ</span></a>
-  </div>
+<div class="deck" id="deck">
 
-  <header class="head">
-    <div class="mark" aria-hidden="true">
+  <!-- ── ช่วงบน: แพ็กเกจ กินเต็มจอพอดี ── -->
+  <section class="pane" id="paneTop">
+    <div class="pane-in">
+      <div class="top">
+        <a class="back" href="./chat.html"><i class="ti ti-arrow-left"></i><span id="backTx">กลับ</span></a>
+      </div>
+
+      <header class="head">
+        <div class="mark" aria-hidden="true">
       <svg viewBox="-6 -6 94.8 112" fill="currentColor"><path d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 Z"/></svg>
     </div>
-    <h1 id="hTitle">เลือกแพ็กเกจที่พอดีกับคุณ</h1>
-    <p class="sub" id="hSub">โควตาคิดตามความยาวจริงของบทสนทนา ถามสั้นก็หักน้อย ไม่ได้นับเป็นครั้ง</p>
-  </header>
+        <h1 id="hTitle">เลือกแพ็กเกจที่พอดีกับคุณ</h1>
+        <p class="sub" id="hSub">โควตาคิดตามความยาวจริงของบทสนทนา ถามสั้นก็หักน้อย ไม่ได้นับเป็นครั้ง</p>
+      </header>
 
-  <main class="tiers" id="tiers"></main>
+      <main class="tiers" id="tiers"></main>
 
-  <p class="note" id="foot"></p>
+      <!-- เงาสะท้อนในน้ำ วาดจากการ์ดชุดเดียวกันที่โคลนมาด้วย JS
+           ไม่ได้เขียนซ้ำด้วยมือ ข้อมูลจึงตรงกันเสมอแม้ราคาเปลี่ยน -->
+      <!-- บ่อน้ำ: ผิวน้ำกับเงาต้องอยู่ในกล่องเดียวกัน
+           ผิวน้ำจะได้เริ่มตรงขอบล่างการ์ดเสมอ ไม่ว่าการ์ดจะยาวแค่ไหน -->
+      <div class="pool">
+        <div class="mirror" id="mirror" aria-hidden="true"></div>
+        <div class="water" aria-hidden="true">
+          <div class="spec"></div>
+        </div>
+      </div>
+    </div>
+    <button class="more" id="more" aria-label="เลื่อนลงดูข้อมูลเพิ่ม">
+      <span id="moreTx">ข้อมูลเพิ่มเติม</span><i class="ti ti-chevron-down"></i></button>
+  </section>
 
-  <section class="qa" id="qa"></section>
+  <!-- ── ช่วงล่าง: ข้อมูลประกอบ ── -->
+  <section class="pane" id="paneInfo">
+    <div class="pane-in">
+      <p class="note" id="foot"></p>
+      <section class="qa" id="qa"></section>
+    </div>
+  </section>
+
 </div>
 
 <div class="toast" id="toast"><i class="ti ti-bell-check"></i><span></span></div>
@@ -342,7 +583,33 @@ function render(){
        "Tell us through Feedback in the app — we read every one.")],
   ].map(x=>`<div><b>${esc(x[0])}</b><p>${esc(x[1])}</p></div>`).join("");
 
+  paintMirror();
   wire();
+}
+
+/* ── เงาสะท้อนในน้ำ ──
+   โคลนการ์ดชุดจริงมาแทนที่จะเขียนซ้ำด้วยมือ ราคาเปลี่ยนเมื่อไหร่เงาก็ตามทันที
+   ถ้าเขียนซ้ำ วันหนึ่งจะมีคนแก้ที่เดียวแล้วเงาโชว์ราคาเก่าค้างอยู่ */
+function paintMirror(){
+  const m=$("mirror"); if(!m)return;
+  const src=$("tiers"); if(!src)return;
+  const c=src.cloneNode(true);
+  c.removeAttribute("id");
+  /* เงาไม่ควรถูกอ่านโดยโปรแกรมอ่านหน้าจอ และต้องกดไม่ได้ */
+  c.querySelectorAll("[id]").forEach(e=>e.removeAttribute("id"));
+  c.querySelectorAll("button,a").forEach(e=>{ e.tabIndex=-1; e.setAttribute("aria-hidden","true") });
+  m.innerHTML="";
+  m.appendChild(c);
+  /* ชั้นเบลอต้องอยู่ทับเงา จึงต่อท้ายหลังโคลนเสมอ ไม่ใช่เขียนไว้ใน HTML
+     เพราะ innerHTML ข้างบนล้างของเดิมทิ้งทุกครั้งที่ราคาเปลี่ยน */
+  const d=D.createElement("div");
+  d.className="mdepth";
+  d.innerHTML="<i></i><i></i><i></i><i></i>";
+  /* ต้องอยู่ในบ่อ ไม่ใช่ในเงา เพราะความมัวเป็นสมบัติของน้ำ ไม่ใช่ของเงา
+     ถ้าใส่ในเงา ผิวน้ำที่ทับอยู่ข้างบนจะไม่โดนเบลอตาม แล้วเห็นเป็นสองชั้นแยกกัน */
+  const pool=m.parentNode;
+  const old=pool.querySelector(".mdepth"); if(old)old.remove();
+  pool.appendChild(d);
 }
 
 function wire(){
@@ -358,6 +625,19 @@ function wire(){
       {plan:b.dataset.plan,at:Date.now()})) }catch(e){}
   });
 }
+
+/* ปุ่มเลื่อนลง — ช่วงบนกินเต็มจอพอดีจนไม่มีอะไรโผล่มาบอกว่ายังมีของข้างล่าง */
+(function(){
+  const btn=$("more"), deck=$("deck"), info=$("paneInfo");
+  if(!btn||!deck||!info)return;
+  btn.onclick=()=>info.scrollIntoView({behavior:"smooth",block:"start"});
+  /* ถึงช่วงล่างแล้วปุ่มไม่มีประโยชน์ ซ่อนไปเลยดีกว่าปล่อยให้กดแล้วไม่มีอะไรเกิดขึ้น */
+  deck.addEventListener("scroll",()=>{
+    const past=deck.scrollTop>deck.clientHeight*0.4;
+    btn.style.opacity=past?"0":"";
+    btn.style.pointerEvents=past?"none":"";
+  },{passive:true});
+})();
 
 let toastT=0;
 function toast(msg){
@@ -396,6 +676,19 @@ render();
     const d=await r.json();
     if(d&&(d.plans||d.plan)){ quota=d; render() }
   }catch(e){ /* ออฟไลน์หรือยังไม่ล็อกอิน — ค่าสำรองใช้ได้อยู่แล้ว */ }
+})();
+
+/* คนที่ตั้งเครื่องว่าไม่อยากเห็นการเคลื่อนไหว ต้องได้ผิวน้ำที่นิ่ง
+   แอนิเมชันของ SVG (SMIL) สั่งหยุดด้วย CSS ไม่ได้ ต้องเรียก pauseAnimations เอง
+   บางคนตั้งค่านี้เพราะภาพเคลื่อนไหวทำให้เวียนหัวจริง ๆ ไม่ใช่แค่ความชอบ */
+(function(){
+  try{
+    const mq=matchMedia("(prefers-reduced-motion:reduce)");
+    const fx=document.getElementById("fx");
+    const sync=()=>{ if(!fx)return; mq.matches?fx.pauseAnimations():fx.unpauseAnimations() };
+    sync();
+    mq.addEventListener?mq.addEventListener("change",sync):mq.addListener(sync);
+  }catch(e){}
 })();
 </script>
 </body>

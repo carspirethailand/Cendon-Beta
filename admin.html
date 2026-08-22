@@ -7,7 +7,7 @@
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <meta name="robots" content="noindex,nofollow"/>
 <meta name="theme-color" content="#0A0A0A"/>
-<title>Cendon — Admin Control</title>
+<title>Cendon Experience</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css" media="print" onload="this.media='all'"/>
 <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css"/></noscript>
@@ -91,6 +91,32 @@ h1,h2,h3{font-weight:600;letter-spacing:.01em}
 .scrim.show{opacity:1;pointer-events:auto}
 main{min-width:0}
 .side{background:var(--bg2);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:18px 14px;position:sticky;top:0;height:100dvh}
+/* ── หน้าเปิดแอป ──
+   หายไปเองเมื่อ animation จบ ไม่ต้องรอสคริปต์สั่งปิด
+   ถ้าให้สคริปต์ปิด แล้วสคริปต์พังหรือโหลดไม่ทัน หน้าจะค้างดำถาวร */
+.boot{position:fixed;inset:0;z-index:9999;background:var(--bg);display:grid;
+  place-items:center;gap:0;align-content:center;
+  animation:bootOut .55s cubic-bezier(.4,0,.2,1) 1.15s forwards}
+@keyframes bootOut{to{opacity:0;visibility:hidden}}
+.boot-mark{width:64px;height:64px;display:grid;place-items:center;color:var(--acc);
+  animation:bootIn .7s cubic-bezier(.2,.9,.3,1) both}
+.boot-mark svg{width:100%;height:100%}.boot-mark path{fill:currentColor}
+@keyframes bootIn{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:none}}
+.boot-t{margin-top:18px;font-size:15px;letter-spacing:.26em;text-transform:uppercase;
+  color:var(--faint);font-weight:400;animation:bootIn .7s cubic-bezier(.2,.9,.3,1) .12s both}
+.boot-t b{color:var(--ink);font-weight:700}
+/* แถบเดินหน้าเป็นการบอกว่าระบบกำลังทำงาน ไม่ได้บอกว่าเหลืออีกเท่าไร
+   เพราะเวลาจริงขึ้นกับเครือข่าย ซึ่งเดาไม่ได้ */
+.boot-b{margin-top:22px;width:132px;height:2px;border-radius:2px;overflow:hidden;
+  background:var(--line);animation:bootIn .7s .2s both}
+.boot-b i{display:block;height:100%;width:40%;border-radius:2px;background:var(--acc);
+  animation:bootRun 1.05s cubic-bezier(.5,0,.5,1) infinite}
+@keyframes bootRun{from{transform:translateX(-110%)}to{transform:translateX(340%)}}
+@media(prefers-reduced-motion:reduce){
+  .boot,.boot-mark,.boot-t,.boot-b{animation-duration:.01s;animation-delay:0s}
+  .boot-b i{animation:none;width:100%}
+}
+
 .brand{display:flex;align-items:center;gap:11px;padding:6px 8px 20px}
 .brand .mark{width:38px;height:38px;border-radius:12px;background:var(--grad);color:#fff;display:grid;place-items:center;box-shadow:0 8px 20px -8px var(--acc)}
 .brand .mark svg{height:56%;width:auto}.brand .mark path{fill:currentColor}
@@ -102,6 +128,57 @@ main{min-width:0}
 .nav a:hover{background:var(--surface);color:var(--ink)}
 .nav a.on{background:var(--acc-soft);color:var(--acc)}
 .nav a.locked{opacity:.4;pointer-events:none}
+/* ── กลุ่มเมนู ──
+   หัวกลุ่มตัวเล็กจาง ๆ ทำหน้าที่เป็นที่พักสายตา ไม่ใช่ของที่ต้องอ่าน
+   ถ้าทำให้เด่นเท่ารายการ มันจะกลายเป็นสิ่งรบกวนแทนที่จะช่วยหา */
+.ng{display:flex;flex-direction:column;gap:2px;margin-bottom:10px}
+.ng+.ng{padding-top:10px;border-top:1px solid var(--line2)}
+.ng-t{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);
+  font-weight:700;padding:0 13px 5px}
+
+/* ── แท็บย่อยในหน้าความรู้ AI ── */
+.ktabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;
+  background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:5px}
+.ktabs button{display:flex;align-items:center;gap:7px;padding:9px 15px;border:0;cursor:pointer;
+  border-radius:10px;background:transparent;color:var(--mut);font:inherit;font-size:13.5px;
+  font-weight:600;transition:.15s}
+.ktabs button:hover{color:var(--ink)}
+.ktabs button.on{background:var(--surface2);color:var(--ink)}
+.kpane{display:none}
+.kpane.on{display:block}
+
+/* ── กราฟเส้น ──
+   แท่งบอกได้แค่ค่าของแต่ละวัน แต่สิ่งที่คนดูอยากรู้จริงคือ "ขึ้นหรือลง"
+   เส้นต่อเนื่องบอกทิศทางได้ในแวบเดียว ซึ่งแท่งทำไม่ได้ */
+.graph{position:relative;height:150px;padding-top:8px}
+.graph svg{width:100%;height:100%;display:block;overflow:visible}
+.graph .gl{fill:none;stroke:var(--acc);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+/* ห้ามใส่ fill ตรงนี้ — จะทับ fill="url(#...)" ของ path ที่ชี้ไปยังไล่สีเฉพาะกราฟนั้น */
+.graph .ga{opacity:.95}
+.graph .gd{fill:var(--acc);opacity:0;transition:.15s}
+.graph .gh:hover .gd{opacity:1}
+.graph .gg{stroke:var(--line2);stroke-width:1}
+.graph .gt{position:absolute;pointer-events:none;background:var(--surface2);color:var(--ink);
+  border:1px solid var(--line);border-radius:9px;padding:5px 9px;font-size:11.5px;font-weight:600;
+  transform:translate(-50%,-130%);opacity:0;transition:.12s;white-space:nowrap;z-index:2}
+.graph .gt.on{opacity:1}
+
+/* ── ห้องทำงาน ── */
+.wk{display:flex;flex-direction:column;height:calc(100vh - 210px);min-height:380px}
+.wk-log{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding:4px 2px}
+.wk-log>*:first-child{margin-top:auto}
+.wk-m{display:flex;gap:10px;align-items:flex-start}
+.wk-m .av{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;
+  background:var(--surface2);color:var(--ink);font-weight:700;font-size:13px}
+.wk-m .bd{min-width:0;flex:1}
+.wk-m .hd{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.wk-m .hd b{font-size:13.5px}
+.wk-m .hd .ps{font-size:10.5px;color:var(--faint);border:1px solid var(--line);
+  border-radius:6px;padding:1px 6px}
+.wk-m .hd .tm{font-size:11px;color:var(--faint)}
+.wk-m .tx{font-size:14px;line-height:1.55;margin-top:2px;white-space:pre-wrap;word-break:break-word}
+.wk-in{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.wk-in textarea{flex:1;resize:none;min-height:44px;max-height:140px}
 .side-foot{border-top:1px solid var(--line);padding-top:12px;margin-top:8px}
 .me{display:flex;align-items:center;gap:10px;padding:8px}
 .me img,.me .fb{width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0}
@@ -481,10 +558,22 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 <body>
 
 <!-- ACCESS GATE -->
+<!-- ══ หน้าเปิดแอป ══
+     ช่วงระหว่างยืนยันสิทธิ์กับหน้าจอพร้อมใช้ ใช้เวลาจริงราวหนึ่งถึงสามวินาที
+     ถ้าปล่อยว่างไว้ คนจะรู้สึกว่าเว็บค้าง จึงให้มีอะไรเคลื่อนไหวคั่นไว้
+     ปิดตัวเองด้วย animation ที่จบแล้วไม่กลับมา จึงไม่ต้องมี JavaScript คุม -->
+<div class="boot" id="boot">
+  <div class="boot-mark">
+    <svg viewBox="-6.0 -6.0 94.8 112.0"><path d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg>
+  </div>
+  <div class="boot-t">Cendon <b>Experience</b></div>
+  <div class="boot-b"><i></i></div>
+</div>
+
 <div class="gate" id="gate">
   <div class="gate-card">
     <div class="mark"><svg viewBox="-6.0 -6.0 94.8 112.0"><path d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg></div>
-    <h1 id="gateTitle">Cendon Admin</h1>
+    <h1 id="gateTitle">Cendon Experience</h1>
     <p id="gateMsg"><i class="ti ti-loader-2"></i> กำลังตรวจสอบสิทธิ์...</p>
     <div id="gateActions"></div>
   </div>
@@ -496,31 +585,63 @@ html[data-idle="1"] *{animation-play-state:paused!important}
   <aside class="side" id="side">
     <div class="brand">
       <div class="mark"><svg viewBox="-6.0 -6.0 94.8 112.0"><path d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg></div>
-      <div><b>Cendon</b><small>Admin Control</small></div>
+      <div><b>Cendon</b><small>Experience</small></div>
     </div>
+    <!-- ══ เมนูจัดเป็นกลุ่มตามงาน ══
+         ของเดิมเป็นรายการยาวสิบสามบรรทัดเรียงกันโดยไม่มีที่พัก
+         ตาต้องอ่านทุกบรรทัดทุกครั้งเพื่อหาอันที่ต้องการ
+         จัดกลุ่มแล้วกวาดตาหาเจอที่กลุ่มก่อน แล้วค่อยหาในกลุ่ม ซึ่งเร็วกว่ามาก
+         แต่ละคนเห็นเฉพาะกลุ่มที่ตำแหน่งของตนดูแล -->
     <nav class="nav" id="nav">
-      <a data-tab="overview" class="on"><i class="ti ti-layout-dashboard"></i> ภาพรวม</a>
-      <a data-tab="users"><i class="ti ti-users"></i> ผู้ใช้ & ยศ</a>
-      <a data-tab="cars"><i class="ti ti-car"></i> รถในระบบ</a>
-      <a data-tab="kb"><i class="ti ti-school"></i> สอน AI</a>
-      <a data-tab="cache"><i class="ti ti-bolt"></i> คำตอบที่ใช้ซ้ำ</a>
-      <a data-tab="vector"><i class="ti ti-topology-star-3"></i> สมองเวกเตอร์</a>
-      <a data-tab="feedback"><i class="ti ti-message-2-heart"></i> ความเห็นผู้ใช้ <span class="nav-badge" id="fbBadge"></span></a>
-      <a data-tab="magazine"><i class="ti ti-news"></i> นิตยสาร</a>
-      <a data-tab="shop"><i class="ti ti-shopping-bag"></i> ร้านค้า</a>
-      <a data-tab="config" data-min="admin"><i class="ti ti-settings"></i> ตั้งค่าเว็บ</a>
-      <a data-tab="audit" data-min="admin"><i class="ti ti-history"></i> บันทึกการทำงาน</a>
-      <a data-tab="system"><i class="ti ti-heartbeat"></i> สุขภาพระบบ</a>
-      <a data-tab="nda" data-min="admin"><i class="ti ti-writing-sign"></i> ผู้ลงนาม NDA</a>
-      <!-- คู่มือเป็นหน้าของตัวเอง ไม่ใช่แท็บ เพราะเป็นเอกสารที่อ่านยาว
-           ไม่ใช่เครื่องมือที่กดไปกดมา และต้องเปิดค้างไว้อีกแท็บได้ -->
-      <a href="./handbook.html" style="border-top:1px solid var(--line);margin-top:6px;padding-top:12px">
-        <i class="ti ti-book-2"></i> คู่มือระบบ</a>
+      <div class="ng" data-mods="chat">
+        <span class="ng-t">ที่ทำงาน</span>
+        <a data-tab="chat" data-mod="chat"><i class="ti ti-messages"></i> ห้องทำงาน
+          <span class="nav-badge" id="chatBadge"></span></a>
+        <a data-tab="overview" data-mod="overview" class="on"><i class="ti ti-layout-dashboard"></i> ภาพรวม</a>
+      </div>
+
+      <div class="ng" data-mods="knowledge,system">
+        <span class="ng-t">สมอง AI</span>
+        <a data-tab="knowledge" data-mod="knowledge"><i class="ti ti-brain"></i> ความรู้ AI</a>
+        <a data-tab="system" data-mod="system"><i class="ti ti-heartbeat"></i> สุขภาพระบบ</a>
+      </div>
+
+      <div class="ng" data-mods="users,cars,feedback">
+        <span class="ng-t">คนและข้อมูล</span>
+        <a data-tab="users" data-mod="users"><i class="ti ti-users"></i> ทีมและตำแหน่ง</a>
+        <a data-tab="cars" data-mod="cars"><i class="ti ti-car"></i> รถในระบบ</a>
+        <a data-tab="feedback" data-mod="feedback"><i class="ti ti-message-2-heart"></i> ความเห็นผู้ใช้
+          <span class="nav-badge" id="fbBadge"></span></a>
+      </div>
+
+      <div class="ng" data-mods="magazine,shop,finance">
+        <span class="ng-t">ธุรกิจ</span>
+        <a data-tab="magazine" data-mod="magazine"><i class="ti ti-news"></i> นิตยสาร</a>
+        <a data-tab="shop" data-mod="shop"><i class="ti ti-shopping-bag"></i> ร้านค้า</a>
+        <a data-tab="finance" data-mod="finance"><i class="ti ti-coin"></i> การเงินและโควตา</a>
+      </div>
+
+      <div class="ng" data-mods="config,audit">
+        <span class="ng-t">ควบคุม</span>
+        <a data-tab="config" data-mod="config"><i class="ti ti-settings"></i> ตั้งค่าเว็บ</a>
+        <a data-tab="audit" data-mod="audit"><i class="ti ti-history"></i> บันทึกการทำงาน</a>
+      </div>
+
+      <div class="ng" data-mods="handbook">
+        <span class="ng-t">เอกสาร</span>
+        <a href="./handbook.html" data-mod="handbook"><i class="ti ti-book-2"></i> คู่มือระบบ</a>
+      </div>
     </nav>
     <div class="side-foot">
       <div class="me" id="me"></div>
       <!-- replace แทน href — ไม่ทิ้งแผงควบคุมไว้ในประวัติ
            กดย้อนกลับของเบราว์เซอร์แล้วจึงไม่วนกลับเข้ามาอีก -->
+      <!-- ลายมือชื่อคือของส่วนตัวของคนที่เซ็น การเอาไปวางไว้ในเมนูให้ผู้ดูแลทุกคนกดดู
+           เท่ากับเปิดให้คนที่ไม่มีเหตุต้องดู ได้ดู ปุ่มนี้จึงโผล่เฉพาะ CEO
+           และถึงจะเดา URL ก็ยังไม่ผ่าน เพราะเนื้อหาอยู่หลัง /api/kb ที่กันยศไว้อีกชั้น -->
+      <button class="btn ghost sm" id="ndaBtn" hidden
+        style="width:100%;margin-top:8px;justify-content:center"
+        onclick="go('nda')"><i class="ti ti-writing-sign"></i> ผู้ลงนาม NDA</button>
       <button class="btn ghost sm" style="width:100%;margin-top:8px;justify-content:center"
         onclick="location.replace('index.html')"><i class="ti ti-arrow-left"></i> กลับหน้าเว็บ</button>
       <button class="btn ghost sm" style="width:100%;margin-top:6px;justify-content:center"
@@ -744,7 +865,24 @@ html[data-idle="1"] *{animation-play-state:paused!important}
       </section>
 
       <!-- KB: สอน AI -->
-      <section class="view" id="v-kb">
+      <section class="view" id="v-knowledge">
+  <div class="head">
+    <div><h1>ความรู้ AI</h1>
+      <p class="sub">ทุกอย่างที่ทำให้ AI ตอบได้ดีขึ้น — ความรู้ที่สอน คำตอบที่ใช้ซ้ำ และดัชนีค้นด้วยความหมาย</p></div>
+  </div>
+  <!-- สามเรื่องนี้เคยเป็นสามแท็บแยกกัน ทั้งที่เป็นเรื่องเดียวกันคือ "AI รู้อะไรบ้าง"
+       การแยกทำให้ต้องเด้งไปมาเพื่อดูภาพรวม แท็บย่อยในหน้าเดียวแก้ปัญหานั้น -->
+  <div class="ktabs" id="ktabs">
+    <button class="on" data-k="kb"><i class="ti ti-school"></i> ความรู้ที่สอน</button>
+    <button data-k="cache"><i class="ti ti-bolt"></i> คำตอบใช้ซ้ำ</button>
+    <button data-k="vector"><i class="ti ti-topology-star-3"></i> ดัชนีค้นความหมาย</button>
+  </div>
+  <div id="kpane-kb" class="kpane on"></div>
+  <div id="kpane-cache" class="kpane"></div>
+  <div id="kpane-vector" class="kpane"></div>
+</section>
+
+<section class="view" id="v-kb" hidden>
         <div class="page-head"><div><h1>สอน AI</h1>
           <p>ความรู้ที่ใส่ตรงนี้ AI จะหยิบไปใช้ตอบผู้ใช้ทุกคน — ใส่แล้วมีผลทันที ไม่ต้อง deploy</p></div>
           <div style="display:flex;gap:8px">
@@ -786,6 +924,56 @@ html[data-idle="1"] *{animation-play-state:paused!important}
       </section>
 
       <!-- AUDIT -->
+      <!-- ══ การเงินและโควตา ══
+           ตัวเลขต้นทุนเป็นการประมาณจากปริมาณการใช้งานจริงคูณอัตราที่ตั้งไว้
+           ไม่ใช่ยอดเรียกเก็บจริง จึงบอกไว้ตรง ๆ ในหน้า ไม่ปล่อยให้เข้าใจผิด -->
+      <section class="view" id="v-finance">
+        <div class="page-head"><div><h1>การเงินและโควตา</h1>
+          <p>ปริมาณการใช้งานและต้นทุนโดยประมาณ</p></div>
+          <button class="btn sm" onclick="loadFinance()"><i class="ti ti-refresh"></i> รีเฟรช</button></div>
+        <div class="stat-grid" id="finGrid"></div>
+        <div class="card">
+          <h3>ปริมาณการใช้งาน 14 วัน</h3>
+          <div class="sub">ยิ่งเส้นชัน ต้นทุนต่อวันยิ่งสูงตาม</div>
+          <div class="chart" id="finChart"></div><div class="chart-x" id="finChartX"></div>
+        </div>
+        <div class="card">
+          <h3>อัตราที่ใช้คำนวณ</h3>
+          <div class="sub">ปรับตัวเลขแล้วกดคำนวณใหม่ เพื่อดูว่าต้นทุนเปลี่ยนไปเท่าไร</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-top:10px">
+            <div class="field" style="flex:1;min-width:190px;margin:0">
+              <label>ต้นทุนต่อข้อความ (บาท)</label>
+              <input class="input" id="finRate" type="number" step="0.01" min="0" value="0.35">
+            </div>
+            <button class="btn sm" onclick="loadFinance()"><i class="ti ti-calculator"></i> คำนวณใหม่</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>ผู้ใช้ที่ใช้งานหนักที่สุด</h3>
+          <div class="sub">คนกลุ่มนี้คือส่วนใหญ่ของต้นทุน</div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>ผู้ใช้</th><th style="text-align:right">ข้อความ</th>
+              <th style="text-align:right">ต้นทุนโดยประมาณ</th></tr></thead>
+            <tbody id="finTop"><tr><td colspan="3" class="empty">กำลังโหลด...</td></tr></tbody>
+          </table></div>
+        </div>
+      </section>
+
+      <!-- ══ ห้องทำงานร่วม ══ -->
+      <section class="view" id="v-chat">
+        <div class="page-head"><div><h1>ห้องทำงาน</h1>
+          <p>คุยกันภายในทีม ไม่ออกไปไหน ผู้ใช้ทั่วไปมองไม่เห็น</p></div>
+          <button class="btn sm ghost" onclick="pollChat(true)"><i class="ti ti-refresh"></i> รีเฟรช</button></div>
+        <div class="card wk">
+          <div class="wk-log" id="wkLog"><div class="empty">กำลังโหลด...</div></div>
+          <div class="wk-in">
+            <textarea class="input" id="wkIn" rows="1" maxlength="2000"
+              placeholder="พิมพ์ข้อความ แล้วกด Enter เพื่อส่ง"></textarea>
+            <button class="btn" id="wkSend" onclick="sendChat()"><i class="ti ti-send"></i></button>
+          </div>
+        </div>
+      </section>
+
       <section class="view" id="v-audit">
         <div class="page-head"><div><h1>บันทึกการทำงาน</h1><p>ประวัติการกระทำของผู้ดูแลระบบล่าสุด</p></div>
           <button class="btn sm" onclick="loadAudit()"><i class="ti ti-refresh"></i> รีเฟรช</button></div>
@@ -879,6 +1067,84 @@ const esc=s=>(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"
 const BACKEND_URL="https://spireonebackend.carspirethailand.workers.dev";
 const fbConfig={apiKey:"AIzaSyDDtvz4d4FRG_KOq5EQHmlDijU-x1FDZlQ",authDomain:"sp1p-82396.firebaseapp.com",databaseURL:"https://sp1p-82396-default-rtdb.firebaseio.com",projectId:"sp1p-82396",storageBucket:"sp1p-82396.appspot.com",messagingSenderId:"924479207020",appId:"1:924479207020:web:ec64428a61403e1ad48a49"};
 const ROLE_RANK={owner:4,admin:3,moderator:2,user:1};
+
+/* ══ ตำแหน่งในองค์กร ═══════════════════════════════════════════════════
+   base คือยศที่เซิร์ฟเวอร์รู้จัก ตำแหน่งทุกตำแหน่งต้องผูกกับยศใดยศหนึ่ง
+   ไม่งั้น /api/admin/users/role จะปฏิเสธด้วย 400 เพราะมันรับแค่สามค่า
+
+   can คือโมดูลที่ตำแหน่งนั้นดูแล — "*" คือทั้งหมด
+   คนที่ไม่มีโมดูลในรายการจะไม่เห็นเมนูนั้น แต่กำแพงจริงอยู่ที่เซิร์ฟเวอร์ */
+const POSITIONS={
+  ceo:{th:"ประธานเจ้าหน้าที่บริหาร",ab:"CEO",base:"owner",ic:"ti-crown",
+       can:["*"],note:"คุมทุกอย่าง · เห็นลายมือชื่อผู้ลงนาม"},
+  cto:{th:"ประธานเจ้าหน้าที่เทคโนโลยี",ab:"CTO",base:"admin",ic:"ti-cpu",
+       can:["overview","knowledge","system","audit","config","users","handbook","chat"],
+       note:"ระบบ · ความรู้ AI · สุขภาพระบบ · ตั้งค่า"},
+  cfo:{th:"ประธานเจ้าหน้าที่การเงิน",ab:"CFO",base:"admin",ic:"ti-coin",
+       can:["overview","finance","users","audit","chat"],
+       note:"การเงิน · โควตา · ต้นทุน · ผู้ใช้"},
+  coo:{th:"ประธานเจ้าหน้าที่ปฏิบัติการ",ab:"COO",base:"admin",ic:"ti-settings-cog",
+       can:["overview","users","cars","shop","magazine","feedback","audit","chat"],
+       note:"ผู้ใช้ · รถ · ร้านค้า · เนื้อหา"},
+  cmo:{th:"ประธานเจ้าหน้าที่การตลาด",ab:"CMO",base:"admin",ic:"ti-speakerphone",
+       can:["overview","magazine","shop","feedback","config","chat"],
+       note:"นิตยสาร · ร้านค้า · ความเห็นผู้ใช้ · ประกาศ"},
+  head_ai:{th:"หัวหน้าฝ่าย AI",ab:"Head of AI",base:"moderator",ic:"ti-brain",
+       can:["overview","knowledge","system","chat"],
+       note:"สอน AI · คำตอบใช้ซ้ำ · สมองเวกเตอร์"},
+  head_ops:{th:"หัวหน้าฝ่ายปฏิบัติการ",ab:"Head of Ops",base:"moderator",ic:"ti-clipboard-check",
+       can:["overview","cars","shop","magazine","feedback","chat"],
+       note:"รถ · ร้านค้า · เนื้อหา · ความเห็น"},
+  support:{th:"ฝ่ายดูแลลูกค้า",ab:"Support",base:"moderator",ic:"ti-headset",
+       can:["overview","feedback","cars","chat"],
+       note:"ตอบความเห็น · ดูข้อมูลรถ"},
+  staff:{th:"พนักงาน",ab:"Staff",base:"user",ic:"ti-user",
+       can:["chat"],note:"ห้องทำงานร่วมอย่างเดียว"},
+};
+/* ตำแหน่งเริ่มต้นเมื่อยังไม่ได้กำหนด — เดาจากยศพื้นฐานที่มีอยู่
+   คนที่เคยเป็น owner ก่อนระบบตำแหน่งจะมีอยู่ ย่อมเป็น CEO */
+const POS_BY_BASE={owner:"ceo",admin:"coo",moderator:"support",user:"staff"};
+/* ── ที่เก็บตำแหน่ง ──
+   ตารางผู้ใช้ฝั่งเซิร์ฟเวอร์ไม่มีช่องตำแหน่ง และการเพิ่มช่องเป็นงานฝั่งหลังบ้าน
+   ซึ่งไม่ใช่เขตของไฟล์นี้ จึงเก็บในตารางความรู้ด้วยคำนำหน้า pos_ เหมือนที่ทำกับใบลงนาม
+   ปิดใช้งานไว้ AI จึงหยิบไปตอบผู้ใช้ไม่ได้ */
+let POSMAP={};
+async function loadPos(){
+  try{
+    const res=await api("/api/kb");
+    POSMAP={};
+    (res.kb||[]).filter(k=>/^pos_/.test(k.id)).forEach(k=>{
+      let v=""; try{ v=(JSON.parse(k.keywords||"{}").p||"") }catch(e){}
+      if(POSITIONS[v])POSMAP[k.id.slice(4)]=v;
+    });
+  }catch(e){ /* อ่านไม่ได้ก็ถอยไปเดาจากยศพื้นฐาน ไม่ใช่เรื่องที่ต้องหยุดทั้งแอป */ }
+}
+async function savePos(uid,pos,base){
+  await api("/api/kb",{method:"POST",body:{id:"pos_"+uid,title:"ตำแหน่ง "+uid,
+    body:"บันทึกตำแหน่งในองค์กรของผู้ใช้รายนี้ — "+(POSITIONS[pos]||{}).th,
+    keywords:JSON.stringify({p:pos}),make:"__pos__",model:"",enabled:false}});
+  POSMAP[uid]=pos;
+  /* ตำแหน่งเปลี่ยนยศพื้นฐานตามไปด้วย ไม่งั้นสิทธิ์จริงกับตำแหน่งจะไม่ตรงกัน
+     ยศ owner เปลี่ยนผ่าน API ไม่ได้ จึงข้ามกรณีนั้นไป */
+  if(base&&["admin","moderator","user"].includes(base))
+    await api("/api/admin/users/role",{method:"POST",body:{uid,role:base}});
+}
+
+function posOf(u){
+  const p=(u&&u.pos)||(u&&u.uid&&POSMAP[u.uid]);
+  if(p&&POSITIONS[p])return p;
+  return POS_BY_BASE[(u&&u.role)||"user"]||"staff";
+}
+function posInfo(u){ return POSITIONS[posOf(u)] }
+/* ดูแลโมดูลนี้ไหม — ตรวจทั้งตำแหน่งและยศพื้นฐาน
+   ยศพื้นฐานยังเป็นเพดานเสมอ ตำแหน่งเปิดสิทธิ์เกินยศไม่ได้ */
+function can(mod){
+  if(!me)return false;
+  const inf=posInfo(me);
+  if(!inf)return false;
+  return inf.can.includes("*")||inf.can.includes(mod);
+}
+window.can=can;
 let auth=null,useFb=false,me=null;
 /* firebase โหลดแบบ defer แล้ว ตัวแปลภาษาจึงไม่ต้องหยุดรอเซิร์ฟเวอร์ของ Google กลางคัน
    ผลคือหน้าเว็บวาดและกดใช้งานได้ก่อน ระบบล็อกอินตามมาทีหลังไม่กี่ร้อยมิลลิวินาที
@@ -948,7 +1214,7 @@ function doLogout(){if(useFb)auth.signOut();location.href="index.html"}
 
 if(useFb)auth.onAuthStateChanged(async u=>{
   if(!u){
-    gateMsg("เข้าสู่ระบบด้วยบัญชีผู้ดูแลเพื่อเข้าใช้แผงควบคุม",
+    gateMsg("เข้าสู่ระบบเพื่อเข้าที่ทำงาน",
       `<button class="btn primary" style="width:100%;justify-content:center" onclick="signIn()"><i class="ti ti-brand-google"></i> เข้าสู่ระบบด้วย Google</button>`);
     return;
   }
@@ -970,17 +1236,48 @@ if(useFb)auth.onAuthStateChanged(async u=>{
 });
 else gateMsg("ระบบล็อกอินไม่พร้อมใช้งาน");
 
-function enterAdmin(){
+async function enterAdmin(){
+  /* ต้องรู้ตำแหน่งก่อนวาดเมนู ไม่งั้นเมนูจะถูกกรองด้วยตำแหน่งที่เดาจากยศ
+     แล้วกระพริบเปลี่ยนทีหลัง ซึ่งดูเหมือนหน้าเว็บทำงานผิด */
+  await loadPos();
   $("gate").style.display="none";
   $("app").style.display="grid";
   // role chip + me
-  const rl={owner:["owner","เจ้าของระบบ"],admin:["admin","ผู้ดูแลระบบ"],moderator:["moderator","ผู้ควบคุม"]}[me.role]||["user","ผู้ใช้"];
+  /* แสดงตำแหน่งจริง ไม่ใช่ยศในระบบ — คนทำงานเรียกกันด้วยตำแหน่ง ไม่ใช่ระดับสิทธิ์ */
+  const inf=posInfo(me);
   $("me").innerHTML=`${me.photo?`<img src="${esc(me.photo)}" referrerpolicy="no-referrer">`:`<div class="fb">${esc((me.name||"?")[0].toUpperCase())}</div>`}
-    <div class="info"><b>${esc(me.name)}</b><span class="rolechip ${rl[0]}"><i class="ti ti-shield-check"></i> ${rl[1]}</span></div>`;
-  // lock admin-only tabs for moderators
+    <div class="info"><b>${esc(me.name)}</b>
+      <span class="rolechip ${esc(me.role)}"><i class="ti ${esc(inf.ic)}"></i> ${esc(inf.ab)}</span></div>`;
+  /* ── เมนูตามตำแหน่ง ──
+     แต่ละตำแหน่งดูแลคนละเรื่อง การโชว์เมนูที่กดแล้วโดนปฏิเสธไม่ช่วยใคร
+     ซ่อนไปเลยดีกว่า แต่กำแพงจริงยังอยู่ที่เซิร์ฟเวอร์เหมือนเดิม */
+  document.querySelectorAll("#nav a[data-mod]").forEach(a=>{
+    a.style.display=can(a.dataset.mod)?"":"none";
+  });
+  /* กลุ่มไหนไม่เหลือรายการเลย ซ่อนหัวกลุ่มด้วย ไม่งั้นจะมีหัวข้อลอยไม่มีของ */
+  document.querySelectorAll("#nav .ng").forEach(g=>{
+    const any=[...g.querySelectorAll("a[data-mod]")].some(a=>a.style.display!=="none");
+    g.style.display=any?"":"none";
+  });
   document.querySelectorAll("[data-min='admin']").forEach(a=>{if(rank(me.role)<rank("admin"))a.classList.add("locked")});
-  loadStats();loadUsers();loadMag();loadCars();loadShop();loadHealth();
-  if(rank(me.role)>=rank("admin")){loadConfig();loadAudit()}
+  if(posOf(me)==="ceo")$("ndaBtn").hidden=false;
+  /* เปิดแท็บแรกที่ตำแหน่งนี้เข้าได้ ไม่ใช่ภาพรวมเสมอ
+     พนักงานที่เข้าได้แค่ห้องทำงาน ควรเห็นห้องทำงานทันทีที่เปิด */
+  const first=[...document.querySelectorAll("#nav a[data-tab]")]
+    .find(a=>a.style.display!=="none");
+  const want=(location.hash||"").slice(1);
+  const okWant=want&&can(want)&&document.getElementById("v-"+want);
+  go(okWant?want:(first?first.dataset.tab:"overview"));
+  /* ยิงเฉพาะของที่คนนี้เห็น ลดงานที่ไม่มีใครขอดู และลดโอกาสโดนปฏิเสธ 403
+     ซึ่งจะโผล่เป็นข้อความ error ในหน้าโดยที่ผู้ใช้ไม่ได้ทำอะไรผิด */
+  if(can("overview"))loadStats();
+  if(can("users"))loadUsers();
+  if(can("magazine"))loadMag();
+  if(can("cars"))loadCars();
+  if(can("shop"))loadShop();
+  if(can("system"))loadHealth();
+  if(can("config")&&rank(me.role)>=rank("admin"))loadConfig();
+  if(can("audit")&&rank(me.role)>=rank("admin"))loadAudit();
 }
 
 /* ── ผู้ลงนาม NDA ──
@@ -1041,18 +1338,148 @@ async function loadNda(){
   }
 }
 
+/* ══ การเงิน ══
+   ไม่มีปลายทางฝั่งเซิร์ฟเวอร์สำหรับต้นทุนโดยเฉพาะ จึงคำนวณจากสถิติที่มีอยู่แล้ว
+   วิธีนี้ไม่ต้องแก้หลังบ้าน และตัวเลขเคลื่อนตามการใช้งานจริงทันที */
+async function loadFinance(){
+  const rate=parseFloat(($("finRate")||{}).value||"0.35")||0;
+  $("finGrid").innerHTML=Array.from({length:4},()=>`<div class="stat"><div class="skel" style="height:78px"></div></div>`).join("");
+  try{
+    const s=await api("/api/admin/stats");
+    const daily=(s.aiDaily||[]).map(x=>({c:x.c,day:x.day}));
+    const sum14=daily.reduce((a,b)=>a+(b.c||0),0);
+    const money=v=>"฿"+(v||0).toLocaleString("th-TH",{minimumFractionDigits:2,maximumFractionDigits:2});
+    $("finGrid").innerHTML=[
+      {ic:"ti-message-2",cls:"b",n:(s.aiToday||0).toLocaleString("th-TH"),l:"ข้อความวันนี้"},
+      {ic:"ti-coin",cls:"g",n:money((s.aiToday||0)*rate),l:"ต้นทุนวันนี้ (ประมาณ)"},
+      {ic:"ti-calendar-week",cls:"",n:money(sum14*rate),l:"ต้นทุน 14 วัน (ประมาณ)"},
+      {ic:"ti-trending-up",cls:"p",n:money(sum14/14*30*rate),l:"คาดการณ์ต่อเดือน"},
+    ].map(c=>`<div class="stat"><div class="ic ${c.cls}"><i class="ti ${c.ic}"></i></div>
+      <div class="n" style="font-size:24px">${c.n}</div><div class="l">${c.l}</div></div>`).join("");
+    const dfmt=d=>{const p=(d.day||"").split("-");return p.length===3?p[2]+"/"+p[1]:""};
+    bars($("finChart"),$("finChartX"),daily,dfmt);
+    const tu=s.topUsers||[];
+    $("finTop").innerHTML=tu.length?tu.map(u=>`<tr>
+      <td><div style="font-weight:600">${esc(u.name||"-")}</div>
+        <div style="font-size:11.5px;color:var(--faint)">${esc(u.email||"")}</div></td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums">${u.c||0}</td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:700">${money((u.c||0)*rate)}</td>
+    </tr>`).join(""):`<tr><td colspan="3" class="empty">ยังไม่มีข้อมูล</td></tr>`;
+  }catch(e){
+    $("finGrid").innerHTML=`<div class="empty">โหลดไม่ได้: ${esc(e.message)}</div>`;
+  }
+}
+
+/* ══ ห้องทำงานร่วม ══
+   ข้อความเก็บในตารางความรู้เหมือนคู่มือและใบลงนาม แต่คนละคำนำหน้า (msg_)
+   และปิดใช้งานไว้ AI จึงหยิบไปตอบผู้ใช้ไม่ได้ เพราะฝั่งค้นหากรอง enabled=1
+
+   เลือกวิธีนี้เพราะยังไม่มีปลายทางสำหรับข้อความในหลังบ้าน และหลังบ้านเป็นเขตของอีกคน
+   ข้อจำกัดที่ตามมา: ต้องยศผู้ควบคุมขึ้นไปถึงเรียก /api/kb ได้ ตำแหน่งพนักงานจึงยังเข้าไม่ได้
+   และเป็นการถามซ้ำทุกไม่กี่วินาที ไม่ใช่ข้อความสด */
+let CHAT=[], chatTimer=null, chatBusy=false;
+function chatName(m){ return m.n||"ไม่ทราบชื่อ" }
+function openChat(){
+  pollChat(true);
+  clearInterval(chatTimer);
+  chatTimer=setInterval(()=>{ if(document.getElementById("v-chat").classList.contains("on"))pollChat() },6000);
+}
+/* หยุดถามเมื่อสลับไปแท็บอื่นของเบราว์เซอร์ ไม่ให้เปลืองโควตาตอนไม่มีคนดู */
+document.addEventListener("visibilitychange",()=>{ if(document.hidden)clearInterval(chatTimer);
+  else if(document.getElementById("v-chat")&&document.getElementById("v-chat").classList.contains("on"))openChat() });
+
+async function pollChat(force){
+  if(chatBusy)return; chatBusy=true;
+  try{
+    const res=await api("/api/kb");
+    const rows=(res.kb||[]).filter(k=>/^msg_/.test(k.id)).map(k=>{
+      let m={}; try{ m=JSON.parse(k.keywords||"{}") }catch(e){}
+      return {id:k.id,tx:k.body||"",n:m.n||k.title||"",p:m.p||"",t:m.t||0,uid:m.u||""};
+    }).sort((a,b)=>a.t-b.t).slice(-200);
+    if(!force&&rows.length===CHAT.length&&rows.length&&CHAT.length&&rows[rows.length-1].id===CHAT[CHAT.length-1].id){ chatBusy=false; return }
+    CHAT=rows; drawChat();
+  }catch(e){
+    if(force)$("wkLog").innerHTML=`<div class="empty">เข้าห้องทำงานไม่ได้: ${esc(e.message)}</div>`;
+  }
+  chatBusy=false;
+}
+function drawChat(){
+  const box=$("wkLog");
+  /* ถ้าคนกำลังอ่านข้อความเก่าอยู่ อย่าลากเขากลับลงล่าง — เลื่อนเฉพาะตอนที่เขาอยู่ล่างสุดอยู่แล้ว */
+  const atEnd=box.scrollHeight-box.scrollTop-box.clientHeight<60;
+  box.innerHTML=CHAT.length?CHAT.map(m=>`<div class="wk-m">
+    <div class="av">${esc((m.n||"?")[0].toUpperCase())}</div>
+    <div class="bd"><div class="hd"><b>${esc(m.n)}</b>
+      ${m.p?`<span class="ps">${esc(m.p)}</span>`:""}
+      <span class="tm">${new Date(m.t).toLocaleString("th-TH",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</span></div>
+      <div class="tx">${esc(m.tx)}</div></div>
+  </div>`).join(""):`<div class="empty">ยังไม่มีข้อความ เริ่มคุยได้เลย</div>`;
+  if(atEnd)box.scrollTop=box.scrollHeight;
+}
+async function sendChat(){
+  const el=$("wkIn"), tx=el.value.trim(); if(!tx)return;
+  const btn=$("wkSend"); btn.disabled=true; el.value="";
+  const inf=posInfo(me);
+  try{
+    await api("/api/kb",{method:"POST",body:{
+      id:"msg_"+Date.now()+"_"+Math.random().toString(36).slice(2,8),
+      title:(me.name||"ทีมงาน").slice(0,80), body:tx,
+      keywords:JSON.stringify({n:me.name||"",p:inf?inf.ab:"",t:Date.now(),u:me.uid||""}).slice(0,395),
+      make:"__chat__", model:"", enabled:false }});
+    await pollChat(true);
+  }catch(e){ el.value=tx; alert("ส่งไม่สำเร็จ: "+e.message) }
+  btn.disabled=false; el.focus();
+}
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Enter"||e.shiftKey)return;
+  if(e.target&&e.target.id==="wkIn"){ e.preventDefault(); sendChat() }
+});
+
 /* ===== TABS ===== */
 $("nav").addEventListener("click",e=>{
   const a=e.target.closest("[data-tab]");if(!a||a.classList.contains("locked"))return;
-  document.querySelectorAll("#nav a").forEach(x=>x.classList.remove("on"));
-  a.classList.add("on");
-  const t=a.dataset.tab;
+  go(a.dataset.tab);
+  toggleSide(false);
+});
+function go(t){
+  document.querySelectorAll("#nav a").forEach(x=>x.classList.toggle("on",x.dataset.tab===t));
   document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on",v.id==="v-"+t));
   /* หน้าที่ต้องยิงถามหลังบ้าน โหลดตอนเปิดดูจริง ไม่ใช่ตอนเข้าเว็บ
      จะได้ไม่หน่วงหน้าแรกด้วยงานที่ยังไม่มีใครขอดู */
-  if(t==="vector")loadVector();
+  if(t==="knowledge")openK(curK);
   if(t==="nda")loadNda();
-  toggleSide(false);
+  if(t==="finance")loadFinance();
+  if(t==="chat")openChat();
+  try{ location.hash=t }catch(e){}
+}
+window.go=go;
+
+/* ── แท็บย่อยของความรู้ AI ──
+   ย้ายเนื้อหาของสามหน้าเดิมมาไว้ในแผงเดียวกัน โดยไม่ได้เขียนใหม่
+   ย้าย DOM จริงเข้ามา เพราะทุกฟังก์ชันเดิมผูกกับ id ในนั้นอยู่
+   ถ้าเขียนใหม่ต้องไล่แก้ทุกจุดที่อ้าง id ซึ่งเสี่ยงพังโดยไม่จำเป็น */
+let curK="kb";
+(function moveK(){
+  const map={kb:"v-kb",cache:"v-cache",vector:"v-vector"};
+  for(const [k,id] of Object.entries(map)){
+    const src=document.getElementById(id), dst=document.getElementById("kpane-"+k);
+    if(!src||!dst)continue;
+    /* หัวเรื่องเดิมของแต่ละหน้าซ้ำกับหัวเรื่องของแผงรวม ตัดออก */
+    const h=src.querySelector(".head>div>h1"); if(h&&h.parentElement)h.parentElement.remove();
+    while(src.firstChild)dst.appendChild(src.firstChild);
+    src.remove();
+  }
+})();
+function openK(k){
+  curK=k;
+  document.querySelectorAll("#ktabs button").forEach(b=>b.classList.toggle("on",b.dataset.k===k));
+  document.querySelectorAll(".kpane").forEach(x=>x.classList.toggle("on",x.id==="kpane-"+k));
+  if(k==="vector")loadVector();
+  if(k==="cache"&&typeof loadCache==="function")loadCache();
+  if(k==="kb"&&typeof loadKb==="function")loadKb();
+}
+$("ktabs").addEventListener("click",e=>{
+  const b=e.target.closest("[data-k]"); if(b)openK(b.dataset.k);
 });
 function toggleSide(open){$("side").classList.toggle("open",open);$("scrim").classList.toggle("show",open)}
 
@@ -1079,10 +1506,39 @@ async function hardReset(){
 window.hardReset=hardReset;
 
 /* ===== OVERVIEW ===== */
+/* วาดเป็นเส้นพร้อมพื้นที่ใต้เส้น — ชื่อฟังก์ชันยังเป็น bars เพราะมีที่เรียกหลายแห่ง
+   เปลี่ยนชื่อแล้วต้องไล่แก้ทุกจุด ซึ่งไม่ได้ทำให้อะไรดีขึ้น */
+let GID=0;
 function bars(el,elx,data,fmt){
-  const max=Math.max(1,...data.map(d=>d.c));
-  el.innerHTML=data.map(d=>`<div class="bar" style="height:${Math.round(d.c/max*100)}%"><span>${d.c}</span></div>`).join("")||`<div class="empty" style="width:100%">ยังไม่มีข้อมูล</div>`;
-  elx.innerHTML=data.map(d=>`<div>${fmt(d)}</div>`).join("");
+  el.classList.remove("chart"); el.classList.add("graph");
+  if(!data.length){ el.innerHTML='<div class="empty">ยังไม่มีข้อมูล</div>'; elx.innerHTML=""; return }
+  const max=Math.max(1,...data.map(d=>d.c)), n=data.length, id="gf"+(++GID);
+  /* ใช้พิกัด 0-100 แล้วให้ svg ยืดเอง จะได้ไม่ต้องวัดความกว้างจริง
+     ซึ่งวัดไม่ได้ตอนหน้ายังซ่อนอยู่ (แท็บที่ยังไม่เปิด กว้าง 0) */
+  const W=100,H=100,px=i=>n===1?W/2:i*W/(n-1),py=v=>H-(v/max)*(H-8)-4;
+  const pts=data.map((d,i)=>px(i)+","+py(d.c));
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+    <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="var(--acc)" stop-opacity=".28"/>
+      <stop offset="100%" stop-color="var(--acc)" stop-opacity="0"/>
+    </linearGradient></defs>
+    ${[0,.5,1].map(f=>`<line class="gg" x1="0" y1="${4+f*(H-8)}" x2="${W}" y2="${4+f*(H-8)}"
+      vector-effect="non-scaling-stroke"/>`).join("")}
+    <path class="ga" fill="url(#${id})" d="M0,${H} L${pts.join(" L")} L${W},${H} Z"/>
+    <polyline class="gl" points="${pts.join(" ")}" vector-effect="non-scaling-stroke"/>
+  </svg><div class="gt" id="${id}t"></div>`;
+  /* จุดและป้ายค่าใช้ HTML ทับบน svg ไม่ใช่วาดใน svg
+     เพราะ viewBox ถูกยืดไม่เท่ากันสองแกน วงกลมใน svg จะกลายเป็นวงรี */
+  const tip=el.querySelector(".gt");
+  el.addEventListener("mousemove",e=>{
+    const r=el.getBoundingClientRect(), f=(e.clientX-r.left)/r.width;
+    const i=Math.max(0,Math.min(n-1,Math.round(f*(n-1))));
+    tip.textContent=fmt(data[i])+" · "+data[i].c;
+    tip.style.left=(px(i)/W*100)+"%"; tip.style.top=(py(data[i].c)/H*100)+"%";
+    tip.classList.add("on");
+  });
+  el.addEventListener("mouseleave",()=>tip.classList.remove("on"));
+  elx.innerHTML=data.map((d,i)=>`<div>${i%2||n<8?fmt(d):""}</div>`).join("");
 }
 async function loadStats(){
   $("statGrid").innerHTML=Array.from({length:8},()=>`<div class="stat"><div class="skel" style="height:78px"></div></div>`).join("");
@@ -1170,9 +1626,14 @@ async function loadUsers(){
       const av=u.photo?`<img src="${esc(u.photo)}" referrerpolicy="no-referrer">`:`<div class="fb">${esc((u.name||"?")[0].toUpperCase())}</div>`;
       let ctrl="";
       if(canEdit){
-        const opts=["moderator","user"];if(amOwner)opts.unshift("admin");
-        ctrl=`<select class="mini-select" onchange="setRole('${u.uid}',this.value,this)">
-          ${opts.map(o=>`<option value="${o}" ${u.role===o?"selected":""}>${roleLabel(o)}</option>`).join("")}
+        /* เลือกตำแหน่ง ไม่ใช่เลือกยศ — ยศพื้นฐานถูกตั้งตามตำแหน่งให้อัตโนมัติ
+           คนตั้งจะได้ไม่ต้องจำว่าตำแหน่งไหนควรคู่กับยศไหน ซึ่งจำผิดได้ง่าย
+           ตำแหน่ง CEO ไม่อยู่ในรายการ เพราะยศ owner เปลี่ยนผ่าน API ไม่ได้ */
+        const cur=posOf(u);
+        const opts=Object.keys(POSITIONS).filter(k=>k!=="ceo"&&(amOwner||POSITIONS[k].base!=="admin"));
+        ctrl=`<select class="mini-select" title="กำหนดตำแหน่ง"
+            onchange="setPos('${u.uid}',this.value,this)">
+          ${opts.map(o=>`<option value="${o}" ${cur===o?"selected":""}>${POSITIONS[o].ab} — ${POSITIONS[o].th}</option>`).join("")}
         </select>`;
       }
       let banBtn="";
@@ -1181,12 +1642,20 @@ async function loadUsers(){
         :`<button class="btn sm danger" onclick="banUser('${u.uid}',true,this)"><i class="ti ti-ban"></i> แบน</button>`;
       return `<tr class="${u.banned?'banned-row':''}">
         <td><div class="u-cell">${av}<div style="min-width:0"><div style="font-weight:600">${esc(u.name||"-")}</div><div style="font-size:11.5px;color:var(--faint)">${esc(u.email||"")}</div></div></div></td>
-        <td><span class="role-pill ${u.role}">${roleLabel(u.role)}</span>${u.banned?' <span class="role-pill" style="background:rgba(242,104,95,.16);color:var(--danger)">ถูกแบน</span>':''}</td>
+        <td><span class="role-pill ${u.role}" title="${esc(posInfo(u).th)}">${esc(posInfo(u).ab)}</span>${u.banned?' <span class="role-pill" style="background:rgba(242,104,95,.16);color:var(--danger)">ถูกแบน</span>':''}</td>
         <td style="color:var(--mut);font-size:12.5px">${u.last_login?new Date(u.last_login).toLocaleString("th-TH",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"-"}</td>
         <td><div class="row-actions">${ctrl}${banBtn}${!canEdit&&!canBan?'<span style="color:var(--faint);font-size:12px">—</span>':''}</div></td>
       </tr>`;
     }).join("");
   }catch(e){$("userRows").innerHTML=`<tr><td colspan="4" class="empty">โหลดไม่ได้: ${esc(e.message)}</td></tr>`}
+}
+async function setPos(uid,pos,el){
+  const inf=POSITIONS[pos]; if(!inf)return;
+  el.disabled=true;
+  try{ await savePos(uid,pos,inf.base);
+    toast("ตั้งเป็น "+inf.th+" แล้ว","ti-user-check"); loadUsers() }
+  catch(e){ alert("เปลี่ยนตำแหน่งไม่สำเร็จ: "+e.message) }
+  el.disabled=false;
 }
 async function setRole(uid,role,el){
   el.disabled=true;
@@ -1679,7 +2148,7 @@ async function loadKb(){
        ต้องไม่โผล่ตรงนี้ ไม่งั้นจะมีคนเผลอแก้ เผลอลบ หรือแย่ที่สุดคือเผลอเปิด enabled
        ซึ่งจะทำให้ AI เอาเรื่องฐานข้อมูลและชื่อเซิร์ฟเวอร์ไปตอบผู้ใช้ทั่วไป */
     const all=res.kb||[];
-    const arr=all.filter(k=>!/^(hb|nda)_/.test(k.id));
+    const arr=all.filter(k=>!/^(hb|nda|pos|msg)_/.test(k.id));
     const hb=all.filter(k=>/^hb_/.test(k.id)).length;
     const nda=all.filter(k=>/^nda_/.test(k.id)).length;
     const bits=[];

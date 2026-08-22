@@ -484,6 +484,10 @@ html[data-idle="1"] *{animation-play-state:paused!important}
       <a data-tab="config" data-min="admin"><i class="ti ti-settings"></i> ตั้งค่าเว็บ</a>
       <a data-tab="audit" data-min="admin"><i class="ti ti-history"></i> บันทึกการทำงาน</a>
       <a data-tab="system"><i class="ti ti-heartbeat"></i> สุขภาพระบบ</a>
+      <!-- คู่มือเป็นหน้าของตัวเอง ไม่ใช่แท็บ เพราะเป็นเอกสารที่อ่านยาว
+           ไม่ใช่เครื่องมือที่กดไปกดมา และต้องเปิดค้างไว้อีกแท็บได้ -->
+      <a href="./handbook.html" style="border-top:1px solid var(--line);margin-top:6px;padding-top:12px">
+        <i class="ti ti-book-2"></i> คู่มือระบบ</a>
     </nav>
     <div class="side-foot">
       <div class="me" id="me"></div>
@@ -1547,9 +1551,16 @@ async function loadKb(){
   $("kbList").innerHTML=`<div class="empty">กำลังโหลด...</div>`;
   try{
     const res=await api("/api/kb"+(q?"?q="+encodeURIComponent(q):""));
-    const arr=res.kb||[];
-    if(!arr.length){ $("kbList").innerHTML=`<div class="empty">ยังไม่มีความรู้ในคลัง — กดเพิ่มความรู้เพื่อเริ่มสอน AI</div>`; return }
-    $("kbList").innerHTML=arr.map(k=>`<div class="kb-item">
+    /* ตอนของคู่มือระบบใช้ตารางเดียวกันแต่ไม่ใช่ความรู้ที่สอน AI
+       ต้องไม่โผล่ตรงนี้ ไม่งั้นจะมีคนเผลอแก้ เผลอลบ หรือแย่ที่สุดคือเผลอเปิด enabled
+       ซึ่งจะทำให้ AI เอาเรื่องฐานข้อมูลและชื่อเซิร์ฟเวอร์ไปตอบผู้ใช้ทั่วไป */
+    const arr=(res.kb||[]).filter(k=>!/^hb_/.test(k.id));
+    const hb=(res.kb||[]).length-arr.length;
+    const hbNote=hb?`<div class="empty" style="text-align:left;border-style:solid">
+      <b>คู่มือระบบ ${hb} ตอน</b> ถูกซ่อนจากรายการนี้ เพราะไม่ใช่ความรู้ที่สอน AI
+      <a href="./handbook.html" style="color:var(--acc)">เปิดคู่มือ</a></div>`:"";
+    if(!arr.length){ $("kbList").innerHTML=hbNote+`<div class="empty">ยังไม่มีความรู้ในคลัง — กดเพิ่มความรู้เพื่อเริ่มสอน AI</div>`; return }
+    $("kbList").innerHTML=hbNote+arr.map(k=>`<div class="kb-item">
       <div class="kb-bd">
         <div class="kb-h"><b>${esc(k.title)}</b>
           ${k.enabled?"":`<span class="kb-off">ปิดอยู่</span>`}

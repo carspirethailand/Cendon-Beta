@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>คู่มือระบบ · Cendon</title>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<link rel="icon" type="image/png" href="./favicon.png">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.7.0/dist/tabler-icons.min.css">
+
+<!--
+  ══════════════════════════════════════════════════════════════════════
+  คู่มือระบบ — หน้านี้ไม่มีเนื้อหาคู่มืออยู่ในไฟล์แม้แต่ตัวอักษรเดียว
+
+  ไฟล์ HTML บนเว็บทุกไฟล์เปิดดูได้เสมอด้วย view-source ไม่ว่าจะซ่อน UI ยังไง
+  ถ้าเก็บเนื้อหาไว้ในไฟล์นี้ ใครก็ตามที่รู้ที่อยู่หน้าก็อ่านได้หมด
+  การเช็กยศด้วย JavaScript ในหน้าเว็บเป็นแค่การซ่อนปุ่ม ไม่ใช่การปกป้อง
+
+  เนื้อหาจริงอยู่ในฐานข้อมูล และดึงผ่าน GET /api/kb ซึ่งฝั่งเซิร์ฟเวอร์
+  บังคับยศผู้ควบคุมขึ้นไป (guarded('moderator')) คนที่ยศไม่ถึงจะได้ 403
+  ต่อให้แก้ JavaScript ในหน้านี้ยังไงก็ไม่ได้เนื้อหา เพราะการตรวจไม่ได้อยู่ที่นี่
+  ══════════════════════════════════════════════════════════════════════
+-->
+
+<style>
+:root{
+  --bg:#F8F7F5; --surface:#FFFFFF; --sunken:#F2F0EC;
+  --ink:#1A1815; --mut:#6B665E; --faint:#94908A;
+  --rule:#E4E1DB; --rule2:#EFEDE8;
+  --acc:#A85E13; --acc-soft:rgba(168,94,19,.09);
+  --stop:#B3392B; --stop-bg:rgba(179,57,43,.06);
+  --care:#8A5A10; --care-bg:rgba(138,90,16,.07);
+  --why:#356483;  --why-bg:rgba(53,100,131,.06);
+  --shadow:0 1px 2px rgba(26,24,21,.05),0 12px 28px -20px rgba(26,24,21,.28);
+  --disp:'Kanit',system-ui,sans-serif;
+  --body:'IBM Plex Sans Thai','IBM Plex Sans',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+html[data-theme="dark"],html[data-theme="midnight"],html[data-theme="aurora"],html[data-theme="sunset"]{
+  --bg:#0D0D10; --surface:#141418; --sunken:#191920;
+  --ink:#ECEAE6; --mut:#9B968E; --faint:#6E6A64;
+  --rule:#26262C; --rule2:#1E1E24;
+  --acc:#E8943C; --acc-soft:rgba(232,148,60,.12);
+  --stop:#F07A6C; --stop-bg:rgba(240,122,108,.09);
+  --care:#E0AC4E; --care-bg:rgba(224,172,78,.09);
+  --why:#7FB0CE;  --why-bg:rgba(127,176,206,.09);
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 14px 32px -22px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);
+  font-size:15.5px;line-height:1.78;-webkit-font-smoothing:antialiased}
+
+/* ── ด่านตรวจสิทธิ์ ── */
+#gate{min-height:100dvh;display:grid;place-items:center;padding:24px}
+.gcard{width:min(430px,100%);background:var(--surface);border:1px solid var(--rule);
+  border-radius:18px;padding:34px 30px;box-shadow:var(--shadow);text-align:center}
+.glock{width:52px;height:52px;margin:0 auto 18px;border-radius:14px;display:grid;
+  place-items:center;background:var(--acc-soft);color:var(--acc);font-size:25px}
+.gcard h1{font-family:var(--disp);font-size:21px;font-weight:600;margin:0 0 6px;
+  letter-spacing:-.015em}
+.gcard .gs{color:var(--faint);font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;
+  margin:0 0 20px;font-family:var(--disp)}
+#gmsg{color:var(--mut);font-size:14.5px;margin:0 0 18px;line-height:1.7}
+#gmsg b{color:var(--ink)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  padding:11px 18px;border-radius:11px;border:1px solid var(--rule);background:var(--sunken);
+  color:var(--ink);font:inherit;font-size:14px;font-weight:500;cursor:pointer;
+  text-decoration:none;transition:.16s}
+.btn:hover{border-color:var(--acc)}
+.btn.primary{background:var(--acc);border-color:transparent;color:#fff}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn+.btn{margin-top:9px}
+
+/* ── ตัวเล่ม ── */
+#app{display:none}
+.wrap{display:grid;grid-template-columns:288px minmax(0,1fr);max-width:1360px;
+  margin:0 auto;align-items:start}
+.rail{position:sticky;top:0;height:100dvh;display:flex;flex-direction:column;
+  border-right:1px solid var(--rule);background:var(--surface)}
+.rail-top{padding:22px 20px 13px;border-bottom:1px solid var(--rule2);flex-shrink:0}
+.brand{font-family:var(--disp);font-weight:600;font-size:17px;margin:0;line-height:1.3;
+  letter-spacing:-.015em}
+.brand i{font-style:normal;color:var(--acc);font-weight:500}
+.brand-sub{display:block;font-size:10.5px;color:var(--faint);letter-spacing:.14em;
+  text-transform:uppercase;margin-top:3px;font-weight:500}
+.who{display:flex;align-items:center;gap:8px;margin-top:13px;padding:7px 10px;
+  border-radius:9px;background:var(--sunken);font-size:12.5px}
+.who img{width:22px;height:22px;border-radius:50%;object-fit:cover}
+.who .rc{margin-left:auto;font-size:10px;font-family:var(--disp);letter-spacing:.09em;
+  text-transform:uppercase;color:var(--acc)}
+.find{width:100%;margin-top:11px;padding:8px 11px;border-radius:8px;
+  border:1px solid var(--rule);background:var(--bg);color:var(--ink);
+  font-family:inherit;font-size:13px;outline:none;transition:border-color .15s}
+.find:focus{border-color:var(--acc)}
+.nav{flex:1;overflow-y:auto;padding:12px;scrollbar-width:thin}
+.nv{display:block;text-decoration:none;color:var(--mut);border-radius:7px;
+  padding:6px 11px;font-size:13.5px;line-height:1.45;transition:.13s}
+.nv:hover{background:var(--sunken);color:var(--ink)}
+.nv-1{margin-top:15px;padding-top:9px;border-top:1px solid var(--rule2)}
+.nv-1:first-child{margin-top:0;border-top:0}
+.nv-1 b{display:block;font-family:var(--disp);font-weight:500;font-size:11px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--acc)}
+.nv-1 span{display:block;color:var(--ink);font-weight:500;font-size:13.5px}
+.nv-2{padding-left:13px;position:relative}
+.nv-2::before{content:"";position:absolute;left:3px;top:50%;width:3px;height:3px;
+  border-radius:50%;background:var(--rule);transform:translateY(-50%)}
+.nv.on{color:var(--ink);background:var(--acc-soft)}
+.nv.on::before{background:var(--acc)}
+.nv[hidden]{display:none}
+.rail-foot{padding:11px 14px;border-top:1px solid var(--rule2);display:flex;gap:7px}
+.rail-foot a,.rail-foot button{flex:1;padding:7px;border-radius:8px;border:1px solid var(--rule);
+  background:var(--bg);color:var(--mut);font:inherit;font-size:12px;cursor:pointer;
+  text-align:center;text-decoration:none;transition:.15s}
+.rail-foot a:hover,.rail-foot button:hover{border-color:var(--acc);color:var(--acc)}
+
+.page{padding:0 clamp(20px,4vw,64px) 140px;min-width:0}
+.doc{max-width:74ch;margin:0 auto}
+.cover{padding:clamp(48px,8vh,92px) 0 36px;border-bottom:1px solid var(--rule)}
+.cover .kicker{font-family:var(--disp);font-size:11.5px;font-weight:500;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--acc);margin:0 0 13px}
+.cover h1{font-family:var(--disp);font-weight:600;font-size:clamp(29px,5vw,44px);
+  line-height:1.16;letter-spacing:-.025em;margin:0;text-wrap:balance}
+.cover .desc{color:var(--mut);font-size:16.5px;margin:15px 0 0;max-width:56ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
+.meta span{font-family:var(--mono);font-size:11.5px;padding:4px 10px;border-radius:6px;
+  background:var(--sunken);color:var(--mut);border:1px solid var(--rule2)}
+
+h2.part{font-family:var(--disp);display:block;margin:78px 0 28px;padding-top:28px;
+  border-top:2px solid var(--ink);scroll-margin-top:18px}
+h2.part .p-num{display:block;font-size:11.5px;font-weight:500;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--acc);margin-bottom:7px}
+h2.part .p-name{display:block;font-size:clamp(23px,3.3vw,32px);font-weight:600;
+  letter-spacing:-.02em;line-height:1.2;text-wrap:balance}
+h2{font-family:var(--disp);font-weight:600;font-size:20px;letter-spacing:-.012em;
+  line-height:1.35;margin:50px 0 13px;scroll-margin-top:18px;text-wrap:balance}
+h3{font-family:var(--disp);font-weight:500;font-size:16.5px;margin:32px 0 9px;
+  scroll-margin-top:18px}
+p{margin:0 0 15px}
+a{color:var(--acc);text-underline-offset:2px}
+hr{border:0;border-top:1px solid var(--rule2);margin:32px 0}
+code{font-family:var(--mono);font-size:.885em;background:var(--sunken);padding:1.5px 5px;
+  border-radius:4px;border:1px solid var(--rule2);word-break:break-word}
+.code{margin:0 0 20px;padding:16px 18px;border-radius:11px;overflow-x:auto;
+  background:var(--sunken);border:1px solid var(--rule2);font-family:var(--mono);
+  font-size:12.9px;line-height:1.68;position:relative}
+.code code{background:none;border:0;padding:0;white-space:pre;font-size:inherit}
+.code[data-lang]:not([data-lang=""])::after{content:attr(data-lang);position:absolute;
+  top:9px;right:12px;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--faint)}
+.tw{overflow-x:auto;margin:0 0 22px;border:1px solid var(--rule);border-radius:11px;
+  background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th{font-family:var(--disp);font-weight:500;font-size:11.5px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--mut);text-align:left;padding:11px 15px;
+  border-bottom:1px solid var(--rule);white-space:nowrap}
+td{padding:11px 15px;border-bottom:1px solid var(--rule2);vertical-align:top;line-height:1.6}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--sunken)}
+ul,ol{margin:0 0 17px;padding-left:22px}
+li{margin:0 0 7px}
+li::marker{color:var(--faint)}
+li.task{list-style:none;position:relative;padding-left:26px;margin-left:-22px}
+li.task::before{content:"";position:absolute;left:0;top:.42em;width:13px;height:13px;
+  border:1.5px solid var(--rule);border-radius:3.5px}
+blockquote{margin:0 0 20px;padding:2px 0 2px 18px;border-left:2px solid var(--rule);
+  color:var(--mut)}
+blockquote p:last-child{margin-bottom:0}
+.note{margin:0 0 22px;padding:14px 18px 14px 17px;border-radius:0 10px 10px 0;
+  border-left:3px solid;display:grid;gap:7px}
+.n-tag{font-family:var(--disp);font-size:10.5px;font-weight:500;letter-spacing:.13em;
+  text-transform:uppercase;justify-self:start}
+.n-body p:last-child{margin:0}
+.n-stop{border-color:var(--stop);background:var(--stop-bg)}
+.n-stop .n-tag{color:var(--stop)}
+.n-care{border-color:var(--care);background:var(--care-bg)}
+.n-care .n-tag{color:var(--care)}
+.n-why{border-color:var(--why);background:var(--why-bg)}
+.n-why .n-tag{color:var(--why)}
+
+.tocbtn{display:none;position:fixed;left:14px;bottom:14px;z-index:40;padding:11px 17px;
+  border-radius:999px;border:1px solid var(--rule);background:var(--surface);color:var(--ink);
+  font-family:var(--disp);font-size:13.5px;font-weight:500;cursor:pointer;box-shadow:var(--shadow)}
+.veil{display:none}
+@media(max-width:940px){
+  .wrap{grid-template-columns:1fr}
+  .rail{position:fixed;inset:0 auto 0 0;width:min(310px,86vw);z-index:50;
+    transform:translateX(-102%);transition:transform .22s ease;box-shadow:var(--shadow)}
+  body.toc .rail{transform:none}
+  .tocbtn{display:block}
+  body.toc .veil{display:block;position:fixed;inset:0;z-index:45;background:rgba(0,0,0,.42)}
+  body{font-size:15px}
+}
+@media(prefers-reduced-motion:reduce){.rail{transition:none}html{scroll-behavior:auto}}
+html{scroll-behavior:smooth}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:4px}
+@media print{.rail,.tocbtn,.veil{display:none}.wrap{grid-template-columns:1fr}
+  .page{padding:0}.doc{max-width:none}h2.part{break-before:page}
+  .note,.tw,.code{break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<!-- ── ด่านตรวจสิทธิ์ ── -->
+<div id="gate">
+  <div class="gcard">
+    <div class="glock"><i class="ti ti-lock"></i></div>
+    <h1>คู่มือระบบ Cendon</h1>
+    <p class="gs">เฉพาะทีมงาน</p>
+    <p id="gmsg">กำลังตรวจสิทธิ์…</p>
+    <div id="gact"></div>
+  </div>
+</div>
+
+<!-- ── ตัวเล่ม — ว่างเปล่าจนกว่าเซิร์ฟเวอร์จะส่งเนื้อหามาให้ ── -->
+<div id="app">
+  <div class="wrap">
+    <nav class="rail" id="rail" aria-label="สารบัญ">
+      <div class="rail-top">
+        <h2 class="brand">คู่มือระบบ <i>Cendon</i>
+          <span class="brand-sub">Developer handbook</span></h2>
+        <div class="who" id="who"></div>
+        <input class="find" id="find" type="search" placeholder="ค้นหาหัวข้อ…"
+               aria-label="ค้นหาหัวข้อ" autocomplete="off">
+      </div>
+      <div class="nav" id="nav"></div>
+      <div class="rail-foot">
+        <a href="./admin.html"><i class="ti ti-arrow-left"></i> แผงควบคุม</a>
+        <button id="reload">โหลดใหม่</button>
+      </div>
+    </nav>
+    <main class="page"><div class="doc" id="doc"></div></main>
+  </div>
+</div>
+
+<button class="tocbtn" id="tocbtn" aria-expanded="false">สารบัญ</button>
+<div class="veil" id="veil"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ตั้งธีมตามที่ผู้ใช้เลือกไว้ในแอป ทีมงานจะได้ไม่โดนจอขาวแยงตาตอนดึก */
+try{
+  const t=JSON.parse(localStorage.getItem("spire_theme")||'"dark"');
+  document.documentElement.setAttribute("data-theme",t);
+}catch(e){ document.documentElement.setAttribute("data-theme","dark") }
+
+const BACKEND_URL="https://spireonebackend.carspirethailand.workers.dev";
+const fbConfig={apiKey:"AIzaSyDDtvz4d4FRG_KOq5EQHmlDijU-x1FDZlQ",authDomain:"sp1p-82396.firebaseapp.com",databaseURL:"https://sp1p-82396-default-rtdb.firebaseio.com",projectId:"sp1p-82396",storageBucket:"sp1p-82396.appspot.com",messagingSenderId:"924479207020",appId:"1:924479207020:web:ec64428a614032f92c9f60"};
+
+let auth=null,me=null;
+try{ firebase.initializeApp(fbConfig); auth=firebase.auth() }catch(e){}
+
+const ROLE_RANK={owner:4,admin:3,moderator:2,user:1};
+const rank=r=>ROLE_RANK[r]||0;
+const ROLE_TH={owner:"เจ้าของระบบ",admin:"ผู้ดูแลระบบ",moderator:"ผู้ควบคุม",user:"ผู้ใช้"};
+
+function gate(msg,actions){ $("gmsg").innerHTML=msg; $("gact").innerHTML=actions||"" }
+
+async function api(path,opt){
+  const u=auth&&auth.currentUser;
+  if(!u)throw new Error("ยังไม่ได้เข้าสู่ระบบ");
+  const r=await fetch(BACKEND_URL+path,Object.assign({
+    headers:{Authorization:"Bearer "+await u.getIdToken(),"Content-Type":"application/json"}
+  },opt||{}));
+  let d=null; try{ d=await r.json() }catch(e){}
+  if(!r.ok)throw new Error((d&&d.error)||("HTTP "+r.status));
+  return d;
+}
+
+function signIn(){
+  if(location.protocol==="file:"){
+    gate("เปิดผ่านเว็บจริงเพื่อเข้าสู่ระบบ — เปิดจากไฟล์ตรง ๆ ใช้ไม่ได้");return;
+  }
+  const p=new firebase.auth.GoogleAuthProvider();
+  p.setCustomParameters({prompt:"select_account"});
+  auth.signInWithPopup(p).catch(e=>{
+    const c=(e&&e.code)||"unknown";
+    if(c==="auth/popup-closed-by-user"||c==="auth/cancelled-popup-request")return;
+    const M={
+      "auth/operation-not-allowed":"ยังไม่ได้เปิดวิธีเข้าระบบนี้ — Firebase Console → Authentication → Sign-in method",
+      "auth/unauthorized-domain":"โดเมนนี้ยังไม่ได้รับอนุญาต — Firebase Console → Authentication → Settings → Authorized domains",
+      "auth/popup-blocked":"เบราว์เซอร์บล็อกหน้าต่างเข้าระบบ อนุญาตป๊อปอัปแล้วลองใหม่",
+      "auth/network-request-failed":"เชื่อมต่อไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองใหม่"
+    };
+    gate((M[c]||"เข้าสู่ระบบไม่สำเร็จ")+" <code>"+esc(c)+"</code>",
+      '<button class="btn primary" onclick="signIn()">ลองใหม่</button>');
+  });
+}
+window.signIn=signIn;
+function signOut(){ auth&&auth.signOut(); location.href="index.html" }
+window.signOut=signOut;
+
+if(!auth){
+  gate("ระบบเข้าสู่ระบบไม่พร้อมใช้งาน");
+}else auth.onAuthStateChanged(async u=>{
+  if(!u){
+    gate("คู่มือนี้เปิดให้เฉพาะทีมงาน<br>เข้าสู่ระบบด้วยบัญชีที่มียศผู้ควบคุมขึ้นไป",
+      '<button class="btn primary" onclick="signIn()"><i class="ti ti-brand-google"></i> เข้าสู่ระบบด้วย Google</button>');
+    return;
+  }
+  gate('<i class="ti ti-loader-2"></i> กำลังยืนยันสิทธิ์…');
+  try{
+    const d=await api("/api/login",{method:"POST",
+      body:JSON.stringify({name:u.displayName||"",photo:u.photoURL||""})});
+    me={uid:d.uid,name:d.name,email:d.email,photo:d.photo,role:d.role||"user"};
+    /* การตรวจตรงนี้เป็นแค่การบอกผู้ใช้ให้เร็ว ตัวที่ปกป้องจริงคือ 403 จากเซิร์ฟเวอร์
+       ต่อให้ลบเงื่อนไขนี้ทิ้ง การขอเนื้อหาก็ยังถูกปฏิเสธอยู่ดี */
+    if(rank(me.role)<rank("moderator")){
+      gate("บัญชี <b>"+esc(me.email)+"</b> ไม่มีสิทธิ์อ่านคู่มือนี้<br>"+
+           "<small>ต้องเป็นผู้ควบคุมขึ้นไป</small>",
+        '<button class="btn" onclick="signOut()">ออกจากระบบ</button>'+
+        '<a class="btn" href="index.html">กลับหน้าหลัก</a>');
+      return;
+    }
+    await load();
+  }catch(e){
+    const m=String(e.message||e);
+    gate(/suspended/i.test(m)?"บัญชีนี้ถูกระงับการใช้งาน":"เกิดข้อผิดพลาด: "+esc(m),
+      '<button class="btn" onclick="location.reload()">ลองใหม่</button>');
+  }
+});
+
+/* ══ ดึงเนื้อหาจากเซิร์ฟเวอร์ ══════════════════════════════════════════
+   เนื้อหาเก็บอยู่ในฐานข้อมูลเป็นหลายตอน ตอนละแถว เรียงด้วยรหัส hb_NN
+   ทุกแถวตั้ง enabled = 0 ไว้ ซึ่งสำคัญมาก:
+   ตัวค้นความรู้ของ AI กรอง enabled = 1 เสมอ คู่มือจึงไม่มีทางหลุดไปอยู่ใน
+   คำตอบที่ผู้ใช้ทั่วไปได้รับ — เป็นกฎที่เจ้าของโปรเจกต์สั่งไว้ */
+let PARTS=[];
+async function load(){
+  gate('<i class="ti ti-loader-2"></i> กำลังโหลดเนื้อหา…');
+  const d=await api("/api/kb");
+  PARTS=(d.kb||[]).filter(r=>/^hb_/.test(r.id)).sort((a,b)=>a.id<b.id?-1:1);
+  if(!PARTS.length){
+    gate("ยังไม่มีเนื้อหาคู่มือในระบบ<br><small>ผู้ดูแลต้องนำเข้าก่อน — ดูวิธีที่ท้ายหน้าแผงควบคุม</small>",
+      '<a class="btn" href="admin.html">ไปที่แผงควบคุม</a>');
+    return;
+  }
+  $("gate").style.display="none";
+  $("app").style.display="block";
+  $("who").innerHTML=(me.photo?'<img src="'+esc(me.photo)+'" referrerpolicy="no-referrer">':"")+
+    "<span>"+esc(me.name||me.email)+"</span>"+
+    '<span class="rc">'+esc(ROLE_TH[me.role]||me.role)+"</span>";
+  render(PARTS.map(p=>p.body).join("\n\n"));
+}
+$("reload").onclick=()=>load().catch(e=>alert(e.message));
+
+/* ══ แปลง Markdown เป็นหน้าเว็บ ═════════════════════════════════════════
+   เขียนเองเพราะเล่มนี้มีของเฉพาะตัว: เครื่องหมาย 🔴 ⚠️ 💡 ต้องกลายเป็น
+   กล่องสามแบบที่บอกว่า "ต้องทำอะไรต่อ" ไม่ใช่อิโมจิลอย ๆ กลางย่อหน้า
+   และการดึงตัวแปลงจากภายนอกเข้ามาก็เป็นการเพิ่มของที่ต้องดูแลโดยไม่จำเป็น */
+const MARK=[["🔴","stop","ห้ามข้าม"],["⚠️","care","ระวัง"],["💡","why","เหตุผลเบื้องหลัง"]];
+function inline(t){
+  t=esc(t);
+  t=t.replace(/`([^`]+)`/g,(m,x)=>"<code>"+x+"</code>");
+  t=t.replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>");
+  t=t.replace(/(^|[^\w*])\*([^*\n]+)\*(?![\w*])/g,"$1<em>$2</em>");
+  t=t.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2">$1</a>');
+  return t;
+}
+function callout(inner,raw){
+  for(const [gl,kind,label] of MARK){
+    if(raw.trimStart().startsWith(gl)){
+      inner=inner.replace(gl+" ","").replace(gl,"");
+      return '<aside class="note n-'+kind+'"><span class="n-tag">'+label+
+             '</span><div class="n-body">'+inner+"</div></aside>";
+    }
+  }
+  return null;
+}
+function render(md){
+  const L=md.split("\n"); const out=[]; const toc=[]; let k=0,n=0;
+  const row=l=>l.trim().replace(/^\||\|$/g,"").split("|");
+  while(k<L.length){
+    const x=L[k];
+    if(x.startsWith("```")){
+      const lang=x.slice(3).trim(); const buf=[]; k++;
+      while(k<L.length&&!L[k].startsWith("```")){ buf.push(L[k]); k++ } k++;
+      out.push('<pre class="code" data-lang="'+esc(lang)+'"><code>'+esc(buf.join("\n"))+"</code></pre>");
+      continue;
+    }
+    const h=/^(#{1,3}) (.+)$/.exec(x);
+    if(h){
+      const lv=h[1].length, txt=h[2].trim(); const id="s"+(++n);
+      const part=/^ภาค (\d+) — (.+)$/.exec(txt);
+      if(lv===1&&part){
+        toc.push({id,lv:1,t:"ภาค "+part[1],sub:part[2]});
+        out.push('<h2 class="part" id="'+id+'"><span class="p-num">ภาค '+part[1]+
+                 '</span><span class="p-name">'+esc(part[2])+"</span></h2>");
+      }else if(lv===1){
+        /* หัวเรื่องระดับบนสุดที่ไม่ใช่ภาค คือชื่อหนังสือ ซึ่งปกวาดไว้แล้ว
+           ปล่อยไว้จะได้ชื่อเดียวกันสองครั้งติดกัน อ่านแล้วสะดุด */
+      }else{
+        toc.push({id,lv,t:txt});
+        out.push("<h"+(lv<=2?2:3)+' id="'+id+'">'+inline(txt)+"</h"+(lv<=2?2:3)+">");
+      }
+      k++; continue;
+    }
+    if(/^\|/.test(x)&&k+1<L.length&&/^\|[\s:|-]+\|?\s*$/.test(L[k+1])){
+      const rs=[]; while(k<L.length&&L[k].trim().startsWith("|")){ rs.push(row(L[k])); k++ }
+      const cell=(r,t)=>r.map(c=>"<"+t+">"+inline(c.trim())+"</"+t+">").join("");
+      out.push('<div class="tw"><table><thead><tr>'+cell(rs[0],"th")+"</tr></thead><tbody>"+
+        rs.slice(2).map(r=>"<tr>"+cell(r,"td")+"</tr>").join("")+"</tbody></table></div>");
+      continue;
+    }
+    if(x.startsWith("> ")){
+      const buf=[]; while(k<L.length&&(L[k].startsWith("> ")||L[k].trim()===">")){
+        buf.push(L[k].length>2?L[k].slice(2):""); k++ }
+      const raw=buf.join("\n");
+      const inner=raw.split("\n\n").filter(s=>s.trim()).map(s=>"<p>"+inline(s)+"</p>").join("");
+      out.push(callout(inner,raw)||"<blockquote>"+inner+"</blockquote>");
+      continue;
+    }
+    if(/^(-|\d+\.) /.test(x)){
+      const ord=/^\d+\. /.test(x); const items=[];
+      while(k<L.length&&(/^(-|\d+\.) /.test(L[k])||/^\s\s/.test(L[k]))){
+        if(/^\s\s/.test(L[k])&&items.length) items[items.length-1]+=" "+L[k].trim();
+        else items.push(L[k].replace(/^(-|\d+\.) /,""));
+        k++;
+      }
+      const tg=ord?"ol":"ul";
+      out.push("<"+tg+">"+items.map(s=>{
+        const box=s.startsWith("[ ] ");
+        return "<li"+(box?' class="task"':"")+">"+inline(box?s.slice(4):s)+"</li>";
+      }).join("")+"</"+tg+">");
+      continue;
+    }
+    if(/^---+\s*$/.test(x)){ out.push("<hr>"); k++; continue }
+    if(!x.trim()){ k++; continue }
+    const buf=[];
+    while(k<L.length&&L[k].trim()&&!/^(#{1,3} |```|\||> |- |\d+\. |---+$)/.test(L[k])){
+      buf.push(L[k]); k++;
+    }
+    const raw=buf.join("\n"); const p="<p>"+inline(raw.replace(/\n/g," "))+"</p>";
+    out.push(callout(p,raw)||p);
+  }
+
+  const upd=Math.max.apply(null,PARTS.map(p=>+p.updated_at||0));
+  $("doc").innerHTML=
+    '<header class="cover"><p class="kicker">Phasmion · เฉพาะทีมงาน</p>'+
+    "<h1>คู่มือระบบ Cendon</h1>"+
+    '<p class="desc">ทุกส่วนของเว็บและเบื้องหลัง — ระบบทำงานยังไง ต่อกับอะไร '+
+    'และอะไรที่ยังไม่เรียบร้อย</p><div class="meta">'+
+    "<span>"+PARTS.length+" ตอน</span>"+
+    "<span>"+toc.filter(t=>t.lv===1).length+" ภาค</span>"+
+    "<span>"+toc.length+" หัวข้อ</span>"+
+    /* ถ้าทุกตอนยังไม่มีเวลาบันทึก อย่าแสดงวันที่ปี 2513 ซึ่งมาจากเลขศูนย์
+       การไม่บอกวันที่ ดีกว่าบอกวันที่ที่ผิด */
+    (upd?"<span>อัปเดต "+new Date(upd)
+      .toLocaleDateString("th-TH",{year:"numeric",month:"short",day:"numeric"})+"</span>":"")+
+    "</div></header>"+out.join("\n");
+
+  $("nav").innerHTML=toc.map(t=>
+    t.lv===1?'<a class="nv nv-1" href="#'+t.id+'"><b>'+esc(t.t)+"</b><span>"+esc(t.sub)+"</span></a>"
+    :t.lv===2?'<a class="nv nv-2" href="#'+t.id+'">'+esc(t.t)+"</a>":""
+  ).join("");
+  wire();
+}
+
+/* สารบัญตามตำแหน่งที่อ่าน + ค้นหา + แผ่นเลื่อนบนจอแคบ */
+function wire(){
+  const links=[].slice.call(document.querySelectorAll(".nv"));
+  const map={}; links.forEach(a=>{ map[a.getAttribute("href").slice(1)]=a });
+  const heads=[].slice.call(document.querySelectorAll("h2[id],h3[id]"));
+  let cur=null; const seen={};
+  const mark=id=>{
+    if(!map[id]||cur===id)return;
+    if(cur&&map[cur])map[cur].classList.remove("on");
+    cur=id; map[id].classList.add("on");
+    const r=map[id].getBoundingClientRect(), nb=$("nav").getBoundingClientRect();
+    if(r.top<nb.top+40||r.bottom>nb.bottom-40)
+      map[id].scrollIntoView({block:"center",behavior:"smooth"});
+  };
+  const io=new IntersectionObserver(es=>{
+    es.forEach(e=>{ seen[e.target.id]=e.isIntersecting });
+    for(const h of heads) if(seen[h.id]) return mark(h.id);
+  },{rootMargin:"0px 0px -72% 0px"});
+  heads.forEach(h=>io.observe(h));
+
+  const find=$("find");
+  find.oninput=()=>{
+    const q=find.value.trim().toLowerCase();
+    links.forEach(a=>{ a.hidden = q ? a.textContent.toLowerCase().indexOf(q)<0 : false });
+  };
+  find.onkeydown=e=>{ if(e.key==="Escape"){ find.value=""; find.oninput() } };
+  addEventListener("keydown",e=>{
+    if(e.key==="/"&&document.activeElement!==find){ e.preventDefault(); find.focus() }
+    if(e.key==="Escape") toc(false);
+  });
+
+  const toc=on=>{
+    document.body.classList.toggle("toc",on);
+    $("tocbtn").setAttribute("aria-expanded",on?"true":"false");
+  };
+  $("tocbtn").onclick=()=>toc(!document.body.classList.contains("toc"));
+  $("veil").onclick=()=>toc(false);
+  $("nav").addEventListener("click",e=>{ if(e.target.closest(".nv")&&innerWidth<=940) toc(false) });
+}
+</script>
+</body>
+</html>

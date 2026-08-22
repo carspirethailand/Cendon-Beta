@@ -73,6 +73,92 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);
 .btn.primary:hover{filter:brightness(1.06)}
 .btn+.btn{margin-top:9px}
 
+/* ══ ขั้นตอนเซ็นสัญญารักษาความลับ ═══════════════════════════════════════
+   ต้องเซ็นก่อนถึงจะเห็นเนื้อหา และต้องเลื่อนอ่านจนจบก่อนถึงจะเซ็นได้
+   การบังคับเลื่อนไม่ใช่พิธีกรรม — เอกสารที่กดยอมรับได้ทันทีโดยไม่ต้องเลื่อน
+   คือเอกสารที่ไม่มีใครอ่าน แล้วข้อกำหนดก็ไม่ได้ทำหน้าที่อะไรเลย */
+#nda{display:none;min-height:100dvh;padding:clamp(18px,4vh,44px) 20px 40px}
+#nda.on{display:block}
+.nwrap{max-width:760px;margin:0 auto}
+.nhead{text-align:center;margin-bottom:26px}
+.nhead .seal{width:54px;height:54px;margin:0 auto 15px;border-radius:14px;display:grid;
+  place-items:center;background:var(--acc-soft);color:var(--acc);font-size:26px}
+.nhead h1{font-family:var(--disp);font-size:clamp(21px,3.4vw,27px);font-weight:600;
+  margin:0 0 7px;letter-spacing:-.015em}
+.nhead p{color:var(--mut);font-size:14px;margin:0;line-height:1.7}
+.nwho{display:inline-flex;align-items:center;gap:8px;margin-top:13px;padding:6px 13px;
+  border-radius:999px;background:var(--sunken);border:1px solid var(--rule2);font-size:12.5px}
+.nwho b{font-weight:600}
+
+/* กล่องข้อกำหนด — สูงคงที่แล้วเลื่อนข้างใน เพื่อให้รู้ว่ามีอะไรให้อ่านอีก */
+.nterms{border:1px solid var(--rule);border-radius:14px;background:var(--surface);
+  height:min(46vh,420px);overflow-y:auto;padding:22px 24px;position:relative;
+  scrollbar-width:thin}
+.nterms h2{font-family:var(--disp);font-size:15px;font-weight:600;margin:22px 0 8px;
+  letter-spacing:-.005em}
+.nterms h2:first-child{margin-top:0}
+.nterms p,.nterms li{font-size:14px;line-height:1.85;color:var(--ink)}
+.nterms p{margin:0 0 11px}
+.nterms ol{margin:0 0 13px;padding-left:20px}
+.nterms li{margin-bottom:7px}
+.nterms .lead{color:var(--mut)}
+.nterms strong{font-weight:600}
+.nterms .sev{color:var(--stop);font-weight:600}
+.nend{margin-top:20px;padding-top:14px;border-top:1px solid var(--rule2);
+  color:var(--faint);font-size:12.5px;text-align:center}
+
+.nprog{display:flex;align-items:center;gap:10px;margin:11px 2px 0;font-size:12.5px;
+  color:var(--faint)}
+.nbar{flex:1;height:3px;border-radius:3px;background:var(--rule2);overflow:hidden}
+.nbar i{display:block;height:100%;width:0;background:var(--acc);transition:width .12s linear}
+.nprog.done{color:var(--acc)}
+
+/* ── ช่องวาดลายเซ็น ── */
+.nsign{margin-top:22px;border:1px solid var(--rule);border-radius:14px;
+  background:var(--surface);padding:18px}
+.nsign>h3{font-family:var(--disp);font-size:14.5px;font-weight:600;margin:0 0 4px}
+.nsign>p{color:var(--mut);font-size:12.5px;margin:0 0 13px;line-height:1.65}
+.pad{position:relative;border:1px dashed var(--rule);border-radius:11px;
+  background:var(--bg);overflow:hidden}
+.pad canvas{display:block;width:100%;height:172px;touch-action:none;cursor:crosshair}
+/* เส้นบรรทัดให้เซ็นบน เหมือนเอกสารกระดาษ ทำให้ลายเซ็นออกมาตรงและอ่านง่ายกว่า */
+.pad::after{content:"";position:absolute;left:9%;right:9%;bottom:44px;height:1px;
+  background:var(--rule);pointer-events:none}
+.pad .hint{position:absolute;left:0;right:0;bottom:16px;text-align:center;
+  color:var(--faint);font-size:12px;pointer-events:none;transition:opacity .2s}
+.pad.inked .hint{opacity:0}
+.padbar{display:flex;gap:8px;margin-top:11px;align-items:center}
+.padbar .sp{flex:1}
+.padbar button{padding:8px 14px;border-radius:9px;border:1px solid var(--rule);
+  background:var(--bg);color:var(--mut);font:inherit;font-size:12.5px;cursor:pointer;
+  transition:.15s}
+.padbar button:hover:not(:disabled){border-color:var(--acc);color:var(--acc)}
+.padbar button:disabled{opacity:.45;cursor:default}
+
+.nagree{display:flex;gap:11px;align-items:flex-start;margin-top:18px;padding:14px 16px;
+  border-radius:12px;background:var(--sunken);border:1px solid var(--rule2);
+  cursor:pointer;line-height:1.7;font-size:13.5px}
+.nagree input{margin-top:4px;width:17px;height:17px;accent-color:var(--acc);flex-shrink:0;
+  cursor:pointer}
+.nagree.off{opacity:.5;cursor:not-allowed}
+.nagree.off input{cursor:not-allowed}
+
+#nsubmit{margin-top:16px}
+.nnote{margin-top:13px;color:var(--faint);font-size:12px;line-height:1.7;text-align:center}
+.nerr{margin-top:12px;padding:11px 14px;border-radius:10px;border-left:3px solid var(--stop);
+  background:var(--stop-bg);color:var(--stop);font-size:13px;display:none}
+.nerr.on{display:block}
+
+/* ── ลายน้ำในเล่ม ──
+   ชื่อกับอีเมลของคนที่กำลังอ่าน จางพอที่จะไม่รบกวนการอ่าน
+   แต่ชัดพอที่จะติดไปกับภาพถ่ายจอหรือภาพแคปหน้าจอ
+   ถ้าเอกสารหลุดออกไป จะรู้ได้ว่าหลุดจากบัญชีไหน */
+.wmark{position:fixed;inset:0;z-index:9;pointer-events:none;overflow:hidden;
+  opacity:.055;user-select:none}
+.wmark span{position:absolute;white-space:nowrap;font-family:var(--mono);font-size:13px;
+  color:var(--ink);transform:rotate(-24deg);transform-origin:0 0}
+@media print{.wmark{opacity:.12}}
+
 /* ── ตัวเล่ม ── */
 #app{display:none}
 .wrap{display:grid;grid-template-columns:288px minmax(0,1fr);max-width:1360px;
@@ -213,6 +299,121 @@ html{scroll-behavior:smooth}
   </div>
 </div>
 
+<!-- ══ ขั้นตอนเซ็นสัญญารักษาความลับ ══════════════════════════════════
+     ข้อกำหนดอยู่ในไฟล์นี้ได้ เพราะมันคือสิ่งที่คนอ่านต้องเห็นก่อนตัดสินใจ
+     ไม่ใช่ความลับ ต่างจากเนื้อหาคู่มือที่อยู่ในฐานข้อมูล -->
+<div id="nda">
+  <div class="nwrap">
+    <div class="nhead">
+      <div class="seal"><i class="ti ti-writing-sign"></i></div>
+      <h1>ข้อตกลงรักษาความลับ</h1>
+      <p>คู่มือระบบมีรายละเอียดโครงสร้างภายในทั้งหมดของ Cendon<br>
+         อ่านข้อกำหนดให้จบแล้วลงลายมือชื่อ เพื่อเข้าดูเนื้อหา</p>
+      <div class="nwho" id="nwho"></div>
+    </div>
+
+    <div class="nterms" id="nterms">
+      <p class="lead">ข้อตกลงฉบับนี้ทำขึ้นระหว่าง <strong>บริษัท Phasmion</strong>
+        ผู้เป็นเจ้าของระบบ Cendon กับผู้ลงลายมือชื่อท้ายเอกสารนี้
+        โดยมีผลนับตั้งแต่วินาทีที่ลงลายมือชื่อเป็นต้นไป</p>
+
+      <h2>1. สิ่งที่ถือเป็นความลับ</h2>
+      <p>ทุกสิ่งที่ปรากฏในคู่มือระบบถือเป็นความลับทางการค้าของบริษัท ครอบคลุมถึง</p>
+      <ol>
+        <li>โครงสร้างฐานข้อมูล ชื่อตาราง ชื่อคอลัมน์ และความสัมพันธ์ระหว่างตาราง</li>
+        <li>ที่อยู่และการตั้งค่าของเซิร์ฟเวอร์ ผู้ให้บริการ และบริการภายนอกที่ระบบใช้</li>
+        <li>รายการเส้นทาง API ทั้งหมด รวมถึงรูปแบบข้อมูลที่รับและส่ง</li>
+        <li>กลไกการยืนยันตัวตน การกำหนดสิทธิ์ และการคิดโควตา</li>
+        <li>สถาปัตยกรรมของระบบค้นด้วยความหมาย และค่าที่ใช้ปรับจูน</li>
+        <li>รายการช่องโหว่ ข้อบกพร่อง และสิ่งที่ยังไม่เรียบร้อยซึ่งบันทึกไว้ในคู่มือ</li>
+        <li>วิธีการทำงาน ขั้นตอนภายใน และการตัดสินใจเชิงเทคนิคที่อธิบายไว้</li>
+      </ol>
+
+      <h2>2. สิ่งที่ห้ามทำ</h2>
+      <ol>
+        <li><span class="sev">ห้ามเปิดเผย</span> เนื้อหาไม่ว่าทั้งหมดหรือบางส่วน
+            แก่บุคคลที่ไม่มียศผู้ควบคุมขึ้นไปในระบบนี้ ไม่ว่าด้วยวาจา ข้อความ
+            ภาพถ่ายหน้าจอ การบันทึกหน้าจอ หรือวิธีอื่นใด</li>
+        <li><span class="sev">ห้ามคัดลอก</span> ทำซ้ำ ดัดแปลง แปล หรือสรุปเนื้อหา
+            ไปเก็บไว้นอกระบบนี้ รวมถึงในเครื่องส่วนตัว บริการเก็บไฟล์ออนไลน์
+            แอปจดบันทึก และเครื่องมือ AI ภายนอกทุกชนิด</li>
+        <li><span class="sev">ห้ามนำไปใช้</span> เพื่อประโยชน์ของตนเองหรือผู้อื่น
+            นอกเหนือจากการปฏิบัติงานให้บริษัท รวมถึงการนำไปสร้างระบบที่แข่งขันกัน</li>
+        <li><span class="sev">ห้ามพยายามเข้าถึง</span> ด้วยวิธีอื่นนอกจากผ่านหน้านี้
+            เช่นการเรียกเส้นทาง API โดยตรง การดักจับข้อมูล
+            หรือการใช้บัญชีของผู้อื่น</li>
+        <li>ห้ามแบ่งปันบัญชีของตนให้ผู้อื่นใช้ และห้ามเปิดหน้านี้ค้างไว้
+            ในที่ที่ผู้อื่นมองเห็นได้</li>
+      </ol>
+
+      <h2>3. หน้าที่ในการดูแลรักษา</h2>
+      <ol>
+        <li>ใช้ความระมัดระวังในการรักษาความลับนี้ไม่น้อยกว่าที่ใช้กับความลับของตนเอง</li>
+        <li>เข้าดูเฉพาะเมื่อมีความจำเป็นต่อการทำงาน ไม่เปิดดูเพื่อความอยากรู้</li>
+        <li>แจ้งบริษัททันทีเมื่อทราบว่ามีการรั่วไหล การเข้าถึงโดยไม่ได้รับอนุญาต
+            หรือสงสัยว่าบัญชีของตนถูกผู้อื่นใช้</li>
+        <li>เมื่อพ้นจากหน้าที่ ต้องหยุดเข้าดูทันที และทำลายสำเนาทุกรูปแบบที่มีอยู่</li>
+      </ol>
+
+      <h2>4. การบันทึกและการตรวจสอบ</h2>
+      <p>บริษัทบันทึกการเข้าดูคู่มือทุกครั้ง พร้อมบัญชีผู้เข้าดูและเวลา
+        และแสดงชื่อกับอีเมลของผู้อ่านเป็นลายน้ำบนหน้าจอตลอดเวลาที่เปิดอ่าน
+        <strong>หากเนื้อหารั่วไหล บริษัทสามารถระบุได้ว่าหลุดจากบัญชีใด</strong></p>
+
+      <h2>5. ระยะเวลา</h2>
+      <p>หน้าที่รักษาความลับตามข้อตกลงนี้<strong>ไม่มีกำหนดสิ้นสุด</strong>
+        และยังคงมีผลต่อไปแม้ผู้ลงลายมือชื่อจะพ้นจากตำแหน่ง
+        สิ้นสุดสัญญาจ้าง หรือถูกถอนสิทธิ์เข้าถึงระบบไปแล้วก็ตาม</p>
+
+      <h2>6. ผลของการฝ่าฝืน</h2>
+      <p>การฝ่าฝืนข้อตกลงนี้เป็นการละเมิดความลับทางการค้า
+        บริษัทมีสิทธิ์ระงับการเข้าถึงระบบทันทีโดยไม่ต้องบอกกล่าวล่วงหน้า
+        เรียกค่าเสียหายตามความเสียหายที่เกิดขึ้นจริง
+        และดำเนินคดีตามกฎหมายทั้งทางแพ่งและทางอาญา</p>
+
+      <h2>7. การยอมรับ</h2>
+      <p>การลงลายมือชื่อในหน้านี้ถือว่าผู้ลงลายมือชื่อ<strong>ได้อ่าน เข้าใจ
+        และตกลงผูกพัน</strong>ตามข้อกำหนดทั้งหมดข้างต้นด้วยความสมัครใจ
+        ลายมือชื่อที่วาดในหน้านี้ พร้อมบัญชี เวลา และอุปกรณ์ที่ใช้
+        จะถูกบันทึกไว้เป็นหลักฐาน</p>
+
+      <p class="nend">— จบข้อกำหนด —</p>
+    </div>
+
+    <div class="nprog" id="nprog">
+      <span id="nprogtx">เลื่อนอ่านให้จบก่อนจึงจะลงลายมือชื่อได้</span>
+      <span class="nbar"><i id="nbar"></i></span>
+    </div>
+
+    <div class="nsign">
+      <h3>ลงลายมือชื่อ</h3>
+      <p>วาดด้วยเมาส์ นิ้ว หรือปากกาสไตลัส ให้เหมือนที่เซ็นบนกระดาษ</p>
+      <div class="pad" id="pad">
+        <canvas id="sig"></canvas>
+        <span class="hint">วาดลายมือชื่อของคุณที่นี่</span>
+      </div>
+      <div class="padbar">
+        <button type="button" id="sigUndo" disabled>ย้อนเส้นล่าสุด</button>
+        <button type="button" id="sigClear" disabled>ล้างทั้งหมด</button>
+        <span class="sp"></span>
+        <span style="color:var(--faint);font-size:12px" id="sigInfo"></span>
+      </div>
+    </div>
+
+    <label class="nagree off" id="nagreeBox">
+      <input type="checkbox" id="nagree" disabled>
+      <span>ข้าพเจ้าได้อ่านและเข้าใจข้อกำหนดทั้งหมดแล้ว
+        และตกลงผูกพันตามข้อตกลงรักษาความลับฉบับนี้ด้วยความสมัครใจ</span>
+    </label>
+
+    <div class="nerr" id="nerr"></div>
+    <button class="btn primary" id="nsubmit" disabled>
+      <i class="ti ti-file-check"></i> ลงนามและเข้าดูคู่มือ</button>
+    <p class="nnote">ลายมือชื่อจะถูกเก็บเป็นภาพในฐานข้อมูลของบริษัท
+      พร้อมบัญชี เวลา และอุปกรณ์ที่ใช้ลงนาม</p>
+  </div>
+</div>
+
 <!-- ── ตัวเล่ม — ว่างเปล่าจนกว่าเซิร์ฟเวอร์จะส่งเนื้อหามาให้ ── -->
 <div id="app">
   <div class="wrap">
@@ -318,7 +519,7 @@ if(!auth){
         '<a class="btn" href="index.html">กลับหน้าหลัก</a>');
       return;
     }
-    await load();
+    await afterAuth();
   }catch(e){
     const m=String(e.message||e);
     gate(/suspended/i.test(m)?"บัญชีนี้ถูกระงับการใช้งาน":"เกิดข้อผิดพลาด: "+esc(m),
@@ -326,29 +527,314 @@ if(!auth){
   }
 });
 
+/* ══ สัญญารักษาความลับ ══════════════════════════════════════════════════
+   ต้องเซ็นก่อนถึงจะเห็นเนื้อหา ลายเซ็นเก็บเป็นภาพในฐานข้อมูล
+   พร้อมบัญชี เวลา และอุปกรณ์ที่ใช้ลงนาม
+
+   เก็บในตารางเดียวกับคู่มือ แถวรหัส nda_<uid> และปิดใช้งานไว้เหมือนกัน
+   อ่านได้เฉพาะผู้ควบคุมขึ้นไป ซึ่งเหมาะสม เพราะเจ้าของระบบต้องตรวจได้ว่าใครเซ็นแล้ว */
+const NDA_VERSION=1;          /* แก้ข้อกำหนดเมื่อไหร่ ให้บวกเลขนี้ ทุกคนต้องเซ็นใหม่ */
+
+async function afterAuth(){
+  gate('<i class="ti ti-loader-2"></i> กำลังตรวจสถานะการลงนาม…');
+  const d=await api("/api/kb");
+  LAST=d.kb||[];
+  const mine=LAST.find(r=>r.id==="nda_"+me.uid);
+  let signed=null;
+  if(mine){ try{ signed=JSON.parse(mine.keywords||"{}") }catch(e){} }
+  /* เซ็นไว้แล้วและเป็นข้อกำหนดรุ่นปัจจุบัน — ผ่านได้เลย ไม่ต้องเซ็นซ้ำทุกครั้ง
+     แต่ถ้าข้อกำหนดถูกแก้ เลขรุ่นจะไม่ตรง แล้วต้องอ่านและเซ็นใหม่ */
+  if(signed&&signed.v===NDA_VERSION) return show(LAST);
+  openNda();
+}
+
+function openNda(){
+  $("gate").style.display="none";
+  $("nda").classList.add("on");
+  $("nwho").innerHTML='<i class="ti ti-user-circle"></i><b>'+esc(me.name||"")+"</b>"+
+    '<span style="color:var(--faint)">'+esc(me.email||"")+"</span>";
+
+  /* ── บังคับอ่านจนจบ ──
+     เอกสารที่กดยอมรับได้ทันทีคือเอกสารที่ไม่มีใครอ่าน
+     ปลดล็อกเมื่อเลื่อนถึงท้ายจริง ๆ เท่านั้น */
+  const box=$("nterms"), bar=$("nbar"), tx=$("nprogtx"), pr=$("nprog");
+  let read=false;
+  const onScroll=()=>{
+    const max=box.scrollHeight-box.clientHeight;
+    const pct=max<=4?1:Math.min(1,box.scrollTop/max);
+    bar.style.width=(pct*100).toFixed(1)+"%";
+    if(pct>=0.985&&!read){
+      read=true; pr.classList.add("done");
+      tx.textContent="อ่านครบแล้ว — ลงลายมือชื่อได้";
+      $("nagree").disabled=false;
+      $("nagreeBox").classList.remove("off");
+      sync();
+    }
+  };
+  box.addEventListener("scroll",onScroll,{passive:true});
+  onScroll();   /* จอสูงมากจนไม่ต้องเลื่อน ก็ถือว่าอ่านครบ */
+
+  /* ── ช่องวาดลายเซ็น ──
+     เก็บเป็นชุดของเส้น ไม่ใช่ภาพอย่างเดียว จะได้ย้อนทีละเส้นได้
+     และวาดใหม่ให้คมตอนหน้าจอเปลี่ยนขนาดหรือย้ายไปจอความละเอียดต่างกัน */
+  const cv=$("sig"), g=cv.getContext("2d");
+  let strokes=[], cur=null, drawing=false;
+
+  function fit(){
+    const r=cv.getBoundingClientRect();
+    const dpr=Math.min(devicePixelRatio||1,2);   /* เกินสองเท่าไม่ได้อะไรเพิ่ม แต่ไฟล์ใหญ่ขึ้นมาก */
+    cv.width=Math.round(r.width*dpr); cv.height=Math.round(r.height*dpr);
+    g.setTransform(dpr,0,0,dpr,0,0);
+    paint();
+  }
+  function paint(){
+    g.clearRect(0,0,cv.width,cv.height);
+    g.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue("--ink").trim()||"#fff";
+    g.lineWidth=2.2; g.lineCap="round"; g.lineJoin="round";
+    for(const st of strokes){
+      if(st.length<2){
+        /* จุดเดียว วาดเป็นวงกลมเล็ก ไม่งั้นการแตะสั้น ๆ จะไม่เห็นอะไรเลย */
+        if(st.length===1){ g.beginPath(); g.arc(st[0].x,st[0].y,1.2,0,7); g.fillStyle=g.strokeStyle; g.fill() }
+        continue;
+      }
+      g.beginPath(); g.moveTo(st[0].x,st[0].y);
+      for(let i=1;i<st.length;i++){
+        /* ลากผ่านจุดกึ่งกลางด้วยเส้นโค้ง ทำให้ลายเซ็นลื่นเหมือนปากกาจริง
+           ไม่ใช่เส้นหักเป็นเหลี่ยมตามจุดที่เมาส์รายงานมา */
+        const a=st[i-1], b2=st[i];
+        g.quadraticCurveTo(a.x,a.y,(a.x+b2.x)/2,(a.y+b2.y)/2);
+      }
+      g.stroke();
+    }
+  }
+  const pos=e=>{ const r=cv.getBoundingClientRect();
+    return {x:(e.clientX-r.left),y:(e.clientY-r.top)} };
+  cv.addEventListener("pointerdown",e=>{
+    e.preventDefault(); cv.setPointerCapture(e.pointerId);
+    drawing=true; cur=[pos(e)]; strokes.push(cur); $("pad").classList.add("inked"); paint(); sync();
+  });
+  cv.addEventListener("pointermove",e=>{ if(!drawing)return; cur.push(pos(e)); paint() });
+  const stop=()=>{ if(!drawing)return; drawing=false; cur=null; sync() };
+  cv.addEventListener("pointerup",stop);
+  cv.addEventListener("pointercancel",stop);
+  cv.addEventListener("pointerleave",stop);
+  addEventListener("resize",fit);
+  fit();
+
+  $("sigUndo").onclick=()=>{ strokes.pop(); if(!strokes.length)$("pad").classList.remove("inked"); paint(); sync() };
+  $("sigClear").onclick=()=>{ strokes=[]; $("pad").classList.remove("inked"); paint(); sync() };
+  $("nagree").onchange=sync;
+
+  /* ── ลายเซ็นต้องมีเนื้อจริง ──
+     ขีดเดียวสั้น ๆ หรือจุดเดียวไม่ใช่ลายมือชื่อ
+     วัดจากความยาวเส้นรวมและขนาดกรอบที่ครอบลายเซ็น
+     ถ้าไม่วัด คนกดผ่านด้วยการแตะจอครั้งเดียวได้ แล้วสัญญาก็ไม่มีความหมาย */
+  function quality(){
+    let len=0, minX=1e9,maxX=-1e9,minY=1e9,maxY=-1e9, pts=0;
+    for(const st of strokes) for(let i=0;i<st.length;i++){
+      const q=st[i]; pts++;
+      if(i){ len+=Math.hypot(q.x-st[i-1].x,q.y-st[i-1].y) }
+      if(q.x<minX)minX=q.x; if(q.x>maxX)maxX=q.x;
+      if(q.y<minY)minY=q.y; if(q.y>maxY)maxY=q.y;
+    }
+    return {len,pts,w:maxX-minX,h:maxY-minY};
+  }
+  function sync(){
+    const q=quality();
+    const enough=q.len>=140&&q.w>=45&&q.pts>=12;
+    $("sigUndo").disabled=!strokes.length;
+    $("sigClear").disabled=!strokes.length;
+    $("sigInfo").textContent=strokes.length
+      ? (enough?"ลายมือชื่อใช้ได้":"ลายมือชื่อสั้นเกินไป")
+      : "";
+    $("nsubmit").disabled=!(read&&$("nagree").checked&&enough);
+  }
+
+  $("nsubmit").onclick=async()=>{
+    const err=$("nerr"); err.classList.remove("on");
+    $("nsubmit").disabled=true;
+    $("nsubmit").innerHTML='<i class="ti ti-loader-2"></i> กำลังบันทึก…';
+    try{
+      const png=await render(strokes);
+      const at=Date.now();
+      /* keywords เก็บได้ 400 ตัวอักษร พอสำหรับข้อมูลการลงนาม
+         ตัวภาพไปอยู่ใน body ซึ่งเก็บได้ถึง 8,000 ตัว */
+      const meta=JSON.stringify({v:NDA_VERSION,at,email:me.email,name:me.name,
+        role:me.role,ua:navigator.userAgent.slice(0,110)}).slice(0,395);
+      await api("/api/kb",{method:"POST",body:JSON.stringify({
+        id:"nda_"+me.uid,
+        title:"ลงนาม NDA — "+(me.name||"")+" "+(me.email||""),
+        body:png, keywords:meta, make:"__nda__", model:"",
+        /* ต้องเป็น false ที่เป็น boolean เท่านั้น เซิร์ฟเวอร์เช็ค === false
+           ส่งเลข 0 จะกลายเป็นเปิดใช้งาน แล้ว AI จะเอาไปตอบผู้ใช้ */
+        enabled:false })});
+      $("nda").classList.remove("on");
+      await load();
+    }catch(e){
+      err.textContent="บันทึกไม่สำเร็จ: "+(e.message||e)+" — ลองใหม่อีกครั้ง";
+      err.classList.add("on");
+      $("nsubmit").disabled=false;
+      $("nsubmit").innerHTML='<i class="ti ti-file-check"></i> ลงนามและเข้าดูคู่มือ';
+    }
+  };
+
+  /* ── แปลงลายเซ็นเป็นภาพ ──
+     ตัดขอบว่างออกก่อน แล้วย่อให้พอดี 460 กว้าง
+     เพราะเซิร์ฟเวอร์ตัดเนื้อหาที่ 8,000 ตัวอักษร ถ้าภาพใหญ่เกินจะโดนตัดกลางทาง
+     แล้วได้ไฟล์เสียที่เปิดไม่ขึ้น ซึ่งแย่กว่าไม่มีภาพเลย */
+  async function render(sts){
+    let minX=1e9,maxX=-1e9,minY=1e9,maxY=-1e9;
+    for(const st of sts) for(const q of st){
+      if(q.x<minX)minX=q.x; if(q.x>maxX)maxX=q.x;
+      if(q.y<minY)minY=q.y; if(q.y>maxY)maxY=q.y;
+    }
+    const pad=10;
+    minX-=pad; minY-=pad; maxX+=pad; maxY+=pad;
+    const w=Math.max(1,maxX-minX), h=Math.max(1,maxY-minY);
+    for(const W of [460,380,300,240]){
+      const sc=Math.min(W/w,1), c=document.createElement("canvas");
+      c.width=Math.round(w*sc); c.height=Math.round(h*sc);
+      const x=c.getContext("2d");
+      /* พื้นขาวหมึกดำเสมอ ไม่ตามธีมของคนเซ็น
+         เอกสารต้องหน้าตาเหมือนกันทุกใบ ไม่ว่าคนเซ็นจะใช้ธีมอะไร */
+      x.fillStyle="#fff"; x.fillRect(0,0,c.width,c.height);
+      x.strokeStyle="#111"; x.lineWidth=2.2*sc; x.lineCap="round"; x.lineJoin="round";
+      x.setTransform(sc,0,0,sc,-minX*sc,-minY*sc);
+      for(const st of sts){
+        if(st.length<2){
+          if(st.length===1){ x.beginPath(); x.arc(st[0].x,st[0].y,1.2,0,7); x.fillStyle="#111"; x.fill() }
+          continue;
+        }
+        x.beginPath(); x.moveTo(st[0].x,st[0].y);
+        for(let i=1;i<st.length;i++){ const a=st[i-1],b2=st[i];
+          x.quadraticCurveTo(a.x,a.y,(a.x+b2.x)/2,(a.y+b2.y)/2) }
+        x.stroke();
+      }
+      const url=c.toDataURL("image/png");
+      if(url.length<=7600) return url;
+    }
+    throw new Error("ลายมือชื่อซับซ้อนเกินไป ลองเซ็นให้สั้นลง");
+  }
+}
+
 /* ══ ดึงเนื้อหาจากเซิร์ฟเวอร์ ══════════════════════════════════════════
    เนื้อหาเก็บอยู่ในฐานข้อมูลเป็นหลายตอน ตอนละแถว เรียงด้วยรหัส hb_NN
    ทุกแถวตั้ง enabled = 0 ไว้ ซึ่งสำคัญมาก:
    ตัวค้นความรู้ของ AI กรอง enabled = 1 เสมอ คู่มือจึงไม่มีทางหลุดไปอยู่ใน
    คำตอบที่ผู้ใช้ทั่วไปได้รับ — เป็นกฎที่เจ้าของโปรเจกต์สั่งไว้ */
-let PARTS=[];
+let PARTS=[], LAST=[];
 async function load(){
   gate('<i class="ti ti-loader-2"></i> กำลังโหลดเนื้อหา…');
   const d=await api("/api/kb");
-  PARTS=(d.kb||[]).filter(r=>/^hb_/.test(r.id)).sort((a,b)=>a.id<b.id?-1:1);
+  show(d.kb||[]);
+}
+function show(rows){
+  LAST=rows;
+  PARTS=LAST.filter(r=>/^hb_/.test(r.id)).sort((a,b)=>a.id<b.id?-1:1);
   if(!PARTS.length){
-    gate("ยังไม่มีเนื้อหาคู่มือในระบบ<br><small>ผู้ดูแลต้องนำเข้าก่อน — ดูวิธีที่ท้ายหน้าแผงควบคุม</small>",
-      '<a class="btn" href="admin.html">ไปที่แผงควบคุม</a>');
+    /* ของที่เคยนำเข้าผิดวิธีจะมีรหัส kb_* แทน hb_* และที่แย่กว่านั้นคือเปิดใช้งานอยู่
+       ต้องบอกให้เห็นทันที เพราะแปลว่าคู่มือกำลังหลุดไปอยู่ในคำตอบที่ AI ให้ผู้ใช้ */
+    const stray=(LAST||[]).filter(r=>r.make==="__handbook__"&&!/^hb_/.test(r.id));
+    /* แถวลายเซ็นใช้ตารางเดียวกันแต่คนละเรื่อง ห้ามนับรวมและห้ามลบ */
+    const warn=stray.length?
+      '<div style="color:var(--stop);margin-bottom:14px;line-height:1.6">'+
+      '<b>พบคู่มือที่นำเข้าผิดวิธี '+stray.length+' รายการ</b><br>'+
+      '<small>ใช้รหัสผิดและเปิดใช้งานอยู่ แปลว่า AI อาจเอาไปตอบผู้ใช้ทั่วไป '+
+      'กดนำเข้าใหม่แล้วระบบจะเก็บกวาดให้</small></div>':"";
+    gate(warn+"ยังไม่มีเนื้อหาคู่มือในระบบ<br><small>เลือกไฟล์ HANDBOOK.md เพื่อนำเข้า</small>",
+      '<label class="btn primary" style="cursor:pointer">'+
+      '<i class="ti ti-upload"></i> เลือกไฟล์ HANDBOOK.md'+
+      '<input type="file" accept=".md,text/markdown,text/plain" id="mdFile" hidden></label>'+
+      '<a class="btn" href="admin.html">กลับแผงควบคุม</a>');
+    $("mdFile").onchange=e=>{
+      const f=e.target.files[0]; if(!f)return;
+      const rd=new FileReader();
+      rd.onload=()=>importMd(String(rd.result||""),stray).catch(err=>
+        gate("นำเข้าไม่สำเร็จ: "+esc(err.message),
+          '<button class="btn" onclick="location.reload()">ลองใหม่</button>'));
+      rd.readAsText(f,"utf-8");
+    };
     return;
   }
   $("gate").style.display="none";
+  $("nda").classList.remove("on");
   $("app").style.display="block";
+  paintWatermark();
   $("who").innerHTML=(me.photo?'<img src="'+esc(me.photo)+'" referrerpolicy="no-referrer">':"")+
     "<span>"+esc(me.name||me.email)+"</span>"+
     '<span class="rc">'+esc(ROLE_TH[me.role]||me.role)+"</span>";
   render(PARTS.map(p=>p.body).join("\n\n"));
 }
 $("reload").onclick=()=>load().catch(e=>alert(e.message));
+
+/* ══ นำเข้าเนื้อหา ══════════════════════════════════════════════════════
+   แบ่งไฟล์ตามหัวข้อระดับภาค แล้วส่งทีละตอนด้วย POST /api/kb
+
+   ไม่ใช้ /api/kb/bulk เพราะมันสร้างรหัสใหม่เองและฮาร์ดโค้ด enabled = 1
+   ซึ่งจะทำให้คู่มือหลุดไปอยู่ในคำตอบที่ AI ให้ผู้ใช้ทั่วไป */
+async function importMd(md, stray){
+  const lines=md.split("\n");
+  const marks=[]; let inCode=false, pos=0;
+  for(const ln of lines){
+    /* คอมเมนต์ของ bash ขึ้นต้นด้วย # เหมือนหัวข้อ Markdown เป๊ะ
+       ไม่ข้ามบล็อกโค้ดก่อนจะได้ตอนปลอมจากตัวอย่างคำสั่งเป็นสิบตอน */
+    if(ln.startsWith("```")) inCode=!inCode;
+    else if(!inCode){ const m=/^# (.+)$/.exec(ln); if(m) marks.push({pos,t:m[1]}) }
+    pos+=ln.length+1;
+  }
+  if(!marks.length) throw new Error("ไม่พบหัวข้อระดับภาคในไฟล์ — เลือกไฟล์ HANDBOOK.md ใช่ไหม");
+
+  const parts=[]; const add=(title,body)=>{
+    body=body.trim(); if(body.length<10) return;
+    parts.push({ id:"hb_"+String(parts.length).padStart(2,"0"),
+      title:title.slice(0,200), body, keywords:"handbook คู่มือระบบ",
+      make:"__handbook__", model:"",
+      /* ต้องเป็น false ที่เป็น boolean เท่านั้น เซิร์ฟเวอร์เช็ค b.enabled === false
+         ส่งเลข 0 จะกลายเป็นเปิดใช้งาน ซึ่งมองไม่เห็นจนกว่า AI จะพูดออกมา */
+      enabled:false });
+  };
+  add("คู่มือระบบ Cendon — ส่วนหัว", md.slice(0,marks[0].pos));
+  for(let i=0;i<marks.length;i++)
+    add(marks[i].t, md.slice(marks[i].pos, i+1<marks.length?marks[i+1].pos:md.length));
+
+  /* เนื้อหาถูกตัดที่ 8000 ตัวอักษรฝั่งเซิร์ฟเวอร์ ตอนที่ยาวกว่านั้นต้องซอยก่อนส่ง
+     ไม่งั้นจะหายไปเงียบ ๆ โดยไม่มีข้อความบอก */
+  const LIMIT=7800, out=[];
+  for(const p of parts){
+    if(p.body.length<=LIMIT){ out.push(p); continue }
+    const chunks=[]; let rest=p.body;
+    while(rest.length){
+      let cut=rest.length<=LIMIT?rest.length:rest.lastIndexOf("\n\n",LIMIT);
+      if(cut<LIMIT*0.5)cut=Math.min(LIMIT,rest.length);
+      chunks.push(rest.slice(0,cut)); rest=rest.slice(cut);
+    }
+    chunks.forEach((c,i)=>out.push(Object.assign({},p,{body:c,
+      title:p.title+(i?" ("+(i+1)+")":"")})));
+  }
+  out.forEach((p,i)=>{ p.id="hb_"+String(i).padStart(2,"0") });
+
+  const total=out.length+(stray?stray.length:0);
+  let done=0;
+  const step=()=>gate('<i class="ti ti-loader-2"></i> กำลังนำเข้า '+done+' / '+total+' …');
+  step();
+
+  for(const p of out){
+    await api("/api/kb",{method:"POST",body:JSON.stringify(p)});
+    done++; step();
+  }
+  /* เก็บกวาดของที่เคยนำเข้าผิดวิธี ต้องทำหลังนำเข้าใหม่สำเร็จ
+     ถ้าลบก่อนแล้วนำเข้าล้ม จะเหลือศูนย์ทั้งที่เดิมยังพออ่านได้ */
+  for(const r of (stray||[])){
+    try{ await api("/api/kb/"+encodeURIComponent(r.id),{method:"DELETE"}) }catch(e){}
+    done++; step();
+  }
+  /* ตอนเก่าที่เกินจำนวนตอนใหม่ต้องลบด้วย ไม่งั้นเนื้อหาเวอร์ชันก่อนจะค้างต่อท้าย */
+  for(const r of LAST.filter(x=>/^hb_/.test(x.id))){
+    if(!out.some(p=>p.id===r.id))
+      try{ await api("/api/kb/"+encodeURIComponent(r.id),{method:"DELETE"}) }catch(e){}
+  }
+  await load();
+}
 
 /* ══ แปลง Markdown เป็นหน้าเว็บ ═════════════════════════════════════════
    เขียนเองเพราะเล่มนี้มีของเฉพาะตัว: เครื่องหมาย 🔴 ⚠️ 💡 ต้องกลายเป็น
@@ -461,6 +947,23 @@ function render(md){
   ).join("");
   wire();
 }
+
+/* ── ลายน้ำชื่อผู้อ่าน ──
+   ถ้าเอกสารหลุดออกไปเป็นภาพถ่ายจอหรือภาพแคป จะรู้ได้ว่าหลุดจากบัญชีไหน
+   จางพอที่จะไม่รบกวนการอ่าน แต่ติดไปกับภาพเสมอ
+   ข้อกำหนดข้อ 4 บอกผู้เซ็นไว้แล้วว่ามีสิ่งนี้ ไม่ได้แอบทำ */
+function paintWatermark(){
+  let w=document.querySelector(".wmark");
+  if(!w){ w=document.createElement("div"); w.className="wmark";
+    w.setAttribute("aria-hidden","true"); document.body.appendChild(w) }
+  const tag=(me.email||me.name||"")+" · "+new Date().toLocaleDateString("th-TH");
+  let html="";
+  for(let y=-40;y<innerHeight+300;y+=132)
+    for(let x=-180;x<innerWidth+300;x+=330)
+      html+='<span style="left:'+x+'px;top:'+y+'px">'+esc(tag)+"</span>";
+  w.innerHTML=html;
+}
+addEventListener("resize",()=>{ if(document.querySelector(".wmark")&&me)paintWatermark() });
 
 /* สารบัญตามตำแหน่งที่อ่าน + ค้นหา + แผ่นเลื่อนบนจอแคบ */
 function wire(){

@@ -1,595 +1,1868 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>คู่มือระบบ · Cendon</title>
-<meta name="robots" content="noindex,nofollow,noarchive">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <link rel="icon" type="image/png" href="./favicon.png">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.7.0/dist/tabler-icons.min.css">
-
-<!--
-  ══════════════════════════════════════════════════════════════════════
-  คู่มือระบบ — หน้านี้ไม่มีเนื้อหาคู่มืออยู่ในไฟล์แม้แต่ตัวอักษรเดียว
-
-  ไฟล์ HTML บนเว็บทุกไฟล์เปิดดูได้เสมอด้วย view-source ไม่ว่าจะซ่อน UI ยังไง
-  ถ้าเก็บเนื้อหาไว้ในไฟล์นี้ ใครก็ตามที่รู้ที่อยู่หน้าก็อ่านได้หมด
-  การเช็กยศด้วย JavaScript ในหน้าเว็บเป็นแค่การซ่อนปุ่ม ไม่ใช่การปกป้อง
-
-  เนื้อหาจริงอยู่ในฐานข้อมูล และดึงผ่าน GET /api/kb ซึ่งฝั่งเซิร์ฟเวอร์
-  บังคับยศผู้ควบคุมขึ้นไป (guarded('moderator')) คนที่ยศไม่ถึงจะได้ 403
-  ต่อให้แก้ JavaScript ในหน้านี้ยังไงก็ไม่ได้เนื้อหา เพราะการตรวจไม่ได้อยู่ที่นี่
-  ══════════════════════════════════════════════════════════════════════
--->
-
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<meta name="robots" content="noindex,nofollow"/>
+<meta name="theme-color" content="#0A0A0A"/>
+<title>Cendon — Admin Control</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css" media="print" onload="this.media='all'"/>
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css"/></noscript>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
 <style>
+/* Spire09 เฉพาะอักษรละติน  ฝังมาในไฟล์เพื่อไม่ต้องพึ่งโฟลเดอร์ fonts
+   ที่ไม่เคยถูกอัปขึ้นเซิร์ฟเวอร์  ภาษาไทยไม่อยู่ในช่วงนี้ จึงยังใช้ Kanit เหมือนเดิม
+   Medium ใช้กับเนื้อความ  Bold คือหน้าตาแบบ Phasmion ใช้กับหัวเรื่องและปุ่ม */
+@font-face{font-family:'Spire09';font-style:normal;font-weight:400;font-display:swap;src:url(data:font/woff2;base64,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) format('woff2');unicode-range:U+0000-002F,U+003A-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AB-20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Spire09';font-style:normal;font-weight:700;font-display:swap;src:url(data:font/woff2;base64,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) format('woff2');unicode-range:U+0000-002F,U+003A-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AB-20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+
 :root{
-  --bg:#F8F7F5; --surface:#FFFFFF; --sunken:#F2F0EC;
-  --ink:#1A1815; --mut:#6B665E; --faint:#94908A;
-  --rule:#E4E1DB; --rule2:#EFEDE8;
-  --acc:#A85E13; --acc-soft:rgba(168,94,19,.09);
-  --stop:#B3392B; --stop-bg:rgba(179,57,43,.06);
-  --care:#8A5A10; --care-bg:rgba(138,90,16,.07);
-  --why:#356483;  --why-bg:rgba(53,100,131,.06);
-  --shadow:0 1px 2px rgba(26,24,21,.05),0 12px 28px -20px rgba(26,24,21,.28);
-  --disp:'Kanit',system-ui,sans-serif;
-  --body:'IBM Plex Sans Thai','IBM Plex Sans',system-ui,sans-serif;
-  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  /* ── สีกลางล้วน R=G=B ทุกค่า ──
+     ค่าใดค่าหนึ่งต่างจากอีกสองค่าเมื่อไหร่ พื้นหลังจะเริ่มมีโทน
+     และตาจะอ่านว่าหน้านี้ "มีอารมณ์" ซึ่งไม่ใช่สิ่งที่เครื่องมือทำงานควรมี */
+  --bg:#0A0A0A; --bg2:#101010; --surface:#151515; --surface2:#1C1C1C;
+  --line:rgba(255,255,255,.10); --line2:rgba(255,255,255,.055);
+  --ink:#ECECEC; --mut:#9A9A9A; --faint:#6A6A6A;
+  /* สีเน้นเหลือตัวเดียว ไม่มีไล่สี — ไล่สีบนปุ่มทำให้ดูเป็นหน้าโปรโมชัน */
+  --acc:#E8943C; --acc2:#E8943C; --grad:#E8943C; --acc-soft:rgba(232,148,60,.13);
+  /* สีสถานะลดความอิ่มลง ยังแยกออกจากกันได้ชัดแต่ไม่แสบตาเมื่อเปิดทั้งวัน */
+  --ok:#5BAE84; --warn:#C9A24E; --danger:#D06B62; --info:#5F94BE; --purple:#8E7FBE;
+  --kd:'Spire09','Kanit',system-ui,sans-serif; --kb:'Spire09','Kanit',system-ui,sans-serif;
+  --shadow:0 20px 50px -22px rgba(0,0,0,.7); --shadow-sm:0 8px 22px -12px rgba(0,0,0,.6);
 }
-html[data-theme="dark"],html[data-theme="midnight"],html[data-theme="aurora"],html[data-theme="sunset"]{
-  --bg:#0D0D10; --surface:#141418; --sunken:#191920;
-  --ink:#ECEAE6; --mut:#9B968E; --faint:#6E6A64;
-  --rule:#26262C; --rule2:#1E1E24;
-  --acc:#E8943C; --acc-soft:rgba(232,148,60,.12);
-  --stop:#F07A6C; --stop-bg:rgba(240,122,108,.09);
-  --care:#E0AC4E; --care-bg:rgba(224,172,78,.09);
-  --why:#7FB0CE;  --why-bg:rgba(127,176,206,.09);
-  --shadow:0 1px 2px rgba(0,0,0,.4),0 14px 32px -22px rgba(0,0,0,.8);
-}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);
-  font-size:15.5px;line-height:1.78;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-tap-highlight-color:transparent}
+/* ไม่มีไล่สีที่พื้นหลัง — พื้นเรียบสม่ำเสมอทั้งจอ
+   ไล่สีมุมจอทำให้การ์ดใบเดียวกันดูสีต่างกันเมื่ออยู่คนละมุม
+   ซึ่งกวนการอ่านตารางที่ต้องกวาดตาข้ามจอ */
+body{font-family:var(--kb);background:var(--bg);color:var(--ink);line-height:1.55;
+  min-height:100dvh;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit}
+a{color:inherit;text-decoration:none}
+.ti{line-height:1}
+::selection{background:var(--acc);color:#fff}
+::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:var(--line);border-radius:9px}
+h1,h2,h3{font-weight:600;letter-spacing:.01em}
 
-/* ── ด่านตรวจสิทธิ์ ── */
-#gate{min-height:100dvh;display:grid;place-items:center;padding:24px}
-.gcard{width:min(430px,100%);background:var(--surface);border:1px solid var(--rule);
-  border-radius:18px;padding:34px 30px;box-shadow:var(--shadow);text-align:center}
-.glock{width:52px;height:52px;margin:0 auto 18px;border-radius:14px;display:grid;
-  place-items:center;background:var(--acc-soft);color:var(--acc);font-size:25px}
-.gcard h1{font-family:var(--disp);font-size:21px;font-weight:600;margin:0 0 6px;
-  letter-spacing:-.015em}
-.gcard .gs{color:var(--faint);font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;
-  margin:0 0 20px;font-family:var(--disp)}
-#gmsg{color:var(--mut);font-size:14.5px;margin:0 0 18px;line-height:1.7}
-#gmsg b{color:var(--ink)}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;
-  padding:11px 18px;border-radius:11px;border:1px solid var(--rule);background:var(--sunken);
-  color:var(--ink);font:inherit;font-size:14px;font-weight:500;cursor:pointer;
-  text-decoration:none;transition:.16s}
+/* ── รายชื่อผู้ลงนาม ── */
+.nda-row{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;
+  padding:15px 17px;border:1px solid var(--line);border-radius:14px;
+  background:var(--surface);margin-bottom:10px}
+.nda-who b{display:block;font-size:14.5px;font-weight:600}
+.nda-who small{display:block;color:var(--mut);font-size:12.5px;margin-top:2px}
+.nda-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.nda-meta span{font-size:11px;padding:3px 9px;border-radius:6px;background:var(--bg2);
+  color:var(--mut);border:1px solid var(--line2)}
+.nda-sig{width:190px;height:66px;border-radius:9px;background:#fff;padding:5px;
+  display:grid;place-items:center;flex-shrink:0}
+.nda-sig img{max-width:100%;max-height:100%;object-fit:contain}
+.nda-sum{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.nda-sum div{padding:11px 16px;border-radius:12px;background:var(--surface);
+  border:1px solid var(--line)}
+.nda-sum b{display:block;font-size:20px;font-family:var(--kd)}
+.nda-sum small{color:var(--mut);font-size:12px}
+
+/* soft-3D buttons */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;font-weight:600;font-size:13.5px;
+  background:var(--surface2);border:1px solid var(--line);color:var(--ink);transition:transform .3s cubic-bezier(.3,1.5,.4,1),border-color .18s,background .18s,box-shadow .2s;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
 .btn:hover{border-color:var(--acc)}
-.btn.primary{background:var(--acc);border-color:transparent;color:#fff}
-.btn.primary:hover{filter:brightness(1.06)}
-.btn+.btn{margin-top:9px}
+.btn:active{transform:scale(.94)}
+.btn.primary{background:var(--grad);color:#fff;border:none;box-shadow:inset 0 1.5px 0 rgba(255,255,255,.4),inset 0 -2px 3px rgba(0,0,0,.18),0 10px 24px -10px rgba(217,94,60,.6)}
+.btn.primary:active{box-shadow:inset 0 2px 6px rgba(0,0,0,.28)}
+.btn.danger{background:rgba(242,104,95,.12);color:var(--danger);border-color:rgba(242,104,95,.3)}
+.btn.danger:hover{background:var(--danger);color:#fff}
+.btn.sm{padding:7px 12px;font-size:12.5px;border-radius:10px}
+.btn.ghost{background:transparent}
+.input{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:11px;padding:11px 14px;font-size:14px;color:var(--ink);outline:none;transition:.15s}
+.input:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-soft)}
 
-/* ── ตัวเล่ม ── */
-#app{display:none}
-.wrap{display:grid;grid-template-columns:288px minmax(0,1fr);max-width:1360px;
-  margin:0 auto;align-items:start}
-.rail{position:sticky;top:0;height:100dvh;display:flex;flex-direction:column;
-  border-right:1px solid var(--rule);background:var(--surface)}
-.rail-top{padding:22px 20px 13px;border-bottom:1px solid var(--rule2);flex-shrink:0}
-.brand{font-family:var(--disp);font-weight:600;font-size:17px;margin:0;line-height:1.3;
-  letter-spacing:-.015em}
-.brand i{font-style:normal;color:var(--acc);font-weight:500}
-.brand-sub{display:block;font-size:10.5px;color:var(--faint);letter-spacing:.14em;
-  text-transform:uppercase;margin-top:3px;font-weight:500}
-.who{display:flex;align-items:center;gap:8px;margin-top:13px;padding:7px 10px;
-  border-radius:9px;background:var(--sunken);font-size:12.5px}
-.who img{width:22px;height:22px;border-radius:50%;object-fit:cover}
-.who .rc{margin-left:auto;font-size:10px;font-family:var(--disp);letter-spacing:.09em;
-  text-transform:uppercase;color:var(--acc)}
-.find{width:100%;margin-top:11px;padding:8px 11px;border-radius:8px;
-  border:1px solid var(--rule);background:var(--bg);color:var(--ink);
-  font-family:inherit;font-size:13px;outline:none;transition:border-color .15s}
-.find:focus{border-color:var(--acc)}
-.nav{flex:1;overflow-y:auto;padding:12px;scrollbar-width:thin}
-.nv{display:block;text-decoration:none;color:var(--mut);border-radius:7px;
-  padding:6px 11px;font-size:13.5px;line-height:1.45;transition:.13s}
-.nv:hover{background:var(--sunken);color:var(--ink)}
-.nv-1{margin-top:15px;padding-top:9px;border-top:1px solid var(--rule2)}
-.nv-1:first-child{margin-top:0;border-top:0}
-.nv-1 b{display:block;font-family:var(--disp);font-weight:500;font-size:11px;
-  letter-spacing:.12em;text-transform:uppercase;color:var(--acc)}
-.nv-1 span{display:block;color:var(--ink);font-weight:500;font-size:13.5px}
-.nv-2{padding-left:13px;position:relative}
-.nv-2::before{content:"";position:absolute;left:3px;top:50%;width:3px;height:3px;
-  border-radius:50%;background:var(--rule);transform:translateY(-50%)}
-.nv.on{color:var(--ink);background:var(--acc-soft)}
-.nv.on::before{background:var(--acc)}
-.nv[hidden]{display:none}
-.rail-foot{padding:11px 14px;border-top:1px solid var(--rule2);display:flex;gap:7px}
-.rail-foot a,.rail-foot button{flex:1;padding:7px;border-radius:8px;border:1px solid var(--rule);
-  background:var(--bg);color:var(--mut);font:inherit;font-size:12px;cursor:pointer;
-  text-align:center;text-decoration:none;transition:.15s}
-.rail-foot a:hover,.rail-foot button:hover{border-color:var(--acc);color:var(--acc)}
+/* ===== SHELL ===== */
+.shell{display:grid;grid-template-columns:248px 1fr;min-height:100dvh}
+/* ฉากหลังของลิ้นชักมือถือ ต้องลอยอยู่นอกกริดเสมอ ไม่งั้นมันจะกินช่องที่ 2
+   แล้วดัน <main> ตกไปแถวล่างกว้างแค่ 248px — หน้าจะดูเหมือนมีแต่แถบเมนู */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:140;
+  opacity:0;pointer-events:none;transition:opacity .3s}
+.scrim.show{opacity:1;pointer-events:auto}
+main{min-width:0}
+.side{background:var(--bg2);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:18px 14px;position:sticky;top:0;height:100dvh}
+.brand{display:flex;align-items:center;gap:11px;padding:6px 8px 20px}
+.brand .mark{width:38px;height:38px;border-radius:12px;background:var(--grad);color:#fff;display:grid;place-items:center;box-shadow:0 8px 20px -8px var(--acc)}
+.brand .mark svg{height:56%;width:auto}.brand .mark path{fill:currentColor}
+.brand b{font-size:17px;font-weight:800;letter-spacing:.03em}
+.brand small{display:block;font-size:10.5px;color:var(--faint);font-weight:500;letter-spacing:.14em;text-transform:uppercase}
+.nav{display:flex;flex-direction:column;gap:3px;flex:1}
+.nav a{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:12px;color:var(--mut);font-weight:600;font-size:14px;transition:.16s;cursor:pointer}
+.nav a .ti{font-size:20px}
+.nav a:hover{background:var(--surface);color:var(--ink)}
+.nav a.on{background:var(--acc-soft);color:var(--acc)}
+.nav a.locked{opacity:.4;pointer-events:none}
+.side-foot{border-top:1px solid var(--line);padding-top:12px;margin-top:8px}
+.me{display:flex;align-items:center;gap:10px;padding:8px}
+.me img,.me .fb{width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.me .fb{display:grid;place-items:center;font-weight:700;background:var(--grad);color:#fff}
+.me .info{flex:1;min-width:0}
+.me b{display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.me small{font-size:11px;color:var(--faint)}
+.rolechip{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.04em}
+.rolechip.owner{background:rgba(232,148,60,.16);color:var(--acc)}
+.rolechip.admin{background:rgba(155,123,240,.16);color:var(--purple)}
+.rolechip.moderator{background:rgba(79,169,232,.16);color:var(--info)}
 
-.page{padding:0 clamp(20px,4vw,64px) 140px;min-width:0}
-.doc{max-width:74ch;margin:0 auto}
-.cover{padding:clamp(48px,8vh,92px) 0 36px;border-bottom:1px solid var(--rule)}
-.cover .kicker{font-family:var(--disp);font-size:11.5px;font-weight:500;letter-spacing:.16em;
-  text-transform:uppercase;color:var(--acc);margin:0 0 13px}
-.cover h1{font-family:var(--disp);font-weight:600;font-size:clamp(29px,5vw,44px);
-  line-height:1.16;letter-spacing:-.025em;margin:0;text-wrap:balance}
-.cover .desc{color:var(--mut);font-size:16.5px;margin:15px 0 0;max-width:56ch}
-.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
-.meta span{font-family:var(--mono);font-size:11.5px;padding:4px 10px;border-radius:6px;
-  background:var(--sunken);color:var(--mut);border:1px solid var(--rule2)}
+.main{padding:26px 30px 60px;max-width:1180px;width:100%}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+.page-head h1{font-family:var(--kd);font-size:26px;font-weight:600}
+.page-head p{color:var(--mut);font-size:13.5px;margin-top:3px}
+.view{display:none;animation:fade .4s cubic-bezier(.16,.84,.28,1)}
+.view.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 
-h2.part{font-family:var(--disp);display:block;margin:78px 0 28px;padding-top:28px;
-  border-top:2px solid var(--ink);scroll-margin-top:18px}
-h2.part .p-num{display:block;font-size:11.5px;font-weight:500;letter-spacing:.16em;
-  text-transform:uppercase;color:var(--acc);margin-bottom:7px}
-h2.part .p-name{display:block;font-size:clamp(23px,3.3vw,32px);font-weight:600;
-  letter-spacing:-.02em;line-height:1.2;text-wrap:balance}
-h2{font-family:var(--disp);font-weight:600;font-size:20px;letter-spacing:-.012em;
-  line-height:1.35;margin:50px 0 13px;scroll-margin-top:18px;text-wrap:balance}
-h3{font-family:var(--disp);font-weight:500;font-size:16.5px;margin:32px 0 9px;
-  scroll-margin-top:18px}
-p{margin:0 0 15px}
-a{color:var(--acc);text-underline-offset:2px}
-hr{border:0;border-top:1px solid var(--rule2);margin:32px 0}
-code{font-family:var(--mono);font-size:.885em;background:var(--sunken);padding:1.5px 5px;
-  border-radius:4px;border:1px solid var(--rule2);word-break:break-word}
-.code{margin:0 0 20px;padding:16px 18px;border-radius:11px;overflow-x:auto;
-  background:var(--sunken);border:1px solid var(--rule2);font-family:var(--mono);
-  font-size:12.9px;line-height:1.68;position:relative}
-.code code{background:none;border:0;padding:0;white-space:pre;font-size:inherit}
-.code[data-lang]:not([data-lang=""])::after{content:attr(data-lang);position:absolute;
-  top:9px;right:12px;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--faint)}
-.tw{overflow-x:auto;margin:0 0 22px;border:1px solid var(--rule);border-radius:11px;
-  background:var(--surface)}
-table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
-th{font-family:var(--disp);font-weight:500;font-size:11.5px;letter-spacing:.09em;
-  text-transform:uppercase;color:var(--mut);text-align:left;padding:11px 15px;
-  border-bottom:1px solid var(--rule);white-space:nowrap}
-td{padding:11px 15px;border-bottom:1px solid var(--rule2);vertical-align:top;line-height:1.6}
-tbody tr:last-child td{border-bottom:0}
-tbody tr:hover{background:var(--sunken)}
-ul,ol{margin:0 0 17px;padding-left:22px}
-li{margin:0 0 7px}
-li::marker{color:var(--faint)}
-li.task{list-style:none;position:relative;padding-left:26px;margin-left:-22px}
-li.task::before{content:"";position:absolute;left:0;top:.42em;width:13px;height:13px;
-  border:1.5px solid var(--rule);border-radius:3.5px}
-blockquote{margin:0 0 20px;padding:2px 0 2px 18px;border-left:2px solid var(--rule);
-  color:var(--mut)}
-blockquote p:last-child{margin-bottom:0}
-.note{margin:0 0 22px;padding:14px 18px 14px 17px;border-radius:0 10px 10px 0;
-  border-left:3px solid;display:grid;gap:7px}
-.n-tag{font-family:var(--disp);font-size:10.5px;font-weight:500;letter-spacing:.13em;
-  text-transform:uppercase;justify-self:start}
-.n-body p:last-child{margin:0}
-.n-stop{border-color:var(--stop);background:var(--stop-bg)}
-.n-stop .n-tag{color:var(--stop)}
-.n-care{border-color:var(--care);background:var(--care-bg)}
-.n-care .n-tag{color:var(--care)}
-.n-why{border-color:var(--why);background:var(--why-bg)}
-.n-why .n-tag{color:var(--why)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:var(--shadow-sm)}
+.card+.card{margin-top:16px}
+/* ── layout helpers added with the expanded control centre ── */
+.two-col{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-top:16px}
+.two-col>.card{margin-top:0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
 
-.tocbtn{display:none;position:fixed;left:14px;bottom:14px;z-index:40;padding:11px 17px;
-  border-radius:999px;border:1px solid var(--rule);background:var(--surface);color:var(--ink);
-  font-family:var(--disp);font-size:13.5px;font-weight:500;cursor:pointer;box-shadow:var(--shadow)}
-.veil{display:none}
-@media(max-width:940px){
-  .wrap{grid-template-columns:1fr}
-  .rail{position:fixed;inset:0 auto 0 0;width:min(310px,86vw);z-index:50;
-    transform:translateX(-102%);transition:transform .22s ease;box-shadow:var(--shadow)}
-  body.toc .rail{transform:none}
-  .tocbtn{display:block}
-  body.toc .veil{display:block;position:fixed;inset:0;z-index:45;background:rgba(0,0,0,.42)}
-  body{font-size:15px}
+/* แถบเตือนเมื่อฐานข้อมูลยังไม่ถูก migrate */
+.banner{display:flex;gap:14px;align-items:flex-start;padding:16px 18px;border-radius:16px;margin-bottom:18px;
+  border:1px solid rgba(240,170,60,.45);background:rgba(240,170,60,.10)}
+.banner.bad{border-color:rgba(242,104,95,.5);background:rgba(242,104,95,.10)}
+.banner .bi{font-size:22px;color:var(--warn);flex-shrink:0;line-height:1}
+.banner.bad .bi{color:var(--danger)}
+.banner b{display:block;font-size:14.5px;margin-bottom:4px}
+.banner p{font-size:13px;color:var(--mut);line-height:1.8}
+.banner code{display:inline-block;margin-top:8px;padding:7px 11px;border-radius:9px;font-size:12.5px;
+  background:rgba(0,0,0,.30);border:1px solid var(--line);font-family:ui-monospace,Menlo,monospace;
+  user-select:all;word-break:break-all}
+
+/* แถวแท่งเปรียบเทียบ */
+.brow{display:grid;grid-template-columns:minmax(84px,auto) 1fr auto;align-items:center;gap:12px;
+  padding:9px 2px;font-size:13px}
+.brow+.brow{border-top:1px solid var(--line)}
+.brow .lb{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brow .bar{height:7px;border-radius:5px;background:rgba(255,255,255,.08);overflow:hidden}
+.brow .bar i{display:block;height:100%;border-radius:5px;background:var(--grad,linear-gradient(90deg,var(--acc),var(--acc2,var(--acc))))}
+.brow .vv{font-variant-numeric:tabular-nums;font-weight:700;color:var(--mut);min-width:44px;text-align:right}
+
+/* รายการผู้ใช้ล่าสุด */
+.mini-list{display:flex;flex-direction:column}
+.mini-row{display:flex;align-items:center;gap:11px;padding:10px 2px;font-size:13px}
+.mini-row+.mini-row{border-top:1px solid var(--line)}
+.mini-row .tx{flex:1;min-width:0}
+.mini-row .tx b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini-row .tx small{font-size:11.5px;color:var(--faint)}
+.mini-row .tm{font-size:11.5px;color:var(--faint);white-space:nowrap;font-variant-numeric:tabular-nums}
+
+/* สวิตช์ฟีเจอร์ */
+.feat-row{display:flex;align-items:center;gap:12px;padding:12px 0}
+.feat-row+.feat-row{border-top:1px solid var(--line)}
+.feat-row .tx{flex:1;min-width:0}
+.feat-row .tx b{display:block;font-size:13.5px;font-weight:600}
+.feat-row .tx small{font-size:12px;color:var(--faint);line-height:1.6}
+
+/* หน้าสุขภาพระบบ */
+.hgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.hcell{padding:13px 15px;border-radius:13px;border:1px solid var(--line);background:var(--surface-2,rgba(255,255,255,.03))}
+.hcell small{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--faint)}
+.hcell b{display:block;font-size:14.5px;font-weight:700;margin-top:4px;word-break:break-word}
+.hcell.ok b{color:var(--ok,#4CC38A)} .hcell.bad b{color:var(--danger)}
+.tick{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700}
+.tick.ok{color:var(--ok,#4CC38A)} .tick.bad{color:var(--danger)}
+.schema-row{display:flex;align-items:center;gap:10px;padding:9px 2px;font-size:13px}
+.schema-row+.schema-row{border-top:1px solid var(--line)}
+.schema-row .nm{flex:1;font-weight:600;font-family:ui-monospace,Menlo,monospace;font-size:12.5px}
+.card h3{font-size:16px;font-weight:600;margin-bottom:4px}
+.card .sub{color:var(--mut);font-size:13px;margin-bottom:16px}
+
+/* ===== STATS ===== */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:20px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;position:relative;overflow:hidden;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);animation:fade .5s backwards}
+.stat:nth-child(2){animation-delay:.05s}.stat:nth-child(3){animation-delay:.1s}.stat:nth-child(4){animation-delay:.15s}
+.stat:nth-child(5){animation-delay:.2s}.stat:nth-child(6){animation-delay:.25s}
+.stat .ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:20px;color:#0A0A0A;margin-bottom:12px;background:var(--acc)}
+.stat .ic.b{background:var(--info)}
+.stat .ic.g{background:var(--ok)}
+.stat .ic.p{background:var(--purple)}
+.stat .ic.r{background:var(--danger)}
+.stat .n{font-size:30px;font-weight:800;font-family:var(--kd);line-height:1}
+.stat .l{font-size:12.5px;color:var(--mut);margin-top:5px}
+
+/* mini bar chart */
+.chart{display:flex;align-items:flex-end;gap:5px;height:120px;padding-top:10px}
+.chart .bar{flex:1;background:var(--grad);border-radius:5px 5px 0 0;min-height:3px;position:relative;transition:height .6s cubic-bezier(.2,.9,.3,1);opacity:.85}
+.chart .bar:hover{opacity:1}
+.chart .bar span{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--mut);opacity:0;transition:.15s;white-space:nowrap}
+.chart .bar:hover span{opacity:1}
+.chart-x{display:flex;gap:5px;margin-top:6px}
+.chart-x div{flex:1;text-align:center;font-size:9.5px;color:var(--faint);overflow:hidden}
+
+/* ===== TABLE ===== */
+.tbl-wrap{overflow-x:auto;border-radius:14px;border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:640px}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);font-weight:700;padding:12px 14px;background:var(--bg2);border-bottom:1px solid var(--line)}
+td{padding:12px 14px;border-bottom:1px solid var(--line2);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr.banned-row{opacity:.5}
+.u-cell{display:flex;align-items:center;gap:10px}
+.u-cell img,.u-cell .fb{width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.u-cell .fb{display:grid;place-items:center;font-weight:700;background:var(--grad);color:#fff;font-size:13px}
+.role-pill{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
+.role-pill.owner{background:rgba(232,148,60,.16);color:var(--acc)}
+.role-pill.admin{background:rgba(155,123,240,.16);color:var(--purple)}
+.role-pill.moderator{background:rgba(79,169,232,.16);color:var(--info)}
+.role-pill.user{background:rgba(140,153,181,.14);color:var(--mut)}
+.row-actions{display:flex;gap:6px;flex-wrap:wrap}
+.mini-select{background:var(--bg2);border:1px solid var(--line);border-radius:9px;padding:6px 8px;font-size:12.5px;color:var(--ink);outline:none;cursor:pointer}
+.mini-select:focus{border-color:var(--acc)}
+
+/* toggle */
+.switch{position:relative;display:inline-block;width:46px;height:26px;flex-shrink:0}
+.switch input{display:none}
+.switch .sl{position:absolute;inset:0;background:var(--surface2);border:1px solid var(--line);border-radius:20px;transition:.25s}
+.switch .sl::before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:var(--mut);border-radius:50%;transition:.25s}
+.switch input:checked+.sl{background:var(--grad);border-color:transparent}
+.switch input:checked+.sl::before{transform:translateX(20px);background:#fff}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:13px;font-weight:600;margin-bottom:7px}
+.field .hint{font-size:12px;color:var(--faint);margin-top:6px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid var(--line2)}
+.toggle-row:last-of-type{border-bottom:none}
+.toggle-row b{font-size:14px;font-weight:600}
+.toggle-row small{display:block;font-size:12px;color:var(--mut);margin-top:2px}
+
+/* segmented */
+.seg{display:inline-flex;background:var(--bg2);border:1px solid var(--line);border-radius:11px;padding:3px;gap:2px}
+.seg button{padding:7px 14px;border-radius:9px;font-size:12.5px;font-weight:600;color:var(--mut)}
+.seg button.on{background:var(--grad);color:#fff}
+
+/* audit */
+.audit-item{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--line2);font-size:13px}
+.audit-item:last-child{border:none}
+.audit-item .ai{width:32px;height:32px;border-radius:10px;background:var(--surface2);display:grid;place-items:center;color:var(--acc);flex-shrink:0}
+.audit-item .at{flex:1;min-width:0}
+.audit-item .at b{font-weight:600}
+.audit-item .at small{display:block;color:var(--faint);font-size:11.5px;margin-top:1px}
+.audit-item .time{color:var(--faint);font-size:11.5px;white-space:nowrap}
+
+/* mag admin cards */
+.mag-admin{display:flex;gap:12px;padding:13px;border:1px solid var(--line);border-radius:14px;margin-bottom:10px;background:var(--bg2)}
+.mag-admin .tag{font-size:10px;font-weight:700;color:var(--acc);text-transform:uppercase;letter-spacing:.08em}
+.mag-admin .tx{flex:1;min-width:0}
+.mag-admin b{display:block;font-size:14px;margin:2px 0}
+.mag-admin p{font-size:12.5px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+
+.empty{text-align:center;color:var(--faint);padding:30px;font-size:13.5px}
+.skel{background:linear-gradient(90deg,var(--surface) 25%,var(--surface2) 50%,var(--surface) 75%);background-size:200% 100%;animation:sk 1.3s infinite;border-radius:10px}
+@keyframes sk{to{background-position:-200% 0}}
+
+/* gate */
+.gate{min-height:100dvh;display:grid;place-items:center;padding:24px}
+.gate-card{text-align:center;max-width:420px;background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:40px 32px;box-shadow:var(--shadow)}
+.gate-card .mark{width:64px;height:64px;border-radius:20px;background:var(--grad);color:#fff;display:grid;place-items:center;margin:0 auto 18px;box-shadow:0 16px 34px -12px var(--acc)}
+.gate-card .mark svg{height:54%;width:auto}.gate-card .mark path{fill:currentColor}
+.gate-card h1{font-size:23px;font-weight:600;margin-bottom:8px}
+.gate-card p{color:var(--mut);font-size:14px;margin-bottom:22px}
+
+/* toast + modal */
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(130px);background:var(--surface2);border:1px solid var(--line);
+  color:var(--ink);padding:13px 20px;border-radius:14px;font-weight:600;font-size:13.5px;box-shadow:var(--shadow);z-index:300;
+  transition:.32s cubic-bezier(.2,.9,.3,1);display:flex;gap:9px;align-items:center;max-width:90vw}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast .ti{font-size:18px;color:var(--acc)}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);z-index:200;display:grid;place-items:center;padding:20px;opacity:0;pointer-events:none;transition:.28s}
+.modal-bg.show{opacity:1;pointer-events:auto}
+.modal{background:var(--surface);border:1px solid var(--line);border-radius:20px;width:100%;max-width:520px;max-height:88dvh;overflow-y:auto;padding:24px;transform:scale(.94);transition:.3s cubic-bezier(.2,.9,.3,1.2)}
+.modal-bg.show .modal{transform:none}
+.modal h3{font-size:19px;margin-bottom:16px}
+
+.mobile-top{display:none}
+@media(max-width:820px){
+  .shell{grid-template-columns:1fr}
+  .side{position:fixed;left:0;top:0;z-index:150;width:250px;transform:translateX(-100%);transition:transform .3s cubic-bezier(.2,.9,.3,1)}
+  .side.open{transform:none;box-shadow:0 0 60px rgba(0,0,0,.6)}
+  .mobile-top{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg2);z-index:100}
+  .mobile-top b{font-weight:800;letter-spacing:.03em}
+  .scrim{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:140;opacity:0;pointer-events:none;transition:.3s}
+  .scrim.show{opacity:1;pointer-events:auto}
+  .main{padding:18px 16px 50px}
 }
-@media(prefers-reduced-motion:reduce){.rail{transition:none}html{scroll-behavior:auto}}
-html{scroll-behavior:smooth}
-:focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:4px}
-@media print{.rail,.tocbtn,.veil{display:none}.wrap{grid-template-columns:1fr}
-  .page{padding:0}.doc{max-width:none}h2.part{break-before:page}
-  .note,.tw,.code{break-inside:avoid}}
+</style>
+<!-- นำทางแบบไม่ต้องรอโหลด
+     เบราว์เซอร์จะเตรียมหน้าถัดไปไว้ล่วงหน้าตอนผู้ใช้เล็งจะกด พอกดจริงจึงขึ้นทันที
+     eagerness moderate คือเริ่มเตรียมตอนเมาส์ค้างหรือแตะค้าง ไม่ใช่เตรียมทุกลิงก์ทิ้งไว้
+     ตัวไหนไม่รองรับ speculation rules จะตกไปใช้ prefetch ข้างล่างแทน -->
+<script type="speculationrules">
+{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}],
+ "prefetch":[{"where":{"href_matches":"/*.html"},"eagerness":"conservative"}]}
+</script>
+<link rel="prefetch" href="./index.html">
+<link rel="prefetch" href="./garage.html">
+<link rel="prefetch" href="./spares.html">
+<link rel="prefetch" href="./news.html">
+<link rel="prefetch" href="./profile.html">
+<link rel="prefetch" href="./chat.html">
+<script id="perfraf">
+/* ══════════════════════════════════════════════════════════════════
+   ตัวคุมจังหวะการวาดของ canvas
+
+   หน้าเดียวมีลูปวาดภาพเดินพร้อมกันสี่ตัว  ฉากพื้นหลัง  การ์ดสรุปประจำวัน
+   ดาวในหน้าตั้งค่าเริ่มต้น  และห้องนักบินสามมิติที่วาดด้วย WebGL
+   ทุกตัววาดต่อเนื่อง 60 ครั้งต่อวินาทีไม่ว่าจะมองเห็นอยู่หรือไม่
+   นี่คือสาเหตุหลักที่เครื่องร้อนและภาพกระตุกบนมือถือ
+
+   spireAwake คืนค่าจริงเฉพาะตอนที่ควรวาดจริง ๆ คือแท็บเปิดอยู่
+   และ canvas ตัวนั้นยังอยู่ในสายตา  ลูปยังหมุนอยู่เหมือนเดิมทุกตัว
+   แต่ข้ามงานวาดตอนไม่มีใครดู พอเลื่อนกลับมาก็วาดต่อทันที ไม่มีสะดุด
+   ══════════════════════════════════════════════════════════════════ */
+(function(){
+  var io=null, sup=("IntersectionObserver" in window);
+  if(sup) io=new IntersectionObserver(function(es){
+    es.forEach(function(e){ e.target.__awake=e.isIntersecting })
+  },{rootMargin:"20% 0px"});
+  window.spireAwake=function(el){
+    if(document.hidden)return false;
+    if(!el||!sup)return true;
+    if(el.__awake===undefined){ el.__awake=true; try{io.observe(el)}catch(e){} }
+    return el.__awake!==false;
+  };
+})();
+</script>
+<style id="perfcss">
+/* ══════════════════════════════════════════════════════════════════
+   ชั้นประสิทธิภาพ — วางท้าย head จึงทับกฎอื่นได้โดยไม่ต้องแข่ง specificity
+
+   หลักที่ใช้ตัดสินว่าอะไรควรแก้
+     สมบัติที่เบราว์เซอร์ขยับได้บนการ์ดจอ  transform กับ opacity  ราคาเกือบศูนย์
+     สมบัติที่ต้องวาดใหม่ทุกเฟรม  background-position, box-shadow, filter  แพง
+     สมบัติที่ต้องคำนวณผังใหม่ทุกเฟรม  left, top, width, height  แพงที่สุด
+   ของเดิมมีอนิเมชันวนไม่จบที่ใช้สองกลุ่มหลังอยู่หลายจุด จึงย้ายมาใช้ transform
+
+   backdrop-filter คือตัวที่หนักที่สุดบนมือถือ เพราะบังคับให้เบลอพื้นหลัง
+   ใหม่ทุกเฟรมต่อหนึ่งชิ้น ของเดิมใส่ไว้กับฟองข้อความและชิปซึ่งมีเป็นสิบชิ้น
+   พอเลื่อนจอจึงเบลอพร้อมกันสิบรอบต่อเฟรม ตรงนี้คือเหตุที่เลื่อนแล้วสะดุด
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── 1. เลิกไล่สีพื้นหลังแบบวนไม่จบ ──
+   ปุ่มหลักทุกปุ่มในหน้าเคยขยับ background-position ตลอดเวลา
+   หนึ่งปุ่มคือหนึ่งการวาดใหม่ต่อเฟรม หน้าหนึ่งมีปุ่มแบบนี้หลายสิบปุ่ม
+   ตอนนี้ไล่สีอยู่นิ่ง ๆ จะไหลเฉพาะตอนเอาเมาส์ไปวางหรือกดค้าง */
+.btn.primary{animation:none}
+.btn.primary:hover,.btn.primary:focus-visible,.btn.primary:active{
+  animation:gradFlow 4s ease infinite}
+@media(hover:none){.btn.primary:hover{animation:none}}
+
+/* ── 2. เส้นแบ่งเลนถนนกับรถในการ์ดพยากรณ์อากาศ ──
+   เลนเคยขยับ background-position  รถเคยขยับ left ซึ่งต้องคำนวณผังใหม่ทุกเฟรม
+   เปลี่ยนเป็น transform ทั้งคู่ ภาพที่เห็นเหมือนเดิมทุกประการ
+   ระยะวิ่งของรถอิงความกว้างการ์ดจริงด้วยหน่วย cqw จึงยังวิ่งพอดีขอบเหมือนเดิม */
+.bw{container-type:inline-size}
+.bw-lane{background-position:0 0!important;overflow:hidden}
+.bw-lane::after{content:"";position:absolute;inset:0 -34px 0 0;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.4) 0 16px,transparent 16px 34px);
+  animation:bwLaneT 1.6s linear infinite}
+@keyframes bwLane{to{background-position:0 0}}   /* ปิดของเดิม */
+@keyframes bwLaneT{to{transform:translateX(-34px)}}
+@keyframes bwDrive{from{transform:translateX(-120px)}to{transform:translateX(100cqw)}}
+
+/* ── 3. วงกระเพื่อมตอนอัดเสียงและตอนโทร ──
+   ของเดิมขยายเงา box-shadow ซึ่งวาดใหม่ทุกเฟรม
+   เปลี่ยนเป็นวงแยกที่ขยายด้วย transform ซึ่งการ์ดจอทำให้ฟรี */
+@keyframes lgPulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.45)}}
+@keyframes recPulse{0%,100%{box-shadow:0 0 0 0 rgba(214,74,74,.5)}}
+@keyframes callPulse{0%,100%{box-shadow:none}}
+.lg-mic.rec,.att-btn.rec,.call-dot{position:relative}
+.lg-mic.rec::after,.att-btn.rec::after{content:"";position:absolute;inset:0;border-radius:inherit;
+  border:2px solid currentColor;opacity:.5;pointer-events:none;
+  animation:ringOut 1.3s ease-out infinite;will-change:transform,opacity}
+@keyframes ringOut{from{transform:scale(1);opacity:.5}to{transform:scale(1.7);opacity:0}}
+
+/* ── 4. โครงร่างตอนกำลังโหลด ──
+   แถบแสงวิ่งเคยขยับ background-position บนทุกใบพร้อมกัน */
+.sp-skel{background-position:0 0!important;position:relative;overflow:hidden}
+@keyframes spShine{to{background-position:0 0}}
+.sp-skel::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.14) 50%,transparent 70%);
+  animation:skelSweep 1.3s linear infinite;will-change:transform}
+@keyframes skelSweep{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+
+/* ── 5. เบลอพื้นหลัง ──
+   ชิ้นที่มีซ้ำ ๆ หลายสิบชิ้นไม่ต้องเบลอ ใช้สีทึบบาง ๆ แทนแล้วดูไม่ต่าง
+   ส่วนบนมือถือปิดทั้งหมด เหลือไว้แค่บนจอคอมที่มีแรงพอ */
+.msg.ai .bubble,.chip,.sk-chip,.cl-chip,.sp-chip,.pill-tag,.att-chip,
+.sp-art .badge,.spw-row,#v-shop .sp-card,.bp-ico,.nx{
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+/* บนมือถือปิดหมด ยกเว้นแถบหลักไม่กี่ชิ้นที่ต้องอ่านทะลุพื้นหลังจริง ๆ
+   ชิ้นพวกนั้นมีหน้าละไม่เกินสองสามชิ้น ราคาจึงไม่ใช่ปัญหา */
+@media(max-width:900px){
+  *:not(.nav):not(.pill):not(.sheet):not(.side):not(.sheet-bg):not(.side-scrim)
+   :not(.p-drop):not(.acct-drop):not(.bpanel):not(.composer):not(.mnav):not(.su-card){
+    backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+}
+
+/* ── 6. อนิเมชันที่มองไม่เห็นไม่ต้องเดิน ──
+   การ์ดที่เลื่อนพ้นจอ กับตอนสลับไปแท็บอื่น หยุดไว้ก่อน
+   ธง data-idle ตั้งโดยสคริปต์ท้ายไฟล์ */
+[data-anim="off"],[data-anim="off"] *{animation-play-state:paused!important}
+html[data-idle="1"] *{animation-play-state:paused!important}
+
+/* ── 7. ส่วนที่ยังไม่ถูกเลื่อนไปถึง ไม่ต้องคิดผังและไม่ต้องวาด ──
+   contain-intrinsic-size บอกความสูงคร่าว ๆ ไว้ก่อน แถบเลื่อนจึงไม่กระโดด */
+.widget-grid>*,.sp-card,.news-card,.hist-item{content-visibility:auto;
+  contain-intrinsic-size:auto 320px}
+
+/* ── 8. ผู้ใช้ที่ตั้งเครื่องว่าไม่เอาการเคลื่อนไหว ให้เงียบทั้งหมด ── */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;
+    transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+</style>
+<style id="fbcss">
+.nav-badge{margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:999px;
+  display:none;place-items:center;font-size:11px;font-weight:700;
+  background:var(--danger,#D64A4A);color:#fff}
+.nav-badge.on{display:grid}
+.fb-filter{display:flex;flex-wrap:wrap;gap:7px}
+.fb-filter button{padding:7px 13px;border-radius:999px;border:1px solid var(--line,rgba(255,255,255,.12));
+  background:none;color:inherit;font:inherit;font-size:13px;cursor:pointer}
+.fb-filter button.on{background:var(--acc,#E08A3C);border-color:transparent;color:#141414;font-weight:600}
+.fb-item{display:flex;gap:12px;padding:14px 4px;border-bottom:1px solid var(--line,rgba(255,255,255,.08))}
+.fb-item:last-child{border-bottom:0}
+.fb-ic{width:36px;height:36px;flex-shrink:0;border-radius:11px;display:grid;place-items:center;font-size:18px}
+.fb-ic.bug{background:rgba(214,74,74,.15);color:#F26D6D}
+.fb-ic.idea{background:rgba(224,138,60,.15);color:#E08A3C}
+.fb-ic.praise{background:rgba(62,158,110,.15);color:#4FBF88}
+.fb-ic.other{background:rgba(127,127,127,.15);color:var(--faint,#888)}
+.fb-bd{flex:1;min-width:0}
+.fb-hd{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;margin-bottom:3px}
+.fb-hd b{font-size:14px}
+.fb-hd small{font-size:11.5px;color:var(--faint,#888)}
+.fb-msg{font-size:13.5px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+.fb-meta{margin-top:5px;font-size:11.5px;color:var(--faint,#888)}
+.fb-act{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.fb-act button{padding:5px 11px;border-radius:9px;border:1px solid var(--line,rgba(255,255,255,.12));
+  background:none;color:inherit;font:inherit;font-size:12px;cursor:pointer}
+.fb-act button:hover{background:rgba(127,127,127,.14)}
+.fb-st{padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600}
+.fb-st.new{background:rgba(224,138,60,.18);color:#E08A3C}
+.fb-st.read{background:rgba(127,127,127,.16);color:var(--faint,#999)}
+.fb-st.done{background:rgba(62,158,110,.16);color:#4FBF88}
+.fb-st.spam{background:rgba(214,74,74,.16);color:#F26D6D}
+</style>
+<style id="kbcss">
+.kb-item{display:flex;gap:14px;padding:14px 4px;align-items:flex-start;
+  border-bottom:1px solid var(--line,rgba(255,255,255,.08))}
+.kb-item:last-child{border-bottom:0}
+.kb-bd{flex:1;min-width:0}
+.kb-h{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:5px}
+.kb-h b{font-size:14.5px}
+.kb-h small{font-size:11.5px;color:var(--faint,#888)}
+.kb-tag{padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600;
+  background:rgba(224,138,60,.16);color:#E08A3C}
+.kb-tag.all{background:rgba(127,127,127,.16);color:var(--faint,#999)}
+.kb-off{padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600;
+  background:rgba(214,74,74,.16);color:#F26D6D}
+.kb-body{font-size:13px;line-height:1.55;color:var(--faint,#999);white-space:pre-wrap;word-break:break-word}
+.kb-keys{margin-top:6px;font-size:11.5px;color:#E08A3C;opacity:.8}
+.kb-act{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+.kb-act button{padding:6px 13px;border-radius:9px;cursor:pointer;font:inherit;font-size:12.5px;
+  border:1px solid var(--line,rgba(255,255,255,.12));background:none;color:inherit}
+.kb-act button:hover{background:rgba(127,127,127,.14)}
+.kb-act button.danger{color:#F26D6D}
+@media(max-width:600px){.kb-item{flex-direction:column;gap:8px}.kb-act{flex-direction:row}}
 </style>
 </head>
 <body>
 
-<!-- ── ด่านตรวจสิทธิ์ ── -->
-<div id="gate">
-  <div class="gcard">
-    <div class="glock"><i class="ti ti-lock"></i></div>
-    <h1>คู่มือระบบ Cendon</h1>
-    <p class="gs">เฉพาะทีมงาน</p>
-    <p id="gmsg">กำลังตรวจสิทธิ์…</p>
-    <div id="gact"></div>
+<!-- ACCESS GATE -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="mark"><svg viewBox="-6.0 -6.0 94.8 112.0"><path d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg></div>
+    <h1 id="gateTitle">Cendon Admin</h1>
+    <p id="gateMsg"><i class="ti ti-loader-2"></i> กำลังตรวจสอบสิทธิ์...</p>
+    <div id="gateActions"></div>
   </div>
 </div>
 
-<!-- ── ตัวเล่ม — ว่างเปล่าจนกว่าเซิร์ฟเวอร์จะส่งเนื้อหามาให้ ── -->
-<div id="app">
-  <div class="wrap">
-    <nav class="rail" id="rail" aria-label="สารบัญ">
-      <div class="rail-top">
-        <h2 class="brand">คู่มือระบบ <i>Cendon</i>
-          <span class="brand-sub">Developer handbook</span></h2>
-        <div class="who" id="who"></div>
-        <input class="find" id="find" type="search" placeholder="ค้นหาหัวข้อ…"
-               aria-label="ค้นหาหัวข้อ" autocomplete="off">
-      </div>
-      <div class="nav" id="nav"></div>
-      <div class="rail-foot">
-        <a href="./admin.html"><i class="ti ti-arrow-left"></i> แผงควบคุม</a>
-        <button id="reload">โหลดใหม่</button>
-      </div>
+<!-- APP -->
+<div class="shell" id="app" style="display:none">
+  <!-- mobile top bar -->
+  <aside class="side" id="side">
+    <div class="brand">
+      <div class="mark"><svg viewBox="-6.0 -6.0 94.8 112.0"><path d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg></div>
+      <div><b>Cendon</b><small>Admin Control</small></div>
+    </div>
+    <nav class="nav" id="nav">
+      <a data-tab="overview" class="on"><i class="ti ti-layout-dashboard"></i> ภาพรวม</a>
+      <a data-tab="users"><i class="ti ti-users"></i> ผู้ใช้ & ยศ</a>
+      <a data-tab="cars"><i class="ti ti-car"></i> รถในระบบ</a>
+      <a data-tab="kb"><i class="ti ti-school"></i> สอน AI</a>
+      <a data-tab="cache"><i class="ti ti-bolt"></i> คำตอบที่ใช้ซ้ำ</a>
+      <a data-tab="vector"><i class="ti ti-topology-star-3"></i> สมองเวกเตอร์</a>
+      <a data-tab="feedback"><i class="ti ti-message-2-heart"></i> ความเห็นผู้ใช้ <span class="nav-badge" id="fbBadge"></span></a>
+      <a data-tab="magazine"><i class="ti ti-news"></i> นิตยสาร</a>
+      <a data-tab="shop"><i class="ti ti-shopping-bag"></i> ร้านค้า</a>
+      <a data-tab="config" data-min="admin"><i class="ti ti-settings"></i> ตั้งค่าเว็บ</a>
+      <a data-tab="audit" data-min="admin"><i class="ti ti-history"></i> บันทึกการทำงาน</a>
+      <a data-tab="system"><i class="ti ti-heartbeat"></i> สุขภาพระบบ</a>
+      <a data-tab="nda" data-min="admin"><i class="ti ti-writing-sign"></i> ผู้ลงนาม NDA</a>
+      <!-- คู่มือเป็นหน้าของตัวเอง ไม่ใช่แท็บ เพราะเป็นเอกสารที่อ่านยาว
+           ไม่ใช่เครื่องมือที่กดไปกดมา และต้องเปิดค้างไว้อีกแท็บได้ -->
+      <a href="./handbook.html" style="border-top:1px solid var(--line);margin-top:6px;padding-top:12px">
+        <i class="ti ti-book-2"></i> คู่มือระบบ</a>
     </nav>
-    <main class="page"><div class="doc" id="doc"></div></main>
+    <div class="side-foot">
+      <div class="me" id="me"></div>
+      <!-- replace แทน href — ไม่ทิ้งแผงควบคุมไว้ในประวัติ
+           กดย้อนกลับของเบราว์เซอร์แล้วจึงไม่วนกลับเข้ามาอีก -->
+      <button class="btn ghost sm" style="width:100%;margin-top:8px;justify-content:center"
+        onclick="location.replace('index.html')"><i class="ti ti-arrow-left"></i> กลับหน้าเว็บ</button>
+      <button class="btn ghost sm" style="width:100%;margin-top:6px;justify-content:center"
+        onclick="hardReset()" title="ถอนตัวแคชและโหลดไฟล์ใหม่ทั้งหมด">
+        <i class="ti ti-refresh-alert"></i> ล้างแคชและโหลดใหม่</button>
+      <button class="btn ghost sm" style="width:100%;margin-top:6px;justify-content:center;color:var(--danger)" onclick="doLogout()"><i class="ti ti-logout"></i> ออกจากระบบ</button>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim" onclick="toggleSide(false)"></div>
+
+  <main>
+    <div class="mobile-top">
+      <button class="btn sm ghost" onclick="toggleSide(true)"><i class="ti ti-menu-2" style="font-size:20px"></i></button>
+      <b>Cendon Admin</b>
+    </div>
+    <div class="main">
+      <div id="schemaBanner"></div>
+
+      <!-- OVERVIEW -->
+      <section class="view on" id="v-overview">
+        <div class="page-head"><div><h1>ภาพรวมระบบ</h1><p>สถิติการใช้งาน Cendon แบบเรียลไทม์</p></div>
+          <button class="btn sm" onclick="loadStats()"><i class="ti ti-refresh"></i> รีเฟรช</button></div>
+        <div class="stat-grid" id="statGrid"></div>
+        <div class="card">
+          <h3>การใช้งาน AI ย้อนหลัง 14 วัน</h3><div class="sub">จำนวนข้อความที่ส่งถึง Cendon ต่อวัน</div>
+          <div class="chart" id="aiChart"></div><div class="chart-x" id="aiChartX"></div>
+        </div>
+        <div class="card">
+          <h3>ผู้ใช้ใหม่ 14 วัน</h3><div class="sub">จำนวนบัญชีที่สมัครเข้าใช้งานต่อวัน</div>
+          <div class="chart" id="signupChart"></div><div class="chart-x" id="signupChartX"></div>
+        </div>
+        <div class="two-col">
+          <div class="card">
+            <h3>สัดส่วนยศผู้ใช้</h3><div class="sub">จำนวนบัญชีในแต่ละระดับสิทธิ์</div>
+            <div id="roleBreak"><div class="empty">กำลังโหลด...</div></div>
+          </div>
+          <div class="card">
+            <h3>ยี่ห้อรถยอดนิยม</h3><div class="sub">ยี่ห้อที่ผู้ใช้ลงทะเบียนมากที่สุด</div>
+            <div id="makeBreak"><div class="empty">กำลังโหลด...</div></div>
+          </div>
+        </div>
+        <div class="two-col">
+          <div class="card">
+            <h3>ผู้ใช้ AI มากที่สุด</h3><div class="sub">นับจากจำนวนข้อความสะสม</div>
+            <div class="tbl-wrap"><table>
+              <thead><tr><th>ผู้ใช้</th><th>ยศ</th><th style="text-align:right">ข้อความ</th></tr></thead>
+              <tbody id="topUsers"><tr><td colspan="3" class="empty">กำลังโหลด...</td></tr></tbody>
+            </table></div>
+          </div>
+          <div class="card">
+            <h3>เข้าใช้งานล่าสุด</h3><div class="sub">บัญชีที่เพิ่งเข้าระบบ</div>
+            <div id="recentUsers"><div class="empty">กำลังโหลด...</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CARS -->
+      <section class="view" id="v-cars">
+        <div class="page-head"><div><h1>รถในระบบ</h1><p>รถทุกคันที่ผู้ใช้ลงทะเบียนไว้ พร้อมเจ้าของ</p></div>
+          <button class="btn sm" onclick="loadCars()"><i class="ti ti-refresh"></i> รีเฟรช</button></div>
+        <div class="card">
+          <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+            <input class="input" id="carSearch" placeholder="ค้นหายี่ห้อ รุ่น หรืออีเมลเจ้าของ..." style="flex:1;min-width:200px" onkeydown="if(event.key==='Enter')loadCars()">
+            <button class="btn primary" onclick="loadCars()"><i class="ti ti-search"></i> ค้นหา</button>
+          </div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>รถ</th><th>ปี</th><th>เลขไมล์</th><th>เจ้าของ</th><th>เพิ่มเมื่อ</th></tr></thead>
+            <tbody id="carRows"><tr><td colspan="5" class="empty">กำลังโหลด...</td></tr></tbody>
+          </table></div>
+        </div>
+      </section>
+
+      <!-- SHOP -->
+      <section class="view" id="v-shop">
+        <div class="page-head"><div><h1>จัดการร้านค้า</h1><p>สินค้าอะไหล่และของตกแต่งที่แสดงในแอป</p></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn" onclick="syncShop()" id="syncShopBtn"><i class="ti ti-sparkles"></i> ให้ AI หาสินค้าใหม่</button>
+            <button class="btn primary" onclick="openShopEditor()"><i class="ti ti-plus"></i> เพิ่มสินค้า</button>
+          </div></div>
+        <div class="card"><div id="shopList"><div class="empty">กำลังโหลด...</div></div></div>
+      </section>
+
+      <!-- USERS -->
+      <section class="view" id="v-users">
+        <div class="page-head"><div><h1>ผู้ใช้ & การให้ยศ</h1><p>ค้นหา จัดการสิทธิ์ และแบน/ปลดแบนบัญชี</p></div></div>
+        <div class="card">
+          <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+            <input class="input" id="userSearch" placeholder="ค้นหาชื่อหรืออีเมล..." style="flex:1;min-width:200px" onkeydown="if(event.key==='Enter')loadUsers()">
+            <button class="btn primary" onclick="loadUsers()"><i class="ti ti-search"></i> ค้นหา</button>
+          </div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>ผู้ใช้</th><th>ยศ</th><th>เข้าใช้ล่าสุด</th><th>จัดการ</th></tr></thead>
+            <tbody id="userRows"><tr><td colspan="4" class="empty">กำลังโหลด...</td></tr></tbody>
+          </table></div>
+        </div>
+      </section>
+
+      <!-- MAGAZINE -->
+      <section class="view" id="v-magazine">
+        <div class="page-head"><div><h1>จัดการนิตยสาร</h1><p>เพิ่ม แก้ไข ลบข่าว หรือให้ AI ดึงข่าวใหม่</p></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn" onclick="syncShop()" id="syncShopBtn" style="color:var(--warn)"><i class="ti ti-sparkles"></i> AI หาสินค้า Shop</button>
+            <button class="btn" onclick="syncMag()" id="syncBtn"><i class="ti ti-sparkles"></i> ให้ AI ดึงข่าวใหม่</button>
+            <button class="btn primary" onclick="openMagEditor()"><i class="ti ti-plus"></i> เพิ่มข่าว</button>
+          </div></div>
+        <div class="card"><div id="magList"><div class="empty">กำลังโหลด...</div></div></div>
+      </section>
+
+      <!-- CONFIG -->
+      <section class="view" id="v-config">
+        <div class="page-head"><div><h1>ตั้งค่าเว็บไซต์</h1><p>ประกาศบนหน้าเว็บ และโหมดปิดปรับปรุง</p></div></div>
+        <div class="card">
+          <h3><i class="ti ti-speakerphone"></i> ประกาศบนหน้าเว็บ</h3>
+          <div class="sub">แถบข้อความที่แสดงบนสุดของหน้าเว็บให้ผู้ใช้ทุกคนเห็น</div>
+          <div class="toggle-row"><div><b>เปิดใช้งานประกาศ</b><small>แสดงแถบประกาศบนหน้าหลัก</small></div>
+            <label class="switch"><input type="checkbox" id="annEnabled"><span class="sl"></span></label></div>
+          <div class="field" style="margin-top:16px">
+            <label>ข้อความประกาศ</label>
+            <input class="input" id="annText" placeholder="เช่น เปิดตัวฟีเจอร์ใหม่วันนี้!" maxlength="300">
+          </div>
+          <div class="field">
+            <label>ระดับความสำคัญ</label>
+            <div class="seg" id="annType">
+              <button data-v="info" class="on">ทั่วไป</button>
+              <button data-v="warn">สำคัญ/เตือน</button>
+            </div>
+          </div>
+          <button class="btn primary" onclick="saveAnnouncement()"><i class="ti ti-device-floppy"></i> บันทึกประกาศ</button>
+        </div>
+        <div class="card">
+          <h3><i class="ti ti-tool"></i> โหมดปิดปรับปรุง</h3>
+          <div class="sub">เมื่อเปิด ผู้ใช้ทั่วไปจะเข้าเว็บไม่ได้และใช้ AI ไม่ได้ (แอดมิน/ผู้ควบคุมยังเข้าได้)</div>
+          <div class="toggle-row"><div><b>เปิดโหมดปิดปรับปรุง</b><small>ปิดการใช้งานสำหรับผู้ใช้ทั่วไป</small></div>
+            <label class="switch"><input type="checkbox" id="maintEnabled"><span class="sl"></span></label></div>
+          <div class="field" style="margin-top:16px">
+            <label>ข้อความแจ้งผู้ใช้</label>
+            <input class="input" id="maintMsg" placeholder="ระบบกำลังปรับปรุง กลับมาเร็วๆ นี้ครับ" maxlength="300">
+          </div>
+          <button class="btn primary" onclick="saveMaintenance()"><i class="ti ti-device-floppy"></i> บันทึก</button>
+        </div>
+        <div class="card">
+          <h3><i class="ti ti-gauge"></i> โควตาการใช้ AI</h3>
+          <div class="sub">จำกัดจำนวนข้อความต่อคนต่อวัน — แอดมินและเจ้าของไม่ถูกจำกัด</div>
+          <div class="grid2">
+            <div class="field"><label>ผู้ใช้ที่ล็อกอิน (ข้อความ/วัน)</label>
+              <input class="input" id="limAi" type="number" min="0" max="100000" placeholder="60"></div>
+            <div class="field"><label>ผู้ใช้ที่ไม่ได้ล็อกอิน (ต่อ IP/วัน)</label>
+              <input class="input" id="limAnon" type="number" min="0" max="100000" placeholder="15"></div>
+          </div>
+          <button class="btn primary" onclick="saveLimits()"><i class="ti ti-device-floppy"></i> บันทึกโควตา</button>
+        </div>
+        <div class="card">
+          <h3><i class="ti ti-toggle-left"></i> เปิด/ปิดฟีเจอร์</h3>
+          <div class="sub">ปิดฟีเจอร์ชั่วคราวได้ทันทีโดยไม่ต้องแก้โค้ดหรือ deploy ใหม่</div>
+          <div id="featureRows"></div>
+          <button class="btn primary" onclick="saveFeatures()"><i class="ti ti-device-floppy"></i> บันทึกฟีเจอร์</button>
+        </div>
+        <div class="card">
+          <h3><i class="ti ti-download"></i> ส่งออกข้อมูล</h3>
+          <div class="sub">ดาวน์โหลดผู้ใช้ รถ นิตยสาร ร้านค้า และบันทึกการทำงานทั้งหมดเป็นไฟล์ JSON</div>
+          <button class="btn" onclick="doExport()" id="exportBtn"><i class="ti ti-file-download"></i> ส่งออกเป็น JSON</button>
+        </div>
+      </section>
+
+      <!-- SYSTEM -->
+      <section class="view" id="v-nda">
+  <div class="head">
+    <div><h1>ผู้ลงนามข้อตกลงรักษาความลับ</h1>
+      <p class="sub">ทุกคนที่เข้าดูคู่มือระบบต้องลงนามก่อน · เก็บลายมือชื่อ เวลา และอุปกรณ์ไว้เป็นหลักฐาน</p></div>
+    <button class="btn" onclick="loadNda()"><i class="ti ti-refresh"></i> รีเฟรช</button>
+  </div>
+  <div id="ndaList"><div class="empty">กำลังโหลด...</div></div>
+</section>
+
+<section class="view" id="v-system">
+        <div class="page-head"><div><h1>สุขภาพระบบ</h1><p>ตรวจว่าฐานข้อมูลและการตั้งค่าเซิร์ฟเวอร์ครบถ้วนหรือยัง</p></div>
+          <button class="btn sm" onclick="loadHealth()"><i class="ti ti-refresh"></i> ตรวจใหม่</button></div>
+        <div id="healthBody"><div class="card"><div class="empty">กำลังตรวจ...</div></div></div>
+        <div class="page-head" style="margin-top:22px"><div><h1 style="font-size:19px">ตรวจการค้นข้อมูลของ AI</h1>
+          <p>เช็กว่า AI ค้นเน็ตได้จริงไหม ถ้าไม่ได้จะบอกว่าติดตรงไหน</p></div>
+          <button class="btn sm" onclick="loadDiag()"><i class="ti ti-stethoscope"></i> ตรวจเดี๋ยวนี้</button></div>
+        <div class="card"><div id="diagBody"><div class="empty">กดปุ่มตรวจเดี๋ยวนี้เพื่อเริ่ม</div></div></div>
+      </section>
+
+      <!-- VECTORIZE -->
+      <section class="view" id="v-vector">
+        <div class="page-head"><div><h1>สมองเวกเตอร์</h1>
+          <p>ความรู้ที่สอนไว้ คำตอบที่ใช้ซ้ำ และความจำผู้ใช้ ถูกค้นด้วย “ความหมาย” ไม่ใช่การจับคำตรงตัว
+             — ถามคนละคำแต่เรื่องเดียวกัน ระบบก็หาเจอ</p></div>
+          <button class="btn sm" onclick="loadVector()"><i class="ti ti-refresh"></i> รีเฟรช</button></div>
+        <div class="card" id="vecStatus"><div class="empty">กำลังโหลด...</div></div>
+        <div class="card" style="margin-top:12px">
+          <div class="kb-h" style="margin-bottom:8px"><b>สร้างดัชนีย้อนหลัง</b></div>
+          <p style="color:var(--faint);font-size:13px;margin:0 0 10px">
+            ของที่มีอยู่ก่อนเปลี่ยนระบบยังไม่มีเวกเตอร์ กดปุ่มนี้ครั้งเดียวเพื่อสร้างให้ครบ
+            ทำเป็นรอบ ๆ อัตโนมัติ ปิดหน้าไม่ได้จนกว่าจะขึ้นว่าเสร็จ</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn sm" onclick="vecBackfill('kb')"><i class="ti ti-book"></i> ความรู้ที่สอนไว้</button>
+            <button class="btn sm ghost" onclick="vecBackfill('cache')"><i class="ti ti-recycle"></i> คำตอบที่ใช้ซ้ำ</button>
+            <button class="btn sm ghost" onclick="vecBackfill('memory')"><i class="ti ti-brain"></i> ความจำผู้ใช้</button>
+            <button class="btn sm ghost" onclick="vecBackfillAll()"><i class="ti ti-stack-2"></i> ทั้งหมด</button>
+          </div>
+          <div id="vecLog" style="margin-top:12px;font-size:13px;color:var(--faint);white-space:pre-wrap"></div>
+        </div>
+        <div class="card" style="margin-top:12px">
+          <div class="kb-h" style="margin-bottom:8px"><b>ทดลองค้น</b></div>
+          <p style="color:var(--faint);font-size:13px;margin:0 0 10px">
+            พิมพ์คำถามแบบที่ผู้ใช้จะถามจริง แล้วดูว่าดัชนีคืนอะไรมาบ้างและคะแนนเท่าไหร่
+            ใช้ปรับค่าคะแนนขั้นต่ำ (VEC_MIN_*) โดยดูของจริง ไม่ใช่เดา</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <input class="input" id="vecQ" style="flex:1;min-width:220px" placeholder="เช่น เหยียบเบรกแล้วดังเอี๊ยด">
+            <select class="input" id="vecKind" style="max-width:180px">
+              <option value="kb">ความรู้ที่สอนไว้</option>
+              <option value="cache">คำตอบที่ใช้ซ้ำ</option>
+              <option value="memory">ความจำผู้ใช้</option>
+            </select>
+            <button class="btn sm" onclick="vecProbe()"><i class="ti ti-search"></i> ค้น</button>
+          </div>
+          <div id="vecProbeOut" style="margin-top:12px"></div>
+        </div>
+      </section>
+
+      <!-- KB: สอน AI -->
+      <section class="view" id="v-kb">
+        <div class="page-head"><div><h1>สอน AI</h1>
+          <p>ความรู้ที่ใส่ตรงนี้ AI จะหยิบไปใช้ตอบผู้ใช้ทุกคน — ใส่แล้วมีผลทันที ไม่ต้อง deploy</p></div>
+          <div style="display:flex;gap:8px">
+            <label class="btn sm ghost" style="cursor:pointer">
+              <i class="ti ti-upload"></i> นำเข้าชุดความรู้
+              <input type="file" id="kbFile" accept=".json,application/json" hidden onchange="kbImport(this)">
+            </label>
+            <button class="btn sm" onclick="kbNew()"><i class="ti ti-plus"></i> เพิ่มความรู้</button>
+          </div></div>
+        <div class="card" style="margin-bottom:12px">
+          <input class="input" id="kbSearch" placeholder="ค้นหาจากหัวข้อ คำสำคัญ หรือรุ่นรถ" oninput="loadKb()">
+        </div>
+        <div class="card"><div id="kbList"><div class="empty">กำลังโหลด...</div></div></div>
+      </section>
+
+      <!-- CACHE -->
+      <section class="view" id="v-cache">
+        <div class="page-head"><div><h1>คำตอบที่ใช้ซ้ำ</h1>
+          <p>คำถามที่เคยตอบไปแล้ว ถ้ามีคนถามซ้ำกับรถรุ่นเดียวกัน ระบบจะตอบจากตรงนี้ทันทีโดยไม่เสียโควตา</p></div>
+          <button class="btn sm" onclick="loadCache()"><i class="ti ti-refresh"></i> รีเฟรช</button></div>
+        <div class="stat-grid" id="cacheStat" style="margin-bottom:12px"></div>
+        <div class="card"><div id="cacheList"><div class="empty">กำลังโหลด...</div></div></div>
+      </section>
+
+      <!-- FEEDBACK -->
+      <section class="view" id="v-feedback">
+        <div class="page-head"><div><h1>ความเห็นผู้ใช้</h1><p>ข้อความที่ผู้ใช้ส่งมาจากหน้าแชต</p></div>
+          <button class="btn sm" onclick="loadFeedback()"><i class="ti ti-refresh"></i> รีเฟรช</button></div>
+        <div class="card" style="margin-bottom:12px">
+          <div class="fb-filter" id="fbFilter">
+            <button data-st="" class="on">ทั้งหมด</button>
+            <button data-st="new">ใหม่</button>
+            <button data-st="read">อ่านแล้ว</button>
+            <button data-st="done">จัดการแล้ว</button>
+            <button data-st="spam">สแปม</button>
+          </div>
+        </div>
+        <div class="card"><div id="fbList"><div class="empty">กำลังโหลด...</div></div></div>
+      </section>
+
+      <!-- AUDIT -->
+      <section class="view" id="v-audit">
+        <div class="page-head"><div><h1>บันทึกการทำงาน</h1><p>ประวัติการกระทำของผู้ดูแลระบบล่าสุด</p></div>
+          <button class="btn sm" onclick="loadAudit()"><i class="ti ti-refresh"></i> รีเฟรช</button></div>
+        <div class="card"><div id="auditList"><div class="empty">กำลังโหลด...</div></div></div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- KB EDITOR MODAL -->
+<div class="modal-bg" id="kbModal" onclick="if(event.target===this)kbClose()">
+  <div class="modal">
+    <h3 id="kbModalTitle">เพิ่มความรู้</h3>
+    <input type="hidden" id="kbId">
+    <div class="field"><label>หัวข้อ — สรุปสั้น ๆ ว่าความรู้ชิ้นนี้เรื่องอะไร</label>
+      <input class="input" id="kbTitle" maxlength="200" placeholder="เช่น อาการคอมแอร์ Civic FC ตัดบ่อย"></div>
+    <div class="field"><label>คำสำคัญ — คั่นด้วยจุลภาค ถ้าคำถามมีคำพวกนี้ AI จะหยิบความรู้ชิ้นนี้ไปใช้</label>
+      <input class="input" id="kbKeys" maxlength="400" placeholder="แอร์ไม่เย็น, คอมแอร์, แอร์ตัด"></div>
+    <div style="display:flex;gap:10px">
+      <div class="field" style="flex:1"><label>ยี่ห้อ (เว้นว่าง = ใช้กับทุกยี่ห้อ)</label>
+        <input class="input" id="kbMake" maxlength="60" placeholder="honda"></div>
+      <div class="field" style="flex:1"><label>รุ่น (เว้นว่าง = ใช้กับทุกรุ่น)</label>
+        <input class="input" id="kbModelName" maxlength="60" placeholder="civic"></div>
+    </div>
+    <div class="field"><label>เนื้อหาความรู้ — เขียนอย่างที่อยากให้ AI รู้และเอาไปใช้ตอบ</label>
+      <textarea class="input" id="kbBody" rows="8" maxlength="8000"
+        placeholder="เช่น รุ่นนี้คอมแอร์ตัดบ่อยเพราะพัดลมแผงร้อนอ่อน ให้เช็กพัดลมก่อนเสมอ ค่าเปลี่ยนราว 2,500-4,000 บาท"></textarea></div>
+    <div class="field"><label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+      <input type="checkbox" id="kbEnabled" checked style="width:auto"> เปิดใช้งาน</label></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn ghost" onclick="kbClose()">ยกเลิก</button>
+      <button class="btn primary" id="kbSaveBtn" onclick="kbSave()"><i class="ti ti-device-floppy"></i> บันทึก</button>
+    </div>
   </div>
 </div>
 
-<button class="tocbtn" id="tocbtn" aria-expanded="false">สารบัญ</button>
-<div class="veil" id="veil"></div>
+<!-- MAG EDITOR MODAL -->
+<div class="modal-bg" id="magModal" onclick="if(event.target===this)closeMagEditor()">
+  <div class="modal">
+    <h3 id="magModalTitle">เพิ่มข่าว</h3>
+    <input type="hidden" id="magId">
+    <div class="field"><label>พาดหัวข่าว</label><input class="input" id="magTitle" maxlength="300"></div>
+    <div class="field"><label>ประเภท</label>
+      <select class="input" id="magType">
+        <option>ข่าวเด่น</option><option>รีวิว</option><option>เทคโนโลยี</option><option>เคล็ดลับ</option>
+        <option>EV</option><option>ราคา</option><option>อุบัติเหตุ</option><option>นโยบาย</option>
+      </select></div>
+    <div class="field"><label>สรุปสั้น (แสดงในการ์ด)</label><textarea class="input" id="magShort" rows="2" maxlength="1000"></textarea></div>
+    <div class="field"><label>เนื้อหาเต็ม</label><textarea class="input" id="magFull" rows="6" maxlength="20000"></textarea></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn ghost" onclick="closeMagEditor()">ยกเลิก</button>
+      <button class="btn primary" id="magSaveBtn" onclick="saveMag()"><i class="ti ti-device-floppy"></i> บันทึก</button>
+    </div>
+  </div>
+</div>
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<!-- SHOP EDITOR MODAL -->
+<div class="modal-bg" id="shopModal" onclick="if(event.target===this)closeShopEditor()">
+  <div class="modal">
+    <h3 id="shopModalTitle">เพิ่มสินค้า</h3>
+    <input type="hidden" id="shopId">
+    <div class="field"><label>ชื่อสินค้า</label><input class="input" id="shopTitle" maxlength="200"></div>
+    <div class="field"><label>หมวดหมู่</label>
+      <select class="input" id="shopCat">
+        <option>อะไหล่</option><option>ของตกแต่ง</option><option>น้ำมันเครื่อง</option>
+        <option>ยางและล้อ</option><option>เครื่องเสียง</option><option>อุปกรณ์ความปลอดภัย</option><option>ดูแลรักษา</option>
+      </select></div>
+    <div class="grid2">
+      <div class="field"><label>ราคา</label><input class="input" id="shopPrice" maxlength="40" placeholder="1,200 - 1,800 บาท"></div>
+      <div class="field"><label>ลิงก์สินค้า</label><input class="input" id="shopUrl" maxlength="500" placeholder="https://..."></div>
+    </div>
+    <div class="field"><label>คำอธิบายสั้น</label><textarea class="input" id="shopNote" rows="3" maxlength="1000"></textarea></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn ghost" onclick="closeShopEditor()">ยกเลิก</button>
+      <button class="btn primary" id="shopSaveBtn" onclick="saveShop()"><i class="ti ti-device-floppy"></i> บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- defer: ตัวแปลภาษาเดินต่อได้เลย ไม่ต้องหยุดรอสองไฟล์นี้จากเซิร์ฟเวอร์ของ Google -->
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
 "use strict";
 const $=id=>document.getElementById(id);
-const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-
-/* ตั้งธีมตามที่ผู้ใช้เลือกไว้ในแอป ทีมงานจะได้ไม่โดนจอขาวแยงตาตอนดึก */
-try{
-  const t=JSON.parse(localStorage.getItem("spire_theme")||'"dark"');
-  document.documentElement.setAttribute("data-theme",t);
-}catch(e){ document.documentElement.setAttribute("data-theme","dark") }
+const esc=s=>(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 const BACKEND_URL="https://spireonebackend.carspirethailand.workers.dev";
-const fbConfig={apiKey:"AIzaSyDDtvz4d4FRG_KOq5EQHmlDijU-x1FDZlQ",authDomain:"sp1p-82396.firebaseapp.com",databaseURL:"https://sp1p-82396-default-rtdb.firebaseio.com",projectId:"sp1p-82396",storageBucket:"sp1p-82396.appspot.com",messagingSenderId:"924479207020",appId:"1:924479207020:web:ec64428a614032f92c9f60"};
-
-let auth=null,me=null;
-try{ firebase.initializeApp(fbConfig); auth=firebase.auth() }catch(e){}
-
+const fbConfig={apiKey:"AIzaSyDDtvz4d4FRG_KOq5EQHmlDijU-x1FDZlQ",authDomain:"sp1p-82396.firebaseapp.com",databaseURL:"https://sp1p-82396-default-rtdb.firebaseio.com",projectId:"sp1p-82396",storageBucket:"sp1p-82396.appspot.com",messagingSenderId:"924479207020",appId:"1:924479207020:web:ec64428a61403e1ad48a49"};
 const ROLE_RANK={owner:4,admin:3,moderator:2,user:1};
-const rank=r=>ROLE_RANK[r]||0;
-const ROLE_TH={owner:"เจ้าของระบบ",admin:"ผู้ดูแลระบบ",moderator:"ผู้ควบคุม",user:"ผู้ใช้"};
+let auth=null,useFb=false,me=null;
+/* firebase โหลดแบบ defer แล้ว ตัวแปลภาษาจึงไม่ต้องหยุดรอเซิร์ฟเวอร์ของ Google กลางคัน
+   ผลคือหน้าเว็บวาดและกดใช้งานได้ก่อน ระบบล็อกอินตามมาทีหลังไม่กี่ร้อยมิลลิวินาที
+   ตอนบรรทัดนี้ทำงานยังไม่มีตัว firebase จึงวางตัวแทนไว้ก่อน
+   ตัวแทนรับ onAuthStateChanged เก็บเข้าคิว พอของจริงมาถึงค่อยลงทะเบียนให้ครบ
+   จุดอื่นในไฟล์อ่านค่า auth ตอนผู้ใช้กด ซึ่งเป็นตอนที่ของจริงมาแล้วเสมอ */
+(function(){
+  var q=[];
+  auth={currentUser:null,
+    onAuthStateChanged:function(cb){var e={cb:cb,un:null,dead:false};q.push(e);
+      return function(){e.dead=true;if(e.un)try{e.un()}catch(x){}}},
+    /* ยังไม่ทันโหลดเสร็จก็กดออกจากระบบได้ รอของจริงแล้วค่อยสั่ง */
+    signOut:function(){var stub=this;return window.spireFbReady.then(function(){
+      return (auth&&auth!==stub)?auth.signOut():null})}};
+  useFb=true;
+  window.spireFbReady=new Promise(function(res){
+    function go(){
+      try{
+        firebase.initializeApp(fbConfig);
+        var real=firebase.auth();
+        real.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(){});
+        auth=real; useFb=true;
+        q.forEach(function(e){if(e.dead)return;try{e.un=real.onAuthStateChanged(e.cb)}catch(x){}});
+      }catch(e){console.warn("fb",e);auth=null;useFb=false}
+      res(useFb);
+    }
+    if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",go,{once:true});
+    else go();
+  });
+})();
 
-function gate(msg,actions){ $("gmsg").innerHTML=msg; $("gact").innerHTML=actions||"" }
-
-async function api(path,opt){
-  const u=auth&&auth.currentUser;
-  if(!u)throw new Error("ยังไม่ได้เข้าสู่ระบบ");
-  const r=await fetch(BACKEND_URL+path,Object.assign({
-    headers:{Authorization:"Bearer "+await u.getIdToken(),"Content-Type":"application/json"}
-  },opt||{}));
-  let d=null; try{ d=await r.json() }catch(e){}
-  if(!r.ok)throw new Error((d&&d.error)||("HTTP "+r.status));
+let tt;function toast(m,ic){const el=$("toast");el.innerHTML=`<i class="ti ${ic||"ti-check"}"></i>${esc(m)}`;el.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("show"),3200)}
+function rank(r){return ROLE_RANK[r]||0}
+async function tok(){return await auth.currentUser.getIdToken()}
+async function api(path,opts){
+  opts=opts||{};
+  const headers=Object.assign({"Authorization":"Bearer "+await tok()},opts.headers||{});
+  if(opts.body)headers["Content-Type"]="application/json";
+  const r=await fetch(BACKEND_URL+path,{method:opts.method||"GET",headers,body:opts.body?JSON.stringify(opts.body):undefined});
+  let d=null;try{d=await r.json()}catch(e){}
+  if(!r.ok)throw new Error((d&&d.error)||("Error "+r.status));
   return d;
 }
 
-function signIn(){
-  if(location.protocol==="file:"){
-    gate("เปิดผ่านเว็บจริงเพื่อเข้าสู่ระบบ — เปิดจากไฟล์ตรง ๆ ใช้ไม่ได้");return;
-  }
-  const p=new firebase.auth.GoogleAuthProvider();
-  p.setCustomParameters({prompt:"select_account"});
-  auth.signInWithPopup(p).catch(e=>{
-    const c=(e&&e.code)||"unknown";
-    if(c==="auth/popup-closed-by-user"||c==="auth/cancelled-popup-request")return;
+/* ===== AUTH GATE ===== */
+function gateMsg(html,actions){$("gateMsg").innerHTML=html;$("gateActions").innerHTML=actions||""}
+async function signIn(){
+  if(location.protocol==="file:"){gateMsg("เปิดผ่านเว็บจริงเพื่อล็อกอิน (file:// ใช้ไม่ได้)");return}
+  const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:"select_account"});
+  try{await auth.signInWithPopup(p)}catch(e){
+    const code=(e&&e.code)||"unknown";
+    if(code==="auth/popup-closed-by-user"||code==="auth/cancelled-popup-request")return;
+    /* ของเดิมต่อ e.code ดิบ ๆ error ที่ไม่ใช่ของ Firebase ไม่มี .code
+       หน้าจอจึงขึ้นว่า "ล็อกอินไม่สำเร็จ: undefined" ซึ่งไม่ช่วยอะไรเลย
+       หน้านี้เป็นของทีมงาน จึงบอกสาเหตุกับทางแก้ไปตรง ๆ ได้ */
     const M={
-      "auth/operation-not-allowed":"ยังไม่ได้เปิดวิธีเข้าระบบนี้ — Firebase Console → Authentication → Sign-in method",
-      "auth/unauthorized-domain":"โดเมนนี้ยังไม่ได้รับอนุญาต — Firebase Console → Authentication → Settings → Authorized domains",
-      "auth/popup-blocked":"เบราว์เซอร์บล็อกหน้าต่างเข้าระบบ อนุญาตป๊อปอัปแล้วลองใหม่",
-      "auth/network-request-failed":"เชื่อมต่อไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองใหม่"
+      "auth/operation-not-allowed":"ยังไม่ได้เปิดวิธีเข้าระบบนี้ — เปิดที่ Firebase Console → Authentication → Sign-in method",
+      "auth/unauthorized-domain":"โดเมนนี้ยังไม่ได้รับอนุญาต — เพิ่มที่ Firebase Console → Authentication → Settings → Authorized domains",
+      "auth/popup-blocked":"เบราว์เซอร์บล็อกหน้าต่างล็อกอิน กรุณาอนุญาตป๊อปอัปแล้วลองใหม่",
+      "auth/network-request-failed":"เชื่อมต่อไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองใหม่",
+      "auth/user-disabled":"บัญชีนี้ถูกระงับอยู่"
     };
-    gate((M[c]||"เข้าสู่ระบบไม่สำเร็จ")+" <code>"+esc(c)+"</code>",
-      '<button class="btn primary" onclick="signIn()">ลองใหม่</button>');
-  });
+    gateMsg((M[code]||"เข้าสู่ระบบไม่สำเร็จ")+"  ("+code+")");
+  }
 }
-window.signIn=signIn;
-function signOut(){ auth&&auth.signOut(); location.href="index.html" }
-window.signOut=signOut;
+function doLogout(){if(useFb)auth.signOut();location.href="index.html"}
 
-if(!auth){
-  gate("ระบบเข้าสู่ระบบไม่พร้อมใช้งาน");
-}else auth.onAuthStateChanged(async u=>{
+if(useFb)auth.onAuthStateChanged(async u=>{
   if(!u){
-    gate("คู่มือนี้เปิดให้เฉพาะทีมงาน<br>เข้าสู่ระบบด้วยบัญชีที่มียศผู้ควบคุมขึ้นไป",
-      '<button class="btn primary" onclick="signIn()"><i class="ti ti-brand-google"></i> เข้าสู่ระบบด้วย Google</button>');
+    gateMsg("เข้าสู่ระบบด้วยบัญชีผู้ดูแลเพื่อเข้าใช้แผงควบคุม",
+      `<button class="btn primary" style="width:100%;justify-content:center" onclick="signIn()"><i class="ti ti-brand-google"></i> เข้าสู่ระบบด้วย Google</button>`);
     return;
   }
-  gate('<i class="ti ti-loader-2"></i> กำลังยืนยันสิทธิ์…');
+  gateMsg('<i class="ti ti-loader-2"></i> กำลังยืนยันสิทธิ์...');
   try{
-    const d=await api("/api/login",{method:"POST",
-      body:JSON.stringify({name:u.displayName||"",photo:u.photoURL||""})});
+    const d=await api("/api/login",{method:"POST",body:{name:u.displayName||"",photo:u.photoURL||""}});
     me={uid:d.uid,name:d.name,email:d.email,photo:d.photo,role:d.role||"user"};
-    /* การตรวจตรงนี้เป็นแค่การบอกผู้ใช้ให้เร็ว ตัวที่ปกป้องจริงคือ 403 จากเซิร์ฟเวอร์
-       ต่อให้ลบเงื่อนไขนี้ทิ้ง การขอเนื้อหาก็ยังถูกปฏิเสธอยู่ดี */
     if(rank(me.role)<rank("moderator")){
-      gate("บัญชี <b>"+esc(me.email)+"</b> ไม่มีสิทธิ์อ่านคู่มือนี้<br>"+
-           "<small>ต้องเป็นผู้ควบคุมขึ้นไป</small>",
-        '<button class="btn" onclick="signOut()">ออกจากระบบ</button>'+
-        '<a class="btn" href="index.html">กลับหน้าหลัก</a>');
+      gateMsg(`บัญชี <b>${esc(me.email)}</b> ไม่มีสิทธิ์เข้าแผงควบคุม<br><small style="color:var(--faint)">ต้องเป็นผู้ควบคุมขึ้นไป</small>`,
+        `<button class="btn" style="width:100%;justify-content:center" onclick="doLogout()">ออกจากระบบ</button>`);
       return;
     }
-    await load();
+    enterAdmin();
   }catch(e){
-    const m=String(e.message||e);
-    gate(/suspended/i.test(m)?"บัญชีนี้ถูกระงับการใช้งาน":"เกิดข้อผิดพลาด: "+esc(m),
-      '<button class="btn" onclick="location.reload()">ลองใหม่</button>');
+    if((e.message||"").includes("suspended")){
+      gateMsg("บัญชีนี้ถูกระงับการใช้งาน",`<button class="btn" style="width:100%;justify-content:center" onclick="doLogout()">ออกจากระบบ</button>`);
+    }else gateMsg("เกิดข้อผิดพลาด: "+esc(e.message),`<button class="btn" style="width:100%;justify-content:center" onclick="location.reload()">ลองใหม่</button>`);
   }
 });
+else gateMsg("ระบบล็อกอินไม่พร้อมใช้งาน");
 
-/* ══ ดึงเนื้อหาจากเซิร์ฟเวอร์ ══════════════════════════════════════════
-   เนื้อหาเก็บอยู่ในฐานข้อมูลเป็นหลายตอน ตอนละแถว เรียงด้วยรหัส hb_NN
-   ทุกแถวตั้ง enabled = 0 ไว้ ซึ่งสำคัญมาก:
-   ตัวค้นความรู้ของ AI กรอง enabled = 1 เสมอ คู่มือจึงไม่มีทางหลุดไปอยู่ใน
-   คำตอบที่ผู้ใช้ทั่วไปได้รับ — เป็นกฎที่เจ้าของโปรเจกต์สั่งไว้ */
-let PARTS=[], LAST=[];
-async function load(){
-  gate('<i class="ti ti-loader-2"></i> กำลังโหลดเนื้อหา…');
-  const d=await api("/api/kb");
-  LAST=d.kb||[];
-  PARTS=LAST.filter(r=>/^hb_/.test(r.id)).sort((a,b)=>a.id<b.id?-1:1);
-  if(!PARTS.length){
-    /* ของที่เคยนำเข้าผิดวิธีจะมีรหัส kb_* แทน hb_* และที่แย่กว่านั้นคือเปิดใช้งานอยู่
-       ต้องบอกให้เห็นทันที เพราะแปลว่าคู่มือกำลังหลุดไปอยู่ในคำตอบที่ AI ให้ผู้ใช้ */
-    const stray=(LAST||[]).filter(r=>r.make==="__handbook__"&&!/^hb_/.test(r.id));
-    const warn=stray.length?
-      '<div style="color:var(--stop);margin-bottom:14px;line-height:1.6">'+
-      '<b>พบคู่มือที่นำเข้าผิดวิธี '+stray.length+' รายการ</b><br>'+
-      '<small>ใช้รหัสผิดและเปิดใช้งานอยู่ แปลว่า AI อาจเอาไปตอบผู้ใช้ทั่วไป '+
-      'กดนำเข้าใหม่แล้วระบบจะเก็บกวาดให้</small></div>':"";
-    gate(warn+"ยังไม่มีเนื้อหาคู่มือในระบบ<br><small>เลือกไฟล์ HANDBOOK.md เพื่อนำเข้า</small>",
-      '<label class="btn primary" style="cursor:pointer">'+
-      '<i class="ti ti-upload"></i> เลือกไฟล์ HANDBOOK.md'+
-      '<input type="file" accept=".md,text/markdown,text/plain" id="mdFile" hidden></label>'+
-      '<a class="btn" href="admin.html">กลับแผงควบคุม</a>');
-    $("mdFile").onchange=e=>{
-      const f=e.target.files[0]; if(!f)return;
-      const rd=new FileReader();
-      rd.onload=()=>importMd(String(rd.result||""),stray).catch(err=>
-        gate("นำเข้าไม่สำเร็จ: "+esc(err.message),
-          '<button class="btn" onclick="location.reload()">ลองใหม่</button>'));
-      rd.readAsText(f,"utf-8");
-    };
-    return;
-  }
+function enterAdmin(){
   $("gate").style.display="none";
-  $("app").style.display="block";
-  $("who").innerHTML=(me.photo?'<img src="'+esc(me.photo)+'" referrerpolicy="no-referrer">':"")+
-    "<span>"+esc(me.name||me.email)+"</span>"+
-    '<span class="rc">'+esc(ROLE_TH[me.role]||me.role)+"</span>";
-  render(PARTS.map(p=>p.body).join("\n\n"));
+  $("app").style.display="grid";
+  // role chip + me
+  const rl={owner:["owner","เจ้าของระบบ"],admin:["admin","ผู้ดูแลระบบ"],moderator:["moderator","ผู้ควบคุม"]}[me.role]||["user","ผู้ใช้"];
+  $("me").innerHTML=`${me.photo?`<img src="${esc(me.photo)}" referrerpolicy="no-referrer">`:`<div class="fb">${esc((me.name||"?")[0].toUpperCase())}</div>`}
+    <div class="info"><b>${esc(me.name)}</b><span class="rolechip ${rl[0]}"><i class="ti ti-shield-check"></i> ${rl[1]}</span></div>`;
+  // lock admin-only tabs for moderators
+  document.querySelectorAll("[data-min='admin']").forEach(a=>{if(rank(me.role)<rank("admin"))a.classList.add("locked")});
+  loadStats();loadUsers();loadMag();loadCars();loadShop();loadHealth();
+  if(rank(me.role)>=rank("admin")){loadConfig();loadAudit()}
 }
-$("reload").onclick=()=>load().catch(e=>alert(e.message));
 
-/* ══ นำเข้าเนื้อหา ══════════════════════════════════════════════════════
-   แบ่งไฟล์ตามหัวข้อระดับภาค แล้วส่งทีละตอนด้วย POST /api/kb
-
-   ไม่ใช้ /api/kb/bulk เพราะมันสร้างรหัสใหม่เองและฮาร์ดโค้ด enabled = 1
-   ซึ่งจะทำให้คู่มือหลุดไปอยู่ในคำตอบที่ AI ให้ผู้ใช้ทั่วไป */
-async function importMd(md, stray){
-  const lines=md.split("\n");
-  const marks=[]; let inCode=false, pos=0;
-  for(const ln of lines){
-    /* คอมเมนต์ของ bash ขึ้นต้นด้วย # เหมือนหัวข้อ Markdown เป๊ะ
-       ไม่ข้ามบล็อกโค้ดก่อนจะได้ตอนปลอมจากตัวอย่างคำสั่งเป็นสิบตอน */
-    if(ln.startsWith("```")) inCode=!inCode;
-    else if(!inCode){ const m=/^# (.+)$/.exec(ln); if(m) marks.push({pos,t:m[1]}) }
-    pos+=ln.length+1;
-  }
-  if(!marks.length) throw new Error("ไม่พบหัวข้อระดับภาคในไฟล์ — เลือกไฟล์ HANDBOOK.md ใช่ไหม");
-
-  const parts=[]; const add=(title,body)=>{
-    body=body.trim(); if(body.length<10) return;
-    parts.push({ id:"hb_"+String(parts.length).padStart(2,"0"),
-      title:title.slice(0,200), body, keywords:"handbook คู่มือระบบ",
-      make:"__handbook__", model:"",
-      /* ต้องเป็น false ที่เป็น boolean เท่านั้น เซิร์ฟเวอร์เช็ค b.enabled === false
-         ส่งเลข 0 จะกลายเป็นเปิดใช้งาน ซึ่งมองไม่เห็นจนกว่า AI จะพูดออกมา */
-      enabled:false });
-  };
-  add("คู่มือระบบ Cendon — ส่วนหัว", md.slice(0,marks[0].pos));
-  for(let i=0;i<marks.length;i++)
-    add(marks[i].t, md.slice(marks[i].pos, i+1<marks.length?marks[i+1].pos:md.length));
-
-  /* เนื้อหาถูกตัดที่ 8000 ตัวอักษรฝั่งเซิร์ฟเวอร์ ตอนที่ยาวกว่านั้นต้องซอยก่อนส่ง
-     ไม่งั้นจะหายไปเงียบ ๆ โดยไม่มีข้อความบอก */
-  const LIMIT=7800, out=[];
-  for(const p of parts){
-    if(p.body.length<=LIMIT){ out.push(p); continue }
-    const chunks=[]; let rest=p.body;
-    while(rest.length){
-      let cut=rest.length<=LIMIT?rest.length:rest.lastIndexOf("\n\n",LIMIT);
-      if(cut<LIMIT*0.5)cut=Math.min(LIMIT,rest.length);
-      chunks.push(rest.slice(0,cut)); rest=rest.slice(cut);
+/* ── ผู้ลงนาม NDA ──
+   เก็บอยู่ในตารางความรู้เหมือนคู่มือ แต่คนละคำนำหน้า (nda_ กับ hb_)
+   และปิดใช้งานไว้ทั้งคู่ AI จึงไม่มีทางเอาไปตอบผู้ใช้ */
+async function loadNda(){
+  const box=$("ndaList");
+  box.innerHTML='<div class="empty">กำลังโหลด...</div>';
+  try{
+    const res=await api("/api/kb");
+    const rows=(res.kb||[]).filter(k=>/^nda_/.test(k.id))
+      .map(k=>{ let m={}; try{ m=JSON.parse(k.keywords||"{}") }catch(e){}
+        return {k,m} })
+      .sort((a,b)=>(b.m.at||0)-(a.m.at||0));
+    if(!rows.length){
+      box.innerHTML='<div class="empty">ยังไม่มีใครลงนาม — คนแรกที่เปิดคู่มือระบบจะถูกขอให้ลงนามก่อน</div>';
+      return;
     }
-    chunks.forEach((c,i)=>out.push(Object.assign({},p,{body:c,
-      title:p.title+(i?" ("+(i+1)+")":"")})));
+    /* แถวที่เปิดใช้งานอยู่คือความผิดพลาด ต้องเห็นทันที
+       เพราะแปลว่าลายเซ็นกำลังถูกส่งเข้าไปในคำตอบที่ AI ให้ผู้ใช้ */
+    const leak=rows.filter(r=>r.k.enabled).length;
+    const dt=t=>t?new Date(t).toLocaleString("th-TH",{dateStyle:"medium",timeStyle:"short"}):"—";
+    const dev=u=>{ u=u||"";
+      const os=/iPhone|iPad/.test(u)?"iOS":/Android/.test(u)?"Android":
+               /Mac OS X/.test(u)?"macOS":/Windows/.test(u)?"Windows":
+               /Linux/.test(u)?"Linux":"อื่น ๆ";
+      const br=/Edg\//.test(u)?"Edge":/Chrome\//.test(u)?"Chrome":
+               /Safari\//.test(u)?"Safari":/Firefox\//.test(u)?"Firefox":"อื่น ๆ";
+      return os+" · "+br; };
+    box.innerHTML=
+      '<div class="nda-sum">'+
+        '<div><b>'+rows.length+'</b><small>ลงนามแล้ว</small></div>'+
+        '<div><b style="font-size:15px">'+
+          (rows[0].m.at?new Date(rows[0].m.at).toLocaleDateString("th-TH",
+            {day:"numeric",month:"short",year:"2-digit"}):"—")+
+          '</b><small>ลงนามล่าสุด</small></div>'+
+        (leak?'<div style="border-color:var(--danger)"><b style="color:var(--danger)">'+leak+
+          '</b><small>เปิดใช้งานอยู่ — ต้องแก้</small></div>':"")+
+      "</div>"+
+      rows.map(({k,m})=>`<div class="nda-row">
+        <div class="nda-who">
+          <b>${esc(m.name||k.title.replace(/^ลงนาม NDA — /,"").replace(/\s*\S+@\S+$/,"")||"—")}</b>
+          <small>${esc(m.email||"")}</small>
+          <div class="nda-meta">
+            <span><i class="ti ti-clock"></i> ${esc(dt(m.at))}</span>
+            <span>${esc(dev(m.ua))}</span>
+            <span>ยศตอนลงนาม: ${esc(m.role||"—")}</span>
+            <span>ข้อกำหนดรุ่น ${esc(String(m.v||"?"))}</span>
+            ${k.enabled?'<span style="color:var(--danger);border-color:var(--danger)">เปิดใช้งานอยู่</span>':""}
+          </div>
+        </div>
+        <div class="nda-sig">${/^data:image\//.test(k.body||"")
+          ?`<img src="${esc(k.body)}" alt="ลายมือชื่อ">`
+          :'<span style="color:#888;font-size:11px">ไม่มีภาพ</span>'}</div>
+      </div>`).join("");
+  }catch(e){
+    box.innerHTML='<div class="empty">โหลดไม่ได้: '+esc(e.message)+"</div>";
   }
-  out.forEach((p,i)=>{ p.id="hb_"+String(i).padStart(2,"0") });
-
-  const total=out.length+(stray?stray.length:0);
-  let done=0;
-  const step=()=>gate('<i class="ti ti-loader-2"></i> กำลังนำเข้า '+done+' / '+total+' …');
-  step();
-
-  for(const p of out){
-    await api("/api/kb",{method:"POST",body:JSON.stringify(p)});
-    done++; step();
-  }
-  /* เก็บกวาดของที่เคยนำเข้าผิดวิธี ต้องทำหลังนำเข้าใหม่สำเร็จ
-     ถ้าลบก่อนแล้วนำเข้าล้ม จะเหลือศูนย์ทั้งที่เดิมยังพออ่านได้ */
-  for(const r of (stray||[])){
-    try{ await api("/api/kb/"+encodeURIComponent(r.id),{method:"DELETE"}) }catch(e){}
-    done++; step();
-  }
-  /* ตอนเก่าที่เกินจำนวนตอนใหม่ต้องลบด้วย ไม่งั้นเนื้อหาเวอร์ชันก่อนจะค้างต่อท้าย */
-  for(const r of LAST.filter(x=>/^hb_/.test(x.id))){
-    if(!out.some(p=>p.id===r.id))
-      try{ await api("/api/kb/"+encodeURIComponent(r.id),{method:"DELETE"}) }catch(e){}
-  }
-  await load();
 }
 
-/* ══ แปลง Markdown เป็นหน้าเว็บ ═════════════════════════════════════════
-   เขียนเองเพราะเล่มนี้มีของเฉพาะตัว: เครื่องหมาย 🔴 ⚠️ 💡 ต้องกลายเป็น
-   กล่องสามแบบที่บอกว่า "ต้องทำอะไรต่อ" ไม่ใช่อิโมจิลอย ๆ กลางย่อหน้า
-   และการดึงตัวแปลงจากภายนอกเข้ามาก็เป็นการเพิ่มของที่ต้องดูแลโดยไม่จำเป็น */
-const MARK=[["🔴","stop","ห้ามข้าม"],["⚠️","care","ระวัง"],["💡","why","เหตุผลเบื้องหลัง"]];
-function inline(t){
-  t=esc(t);
-  t=t.replace(/`([^`]+)`/g,(m,x)=>"<code>"+x+"</code>");
-  t=t.replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>");
-  t=t.replace(/(^|[^\w*])\*([^*\n]+)\*(?![\w*])/g,"$1<em>$2</em>");
-  t=t.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2">$1</a>');
-  return t;
-}
-function callout(inner,raw){
-  for(const [gl,kind,label] of MARK){
-    if(raw.trimStart().startsWith(gl)){
-      inner=inner.replace(gl+" ","").replace(gl,"");
-      return '<aside class="note n-'+kind+'"><span class="n-tag">'+label+
-             '</span><div class="n-body">'+inner+"</div></aside>";
+/* ===== TABS ===== */
+$("nav").addEventListener("click",e=>{
+  const a=e.target.closest("[data-tab]");if(!a||a.classList.contains("locked"))return;
+  document.querySelectorAll("#nav a").forEach(x=>x.classList.remove("on"));
+  a.classList.add("on");
+  const t=a.dataset.tab;
+  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on",v.id==="v-"+t));
+  /* หน้าที่ต้องยิงถามหลังบ้าน โหลดตอนเปิดดูจริง ไม่ใช่ตอนเข้าเว็บ
+     จะได้ไม่หน่วงหน้าแรกด้วยงานที่ยังไม่มีใครขอดู */
+  if(t==="vector")loadVector();
+  if(t==="nda")loadNda();
+  toggleSide(false);
+});
+function toggleSide(open){$("side").classList.toggle("open",open);$("scrim").classList.toggle("show",open)}
+
+/* ── ล้างของเก่าที่ค้างอยู่ ──
+   ตัวแคชของเว็บ (service worker) เก็บไฟล์ไว้ให้เปิดได้ตอนเน็ตหลุด
+   แต่บางครั้งมันยึดไฟล์รุ่นเก่าไว้ทั้งที่เซิร์ฟเวอร์มีรุ่นใหม่แล้ว
+   อาการที่เห็นคือหน้าเว็บทำตัวเหมือนเวอร์ชันก่อน ซึ่งหาสาเหตุยากมาก
+   เพราะโค้ดในเครื่องนักพัฒนาถูกต้องแล้ว ปุ่มนี้ล้างทุกอย่างแล้วเริ่มใหม่ */
+async function hardReset(){
+  if(!confirm("ล้างไฟล์ที่เก็บไว้ในเครื่องแล้วโหลดใหม่ทั้งหมด?\n\nข้อมูลบัญชีและรถไม่หาย เพราะเก็บอยู่ที่เซิร์ฟเวอร์"))return;
+  try{
+    if("serviceWorker" in navigator){
+      const rs=await navigator.serviceWorker.getRegistrations();
+      await Promise.all(rs.map(r=>r.unregister()));
     }
-  }
-  return null;
-}
-function render(md){
-  const L=md.split("\n"); const out=[]; const toc=[]; let k=0,n=0;
-  const row=l=>l.trim().replace(/^\||\|$/g,"").split("|");
-  while(k<L.length){
-    const x=L[k];
-    if(x.startsWith("```")){
-      const lang=x.slice(3).trim(); const buf=[]; k++;
-      while(k<L.length&&!L[k].startsWith("```")){ buf.push(L[k]); k++ } k++;
-      out.push('<pre class="code" data-lang="'+esc(lang)+'"><code>'+esc(buf.join("\n"))+"</code></pre>");
-      continue;
+    if(window.caches){
+      const ks=await caches.keys();
+      await Promise.all(ks.map(k=>caches.delete(k)));
     }
-    const h=/^(#{1,3}) (.+)$/.exec(x);
-    if(h){
-      const lv=h[1].length, txt=h[2].trim(); const id="s"+(++n);
-      const part=/^ภาค (\d+) — (.+)$/.exec(txt);
-      if(lv===1&&part){
-        toc.push({id,lv:1,t:"ภาค "+part[1],sub:part[2]});
-        out.push('<h2 class="part" id="'+id+'"><span class="p-num">ภาค '+part[1]+
-                 '</span><span class="p-name">'+esc(part[2])+"</span></h2>");
-      }else if(lv===1){
-        /* หัวเรื่องระดับบนสุดที่ไม่ใช่ภาค คือชื่อหนังสือ ซึ่งปกวาดไว้แล้ว
-           ปล่อยไว้จะได้ชื่อเดียวกันสองครั้งติดกัน อ่านแล้วสะดุด */
-      }else{
-        toc.push({id,lv,t:txt});
-        out.push("<h"+(lv<=2?2:3)+' id="'+id+'">'+inline(txt)+"</h"+(lv<=2?2:3)+">");
+  }catch(e){ console.warn("hardReset",e) }
+  /* ต่อพารามิเตอร์กันเบราว์เซอร์หยิบหน้าเดิมจากแคชของตัวเองอีกชั้น */
+  location.replace("index.html?fresh="+Date.now());
+}
+window.hardReset=hardReset;
+
+/* ===== OVERVIEW ===== */
+function bars(el,elx,data,fmt){
+  const max=Math.max(1,...data.map(d=>d.c));
+  el.innerHTML=data.map(d=>`<div class="bar" style="height:${Math.round(d.c/max*100)}%"><span>${d.c}</span></div>`).join("")||`<div class="empty" style="width:100%">ยังไม่มีข้อมูล</div>`;
+  elx.innerHTML=data.map(d=>`<div>${fmt(d)}</div>`).join("");
+}
+async function loadStats(){
+  $("statGrid").innerHTML=Array.from({length:8},()=>`<div class="stat"><div class="skel" style="height:78px"></div></div>`).join("");
+  try{
+    const s=await api("/api/admin/stats");
+    showWarnings(s.warnings);
+    const cards=[
+      {ic:"ti-users",cls:"",n:s.totalUsers,l:"ผู้ใช้ทั้งหมด"},
+      {ic:"ti-user-check",cls:"g",n:s.activeToday,l:"ใช้งานวันนี้"},
+      {ic:"ti-calendar-week",cls:"g",n:s.active7,l:"ใช้งาน 7 วัน"},
+      {ic:"ti-message-2",cls:"b",n:s.aiToday,l:"ข้อความ AI วันนี้"},
+      {ic:"ti-messages",cls:"p",n:s.aiTotal,l:"ข้อความ AI รวม"},
+      {ic:"ti-car",cls:"",n:s.totalCars,l:"รถในระบบ"},
+      {ic:"ti-news",cls:"b",n:s.magazine,l:"ข่าวในนิตยสาร"},
+      {ic:"ti-ban",cls:"r",n:s.banned,l:"บัญชีถูกแบน"},
+    ];
+    $("statGrid").innerHTML=cards.map(c=>`<div class="stat"><div class="ic ${c.cls}"><i class="ti ${c.ic}"></i></div><div class="n">${c.n??"—"}</div><div class="l">${c.l}</div></div>`).join("");
+    const dfmt=d=>{const p=(d.day||d.d||"").split("-");return p.length===3?p[2]+"/"+p[1]:""};
+    bars($("aiChart"),$("aiChartX"),(s.aiDaily||[]).map(x=>({c:x.c,day:x.day})),dfmt);
+    bars($("signupChart"),$("signupChartX"),(s.signups||[]).map(x=>({c:x.c,d:x.d})),dfmt);
+
+    // สัดส่วนยศ
+    $("roleBreak").innerHTML=rows((s.roles||[]).map(r=>({l:roleLabel(r.role),v:r.c})))
+      ||`<div class="empty">ยังไม่มีข้อมูล</div>`;
+    // ยี่ห้อรถ
+    $("makeBreak").innerHTML=rows((s.topMakes||[]).map(r=>({l:r.make||"ไม่ระบุ",v:r.c})))
+      ||`<div class="empty">ยังไม่มีรถในระบบ</div>`;
+    // ผู้ใช้ AI มากสุด
+    const tu=s.topUsers||[];
+    $("topUsers").innerHTML=tu.length?tu.map(u=>`<tr>
+      <td><div style="font-weight:600">${esc(u.name||"-")}</div>
+        <div style="font-size:11.5px;color:var(--faint)">${esc(u.email||"")}</div></td>
+      <td><span class="role-pill ${u.role}">${roleLabel(u.role)}</span></td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:700">${u.c||0}</td>
+    </tr>`).join(""):`<tr><td colspan="3" class="empty">ยังไม่มีการใช้งาน AI</td></tr>`;
+    // เข้าใช้ล่าสุด
+    const ru=s.recentUsers||[];
+    $("recentUsers").innerHTML=ru.length?`<div class="mini-list">${ru.map(u=>`<div class="mini-row">
+      <div class="tx"><b>${esc(u.name||"-")}</b><small>${esc(u.email||"")}</small></div>
+      <span class="role-pill ${u.role}">${roleLabel(u.role)}</span>
+      <div class="tm">${u.last_login?new Date(u.last_login).toLocaleString("th-TH",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"-"}</div>
+    </div>`).join("")}</div>`:`<div class="empty">ยังไม่มีผู้ใช้</div>`;
+  }catch(e){
+    $("statGrid").innerHTML=`<div class="empty">โหลดสถิติไม่ได้: ${esc(e.message)}</div>`;
+  }
+}
+/* แถวแท่งเปรียบเทียบ */
+function rows(list){
+  if(!list||!list.length)return "";
+  const max=Math.max(1,...list.map(x=>x.v||0));
+  return list.map(x=>`<div class="brow"><div class="lb">${esc(String(x.l))}</div>
+    <div class="bar"><i style="width:${Math.round((x.v||0)/max*100)}%"></i></div>
+    <div class="vv">${x.v||0}</div></div>`).join("");
+}
+/* แถบเตือนเมื่อฐานข้อมูลยังไม่ครบ */
+function showWarnings(w){
+  const el=$("schemaBanner"); if(!el)return;
+  if(!w||!w.length){el.innerHTML="";return}
+  const parts=[...new Set(w.map(x=>x.part))].join(", ");
+  el.innerHTML=`<div class="banner">
+    <i class="ti ti-alert-triangle bi"></i>
+    <div><b>ฐานข้อมูลยังไม่ครบ — ข้อมูลบางส่วนจึงว่าง</b>
+      <p>ส่วนที่อ่านไม่ได้: ${esc(parts)}<br>
+      มักเกิดจากยังไม่ได้ apply migration ล่าสุดกับฐานข้อมูลจริง รันคำสั่งนี้ในโฟลเดอร์ Cendon-backend แล้วรีเฟรช</p>
+      <code>wrangler d1 migrations apply spireone --remote</code></div></div>`;
+}
+
+/* ===== USERS ===== */
+function roleLabel(r){return {owner:"เจ้าของ",admin:"แอดมิน",moderator:"ผู้ควบคุม",user:"ผู้ใช้"}[r]||r}
+async function loadUsers(){
+  const q=$("userSearch").value.trim();
+  $("userRows").innerHTML=`<tr><td colspan="4" class="empty">กำลังโหลด...</td></tr>`;
+  try{
+    const res=await api("/api/admin/users"+(q?"?q="+encodeURIComponent(q):""));
+    const arr=Array.isArray(res)?res:(res.users||[]);
+    if(!Array.isArray(res))showWarnings(res.warnings);
+    if(!arr.length){$("userRows").innerHTML=`<tr><td colspan="4" class="empty">ไม่พบผู้ใช้</td></tr>`;return}
+    const amOwner=me.role==="owner";
+    $("userRows").innerHTML=arr.map(u=>{
+      const isOwner=u.role==="owner";
+      const isTargetAdmin=u.role==="admin";
+      // Can I edit this user's role? owners edit anyone but owners; admins edit only moderators/users
+      const canEdit=!isOwner && (amOwner || (!isTargetAdmin && u.uid!==me.uid));
+      const canBan=!isOwner && u.uid!==me.uid && (amOwner || !isTargetAdmin);
+      const av=u.photo?`<img src="${esc(u.photo)}" referrerpolicy="no-referrer">`:`<div class="fb">${esc((u.name||"?")[0].toUpperCase())}</div>`;
+      let ctrl="";
+      if(canEdit){
+        const opts=["moderator","user"];if(amOwner)opts.unshift("admin");
+        ctrl=`<select class="mini-select" onchange="setRole('${u.uid}',this.value,this)">
+          ${opts.map(o=>`<option value="${o}" ${u.role===o?"selected":""}>${roleLabel(o)}</option>`).join("")}
+        </select>`;
       }
-      k++; continue;
+      let banBtn="";
+      if(canBan)banBtn=u.banned
+        ?`<button class="btn sm" onclick="banUser('${u.uid}',false,this)"><i class="ti ti-lock-open"></i> ปลดแบน</button>`
+        :`<button class="btn sm danger" onclick="banUser('${u.uid}',true,this)"><i class="ti ti-ban"></i> แบน</button>`;
+      return `<tr class="${u.banned?'banned-row':''}">
+        <td><div class="u-cell">${av}<div style="min-width:0"><div style="font-weight:600">${esc(u.name||"-")}</div><div style="font-size:11.5px;color:var(--faint)">${esc(u.email||"")}</div></div></div></td>
+        <td><span class="role-pill ${u.role}">${roleLabel(u.role)}</span>${u.banned?' <span class="role-pill" style="background:rgba(242,104,95,.16);color:var(--danger)">ถูกแบน</span>':''}</td>
+        <td style="color:var(--mut);font-size:12.5px">${u.last_login?new Date(u.last_login).toLocaleString("th-TH",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"-"}</td>
+        <td><div class="row-actions">${ctrl}${banBtn}${!canEdit&&!canBan?'<span style="color:var(--faint);font-size:12px">—</span>':''}</div></td>
+      </tr>`;
+    }).join("");
+  }catch(e){$("userRows").innerHTML=`<tr><td colspan="4" class="empty">โหลดไม่ได้: ${esc(e.message)}</td></tr>`}
+}
+async function setRole(uid,role,el){
+  el.disabled=true;
+  try{await api("/api/admin/users/role",{method:"POST",body:{uid,role}});toast("อัปเดตยศแล้ว","ti-shield-check");loadUsers();loadStats()}
+  catch(e){toast(e.message,"ti-alert-triangle");el.disabled=false}
+}
+async function banUser(uid,banned,el){
+  el.disabled=true;
+  try{await api("/api/admin/users/ban",{method:"POST",body:{uid,banned}});toast(banned?"แบนผู้ใช้แล้ว":"ปลดแบนแล้ว",banned?"ti-ban":"ti-lock-open");loadUsers();loadStats()}
+  catch(e){toast(e.message,"ti-alert-triangle");el.disabled=false}
+}
+
+/* ===== MAGAZINE ===== */
+let magItems=[];
+async function loadMag(){
+  $("magList").innerHTML=`<div class="empty">กำลังโหลด...</div>`;
+  try{
+    const arr=await fetch(BACKEND_URL+"/api/magazine").then(r=>r.json());
+    magItems=Array.isArray(arr)?arr:[];
+    if(!magItems.length){$("magList").innerHTML=`<div class="empty">ยังไม่มีข่าว — กด "ให้ AI ดึงข่าวใหม่" หรือเพิ่มเอง</div>`;return}
+    $("magList").innerHTML=magItems.map(m=>`<div class="mag-admin">
+      <div class="tx"><span class="tag">${esc(m.type||"ข่าว")}</span><b>${esc(m.title||"")}</b><p>${esc(m.short_description||"")}</p></div>
+      <div class="row-actions" style="align-items:flex-start">
+        <button class="btn sm" onclick="editMag(${m.id})"><i class="ti ti-edit"></i></button>
+        <button class="btn sm danger" onclick="delMag(${m.id})"><i class="ti ti-trash"></i></button>
+      </div></div>`).join("");
+  }catch(e){$("magList").innerHTML=`<div class="empty">โหลดไม่ได้: ${esc(e.message)}</div>`}
+}
+function openMagEditor(){$("magId").value="";$("magTitle").value="";$("magType").value="ข่าวเด่น";$("magShort").value="";$("magFull").value="";$("magModalTitle").textContent="เพิ่มข่าว";$("magModal").classList.add("show")}
+function editMag(id){const m=magItems.find(x=>x.id===id);if(!m)return;$("magId").value=id;$("magTitle").value=m.title||"";$("magType").value=m.type||"ข่าวเด่น";$("magShort").value=m.short_description||"";$("magFull").value=m.full_description||"";$("magModalTitle").textContent="แก้ไขข่าว";$("magModal").classList.add("show")}
+function closeMagEditor(){$("magModal").classList.remove("show")}
+async function saveMag(){
+  const id=$("magId").value;
+  const body={title:$("magTitle").value.trim(),type:$("magType").value,short_description:$("magShort").value.trim(),full_description:$("magFull").value.trim()};
+  if(!body.title){toast("กรุณาใส่พาดหัวข่าว","ti-alert-triangle");return}
+  $("magSaveBtn").disabled=true;
+  try{
+    if(id)await api("/api/admin/magazine/"+id,{method:"PUT",body});
+    else await api("/api/admin/magazine",{method:"POST",body});
+    toast("บันทึกข่าวแล้ว","ti-check");closeMagEditor();loadMag();
+  }catch(e){toast(e.message,"ti-alert-triangle")}
+  $("magSaveBtn").disabled=false;
+}
+async function delMag(id){
+  if(!confirm("ลบข่าวนี้?"))return;
+  try{await api("/api/admin/magazine/"+id,{method:"DELETE"});toast("ลบข่าวแล้ว","ti-trash");loadMag()}
+  catch(e){toast(e.message,"ti-alert-triangle")}
+}
+async function syncMag(){
+  $("syncBtn").disabled=true;$("syncBtn").innerHTML='<i class="ti ti-loader-2"></i> กำลังดึงข่าว...';
+  try{await api("/api/magazine/sync",{method:"POST"});toast("ดึงข่าวใหม่จาก AI สำเร็จ","ti-sparkles");loadMag()}
+  catch(e){toast("ดึงข่าวไม่สำเร็จ: "+e.message,"ti-alert-triangle")}
+  $("syncBtn").disabled=false;$("syncBtn").innerHTML='<i class="ti ti-sparkles"></i> ให้ AI ดึงข่าวใหม่';
+}
+async function syncShop(){
+  $("syncShopBtn").disabled=true;$("syncShopBtn").innerHTML='<i class="ti ti-loader-2"></i> กำลังหาสินค้า...';
+  try{await api("/api/shop/sync",{method:"POST"});toast("ดึงข้อมูล Shop ใหม่สำเร็จ","ti-sparkles")}
+  catch(e){toast("ดึง Shop ไม่สำเร็จ: "+e.message,"ti-alert-triangle")}
+  $("syncShopBtn").disabled=false;$("syncShopBtn").innerHTML='<i class="ti ti-sparkles"></i> AI หาสินค้า Shop';
+}
+
+/* ===== CONFIG ===== */
+let annType="info";
+document.querySelectorAll("#annType button").forEach(b=>b.onclick=()=>{annType=b.dataset.v;document.querySelectorAll("#annType button").forEach(x=>x.classList.toggle("on",x===b))});
+async function loadConfig(){
+  try{
+    const c=await fetch(BACKEND_URL+"/api/config").then(r=>r.json());
+    const a=c.announcement||{};$("annEnabled").checked=!!a.enabled;$("annText").value=a.text||"";
+    annType=a.type||"info";document.querySelectorAll("#annType button").forEach(x=>x.classList.toggle("on",x.dataset.v===annType));
+    const m=c.maintenance||{};$("maintEnabled").checked=!!m.enabled;$("maintMsg").value=m.message||"";
+    const l=c.limits||{};
+    if($("limAi"))$("limAi").value=l.aiDaily||60;
+    if($("limAnon"))$("limAnon").value=l.anonDaily||15;
+    featureState=c.features||{};
+    if($("featureRows"))renderFeatures();
+  }catch(e){}
+}
+async function saveAnnouncement(){
+  try{await api("/api/admin/config",{method:"POST",body:{announcement:{enabled:$("annEnabled").checked,text:$("annText").value.trim(),type:annType}}});toast("บันทึกประกาศแล้ว","ti-speakerphone")}
+  catch(e){toast(e.message,"ti-alert-triangle")}
+}
+async function saveMaintenance(){
+  try{await api("/api/admin/config",{method:"POST",body:{maintenance:{enabled:$("maintEnabled").checked,message:$("maintMsg").value.trim()}}});toast("บันทึกการตั้งค่าแล้ว","ti-tool")}
+  catch(e){toast(e.message,"ti-alert-triangle")}
+}
+
+/* ===== AUDIT ===== */
+const AUDIT_IC={"shop.sync":"ti-sparkles","shop.create":"ti-plus","shop.edit":"ti-edit","shop.delete":"ti-trash","config.limits":"ti-gauge","config.features":"ti-toggle-left","data.export":"ti-file-download","audit.clear":"ti-trash-x","user.role":"ti-shield","user.ban":"ti-ban","user.unban":"ti-lock-open","magazine.create":"ti-plus","magazine.edit":"ti-edit","magazine.delete":"ti-trash","magazine.clear":"ti-trash-x","magazine.sync":"ti-sparkles","config.announcement":"ti-speakerphone","config.maintenance":"ti-tool"};
+async function loadAudit(){
+  $("auditList").innerHTML=`<div class="empty">กำลังโหลด...</div>`;
+  try{
+    const res=await api("/api/admin/audit");
+    const arr=Array.isArray(res)?res:(res.audit||[]);
+    if(!arr.length){$("auditList").innerHTML=`<div class="empty">ยังไม่มีบันทึก</div>`;return}
+    $("auditList").innerHTML=arr.map(a=>`<div class="audit-item">
+      <div class="ai"><i class="ti ${AUDIT_IC[a.action]||"ti-point"}"></i></div>
+      <div class="at"><b>${esc(a.actor||"-")}</b> · ${esc(a.action||"")} ${a.target?`→ <span style="color:var(--acc)">${esc(a.target)}</span>`:""}<small>${esc(a.detail||"")}</small></div>
+      <div class="time">${new Date(a.t).toLocaleString("th-TH",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</div>
+    </div>`).join("");
+  }catch(e){$("auditList").innerHTML=`<div class="empty">โหลดไม่ได้: ${esc(e.message)}</div>`}
+}
+
+/* ═══════════ รถในระบบ ═══════════ */
+async function loadCars(){
+  const q=$("carSearch").value.trim();
+  $("carRows").innerHTML=`<tr><td colspan="5" class="empty">กำลังโหลด...</td></tr>`;
+  try{
+    const res=await api("/api/admin/cars"+(q?"?q="+encodeURIComponent(q):""));
+    showWarnings(res.warnings);
+    const arr=res.cars||[];
+    if(!arr.length){$("carRows").innerHTML=`<tr><td colspan="5" class="empty">ยังไม่มีรถในระบบ</td></tr>`;return}
+    $("carRows").innerHTML=arr.map(c=>`<tr>
+      <td><div style="font-weight:600">${esc(c.make||"")} ${esc(c.model||"")}</div>
+        <div style="font-size:11.5px;color:var(--faint)">${esc(c.id||"")}</div></td>
+      <td style="font-variant-numeric:tabular-nums">${esc(c.year||"-")}</td>
+      <td style="font-variant-numeric:tabular-nums">${c.mileage?esc(c.mileage)+" กม.":"-"}</td>
+      <td><div style="font-weight:600">${esc(c.owner_name||"-")}</div>
+        <div style="font-size:11.5px;color:var(--faint)">${esc(c.owner_email||"")}</div></td>
+      <td style="color:var(--mut);font-size:12.5px">${c.created_at?new Date(c.created_at).toLocaleDateString("th-TH",{day:"numeric",month:"short",year:"2-digit"}):"-"}</td>
+    </tr>`).join("");
+  }catch(e){$("carRows").innerHTML=`<tr><td colspan="5" class="empty">โหลดไม่ได้: ${esc(e.message)}</td></tr>`}
+}
+
+/* ═══════════ ร้านค้า ═══════════ */
+let shopItems=[];
+async function loadShop(){
+  $("shopList").innerHTML=`<div class="empty">กำลังโหลด...</div>`;
+  try{
+    const arr=await fetch(BACKEND_URL+"/api/shop").then(r=>r.json());
+    shopItems=Array.isArray(arr)?arr:[];
+    if(!shopItems.length){$("shopList").innerHTML=`<div class="empty">ยังไม่มีสินค้า — กด "ให้ AI หาสินค้าใหม่" หรือเพิ่มเอง</div>`;return}
+    $("shopList").innerHTML=shopItems.map(m=>`<div class="mag-admin">
+      <div class="tx"><span class="tag">${esc(m.category||"อะไหล่")}</span><b>${esc(m.title||"")}</b>
+        <p>${esc(m.note||"")}${m.price?` · <b style="color:var(--acc)">${esc(m.price)}</b>`:""}</p></div>
+      <div class="row-actions" style="align-items:flex-start">
+        ${m.url?`<a class="btn sm" href="${esc(m.url)}" target="_blank" rel="noopener"><i class="ti ti-external-link"></i></a>`:""}
+        <button class="btn sm" onclick="editShop(${m.id})"><i class="ti ti-edit"></i></button>
+        <button class="btn sm danger" onclick="delShop(${m.id})"><i class="ti ti-trash"></i></button>
+      </div></div>`).join("");
+  }catch(e){$("shopList").innerHTML=`<div class="empty">โหลดไม่ได้: ${esc(e.message)}</div>`}
+}
+function openShopEditor(){["shopId","shopTitle","shopPrice","shopUrl","shopNote"].forEach(i=>$(i).value="");
+  $("shopCat").value="อะไหล่";$("shopModalTitle").textContent="เพิ่มสินค้า";$("shopModal").classList.add("show")}
+function editShop(id){const m=shopItems.find(x=>x.id===id);if(!m)return;
+  $("shopId").value=id;$("shopTitle").value=m.title||"";$("shopCat").value=m.category||"อะไหล่";
+  $("shopPrice").value=m.price||"";$("shopUrl").value=m.url||"";$("shopNote").value=m.note||"";
+  $("shopModalTitle").textContent="แก้ไขสินค้า";$("shopModal").classList.add("show")}
+function closeShopEditor(){$("shopModal").classList.remove("show")}
+async function saveShop(){
+  const id=$("shopId").value;
+  const body={title:$("shopTitle").value.trim(),category:$("shopCat").value,
+    price:$("shopPrice").value.trim(),url:$("shopUrl").value.trim(),note:$("shopNote").value.trim()};
+  if(!body.title){toast("กรุณาใส่ชื่อสินค้า","ti-alert-triangle");return}
+  $("shopSaveBtn").disabled=true;
+  try{
+    if(id)await api("/api/admin/shop/"+id,{method:"PUT",body});
+    else await api("/api/admin/shop",{method:"POST",body});
+    toast("บันทึกสินค้าแล้ว","ti-check");closeShopEditor();loadShop();
+  }catch(e){toast(e.message,"ti-alert-triangle")}
+  $("shopSaveBtn").disabled=false;
+}
+async function delShop(id){
+  if(!confirm("ลบสินค้านี้?"))return;
+  try{await api("/api/admin/shop/"+id,{method:"DELETE"});toast("ลบสินค้าแล้ว","ti-trash");loadShop()}
+  catch(e){toast(e.message,"ti-alert-triangle")}
+}
+async function syncShop(){
+  const b=$("syncShopBtn");b.disabled=true;b.innerHTML='<i class="ti ti-loader-2"></i> กำลังหาสินค้า...';
+  try{await api("/api/shop/sync",{method:"POST"});toast("ให้ AI หาสินค้าใหม่สำเร็จ","ti-sparkles");loadShop()}
+  catch(e){toast("ดึงสินค้าไม่สำเร็จ: "+e.message,"ti-alert-triangle")}
+  b.disabled=false;b.innerHTML='<i class="ti ti-sparkles"></i> ให้ AI หาสินค้าใหม่';
+}
+
+/* ═══════════ โควตา · ฟีเจอร์ · ส่งออก ═══════════ */
+const FEATURES=[
+  {k:"chat",     n:"ห้องแชต AI",        d:"ปิดแล้วผู้ใช้จะเข้าห้องแชตไม่ได้"},
+  {k:"call",     n:"โทรคุยกับ AI",       d:"โหมดเสียง/กล้องแบบเรียลไทม์"},
+  {k:"magazine", n:"นิตยสาร",            d:"หน้าอ่านข่าวในแอป"},
+  {k:"shop",     n:"ร้านค้า",            d:"หน้าสินค้าอะไหล่และของตกแต่ง"},
+  {k:"brief",    n:"Today's Brief",     d:"สรุปประจำวันบนหน้าแรก"},
+  {k:"cockpit",  n:"ห้องนักบิน 3 มิติ",  d:"ปิดแล้วหน้าแรกจะเป็นแดชบอร์ดล้วน"},
+];
+let featureState={};
+function renderFeatures(){
+  $("featureRows").innerHTML=FEATURES.map(f=>`<div class="feat-row">
+    <div class="tx"><b>${esc(f.n)}</b><small>${esc(f.d)}</small></div>
+    <label class="switch"><input type="checkbox" data-feat="${f.k}" ${featureState[f.k]===false?"":"checked"}><span class="sl"></span></label>
+  </div>`).join("");
+}
+async function saveLimits(){
+  const body={limits:{aiDaily:parseInt($("limAi").value,10)||0,anonDaily:parseInt($("limAnon").value,10)||0}};
+  try{await api("/api/admin/config",{method:"POST",body});toast("บันทึกโควตาแล้ว","ti-gauge");loadAudit()}
+  catch(e){toast(e.message,"ti-alert-triangle")}
+}
+async function saveFeatures(){
+  const f={};document.querySelectorAll("[data-feat]").forEach(i=>f[i.dataset.feat]=i.checked);
+  try{await api("/api/admin/config",{method:"POST",body:{features:f}});featureState=f;
+    toast("บันทึกฟีเจอร์แล้ว","ti-toggle-right");loadAudit()}
+  catch(e){toast(e.message,"ti-alert-triangle")}
+}
+async function doExport(){
+  const b=$("exportBtn");b.disabled=true;b.innerHTML='<i class="ti ti-loader-2"></i> กำลังรวบรวม...';
+  try{
+    const d=await api("/api/admin/export");
+    const blob=new Blob([JSON.stringify(d,null,2)],{type:"application/json"});
+    const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+    a.download="cendon-export-"+new Date().toISOString().slice(0,10)+".json";a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+    toast("ส่งออกแล้ว","ti-file-download");
+  }catch(e){toast(e.message,"ti-alert-triangle")}
+  b.disabled=false;b.innerHTML='<i class="ti ti-file-download"></i> ส่งออกเป็น JSON';
+}
+
+/* ═══════════ สุขภาพระบบ ═══════════ */
+async function loadHealth(){
+  $("healthBody").innerHTML=`<div class="card"><div class="empty">กำลังตรวจ...</div></div>`;
+  try{
+    const h=await api("/api/admin/health");
+    const sc=h.schema||{},en=h.env||{};
+    const tick=(ok,y,n)=>`<span class="tick ${ok?"ok":"bad"}"><i class="ti ${ok?"ti-circle-check":"ti-alert-triangle"}"></i>${ok?y:n}</span>`;
+    const tables=Object.entries(sc.tables||{}).map(([t,v])=>`<div class="schema-row">
+      <span class="nm">${esc(t)}</span>
+      ${v.exists?(v.missing&&v.missing.length
+        ?tick(false,"","ขาดคอลัมน์: "+v.missing.join(", "))
+        :tick(true,"ครบถ้วน","")):tick(false,"","ยังไม่มีตารางนี้")}
+    </div>`).join("");
+    $("healthBody").innerHTML=`
+      ${sc.ok?`<div class="banner" style="border-color:rgba(63,207,142,.45);background:rgba(63,207,142,.08)">
+          <i class="ti ti-circle-check bi" style="color:var(--ok)"></i>
+          <div><b>ฐานข้อมูลครบถ้วน</b><p>ทุกตารางและคอลัมน์ที่ระบบต้องใช้มีอยู่ครบแล้ว</p></div></div>`
+        :`<div class="banner bad"><i class="ti ti-alert-triangle bi"></i>
+          <div><b>ฐานข้อมูลยังไม่ครบ</b>
+          <p>${sc.missingTables&&sc.missingTables.length?`ตารางที่ยังไม่มี: <b>${esc(sc.missingTables.join(", "))}</b><br>`:""}
+          ${sc.missingColumns&&sc.missingColumns.length?`คอลัมน์ที่ยังไม่มี: <b>${esc(sc.missingColumns.map(c=>c.table+"."+c.columns.join("/")).join(", "))}</b><br>`:""}
+          นี่คือสาเหตุที่หน้าแผงควบคุมว่าง — รันคำสั่งนี้ในโฟลเดอร์ Cendon-backend แล้วรีเฟรชหน้านี้</p>
+          <code>${esc(sc.fix||"wrangler d1 migrations apply spireone --remote")}</code></div></div>`}
+      <div class="card"><h3><i class="ti ti-database"></i> ตารางในฐานข้อมูล</h3>
+        <div class="sub">ตรวจว่าตารางและคอลัมน์ที่แต่ละหน้าต้องใช้มีครบหรือไม่</div>${tables}</div>
+      <div class="card"><h3><i class="ti ti-server-cog"></i> การตั้งค่าเซิร์ฟเวอร์</h3>
+        <div class="sub">ค่าที่กำลังใช้งานจริงบน Worker</div>
+        <div class="hgrid">
+          <div class="hcell ${en.aiConfigured?"ok":"bad"}"><small>คีย์ AI</small><b>${en.aiConfigured?"ตั้งค่าแล้ว":"ยังไม่ได้ตั้งค่า"}</b></div>
+          <div class="hcell"><small>โมเดลหลัก</small><b>${esc(en.model||"-")}</b></div>
+          <div class="hcell"><small>โมเดลสำรอง</small><b>${esc(en.fallbackModel||"-")}</b></div>
+          <div class="hcell"><small>โมเดลโทรคุย</small><b>${esc(en.liveModel||"-")}</b></div>
+          <div class="hcell"><small>โควตา/คน/วัน</small><b>${en.aiDailyLimit??"-"}</b></div>
+          <div class="hcell"><small>โควตาผู้ไม่ล็อกอิน</small><b>${en.anonDailyLimit??"-"}</b></div>
+          <div class="hcell ${en.allowedOrigins&&en.allowedOrigins!=="*"?"ok":"bad"}"><small>โดเมนที่อนุญาต (CORS)</small>
+            <b>${esc(en.allowedOrigins||"-")}</b></div>
+          <div class="hcell"><small>Firebase Project</small><b>${esc(en.firebaseProject||"-")}</b></div>
+        </div>
+        ${en.allowedOrigins==="*"?`<p style="margin-top:12px;font-size:12.5px;color:var(--warn);line-height:1.8">
+          <i class="ti ti-alert-triangle"></i> ALLOWED_ORIGINS ยังเป็น <b>*</b> — เว็บไหนก็เรียก API ของคุณได้
+          ควรตั้งเป็นโดเมนจริงใน wrangler.jsonc แล้ว deploy ใหม่</p>`:""}
+        <div style="margin-top:14px"><small style="color:var(--faint);font-size:11.5px">เจ้าของระบบ: ${
+          esc((en.owners||[]).join(", ")||"-")}</small></div>
+      </div>`;
+  }catch(e){
+    $("healthBody").innerHTML=`<div class="card"><div class="empty">ตรวจไม่ได้: ${esc(e.message)}<br>
+      <small style="color:var(--faint)">ถ้าขึ้น 404 แปลว่าเซิร์ฟเวอร์ยังเป็นเวอร์ชันเก่า — deploy Worker ใหม่ก่อน</small></div></div>`;
+  }
+}
+
+/* ═══════════ ตรวจการค้นข้อมูล ═══════════ */
+/* ── หน้าตรวจระบบค้นข้อมูล ──
+   หน้านี้เรียก /api/admin/diag ซึ่งตอนนี้ยิงผ่านทางเดียวกับที่ผู้ใช้ใช้จริง
+   จึงเชื่อผลได้ ต่างจากเดิมที่ทดสอบคนละทาง แล้วขึ้นว่าปกติทั้งที่พังอยู่ */
+async function loadDiag(){
+  $("diagBody").innerHTML=`<div class="empty">กำลังตรวจ... อาจใช้เวลาสักครู่</div>`;
+  try{
+    const d=await api("/api/admin/diag");
+    const sc=d.search||{};
+    const ok=!!sc.ok;
+    const SRC={gemini:"Gemini + Google Search",openrouter:"OpenRouter (ค้นเว็บ)",
+               duckduckgo:"DuckDuckGo",wikipedia:"Wikipedia"};
+
+    /* ทุกทางที่ระบบลองไป เรียงตามลำดับที่ลองจริง */
+    const rows=(d.providers||[]).map(t=>{
+      const good=/:\s*ok\b|เจอ \d+ รายการ|ได้ \d+ หน้า/.test(t);
+      const name=String(t).split(":")[0];
+      const detail=String(t).slice(name.length+1).trim();
+      return `<div class="kb-item"><div class="kb-bd"><div class="kb-h">
+        <b>${esc(name)}</b>
+        <span class="fb-st ${good?"done":"spam"}">${good?"ผ่าน":"ไม่ผ่าน"}</span>
+      </div>
+      <div class="kb-body">${esc(detail||"-")}</div></div></div>`;
+    }).join("");
+
+    const v=d.vector||{};
+    const vecCard=`<div class="kb-item"><div class="kb-bd"><div class="kb-h">
+        <b>สมองเวกเตอร์</b>
+        <span class="fb-st ${v.enabled?"done":"spam"}">${v.enabled?"เปิดใช้งาน":"ยังไม่เปิด"}</span>
+        ${v.enabled?`<span class="kb-tag">${esc(v.model||"")}</span>`:""}
+      </div>
+      <div class="kb-body">${v.enabled
+        ? `มีเวกเตอร์ในดัชนี <b>${v.vectors!=null?v.vectors:"?"}</b> ชิ้น · ${v.dimensions||"?"} มิติ
+           ${v.error?`<br><b>อ่านดัชนีไม่ได้: ${esc(v.error)}</b>`:""}`
+        : esc(v.hint||"ยังไม่ได้ผูก Vectorize")}</div>
+      </div></div>`;
+    $("diagBody").innerHTML=vecCard+
+      `<div class="kb-item"><div class="kb-bd"><div class="kb-h">
+         <b>สรุปการค้นอินเทอร์เน็ต</b><span class="fb-st ${ok?"done":"spam"}">${ok?"ค้นได้":"ค้นไม่ได้"}</span>
+         ${ok?`<span class="kb-tag">${esc(SRC[sc.source]||sc.source||"")}</span>`:""}
+         ${sc.grounded?`<small>ค้นเว็บจริง</small>`:""}
+       </div>
+       <div class="kb-body">
+         คำค้นที่ใช้ทดสอบ: <b>${esc(sc.query||"")}</b><br>
+         คำสำคัญที่ดึงออกมา: <b>${esc(sc.keywords||"")}</b> ·
+         ระบบตัดสินว่าต้องค้นข้อมูลสด: <b>${sc.needsFresh?"ใช่":"ไม่"}</b><br>
+         ใช้เวลา ${sc.ms||0} มิลลิวินาที · ได้เนื้อหา ${sc.length||0} ตัวอักษร
+         ${sc.model?` · โมเดล ${esc(sc.model)}`:""}
+         ${sc.hint?`<br><b>${esc(sc.hint)}</b>`:""}
+       </div>
+       ${sc.sample?`<div class="kb-body" style="white-space:pre-wrap;opacity:.85;margin-top:6px">${esc(sc.sample)}</div>`:""}
+       <div class="kb-keys">GEMINI_KEY: ${d.keys.gemini?"ตั้งแล้ว":"ยังไม่ได้ตั้ง"} ·
+         OPENROUTER_API_KEY: ${d.keys.openrouter?"ตั้งแล้ว":"ยังไม่ได้ตั้ง"} ·
+         GEMINI_MODEL: ${esc(d.keys.geminiModel)} ·
+         GEMINI_SEARCH_MODEL: ${esc(d.keys.searchModel)}</div>
+       </div></div>
+       <div class="page-head" style="margin:14px 0 8px"><div>
+         <h1 style="font-size:17px">ทางที่ระบบลองไล่ไปทีละทาง</h1>
+         <p>เจอทางไหนได้ผลก่อน ระบบจะหยุดที่ทางนั้น ทางที่เหลือจึงไม่ได้ลอง</p></div></div>`
+      +(rows||`<div class="empty">ไม่มีบันทึกการลอง</div>`);
+  }catch(e){
+    $("diagBody").innerHTML=`<div class="empty">ตรวจไม่ได้: ${esc(e.message)}<br>
+      <small style="color:var(--faint)">ถ้าขึ้น 404 แปลว่ายังไม่ได้ deploy Worker ตัวใหม่</small></div>`;
+  }
+}
+
+/* ═══════════ สมองเวกเตอร์ ═══════════ */
+const VEC_KIND_TH={kb:"ความรู้ที่สอนไว้",cache:"คำตอบที่ใช้ซ้ำ",memory:"ความจำผู้ใช้"};
+
+async function loadVector(){
+  $("vecStatus").innerHTML=`<div class="empty">กำลังโหลด...</div>`;
+  try{
+    const d=await api("/api/admin/vectorize/status");
+    const idx=d.index||{};
+    const rows=d.rows||{};
+    /* เทียบ "แถวที่ควรมีเวกเตอร์" กับ "เวกเตอร์ที่มีจริง"
+       ถ้าต่างกันมาก แปลว่ายังสร้างย้อนหลังไม่ครบ บอกให้เห็นชัด ๆ ตรงนี้เลย */
+    const have=idx.vectors!=null?idx.vectors:null;
+    const want=rows.total||0;
+    const gap=(have!=null&&want)?want-have:null;
+    $("vecStatus").innerHTML=`
+      <div class="kb-item"><div class="kb-bd">
+        <div class="kb-h"><b>สถานะ</b>
+          <span class="fb-st ${d.enabled?"done":"spam"}">${d.enabled?"เปิดใช้งาน":"ยังไม่เปิด"}</span>
+          ${d.enabled?`<span class="kb-tag">${esc(d.model||"")}</span>`:""}
+        </div>
+        <div class="kb-body">
+          ${d.enabled?`
+            เวกเตอร์ในดัชนี <b>${have!=null?have:"?"}</b> ชิ้น · ${idx.dimensions||d.dim} มิติ · ${esc(idx.metric||"cosine")}<br>
+            ข้อมูลใน D1 ที่ควรมีเวกเตอร์: ความรู้ ${rows.kb||0} · คำตอบใช้ซ้ำ ${rows.cache||0} · ความจำ ${rows.memory||0}
+            (รวม <b>${want}</b>)
+            ${gap!=null&&gap>0?`<br><b style="color:var(--warn,#c98a2e)">ยังขาดอีกราว ${gap} ชิ้น — กดสร้างดัชนีย้อนหลังด้านล่าง</b>`:""}
+            ${gap!=null&&gap<=0?`<br><b style="color:var(--ok,#3d8f5f)">ครบแล้ว</b>`:""}
+            ${d.warn?`<br><b style="color:var(--danger)">${esc(d.warn)}</b>`:""}
+            ${d.describeError?`<br><b style="color:var(--danger)">อ่านดัชนีไม่ได้: ${esc(d.describeError)}</b>`:""}
+          `:esc(d.hint||"ยังไม่ได้ผูก Vectorize")}
+        </div>
+        <div class="kb-keys">Vectorize binding: ${d.bindings&&d.bindings.vectorize?"ผูกแล้ว":"ยังไม่ผูก"} ·
+          Workers AI binding: ${d.bindings&&d.bindings.ai?"ผูกแล้ว":"ยังไม่ผูก"}</div>
+      </div></div>`;
+  }catch(e){
+    $("vecStatus").innerHTML=`<div class="empty">โหลดไม่ได้: ${esc(e.message)}<br>
+      <small style="color:var(--faint)">ถ้าขึ้น 404 แปลว่ายังไม่ได้ deploy Worker ตัวใหม่</small></div>`;
+  }
+}
+
+let vecBusy=false;
+function vecLog(t){ const el=$("vecLog"); el.textContent=(el.textContent?el.textContent+"\n":"")+t }
+
+/* สร้างดัชนีย้อนหลัง — วนเรียกเป็นรอบจนกว่าหลังบ้านจะบอกว่าหมดแล้ว
+   ทำทีเดียวทั้งหมดในคำขอเดียวไม่ได้ เพราะ Worker มีเพดานเวลาต่อคำขอ */
+async function vecBackfill(kind){
+  if(vecBusy){ toast("กำลังทำอยู่ รอให้เสร็จก่อนครับ"); return }
+  vecBusy=true;
+  vecLog(`▶ เริ่ม ${VEC_KIND_TH[kind]||kind}`);
+  let after="",total=0,rounds=0;
+  try{
+    while(true){
+      /* api() แปลงเป็น JSON ให้เองอยู่แล้ว ส่งอ็อบเจ็กต์ดิบไปตรง ๆ
+         ถ้า stringify มาก่อน จะกลายเป็นสตริงซ้อนสตริงแล้วหลังบ้านอ่านไม่ออก */
+      const r=await api("/api/admin/vectorize/backfill",{method:"POST",
+        body:{kind,after,limit:100}});
+      total+=r.wrote||0; after=r.after||after; rounds++;
+      vecLog(`   รอบที่ ${rounds}: อ่าน ${r.read} เขียน ${r.wrote} (รวม ${total})`);
+      if(r.done)break;
+      if(rounds>200){ vecLog("   หยุดไว้ก่อน ทำไปหลายรอบมากผิดปกติ"); break }
     }
-    if(/^\|/.test(x)&&k+1<L.length&&/^\|[\s:|-]+\|?\s*$/.test(L[k+1])){
-      const rs=[]; while(k<L.length&&L[k].trim().startsWith("|")){ rs.push(row(L[k])); k++ }
-      const cell=(r,t)=>r.map(c=>"<"+t+">"+inline(c.trim())+"</"+t+">").join("");
-      out.push('<div class="tw"><table><thead><tr>'+cell(rs[0],"th")+"</tr></thead><tbody>"+
-        rs.slice(2).map(r=>"<tr>"+cell(r,"td")+"</tr>").join("")+"</tbody></table></div>");
-      continue;
+    vecLog(`✔ เสร็จ ${VEC_KIND_TH[kind]||kind} — ทั้งหมด ${total} ชิ้น`);
+  }catch(e){
+    vecLog(`✖ ล้มเหลว: ${e.message}`);
+  }
+  vecBusy=false;
+  loadVector();
+}
+
+async function vecBackfillAll(){
+  for(const k of ["kb","cache","memory"]){
+    if(vecBusy)return;
+    await vecBackfill(k);
+  }
+}
+
+async function vecProbe(){
+  const q=$("vecQ").value.trim();
+  if(!q){ toast("พิมพ์คำถามก่อนครับ"); return }
+  const kind=$("vecKind").value;
+  $("vecProbeOut").innerHTML=`<div class="empty">กำลังค้น...</div>`;
+  try{
+    const d=await api(`/api/admin/vectorize/probe?q=${encodeURIComponent(q)}&kind=${kind}`);
+    if(!d.ok){ $("vecProbeOut").innerHTML=`<div class="empty">${esc(d.error||"ค้นไม่ได้")}</div>`; return }
+    const rows=(d.matches||[]).map(m=>`
+      <div class="kb-item"><div class="kb-bd"><div class="kb-h">
+        <b>${esc((m.meta&&m.meta.title)||m.id)}</b>
+        <span class="fb-st ${m.pass?"done":"spam"}">${m.score.toFixed(3)}</span>
+        ${m.pass?`<small>ผ่านเกณฑ์</small>`:`<small>ต่ำกว่าเกณฑ์ ${d.minScore}</small>`}
+      </div>
+      <div class="kb-keys">${esc(JSON.stringify(m.meta||{}))}</div></div></div>`).join("");
+    $("vecProbeOut").innerHTML=
+      `<div class="kb-keys" style="margin-bottom:8px">แปลงคำถามเป็นเวกเตอร์ ${d.dim} มิติ ใน ${d.embedMs} มิลลิวินาที ·
+        เกณฑ์ผ่านของ ${VEC_KIND_TH[kind]||kind} คือ ${d.minScore}</div>`
+      +(rows||`<div class="empty">ไม่เจออะไรเลย — อาจยังไม่ได้สร้างดัชนีย้อนหลัง</div>`);
+  }catch(e){
+    $("vecProbeOut").innerHTML=`<div class="empty">ค้นไม่ได้: ${esc(e.message)}</div>`;
+  }
+}
+
+/* ═══════════ โหลดข้อมูลตามแท็บ ═══════════ */
+/* ═══════════ ความเห็นผู้ใช้ ═══════════ */
+let fbStatus="";
+const FB_IC={bug:"ti-bug",idea:"ti-bulb",praise:"ti-heart",other:"ti-message-2"};
+const FB_TH={bug:"แจ้งปัญหา",idea:"ข้อเสนอแนะ",praise:"ชมเชย",other:"อื่น ๆ"};
+const FB_STTH={new:"ใหม่",read:"อ่านแล้ว",done:"จัดการแล้ว",spam:"สแปม"};
+
+async function loadFeedback(){
+  $("fbList").innerHTML=`<div class="empty">กำลังโหลด...</div>`;
+  try{
+    const res=await api("/api/admin/feedback"+(fbStatus?"?status="+fbStatus:""));
+    const arr=res.feedback||[];
+    /* ป้ายตัวเลขข้างเมนู นับเฉพาะที่ยังไม่มีใครอ่าน */
+    const nw=(res.counts||[]).find(c=>c.status==="new");
+    const badge=$("fbBadge");
+    if(badge){ badge.textContent=nw?nw.n:""; badge.classList.toggle("on",!!(nw&&nw.n)) }
+    if(!arr.length){ $("fbList").innerHTML=`<div class="empty">ยังไม่มีความเห็น</div>`; return }
+    $("fbList").innerHTML=arr.map(f=>{
+      const k=FB_IC[f.kind]?f.kind:"other";
+      return `<div class="fb-item" id="fb-${esc(f.id)}">
+        <div class="fb-ic ${k}"><i class="ti ${FB_IC[k]}"></i></div>
+        <div class="fb-bd">
+          <div class="fb-hd"><b>${esc(f.name||"ผู้ใช้")}</b>
+            <span class="fb-st ${esc(f.status)}">${esc(FB_STTH[f.status]||f.status)}</span>
+            <small>${esc(FB_TH[k])} · ${new Date(f.created_at).toLocaleString("th-TH",
+              {day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</small></div>
+          <div class="fb-msg">${esc(f.message||"")}</div>
+          <div class="fb-meta">${esc(f.email||"-")}${f.page?" · "+esc(f.page):""}${
+            f.ua?" · "+esc(String(f.ua).slice(0,70)):""}</div>
+          <div class="fb-act">
+            <button onclick="fbSet('${esc(f.id)}','read')">อ่านแล้ว</button>
+            <button onclick="fbSet('${esc(f.id)}','done')">จัดการแล้ว</button>
+            <button onclick="fbSet('${esc(f.id)}','spam')">สแปม</button>
+          </div>
+        </div></div>`;
+    }).join("");
+  }catch(e){
+    $("fbList").innerHTML=`<div class="empty">โหลดไม่ได้: ${esc(e.message)}<br>
+      <small style="color:var(--faint)">ถ้าขึ้น 404 แปลว่ายังไม่ได้ deploy Worker ตัวใหม่</small></div>`;
+  }
+}
+async function fbSet(id,status){
+  try{
+    await api("/api/admin/feedback",{method:"POST",body:{id,status}});
+    loadFeedback();
+  }catch(e){ alert("ทำไม่สำเร็จ: "+e.message) }
+}
+document.addEventListener("click",e=>{
+  const b=e.target.closest("#fbFilter [data-st]"); if(!b)return;
+  document.querySelectorAll("#fbFilter button").forEach(x=>x.classList.toggle("on",x===b));
+  fbStatus=b.dataset.st; loadFeedback();
+});
+
+/* ═══════════ สอน AI ═══════════ */
+async function loadKb(){
+  const q=($("kbSearch")||{}).value||"";
+  $("kbList").innerHTML=`<div class="empty">กำลังโหลด...</div>`;
+  try{
+    const res=await api("/api/kb"+(q?"?q="+encodeURIComponent(q):""));
+    /* ตอนของคู่มือระบบใช้ตารางเดียวกันแต่ไม่ใช่ความรู้ที่สอน AI
+       ต้องไม่โผล่ตรงนี้ ไม่งั้นจะมีคนเผลอแก้ เผลอลบ หรือแย่ที่สุดคือเผลอเปิด enabled
+       ซึ่งจะทำให้ AI เอาเรื่องฐานข้อมูลและชื่อเซิร์ฟเวอร์ไปตอบผู้ใช้ทั่วไป */
+    const all=res.kb||[];
+    const arr=all.filter(k=>!/^(hb|nda)_/.test(k.id));
+    const hb=all.filter(k=>/^hb_/.test(k.id)).length;
+    const nda=all.filter(k=>/^nda_/.test(k.id)).length;
+    const bits=[];
+    if(hb)bits.push(`<b>คู่มือระบบ ${hb} ตอน</b>`);
+    if(nda)bits.push(`<b>ลายมือชื่อ NDA ${nda} รายการ</b>`);
+    const hbNote=bits.length?`<div class="empty" style="text-align:left;border-style:solid">
+      ${bits.join(" · ")} ถูกซ่อนจากรายการนี้ เพราะไม่ใช่ความรู้ที่สอน AI
+      ${hb?'<a href="./handbook.html" style="color:var(--acc)">เปิดคู่มือ</a>':""}
+      ${nda?'<a href="#" onclick="document.querySelector(\'[data-tab=nda]\').click();return false" style="color:var(--acc)">ดูผู้ลงนาม</a>':""}
+      </div>`:"";
+    if(!arr.length){ $("kbList").innerHTML=hbNote+`<div class="empty">ยังไม่มีความรู้ในคลัง — กดเพิ่มความรู้เพื่อเริ่มสอน AI</div>`; return }
+    $("kbList").innerHTML=hbNote+arr.map(k=>`<div class="kb-item">
+      <div class="kb-bd">
+        <div class="kb-h"><b>${esc(k.title)}</b>
+          ${k.enabled?"":`<span class="kb-off">ปิดอยู่</span>`}
+          ${(k.make||k.model)?`<span class="kb-tag">${esc([k.make,k.model].filter(Boolean).join(" "))}</span>`:`<span class="kb-tag all">ทุกรุ่น</span>`}
+          <small>ถูกใช้ ${k.uses||0} ครั้ง</small></div>
+        <div class="kb-body">${esc(String(k.body||"").slice(0,220))}${String(k.body||"").length>220?"…":""}</div>
+        ${k.keywords?`<div class="kb-keys">${esc(k.keywords)}</div>`:""}
+      </div>
+      <div class="kb-act">
+        <button onclick='kbEdit(${JSON.stringify(JSON.stringify(k))})'>แก้ไข</button>
+        <button class="danger" onclick="kbDel('${esc(k.id)}')">ลบ</button>
+      </div></div>`).join("");
+  }catch(e){
+    $("kbList").innerHTML=`<div class="empty">โหลดไม่ได้: ${esc(e.message)}<br>
+      <small style="color:var(--faint)">ถ้าขึ้น 404 แปลว่ายังไม่ได้ deploy Worker ตัวใหม่</small></div>`;
+  }
+}
+function kbNew(){
+  $("kbId").value=""; $("kbTitle").value=""; $("kbKeys").value="";
+  $("kbMake").value=""; $("kbModelName").value=""; $("kbBody").value="";
+  $("kbEnabled").checked=true;
+  $("kbModalTitle").textContent="เพิ่มความรู้";
+  $("kbModal").classList.add("show");
+}
+function kbEdit(raw){
+  const k=JSON.parse(raw);
+  $("kbId").value=k.id; $("kbTitle").value=k.title||""; $("kbKeys").value=k.keywords||"";
+  $("kbMake").value=k.make||""; $("kbModelName").value=k.model||""; $("kbBody").value=k.body||"";
+  $("kbEnabled").checked=k.enabled!==0;
+  $("kbModalTitle").textContent="แก้ไขความรู้";
+  $("kbModal").classList.add("show");
+}
+function kbClose(){ $("kbModal").classList.remove("show") }
+async function kbSave(){
+  const b={id:$("kbId").value||undefined,title:$("kbTitle").value.trim(),
+    body:$("kbBody").value.trim(),keywords:$("kbKeys").value.trim(),
+    make:$("kbMake").value.trim(),model:$("kbModelName").value.trim(),
+    enabled:$("kbEnabled").checked};
+  if(b.title.length<3||b.body.length<10){ alert("ต้องมีหัวข้อและเนื้อหาความรู้"); return }
+  const btn=$("kbSaveBtn"); btn.disabled=true;
+  try{ await api("/api/kb",{method:"POST",body:b}); kbClose(); loadKb() }
+  catch(e){ alert("บันทึกไม่สำเร็จ: "+e.message) }
+  btn.disabled=false;
+}
+/* นำเข้าไฟล์ชุดความรู้ทีเดียวทั้งก้อน ไม่ต้องพิมพ์ทีละหัวข้อ
+   กดซ้ำได้ หัวข้อเดิมจะถูกอัปเดต ไม่เกิดของซ้ำ */
+async function kbImport(el){
+  const f=el.files&&el.files[0]; el.value="";
+  if(!f)return;
+  let data=null;
+  try{ data=JSON.parse(await f.text()) }
+  catch(e){ alert("ไฟล์ไม่ใช่ JSON ที่อ่านได้: "+e.message); return }
+  const items=Array.isArray(data)?data:(data.items||[]);
+  if(!items.length){ alert("ไม่พบรายการความรู้ในไฟล์นี้"); return }
+  if(!confirm(`นำเข้าความรู้ ${items.length} หัวข้อ?\n${data.pack||""}`))return;
+  $("kbList").innerHTML=`<div class="empty">กำลังนำเข้า...</div>`;
+  try{
+    const r=await api("/api/kb/bulk",{method:"POST",body:{items}});
+    alert(`นำเข้าเสร็จแล้ว\nเพิ่มใหม่ ${r.added} · อัปเดต ${r.updated}`+
+          (r.skipped?` · ข้าม ${r.skipped}`:""));
+    loadKb();
+  }catch(e){ alert("นำเข้าไม่สำเร็จ: "+e.message); loadKb() }
+}
+
+async function kbDel(id){
+  if(!confirm("ลบความรู้ชิ้นนี้?"))return;
+  try{ await api("/api/kb/"+id,{method:"DELETE"}); loadKb() }
+  catch(e){ alert("ลบไม่สำเร็จ: "+e.message) }
+}
+
+/* ═══════════ คำตอบที่ใช้ซ้ำ ═══════════ */
+async function loadCache(){
+  $("cacheList").innerHTML=`<div class="empty">กำลังโหลด...</div>`;
+  try{
+    const res=await api("/api/cache");
+    const arr=res.cache||[];
+    $("cacheStat").innerHTML=
+      `<div class="stat"><div class="ic"><i class="ti ti-database"></i></div>
+         <div class="n">${(res.total||0).toLocaleString("th-TH")}</div><div class="l">คำตอบที่เก็บไว้</div></div>`+
+      `<div class="stat"><div class="ic"><i class="ti ti-bolt"></i></div>
+         <div class="n">${(res.saved||0).toLocaleString("th-TH")}</div><div class="l">ครั้งที่ตอบซ้ำได้ ไม่เสียโควตา</div></div>`;
+    if(!arr.length){ $("cacheList").innerHTML=`<div class="empty">ยังไม่มีคำตอบที่เก็บไว้</div>`; return }
+    $("cacheList").innerHTML=arr.map(c=>`<div class="kb-item">
+      <div class="kb-bd">
+        <div class="kb-h"><b>${esc(c.question)}</b>
+          <span class="kb-tag">${esc([c.make,c.model].filter(Boolean).join(" ")||"ไม่ระบุรุ่น")}</span>
+          <small>ใช้ซ้ำ ${c.hits||0} ครั้ง${c.bad?` · ไม่ตรง ${c.bad}`:""}${c.good?` · ตรง ${c.good}`:""}</small></div>
+        <div class="kb-body">${esc(String(c.answer||"").slice(0,220))}${String(c.answer||"").length>220?"…":""}</div>
+      </div>
+      <div class="kb-act"><button class="danger" onclick="cacheDel('${esc(c.id)}')">ลบ</button></div>
+    </div>`).join("");
+  }catch(e){
+    $("cacheList").innerHTML=`<div class="empty">โหลดไม่ได้: ${esc(e.message)}</div>`;
+  }
+}
+async function cacheDel(id){
+  if(!confirm("ลบคำตอบนี้ออกจากคลัง?"))return;
+  try{ await api("/api/cache/"+id,{method:"DELETE"}); loadCache() }
+  catch(e){ alert("ลบไม่สำเร็จ: "+e.message) }
+}
+
+const TAB_LOAD={overview:loadStats,users:loadUsers,cars:loadCars,magazine:loadMag,
+  shop:loadShop,config:loadConfig,audit:loadAudit,system:loadHealth,feedback:loadFeedback,
+  kb:loadKb,cache:loadCache};
+document.getElementById("nav").addEventListener("click",e=>{
+  const a=e.target.closest("[data-tab]");
+  if(!a||a.classList.contains("locked"))return;
+  const fn=TAB_LOAD[a.dataset.tab];
+  if(fn)try{fn()}catch(err){}
+});
+</script>
+<script id="perfjs">
+/* ══════════════════════════════════════════════════════════════════
+   ชั้นประสิทธิภาพ ฝั่งสคริปต์ — ทำสามอย่าง ไม่ยุ่งกับตรรกะของแอปเลย
+
+   1. สลับไปแท็บอื่นแล้วหยุดอนิเมชันทุกตัว
+      ของเดิมยังวาดต่อทั้งที่ไม่มีใครดู กินแบตและกิน CPU ฟรี ๆ
+   2. การ์ดที่เลื่อนพ้นจอแล้ว หยุดอนิเมชันในนั้นไว้ก่อน
+      การ์ดพยากรณ์อากาศใบเดียวมีอนิเมชันวนไม่จบเป็นสิบตัว (เมฆ ฝน ดาว รถ)
+      ถ้าไม่หยุด มันเดินอยู่ตลอดแม้ผู้ใช้เลื่อนผ่านไปนานแล้ว
+   3. กดลิงก์แล้วไปทันที
+      เบราว์เซอร์ที่รองรับ speculation rules เตรียมหน้าถัดไปให้อยู่แล้ว
+      ตัวที่ไม่รองรับ ใช้การแตะค้างหรือเอาเมาส์ไปวางเป็นสัญญาณโหลดล่วงหน้า
+   ══════════════════════════════════════════════════════════════════ */
+(function(){
+  "use strict";
+  var D=document,H=D.documentElement;
+
+  /* 1 — ไม่ได้ดูอยู่ก็ไม่ต้องวาด */
+  function idle(){H.dataset.idle=D.hidden?"1":"0"}
+  D.addEventListener("visibilitychange",idle); idle();
+
+  /* 2 — พ้นจอแล้วพัก  เข้าจอแล้วเดินต่อ
+        rootMargin เผื่อไว้หนึ่งจอ อนิเมชันจึงเดินก่อนผู้ใช้เลื่อนมาถึงจริง
+        ไม่งั้นจะเห็นภาพค้างอยู่เสี้ยววินาทีตอนเลื่อนเข้ามาพอดี */
+  if("IntersectionObserver" in window){
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(e.isIntersecting)e.target.removeAttribute("data-anim");
+        else e.target.dataset.anim="off";
+      });
+    },{rootMargin:"100% 0px"});
+    var watch=function(){
+      D.querySelectorAll(".bw,.widget-grid>*,.croom,.sp-card,.news-card")
+       .forEach(function(el){ if(!el.__animWatched){el.__animWatched=true;io.observe(el)} });
+    };
+    watch();
+    /* การ์ดถูกสร้างทีหลังด้วยสคริปต์ จึงต้องคอยมองหาของใหม่ด้วย */
+    if("MutationObserver" in window){
+      var mo=new MutationObserver(function(){ if(mo.__t)return;
+        mo.__t=setTimeout(function(){mo.__t=0;watch()},400)});
+      mo.observe(D.body||H,{childList:true,subtree:true});
     }
-    if(x.startsWith("> ")){
-      const buf=[]; while(k<L.length&&(L[k].startsWith("> ")||L[k].trim()===">")){
-        buf.push(L[k].length>2?L[k].slice(2):""); k++ }
-      const raw=buf.join("\n");
-      const inner=raw.split("\n\n").filter(s=>s.trim()).map(s=>"<p>"+inline(s)+"</p>").join("");
-      out.push(callout(inner,raw)||"<blockquote>"+inner+"</blockquote>");
-      continue;
-    }
-    if(/^(-|\d+\.) /.test(x)){
-      const ord=/^\d+\. /.test(x); const items=[];
-      while(k<L.length&&(/^(-|\d+\.) /.test(L[k])||/^\s\s/.test(L[k]))){
-        if(/^\s\s/.test(L[k])&&items.length) items[items.length-1]+=" "+L[k].trim();
-        else items.push(L[k].replace(/^(-|\d+\.) /,""));
-        k++;
-      }
-      const tg=ord?"ol":"ul";
-      out.push("<"+tg+">"+items.map(s=>{
-        const box=s.startsWith("[ ] ");
-        return "<li"+(box?' class="task"':"")+">"+inline(box?s.slice(4):s)+"</li>";
-      }).join("")+"</"+tg+">");
-      continue;
-    }
-    if(/^---+\s*$/.test(x)){ out.push("<hr>"); k++; continue }
-    if(!x.trim()){ k++; continue }
-    const buf=[];
-    while(k<L.length&&L[k].trim()&&!/^(#{1,3} |```|\||> |- |\d+\. |---+$)/.test(L[k])){
-      buf.push(L[k]); k++;
-    }
-    const raw=buf.join("\n"); const p="<p>"+inline(raw.replace(/\n/g," "))+"</p>";
-    out.push(callout(p,raw)||p);
   }
 
-  const upd=Math.max.apply(null,PARTS.map(p=>+p.updated_at||0));
-  $("doc").innerHTML=
-    '<header class="cover"><p class="kicker">Phasmion · เฉพาะทีมงาน</p>'+
-    "<h1>คู่มือระบบ Cendon</h1>"+
-    '<p class="desc">ทุกส่วนของเว็บและเบื้องหลัง — ระบบทำงานยังไง ต่อกับอะไร '+
-    'และอะไรที่ยังไม่เรียบร้อย</p><div class="meta">'+
-    "<span>"+PARTS.length+" ตอน</span>"+
-    "<span>"+toc.filter(t=>t.lv===1).length+" ภาค</span>"+
-    "<span>"+toc.length+" หัวข้อ</span>"+
-    /* ถ้าทุกตอนยังไม่มีเวลาบันทึก อย่าแสดงวันที่ปี 2513 ซึ่งมาจากเลขศูนย์
-       การไม่บอกวันที่ ดีกว่าบอกวันที่ที่ผิด */
-    (upd?"<span>อัปเดต "+new Date(upd)
-      .toLocaleDateString("th-TH",{year:"numeric",month:"short",day:"numeric"})+"</span>":"")+
-    "</div></header>"+out.join("\n");
-
-  $("nav").innerHTML=toc.map(t=>
-    t.lv===1?'<a class="nv nv-1" href="#'+t.id+'"><b>'+esc(t.t)+"</b><span>"+esc(t.sub)+"</span></a>"
-    :t.lv===2?'<a class="nv nv-2" href="#'+t.id+'">'+esc(t.t)+"</a>":""
-  ).join("");
-  wire();
-}
-
-/* สารบัญตามตำแหน่งที่อ่าน + ค้นหา + แผ่นเลื่อนบนจอแคบ */
-function wire(){
-  const links=[].slice.call(document.querySelectorAll(".nv"));
-  const map={}; links.forEach(a=>{ map[a.getAttribute("href").slice(1)]=a });
-  const heads=[].slice.call(document.querySelectorAll("h2[id],h3[id]"));
-  let cur=null; const seen={};
-  const mark=id=>{
-    if(!map[id]||cur===id)return;
-    if(cur&&map[cur])map[cur].classList.remove("on");
-    cur=id; map[id].classList.add("on");
-    const r=map[id].getBoundingClientRect(), nb=$("nav").getBoundingClientRect();
-    if(r.top<nb.top+40||r.bottom>nb.bottom-40)
-      map[id].scrollIntoView({block:"center",behavior:"smooth"});
-  };
-  const io=new IntersectionObserver(es=>{
-    es.forEach(e=>{ seen[e.target.id]=e.isIntersecting });
-    for(const h of heads) if(seen[h.id]) return mark(h.id);
-  },{rootMargin:"0px 0px -72% 0px"});
-  heads.forEach(h=>io.observe(h));
-
-  const find=$("find");
-  find.oninput=()=>{
-    const q=find.value.trim().toLowerCase();
-    links.forEach(a=>{ a.hidden = q ? a.textContent.toLowerCase().indexOf(q)<0 : false });
-  };
-  find.onkeydown=e=>{ if(e.key==="Escape"){ find.value=""; find.oninput() } };
-  addEventListener("keydown",e=>{
-    if(e.key==="/"&&document.activeElement!==find){ e.preventDefault(); find.focus() }
-    if(e.key==="Escape") toc(false);
-  });
-
-  const toc=on=>{
-    document.body.classList.toggle("toc",on);
-    $("tocbtn").setAttribute("aria-expanded",on?"true":"false");
-  };
-  $("tocbtn").onclick=()=>toc(!document.body.classList.contains("toc"));
-  $("veil").onclick=()=>toc(false);
-  $("nav").addEventListener("click",e=>{ if(e.target.closest(".nv")&&innerWidth<=940) toc(false) });
-}
+  /* 3 — โหลดหน้าถัดไปล่วงหน้าตอนผู้ใช้เล็งจะกด
+        ทำเฉพาะตัวที่ไม่รองรับ speculation rules จะได้ไม่โหลดซ้ำสองรอบ */
+  if(!(HTMLScriptElement.supports&&HTMLScriptElement.supports("speculationrules"))){
+    var done=Object.create(null);
+    var warm=function(ev){
+      var a=ev.target.closest&&ev.target.closest('a[href$=".html"]');
+      if(!a)return;
+      var u=a.getAttribute("href");
+      if(!u||u[0]==="#"||done[u])return;
+      done[u]=1;
+      var l=D.createElement("link"); l.rel="prefetch"; l.href=u; D.head.appendChild(l);
+    };
+    D.addEventListener("pointerenter",warm,{capture:true,passive:true});
+    D.addEventListener("touchstart",warm,{capture:true,passive:true});
+  }
+})();
 </script>
 </body>
 </html>

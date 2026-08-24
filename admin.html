@@ -34,14 +34,16 @@
 
   --ink:#F4F4F5; --mut:#A1A1AA; --faint:#71717A; --disabled:#52525B;
 
-  /* ══ สีเน้นสีเดียวทั้งแอป ══
-     อำพันหม่น ความอิ่มต่ำกว่า 80% — สีจัดเต็มบนพื้นมืดจะเรืองแสงและล้าตา
-     ทุกอย่างที่ไม่ใช่ "สิ่งที่คุณกำลังทำอยู่" เป็นสีเทาหมด ไม่มีข้อยกเว้น */
-  --acc:#D8A05C; --acc-lo:#B8843F; --acc-hi:#EBBB7E;
-  --acc-08:rgba(216,160,92,.08); --acc-14:rgba(216,160,92,.14); --acc-30:rgba(216,160,92,.30);
-  --acc2:var(--acc); --grad:var(--acc); --acc-soft:var(--acc-14);
-  /* สถานะไม่ใช่สีเน้น เป็นคนละหน้าที่กัน จึงหม่นลงให้ไม่แย่งสายตากับสีแบรนด์ */
-  --ok:#6BA88A; --warn:#C99A55; --danger:#C4736B; --info:#7C96B8; --purple:#8F8AA6;
+  /* ══ สีเน้น — ชุดเดียวกับเว็บหลัก ══
+     ของเดิมผมหม่นสีลงเองเพราะกลัวแสบตาบนพื้นมืด ผลคือแอดมินดูซีดกว่าเว็บหลัก
+     ทั้งที่เป็นแบรนด์เดียวกัน ตอนนี้ยกค่าจาก index.html มาตรง ๆ
+     ความสดใสได้จากตัวสี ไม่ใช่จากการเพิ่มแสงเรือง */
+  --acc:#E8943C; --acc-lo:#D95E3C; --acc-hi:#F0A93C;
+  --acc-2:#E8A23C; --acc-d:#B85A2A;
+  --acc-08:rgba(232,148,60,.10); --acc-14:rgba(232,148,60,.18); --acc-30:rgba(232,148,60,.36);
+  --acc2:var(--acc-2); --grad:linear-gradient(135deg,#E8943C,#D95E3C); --acc-soft:var(--acc-14);
+  /* สถานะสดขึ้นตามเว็บหลัก แต่ดันความสว่างขึ้นเล็กน้อยเพราะอยู่บนพื้นมืด */
+  --ok:#4DBE87; --warn:#F0A93C; --danger:#E85C5C; --info:#5BA9D9; --purple:#B07EE5;
 
   --kd:'Outfit','Kanit',system-ui,sans-serif;
   --kb:'Outfit','Kanit',system-ui,sans-serif;
@@ -1060,6 +1062,29 @@ tbody tr:hover{background:rgba(255,255,255,.022)}
   .ring{left:var(--s3);right:var(--s3);top:var(--s3)}
 }
 
+/* สัญลักษณ์บอกว่าหน้านี้ต้องเซ็นรับรองก่อน */
+.lockmark{margin-left:auto;font-size:12px !important;color:var(--disabled);opacity:.7}
+.nav a.on .lockmark{color:var(--acc)}
+
+/* ── หน้าระบบ ── */
+.sys-line{font-size:12.5px;color:var(--faint);line-height:1.7;margin-bottom:var(--s4)}
+.sys-line b{color:var(--ink)}
+.env-row{display:grid;grid-template-columns:1fr 150px 1fr auto;gap:12px;align-items:center;
+  padding:13px 0;border-bottom:1px solid var(--line2)}
+.env-row:last-of-type{border-bottom:0}
+.env-id b{display:block;font-size:13px;font-weight:500}
+.env-id code{font-family:var(--mono);font-size:10.5px;color:var(--disabled)}
+.env-warn{display:block;font-size:11px;color:var(--warn);margin-top:4px;line-height:1.5}
+.env-now{font-family:var(--mono);font-size:11.5px;color:var(--mut);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.env-in{padding:7px 10px;font-size:12.5px}
+.env-foot{margin-top:var(--s4);padding-top:var(--s4);border-top:1px solid var(--line2)}
+.env-foot b{font-size:13px}
+.env-foot p{font-size:12.5px;color:var(--faint);line-height:1.8;margin:6px 0 12px}
+.env-foot code{font-family:var(--mono);font-size:11.5px;background:var(--z-1000);
+  padding:2px 6px;border-radius:4px}
+@media(max-width:900px){.env-row{grid-template-columns:1fr;gap:7px}}
+
 /* ── หน้าผู้คน ──
    ทีมงานเป็นการ์ด ลูกค้าเป็นตาราง เพราะงานที่ทำกับสองกลุ่มนี้ต่างกันสิ้นเชิง
    ทีมงาน = ติดต่อ · ลูกค้า = ค้นหาและจัดการบัญชี */
@@ -1109,11 +1134,11 @@ tbody tr:hover{background:rgba(255,255,255,.022)}
    ไม่ใช่ไล่สีแบบไล่ระดับเรียบ ๆ ของงานกราฟิก และไม่ใช่แสงนีออน
    ความอิ่มสีต่ำมากโดยตั้งใจ เพราะสีจัดบนพื้นมืดจะเรืองแสงและล้าตาเมื่อเปิดทั้งวัน */
 :root{
-  --paint-1:#C98B5E;   /* ดินเผา */
-  --paint-2:#7E9E86;   /* เขียวใบไม้แห้ง */
-  --paint-3:#7A90AE;   /* ฟ้าหม่น */
-  --paint-4:#B07E96;   /* ชมพูอมม่วงหม่น */
-  --paint-5:#C2A75C;   /* เหลืองดินเหลือง */
+  --paint-1:#E8843C;   /* ส้มอิฐ */
+  --paint-2:#4DBE87;   /* เขียวใบไม้ */
+  --paint-3:#5BA9D9;   /* ฟ้าคราม */
+  --paint-4:#D97BA8;   /* ชมพูกุหลาบ */
+  --paint-5:#F0C24C;   /* เหลืองทอง */
 }
 /* รอยพู่กันหลังหัวเรื่องของทุกหน้า — สองรอยซ้อนกันคนละมุม ให้ดูเหมือนป้ายจริง
    ไม่ใช่วงกลมเบลอที่ทุกเว็บใช้ */
@@ -1121,8 +1146,8 @@ tbody tr:hover{background:rgba(255,255,255,.022)}
 .view.on>.page-head::before{content:"";position:absolute;left:-46px;top:-58px;
   width:340px;height:190px;pointer-events:none;z-index:-1;
   background:
-    radial-gradient(58% 44% at 24% 40%,rgba(201,139,94,.16),transparent 70%),
-    radial-gradient(46% 40% at 66% 62%,rgba(122,144,174,.13),transparent 72%);
+    radial-gradient(58% 44% at 24% 40%,rgba(232,132,60,.24),transparent 70%),
+    radial-gradient(46% 40% at 66% 62%,rgba(91,169,217,.18),transparent 72%);
   filter:blur(14px)}
 /* แต่ละกลุ่มเมนูมีสีประจำตัวจาง ๆ ที่หัวกลุ่ม ทำให้กวาดตาหากลุ่มเจอเร็วขึ้น
    โดยไม่ต้องอ่านตัวหนังสือ */
@@ -1138,39 +1163,47 @@ tbody tr:hover{background:rgba(255,255,255,.022)}
 .stat::after{content:"";position:absolute;right:-28px;top:-34px;width:130px;height:92px;
   pointer-events:none;filter:blur(16px);opacity:.5;
   background:radial-gradient(closest-side,var(--pc,var(--paint-1)),transparent)}
-.stat:nth-child(4n+1){--pc:rgba(201,139,94,.5)}
-.stat:nth-child(4n+2){--pc:rgba(126,158,134,.42)}
-.stat:nth-child(4n+3){--pc:rgba(122,144,174,.42)}
-.stat:nth-child(4n){--pc:rgba(176,126,150,.38)}
+.stat:nth-child(4n+1){--pc:rgba(232,132,60,.62)}
+.stat:nth-child(4n+2){--pc:rgba(77,190,135,.5)}
+.stat:nth-child(4n+3){--pc:rgba(91,169,217,.5)}
+.stat:nth-child(4n){--pc:rgba(217,123,168,.46)}
 /* การ์ดมีเส้นสีบาง ๆ ด้านบน เหมือนขีดสีคาดหัวกระดาษ */
 .card{position:relative;overflow:hidden}
 .card::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(201,139,94,.42) 18%,
-    rgba(122,144,174,.3) 52%,transparent 88%)}
-/* ปุ่มหลักเป็นรอยสีไล่จากอำพันไปดินเผา ไม่ใช่สีเรียบ */
-.btn.primary{background:linear-gradient(135deg,var(--acc),#CE8F55)}
-.btn.primary:hover{background:linear-gradient(135deg,var(--acc-hi),#D89A5E)}
+  background:linear-gradient(90deg,transparent,rgba(232,132,60,.55) 18%,
+    rgba(91,169,217,.4) 52%,transparent 88%)}
+/* ปุ่มหลัก — ยกวิธีทำผิวปุ่มมาจากเว็บหลัก
+   แสงบางที่ขอบบน เงาที่ขอบล่าง แล้วทับด้วยไล่สีของแบรนด์
+   ปุ่มจึงดูเป็นวัตถุที่มีผิว ไม่ใช่สี่เหลี่ยมสีแบน ๆ */
+.btn.primary{
+  background-image:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,.04) 46%,
+    rgba(0,0,0,.16)),var(--grad);
+  border-color:rgba(0,0,0,.2);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.4),inset 0 -1.5px 0 rgba(0,0,0,.2);
+  color:#2A1706}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.primary:active{filter:brightness(.96)}
 /* หัวห้องคุยกับแถบบนมีรอยสีจาง ๆ เช่นกัน */
 .wsp-hd,.topbar{position:relative}
 .wsp-hd::after,.topbar::after{content:"";position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(90deg,rgba(201,139,94,.05),transparent 42%)}
-.rs-h{background:linear-gradient(90deg,rgba(126,158,134,.06),transparent 60%)}
+  background:linear-gradient(90deg,rgba(232,132,60,.07),transparent 42%)}
+.rs-h{background:linear-gradient(90deg,rgba(77,190,135,.08),transparent 60%)}
 /* ป้ายตำแหน่งในหน้าผู้คน ใช้สีตามแผนกของคนนั้น ทำให้แยกฝ่ายได้ด้วยสี */
-.pe-card:nth-child(5n+1){--pc:rgba(201,139,94,.4)}
-.pe-card:nth-child(5n+2){--pc:rgba(126,158,134,.36)}
-.pe-card:nth-child(5n+3){--pc:rgba(122,144,174,.36)}
-.pe-card:nth-child(5n+4){--pc:rgba(176,126,150,.34)}
-.pe-card:nth-child(5n){--pc:rgba(194,167,92,.34)}
+.pe-card:nth-child(5n+1){--pc:rgba(232,132,60,.5)}
+.pe-card:nth-child(5n+2){--pc:rgba(77,190,135,.44)}
+.pe-card:nth-child(5n+3){--pc:rgba(91,169,217,.44)}
+.pe-card:nth-child(5n+4){--pc:rgba(217,123,168,.42)}
+.pe-card:nth-child(5n){--pc:rgba(240,194,76,.42)}
 .pe-card{position:relative;overflow:hidden}
 .pe-card::after{content:"";position:absolute;right:-30px;top:-38px;width:120px;height:96px;
   pointer-events:none;filter:blur(18px);opacity:.55;
   background:radial-gradient(closest-side,var(--pc),transparent)}
 /* เวทีห้องเสียงมีแสงจาง ๆ จากด้านบน ให้รู้สึกเป็นห้องจริงที่มีไฟ ไม่ใช่กล่องดำ */
 .stage{background:
-  radial-gradient(120% 70% at 50% -10%,rgba(201,139,94,.10),transparent 62%),
-  radial-gradient(90% 60% at 12% 110%,rgba(122,144,174,.08),transparent 60%),
+  radial-gradient(120% 70% at 50% -10%,rgba(232,132,60,.14),transparent 62%),
+  radial-gradient(90% 60% at 12% 110%,rgba(91,169,217,.11),transparent 60%),
   var(--z-1000)}
-.tile.self{box-shadow:0 0 0 1px rgba(201,139,94,.22)}
+.tile.self{box-shadow:0 0 0 1px rgba(232,132,60,.32)}
 @media(prefers-reduced-motion:reduce){.tour-arrow{animation:none;stroke-dashoffset:0}}
 
 /* ── กระดาษ ──/* ── กระดาษ ──
@@ -1938,6 +1971,52 @@ td .empty::before,td.empty::before{display:none}
           <p>เช็กว่า AI ค้นเน็ตได้จริงไหม ถ้าไม่ได้จะบอกว่าติดตรงไหน</p></div>
           <button class="btn sm" onclick="loadDiag()"><i class="ti ti-stethoscope"></i> ตรวจเดี๋ยวนี้</button></div>
         <div class="card"><div id="diagBody"><div class="empty">กดปุ่มตรวจเดี๋ยวนี้เพื่อเริ่ม</div></div></div>
+
+        <!-- ══ สิ่งที่กดแล้วเกิดขึ้นจริงทันที ══ -->
+        <div class="page-head" style="margin-top:26px"><div><h1 style="font-size:19px">การจัดการระบบ</h1>
+          <p>ทุกปุ่มในส่วนนี้มีผลกับระบบจริงทันทีที่กด</p></div></div>
+        <div class="two-col" style="margin-top:0">
+          <div class="card">
+            <h3><i class="ti ti-topology-star-3"></i> ดัชนีค้นความหมาย</h3>
+            <div class="sub">สร้างดัชนีใหม่จากความรู้ทั้งหมด ใช้เมื่อผลการค้นเพี้ยนหรือเพิ่งย้ายข้อมูล</div>
+            <div id="sysVec" class="sys-line">กำลังตรวจ...</div>
+            <button class="btn sm" id="sysVecBtn" onclick="sysBackfill()">
+              <i class="ti ti-refresh"></i> สร้างดัชนีใหม่ทั้งหมด</button>
+          </div>
+          <div class="card">
+            <h3><i class="ti ti-download"></i> สำรองข้อมูล</h3>
+            <div class="sub">ดาวน์โหลดข้อมูลทั้งระบบเป็นไฟล์เดียว เก็บไว้นอกระบบ</div>
+            <div class="sys-line">ไฟล์ที่ได้มีข้อมูลจริงของลูกค้า เก็บให้ปลอดภัยตามข้อ 5 ของกฎการใช้งาน</div>
+            <button class="btn sm" onclick="sysExport()"><i class="ti ti-file-download"></i> ดาวน์โหลด</button>
+          </div>
+          <div class="card">
+            <h3><i class="ti ti-history"></i> บันทึกการทำงาน</h3>
+            <div class="sub">ล้างประวัติการกระทำของผู้ดูแลทั้งหมด</div>
+            <div class="sys-line">ล้างแล้วเอากลับไม่ได้ ใช้เมื่อบันทึกเยอะจนหาของไม่เจอเท่านั้น</div>
+            <button class="btn sm danger" onclick="sysClearAudit()"><i class="ti ti-trash"></i> ล้างบันทึก</button>
+          </div>
+          <div class="card">
+            <h3><i class="ti ti-refresh-alert"></i> ไฟล์ที่ค้างในเครื่องผู้ใช้</h3>
+            <div class="sub">บังคับให้เบราว์เซอร์โหลดไฟล์ใหม่ทั้งหมด ใช้เมื่ออัปไฟล์แล้วหน้ายังเป็นของเก่า</div>
+            <div class="sys-line">มีผลกับเครื่องนี้เท่านั้น คนอื่นต้องกดเองที่เครื่องเขา</div>
+            <button class="btn sm" onclick="hardReset()"><i class="ti ti-reload"></i> ล้างแล้วโหลดใหม่</button>
+          </div>
+        </div>
+
+        <!-- ══ ค่าที่ต้องแก้ที่เครื่อง deploy ══ -->
+        <div class="page-head" style="margin-top:26px"><div><h1 style="font-size:19px">ค่าตั้งต้นของเซิร์ฟเวอร์</h1>
+          <p>กรอกค่าที่ต้องการ แล้วคัดลอกคำสั่งไปรันที่เครื่องที่ deploy — เว็บสั่งเปลี่ยนเองไม่ได้</p></div></div>
+        <div class="card">
+          <div class="banner" style="margin-bottom:18px">
+            <i class="ti ti-info-circle bi"></i>
+            <div><b>ทำไมกดเปลี่ยนจากตรงนี้ไม่ได้</b>
+            <p>ค่าเหล่านี้อยู่ในตัวแปรของ Worker ซึ่งอ่านตอนเริ่มทำงาน ไม่ได้อยู่ในฐานข้อมูล
+            การเปลี่ยนจึงต้องผ่านการ deploy ใหม่<br>
+            ถ้าอยากแก้จากหน้านี้ได้จริง ต้องเพิ่มเส้นทางที่หลังบ้านก่อน — รายละเอียดอยู่ใน
+            <b>BACKEND-TODO-workspace.md</b></p></div>
+          </div>
+          <div id="sysEnv"></div>
+        </div>
       </section>
 
       <!-- VECTORIZE -->
@@ -2227,6 +2306,46 @@ td .empty::before,td.empty::before{display:none}
           <div class="sign-note" id="lgNote">เลื่อนอ่านให้ครบทุกข้อก่อน จึงจะติ๊กช่องนี้ได้</div>
           <button class="btn primary" id="lgSubmit" onclick="lgSubmit()" disabled>
             ยอมรับและเริ่มใช้งาน</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ เซ็นรับรองก่อนเข้าดูของที่ไม่ควรเปิดเผย ══ -->
+<div class="gatewall" id="ndaWall" hidden>
+  <div class="paper paper-lg" style="max-width:660px">
+    <div class="paper-top">
+      <div class="paper-mark"><svg viewBox="-6.0 -6.0 94.8 112.0"><path d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg></div>
+      <div><b>รับรองการรักษาความลับ</b>
+        <small>ก่อนเข้าดูข้อมูลที่ไม่เปิดเผยต่อบุคคลภายนอก</small></div>
+    </div>
+    <div class="paper-body" style="max-height:38vh">
+      <p style="font-size:14.5px;color:#2a2823">คุณกำลังจะเข้าดู <b id="ndaWhat">ข้อมูลภายใน</b></p>
+      <section class="pg-sec">
+        <p>ข้าพเจ้ารับทราบว่าข้อมูลที่กำลังจะเข้าถึงนี้ เป็นความลับของบริษัท Phasmion
+        และอาจมีข้อมูลส่วนบุคคลของลูกค้ารวมอยู่ด้วย</p>
+        <p>ข้าพเจ้าจะไม่ถ่ายภาพหน้าจอ อัดวิดีโอ คัดลอก หรือบันทึกข้อมูลนี้ออกไปนอกระบบ
+        และจะไม่เปิดเผยต่อบุคคลใดที่ไม่มีสิทธิ์เข้าถึง</p>
+        <p>ข้าพเจ้าจะเข้าดูเท่าที่จำเป็นต่อหน้าที่ของตนเท่านั้น</p>
+        <p>ข้าพเจ้าเข้าใจว่าการเข้าดูครั้งนี้ถูกบันทึกไว้ พร้อมเวลาและลายมือชื่อของข้าพเจ้า
+        และหน้าที่รักษาความลับนี้มีผลต่อไปแม้พ้นสภาพการเป็นพนักงานแล้ว</p>
+      </section>
+    </div>
+    <div class="paper-sign">
+      <div class="sign-row">
+        <div class="sign-left">
+          <span class="sign-lab">ลงลายมือชื่อตรงเส้นด้านล่าง</span>
+          <canvas id="ndaSig" class="sign-pad" style="height:76px"></canvas>
+          <div class="sign-line"></div>
+          <div class="sign-under"><span id="ndaWho"></span>
+            <button class="sign-clear" onclick="ndaClear()">ลบแล้วเซ็นใหม่</button></div>
+        </div>
+        <div class="sign-right">
+          <div class="sign-note" id="ndaNote">เซ็นชื่อด้านซ้ายเพื่อเข้าดู</div>
+          <button class="btn primary" id="ndaGo" onclick="ndaAccept()" disabled>เซ็นและเข้าดู</button>
+          <button class="btn ghost" style="width:100%;margin-top:8px;justify-content:center"
+            onclick="ndaCancel()">ไม่เข้าดูตอนนี้</button>
         </div>
       </div>
     </div>
@@ -2675,6 +2794,12 @@ async function enterAdmin(){
      ซ่อนไปเลยดีกว่า แต่กำแพงจริงยังอยู่ที่เซิร์ฟเวอร์เหมือนเดิม */
   document.querySelectorAll("#nav a[data-mod]").forEach(a=>{
     a.style.display=can(a.dataset.mod)?"":"none";
+    /* ติดสัญลักษณ์ให้รู้ล่วงหน้าว่าหน้านี้ต้องเซ็นก่อน ไม่ใช่กดแล้วเพิ่งรู้ */
+    if(NDA_AREAS[a.dataset.tab]&&!a.querySelector(".lockmark")){
+      const i=document.createElement("i");
+      i.className="ti ti-lock lockmark"; i.title="ต้องเซ็นรับรองก่อนเข้าดู";
+      a.appendChild(i);
+    }
   });
   /* กลุ่มไหนไม่เหลือรายการเลย ซ่อนหัวกลุ่มด้วย ไม่งั้นจะมีหัวข้อลอยไม่มีของ */
   document.querySelectorAll("#nav .ng").forEach(g=>{
@@ -2807,6 +2932,193 @@ function denyMsg(e,what){
       <small>ระดับสิทธิ์ในระบบยังไม่ถึง — แจ้งผู้ดูแลให้ปรับตำแหน่งให้ก่อน</small>`;
   return `เข้า${esc(what)}ไม่ได้<br><small>${esc(m)}</small>`;
 }
+
+/* ══ การเซ็นรับรองก่อนเข้าดูของลับ ══ */
+const NDA_AREAS={
+  finance:"ข้อมูลการเงินและต้นทุนของบริษัท",
+  cars:"ข้อมูลรถและเจ้าของรถ ซึ่งเป็นข้อมูลส่วนบุคคล",
+  feedback:"ข้อความที่ลูกค้าส่งเข้ามา",
+  audit:"บันทึกว่าใครทำอะไรในระบบ",
+  system:"โครงสร้างภายในและการตั้งค่าเซิร์ฟเวอร์",
+  nda:"ลายมือชื่อของผู้ลงนามคนอื่น",
+};
+const NDA_VER=1;
+let NDA_OK=false, ndaPad=null, ndaInk=[], ndaOn=false, ndaWant=null;
+
+function ndaNeeded(tab){ return !!NDA_AREAS[tab]&&!NDA_OK }
+function ndaSetup(){
+  const c=$("ndaSig"); if(!c)return;
+  const r=c.getBoundingClientRect(), dpr=window.devicePixelRatio||1;
+  c.width=Math.max(1,Math.round(r.width*dpr)); c.height=Math.max(1,Math.round(r.height*dpr));
+  const g=c.getContext("2d");
+  g.scale(dpr,dpr); g.lineWidth=2.1; g.lineCap="round"; g.lineJoin="round"; g.strokeStyle="#1b1b1f";
+  ndaPad=g; ndaInk=[];
+  const pos=e=>{ const b=c.getBoundingClientRect(); const t=e.touches?e.touches[0]:e;
+    return {x:t.clientX-b.left,y:t.clientY-b.top} };
+  const down=e=>{ e.preventDefault(); ndaOn=true; const q=pos(e); g.beginPath(); g.moveTo(q.x,q.y); ndaInk.push(q) };
+  const move=e=>{ if(!ndaOn)return; e.preventDefault(); const q=pos(e); g.lineTo(q.x,q.y); g.stroke(); ndaInk.push(q) };
+  const up=()=>{ ndaOn=false; ndaCheck() };
+  c.onmousedown=down; c.onmousemove=move; window.addEventListener("mouseup",up);
+  c.ontouchstart=down; c.ontouchmove=move; c.ontouchend=up;
+}
+function ndaClear(){ const c=$("ndaSig"); if(c&&ndaPad){ ndaPad.clearRect(0,0,c.width,c.height); ndaInk=[]; ndaCheck() } }
+function ndaQuality(){
+  if(ndaInk.length<14)return false;
+  const xs=ndaInk.map(p=>p.x), ys=ndaInk.map(p=>p.y);
+  const w=Math.max(...xs)-Math.min(...xs), h=Math.max(...ys)-Math.min(...ys);
+  let len=0;
+  for(let i=1;i<ndaInk.length;i++)len+=Math.hypot(ndaInk[i].x-ndaInk[i-1].x,ndaInk[i].y-ndaInk[i-1].y);
+  return w>=50&&len>=150&&h>=6;
+}
+function ndaCheck(){
+  const ok=ndaQuality();
+  $("ndaGo").disabled=!ok;
+  $("ndaNote").textContent=ok?"เรียบร้อย กดเซ็นและเข้าดูได้เลย":"เซ็นชื่อด้านซ้ายเพื่อเข้าดู";
+}
+function ndaAsk(tab){
+  ndaWant=tab;
+  $("ndaWhat").textContent=NDA_AREAS[tab]||"ข้อมูลภายใน";
+  $("ndaWho").textContent=(me.name||"")+"  ·  "+new Date().toLocaleDateString("th-TH",
+    {day:"numeric",month:"long",year:"numeric"});
+  $("ndaGo").disabled=true;
+  $("ndaWall").hidden=false;
+  setTimeout(ndaSetup,60);
+}
+function ndaCancel(){ $("ndaWall").hidden=true; ndaWant=null; go("overview") }
+async function ndaAccept(){
+  const b=$("ndaGo"); b.disabled=true; b.textContent="กำลังบันทึก...";
+  try{
+    const img=$("ndaSig").toDataURL("image/png");
+    await api("/api/kb",{method:"POST",body:{
+      id:"nda_"+me.uid, title:"รับรองการรักษาความลับ "+(me.name||me.uid),
+      body:img.length<=7600?img:"บันทึกการรับรอง (ลายเซ็นใหญ่เกินกว่าที่เก็บได้)",
+      keywords:JSON.stringify({v:NDA_VER,at:Date.now(),n:(me.name||"").slice(0,40),
+        e:(me.email||"").slice(0,50),area:ndaWant||""}).slice(0,395),
+      make:"__nda__",model:"",enabled:false}});
+    NDA_OK=true; $("ndaWall").hidden=true;
+    const t=ndaWant; ndaWant=null;
+    toast("บันทึกการรับรองแล้ว","ti-writing-sign");
+    if(t)go(t);
+  }catch(e){
+    alert("บันทึกไม่สำเร็จ: "+e.message);
+    b.disabled=false; b.textContent="เซ็นและเข้าดู";
+  }
+}
+window.ndaClear=ndaClear; window.ndaCancel=ndaCancel; window.ndaAccept=ndaAccept;
+
+/* ══ การจัดการระบบ ══
+   ทุกฟังก์ชันในกลุ่มนี้เรียกเส้นทางที่มีอยู่จริงและทำงานได้จริง
+   ไม่มีปุ่มไหนที่กดแล้วไม่เกิดอะไรขึ้น */
+async function sysBackfill(){
+  if(!confirm("สร้างดัชนีค้นความหมายใหม่จากความรู้ทั้งหมด?\n\nใช้เวลาสักครู่ ระหว่างนี้การค้นยังทำงานได้ตามปกติ"))return;
+  const b=$("sysVecBtn"); b.disabled=true; b.innerHTML='<i class="ti ti-loader-2"></i> กำลังสร้าง...';
+  try{
+    const r=await api("/api/admin/vectorize/backfill",{method:"POST",body:{}});
+    toast("สร้างดัชนีแล้ว "+((r&&(r.count??r.done))||"")+" รายการ","ti-circle-check");
+    sysVecStatus();
+  }catch(e){ alert("สร้างดัชนีไม่สำเร็จ: "+e.message) }
+  b.disabled=false; b.innerHTML='<i class="ti ti-refresh"></i> สร้างดัชนีใหม่ทั้งหมด';
+}
+async function sysVecStatus(){
+  const el=$("sysVec"); if(!el)return;
+  try{
+    const r=await api("/api/admin/vectorize/status");
+    el.innerHTML=r&&r.enabled
+      ?`ใช้งานอยู่ · มีในดัชนี <b>${r.count??"-"}</b> รายการ`
+      :`ยังไม่ได้เปิดใช้ดัชนี ระบบจะถอยไปใช้วิธีจับคำแทน ซึ่งค้นได้แต่แม่นน้อยกว่า`;
+  }catch(e){ el.textContent="ตรวจสถานะดัชนีไม่ได้" }
+}
+async function sysExport(){
+  try{
+    const d=await api("/api/admin/export");
+    const blob=new Blob([JSON.stringify(d,null,2)],{type:"application/json"});
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download="cendon-backup-"+new Date().toISOString().slice(0,10)+".json";
+    a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+    toast("ดาวน์โหลดแล้ว","ti-file-download");
+  }catch(e){ alert("ดาวน์โหลดไม่สำเร็จ: "+e.message) }
+}
+async function sysClearAudit(){
+  if(!confirm("ล้างบันทึกการทำงานทั้งหมด?\n\nเอากลับไม่ได้"))return;
+  try{ await api("/api/admin/audit",{method:"DELETE"});
+    toast("ล้างบันทึกแล้ว","ti-trash"); if(can("audit"))loadAudit() }
+  catch(e){ alert("ล้างไม่สำเร็จ: "+e.message) }
+}
+window.sysBackfill=sysBackfill; window.sysExport=sysExport; window.sysClearAudit=sysClearAudit;
+
+/* ── ค่าของเซิร์ฟเวอร์ ──
+   แก้ที่นี่ไม่ได้ แต่ช่วยให้เตรียมคำสั่งที่ถูกต้องได้โดยไม่ต้องจำรูปแบบเอง
+   ซึ่งเป็นจุดที่คนพิมพ์ผิดบ่อยที่สุด */
+const ENV_FIELDS=[
+ {k:"AI_MODEL",       th:"โมเดลหลัก",            kind:"var"},
+ {k:"AI_FALLBACK_MODEL",th:"โมเดลสำรอง",         kind:"var"},
+ {k:"AI_LIVE_MODEL",  th:"โมเดลสำหรับโทรคุย",     kind:"var"},
+ {k:"AI_DAILY_LIMIT", th:"โควตาต่อคนต่อวัน",      kind:"var"},
+ {k:"ANON_DAILY_LIMIT",th:"โควตาผู้ที่ไม่ล็อกอิน", kind:"var"},
+ {k:"ALLOWED_ORIGINS",th:"โดเมนที่อนุญาตให้เรียก API",kind:"var",
+  warn:"ถ้าเป็น * แปลว่าเว็บไหนก็เรียก API ของเราได้ ควรตั้งเป็นโดเมนจริง"},
+ {k:"GEMINI_API_KEY", th:"คีย์ Google Gemini",   kind:"secret"},
+ {k:"OPENROUTER_API_KEY",th:"คีย์ OpenRouter",   kind:"secret"},
+];
+let ENV_NOW={};
+function drawEnv(){
+  const box=$("sysEnv"); if(!box)return;
+  box.innerHTML=ENV_FIELDS.map(f=>{
+    const cur=ENV_NOW[f.k];
+    const shown=f.kind==="secret"
+      ? (cur?"ตั้งค่าไว้แล้ว":"ยังไม่ได้ตั้ง")
+      : (cur===undefined||cur===null||cur===""?"—":String(cur));
+    return `<div class="env-row">
+      <div class="env-id"><b>${esc(f.th)}</b><code>${esc(f.k)}</code>
+        ${f.warn&&String(cur)==="*"?`<small class="env-warn">${esc(f.warn)}</small>`:""}</div>
+      <div class="env-now">${esc(shown)}</div>
+      <input class="input env-in" id="env_${f.k}" placeholder="${f.kind==="secret"?"ใส่คีย์ใหม่":"ค่าใหม่"}"
+        ${f.kind==="secret"?'type="password" autocomplete="new-password"':""}>
+      <button class="btn sm" onclick="envCmd('${f.k}','${f.kind}')">
+        <i class="ti ti-clipboard"></i> คัดลอกคำสั่ง</button>
+    </div>`}).join("")
+    +`<div class="env-foot">
+      <b>วิธีใช้</b>
+      <p>กรอกค่าที่ต้องการ กดคัดลอกคำสั่ง แล้วนำไปวางใน Terminal ที่โฟลเดอร์ของหลังบ้าน
+      จากนั้นสั่ง <code>npx wrangler deploy</code> อีกครั้ง ค่าใหม่จึงจะมีผล</p>
+      <button class="btn sm ghost" onclick="envAllCmd()">
+        <i class="ti ti-clipboard-list"></i> คัดลอกคำสั่งของทุกช่องที่กรอกไว้</button>
+    </div>`;
+}
+function cmdFor(k,kind){
+  const v=($("env_"+k)||{}).value||"";
+  if(!v.trim())return "";
+  return kind==="secret"
+    ? `echo "${v.trim()}" | npx wrangler secret put ${k}`
+    /* ค่าธรรมดาอยู่ใน wrangler.jsonc ไม่ใช่ secret จึงบอกให้แก้ไฟล์แล้ว deploy */
+    : `# แก้ในไฟล์ wrangler.jsonc ที่ส่วน "vars" แล้วสั่ง deploy\n#   "${k}": "${v.trim()}"`;
+}
+function copyText(t,msg){
+  const done=()=>toast(msg||"คัดลอกแล้ว","ti-clipboard-check");
+  if(navigator.clipboard&&navigator.clipboard.writeText)
+    navigator.clipboard.writeText(t).then(done,()=>fallback());
+  else fallback();
+  function fallback(){
+    /* บางเบราว์เซอร์ปิดคลิปบอร์ดไว้ ต้องมีทางสำรองที่ยังคัดลอกได้จริง */
+    const ta=document.createElement("textarea");
+    ta.value=t; ta.style.position="fixed"; ta.style.opacity="0";
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand("copy"); done() }catch(e){ alert(t) }
+    ta.remove();
+  }
+}
+function envCmd(k,kind){
+  const c=cmdFor(k,kind);
+  if(!c){ alert("กรอกค่าใหม่ในช่องก่อน"); return }
+  copyText(c,"คัดลอกคำสั่งของ "+k+" แล้ว");
+}
+function envAllCmd(){
+  const all=ENV_FIELDS.map(f=>cmdFor(f.k,f.kind)).filter(Boolean);
+  if(!all.length){ alert("ยังไม่ได้กรอกช่องไหนเลย"); return }
+  copyText(all.join("\n\n")+"\n\nnpx wrangler deploy","คัดลอกครบทุกคำสั่งแล้ว");
+}
+window.envCmd=envCmd; window.envAllCmd=envAllCmd;
 
 /* ══ กฎการใช้งาน ══
    เขียนเป็นข้อมูลชุดเดียว ใช้ทั้งหน้ากฎและหน้าเซ็นตอนเข้าครั้งแรก
@@ -2961,6 +3273,9 @@ async function checkLegal(){
     const row=(res.kb||[]).find(k=>k.id==="lgl_"+me.uid);
     let m={}; if(row)try{ m=JSON.parse(row.keywords||"{}") }catch(e){}
     LEGAL_OK=!!(row&&m.v===LEGAL_VERSION);
+    const nrow=(res.kb||[]).find(k=>k.id==="nda_"+me.uid);
+    let nm={}; if(nrow)try{ nm=JSON.parse(nrow.keywords||"{}") }catch(e){}
+    NDA_OK=!!(nrow&&nm.v===NDA_VER);
   }catch(e){ LEGAL_OK=true }   /* อ่านไม่ได้ อย่าขวางคนทำงาน */
   $("legalPaper").innerHTML=legalHtml();
   const sg=$("lgSigned");
@@ -4207,6 +4522,9 @@ $("nav").addEventListener("click",e=>{
   toggleSide(false);
 });
 function go(t){
+  /* หน้าที่มีของลับต้องเซ็นรับรองก่อน เซ็นครั้งเดียวใช้ได้ทุกหน้าในกลุ่ม
+     ขวางตรงนี้จุดเดียว จะได้ไม่มีหน้าไหนหลุดออกจากกติกาเวลาเพิ่มหน้าใหม่ */
+  if(ndaNeeded(t)){ ndaAsk(t); return }
   document.querySelectorAll("#nav a").forEach(x=>x.classList.toggle("on",x.dataset.tab===t));
   document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on",v.id==="v-"+t));
   /* หน้าที่ต้องยิงถามหลังบ้าน โหลดตอนเปิดดูจริง ไม่ใช่ตอนเข้าเว็บ
@@ -4853,6 +5171,12 @@ async function loadHealth(){
   try{
     const h=await api("/api/admin/health");
     const sc=h.schema||{},en=h.env||{};
+    /* เอาค่าที่กำลังใช้อยู่จริงมาแสดงคู่กับช่องกรอก จะได้เห็นว่ากำลังจะเปลี่ยนจากอะไรเป็นอะไร */
+    ENV_NOW={AI_MODEL:en.model,AI_FALLBACK_MODEL:en.fallbackModel,AI_LIVE_MODEL:en.liveModel,
+      AI_DAILY_LIMIT:en.aiDailyLimit,ANON_DAILY_LIMIT:en.anonDailyLimit,
+      ALLOWED_ORIGINS:en.allowedOrigins,GEMINI_API_KEY:en.aiConfigured,
+      OPENROUTER_API_KEY:en.openrouterConfigured};
+    drawEnv(); sysVecStatus();
     const tick=(ok,y,n)=>`<span class="tick ${ok?"ok":"bad"}"><i class="ti ${ok?"ti-circle-check":"ti-alert-triangle"}"></i>${ok?y:n}</span>`;
     const tables=Object.entries(sc.tables||{}).map(([t,v])=>`<div class="schema-row">
       <span class="nm">${esc(t)}</span>

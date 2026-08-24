@@ -108,7 +108,10 @@ h1,h2,h3{font-weight:600;letter-spacing:.01em}
 .input:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-soft)}
 
 /* ===== SHELL ===== */
-.shell{display:grid;grid-template-columns:248px 1fr;min-height:100dvh}
+.shell{display:grid;grid-template-columns:248px minmax(0,1fr) 250px;min-height:100dvh}
+/* ซ่อนแถบขวาแล้วคืนที่ให้เนื้อหา — สำหรับคนที่อยากได้พื้นที่ทำงานกว้างสุด */
+body.no-right .shell{grid-template-columns:248px minmax(0,1fr)}
+body.no-right .rside{display:none}
 /* ฉากหลังของลิ้นชักมือถือ ต้องลอยอยู่นอกกริดเสมอ ไม่งั้นมันจะกินช่องที่ 2
    แล้วดัน <main> ตกไปแถวล่างกว้างแค่ 248px — หน้าจะดูเหมือนมีแต่แถบเมนู */
 .scrim{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:140;
@@ -218,7 +221,9 @@ main{min-width:0}
 .rolechip.admin{background:rgba(155,123,240,.16);color:var(--purple)}
 .rolechip.moderator{background:rgba(79,169,232,.16);color:var(--info)}
 
-.main{padding:26px 30px 60px;max-width:1180px;width:100%}
+/* เดิมจำกัดความกว้างไว้ 1180 ทำให้จอกว้างเหลือที่ว่างทิ้งไว้เฉย ๆ ด้านขวา
+   ตอนนี้แถบขวาทำหน้าที่นั้นแทน เนื้อหาตรงกลางจึงกินเต็มที่ที่เหลือได้ */
+.main{padding:26px 30px 60px;width:100%}
 .page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:24px;flex-wrap:wrap}
 .page-head h1{font-family:var(--kd);font-size:26px;font-weight:600}
 .page-head p{color:var(--mut);font-size:13.5px;margin-top:3px}
@@ -1099,6 +1104,291 @@ tbody tr:hover{background:rgba(255,255,255,.022)}
 .tm-who small{color:var(--disabled);font-size:11.5px}
 @media(max-width:820px){.pe-grid{grid-template-columns:1fr}}
 
+/* ── สีสันแบบระบายมือ ──
+   พื้นยังดำเหมือนเดิมตามที่สั่ง สิ่งที่เพิ่มคือรอยสีจาง ๆ ที่เหมือนป้ายพู่กันทิ้งไว้
+   ไม่ใช่ไล่สีแบบไล่ระดับเรียบ ๆ ของงานกราฟิก และไม่ใช่แสงนีออน
+   ความอิ่มสีต่ำมากโดยตั้งใจ เพราะสีจัดบนพื้นมืดจะเรืองแสงและล้าตาเมื่อเปิดทั้งวัน */
+:root{
+  --paint-1:#C98B5E;   /* ดินเผา */
+  --paint-2:#7E9E86;   /* เขียวใบไม้แห้ง */
+  --paint-3:#7A90AE;   /* ฟ้าหม่น */
+  --paint-4:#B07E96;   /* ชมพูอมม่วงหม่น */
+  --paint-5:#C2A75C;   /* เหลืองดินเหลือง */
+}
+/* รอยพู่กันหลังหัวเรื่องของทุกหน้า — สองรอยซ้อนกันคนละมุม ให้ดูเหมือนป้ายจริง
+   ไม่ใช่วงกลมเบลอที่ทุกเว็บใช้ */
+.view.on>.page-head{position:relative}
+.view.on>.page-head::before{content:"";position:absolute;left:-46px;top:-58px;
+  width:340px;height:190px;pointer-events:none;z-index:-1;
+  background:
+    radial-gradient(58% 44% at 24% 40%,rgba(201,139,94,.16),transparent 70%),
+    radial-gradient(46% 40% at 66% 62%,rgba(122,144,174,.13),transparent 72%);
+  filter:blur(14px)}
+/* แต่ละกลุ่มเมนูมีสีประจำตัวจาง ๆ ที่หัวกลุ่ม ทำให้กวาดตาหากลุ่มเจอเร็วขึ้น
+   โดยไม่ต้องอ่านตัวหนังสือ */
+.ng:nth-of-type(1) .ng-t{color:var(--paint-1)}
+.ng:nth-of-type(2) .ng-t{color:var(--paint-2)}
+.ng:nth-of-type(3) .ng-t{color:var(--paint-3)}
+.ng:nth-of-type(4) .ng-t{color:var(--paint-5)}
+.ng:nth-of-type(5) .ng-t{color:var(--paint-4)}
+.ng:nth-of-type(6) .ng-t{color:var(--faint)}
+.ng .ng-t{opacity:.85}
+/* ตัวเลขสำคัญ — แต่ละช่องมีรอยสีของตัวเองที่มุมบน จาง ๆ */
+.stat{position:relative;overflow:hidden}
+.stat::after{content:"";position:absolute;right:-28px;top:-34px;width:130px;height:92px;
+  pointer-events:none;filter:blur(16px);opacity:.5;
+  background:radial-gradient(closest-side,var(--pc,var(--paint-1)),transparent)}
+.stat:nth-child(4n+1){--pc:rgba(201,139,94,.5)}
+.stat:nth-child(4n+2){--pc:rgba(126,158,134,.42)}
+.stat:nth-child(4n+3){--pc:rgba(122,144,174,.42)}
+.stat:nth-child(4n){--pc:rgba(176,126,150,.38)}
+/* การ์ดมีเส้นสีบาง ๆ ด้านบน เหมือนขีดสีคาดหัวกระดาษ */
+.card{position:relative;overflow:hidden}
+.card::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(201,139,94,.42) 18%,
+    rgba(122,144,174,.3) 52%,transparent 88%)}
+/* ปุ่มหลักเป็นรอยสีไล่จากอำพันไปดินเผา ไม่ใช่สีเรียบ */
+.btn.primary{background:linear-gradient(135deg,var(--acc),#CE8F55)}
+.btn.primary:hover{background:linear-gradient(135deg,var(--acc-hi),#D89A5E)}
+/* หัวห้องคุยกับแถบบนมีรอยสีจาง ๆ เช่นกัน */
+.wsp-hd,.topbar{position:relative}
+.wsp-hd::after,.topbar::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(90deg,rgba(201,139,94,.05),transparent 42%)}
+.rs-h{background:linear-gradient(90deg,rgba(126,158,134,.06),transparent 60%)}
+/* ป้ายตำแหน่งในหน้าผู้คน ใช้สีตามแผนกของคนนั้น ทำให้แยกฝ่ายได้ด้วยสี */
+.pe-card:nth-child(5n+1){--pc:rgba(201,139,94,.4)}
+.pe-card:nth-child(5n+2){--pc:rgba(126,158,134,.36)}
+.pe-card:nth-child(5n+3){--pc:rgba(122,144,174,.36)}
+.pe-card:nth-child(5n+4){--pc:rgba(176,126,150,.34)}
+.pe-card:nth-child(5n){--pc:rgba(194,167,92,.34)}
+.pe-card{position:relative;overflow:hidden}
+.pe-card::after{content:"";position:absolute;right:-30px;top:-38px;width:120px;height:96px;
+  pointer-events:none;filter:blur(18px);opacity:.55;
+  background:radial-gradient(closest-side,var(--pc),transparent)}
+/* เวทีห้องเสียงมีแสงจาง ๆ จากด้านบน ให้รู้สึกเป็นห้องจริงที่มีไฟ ไม่ใช่กล่องดำ */
+.stage{background:
+  radial-gradient(120% 70% at 50% -10%,rgba(201,139,94,.10),transparent 62%),
+  radial-gradient(90% 60% at 12% 110%,rgba(122,144,174,.08),transparent 60%),
+  var(--z-1000)}
+.tile.self{box-shadow:0 0 0 1px rgba(201,139,94,.22)}
+@media(prefers-reduced-motion:reduce){.tour-arrow{animation:none;stroke-dashoffset:0}}
+
+/* ── กระดาษ ──/* ── กระดาษ ──
+   เอกสารที่มีผลผูกพันควรอ่านเหมือนกระดาษ ไม่ใช่เหมือนหน้าเว็บ
+   พื้นครีมอุ่น เส้นบรรทัดจาง ๆ ขอบไม่คม และเงาที่ทำให้รู้สึกว่ามันวางอยู่บนโต๊ะ
+   ไม่มีกรอบสี่เหลี่ยมล้อม เพราะกระดาษจริงไม่มีกรอบ */
+.paper{position:relative;background:#F7F3EA;color:#26241F;border-radius:2px;
+  padding:44px 52px;line-height:1.95;
+  box-shadow:0 1px 2px rgba(0,0,0,.5),0 18px 44px -14px rgba(0,0,0,.62);
+  /* เส้นบรรทัดของสมุด จาง ๆ พอให้รู้สึกว่าเป็นกระดาษมีเส้น */
+  background-image:repeating-linear-gradient(to bottom,transparent 0 30px,rgba(60,52,40,.055) 30px 31px);
+  background-position:0 44px}
+/* ขอบกระดาษไม่เรียบเป๊ะ — ขอบที่เป๊ะเกินไปอ่านว่าเป็นกล่องในเว็บ ไม่ใช่กระดาษ */
+.paper::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:2px;
+  box-shadow:inset 0 0 0 1px rgba(60,52,40,.09),inset 0 1px 0 rgba(255,255,255,.6)}
+.paper h3{font-family:var(--kd);font-size:16.5px;font-weight:600;color:#1b1a17;
+  margin:0 0 10px;letter-spacing:-.01em}
+.paper p{font-size:14px;color:#3b3830;margin:0 0 9px;max-width:66ch}
+.pg-sec{margin-bottom:30px;position:relative}
+.pg-sec:last-child{margin-bottom:0}
+/* เส้นคั่นวาดมือ ไม่ใช่เส้นตรงคม — ใช้ไล่สีที่จางหัวจางท้าย */
+.pg-sec+.pg-sec::before{content:"";position:absolute;top:-16px;left:0;width:84px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(60,52,40,.34) 22%,rgba(60,52,40,.34) 78%,transparent)}
+.paper-lg{width:min(880px,94vw);max-height:92vh;display:flex;flex-direction:column;padding:0}
+.paper-top{display:flex;align-items:center;gap:14px;padding:26px 46px 18px;
+  border-bottom:1px solid rgba(60,52,40,.13)}
+.paper-mark{width:32px;height:32px;color:#8a6f3d;flex-shrink:0}
+.paper-mark svg{width:100%;height:100%}.paper-mark path{fill:currentColor}
+.paper-top b{display:block;font-family:var(--kd);font-size:16px;font-weight:600;color:#1b1a17}
+.paper-top small{display:block;font-size:11.5px;color:#7b7466;margin-top:2px}
+.paper-body{overflow-y:auto;padding:26px 46px 30px;flex:1;min-height:0;
+  background-image:repeating-linear-gradient(to bottom,transparent 0 30px,rgba(60,52,40,.055) 30px 31px)}
+.paper-body::-webkit-scrollbar{width:9px}
+.paper-body::-webkit-scrollbar-thumb{background:rgba(60,52,40,.2);border-radius:5px}
+.paper-sign{border-top:1px solid rgba(60,52,40,.13);padding:20px 46px 24px;background:#F2EDE2}
+.sign-row{display:grid;grid-template-columns:1fr 268px;gap:30px;align-items:end}
+.sign-lab{font-size:11px;color:#8a8272;letter-spacing:.04em}
+/* ช่องเซ็นไม่มีกรอบ มีแค่เส้นบรรทัดเดียวเหมือนช่องเซ็นในเอกสารจริง */
+.sign-pad{display:block;width:100%;height:88px;cursor:crosshair;touch-action:none;background:transparent}
+.sign-line{height:1px;background:#3f3a30;opacity:.55}
+.sign-under{display:flex;justify-content:space-between;align-items:center;margin-top:6px;
+  font-size:11.5px;color:#7b7466}
+.sign-clear{background:none;border:0;color:#8a6f3d;cursor:pointer;font-size:11.5px;
+  font-family:inherit;text-decoration:underline;text-underline-offset:2px}
+.sign-check{display:flex;gap:9px;align-items:flex-start;font-size:13px;color:#3b3830;
+  cursor:pointer;line-height:1.6}
+.sign-check input{margin-top:3px;width:16px;height:16px;accent-color:#8a6f3d;flex-shrink:0}
+.sign-note{font-size:11.5px;color:#8a8272;margin:9px 0 12px;line-height:1.6}
+.paper-sign .btn.primary{width:100%;justify-content:center;background:#8a6f3d;border-color:#8a6f3d;
+  color:#F7F3EA;padding:11px}
+.paper-sign .btn.primary:hover{background:#9c7f47;border-color:#9c7f47}
+.paper-sign .btn.primary:disabled{opacity:.4;cursor:not-allowed}
+.gatewall{position:fixed;inset:0;z-index:600;display:grid;place-items:center;padding:3vh 16px;
+  background:radial-gradient(1200px 700px at 50% 0%,#141318,#08080a 70%);
+  animation:fade .4s var(--ease)}
+.gatewall[hidden]{display:none}
+.lg-signed{font-size:12px;color:var(--ok);display:flex;align-items:center;gap:6px}
+@media(max-width:820px){
+  .paper{padding:28px 22px}
+  .paper-top,.paper-body,.paper-sign{padding-left:22px;padding-right:22px}
+  .sign-row{grid-template-columns:1fr;gap:18px}
+}
+
+/* ── การสอนใช้ ──
+   มืดทั้งจอ เจาะช่องสว่างเฉพาะจุดที่พูดถึง ลูกศรลากมือชี้ไปหา */
+.tour{position:fixed;inset:0;z-index:620}
+.tour[hidden]{display:none}
+.tour-mask{position:absolute;inset:0;width:100%;height:100%}
+.tour-arrow{fill:none;stroke:var(--acc);stroke-width:2.2;stroke-linecap:round;
+  stroke-linejoin:round;filter:drop-shadow(0 2px 6px rgba(0,0,0,.6));
+  stroke-dasharray:420;stroke-dashoffset:420;animation:draw .7s var(--ease) .12s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.tour-card{position:absolute;width:320px;background:var(--z-900);border:1px solid var(--line3);
+  border-radius:var(--r-lg);padding:18px;box-shadow:var(--shadow);
+  animation:rise .38s var(--ease)}
+.tour-step{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;color:var(--acc)}
+.tour-card b{display:block;font-size:15.5px;font-weight:600;margin:7px 0 6px}
+.tour-card p{font-size:13px;color:var(--mut);line-height:1.75;margin-bottom:16px}
+.tour-act{display:flex;gap:8px;justify-content:flex-end}
+
+/* ── แถบขวา ──
+   สามส่วนบนเป็นคน หนึ่งส่วนล่างเป็นทางลัด ตามที่เจ้าของงานกำหนด
+   ใช้ grid-template-rows 3fr 1fr เพื่อให้สัดส่วนคงที่ไม่ว่าจอสูงเท่าไร */
+.rside{background:var(--z-1000);border-left:1px solid var(--line2);
+  display:grid;grid-template-rows:3fr auto 1fr;position:sticky;top:0;height:100dvh;
+  min-height:0;overflow:hidden}
+.rs-team,.rs-short{display:flex;flex-direction:column;min-height:0}
+.rs-cut{height:1px;background:var(--line2)}
+.rs-h{display:flex;align-items:center;height:47px;padding:0 10px 0 14px;flex-shrink:0;
+  font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--disabled);border-bottom:1px solid var(--line2)}
+.rs-h span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rs-x{width:24px;height:24px;border-radius:5px;border:0;background:none;color:var(--disabled);
+  cursor:pointer;display:grid;place-items:center;font-size:15px;font-family:inherit}
+.rs-x:hover{background:rgba(255,255,255,.07);color:var(--ink)}
+.rs-list,.rs-sc{flex:1;overflow-y:auto;padding:8px}
+.rs-p{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:6px;position:relative}
+.rs-p:hover{background:rgba(255,255,255,.045)}
+.rs-av{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex-shrink:0;
+  background:var(--surface2);color:var(--acc);font-weight:600;font-size:12.5px;position:relative}
+.rs-dot{position:absolute;right:-2px;bottom:-2px;width:10px;height:10px;border-radius:50%;
+  background:var(--ok);border:2px solid var(--z-1000)}
+.rs-n{min-width:0;flex:1}
+.rs-n b{display:block;font-size:12.5px;font-weight:500;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.rs-n small{display:block;font-size:10.5px;color:var(--disabled);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.rs-p.live .rs-n small{color:var(--ok)}
+.rs-act{display:none;gap:2px}
+.rs-p:hover .rs-act{display:flex}
+.rs-p:hover .nav-badge{display:none}
+.rs-act button{width:26px;height:26px;border-radius:5px;border:0;background:var(--surface2);
+  color:var(--mut);cursor:pointer;display:grid;place-items:center;font-size:14px}
+.rs-act button:hover{background:var(--acc);color:var(--z-1000)}
+.rs-none{font-size:11.5px;color:var(--disabled);padding:14px 8px;line-height:1.7}
+.sc{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:6px;cursor:pointer;
+  font-size:12.5px;color:var(--mut);position:relative}
+.sc:hover{background:rgba(255,255,255,.045);color:var(--ink)}
+.sc .ti{font-size:14px;color:var(--disabled);flex-shrink:0}
+.sc span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sc-x{width:20px;height:20px;border-radius:4px;border:0;background:none;color:var(--disabled);
+  cursor:pointer;display:none;place-items:center;font-size:13px}
+.sc:hover .sc-x{display:grid}
+.sc-x:hover{background:rgba(196,115,107,.18);color:var(--danger)}
+.rside-open{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:80;
+  width:26px;height:52px;border-radius:8px 0 0 8px;border:1px solid var(--line2);border-right:0;
+  background:var(--surface);color:var(--faint);cursor:pointer;display:grid;place-items:center}
+.rside-open:hover{color:var(--ink);background:var(--surface2)}
+/* จอที่ไม่กว้างพอ ซ่อนแถบขวาแล้วคืนที่ให้เนื้อหาตรงกลาง
+   ต้องกำหนดขอบล่างด้วย (min-width:821px) ไม่งั้นกฎนี้จะไปทับกฎของมือถือ
+   ซึ่งเขียนไว้ก่อนหน้า แล้วคอลัมน์เนื้อหาบนมือถือจะเหลือกว้างแค่ 248px */
+@media(max-width:1360px) and (min-width:821px){
+  .shell{grid-template-columns:248px minmax(0,1fr)}
+  .rside,.rside-open{display:none}
+}
+
+/* ── เวทีห้องเสียง ──
+   เต็มจอเพราะตอนคุยกัน สิ่งที่สำคัญที่สุดคือหน้าคน ไม่ใช่เมนูรอบ ๆ
+   ย่อลงมุมได้เมื่ออยากทำงานไปคุยไป */
+.stage{position:fixed;inset:0;z-index:400;background:var(--z-1000);
+  display:flex;flex-direction:column;animation:stageIn .32s var(--ease)}
+/* ต้องเขียนกฎนี้ให้ชัด — display ที่เราตั้งเองชนะ hidden ของเบราว์เซอร์เสมอ
+   ถ้าไม่มีบรรทัดนี้ เวทีจะคลุมทั้งแอปไว้แบบมองไม่เห็น กดอะไรไม่ได้เลยสักปุ่ม */
+.stage[hidden]{display:none}
+@keyframes stageIn{from{opacity:0;transform:scale(.985)}to{opacity:1;transform:none}}
+.stage.min{inset:auto 20px 20px auto;width:320px;height:210px;border-radius:var(--r-lg);
+  border:1px solid var(--line3);box-shadow:var(--shadow);overflow:hidden}
+.stage.min .stage-bar{padding:8px}
+.stage.min .cbtn{width:34px;height:34px;font-size:15px}
+.stage.min .tile-nm{font-size:10px}
+.stage-top{display:flex;align-items:center;gap:12px;padding:14px 20px;flex-shrink:0}
+.stage-id{display:flex;align-items:center;gap:9px;flex:1;min-width:0}
+.stage-id b{font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--ok);flex-shrink:0;
+  animation:pulse 2s var(--ease) infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.stage-n{font-family:var(--mono);font-size:10px;color:var(--disabled);letter-spacing:.06em}
+.stage-t{font-family:var(--mono);font-size:12px;color:var(--faint)}
+.tiles{flex:1;display:grid;gap:10px;padding:0 20px;min-height:0;align-content:center}
+.tile{position:relative;border-radius:var(--r-lg);overflow:hidden;background:var(--z-900);
+  border:1px solid var(--line2);aspect-ratio:16/10;min-height:0}
+.tile video{width:100%;height:100%;object-fit:cover;display:none;background:var(--z-1000)}
+.tile video.on{display:block}
+.tile-ph{position:absolute;inset:0;display:grid;place-items:center;
+  background:linear-gradient(150deg,var(--z-900),var(--z-1000))}
+.tile-ph.off{display:none}
+.tile-av{width:76px;height:76px;border-radius:22px;display:grid;place-items:center;
+  font-family:var(--kd);font-size:30px;font-weight:600;color:var(--acc);
+  background:var(--surface2);border:1px solid var(--line2)}
+.tile-nm{position:absolute;left:10px;bottom:9px;display:flex;align-items:center;gap:6px;
+  font-size:12px;font-weight:500;color:#fff;background:rgba(5,5,6,.62);
+  padding:4px 9px;border-radius:6px;backdrop-filter:blur(6px)}
+.tile-nm .ti{font-size:14px;color:var(--danger)}
+.tile-bad{color:var(--danger);font-size:10.5px}
+.tile.self{border-color:var(--acc-30)}
+.stage-bar{display:flex;gap:10px;justify-content:center;padding:18px;flex-shrink:0}
+.cbtn{width:46px;height:46px;border-radius:50%;border:1px solid var(--line2);
+  background:var(--surface2);color:var(--ink);font-size:19px;cursor:pointer;
+  display:grid;place-items:center;
+  transition:background var(--t-fast) var(--ease),transform .1s var(--ease)}
+.cbtn:hover{background:var(--z-700)}
+.cbtn:active{transform:scale(.94)}
+.cbtn.off{background:rgba(196,115,107,.16);color:var(--danger);border-color:rgba(196,115,107,.4)}
+.cbtn.on{background:var(--acc);color:var(--z-1000);border-color:var(--acc)}
+.cbtn.leave{background:var(--danger);border-color:var(--danger);color:#fff}
+.cbtn.leave:hover{background:#d4837b}
+.rm-v{display:inline-flex;align-items:center;gap:2px;margin-left:auto;font-family:var(--mono);
+  font-size:9.5px;color:var(--ok)}
+.rm-v .ti{font-size:12px}
+@media(max-width:820px){
+  .tiles{grid-template-columns:1fr !important;padding:0 12px}
+  .stage.min{inset:auto 10px 10px 10px;width:auto}
+}
+
+/* ── ไฟล์แนบในแชต ── */
+.wk-warn{display:none;margin:0 var(--s4);padding:9px 12px;border-radius:var(--r-sm);
+  background:rgba(196,115,107,.12);border:1px solid rgba(196,115,107,.35);
+  color:var(--danger);font-size:12.5px}
+.wk-warn.on{display:block}
+.wk-pend{display:none;align-items:center;gap:10px;margin:var(--s2) var(--s4) 0;
+  padding:9px 11px;border-radius:var(--r-sm);background:var(--z-1000);
+  border:1px solid var(--line2)}
+.wk-pend.on{display:flex}
+.wk-pend img{width:46px;height:46px;object-fit:cover;border-radius:6px}
+.wk-pend audio{height:34px;max-width:230px}
+.wk-pend span{font-size:12px;color:var(--faint);flex:1}
+.pend-load{font-size:12.5px;color:var(--faint)}
+.pend-x{width:26px;height:26px;border-radius:6px;border:0;background:none;color:var(--disabled);
+  cursor:pointer;display:grid;place-items:center;font-size:15px}
+.pend-x:hover{background:rgba(255,255,255,.07);color:var(--ink)}
+#wkMic.rec{color:var(--danger);border-color:rgba(196,115,107,.4);font-family:var(--mono);font-size:11px}
+.msg-img{max-width:min(320px,70%);border-radius:var(--r-sm);display:block;margin-top:4px;
+  cursor:zoom-in;border:1px solid var(--line2)}
+.msg-aud{margin-top:5px;height:36px;max-width:260px;display:block}
+.imgzoom{position:fixed;inset:0;z-index:500;background:rgba(5,5,6,.9);display:grid;
+  place-items:center;padding:24px;cursor:zoom-out;animation:fade .2s var(--ease)}
+.imgzoom img{max-width:100%;max-height:100%;border-radius:var(--r)}
+
 /* ── ประชุม ──
    รายการซ้าย รายละเอียดขวา — รูปแบบเดียวกับห้องคุย เพราะเป็นงานประเภทเดียวกัน
    คือเลือกของจากรายการแล้วดูรายละเอียด ใช้รูปแบบเดียวกันแปลว่าเรียนรู้ครั้งเดียวพอ */
@@ -1376,9 +1666,10 @@ td .empty::before,td.empty::before{display:none}
         <a data-tab="audit" data-mod="audit"><i class="ti ti-history"></i> บันทึกการทำงาน</a>
       </div>
 
-      <div class="ng" data-mods="handbook">
+      <div class="ng" data-mods="handbook,chat">
         <span class="ng-t">เอกสาร</span>
         <a href="./handbook.html" data-mod="handbook"><i class="ti ti-book-2"></i> คู่มือระบบ</a>
+        <a data-tab="legal" data-mod="chat"><i class="ti ti-gavel"></i> กฎการใช้งาน</a>
       </div>
     </nav>
     <div class="side-foot">
@@ -1782,6 +2073,15 @@ td .empty::before,td.empty::before{display:none}
         </div>
       </section>
 
+      <!-- ══ กฎการใช้งาน ══
+           เนื้อหาชุดเดียวกับที่ขึ้นตอนเข้าครั้งแรก จะได้ไม่มีสองฉบับที่ไม่ตรงกัน -->
+      <section class="view" id="v-legal">
+        <div class="page-head"><div><h1>กฎการใช้งาน</h1>
+          <p>ข้อตกลงที่ทุกคนในทีมยอมรับก่อนเข้าใช้งาน</p></div>
+          <span class="lg-signed" id="lgSigned"></span></div>
+        <div class="paper" id="legalPaper"></div>
+      </section>
+
       <!-- ══ ประชุม ══
            หนึ่งการประชุมคือหนึ่งระเบียน ที่เก็บทั้งวาระก่อนประชุมและบันทึกหลังประชุม
            แยกเป็นสองที่แล้วจะไม่มีใครหาเจอว่าที่ตกลงกันไว้คราวก่อนคืออะไร -->
@@ -1824,19 +2124,23 @@ td .empty::before,td.empty::before{display:none}
                 <b id="wkTitle">ห้องคุย</b>
                 <small id="wkWho"></small>
               </div>
-              <span id="wkCallWrap" style="display:none">
-                <button class="btn sm ghost" onclick="startCall(false)" title="โทรเสียง">
-                  <i class="ti ti-phone"></i></button>
-                <button class="btn sm ghost" onclick="startCall(true)" title="วิดีโอคอล">
-                  <i class="ti ti-video"></i></button>
-              </span>
+              <button class="btn sm" id="wkJoinV" onclick="joinRoomVoice()" title="เข้าห้องเสียงของห้องนี้">
+                <i class="ti ti-headphones"></i> เข้าห้องเสียง</button>
               <button class="btn sm ghost" onclick="delRoom()" title="ลบห้องนี้">
                 <i class="ti ti-trash"></i></button>
             </div>
             <div class="wk-log" id="wkLog"><div class="empty">กำลังโหลด...</div></div>
+            <div class="wk-warn" id="wkWarn"></div>
+            <div class="wk-pend" id="wkPend"></div>
             <div class="wk-in">
+              <label class="btn sm ghost" title="แนบรูป" style="cursor:pointer">
+                <i class="ti ti-photo"></i>
+                <input type="file" accept="image/*" hidden onchange="pickImage(this)">
+              </label>
+              <button class="btn sm ghost" id="wkMic" onclick="recVoice()" title="กดค้างเพื่ออัดเสียง">
+                <i class="ti ti-microphone"></i></button>
               <textarea class="input" id="wkIn" rows="1" maxlength="2000"
-                placeholder="พิมพ์ข้อความ แล้วกด Enter เพื่อส่ง · Shift+Enter ขึ้นบรรทัดใหม่"></textarea>
+                placeholder="พิมพ์อะไรก็ได้ · Enter ส่ง · Shift+Enter ขึ้นบรรทัดใหม่"></textarea>
               <button class="btn primary" id="wkSend" onclick="sendChat()"><i class="ti ti-send"></i></button>
             </div>
           </div>
@@ -1851,37 +2155,125 @@ td .empty::before,td.empty::before{display:none}
 
     </div>
   </main>
+
+  <!-- ══ แถบขวา ══
+       สามส่วนบนคือคนในแผนกเดียวกัน เพราะคนที่ต้องคุยด้วยบ่อยที่สุดคือคนกลุ่มนี้
+       ส่วนล่างคือทางลัดที่แต่ละคนตั้งเอง เพราะงานของแต่ละตำแหน่งไม่เหมือนกัน -->
+  <aside class="rside" id="rside">
+    <div class="rs-team">
+      <div class="rs-h"><span id="rsDept">แผนกของคุณ</span>
+        <button class="rs-x" onclick="toggleRight()" title="ซ่อนแถบนี้"><i class="ti ti-layout-sidebar-right-collapse"></i></button>
+      </div>
+      <div class="rs-list" id="rsTeam"></div>
+    </div>
+    <div class="rs-cut"></div>
+    <div class="rs-short">
+      <div class="rs-h"><span>ทางลัดของฉัน</span>
+        <button class="rs-x" onclick="scAdd()" title="เพิ่มทางลัด">+</button></div>
+      <div class="rs-sc" id="rsShort"></div>
+    </div>
+  </aside>
 </div>
 
-<!-- ══ แผงสายสนทนา ══
-     ลอยอยู่มุมจอ ไม่ใช่หน้าต่างเต็มจอ เพราะระหว่างคุยกันคนยังต้องดูงานไปด้วย
-     หน้าต่างเต็มจอบังคับให้เลือกอย่างใดอย่างหนึ่ง ซึ่งไม่ใช่วิธีที่คนทำงานจริง -->
-<div class="call" id="callBox" hidden>
-  <div class="call-hd">
-    <span class="dot" id="callDot"></span>
-    <b id="callWho">กำลังต่อสาย</b>
-    <span class="call-t" id="callTime"></span>
-    <button class="btn sm ghost" onclick="callMin()" title="ย่อ"><i class="ti ti-minus"></i></button>
-  </div>
-  <div class="call-vid" id="callVid">
-    <video id="vRemote" autoplay playsinline></video>
-    <video id="vLocal" autoplay playsinline muted></video>
-    <div class="call-ph" id="callPh"><i class="ti ti-phone-calling"></i><span id="callState">กำลังเรียก...</span></div>
-  </div>
-  <div class="call-bar">
-    <button class="btn sm" id="btnMic" onclick="callMic()" title="ปิด/เปิดไมค์"><i class="ti ti-microphone"></i></button>
-    <button class="btn sm" id="btnCam" onclick="callCam()" title="ปิด/เปิดกล้อง"><i class="ti ti-video"></i></button>
-    <button class="btn sm" id="btnShare" onclick="callShare()" title="แชร์หน้าจอ"><i class="ti ti-screen-share"></i></button>
-    <button class="btn sm danger" onclick="callEnd(true)" title="วางสาย"><i class="ti ti-phone-off"></i></button>
+<!-- ปุ่มเรียกแถบขวากลับมาเมื่อซ่อนไว้ -->
+<button class="rside-open" id="rsOpen" onclick="toggleRight()" hidden title="เปิดแถบทีม">
+  <i class="ti ti-layout-sidebar-right-expand"></i></button>
+
+<!-- เพิ่มทางลัด -->
+<div class="modal-bg" id="scModal" onclick="if(event.target===this)scClose()">
+  <div class="modal" style="max-width:420px">
+    <h3>เพิ่มทางลัด</h3>
+    <p class="sub" style="margin:-6px 0 16px">ทางลัดไปหน้าในระบบ หรือลิงก์ข้างนอกที่ใช้บ่อย</p>
+    <div class="field"><label>ชื่อที่จะให้แสดง</label>
+      <input class="input" id="scName" maxlength="30" placeholder="เช่น แดชบอร์ด Cloudflare"></div>
+    <div class="field"><label>ไปที่ไหน</label>
+      <select class="input" id="scTarget"></select></div>
+    <div class="field" id="scUrlWrap" hidden><label>ลิงก์</label>
+      <input class="input" id="scUrl" placeholder="https://..."></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn ghost" onclick="scClose()">ยกเลิก</button>
+      <button class="btn primary" onclick="scSave()">เพิ่ม</button>
+    </div>
   </div>
 </div>
 
-<!-- สายเรียกเข้า -->
-<div class="ring" id="ringBox" hidden>
-  <div class="ring-in"><i class="ti ti-phone-incoming"></i>
-    <div><b id="ringWho">มีสายเรียกเข้า</b><small id="ringKind">สายเสียง</small></div>
-    <button class="btn sm primary" onclick="callAccept()"><i class="ti ti-phone"></i> รับสาย</button>
-    <button class="btn sm danger" onclick="callReject()"><i class="ti ti-phone-off"></i></button>
+<!-- ══ หน้ายอมรับกฎ ตอนเข้าใช้ครั้งแรก ══
+     ขวางไว้จนกว่าจะอ่านจบและเซ็น เพราะเป็นข้อตกลงที่มีผลจริง
+     ทำเป็นกระดาษวางบนโต๊ะ ไม่ใช่กล่องข้อความในเว็บ ให้ความรู้สึกว่ากำลังเซ็นของจริง -->
+<div class="gatewall" id="lgWall" hidden>
+  <div class="paper paper-lg">
+    <div class="paper-top">
+      <div class="paper-mark"><svg viewBox="-6.0 -6.0 94.8 112.0"><path d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg></div>
+      <div><b>ข้อตกลงการใช้งาน Cendon Experience</b>
+        <small>บริษัท Phasmion · ฉบับที่ 1</small></div>
+    </div>
+    <div class="paper-body" id="lgBody"></div>
+    <div class="paper-sign">
+      <div class="sign-row">
+        <div class="sign-left">
+          <span class="sign-lab">ลงลายมือชื่อตรงเส้นด้านล่าง</span>
+          <canvas id="lgSig" class="sign-pad"></canvas>
+          <div class="sign-line"></div>
+          <div class="sign-under">
+            <span id="lgWho"></span>
+            <button class="sign-clear" onclick="lgClear()">ลบแล้วเซ็นใหม่</button>
+          </div>
+        </div>
+        <div class="sign-right">
+          <label class="sign-check">
+            <input type="checkbox" id="lgRead">
+            <span>ข้าพเจ้าได้อ่านข้อตกลงทั้งหมดแล้ว และยอมรับทุกข้อ</span>
+          </label>
+          <div class="sign-note" id="lgNote">เลื่อนอ่านให้ครบทุกข้อก่อน จึงจะติ๊กช่องนี้ได้</div>
+          <button class="btn primary" id="lgSubmit" onclick="lgSubmit()" disabled>
+            ยอมรับและเริ่มใช้งาน</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ การสอนใช้ครั้งแรก ══
+     ทุกอย่างมืดลง เหลือสว่างเฉพาะสิ่งที่กำลังพูดถึง พร้อมลูกศรวาดมือชี้ไปหา -->
+<div class="tour" id="tour" hidden>
+  <svg class="tour-mask" id="tourMask"><defs><mask id="tmask">
+    <rect x="0" y="0" width="100%" height="100%" fill="white"/>
+    <rect id="tourHole" x="0" y="0" width="0" height="0" rx="10" fill="black"/>
+  </mask></defs>
+  <rect x="0" y="0" width="100%" height="100%" fill="rgba(5,5,6,.86)" mask="url(#tmask)"/>
+  <path id="tourArrow" class="tour-arrow" d=""/>
+  </svg>
+  <div class="tour-card" id="tourCard">
+    <span class="tour-step" id="tourStep"></span>
+    <b id="tourTitle"></b>
+    <p id="tourText"></p>
+    <div class="tour-act">
+      <button class="btn ghost sm" onclick="tourEnd()">ข้ามการแนะนำ</button>
+      <button class="btn primary sm" id="tourNext" onclick="tourNext()">ต่อไป</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ เวทีห้องเสียง ══
+     เต็มจอ ช่องของแต่ละคนเรียงเป็นตาราง ปรับจำนวนคอลัมน์ตามจำนวนคนเอง
+     ปุ่มควบคุมลอยอยู่ล่างสุดตรงกลาง ซึ่งเป็นที่ที่นิ้วโป้งกับเมาส์ไปถึงง่ายที่สุด -->
+<div class="stage" id="stage" hidden>
+  <div class="stage-top">
+    <div class="stage-id">
+      <span class="live-dot"></span>
+      <b id="stName">ห้องเสียง</b>
+      <span class="stage-n" id="stCount"></span>
+    </div>
+    <div class="stage-t" id="stTime"></div>
+    <button class="btn sm ghost" onclick="stageMin()" title="ย่อลงมุมจอ">
+      <i class="ti ti-minimize"></i></button>
+  </div>
+  <div class="tiles" id="tiles"></div>
+  <div class="stage-bar">
+    <button class="cbtn" id="cMic" onclick="vcMic()" title="ไมค์"><i class="ti ti-microphone"></i></button>
+    <button class="cbtn" id="cCam" onclick="vcCam()" title="กล้อง"><i class="ti ti-video-off"></i></button>
+    <button class="cbtn" id="cShare" onclick="vcShare()" title="แชร์หน้าจอ"><i class="ti ti-screen-share"></i></button>
+    <button class="cbtn leave" onclick="vcLeave()" title="ออกจากห้อง"><i class="ti ti-phone-off"></i></button>
   </div>
 </div>
 
@@ -2065,8 +2457,16 @@ const POSITIONS={
   support:{th:"ฝ่ายดูแลลูกค้า",ab:"Support",base:"moderator",ic:"ti-headset",
        can:["overview","feedback","cars","chat"],
        note:"ตอบความเห็น · ดูข้อมูลรถ"},
-  staff:{th:"พนักงาน",ab:"Staff",base:"user",ic:"ti-user",
-       can:["chat"],note:"ห้องคุยของแผนกตัวเอง และการประชุม"},
+  /* ── พนักงาน ──
+     ยศพื้นฐานเป็นผู้ควบคุม ไม่ใช่ผู้ใช้ทั่วไป เพราะทุกอย่างในที่ทำงาน
+     (ห้องคุย ประชุม สัญญาณโทร) ฝากผ่าน /api/kb ซึ่งกันไว้ที่ยศผู้ควบคุม
+     ตั้งเป็นผู้ใช้ทั่วไปแล้วพนักงานจะเข้าที่ทำงานไม่ได้เลยแม้แต่หน้าเดียว
+
+     ผลข้างเคียงที่ต้องรู้: ยศผู้ควบคุมเปิดให้เขียนคลังความรู้ AI ได้ด้วย
+     เมนูฝั่งหน้าเว็บซ่อนไว้แล้ว แต่คนที่รู้วิธียิง API ตรงยังทำได้
+     ทางแก้ที่ถูกต้องคือเส้นทาง /api/ws แยกต่างหาก ดู BACKEND-TODO-workspace.md */
+  staff:{th:"พนักงาน",ab:"Staff",base:"moderator",ic:"ti-user",
+       can:["chat","meet","overview"],note:"ห้องคุยของแผนกตัวเอง ประชุม และภาพรวม"},
 };
 /* ══ แผนก ══
    ตำแหน่งบอกว่า "มีอำนาจแค่ไหน" แผนกบอกว่า "ทำงานเรื่องอะไร" — คนละเรื่องกัน
@@ -2294,7 +2694,10 @@ async function enterAdmin(){
      ซึ่งจะโผล่เป็นข้อความ error ในหน้าโดยที่ผู้ใช้ไม่ได้ทำอะไรผิด */
   /* ฟังสายเรียกเข้าตลอดเวลาที่เปิดแอปอยู่ ไม่ใช่เฉพาะตอนอยู่หน้าห้องคุย
      สายที่ดังเฉพาะตอนเปิดหน้าถูกไว้ ก็ไม่ต่างจากไม่มีระบบโทร */
-  if(can("chat"))sigStart();
+  /* ฟังสถานะห้องเสียงตลอด จะได้เห็นว่าใครอยู่ในห้องไหนโดยไม่ต้องเข้าไปดูเอง */
+  if(can("chat")){ sigStart(); notifyAsk(); loadUsers(); }
+  /* ตรวจว่ายอมรับกฎแล้วหรือยัง ถ้ายัง จะขวางไว้ทั้งหน้าจนกว่าจะเซ็น */
+  checkLegal();
   if(can("overview"))loadStats();
   if(can("users"))loadUsers();
   if(can("magazine"))loadMag();
@@ -2405,251 +2808,682 @@ function denyMsg(e,what){
   return `เข้า${esc(what)}ไม่ได้<br><small>${esc(m)}</small>`;
 }
 
-/* ══ สายสนทนา ══
-   สัญญาณจับคู่ฝากผ่านตารางความรู้  sig_<ถึงใคร>_<จากใคร>
-   คำสำคัญ {k:ชนิด, t:เวลา, v:วิดีโอไหม, n:ชื่อผู้โทร}  เนื้อหา = ก้อน SDP หรือ ICE
+/* ══ กฎการใช้งาน ══
+   เขียนเป็นข้อมูลชุดเดียว ใช้ทั้งหน้ากฎและหน้าเซ็นตอนเข้าครั้งแรก
+   ถ้าแยกเป็นสองชุด วันหนึ่งจะแก้ที่เดียวแล้วอีกที่ไม่ตรงกัน
+   ซึ่งกับเอกสารที่มีผลผูกพัน เป็นเรื่องใหญ่กว่าที่คิด */
+const LEGAL_VERSION=1;
+const LEGAL=[
+ {h:"1 · สิ่งที่คุณกำลังจะเข้าถึง",
+  p:["Cendon Experience คือระบบภายในของบริษัท Phasmion ทั้งหมดที่อยู่ในนี้เป็นทรัพย์สินของบริษัท",
+     "รวมถึงข้อมูลลูกค้า ข้อมูลรถ บทสนทนาภายในทีม ตัวเลขการเงิน โครงสร้างระบบ วิธีที่ AI ทำงาน และเอกสารทุกฉบับ",
+     "การได้รับสิทธิ์เข้าใช้ ไม่ได้แปลว่าได้รับสิทธิ์ในการนำสิ่งที่เห็นออกไปข้างนอก"]},
+ {h:"2 · ห้ามบันทึกภาพหน้าจอออกไปเผยแพร่",
+  p:["ห้ามถ่ายภาพหน้าจอ อัดวิดีโอหน้าจอ ถ่ายด้วยกล้องมือถือ หรือบันทึกด้วยวิธีใดก็ตาม แล้วนำไปเผยแพร่สู่สาธารณะ",
+     "รวมถึงโซเชียลมีเดียทุกชนิด กลุ่มแชตนอกบริษัท เว็บบอร์ด สื่อ พอดแคสต์ งานสัมมนา และการส่งต่อให้บุคคลภายนอกเป็นการส่วนตัว",
+     "การถ่ายเพื่อใช้ในงานภายใน เช่น แนบในรายงานหรือแจ้งปัญหาให้เพื่อนร่วมทีม ทำได้ แต่ต้องอยู่ในช่องทางของบริษัทเท่านั้น",
+     "ห้ามแชร์หน้าจอที่มีระบบนี้ระหว่างประชุมกับบุคคลภายนอก โดยไม่ได้รับอนุญาตเป็นลายลักษณ์อักษรก่อน"]},
+ {h:"3 · ห้ามเปิดเผยข้อมูล",
+  p:["ห้ามเปิดเผยข้อมูลลูกค้าทุกชนิด ไม่ว่าจะเป็นชื่อ อีเมล เบอร์โทร ทะเบียนรถ ประวัติการใช้งาน หรือบทสนทนากับ AI",
+     "ห้ามเปิดเผยตัวเลขทางธุรกิจ ต้นทุน รายได้ จำนวนผู้ใช้ หรือแผนงานที่ยังไม่ประกาศ",
+     "ห้ามเปิดเผยโครงสร้างทางเทคนิค ชื่อผู้ให้บริการ วิธีที่ระบบทำงาน หรือจุดอ่อนที่พบ",
+     "ข้อห้ามนี้มีผลตลอดไป ไม่สิ้นสุดเมื่อพ้นสภาพการเป็นพนักงาน"]},
+ {h:"4 · บัญชีเป็นของคุณคนเดียว",
+  p:["ห้ามให้คนอื่นยืมบัญชี ห้ามบอกรหัสผ่าน ห้ามเปิดค้างไว้ในเครื่องที่คนอื่นใช้ร่วมกัน",
+     "ทุกการกระทำที่เกิดจากบัญชีของคุณ ถือว่าคุณเป็นผู้กระทำ",
+     "ถ้าสงสัยว่าบัญชีถูกใช้โดยคนอื่น ต้องแจ้งทันที ไม่ใช่รอดูก่อน"]},
+ {h:"5 · ห้ามนำข้อมูลออกจากระบบ",
+  p:["ห้ามคัดลอกฐานข้อมูล ส่งออกเป็นไฟล์ หรือเขียนโปรแกรมดึงข้อมูลออกไปเก็บที่อื่น",
+     "ห้ามอัปโหลดข้อมูลของบริษัทเข้าเครื่องมือภายนอก รวมถึงบริการ AI ตัวอื่น เว้นแต่ได้รับอนุญาตแล้ว",
+     "ห้ามเก็บข้อมูลของบริษัทไว้ในอุปกรณ์ส่วนตัวโดยไม่จำเป็นต่อการทำงาน"]},
+ {h:"6 · การใช้ห้องคุยและห้องเสียง",
+  p:["ทุกข้อความ ทุกไฟล์ และทุกการเข้าห้องเสียง ถูกบันทึกไว้และตรวจสอบย้อนหลังได้",
+     "ห้ามอัดเสียงหรือวิดีโอการประชุมโดยไม่บอกผู้ร่วมประชุมทุกคนก่อน",
+     "ห้ามใช้คำหยาบ ดูหมิ่น คุกคาม หรือเลือกปฏิบัติ ระบบมีตัวกรองคำอยู่แล้ว แต่ตัวกรองไม่ใช่ขอบเขตของมารยาท",
+     "ห้ามส่งเนื้อหาที่ผิดกฎหมาย ละเมิดลิขสิทธิ์ หรือไม่เกี่ยวกับงาน"]},
+ {h:"7 · สิทธิ์ที่ได้รับ ใช้เท่าที่จำเป็น",
+  p:["เข้าดูเฉพาะสิ่งที่จำเป็นต่องานของตน แม้ระบบจะเปิดให้เข้าถึงได้มากกว่านั้น",
+     "ห้ามพยายามข้ามระบบสิทธิ์ ไม่ว่าจะด้วยการแก้โปรแกรมในเบราว์เซอร์ เรียก API ตรง หรือวิธีอื่นใด",
+     "ห้ามแก้ไขคลังความรู้ที่ AI ใช้ตอบลูกค้า ถ้าไม่ใช่หน้าที่ของตน เพราะมีผลกับลูกค้าจริงทันที"]},
+ {h:"8 · เมื่อพบช่องโหว่หรือความผิดพลาด",
+  p:["ถ้าพบช่องโหว่ ต้องแจ้งภายในทันที ห้ามทดลองเจาะต่อเพื่อดูว่าไปได้ไกลแค่ไหน",
+     "ห้ามเปิดเผยช่องโหว่สู่สาธารณะก่อนได้รับการแก้ไข",
+     "การแจ้งด้วยความสุจริตจะไม่ถูกลงโทษ การปกปิดจะถูกลงโทษ"]},
+ {h:"9 · เมื่อพ้นสภาพ",
+  p:["เมื่อพ้นสภาพการเป็นพนักงานหรือคู่สัญญา สิทธิ์เข้าใช้จะถูกยกเลิกทันที",
+     "ต้องลบข้อมูลของบริษัทออกจากอุปกรณ์ส่วนตัวทั้งหมด",
+     "หน้าที่ในการรักษาความลับตามข้อ 3 ยังมีผลต่อไปไม่มีกำหนดสิ้นสุด"]},
+ {h:"10 · ผลของการฝ่าฝืน",
+  p:["การฝ่าฝืนอาจนำไปสู่การระงับสิทธิ์ การลงโทษทางวินัย การเลิกจ้าง และการดำเนินคดีตามกฎหมาย",
+     "บริษัทสงวนสิทธิ์เรียกร้องค่าเสียหายที่เกิดขึ้นจริงจากการฝ่าฝืน",
+     "การกดยอมรับด้านล่างนี้ ถือเป็นการลงนามที่มีผลผูกพันเช่นเดียวกับการลงนามบนกระดาษ"]},
+];
+function legalHtml(){
+  return LEGAL.map(sec=>`<section class="pg-sec">
+    <h3>${esc(sec.h)}</h3>
+    ${sec.p.map(x=>`<p>${esc(x)}</p>`).join("")}
+  </section>`).join("");
+}
 
-   ที่เลือกใส่ผู้รับไว้ในรหัสระเบียน เพราะจะได้กรองด้วยการอ่านรหัสอย่างเดียว
-   ไม่ต้องแกะ JSON ของทุกแถวในตารางเพื่อหาว่าแถวไหนเป็นของเรา */
+/* ── ลายเซ็นบนกระดาษ ── */
+let lgPad=null, lgInk=[], lgOn=false;
+function lgSetup(){
+  const c=$("lgSig"); if(!c)return;
+  const r=c.getBoundingClientRect();
+  const dpr=window.devicePixelRatio||1;
+  c.width=Math.max(1,Math.round(r.width*dpr));
+  c.height=Math.max(1,Math.round(r.height*dpr));
+  const g=c.getContext("2d");
+  g.scale(dpr,dpr); g.lineWidth=2.1; g.lineCap="round"; g.lineJoin="round";
+  g.strokeStyle="#1b1b1f";
+  lgPad=g; lgInk=[];
+  const pos=e=>{ const b=c.getBoundingClientRect();
+    const t=e.touches?e.touches[0]:e; return {x:t.clientX-b.left,y:t.clientY-b.top} };
+  const down=e=>{ e.preventDefault(); lgOn=true; const q=pos(e); g.beginPath(); g.moveTo(q.x,q.y); lgInk.push(q) };
+  const move=e=>{ if(!lgOn)return; e.preventDefault(); const q=pos(e); g.lineTo(q.x,q.y); g.stroke(); lgInk.push(q) };
+  const up=()=>{ lgOn=false; lgCheck() };
+  c.onmousedown=down; c.onmousemove=move; window.addEventListener("mouseup",up);
+  c.ontouchstart=down; c.ontouchmove=move; c.ontouchend=up;
+}
+function lgClear(){
+  const c=$("lgSig"); if(!c||!lgPad)return;
+  lgPad.clearRect(0,0,c.width,c.height); lgInk=[]; lgCheck();
+}
+window.lgClear=lgClear;
+/* ลายเซ็นต้องมีเนื้อจริง ไม่ใช่จุดเดียวหรือขีดเดียว
+   ไม่งั้นการเซ็นจะไม่มีความหมายอะไรเลยนอกจากการกดผ่าน */
+function lgQuality(){
+  if(lgInk.length<14)return false;
+  const xs=lgInk.map(p=>p.x), ys=lgInk.map(p=>p.y);
+  const w=Math.max(...xs)-Math.min(...xs), h=Math.max(...ys)-Math.min(...ys);
+  let len=0;
+  for(let i=1;i<lgInk.length;i++)
+    len+=Math.hypot(lgInk[i].x-lgInk[i-1].x,lgInk[i].y-lgInk[i-1].y);
+  return w>=50&&len>=150&&h>=6;
+}
+function lgCheck(){
+  const okSig=lgQuality(), read=$("lgRead").checked;
+  $("lgSubmit").disabled=!(okSig&&read);
+  const n=$("lgNote");
+  if(!$("lgRead").disabled&&!read)n.textContent="ติ๊กช่องยอมรับ แล้วเซ็นชื่อด้านซ้าย";
+  else if(!okSig)n.textContent="เซ็นชื่อลงบนเส้นด้านซ้ายให้เห็นเป็นลายมือ";
+  else n.textContent="เรียบร้อย กดยอมรับเพื่อเริ่มใช้งานได้เลย";
+}
+
+/* ── เปิดหน้ายอมรับกฎ ── */
+function lgOpen(){
+  $("lgBody").innerHTML=legalHtml();
+  $("lgWho").textContent=(me.name||"")+"  ·  "+new Date().toLocaleDateString("th-TH",
+    {day:"numeric",month:"long",year:"numeric"});
+  $("lgRead").checked=false; $("lgRead").disabled=true;
+  $("lgSubmit").disabled=true;
+  $("lgWall").hidden=false;
+  setTimeout(lgSetup,60);
+  /* ต้องเลื่อนอ่านจนสุดก่อน ถึงจะติ๊กช่องยอมรับได้
+     ไม่ใช่กันคนโกง แต่ทำให้การกดยอมรับหมายความว่าได้เห็นข้อความจริง ๆ */
+  const body=$("lgBody");
+  const onScroll=()=>{
+    if(body.scrollTop+body.clientHeight>=body.scrollHeight-40){
+      $("lgRead").disabled=false;
+      $("lgNote").textContent="ติ๊กช่องยอมรับ แล้วเซ็นชื่อด้านซ้าย";
+      body.removeEventListener("scroll",onScroll);
+    }
+  };
+  body.addEventListener("scroll",onScroll);
+  /* เนื้อหาสั้นกว่าช่องจนไม่ต้องเลื่อน ก็ถือว่าอ่านครบแล้ว */
+  setTimeout(()=>{ if(body.scrollHeight<=body.clientHeight+8)onScroll() },120);
+  $("lgRead").onchange=lgCheck;
+}
+async function lgSubmit(){
+  const btn=$("lgSubmit"); btn.disabled=true; btn.textContent="กำลังบันทึก...";
+  try{
+    const img=$("lgSig").toDataURL("image/png");
+    await api("/api/kb",{method:"POST",body:{
+      id:"lgl_"+me.uid, title:"ยอมรับกฎการใช้งาน "+(me.name||me.uid),
+      body:img.length<=7600?img:"บันทึกการยอมรับกฎ (ลายเซ็นใหญ่เกินกว่าที่เก็บได้)",
+      keywords:JSON.stringify({v:LEGAL_VERSION,at:Date.now(),
+        n:(me.name||"").slice(0,40),e:(me.email||"").slice(0,60)}).slice(0,395),
+      make:"__legal__",model:"",enabled:false}});
+    $("lgWall").hidden=true;
+    LEGAL_OK=true;
+    startTour();
+  }catch(e){
+    alert("บันทึกไม่สำเร็จ: "+e.message);
+    btn.disabled=false; btn.textContent="ยอมรับและเริ่มใช้งาน";
+  }
+}
+window.lgSubmit=lgSubmit;
+
+let LEGAL_OK=false;
+async function checkLegal(){
+  try{
+    const res=await api("/api/kb");
+    const row=(res.kb||[]).find(k=>k.id==="lgl_"+me.uid);
+    let m={}; if(row)try{ m=JSON.parse(row.keywords||"{}") }catch(e){}
+    LEGAL_OK=!!(row&&m.v===LEGAL_VERSION);
+  }catch(e){ LEGAL_OK=true }   /* อ่านไม่ได้ อย่าขวางคนทำงาน */
+  $("legalPaper").innerHTML=legalHtml();
+  const sg=$("lgSigned");
+  if(sg)sg.innerHTML=LEGAL_OK?'<i class="ti ti-writing-sign"></i> คุณยอมรับข้อตกลงฉบับนี้แล้ว':"";
+  if(!LEGAL_OK){ lgOpen(); return }
+  /* เคยยอมรับแล้ว แต่ยังไม่เคยดูการแนะนำ ก็ให้ดูก่อน */
+  try{ if(!localStorage.getItem("cx_tour"))startTour() }catch(e){}
+}
+
+/* ══ การสอนใช้ครั้งแรก ══
+   ทุกอย่างมืดลง เหลือสว่างเฉพาะจุดที่กำลังพูดถึง มีลูกศรวาดมือชี้ไปหา
+   กดต่อไปเรื่อย ๆ จนจบ ข้ามได้ตลอดเวลา */
+const TOUR=[
+ {sel:"#nav",t:"เมนูหลัก",
+  d:"ทุกอย่างในระบบอยู่ในเมนูนี้ จัดเป็นกลุ่มตามงาน คุณจะเห็นเฉพาะกลุ่มที่ตำแหน่งของคุณดูแล"},
+ {sel:'#nav a[data-tab="chat"]',t:"ห้องคุย",
+  d:"คุยกับทีมได้ที่นี่ แยกห้องตามแผนกและตามงาน สร้างห้องใหม่เองได้ และทุกห้องมีห้องเสียงของตัวเอง"},
+ {sel:'#nav a[data-tab="meet"]',t:"ประชุม",
+  d:"นัดหมาย ใส่วาระ และจดบันทึกร่วมกัน จบแล้วให้ AI สรุปเป็นมติและงานที่ต้องทำต่อได้"},
+ {sel:"#rside",t:"เพื่อนร่วมแผนก",
+  d:"คนในแผนกเดียวกับคุณอยู่ตรงนี้ จุดเขียวแปลว่าเขาอยู่ในห้องเสียง กดทักหรือกดโทรได้ทันที",
+  skipIfHidden:true},
+ {sel:"#rsShort",t:"ทางลัดของคุณ",
+  d:"ใส่ทางลัดไปหน้าที่ใช้บ่อย หรือลิงก์ข้างนอกก็ได้ กดเครื่องหมายบวกเพื่อเพิ่ม",
+  skipIfHidden:true},
+ {sel:".cmdk",t:"ค้นหาและสั่งงาน",
+  d:"กด Ctrl+K ที่ไหนก็ได้ แล้วพิมพ์ชื่อหน้าที่จะไป กด Enter ไปเลย ไม่ต้องหาในเมนู"},
+ {sel:"#me",t:"บัญชีของคุณ",
+  d:"ชื่อกับตำแหน่งของคุณอยู่ตรงนี้ ปุ่มด้านล่างคือกลับหน้าเว็บ ล้างแคช และออกจากระบบ"},
+];
+let tourI=0, tourList=[];
+function startTour(){
+  tourList=TOUR.filter(x=>{
+    const el=document.querySelector(x.sel);
+    return el&&(!x.skipIfHidden||el.offsetParent!==null);
+  });
+  if(!tourList.length)return;
+  tourI=0; $("tour").hidden=false; tourShow();
+}
+function tourShow(){
+  const step=tourList[tourI];
+  const el=document.querySelector(step.sel);
+  if(!el){ tourNext(); return }
+  el.scrollIntoView({block:"center",behavior:"smooth"});
+  setTimeout(()=>{
+    const r=el.getBoundingClientRect(), pad=8;
+    const hole=$("tourHole");
+    hole.setAttribute("x",Math.max(0,r.left-pad));
+    hole.setAttribute("y",Math.max(0,r.top-pad));
+    hole.setAttribute("width",r.width+pad*2);
+    hole.setAttribute("height",r.height+pad*2);
+    $("tourStep").textContent=(tourI+1)+" / "+tourList.length;
+    $("tourTitle").textContent=step.t;
+    $("tourText").textContent=step.d;
+    $("tourNext").textContent=tourI===tourList.length-1?"เริ่มใช้งาน":"ต่อไป";
+    /* วางการ์ดคำอธิบายไว้ฝั่งที่มีที่ว่างมากกว่า แล้วลากลูกศรจากการ์ดไปยังของจริง */
+    const card=$("tourCard");
+    const right=r.right+24, vw=window.innerWidth, vh=window.innerHeight;
+    const useRight=right+320<vw;
+    const cx=useRight?right:Math.max(16,r.left-336);
+    const cy=Math.min(Math.max(16,r.top+r.height/2-90),vh-230);
+    card.style.left=cx+"px"; card.style.top=cy+"px";
+    const ax=useRight?cx-10:cx+330, ay=cy+80;
+    const tx=useRight?r.right+6:r.left-6, ty=r.top+r.height/2;
+    /* เส้นโค้งวาดมือ ไม่ใช่เส้นตรง — เส้นตรงอ่านว่า "แผนภาพ" เส้นโค้งอ่านว่า "มีคนชี้ให้" */
+    const mx=(ax+tx)/2, my=(ay+ty)/2-34;
+    $("tourArrow").setAttribute("d",
+      `M ${ax} ${ay} Q ${mx} ${my} ${tx} ${ty}
+       M ${tx} ${ty} l ${useRight?9:-9} -7 M ${tx} ${ty} l ${useRight?9:-9} 7`);
+  },220);
+}
+function tourNext(){
+  tourI++;
+  if(tourI>=tourList.length){ tourEnd(); return }
+  tourShow();
+}
+function tourEnd(){
+  $("tour").hidden=true;
+  try{ localStorage.setItem("cx_tour","1") }catch(e){}
+}
+window.startTour=startTour; window.tourNext=tourNext; window.tourEnd=tourEnd;
+window.addEventListener("resize",()=>{ if(!$("tour").hidden)tourShow() });
+
+/* ══ แถบขวา ══ */
+let SHORTCUTS=[];
+try{ SHORTCUTS=JSON.parse(localStorage.getItem("cx_short")||"null")||null }catch(e){ SHORTCUTS=null }
+if(!SHORTCUTS)SHORTCUTS=[
+  {n:"ห้องคุย",t:"chat"},{n:"ประชุม",t:"meet"},{n:"ความรู้ AI",t:"knowledge"}];
+
+function drawRight(){
+  const box=$("rsTeam"); if(!box)return;
+  const d=deptOf(me);
+  $("rsDept").textContent=(DEPTS[d]||{}).th||"แผนกของคุณ";
+  /* คนในแผนกเดียวกัน เรียงคนที่อยู่ในห้องเสียงขึ้นก่อน เพราะกดคุยได้ทันที */
+  const mates=teamList().filter(u=>u.uid!==me.uid&&deptOf(u)===d);
+  const inVoice=u=>Object.values(VOICE).some(a=>a.some(x=>x.uid===u.uid));
+  mates.sort((a,b)=>(inVoice(b)?1:0)-(inVoice(a)?1:0));
+  box.innerHTML=mates.length?mates.map(u=>{
+    const live=inVoice(u);
+    const un=CHAT.filter(m=>m.uid===u.uid&&m.r===dmId(me.uid,u.uid)&&m.t>(SEEN[dmId(me.uid,u.uid)]||0)).length;
+    return `<div class="rs-p ${live?"live":""}">
+      <div class="rs-av">${esc((u.name||"?")[0].toUpperCase())}
+        ${live?'<span class="rs-dot"></span>':""}</div>
+      <div class="rs-n"><b>${esc((u.name||u.email||"").slice(0,22))}</b>
+        <small>${esc((POSITIONS[posOf(u)]||{}).ab||"")}${live?" · อยู่ในห้องเสียง":""}</small></div>
+      ${un?`<span class="nav-badge on">${un>9?"9+":un}</span>`:""}
+      <div class="rs-act">
+        <button onclick="msgPerson('${esc(u.uid)}')" title="ทัก"><i class="ti ti-message"></i></button>
+        <button onclick="callPerson('${esc(u.uid)}',false)" title="โทร"><i class="ti ti-phone"></i></button>
+      </div>
+    </div>`}).join("")
+    :`<div class="rs-none">ยังไม่มีเพื่อนร่วมแผนก<br><small>เพิ่มคนเข้าทีมที่หน้าผู้คน</small></div>`;
+  drawShort();
+}
+function drawShort(){
+  const box=$("rsShort"); if(!box)return;
+  box.innerHTML=SHORTCUTS.map((x,i)=>{
+    const ext=!!x.u;
+    return `<a class="sc" ${ext?`href="${esc(x.u)}" target="_blank" rel="noopener"`:`onclick="go('${esc(x.t)}')"`}>
+      <i class="ti ${ext?"ti-external-link":"ti-arrow-right"}"></i>
+      <span>${esc(x.n)}</span>
+      <button class="sc-x" onclick="event.preventDefault();event.stopPropagation();scDel(${i})" title="ลบ">
+        <i class="ti ti-x"></i></button></a>`}).join("")
+    ||`<div class="rs-none">ยังไม่มีทางลัด — กด + เพื่อเพิ่ม</div>`;
+}
+function scSaveLocal(){ try{ localStorage.setItem("cx_short",JSON.stringify(SHORTCUTS)) }catch(e){} }
+function scAdd(){
+  $("scName").value=""; $("scUrl").value="";
+  const sel=$("scTarget");
+  sel.innerHTML=[...document.querySelectorAll("#nav a[data-tab]")]
+    .filter(a=>a.style.display!=="none")
+    .map(a=>`<option value="${a.dataset.tab}">${esc((a.textContent||"").trim())}</option>`).join("")
+    +`<option value="__url">ลิงก์ข้างนอก...</option>`;
+  sel.onchange=()=>{ $("scUrlWrap").hidden=sel.value!=="__url" };
+  $("scUrlWrap").hidden=true;
+  $("scModal").classList.add("show"); $("scName").focus();
+}
+function scClose(){ $("scModal").classList.remove("show") }
+function scSave(){
+  const t=$("scTarget").value, u=$("scUrl").value.trim();
+  const n=$("scName").value.trim()||
+    (t==="__url"?u.slice(0,24):($("scTarget").selectedOptions[0]||{}).textContent||"ทางลัด");
+  if(t==="__url"&&!/^https?:\/\//.test(u)){ alert("ลิงก์ต้องขึ้นต้นด้วย http:// หรือ https://"); return }
+  SHORTCUTS.push(t==="__url"?{n,u}:{n,t});
+  scSaveLocal(); drawShort(); scClose();
+}
+function scDel(i){ SHORTCUTS.splice(i,1); scSaveLocal(); drawShort() }
+window.scAdd=scAdd; window.scClose=scClose; window.scSave=scSave; window.scDel=scDel;
+
+function toggleRight(){
+  const on=document.body.classList.toggle("no-right");
+  $("rsOpen").hidden=!on;
+  try{ localStorage.setItem("cx_right",on?"0":"1") }catch(e){}
+}
+window.toggleRight=toggleRight;
+try{ if(localStorage.getItem("cx_right")==="0"){
+  document.body.classList.add("no-right");
+} }catch(e){}
+
+/* ══ แจ้งเตือน ══
+   เตือนเมื่อมีคนทักหรือเข้าห้องเสียงมาหาเรา
+   ขออนุญาตตอนกดใช้ครั้งแรกเท่านั้น ไม่ใช่เด้งถามทันทีที่เปิดเว็บ
+   ซึ่งเป็นสิ่งที่ทุกคนกดปฏิเสธโดยไม่อ่าน */
+let notifySeen=0;
+function notifyAsk(){
+  if(!("Notification" in window))return;
+  if(Notification.permission==="default")Notification.requestPermission().catch(()=>{});
+}
+function notify(title,body,tag){
+  try{
+    if(!("Notification" in window)||Notification.permission!=="granted")return;
+    if(document.visibilityState==="visible")return;   /* ดูอยู่แล้วไม่ต้องเตือน */
+    new Notification(title,{body,tag,icon:"./favicon.png"});
+  }catch(e){}
+}
+/* เสียงเตือนสั้น ๆ สร้างเอง ไม่ต้องมีไฟล์เสียงให้ลืมอัป */
+function ping(){
+  try{
+    const C=window.AudioContext||window.webkitAudioContext; if(!C)return;
+    const ac=new C(), o=ac.createOscillator(), g=ac.createGain();
+    o.frequency.value=880; o.connect(g); g.connect(ac.destination);
+    g.gain.setValueAtTime(.0001,ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(.05,ac.currentTime+.02);
+    g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+.28);
+    o.start(); o.stop(ac.currentTime+.3);
+    setTimeout(()=>ac.close(),500);
+  }catch(e){}
+}
+function checkNotify(){
+  const fresh=CHAT.filter(m=>m.uid!==me.uid&&m.t>notifySeen&&m.t>Date.now()-6e4);
+  if(!notifySeen){ notifySeen=Date.now(); return }
+  fresh.forEach(m=>{
+    if(m.r===curRoom&&document.visibilityState==="visible")return;
+    const r=ROOMS.find(x=>x.id===m.r);
+    notify(m.n+(r?" · "+r.n:""),m.a==="img"?"ส่งรูปมา":m.a==="aud"?"ส่งข้อความเสียงมา":m.tx.slice(0,120),m.r);
+    ping();
+  });
+  if(fresh.length)notifySeen=Math.max(notifySeen,...fresh.map(m=>m.t));
+}
+
+/* ══ ห้องเสียง ══
+   ไม่มีการโทร มีแต่ "ห้อง" ที่เดินเข้าไปได้เลย เหมือนเดินเข้าห้องประชุมจริง
+   ใครอยู่ในห้องบ้างดูจากรายการสถานะที่แต่ละคนเขียนทิ้งไว้ทุกห้าวินาที
+   ใครหายไปเกินสิบห้าวินาทีถือว่าออกไปแล้ว (ปิดแท็บ เน็ตหลุด ไฟดับ)
+
+   สัญญาณจับคู่ยังฝากผ่านตารางเดิม  sig_<ถึงใคร>_<จากใคร>_<เวลา> */
 const ICE={iceServers:[
   {urls:"stun:stun.l.google.com:19302"},
   {urls:"stun:stun1.l.google.com:19302"}]};
-let PC=null, LOCAL=null, callPeer=null, callTimer=null, callT0=0, sigTimer=null,
-    pendingOffer=null, callVideo=false, seenSig={}, shareTrack=null;
+const VC_BEAT=5000, VC_GONE=15000;
 
-function sigId(to,from){ return "sig_"+to+"_"+from }
-async function sigSend(to,kind,payload,extra){
-  await api("/api/kb",{method:"POST",body:{
-    id:sigId(to,me.uid)+"_"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),
-    title:"สัญญาณสาย "+kind,
-    body:JSON.stringify(payload||{}) ,
-    keywords:JSON.stringify(Object.assign({k:kind,t:Date.now(),n:(me.name||"").slice(0,30)},extra||{})).slice(0,395),
-    make:"__sig__",model:"",enabled:false}});
+let PEERS={};            /* uid -> {pc, stream, name} */
+let LOCAL=null, camTrack=null, shareTrack=null;
+let vcRoom=null, vcBeat=null, vcPoll=null, vcT0=0, vcTimer=null;
+let micOn=true, camOn=false;
+let sigTimer=null, seenSig={}, VOICE={};   /* rooms -> [{uid,name,t}] */
+
+/* ── สถานะว่าใครอยู่ในห้องไหน ── */
+function vcId(room,uid){ return "vc_"+room.replace(/[^a-zA-Z0-9ก-๙:_-]/g,"")+"__"+uid }
+async function vcBeatNow(){
+  if(!vcRoom)return;
+  try{
+    await api("/api/kb",{method:"POST",body:{
+      id:vcId(vcRoom,me.uid), title:"อยู่ในห้องเสียง",
+      body:"บันทึกว่าผู้ใช้รายนี้อยู่ในห้องเสียงขณะนี้ ระเบียนนี้หมดอายุเองใน 15 วินาที",
+      keywords:JSON.stringify({r:vcRoom,u:me.uid,n:(me.name||"").slice(0,30),
+        t:Date.now(),cam:camOn?1:0,mic:micOn?1:0}).slice(0,395),
+      make:"__voice__",model:"",enabled:false}});
+  }catch(e){}
 }
-/* ถามหาสัญญาณที่ส่งถึงเราทุกสองวินาที — ถี่กว่าห้องคุยเพราะการต่อสายต้องเร็ว
-   แต่หยุดทันทีที่ไม่มีสายค้างอยู่ จะได้ไม่ยิงถามทั้งวันโดยไม่มีเหตุ */
-function sigStart(){
-  if(sigTimer)return;
-  sigTimer=setInterval(sigPoll,2000); sigPoll();
+function vcParse(kb){
+  const out={};
+  (kb||[]).filter(k=>/^vc_/.test(k.id)).forEach(k=>{
+    let m={}; try{ m=JSON.parse(k.keywords||"{}") }catch(e){}
+    if(!m.r||!m.u)return;
+    if(Date.now()-(m.t||0)>VC_GONE)return;      /* เก่าเกินไป ถือว่าออกไปแล้ว */
+    (out[m.r]=out[m.r]||[]).push({uid:m.u,name:m.n||"",cam:!!m.cam,mic:!!m.mic,t:m.t});
+  });
+  return out;
 }
-function sigStop(){ clearInterval(sigTimer); sigTimer=null }
+
+/* ── เข้าห้อง ── */
+async function vcJoin(room,name){
+  if(vcRoom===room)return;
+  if(vcRoom)await vcLeave(true);
+  if(!LOCAL){
+    try{ LOCAL=await navigator.mediaDevices.getUserMedia({audio:true}) }
+    catch(e){ alert("เข้าห้องเสียงไม่ได้ ต้องอนุญาตให้ใช้ไมค์ก่อน\n\n"+e.message); return }
+  }
+  vcRoom=room; micOn=true; camOn=false;
+  $("stName").textContent=name||room;
+  $("stage").hidden=false; $("stage").classList.remove("min");
+  vcT0=Date.now(); clearInterval(vcTimer);
+  const tick=()=>{ const s=Math.floor((Date.now()-vcT0)/1000);
+    $("stTime").textContent=String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0") };
+  tick(); vcTimer=setInterval(tick,1000);
+  drawTiles();
+  await vcBeatNow();
+  clearInterval(vcBeat); vcBeat=setInterval(vcBeatNow,VC_BEAT);
+  sigStart();
+  vcSync();
+}
+
+/* ── ออกจากห้อง ── */
+async function vcLeave(quiet){
+  const room=vcRoom; vcRoom=null;
+  clearInterval(vcBeat); clearInterval(vcTimer);
+  Object.keys(PEERS).forEach(u=>{ try{PEERS[u].pc.close()}catch(e){} });
+  PEERS={};
+  if(camTrack){ try{camTrack.stop()}catch(e){} camTrack=null }
+  if(shareTrack){ try{shareTrack.stop()}catch(e){} shareTrack=null }
+  if(LOCAL&&!quiet){ LOCAL.getTracks().forEach(t=>t.stop()); LOCAL=null }
+  camOn=false;
+  $("stage").hidden=true; $("stTime").textContent="";
+  if(room)try{ await api("/api/kb/"+encodeURIComponent(vcId(room,me.uid)),{method:"DELETE"}) }catch(e){}
+  drawRooms&&drawRooms();
+}
+window.vcJoin=vcJoin; window.vcLeave=vcLeave;
+function stageMin(){ $("stage").classList.toggle("min") }
+window.stageMin=stageMin;
+
+/* ── จับคู่กับทุกคนในห้อง ──
+   กติกาว่าใครเป็นฝ่ายเริ่ม: คนที่รหัสน้อยกว่าเป็นคนเริ่มเสมอ
+   ถ้าไม่มีกติกานี้ ทั้งสองฝั่งจะเริ่มพร้อมกันแล้วชนกัน สายจะไม่มีวันต่อติด */
+function vcSync(){
+  if(!vcRoom)return;
+  const here=(VOICE[vcRoom]||[]).filter(x=>x.uid!==me.uid);
+  here.forEach(x=>{ if(!PEERS[x.uid])connectPeer(x.uid,x.name) });
+  Object.keys(PEERS).forEach(u=>{
+    if(!here.find(x=>x.uid===u)){ try{PEERS[u].pc.close()}catch(e){} delete PEERS[u] }
+  });
+  drawTiles();
+}
+/* ฝ่ายเริ่มกับฝ่ายรับต้องประกอบช่องสัญญาณคนละวิธี
+   ฝ่ายเริ่ม  — ประกาศช่องของตัวเองก่อน แล้วส่งคำขอไป
+   ฝ่ายรับ    — ต้องรับคำขอมาก่อน ให้เบราว์เซอร์สร้างช่องตามที่อีกฝ่ายประกาศมา
+                แล้วค่อยยัดเสียงกับภาพของตัวเองลงช่องเหล่านั้น
+
+   ถ้าฝ่ายรับดันไปสร้างช่องเองก่อน ช่องสองชุดจะจับคู่กันผิดลำดับ
+   ผลคือเสียงยังพอไปได้แต่ภาพไม่มีทางวิ่งถึงกัน — นี่คือสาเหตุที่
+   "เปิดกล้องสองคนแต่เห็นแค่ของตัวเอง" */
+async function newPC(uid,name,isOfferer){
+  const pc=new RTCPeerConnection(ICE);
+  const rec={pc,stream:null,name:name||uid,vSender:null};
+  PEERS[uid]=rec;
+  pc.onicecandidate=e=>{ if(e.candidate)sigSend(uid,"ice",e.candidate.toJSON()) };
+  /* ประกอบสตรีมของอีกฝ่ายเอง ไม่พึ่ง e.streams[0]
+     เพราะช่องที่จองไว้แล้วค่อยยัดภาพทีหลัง (replaceTrack) จะไม่มีสตรีมติดมาด้วย
+     e.streams[0] จึงเป็นค่าว่าง แล้วภาพก็ไม่มีวันขึ้นจอทั้งที่สายต่อติดแล้ว */
+  pc.ontrack=e=>{
+    if(!rec.stream)rec.stream=new MediaStream();
+    if(e.track&&!rec.stream.getTracks().some(t=>t.id===e.track.id))rec.stream.addTrack(e.track);
+    /* เฟรมแรกของวิดีโอมาช้ากว่าเหตุการณ์นี้เสมอ วาดใหม่อีกรอบตอนภาพเริ่มวิ่ง */
+    if(e.track&&e.track.kind==="video"){
+      e.track.onunmute=()=>drawTiles();
+      e.track.onended=()=>drawTiles();
+    }
+    drawTiles();
+  };
+  pc.onconnectionstatechange=()=>{
+    if(pc.connectionState==="failed"){
+      /* ต่อตรงไม่ได้จริง ๆ เกิดเมื่อเครือข่ายฝั่งใดฝั่งหนึ่งไม่ยอมให้เจาะ
+         บอกให้รู้ ไม่ปล่อยให้ช่องว่างค้างอยู่เฉย ๆ โดยไม่มีคำอธิบาย */
+      rec.failed=true;
+    }
+    drawTiles();
+  };
+  if(isOfferer){
+    /* เสียงใส่ทันที ส่วนวิดีโอ "จองช่องไว้" โดยยังไม่มีภาพ
+       นี่คือหัวใจที่ทำให้เปิดกล้องทีหลังแล้วอีกฝั่งเห็นทันที ไม่ต้องต่อสายใหม่ */
+    LOCAL.getAudioTracks().forEach(t=>pc.addTrack(t,LOCAL));
+    const tr=pc.addTransceiver("video",{direction:"sendrecv"});
+    rec.vSender=tr.sender;
+    if(camTrack)await rec.vSender.replaceTrack(camTrack);
+  }
+  return rec;
+}
+/* ยัดเสียงกับภาพของเราลงช่องที่อีกฝ่ายประกาศมา ใช้เฉพาะฝั่งผู้รับ */
+async function fillSenders(rec){
+  const send=camTrack||shareTrack||null;
+  for(const t of rec.pc.getTransceivers()){
+    const kind=(t.receiver&&t.receiver.track&&t.receiver.track.kind)||
+               (t.sender&&t.sender.track&&t.sender.track.kind)||"";
+    if(kind==="audio"){
+      const a=LOCAL&&LOCAL.getAudioTracks()[0];
+      if(a)try{ await t.sender.replaceTrack(a) }catch(e){}
+      try{ t.direction="sendrecv" }catch(e){}
+    }else if(kind==="video"){
+      rec.vSender=t.sender;
+      try{ await t.sender.replaceTrack(send) }catch(e){}
+      try{ t.direction="sendrecv" }catch(e){}
+    }
+  }
+  /* อีกฝ่ายไม่ได้ประกาศช่องวิดีโอมา (เกิดได้ถ้าเขาใช้รุ่นเก่า) จองเพิ่มเอง */
+  if(!rec.vSender){
+    const tr=rec.pc.addTransceiver("video",{direction:"sendrecv"});
+    rec.vSender=tr.sender;
+    if(send)try{ await tr.sender.replaceTrack(send) }catch(e){}
+  }
+}
+async function connectPeer(uid,name){
+  /* คนที่รหัสน้อยกว่าเป็นฝ่ายเริ่มเสมอ อีกฝั่งรอรับ
+     ถ้าไม่มีกติกานี้ ทั้งคู่จะส่งคำขอชนกันแล้วสายไม่มีวันต่อติด */
+  if(me.uid>=uid){ await newPC(uid,name,false); drawTiles(); return }
+  const rec=await newPC(uid,name,true);
+  const off=await rec.pc.createOffer();
+  await rec.pc.setLocalDescription(off);
+  await sigSend(uid,"offer",{type:off.type,sdp:off.sdp},{r:vcRoom});
+  drawTiles();
+}
+
+/* ── สัญญาณจับคู่ ── */
+function sigSend(to,kind,payload,extra){
+  return api("/api/kb",{method:"POST",body:{
+    id:"sig_"+to+"_"+me.uid+"_"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),
+    title:"สัญญาณห้องเสียง "+kind,
+    body:JSON.stringify(payload||{}),
+    keywords:JSON.stringify(Object.assign({k:kind,t:Date.now(),
+      n:(me.name||"").slice(0,30)},extra||{})).slice(0,395),
+    make:"__sig__",model:"",enabled:false}}).catch(()=>{});
+}
+function sigStart(){ if(!sigTimer)sigTimer=setInterval(sigPoll,2000); sigPoll() }
+function sigDel(id){ api("/api/kb/"+encodeURIComponent(id),{method:"DELETE"}).catch(()=>{}) }
 async function sigPoll(){
   try{
-    const res=await api("/api/kb"); const pre="sig_"+me.uid+"_";
-    const rows=(res.kb||[]).filter(k=>k.id.startsWith(pre)&&!seenSig[k.id]);
-    for(const r of rows){
+    const res=await api("/api/kb"); const kb=res.kb||[];
+    VOICE=vcParse(kb);
+    if(vcRoom)vcSync();
+    drawRooms&&drawRooms();
+    const pre="sig_"+me.uid+"_";
+    for(const r of kb.filter(k=>k.id.startsWith(pre)&&!seenSig[k.id])){
       seenSig[r.id]=1;
-      let m={},b={}; try{m=JSON.parse(r.keywords||"{}")}catch(e){}
-      try{b=JSON.parse(r.body||"{}")}catch(e){}
-      /* สัญญาณเก่ากว่าสองนาทีคือของค้างจากสายที่จบไปแล้ว ทิ้งไป
-         ไม่งั้นเปิดหน้าเว็บใหม่แล้วจะมีสายผีเรียกเข้าจากเมื่อวาน */
-      if(Date.now()-(m.t||0)>12e4){ sigDel(r.id); continue }
+      let m={},bd={}; try{m=JSON.parse(r.keywords||"{}")}catch(e){}
+      try{bd=JSON.parse(r.body||"{}")}catch(e){}
+      if(Date.now()-(m.t||0)>6e4){ sigDel(r.id); continue }
       const from=r.id.slice(pre.length).split("_")[0];
-      await sigHandle(m.k,b,from,m);
+      await sigHandle(m.k,bd,from,m);
       sigDel(r.id);
     }
   }catch(e){}
 }
-function sigDel(id){ api("/api/kb/"+encodeURIComponent(id),{method:"DELETE"}).catch(()=>{}) }
-
 async function sigHandle(kind,body,from,meta){
   if(kind==="offer"){
-    if(PC){ sigSend(from,"busy",{}); return }
-    pendingOffer={from,sdp:body,video:!!meta.v,name:meta.n||from};
-    $("ringWho").textContent=(meta.n||"มีคนโทรมา");
-    $("ringKind").textContent=meta.v?"วิดีโอคอล":"สายเสียง";
-    $("ringBox").hidden=false;
-    ringTone(true);
-  }else if(kind==="answer"&&PC){
-    await PC.setRemoteDescription(new RTCSessionDescription(body));
-    setState("กำลังเชื่อมต่อ...");
-  }else if(kind==="ice"&&PC){
-    try{ await PC.addIceCandidate(new RTCIceCandidate(body)) }catch(e){}
-  }else if(kind==="bye"){ callEnd(false) }
-  else if(kind==="busy"){ setState("ปลายทางกำลังคุยสายอื่นอยู่"); setTimeout(()=>callEnd(false),2200) }
-  else if(kind==="reject"){ setState("ปลายทางไม่รับสาย"); setTimeout(()=>callEnd(false),2200) }
-}
-
-/* เสียงเรียกเข้าสร้างจากตัวสังเคราะห์เสียงในเบราว์เซอร์ ไม่ต้องโหลดไฟล์เสียง
-   ไฟล์เสียงหมายถึงอีกหนึ่งไฟล์ที่ต้องอัปขึ้นเซิร์ฟเวอร์และอาจลืมอัป */
-let ringOsc=null;
-function ringTone(on){
-  try{
-    if(on){
-      const C=window.AudioContext||window.webkitAudioContext; if(!C)return;
-      const ac=new C(); ringOsc={ac,iv:null};
-      const beep=()=>{
-        const o=ac.createOscillator(), g=ac.createGain();
-        o.frequency.value=520; o.connect(g); g.connect(ac.destination);
-        g.gain.setValueAtTime(.0001,ac.currentTime);
-        g.gain.exponentialRampToValueAtTime(.09,ac.currentTime+.05);
-        g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+.5);
-        o.start(); o.stop(ac.currentTime+.55);
-      };
-      beep(); ringOsc.iv=setInterval(beep,1600);
-    }else if(ringOsc){ clearInterval(ringOsc.iv); ringOsc.ac.close(); ringOsc=null }
-  }catch(e){}
-}
-
-function setState(t){ const e=$("callState"); if(e)e.textContent=t }
-function callShow(who,video){
-  $("callWho").textContent=who;
-  $("callBox").hidden=false;
-  $("callBox").classList.toggle("audio",!video);
-  $("callVid").classList.toggle("on",video);
-  $("btnCam").style.display=video?"":"none";
-  $("btnShare").style.display=video?"":"none";
-}
-function callMin(){ $("callBox").classList.toggle("min") }
-window.callMin=callMin;
-
-async function newPC(peer){
-  const pc=new RTCPeerConnection(ICE);
-  pc.onicecandidate=e=>{ if(e.candidate)sigSend(peer,"ice",e.candidate.toJSON()) };
-  pc.ontrack=e=>{ const v=$("vRemote"); if(v.srcObject!==e.streams[0])v.srcObject=e.streams[0];
-    $("callPh").classList.add("gone") };
-  pc.onconnectionstatechange=()=>{
-    if(pc.connectionState==="connected"){ setState("คุยกันอยู่"); startTimer(); $("callDot").classList.add("live") }
-    if(["failed","closed","disconnected"].includes(pc.connectionState)){
-      /* ต่อไม่ติดเกิดได้จริงเมื่อทั้งสองฝั่งอยู่หลังเราเตอร์ที่เจาะไม่ได้
-         บอกตรง ๆ ว่าเกิดอะไรและให้ทางออก ดีกว่าปล่อยให้จอค้างเงียบ */
-      if(pc.connectionState==="failed")
-        setState("ต่อสายไม่สำเร็จ — เครือข่ายฝั่งใดฝั่งหนึ่งไม่ยอมให้ต่อตรง ลองใช้ลิงก์ประชุมข้างนอกแทน");
-      setTimeout(()=>callEnd(false),3000);
-    }
-  };
-  return pc;
-}
-async function getMedia(video){
-  try{
-    LOCAL=await navigator.mediaDevices.getUserMedia({audio:true,video:video?{width:{ideal:1280}}:false});
-    if(video){ const v=$("vLocal"); v.srcObject=LOCAL }
-    return true;
-  }catch(e){
-    alert("เปิดไมค์หรือกล้องไม่ได้ — ต้องกดอนุญาตในเบราว์เซอร์ก่อน\n\n"+e.message);
-    return false;
+    /* มีคนขอต่อเข้ามา แต่เราไม่ได้อยู่ในห้องนั้น ไม่ต้องรับ
+       ไม่มีการเด้งถามว่าจะรับสายไหมอีกแล้ว */
+    if(!vcRoom||meta.r!==vcRoom)return;
+    let rec=PEERS[from]; if(!rec)rec=await newPC(from,meta.n,false);
+    await rec.pc.setRemoteDescription(new RTCSessionDescription(body));
+    await fillSenders(rec);
+    const ans=await rec.pc.createAnswer();
+    await rec.pc.setLocalDescription(ans);
+    await sigSend(from,"answer",{type:ans.type,sdp:ans.sdp},{r:vcRoom});
+    drawTiles();
+  }else if(kind==="answer"){
+    const rec=PEERS[from]; if(!rec)return;
+    if(rec.pc.signalingState==="have-local-offer")
+      await rec.pc.setRemoteDescription(new RTCSessionDescription(body));
+  }else if(kind==="ice"){
+    const rec=PEERS[from]; if(!rec)return;
+    try{ await rec.pc.addIceCandidate(new RTCIceCandidate(body)) }catch(e){}
   }
 }
-function startTimer(){
-  callT0=Date.now(); clearInterval(callTimer);
-  /* วาดครั้งแรกทันที ไม่รอครบหนึ่งวินาที — ไม่งั้นช่องเวลาจะว่างอยู่วินาทีแรกของทุกสาย
-     ซึ่งเป็นวินาทีที่คนจ้องหน้าจอที่สุด เพราะเพิ่งต่อติด */
-  const tick=()=>{
-    const s=Math.floor((Date.now()-callT0)/1000);
-    $("callTime").textContent=String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
-  };
-  tick(); callTimer=setInterval(tick,1000);
+
+/* ── ช่องของแต่ละคน ── */
+function drawTiles(){
+  const box=$("tiles"); if(!box)return;
+  const list=[{uid:me.uid,name:(me.name||"คุณ"),self:true}]
+    .concat(Object.keys(PEERS).map(u=>({uid:u,name:PEERS[u].name,rec:PEERS[u]})));
+  $("stCount").textContent=list.length+" คน";
+  /* จำนวนคอลัมน์ตามจำนวนคน — สองคนวางข้างกัน สี่คนเป็นตารางสองแถว
+     ให้แต่ละช่องใหญ่ที่สุดเท่าที่จะเป็นไปได้เสมอ */
+  box.style.gridTemplateColumns="repeat("+Math.min(3,Math.ceil(Math.sqrt(list.length)))+",1fr)";
+  box.innerHTML=list.map(x=>{
+    const on=x.self?camOn:(x.rec&&x.rec.stream&&x.rec.stream.getVideoTracks().some(t=>t.readyState==="live"&&!t.muted));
+    return `<div class="tile ${x.self?"self":""}" data-uid="${esc(x.uid)}">
+      <video id="v_${esc(x.uid)}" autoplay playsinline ${x.self?"muted":""} class="${on?"on":""}"></video>
+      <div class="tile-ph ${on?"off":""}">
+        <div class="tile-av">${esc((x.name||"?")[0].toUpperCase())}</div>
+      </div>
+      <div class="tile-nm">${esc(x.name)}${x.self?" (คุณ)":""}
+        ${x.self&&!micOn?'<i class="ti ti-microphone-off"></i>':""}
+        ${x.rec&&x.rec.failed?'<span class="tile-bad">ต่อไม่ติด</span>':""}</div>
+    </div>`}).join("");
+  /* ผูกภาพเข้าช่องหลังวาดเสร็จ — ตั้ง srcObject ก่อนที่ element จะอยู่ในหน้าไม่ได้ */
+  const mv=$("v_"+me.uid);
+  if(mv&&LOCAL&&mv.srcObject!==LOCAL)mv.srcObject=LOCAL;
+  Object.keys(PEERS).forEach(u=>{
+    const v=$("v_"+u);
+    if(v&&PEERS[u].stream&&v.srcObject!==PEERS[u].stream)v.srcObject=PEERS[u].stream;
+  });
 }
 
-/* โทรออก — ใช้ได้เฉพาะห้องตัวต่อตัว เพราะรู้แน่ว่าปลายทางคือใคร */
-async function startCall(video){
-  const r=roomOf(curRoom);
-  if(!r||!r.id.startsWith("dm:")){ alert("เลือกห้องคุยตัวต่อตัวก่อน แล้วจึงโทรได้"); return }
-  const peer=r.id.slice(3).split("|").find(u=>u!==me.uid);
-  if(!peer)return;
-  await placeCall(peer,r.n,video);
-}
-async function placeCall(peer,name,video){
-  if(PC){ alert("กำลังคุยสายอยู่แล้ว"); return }
-  callVideo=video; callPeer=peer;
-  if(!await getMedia(video))return;
-  callShow(name,video); setState("กำลังเรียก...");
-  PC=await newPC(peer);
-  LOCAL.getTracks().forEach(t=>PC.addTrack(t,LOCAL));
-  const off=await PC.createOffer({offerToReceiveAudio:true,offerToReceiveVideo:video});
-  await PC.setLocalDescription(off);
-  await sigSend(peer,"offer",{type:off.type,sdp:off.sdp},{v:video?1:0});
-  sigStart();
-}
-window.startCall=startCall;
-
-async function callAccept(){
-  const o=pendingOffer; if(!o)return;
-  ringTone(false); $("ringBox").hidden=true; pendingOffer=null;
-  callVideo=o.video; callPeer=o.from;
-  if(!await getMedia(o.video)){ sigSend(o.from,"reject",{}); return }
-  callShow(o.name,o.video); setState("กำลังเชื่อมต่อ...");
-  PC=await newPC(o.from);
-  LOCAL.getTracks().forEach(t=>PC.addTrack(t,LOCAL));
-  await PC.setRemoteDescription(new RTCSessionDescription(o.sdp));
-  const ans=await PC.createAnswer();
-  await PC.setLocalDescription(ans);
-  await sigSend(o.from,"answer",{type:ans.type,sdp:ans.sdp});
-}
-function callReject(){
-  if(pendingOffer)sigSend(pendingOffer.from,"reject",{});
-  pendingOffer=null; ringTone(false); $("ringBox").hidden=true;
-}
-window.callAccept=callAccept; window.callReject=callReject;
-
-function callEnd(tell){
-  if(tell&&callPeer)sigSend(callPeer,"bye",{});
-  if(PC){ try{PC.close()}catch(e){} PC=null }
-  if(LOCAL){ LOCAL.getTracks().forEach(t=>t.stop()); LOCAL=null }
-  if(shareTrack){ try{shareTrack.stop()}catch(e){} shareTrack=null }
-  clearInterval(callTimer); callTimer=null;
-  $("callBox").hidden=true; $("callBox").classList.remove("min");
-  $("callPh").classList.remove("gone"); $("callDot").classList.remove("live");
-  $("callTime").textContent=""; $("vRemote").srcObject=null; $("vLocal").srcObject=null;
-  callPeer=null;
-  /* ยังต้องฟังสัญญาณต่อ เพราะคนอื่นอาจโทรเข้ามาได้ตลอด แค่ไม่ต้องถี่เท่าเดิม */
-}
-window.callEnd=callEnd;
-
-function callMic(){
+/* ── ปุ่มควบคุม ── */
+function vcMic(){
   if(!LOCAL)return;
-  const t=LOCAL.getAudioTracks()[0]; if(!t)return;
-  t.enabled=!t.enabled;
-  $("btnMic").innerHTML=`<i class="ti ti-microphone${t.enabled?"":"-off"}"></i>`;
-  $("btnMic").classList.toggle("danger",!t.enabled);
+  micOn=!micOn;
+  LOCAL.getAudioTracks().forEach(t=>t.enabled=micOn);
+  $("cMic").innerHTML=`<i class="ti ti-microphone${micOn?"":"-off"}"></i>`;
+  $("cMic").classList.toggle("off",!micOn);
+  drawTiles(); vcBeatNow();
 }
-function callCam(){
-  if(!LOCAL)return;
-  const t=LOCAL.getVideoTracks()[0]; if(!t)return;
-  t.enabled=!t.enabled;
-  $("btnCam").innerHTML=`<i class="ti ti-video${t.enabled?"":"-off"}"></i>`;
-  $("btnCam").classList.toggle("danger",!t.enabled);
+/* เปิดกล้อง = ยัดภาพเข้าช่องที่จองไว้ตอนต่อสาย ไม่ต้องต่อใหม่
+   ปิดกล้อง = เอาภาพออกจากช่อง ช่องยังอยู่ เปิดใหม่เมื่อไหร่ก็ได้ */
+async function vcCam(){
+  if(!vcRoom)return;
+  if(camOn){
+    camOn=false;
+    if(camTrack){ camTrack.stop(); camTrack=null }
+    for(const u of Object.keys(PEERS))try{ await PEERS[u].vSender.replaceTrack(null) }catch(e){}
+  }else{
+    try{
+      const st=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:1280}}});
+      camTrack=st.getVideoTracks()[0];
+      /* ใส่ลงสตรีมของตัวเองด้วย จะได้เห็นภาพตัวเองในช่องของตัวเอง */
+      if(LOCAL){ LOCAL.getVideoTracks().forEach(t=>LOCAL.removeTrack(t)); LOCAL.addTrack(camTrack) }
+      for(const u of Object.keys(PEERS))try{ await PEERS[u].vSender.replaceTrack(camTrack) }catch(e){}
+      camOn=true;
+    }catch(e){ alert("เปิดกล้องไม่ได้ — ต้องกดอนุญาตในเบราว์เซอร์ก่อน\n\n"+e.message); return }
+  }
+  $("cCam").innerHTML=`<i class="ti ti-video${camOn?"":"-off"}"></i>`;
+  $("cCam").classList.toggle("off",!camOn);
+  drawTiles(); vcBeatNow();
 }
-/* แชร์หน้าจอคือการสลับแหล่งภาพของสายที่ต่ออยู่แล้ว ไม่ใช่การต่อสายใหม่
-   จึงใช้ replaceTrack ซึ่งเปลี่ยนได้ทันทีโดยสายไม่หลุด */
-async function callShare(){
-  if(!PC)return;
-  const sender=PC.getSenders().find(x=>x.track&&x.track.kind==="video");
-  if(!sender){ alert("สายนี้เป็นสายเสียง แชร์หน้าจอไม่ได้"); return }
+async function vcShare(){
+  if(!vcRoom)return;
   if(shareTrack){
     shareTrack.stop(); shareTrack=null;
-    const cam=LOCAL.getVideoTracks()[0]; if(cam)await sender.replaceTrack(cam);
-    $("btnShare").classList.remove("primary");
-    return;
+    for(const u of Object.keys(PEERS))try{ await PEERS[u].vSender.replaceTrack(camOn?camTrack:null) }catch(e){}
+    $("cShare").classList.remove("on"); drawTiles(); return;
   }
   try{
     const st=await navigator.mediaDevices.getDisplayMedia({video:true});
     shareTrack=st.getVideoTracks()[0];
-    await sender.replaceTrack(shareTrack);
-    $("btnShare").classList.add("primary");
-    shareTrack.onended=()=>{ if(shareTrack){ callShare() } };
+    for(const u of Object.keys(PEERS))try{ await PEERS[u].vSender.replaceTrack(shareTrack) }catch(e){}
+    if(LOCAL){ LOCAL.getVideoTracks().forEach(t=>LOCAL.removeTrack(t)); LOCAL.addTrack(shareTrack) }
+    $("cShare").classList.add("on");
+    shareTrack.onended=()=>{ if(shareTrack)vcShare() };
+    drawTiles();
   }catch(e){}
 }
-window.callMic=callMic; window.callCam=callCam; window.callShare=callShare;
+window.vcMic=vcMic; window.vcCam=vcCam; window.vcShare=vcShare;
 
-/* เข้าประชุม — ประชุมสองคนต่อสายตรง ส่วนประชุมหลายคนยังต้องใช้ลิงก์ข้างนอก
-   เพราะการต่อตรงหลายคนพร้อมกันต้องมีตัวรวมสัญญาณที่ฝั่งเซิร์ฟเวอร์ */
-async function joinMeet(id,video){
+/* ── ทางเข้าห้องเสียงจากที่ต่าง ๆ ── */
+function joinRoomVoice(){
+  const r=roomOf(curRoom); if(!r)return;
+  vcJoin("v:"+r.id, r.n);
+}
+window.joinRoomVoice=joinRoomVoice;
+/* เข้าห้องเสียงของการประชุม — ไม่โทรหาใครทั้งนั้น
+   ใครอยากเข้าก็กดเข้า เหมือนเดินเข้าห้องประชุมจริงที่ไม่ต้องมีใครโทรตาม */
+function joinMeet(id){
   const m=MEETS.find(x=>x.id===id); if(!m)return;
-  const others=(m.at||[]).filter(u=>u!==me.uid);
-  if(!others.length){
-    alert("ยังไม่มีใครตอบรับนัดนี้ — รอให้อีกฝ่ายกดตอบรับก่อน แล้วจึงเข้าห้องได้");
-    return;
-  }
-  if(others.length>1){
-    alert("นัดนี้มีผู้เข้าร่วม "+(others.length+1)+" คน\n\n"+
-      "การคุยพร้อมกันเกินสองคนต้องใช้ตัวรวมสัญญาณที่เซิร์ฟเวอร์ ซึ่งยังไม่มี\n"+
-      "ตอนนี้ให้ใช้ลิงก์ห้องประชุมข้างนอกที่ใส่ไว้ในนัดหมายแทน");
-    return;
-  }
-  await placeCall(others[0],TEAMNAME[others[0]]||"ผู้ร่วมประชุม",video);
+  vcJoin("v:mt:"+id, m.title);
 }
 window.joinMeet=joinMeet;
+/* ทักหาคนเดียว = ห้องเสียงที่มีแค่สองคน ใช้กลไกเดียวกันทั้งหมด */
+async function callPerson(uid,video){
+  const u=PEOPLE.find(x=>x.uid===uid); if(!u)return;
+  ensureDm(uid,u.name||u.email||uid);
+  await vcJoin("v:"+dmId(me.uid,uid), u.name||u.email||uid);
+  if(video&&!camOn)vcCam();
+}
+window.callPerson=callPerson;
 
 /* ══ ประชุม ══
    ระเบียนละหนึ่งการประชุม  mt_<ts>
@@ -2878,6 +3712,146 @@ $("mtTabs").addEventListener("click",e=>{
   drawMeet();
 });
 
+function zoomImg(src){
+  const d=document.createElement("div");
+  d.className="imgzoom"; d.onclick=()=>d.remove();
+  d.innerHTML=`<img src="${src}" alt="">`;
+  document.body.appendChild(d);
+}
+window.zoomImg=zoomImg;
+
+/* ══ ไฟล์แนบ ══
+   เพดานจริงของช่องเนื้อหาคือ 8,000 ตัวอักษร เผื่อไว้ให้เหลือขอบ
+   ถ้าเกินนี้เซิร์ฟเวอร์จะตัดกลางคัน แล้วรูปจะเสียโดยไม่มีใครรู้ว่าทำไม */
+const ATT_MAX=7600;
+let PENDING=null, REC=null, recChunks=[], recTimer=null;
+
+/* ลดขนาดรูปลงเรื่อย ๆ จนกว่าจะพอดีช่อง — เริ่มจากกว้างสุดที่ยังพอดูรู้เรื่อง
+   วนลดทีละขั้นแทนการเดาขนาดครั้งเดียว เพราะรูปแต่ละใบบีบได้ไม่เท่ากัน */
+async function shrinkImage(file){
+  const url=URL.createObjectURL(file);
+  try{
+    const img=await new Promise((res,rej)=>{
+      const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=url;
+    });
+    for(const w of [520,420,340,260,200,150]){
+      for(const q of [0.72,0.6,0.48,0.36]){
+        const sc=Math.min(1,w/img.naturalWidth);
+        const c=document.createElement("canvas");
+        c.width=Math.max(1,Math.round(img.naturalWidth*sc));
+        c.height=Math.max(1,Math.round(img.naturalHeight*sc));
+        c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+        const d=c.toDataURL("image/jpeg",q);
+        if(d.length<=ATT_MAX)return d;
+      }
+    }
+    return null;
+  } finally { URL.revokeObjectURL(url) }
+}
+async function pickImage(input){
+  const f=input.files&&input.files[0]; input.value="";
+  if(!f)return;
+  const box=$("wkPend");
+  box.innerHTML='<div class="pend-load">กำลังย่อรูป...</div>'; box.classList.add("on");
+  const d=await shrinkImage(f);
+  if(!d){
+    box.innerHTML='<div class="pend-load">รูปนี้ใหญ่เกินกว่าที่ระบบเก็บได้ ลองรูปที่เล็กกว่านี้</div>';
+    setTimeout(()=>{ if(!PENDING){box.classList.remove("on");box.innerHTML=""} },3800);
+    return;
+  }
+  PENDING={kind:"img",data:d}; drawPending();
+}
+window.pickImage=pickImage;
+
+/* ── เสียง ──
+   อัดด้วยอัตราบิตต่ำสุดที่ยังฟังรู้เรื่อง และตัดที่สิบวินาที
+   ยาวกว่านั้นจะเกินช่องเก็บ ระบบจึงหยุดให้เองแทนที่จะปล่อยแล้วส่งไม่ได้ */
+async function recVoice(){
+  if(REC){ stopRec(); return }
+  try{
+    const st=await navigator.mediaDevices.getUserMedia({audio:true});
+    const mime=["audio/webm;codecs=opus","audio/webm","audio/mp4"]
+      .find(m=>window.MediaRecorder&&MediaRecorder.isTypeSupported(m))||"";
+    REC=new MediaRecorder(st,mime?{mimeType:mime,audioBitsPerSecond:12000}:undefined);
+    recChunks=[];
+    REC.ondataavailable=e=>{ if(e.data.size)recChunks.push(e.data) };
+    REC.onstop=async()=>{
+      st.getTracks().forEach(t=>t.stop());
+      const blob=new Blob(recChunks,{type:mime||"audio/webm"});
+      const d=await new Promise(r=>{ const fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(blob) });
+      REC=null; $("wkMic").classList.remove("rec");
+      $("wkMic").innerHTML='<i class="ti ti-microphone"></i>';
+      if(d.length>ATT_MAX){
+        const box=$("wkPend");
+        box.innerHTML='<div class="pend-load">เสียงยาวเกินกว่าที่ระบบเก็บได้ ลองอัดสั้นลง</div>';
+        box.classList.add("on");
+        setTimeout(()=>{ if(!PENDING){box.classList.remove("on");box.innerHTML=""} },3800);
+        return;
+      }
+      PENDING={kind:"aud",data:d}; drawPending();
+    };
+    REC.start();
+    $("wkMic").classList.add("rec");
+    let sec=0;
+    $("wkMic").innerHTML='<i class="ti ti-player-stop"></i> 0s';
+    recTimer=setInterval(()=>{
+      sec++; $("wkMic").innerHTML='<i class="ti ti-player-stop"></i> '+sec+"s";
+      if(sec>=10)stopRec();
+    },1000);
+  }catch(e){ alert("เปิดไมค์ไม่ได้ — ต้องกดอนุญาตในเบราว์เซอร์ก่อน\n\n"+e.message) }
+}
+function stopRec(){
+  clearInterval(recTimer);
+  if(REC&&REC.state!=="inactive")REC.stop();
+}
+window.recVoice=recVoice;
+
+function drawPending(){
+  const box=$("wkPend");
+  if(!PENDING){ box.classList.remove("on"); box.innerHTML=""; return }
+  box.classList.add("on");
+  box.innerHTML=PENDING.kind==="img"
+    ? `<img src="${PENDING.data}" alt="">
+       <span>แนบรูปแล้ว — พิมพ์คำอธิบายได้ แล้วกดส่ง</span>
+       <button class="pend-x" onclick="clearPending()"><i class="ti ti-x"></i></button>`
+    : `<audio controls src="${PENDING.data}"></audio>
+       <span>อัดเสียงแล้ว</span>
+       <button class="pend-x" onclick="clearPending()"><i class="ti ti-x"></i></button>`;
+}
+function clearPending(){ PENDING=null; drawPending() }
+window.clearPending=clearPending; window.drawPending=drawPending;
+
+/* ══ กรองคำหยาบ ══
+   ตรวจก่อนส่ง ไม่ใช่ตรวจหลังส่งแล้วค่อยลบ เพราะข้อความที่ส่งไปแล้ว
+   มีคนเห็นเสมอ ต่อให้ลบทีหลังเร็วแค่ไหน
+
+   รายการคำครอบคลุมไทย อังกฤษ และคำที่เขียนเลี่ยงด้วยตัวเลขหรือสัญลักษณ์
+   ตัวตรวจทำให้เป็นตัวพิมพ์เล็ก ถอดสัญลักษณ์คั่น และแปลงเลขที่ใช้แทนตัวอักษรก่อนเทียบ
+   เพราะคนที่ตั้งใจเลี่ยงจะพิมพ์แบบ f-u-c-k หรือ sh1t เสมอ */
+const BAD_WORDS=[
+  /* ไทย */
+  "เหี้ย","สัส","สาด","ควย","หี","เย็ด","แม่ง","อีดอก","ระยำ","ชาติหมา",
+  "ไอ้เวร","อีเวร","มึงมัน","ตอแหล","กระหรี่","ดอกทอง","สันดาน","ไอ้สัตว์",
+  "อีสัตว์","หน้าหี","แตด","จู๋","จิ๋ม","ล่อกัน","เสือก","ปัญญาอ่อน",
+  /* อังกฤษ */
+  "fuck","shit","bitch","asshole","bastard","cunt","dick","pussy","whore",
+  "slut","motherfucker","retard","nigger","faggot","douchebag","jerkoff",
+  /* อื่น ๆ ที่เจอบ่อยในทีมข้ามชาติ */
+  "puta","mierda","merde","scheisse","cazzo","kurwa","blyat","chink",
+];
+/* ตัวเลขที่คนใช้แทนตัวอักษรเวลาเลี่ยงตัวกรอง */
+const LEET={"0":"o","1":"i","3":"e","4":"a","5":"s","7":"t","@":"a","$":"s","!":"i"};
+function normText(t){
+  return String(t||"").toLowerCase()
+    .replace(/[0134579@$!]/g,c=>LEET[c]||c)
+    /* ตัดสัญลักษณ์คั่นที่ใช้แทรกกลางคำ เช่น f.u.c.k หรือ ค-ว-ย */
+    .replace(/[\s._\-*+~^|\\\/()\[\]{}<>'"`,:;]/g,"");
+}
+function findBad(t){
+  const n=normText(t);
+  return BAD_WORDS.find(w=>n.includes(normText(w)))||"";
+}
+
 /* ══ ห้องคุย ══
    รายการห้องไม่ได้เก็บไว้ที่ไหน แต่คำนวณจากตำแหน่งกับแผนกทุกครั้ง
    ข้อดีคือพอเปลี่ยนแผนกใครสักคน ห้องของเขาเปลี่ยนตามทันทีโดยไม่ต้องไปแก้รายชื่อสมาชิก
@@ -2982,6 +3956,8 @@ function drawRooms(){
       return `<a class="rm ${r.id===curRoom?"on":""} ${u?"un":""}" onclick="goRoom('${esc(r.id)}')" title="${esc(r.d||"")}">
         ${hash?'<span class="hash">#</span>':`<i class="ti ${esc(r.ic)}"></i>`}
         <span class="nm">${esc(r.n)}</span>
+        ${(VOICE["v:"+r.id]||[]).length?`<span class="rm-v" title="มีคนอยู่ในห้องเสียง">
+          <i class="ti ti-volume"></i>${(VOICE["v:"+r.id]||[]).length}</span>`:""}
         ${u?`<span class="nav-badge on">${u>99?"99+":u}</span>`:""}</a>`}).join("")}
   </div>`).join("");
   const r=roomOf(curRoom);
@@ -2996,14 +3972,25 @@ function drawRooms(){
         <i class="ti ti-refresh"></i> โหลดรายการห้องใหม่</button>
       <button class="btn sm ghost" style="margin-top:14px" onclick="goRoom('team')">
         ไปห้องประกาศ</button></div>`;
-    const cw=$("wkCallWrap"); if(cw)cw.style.display="none";
+    const jv0=$("wkJoinV"); if(jv0)jv0.style.display="none";
     return;
   }
   $("wkTitle").innerHTML=r.id.startsWith("ch:")
     ? `<span class="hash big">#</span> ${esc(r.n)}`
     : `<i class="ti ${esc(r.ic)}"></i> ${esc(r.n)}`;
   $("wkWho").textContent=r.d||"";
-  const cw=$("wkCallWrap"); if(cw)cw.style.display=r.id.startsWith("dm:")?"":"none";
+  /* ทุกห้องมีห้องเสียงของตัวเอง ไม่ใช่แค่ห้องตัวต่อตัว — เข้าไปนั่งคนเดียวก็ได้
+     แล้วคนอื่นเห็นว่ามีคนอยู่ในนั้น จึงตามเข้ามาได้เอง เหมือน Discord */
+  const jv=$("wkJoinV");
+  if(jv){
+    jv.style.display="";
+    const inHere=vcRoom==="v:"+r.id;
+    const n=(VOICE["v:"+r.id]||[]).length;
+    jv.innerHTML=inHere?'<i class="ti ti-headphones-off"></i> ออกจากห้องเสียง'
+      :`<i class="ti ti-headphones"></i> เข้าห้องเสียง${n?" · "+n+" คน":""}`;
+    jv.onclick=inHere?()=>vcLeave():()=>joinRoomVoice();
+    jv.classList.toggle("primary",!inHere&&!!n);
+  }
 }
 function goRoom(id){
   curRoom=id; SEEN[id]=Date.now(); UNREAD[id]=0;
@@ -3031,7 +4018,8 @@ async function pollChat(force){
     CHROOMS=chRemember(fresh).sort((a,b)=>(a.n||"").localeCompare(b.n||"","th"));
     CHAT=kb.filter(k=>/^msg_/.test(k.id)).map(k=>{
       let m={}; try{ m=JSON.parse(k.keywords||"{}") }catch(e){}
-      return {id:k.id,tx:k.body||"",n:m.n||k.title||"",p:m.p||"",t:m.t||0,uid:m.u||"",
+      return {id:k.id,tx:unpadBody(k.body||""),n:m.n||k.title||"",p:m.p||"",
+        t:m.t||0,uid:m.u||"",a:m.a||"",cap:m.cap||"",
         /* ข้อความรุ่นก่อนมีระบบห้องไม่มีรหัสห้อง นับเป็นห้องรวม ไม่ปล่อยให้หาย */
         r:m.r||"team"};
     }).sort((a,b)=>a.t-b.t);
@@ -3044,7 +4032,7 @@ async function pollChat(force){
       if(m.t>(SEEN[m.r]||0))UNREAD[m.r]=(UNREAD[m.r]||0)+1;
     });
     if(force||JSON.stringify(ROOMS.map(r=>r.id))!==before)drawRooms(); else drawRooms();
-    drawChat();
+    drawChat(); checkNotify(); drawRight();
   }catch(e){
     if(force)$("wkLog").innerHTML=`<div class="empty">${denyMsg(e,"ห้องคุย")}</div>`;
   }
@@ -3065,29 +4053,63 @@ function drawChat(){
        การซ้ำหัวข้อความทุกบรรทัดทำให้บทสนทนาอ่านเหมือนรายการ ไม่เหมือนคนคุยกัน */
     const same=m.uid===last&&(m.t-lastT)<3e5;
     last=m.uid; lastT=m.t;
-    if(same)return `<div class="wk-m tight"><div class="tx">${esc(m.tx)}</div></div>`;
+    const bodyHtml=m.a==="img"
+      ? `<img class="msg-img" src="${esc(m.tx)}" alt="รูปที่แนบ" onclick="zoomImg(this.src)">
+         ${m.cap?`<div class="tx">${esc(m.cap)}</div>`:""}`
+      : m.a==="aud"
+      ? `<audio class="msg-aud" controls src="${esc(m.tx)}"></audio>
+         ${m.cap?`<div class="tx">${esc(m.cap)}</div>`:""}`
+      : `<div class="tx">${esc(m.tx)}</div>`;
+    if(same)return `<div class="wk-m tight">${bodyHtml}</div>`;
     return `<div class="wk-m">
       <div class="av">${esc((m.n||"?")[0].toUpperCase())}</div>
       <div class="bd"><div class="hd"><b>${esc(m.n)}</b>
         ${m.p?`<span class="ps">${esc(m.p)}</span>`:""}
         <span class="tm">${new Date(m.t).toLocaleString("th-TH",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</span></div>
-        <div class="tx">${esc(m.tx)}</div></div></div>`}).join("")
+        ${bodyHtml}</div></div>`}).join("")
     :`<div class="empty">ยังไม่มีใครพูดอะไรในห้องนี้<br><small>พิมพ์ข้อความแรกได้เลย</small></div>`;
   if(atEnd)box.scrollTop=box.scrollHeight;
 }
+/* อักษรความกว้างศูนย์ ใช้เติมให้ผ่านกติกาความยาวขั้นต่ำของเซิร์ฟเวอร์
+   ไม่ถูกนับเป็นช่องว่าง จึงรอดจาก .trim() และมองไม่เห็นบนหน้าจอ */
+const ZW="\u200b";
+function padBody(t){ return t.length>=10?t:t+ZW.repeat(10-t.length) }
+function unpadBody(t){ return String(t||"").replace(/\u200b+$/,"") }
+
 async function sendChat(){
-  const el=$("wkIn"), tx=el.value.trim(); if(!tx)return;
-  const btn=$("wkSend"); btn.disabled=true; el.value=""; el.style.height="auto";
+  const el=$("wkIn"), tx=el.value.trim();
+  if(!tx&&!PENDING)return;
+  /* ── กันคำหยาบก่อนส่ง ── */
+  const bad=findBad(tx);
+  if(bad){
+    warnBad(bad);
+    return;
+  }
+  const btn=$("wkSend"); btn.disabled=true;
+  const keep=el.value; el.value=""; el.style.height="auto";
   const inf=posInfo(me);
+  /* ไฟล์แนบเก็บแยกจากข้อความ เพราะช่องเนื้อหามีเพดานแปดพันตัวอักษร
+     ถ้ายัดรวมกัน ข้อความยาว ๆ กับรูปจะแย่งที่กันแล้วตัดกันเอง */
+  const att=PENDING; PENDING=null; drawPending();
   try{
     await api("/api/kb",{method:"POST",body:{
       id:"msg_"+Date.now()+"_"+Math.random().toString(36).slice(2,8),
-      title:(me.name||"ทีมงาน").slice(0,80), body:tx,
-      keywords:JSON.stringify({n:me.name||"",p:inf?inf.ab:"",t:Date.now(),u:me.uid||"",r:curRoom}).slice(0,395),
+      title:(me.name||"ทีมงาน").slice(0,80),
+      body:padBody(att?att.data:tx),
+      keywords:JSON.stringify({n:me.name||"",p:inf?inf.ab:"",t:Date.now(),u:me.uid||"",
+        r:curRoom,a:att?att.kind:"",cap:att?tx.slice(0,80):""}).slice(0,395),
       make:"__chat__", model:"", enabled:false }});
     await pollChat(true);
-  }catch(e){ el.value=tx; alert("ส่งไม่สำเร็จ: "+e.message) }
+  }catch(e){ el.value=keep; PENDING=att; drawPending(); alert("ส่งไม่สำเร็จ: "+e.message) }
   btn.disabled=false; el.focus();
+}
+/* บอกให้รู้ว่าติดตรงไหน โดยไม่ต้องพิมพ์คำนั้นซ้ำให้คนอื่นเห็น */
+function warnBad(w){
+  const box=$("wkWarn");
+  box.textContent="ข้อความนี้มีคำที่ไม่อนุญาตให้ใช้ในที่ทำงาน — แก้แล้วส่งใหม่ได้เลย";
+  box.classList.add("on");
+  clearTimeout(window.__badT);
+  window.__badT=setTimeout(()=>box.classList.remove("on"),4200);
 }
 
 /* ── สร้างห้องงาน ── */
@@ -3194,6 +4216,7 @@ function go(t){
   if(t==="finance")loadFinance();
   if(t==="chat")openChat();
   if(t==="meet"){ loadTeamNames(); loadMeet() }
+  if(t==="legal")$("legalPaper").innerHTML=legalHtml();
   crumb(t);
   try{ location.hash=t }catch(e){}
 }
@@ -3424,7 +4447,7 @@ async function loadUsers(){
     const arr=Array.isArray(res)?res:(res.users||[]);
     if(!Array.isArray(res))showWarnings(res.warnings);
     PEOPLE=arr;
-    drawTeam(); drawCustomers();
+    drawTeam(); drawCustomers(); drawRight();
   }catch(e){
     $("userRows").innerHTML=`<tr><td colspan="3" class="empty">โหลดไม่ได้: ${esc(e.message)}</td></tr>`;
     $("teamGrid").innerHTML=`<div class="empty">โหลดรายชื่อทีมไม่ได้<br><small>${esc(e.message)}</small></div>`;

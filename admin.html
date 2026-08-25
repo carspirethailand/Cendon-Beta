@@ -1398,6 +1398,7 @@ main{background-attachment:local}
 .tile-av{width:76px;height:76px;border-radius:22px;display:grid;place-items:center;
   font-family:var(--kd);font-size:30px;font-weight:600;color:var(--acc);
   background:var(--surface2);border:1px solid var(--line2)}
+.tile audio{display:none}
 .tile-nm{position:absolute;left:10px;bottom:9px;display:flex;align-items:center;gap:6px;
   font-size:12px;font-weight:500;color:#fff;background:rgba(5,5,6,.62);
   padding:4px 9px;border-radius:6px;backdrop-filter:blur(6px)}
@@ -3525,9 +3526,20 @@ function checkNotify(){
    ใครหายไปเกินสิบห้าวินาทีถือว่าออกไปแล้ว (ปิดแท็บ เน็ตหลุด ไฟดับ)
 
    สัญญาณจับคู่ยังฝากผ่านตารางเดิม  sig_<ถึงใคร>_<จากใคร>_<เวลา> */
+/* ── เส้นทางของสัญญาณเสียงและภาพ ──
+   STUN ใช้บอกว่าเราอยู่ที่ไหนบนอินเทอร์เน็ต พอทั้งสองฝ่ายรู้ที่อยู่กันก็ต่อตรงได้
+   แต่เครือข่ายบริษัทและมือถือบางเจ้าไม่ยอมให้ต่อตรง ต้องมีคนกลางส่งต่อให้ (TURN)
+   ถ้าไม่มี TURN อาการที่เจอคือ "ขึ้นว่าต่อติดแล้วแต่ไม่ได้ยินอะไรเลย"
+
+   ที่ใส่ไว้เป็นบริการสาธารณะฟรี ใช้ได้จริงแต่ช้าและไม่มีใครรับประกัน
+   ถ้าจะใช้กับทีมจริงจัง ควรเช่าบริการของตัวเองแล้วมาแทนที่ตรงนี้ */
 const ICE={iceServers:[
   {urls:"stun:stun.l.google.com:19302"},
-  {urls:"stun:stun1.l.google.com:19302"}]};
+  {urls:"stun:stun1.l.google.com:19302"},
+  {urls:"turn:openrelay.metered.ca:80",username:"openrelayproject",credential:"openrelayproject"},
+  {urls:"turn:openrelay.metered.ca:443",username:"openrelayproject",credential:"openrelayproject"},
+  {urls:"turn:openrelay.metered.ca:443?transport=tcp",username:"openrelayproject",credential:"openrelayproject"},
+],iceCandidatePoolSize:2};
 const VC_BEAT=5000, VC_GONE=15000;
 
 let PEERS={};            /* uid -> {pc, stream, name} */
@@ -3592,6 +3604,7 @@ async function vcLeave(quiet){
   if(shareTrack){ try{shareTrack.stop()}catch(e){} shareTrack=null }
   if(LOCAL&&!quiet){ LOCAL.getTracks().forEach(t=>t.stop()); LOCAL=null }
   camOn=false;
+  clearTiles();
   $("stage").hidden=true; $("stTime").textContent="";
   if(room)try{ await api("/api/kb/"+encodeURIComponent(vcId(room,me.uid)),{method:"DELETE"}) }catch(e){}
   drawRooms&&drawRooms();
@@ -3637,6 +3650,13 @@ async function newPC(uid,name,isOfferer){
       e.track.onended=()=>drawTiles();
     }
     drawTiles();
+  };
+  /* ต่อไม่ได้ทางตรงแล้วลองใหม่อีกครั้ง ก่อนจะยอมแพ้
+     บางครั้งรอบแรกล้มเพราะเครือข่ายเพิ่งสลับ ลองใหม่แล้วติดเลย */
+  pc.oniceconnectionstatechange=()=>{
+    if(pc.iceConnectionState==="failed"&&pc.restartIce){
+      try{ pc.restartIce() }catch(e){}
+    }
   };
   pc.onconnectionstatechange=()=>{
     if(pc.connectionState==="failed"){
@@ -3742,32 +3762,133 @@ async function sigHandle(kind,body,from,meta){
   }
 }
 
-/* ── ช่องของแต่ละคน ── */
+/* ── ช่องของแต่ละคน ──
+   กฎเหล็กของส่วนนี้: ห้ามล้าง innerHTML เด็ดขาด
+
+   สื่อที่กำลังเล่นอยู่ผูกกับ element ตัวนั้นจริง ๆ ไม่ใช่กับ HTML ที่เขียนไว้
+   ถ้าล้างแล้วสร้างใหม่ ทุกอย่างที่กำลังเล่นจะถูกทิ้ง แล้วเริ่มนับหนึ่งใหม่
+   ในเมื่อฟังก์ชันนี้ถูกเรียกทุกสองวินาที เสียงจึงไม่มีวันดังทัน
+
+   วิธีที่ถูกคือหาว่ามีใครเพิ่มมาหรือหายไป แล้วแก้เฉพาะส่วนนั้น
+   ของที่กำลังเล่นอยู่จะไม่ถูกแตะเลย */
+const TILES={};              /* uid -> {root,video,audio,ph,nm} */
+function tileMake(uid,name,self){
+  const d=document.createElement("div");
+  d.className="tile"+(self?" self":"");
+  d.dataset.uid=uid;
+  d.innerHTML=`<video autoplay playsinline${self?" muted":""}></video>
+    <audio autoplay></audio>
+    <div class="tile-ph"><div class="tile-av"></div></div>
+    <div class="tile-nm"><span class="nmx"></span></div>`;
+  const rec={root:d,video:d.querySelector("video"),audio:d.querySelector("audio"),
+    ph:d.querySelector(".tile-ph"),av:d.querySelector(".tile-av"),
+    nm:d.querySelector(".nmx"),extra:d.querySelector(".tile-nm")};
+  /* เสียงของตัวเองต้องไม่เล่นออกลำโพง ไม่งั้นจะได้ยินเสียงตัวเองสะท้อนกลับ */
+  if(self)rec.audio.muted=true;
+  TILES[uid]=rec;
+  return rec;
+}
+/* ขอให้เล่น แล้วถ้าเบราว์เซอร์ปฏิเสธ ให้รอจังหวะที่ผู้ใช้แตะจอครั้งถัดไปแล้วลองใหม่
+   เบราว์เซอร์สมัยใหม่ห้ามเล่นเสียงเองก่อนที่ผู้ใช้จะแตะอะไรสักอย่าง */
+const waitTap=[];
+function playSoft(el){
+  if(!el||!el.srcObject)return;
+  const t=el.play();
+  if(t&&t.catch)t.catch(()=>{ if(waitTap.indexOf(el)<0)waitTap.push(el) });
+}
+["click","touchend","keydown"].forEach(ev=>document.addEventListener(ev,()=>{
+  while(waitTap.length){ const el=waitTap.pop(); try{ el.play() }catch(e){} }
+},{passive:true}));
+
+/* อีกฝ่ายเปิดกล้องอยู่หรือเปล่า — ถามจากสถานะที่เขาประกาศไว้เอง
+   ไม่ใช่เดาจาก track.muted ซึ่งเชื่อไม่ได้
+   เมื่อฝั่งส่งถอดภาพออกจากช่อง (replaceTrack null) ฝั่งรับยังเห็น track เป็นปกติอยู่
+   ภาพเฟรมสุดท้ายจึงค้างอยู่บนจอ ทั้งที่อีกฝ่ายปิดกล้องไปแล้ว */
+function peerCam(uid){
+  const list=VOICE[vcRoom]||[];
+  const p=list.find(x=>x.uid===uid);
+  return p?!!p.cam:null;          /* null = ยังไม่รู้ ค่อยถอยไปดู track แทน */
+}
 function drawTiles(){
   const box=$("tiles"); if(!box)return;
+  /* ออกจากห้องไปแล้วไม่ต้องวาดอะไรอีก
+     ถ้าไม่กันไว้ การปิดสายจะไปกระตุ้นให้วาดใหม่ แล้วช่องของตัวเองจะโผล่กลับมา */
+  if(!vcRoom){ clearTiles(); return }
   const list=[{uid:me.uid,name:(me.name||"คุณ"),self:true}]
     .concat(Object.keys(PEERS).map(u=>({uid:u,name:PEERS[u].name,rec:PEERS[u]})));
   $("stCount").textContent=list.length+" คน";
-  /* จำนวนคอลัมน์ตามจำนวนคน — สองคนวางข้างกัน สี่คนเป็นตารางสองแถว
-     ให้แต่ละช่องใหญ่ที่สุดเท่าที่จะเป็นไปได้เสมอ */
   box.style.gridTemplateColumns="repeat("+Math.min(3,Math.ceil(Math.sqrt(list.length)))+",1fr)";
-  box.innerHTML=list.map(x=>{
-    const on=x.self?camOn:(x.rec&&x.rec.stream&&x.rec.stream.getVideoTracks().some(t=>t.readyState==="live"&&!t.muted));
-    return `<div class="tile ${x.self?"self":""}" data-uid="${esc(x.uid)}">
-      <video id="v_${esc(x.uid)}" autoplay playsinline ${x.self?"muted":""} class="${on?"on":""}"></video>
-      <div class="tile-ph ${on?"off":""}">
-        <div class="tile-av">${esc((x.name||"?")[0].toUpperCase())}</div>
-      </div>
-      <div class="tile-nm">${esc(x.name)}${x.self?" (คุณ)":""}
-        ${x.self&&!micOn?'<i class="ti ti-microphone-off"></i>':""}
-        ${x.rec&&x.rec.failed?'<span class="tile-bad">ต่อไม่ติด</span>':""}</div>
-    </div>`}).join("");
-  /* ผูกภาพเข้าช่องหลังวาดเสร็จ — ตั้ง srcObject ก่อนที่ element จะอยู่ในหน้าไม่ได้ */
-  const mv=$("v_"+me.uid);
-  if(mv&&LOCAL&&mv.srcObject!==LOCAL)mv.srcObject=LOCAL;
-  Object.keys(PEERS).forEach(u=>{
-    const v=$("v_"+u);
-    if(v&&PEERS[u].stream&&v.srcObject!==PEERS[u].stream)v.srcObject=PEERS[u].stream;
+
+  /* ใครหายไปจากห้อง เอาช่องออก พร้อมตัดสื่อทิ้งให้เรียบร้อย */
+  Object.keys(TILES).forEach(u=>{
+    if(list.some(x=>x.uid===u))return;
+    const t=TILES[u];
+    try{ t.video.srcObject=null; t.audio.srcObject=null }catch(e){}
+    t.root.remove(); delete TILES[u];
+  });
+
+  list.forEach(x=>{
+    const t=TILES[x.uid]||tileMake(x.uid,x.name,!!x.self);
+    if(t.root.parentNode!==box)box.appendChild(t.root);
+
+    /* ── เสียง ──
+       แยกออกมาไว้ที่ <audio> ของตัวเอง ไม่ผูกกับการเปิดปิดกล้อง
+       เพราะช่องวิดีโอถูกซ่อนตอนปิดกล้อง แล้วบางเบราว์เซอร์หยุดเล่นสื่อที่ถูกซ่อน */
+    const stream=x.self?LOCAL:(x.rec&&x.rec.stream);
+    if(!x.self&&stream){
+      const at=stream.getAudioTracks();
+      if(at.length){
+        if(!t.aStream||t.aTrackId!==at[0].id){
+          t.aStream=new MediaStream([at[0]]); t.aTrackId=at[0].id;
+          t.audio.srcObject=t.aStream;
+        }
+        playSoft(t.audio);
+      }
+    }
+
+    /* ── ภาพ ──
+       ตั้ง srcObject ใหม่เฉพาะตอนที่สตรีมเปลี่ยนจริง ไม่ใช่ทุกครั้งที่วาด */
+    const vt=stream?stream.getVideoTracks().filter(v=>v.readyState==="live"):[];
+    const pc=x.self?null:peerCam(x.uid);
+    const live=vt.length&&(x.self?(camOn||!!shareTrack)
+      :(pc===null?!vt[0].muted:pc));
+    if(vt.length){
+      if(!t.vStream||t.vTrackId!==vt[0].id){
+        t.vStream=new MediaStream([vt[0]]); t.vTrackId=vt[0].id;
+        t.video.srcObject=t.vStream;
+      }
+      if(live)playSoft(t.video);
+    }else if(t.vTrackId){
+      t.video.srcObject=null; t.vStream=null; t.vTrackId="";
+    }
+    t.video.classList.toggle("on",!!live);
+    t.ph.classList.toggle("off",!!live);
+
+    /* ── ข้อความบนช่อง ── เขียนทับเฉพาะตอนที่เปลี่ยนจริง ลดการวาดที่ไม่จำเป็น */
+    const label=(x.name||"?")+(x.self?" (คุณ)":"");
+    if(t.nm.textContent!==label)t.nm.textContent=label;
+    const ini=(x.name||"?")[0].toUpperCase();
+    if(t.av.textContent!==ini)t.av.textContent=ini;
+    const bad=x.rec&&x.rec.failed;
+    const mute=x.self&&!micOn;
+    const extra=(mute?"muted":"")+(bad?"|bad":"");
+    if(t.extraKey!==extra){
+      t.extraKey=extra;
+      t.root.querySelectorAll(".tile-x").forEach(e=>e.remove());
+      if(mute)t.extra.insertAdjacentHTML("beforeend",
+        '<i class="ti ti-microphone-off tile-x"></i>');
+      if(bad)t.extra.insertAdjacentHTML("beforeend",
+        '<span class="tile-bad tile-x">ต่อไม่ติด — เครือข่ายไม่ยอมให้ต่อถึงกัน</span>');
+    }
+  });
+}
+/* ล้างช่องทั้งหมดตอนออกจากห้อง ไม่งั้นเข้าห้องใหม่แล้วจะเจอช่องเก่าค้าง */
+/* เรียกก่อน TILES ถูกใช้ที่ไหนก็ได้ จึงต้องประกาศไว้ให้เห็นทั้งไฟล์ */
+function clearTiles(){
+  Object.keys(TILES).forEach(u=>{
+    const t=TILES[u];
+    try{ t.video.srcObject=null; t.audio.srcObject=null }catch(e){}
+    t.root.remove(); delete TILES[u];
   });
 }
 

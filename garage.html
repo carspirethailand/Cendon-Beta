@@ -2870,10 +2870,6 @@ html[data-level="basic"] .hfree{
 .su-p.ghost{background:rgba(255,255,255,.05);color:#DCE9F8;
   border-color:rgba(150,190,240,.22)}
 .su-p.ghost:hover{background:rgba(255,255,255,.1)}
-.su-p-off{opacity:.42;cursor:default;pointer-events:none}
-.su-p-off:hover{transform:none;box-shadow:none}
-.su-p-tag{margin-left:auto;font-size:10.5px;font-weight:700;letter-spacing:.04em;
-  text-transform:uppercase;opacity:.8}
 
 .su-or{display:flex;align-items:center;gap:12px;margin:16px 0;
   font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;
@@ -4403,6 +4399,7 @@ window.spireI18nCoverage=code=>{
         <span class="nav-ind" id="navInd"></span>
         <a href="index.html" data-view="home"><i class="ti ti-layout-dashboard"></i> <span data-i18n="nav.home">หน้าหลัก</span></a>
         <a href="garage.html" data-view="garage" class="active"><i class="ti ti-car-garage"></i> <span data-i18n="nav.garage">การาจ</span></a>
+        <a href="technicians.html"><i class="ti ti-tool"></i> <span>ช่าง</span></a>
         <a href="news.html" data-view="magazine"><i class="ti ti-book-2"></i> <span data-i18n="nav.magazine">นิตยสาร</span></a>
         <a href="spares.html" data-view="shop"><i class="ti ti-shopping-cart"></i> <span data-i18n="nav.shop">ร้านค้า</span></a>
       </div>
@@ -4566,9 +4563,7 @@ let auth=null,useFb=false;
     else go();
   });
 })();
-/* ค่าตั้งต้นต้องมาจากตัวเลือกภาษาชุดกลาง ไม่ใช่ "th" ตายตัว
-   ไม่งั้น applyLang() ตอนบูตจะเขียน "th" ทับสิ่งที่ชุดกลางเลือกไว้ */
-let currentUser=LS.get("cachedUser",null),lang=LS.get("lang",(["th","en","ja","zh","de","es"].indexOf((window.spireLang&&window.spireLang())||"")>=0?window.spireLang():"th"));
+let currentUser=LS.get("cachedUser",null),lang=LS.get("lang","th");
 try{window.BACKEND_URL=BACKEND_URL;Object.defineProperty(window,"spireAuth",{configurable:true,get:function(){return auth}});Object.defineProperty(window,"auth",{configurable:true,get:function(){return auth}});Object.defineProperty(window,"lang",{configurable:true,get:function(){return lang},set:function(v){lang=v}});Object.defineProperty(window,"currentUser",{configurable:true,get:function(){return currentUser},set:function(v){currentUser=v}});window.spireAwaitUser=function(ms){return new Promise(function(res){try{if(!auth)return res(null);if(auth.currentUser)return res(auth.currentUser);var done=false;var t=setTimeout(function(){if(done)return;done=true;res(auth.currentUser||null)},ms||8000);var un=auth.onAuthStateChanged(function(u){if(done)return;done=true;clearTimeout(t);try{un&&un()}catch(e){}res(u||null)});}catch(e){res(null)}})};}catch(e){}
 let currentTheme = LS.get("theme", "warm");
 let wireframeOpacity = LS.get("opacity", 0.15);
@@ -5394,16 +5389,7 @@ async function signIn(){
   if(!useFb){toast((window.spireT?window.spireT("ระบบล็อกอินไม่พร้อม","Auth unavailable"):(lang==="en"?"Auth unavailable":"ระบบล็อกอินไม่พร้อม")),"ti-alert-triangle");return}
   if(location.protocol==="file:"){toast("ล็อกอิน Google ต้องเปิดผ่าน localhost/เว็บจริง (file:// ใช้ไม่ได้) — แต่ใช้แชต/การาจได้เลย","ti-info-circle");return}
   const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:"select_account"});
-  try{await auth.signInWithPopup(p)}catch(e){
-    const code=(e&&e.code)||"unknown";
-    if(code==="auth/popup-closed-by-user"||code==="auth/cancelled-popup-request")return;
-    /* ของเดิมต่อ e.code ดิบ ๆ เข้าไปในข้อความ error ที่ไม่ใช่ของ Firebase ไม่มี .code
-       ผู้ใช้จึงเห็นคำว่า "ล็อกอินไม่สำเร็จ: undefined" ซึ่งไม่บอกอะไรเลย
-       ใช้ตัวแปลข้อความชุดเดียวกับหน้าล็อกอินหลัก จะได้พูดภาษาเดียวกันทั้งแอป */
-    if(code==="auth/operation-not-allowed"||code==="auth/admin-restricted-operation")
-      authMarkDead("google");
-    toast(authMsg(code)||L("เข้าสู่ระบบไม่สำเร็จ","Sign-in failed"),"ti-alert-triangle");
-  }}
+  try{await auth.signInWithPopup(p)}catch(e){if(e.code==="auth/popup-closed-by-user")return;toast("ล็อกอินไม่สำเร็จ: "+e.code,"ti-alert-triangle")}}
 window.signIn=signIn;
 ($("signinBtn")||{}).onclick=signIn;
 ($("logoutBtn")||{}).onclick=async()=>{if(useFb)await auth.signOut();$("dd").classList.remove("show");switchView("home");toast((window.spireT?window.spireT("ออกจากระบบแล้ว","Logged out"):(lang==="en"?"Logged out":"ออกจากระบบแล้ว")),"ti-logout")};
@@ -5943,21 +5929,6 @@ let authBusy=false, authErr="";
 
 /* ข้อความผิดพลาดของ Firebase เป็นรหัสภาษาอังกฤษล้วน แปลให้อ่านรู้เรื่อง
    ที่สำคัญคือบอกด้วยว่าต้องทำอะไรต่อ ไม่ใช่แค่บอกว่าผิด */
-/* ── จำวิธีเข้าระบบที่ยังไม่ได้เปิด ──
-   เก็บใน sessionStorage ไม่ใช่ localStorage เพราะถ้าเจ้าของระบบเพิ่งไปเปิด provider
-   ผู้ใช้แค่เปิดแท็บใหม่ก็ได้ปุ่มกลับมาครบ ไม่ต้องรอให้ใครมาบอกให้ล้างแคช */
-const AUTH_DEAD_KEY="spire_auth_off";
-function authDeadList(){
-  try{ return JSON.parse(sessionStorage.getItem(AUTH_DEAD_KEY)||"[]") }catch(e){ return [] }
-}
-function authDead(kind){ return authDeadList().indexOf(kind)>=0 }
-function authMarkDead(kind){
-  if(!kind||authDead(kind))return;
-  try{
-    const l=authDeadList(); l.push(kind);
-    sessionStorage.setItem(AUTH_DEAD_KEY,JSON.stringify(l));
-  }catch(e){}
-}
 function authMsg(code){
   const M={
     "auth/invalid-email":["อีเมลไม่ถูกต้อง","That email doesn't look right"],
@@ -5971,8 +5942,7 @@ function authMsg(code){
     "auth/popup-blocked":["เบราว์เซอร์บล็อกหน้าต่างล็อกอิน กรุณาอนุญาตป๊อปอัป","Your browser blocked the sign-in window — allow pop-ups"],
     "auth/too-many-requests":["ลองมากเกินไป รอสักครู่แล้วลองใหม่","Too many attempts — wait a moment and try again"],
     "auth/network-request-failed":["เชื่อมต่อไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองใหม่","Can't connect — check your internet and try again"],
-    "auth/operation-not-allowed":["วิธีนี้ยังเปิดให้ใช้ไม่ได้ ตอนนี้เข้าด้วย Google ได้เลย","That method isn't available yet — use Google for now"],
-    "auth/admin-restricted-operation":["วิธีนี้ยังเปิดให้ใช้ไม่ได้ ตอนนี้เข้าด้วย Google ได้เลย","That method isn't available yet — use Google for now"],
+    "auth/operation-not-allowed":["วิธีนี้ยังไม่ได้เปิดใช้งานในระบบ","That sign-in method isn't enabled yet"],
     "auth/invalid-phone-number":["เบอร์โทรไม่ถูกต้อง","That phone number isn't valid"],
     "auth/invalid-verification-code":["รหัสยืนยันไม่ถูกต้อง","That verification code is wrong"],
     "auth/unauthorized-domain":["โดเมนนี้ยังไม่ได้รับอนุญาตใน Firebase — เพิ่มโดเมนที่ Authentication → Settings → Authorized domains",
@@ -6083,12 +6053,7 @@ async function providerSignIn(kind){
       try{ await auth.signInWithRedirect(p); return }
       catch(err){ authErr=authMsg((err&&err.code)||code) }
     }
-    else if(code!=="auth/popup-closed-by-user"){
-      /* ระบบยังไม่ได้เปิดวิธีนี้ — จำไว้ ผู้ใช้จะได้ไม่ต้องมากดซ้ำแล้วเจอกำแพงเดิม */
-      if(code==="auth/operation-not-allowed"||code==="auth/admin-restricted-operation")
-        authMarkDead(kind);
-      authErr=authMsg(code);
-    }
+    else if(code!=="auth/popup-closed-by-user"){ authErr=authMsg(code) }
   }
   authBusy=false; render();
 }
@@ -6110,13 +6075,7 @@ async function emailSubmit(){
     }else{
       await auth.signInWithEmailAndPassword(mail.trim(),pass);
     }
-  }catch(e){
-    const code=(e&&e.code)||"unknown";
-    /* สมัครด้วยอีเมลถูกปิดอยู่ ก็ควรบอกให้ไปทางที่เปิดอยู่ แทนที่จะปล่อยให้ลองใหม่เรื่อย ๆ */
-    if(code==="auth/operation-not-allowed"||code==="auth/admin-restricted-operation")
-      authMarkDead("email");
-    authErr=authMsg(code);
-  }
+  }catch(e){ authErr=authMsg(e&&e.code||"unknown") }
   authBusy=false; render();
 }
 
@@ -6181,13 +6140,7 @@ async function phoneGo(){
       if(!phoneConfirm)throw {code:"auth/invalid-verification-code"};
       await phoneConfirm.confirm(code);
     }
-  }catch(e){
-    const pc=(e&&e.code)||"unknown";
-    if(pc==="auth/operation-not-allowed"||pc==="auth/admin-restricted-operation"){
-      authMarkDead("phone"); phase="auth";
-    }
-    authErr=authMsg(pc);
-  }
+  }catch(e){ authErr=authMsg(e&&e.code||"unknown") }
   authBusy=false; render();
 }
 
@@ -6348,27 +6301,9 @@ function render(){
 function wire(){
   const w=$("suWrap"); if(!w)return;
   /* ── หน้าเข้าสู่ระบบ ── */
-  /* ── ปุ่มที่ระบบยังไม่ได้เปิดให้ใช้ ──
-     Firebase ตอบ auth/operation-not-allowed เมื่อ provider นั้นยังไม่ถูกเปิดใน Console
-     ของเดิมปล่อยให้ผู้ใช้กดชนกำแพงทีละปุ่มจนครบ โดยไม่มีอะไรบอกว่าปุ่มไหนใช้ได้จริง
-     ตอนนี้จำไว้ว่าอันไหนตาย แล้วหรี่มันลงพร้อมป้ายกำกับ เหลือทางที่เดินได้ให้เห็นชัด */
-  w.querySelectorAll("[data-prov]").forEach(b=>{
-    const kind=b.dataset.prov;
-    if(authDead(kind)){
-      b.disabled=true;
-      b.classList.add("su-p-off");
-      if(!b.querySelector(".su-p-tag")){
-        const tag=document.createElement("span");
-        tag.className="su-p-tag";
-        tag.textContent=L("ยังไม่เปิด","not available");
-        b.appendChild(tag);
-      }
-      return;
-    }
-    b.onclick=()=>{
-      if(kind==="phone"){ phase="phone"; phoneStage=0; authErr=""; render(); return }
-      providerSignIn(kind);
-    };
+  w.querySelectorAll("[data-prov]").forEach(b=>b.onclick=()=>{
+    if(b.dataset.prov==="phone"){ phase="phone"; phoneStage=0; authErr=""; render(); return }
+    providerSignIn(b.dataset.prov);
   });
   /* รูปโมโนลิธจะโผล่ก็ต่อเมื่อโหลดสำเร็จจริง ถ้าไฟล์ยังไม่ขึ้นเซิร์ฟเวอร์
      ให้ทิ้งไว้เป็นเลข 1 ที่วาดด้วย CSS แทน จะได้ไม่เหลือกรอบดำเปล่า ๆ
@@ -15672,5 +15607,28 @@ window.spireApplyPrimary=()=>apply(read());
 .send,.w-send,.hist-new,.side-new{background:var(--c-grad) !important;color:var(--on-acc,#fff) !important}
 .p-mark,.hint-logo,.side-mark{color:var(--c-acc)}
 </style>
+<a href="technicians.html" id="techShortcut" title="ค้นหาช่าง & นัดหมาย"
+  style="position:fixed;right:18px;bottom:22px;z-index:50;display:flex;align-items:center;gap:8px;
+  padding:12px 16px;border-radius:999px;background:linear-gradient(135deg,#E8943C,#D95E3C);color:#fff;
+  font-weight:700;font-size:14px;text-decoration:none;box-shadow:0 12px 28px -10px rgba(217,94,60,.55);
+  font-family:Kanit,system-ui,sans-serif">
+  <i class="ti ti-calendar-plus" style="font-size:18px"></i> นัดช่าง
+</a>
+<script>
+/* seed ช่างเริ่มต้นให้ AI ใน chat ใช้ได้ทันทีแม้ยังไม่เปิดหน้าช่าง */
+(function(){
+  try{
+    if(localStorage.getItem("spire_technicians"))return;
+    localStorage.setItem("spire_technicians",JSON.stringify([
+      {id:"t1",name:"ช่างบอล อู่บ้านสวน",role:"ช่างซ่อมทั่วไป / ช่วงล่าง",area:"กรุงเทพฯ",district:"ลาดพร้าว",distanceKm:3.2,rating:4.9,reviews:128,jobs:420,priceFrom:350,tags:["ช่วงล่าง","เบรก","ทั่วไป"],badges:["nearby","verified"],categories:["nearby","suspension"],years:12,phone:"081-234-5678",bio:"อู่เล็กคุณภาพ เน้นช่วงล่าง",responseMin:12},
+      {id:"t2",name:"Pro Auto Electric — ช่างเกมส์",role:"ช่างระบบไฟฟ้า",area:"นนทบุรี",district:"เมืองนนทบุรี",distanceKm:8.5,rating:4.95,reviews:86,jobs:310,priceFrom:500,tags:["ไฟ","แบตเตอรี่","เซ็นเซอร์"],badges:["pro","verified","urgent"],categories:["pro","electric","urgent"],years:9,phone:"089-111-2233",bio:"ระบบไฟฟ้ามืออาชีพ รับงานด่วน",responseMin:5},
+      {id:"t3",name:"ด่วน 24 ชม. — ช่างมิค",role:"ช่างฉุกเฉิน",area:"กรุงเทพฯ",district:"ห้วยขวาง",distanceKm:5.1,rating:4.7,reviews:210,jobs:890,priceFrom:400,tags:["ด่วน","ยาง","แบต"],badges:["urgent","nearby"],categories:["urgent","nearby"],years:7,phone:"086-999-8877",bio:"ฉุกเฉิน 24 ชม.",responseMin:3},
+      {id:"t4",name:"สีสวย การาจ — มาสเตอร์เอ",role:"ตัวถัง / พ่นสี",area:"สมุทรปราการ",district:"บางพลี",distanceKm:18,rating:4.85,reviews:64,jobs:190,priceFrom:2500,tags:["ตัวถัง","สี"],badges:["pro","verified"],categories:["pro","body"],years:15,phone:"082-555-6677",bio:"อู่ตัวถังมาตรฐานประกัน",responseMin:20},
+      {id:"t5",name:"Detail Lab by จอย",role:"ล้างรถ / ดีเทล",area:"ปทุมธานี",district:"รังสิต",distanceKm:22,rating:4.8,reviews:152,jobs:560,priceFrom:299,tags:["ดีเทล","เคลือบแก้ว"],badges:["nearby","verified"],categories:["detail","nearby"],years:5,phone:"083-222-3344",bio:"ดีเทลลิ่งงานละเอียด",responseMin:15},
+      {id:"t8",name:"อู่ใจดี — ช่างแดง",role:"ซ่อมทั่วไป",area:"กรุงเทพฯ",district:"บางกะปิ",distanceKm:4.8,rating:4.6,reviews:73,jobs:280,priceFrom:250,tags:["ทั่วไป","น้ำมันเครื่อง"],badges:["nearby"],categories:["nearby","other"],years:20,phone:"081-888-9900",bio:"อู่ชุมชน ราคาย่อมเยา",responseMin:30}
+    ]));
+  }catch(e){}
+})();
+</script>
 </body>
 </html>

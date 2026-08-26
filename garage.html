@@ -408,6 +408,37 @@ a{color:inherit;text-decoration:none}button{font-family:inherit;cursor:pointer;b
 
 /* ===== 3/4 WIREFRAME CARD BACKGROUNDS ===== */
 .gcard-wrap{position:relative;overflow:hidden}
+/* ── การ์ดรถแนวนอน ──
+   สามชิ้นเรียงจากซ้าย: ประเภทรถ · ชื่อรถ · ทางเข้าไปดูต่อ
+   ทั้งใบเป็นปุ่มเดียว จึงกดที่ไหนก็เข้าได้ ไม่ต้องเล็ง */
+.gdeck{
+  width:100%;display:flex;align-items:center;gap:13px;
+  padding:13px 14px;margin-bottom:10px;
+  border:1px solid var(--line);border-radius:var(--radius,18px);
+  background:var(--surface);box-shadow:var(--shadow-sm);
+  cursor:pointer;text-align:left;font-family:inherit;color:var(--ink);
+  transition:transform .16s cubic-bezier(.34,1.3,.5,1),border-color .16s}
+.gdeck:hover{border-color:var(--accent)}
+.gdeck:active{transform:scale(.985)}
+.gd-ic{
+  width:44px;height:44px;flex:0 0 44px;border-radius:14px;
+  display:grid;place-items:center;font-size:23px;color:#fff;
+  background:var(--grad)}
+.gd-t{flex:1;min-width:0}
+.gd-t b{display:block;font-size:15px;font-weight:700;letter-spacing:-.01em;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gd-t small{display:block;font-size:12px;color:var(--muted);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gd-go{
+  width:36px;height:36px;flex:0 0 36px;border-radius:12px;
+  display:grid;place-items:center;font-size:19px;
+  color:var(--accent);background:var(--surface-2);border:1px solid var(--line-2)}
+@media(max-width:520px){
+  .gdeck{gap:11px;padding:11px 12px;margin-bottom:8px}
+  .gd-ic{width:40px;height:40px;flex:0 0 40px;font-size:21px;border-radius:13px}
+  .gd-t b{font-size:14px}.gd-t small{font-size:11px}
+  .gd-go{width:32px;height:32px;flex:0 0 32px;font-size:17px}
+}
 .ccard{position:relative;overflow:hidden}
 .gcar-wireframe-bg {
   position: absolute;
@@ -3592,14 +3623,15 @@ button.lg-card:active,.cl-card:active{
   --m-pad:14px;          /* ขอบซ้ายขวาของหน้า */
 
   /* ตัวอักษร — เทียบจาก Grab/Uber โดยตรง ไม่ใช่ย่อจากสเกลเดสก์ท็อป */
-  --m-t-lbl:10px;        /* ชื่อแท็บใต้ไอคอน */
-  --m-t-xs:11px;         /* ป้ายกำกับ */
-  --m-t-sm:12px;         /* คำอธิบายรอง */
-  --m-t:14px;            /* เนื้อความ */
-  --m-t-md:15px;         /* หัวข้อในแถว */
-  --m-t-lg:17px;         /* หัวการ์ด */
-  --m-t-xl:20px;         /* หัวจอ */
-  --m-num:22px;          /* ตัวเลขเด่น */
+  /* ย่อลงหนึ่งระดับทั้งแถว ให้ตรงกับหน้าหลัก */
+  --m-t-lbl:9.5px;       /* ชื่อแท็บใต้ไอคอน */
+  --m-t-xs:10.5px;       /* ป้ายกำกับ */
+  --m-t-sm:11.5px;       /* คำอธิบายรอง */
+  --m-t:13px;            /* เนื้อความ */
+  --m-t-md:14px;         /* หัวข้อในแถว */
+  --m-t-lg:15.5px;       /* หัวการ์ด */
+  --m-t-xl:18px;         /* หัวจอ */
+  --m-num:20px;          /* ตัวเลขเด่น */
 
   --m-line:rgba(255,255,255,.08);
   --m-fill:rgba(255,255,255,.055);
@@ -5253,6 +5285,17 @@ function selCar(){const id=LS.get("selCar","");return garage().find(c=>c.id===id
 function renderCarSel(){const el=$("carSel");if(!el)return;const g=garage(),cur=LS.get("selCar","");
   el.innerHTML=`<option value="">${(window.spireT?window.spireT("ไม่ระบุรถ","No car"):(lang==="en"?"No car":"ไม่ระบุรถ"))}</option>`+g.map(c=>`<option value="${c.id}" ${c.id===cur?"selected":""}>${esc(c.name)}</option>`).join("")}
 
+/* ชื่อและไอคอนประจำประเภทรถ สำหรับการ์ดในหน้าการาจ
+   ใช้ไอคอนเส้นแทนภาพโครงรถของเดสก์ท็อป เพราะย่อลงมาขนาดนี้
+   ภาพโครงรถจะกลายเป็นก้อนเส้นที่แยกกระบะกับเก๋งไม่ออก */
+const GD_BODY={
+  sedan:{th:"ซีดาน",en:"Sedan",ic:"ti-car"},
+  hatchback:{th:"แฮทช์แบ็ก",en:"Hatchback",ic:"ti-car"},
+  suv:{th:"เอสยูวี",en:"SUV",ic:"ti-car-suv"},
+  pickup:{th:"กระบะ",en:"Pickup",ic:"ti-car-crane"},
+  mpv:{th:"เอ็มพีวี",en:"MPV",ic:"ti-bus"},
+  ev:{th:"ไฟฟ้า",en:"Electric",ic:"ti-charging-pile"}
+};
 function renderGarage(){if(!document.getElementById("garageList"))return;const g=garage();const w=$("garageList");if(!w)return;
   if(!g.length){
     w.innerHTML=`<div class="card" style="text-align:center;color:var(--muted);margin-bottom:6px">${tr("garage.empty")}</div>`;
@@ -5261,17 +5304,34 @@ function renderGarage(){if(!document.getElementById("garageList"))return;const g
   }
   w.innerHTML=g.map(c=>{
     const bodyStyle = c.type || getBodyStyle(c.name);
-    const wireframeSvg = WIREFRAME_SVGs[bodyStyle] || WIREFRAME_SVGs.sedan;
-    return `<div class="card gcard-wrap" style="margin-bottom:14px;">${wireframeSvg}
-      <div class="gcar" style="position:relative; z-index:1;"><div class="gi"><i class="ti ti-car"></i></div>
-      <div style="flex:1"><h4>${esc(c.name)}</h4><div class="gs">${esc(c.year||"-")} · ${c.mileage?Number(c.mileage).toLocaleString("en-US"):"-"} กม.</div></div>
-      <button class="btn primary" data-diag2="${c.id}" style="padding:8px 14px"><i class="ti ti-stethoscope"></i> ${(window.spireT?window.spireT("วินิจฉัย","Diagnose"):(lang==="en"?"Diagnose":"วินิจฉัย"))}</button>
-      <button class="btn danger" data-del="${c.id}" style="padding:8px 12px"><i class="ti ti-trash"></i></button></div>
-      <div class="ghist" style="position:relative; z-index:1;"><div class="h">${tr("garage.hist")}</div>${(c.history&&c.history.length)?c.history.slice(0,8).map(h=>`<div class="hrow"><div class="q">${esc(h.q)}</div><div class="a">${esc(h.a)}</div><div class="t">${new Date(h.t).toLocaleString((window.spireT?window.spireT("th-TH","en-US"):(lang==="en"?"en-US":"th-TH")),{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</div></div>`).join(""):`<div style="color:var(--faint);font-size:13px">${tr("garage.nohist")}</div>`}</div></div>`
+    const lbl=GD_BODY[bodyStyle]||GD_BODY.sedan;
+    const tx=(th,en)=>(window.spireT?window.spireT(th,en):((window.lang||"th")==="en"?en:th));
+    /* ── การ์ดรถแนวนอน ──
+       อ่านจากซ้ายไปขวาได้ในครั้งเดียว: นี่รถอะไร → คันไหน → เข้าไปดูต่อ
+
+       ของเดิมแต่ละใบพ่วงบทสนทนากับ AI แปดรายการมาด้วย
+       การ์ดจึงยาวเป็นเมตรและล้นกรอบ ทั้งที่ตอนกวาดตาหารถ
+       ไม่มีใครอยากอ่านว่าเมื่อเดือนก่อนถาม AI ว่าอะไร
+       ประวัติพวกนั้นย้ายไปอยู่ในหน้าของรถคันนั้นแทน ที่ที่มันควรอยู่ */
+    return `<button class="gdeck" data-open="${c.id}">
+      <span class="gd-ic"><i class="ti ${lbl.ic}"></i></span>
+      <span class="gd-t">
+        <b>${esc(c.name)}</b>
+        <small>${esc(tx(lbl.th,lbl.en))} · ${esc(c.year||"-")} · ${
+          c.mileage?Number(c.mileage).toLocaleString("en-US"):"-"} ${tx("กม.","km")}</small>
+      </span>
+      <span class="gd-go" aria-hidden="true"><i class="ti ti-car-garage"></i></span>
+    </button>`
   }).join("");
   renderCarSel()}
 
-$("garageList")?.addEventListener("click",async e=>{const dg=e.target.closest("[data-diag2]");if(dg){openChat({car:dg.dataset.diag2,starter:true});return}
+$("garageList")?.addEventListener("click",async e=>{
+  /* กดที่ไหนของการ์ดก็เข้าหน้ารถคันนั้น ไม่ต้องเล็งปุ่มเล็ก ๆ
+     ปุ่มวินิจฉัยกับปุ่มลบย้ายเข้าไปอยู่ในหน้านั้นแล้ว ซึ่งปลอดภัยกว่าด้วย
+     เพราะปุ่มลบที่อยู่ติดนิ้วบนหน้ารายการคือปุ่มที่รอวันโดนกดพลาด */
+  const op=e.target.closest("[data-open]");
+  if(op){ try{window.openCarDetail(op.dataset.open)}catch(err){} return }
+  const dg=e.target.closest("[data-diag2]");if(dg){openChat({car:dg.dataset.diag2,starter:true});return}
   const d=e.target.closest("[data-del]");if(d){const id=d.dataset.del;
     if(carsAreRemote()){try{await fetch(`${BACKEND_URL}/api/cars/${encodeURIComponent(id)}`,{method:"DELETE",headers:{"Authorization":"Bearer "+await carTok()}})}catch(err){console.warn("delete car failed",err)}}
     const g=garage().filter(c=>c.id!==id);saveGarage(g);renderGarage();renderDashboard();toast((window.spireT?window.spireT("ลบรถแล้ว","Car removed"):(lang==="en"?"Car removed":"ลบรถแล้ว")),"ti-trash")}});
@@ -7997,6 +8057,23 @@ async function askAI(c){
 }
 
 /* ═══════════ โมดัลรายละเอียดรถ ═══════════ */
+/* แถวปุ่มลงมือทำ — อยู่เหนือแท็บข้อมูลเสมอ */
+(function(){const st=document.createElement("style");st.textContent=`
+.cl-act{display:flex;gap:8px;padding:0 16px 12px}
+.cl-a{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;
+  padding:11px 12px;border-radius:13px;border:1px solid var(--line);
+  background:var(--surface-2);color:var(--ink);font-family:inherit;
+  font-size:13px;font-weight:600;cursor:pointer;transition:.16s;min-width:0}
+.cl-a span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cl-a i{font-size:17px;flex:0 0 auto}
+.cl-a.p{background:var(--grad);color:#fff;border-color:transparent}
+.cl-a.x{flex:0 0 44px;color:var(--danger)}
+.cl-a:active{transform:scale(.96)}
+@media(max-width:520px){
+  .cl-act{padding:0 13px 10px;gap:7px}
+  .cl-a{padding:10px 9px;font-size:12px;border-radius:12px}
+  .cl-a.x{flex:0 0 40px}
+}`;document.head.appendChild(st)})();
 let modal=null, curCar=null, curTab="spec";
 function ensureModal(){
   if(modal)return modal;
@@ -8008,6 +8085,10 @@ function ensureModal(){
       <div style="flex:1;min-width:0"><h2 id="clName">—</h2><div class="sub" id="clSub">—</div></div>
       <button class="mag-modal-close" id="clX" aria-label="ปิด"><i class="ti ti-x"></i></button>
     </div>
+    <!-- ── สิ่งที่ทำได้กับรถคันนี้ ──
+         สามอย่างนี้อยู่เหนือแท็บข้อมูล เพราะคนเปิดหน้านี้ตอนรถมีเรื่อง
+         ไม่ใช่ตอนอยากอ่านสเปก ทางแก้จึงต้องอยู่ก่อนข้อมูล -->
+    <div class="cl-act" id="clAct"></div>
     <div class="cl-tabs" role="tablist" id="clTabs"></div>
     <div class="mag-modal-body" id="clBody"></div>
   </div>`;
@@ -8034,6 +8115,15 @@ window.openCarDetail=function(id){
   ($("clName")||{}).textContent=c.name||`${c.make||""} ${c.model||""}`.trim()||T("รถของฉัน","My car");
   const b=BODY[bodyOf(c)];
   ($("clSub")||{}).textContent=`${c.year||"—"} · ${T(b.th,b.en)} · ${num(KM(c))} ${T("กม.","km")}`;
+  /* หาสาเหตุกับ AI ก่อน แล้วค่อยเรียกช่างพร้อมอาการที่สรุปไว้แล้ว
+     ลำดับนี้สำคัญ: ถ้าเรียกช่างโดยยังไม่รู้ว่าเป็นอะไร ทั้งสองฝ่ายเสียเวลา */
+  ($("clAct")||{}).innerHTML=`
+    <button class="cl-a p" data-act="diag"><i class="ti ti-stethoscope"></i>
+      <span>${T("หาสาเหตุกับ AI","Diagnose with AI")}</span></button>
+    <button class="cl-a" data-act="tech"><i class="ti ti-tool"></i>
+      <span>${T("เรียกช่าง","Call a pro")}</span></button>
+    <button class="cl-a x" data-act="del" aria-label="${T("ลบรถคันนี้","Remove car")}">
+      <i class="ti ti-trash"></i></button>`;
   ($("clTabs")||{}).innerHTML=TABS.map(t=>
     `<button class="cl-tab" role="tab" data-tab="${t.k}" aria-selected="${t.k===curTab}">
        <i class="ti ${t.ic}"></i> ${T(t.th,t.en)}</button>`).join("");
@@ -8041,6 +8131,26 @@ window.openCarDetail=function(id){
   modal.classList.add("show");
 };
 D.addEventListener("click",e=>{
+  const a=e.target.closest("[data-act]");
+  if(a&&a.closest("#clAct")&&curCar){
+    const c=curCar, k=a.dataset.act;
+    if(k==="diag"){
+      /* ส่งรถคันนี้ไปให้ห้องแชตพร้อมกัน AI จะได้ไม่ต้องถามว่ารถอะไรอีก */
+      try{ if(window.openChat){ closeCL(); window.openChat({car:c.id,starter:true}); return } }catch(err){}
+      location.href="chat.html?car="+encodeURIComponent(c.id)+"&starter=1"; return;
+    }
+    if(k==="tech"){
+      /* พาไปหน้าช่างพร้อมข้อมูลรถ ระบบจะได้กรองช่างที่รับยี่ห้อนี้ให้ */
+      const q=[c.make||"",c.model||"",c.name||""].filter(Boolean).join(" ").trim();
+      location.href="techs.html"+(q?"?q="+encodeURIComponent(q):""); return;
+    }
+    if(k==="del"){
+      if(!confirm(T("ลบรถคันนี้ออกจากการาจ?","Remove this car from your garage?")))return;
+      try{ const g=garage().filter(x=>x.id!==c.id); saveGarage(g);
+        closeCL(); if(window.renderGarage)window.renderGarage() }catch(err){}
+      return;
+    }
+  }
   const t=e.target.closest("[data-tab]");
   if(t&&t.closest("#clTabs")){curTab=t.dataset.tab;
     $("clTabs").querySelectorAll(".cl-tab").forEach(x=>x.setAttribute("aria-selected",x.dataset.tab===curTab));

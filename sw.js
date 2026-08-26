@@ -4,13 +4,14 @@
    หน้าเว็บเป็นไฟล์เดียวที่เปลี่ยนบ่อย จึงใช้ network-first เสมอ
    ไม่งั้นผู้ใช้จะติดอยู่กับเวอร์ชันเก่าโดยไม่รู้ตัว
    ══════════════════════════════════════════════════════════════════ */
-const CACHE = 'cendon-v74';
+const CACHE = 'cendon-v75';
 /* แต่ละหน้าเป็นไฟล์เดี่ยวที่สมบูรณ์ในตัว โหลดล่วงหน้าไว้ทั้งชุด
    การเปิด URL ของหน้าไหนตรง ๆ จึงไม่ต้องรอเน็ต */
 const SHELL = ['./', './index.html', './garage.html', './news.html',
   './spares.html', './profile.html', './chat.html',
   './about.html', './help.html', './terms.html', './privacy.html',
-  './plan.html', './handbook.html'];
+  './plan.html', './handbook.html',
+  './techs.html', './techs.js'];
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();

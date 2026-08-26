@@ -4454,7 +4454,6 @@ window.spireI18nCoverage=code=>{
           <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:12px;">
             <label class="toggle-label"><input type="checkbox" id="chk-ai" onchange="toggleWidget('w-ai', this.checked)"> <span data-i18n="dash.widget_ai">ผู้ช่วย AI (ด่วน)</span></label>
             <label class="toggle-label"><input type="checkbox" id="chk-magazine" onchange="toggleWidget('w-magazine', this.checked)"> <span data-i18n="dash.widget_news">ข่าวสารล่าสุด</span></label>
-            <label class="toggle-label"><input type="checkbox" id="chk-settings" onchange="toggleWidget('w-settings', this.checked)"> <span data-i18n="dash.widget_settings">ตั้งค่าธีมและสี</span></label>
             <label class="toggle-label"><input type="checkbox" id="chk-shop" onchange="toggleWidget('w-shop', this.checked)"> <span data-i18n="dash.widget_shop">ร้านค้า 3D</span></label>
           </div>
           <p style="font-size:12px; color:var(--muted);"><i class="ti ti-info-circle"></i> คุณสามารถลากย้ายสลับตำแหน่งวิดเจ็ตต่างๆ ด้านล่างได้เลยโดยใช้เมาส์ หรือใช้ปุ่มลูกศรควบคุมตำแหน่ง</p>
@@ -4491,7 +4490,7 @@ window.spireI18nCoverage=code=>{
               <button class="qa" data-open="video"><i class="ti ti-video qa-deco" aria-hidden="true"></i><div class="qa-ic"><i class="ti ti-video"></i></div><div class="qa-t" data-i18n="qa.video">วิดีโอ</div></button>
               <!-- ช่องที่สี่ของตารางว่างอยู่แต่แรก จึงใส่ทางลัดหาช่างตรงนี้ได้โดยไม่ดันของเดิม
                    วินิจฉัยเสร็จแล้วขั้นต่อไปคือหาคนซ่อม ทางลัดจึงควรอยู่ติดกันแบบนี้ -->
-              <button class="qa" onclick="location.href='techs.html'"><i class="ti ti-tool qa-deco" aria-hidden="true"></i><div class="qa-ic"><i class="ti ti-tool"></i></div><div class="qa-t" data-i18n="qa.tech">หาช่าง</div></button>
+              <button class="qa qa-tech" onclick="location.href='techs.html'"><i class="ti ti-tool qa-deco" aria-hidden="true"></i><div class="qa-ic"><i class="ti ti-tool"></i></div><div class="qa-t" data-i18n="qa.tech">หาช่าง</div></button>
             </div>
           </div>
 
@@ -4526,28 +4525,7 @@ window.spireI18nCoverage=code=>{
             </div>
           </div>
 
-          <!-- Widget 5: Theme settings (Optional) -->
-          <div class="widget" id="w-settings" draggable="true" style="display:none;">
-            <div class="widget-header">
-              <span class="widget-drag-handle"><i class="ti ti-hand-grab"></i></span>
-              <h3 data-i18n="dash.widget_settings">ตั้งค่าธีมและสี</h3>
-              <div class="widget-actions">
-                <button class="widget-nav-btn" onclick="moveWidget('w-settings', -1); event.stopPropagation();"><i class="ti ti-arrow-narrow-up"></i></button>
-                <button class="widget-nav-btn" onclick="moveWidget('w-settings', 1); event.stopPropagation();"><i class="ti ti-arrow-narrow-down"></i></button>
-              </div>
-            </div>
-            <div class="card" style="padding:16px; display:flex; flex-direction:column; gap:12px;">
-              <div>
-                <h4 style="font-size:13.5px; font-weight:700; margin-bottom:6px; color:var(--ink);" data-i18n="set.theme">ธีมระบบ</h4>
-                <div class="theme-grid"></div>
-              </div>
-              <div>
-                <h4 style="font-size:13.5px; font-weight:700; margin-bottom:4px; color:var(--ink);" data-i18n="set.opacity">ความชัดเจนพื้นหลังการาจ</h4>
-                <input type="range" class="slider" min="0" max="0.6" step="0.05" id="wireframeOpacitySlider" oninput="setWireframeOpacity(this.value)" style="width:100%;">
-              </div>
-            </div>
-          </div>
-
+          <!-- วิดเจ็ตตั้งค่าธีมถูกเอาออกแล้ว — ที่ของมันคือหน้าตั้งค่า ไม่ใช่หน้าหลัก -->
           <!-- Widget 6: Shop -->
           <div class="widget" id="w-shop" draggable="true" style="display:none;">
             <div class="widget-header" style="margin-bottom:0">
@@ -4841,6 +4819,8 @@ const T={
  "qa.text":["พิมพ์ถาม","Type","テキスト入力","文字输入","Tippen","Escribir"],
  "qa.image":["ถ่ายรูป","Photo","写真撮影","照片上传","Foto","Foto"],
  "qa.video":["วิดีโอ","Video","動画撮影","视频上传","Video","Video"],
+ "qa.tech":["หาช่าง","Find a pro","整備士を探す","找技师","Werkstatt finden","Buscar taller"],
+ "menu.techs":["หาช่าง","Find a pro","整備士を探す","找技师","Werkstatt finden","Buscar taller"],
  "qa.mic":["อัดเสียง","Voice","音声録音","语音输入","Sprachaufnahme","Voz"],
  "chat.title":["Cendon","Cendon","Cendon","Cendon","Cendon","Cendon"],
  "composer.ph":["พิมพ์อาการรถ หรือถามอะไรก็ได้...","Describe a car issue or ask anything...","車の症状を入力するか、何でも質問してください...","描述车辆症状或提问...","Beschreiben Sie ein Autoproblem oder fragen Sie etwas...","Describa un problema del automóvil o pregunte algo..."],
@@ -4938,8 +4918,8 @@ document.addEventListener("click",e=>{const n=e.target.closest("[data-view]");if
 document.addEventListener("click",e=>{if(!e.target.closest(".nav-right"))$("dd").classList.remove("show")});
 
 /* ===== CUSTOM WIDGETS LAYOUT ===== */
-let widgetOrder = LS.get("widgetOrder", ["w-cars", "w-quick-actions", "w-ai", "w-magazine", "w-settings"]);
-let widgetToggles = LS.get("widgetToggles", { "w-ai": false, "w-magazine": true, "w-settings": true });
+let widgetOrder = LS.get("widgetOrder", ["w-cars", "w-quick-actions", "w-ai", "w-magazine"]);
+let widgetToggles = LS.get("widgetToggles", { "w-ai": false, "w-magazine": true });
 let editMode = false;
 
 function applyWidgetLayout() {
@@ -8598,7 +8578,7 @@ function mountWidgets(){
    การ์ดจึงมีพื้นที่พอให้ไล่สีและกราฟิกเห็นเต็มๆ ที่เหลือเปิดเองได้ในหน้าปรับแต่ง */
 const DEFAULT_ON=["w-brief","w-magazine","w-shop"];
 const WANT=["w-brief","w-magazine","w-shop","w-cars","w-todo","w-health",
-            "w-quick-actions","w-cost","w-drive","w-odo","w-settings","w-ai"];
+            "w-quick-actions","w-cost","w-drive","w-odo","w-ai"];
 let arranged=false;
 function arrangeWidgets(){
   const grid=$("widgetGrid"); if(!grid||arranged||!$("w-todo"))return;
@@ -11027,11 +11007,9 @@ const HERO=[
    enw:"Because it remembers your car, not a generic answer"}
 ];
 function heroCards(){
+  /* ตัดหัวเรื่อง "ทำไมต้อง Cendon" ออกแล้ว — คนที่มาถึงหน้านี้สมัครไปแล้ว
+     ไม่ต้องขายของให้เขาซ้ำ เหลือแต่การ์ดที่กดแล้วไปทำงานได้จริง */
   return `<section class="hero-feat">
-    <div class="hf-head">
-      <small>${T("ทำไมต้อง Cendon","Why Cendon")}</small>
-      <h2>${T("สี่อย่างที่ถามแชตบอตทั่วไปไม่ได้","Four things a chatbot can't do for you")}</h2>
-    </div>
     <div class="hf-grid">${HERO.map(f=>`
       <button class="hf-card" data-hero="${f.k}" style="--c:${f.c}">
         <span class="hf-ic"><i class="ti ${f.ic}"></i></span>
@@ -15069,9 +15047,12 @@ const FEATS=[
   {k:"shake", ic:"ti-activity",     c:"#3FC3D6", th:"วัดการสั่น",     en:"Shake"},
   {k:"park",  ic:"ti-map-pin",      c:"#F0655C", th:"จำที่จอด",       en:"Parking"},
   {k:"own",   ic:"ti-report-money", c:"#7B8CF0", th:"ต้นทุน",         en:"Costs"},
-  {k:"spares",ic:"ti-package",      c:"#F08A3D", th:"อะไหล่",         en:"Spares"}
+  {k:"spares",ic:"ti-package",      c:"#F08A3D", th:"อะไหล่",         en:"Spares"},
+  {k:"techs", ic:"ti-tool",         c:"#E8743C", th:"หาช่าง",         en:"Find a pro"}
 ];
-const HOME7=["text","image","listen","quote","shake","park","spares"];
+/* หาช่างขึ้นแถวแรก เพราะมันคือสิ่งที่คนทำต่อหลังรู้ว่ารถเป็นอะไร
+   ถ้าซ่อนไว้ในแผ่น "ทั้งหมด" ก็เท่ากับไม่มี */
+const HOME7=["text","image","techs","listen","quote","shake","park"];
 
 const tile=f=>`<button class="mtool" data-mfeat="${f.k}">
   <span class="mt-ic" style="--c:${f.c}"><i class="ti ${f.ic}"></i></span>
@@ -15101,6 +15082,7 @@ function run(k){
   close();
   const f=FEATS.find(x=>x.k===k); if(!f)return;
   if(k==="spares"){ try{window.switchView("shop")}catch(e){location.href="spares.html"} return }
+  if(k==="techs"){ location.href="techs.html"; return }
   if(k==="text"||k==="image"||k==="video"){
     try{ if(typeof window.openChat==="function"){window.openChat({attach:k});return} }catch(e){}
     location.href="chat.html?attach="+encodeURIComponent(k); return;
@@ -15779,6 +15761,154 @@ window.spireApplyPrimary=()=>apply(read());
 /* ปุ่มหลักและโลโก้ */
 .send,.w-send,.hist-new,.side-new{background:var(--c-grad) !important;color:var(--on-acc,#fff) !important}
 .p-mark,.hint-logo,.side-mark{color:var(--c-acc)}
+</style>
+
+<style id="clay">
+/* ═══════════════════════════════════════════════════════════════════
+   Claymorphism — ทำให้ปุ่มแต่ละอันมีตัวตนของตัวเอง
+   ───────────────────────────────────────────────────────────────────
+   ปัญหาเดิมคือทุกปุ่มเป็นสี่เหลี่ยมพื้นขาวขอบบางเหมือนกันหมด
+   ต่างกันแค่ไอคอนข้างใน ตาจึงต้องอ่านตัวหนังสือทุกครั้งกว่าจะรู้ว่าอันไหนคืออะไร
+
+   ดินน้ำมันแก้เรื่องนี้ด้วยสามอย่าง ไม่ใช่แค่ทำให้มน
+     1 มวล      — เงาสองชั้น ชั้นในบอกความหนา ชั้นนอกบอกว่าลอยอยู่เหนือพื้น
+     2 แสง      — ขอบบนซ้ายสว่าง ขอบล่างขวาเข้ม ทุกปุ่มรับแสงจากทางเดียวกัน
+     3 สีประจำตัว — แต่ละปุ่มมีสีของตัวเอง จำได้ด้วยหางตาโดยไม่ต้องอ่าน
+
+   ใช้เฉพาะจอกว้าง เพราะบนมือถือมีตารางไอคอนของตัวเองอยู่แล้ว
+   ═══════════════════════════════════════════════════════════════════ */
+@media (min-width:861px){
+
+  /* ── ตัวปุ่มเครื่องมือ ── */
+  .qa{
+    border-radius:28px;
+    padding:26px 12px 22px;
+    border:0;
+    background:
+      linear-gradient(160deg,
+        color-mix(in srgb,var(--qc,var(--accent)) 15%,var(--surface)),
+        color-mix(in srgb,var(--qc,var(--accent)) 4%,var(--surface)));
+    box-shadow:
+      /* แสงจากบนซ้าย */
+      inset 3px 4px 6px -2px rgba(255,255,255,.85),
+      /* เนื้อดินด้านล่างขวา */
+      inset -4px -5px 9px -3px var(--qc-shadow,rgba(217,94,60,.28)),
+      /* เงาที่ทอดลงพื้น สองชั้นเพื่อให้ขอบเงานุ่มแทนที่จะเป็นเส้น */
+      0 10px 16px -12px var(--qc-shadow,rgba(217,94,60,.5)),
+      0 22px 36px -22px var(--qc-shadow,rgba(217,94,60,.55));
+    transition:transform .3s cubic-bezier(.34,1.4,.5,1),box-shadow .3s;
+  }
+  .qa:hover{
+    transform:translateY(-6px);
+    box-shadow:
+      inset 3px 4px 7px -2px rgba(255,255,255,.9),
+      inset -4px -5px 10px -3px var(--qc-shadow,rgba(217,94,60,.34)),
+      0 16px 22px -14px var(--qc-shadow,rgba(217,94,60,.55)),
+      0 34px 48px -24px var(--qc-shadow,rgba(217,94,60,.6));
+  }
+  /* กดแล้วต้องยุบลงไปในพื้น ไม่ใช่แค่เล็กลง
+     ดินน้ำมันจริงกดแล้วบุ๋ม เงาด้านในจึงต้องลึกขึ้นและเงาที่พื้นต้องหด */
+  .qa:active{
+    transform:translateY(1px) scale(.975);
+    box-shadow:
+      inset 4px 5px 10px -2px rgba(255,255,255,.55),
+      inset -5px -6px 12px -3px var(--qc-shadow,rgba(217,94,60,.42)),
+      0 4px 8px -6px var(--qc-shadow,rgba(217,94,60,.4));
+  }
+
+  /* ── ก้อนไอคอน ──
+     นี่คือส่วนที่ทำให้จำได้ ก้อนสีอิ่มตัวลอยนูนออกมาจากตัวปุ่ม
+     แต่ละอันเอียงคนละองศาเล็กน้อย จะได้ไม่ดูเป็นแถวทหาร */
+  .qa-ic,.hf-ic{
+    border-radius:22px;
+    background:linear-gradient(150deg,var(--qc2,var(--accent-2)),var(--qc,var(--accent)) 78%);
+    box-shadow:
+      inset 2px 3px 5px -1px rgba(255,255,255,.6),
+      inset -2px -3px 6px -1px rgba(0,0,0,.22),
+      0 9px 15px -8px var(--qc-shadow,rgba(217,94,60,.65)),
+      0 3px 5px -3px rgba(0,0,0,.2);
+  }
+  .qa-ic{width:60px;height:60px;font-size:27px}
+  .qa:hover .qa-ic{transform:rotate(0) scale(1.1) translateY(-2px)}
+  .qa:nth-child(1) .qa-ic{transform:rotate(-9deg)}
+  .qa:nth-child(2) .qa-ic{transform:rotate(6deg)}
+  .qa:nth-child(3) .qa-ic{transform:rotate(-5deg)}
+  .qa:nth-child(4) .qa-ic{transform:rotate(8deg)}
+  /* ไอคอนจาง ๆ หลังปุ่มเบาลง ไม่งั้นแย่งสายตากับก้อนสีข้างหน้า */
+  .qa-deco{opacity:.055}
+  .qa:hover .qa-deco{opacity:.1}
+  .qa-t{font-size:14px;font-weight:700;letter-spacing:-.2px}
+
+  /* ── สีประจำตัวของแต่ละปุ่ม ── */
+  .qa[data-open="text"] {--qc:#D9733C;--qc2:#F0A860;--qc-shadow:rgba(217,115,60,.5)}
+  .qa[data-open="image"]{--qc:#3A8CC5;--qc2:#74C2E8;--qc-shadow:rgba(58,140,197,.5)}
+  .qa[data-open="video"]{--qc:#9B5DE0;--qc2:#C89BF0;--qc-shadow:rgba(155,93,224,.5)}
+  .qa.qa-tech           {--qc:#2E9E78;--qc2:#63D0A4;--qc-shadow:rgba(46,158,120,.5)}
+
+  /* ── การ์ดรถและการ์ดฟีเจอร์ ใช้ภาษาเดียวกัน ── */
+  .ccard,.hf-card{
+    border:0;border-radius:26px;
+    background:linear-gradient(160deg,
+      color-mix(in srgb,var(--c,var(--accent)) 7%,var(--surface)),
+      color-mix(in srgb,var(--c,var(--accent)) 2%,var(--surface)));
+    box-shadow:
+      inset 3px 4px 6px -2px rgba(255,255,255,.8),
+      inset -4px -5px 9px -3px color-mix(in srgb,var(--c,var(--accent)) 26%,transparent),
+      0 18px 32px -22px color-mix(in srgb,var(--c,var(--accent)) 60%,transparent);
+  }
+  .ccard:hover,.hf-card:hover{
+    transform:translateY(-4px);
+    box-shadow:
+      inset 3px 4px 7px -2px rgba(255,255,255,.86),
+      inset -4px -5px 10px -3px color-mix(in srgb,var(--c,var(--accent)) 32%,transparent),
+      0 28px 44px -24px color-mix(in srgb,var(--c,var(--accent)) 70%,transparent);
+  }
+  .hf-ic{width:50px;height:50px;border-radius:19px}
+  .ccard .ci{
+    border-radius:19px;
+    box-shadow:
+      inset 2px 3px 5px -1px rgba(255,255,255,.32),
+      inset -2px -3px 6px -1px rgba(0,0,0,.3),
+      0 8px 14px -8px rgba(0,0,0,.5);
+  }
+
+  /* ── ธีมมืด ──
+     แสงขาวบนพื้นมืดจะกลายเป็นขอบเรืองแสงจนดูเป็นนีออน ไม่ใช่ดิน
+     จึงต้องลดแสงลงมาก แล้วไปเพิ่มน้ำหนักที่เงาแทน */
+  [data-theme="cyber"] .qa,[data-theme="cyber"] .ccard,[data-theme="cyber"] .hf-card,
+  [data-theme="dark"] .qa,[data-theme="dark"] .ccard,[data-theme="dark"] .hf-card{
+    box-shadow:
+      inset 2px 3px 6px -2px rgba(255,255,255,.14),
+      inset -4px -5px 10px -3px rgba(0,0,0,.55),
+      0 20px 34px -22px rgba(0,0,0,.8);
+  }
+  [data-theme="cyber"] .qa:hover,[data-theme="dark"] .qa:hover{
+    box-shadow:
+      inset 2px 3px 7px -2px rgba(255,255,255,.18),
+      inset -4px -5px 11px -3px rgba(0,0,0,.6),
+      0 30px 46px -24px var(--qc-shadow,rgba(0,0,0,.85));
+  }
+}
+
+/* ── ตารางเครื่องมือบนมือถือ ──
+   ใช้ภาษาเดียวกันแต่เบามือกว่า เพราะไอคอนเรียงติดกันแปดตัว
+   ถ้าใส่เงาหนักเท่าเดสก์ท็อปจะกลายเป็นหน้าจอที่มีแต่เงา */
+.mtool .mt-ic{
+  border-radius:20px;
+  box-shadow:
+    inset 2px 3px 4px -1px rgba(255,255,255,.5),
+    inset -2px -3px 6px -1px rgba(0,0,0,.28),
+    0 8px 13px -8px var(--c,rgba(0,0,0,.5));
+}
+.mtool:active .mt-ic{
+  transform:scale(.9);
+  box-shadow:
+    inset 3px 4px 8px -1px rgba(255,255,255,.3),
+    inset -3px -4px 9px -1px rgba(0,0,0,.4);
+}
+@media (prefers-reduced-motion:reduce){
+  .qa,.qa-ic,.ccard,.hf-card{transition:none !important}
+}
 </style>
 </body>
 </html>

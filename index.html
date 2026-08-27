@@ -3943,6 +3943,30 @@ html[data-theme="light"] .mnav,html[data-theme="plant"] .mnav{
   width:100%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
   overflow:hidden;opacity:.85}
 
+/* ── หน้าหลักมือถือ: หนึ่งจอพอดี ไม่มีอะไรให้เลื่อน ──
+   ของทั้งหมดมีสามชิ้น — ค้นหา · แถบสไลด์ · ตารางเครื่องมือ
+   สามชิ้นนี้สูงรวมกันไม่ถึงจอ จึงไม่ควรมีแถบเลื่อน
+   และไม่ควรกองอยู่ข้างบนโดยปล่อยข้างล่างว่าง
+
+   วิธีที่ถูกคือทำให้ตัวหน้าสูงเท่าจอพอดี แล้วดันเนื้อหาเข้ากลางแนวตั้ง
+   ไม่ใช่ใส่ margin-top เดา ๆ ซึ่งจะเพี้ยนทันทีที่เปลี่ยนขนาดจอ */
+.msnap-3.hfree{
+  max-width:440px;margin-left:auto;margin-right:auto;
+  min-height:calc(100dvh - var(--m-nav) - var(--m-nav-gap)
+    - env(safe-area-inset-bottom) - env(safe-area-inset-top));
+  display:flex;flex-direction:column;justify-content:center;
+  padding-top:0!important;padding-bottom:var(--m-4)!important}
+/* ตัวหน้าเลื่อนไม่ได้ เพราะไม่มีอะไรอยู่นอกจอให้เลื่อนไปหา */
+body.mhome-fit #v-home>.scroll{overflow-y:hidden}
+#mtop,#mbanner,#mtools{margin-left:auto;margin-right:auto;width:100%;flex:0 0 auto}
+#mtop{position:static}       /* ไม่ต้องติดหนึบแล้ว เพราะไม่มีการเลื่อน */
+#mtools .mgrid-t{text-align:center}
+#mtools{margin-bottom:0}
+.mgrid{margin-bottom:0}
+/* ทุกอย่างที่เหลือใน #hfree ไม่ต้องแสดงบนมือถือแล้ว
+   วิดเจ็ตย้ายเข้าแถบสไลด์หมดแล้ว ที่ยังอยู่คือกล่องเปล่าที่ดันหน้าให้ยาว */
+.msnap-3.hfree>*:not(#mtop):not(#mbanner):not(#mtools){display:none!important}
+
 /* ── ซ่อนห้องนักบินและหน้าฮีโร่ ──
    ซ่อน ไม่ใช่ลบ เพราะหมุนจอเป็นแนวนอนแล้วต้องได้ของเดิมกลับมาครบ */
 .mhide{display:none!important}
@@ -3950,10 +3974,15 @@ html[data-theme="light"] .mnav,html[data-theme="plant"] .mnav{
 /* ═══ แถบบนสุด: ช่องค้นหา ═══
    ติดหนึบไว้บนสุดเหมือน Uber ทางออกจากทุกความหลงทางอยู่ที่เดียว */
 #mtop{
-  position:sticky;top:0;z-index:60;display:flex;gap:var(--m-2);
+  position:sticky;top:0;z-index:60;
   padding:calc(env(safe-area-inset-top) + var(--m-3)) 0 var(--m-3);
-  background:linear-gradient(to bottom,var(--bg) 72%,transparent);
+  background:linear-gradient(to bottom,var(--bg) 78%,transparent);
   margin-bottom:var(--m-1)}
+.mtop-row{display:flex;gap:var(--m-2);align-items:center}
+/* โลโก้ตัว C — สีส้มของแบรนด์เสมอ ไม่เปลี่ยนตามธีม
+   เพราะมันคือเครื่องหมายการค้า ไม่ใช่ส่วนหนึ่งของหน้าจอ */
+.mlogo{display:flex;justify-content:center;margin-bottom:var(--m-3)}
+.mlogo svg{width:28px;height:33px;color:#E8943C;display:block}
 .mfind{
   flex:1;min-width:0;display:flex;align-items:center;gap:var(--m-2);
   height:46px;padding:0 var(--m-4);border-radius:23px;
@@ -3966,10 +3995,7 @@ html[data-theme="light"] .mnav,html[data-theme="plant"] .mnav{
 .mfind-x{
   width:46px;height:46px;flex:0 0 46px;border-radius:23px;border:0;
   display:grid;place-items:center;font-size:20px;color:#fff;cursor:pointer;
-  background:linear-gradient(160deg,#3FBE8E,#2E9E78);
-  box-shadow:inset 2px 2px 4px -1px rgba(255,255,255,.42),
-             inset -2px -3px 6px -1px rgba(0,0,0,.3),
-             0 8px 16px -9px rgba(46,158,120,.9)}
+  background:linear-gradient(160deg,#3FBE8E,#2E9E78)}
 .mfind-x:active{transform:scale(.92)}
 
 /* ═══ หน้าค้นหาเต็มจอ ═══ */
@@ -3999,9 +4025,7 @@ html[data-theme="light"] .mnav,html[data-theme="plant"] .mnav{
 .mf-ic{
   width:38px;height:38px;flex:0 0 38px;border-radius:13px;display:grid;
   place-items:center;font-size:18px;color:#fff;
-  background:linear-gradient(160deg,var(--c),color-mix(in srgb,var(--c) 76%,#000));
-  box-shadow:inset 1px 2px 3px -1px rgba(255,255,255,.4),
-             inset -1px -2px 4px -1px rgba(0,0,0,.3)}
+  background:linear-gradient(160deg,var(--c),color-mix(in srgb,var(--c) 76%,#000))}
 .mf-t{flex:1;min-width:0}
 .mf-t b{display:block;font-size:var(--m-t);font-weight:600;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -4015,10 +4039,16 @@ html[data-theme="light"] .mnav,html[data-theme="plant"] .mnav{
    ไม่ได้เขียนตัวเลื่อนเอง จะได้ปัดแล้วลื่นเหมือนทุกแอปที่เขาคุ้นมือ */
 #mbanner{margin:0 0 var(--m-4)}
 .bn-track{
-  display:flex;gap:var(--m-3);overflow-x:auto;scroll-snap-type:x mandatory;
+  display:flex;gap:var(--m-3);overflow-x:auto;overflow-y:hidden;
+  scroll-snap-type:x mandatory;
   scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  align-items:flex-start;transition:height .28s cubic-bezier(.32,.72,0,1);
   margin:0 calc(var(--m-pad) * -1);padding:0 var(--m-pad)}
 .bn-track::-webkit-scrollbar{display:none}
+/* แต่ละใบคือวิดเจ็ตของจริงที่ย้ายเข้ามา จึงต้องคุมแค่ความกว้างกับการล็อกตำแหน่ง
+   ห้ามไปยุ่งกับหน้าตาข้างใน ไม่งั้นกราฟิกเดิมของมันจะเพี้ยน */
+.bn-slide{flex:0 0 100%;scroll-snap-align:center;box-sizing:border-box;min-width:0}
+.bn-slide>*{margin:0!important;width:100%!important;max-width:100%!important}
 .bn-card{
   flex:0 0 100%;scroll-snap-align:center;box-sizing:border-box;
   border-radius:var(--m-r-lg);padding:var(--m-4);cursor:pointer;
@@ -4047,22 +4077,6 @@ html[data-theme="light"] .mnav,html[data-theme="plant"] .mnav{
   width:6px;height:6px;padding:0;border:0;border-radius:3px;cursor:pointer;
   background:var(--m-fill-2);transition:width .22s,background .22s}
 .bn-dots button.on{width:18px;background:var(--accent)}
-
-/* ═══ ไอคอนสามมิติของตารางเครื่องมือ ═══
-   สามคลาสนี้คือทั้งหมดที่ทำให้ภาพแบนกลายเป็นภาพนูน
-     f3 ผิวบนรับแสง · s3 ผนังในเงา · d3 ส่วนที่จมลงไป · h3 จุดแสงสะท้อน
-   ทุกตัวอ้างอิงสีเดียวกันคือ --c จึงเปลี่ยนสีไอคอนได้ที่เดียวจบ */
-.mt-ic.g3{background:linear-gradient(158deg,
-    color-mix(in srgb,var(--c) 88%,#fff) 0%,
-    var(--c) 42%,
-    color-mix(in srgb,var(--c) 62%,#000) 100%)}
-.mt-ic.g3 svg{width:76%;height:76%;display:block;overflow:visible}
-.mt-ic.g3 .f3{fill:#fff;fill-opacity:.97}
-.mt-ic.g3 .s3{fill:#000;fill-opacity:.26}
-.mt-ic.g3 .d3{fill:#000;fill-opacity:.42}
-.mt-ic.g3 .h3{fill:#fff;fill-opacity:.55}
-.mt-ic.g3 .l3{stroke:#fff;stroke-width:2.6;stroke-linecap:round;
-  stroke-linejoin:round;stroke-opacity:.95}
 
 /* แผ่นเลื่อนขึ้น "เครื่องมือทั้งหมด" */
 .msheet-bg{
@@ -4580,6 +4594,7 @@ window.spireI18nCoverage=code=>{
           <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:12px;">
             <label class="toggle-label"><input type="checkbox" id="chk-ai" onchange="toggleWidget('w-ai', this.checked)"> <span data-i18n="dash.widget_ai">ผู้ช่วย AI (ด่วน)</span></label>
             <label class="toggle-label"><input type="checkbox" id="chk-magazine" onchange="toggleWidget('w-magazine', this.checked)"> <span data-i18n="dash.widget_news">ข่าวสารล่าสุด</span></label>
+            <label class="toggle-label"><input type="checkbox" id="chk-tech" onchange="toggleWidget('w-tech', this.checked)"> <span data-i18n="dash.widget_tech">เรียกช่าง</span></label>
             <label class="toggle-label"><input type="checkbox" id="chk-shop" onchange="toggleWidget('w-shop', this.checked)"> <span data-i18n="dash.widget_shop">ร้านค้า 3D</span></label>
           </div>
           <p style="font-size:12px; color:var(--muted);"><i class="ti ti-info-circle"></i> คุณสามารถลากย้ายสลับตำแหน่งวิดเจ็ตต่างๆ ด้านล่างได้เลยโดยใช้เมาส์ หรือใช้ปุ่มลูกศรควบคุมตำแหน่ง</p>
@@ -4651,7 +4666,20 @@ window.spireI18nCoverage=code=>{
             </div>
           </div>
 
-          <!-- วิดเจ็ตตั้งค่าธีมถูกเอาออกแล้ว — ที่ของมันคือหน้าตั้งค่า ไม่ใช่หน้าหลัก -->
+          <!-- ══ เรียกช่างจากแดชบอร์ด ══
+               วางไว้ตรงนี้เพราะมันคือขั้นถัดไปหลังรู้ว่ารถเป็นอะไร
+               ผู้ใช้ไม่ต้องออกจากหน้าหลักเพื่อไปหาช่าง พิมพ์อาการแล้วจบในที่เดียว -->
+          <div class="widget" id="w-tech" draggable="true">
+            <div class="widget-header">
+              <span class="widget-drag-handle"><i class="ti ti-hand-grab"></i></span>
+              <h3 data-i18n="dash.widget_tech">เรียกช่าง</h3>
+              <div class="widget-actions">
+                <button class="widget-nav-btn" onclick="moveWidget('w-tech', -1); event.stopPropagation();"><i class="ti ti-arrow-narrow-up"></i></button>
+                <button class="widget-nav-btn" onclick="moveWidget('w-tech', 1); event.stopPropagation();"><i class="ti ti-arrow-narrow-down"></i></button>
+              </div>
+            </div>
+            <div class="tw" id="techWidget"></div>
+          </div>
           <!-- Widget 6: Shop -->
           <div class="widget" id="w-shop" draggable="true" style="display:none;">
             <div class="widget-header" style="margin-bottom:0">
@@ -4945,6 +4973,7 @@ const T={
  "qa.text":["พิมพ์ถาม","Type","テキスト入力","文字输入","Tippen","Escribir"],
  "qa.image":["ถ่ายรูป","Photo","写真撮影","照片上传","Foto","Foto"],
  "qa.video":["วิดีโอ","Video","動画撮影","视频上传","Video","Video"],
+ "dash.widget_tech":["เรียกช่าง","Call a pro","整備士を呼ぶ","叫技师","Werkstatt rufen","Llamar taller"],
  "qa.tech":["หาช่าง","Find a pro","整備士を探す","找技师","Werkstatt finden","Buscar taller"],
  "menu.techs":["หาช่าง","Find a pro","整備士を探す","找技师","Werkstatt finden","Buscar taller"],
  "qa.mic":["อัดเสียง","Voice","音声録音","语音输入","Sprachaufnahme","Voz"],
@@ -5044,8 +5073,8 @@ document.addEventListener("click",e=>{const n=e.target.closest("[data-view]");if
 document.addEventListener("click",e=>{if(!e.target.closest(".nav-right"))$("dd").classList.remove("show")});
 
 /* ===== CUSTOM WIDGETS LAYOUT ===== */
-let widgetOrder = LS.get("widgetOrder", ["w-cars", "w-quick-actions", "w-ai", "w-magazine"]);
-let widgetToggles = LS.get("widgetToggles", { "w-ai": false, "w-magazine": true });
+let widgetOrder = LS.get("widgetOrder", ["w-cars", "w-quick-actions", "w-tech", "w-ai", "w-magazine"]);
+let widgetToggles = LS.get("widgetToggles", { "w-ai": false, "w-magazine": true, "w-tech": true });
 let editMode = false;
 
 function applyWidgetLayout() {
@@ -8704,7 +8733,7 @@ function mountWidgets(){
    การ์ดจึงมีพื้นที่พอให้ไล่สีและกราฟิกเห็นเต็มๆ ที่เหลือเปิดเองได้ในหน้าปรับแต่ง */
 const DEFAULT_ON=["w-brief","w-magazine","w-shop"];
 const WANT=["w-brief","w-magazine","w-shop","w-cars","w-todo","w-health",
-            "w-quick-actions","w-cost","w-drive","w-odo","w-ai"];
+            "w-quick-actions","w-tech","w-cost","w-drive","w-odo","w-ai"];
 let arranged=false;
 function arrangeWidgets(){
   const grid=$("widgetGrid"); if(!grid||arranged||!$("w-todo"))return;
@@ -15085,6 +15114,7 @@ function arrange(){
   if(hero)hero.classList.add("mhide");
   free.classList.add("msnap","msnap-3");
 
+  D.body.classList.add("mhome-fit");
   topbar();      /* ช่องค้นหาที่ไปได้ทุกที่ในแอป */
   banner();      /* แถบสไลด์ที่รวมวิดเจ็ตไว้ที่เดียว */
   tools();
@@ -15198,81 +15228,8 @@ const FEATS=[
    ถ้าซ่อนไว้ในแผ่น "ทั้งหมด" ก็เท่ากับไม่มี */
 const HOME7=["text","image","techs","listen","quote","shake","park"];
 
-/* ── ไอคอนสามมิติ ──
-   Grab ใช้ภาพเรนเดอร์จริง เราวาดเองด้วยเวกเตอร์ ได้ผลใกล้กันโดยไม่ต้องโหลดภาพ
-   และไม่ไปแตะลิขสิทธิ์ของใคร
-
-   สิ่งที่ทำให้อ่านเป็นสามมิติมีสามอย่าง ไม่ใช่แค่ไล่สี
-     face  ผิวบนที่รับแสง สว่างที่สุด
-     side  ผนังด้านล่างขวาที่แสงไปไม่ถึง มืดกว่าผิวบนหนึ่งระดับ
-     shade เงาที่ตัวมันทอดลงบนตัวเอง ทำให้รู้ว่าชิ้นไหนอยู่หน้าชิ้นไหน
-   ขาดชิ้นกลางไปเมื่อไหร่ มันจะกลับไปเป็นไอคอนแบนที่มีไล่สีทันที */
-const G3D={
-  /* พิมพ์ถาม — กล่องข้อความลอยซ้อนกันสองใบ */
-  text:`<svg viewBox="0 0 48 48" aria-hidden="true">
-    <path d="M10 30V14a5 5 0 015-5h22a5 5 0 015 5v12a5 5 0 01-5 5H22l-8 7z" class="f3"/>
-    <path d="M42 26a5 5 0 01-5 5H22l-8 7 3-9h20a5 5 0 005-5z" class="s3"/>
-    <circle cx="21" cy="20" r="2.1" class="d3"/><circle cx="28" cy="20" r="2.1" class="d3"/>
-    <circle cx="35" cy="20" r="2.1" class="d3"/></svg>`,
-  /* ถ่ายรูป — ตัวกล้องมีฝาบนและเลนส์จม */
-  image:`<svg viewBox="0 0 48 48" aria-hidden="true">
-    <path d="M6 20a5 5 0 015-5h4l3-4h12l3 4h4a5 5 0 015 5v13a5 5 0 01-5 5H11a5 5 0 01-5-5z" class="f3"/>
-    <path d="M42 28v5a5 5 0 01-5 5H11a5 5 0 01-5-5v-5z" class="s3"/>
-    <circle cx="24" cy="26" r="8" class="s3"/><circle cx="24" cy="26" r="5.4" class="d3"/>
-    <circle cx="21.6" cy="23.6" r="1.8" class="h3"/></svg>`,
-  /* หาช่าง — ประแจไขว้กับไขควง */
-  techs:`<svg viewBox="0 0 48 48" aria-hidden="true">
-    <path d="M31 8a9 9 0 00-8.2 12.7L9.6 34a3.6 3.6 0 105.1 5.1l13.3-13.3A9 9 0 1031 8z" class="f3"/>
-    <path d="M14.7 39.1a3.6 3.6 0 01-5.1-5.1l1.5-1.5 5.1 5.1z" class="s3"/>
-    <circle cx="31" cy="17" r="4.4" class="d3"/><circle cx="29.6" cy="15.6" r="1.7" class="h3"/></svg>`,
-  /* ฟังเสียง — คลื่นเสียงสามชั้น */
-  listen:`<svg viewBox="0 0 48 48" aria-hidden="true">
-    <rect x="20.4" y="9" width="7.2" height="20" rx="3.6" class="f3"/>
-    <path d="M27.6 22v3a3.6 3.6 0 01-7.2 0v-3z" class="s3"/>
-    <path d="M14 23v2a10 10 0 0020 0v-2" fill="none" class="l3"/>
-    <path d="M24 35v5" fill="none" class="l3"/><path d="M18 40h12" fill="none" class="l3"/></svg>`,
-  /* เช็กราคา — ใบเสร็จที่ขอบล่างหยัก */
-  quote:`<svg viewBox="0 0 48 48" aria-hidden="true">
-    <path d="M11 8h26v30l-4.3-3-4.4 3-4.3-3-4.4 3-4.3-3-4.3 3z" class="f3"/>
-    <path d="M37 30v8l-4.3-3-4.4 3-4.3-3-4.4 3-4.3-3-4.3 3v-8z" class="s3"/>
-    <rect x="17" y="15" width="14" height="2.6" rx="1.3" class="d3"/>
-    <rect x="17" y="21" width="9" height="2.6" rx="1.3" class="d3"/></svg>`,
-  /* วัดการสั่น — คลื่นชีพจร */
-  shake:`<svg viewBox="0 0 48 48" aria-hidden="true">
-    <rect x="7" y="12" width="34" height="24" rx="6" class="f3"/>
-    <path d="M41 28v2a6 6 0 01-6 6H13a6 6 0 01-6-6v-2z" class="s3"/>
-    <path d="M12 24h5l3-7 4 14 3-7h9" fill="none" class="l3"/></svg>`,
-  /* จำที่จอด — หมุดปักที่พื้น */
-  park:`<svg viewBox="0 0 48 48" aria-hidden="true">
-    <ellipse cx="24" cy="39" rx="9" ry="3.2" class="s3"/>
-    <path d="M24 6a12 12 0 00-12 12c0 8.6 12 21 12 21s12-12.4 12-21A12 12 0 0024 6z" class="f3"/>
-    <path d="M36 18c0 8.6-12 21-12 21V6a12 12 0 0112 12z" class="s3"/>
-    <circle cx="24" cy="18" r="5" class="d3"/><circle cx="22.3" cy="16.3" r="1.8" class="h3"/></svg>`,
-  /* ต้นทุน — เหรียญซ้อนกัน มีความหนาให้เห็น */
-  own:`<svg viewBox="0 0 48 48" aria-hidden="true">
-    <ellipse cx="24" cy="32" rx="14" ry="6" class="s3"/>
-    <path d="M10 24v8c0 3.3 6.3 6 14 6s14-2.7 14-6v-8z" class="s3"/>
-    <ellipse cx="24" cy="24" rx="14" ry="6" class="f3"/>
-    <ellipse cx="24" cy="22.6" rx="8" ry="3.2" class="h3"/></svg>`,
-  /* อะไหล่ — กล่องพัสดุที่เห็นสองหน้า */
-  spares:`<svg viewBox="0 0 48 48" aria-hidden="true">
-    <path d="M24 9l15 7v16l-15 7-15-7V16z" class="f3"/>
-    <path d="M24 23l15-7v16l-15 7z" class="s3"/>
-    <path d="M24 23L9 16v16l15 7z" class="d3"/>
-    <path d="M16.5 12.5l15 7v6l-15-7z" class="h3"/></svg>`,
-  /* ทั้งหมด — เก้าเหลี่ยมเล็กเรียงกัน */
-  all:`<svg viewBox="0 0 48 48" aria-hidden="true">
-    <rect x="9" y="9" width="12" height="12" rx="3.6" class="f3"/>
-    <rect x="27" y="9" width="12" height="12" rx="3.6" class="f3"/>
-    <rect x="9" y="27" width="12" height="12" rx="3.6" class="f3"/>
-    <rect x="27" y="27" width="12" height="12" rx="3.6" class="s3"/></svg>`,
-};
-/* ตัวไหนยังไม่ได้วาด ให้ใช้ไอคอนเส้นของเดิมไปก่อน
-   ดีกว่าปล่อยช่องว่าง และไม่ต้องรอให้วาดครบทุกตัวก่อนถึงจะใช้ได้ */
-const glyph=f=>G3D[f.k]||`<i class="ti ${f.ic}"></i>`;
-
 const tile=f=>`<button class="mtool" data-mfeat="${f.k}">
-  <span class="mt-ic${G3D[f.k]?" g3":""}" style="--c:${f.c}">${glyph(f)}</span>
+  <span class="mt-ic" style="--c:${f.c}"><i class="ti ${f.ic}"></i></span>
   <b>${T(f.th,f.en)}</b></button>`;
 
 /* ═══════════ ช่องค้นหาบนสุด ═══════════
@@ -15306,12 +15263,16 @@ function searchIndex(){
 function topbar(){
   const free=$("hfree"); if(!free||$("mtop"))return;
   const bar=D.createElement("div"); bar.id="mtop";
-  bar.innerHTML=`<button class="mfind" type="button">
+  /* โลโก้ตัว C อย่างเดียว ไม่มีคำว่า Cendon ต่อท้าย
+     ชื่อแอปอยู่บนไอคอนที่เขากดเข้ามาแล้ว เขียนซ้ำอีกก็แค่กินที่ */
+  bar.innerHTML=`<div class="mlogo"><svg viewBox="-6 -6 94.8 112" role="img" aria-label="Cendon">
+      <path fill="currentColor" d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg></div>
+    <div class="mtop-row"><button class="mfind" type="button">
       <i class="ti ti-search"></i>
       <span>${T("ค้นหาเครื่องมือ รถ หรือช่าง","Search tools, cars or pros")}</span>
     </button>
     <button class="mfind-x" type="button" aria-label="${T("หาช่าง","Find a pro")}">
-      <i class="ti ti-tool"></i></button>`;
+      <i class="ti ti-tool"></i></button></div>`;
   free.insertBefore(bar,free.firstChild);
   bar.querySelector(".mfind").onclick=openFind;
   bar.querySelector(".mfind-x").onclick=()=>location.href="techs.html";
@@ -15358,89 +15319,6 @@ function closeFind(){
   el.classList.remove("on"); setTimeout(()=>el.remove(),260);
 }
 
-/* ═══════════ แถบสไลด์กลางหน้า ═══════════
-   ของเดิมวิดเจ็ตเรียงลงมาเป็นตับ ต้องเลื่อนผ่านทั้งหมดกว่าจะถึงเครื่องมือ
-   เอามารวมเป็นแผ่นเดียวที่สลับเองเรื่อย ๆ ได้พื้นที่คืนมาเกือบสองจอ */
-let bnTimer=null,bnAt=0;
-function bnCards(){
-  const out=[];
-  const c=(()=>{try{return window.selCar&&window.selCar()}catch(e){return null}})();
-  /* ใบแรกคือรถของเขาเสมอ ถ้ามี — เป็นเหตุผลที่เขาเปิดแอปนี้ */
-  if(c)out.push({k:"car",ic:"ti-car",c:"#E8943C",
-    t:c.name||T("รถของคุณ","Your car"),
-    d:T("ดูสถานะและสิ่งที่ต้องทำของคันนี้","Status and what's due on this car"),
-    cta:T("เปิดการาจ","Open garage"),go:()=>go("garage")});
-  out.push({k:"brief",ic:"ti-sun-high",c:"#3FA9F5",
-    t:T("สรุปวันนี้","Today's brief"),
-    d:T("อากาศ สิ่งที่ถึงกำหนด และเรื่องที่ควรรู้ก่อนออกรถ","Weather, what's due, and what to know before you drive"),
-    cta:T("เปิดสรุป","Open brief"),go:()=>{const b=D.querySelector("[data-brief],#briefCard");
-      if(b)b.click(); else go("garage")}});
-  out.push({k:"tech",ic:"ti-tool",c:"#2E9E78",
-    t:T("หาช่างที่ทำเรื่องนั้นเป็น","Find a pro who does that"),
-    d:T("บอกอาการ ระบบจับคู่ช่างให้ พร้อมราคาเริ่มต้นและระยะรับประกัน","Say the symptom — we match a pro, with a starting price and warranty"),
-    cta:T("หาช่าง","Find a pro"),go:()=>location.href="techs.html"});
-  out.push({k:"ai",ic:"ti-sparkles",c:"#A46BF5",
-    t:T("ถาม AI เรื่องรถ","Ask the AI about your car"),
-    d:T("แนบรูปหรืออัดเสียงเครื่องมาได้ มันดูให้จริง ไม่ใช่ตอบทั่วไป","Attach a photo or engine sound — it actually looks, not a generic answer"),
-    cta:T("เปิดแชต","Open chat"),go:()=>go("chat")});
-  return out;
-}
-function banner(){
-  const free=$("hfree"); if(!free)return;
-  let b=$("mbanner");
-  const cards=bnCards();
-  if(!b){
-    b=D.createElement("section"); b.id="mbanner";
-    const top=$("mtop");
-    if(top&&top.nextSibling)free.insertBefore(b,top.nextSibling); else free.insertBefore(b,free.firstChild);
-    b.addEventListener("click",e=>{
-      const d=e.target.closest("[data-bn]");
-      if(d){ bnGo(+d.dataset.bn); return }
-      const card=e.target.closest("[data-bi]");
-      if(card){ const x=cards[+card.dataset.bi]; if(x&&x.go)x.go() }
-    });
-    /* หยุดสไลด์ตอนคนกำลังปัดดูเอง ไม่งั้นมันจะแย่งกันเลื่อน */
-    b.addEventListener("pointerdown",()=>{ if(bnTimer){clearInterval(bnTimer);bnTimer=null} });
-  }
-  /* วาดใหม่เฉพาะตอนเนื้อหาเปลี่ยนจริง ห้ามวาดทุกครั้งที่ถูกเรียก
-     ตัวเฝ้าหน้าจอเรียกฟังก์ชันนี้ทุก 140 มิลลิวินาทีตอนแอปกำลังวาดของอื่นอยู่
-     ถ้าเขียน innerHTML ใหม่ทุกครั้ง ตำแหน่งที่ผู้ใช้ปัดค้างไว้จะถูกดีดกลับใบแรก
-     ตลอดเวลา — ปัดไปดูใบที่สองไม่ได้เลย นี่คือบทเรียนเดียวกับตอนแก้จอวิดีโอ */
-  const key=cards.map(x=>x.k+"|"+x.t).join("~");
-  if(b.dataset.key===key)return;
-  b.dataset.key=key;
-  b.innerHTML=`<div class="bn-track" id="bnTrack">${cards.map((x,i)=>`
-      <article class="bn-card" data-bi="${i}" style="--c:${x.c}">
-        <span class="bn-ic"><i class="ti ${x.ic}"></i></span>
-        <b>${x.t}</b><p>${x.d}</p>
-        <span class="bn-cta">${x.cta} <i class="ti ti-arrow-right"></i></span>
-      </article>`).join("")}</div>
-    <div class="bn-dots">${cards.map((x,i)=>
-      `<button data-bn="${i}" class="${i===0?"on":""}" aria-label="${x.t}"></button>`).join("")}</div>`;
-  const tr=$("bnTrack");
-  tr.addEventListener("scroll",()=>{
-    const i=Math.round(tr.scrollLeft/tr.clientWidth);
-    if(i!==bnAt){ bnAt=i; paintDots() }
-  },{passive:true});
-  bnAt=0; paintDots();
-  if(bnTimer)clearInterval(bnTimer);
-  /* หกวินาทีต่อใบ — พออ่านจบสองบรรทัดแบบไม่ต้องรีบ
-     เร็วกว่านี้จะกลายเป็นป้ายโฆษณาที่ไม่มีใครอ่านทัน */
-  bnTimer=setInterval(()=>{
-    if(!D.getElementById("bnTrack")){clearInterval(bnTimer);bnTimer=null;return}
-    if(D.hidden)return;
-    bnGo((bnAt+1)%cards.length);
-  },6000);
-}
-function paintDots(){
-  const d=D.querySelectorAll(".bn-dots button");
-  d.forEach((x,i)=>x.classList.toggle("on",i===bnAt));
-}
-function bnGo(i){
-  const tr=$("bnTrack"); if(!tr)return;
-  bnAt=i; tr.scrollTo({left:i*tr.clientWidth,behavior:"smooth"}); paintDots();
-}
-
 function tools(){
   const free=$("hfree"); if(!free)return;
   let g=$("mtools");
@@ -15456,7 +15334,7 @@ function tools(){
     <div class="mgrid">
       ${HOME7.map(k=>tile(FEATS.find(f=>f.k===k))).join("")}
       <button class="mtool" data-mall="1">
-        <span class="mt-ic g3" style="--c:#6B7A90">${G3D.all}</span>
+        <span class="mt-ic" style="--c:#6B7A90"><i class="ti ti-layout-grid"></i></span>
         <b>${T("ทั้งหมด","All")}</b></button>
     </div>`;
 }
@@ -15501,6 +15379,112 @@ function close(){
   setTimeout(()=>{a.remove();b.remove()},320);
 }
 
+/* ═══════════ แถบสไลด์กลางหน้า ═══════════
+   รวมวิดเจ็ตทุกอันมาไว้ที่เดียว ข้างล่างจึงไม่เหลืออะไรอีก
+
+   จุดสำคัญคือ "ย้าย" ของจริงเข้ามา ไม่ใช่วาดการ์ดใหม่ที่หน้าตาคล้าย ๆ
+   วิดเจ็ตเดิมมีกราฟิกของมันอยู่แล้ว ทั้งภาพสภาพอากาศ การ์ดรถ และข่าว
+   ถ้าวาดใหม่เองก็ต้องทำกราฟิกพวกนั้นขึ้นมาใหม่ทั้งหมด แล้วมันจะไม่มีวันเหมือนเดิม
+   และของสองชุดจะเริ่มไม่ตรงกันในวันที่ใครสักคนแก้แค่ชุดเดียว
+
+   ผลข้างเคียงที่ต้องระวัง: แอปวาดวิดเจ็ตใหม่เป็นระยะ ของที่เราย้ายออกมา
+   อาจโผล่กลับไปที่เดิม จึงต้องคอยรับกลับเข้ามา ไม่ใช่ย้ายครั้งเดียวจบ */
+let bnTimer=null,bnAt=0;
+const BN_HOME=new WeakMap();      /* จำที่เดิมของแต่ละวิดเจ็ต ไว้คืนตอนกลับจอกว้าง */
+
+/* วิดเจ็ตที่ควรอยู่ในแถบสไลด์ เรียงตามลำดับที่อยากให้เห็น */
+function bnSources(){
+  const out=[];
+  const lite=$("hlite"); if(lite)out.push(lite);
+  const grid=$("widgetGrid");
+  if(grid)[...grid.children].forEach(w=>{
+    if(w.classList&&w.classList.contains("widget")&&w.offsetParent!==null)out.push(w);
+  });
+  /* ของที่เคยย้ายมาแล้วและยังอยู่ในราง ก็นับด้วย ไม่งั้นจะถูกมองว่าหายไป */
+  const tr=$("bnTrack");
+  if(tr)[...tr.children].forEach(sl=>{ const w=sl.firstElementChild;
+    if(w&&out.indexOf(w)<0)out.push(w) });
+  return out;
+}
+function banner(){
+  const free=$("hfree"); if(!free)return;
+  let b=$("mbanner");
+  if(!b){
+    b=D.createElement("section"); b.id="mbanner";
+    b.innerHTML=`<div class="bn-track" id="bnTrack"></div><div class="bn-dots"></div>`;
+    free.insertBefore(b,free.firstChild);
+    b.addEventListener("click",e=>{
+      const d=e.target.closest("[data-bn]"); if(d)bnGo(+d.dataset.bn);
+    });
+    /* กำลังปัดดูเองอยู่ ห้ามแย่งเลื่อน */
+    b.addEventListener("pointerdown",()=>{ if(bnTimer){clearInterval(bnTimer);bnTimer=null} });
+    const tr=b.querySelector("#bnTrack");
+    tr.addEventListener("scroll",()=>{
+      const i=Math.round(tr.scrollLeft/Math.max(1,tr.clientWidth));
+      if(i!==bnAt){ bnAt=i; paintDots() }
+    },{passive:true});
+  }
+  const tr=$("bnTrack"); if(!tr)return;
+  const src=bnSources();
+  let moved=false;
+  src.forEach(w=>{
+    if(w.parentElement&&w.parentElement.classList.contains("bn-slide"))return;
+    if(!BN_HOME.has(w))BN_HOME.set(w,{p:w.parentElement,n:w.nextElementSibling});
+    const sl=D.createElement("div"); sl.className="bn-slide";
+    sl.appendChild(w); tr.appendChild(sl); moved=true;
+  });
+  /* วาดจุดใหม่เฉพาะตอนจำนวนใบเปลี่ยน ไม่ใช่ทุกครั้งที่ถูกเรียก
+     เขียนทับทุกครั้งจะทำให้ตำแหน่งที่ปัดค้างไว้ถูกล้าง — บทเรียนเดิมจากจอวิดีโอ */
+  const dots=b.querySelector(".bn-dots");
+  if(moved||dots.children.length!==tr.children.length){
+    dots.innerHTML=[...tr.children].map((x,i)=>
+      `<button data-bn="${i}" class="${i===bnAt?"on":""}" aria-label="${i+1}"></button>`).join("");
+    if(tr.__ro){ tr.__ro.disconnect(); tr.__ro=null }
+  }
+  watchBanner(); fitBanner();
+  if(bnTimer)clearInterval(bnTimer);
+  /* แปดวินาทีต่อใบ — วิดเจ็ตจริงมีเนื้อหามากกว่าการ์ดข้อความ ต้องให้เวลาอ่าน */
+  bnTimer=setInterval(()=>{
+    if(!D.getElementById("bnTrack")){clearInterval(bnTimer);bnTimer=null;return}
+    if(D.hidden)return;
+    const n=$("bnTrack").children.length; if(n>1)bnGo((bnAt+1)%n);
+  },8000);
+}
+function paintDots(){
+  D.querySelectorAll(".bn-dots button").forEach((x,i)=>x.classList.toggle("on",i===bnAt));
+  fitBanner();
+}
+/* ── ความสูงของรางต้องเท่ากับใบที่กำลังดูอยู่ ──
+   แถวแนวนอนปกติจะสูงเท่าใบที่สูงที่สุดเสมอ ใบสั้น ๆ จึงมีที่ว่างห้อยอยู่ใต้มัน
+   บนจอมือถือช่องว่างนั้นกินไปเกือบสามร้อยพิกเซล ซึ่งคือครึ่งจอ */
+let fitT=null;
+function fitBanner(){
+  const tr=$("bnTrack"); if(!tr)return;
+  const sl=tr.children[bnAt]; if(!sl)return;
+  const h=sl.firstElementChild?sl.firstElementChild.offsetHeight:sl.offsetHeight;
+  if(h>40)tr.style.height=h+"px";
+}
+/* วิดเจ็ตข้างในโตหรือหดได้เอง (ข่าวโหลดเสร็จ ยางบานออก) ต้องวัดใหม่ตาม */
+function watchBanner(){
+  const tr=$("bnTrack"); if(!tr||tr.__ro||typeof ResizeObserver==="undefined")return;
+  tr.__ro=new ResizeObserver(()=>{ clearTimeout(fitT); fitT=setTimeout(fitBanner,80) });
+  [...tr.children].forEach(sl=>{ if(sl.firstElementChild)tr.__ro.observe(sl.firstElementChild) });
+}
+function bnGo(i){
+  const tr=$("bnTrack"); if(!tr||!tr.children[i])return;
+  bnAt=i; tr.scrollTo({left:tr.children[i].offsetLeft-tr.offsetLeft,behavior:"smooth"}); paintDots();
+}
+/* คืนวิดเจ็ตทุกอันกลับที่เดิม ตอนกลับไปจอกว้าง */
+function bnRestore(){
+  const tr=$("bnTrack"); if(!tr)return;
+  [...tr.children].forEach(sl=>{
+    const w=sl.firstElementChild; if(!w)return;
+    const h=BN_HOME.get(w);
+    if(h&&h.p)h.p.insertBefore(w,h.n&&h.n.parentElement===h.p?h.n:null);
+    else sl.parentElement.parentElement.appendChild(w);
+  });
+}
+
 /* ─────────── ถอนคืนเมื่อกลับไปจอกว้าง ─────────── */
 /* หมุนเครื่องเป็นแนวนอนหรือเปิดบนแท็บเล็ตแล้วต้องได้หน้าเดิมของเดสก์ท็อปกลับมา
    ครบทุกชิ้น ไม่ใช่ครึ่ง ๆ กลาง ๆ — จึงต้องเก็บทุกอย่างที่เราสร้าง */
@@ -15509,6 +15493,8 @@ function teardown(){
   const n=$("mnav"); if(n)n.remove();
   const g=$("mtools"); if(g)g.remove();
   const tb=$("mtop"); if(tb)tb.remove();
+  D.body.classList.remove("mhome-fit");
+  bnRestore();
   const bn=$("mbanner"); if(bn)bn.remove();
   D.querySelectorAll(".mhide").forEach(el=>el.classList.remove("mhide"));
   if(bnTimer){clearInterval(bnTimer);bnTimer=null}
@@ -16150,152 +16136,171 @@ window.spireApplyPrimary=()=>apply(read());
 .p-mark,.hint-logo,.side-mark{color:var(--c-acc)}
 </style>
 
-<style id="clay">
-/* ═══════════════════════════════════════════════════════════════════
-   Claymorphism — ทำให้ปุ่มแต่ละอันมีตัวตนของตัวเอง
+<!-- ถอด Claymorphism ออกแล้ว กลับไปใช้สไตล์เดิมของหน้า -->
+
+<style id="techwidget">
+/* ══════════════════════════════════════════════════════════════════
+   วิดเจ็ตเรียกช่าง — สามมิติแบบเบามือ ไม่ใช่ดินน้ำมัน
    ───────────────────────────────────────────────────────────────────
-   ปัญหาเดิมคือทุกปุ่มเป็นสี่เหลี่ยมพื้นขาวขอบบางเหมือนกันหมด
-   ต่างกันแค่ไอคอนข้างใน ตาจึงต้องอ่านตัวหนังสือทุกครั้งกว่าจะรู้ว่าอันไหนคืออะไร
-
-   ดินน้ำมันแก้เรื่องนี้ด้วยสามอย่าง ไม่ใช่แค่ทำให้มน
-     1 มวล      — เงาสองชั้น ชั้นในบอกความหนา ชั้นนอกบอกว่าลอยอยู่เหนือพื้น
-     2 แสง      — ขอบบนซ้ายสว่าง ขอบล่างขวาเข้ม ทุกปุ่มรับแสงจากทางเดียวกัน
-     3 สีประจำตัว — แต่ละปุ่มมีสีของตัวเอง จำได้ด้วยหางตาโดยไม่ต้องอ่าน
-
-   ใช้เฉพาะจอกว้าง เพราะบนมือถือมีตารางไอคอนของตัวเองอยู่แล้ว
-   ═══════════════════════════════════════════════════════════════════ */
-@media (min-width:861px){
-
-  /* ── ตัวปุ่มเครื่องมือ ── */
-  .qa{
-    border-radius:28px;
-    padding:26px 12px 22px;
-    border:0;
-    background:
-      linear-gradient(160deg,
-        color-mix(in srgb,var(--qc,var(--accent)) 15%,var(--surface)),
-        color-mix(in srgb,var(--qc,var(--accent)) 4%,var(--surface)));
-    box-shadow:
-      /* แสงจากบนซ้าย */
-      inset 3px 4px 6px -2px rgba(255,255,255,.85),
-      /* เนื้อดินด้านล่างขวา */
-      inset -4px -5px 9px -3px var(--qc-shadow,rgba(217,94,60,.28)),
-      /* เงาที่ทอดลงพื้น สองชั้นเพื่อให้ขอบเงานุ่มแทนที่จะเป็นเส้น */
-      0 10px 16px -12px var(--qc-shadow,rgba(217,94,60,.5)),
-      0 22px 36px -22px var(--qc-shadow,rgba(217,94,60,.55));
-    transition:transform .3s cubic-bezier(.34,1.4,.5,1),box-shadow .3s;
-  }
-  .qa:hover{
-    transform:translateY(-6px);
-    box-shadow:
-      inset 3px 4px 7px -2px rgba(255,255,255,.9),
-      inset -4px -5px 10px -3px var(--qc-shadow,rgba(217,94,60,.34)),
-      0 16px 22px -14px var(--qc-shadow,rgba(217,94,60,.55)),
-      0 34px 48px -24px var(--qc-shadow,rgba(217,94,60,.6));
-  }
-  /* กดแล้วต้องยุบลงไปในพื้น ไม่ใช่แค่เล็กลง
-     ดินน้ำมันจริงกดแล้วบุ๋ม เงาด้านในจึงต้องลึกขึ้นและเงาที่พื้นต้องหด */
-  .qa:active{
-    transform:translateY(1px) scale(.975);
-    box-shadow:
-      inset 4px 5px 10px -2px rgba(255,255,255,.55),
-      inset -5px -6px 12px -3px var(--qc-shadow,rgba(217,94,60,.42)),
-      0 4px 8px -6px var(--qc-shadow,rgba(217,94,60,.4));
-  }
-
-  /* ── ก้อนไอคอน ──
-     นี่คือส่วนที่ทำให้จำได้ ก้อนสีอิ่มตัวลอยนูนออกมาจากตัวปุ่ม
-     แต่ละอันเอียงคนละองศาเล็กน้อย จะได้ไม่ดูเป็นแถวทหาร */
-  .qa-ic,.hf-ic{
-    border-radius:22px;
-    background:linear-gradient(150deg,var(--qc2,var(--accent-2)),var(--qc,var(--accent)) 78%);
-    box-shadow:
-      inset 2px 3px 5px -1px rgba(255,255,255,.6),
-      inset -2px -3px 6px -1px rgba(0,0,0,.22),
-      0 9px 15px -8px var(--qc-shadow,rgba(217,94,60,.65)),
-      0 3px 5px -3px rgba(0,0,0,.2);
-  }
-  .qa-ic{width:60px;height:60px;font-size:27px}
-  .qa:hover .qa-ic{transform:rotate(0) scale(1.1) translateY(-2px)}
-  .qa:nth-child(1) .qa-ic{transform:rotate(-9deg)}
-  .qa:nth-child(2) .qa-ic{transform:rotate(6deg)}
-  .qa:nth-child(3) .qa-ic{transform:rotate(-5deg)}
-  .qa:nth-child(4) .qa-ic{transform:rotate(8deg)}
-  /* ไอคอนจาง ๆ หลังปุ่มเบาลง ไม่งั้นแย่งสายตากับก้อนสีข้างหน้า */
-  .qa-deco{opacity:.055}
-  .qa:hover .qa-deco{opacity:.1}
-  .qa-t{font-size:14px;font-weight:700;letter-spacing:-.2px}
-
-  /* ── สีประจำตัวของแต่ละปุ่ม ── */
-  .qa[data-open="text"] {--qc:#D9733C;--qc2:#F0A860;--qc-shadow:rgba(217,115,60,.5)}
-  .qa[data-open="image"]{--qc:#3A8CC5;--qc2:#74C2E8;--qc-shadow:rgba(58,140,197,.5)}
-  .qa[data-open="video"]{--qc:#9B5DE0;--qc2:#C89BF0;--qc-shadow:rgba(155,93,224,.5)}
-  .qa.qa-tech           {--qc:#2E9E78;--qc2:#63D0A4;--qc-shadow:rgba(46,158,120,.5)}
-
-  /* ── การ์ดรถและการ์ดฟีเจอร์ ใช้ภาษาเดียวกัน ── */
-  .ccard,.hf-card{
-    border:0;border-radius:26px;
-    background:linear-gradient(160deg,
-      color-mix(in srgb,var(--c,var(--accent)) 7%,var(--surface)),
-      color-mix(in srgb,var(--c,var(--accent)) 2%,var(--surface)));
-    box-shadow:
-      inset 3px 4px 6px -2px rgba(255,255,255,.8),
-      inset -4px -5px 9px -3px color-mix(in srgb,var(--c,var(--accent)) 26%,transparent),
-      0 18px 32px -22px color-mix(in srgb,var(--c,var(--accent)) 60%,transparent);
-  }
-  .ccard:hover,.hf-card:hover{
-    transform:translateY(-4px);
-    box-shadow:
-      inset 3px 4px 7px -2px rgba(255,255,255,.86),
-      inset -4px -5px 10px -3px color-mix(in srgb,var(--c,var(--accent)) 32%,transparent),
-      0 28px 44px -24px color-mix(in srgb,var(--c,var(--accent)) 70%,transparent);
-  }
-  .hf-ic{width:50px;height:50px;border-radius:19px}
-  .ccard .ci{
-    border-radius:19px;
-    box-shadow:
-      inset 2px 3px 5px -1px rgba(255,255,255,.32),
-      inset -2px -3px 6px -1px rgba(0,0,0,.3),
-      0 8px 14px -8px rgba(0,0,0,.5);
-  }
-
-  /* ── ธีมมืด ──
-     แสงขาวบนพื้นมืดจะกลายเป็นขอบเรืองแสงจนดูเป็นนีออน ไม่ใช่ดิน
-     จึงต้องลดแสงลงมาก แล้วไปเพิ่มน้ำหนักที่เงาแทน */
-  [data-theme="cyber"] .qa,[data-theme="cyber"] .ccard,[data-theme="cyber"] .hf-card,
-  [data-theme="dark"] .qa,[data-theme="dark"] .ccard,[data-theme="dark"] .hf-card{
-    box-shadow:
-      inset 2px 3px 6px -2px rgba(255,255,255,.14),
-      inset -4px -5px 10px -3px rgba(0,0,0,.55),
-      0 20px 34px -22px rgba(0,0,0,.8);
-  }
-  [data-theme="cyber"] .qa:hover,[data-theme="dark"] .qa:hover{
-    box-shadow:
-      inset 2px 3px 7px -2px rgba(255,255,255,.18),
-      inset -4px -5px 11px -3px rgba(0,0,0,.6),
-      0 30px 46px -24px var(--qc-shadow,rgba(0,0,0,.85));
-  }
-}
-
-/* ── ตารางเครื่องมือบนมือถือ ──
-   ใช้ภาษาเดียวกันแต่เบามือกว่า เพราะไอคอนเรียงติดกันแปดตัว
-   ถ้าใส่เงาหนักเท่าเดสก์ท็อปจะกลายเป็นหน้าจอที่มีแต่เงา */
-.mtool .mt-ic{
-  border-radius:20px;
-  box-shadow:
-    inset 2px 3px 4px -1px rgba(255,255,255,.5),
-    inset -2px -3px 6px -1px rgba(0,0,0,.28),
-    0 8px 13px -8px var(--c,rgba(0,0,0,.5));
-}
-.mtool:active .mt-ic{
-  transform:scale(.9);
-  box-shadow:
-    inset 3px 4px 8px -1px rgba(255,255,255,.3),
-    inset -3px -4px 9px -1px rgba(0,0,0,.4);
-}
-@media (prefers-reduced-motion:reduce){
-  .qa,.qa-ic,.ccard,.hf-card{transition:none !important}
-}
+   ความลึกมาจากสามอย่างที่บางมาก ไม่ใช่เงาหนา ๆ
+     เส้นสว่างหนึ่งพิกเซลที่ขอบบน  = แสงตกกระทบขอบ
+     เส้นมืดหนึ่งพิกเซลที่ขอบล่าง  = ขอบที่พ้นแสง
+     เงาที่ทอดลงพื้นแบบกว้างและจาง = ระยะห่างจากพื้น
+   สามอย่างนี้อ่านเป็นวัตถุจริงได้ โดยไม่กลายเป็นของเล่นเหมือนดินน้ำมัน
+   ══════════════════════════════════════════════════════════════════ */
+.tw{display:flex;flex-direction:column;gap:14px}
+.tw-ask{display:flex;gap:9px;align-items:center;
+  background:var(--surface-2);border-radius:15px;padding:5px 6px 5px 15px;
+  border:1px solid var(--line);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 1px 0 rgba(0,0,0,.16);
+  transition:border-color .18s,box-shadow .18s}
+.tw-ask:focus-within{border-color:var(--accent);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
+.tw-ask input{flex:1;min-width:0;border:0;background:none;outline:0;
+  padding:12px 0;font-family:inherit;font-size:14.5px;color:var(--ink)}
+.tw-ask button{border:0;border-radius:12px;padding:11px 17px;cursor:pointer;
+  background:var(--grad);color:#fff;font-family:inherit;font-weight:600;font-size:13.5px;
+  white-space:nowrap;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 6px 14px -8px color-mix(in srgb,var(--accent) 80%,transparent);
+  transition:transform .16s,box-shadow .16s}
+.tw-ask button:hover{transform:translateY(-1px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.34),0 10px 20px -9px color-mix(in srgb,var(--accent) 85%,transparent)}
+.tw-ask button:active{transform:translateY(1px);box-shadow:inset 0 2px 5px rgba(0,0,0,.25)}
+.tw-chips{display:flex;gap:7px;flex-wrap:wrap}
+.tw-chips button{border:1px solid var(--line);background:var(--surface);
+  border-radius:20px;padding:7px 14px;font-family:inherit;font-size:12.5px;
+  color:var(--muted);cursor:pointer;transition:.16s;box-shadow:0 1px 2px rgba(0,0,0,.1)}
+.tw-chips button:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-1px)}
+.tw-res{display:grid;gap:11px;animation:twIn .32s cubic-bezier(.2,.9,.3,1)}
+@keyframes twIn{from{opacity:0;transform:translateY(6px)}}
+.tw-band{display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap;
+  background:var(--surface-2);border:1px solid var(--line);border-radius:16px;
+  padding:15px 17px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 8px 18px -14px rgba(0,0,0,.5)}
+.tw-band .c{flex:1;min-width:88px}
+.tw-band .c span{display:block;font-size:11px;color:var(--faint);
+  letter-spacing:.03em;text-transform:uppercase;margin-bottom:2px}
+.tw-band .c b{font-size:20px;font-weight:700;letter-spacing:-.4px}
+.tw-band .c.hi b{font-size:26px;color:var(--accent)}
+.tw-pro{display:flex;align-items:center;gap:13px;cursor:pointer;
+  background:var(--surface);border:1px solid var(--line);border-radius:16px;
+  padding:14px 15px;text-align:left;font-family:inherit;color:var(--ink);width:100%;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 10px 22px -18px rgba(0,0,0,.55);
+  transition:transform .18s cubic-bezier(.3,1.2,.5,1),box-shadow .18s,border-color .18s}
+.tw-pro:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--accent) 55%,transparent);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 18px 32px -20px rgba(0,0,0,.7)}
+.tw-pro:active{transform:translateY(0)}
+.tw-av{width:46px;height:46px;flex:0 0 46px;border-radius:15px;display:grid;
+  place-items:center;font-size:19px;font-weight:700;color:#fff;background:var(--grad);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 6px 14px -8px color-mix(in srgb,var(--accent) 80%,transparent)}
+.tw-in{flex:1;min-width:0}
+.tw-in b{display:block;font-size:15px;font-weight:700;letter-spacing:-.01em}
+.tw-in small{display:block;font-size:12px;color:var(--muted);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tw-why{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.tw-why span{font-size:11px;padding:3px 8px;border-radius:7px;
+  background:color-mix(in srgb,var(--accent) 12%,transparent);
+  color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 22%,transparent)}
+.tw-go{flex:0 0 auto;color:var(--accent);font-size:19px}
+.tw-more{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted);
+  align-items:center;padding:0 2px}
+.tw-more b{color:var(--ink);font-weight:600}
+.tw-act{display:flex;gap:9px}
+.tw-act button{flex:1;border-radius:13px;padding:11px;cursor:pointer;
+  font-family:inherit;font-weight:600;font-size:13px;transition:.16s;
+  border:1px solid var(--line);background:var(--surface-2);color:var(--ink);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.tw-act button.p{background:var(--grad);color:#fff;border-color:transparent;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 6px 14px -8px color-mix(in srgb,var(--accent) 80%,transparent)}
+.tw-act button:active{transform:scale(.97)}
+.tw-empty{font-size:13px;color:var(--muted);line-height:1.65;padding:2px}
+@media (prefers-reduced-motion:reduce){.tw-res,.tw-pro{animation:none;transition:none}}
 </style>
+
+<script id="techwidget-js">
+/* ══ วิดเจ็ตเรียกช่างบนแดชบอร์ด ══
+   ใช้เครื่องมือชุดเดียวกับหน้าช่าง (Techs.estimate / Techs.match)
+   ผลลัพธ์จึงตรงกันเสมอ ไม่มีทางที่หน้าหลักแนะนำช่างที่กดเข้าไปแล้วไม่เจอ */
+(function(){
+  const $=id=>document.getElementById(id);
+  const esc=t=>String(t==null?"":t).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const money=n=>Number(n).toLocaleString("th-TH");
+  const tx=(th,en)=>(window.spireT?window.spireT(th,en):((window.lang||"th")==="en"?en:th));
+  const HINTS=["แอร์ไม่เย็น","ช่วงล่างมีเสียง","สตาร์ทไม่ติด","เช็กระยะ"];
+
+  function shell(){
+    const w=$("techWidget"); if(!w||!window.Techs)return null;
+    if(w.dataset.ready)return w;
+    w.dataset.ready="1";
+    w.innerHTML=`<div class="tw-ask">
+        <input id="twQ" placeholder="${tx("รถเป็นอะไร พิมพ์อาการได้เลย","What is wrong? Just describe it")}" autocomplete="off"/>
+        <button id="twGo">${tx("หาช่าง","Find")}</button>
+      </div>
+      <div class="tw-chips">${HINTS.map(h=>`<button data-h="${esc(h)}">${esc(h)}</button>`).join("")}</div>
+      <div id="twOut"><div class="tw-empty">${tx(
+        "บอกอาการแล้วระบบจะประเมินราคาให้ก่อน แล้วค่อยเลือกช่างที่ทำเรื่องนั้นเป็น — ไม่ต้องรู้ว่าต้องเรียกช่างประเภทไหน",
+        "Describe the symptom — we price it first, then pick a pro who does exactly that")}</div></div>`;
+    $("twGo").onclick=()=>go($("twQ").value.trim());
+    $("twQ").addEventListener("keydown",e=>{ if(e.key==="Enter")go($("twQ").value.trim()) });
+    w.querySelectorAll(".tw-chips button").forEach(b=>b.onclick=()=>{
+      $("twQ").value=b.dataset.h; go(b.dataset.h) });
+    return w;
+  }
+
+  function go(q){
+    const out=$("twOut"); if(!out)return;
+    if(!q){ $("twQ").focus(); return }
+    const car=(()=>{try{return (window.cars?window.cars():[])[0]||{}}catch(e){return{}}})();
+    const here=Techs.home()||Techs.pos();
+    const e=Techs.estimate(q,here);
+    const m=Techs.match({symptom:q,here,car});
+    if(!m||!e){
+      out.innerHTML=`<div class="tw-empty">${tx(
+        "ยังไม่มีช่างที่ระบุว่าทำงานแบบนี้ ลองพิมพ์สั้นลง เช่น ‘แอร์’ หรือ ‘ช่วงล่าง’",
+        "No pro listed for that yet — try something shorter like air-con")}</div>`;
+      return;
+    }
+    const b=m.best;
+    out.innerHTML=`<div class="tw-res">
+      <div class="tw-band">
+        <div class="c"><span>${tx("เริ่มที่","From")}</span><b>฿${money(e.low)}</b></div>
+        <div class="c hi"><span>${tx("ราคาที่พบบ่อย","Typical")}</span><b>฿${money(e.typical)}</b></div>
+        <div class="c"><span>${tx("งานหนักสุด","Heavy job")}</span><b>฿${money(e.high)}</b></div>
+      </div>
+      <button class="tw-pro" data-open="${b.id}">
+        <span class="tw-av">${esc((b.name||"?")[0])}</span>
+        <span class="tw-in"><b>${esc(b.name)}</b>
+          <small>${esc(b.shop)} · ${esc(b.area)}${b.dist!=null?` · ${b.dist} ${tx("กม.","km")}`:""}</small>
+          <span class="tw-why">${b.why.slice(0,3).map(x=>`<span>${esc(x)}</span>`).join("")}</span>
+        </span>
+        <i class="ti ti-chevron-right tw-go"></i>
+      </button>
+      ${m.others.length?`<div class="tw-more">${tx("รองลงมา","Also")}
+        <b>${m.others.map(o=>esc(o.name)).join(" · ")}</b></div>`:""}
+      <div class="tw-act">
+        <button data-all="1">${tx("ดูช่างทั้งหมด","See all pros")}</button>
+        <button class="p" data-job="${b.id}"><i class="ti ti-send"></i> ${tx("ส่งใบงานให้ช่าง","Send job sheet")}</button>
+      </div>
+    </div>`;
+    out.querySelector("[data-open]").onclick=()=>location.href="techs.html?q="+encodeURIComponent(q);
+    out.querySelector("[data-all]").onclick=()=>location.href="techs.html?q="+encodeURIComponent(q);
+    out.querySelector("[data-job]").onclick=()=>{
+      /* ใบงานเดียวกับที่หน้าช่างสร้าง — AI ได้ข้อมูลรถและอาการครบตั้งแต่ข้อความแรก */
+      const brief=Techs.jobBrief({car,symptom:q});
+      location.href="chat.html?q="+encodeURIComponent(
+        tx("ช่วยเรียบเรียงใบงานนี้ให้ช่างอ่านเข้าใจใน 30 วินาที แล้วเติมคำถามที่ช่างน่าจะอยากรู้เพิ่ม",
+           "Tidy this job sheet so a mechanic gets it in 30 seconds, and add what they would want to know")
+        +"\n\n"+brief);
+    };
+  }
+
+  /* แอปวาดแดชบอร์ดใหม่เป็นระยะ ต้องคอยสร้างกลับ ไม่ใช่ทำครั้งเดียวจบ
+     แต่ห้ามวาดทับของที่มีอยู่ ไม่งั้นสิ่งที่ผู้ใช้พิมพ์ค้างไว้จะหาย */
+  const boot=()=>{ try{ shell() }catch(e){} };
+  if(document.readyState==="loading")addEventListener("DOMContentLoaded",boot); else boot();
+  new MutationObserver(()=>{ const w=$("techWidget"); if(w&&!w.dataset.ready)boot() })
+    .observe(document.body,{childList:true,subtree:true});
+})();
+</script>
 </body>
 </html>

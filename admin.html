@@ -3720,23 +3720,45 @@ function sigSend(to,kind,payload,extra){
       n:(me.name||"").slice(0,30)},extra||{})).slice(0,395),
     make:"__sig__",model:"",enabled:false}}).catch(()=>{});
 }
-function sigStart(){ if(!sigTimer)sigTimer=setInterval(sigPoll,2000); sigPoll() }
+let sigFast=0;
+function sigRate(){
+  /* กำลังจับมืออยู่ไหม — ดูจากสายที่ยังไม่ถึงสถานะ connected */
+  const busy=Object.keys(PEERS).some(u=>{
+    const st=PEERS[u]&&PEERS[u].pc&&PEERS[u].pc.connectionState;
+    return st&&st!=="connected"&&st!=="closed"&&st!=="failed";
+  })||(vcRoom&&!Object.keys(PEERS).length);
+  const want=busy?500:2000;
+  if(want===sigFast)return;
+  sigFast=want;
+  if(sigTimer)clearInterval(sigTimer);
+  sigTimer=setInterval(sigPoll,want);
+}
+function sigStart(){ sigFast=0; sigRate(); sigPoll() }
 function sigDel(id){ api("/api/kb/"+encodeURIComponent(id),{method:"DELETE"}).catch(()=>{}) }
 async function sigPoll(){
   try{
     const res=await api("/api/kb"); const kb=res.kb||[];
     VOICE=vcParse(kb);
+    sigRate();
     if(vcRoom)vcSync();
     drawRooms&&drawRooms();
     const pre="sig_"+me.uid+"_";
-    for(const r of kb.filter(k=>k.id.startsWith(pre)&&!seenSig[k.id])){
-      seenSig[r.id]=1;
-      let m={},bd={}; try{m=JSON.parse(r.keywords||"{}")}catch(e){}
+    /* เรียงจากเก่าไปใหม่ก่อนเสมอ — ห้ามใช้ลำดับที่เซิร์ฟเวอร์ส่งมาตรง ๆ
+       เพราะเซิร์ฟเวอร์เรียงจากใหม่ไปเก่า ซึ่งเป็นลำดับกลับหลังของการจับมือ
+       การจับมือมีลำดับที่ห้ามสลับ: offer → answer → เส้นทางเครือข่าย
+       ถ้าเอาเส้นทางมาก่อน offer มันจะถูกทิ้งทั้งหมด แล้วสายไม่มีวันต่อติด */
+    const pend=kb.filter(k=>k.id.startsWith(pre)&&!seenSig[k.id]).map(r=>{
+      let m={},bd={};
+      try{m=JSON.parse(r.keywords||"{}")}catch(e){}
       try{bd=JSON.parse(r.body||"{}")}catch(e){}
-      if(Date.now()-(m.t||0)>6e4){ sigDel(r.id); continue }
-      const from=r.id.slice(pre.length).split("_")[0];
-      await sigHandle(m.k,bd,from,m);
-      sigDel(r.id);
+      return {r,m,bd,t:m.t||0};
+    }).sort((a,b)=>a.t-b.t);
+    for(const x of pend){
+      seenSig[x.r.id]=1;
+      if(Date.now()-x.t>6e4){ sigDel(x.r.id); continue }
+      const from=x.r.id.slice(pre.length).split("_")[0];
+      await sigHandle(x.m.k,x.bd,from,x.m);
+      sigDel(x.r.id);
     }
   }catch(e){}
 }
@@ -3747,6 +3769,7 @@ async function sigHandle(kind,body,from,meta){
     if(!vcRoom||meta.r!==vcRoom)return;
     let rec=PEERS[from]; if(!rec)rec=await newPC(from,meta.n,false);
     await rec.pc.setRemoteDescription(new RTCSessionDescription(body));
+    await flushIce(from);
     await fillSenders(rec);
     const ans=await rec.pc.createAnswer();
     await rec.pc.setLocalDescription(ans);
@@ -3754,12 +3777,25 @@ async function sigHandle(kind,body,from,meta){
     drawTiles();
   }else if(kind==="answer"){
     const rec=PEERS[from]; if(!rec)return;
-    if(rec.pc.signalingState==="have-local-offer")
+    if(rec.pc.signalingState==="have-local-offer"){
       await rec.pc.setRemoteDescription(new RTCSessionDescription(body));
+      await flushIce(from);
+    }
   }else if(kind==="ice"){
-    const rec=PEERS[from]; if(!rec)return;
+    /* เส้นทางที่มาถึงก่อนที่สายจะพร้อม ต้องพักไว้ ไม่ใช่ทิ้ง
+       เพราะบางเครือข่ายส่งเส้นทางมาก่อนคำขอเสมอ ทิ้งแล้วก็ต่อไม่ติด */
+    const rec=PEERS[from];
+    if(!rec||!rec.pc.remoteDescription){ (ICEQ[from]=ICEQ[from]||[]).push(body); return }
     try{ await rec.pc.addIceCandidate(new RTCIceCandidate(body)) }catch(e){}
   }
+}
+/* เส้นทางที่พักไว้รอสายพร้อม */
+const ICEQ={};
+async function flushIce(uid){
+  const q=ICEQ[uid]; if(!q||!q.length)return;
+  const rec=PEERS[uid]; if(!rec||!rec.pc.remoteDescription)return;
+  ICEQ[uid]=[];
+  for(const c of q){ try{ await rec.pc.addIceCandidate(new RTCIceCandidate(c)) }catch(e){} }
 }
 
 /* ── ช่องของแต่ละคน ──

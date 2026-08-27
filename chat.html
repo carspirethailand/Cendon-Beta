@@ -5715,6 +5715,11 @@ function techPrompt(){
    ไม่ปล่อยให้โมเดลเดาเอาจากรายชื่อยาว ๆ เพราะการเรียงลำดับ ระยะทาง
    และตัวกรอง เป็นงานของเครื่อง ไม่ใช่ของภาษา */
 const TECH_ASK=/ช่าง|อู่|ร้านซ่อม|ซ่อมที่ไหน|เอารถไป|mechanic|garage|workshop/i;
+/* คำถามที่ตอบจากความรู้เก่าไม่ได้ ต้องเปิดค้นเว็บจริง
+   เช่น ราคาปัจจุบัน ข่าว รุ่นใหม่ โปรโมชัน หรืออะไรที่มีคำว่า "ตอนนี้ ล่าสุด"
+   จับกว้างไว้ก่อน เพราะการค้นเว็บเกินความจำเป็นเสียแค่เวลา
+   แต่การไม่ค้นทั้งที่ควรค้น ทำให้ได้คำตอบที่ผิด */
+const NEEDS_WEB=/ราคา|กี่บาท|ล่าสุด|ตอนนี้|ปีนี้|ข่าว|เปิดตัว|โปรโมชั่น|โปรโมชัน|รีวิว|เทียบรุ่น|รุ่นใหม่|ค้นหา|หาข้อมูล|search|latest|news|price|current|review/i;
 function techHits(text){
   try{
     if(!window.Techs||!TECH_ASK.test(text||""))return"";
@@ -6085,9 +6090,18 @@ async function sendMsg(){
     let skillIds=[];
     try{ skillIds=(window.spireSkillsAttached&&window.spireSkillsAttached()||[])
            .map(x=>x.id||x.slug).filter(Boolean) }catch(e){}
-    /* ลองแบบสตรีมก่อน จะได้เห็นความคิดสด ๆ ถ้าไม่ได้ค่อยใช้ทางเดิม */
+    /* ── เลือกทางก่อน ระหว่างทางสตรีมกับทางปกติ ──
+       ทางสตรีมสวยกว่าเพราะเห็นความคิดสด ๆ แต่ตอนนี้หลังบ้านยังไม่อ่าน
+       ค่า search ที่ส่งไปกับทางนั้น (ดู BACKEND-TODO ข้อ 1)
+       คำถามที่ต้องค้นเว็บจึงตอบว่าค้นไม่ได้ ทั้งที่ทางปกติค้นได้อยู่แล้ว
+
+       ระหว่างรอหลังบ้านแก้ ให้คำถามที่ต้องใช้ข้อมูลสดวิ่งไปทางปกติแทน
+       ผู้ใช้จะได้คำตอบที่ถูกต้องวันนี้ แลกกับการไม่เห็นความคิดไหลเท่านั้น
+       พอหลังบ้านแก้แล้ว ลบเงื่อนไขนี้ทิ้งได้เลย ทุกอย่างกลับไปวิ่งทางสตรีมเหมือนเดิม */
+    const needWeb=NEEDS_WEB.test(text||"");
     let streamed=null;
-    try{ streamed=await streamAnswer(contents,{skillIds,system:sys,search:!hasMedia}) }
+    if(needWeb&&!hasMedia){ streamed=null }
+    else try{ streamed=await streamAnswer(contents,{skillIds,system:sys,search:!hasMedia}) }
     catch(e){
       if(window.__stopped||(e&&e.name==="AbortError")){ window.__stopped=false; return }
       if(/โควตา|quota/i.test(e.message||""))throw e;

@@ -4,398 +4,694 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>Cendon — หาช่าง</title>
-<meta name="theme-color" content="#F6F3EC"/>
+<meta name="theme-color" content="#131316"/>
 <link rel="manifest" href="./manifest.webmanifest"/>
 <link rel="icon" href="./favicon.png"/>
+
+<link rel="stylesheet" href="./theme.css"/>
+<script src="./theme.js"></script>
+
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chonburi&family=Charm:wght@400;700&family=Chakra+Petch:wght@400;600;700&family=Anuphan:wght@400;500;700&display=swap">
-<!-- ══ หน้านี้ใช้ระบบธีมเดียวกับทั้งเว็บ ══
-     ของเดิมผมประกาศสีเองในไฟล์ หน้าช่างจึงสว่างอยู่หน้าเดียว
-     ทั้งที่คนอื่นตั้งธีมมืดหรือธีมนีออนไว้ — เปิดมาแล้วเหมือนหลุดไปอีกเว็บ
-     ตอนนี้ดึง app.css มาใช้ตรง ๆ เขาตั้งธีมไหนไว้ หน้านี้ก็เป็นธีมนั้น -->
-<link rel="stylesheet" href="./app.css"/>
-<script>
-/* ตั้งธีมก่อนวาดหน้าแรก ไม่งั้นจะเห็นหน้าขาววาบหนึ่งครั้งก่อนเปลี่ยนเป็นธีมมืด
-   สคริปต์ตัวนี้เหมือนกับที่หน้าอื่นใช้ทุกตัวอักษร ห้ามแก้ให้ต่างกัน */
-(function(){try{var r=localStorage.getItem("spire_theme"),t=r?JSON.parse(r):"warm";
-  document.documentElement.setAttribute("data-theme",t)}catch(e){}})();
-</script>
 <style>
-/* หน้านี้ยืมตัวแปรสีทั้งหมดมาจาก app.css จึงไม่มี :root ของตัวเอง
-   เหลือแค่ตัวแปรที่ app.css ไม่ได้ให้ไว้ กับสไตล์เฉพาะของหน้าช่าง */
-:root{--info:#3C7FD9}
+/* ══════════════════════════════════════════════════════════════════
+   หน้าหาช่าง — เขียนใหม่ทั้งไฟล์ ไม่ได้ต่อของเดิม
+   ───────────────────────────────────────────────────────────────────
+   สิ่งที่ผิดในรุ่นก่อน และกฎที่ตั้งไว้แก้ในรุ่นนี้
+
+   1 ปุ่มเยอะจนรกตา
+     รุ่นก่อนโชว์ปุ่มสิบกว่าปุ่มพร้อมกันตั้งแต่วินาทีแรก
+     ทั้งที่เก้าในสิบครั้ง คนเข้ามาทำแค่เรื่องเดียวคือพิมพ์อาการแล้วหาช่าง
+     กฎใหม่: หน้าแรกมีของให้กดสองอย่างเท่านั้น คือช่องค้นหากับหมวด
+     ที่เหลือพับเก็บไว้หลังปุ่มเดียว กางออกเมื่อต้องการ
+
+   2 กรอบเต็มไปหมด
+     ทุกอย่างมีเส้นขอบล้อมรอบ สายตาจึงต้องข้ามเส้นสิบเส้นกว่าจะถึงเนื้อหา
+     กฎใหม่: ไม่มีเส้นขอบเลย แยกของด้วยระยะห่างกับระดับพื้นผิวแทน
+     เส้นมีได้ที่เดียวคือตอนโฟกัสช่องกรอก ซึ่งต้องบอกว่าเคอร์เซอร์อยู่ไหน
+
+   3 ไม่มีสี
+     รุ่นก่อนมีแต่สีส้มของแบรนด์กับสีเทา ทุกการ์ดจึงหน้าตาเหมือนกันหมด
+     กฎใหม่: ทุกหมวดมีสีประจำตัว และช่างได้สีตามงานที่เขาถนัด
+     สีมีหน้าที่บอกข้อมูล ไม่ใช่ตกแต่ง — เห็นสีเขียวก็รู้ว่างานช่วงล่าง
+
+   4 แถบบนกินที่
+     แถบที่มีปุ่มย้อนกลับกับปุ่มสมัคร ติดอยู่บนสุดตลอดเวลา
+     ทั้งที่สองปุ่มนั้นถูกกดน้อยมาก
+     กฎใหม่: ไม่มีแถบบน ปุ่มสมัครกับความคุ้มครองย้ายไปท้ายหน้า
+
+   ระยะห่างเป็นสเกลเดียว 4 8 12 16 24 32 48 64 ไม่มีตัวเลขนอกสเกล
+   ══════════════════════════════════════════════════════════════════ */
+:root{
+  --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s6:24px;--s8:32px;--s12:48px;--s16:64px;
+
+  /* ══ ความลึกสามชั้น — สามมิติ ไม่ใช่ดินน้ำมัน ══
+     ต่างกันตรงไหน — ดินน้ำมันคือก้อนนุ่มที่มีเงาในตัวหนา ๆ รอบด้าน
+     ส่วนสามมิติจริงคือของแข็งที่วางอยู่ใต้แสงดวงเดียว จึงมีแค่สามอย่าง
+
+       ขอบบนรับแสง   เส้นสว่างหนาหนึ่งพิกเซล ด้านที่หันเข้าหาแสง
+       ขอบล่างพ้นแสง เส้นมืดหนาหนึ่งพิกเซล ด้านตรงข้าม
+       เงาทอดลงพื้น  สองชั้น ชั้นติดตัวคมและเข้ม ชั้นนอกกว้างและจาง
+
+     ยิ่งของลอยสูง เงาชั้นนอกยิ่งกว้างและจางลง นั่นคือสิ่งที่บอกระดับความสูง
+     ถ้าเพิ่มความหนาของเงาในตัว มันจะกลายเป็นดินน้ำมันทันที */
+  --edge-hi:rgba(255,255,255,.085);
+  --edge-lo:rgba(0,0,0,.42);
+  --e1:inset 0 1px 0 var(--edge-hi),inset 0 -1px 0 var(--edge-lo),
+       0 2px 4px -2px rgba(0,0,0,.5),0 12px 28px -18px rgba(0,0,0,.7);
+  --e2:inset 0 1px 0 var(--edge-hi),inset 0 -1px 0 var(--edge-lo),
+       0 4px 8px -4px rgba(0,0,0,.55),0 22px 44px -22px rgba(0,0,0,.8);
+  --e3:inset 0 1px 0 var(--edge-hi),inset 0 -1px 0 var(--edge-lo),
+       0 8px 16px -8px rgba(0,0,0,.6),0 40px 70px -28px rgba(0,0,0,.85);
+  /* กดแล้วต้องจมลงไปในพื้น แสงจึงสลับข้างกับตอนลอย */
+  --e-in:inset 0 2px 5px rgba(0,0,0,.4),inset 0 -1px 0 rgba(255,255,255,.05);
+
+  /* สีประจำหมวด — เลือกให้ห่างกันบนวงล้อสี จะได้แยกออกด้วยหางตา
+     ไม่ได้เลือกเพราะสวย แต่เลือกเพราะแยกจากกันได้จริง */
+  --c-near:#4F8FF7; --c-quick:#F0655C; --c-pro:#B47CF0;
+  --c-body:#E8743C; --c-ev:#3FC3D6;    --c-tyre:#3EA96E;
+  --c-air:#48A9E8;  --c-eng:#E8A33D;
+}
+/* ธีมสว่าง — เงาต้องเป็นสีของแสงแวดล้อม ไม่ใช่สีดำ
+   เงาสีดำบนพื้นสว่างจะดูเป็นคราบสกปรก ไม่ใช่เงา */
+html[data-theme="light"]{
+  --edge-hi:rgba(255,255,255,.95);
+  --edge-lo:rgba(60,40,15,.13);
+  --e1:inset 0 1px 0 var(--edge-hi),inset 0 -1px 0 var(--edge-lo),
+       0 2px 4px -2px rgba(60,40,15,.14),0 12px 26px -16px rgba(60,40,15,.3);
+  --e2:inset 0 1px 0 var(--edge-hi),inset 0 -1px 0 var(--edge-lo),
+       0 4px 8px -4px rgba(60,40,15,.16),0 22px 42px -20px rgba(60,40,15,.34);
+  --e3:inset 0 1px 0 var(--edge-hi),inset 0 -1px 0 var(--edge-lo),
+       0 8px 16px -8px rgba(60,40,15,.18),0 40px 68px -26px rgba(60,40,15,.4);
+  --e-in:inset 0 2px 5px rgba(60,40,15,.22),inset 0 -1px 0 rgba(255,255,255,.7);
+}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-/* ── ล้างสิ่งที่ app.css ตั้งไว้ให้ body ── (ดู BACKEND-TODO ข้อ app.css)
-   ท้ายไฟล์ app.css มีสไตล์ของเอกสารรายงานปนอยู่โดยไม่ได้จำกัดขอบเขต
-   มันตั้ง body ให้กว้างไม่เกิน 820px ใช้ฟอนต์ Sarabun และสีตัวอักษรของตัวเอง
-   ทุกหน้าที่ดึง app.css จึงต้องเขียนทับเองทั้งหมด หน้าอื่นก็ทำแบบนี้เหมือนกัน
-   แก้ที่ต้นเหตุไม่ได้เพราะ app.css เป็นไฟล์กลางที่ทุกหน้าใช้ร่วมกัน */
 html,body{margin:0;padding:0;max-width:none;height:auto}
-body{background:var(--bg);color:var(--ink);font-family:var(--kb,'Kanit',system-ui,sans-serif);font-weight:400;
-  font-size:15px;line-height:1.6;overflow-x:hidden;overflow-y:auto}
-h1,h2,h3,h4{color:inherit;border:0;padding:0}
+body{background:var(--bg);color:var(--ink);
+  font-family:'Kanit',system-ui,-apple-system,sans-serif;
+  font-size:15px;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
 button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
-::selection{background:rgba(217,115,60,.24)}
+::selection{background:var(--c-acc-soft)}
+h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.025em;line-height:1.2}
+/* ไม่มีเส้นขอบทั้งหน้า — นี่คือกฎ ไม่ใช่ค่าเริ่มต้นที่เผลอตั้ง */
+button{border:0;background:none;cursor:pointer}
 
-/* ── แถบบน ── */
-.top{position:sticky;top:0;z-index:40;backdrop-filter:blur(18px);
-  background:color-mix(in srgb,var(--bg) 86%,transparent);border-bottom:1px solid var(--line-2)}
-.top-in{max-width:1180px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;gap:12px}
-.back{width:38px;height:38px;flex:0 0 38px;border-radius:12px;border:1px solid var(--line);
-  background:var(--surface);display:grid;place-items:center;cursor:pointer;transition:.18s}
-.back:active{transform:scale(.92)}
-.top h1{margin:0;font-size:17px;font-weight:700;letter-spacing:-.2px}
-.top .sub{font-size:11.5px;color:var(--muted);font-weight:400;line-height:1.2}
-.top .sp{flex:1}
-.btn-apply{border:0;border-radius:13px;padding:10px 16px;background:var(--grad);color:#fff;
-  font-weight:600;font-size:13.5px;cursor:pointer;box-shadow:var(--shadow-sm);transition:.18s;white-space:nowrap}
-.btn-apply:active{transform:scale(.95)}
+/* ══════════════════════════════════════════════════════════════════
+   ปุ่มสีหลัก — ผิวโค้งที่มีประกายวิ่งผ่าน
+   ───────────────────────────────────────────────────────────────────
+   ปุ่มสีทึบ ๆ ใบเดียวอ่านเป็นสี่เหลี่ยมสี ไม่ใช่วัตถุ
+   จะให้อ่านเป็นของจริงต้องมีสี่ชั้น เรียงจากล่างขึ้นบน
 
-/* ── หัวเรื่องใหญ่ ── */
-.wrap{max-width:1180px;margin:0 auto;padding:0 18px 90px}
-.hero{padding:30px 0 20px;position:relative}
-.hero h2{margin:0 0 6px;font-size:clamp(25px,5.4vw,38px);font-weight:800;letter-spacing:-.7px;line-height:1.15}
-.hero h2 em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
-.hero p{margin:0;color:var(--muted);font-size:14px;max-width:56ch}
+     1 ตัวปุ่ม     ไล่สีจากอ่อนบนไปเข้มล่าง = ผิวโค้งที่รับแสงจากด้านบน
+     2 แสงตกกระทบ  แถบสว่างบางบนครึ่งบน = จุดที่แสงกระทบผิวโค้งโดยตรง
+     3 ขอบ         สว่างบน มืดล่าง = ความหนาของตัวปุ่ม
+     4 ประกาย      แถบแสงเฉียงที่วิ่งผ่านตอนชี้ = ผิวมัน ไม่ใช่ผิวด้าน
 
-/* ── ช่องค้นหา ── */
-.searchbar{display:flex;gap:9px;align-items:center;background:var(--surface);border:1px solid var(--line);
-  border-radius:16px;padding:5px 6px 5px 15px;box-shadow:var(--shadow-sm);margin-top:18px;transition:.2s}
-.searchbar:focus-within{border-color:var(--accent);box-shadow:0 0 0 4px rgba(217,115,60,.12)}
-.searchbar i{color:var(--faint);font-size:19px}
-.searchbar input{flex:1;min-width:0;border:0;background:none;outline:0;padding:11px 0;font-size:15px}
-.searchbar .go{border:0;border-radius:12px;padding:10px 15px;background:var(--grad);color:#fff;
-  font-weight:600;font-size:13.5px;cursor:pointer;white-space:nowrap}
-.searchbar .go:active{transform:scale(.95)}
-.hints{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
-.hints button{border:1px solid var(--line);background:var(--surface-2);border-radius:20px;
-  padding:6px 13px;font-size:12.5px;color:var(--muted);cursor:pointer;transition:.16s}
-.hints button:hover{border-color:var(--accent);color:var(--accent)}
+   ชั้นที่สี่คือชั้นที่ทำให้รู้ว่ามันเป็นวัตถุมันวาว
+   และเป็นชั้นเดียวที่เคลื่อนไหว จึงต้องเบามือที่สุด
+   ══════════════════════════════════════════════════════════════════ */
+.gloss{
+  position:relative;overflow:hidden;isolation:isolate;
+  background:
+    /* ชั้นแสงตกกระทบ อยู่บนสุดของกองพื้นหลัง */
+    linear-gradient(180deg,rgba(255,255,255,.22) 0,rgba(255,255,255,.05) 46%,
+      rgba(0,0,0,.06) 47%,rgba(0,0,0,.12) 100%),
+    var(--grad);
+  color:var(--on-acc,#fff);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.42),
+    inset 0 -1px 0 rgba(0,0,0,.28),
+    0 2px 4px -2px color-mix(in srgb,var(--accent) 60%,transparent),
+    0 12px 26px -12px color-mix(in srgb,var(--accent) 78%,transparent);
+  transition:transform .18s cubic-bezier(.3,1.2,.5,1),box-shadow .18s}
+/* ประกาย — แถบแสงเฉียงที่จอดอยู่นอกจอ แล้ววิ่งผ่านตอนชี้ */
+.gloss::after{
+  content:"";position:absolute;top:-60%;bottom:-60%;left:-140%;width:55%;
+  z-index:1;pointer-events:none;transform:skewX(-22deg);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.34),transparent);
+  transition:left .62s cubic-bezier(.25,.8,.3,1)}
+.gloss:hover::after{left:150%}
+.gloss:hover{transform:translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.5),
+    inset 0 -1px 0 rgba(0,0,0,.3),
+    0 3px 6px -2px color-mix(in srgb,var(--accent) 65%,transparent),
+    0 20px 38px -14px color-mix(in srgb,var(--accent) 85%,transparent)}
+/* กดแล้วจมลงไป แสงสลับข้าง เงาที่พื้นหด */
+.gloss:active{transform:translateY(1px);
+  box-shadow:
+    inset 0 2px 6px rgba(0,0,0,.34),
+    inset 0 -1px 0 rgba(255,255,255,.14),
+    0 2px 6px -3px color-mix(in srgb,var(--accent) 60%,transparent)}
+.gloss>*{position:relative;z-index:2}
+@media (prefers-reduced-motion:reduce){.gloss::after{display:none}}
 
-/* ── แท็บหมวด ── */
-.cats{display:flex;gap:9px;overflow-x:auto;padding:20px 0 6px;margin:0 -18px;
-  padding-left:18px;padding-right:18px;scrollbar-width:none}
+/* พื้นหลังมีชีวิต ไล่สีสองจุดเหมือนหน้าอื่นในเว็บ */
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(1200px 700px at 8% -10%,var(--c-aura1,rgba(232,132,60,.14)),transparent 60%),
+    radial-gradient(1000px 600px at 104% 104%,var(--c-aura3,rgba(200,120,70,.08)),transparent 58%)}
+
+.wrap{max-width:1080px;margin:0 auto;padding:0 var(--s6) var(--s16)}
+
+/* ══ เปิดหน้า ══ */
+.lead{padding:var(--s8) 0 var(--s4)}
+.homelink{display:inline-flex;align-items:center;gap:7px;font-size:13px;
+  color:var(--muted);margin-bottom:var(--s8);transition:color .16s}
+.homelink:hover{color:var(--accent)}
+.homelink svg{width:15px;height:18px;color:var(--accent)}
+.lead h1{font-size:clamp(30px,6vw,52px);font-weight:800;letter-spacing:-.04em;
+  line-height:1.06;margin-bottom:var(--s4)}
+.lead h1 em{font-style:normal;background:var(--grad);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.lead p{color:var(--muted);font-size:15.5px;max-width:50ch;margin:0}
+
+/* ══ ช่องค้นหา — ไม่มีกรอบ ใช้พื้นผิวคนละระดับแทน ══ */
+.find{display:flex;align-items:center;gap:var(--s3);margin-top:var(--s8);
+  background:var(--surface);border-radius:22px;padding:var(--s2) var(--s2) var(--s2) var(--s6);
+  box-shadow:var(--e-in),0 16px 34px -26px rgba(0,0,0,.7);
+  transition:box-shadow .22s}
+.find:focus-within{box-shadow:var(--e-in),0 0 0 3px var(--c-acc-soft),
+  0 20px 44px -26px rgba(0,0,0,.8)}
+.find>i{font-size:22px;color:var(--faint);flex:0 0 auto}
+.find{cursor:pointer}
+.fq{flex:1;min-width:0;padding:16px 0;font-size:16px;color:var(--faint);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fq.has{color:var(--ink);font-weight:500}
+.find .go{border-radius:16px;padding:15px var(--s6);background:var(--grad);
+  font-weight:600;font-size:15px;white-space:nowrap}
+@media(max-width:560px){
+  .find{padding:var(--s2) var(--s2) var(--s2) var(--s4);gap:var(--s2)}
+  .find input{font-size:15px;padding:14px 0}
+  .find .go{padding:13px var(--s4);font-size:14px}
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   ถาม Cendon — ช่องค้นหากับ AI รวมเป็นช่องเดียว
+   ───────────────────────────────────────────────────────────────────
+   ของเดิมมีสองทางแยกกัน ช่องค้นหาหาช่างได้อย่างเดียว
+   ส่วนคำถามที่ตอบไม่ได้ด้วยรายชื่อ ต้องเดินไปหาหน้าแชตเอง
+   คนที่พิมพ์ว่า "แอร์ไม่เย็นเกิดจากอะไร" ลงช่องค้นหา จึงได้ผลลัพธ์ว่างเปล่า
+   ทั้งที่เป็นคำถามที่ระบบตอบได้ดีที่สุด
+
+   รวมเป็นช่องเดียว แล้วให้ระบบอ่านเองว่าสิ่งที่พิมพ์คืออะไร
+     พิมพ์เป็นคำ      → หาช่างทันที ไม่ต้องรอ
+     พิมพ์เป็นคำถาม   → ยกปุ่มถาม Cendon ขึ้นมาไว้บนสุด
+   ทั้งสองอย่างอยู่ในจอเดียวกัน ไม่ต้องเลือกก่อนว่าจะทำอะไร
+
+   เปิดเป็นเต็มจอ เพราะตอนกำลังหาอะไรสักอย่าง ของอื่นบนหน้าคือสิ่งรบกวน
+   ══════════════════════════════════════════════════════════════════ */
+.ask{position:fixed;inset:0;z-index:150;display:none}
+.ask.on{display:block}
+.ask-bd{position:absolute;inset:0;
+  background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:blur(26px) saturate(1.3);-webkit-backdrop-filter:blur(26px) saturate(1.3);
+  opacity:0;transition:opacity .3s ease}
+.ask.on .ask-bd{opacity:1}
+/* ประกายพื้นหลังของจอถาม — เบากว่าหน้าหลัก เพราะจอนี้ต้องไม่แย่งสายตา */
+.ask-bd::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(760px 420px at 50% -6%,var(--c-acc-soft),transparent 64%)}
+
+.ask-in{position:absolute;inset:0;display:flex;flex-direction:column;
+  max-width:820px;margin:0 auto;padding:0 var(--s6)}
+
+/* แถบพิมพ์ — ขยายขึ้นมาจากช่องเดิม ไม่ใช่โผล่มาเฉย ๆ
+   การขยายจากที่เดิมทำให้สมองตามทันว่าของชิ้นเดียวกันเปลี่ยนรูป
+   ไม่ใช่ของใหม่โผล่มาทับของเก่า */
+.ask-bar{display:flex;align-items:center;gap:var(--s3);
+  margin-top:clamp(24px,9vh,84px);
+  background:var(--surface);border-radius:24px;
+  padding:var(--s2) var(--s2) var(--s2) var(--s6);
+  box-shadow:var(--e-in),0 24px 54px -30px rgba(0,0,0,.8);
+  transform:translateY(18px) scale(.96);opacity:0;
+  transition:transform .38s cubic-bezier(.2,.9,.25,1),opacity .28s}
+.ask.on .ask-bar{transform:none;opacity:1}
+.ask-bar>.mk{width:26px;height:30px;flex:0 0 auto;color:var(--accent)}
+.ask-bar input{flex:1;min-width:0;background:none;border:0;outline:0;
+  padding:18px 0;font-size:18px;font-weight:500}
+.ask-bar .x{width:40px;height:40px;flex:0 0 40px;border-radius:14px;
+  background:var(--surface-2);color:var(--muted);display:grid;place-items:center;font-size:19px}
+.ask-bar .x:hover{color:var(--ink)}
+@media(max-width:560px){
+  .ask-in{padding:0 var(--s4)}
+  .ask-bar{padding:var(--s2) var(--s2) var(--s2) var(--s4);border-radius:20px}
+  .ask-bar input{font-size:16px;padding:15px 0}
+}
+
+/* พื้นที่ผลลัพธ์ */
+.ask-body{flex:1;min-height:0;overflow-y:auto;padding:var(--s6) 0 var(--s16);
+  scrollbar-width:none;
+  /* จางที่ขอบล่าง บอกว่ายังมีของต่ออยู่ข้างล่าง
+     ถ้าตัดตรง ๆ แถวที่ถูกตัดครึ่งจะดูเหมือนหน้าเสีย ไม่ใช่รายการที่ยังไม่จบ */
+  -webkit-mask-image:linear-gradient(to bottom,#000 0,#000 calc(100% - 56px),transparent 100%);
+  mask-image:linear-gradient(to bottom,#000 0,#000 calc(100% - 56px),transparent 100%)}
+.ask-body::-webkit-scrollbar{display:none}
+.ask-sec{margin-bottom:var(--s6)}
+.ask-sec>h5{margin:0 0 var(--s3);font-size:11.5px;font-weight:700;color:var(--faint);
+  text-transform:uppercase;letter-spacing:.12em}
+
+/* แถวผลลัพธ์ — ทยอยขึ้นทีละแถว ไม่ใช่โผล่พร้อมกันทั้งหน้า
+   ทยอยขึ้นช่วยให้สายตาไล่จากบนลงล่างได้ทัน */
+.ask-row{display:flex;align-items:center;gap:var(--s4);width:100%;text-align:left;
+  padding:var(--s3) var(--s4);border-radius:18px;color:var(--ink);
+  background:transparent;transition:background .16s,transform .16s;
+  animation:rowIn .34s cubic-bezier(.2,.9,.3,1) backwards}
+@keyframes rowIn{from{opacity:0;transform:translateY(10px)}}
+.ask-row:hover,.ask-row.sel{background:var(--surface)}
+.ask-row:active{transform:scale(.99)}
+.ask-ic{width:44px;height:44px;flex:0 0 44px;border-radius:15px;display:grid;
+  place-items:center;font-size:20px;color:#fff;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.24) 0,rgba(255,255,255,.04) 48%,
+      rgba(0,0,0,.08) 49%,rgba(0,0,0,.16) 100%),
+    linear-gradient(150deg,color-mix(in srgb,var(--k,var(--accent)) 80%,#fff),var(--k,var(--accent)));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.4),inset 0 -1px 0 rgba(0,0,0,.22),
+             0 8px 18px -10px color-mix(in srgb,var(--k,var(--accent)) 75%,transparent)}
+.ask-t{flex:1;min-width:0}
+.ask-t b{display:block;font-size:15px;font-weight:600;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ask-t small{display:block;font-size:12.5px;color:var(--muted);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ask-go{flex:0 0 auto;font-size:17px;color:var(--faint)}
+.ask-row.sel .ask-go{color:var(--accent)}
+
+/* แถวถาม Cendon — เด่นกว่าแถวอื่นเพราะมันคือสิ่งที่หน้านี้ทำได้ดีที่สุด */
+.ask-hero{
+  display:flex;align-items:center;gap:var(--s4);width:100%;text-align:left;
+  padding:var(--s4) var(--s6);border-radius:22px;margin-bottom:var(--s6);
+  color:var(--on-acc,#fff);position:relative;overflow:hidden;isolation:isolate;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.2) 0,rgba(255,255,255,.04) 46%,
+      rgba(0,0,0,.06) 47%,rgba(0,0,0,.12) 100%),
+    var(--grad);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.4),inset 0 -1px 0 rgba(0,0,0,.26),
+             0 4px 10px -4px color-mix(in srgb,var(--accent) 55%,transparent),
+             0 22px 46px -18px color-mix(in srgb,var(--accent) 80%,transparent);
+  animation:rowIn .34s cubic-bezier(.2,.9,.3,1) backwards;
+  transition:transform .18s cubic-bezier(.3,1.2,.5,1),box-shadow .18s}
+.ask-hero::after{content:"";position:absolute;top:-60%;bottom:-60%;left:-140%;width:50%;
+  z-index:1;pointer-events:none;transform:skewX(-22deg);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);
+  transition:left .62s cubic-bezier(.25,.8,.3,1)}
+.ask-hero:hover::after,.ask-hero.sel::after{left:150%}
+.ask-hero:hover,.ask-hero.sel{transform:translateY(-2px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.48),inset 0 -1px 0 rgba(0,0,0,.28),
+             0 30px 56px -20px color-mix(in srgb,var(--accent) 88%,transparent)}
+.ask-hero>*{position:relative;z-index:2}
+.ask-hero .mk{width:30px;height:35px;flex:0 0 auto}
+.ask-hero b{display:block;font-size:16.5px;font-weight:700}
+.ask-hero small{display:block;font-size:12.5px;opacity:.82;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* จอเปล่า ก่อนพิมพ์อะไร */
+.ask-idle{padding:var(--s4) 0}
+.ask-idle .q{display:flex;gap:var(--s2);flex-wrap:wrap;margin-top:var(--s3)}
+.ask-idle .q button{background:var(--surface);border-radius:16px;padding:11px var(--s4);
+  font-size:13.5px;color:var(--muted);box-shadow:var(--e1);
+  transition:transform .16s,box-shadow .16s,color .16s}
+.ask-idle .q button:hover{transform:translateY(-2px);box-shadow:var(--e2);color:var(--accent)}
+.ask-hint{font-size:12.5px;color:var(--faint);padding:var(--s3) var(--s4);line-height:1.7}
+.ask-hint kbd{background:var(--surface);border-radius:7px;padding:2px 7px;
+  font-family:inherit;font-size:11.5px;box-shadow:var(--e1)}
+@media (prefers-reduced-motion:reduce){
+  .ask-row,.ask-hero{animation:none}
+  .ask-bar{transition:none;transform:none;opacity:1}
+  .ask-hero::after{display:none}
+}
+
+/* คำใบ้ — ตัวหนังสือล้วน ไม่ใช่ปุ่ม เพราะมันคือทางลัด ไม่ใช่คำสั่ง */
+.tips{display:flex;gap:var(--s4);flex-wrap:wrap;margin-top:var(--s4);
+  font-size:13.5px;color:var(--faint)}
+.tips button{color:var(--muted);transition:color .16s;padding:0}
+.tips button:hover{color:var(--accent)}
+
+/* ══ ปุ่มเดียวที่พับเครื่องมือ AI ไว้ข้างใน ══ */
+.morebar{display:flex;align-items:center;gap:var(--s3);margin-top:var(--s6)}
+.more{display:inline-flex;align-items:center;gap:var(--s2);
+  background:var(--c-acc-soft);color:var(--accent);border-radius:30px;
+  padding:11px var(--s6);font-size:13.5px;font-weight:600;
+  box-shadow:var(--e1);transition:transform .18s,box-shadow .18s,filter .18s}
+.more:hover{filter:brightness(1.1);transform:translateY(-1px);box-shadow:var(--e2)}
+.more:active{transform:translateY(1px);box-shadow:var(--e-in)}
+.more i.ch{transition:transform .24s}
+.more.on i.ch{transform:rotate(180deg)}
+.tools{display:none;grid-template-columns:repeat(4,1fr);gap:var(--s3);margin-top:var(--s4)}
+.tools.on{display:grid;animation:drop .3s cubic-bezier(.2,.9,.3,1)}
+@keyframes drop{from{opacity:0;transform:translateY(-8px)}}
+@media(max-width:820px){.tools.on{grid-template-columns:repeat(2,1fr)}}
+.tool{display:flex;align-items:center;gap:var(--s3);text-align:left;
+  background:var(--surface);border-radius:18px;padding:var(--s4);min-width:0;
+  box-shadow:var(--e1);
+  transition:transform .18s cubic-bezier(.3,1.2,.5,1),background .18s,box-shadow .18s}
+.tool:hover{transform:translateY(-3px);background:var(--surface-2);box-shadow:var(--e2)}
+.tool:active{transform:translateY(0);box-shadow:var(--e-in)}
+.tool>i{font-size:22px;flex:0 0 auto}
+.tool b{display:block;font-size:13.5px;font-weight:600;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tool small{font-size:11.5px;color:var(--faint)}
+
+/* ══ ผลจากเครื่องมือ AI ══ */
+.aires{margin-top:var(--s4);border-radius:24px;padding:var(--s6);
+  background:var(--surface);position:relative;
+  box-shadow:var(--e3);
+  animation:drop .3s cubic-bezier(.2,.9,.3,1)}
+.aires h4{font-size:17px;display:flex;align-items:center;gap:var(--s2);margin-bottom:var(--s2)}
+.aires p{margin:0;font-size:14px;color:var(--muted);line-height:1.7}
+.aires .x{position:absolute;right:var(--s4);top:var(--s4);width:32px;height:32px;
+  border-radius:11px;background:var(--surface-2);color:var(--muted);
+  display:grid;place-items:center}
+.aires .x:hover{color:var(--ink)}
+.band{display:flex;align-items:flex-end;gap:var(--s8);margin:var(--s6) 0 var(--s3);flex-wrap:wrap}
+.band .c{flex:1;min-width:100px}
+.band .c span{display:block;font-size:11px;color:var(--faint);
+  text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px}
+.band .c b{font-size:24px;font-weight:700;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.band .c.hi b{font-size:34px;color:var(--accent)}
+.rail{height:10px;border-radius:6px;background:var(--surface-2);position:relative;
+  margin:var(--s3) 0;box-shadow:var(--e-in)}
+.rail i{position:absolute;top:0;bottom:0;border-radius:6px;
+  background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(0,0,0,.1)),var(--grad);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45),
+             0 2px 8px -2px color-mix(in srgb,var(--accent) 80%,transparent)}
+.why{display:flex;gap:var(--s2);flex-wrap:wrap;margin-top:var(--s3)}
+.why span{font-size:12px;padding:6px 12px;border-radius:12px;
+  background:var(--c-acc-soft);color:var(--accent)}
+
+/* ══ หมวด — สีประจำตัว ══ */
+.cats{display:flex;gap:var(--s2);overflow-x:auto;scrollbar-width:none;
+  padding:var(--s8) var(--s6) var(--s2);margin:0 calc(var(--s6) * -1);
+  /* จางที่ขอบขวา บอกว่ายังมีหมวดต่ออยู่ข้างนอกจอ
+     ถ้าตัดตรง ๆ คนจะคิดว่ามีแค่นี้แล้วไม่ปัดต่อ */
+  -webkit-mask-image:linear-gradient(to right,#000 0,#000 calc(100% - 48px),transparent 100%);
+  mask-image:linear-gradient(to right,#000 0,#000 calc(100% - 48px),transparent 100%)}
 .cats::-webkit-scrollbar{display:none}
-.cat{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);border-radius:15px;
-  padding:11px 16px;cursor:pointer;transition:.18s;display:flex;align-items:center;gap:9px;
-  font-weight:600;font-size:13.5px;color:var(--muted)}
-.cat i{font-size:17px}
-.cat:hover{border-color:var(--accent)}
-.cat.on{background:var(--grad);color:#fff;border-color:transparent;box-shadow:var(--shadow-sm)}
-.cat.on .n{color:rgba(255,255,255,.75)}
-.cat .n{font-size:11.5px;font-weight:400;color:var(--faint)}
-.catdesc{font-size:12.5px;color:var(--muted);padding:10px 2px 0;min-height:20px}
+.cat{flex:0 0 auto;display:flex;align-items:center;gap:var(--s2);
+  border-radius:18px;padding:13px var(--s4);font-weight:600;font-size:14px;
+  color:var(--muted);background:var(--surface);white-space:nowrap;
+  box-shadow:var(--e1);
+  transition:transform .18s,background .18s,color .18s,box-shadow .18s}
+.cat i{font-size:18px;color:var(--k,var(--muted));transition:color .18s}
+.cat:hover{background:var(--surface-2);color:var(--ink);
+  transform:translateY(-2px);box-shadow:var(--e2)}
+.cat .n{font-size:12px;font-weight:400;opacity:.6}
+/* หมวดที่เลือกอยู่ใช้สีของตัวเองเต็มที่ — เห็นทันทีว่ากำลังดูหมวดไหน */
+.cat.on{
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.16),rgba(0,0,0,.06)),
+    color-mix(in srgb,var(--k) 26%,transparent);
+  color:var(--k);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb,var(--k) 45%,transparent),
+    inset 0 -1px 0 rgba(0,0,0,.28),
+    0 2px 5px -2px color-mix(in srgb,var(--k) 40%,transparent),
+    0 12px 26px -14px color-mix(in srgb,var(--k) 60%,transparent)}
+.cat.on i{color:var(--k)}
+.catnote{font-size:13.5px;color:var(--muted);padding:var(--s4) 2px 0;min-height:22px}
 
-/* ── แถวตัวกรอง ── */
-.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:12px 0 4px}
-.chip{border:1px solid var(--line);background:var(--surface);border-radius:11px;padding:8px 13px;
-  font-size:12.5px;cursor:pointer;color:var(--muted);transition:.16s;display:flex;align-items:center;gap:6px}
-.chip.on{background:rgba(217,115,60,.13);border-color:var(--accent);color:var(--accent-d);font-weight:600}
-.chip select{border:0;background:none;outline:0;font-size:12.5px;cursor:pointer}
-.count{margin-left:auto;font-size:12.5px;color:var(--faint)}
+/* ══ แถวสรุป — จำนวนกับการเรียง ไม่มีปุ่มกรองเกะกะ ══ */
+.sum{display:flex;align-items:center;gap:var(--s4);flex-wrap:wrap;
+  padding:var(--s6) 0 var(--s2);font-size:13.5px;color:var(--muted)}
+.sum b{color:var(--ink);font-weight:600}
+.sum .sp{flex:1}
+.sum select{background:var(--surface);border-radius:14px;padding:10px var(--s4);
+  outline:0;font-size:13.5px;color:var(--ink);border:0}
+.sum .f{padding:10px var(--s4);border-radius:14px;background:var(--surface);
+  font-size:13.5px;color:var(--muted);transition:.16s}
+.sum .f.on{background:var(--c-acc-soft);color:var(--accent);font-weight:600}
 
-/* ── การ์ดช่าง ── */
-.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));padding-top:16px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:17px;
-  cursor:pointer;transition:.2s;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:12px}
-.card::before{content:"";position:absolute;inset:0 0 auto;height:3px;background:var(--grad);
-  opacity:0;transition:.2s}
-.card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:transparent}
-.card:hover::before{opacity:1}
-.card:active{transform:scale(.99)}
-.chead{display:flex;gap:12px;align-items:flex-start}
-.av{width:50px;height:50px;flex:0 0 50px;border-radius:15px;background:var(--grad);color:#fff;
-  display:grid;place-items:center;font-size:21px;font-weight:700;box-shadow:var(--shadow-sm)}
-.cname{font-weight:700;font-size:15.5px;letter-spacing:-.2px;display:flex;align-items:center;gap:5px}
-.cname .vf{color:var(--info);font-size:15px}
-.cshop{font-size:12.5px;color:var(--muted)}
-.cwhere{font-size:12px;color:var(--faint);display:flex;align-items:center;gap:4px;margin-top:2px}
-.rate{margin-left:auto;text-align:right;flex:0 0 auto}
-.rate b{font-size:16px;font-weight:700;color:var(--accent-d)}
-.rate span{display:block;font-size:11px;color:var(--faint)}
-.tags{display:flex;gap:6px;flex-wrap:wrap}
-.tag{font-size:11.5px;background:var(--surface-2);border:1px solid var(--line-2);border-radius:8px;
-  padding:4px 9px;color:var(--muted)}
-.tag.hi{background:rgba(217,115,60,.12);border-color:rgba(217,115,60,.25);color:var(--accent-d);font-weight:500}
-.tag.ok{background:rgba(62,158,110,.12);border-color:rgba(62,158,110,.25);color:var(--ok);font-weight:500}
-.cfoot{display:flex;align-items:flex-end;gap:10px;padding-top:11px;border-top:1px solid var(--line-2);margin-top:auto}
-.price b{font-size:17px;font-weight:700}
-.price span{font-size:11.5px;color:var(--faint);display:block;line-height:1.2}
-.meta{margin-left:auto;text-align:right;font-size:11.5px;color:var(--muted);line-height:1.45}
+/* ══ การ์ดช่าง — ไม่มีกรอบ ══ */
+.list{display:grid;gap:var(--s3);padding-top:var(--s4)}
+@media(min-width:900px){.list{grid-template-columns:1fr 1fr;gap:var(--s4)}}
+.pro{display:flex;gap:var(--s4);align-items:flex-start;text-align:left;width:100%;
+  background:var(--surface);border-radius:24px;padding:var(--s6);
+  box-shadow:var(--e1);
+  transition:transform .2s cubic-bezier(.3,1.15,.5,1),background .2s,box-shadow .2s;
+  position:relative;overflow:hidden}
+/* แถบสีบางที่ขอบซ้าย บอกหมวดของช่างคนนี้โดยไม่ต้องอ่าน */
+.pro::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;
+  background:var(--k);opacity:.85}
+.pro:hover{transform:translateY(-4px);background:var(--surface-2);
+  box-shadow:var(--e3)}
+.pro:active{transform:translateY(0);box-shadow:var(--e-in)}
+.face{width:56px;height:56px;flex:0 0 56px;border-radius:19px;display:grid;
+  place-items:center;font-size:23px;font-weight:700;color:#fff;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.28) 0,rgba(255,255,255,.04) 48%,
+      rgba(0,0,0,.08) 49%,rgba(0,0,0,.16) 100%),
+    linear-gradient(150deg,color-mix(in srgb,var(--k) 80%,#fff),var(--k));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.45),
+    inset 0 -1px 0 rgba(0,0,0,.24),
+    0 2px 4px -2px color-mix(in srgb,var(--k) 55%,transparent),
+    0 12px 26px -12px color-mix(in srgb,var(--k) 75%,transparent)}
+.pro .b{flex:1;min-width:0}
+.nm{display:flex;align-items:center;gap:var(--s2);font-size:17px;font-weight:700;
+  letter-spacing:-.02em}
+.nm .vf{color:#4F8FF7;font-size:16px;flex:0 0 auto}
+.nm .sc{margin-left:auto;font-size:15px;font-weight:700;color:var(--k);flex:0 0 auto}
+.shop{font-size:13px;color:var(--muted);margin-top:1px}
+.where{font-size:12.5px;color:var(--faint);margin-top:var(--s1)}
+.skills{display:flex;gap:6px;flex-wrap:wrap;margin-top:var(--s3)}
+.skills span{font-size:12px;padding:5px 11px;border-radius:11px;
+  background:color-mix(in srgb,var(--k) 14%,transparent);color:var(--k)}
+.foot{display:flex;align-items:baseline;gap:var(--s3);margin-top:var(--s4);
+  font-size:12.5px;color:var(--faint);flex-wrap:wrap}
+.foot .pz{font-size:19px;font-weight:700;color:var(--ink);letter-spacing:-.03em}
+.foot .sp{flex:1}
+@media(max-width:480px){
+  .pro{padding:var(--s4);gap:var(--s3)}
+  .face{width:48px;height:48px;flex:0 0 48px;border-radius:16px;font-size:20px}
+  .nm{font-size:15.5px}
+}
 
-/* ── ไม่พบ ── */
-.none{text-align:center;padding:60px 20px;color:var(--muted)}
-.none i{font-size:44px;color:var(--faint);display:block;margin-bottom:12px}
-.none b{display:block;font-size:16px;margin-bottom:5px;color:var(--ink)}
+.empty{text-align:center;padding:var(--s16) var(--s6);color:var(--muted)}
+.empty i{font-size:52px;color:var(--faint);display:block;margin-bottom:var(--s4)}
+.empty b{display:block;font-size:17px;margin-bottom:var(--s2);color:var(--ink)}
 
-/* ── แผ่นรายละเอียด ── */
+/* ══ ท้ายหน้า — ที่อยู่ใหม่ของปุ่มที่เคยกินที่บนแถบบน ══ */
+.tail{margin-top:var(--s16);display:grid;gap:var(--s3);
+  grid-template-columns:1fr 1fr}
+@media(max-width:640px){.tail{grid-template-columns:1fr}}
+.tcard{text-align:left;border-radius:24px;padding:var(--s8) var(--s6);
+  background:var(--surface);box-shadow:var(--e1);
+  transition:transform .2s,background .2s,box-shadow .2s}
+.tcard:hover{transform:translateY(-3px);background:var(--surface-2);box-shadow:var(--e3)}
+.tcard:active{transform:translateY(0);box-shadow:var(--e-in)}
+.tcard i{font-size:26px;color:var(--accent);display:block;margin-bottom:var(--s3)}
+.tcard b{display:block;font-size:17px;font-weight:700;margin-bottom:var(--s1)}
+.tcard small{font-size:13px;color:var(--muted);line-height:1.6}
+
+/* ══ แผ่นรายละเอียด ══ */
 .sheet{position:fixed;inset:0;z-index:80;display:none}
 .sheet.on{display:block}
-.sheet .bd{position:absolute;inset:0;background:rgba(20,16,10,.5);backdrop-filter:blur(4px);animation:fade .25s}
-.sheet .pn{position:absolute;right:0;top:0;bottom:0;width:min(560px,100%);background:var(--bg);
-  overflow-y:auto;box-shadow:-20px 0 60px -20px rgba(0,0,0,.4);animation:slide .3s cubic-bezier(.2,.9,.3,1)}
+.sheet .bd{position:absolute;inset:0;background:rgba(6,5,3,.62);
+  backdrop-filter:blur(8px);animation:fade .25s}
+.sheet .pn{position:absolute;right:0;top:0;bottom:0;width:min(600px,100%);
+  background:var(--bg);overflow-y:auto;
+  box-shadow:-40px 0 90px -30px rgba(0,0,0,.7);
+  animation:slide .34s cubic-bezier(.2,.9,.3,1)}
 @keyframes fade{from{opacity:0}}
-@keyframes slide{from{transform:translateX(30px);opacity:0}}
-@media (max-width:640px){.sheet .pn{top:auto;height:92dvh;width:100%;border-radius:24px 24px 0 0;
-  animation:up .3s cubic-bezier(.2,.9,.3,1)}
-  @keyframes up{from{transform:translateY(40px);opacity:0}}}
-.pn-x{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:10px;padding:13px 18px;
-  background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(14px);
-  border-bottom:1px solid var(--line-2)}
-.pn-x b{font-size:15px}
-.pn-x button{margin-left:auto;width:34px;height:34px;border-radius:10px;border:1px solid var(--line);
-  background:var(--surface);cursor:pointer;display:grid;place-items:center}
-.pn-b{padding:20px 18px 40px}
-.pbig{display:flex;gap:14px;align-items:center;margin-bottom:16px}
-.pbig .av{width:64px;height:64px;flex:0 0 64px;border-radius:19px;font-size:26px}
-.pbig h3{margin:0;font-size:19px;font-weight:700;letter-spacing:-.3px}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0}
-.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:11px 8px;text-align:center}
-.stat b{display:block;font-size:16px;font-weight:700}
-.stat span{font-size:10.5px;color:var(--faint)}
-.sec{margin-top:20px}
-.sec h4{margin:0 0 8px;font-size:13px;font-weight:700;color:var(--muted);
-  text-transform:uppercase;letter-spacing:.5px}
-.sec p{margin:0;font-size:14px;line-height:1.7}
-.rowl{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line-2);font-size:13.5px}
-.rowl:last-child{border:0}
-.rowl span:first-child{color:var(--muted)}
-.rowl span:last-child{font-weight:500;text-align:right}
-.cta{display:flex;gap:9px;margin-top:22px;position:sticky;bottom:0;padding:14px 0;
+@keyframes slide{from{transform:translateX(40px);opacity:0}}
+@media (max-width:640px){
+  .sheet .pn{top:auto;height:94dvh;width:100%;border-radius:28px 28px 0 0;
+    animation:up .34s cubic-bezier(.2,.9,.3,1)}
+  @keyframes up{from{transform:translateY(50px);opacity:0}}
+}
+.ph{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:var(--s3);
+  padding:var(--s6);background:color-mix(in srgb,var(--bg) 90%,transparent);
+  backdrop-filter:blur(18px)}
+.ph b{font-size:16px}
+.ph button{margin-left:auto;width:38px;height:38px;border-radius:13px;
+  background:var(--surface);color:var(--ink);display:grid;place-items:center}
+.pb{padding:0 var(--s6) var(--s12)}
+.big{display:flex;gap:var(--s4);align-items:center;margin-bottom:var(--s6)}
+.big .face{width:72px;height:72px;flex:0 0 72px;border-radius:24px;font-size:29px}
+.big h3{font-size:22px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s2);margin:var(--s6) 0}
+@media(max-width:440px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--surface);border-radius:17px;padding:var(--s4) var(--s2);
+  text-align:center;box-shadow:var(--e1)}
+.kpi b{display:block;font-size:19px;font-weight:700;letter-spacing:-.03em}
+.kpi span{font-size:11px;color:var(--faint)}
+.grp{margin-top:var(--s8)}
+.grp h4{font-size:12.5px;font-weight:700;color:var(--faint);
+  text-transform:uppercase;letter-spacing:.1em;margin-bottom:var(--s3)}
+.grp p{margin:0;font-size:14.5px;line-height:1.75}
+.kv{display:flex;justify-content:space-between;gap:var(--s4);
+  padding:13px 0;font-size:14px}
+.kv+.kv{box-shadow:0 -1px 0 var(--line-2)}
+.kv span:first-child{color:var(--muted)}
+.kv span:last-child{font-weight:500;text-align:right}
+.acts{display:flex;gap:var(--s2);margin-top:var(--s8);position:sticky;bottom:0;
+  padding:var(--s4) 0 var(--s6);
   background:linear-gradient(to top,var(--bg) 70%,transparent)}
-.cta button{flex:1;border:0;border-radius:14px;padding:14px;font-weight:600;font-size:14.5px;cursor:pointer;transition:.18s}
-.cta .p{background:var(--grad);color:#fff;box-shadow:var(--shadow-sm)}
-.cta .s{background:var(--surface);border:1px solid var(--line);color:var(--ink)}
-.cta button:active{transform:scale(.96)}
+.acts button{flex:1;border-radius:18px;padding:16px;font-weight:600;font-size:15px;
+  transition:transform .16s,box-shadow .16s}
+.acts .s{background:var(--surface);color:var(--ink);box-shadow:var(--e1)}
+.acts .s:hover{box-shadow:var(--e2);transform:translateY(-2px)}
+.acts .s:active{transform:translateY(1px);box-shadow:var(--e-in)}
 
-/* ── ฟอร์มสมัคร ── */
-.rules{display:grid;gap:9px;margin:14px 0}
-.rule{display:flex;gap:11px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);
-  border-radius:14px;padding:12px 14px}
-.rule i{color:var(--ok);font-size:18px;flex:0 0 auto;margin-top:1px}
-.rule.opt i{color:var(--faint)}
-.rule b{display:block;font-size:13.5px;font-weight:600}
-.rule small{color:var(--muted);font-size:12px;line-height:1.5}
-.keep{background:rgba(217,115,60,.08);border:1px solid rgba(217,115,60,.2);border-radius:14px;
-  padding:14px 16px;margin-top:14px}
-.keep li{font-size:12.5px;color:var(--muted);margin-bottom:6px}
+/* ══ ด่านคัดช่าง ══ */
+.vet{display:grid;gap:var(--s3);margin:var(--s4) 0}
+.stg{border-radius:20px;padding:var(--s6);background:var(--surface);box-shadow:var(--e1)}
+.sh{display:flex;align-items:center;gap:var(--s3);margin-bottom:var(--s3)}
+.sn{width:32px;height:32px;flex:0 0 32px;border-radius:12px;background:var(--grad);
+  color:var(--on-acc,#fff);display:grid;place-items:center;font-size:14px;font-weight:700;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.4),inset 0 -1px 0 rgba(0,0,0,.25),
+             0 6px 14px -8px color-mix(in srgb,var(--accent) 80%,transparent)}
+.sh b{font-size:16px;flex:1}
+.sh small{font-size:11.5px;color:var(--faint);white-space:nowrap}
+.stg li{font-size:13px;color:var(--muted);line-height:1.75;margin-bottom:var(--s1)}
+.swhy{margin-top:var(--s3);font-size:12.5px;color:var(--accent);line-height:1.65}
+
+/* ══ ความคุ้มครอง ══ */
+.trow{display:flex;gap:var(--s4);align-items:flex-start;padding:var(--s4) 0}
+.trow>i{font-size:22px;color:var(--accent);flex:0 0 auto;margin-top:2px}
+.trow b{display:block;font-size:14.5px;font-weight:600;margin-bottom:2px}
+.trow small{font-size:13px;color:var(--muted);line-height:1.65}
+.fee{display:flex;align-items:center;gap:var(--s4);background:var(--surface);
+  border-radius:17px;padding:var(--s4) var(--s6);margin-bottom:var(--s2);
+  box-shadow:var(--e1)}
+.fee b{font-size:23px;font-weight:700;color:var(--accent);flex:0 0 68px;letter-spacing:-.04em}
+.fee span{flex:1;min-width:0}
+.fee strong{display:block;font-size:14px;font-weight:600}
+.fee small{font-size:12px;color:var(--faint)}
+.keep{background:var(--c-acc-soft);border-radius:20px;padding:var(--s6);margin-top:var(--s4)}
+.keep li{font-size:13px;color:var(--muted);margin-bottom:var(--s2)}
 .keep li:last-child{margin:0}
-.f{margin-bottom:13px}
-.f label{display:block;font-size:12.5px;font-weight:600;margin-bottom:5px}
+
+/* ══ ฟอร์ม ══ */
+.f{margin-bottom:var(--s4)}
+.f label{display:block;font-size:13px;font-weight:600;margin-bottom:var(--s2)}
 .f label em{font-style:normal;color:var(--danger)}
-.f input,.f select,.f textarea{width:100%;border:1px solid var(--line);background:var(--surface);
-  border-radius:12px;padding:11px 13px;outline:0;transition:.18s;font-size:14px}
-.f input:focus,.f select:focus,.f textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(217,115,60,.12)}
-.f textarea{min-height:88px;resize:vertical}
-.f .hint{font-size:11.5px;color:var(--faint);margin-top:4px}
-.f.bad input,.f.bad textarea,.f.bad select{border-color:var(--danger)}
-.f .err{font-size:11.5px;color:var(--danger);margin-top:4px;display:none}
+.f input,.f textarea{width:100%;background:var(--surface);border:0;border-radius:16px;
+  padding:14px var(--s4);outline:0;font-size:15px;
+  box-shadow:var(--e-in);transition:box-shadow .18s}
+.f input:focus,.f textarea:focus{box-shadow:var(--e-in),0 0 0 3px var(--c-acc-soft)}
+.f textarea{min-height:100px;resize:vertical}
+.f .hint{font-size:12px;color:var(--faint);margin-top:var(--s2)}
+.f.bad input,.f.bad textarea{box-shadow:0 0 0 2px var(--danger)}
+.f .err{font-size:12px;color:var(--danger);margin-top:var(--s2);display:none}
 .f.bad .err{display:block}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3)}
 @media (max-width:460px){.two{grid-template-columns:1fr}}
-.pick{display:flex;gap:7px;flex-wrap:wrap}
-.pick button{border:1px solid var(--line);background:var(--surface);border-radius:11px;padding:8px 13px;
-  font-size:12.5px;cursor:pointer;color:var(--muted);transition:.16s}
-.pick button.on{background:rgba(217,115,60,.13);border-color:var(--accent);color:var(--accent-d);font-weight:600}
-.ok-box{background:rgba(62,158,110,.1);border:1px solid rgba(62,158,110,.28);border-radius:16px;
-  padding:20px;text-align:center}
-.ok-box i{font-size:40px;color:var(--ok)}
-.ok-box b{display:block;font-size:16px;margin:8px 0 4px}
-.ok-box p{margin:0;font-size:13px;color:var(--muted)}
+.pick{display:flex;gap:var(--s2);flex-wrap:wrap}
+.pick button{background:var(--surface);border-radius:14px;padding:11px var(--s4);
+  font-size:13px;color:var(--muted);box-shadow:var(--e1);
+  transition:transform .16s,box-shadow .16s,background .16s,color .16s}
+.pick button:hover{transform:translateY(-1px);box-shadow:var(--e2)}
+.pick button.on{background:var(--c-acc-soft);color:var(--accent);font-weight:600}
+.pick button:active{transform:translateY(1px);box-shadow:var(--e-in)}
+.done{background:color-mix(in srgb,var(--ok) 12%,transparent);border-radius:22px;
+  padding:var(--s8);text-align:center}
+.done i{font-size:48px;color:var(--ok)}
+.done b{display:block;font-size:18px;margin:var(--s3) 0 var(--s2)}
+.done p{margin:0;font-size:13.5px;color:var(--muted);line-height:1.75}
 
-.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(80px);z-index:200;
-  background:var(--ink);color:var(--bg);border-radius:14px;padding:12px 18px;font-size:13.5px;
-  font-weight:500;box-shadow:var(--shadow);opacity:0;transition:.3s cubic-bezier(.2,.9,.3,1);pointer-events:none;
-  display:flex;align-items:center;gap:9px;max-width:calc(100vw - 40px)}
+.toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(80px);
+  z-index:200;background:var(--ink);color:var(--bg);border-radius:18px;
+  padding:14px var(--s6);font-size:14px;font-weight:500;
+  box-shadow:var(--e3);
+  opacity:0;transition:.3s cubic-bezier(.2,.9,.3,1);pointer-events:none;
+  display:flex;align-items:center;gap:var(--s2);max-width:calc(100vw - 48px)}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
-
-/* ── ปุ่มรอง ── */
-.btn-ghost{border:1px solid var(--line);border-radius:13px;padding:10px 14px;
-  background:var(--surface);color:var(--muted);font-weight:600;font-size:13px;
-  cursor:pointer;white-space:nowrap;transition:.16s}
-.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
-@media(max-width:560px){.btn-ghost span{display:none}}
-
-/* ── แถบเครื่องมือ AI ── */
-.aibar{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:16px}
-@media(max-width:720px){.aibar{grid-template-columns:repeat(2,1fr)}}
-.aib{display:flex;align-items:center;gap:10px;text-align:left;cursor:pointer;
-  border:1px solid var(--line);border-radius:15px;padding:12px 13px;
-  background:var(--surface);color:var(--ink);transition:.16s;min-width:0}
-.aib:hover{border-color:var(--accent);transform:translateY(-2px)}
-.aib:active{transform:scale(.98)}
-.aib>i{font-size:20px;color:var(--accent);flex:0 0 auto}
-.aib span{min-width:0}
-.aib b{display:block;font-size:13px;font-weight:600;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.aib small{font-size:11px;color:var(--faint)}
-
-/* ── ผลลัพธ์จากเครื่องมือ AI ── */
-.aires{margin-top:14px;border:1px solid var(--line);border-radius:var(--radius,18px);
-  padding:16px 17px;background:var(--surface);position:relative}
-.aires h4{margin:0 0 4px;font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:7px}
-.aires h4 i{color:var(--accent)}
-.aires p{margin:0;font-size:13px;color:var(--muted);line-height:1.6}
-.aires .x{position:absolute;right:10px;top:10px;width:28px;height:28px;border:0;
-  border-radius:9px;background:var(--surface-2);color:var(--muted);cursor:pointer}
-.price-band{display:flex;align-items:flex-end;gap:14px;margin:12px 0 6px;flex-wrap:wrap}
-.pb{flex:1;min-width:96px}
-.pb b{display:block;font-size:21px;font-weight:700;letter-spacing:-.5px}
-.pb b.big{font-size:26px;color:var(--accent-d)}
-.pb span{font-size:11px;color:var(--faint)}
-.bar{height:7px;border-radius:4px;background:var(--surface-2);position:relative;margin:10px 0 6px}
-.bar i{position:absolute;top:0;bottom:0;border-radius:4px;background:var(--grad)}
-
-/* ── ด่านคัดช่าง ── */
-.vet{display:grid;gap:11px;margin:14px 0}
-.vstage{border:1px solid var(--line);border-radius:16px;padding:14px 15px;background:var(--surface)}
-.vh{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-.vn{width:27px;height:27px;flex:0 0 27px;border-radius:9px;background:var(--grad);color:#fff;
-  display:grid;place-items:center;font-size:13px;font-weight:700}
-.vh b{font-size:14.5px;font-weight:700;flex:1}
-.vh small{font-size:11px;color:var(--faint);white-space:nowrap}
-.vstage li{font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:4px}
-.vwhy{margin-top:9px;padding-top:9px;border-top:1px solid var(--line-2);
-  font-size:12px;color:var(--accent-d);line-height:1.55}
-
-/* ── ความคุ้มครอง ── */
-.tsec{margin-top:22px}
-.tsec>h4{margin:0 0 4px;font-size:13px;font-weight:700;color:var(--muted);
-  text-transform:uppercase;letter-spacing:.5px}
-.tsec>p{margin:0 0 12px;font-size:12.5px;color:var(--faint);line-height:1.6}
-.trow{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line-2)}
-.trow:last-child{border:0}
-.trow>i{font-size:20px;color:var(--accent);flex:0 0 auto;margin-top:2px}
-.trow b{display:block;font-size:13.5px;font-weight:600;margin-bottom:2px}
-.trow small{font-size:12px;color:var(--muted);line-height:1.55}
-.feegrid{display:grid;gap:8px}
-.feerow{display:flex;align-items:center;gap:12px;background:var(--surface);
-  border:1px solid var(--line);border-radius:13px;padding:11px 14px}
-.feerow b{font-size:19px;font-weight:700;color:var(--accent-d);flex:0 0 58px}
-.feerow span{flex:1;min-width:0}
-.feerow strong{display:block;font-size:13px;font-weight:600}
-.feerow small{font-size:11.5px;color:var(--faint)}
-
-/* ═══ ภาษาเดียวกับหน้าหลัก — Claymorphism ═══
-   หน้าหลักเปลี่ยนไปใช้ปุ่มแบบดินน้ำมันแล้ว ถ้าหน้านี้ยังเป็นการ์ดขอบบาง
-   มันจะดูเหมือนคนละแอปอีกรอบ ทั้งที่คราวนี้สีตรงกันแล้ว
-   หลักคิดเดียวกัน: แสงมาจากบนซ้ายเสมอ เงาสองชั้น กดแล้วยุบลงไปในพื้น */
-.card{
-  border:0;border-radius:26px;
-  background:linear-gradient(160deg,
-    color-mix(in srgb,var(--accent) 6%,var(--surface)),
-    color-mix(in srgb,var(--accent) 1.5%,var(--surface)));
-  box-shadow:
-    inset 2px 3px 6px -2px color-mix(in srgb,var(--ink) 10%,transparent),
-    inset -4px -5px 10px -3px rgba(0,0,0,.28),
-    0 16px 30px -22px rgba(0,0,0,.75);
-}
-.card:hover{
-  transform:translateY(-4px);border-color:transparent;
-  box-shadow:
-    inset 2px 3px 7px -2px color-mix(in srgb,var(--ink) 13%,transparent),
-    inset -4px -5px 11px -3px rgba(0,0,0,.32),
-    0 26px 44px -24px color-mix(in srgb,var(--accent) 55%,rgba(0,0,0,.8));
-}
-.card:active{transform:translateY(1px) scale(.985)}
-/* ก้อนอักษรย่อของช่าง คือจุดที่ตาไปตกก่อนเสมอ จึงต้องนูนที่สุดในการ์ด */
-.av{
-  border-radius:19px;
-  box-shadow:
-    inset 2px 3px 5px -1px rgba(255,255,255,.55),
-    inset -2px -3px 6px -1px rgba(0,0,0,.28),
-    0 9px 15px -8px color-mix(in srgb,var(--accent) 70%,transparent);
-}
-.cat.on,.btn-apply,.searchbar .go,.cta .p{
-  box-shadow:
-    inset 2px 2px 4px -1px rgba(255,255,255,.4),
-    inset -2px -3px 6px -1px rgba(0,0,0,.25),
-    0 10px 18px -10px color-mix(in srgb,var(--accent) 75%,transparent);
-}
-.cat.on:active,.btn-apply:active,.searchbar .go:active,.cta .p:active{
-  box-shadow:inset 3px 4px 8px -1px rgba(0,0,0,.3);
-}
-.stat{
-  border:0;border-radius:18px;background:var(--surface);
-  box-shadow:
-    inset 2px 3px 5px -2px color-mix(in srgb,var(--ink) 9%,transparent),
-    inset -3px -4px 8px -3px rgba(0,0,0,.26),
-    0 10px 20px -16px rgba(0,0,0,.7);
-}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 
-<div class="top">
-  <div class="top-in">
-    <button class="back" onclick="goBack()" aria-label="ย้อนกลับ"><i class="ti ti-arrow-left"></i></button>
-    <div>
-      <h1>หาช่าง</h1>
-      <div class="sub" id="topSub">ช่างที่ผ่านการตรวจสอบ ทั่วประเทศ</div>
-    </div>
-    <div class="sp"></div>
-    <button class="btn-ghost" onclick="openTrust()"><i class="ti ti-shield-check"></i> ความคุ้มครอง</button>
-    <button class="btn-apply" onclick="openApply()"><i class="ti ti-tool"></i> สมัครเป็นช่าง</button>
-  </div>
-</div>
-
 <div class="wrap">
-  <div class="hero">
-    <h2>รถมีอาการ<br><em>หาช่างที่ทำเรื่องนั้นเป็น</em></h2>
-    <p>พิมพ์อาการที่เจอได้เลย ไม่ต้องรู้ว่าต้องเรียกช่างประเภทไหน ระบบจะจับคู่ให้เอง — ทุกคนที่ขึ้นในนี้บอกราคาเริ่มต้นและระยะรับประกันไว้ล่วงหน้าแล้ว</p>
+  <div class="lead">
+    <a class="homelink" href="index.html">
+      <svg viewBox="-6 -6 94.8 112" aria-hidden="true"><path fill="currentColor" d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg>
+      กลับหน้าหลัก
+    </a>
+    <h1>รถมีอาการ<br><em>หาช่างที่ทำเรื่องนั้นเป็น</em></h1>
+    <p>พิมพ์อาการที่เจอได้เลย ไม่ต้องรู้ว่าต้องเรียกช่างประเภทไหน</p>
 
-    <div class="searchbar">
+    <!-- ช่องนี้ไม่ได้รับการพิมพ์เอง มันคือปุ่มที่เปิดจอถามเต็มจอขึ้นมา
+         เพราะการค้นหากับการถามเป็นเรื่องเดียวกัน แค่คนพิมพ์ต่างกัน -->
+    <div class="find" onclick="openAsk()" role="button" tabindex="0"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openAsk()}">
       <i class="ti ti-search"></i>
-      <input id="q" placeholder="เช่น แอร์ไม่เย็น, ช่วงล่างมีเสียง, ยางแตกข้างทาง" autocomplete="off"/>
-      <button class="go" onclick="run()">ค้นหา</button>
+      <div class="fq" id="fq">ถามอาการรถ หรือหาช่าง…</div>
+      <input id="q" type="hidden"/>
+      <button class="go gloss" type="button"><span>ถาม Cendon</span></button>
     </div>
-    <div class="hints" id="hints"></div>
+    <div class="tips" id="tips"></div>
 
-    <!-- ── สิ่งที่ AI ทำให้ได้ก่อนจะเรียกช่าง ──
-         วางไว้ตรงนี้เพราะเป็นขั้นที่ควรทำ "ก่อน" เลือกช่าง
-         ถ้าไปวางไว้ในหน้าของช่างแต่ละคน แปลว่าเลือกไปแล้วถึงค่อยรู้ราคา -->
-    <div class="aibar">
-      <button class="aib" onclick="aiEstimate()">
+    <div class="morebar">
+      <button class="more gloss" id="moreBtn" onclick="toggleTools()">
+        <i class="ti ti-sparkles"></i> ให้ AI ช่วย <i class="ti ti-chevron-down ch"></i>
+      </button>
+    </div>
+    <div class="tools" id="tools">
+      <button class="tool" style="color:var(--c-eng)" onclick="aiEstimate()">
         <i class="ti ti-coin"></i><span><b>ประเมินราคา</b><small>ก่อนเรียกช่าง</small></span></button>
-      <button class="aib" onclick="aiMatch()">
+      <button class="tool" style="color:var(--c-pro)" onclick="aiMatch()">
         <i class="ti ti-wand"></i><span><b>ให้ AI เลือกให้</b><small>จับคู่อัตโนมัติ</small></span></button>
-      <button class="aib" onclick="aiHome()">
-        <i class="ti ti-home"></i><span><b>ช่างใกล้บ้าน</b><small>ตั้งบ้านไว้ครั้งเดียว</small></span></button>
-      <button class="aib" onclick="aiInspect()">
+      <button class="tool" style="color:var(--c-near)" onclick="aiHome()">
+        <i class="ti ti-home"></i><span><b>ช่างใกล้บ้าน</b><small>ตั้งครั้งเดียว</small></span></button>
+      <button class="tool" style="color:var(--c-tyre)" onclick="aiInspect()">
         <i class="ti ti-checkup-list"></i><span><b>ตรวจงานหลังซ่อม</b><small>เทียบรูปก่อน–หลัง</small></span></button>
     </div>
     <div id="aiOut"></div>
   </div>
 
   <div class="cats" id="cats"></div>
-  <div class="catdesc" id="catdesc"></div>
+  <div class="catnote" id="catnote"></div>
 
-  <div class="filters">
-    <button class="chip" id="fMobile" onclick="tog('mobile')"><i class="ti ti-truck"></i> ออกนอกสถานที่</button>
-    <button class="chip" id="fVerified" onclick="tog('verified')"><i class="ti ti-rosette-discount-check"></i> ตรวจสอบแล้ว</button>
-    <label class="chip"><i class="ti ti-arrows-sort"></i>
-      <select id="sort" onchange="run()">
-        <option value="best">ตรงที่สุด</option>
-        <option value="near">ใกล้ที่สุด</option>
-        <option value="rating">คะแนนสูงสุด</option>
-        <option value="cheap">ราคาเริ่มต้นถูกสุด</option>
-        <option value="fast">ตอบเร็วสุด</option>
-      </select></label>
-    <span class="count" id="count"></span>
+  <div class="sum">
+    <span id="count"></span>
+    <button class="f" id="fMobile" onclick="tog('mobile')">ออกนอกสถานที่</button>
+    <button class="f" id="fVerified" onclick="tog('verified')">ตรวจสอบแล้ว</button>
+    <span class="sp"></span>
+    <select id="sort" onchange="run()">
+      <option value="best">ตรงที่สุด</option>
+      <option value="near">ใกล้ที่สุด</option>
+      <option value="rating">คะแนนสูงสุด</option>
+      <option value="cheap">ราคาถูกสุด</option>
+      <option value="fast">ตอบเร็วสุด</option>
+    </select>
   </div>
 
-  <div class="grid" id="grid"></div>
+  <div class="list" id="list"></div>
+
+  <div class="tail">
+    <button class="tcard" onclick="openTrust()">
+      <i class="ti ti-shield-check"></i>
+      <b>ความคุ้มครอง</b>
+      <small>เงินพักไว้จนงานเสร็จ ประกันงาน 7–90 วัน และคนกลางเมื่อตกลงกันไม่ได้</small>
+    </button>
+    <button class="tcard" onclick="openApply()">
+      <i class="ti ti-tool"></i>
+      <b>สมัครเป็นช่าง</b>
+      <small>สี่ด่านกว่าจะได้รับงานแรก ทุกด่านมีคนหรือเอกสารเป็นคนตัดสิน</small>
+    </button>
+  </div>
+</div>
+
+<!-- ══ จอถาม Cendon ══ -->
+<div class="ask" id="ask">
+  <div class="ask-bd" onclick="closeAsk()"></div>
+  <div class="ask-in">
+    <div class="ask-bar">
+      <svg class="mk" viewBox="-6 -6 94.8 112" aria-hidden="true"><path fill="currentColor" d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg>
+      <input id="askQ" placeholder="พิมพ์อาการ หรือถามอะไรก็ได้เกี่ยวกับรถ" autocomplete="off"
+             enterkeyhint="go" aria-label="ถาม Cendon"/>
+      <button class="x" onclick="closeAsk()" aria-label="ปิด"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="ask-body" id="askBody"></div>
+  </div>
 </div>
 
 <div class="sheet" id="sheet"><div class="bd" onclick="closeSheet()"></div>
-  <div class="pn"><div class="pn-x"><b id="pnT">รายละเอียด</b>
+  <div class="pn"><div class="ph"><b id="pnT">รายละเอียด</b>
     <button onclick="closeSheet()" aria-label="ปิด"><i class="ti ti-x"></i></button></div>
-    <div class="pn-b" id="pnB"></div></div></div>
+    <div class="pb" id="pnB"></div></div></div>
 
 <div class="toast" id="toast"><i class="ti ti-check"></i><span id="toastT"></span></div>
 
@@ -404,205 +700,396 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 "use strict";
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-function goBack(){ if(history.length>1)history.back(); else location.href="index.html" }
+const money=n=>Number(n).toLocaleString("th-TH");
 let TO=0;
 function toast(t,ic){ $("toastT").textContent=t;
   $("toast").querySelector("i").className="ti "+(ic||"ti-check");
-  $("toast").classList.add("on"); clearTimeout(TO); TO=setTimeout(()=>$("toast").classList.remove("on"),2600) }
+  $("toast").classList.add("on"); clearTimeout(TO); TO=setTimeout(()=>$("toast").classList.remove("on"),2800) }
 
-/* สถานะของหน้า เก็บไว้ที่เดียว ทุกอย่างวาดจากตรงนี้
-   ไม่มีใครไปแก้ DOM ตรง ๆ นอกจาก draw() จะได้ไม่มีวันที่จอกับข้อมูลไม่ตรงกัน */
+/* สถานะของหน้า อยู่ที่เดียว ทุกอย่างวาดจากตรงนี้ */
 const S={cat:"all",q:"",sort:"best",mobile:false,verified:false,here:null};
 
-const HINTS=["แอร์ไม่เย็น","ช่วงล่างมีเสียง","สตาร์ทไม่ติด","ยางแตกข้างทาง","เกียร์กระตุก","แบตเตอรี่ EV","เคาะพ่นสี","เช็กระยะ"];
-$("hints").innerHTML=HINTS.map(h=>`<button onclick="quick('${esc(h)}')">${esc(h)}</button>`).join("");
-function quick(t){ $("q").value=t; S.q=t; run() }
+/* สีประจำหมวด — ตัวเดียวกับที่ประกาศไว้ใน CSS
+   ช่างได้สีจากหมวดแรกที่เขาถนัด สีจึงบอกได้ว่าเขาทำอะไรโดยไม่ต้องอ่าน */
+const HUE={near:"--c-near",quick:"--c-quick",pro:"--c-pro",body:"--c-body",
+           ev:"--c-ev",tyre:"--c-tyre",air:"--c-air",eng:"--c-eng"};
+const hueOf=t=>`var(${HUE[(t.cats||[])[0]]||"--c-eng"})`;
 
-/* แท็บหมวด — สามหมวดหลักขึ้นก่อน แล้วค่อยหมวดงานเฉพาะทาง
-   ผู้ใช้ส่วนใหญ่ไม่รู้ว่าอาการของตัวเองเป็นงานหมวดไหน จึงต้องเห็น "ทั้งหมด" เป็นค่าเริ่มต้น */
+const TIPS=["แอร์ไม่เย็น","ช่วงล่างมีเสียง","สตาร์ทไม่ติด","ยางแตกข้างทาง","เกียร์กระตุก","แบตเตอรี่ EV"];
+$("tips").innerHTML="ลองพิมพ์ · "+TIPS.map(h=>`<button onclick="quick('${esc(h)}')">${esc(h)}</button>`).join("");
+function quick(t){ $("q").value=t; run() }
+
+function toggleTools(){
+  const t=$("tools"), b=$("moreBtn");
+  t.classList.toggle("on"); b.classList.toggle("on");
+}
+
+/* ══ หมวด ══ */
 function drawCats(){
   const list=[{id:"all",th:"ทั้งหมด",ic:"ti-layout-grid",desc:"ช่างทุกคนในระบบ"}].concat(Techs.CATS);
   $("cats").innerHTML=list.map(c=>{
     const n=c.id==="all"?Techs.all().length:Techs.search({cat:c.id,here:S.here}).length;
-    return `<button class="cat${S.cat===c.id?" on":""}" data-c="${c.id}">
-      <i class="ti ${c.ic}"></i><span>${esc(c.th)}<br><span class="n">${n} คน</span></span></button>`;
+    const k=c.id==="all"?"var(--accent)":`var(${HUE[c.id]})`;
+    return `<button class="cat${S.cat===c.id?" on":""}" data-c="${c.id}" style="--k:${k}">
+      <i class="ti ${c.ic}"></i><span>${esc(c.th)} <span class="n">${n}</span></span></button>`;
   }).join("");
   $("cats").querySelectorAll(".cat").forEach(b=>b.onclick=()=>{
     S.cat=b.dataset.c;
-    /* เลือกหมวดใกล้บ้านแล้วยังไม่รู้ว่าอยู่ไหน ก็ต้องถามตรงนี้แหละ
-       ถามตั้งแต่เปิดหน้าจะดูเหมือนแอปหิวข้อมูล ทั้งที่ยังไม่รู้เลยว่าเขาจะใช้ไหม */
-    if(S.cat==="near"&&!S.here){ Techs.askPos().then(p=>{ S.here=p;
-      if(!p)toast("ยังไม่ได้ตำแหน่ง — เรียงตามคะแนนแทน","ti-map-pin-off");
-      else { S.sort="near"; $("sort").value="near" }
-      run(); drawCats() }) }
+    /* เลือกใกล้บ้านแล้วยังไม่รู้ว่าอยู่ไหน ค่อยถามตรงนี้
+       ถามตั้งแต่เปิดหน้าจะดูเหมือนแอปหิวข้อมูล ทั้งที่ยังไม่รู้ว่าเขาจะใช้ไหม */
+    if(S.cat==="near"&&!S.here){
+      Techs.askPos().then(p=>{ S.here=p;
+        if(!p)toast("ยังไม่ได้ตำแหน่ง เรียงตามคะแนนแทน","ti-map-pin-off");
+        else { S.sort="near"; $("sort").value="near" }
+        run(); drawCats() });
+    }
     const d=list.find(x=>x.id===S.cat);
-    $("catdesc").textContent=d&&d.desc?d.desc:"";
+    $("catnote").textContent=d&&d.desc?d.desc:"";
     run(); drawCats();
   });
-  const d=list.find(x=>x.id===S.cat); $("catdesc").textContent=d&&d.desc?d.desc:"";
+  const d=list.find(x=>x.id===S.cat); $("catnote").textContent=d&&d.desc?d.desc:"";
 }
 function tog(k){ S[k]=!S[k];
   $(k==="mobile"?"fMobile":"fVerified").classList.toggle("on",S[k]); run() }
 
-function money(n){ return Number(n).toLocaleString("th-TH") }
-function cardHTML(t){
-  const badges=[];
-  if(t.verified)badges.push('<span class="tag ok"><i class="ti ti-rosette-discount-check"></i> ตรวจสอบแล้ว</span>');
-  if(t.urgent)  badges.push('<span class="tag hi">รับงานด่วน</span>');
-  if(t.mobile)  badges.push('<span class="tag">ออกนอกสถานที่</span>');
-  const sk=(t.skills||[]).slice(0,3).map(s=>`<span class="tag">${esc(s)}</span>`).join("");
-  return `<article class="card" data-id="${t.id}">
-    <div class="chead">
-      <div class="av">${esc((t.name||"?")[0])}</div>
-      <div style="min-width:0">
-        <div class="cname">${esc(t.name)}${t.verified?'<i class="ti ti-rosette-discount-check vf"></i>':""}</div>
-        <div class="cshop">${esc(t.shop)}</div>
-        <div class="cwhere"><i class="ti ti-map-pin"></i>${esc(t.area)}${
-          t.dist!=null?` · ${t.dist} กม.`:""}</div>
-      </div>
-      <div class="rate"><b>${t.rating.toFixed(1)}</b><span>${t.jobs} งาน</span></div>
-    </div>
-    <div class="tags">${badges.join("")}${sk}</div>
-    <div class="cfoot">
-      <div class="price"><span>เริ่มต้น</span><b>฿${money(t.from)}</b></div>
-      <div class="meta">ตอบใน ~${t.reply} นาที<br>รับประกัน ${t.warranty} วัน</div>
-    </div>
-  </article>`;
+/* ══ รายชื่อช่าง ══ */
+function card(t){
+  const k=hueOf(t);
+  return `<button class="pro" data-id="${t.id}" style="--k:${k}">
+    <span class="face">${esc((t.name||"?")[0])}</span>
+    <span class="b">
+      <span class="nm">${esc(t.name)}${t.verified?'<i class="ti ti-rosette-discount-check vf"></i>':""}
+        <span class="sc">${t.rating.toFixed(1)}</span></span>
+      <span class="shop">${esc(t.shop)}</span>
+      <span class="where">${esc(t.area)}${t.dist!=null?` · ${t.dist} กม.`:""} · ${t.jobs} งาน</span>
+      <span class="skills">${(t.skills||[]).slice(0,3).map(s=>`<span>${esc(s)}</span>`).join("")}</span>
+      <span class="foot">
+        <span class="pz">฿${money(t.from)}</span> เริ่มต้น
+        <span class="sp"></span>
+        ตอบ ~${t.reply} นาที · รับประกัน ${t.warranty} วัน
+      </span>
+    </span>
+  </button>`;
 }
 function run(){
   S.q=$("q").value.trim(); S.sort=$("sort").value;
-  const list=Techs.search({q:S.q,cat:S.cat,here:S.here,sort:S.sort,mobile:S.mobile,verified:S.verified});
-  $("count").textContent=list.length+" คน";
-  $("grid").innerHTML=list.length?list.map(cardHTML).join("")
-    :`<div class="none" style="grid-column:1/-1"><i class="ti ti-mood-empty"></i>
+  const l=Techs.search({q:S.q,cat:S.cat,here:S.here,sort:S.sort,mobile:S.mobile,verified:S.verified});
+  $("count").innerHTML=`<b>${l.length}</b> คน`;
+  $("list").innerHTML=l.length?l.map(card).join("")
+    :`<div class="empty" style="grid-column:1/-1"><i class="ti ti-mood-empty"></i>
        <b>ยังไม่มีช่างที่ตรงกับที่หาอยู่</b>
-       ลองพิมพ์อาการสั้นลง หรือเอาตัวกรองออกสักอัน แล้วดูใหม่อีกที</div>`;
-  $("grid").querySelectorAll(".card").forEach(c=>c.onclick=()=>openTech(c.dataset.id));
+       ลองพิมพ์อาการให้สั้นลง หรือเอาตัวกรองออกสักอัน</div>`;
+  $("list").querySelectorAll(".pro").forEach(c=>c.onclick=()=>openTech(c.dataset.id));
 }
 
+/* ══ หน้าของช่างคนนั้น ══ */
 function openTech(id){
   const t=Techs.search({here:S.here}).find(x=>x.id===id); if(!t)return;
+  const k=hueOf(t);
   $("pnT").textContent=t.shop;
   $("pnB").innerHTML=`
-    <div class="pbig"><div class="av">${esc(t.name[0])}</div>
-      <div><h3>${esc(t.name)}${t.verified?' <i class="ti ti-rosette-discount-check vf" style="color:var(--info)"></i>':""}</h3>
-        <div class="cshop">${esc(t.shop)}</div>
-        <div class="cwhere"><i class="ti ti-map-pin"></i>${esc(t.area)}${t.dist!=null?` · ห่างคุณ ${t.dist} กม.`:""}</div></div></div>
-    <div class="stats">
-      <div class="stat"><b>${t.rating.toFixed(1)}</b><span>คะแนน</span></div>
-      <div class="stat"><b>${t.jobs}</b><span>งานที่ปิดแล้ว</span></div>
-      <div class="stat"><b>${t.years}</b><span>ปีประสบการณ์</span></div>
-      <div class="stat"><b>${t.reply}น.</b><span>ตอบเฉลี่ย</span></div>
+    <div class="big" style="--k:${k}"><span class="face">${esc(t.name[0])}</span>
+      <div style="min-width:0"><h3>${esc(t.name)}</h3>
+        <div class="shop">${esc(t.shop)}</div>
+        <div class="where">${esc(t.area)}${t.dist!=null?` · ห่างคุณ ${t.dist} กม.`:""}</div></div></div>
+    <div class="kpis">
+      <div class="kpi"><b>${t.rating.toFixed(1)}</b><span>คะแนน</span></div>
+      <div class="kpi"><b>${t.jobs}</b><span>งานที่ปิดแล้ว</span></div>
+      <div class="kpi"><b>${t.years}</b><span>ปีประสบการณ์</span></div>
+      <div class="kpi"><b>${t.reply}น.</b><span>ตอบเฉลี่ย</span></div>
     </div>
-    <div class="sec"><h4>เกี่ยวกับช่าง</h4><p>${esc(t.about)}</p></div>
-    <div class="sec"><h4>งานที่ถนัด</h4><div class="tags">${
-      (t.skills||[]).map(s=>`<span class="tag hi">${esc(s)}</span>`).join("")}</div></div>
-    <div class="sec"><h4>รายละเอียดบริการ</h4>
-      <div class="rowl"><span>ช่วงราคา</span><span>฿${money(t.from)} – ฿${money(t.to)}</span></div>
-      <div class="rowl"><span>รับประกันงาน</span><span>${t.warranty} วัน</span></div>
-      <div class="rowl"><span>ยี่ห้อที่รับ</span><span>${esc((t.brands||[]).join(", "))}</span></div>
-      <div class="rowl"><span>ออกนอกสถานที่</span><span>${t.mobile?"ได้":"ไม่ได้ ต้องเข้าอู่"}</span></div>
-      <div class="rowl"><span>งานด่วน</span><span>${t.urgent?"รับ":"ไม่รับ"}</span></div>
-      <div class="rowl"><span>สถานะการตรวจสอบ</span><span>${t.verified?"ยืนยันตัวตนและผลงานแล้ว":"ยังตรวจสอบไม่ครบ"}</span></div>
+    <div class="grp"><h4>เกี่ยวกับช่าง</h4><p>${esc(t.about)}</p></div>
+    <div class="grp" style="--k:${k}"><h4>งานที่ถนัด</h4>
+      <div class="skills">${(t.skills||[]).map(s=>`<span>${esc(s)}</span>`).join("")}</div></div>
+    <div class="grp"><h4>รายละเอียดบริการ</h4>
+      <div class="kv"><span>ช่วงราคา</span><span>฿${money(t.from)} – ฿${money(t.to)}</span></div>
+      <div class="kv"><span>รับประกันงาน</span><span>${t.warranty} วัน</span></div>
+      <div class="kv"><span>ยี่ห้อที่รับ</span><span>${esc((t.brands||[]).join(", "))}</span></div>
+      <div class="kv"><span>ออกนอกสถานที่</span><span>${t.mobile?"ได้":"ไม่ได้ ต้องเข้าอู่"}</span></div>
+      <div class="kv"><span>งานด่วน</span><span>${t.urgent?"รับ":"ไม่รับ"}</span></div>
+      <div class="kv"><span>การตรวจสอบ</span><span>${t.verified?"ยืนยันตัวตนและผลงานแล้ว":"ยังตรวจสอบไม่ครบ"}</span></div>
     </div>
-    <div class="cta">
-      <button class="s" onclick="askAI('${t.id}')"><i class="ti ti-sparkles"></i> ถาม AI ก่อน</button>
-      <button class="p" onclick="book('${t.id}')"><i class="ti ti-calendar-plus"></i> นัดหมายช่าง</button>
+    <div class="acts">
+      <button class="s" onclick="askAI('${t.id}')">ถาม AI ก่อน</button>
+      <button class="p gloss" onclick="aiJob('${t.id}')"><span>ส่งใบงานให้ช่าง</span></button>
     </div>`;
-  $("sheet").classList.add("on"); document.body.style.overflow="hidden";
+  openSheet();
 }
+function openSheet(){ $("sheet").classList.add("on"); document.body.style.overflow="hidden" }
 function closeSheet(){ $("sheet").classList.remove("on"); document.body.style.overflow="" }
 addEventListener("keydown",e=>{ if(e.key==="Escape")closeSheet() });
 
-/* ส่งอาการต่อให้หน้าแชต พร้อมชื่อช่างที่กำลังดูอยู่
-   ผู้ใช้จะได้ไม่ต้องเล่าเรื่องเดิมซ้ำอีกรอบ */
 function askAI(id){
   const t=Techs.all().find(x=>x.id===id); if(!t)return;
   const q=(S.q?`${S.q} — `:"")+`ช่าง ${t.name} (${t.shop}) ที่ ${t.area} เหมาะกับงานของผมไหม`;
   location.href="chat.html?q="+encodeURIComponent(q);
 }
-function book(id){
-  const t=Techs.all().find(x=>x.id===id); if(!t)return;
-  /* ยังไม่มีระบบนัดหมายจริง จึงบอกตามตรงว่ายังทำอะไรได้แค่ไหน
-     ขึ้นหน้าจอปลอมว่าจองสำเร็จแล้วปล่อยให้เขานั่งรอช่างที่ไม่มีวันมา คือเรื่องที่ทำไม่ได้ */
-  toast("ระบบนัดหมายกำลังเปิดใช้เร็ว ๆ นี้ — ตอนนี้บันทึกช่างคนนี้ไว้ให้แล้ว","ti-bookmark");
-  try{ const k="spire_tech_saved", a=JSON.parse(localStorage.getItem(k)||"[]");
-    if(a.indexOf(id)<0){ a.push(id); localStorage.setItem(k,JSON.stringify(a)) } }catch(e){}
+
+/* ══════════════════════════════════════════════════════════════════
+   จอถาม Cendon — ค้นหากับถาม AI อยู่ในช่องเดียวกัน
+   ───────────────────────────────────────────────────────────────────
+   หัวใจอยู่ที่การอ่านเจตนา ไม่ใช่ที่หน้าตา
+
+   คนพิมพ์ "แอร์ไม่เย็น" กับ "แอร์ไม่เย็นเกิดจากอะไร" ต้องการคนละอย่าง
+   อันแรกอยากได้ช่าง อันที่สองอยากได้คำอธิบาย
+   ระบบที่บังคับให้เลือกก่อนว่าจะค้นหรือจะถาม คือระบบที่ผลักภาระให้ผู้ใช้
+   ตัดสินใจแทนตัวเอง ทั้งที่ข้อความที่เขาพิมพ์บอกอยู่แล้วว่าเขาต้องการอะไร
+
+   จอนี้จึงแสดงทั้งสองอย่างเสมอ แต่สลับลำดับตามสิ่งที่พิมพ์
+   ═══════════════════════════════════════════════════════════════════ */
+const ASK_MARK=`<svg class="mk" viewBox="-6 -6 94.8 112" aria-hidden="true"><path fill="currentColor" d="${
+  document.querySelector('.ask-bar .mk path').getAttribute('d')}"/></svg>`;
+
+/* คำถามคือประโยคที่ต้องการคำอธิบาย ไม่ใช่รายชื่อ
+   จับจากคำขึ้นต้นและคำลงท้ายที่คนไทยใช้ถามจริง ๆ
+   ไม่ได้จับแค่เครื่องหมายคำถาม เพราะคนไทยส่วนใหญ่ไม่พิมพ์มัน */
+const Q_WORDS="\\?|ทำไม|เพราะอะไร|เกิดจาก|อะไรได้บ้าง|อะไรบ้าง|อะไร|ยังไง|อย่างไร|ไหม|มั้ย|หรือเปล่า|ควรทำ|ควร|แปลว่า|วิธี|ดูยังไง|อันตราย|ปกติ";
+const IS_Q=new RegExp(Q_WORDS);
+/* ตัวถอดคำถามต้องเป็นแบบทั่วทั้งข้อความ ไม่ใช่ตัวแรกตัวเดียว
+   "แอร์ไม่เย็นเกิดจากอะไร" ถ้าถอดแค่ตัวแรกจะเหลือ "แอร์ไม่เย็นอะไร"
+   ซึ่งยังค้นไม่เจอเหมือนเดิม ต้องถอดให้หมดจนเหลือแต่อาการ */
+const Q_STRIP=new RegExp(Q_WORDS,"g");
+const ASK_IDLE=[
+  "แอร์ไม่เย็นเกิดจากอะไรได้บ้าง",
+  "ช่วงล่างมีเสียงตอนข้ามลูกระนาด อันตรายไหม",
+  "เช็กระยะ 60,000 กม. ต้องทำอะไรบ้าง",
+  "ยางหมดอายุดูยังไง",
+];
+
+let askOn=false, askSel=0, askItems=[];
+
+function openAsk(pre){
+  if(askOn)return;
+  askOn=true;
+  const el=$("ask"); el.classList.add("on");
+  document.body.style.overflow="hidden";
+  const i=$("askQ");
+  i.value=(pre!=null?pre:S.q)||"";
+  askDraw();
+  /* รอให้ภาพเคลื่อนไหวเริ่มก่อนค่อยเรียกแป้นพิมพ์ขึ้น
+     ถ้าเรียกทันที แป้นพิมพ์บนมือถือจะกระชากจอจนภาพเคลื่อนไหวสะดุด */
+  setTimeout(()=>i.focus(),120);
+  addEventListener("keydown",askKey);
+}
+function closeAsk(){
+  if(!askOn)return;
+  askOn=false;
+  $("ask").classList.remove("on");
+  document.body.style.overflow="";
+  removeEventListener("keydown",askKey);
+}
+/* ขึ้นลงเลือกแถว เอนเทอร์ทำสิ่งที่เลือก เอสเคปปิด
+   คนที่พิมพ์เร็วจะไม่ยอมย้ายมือไปแตะจอ ถ้าไม่มีปุ่มลูกศรก็เท่ากับใช้ไม่ได้ */
+function askKey(e){
+  if(e.key==="Escape"){ closeAsk(); return }
+  if(!askItems.length)return;
+  if(e.key==="ArrowDown"||e.key==="ArrowUp"){
+    e.preventDefault();
+    askSel=(askSel+(e.key==="ArrowDown"?1:-1)+askItems.length)%askItems.length;
+    askPaintSel();
+  }else if(e.key==="Enter"){
+    e.preventDefault();
+    const it=askItems[askSel]; if(it&&it.go)it.go();
+  }
+}
+function askPaintSel(){
+  const rows=$("askBody").querySelectorAll("[data-i]");
+  rows.forEach(r=>r.classList.toggle("sel",+r.dataset.i===askSel));
+  const cur=$("askBody").querySelector(".sel");
+  if(cur)cur.scrollIntoView({block:"nearest"});
 }
 
-/* ═══════════ เครื่องมือ AI ═══════════
-   ทั้งสี่ตัวคำนวณจากข้อมูลจริงในคลังช่างก่อนเสมอ แล้วค่อยส่งต่อให้ AI เรียบเรียง
-   ถ้าปล่อยให้ AI ตอบเองตั้งแต่ต้น มันจะเดาราคาที่ไม่มีช่างคนไหนรับจริง */
+function askDraw(){
+  const q=$("askQ").value.trim();
+  const body=$("askBody");
+  askItems=[]; askSel=0;
+  if(!q){
+    /* ยังไม่พิมพ์อะไร — เสนอคำถามจริงที่คนถามบ่อย
+       ไม่ใช่จอว่างที่รอให้คิดเอง เพราะคนกดเข้ามาเพราะยังไม่รู้ว่าจะถามยังไง */
+    body.innerHTML=`<div class="ask-idle">
+      <h5 style="margin:0 0 12px;font-size:11.5px;font-weight:700;color:var(--faint);
+        text-transform:uppercase;letter-spacing:.12em">ลองถามแบบนี้</h5>
+      <div class="q">${ASK_IDLE.map(t=>
+        `<button onclick="askFill('${esc(t).replace(/'/g,"\\'")}')">${esc(t)}</button>`).join("")}</div>
+      <div class="ask-hint" style="margin-top:24px">
+        พิมพ์เป็นคำสั้น ๆ จะได้รายชื่อช่างทันที · พิมพ์เป็นคำถามจะได้คำตอบจาก Cendon<br>
+        <kbd>↑</kbd> <kbd>↓</kbd> เลือก · <kbd>Enter</kbd> ไปต่อ · <kbd>Esc</kbd> ปิด
+      </div></div>`;
+    return;
+  }
+
+  const isQ=IS_Q.test(q);
+  /* คำถามยาว ๆ ค้นตรง ๆ ไม่เจอช่างสักคน เพราะไม่มีใครเขียนทักษะตัวเอง
+     ว่า "แอร์ไม่เย็นเกิดจากอะไร" ต้องถอดคำถามออกก่อนเหลือแต่อาการ
+     ผลคือถามเป็นประโยคยาวก็ยังเห็นช่างที่ทำเรื่องนั้นเป็น ไม่ใช่จอว่าง */
+  const core=isQ?q.replace(Q_STRIP,"").replace(/\s+/g," ").trim():q;
+  let hits=Techs.search({q,here:S.here,limit:6});
+  if(!hits.length&&core&&core!==q)hits=Techs.search({q:core,here:S.here,limit:6});
+  /* ยังไม่เจอ — กลับด้านการค้นหา
+     แทนที่จะถามว่า "ช่างคนไหนมีคำนี้" ให้ถามว่า "คำไหนของช่างอยู่ในประโยคนี้"
+     ภาษาไทยไม่เว้นวรรคระหว่างคำ การตัดคำจึงเชื่อถือไม่ได้
+     แต่การหาว่าคำที่เรารู้จักอยู่ในประโยคหรือเปล่า ทำได้แน่นอนเสมอ
+     "ช่วงล่างมีเสียงตอนข้ามลูกระนาด อันตรายไหม" จึงเจอคำว่า "ช่วงล่างมีเสียง" ที่ช่างเขียนไว้ */
+  if(!hits.length){
+    const key=askKeyword(q);
+    if(key)hits=Techs.search({q:key,here:S.here,limit:6});
+  }
+  const cats=Techs.CATS.filter(c=>{
+    const hay=c.th+" "+c.desc;
+    return hay.indexOf(q)>=0||(core&&core.length>1&&hay.indexOf(core)>=0);
+  }).slice(0,2);
+  const est=Techs.estimate(q,S.here)||(core!==q?Techs.estimate(core,S.here):null);
+  let n=0;
+  const row=(o)=>{ askItems.push(o); return o };
+
+  /* แถวถาม Cendon — อยู่บนสุดถ้าเป็นคำถาม ไม่งั้นลงไปอยู่ท้ายรายชื่อ */
+  const heroHTML=(i)=>`<button class="ask-hero" data-kind="ask" data-i="${i}" style="animation-delay:${i*28}ms">
+      ${ASK_MARK}
+      <span style="min-width:0;flex:1">
+        <b>ถาม Cendon ว่า “${esc(q.length>44?q.slice(0,44)+"…":q)}”</b>
+        <small>${isQ?"คำถามแบบนี้ตอบได้ละเอียดกว่าในห้องแชต แนบรูปหรือเสียงเครื่องได้ด้วย"
+                    :"ให้ AI อธิบายสาเหตุและขั้นตอนแก้ ก่อนตัดสินใจเรียกช่าง"}</small>
+      </span>
+      <i class="ti ti-arrow-right ask-go" style="color:currentColor"></i>
+    </button>`;
+  const heroItem=()=>row({go:()=>{ location.href="chat.html?q="+encodeURIComponent(q) }});
+
+  let html="";
+  if(isQ){ heroItem(); html+=heroHTML(n++) }
+
+  if(est&&hits.length){
+    const i=n++;
+    row({go:()=>{ closeAsk(); $("q").value=q; S.q=q; syncBar(); aiEstimate() }});
+    html+=`<div class="ask-sec"><h5>ราคาที่ควรเป็น</h5>
+      <button class="ask-row" data-kind="est" data-i="${i}" style="animation-delay:${i*28}ms;--k:var(--c-eng)">
+        <span class="ask-ic"><i class="ti ti-coin"></i></span>
+        <span class="ask-t"><b>฿${money(est.typical)} โดยประมาณ</b>
+          <small>ช่วง ฿${money(est.low)}–฿${money(est.high)} จากช่าง ${est.n} คนที่ทำงานนี้</small></span>
+        <i class="ti ti-chevron-right ask-go"></i></button></div>`;
+  }
+
+  if(hits.length){
+    html+=`<div class="ask-sec"><h5>ช่างที่ทำเรื่องนี้เป็น</h5>`;
+    hits.forEach(t=>{
+      const i=n++;
+      row({go:()=>{ closeAsk(); $("q").value=q; S.q=q; syncBar(); run(); openTech(t.id) }});
+      html+=`<button class="ask-row" data-kind="pro" data-i="${i}" style="animation-delay:${i*28}ms;--k:${hueOf(t)}">
+        <span class="ask-ic">${esc(t.name[0])}</span>
+        <span class="ask-t"><b>${esc(t.name)} · ${t.rating.toFixed(1)}★</b>
+          <small>${esc(t.shop)} · ${esc(t.area)}${t.dist!=null?` · ${t.dist} กม.`:""} · เริ่ม ฿${money(t.from)}</small></span>
+        <i class="ti ti-chevron-right ask-go"></i></button>`;
+    });
+    html+=`</div>`;
+  }
+
+  if(cats.length){
+    html+=`<div class="ask-sec"><h5>หมวด</h5>`;
+    cats.forEach(c=>{
+      const i=n++;
+      row({go:()=>{ closeAsk(); S.cat=c.id; $("q").value=""; S.q=""; syncBar(); drawCats(); run() }});
+      html+=`<button class="ask-row" data-kind="cat" data-i="${i}" style="animation-delay:${i*28}ms;--k:var(--${"c-"+c.id})">
+        <span class="ask-ic"><i class="ti ${c.ic}"></i></span>
+        <span class="ask-t"><b>${esc(c.th)}</b><small>${esc(c.desc)}</small></span>
+        <i class="ti ti-chevron-right ask-go"></i></button>`;
+    });
+    html+=`</div>`;
+  }
+
+  if(!isQ){ heroItem(); html+=heroHTML(n++) }
+
+  if(!hits.length&&!cats.length){
+    html+=`<div class="ask-hint">ยังไม่มีช่างที่ระบุว่าทำงานแบบนี้ในระบบ —
+      แต่ถาม Cendon ได้เลย มันตอบเรื่องรถได้ทุกอย่าง</div>`;
+  }
+  body.innerHTML=html;
+  body.querySelectorAll("[data-i]").forEach(el=>{
+    el.onclick=()=>{ const it=askItems[+el.dataset.i]; if(it&&it.go)it.go() };
+    el.onmouseenter=()=>{ askSel=+el.dataset.i; askPaintSel() };
+  });
+  askPaintSel();
+}
+/* คำทั้งหมดที่ช่างในระบบเขียนไว้ว่าตัวเองทำอะไรเป็น
+   สร้างครั้งเดียวแล้วเก็บไว้ ไม่ต้องไล่ใหม่ทุกตัวอักษรที่พิมพ์ */
+let SKILL_WORDS=null;
+function askKeyword(text){
+  if(!SKILL_WORDS){
+    const set={};
+    Techs.all().forEach(t=>(t.skills||[]).forEach(k=>{ if(k.length>=3)set[k]=1 }));
+    Techs.CATS.forEach(c=>{ if(c.th.length>=3)set[c.th]=1 });
+    /* เรียงจากคำยาวไปสั้น คำยาวเจาะจงกว่า จึงควรได้สิทธิ์ก่อน
+       ถ้าเรียงจากสั้นไปยาว "เบรก" จะชนะ "เบรกมีเสียง" ทั้งที่อันหลังตรงกว่า */
+    SKILL_WORDS=Object.keys(set).sort((a,b)=>b.length-a.length);
+  }
+  const t=String(text||"");
+  for(const w of SKILL_WORDS)if(t.indexOf(w)>=0)return w;
+  return "";
+}
+function askFill(t){ $("askQ").value=t; askDraw(); $("askQ").focus() }
+/* ช่องบนหน้าหลักต้องสะท้อนสิ่งที่ค้นล่าสุด ไม่งั้นปิดจอถามแล้วดูเหมือนไม่ได้ทำอะไร */
+function syncBar(){
+  const el=$("fq"); if(!el)return;
+  el.textContent=S.q||"ถามอาการรถ หรือหาช่าง…";
+  el.classList.toggle("has",!!S.q);
+}
+
+/* ══ เครื่องมือ AI ══ */
 function aiBox(html){
   $("aiOut").innerHTML=`<div class="aires">
     <button class="x" onclick="document.getElementById('aiOut').innerHTML=''" aria-label="ปิด">
       <i class="ti ti-x"></i></button>${html}</div>`;
   $("aiOut").scrollIntoView({behavior:"smooth",block:"nearest"});
 }
-function needSymptom(){
-  const q=$("q").value.trim();
+function needQ(){
+  const q=($("q").value||"").trim();
   if(q)return q;
-  $("q").focus();
-  toast("พิมพ์อาการที่เจอก่อน แล้วกดปุ่มนี้อีกครั้ง","ti-keyboard");
+  /* ยังไม่ได้ค้นอะไร เปิดจอถามให้เลย ดีกว่าบอกให้ไปพิมพ์เองแล้วปล่อยทิ้งไว้ */
+  openAsk("");
+  toast("พิมพ์อาการที่เจอก่อน แล้วกดเครื่องมือนี้อีกครั้ง","ti-keyboard");
   return "";
 }
-
-/* ประเมินราคาก่อนเรียกช่าง */
 function aiEstimate(){
-  const q=needSymptom(); if(!q)return;
+  const q=needQ(); if(!q)return;
   const e=Techs.estimate(q,S.here);
-  if(!e)return aiBox(`<h4><i class="ti ti-coin"></i>ยังประเมินไม่ได้</h4>
-    <p>ยังไม่มีช่างในระบบที่ระบุว่าทำงาน “${esc(q)}” เป็น ลองพิมพ์อาการให้สั้นลง
-    เช่น “แอร์” หรือ “ช่วงล่าง” แล้วลองใหม่</p>`);
-  /* แถบแสดงช่วงราคา — ให้เห็นว่าราคาที่ช่างเสนอมาอยู่ตรงไหนของช่วง
-     ตัวเลขเดี่ยว ๆ บอกไม่ได้ว่าแพงหรือถูก ต้องเห็นช่วงถึงจะเทียบเป็น */
+  if(!e)return aiBox(`<h4><i class="ti ti-coin" style="color:var(--c-eng)"></i>ยังประเมินไม่ได้</h4>
+    <p>ยังไม่มีช่างที่ระบุว่าทำงาน “${esc(q)}” เป็น ลองพิมพ์สั้นลงแล้วลองใหม่</p>`);
   const span=e.max-e.low||1;
   const l=((e.typical-e.low)/span*100).toFixed(0), w=((e.high-e.typical)/span*100).toFixed(0);
-  aiBox(`<h4><i class="ti ti-coin"></i>ราคาที่ควรเป็นสำหรับ “${esc(q)}”</h4>
-    <div class="price-band">
-      <div class="pb"><span>ถูกที่สุดในระบบ</span><b>฿${money(e.low)}</b></div>
-      <div class="pb"><span>ราคาที่พบบ่อย</span><b class="big">฿${money(e.typical)}</b></div>
-      <div class="pb"><span>งานหนักสุด</span><b>฿${money(e.high)}</b></div>
+  aiBox(`<h4><i class="ti ti-coin" style="color:var(--c-eng)"></i>ราคาที่ควรเป็นสำหรับ “${esc(q)}”</h4>
+    <div class="band">
+      <div class="c"><span>ถูกที่สุด</span><b>฿${money(e.low)}</b></div>
+      <div class="c hi"><span>ราคาที่พบบ่อย</span><b>฿${money(e.typical)}</b></div>
+      <div class="c"><span>งานหนักสุด</span><b>฿${money(e.high)}</b></div>
     </div>
-    <div class="bar"><i style="left:${l}%;width:${w}%"></i></div>
+    <div class="rail"><i style="left:${l}%;width:${w}%"></i></div>
     <p>${esc(e.note)} · ช่างส่วนใหญ่รับประกันงานนี้ ${e.warranty} วัน</p>
-    <p style="margin-top:9px"><b style="color:var(--ink)">ถ้ามีใครเรียกเกิน ฿${money(e.max)}</b>
-    ให้ขอใบเสนอราคาแยกค่าแรงกับค่าอะไหล่ก่อนตกลง แล้วเอามาให้ AI ดูได้ที่หน้าแชต</p>`);
+    <p style="margin-top:12px">ถ้ามีใครเรียกเกิน <b style="color:var(--ink)">฿${money(e.max)}</b>
+    ให้ขอใบเสนอราคาแยกค่าแรงกับค่าอะไหล่ก่อนตกลง</p>`);
 }
-
-/* จับคู่ช่างอัตโนมัติ */
 function aiMatch(){
-  const q=needSymptom(); if(!q)return;
+  const q=needQ(); if(!q)return;
   const car=(()=>{try{return JSON.parse(localStorage.getItem("spire_garage")||"[]")[0]||{}}catch(e){return{}}})();
   const m=Techs.match({symptom:q,here:S.here||Techs.home(),car,urgent:S.cat==="quick",mobile:S.mobile});
-  if(!m)return aiBox(`<h4><i class="ti ti-wand"></i>ยังจับคู่ให้ไม่ได้</h4>
+  if(!m)return aiBox(`<h4><i class="ti ti-wand" style="color:var(--c-pro)"></i>ยังจับคู่ให้ไม่ได้</h4>
     <p>ไม่มีช่างที่ตรงกับ “${esc(q)}” ลองพิมพ์สั้นลงแล้วกดใหม่</p>`);
   const b=m.best;
-  aiBox(`<h4><i class="ti ti-wand"></i>สำหรับงานนี้ ควรเป็น ${esc(b.name)}</h4>
+  aiBox(`<h4><i class="ti ti-wand" style="color:var(--c-pro)"></i>สำหรับงานนี้ ควรเป็น ${esc(b.name)}</h4>
     <p>${esc(b.shop)} · ${esc(b.area)}${b.dist!=null?` · ห่าง ${b.dist} กม.`:""}</p>
-    <ul style="margin:10px 0 0;padding-left:18px">${
-      b.why.map(w=>`<li style="font-size:12.5px;color:var(--muted);margin-bottom:3px">${esc(w)}</li>`).join("")}</ul>
-    <div class="cta" style="position:static;background:none;padding:14px 0 0">
+    <div class="why">${b.why.map(w=>`<span>${esc(w)}</span>`).join("")}</div>
+    <div class="acts" style="position:static;background:none;padding:24px 0 0">
       <button class="s" onclick="openTech('${b.id}')">ดูโปรไฟล์</button>
-      <button class="p" onclick="aiJob('${b.id}')"><i class="ti ti-send"></i> ส่งใบงานให้ช่าง</button>
+      <button class="p gloss" onclick="aiJob('${b.id}')"><span>ส่งใบงานให้ช่าง</span></button>
     </div>
-    ${m.others.length?`<p style="margin-top:12px;font-size:12px">รองลงมา: ${
+    ${m.others.length?`<p style="margin-top:12px;font-size:13px">รองลงมา ${
       m.others.map(o=>esc(o.name)).join(" · ")}</p>`:""}`);
 }
-
-/* AI สรุปอาการเป็นใบงานส่งให้ช่าง */
 function aiJob(id){
   const t=Techs.all().find(x=>x.id===id);
   const car=(()=>{try{return JSON.parse(localStorage.getItem("spire_garage")||"[]")[0]||{}}catch(e){return{}}})();
-  const brief=Techs.jobBrief({car,symptom:$("q").value.trim()||S.q,where:S.here?"ตามตำแหน่งที่บันทึกไว้":""});
-  /* ส่งไปให้ AI ช่วยเรียบเรียงก่อน แล้วผู้ใช้ค่อยกดส่งจริง
-     ไม่ส่งตรงไปหาช่างเลย เพราะใบงานที่ยังไม่ได้อ่านทวนคือใบงานที่ผิดได้ */
+  const brief=Techs.jobBrief({car,symptom:$("q").value.trim()||S.q});
   const q="ช่วยเรียบเรียงใบงานนี้ให้ช่างอ่านเข้าใจใน 30 วินาที แล้วเติมคำถามที่ช่างน่าจะอยากรู้เพิ่ม"
     +(t?` (จะส่งให้ ${t.name} ${t.shop})`:"")+"\n\n"+brief;
   location.href="chat.html?q="+encodeURIComponent(q);
 }
-
-/* ตรวจงานหลังซ่อม */
 function aiInspect(){
   const job=prompt("ตกลงจ้างให้ทำอะไรไว้? (เช่น เปลี่ยนโช้กหน้าคู่หน้า)");
   if(!job)return;
@@ -611,22 +1098,18 @@ function aiInspect(){
     +Techs.inspectList({job,price});
   location.href="chat.html?q="+encodeURIComponent(q)+"&attach=image";
 }
-
-/* ตั้งบ้าน แล้วหาช่างใกล้บ้าน */
 function aiHome(){
   const h=Techs.home();
   if(h){
     S.here={lat:h.lat,lng:h.lng}; S.cat="near"; S.sort="near"; $("sort").value="near";
     drawCats(); run();
-    return aiBox(`<h4><i class="ti ti-home"></i>เรียงตามระยะจากบ้านแล้ว</h4>
-      <p>${esc(h.label||"บ้านที่บันทึกไว้")} — กำลังแสดงช่างที่อยู่ในรัศมี 25 กิโลเมตรจากบ้านคุณ
-      <button class="btn-ghost" style="margin-left:8px;padding:6px 11px;font-size:12px"
-        onclick="Techs.homeSet(null,null,'');localStorage.removeItem('spire_home_geo');aiHome()">ตั้งใหม่</button></p>
-      <p style="margin-top:8px">ทำไมต้องเป็นบ้าน ไม่ใช่ที่ที่ยืนอยู่ตอนนี้ — เพราะช่างข้างทางเจอกันครั้งเดียว
+    return aiBox(`<h4><i class="ti ti-home" style="color:var(--c-near)"></i>เรียงตามระยะจากบ้านแล้ว</h4>
+      <p>${esc(h.label||"บ้านที่บันทึกไว้")} — กำลังแสดงช่างในรัศมี 25 กิโลเมตรจากบ้านคุณ</p>
+      <p style="margin-top:12px">ทำไมต้องเป็นบ้าน ไม่ใช่ที่ที่ยืนอยู่ตอนนี้ — เพราะช่างข้างทางเจอกันครั้งเดียว
       ส่วนช่างใกล้บ้านคือคนที่จะดูแลรถคันนี้ไปอีกหลายปี</p>`);
   }
   if(!navigator.geolocation)return toast("เครื่องนี้บอกตำแหน่งไม่ได้","ti-map-pin-off");
-  toast("กำลังขอตำแหน่ง...","ti-map-pin");
+  toast("กำลังขอตำแหน่ง…","ti-map-pin");
   navigator.geolocation.getCurrentPosition(p=>{
     const label=prompt("ตั้งชื่อที่นี่ว่าอะไร (เช่น บ้าน, ที่ทำงาน)","บ้าน")||"บ้าน";
     Techs.homeSet(p.coords.latitude,p.coords.longitude,label);
@@ -634,55 +1117,48 @@ function aiHome(){
   },()=>toast("ไม่ได้รับอนุญาตให้ดูตำแหน่ง","ti-map-pin-off"),{timeout:9000});
 }
 
-/* ═══ ความคุ้มครองและค่าธรรมเนียม ═══ */
+/* ══ ความคุ้มครอง ══ */
 function openTrust(){
   $("pnT").textContent="ความคุ้มครองและค่าธรรมเนียม";
   const T=Techs.TRUST;
   $("pnB").innerHTML=`
-    <div class="sec" style="margin-top:0">
-      <h4>สิ่งที่หายไปทันทีถ้านัดกันเอง</h4>
-      <p style="font-size:13px;color:var(--muted);margin-bottom:6px">
+    <div class="grp" style="margin-top:0"><h4>สิ่งที่หายไปทันทีถ้านัดกันเอง</h4>
+      <p style="font-size:14px;color:var(--muted);margin-bottom:8px">
         เราห้ามคนสองคนคุยกันนอกแอปไม่ได้จริง สิ่งที่ทำได้คือทำให้การอยู่ในระบบคุ้มกว่า
-        — ห้าอย่างนี้มีผลเฉพาะงานที่จ่ายผ่านระบบเท่านั้น</p>
+        — ห้าอย่างนี้มีผลเฉพาะงานที่จ่ายผ่านระบบ</p>
       ${T.stay.map(x=>`<div class="trow"><i class="ti ${x.ic}"></i>
         <div><b>${esc(x.t)}</b><small>${esc(x.d)}</small></div></div>`).join("")}
     </div>
-    <div class="tsec">
-      <h4>ยิ่งกลับมาใช้ซ้ำ ยิ่งถูกลง</h4>
-      <p>ระบบส่วนใหญ่คิดค่าธรรมเนียมเท่าเดิมทุกงาน ช่างจึงยิ่งอยากพาลูกค้าประจำออกไปข้างนอก
-         ที่นี่คิดกลับกัน — ค่าธรรมเนียมคือค่าหาลูกค้า พอไม่ต้องหาให้แล้วก็ไม่ควรเก็บเท่าเดิม</p>
-      <div class="feegrid">${T.fee.map(f=>`<div class="feerow"><b>${esc(f.v)}</b>
-        <span><strong>${esc(f.t)}</strong><small>${esc(f.d)}</small></span></div>`).join("")}</div>
+    <div class="grp"><h4>ยิ่งกลับมาใช้ซ้ำ ยิ่งถูกลง</h4>
+      <p style="font-size:13.5px;color:var(--muted);margin-bottom:12px">
+        ค่าธรรมเนียมคือค่าหาลูกค้า พอไม่ต้องหาให้แล้วก็ไม่ควรเก็บเท่าเดิม</p>
+      ${T.fee.map(f=>`<div class="fee"><b>${esc(f.v)}</b>
+        <span><strong>${esc(f.t)}</strong><small>${esc(f.d)}</small></span></div>`).join("")}
     </div>
-    <div class="tsec">
-      <h4>กำแพงสำหรับคนที่ตั้งใจ</h4>
-      <p>สามข้อบนคือเหตุผลที่คนส่วนใหญ่จะอยู่ ส่วนนี้ไว้กันคนส่วนน้อยที่ตั้งใจพาออกไปตั้งแต่งานแรก</p>
+    <div class="grp"><h4>กำแพงสำหรับคนที่ตั้งใจ</h4>
       ${T.wall.map(x=>`<div class="trow"><i class="ti ti-shield-lock"></i>
         <div><b>${esc(x.t)}</b><small>${esc(x.d)}</small></div></div>`).join("")}
     </div>
-    <div class="cta"><button class="p" onclick="closeSheet()">เข้าใจแล้ว</button></div>`;
-  $("sheet").classList.add("on"); document.body.style.overflow="hidden";
+    <div class="acts"><button class="p gloss" onclick="closeSheet()"><span>เข้าใจแล้ว</span></button></div>`;
+  openSheet();
 }
 
-/* ═══ สมัครเป็นช่าง ═══ */
+/* ══ สมัครเป็นช่าง ══ */
 function openApply(){
   $("pnT").textContent="สมัครเป็นช่าง";
   $("pnB").innerHTML=`
-    <div class="sec" style="margin-top:0"><h4>สี่ด่านกว่าจะได้รับงานแรก</h4>
-      <p style="font-size:13px;color:var(--muted)">ทุกด่านมีคนหรือเอกสารเป็นคนตัดสิน ไม่มีข้อไหนที่ติ๊กเองแล้วผ่าน
+    <div class="grp" style="margin-top:0"><h4>สี่ด่านกว่าจะได้รับงานแรก</h4>
+      <p style="font-size:14px;color:var(--muted)">ทุกด่านมีคนหรือเอกสารเป็นคนตัดสิน ไม่มีข้อไหนที่ติ๊กเองแล้วผ่าน
       — ด่านที่ผู้สมัครกรอกเองได้ทั้งหมด ไม่เคยคัดใครออกเลย มันแค่ทำให้ใบสมัครยาวขึ้น</p>
-      <div class="vet">${Techs.VET.map(v=>`<div class="vstage">
-        <div class="vh"><span class="vn">${v.n}</span><b>${esc(v.th)}</b><small>${esc(v.days)}</small></div>
-        <ul style="margin:0;padding-left:17px">${v.items.map(i=>`<li>${esc(i)}</li>`).join("")}</ul>
-        <div class="vwhy"><i class="ti ti-info-circle"></i> ${esc(v.why)}</div>
-      </div>`).join("")}</div></div>
-    <div class="keep"><b style="font-size:13px">หลังผ่านครบสี่ด่านแล้ว</b>
-      <ul style="margin:8px 0 0;padding-left:18px">${Techs.KEEP.map(k=>`<li>${esc(k)}</li>`).join("")}</ul>
-      <p style="font-size:12.5px;color:var(--muted);margin:10px 0 0">
-        ค่าธรรมเนียมลดลงเมื่อลูกค้ากลับมาใช้ซ้ำ และเป็นศูนย์ถ้าคุณพาลูกค้าเก่าของตัวเองมาเอง —
-        <a style="color:var(--accent);cursor:pointer" onclick="openTrust()">ดูรายละเอียด</a></p></div>
+      <div class="vet">${Techs.VET.map(v=>`<div class="stg">
+        <div class="sh"><span class="sn">${v.n}</span><b>${esc(v.th)}</b><small>${esc(v.days)}</small></div>
+        <ul style="margin:0;padding-left:18px">${v.items.map(i=>`<li>${esc(i)}</li>`).join("")}</ul>
+        <div class="swhy">${esc(v.why)}</div></div>`).join("")}</div>
+    </div>
+    <div class="keep"><b style="font-size:14px">หลังผ่านครบสี่ด่านแล้ว</b>
+      <ul style="margin:12px 0 0;padding-left:18px">${Techs.KEEP.map(k=>`<li>${esc(k)}</li>`).join("")}</ul></div>
 
-    <div class="sec"><h4>กรอกใบสมัคร</h4>
+    <div class="grp"><h4>กรอกใบสมัคร</h4>
       <div class="f" id="f-name"><label>ชื่อ–นามสกุล <em>*</em></label>
         <input id="a-name" placeholder="ชื่อจริงตามบัตรประชาชน"/><div class="err">กรอกชื่อจริงอย่างน้อย 4 ตัวอักษร</div></div>
       <div class="f" id="f-shop"><label>ชื่อร้าน / ชื่อที่ใช้รับงาน <em>*</em></label>
@@ -698,7 +1174,7 @@ function openApply(){
       <div class="two">
         <div class="f" id="f-exp"><label>ประสบการณ์ (ปี) <em>*</em></label>
           <input id="a-exp" inputmode="numeric" placeholder="อย่างน้อย 1"/><div class="err">อย่างน้อย 1 ปี</div></div>
-        <div class="f" id="f-port"><label>จำนวนผลงานที่มีรูป <em>*</em></label>
+        <div class="f" id="f-port"><label>ผลงานที่มีรูป <em>*</em></label>
           <input id="a-port" inputmode="numeric" placeholder="อย่างน้อย 3"/><div class="err">อย่างน้อย 3 ชิ้น</div></div>
       </div>
       <div class="two">
@@ -717,14 +1193,13 @@ function openApply(){
           <button type="button" data-w="urgent">รับงานด่วน / นอกเวลา</button>
         </div></div>
       <div class="f" id="f-about"><label>เล่าเรื่องฝีมือตัวเอง <em>*</em></label>
-        <textarea id="a-about" placeholder="ถนัดอาการแบบไหน มีเครื่องมืออะไร เคยแก้งานยากอะไรมาบ้าง — เขียนแบบที่ลูกค้าอ่านแล้วกล้าให้จับรถ"></textarea>
+        <textarea id="a-about" placeholder="ถนัดอาการแบบไหน มีเครื่องมืออะไร เคยแก้งานยากอะไรมาบ้าง"></textarea>
         <div class="hint">อย่างน้อย 40 ตัวอักษร</div><div class="err">เขียนอย่างน้อย 40 ตัวอักษร</div></div>
     </div>
-    <div class="cta"><button class="p" onclick="submitApply()"><i class="ti ti-send"></i> ส่งใบสมัคร</button></div>`;
-
+    <div class="acts"><button class="p gloss" onclick="submitApply()"><span>ส่งใบสมัคร</span></button></div>`;
   ["a-cat","a-way"].forEach(id=>$(id).querySelectorAll("button")
     .forEach(b=>b.onclick=()=>b.classList.toggle("on")));
-  $("sheet").classList.add("on"); document.body.style.overflow="hidden";
+  openSheet();
 }
 
 function submitApply(){
@@ -732,8 +1207,8 @@ function submitApply(){
   const num=id=>parseFloat(v(id).replace(/[^\d.]/g,""))||0;
   const cats=[...$("a-cat").querySelectorAll("button.on")].map(b=>b.dataset.c);
   const ways=[...$("a-way").querySelectorAll("button.on")].map(b=>b.dataset.w);
-  /* ตรวจทุกช่องก่อน แล้วค่อยบอกทีเดียวว่าอะไรไม่ผ่านบ้าง
-     ถ้าบอกทีละข้อ คนกรอกจะต้องกดส่งแปดรอบกว่าจะรู้ว่าต้องแก้อะไร */
+  /* ตรวจทุกช่องก่อน แล้วบอกทีเดียวว่าอะไรไม่ผ่าน
+     ถ้าบอกทีละข้อ คนกรอกต้องกดส่งสิบรอบกว่าจะรู้ว่าต้องแก้อะไรบ้าง */
   const bad=[];
   const chk=(f,ok)=>{ const el=$(f); if(el)el.classList.toggle("bad",!ok); if(!ok)bad.push(f) };
   chk("f-name", v("a-name").length>=4);
@@ -758,16 +1233,16 @@ function submitApply(){
     cats,mobile:ways.indexOf("mobile")>=0,urgent:ways.indexOf("urgent")>=0,about:v("a-about")};
   const a=Techs.apps(); a.push(app); Techs.saveApps(a);
   sendApply(app);
-  $("pnB").innerHTML=`<div class="ok-box"><i class="ti ti-circle-check"></i>
+  $("pnB").innerHTML=`<div class="done"><i class="ti ti-circle-check"></i>
     <b>ส่งใบสมัครแล้ว</b>
     <p>ทีมงานจะโทรไปที่เบอร์ ${esc(app.phone)} เพื่อยืนยันตัวตนและขอดูรูปผลงาน ภายใน 3 วันทำการ<br>
     ระหว่างนี้เตรียมบัตรประชาชนและรูปงานจริงไว้ให้พร้อม</p></div>
-    <div class="cta"><button class="p" onclick="closeSheet()">เรียบร้อย</button></div>`;
+    <div class="acts"><button class="p gloss" onclick="closeSheet()"><span>เรียบร้อย</span></button></div>`;
   toast("ส่งใบสมัครเรียบร้อย","ti-check");
 }
 
-/* ส่งใบสมัครขึ้นเซิร์ฟเวอร์ — ถ้ายังไม่มีปลายทาง ก็เก็บไว้ในเครื่องรอส่งใหม่
-   ไม่ขึ้นข้อความว่าล้มเหลวให้ผู้ใช้เห็น เพราะใบสมัครไม่ได้หายไปไหน */
+/* ส่งขึ้นเซิร์ฟเวอร์ ถ้ายังไม่มีปลายทางก็เก็บไว้ในเครื่องรอส่งใหม่
+   ไม่ขึ้นข้อความว่าล้มเหลว เพราะใบสมัครไม่ได้หายไปไหน */
 async function sendApply(app){
   const url=(window.BACKEND_URL||localStorage.getItem("spire_backend")||"");
   if(!url)return;
@@ -778,23 +1253,22 @@ async function sendApply(app){
   }catch(e){}
 }
 
-/* ═══ เริ่มทำงาน ═══ */
+/* ══ เริ่มทำงาน ══ */
 (function init(){
   const p=new URLSearchParams(location.search);
-  if(p.get("q")){ $("q").value=p.get("q") }
+  if(p.get("q"))$("q").value=p.get("q");
   if(p.get("cat"))S.cat=p.get("cat");
-  S.here=Techs.pos();
-  /* ดึงช่างที่อนุมัติแล้วจากเซิร์ฟเวอร์มาเติม ถ้ายังไม่มีปลายทางก็ใช้ของในระบบไปก่อน
-     หน้าเว็บต้องใช้ได้ตั้งแต่วินาทีแรกเสมอ ไม่ใช่ค้างรอเน็ต */
+  S.here=Techs.home()||Techs.pos();
   const url=(window.BACKEND_URL||localStorage.getItem("spire_backend")||"");
   if(url)fetch(url.replace(/\/$/,"")+"/api/tech")
     .then(r=>r.ok?r.json():null)
     .then(d=>{ if(d&&d.techs&&d.techs.length){ Techs.merge(d.techs); drawCats(); run() } })
     .catch(()=>{});
-  drawCats(); run();
-  $("q").addEventListener("keydown",e=>{ if(e.key==="Enter")run() });
-  /* พิมพ์แล้วค้นให้เลย แต่รอให้หยุดพิมพ์ก่อน ไม่งั้นวาดใหม่ทุกตัวอักษร */
-  let d=0; $("q").addEventListener("input",()=>{ clearTimeout(d); d=setTimeout(run,220) });
+  drawCats(); run(); syncBar();
+  /* วาดผลใหม่ระหว่างพิมพ์ แต่รอให้หยุดพิมพ์ก่อน
+     ค้นทุกตัวอักษรจะทำให้รายการกระพริบจนอ่านไม่ทัน */
+  let d=0;
+  $("askQ").addEventListener("input",()=>{ clearTimeout(d); d=setTimeout(askDraw,140) });
 })();
 </script>
 </body>

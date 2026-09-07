@@ -784,6 +784,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
+<link rel="stylesheet" href="./tech-marketplace.css?v=1">
 </head>
 <body>
 
@@ -793,8 +794,11 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
       <svg viewBox="-6 -6 94.8 112" aria-hidden="true"><path fill="currentColor" d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg>
       กลับหน้าหลัก
     </a>
-    <h1>รถมีอาการ<br><em>หาช่างที่ทำเรื่องนั้นเป็น</em></h1>
-    <p>พิมพ์อาการที่เจอได้เลย ไม่ต้องรู้ว่าต้องเรียกช่างประเภทไหน</p>
+    <nav class="market-nav" aria-label="เมนูงานช่าง"><span>CENDON <b>CARE</b></span><div><button onclick="Marketplace.inbox()">งานของฉัน <i class="ti ti-arrow-up-right"></i></button><button onclick="openApply()">พื้นที่ช่าง</button><button id="marketAuth" onclick="Marketplace.signIn()">เข้าสู่ระบบ</button></div></nav>
+    <div class="market-eyebrow"><span></span> คนที่รู้ใจรถคุณ</div>
+    <h1>เรื่องรถ ให้คนที่ใช่<br><em>ช่วยดูแล.</em></h1>
+    <p>หาช่างตรงอาการ ตกลงราคาก่อนซ่อม<br>นัดถึงที่หรือเข้าอู่ ทุกขั้นตอนอยู่ในใบงานเดียว</p>
+    <div class="market-flow" aria-label="ขั้นตอนใช้บริการ"><span><b>01</b> เลือกช่าง</span><i></i><span><b>02</b> ยืนยันราคาและนัด</span><i></i><span><b>03</b> ซ่อมเสร็จ ให้คะแนน</span></div>
 
     <!-- ช่องนี้ไม่ได้รับการพิมพ์เอง มันคือปุ่มที่เปิดจอถามเต็มจอขึ้นมา
          เพราะการค้นหากับการถามเป็นเรื่องเดียวกัน แค่คนพิมพ์ต่างกัน -->
@@ -848,13 +852,13 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
   <div class="tail">
     <button class="tcard" onclick="openTrust()">
       <i class="ti ti-shield-check"></i>
-      <b>ความคุ้มครอง</b>
-      <small>เงินพักไว้จนงานเสร็จ ประกันงาน 7–90 วัน และคนกลางเมื่อตกลงกันไม่ได้</small>
+      <b>จองผ่าน Cendon ได้อะไร</b>
+      <small>ราคาและขอบเขตงานที่ตกลง ประวัติการซ่อม และรีวิวจากงานจริง</small>
     </button>
     <button class="tcard" onclick="openApply()">
       <i class="ti ti-tool"></i>
       <b>สมัครเป็นช่าง</b>
-      <small>สี่ด่านกว่าจะได้รับงานแรก ทุกด่านมีคนหรือเอกสารเป็นคนตัดสิน</small>
+      <small>ยืนยันตัวตน ตรวจผลงานและความพร้อม ก่อนเปิดรับงานจริง</small>
     </button>
   </div>
 </div>
@@ -907,7 +911,7 @@ async function api(path,opts){
   if(!auth||!auth.currentUser)throw new Error("ยังไม่ได้เข้าสู่ระบบ");
   const headers=Object.assign({"Authorization":"Bearer "+await auth.currentUser.getIdToken()},opts.headers||{});
   if(opts.body)headers["Content-Type"]="application/json";
-  const r=await fetch(BACKEND_URL+path,{method:opts.method||"GET",headers,
+  const r=await fetch((window.TECH_API_URL||"https://spireone-techs.carspirethailand.workers.dev")+path,{method:opts.method||"GET",headers,
     body:opts.body?JSON.stringify(opts.body):undefined});
   let d=null; try{ d=await r.json() }catch(e){}
   if(!r.ok)throw new Error((d&&d.error)||("Error "+r.status));
@@ -1344,302 +1348,9 @@ function aiHome(){
 }
 
 /* ══ ความคุ้มครอง ══ */
-function openTrust(){
-  $("pnT").textContent="ความคุ้มครองและค่าธรรมเนียม";
-  const T=Techs.TRUST;
-  $("pnB").innerHTML=`
-    <div class="grp" style="margin-top:0"><h4>สิ่งที่หายไปทันทีถ้านัดกันเอง</h4>
-      <p style="font-size:14px;color:var(--muted);margin-bottom:8px">
-        เราห้ามคนสองคนคุยกันนอกแอปไม่ได้จริง สิ่งที่ทำได้คือทำให้การอยู่ในระบบคุ้มกว่า
-        — ห้าอย่างนี้มีผลเฉพาะงานที่จ่ายผ่านระบบ</p>
-      ${T.stay.map(x=>`<div class="trow"><i class="ti ${x.ic}"></i>
-        <div><b>${esc(x.t)}</b><small>${esc(x.d)}</small></div></div>`).join("")}
-    </div>
-    <div class="grp"><h4>ยิ่งกลับมาใช้ซ้ำ ยิ่งถูกลง</h4>
-      <p style="font-size:13.5px;color:var(--muted);margin-bottom:12px">
-        ค่าธรรมเนียมคือค่าหาลูกค้า พอไม่ต้องหาให้แล้วก็ไม่ควรเก็บเท่าเดิม</p>
-      ${T.fee.map(f=>`<div class="fee"><b>${esc(f.v)}</b>
-        <span><strong>${esc(f.t)}</strong><small>${esc(f.d)}</small></span></div>`).join("")}
-    </div>
-    <div class="grp"><h4>กำแพงสำหรับคนที่ตั้งใจ</h4>
-      ${T.wall.map(x=>`<div class="trow"><i class="ti ti-shield-lock"></i>
-        <div><b>${esc(x.t)}</b><small>${esc(x.d)}</small></div></div>`).join("")}
-    </div>
-    <div class="acts"><button class="p gloss" onclick="closeSheet()"><span>เข้าใจแล้ว</span></button></div>`;
-  openSheet();
-}
-
-/* ══ สมัครเป็นช่าง ══ */
-function openApply(){
-  $("pnT").textContent="สมัครเป็นช่าง";
-  $("pnB").innerHTML=`
-    <div class="grp" style="margin-top:0"><h4>สี่ด่านกว่าจะได้รับงานแรก</h4>
-      <p style="font-size:14px;color:var(--muted)">ทุกด่านมีคนหรือเอกสารเป็นคนตัดสิน ไม่มีข้อไหนที่ติ๊กเองแล้วผ่าน
-      — ด่านที่ผู้สมัครกรอกเองได้ทั้งหมด ไม่เคยคัดใครออกเลย มันแค่ทำให้ใบสมัครยาวขึ้น</p>
-      <div class="vet">${Techs.VET.map(v=>`<div class="stg">
-        <div class="sh"><span class="sn">${v.n}</span><b>${esc(v.th)}</b><small>${esc(v.days)}</small></div>
-        <ul style="margin:0;padding-left:18px">${v.items.map(i=>`<li>${esc(i)}</li>`).join("")}</ul>
-        <div class="swhy">${esc(v.why)}</div></div>`).join("")}</div>
-    </div>
-    <div class="keep"><b style="font-size:14px">หลังผ่านครบสี่ด่านแล้ว</b>
-      <ul style="margin:12px 0 0;padding-left:18px">${Techs.KEEP.map(k=>`<li>${esc(k)}</li>`).join("")}</ul></div>
-
-    <div class="grp"><h4>กรอกใบสมัคร</h4>
-      <div class="f" id="f-name"><label>ชื่อ–นามสกุล <em>*</em></label>
-        <input id="a-name" placeholder="ชื่อจริงตามบัตรประชาชน"/><div class="err">กรอกชื่อจริงอย่างน้อย 4 ตัวอักษร</div></div>
-      <div class="f" id="f-shop"><label>ชื่อร้าน / ชื่อที่ใช้รับงาน <em>*</em></label>
-        <input id="a-shop" placeholder="เช่น อู่ช่างเอ ยางดี"/><div class="err">กรอกชื่อที่ลูกค้าจะเห็น</div></div>
-      <div class="two">
-        <div class="f" id="f-phone"><label>เบอร์โทร <em>*</em></label>
-          <input id="a-phone" inputmode="tel" placeholder="08xxxxxxxx"/><div class="err">เบอร์ 9–10 หลัก</div></div>
-        <div class="f" id="f-age"><label>อายุ <em>*</em></label>
-          <input id="a-age" inputmode="numeric" placeholder="18 ปีขึ้นไป"/><div class="err">ต้องอายุ 18 ปีขึ้นไป</div></div>
-      </div>
-      <div class="f" id="f-area"><label>พื้นที่ให้บริการ <em>*</em></label>
-        <input id="a-area" placeholder="เช่น ลาดพร้าว กรุงเทพฯ (รัศมี 20 กม.)"/><div class="err">ระบุเขต/อำเภอ และจังหวัด</div></div>
-      <div class="two">
-        <div class="f" id="f-exp"><label>ประสบการณ์ (ปี) <em>*</em></label>
-          <input id="a-exp" inputmode="numeric" placeholder="อย่างน้อย 1"/><div class="err">อย่างน้อย 1 ปี</div></div>
-        <div class="f" id="f-port"><label>ผลงานที่มีรูป <em>*</em></label>
-          <input id="a-port" inputmode="numeric" placeholder="อย่างน้อย 3"/><div class="err">อย่างน้อย 3 ชิ้น</div></div>
-      </div>
-      <div class="two">
-        <div class="f" id="f-from"><label>ราคาเริ่มต้น (บาท) <em>*</em></label>
-          <input id="a-from" inputmode="numeric" placeholder="เช่น 400"/><div class="err">ใส่ตัวเลขมากกว่า 0</div></div>
-        <div class="f" id="f-warr"><label>รับประกันงาน (วัน) <em>*</em></label>
-          <input id="a-warr" inputmode="numeric" placeholder="อย่างน้อย 7"/><div class="err">อย่างน้อย 7 วัน</div></div>
-      </div>
-      <div class="f" id="f-cat"><label>งานที่รับ <em>*</em> <span class="hint">เลือกได้หลายอย่าง</span></label>
-        <div class="pick" id="a-cat">${Techs.CATS.filter(c=>["body","ev","tyre","air","eng"].indexOf(c.id)>=0)
-          .map(c=>`<button type="button" data-c="${c.id}">${esc(c.th)}</button>`).join("")}</div>
-        <div class="err">เลือกอย่างน้อยหนึ่งอย่าง</div></div>
-      <div class="f"><label>รับงานแบบไหนได้บ้าง</label>
-        <div class="pick" id="a-way">
-          <button type="button" data-w="mobile">ออกนอกสถานที่ได้</button>
-          <button type="button" data-w="urgent">รับงานด่วน / นอกเวลา</button>
-        </div></div>
-      <div class="f" id="f-about"><label>เล่าเรื่องฝีมือตัวเอง <em>*</em></label>
-        <textarea id="a-about" placeholder="ถนัดอาการแบบไหน มีเครื่องมืออะไร เคยแก้งานยากอะไรมาบ้าง"></textarea>
-        <div class="hint">อย่างน้อย 40 ตัวอักษร</div><div class="err">เขียนอย่างน้อย 40 ตัวอักษร</div></div>
-    </div>
-    <div class="acts"><button class="p gloss" onclick="submitApply()"><span>ส่งใบสมัคร</span></button></div>`;
-  ["a-cat","a-way"].forEach(id=>$(id).querySelectorAll("button")
-    .forEach(b=>b.onclick=()=>b.classList.toggle("on")));
-  openSheet();
-}
-
-function submitApply(){
-  const v=id=>($(id)&&$(id).value||"").trim();
-  const num=id=>parseFloat(v(id).replace(/[^\d.]/g,""))||0;
-  const cats=[...$("a-cat").querySelectorAll("button.on")].map(b=>b.dataset.c);
-  const ways=[...$("a-way").querySelectorAll("button.on")].map(b=>b.dataset.w);
-  /* ตรวจทุกช่องก่อน แล้วบอกทีเดียวว่าอะไรไม่ผ่าน
-     ถ้าบอกทีละข้อ คนกรอกต้องกดส่งสิบรอบกว่าจะรู้ว่าต้องแก้อะไรบ้าง */
-  const bad=[];
-  const chk=(f,ok)=>{ const el=$(f); if(el)el.classList.toggle("bad",!ok); if(!ok)bad.push(f) };
-  chk("f-name", v("a-name").length>=4);
-  chk("f-shop", v("a-shop").length>=2);
-  chk("f-phone",/^0\d{8,9}$/.test(v("a-phone").replace(/[-\s]/g,"")));
-  chk("f-age",  num("a-age")>=18);
-  chk("f-area", v("a-area").length>=4);
-  chk("f-exp",  num("a-exp")>=1);
-  chk("f-port", num("a-port")>=3);
-  chk("f-from", num("a-from")>0);
-  chk("f-warr", num("a-warr")>=7);
-  chk("f-cat",  cats.length>0);
-  chk("f-about",v("a-about").length>=40);
-  if(bad.length){
-    const first=$(bad[0]); if(first)first.scrollIntoView({behavior:"smooth",block:"center"});
-    toast("ยังมี "+bad.length+" ช่องที่ยังไม่ผ่านเกณฑ์","ti-alert-triangle");
-    return;
-  }
-  const app={id:"app_"+Date.now().toString(36),t:Date.now(),status:"pending",
-    name:v("a-name"),shop:v("a-shop"),phone:v("a-phone"),age:num("a-age"),area:v("a-area"),
-    years:num("a-exp"),port:num("a-port"),from:num("a-from"),warranty:num("a-warr"),
-    cats,mobile:ways.indexOf("mobile")>=0,urgent:ways.indexOf("urgent")>=0,about:v("a-about")};
-  const a=Techs.apps(); a.push(app); Techs.saveApps(a);
-  sendApply(app);
-  $("pnB").innerHTML=`<div class="done"><i class="ti ti-circle-check"></i>
-    <b>ส่งใบสมัครแล้ว</b>
-    <p>ทีมงานจะโทรไปที่เบอร์ ${esc(app.phone)} เพื่อยืนยันตัวตนและขอดูรูปผลงาน ภายใน 3 วันทำการ<br>
-    ระหว่างนี้เตรียมบัตรประชาชนและรูปงานจริงไว้ให้พร้อม</p></div>
-    <div class="acts"><button class="p gloss" onclick="closeSheet()"><span>เรียบร้อย</span></button></div>`;
-  toast("ส่งใบสมัครเรียบร้อย","ti-check");
-}
-
-/* ส่งขึ้นเซิร์ฟเวอร์ ถ้ายังไม่มีปลายทางก็เก็บไว้ในเครื่องรอส่งใหม่
-   ไม่ขึ้นข้อความว่าล้มเหลว เพราะใบสมัครไม่ได้หายไปไหน */
-async function sendApply(app){
-  const done=()=>{ const a=Techs.apps().map(x=>x.id===app.id?Object.assign({},x,{sent:true}):x);
-                   Techs.saveApps(a) };
-  /* ทางที่หนึ่ง ปลายทางสาธารณะ ซึ่งคนที่ยังไม่ล็อกอินก็ส่งได้ */
-  try{
-    const r=await fetch(BACKEND_URL+"/api/tech/apply",
-      {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(app)});
-    if(r.ok)return done();
-  }catch(e){}
-  /* ทางที่สอง เข้าคลังกลางโดยตรง ใช้ได้เมื่อล็อกอินแล้ว */
-  try{ await Techs.apply(app); return done() }catch(e){}
-  /* ทั้งสองทางไม่ได้ ใบสมัครยังอยู่ในเครื่องรอส่งใหม่ ไม่หายไปไหน
-     จึงไม่ต้องขึ้นข้อความว่าล้มเหลวให้เขาตกใจ */
-}
-
-/* ═══════════════════════════════════════════════════════════════════
-   แผงผู้ดูแล — เพิ่มช่างเข้าฐานข้อมูลจริง
-   ───────────────────────────────────────────────────────────────────
-   ฟอร์มนี้ไม่มีเกณฑ์อะไรเลย ตั้งใจให้เป็นแบบนั้น เพราะมันคือทางสำหรับ
-   ทีมงานใส่ข้อมูลเข้าไปทดสอบ ไม่ใช่ทางสำหรับคนนอกสมัคร
-   คนนอกยังต้องผ่านสี่ด่านเหมือนเดิมผ่านปุ่ม "สมัครเป็นช่าง"
-
-   กรอกแค่ชื่อก็บันทึกได้ ที่เหลือเติมทีหลังได้ตลอด
-   เพราะการบังคับให้กรอกครบสิบช่องเพื่อทดสอบหนึ่งอย่าง คือการขวางงานตัวเอง
-   ═══════════════════════════════════════════════════════════════════ */
-function openAdmin(t){
-  t=t||{};
-  const ed=!!t.id;
-  $("pnT").textContent=ed?"แก้ข้อมูลช่าง":"เพิ่มช่าง (ผู้ดูแล)";
-  const CS=Techs.CATS.filter(c=>["body","ev","tyre","air","eng"].indexOf(c.id)>=0);
-  $("pnB").innerHTML=`
-    <div class="grp" style="margin-top:0">
-      <h4>${ed?"แก้ข้อมูล":"ใส่ข้อมูลเข้าฐานข้อมูลโดยตรง"}</h4>
-      <p style="font-size:13.5px;color:var(--muted);margin-bottom:16px">
-        ทางนี้ข้ามเกณฑ์ทั้งหมด กรอกแค่ชื่อก็บันทึกได้ ที่เหลือเติมทีหลังได้
-        — ใช้สำหรับทีมงานเท่านั้น คนนอกยังต้องผ่านสี่ด่านตามปกติ</p>
-      <div class="f"><label>ชื่อช่าง <em>*</em></label>
-        <input id="d-name" value="${esc(t.name||"")}" placeholder="ชื่อที่ลูกค้าจะเห็น"/></div>
-      <div class="two">
-        <div class="f"><label>ชื่อร้าน / อู่</label>
-          <input id="d-shop" value="${esc(t.shop||"")}"/></div>
-        <div class="f"><label>พื้นที่</label>
-          <input id="d-area" value="${esc(t.area||"")}" placeholder="เขต จังหวัด"/></div>
-      </div>
-      <div class="two">
-        <div class="f"><label>ละติจูด</label>
-          <input id="d-lat" inputmode="decimal" value="${t.lat!=null?t.lat:""}" placeholder="13.7563"/>
-          <div class="hint">ไม่ใส่ก็ได้ แต่จะไม่โผล่ในหมวดใกล้บ้าน</div></div>
-        <div class="f"><label>ลองจิจูด</label>
-          <input id="d-lng" inputmode="decimal" value="${t.lng!=null?t.lng:""}" placeholder="100.5018"/></div>
-      </div>
-      <div class="two">
-        <div class="f"><label>ราคาเริ่มต้น</label>
-          <input id="d-from" inputmode="numeric" value="${t.from||""}"/></div>
-        <div class="f"><label>ราคาสูงสุด</label>
-          <input id="d-to" inputmode="numeric" value="${t.to||""}"/></div>
-      </div>
-      <div class="two">
-        <div class="f"><label>ประสบการณ์ (ปี)</label>
-          <input id="d-years" inputmode="numeric" value="${t.years||""}"/></div>
-        <div class="f"><label>รับประกัน (วัน)</label>
-          <input id="d-warr" inputmode="numeric" value="${t.warranty||""}"/></div>
-      </div>
-      <div class="two">
-        <div class="f"><label>คะแนน</label>
-          <input id="d-rating" inputmode="decimal" value="${t.rating||""}" placeholder="4.8"/></div>
-        <div class="f"><label>ตอบกลับ (นาที)</label>
-          <input id="d-reply" inputmode="numeric" value="${t.reply||""}"/></div>
-      </div>
-      <div class="f"><label>งานที่รับ</label>
-        <div class="pick" id="d-cat">${CS.map(c=>
-          `<button type="button" data-c="${c.id}" class="${(t.cats||[]).indexOf(c.id)>=0?"on":""}">${esc(c.th)}</button>`).join("")}</div></div>
-      <div class="f"><label>สถานะ</label>
-        <div class="pick" id="d-flag">
-          <button type="button" data-f="verified" class="${t.verified?"on":""}">ตรวจสอบแล้ว</button>
-          <button type="button" data-f="mobile" class="${t.mobile?"on":""}">ออกนอกสถานที่</button>
-          <button type="button" data-f="urgent" class="${t.urgent?"on":""}">รับงานด่วน</button>
-        </div></div>
-      <div class="f"><label>ทักษะ <span class="hint">คั่นด้วยจุลภาค</span></label>
-        <input id="d-skills" value="${esc((t.skills||[]).join(", "))}" placeholder="แอร์ไม่เย็น, ล้างตู้แอร์"/></div>
-      <div class="f"><label>ยี่ห้อที่รับ <span class="hint">คั่นด้วยจุลภาค</span></label>
-        <input id="d-brands" value="${esc((t.brands||[]).join(", "))}" placeholder="ทุกยี่ห้อ"/></div>
-      <div class="f"><label>เกี่ยวกับช่าง</label>
-        <textarea id="d-about" placeholder="ถนัดอะไร มีเครื่องมืออะไร">${esc(t.about||"")}</textarea></div>
-    </div>
-    <div class="acts">
-      ${ed?`<button class="s" style="flex:0 0 auto;color:var(--danger);padding-inline:20px"
-        onclick="delTech('${t.id}')">ลบ</button>`:""}
-      <button class="p gloss" onclick="saveTech('${t.id||""}')"><span>${ed?"บันทึก":"เพิ่มเข้าระบบ"}</span></button>
-    </div>`;
-  ["d-cat","d-flag"].forEach(id=>$(id).querySelectorAll("button")
-    .forEach(b=>b.onclick=()=>b.classList.toggle("on")));
-  openSheet();
-}
-async function saveTech(id){
-  const v=x=>($("d-"+x)&&$("d-"+x).value||"").trim();
-  const n=x=>{ const f=parseFloat(v(x).replace(/[^\d.\-]/g,"")); return isNaN(f)?null:f };
-  const name=v("name");
-  if(name.length<2)return toast("ใส่ชื่อช่างก่อน","ti-alert-triangle");
-  const flags={};
-  $("d-flag").querySelectorAll("button.on").forEach(b=>flags[b.dataset.f]=true);
-  const list=x=>v(x).split(",").map(w=>w.trim()).filter(Boolean);
-  const t={
-    id:id||"", name, shop:v("shop")||name, area:v("area"),
-    lat:n("lat"), lng:n("lng"),
-    cats:[...$("d-cat").querySelectorAll("button.on")].map(b=>b.dataset.c),
-    /* ค่าตั้งต้นที่สมเหตุสมผล ไม่ใช่ศูนย์ เพราะช่างใหม่ที่คะแนนศูนย์
-       จะจมอยู่ท้ายรายการตลอดไปทั้งที่ยังไม่เคยมีใครให้คะแนน */
-    rating:n("rating")!=null?n("rating"):5,
-    jobs:0, years:n("years")||0,
-    from:n("from")||0, to:n("to")||0, reply:n("reply")||60,
-    verified:!!flags.verified, mobile:!!flags.mobile, urgent:!!flags.urgent,
-    brands:list("brands"), warranty:n("warr")||7,
-    skills:list("skills"), about:v("about")
-  };
-  try{
-    toast("กำลังบันทึก…","ti-loader");
-    await Techs.save(t);
-    closeSheet(); drawCats(); run(); adminBar();
-    toast("บันทึกลงฐานข้อมูลแล้ว","ti-check");
-  }catch(e){ toast("บันทึกไม่สำเร็จ: "+e.message,"ti-alert-triangle") }
-}
-async function delTech(id){
-  if(!confirm("ลบช่างคนนี้ออกจากฐานข้อมูล?"))return;
-  try{ await Techs.remove(id); closeSheet(); drawCats(); run(); adminBar();
-    toast("ลบแล้ว","ti-check") }
-  catch(e){ toast("ลบไม่สำเร็จ: "+e.message,"ti-alert-triangle") }
-}
-
-/* แถบเครื่องมือของผู้ดูแล — ขึ้นเฉพาะคนที่เซิร์ฟเวอร์ยอมให้อ่าน /api/kb */
-function adminBar(){
-  const host=$("adminBar"); if(!host)return;
-  if(!CAN){ host.innerHTML=""; return }
-  host.innerHTML=`<div class="abar">
-    <span class="ab-t"><i class="ti ti-shield-lock"></i> โหมดผู้ดูแล</span>
-    <button class="ab-b" onclick="openAdmin()"><i class="ti ti-plus"></i> เพิ่มช่าง</button>
-    <button class="ab-b" onclick="openPending()"><i class="ti ti-inbox"></i> ใบสมัคร</button>
-    <button class="ab-b" onclick="reload()"><i class="ti ti-refresh"></i> โหลดใหม่</button>
-  </div>`;
-}
-async function openPending(){
-  $("pnT").textContent="ใบสมัครที่รอตรวจ";
-  $("pnB").innerHTML=`<p style="color:var(--muted);font-size:14px">กำลังโหลด…</p>`;
-  openSheet();
-  const list=await Techs.pending();
-  $("pnB").innerHTML=list.length?`
-    <div class="grp" style="margin-top:0"><h4>${list.length} ใบ</h4>
-      ${list.map(a=>`<div class="stg" style="margin-bottom:12px">
-        <div class="sh"><b>${esc(a.name||"—")}</b><small>${esc(a.area||"")}</small></div>
-        <div style="font-size:13px;color:var(--muted);line-height:1.7">
-          ${esc(a.shop||"")} · ${esc(a.phone||"")} · ${a.years||0} ปี ·
-          เริ่ม ฿${a.from||0} · รับประกัน ${a.warranty||0} วัน<br>${esc(a.about||"")}</div>
-        <div class="acts" style="position:static;background:none;padding:16px 0 0">
-          <button class="p gloss" onclick='approve(${JSON.stringify(a).replace(/'/g,"&#39;")})'>
-            <span>อนุมัติเป็นช่าง</span></button>
-        </div></div>`).join("")}</div>`
-    : `<p style="color:var(--muted);font-size:14px;padding:8px 0">ยังไม่มีใบสมัครเข้ามา</p>`;
-}
-/* อนุมัติ = เอาใบสมัครมาเปิดในฟอร์มผู้ดูแล ให้ตรวจและเติมข้อมูลก่อนบันทึก
-   ไม่อนุมัติแบบกดปุ่มเดียวจบ เพราะใบสมัครยังขาดพิกัดกับทักษะที่ต้องมีคนใส่ */
-function approve(a){
-  openAdmin({name:a.name,shop:a.shop,area:a.area,cats:a.cats||[],
-    from:a.from,years:a.years,warranty:a.warranty,about:a.about,
-    mobile:a.mobile,urgent:a.urgent});
-}
-async function reload(){
-  toast("กำลังโหลดจากฐานข้อมูล…","ti-loader");
-  await Techs.load(BACKEND_URL);
-  drawCats(); run();
-  toast("ช่างในระบบ "+Techs.all().length+" คน","ti-check");
-}
+/* The live marketplace controller is loaded below before initialization. */
+let openTrust, openApply, openAdmin, openPending, reload;
+let adminBar = () => {};
 
 /* ══ เริ่มทำงาน ══ */
 (function init(){
@@ -1669,10 +1380,10 @@ async function reload(){
           /* ถามเซิร์ฟเวอร์ว่าคนนี้อ่านคลังกลางได้ไหม
              คำตอบนั้นคือคำตอบเดียวกับว่าเขาจัดการช่างได้ไหม
              ไม่ตั้งกฎเองในหน้าเว็บ เพราะกฎในเบราว์เซอร์ไม่ใช่ความปลอดภัย */
-          try{ await api("/api/kb"); CAN=true }catch(e){ CAN=false }
+          try{ CAN=!!(await api("/api/tech/me")).admin }catch(e){ CAN=false }
           if(CAN){ await Techs.load(BACKEND_URL); drawCats(); run() }
         }
-        adminBar(); run();
+        adminBar(); run(); if(window.Marketplace)Marketplace.authChanged();
       });
     }catch(e){ adminBar() }
   })();
@@ -1682,5 +1393,6 @@ async function reload(){
   $("askQ").addEventListener("input",()=>{ clearTimeout(d); d=setTimeout(askDraw,140) });
 })();
 </script>
+<script src="./tech-marketplace.js?v=1"></script>
 </body>
 </html>

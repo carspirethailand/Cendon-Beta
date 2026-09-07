@@ -137,9 +137,9 @@ function search(o){
   });
 
   if(o.cat&&o.cat!=="all"){
-    if(o.cat==="near")      list=list.filter(t=>t.dist==null||t.dist<=(o.radius||40));
-    else if(o.cat==="quick")list=list.filter(t=>t.urgent||t.reply<=20);
-    else if(o.cat==="pro")  list=list.filter(t=>t.verified&&t.rating>=4.6&&t.years>=8);
+    if(o.cat==="near")      list=list.filter(t=>t.dist!=null&&t.dist<=(o.radius||40));
+    else if(o.cat==="quick")list=list.filter(t=>t.urgent);
+    else if(o.cat==="pro")  list=list.filter(t=>t.verified);
     else                    list=list.filter(t=>(t.cats||[]).indexOf(o.cat)>=0);
   }
   if(o.mobile)   list=list.filter(t=>t.mobile);
@@ -175,7 +175,7 @@ function search(o){
     if(sort==="near"&&a.dist!=null&&b.dist!=null)return a.dist-b.dist;
     if(sort==="rating")return b.rating-a.rating;
     if(sort==="cheap") return a.from-b.from;
-    if(sort==="fast")  return a.reply-b.reply;
+    if(sort==="fast")  return (a.reply??Infinity)-(b.reply??Infinity);
     /* best = ตรงคำค้นก่อน แล้วค่อยดูว่าใกล้ไหม แล้วค่อยดูคะแนนกับจำนวนงาน
        จำนวนงานอยู่ท้ายสุดโดยตั้งใจ ไม่งั้นช่างใหม่ที่ฝีมือดีจะไม่มีวันได้ขึ้นหน้าแรก */
     const s=(b.score||0)-(a.score||0); if(s)return s;
@@ -192,9 +192,9 @@ function search(o){
 function line(t){
   return `${t.id} | ${t.name} (${t.shop}) | ${t.area}`
     +(t.dist!=null?` ~${t.dist}กม.`:"")
-    +` | ${t.rating}★ ${t.jobs}งาน ${t.years}ปี`
+    +` | ${t.reviewCount?t.rating+'★':'ยังไม่มีรีวิว'} ${t.jobs}งาน ${t.years}ปี`
     +` | ${t.from.toLocaleString()}-${t.to.toLocaleString()}บ.`
-    +` | ตอบ~${t.reply}น. รับประกัน${t.warranty}วัน`
+    +` | ${t.reply!=null?'ตอบ~'+t.reply+'น. ':''}รับประกันโดยช่าง${t.warranty}วันตามข้อตกลง`
     +(t.verified?" | ตรวจสอบแล้ว":"")+(t.mobile?" | ออกนอกสถานที่":"")+(t.urgent?" | งานด่วน":"")
     +` | ถนัด: ${(t.skills||[]).join(", ")}`;
 }
@@ -427,7 +427,7 @@ function fromRow(r){
 function fill(t){
   if(!t||!t.id)return null;
   return Object.assign({
-    name:"—",shop:"",area:"",cats:[],rating:5,jobs:0,years:0,
+    name:"—",shop:"",area:"",cats:[],rating:0,jobs:0,years:0,
     from:0,to:0,reply:60,verified:false,mobile:false,urgent:false,
     brands:[],warranty:7,skills:[],about:""
   },t);
@@ -441,55 +441,35 @@ function useApi(fn){ API=fn }
 /* โหลดช่างทั้งหมดจากฐานข้อมูล
    ลองปลายทางสาธารณะก่อน ถ้ายังไม่มีค่อยใช้ kb ซึ่งต้องมียศ */
 async function load(backend){
-  let got=[];
-  if(backend){
-    try{
-      const r=await fetch(String(backend).replace(/\/$/,"")+"/api/tech");
-      if(r.ok){ const d=await r.json();
-        if(d&&d.techs)got=d.techs.map(fill).filter(Boolean) }
-    }catch(e){}
-  }
-  if(!got.length&&API){
-    try{
-      const d=await API("/api/kb");
-      got=(d&&d.kb||[]).filter(r=>r.id&&r.id.indexOf(PRE)===0)
-        .map(fromRow).filter(Boolean);
-    }catch(e){}
-  }
-  REMOTE=got;
+  g.Techs.loading=true; g.Techs.error="";
+  try{
+    const r=await fetch((g.TECH_API_URL||"https://spireone-techs.carspirethailand.workers.dev")+"/api/tech",{cache:"no-store"});
+    if(!r.ok)throw new Error("โหลดรายชื่อช่างไม่สำเร็จ กรุณาลองใหม่");
+    const d=await r.json();
+    if(!Array.isArray(d.techs))throw new Error("ข้อมูลรายชื่อช่างไม่ถูกต้อง");
+    REMOTE=d.techs.map(fill).filter(Boolean);
+  }catch(e){ REMOTE=[]; g.Techs.error=e.message||"เชื่อมต่อระบบช่างไม่ได้" }
+  finally{g.Techs.loading=false}
   return REMOTE;
 }
 
 /* บันทึกช่างหนึ่งคนลงฐานข้อมูล — ใช้ id เดิมก็คือแก้ของเดิม */
 async function save(t){
-  if(!API)throw new Error("ยังไม่ได้เข้าสู่ระบบ");
-  if(!t.id)t.id="t"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
-  await API("/api/kb",{method:"POST",body:toRow(t)});
-  merge([t]);
-  return t;
+  throw new Error("ใช้พื้นที่ช่างเพื่อสมัคร และตรวจใบสมัครก่อนเผยแพร่");
 }
 async function remove(id){
   if(!API)throw new Error("ยังไม่ได้เข้าสู่ระบบ");
-  await API("/api/kb/"+encodeURIComponent(PRE+id),{method:"DELETE"});
+  await API("/api/tech/moderate",{method:"POST",body:{id,suspend:true}});
   REMOTE=REMOTE.filter(x=>x.id!==id);
 }
 /* ใบสมัครจากคนนอก — เก็บเป็นคนละประเภท ยังไม่ใช่ช่างจนกว่าจะอนุมัติ */
 async function apply(app){
   if(!API)throw new Error("ยังไม่ได้เข้าสู่ระบบ");
-  await API("/api/kb",{method:"POST",body:{
-    id:APRE+app.id, title:"ใบสมัครช่าง "+(app.name||""),
-    body:JSON.stringify(app),
-    keywords:[app.area,app.phone].filter(Boolean).join(" ").slice(0,390),
-    make:"__techapp__", model:"", enabled:false}});
+  return API("/api/tech/apply",{method:"POST",body:app});
 }
 async function pending(){
-  if(!API)return [];
-  try{
-    const d=await API("/api/kb");
-    return (d&&d.kb||[]).filter(r=>r.id&&r.id.indexOf(APRE)===0)
-      .map(r=>{ try{ return JSON.parse(r.body||"{}") }catch(e){ return null } })
-      .filter(Boolean);
-  }catch(e){ return [] }
+  if(!API)throw new Error("กรุณาเข้าสู่ระบบ");
+  return (await API("/api/tech/applications")).applications;
 }
 
 g.Techs={CATS,MAIN_CATS,MAIN:MAIN_CATS,RULES,KEEP,SEED,VET,TRUST,

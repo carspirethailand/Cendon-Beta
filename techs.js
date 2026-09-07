@@ -55,71 +55,16 @@ const KEEP=[
 ];
 
 /* ── ช่างในระบบ ──
-   ตัวเลขทุกตัวมีที่มา: rating คือคะแนนเฉลี่ยจากงานที่ปิดแล้ว
-   jobs คือจำนวนงานที่ปิดสำเร็จ  reply คือค่ามัธยฐานเวลาตอบกลับเป็นนาที
-   lat/lng ใช้คำนวณ "ใกล้บ้าน" — ไม่มีพิกัดก็จะไม่มีวันโผล่ในหมวดนั้น */
-const SEED=[
- {id:"t01",name:"สมชาย ภู่ระหงษ์",shop:"ช่างชายมอเตอร์",area:"ลาดพร้าว กรุงเทพฯ",lat:13.8060,lng:100.6100,
-  cats:["eng","air"],rating:4.9,jobs:412,years:18,from:500,to:6500,reply:12,verified:true,mobile:true,urgent:true,
-  brands:["Toyota","Honda","Isuzu"],warranty:30,
-  skills:["เครื่องสั่น","เครื่องร้อน","เกียร์กระตุก","แอร์ไม่เย็น","เช็กระยะ"],
-  about:"ทำเครื่องยนต์เบนซินและดีเซลมา 18 ปี ถนัดอาการเครื่องสั่นและเกียร์กระตุกที่ร้านทั่วไปหาไม่เจอ มีเครื่องอ่านโค้ดของศูนย์"},
- {id:"t02",name:"ณัฐพล วงศ์อารีย์",shop:"NP Auto Electric",area:"บางนา กรุงเทพฯ",lat:13.6680,lng:100.6040,
-  cats:["ev","eng"],rating:4.8,jobs:266,years:11,from:800,to:22000,reply:20,verified:true,mobile:true,urgent:true,
-  brands:["BYD","Tesla","MG","Ora"],warranty:60,
-  skills:["รถไฟฟ้า","แบตเตอรี่","ระบบชาร์จ","ไฟรั่ว","สายไฟไหม้"],
-  about:"เรียนมาทางไฟฟ้ากำลัง แล้วมาต่อสายรถไฟฟ้าโดยเฉพาะ รับเช็กสุขภาพแบตและระบบชาร์จบ้าน มีเครื่องวัดความจุแบตจริงไม่ใช่เดาจากหน้าปัด"},
- {id:"t03",name:"อรรถพล สุขเจริญ",shop:"อู่ช่างเอก ตัวถังสี",area:"บางแค กรุงเทพฯ",lat:13.7130,lng:100.3990,
-  cats:["body"],rating:4.7,jobs:189,years:14,from:1500,to:45000,reply:45,verified:true,mobile:false,urgent:false,
-  brands:["ทุกยี่ห้อ"],warranty:90,
-  skills:["เคาะ","พ่นสี","เก็บรอยขนแมว","ชนหนัก","เคลมประกัน"],
-  about:"ห้องพ่นสีอบความร้อน เทียบสีด้วยเครื่องไม่ใช่เทียบด้วยตา รับงานเคลมประกันและงานจ่ายเอง แจ้งราคาก่อนลงมือทุกครั้ง"},
- {id:"t04",name:"กิตติศักดิ์ ทองใบ",shop:"ยางดีช่วงล่างดี",area:"รังสิต ปทุมธานี",lat:14.0350,lng:100.7310,
-  cats:["tyre"],rating:4.8,jobs:521,years:9,from:300,to:15000,reply:8,verified:true,mobile:true,urgent:true,
-  brands:["ทุกยี่ห้อ"],warranty:14,
-  skills:["ยางแตกข้างทาง","ตั้งศูนย์","ถ่วงล้อ","โช้กอัพ","ลูกหมาก","เบรก"],
-  about:"มีรถออกไปเปลี่ยนยางถึงที่ทั่วรังสิต–ดอนเมือง ตี 2 ก็ไป คิดค่าเดินทางตามจริง บอกราคาก่อนออกรถเสมอ"},
- {id:"t05",name:"วีระ ชูเกียรติ",shop:"แอร์เย็นยกกำลัง",area:"นนทบุรี",lat:13.8620,lng:100.5140,
-  cats:["air"],rating:4.9,jobs:333,years:16,from:450,to:9000,reply:15,verified:true,mobile:true,urgent:true,
-  brands:["ทุกยี่ห้อ"],warranty:30,
-  skills:["แอร์ไม่เย็น","ล้างตู้แอร์","คอมเพรสเซอร์","น้ำยารั่ว","กลิ่นอับ"],
-  about:"ล้างตู้แอร์แบบถอดคอนโซล ไม่ใช่พ่นโฟมเข้าช่องลมแล้วเรียกว่าล้าง หาจุดรั่วด้วยไนโตรเจน มีรูปก่อน–หลังให้ดูทุกงาน"},
- {id:"t06",name:"ธนกฤต แสนสุข",shop:"ธนกฤตเซอร์วิส",area:"เมือง เชียงใหม่",lat:18.7880,lng:98.9850,
-  cats:["eng","tyre"],rating:4.6,jobs:154,years:7,from:400,to:12000,reply:25,verified:true,mobile:true,urgent:false,
-  brands:["Toyota","Nissan","Mazda"],warranty:30,
-  skills:["เช็กระยะ","เปลี่ยนถ่ายน้ำมัน","เบรก","ครัช","สายพาน"],
-  about:"รับงานเช็กระยะและงานซ่อมทั่วไปในตัวเมืองเชียงใหม่ ทำงานคนเดียว งานจึงไม่เยอะแต่ตามงานได้ตลอด"},
- {id:"t07",name:"ปิยะ ศรีสวัสดิ์",shop:"P.S. Diesel",area:"หาดใหญ่ สงขลา",lat:7.0080,lng:100.4760,
-  cats:["eng"],rating:4.7,jobs:207,years:21,from:600,to:38000,reply:35,verified:true,mobile:false,urgent:false,
-  brands:["Isuzu","Toyota","Ford","Mitsubishi"],warranty:60,
-  skills:["ดีเซล","หัวฉีด","ปั๊มติ๊ก","ควันดำ","เทอร์โบ"],
-  about:"ทำกระบะดีเซลอย่างเดียวมา 21 ปี มีแท่นทดสอบหัวฉีด รับงานควันดำและกำลังตกที่แก้ที่อื่นแล้วไม่หาย"},
- {id:"t08",name:"สุริยา แก้วมณี",shop:"Surya Mobile Fix",area:"ศรีราชา ชลบุรี",lat:13.1740,lng:100.9300,
-  cats:["eng","ev","tyre"],rating:4.5,jobs:98,years:5,from:350,to:8000,reply:6,verified:false,mobile:true,urgent:true,
-  brands:["ทุกยี่ห้อ"],warranty:7,
-  skills:["สตาร์ทไม่ติด","แบตหมด","พ่วงแบต","ยางแบน","รถเสียข้างทาง"],
-  about:"รับเฉพาะงานฉุกเฉินข้างทางในชลบุรี–ระยอง ตอบเร็วที่สุดในระบบ ยังไม่ผ่านการตรวจสอบเอกสารครบ จึงยังไม่ได้ป้ายมืออาชีพ"},
- {id:"t09",name:"มานพ อินทร์แก้ว",shop:"อู่มานพ ช่วงล่าง",area:"เมือง ขอนแก่น",lat:16.4320,lng:102.8230,
-  cats:["tyre","eng"],rating:4.8,jobs:276,years:13,from:400,to:18000,reply:30,verified:true,mobile:false,urgent:false,
-  brands:["ทุกยี่ห้อ"],warranty:30,
-  skills:["ช่วงล่างมีเสียง","โช้ก","สปริง","บู๊ช","ตั้งศูนย์"],
-  about:"ถนัดอาการมีเสียงจากช่วงล่างที่บอกไม่ถูกว่ามาจากไหน ให้ลูกค้านั่งไปด้วยตอนทดลองวิ่ง จะได้ชี้ได้ว่าเสียงไหน"},
- {id:"t10",name:"ชลธี พงษ์ไพบูลย์",shop:"Chonlathee EV Care",area:"พระราม 9 กรุงเทพฯ",lat:13.7580,lng:100.5660,
-  cats:["ev"],rating:4.9,jobs:141,years:6,from:900,to:65000,reply:18,verified:true,mobile:false,urgent:false,
-  brands:["BYD","Tesla","Neta","Volvo","BMW"],warranty:90,
-  skills:["แบตเสื่อม","BMS","มอเตอร์ไฟฟ้า","ระบบระบายความร้อน","อัปเดตซอฟต์แวร์"],
-  about:"รับเฉพาะรถไฟฟ้าและปลั๊กอินไฮบริด มีอุปกรณ์ตัดไฟแรงสูงตามมาตรฐาน งานแบตต้องนัดล่วงหน้า เพราะใช้เวลาทั้งวัน"},
- {id:"t11",name:"อนุชา เรืองศรี",shop:"อนุชาเคาะพ่นสี",area:"เมือง ภูเก็ต",lat:7.8890,lng:98.3980,
-  cats:["body","tyre"],rating:4.4,jobs:86,years:8,from:1200,to:30000,reply:60,verified:false,mobile:false,urgent:false,
-  brands:["ทุกยี่ห้อ"],warranty:30,
-  skills:["เคาะ","พ่นสี","กันชนแตก","ขัดสี","เคลือบแก้ว"],
-  about:"งานสีและงานขัดเคลือบในภูเก็ต คิวค่อนข้างยาวช่วงไฮซีซัน ตอบช้ากว่าคนอื่นเพราะอยู่ในห้องพ่นทั้งวัน"},
- {id:"t12",name:"เกรียงไกร ดวงดี",shop:"KK Fast Service",area:"ดอนเมือง กรุงเทพฯ",lat:13.9130,lng:100.6000,
-  cats:["eng","air","tyre"],rating:4.6,jobs:318,years:10,from:350,to:14000,reply:5,verified:true,mobile:true,urgent:true,
-  brands:["Toyota","Honda","Mazda","Suzuki"],warranty:14,
-  skills:["รถเสียข้างทาง","สตาร์ทไม่ติด","แอร์ไม่เย็น","เบรก","เปลี่ยนแบต"],
-  about:"รับงานด่วนย่านดอนเมือง–หลักสี่–รังสิต ตอบเร็วเฉลี่ย 5 นาที มีรถบริการ 2 คัน ทำงานถึงเที่ยงคืน"},
-];
+   ว่างเปล่าโดยตั้งใจ ไม่มีข้อมูลตัวอย่างเหลืออยู่แล้ว
+
+   ช่างทุกคนมาจากฐานข้อมูลอย่างเดียว ผ่าน Techs.merge()
+   เหตุผลที่ต้องว่าง ไม่ใช่แค่ความสะอาด แต่เป็นเรื่องความปลอดภัย
+   ข้อมูลตัวอย่างที่หน้าตาเหมือนของจริง วันหนึ่งจะมีคนโทรตามไปจริง
+   แล้วเจอว่าไม่มีอู่นั้นอยู่ — ความเสียหายตกที่ผู้ใช้ ไม่ใช่ที่เรา
+
+   ผลข้างเคียงที่ต้องยอมรับ: ถ้าฐานข้อมูลยังไม่มีใคร หน้าเว็บจะว่าง
+   ซึ่งถูกต้องแล้ว หน้าที่ว่างเพราะยังไม่มีข้อมูล ดีกว่าหน้าที่เต็มไปด้วยของปลอม */
+const SEED=[];
 
 /* ── ช่างที่สมัครผ่านหน้าเว็บ ──
    เก็บไว้ในเครื่องก่อน แล้วส่งขึ้นเซิร์ฟเวอร์เมื่อมีปลายทางให้ส่ง
@@ -439,7 +384,116 @@ function nearHome(o){
   return search(Object.assign({},o,{here:h,cat:"near",sort:"near",radius:o.radius||25}));
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   ฐานข้อมูล — ช่างทุกคนอยู่ที่นี่ ไม่มีข้อมูลตัวอย่างในไฟล์แล้ว
+   ───────────────────────────────────────────────────────────────────
+   เก็บในตาราง kb ซึ่งเป็นที่เก็บกลางที่แอปใช้อยู่แล้วสำหรับหลายเรื่อง
+   (ตำแหน่งพนักงาน ห้องคุย สัญญาณโทร) ใช้คำนำหน้า id แยกประเภทกัน
+     tech_     ช่างที่อนุมัติแล้ว
+     techapp_  ใบสมัครที่รอตรวจ
+
+   ทำไมไม่รอปลายทางของตัวเอง — เพราะ kb มีอยู่แล้ว ใช้ได้เลยวันนี้
+   และเมื่อ /api/tech ของจริงพร้อม ตัวอ่านจะลองอันนั้นก่อนเสมอ
+   ย้ายทีหลังได้โดยไม่ต้องแก้หน้าเว็บสักบรรทัด
+
+   ข้อจำกัดที่ต้องรู้: kb ต้องมียศระดับผู้ดูแลจึงจะอ่านได้
+   ผู้ใช้ทั่วไปจึงยังไม่เห็นช่างจนกว่าจะมี /api/tech แบบเปิด (ดู BACKEND-TODO)
+   ═══════════════════════════════════════════════════════════════════ */
+const PRE="tech_", APRE="techapp_";
+
+/* แปลงร่างไปกลับระหว่างช่างหนึ่งคนกับหนึ่งแถวใน kb
+   ข้อมูลจริงอยู่ใน body เป็น JSON ส่วน title กับ keywords ไว้ให้คนอ่านออก
+   ตอนเปิดดูฐานข้อมูลตรง ๆ ว่าแถวนี้คือใคร */
+function toRow(t){
+  return {
+    id:PRE+t.id, title:"ช่าง "+(t.name||t.id),
+    body:JSON.stringify(t),
+    keywords:[t.area,(t.skills||[]).join(" ")].filter(Boolean).join(" ").slice(0,390),
+    make:"__tech__", model:(t.cats||[])[0]||"", enabled:true
+  };
+}
+function fromRow(r){
+  try{
+    const t=JSON.parse(r.body||"{}");
+    /* ค่าที่ขาดไปต้องมีค่าตั้งต้นเสมอ ไม่งั้นการ์ดจะพังตอนวาด
+       ฐานข้อมูลที่คนกรอกเองย่อมมีแถวที่ไม่ครบ นั่นคือเรื่องปกติ ไม่ใช่ข้อผิดพลาด */
+    return fill(t);
+  }catch(e){ return null }
+}
+/* เติมค่าที่ขาดให้ครบ — ใช้กับช่างทุกคนไม่ว่ามาจากทางไหน
+   ตอนแรกเติมไว้ที่ fromRow ทางเดียว แถวที่มาจาก /api/tech จึงไม่ได้เติม
+   แล้วการ์ดของช่างที่ข้อมูลไม่ครบก็หายไปทั้งใบ
+   ค่าตั้งต้นที่ผูกกับทางเข้าทางเดียว คือค่าตั้งต้นที่รอวันพลาด */
+function fill(t){
+  if(!t||!t.id)return null;
+  return Object.assign({
+    name:"—",shop:"",area:"",cats:[],rating:5,jobs:0,years:0,
+    from:0,to:0,reply:60,verified:false,mobile:false,urgent:false,
+    brands:[],warranty:7,skills:[],about:""
+  },t);
+}
+
+/* ตัวเรียก API ที่หน้าเว็บฝากไว้ — ต้องมีโทเคนของผู้ใช้ติดไปด้วย
+   ไฟล์นี้ไม่ยุ่งกับการล็อกอินเอง เพราะแต่ละหน้ามีวิธีของตัวเอง */
+let API=null;
+function useApi(fn){ API=fn }
+
+/* โหลดช่างทั้งหมดจากฐานข้อมูล
+   ลองปลายทางสาธารณะก่อน ถ้ายังไม่มีค่อยใช้ kb ซึ่งต้องมียศ */
+async function load(backend){
+  let got=[];
+  if(backend){
+    try{
+      const r=await fetch(String(backend).replace(/\/$/,"")+"/api/tech");
+      if(r.ok){ const d=await r.json();
+        if(d&&d.techs)got=d.techs.map(fill).filter(Boolean) }
+    }catch(e){}
+  }
+  if(!got.length&&API){
+    try{
+      const d=await API("/api/kb");
+      got=(d&&d.kb||[]).filter(r=>r.id&&r.id.indexOf(PRE)===0)
+        .map(fromRow).filter(Boolean);
+    }catch(e){}
+  }
+  REMOTE=got;
+  return REMOTE;
+}
+
+/* บันทึกช่างหนึ่งคนลงฐานข้อมูล — ใช้ id เดิมก็คือแก้ของเดิม */
+async function save(t){
+  if(!API)throw new Error("ยังไม่ได้เข้าสู่ระบบ");
+  if(!t.id)t.id="t"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+  await API("/api/kb",{method:"POST",body:toRow(t)});
+  merge([t]);
+  return t;
+}
+async function remove(id){
+  if(!API)throw new Error("ยังไม่ได้เข้าสู่ระบบ");
+  await API("/api/kb/"+encodeURIComponent(PRE+id),{method:"DELETE"});
+  REMOTE=REMOTE.filter(x=>x.id!==id);
+}
+/* ใบสมัครจากคนนอก — เก็บเป็นคนละประเภท ยังไม่ใช่ช่างจนกว่าจะอนุมัติ */
+async function apply(app){
+  if(!API)throw new Error("ยังไม่ได้เข้าสู่ระบบ");
+  await API("/api/kb",{method:"POST",body:{
+    id:APRE+app.id, title:"ใบสมัครช่าง "+(app.name||""),
+    body:JSON.stringify(app),
+    keywords:[app.area,app.phone].filter(Boolean).join(" ").slice(0,390),
+    make:"__techapp__", model:"", enabled:false}});
+}
+async function pending(){
+  if(!API)return [];
+  try{
+    const d=await API("/api/kb");
+    return (d&&d.kb||[]).filter(r=>r.id&&r.id.indexOf(APRE)===0)
+      .map(r=>{ try{ return JSON.parse(r.body||"{}") }catch(e){ return null } })
+      .filter(Boolean);
+  }catch(e){ return [] }
+}
+
 g.Techs={CATS,MAIN_CATS,MAIN:MAIN_CATS,RULES,KEEP,SEED,VET,TRUST,
+  useApi,load,save,remove,apply,pending,
   estimate,jobBrief,match,inspectList,home,homeSet,nearHome,
   all,search,brief,line,km,pos,askPos,merge,apps,saveApps};
 })(window);

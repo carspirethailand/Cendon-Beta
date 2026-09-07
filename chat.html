@@ -4907,6 +4907,12 @@ let lang=LS.get("lang",(["th","en","ja","zh","de","es"].indexOf((window.spireLan
    ของสคริปต์ ซึ่งภาษาไม่เอาขึ้นไปไว้บน window เลเยอร์อื่น (หน้าเข้าสู่ระบบ
    และตัวช่วยตั้งค่า) จึงมองไม่เห็น แล้วขึ้นว่า "ระบบล็อกอินยังไม่พร้อม"
    ตลอดกาล — เปิด getter ให้อ่านค่าจริงได้ เหมือนที่ index.html ทำไว้แล้ว */
+
+/* ── ดึงช่างจากฐานข้อมูลตอนเปิดหน้า ──
+   ในโค้ดไม่มีช่างตัวอย่างเหลืออยู่แล้ว ถ้าหน้านี้ไม่ดึงเอง
+   AI จะตอบว่าไม่รู้จักช่างสักคน ทั้งที่ในฐานข้อมูลมีอยู่
+   ล้มเหลวก็ปล่อยเงียบ — ไม่รู้จักช่าง ยังคุยเรื่องอื่นได้ตามปกติ */
+try{ if(window.Techs&&Techs.load)Techs.load(BACKEND_URL) }catch(e){}
 try{
   window.BACKEND_URL=BACKEND_URL;
   Object.defineProperty(window,"spireAuth",{configurable:true,get:function(){return auth}});

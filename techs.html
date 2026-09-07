@@ -8,8 +8,178 @@
 <link rel="manifest" href="./manifest.webmanifest"/>
 <link rel="icon" href="./favicon.png"/>
 
-<link rel="stylesheet" href="./theme.css"/>
-<script src="./theme.js"></script>
+<!-- ══ ธีมฝังมาในไฟล์ ══
+     ตอนแรกแยกออกไปเป็น theme.css กับ theme.js เพื่อไม่ให้มีของสองชุด
+     แต่พอไฟล์ใดไฟล์หนึ่งไม่ได้ถูกอัปขึ้นเซิร์ฟเวอร์ ตัวแปรสีหายทั้งชุด
+     ปุ่มกลายเป็นขาวบนขาว ตัวหนังสือไล่สีกลายเป็นล่องหน — หน้าพังทั้งหน้า
+
+     หน้าเว็บที่พังเพราะไฟล์เดียวหาย คือหน้าเว็บที่ออกแบบมาเปราะเกินไป
+     จึงย้ายกลับมาฝังไว้ในไฟล์เดียวกัน หน้านี้ทำงานได้ด้วยตัวเองเสมอ
+     ไฟล์ theme.css/theme.js ยังอยู่สำหรับหน้าใหม่ ๆ ที่จะเขียนทีหลัง
+     ถ้าแก้ชุดสี ต้องแก้ทั้งสองที่ให้ตรงกัน -->
+<style>
+/* ── LIGHT — กระดาษอุ่น ── */
+html[data-theme="light"]{
+  --bg:#F7F4EE;--surface:#FFFFFF;--surface-2:#FBF9F4;--ink:#221F1A;--muted:#6C665A;--faint:#A6A093;
+  --line:rgba(40,34,18,.12);--line-2:rgba(40,34,18,.07);
+  --accent:#D9733C;--accent-2:#E8A23C;--accent-d:#B85A2A;
+  --grad:linear-gradient(135deg,#E8943C,#D95E3C);
+  --ok:#3E9E6E;--danger:#D64A4A;--radius:20px;
+  --shadow:0 18px 50px -22px rgba(60,40,15,.30);--shadow-sm:0 6px 20px -10px rgba(60,40,15,.20);
+  --wireframe-opacity:.15;--nav-bg:rgba(255,255,255,.86);--nav-link:#6C665A;
+  --gloss:.5;--gloss-card:.65;--edge-sh:rgba(40,34,18,.16);--el-cast:rgba(60,40,15,.34);--sk-glow:.14;
+
+  --c-bg0:#F4F1EB;--c-bg1:#FBF9F4;--c-bg2:#FFFFFF;
+  --c-aura1:rgba(232,148,60,.10);--c-aura2:rgba(120,150,200,.07);--c-aura3:rgba(200,150,90,.06);
+  --c-ink:#221F1A;--c-mut:#6C665A;--c-faint:#A6A093;
+  --c-glass:rgba(40,34,18,.035);--c-glass2:rgba(40,34,18,.06);
+  --c-line:rgba(40,34,18,.12);--c-line2:rgba(40,34,18,.07);
+  --c-grad:linear-gradient(135deg,#E8943C,#D95E3C);--c-acc:#D9733C;
+  --c-acc-soft:rgba(217,115,60,.14);
+  --c-user:linear-gradient(135deg,#E8943C,#D9553C);--c-ai-bubble:rgba(40,34,18,.045);
+  --pill-bg:rgba(255,255,255,.80);--sheet-bg:rgba(255,255,255,.95);
+  --star-op:0;--star-c:40,34,18;
+}
+
+/* ── DARK — ถ่านอุ่น ── */
+html[data-theme="dark"]{
+  --bg:#131316;--surface:#1D1D21;--surface-2:#26262C;--ink:#E7E7EA;--muted:#9B9BA1;--faint:#616168;
+  --line:rgba(255,255,255,.09);--line-2:rgba(255,255,255,.05);
+  --accent:#E8843C;--accent-2:#F0A93C;--accent-d:#C96A28;
+  --grad:linear-gradient(135deg,#F0A93C,#E85E3C);
+  --ok:#4BB07C;--danger:#E05A54;--radius:20px;
+  --shadow:0 18px 50px -22px rgba(0,0,0,.8);--shadow-sm:0 6px 20px -10px rgba(0,0,0,.5);
+  --wireframe-opacity:.18;--nav-bg:rgba(29,29,33,.92);--nav-link:#9B9BA1;
+  --gloss:.13;--gloss-card:.07;--edge-sh:rgba(0,0,0,.5);--el-cast:rgba(0,0,0,.75);--sk-glow:.07;
+
+  --c-bg0:#0C0C0F;--c-bg1:#141418;--c-bg2:#1B1B21;
+  --c-aura1:rgba(232,132,60,.12);--c-aura2:rgba(120,130,170,.08);--c-aura3:rgba(200,120,70,.07);
+  --c-ink:#E7E7EA;--c-mut:#9B9BA1;--c-faint:#616168;
+  --c-glass:rgba(255,255,255,.05);--c-glass2:rgba(255,255,255,.09);
+  --c-line:rgba(255,255,255,.09);--c-line2:rgba(255,255,255,.05);
+  --c-grad:linear-gradient(135deg,#F0A93C,#E85E3C);--c-acc:#E8843C;
+  --c-acc-soft:rgba(232,132,60,.15);
+  --c-user:linear-gradient(135deg,#F0A93C,#E8553C);--c-ai-bubble:rgba(255,255,255,.055);
+  --pill-bg:rgba(20,20,24,.66);--sheet-bg:rgba(20,20,24,.94);
+  --star-op:1;--star-c:255,255,255;
+}
+
+</style>
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   ธีมและสีหลัก — ตัวเดียวกับที่หน้าหลักใช้
+   ───────────────────────────────────────────────────────────────────
+   ผู้ใช้ตั้งค่าสองอย่างแยกกัน และหน้าใดก็ตามที่อ่านไม่ครบทั้งสอง
+   จะแสดงสีผิดทันที
+     spire_theme    โครงสีพื้นหลังและตัวหนังสือ  light | dark
+     spire_primary  สีหลักของปุ่มและไฮไลต์      รหัสสีหก หลัก
+
+   ต้องโหลดไฟล์นี้แบบไม่มี defer และวางไว้ใน <head> ก่อนอย่างอื่น
+   ไม่งั้นจะเห็นธีมตั้งต้นแวบหนึ่งก่อนสลับ ซึ่งน่ารำคาญกว่าไม่มีธีม
+   ═══════════════════════════════════════════════════════════════════ */
+(function(){
+"use strict";
+var D=document, TKEY="spire_theme", PKEY="spire_primary", DEF="#E8943C";
+
+/* ── โครงสี ── */
+var KEYS=["light","dark"];
+/* ธีมรุ่นเก่าที่เลิกใช้แล้ว ให้ตกลงมาที่โครงสีที่ใกล้ที่สุด
+   ไม่งั้นคนที่เคยตั้งไว้จะเปิดมาเจอสีผิดโดยไม่รู้ว่าทำไม
+   ตารางนี้ต้องตรงกับของหน้าหลักทุกตัว */
+var OLD={warm:"light",pearl:"light",emerald:"light",plant:"light",moss:"light",
+         carbon:"dark",night:"dark",midnight:"dark",cyber:"dark",
+         aurora:"dark",ocean:"dark",sunset:"dark",magma:"dark",
+         wire:"dark",grid:"light"};
+function readTheme(){
+  var v=null;
+  try{ v=JSON.parse(localStorage.getItem(TKEY)) }catch(e){}
+  if(typeof v!=="string"){ try{ v=JSON.parse(localStorage.getItem("spire_chatTheme")) }catch(e){} }
+  if(typeof v!=="string")return "light";
+  if(KEYS.indexOf(v)>=0)return v;
+  return OLD[v]||"light";
+}
+function applyTheme(k){
+  var el=D.documentElement;
+  /* ตั้งทั้งสองแอตทริบิวต์ให้เป็นค่าเดียวกัน เพราะสไตล์ของสองฝั่ง
+     (หน้าเว็บกับห้องแชต) อ้างคนละชื่อกัน */
+  el.setAttribute("data-theme",k);
+  el.setAttribute("data-ctheme",k);
+}
+
+/* ── สีหลัก ── */
+function hex2rgb(h){
+  h=String(h||"").trim().replace(/^#/,"");
+  if(h.length===3)h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+  if(!/^[0-9a-f]{6}$/i.test(h))return null;
+  return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];
+}
+function rgb2hex(r,g,b){
+  return "#"+[r,g,b].map(function(x){
+    return Math.max(0,Math.min(255,Math.round(x))).toString(16).padStart(2,"0")}).join("");
+}
+function rgb2hsl(r,g,b){
+  r/=255;g/=255;b/=255;
+  var mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn,h=0;
+  if(d){ h=mx===r?((g-b)/d+(g<b?6:0)):mx===g?((b-r)/d+2):((r-g)/d+4); h*=60 }
+  var l=(mx+mn)/2, s=d?d/(1-Math.abs(2*l-1)):0;
+  return [h,s,l];
+}
+function hsl2rgb(h,s,l){
+  h=((h%360)+360)%360;
+  var c=(1-Math.abs(2*l-1))*s, x=c*(1-Math.abs((h/60)%2-1)), m=l-c/2, t;
+  if(h<60)t=[c,x,0]; else if(h<120)t=[x,c,0]; else if(h<180)t=[0,c,x];
+  else if(h<240)t=[0,x,c]; else if(h<300)t=[x,0,c]; else t=[c,0,x];
+  return [(t[0]+m)*255,(t[1]+m)*255,(t[2]+m)*255];
+}
+function shift(hex,dl,dh){
+  var c=hex2rgb(hex); if(!c)return hex;
+  var a=rgb2hsl(c[0],c[1],c[2]), l=Math.max(0,Math.min(1,a[2]+dl));
+  return rgb2hex.apply(null,hsl2rgb(a[0]+(dh||0),a[1],l));
+}
+function readPrim(){
+  var v=null;
+  try{ v=JSON.parse(localStorage.getItem(PKEY)) }catch(e){}
+  return (typeof v==="string"&&hex2rgb(v))?v:DEF;
+}
+function applyPrim(raw){
+  var base=hex2rgb(raw)?raw:DEF;
+  var c=hex2rgb(base)||hex2rgb(DEF);
+  var soft=function(a){ return "rgba("+c[0]+","+c[1]+","+c[2]+","+a+")" };
+  var light=shift(base,.10,10), dark=shift(base,-.12,-6);
+  var st=D.documentElement.style, set=function(k,v){ st.setProperty(k,v) };
+  /* ชื่อตัวแปรของหน้าแดชบอร์ดกับห้องแชตไม่เหมือนกัน ตั้งให้ครบทั้งสองชุด
+     ตกไปแม้แต่ตัวเดียว หน้านั้นจะมีสีปุ่มไม่ตรงกับที่ผู้ใช้เลือกไว้ */
+  set("--accent",base); set("--accent-2",light); set("--accent-d",dark);
+  set("--grad","linear-gradient(135deg,"+light+","+dark+")");
+  set("--c-acc",base); set("--c-acc-soft",soft(.16));
+  set("--c-grad","linear-gradient(135deg,"+light+","+dark+")");
+  set("--c-user","linear-gradient(135deg,"+light+","+dark+")");
+  set("--c-aura1",soft(.12));
+  /* สีตัวหนังสือบนพื้นสีหลัก คำนวณจากความสว่างจริง ไม่ใช่เดา
+     สีหลักอ่อน ๆ อย่างสีทอง ถ้าใช้ตัวหนังสือขาวจะอ่านไม่ออก */
+  var lum=(0.299*c[0]+0.587*c[1]+0.114*c[2])/255;
+  set("--on-acc",lum>0.62?"#1A1204":"#ffffff");
+  try{
+    var mt=D.querySelector('meta[name="theme-color"]');
+    if(mt){
+      var cs=getComputedStyle(D.documentElement);
+      var bg=cs.getPropertyValue("--c-bg0").trim()||cs.getPropertyValue("--bg").trim();
+      if(bg)mt.setAttribute("content",bg);
+    }
+  }catch(e){}
+}
+
+function sync(){ applyTheme(readTheme()); applyPrim(readPrim()) }
+sync();
+/* ตั้งค่าจากอีกแท็บหนึ่ง ต้องมีผลกับแท็บนี้ด้วย
+   ไม่งั้นเปลี่ยนธีมในหน้าตั้งค่าแล้วกลับมาหน้านี้ยังเป็นสีเดิม */
+addEventListener("storage",function(e){
+  if(e.key===TKEY||e.key===PKEY||e.key==="spire_chatTheme")sync();
+});
+window.spireThemeSync=sync;
+})();
+
+</script>
 
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css"/>
@@ -380,6 +550,20 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
 .why span{font-size:12px;padding:6px 12px;border-radius:12px;
   background:var(--c-acc-soft);color:var(--accent)}
 
+/* ══ แถบผู้ดูแล — ขึ้นเฉพาะคนที่เซิร์ฟเวอร์ยอมให้จัดการช่าง ══
+   ใช้สีคนละโทนกับทั้งหน้า เพื่อให้เห็นชัดว่านี่ไม่ใช่ของที่ผู้ใช้ทั่วไปเห็น */
+.abar{display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap;
+  margin-top:var(--s8);padding:var(--s3) var(--s4);border-radius:18px;
+  background:color-mix(in srgb,var(--c-pro) 12%,var(--surface));
+  box-shadow:var(--e1)}
+.ab-t{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;
+  color:var(--c-pro);margin-right:var(--s2)}
+.ab-b{display:inline-flex;align-items:center;gap:6px;background:var(--surface);
+  border-radius:13px;padding:9px var(--s4);font-size:13px;color:var(--ink);
+  box-shadow:var(--e1);transition:transform .16s,box-shadow .16s}
+.ab-b:hover{transform:translateY(-2px);box-shadow:var(--e2)}
+.ab-b:active{transform:translateY(1px);box-shadow:var(--e-in)}
+
 /* ══ หมวด — สีประจำตัว ══ */
 .cats{display:flex;gap:var(--s2);overflow-x:auto;scrollbar-width:none;
   padding:var(--s8) var(--s6) var(--s2);margin:0 calc(var(--s6) * -1);
@@ -641,6 +825,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
     <div id="aiOut"></div>
   </div>
 
+  <div id="adminBar"></div>
   <div class="cats" id="cats"></div>
   <div class="catnote" id="catnote"></div>
 
@@ -695,9 +880,40 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
 
 <div class="toast" id="toast"><i class="ti ti-check"></i><span id="toastT"></span></div>
 
+<!-- Firebase — ใช้ชุดเดียวกับหน้าอื่นทั้งหมด -->
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="./techs.js"></script>
 <script>
 "use strict";
+
+/* ═══════════════════════════════════════════════════════════════════
+   ต่อกับฐานข้อมูลจริง — ไม่มีข้อมูลตัวอย่างเหลือแล้ว
+   ───────────────────────────────────────────────────────────────────
+   ช่างทุกคนบนหน้านี้มาจากฐานข้อมูล ถ้าฐานข้อมูลว่าง หน้านี้ก็ว่าง
+   ซึ่งถูกต้องแล้ว — หน้าที่ว่างเพราะยังไม่มีข้อมูล
+   ดีกว่าหน้าที่เต็มไปด้วยอู่ปลอมที่คนอาจโทรตามไปจริง
+
+   สิทธิ์: ใครที่อ่าน /api/kb ได้ คือคนที่จัดการช่างได้
+   ไม่ตั้งกฎเองในหน้าเว็บ เพราะกฎที่ตั้งในเบราว์เซอร์ไม่ใช่ความปลอดภัย
+   ปล่อยให้เซิร์ฟเวอร์เป็นคนตัดสิน แล้วหน้าเว็บแค่ทำตามคำตอบ
+   ═══════════════════════════════════════════════════════════════════ */
+const BACKEND_URL="https://spireonebackend.carspirethailand.workers.dev";
+const fbConfig={apiKey:"AIzaSyDDtvz4d4FRG_KOq5EQHmlDijU-x1FDZlQ",authDomain:"sp1p-82396.firebaseapp.com",databaseURL:"https://sp1p-82396-default-rtdb.firebaseio.com",projectId:"sp1p-82396",storageBucket:"sp1p-82396.appspot.com",messagingSenderId:"924479207020",appId:"1:924479207020:web:ec64428a61403e1ad48a49"};
+let auth=null, ME=null, CAN=false;   /* CAN = จัดการช่างได้ไหม */
+
+async function api(path,opts){
+  opts=opts||{};
+  if(!auth||!auth.currentUser)throw new Error("ยังไม่ได้เข้าสู่ระบบ");
+  const headers=Object.assign({"Authorization":"Bearer "+await auth.currentUser.getIdToken()},opts.headers||{});
+  if(opts.body)headers["Content-Type"]="application/json";
+  const r=await fetch(BACKEND_URL+path,{method:opts.method||"GET",headers,
+    body:opts.body?JSON.stringify(opts.body):undefined});
+  let d=null; try{ d=await r.json() }catch(e){}
+  if(!r.ok)throw new Error((d&&d.error)||("Error "+r.status));
+  return d;
+}
+
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money=n=>Number(n).toLocaleString("th-TH");
@@ -775,9 +991,19 @@ function run(){
   S.q=$("q").value.trim(); S.sort=$("sort").value;
   const l=Techs.search({q:S.q,cat:S.cat,here:S.here,sort:S.sort,mobile:S.mobile,verified:S.verified});
   $("count").innerHTML=`<b>${l.length}</b> คน`;
+  /* จอว่างมีสองแบบ และต้องแยกให้ออก
+     ฐานข้อมูลยังไม่มีใครเลย กับ มีคนแต่ไม่ตรงกับที่ค้น
+     ถ้าบอกเหมือนกันหมด คนจะพิมพ์หาซ้ำ ๆ ทั้งที่ไม่มีอะไรให้หาตั้งแต่ต้น */
+  const none=!Techs.all().length;
   $("list").innerHTML=l.length?l.map(card).join("")
+    :none?`<div class="empty" style="grid-column:1/-1"><i class="ti ti-database-off"></i>
+       <b>ยังไม่มีช่างในระบบ</b>
+       ช่างทุกคนมาจากฐานข้อมูลจริง ไม่มีข้อมูลตัวอย่างแล้ว<br>
+       ${CAN?"กด “เพิ่มช่าง” ด้านบนเพื่อใส่ข้อมูลเข้าไป"
+            :"ทีมงานกำลังทยอยรับช่างเข้าระบบ — สมัครเป็นช่างได้ที่ท้ายหน้า"}</div>`
     :`<div class="empty" style="grid-column:1/-1"><i class="ti ti-mood-empty"></i>
-       <b>ยังไม่มีช่างที่ตรงกับที่หาอยู่</b>
+       <b>ไม่มีช่างที่ตรงกับที่หาอยู่</b>
+       มีช่างในระบบ ${Techs.all().length} คน แต่ไม่มีใครตรงกับเงื่อนไขนี้<br>
        ลองพิมพ์อาการให้สั้นลง หรือเอาตัวกรองออกสักอัน</div>`;
   $("list").querySelectorAll(".pro").forEach(c=>c.onclick=()=>openTech(c.dataset.id));
 }
@@ -1244,13 +1470,175 @@ function submitApply(){
 /* ส่งขึ้นเซิร์ฟเวอร์ ถ้ายังไม่มีปลายทางก็เก็บไว้ในเครื่องรอส่งใหม่
    ไม่ขึ้นข้อความว่าล้มเหลว เพราะใบสมัครไม่ได้หายไปไหน */
 async function sendApply(app){
-  const url=(window.BACKEND_URL||localStorage.getItem("spire_backend")||"");
-  if(!url)return;
+  const done=()=>{ const a=Techs.apps().map(x=>x.id===app.id?Object.assign({},x,{sent:true}):x);
+                   Techs.saveApps(a) };
+  /* ทางที่หนึ่ง ปลายทางสาธารณะ ซึ่งคนที่ยังไม่ล็อกอินก็ส่งได้ */
   try{
-    const r=await fetch(url.replace(/\/$/,"")+"/api/tech/apply",
+    const r=await fetch(BACKEND_URL+"/api/tech/apply",
       {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(app)});
-    if(r.ok){ const a=Techs.apps().map(x=>x.id===app.id?Object.assign({},x,{sent:true}):x); Techs.saveApps(a) }
+    if(r.ok)return done();
   }catch(e){}
+  /* ทางที่สอง เข้าคลังกลางโดยตรง ใช้ได้เมื่อล็อกอินแล้ว */
+  try{ await Techs.apply(app); return done() }catch(e){}
+  /* ทั้งสองทางไม่ได้ ใบสมัครยังอยู่ในเครื่องรอส่งใหม่ ไม่หายไปไหน
+     จึงไม่ต้องขึ้นข้อความว่าล้มเหลวให้เขาตกใจ */
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   แผงผู้ดูแล — เพิ่มช่างเข้าฐานข้อมูลจริง
+   ───────────────────────────────────────────────────────────────────
+   ฟอร์มนี้ไม่มีเกณฑ์อะไรเลย ตั้งใจให้เป็นแบบนั้น เพราะมันคือทางสำหรับ
+   ทีมงานใส่ข้อมูลเข้าไปทดสอบ ไม่ใช่ทางสำหรับคนนอกสมัคร
+   คนนอกยังต้องผ่านสี่ด่านเหมือนเดิมผ่านปุ่ม "สมัครเป็นช่าง"
+
+   กรอกแค่ชื่อก็บันทึกได้ ที่เหลือเติมทีหลังได้ตลอด
+   เพราะการบังคับให้กรอกครบสิบช่องเพื่อทดสอบหนึ่งอย่าง คือการขวางงานตัวเอง
+   ═══════════════════════════════════════════════════════════════════ */
+function openAdmin(t){
+  t=t||{};
+  const ed=!!t.id;
+  $("pnT").textContent=ed?"แก้ข้อมูลช่าง":"เพิ่มช่าง (ผู้ดูแล)";
+  const CS=Techs.CATS.filter(c=>["body","ev","tyre","air","eng"].indexOf(c.id)>=0);
+  $("pnB").innerHTML=`
+    <div class="grp" style="margin-top:0">
+      <h4>${ed?"แก้ข้อมูล":"ใส่ข้อมูลเข้าฐานข้อมูลโดยตรง"}</h4>
+      <p style="font-size:13.5px;color:var(--muted);margin-bottom:16px">
+        ทางนี้ข้ามเกณฑ์ทั้งหมด กรอกแค่ชื่อก็บันทึกได้ ที่เหลือเติมทีหลังได้
+        — ใช้สำหรับทีมงานเท่านั้น คนนอกยังต้องผ่านสี่ด่านตามปกติ</p>
+      <div class="f"><label>ชื่อช่าง <em>*</em></label>
+        <input id="d-name" value="${esc(t.name||"")}" placeholder="ชื่อที่ลูกค้าจะเห็น"/></div>
+      <div class="two">
+        <div class="f"><label>ชื่อร้าน / อู่</label>
+          <input id="d-shop" value="${esc(t.shop||"")}"/></div>
+        <div class="f"><label>พื้นที่</label>
+          <input id="d-area" value="${esc(t.area||"")}" placeholder="เขต จังหวัด"/></div>
+      </div>
+      <div class="two">
+        <div class="f"><label>ละติจูด</label>
+          <input id="d-lat" inputmode="decimal" value="${t.lat!=null?t.lat:""}" placeholder="13.7563"/>
+          <div class="hint">ไม่ใส่ก็ได้ แต่จะไม่โผล่ในหมวดใกล้บ้าน</div></div>
+        <div class="f"><label>ลองจิจูด</label>
+          <input id="d-lng" inputmode="decimal" value="${t.lng!=null?t.lng:""}" placeholder="100.5018"/></div>
+      </div>
+      <div class="two">
+        <div class="f"><label>ราคาเริ่มต้น</label>
+          <input id="d-from" inputmode="numeric" value="${t.from||""}"/></div>
+        <div class="f"><label>ราคาสูงสุด</label>
+          <input id="d-to" inputmode="numeric" value="${t.to||""}"/></div>
+      </div>
+      <div class="two">
+        <div class="f"><label>ประสบการณ์ (ปี)</label>
+          <input id="d-years" inputmode="numeric" value="${t.years||""}"/></div>
+        <div class="f"><label>รับประกัน (วัน)</label>
+          <input id="d-warr" inputmode="numeric" value="${t.warranty||""}"/></div>
+      </div>
+      <div class="two">
+        <div class="f"><label>คะแนน</label>
+          <input id="d-rating" inputmode="decimal" value="${t.rating||""}" placeholder="4.8"/></div>
+        <div class="f"><label>ตอบกลับ (นาที)</label>
+          <input id="d-reply" inputmode="numeric" value="${t.reply||""}"/></div>
+      </div>
+      <div class="f"><label>งานที่รับ</label>
+        <div class="pick" id="d-cat">${CS.map(c=>
+          `<button type="button" data-c="${c.id}" class="${(t.cats||[]).indexOf(c.id)>=0?"on":""}">${esc(c.th)}</button>`).join("")}</div></div>
+      <div class="f"><label>สถานะ</label>
+        <div class="pick" id="d-flag">
+          <button type="button" data-f="verified" class="${t.verified?"on":""}">ตรวจสอบแล้ว</button>
+          <button type="button" data-f="mobile" class="${t.mobile?"on":""}">ออกนอกสถานที่</button>
+          <button type="button" data-f="urgent" class="${t.urgent?"on":""}">รับงานด่วน</button>
+        </div></div>
+      <div class="f"><label>ทักษะ <span class="hint">คั่นด้วยจุลภาค</span></label>
+        <input id="d-skills" value="${esc((t.skills||[]).join(", "))}" placeholder="แอร์ไม่เย็น, ล้างตู้แอร์"/></div>
+      <div class="f"><label>ยี่ห้อที่รับ <span class="hint">คั่นด้วยจุลภาค</span></label>
+        <input id="d-brands" value="${esc((t.brands||[]).join(", "))}" placeholder="ทุกยี่ห้อ"/></div>
+      <div class="f"><label>เกี่ยวกับช่าง</label>
+        <textarea id="d-about" placeholder="ถนัดอะไร มีเครื่องมืออะไร">${esc(t.about||"")}</textarea></div>
+    </div>
+    <div class="acts">
+      ${ed?`<button class="s" style="flex:0 0 auto;color:var(--danger);padding-inline:20px"
+        onclick="delTech('${t.id}')">ลบ</button>`:""}
+      <button class="p gloss" onclick="saveTech('${t.id||""}')"><span>${ed?"บันทึก":"เพิ่มเข้าระบบ"}</span></button>
+    </div>`;
+  ["d-cat","d-flag"].forEach(id=>$(id).querySelectorAll("button")
+    .forEach(b=>b.onclick=()=>b.classList.toggle("on")));
+  openSheet();
+}
+async function saveTech(id){
+  const v=x=>($("d-"+x)&&$("d-"+x).value||"").trim();
+  const n=x=>{ const f=parseFloat(v(x).replace(/[^\d.\-]/g,"")); return isNaN(f)?null:f };
+  const name=v("name");
+  if(name.length<2)return toast("ใส่ชื่อช่างก่อน","ti-alert-triangle");
+  const flags={};
+  $("d-flag").querySelectorAll("button.on").forEach(b=>flags[b.dataset.f]=true);
+  const list=x=>v(x).split(",").map(w=>w.trim()).filter(Boolean);
+  const t={
+    id:id||"", name, shop:v("shop")||name, area:v("area"),
+    lat:n("lat"), lng:n("lng"),
+    cats:[...$("d-cat").querySelectorAll("button.on")].map(b=>b.dataset.c),
+    /* ค่าตั้งต้นที่สมเหตุสมผล ไม่ใช่ศูนย์ เพราะช่างใหม่ที่คะแนนศูนย์
+       จะจมอยู่ท้ายรายการตลอดไปทั้งที่ยังไม่เคยมีใครให้คะแนน */
+    rating:n("rating")!=null?n("rating"):5,
+    jobs:0, years:n("years")||0,
+    from:n("from")||0, to:n("to")||0, reply:n("reply")||60,
+    verified:!!flags.verified, mobile:!!flags.mobile, urgent:!!flags.urgent,
+    brands:list("brands"), warranty:n("warr")||7,
+    skills:list("skills"), about:v("about")
+  };
+  try{
+    toast("กำลังบันทึก…","ti-loader");
+    await Techs.save(t);
+    closeSheet(); drawCats(); run(); adminBar();
+    toast("บันทึกลงฐานข้อมูลแล้ว","ti-check");
+  }catch(e){ toast("บันทึกไม่สำเร็จ: "+e.message,"ti-alert-triangle") }
+}
+async function delTech(id){
+  if(!confirm("ลบช่างคนนี้ออกจากฐานข้อมูล?"))return;
+  try{ await Techs.remove(id); closeSheet(); drawCats(); run(); adminBar();
+    toast("ลบแล้ว","ti-check") }
+  catch(e){ toast("ลบไม่สำเร็จ: "+e.message,"ti-alert-triangle") }
+}
+
+/* แถบเครื่องมือของผู้ดูแล — ขึ้นเฉพาะคนที่เซิร์ฟเวอร์ยอมให้อ่าน /api/kb */
+function adminBar(){
+  const host=$("adminBar"); if(!host)return;
+  if(!CAN){ host.innerHTML=""; return }
+  host.innerHTML=`<div class="abar">
+    <span class="ab-t"><i class="ti ti-shield-lock"></i> โหมดผู้ดูแล</span>
+    <button class="ab-b" onclick="openAdmin()"><i class="ti ti-plus"></i> เพิ่มช่าง</button>
+    <button class="ab-b" onclick="openPending()"><i class="ti ti-inbox"></i> ใบสมัคร</button>
+    <button class="ab-b" onclick="reload()"><i class="ti ti-refresh"></i> โหลดใหม่</button>
+  </div>`;
+}
+async function openPending(){
+  $("pnT").textContent="ใบสมัครที่รอตรวจ";
+  $("pnB").innerHTML=`<p style="color:var(--muted);font-size:14px">กำลังโหลด…</p>`;
+  openSheet();
+  const list=await Techs.pending();
+  $("pnB").innerHTML=list.length?`
+    <div class="grp" style="margin-top:0"><h4>${list.length} ใบ</h4>
+      ${list.map(a=>`<div class="stg" style="margin-bottom:12px">
+        <div class="sh"><b>${esc(a.name||"—")}</b><small>${esc(a.area||"")}</small></div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.7">
+          ${esc(a.shop||"")} · ${esc(a.phone||"")} · ${a.years||0} ปี ·
+          เริ่ม ฿${a.from||0} · รับประกัน ${a.warranty||0} วัน<br>${esc(a.about||"")}</div>
+        <div class="acts" style="position:static;background:none;padding:16px 0 0">
+          <button class="p gloss" onclick='approve(${JSON.stringify(a).replace(/'/g,"&#39;")})'>
+            <span>อนุมัติเป็นช่าง</span></button>
+        </div></div>`).join("")}</div>`
+    : `<p style="color:var(--muted);font-size:14px;padding:8px 0">ยังไม่มีใบสมัครเข้ามา</p>`;
+}
+/* อนุมัติ = เอาใบสมัครมาเปิดในฟอร์มผู้ดูแล ให้ตรวจและเติมข้อมูลก่อนบันทึก
+   ไม่อนุมัติแบบกดปุ่มเดียวจบ เพราะใบสมัครยังขาดพิกัดกับทักษะที่ต้องมีคนใส่ */
+function approve(a){
+  openAdmin({name:a.name,shop:a.shop,area:a.area,cats:a.cats||[],
+    from:a.from,years:a.years,warranty:a.warranty,about:a.about,
+    mobile:a.mobile,urgent:a.urgent});
+}
+async function reload(){
+  toast("กำลังโหลดจากฐานข้อมูล…","ti-loader");
+  await Techs.load(BACKEND_URL);
+  drawCats(); run();
+  toast("ช่างในระบบ "+Techs.all().length+" คน","ti-check");
 }
 
 /* ══ เริ่มทำงาน ══ */
@@ -1259,12 +1647,35 @@ async function sendApply(app){
   if(p.get("q"))$("q").value=p.get("q");
   if(p.get("cat"))S.cat=p.get("cat");
   S.here=Techs.home()||Techs.pos();
-  const url=(window.BACKEND_URL||localStorage.getItem("spire_backend")||"");
-  if(url)fetch(url.replace(/\/$/,"")+"/api/tech")
-    .then(r=>r.ok?r.json():null)
-    .then(d=>{ if(d&&d.techs&&d.techs.length){ Techs.merge(d.techs); drawCats(); run() } })
-    .catch(()=>{});
+  Techs.useApi(api);
   drawCats(); run(); syncBar();
+
+  /* ── ต่อฐานข้อมูล ──
+     ลองปลายทางสาธารณะก่อนโดยไม่ต้องล็อกอิน ถ้ายังไม่มีก็รอจนรู้ว่าใครเข้ามา
+     แล้วค่อยลองอ่านผ่านสิทธิ์ของเขา
+     ไม่บังคับให้ล็อกอินก่อนดูหน้า เพราะคนที่รถเสียไม่ควรต้องสมัครสมาชิกก่อนหาช่าง */
+  Techs.load(BACKEND_URL).then(()=>{ drawCats(); run() });
+
+  (function boot(){
+    if(typeof firebase==="undefined"||!firebase.initializeApp)
+      return setTimeout(boot,120);
+    try{
+      firebase.initializeApp(fbConfig);
+      auth=firebase.auth();
+      auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});
+      auth.onAuthStateChanged(async u=>{
+        ME=u||null; CAN=false;
+        if(u){
+          /* ถามเซิร์ฟเวอร์ว่าคนนี้อ่านคลังกลางได้ไหม
+             คำตอบนั้นคือคำตอบเดียวกับว่าเขาจัดการช่างได้ไหม
+             ไม่ตั้งกฎเองในหน้าเว็บ เพราะกฎในเบราว์เซอร์ไม่ใช่ความปลอดภัย */
+          try{ await api("/api/kb"); CAN=true }catch(e){ CAN=false }
+          if(CAN){ await Techs.load(BACKEND_URL); drawCats(); run() }
+        }
+        adminBar(); run();
+      });
+    }catch(e){ adminBar() }
+  })();
   /* วาดผลใหม่ระหว่างพิมพ์ แต่รอให้หยุดพิมพ์ก่อน
      ค้นทุกตัวอักษรจะทำให้รายการกระพริบจนอ่านไม่ทัน */
   let d=0;

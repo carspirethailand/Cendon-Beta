@@ -763,6 +763,21 @@ html[data-theme="dark"] .fmap .leaflet-tile-pane{filter:invert(1) hue-rotate(180
 @keyframes growy{from{transform:scaleY(0)}}
 @media(min-width:1024px){.dash{display:grid;grid-template-columns:420px minmax(0,1fr);gap:0 28px;align-items:start;padding:12px 32px 60px}
   .dhead,.dstats{grid-column:1}.dtabs,#dBody{grid-column:2}.dtabs{grid-row:1;margin-top:0}#dBody{grid-row:2/span 3}.fmap{height:380px}}
+/* ── ฟอร์มคำขอ: รถจากโรงรถ + หมุดล็อก ── */
+.carc{display:flex;align-items:center;gap:12px;padding:12px;border-radius:16px;background:var(--surface);box-shadow:0 0 0 1px var(--line-2)}
+.carc[hidden]{display:none}
+.carc .sq{width:40px;height:40px;font-size:20px;border-radius:13px;flex-shrink:0}
+.carc div{flex:1;min-width:0}.carc b{display:block;font-weight:600}.carc small{font-size:12px;color:var(--muted)}
+.pk2{height:200px;margin-bottom:8px}
+.pk2 .cross{transition:color .3s,transform .3s var(--spring)}
+.pk2.locked .cross{color:#16a34a;animation:none;transform:translate(-50%,-100%) scale(1.08)}
+.pk2.locked::after{content:"";position:absolute;inset:0;z-index:400;box-shadow:inset 0 0 0 2.5px #16a34a;border-radius:inherit;pointer-events:none}
+.locbar{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:16px;background:var(--surface)}
+.locbar .sq{width:34px;height:34px;font-size:17px;border-radius:11px;flex-shrink:0;transition:background .3s}
+.locbar div{flex:1;min-width:0}.locbar b{display:block;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.locbar small{font-size:11.5px;color:var(--muted)}
+.morebtn{display:flex;align-items:center;gap:6px;width:100%;padding:12px 4px;margin:-4px 0 8px;color:var(--accent);font-weight:600;font-size:14px}
+.morebtn small{color:var(--muted);font-weight:400;font-size:12px}
+.morebtn[hidden]{display:none}
 @media(max-width:360px){.qa{font-size:11.5px}.qa .sq{width:44px;height:44px;font-size:21px}.feat small{display:none}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
@@ -1353,29 +1368,96 @@ function segVal(id){const b=$(id)&&$(id).querySelector(".on");return b?b.dataset
 function wireSeg(id,cb){$(id).querySelectorAll("button").forEach(b=>b.onclick=()=>{$(id).querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));if(cb)cb(b.dataset.v)})}
 const garageCars=()=>ls.get("spire_garage",[]).map(c=>[c.name,c.year].filter(Boolean).join(" ")).filter(Boolean);
 /* ฟอร์มติดต่อชุดเดียว ใช้ทั้งขอราคาร้านเดียว หลายร้าน และเรียกด่วน — ช่องเดียวกัน จำค่าเดิมไว้ให้ */
+/* ═══ ฟอร์มคำขอชุดเดียว (ร้านเดียว / หลายร้าน / ด่วน / ประกาศ) ═══
+   ทำให้สบายที่สุด: รถมาจากโรงรถเอง ตำแหน่งปักหมุดเองจาก GPS แล้วล็อกไว้ ไม่ต้องพิมพ์ที่อยู่
+   อยากบอกเพิ่ม ("จอดใต้ต้นไม้") หรือแนบรูป ค่อยกดเปิดเพิ่มเอง */
+const RG={};
+async function revgeo(p){
+  const k=p.lat.toFixed(4)+","+p.lng.toFixed(4);if(RG[k])return RG[k];
+  try{const ac=new AbortController();setTimeout(()=>ac.abort(),4500);
+    const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=17&lat=${p.lat}&lon=${p.lng}&accept-language=${TH?"th":"en"}`,{signal:ac.signal});
+    const d=await r.json(),a=d.address||{};
+    const line=[a.house_number,a.road||a.pedestrian||a.footway,a.neighbourhood||a.quarter||a.village].filter(Boolean).join(" ");
+    const area=[a.suburb||a.city_district||a.district||a.town||a.municipality,a.city||a.province||a.state].filter(Boolean).join(" ");
+    return RG[k]={line:line||String(d.display_name||"").split(",").slice(0,2).join(",").trim(),area};
+  }catch(e){return {line:"",area:""}}
+}
 function contactForm(o){
-  const cars=garageCars(),prev=ls.get("spire_tech_contact",{});
-  return {
-    html:`<label class="fld"><span>รถ</span>${cars.length?segs("bCar",cars.map(c=>[c,c,"ti-car"]).concat([["__","คันอื่น"]]),cars[0]):""}<input class="inp" id="bCarX" placeholder="ยี่ห้อ รุ่น ปี" ${cars.length?"hidden":""}/></label>
-      ${o.noSym?"":`<label class="fld"><span>อาการ</span><textarea class="inp" id="bSym" placeholder="เช่น แอร์ไม่เย็นตอนรถติด">${esc(o.sym||"")}</textarea></label>`}
-      ${o.urgent?"":`<div class="fld"><span>ให้ซ่อมที่ไหน</span>${segs("bMode",(o.mobile?[["mobile","ให้ช่างมาหา","ti-truck"]]:[]).concat([["shop","เอารถเข้าอู่","ti-building-warehouse"]]),o.mobile?"mobile":"shop")}</div>
-      <div class="fld"><span>เมื่อไร</span>${segs("bWhen",[["วันนี้","วันนี้"],["พรุ่งนี้","พรุ่งนี้"],["__","เลือกเอง"]],"วันนี้")}<input class="inp" id="bWhenX" placeholder="เช่น เสาร์นี้ 10 โมง" hidden/></div>`}
-      <label class="fld"><span>เขต / จังหวัด</span><input class="inp" id="bArea" value="${esc(prev.area||"")}" placeholder="เช่น บางเขน กรุงเทพฯ"/></label>
-      <label class="fld"><span>${o.urgent?"จุดที่รถอยู่ / จุดสังเกต":"ที่อยู่"} <small>(ช่างเห็นหลังคุณยืนยันราคา)</small></span><input class="inp" id="bAddr" value="${esc(o.urgent?"":prev.address||"")}" placeholder="${o.urgent?"เช่น หน้าเซเว่น ซอย 5":"บ้านเลขที่ ซอย จุดสังเกต"}"/></label>
-      <label class="fld"><span>เบอร์โทร <small>(ช่างเห็นหลังคุณยืนยันราคา)</small></span><input class="inp" id="bPhone" type="tel" inputmode="tel" value="${esc(prev.phone||"")}" placeholder="08xxxxxxxx"/></label>`,
+  const G=(ls.get("spire_garage",[])||[]).filter(c=>c&&c.name),sel=ls.get("spire_selCar",null);
+  let ci=Math.max(0,G.findIndex(c=>c.id===sel));
+  const lab=c=>[c.name,c.year].filter(Boolean).join(" ");
+  const prev=ls.get("spire_tech_contact",{});
+  const L={pos:null,locked:false,line:"",area:"",photos:[],map:null};
+  const carCard=()=>{const c=G[ci];return `<span class="sq" style="--c1:var(--accent)"><i class="ti ti-car"></i></span><div><b class="nt">${esc(lab(c))}</b><small>${c.mileage?money(c.mileage)+" "+T("กม.","km")+" · ":""}${T("จากโรงรถของคุณ","From your garage")}</small></div><button type="button" class="lnk" id="bCarChg">${T("เปลี่ยน","Change")}</button>`};
+  const api2={
+    html:`${G.length?`<div class="fld"><span>${T("รถ","Car")}</span><div class="carc" id="bCarC">${carCard()}</div>
+        <div id="bCarPick" hidden>${segs("bCar",G.map((c,i)=>[String(i),lab(c),"ti-car"]).concat([["__",T("คันอื่น","Other car")]]),String(ci))}</div><input class="inp" id="bCarX" placeholder="${T("ยี่ห้อ รุ่น ปี","Make, model, year")}" hidden style="margin-top:8px"/></div>`
+        :`<label class="fld"><span>${T("รถ","Car")}</span><input class="inp" id="bCarX" placeholder="${T("ยี่ห้อ รุ่น ปี","Make, model, year")}"/></label>`}
+      ${o.noSym?"":`<label class="fld"><span>${T("อาการ","Symptom")}</span><textarea class="inp" id="bSym" placeholder="${T("เช่น แอร์ไม่เย็นตอนรถติด","e.g. air-con not cold in traffic")}">${esc(o.sym||"")}</textarea></label>`}
+      ${o.urgent?"":`<div class="fld"><span>${T("ให้ซ่อมที่ไหน","Where to repair")}</span>${segs("bMode",(o.mobile?[["mobile",T("ให้ช่างมาหา","Come to me"),"ti-truck"]]:[]).concat([["shop",T("เอารถเข้าอู่","At the garage"),"ti-building-warehouse"]]),o.mobile?"mobile":"shop")}</div>
+      <div class="fld"><span>${T("เมื่อไร","When")}</span>${segs("bWhen",[["วันนี้",T("วันนี้","Today")],["พรุ่งนี้",T("พรุ่งนี้","Tomorrow")],["__",T("เลือกเอง","Pick a time")]],"วันนี้")}<input class="inp" id="bWhenX" placeholder="${T("เช่น เสาร์นี้ 10 โมง","e.g. Saturday 10am")}" hidden/></div>`}
+      <div class="fld"><span>${T("ตำแหน่งรถ","Car location")}</span>
+        <div class="picker pk2" id="bMap"><div class="lm"></div><i class="ti ti-map-pin-filled cross"></i></div>
+        <div class="locbar e3"><span class="sq lk" id="bLockI" style="--c1:#64748b"><i class="ti ti-loader-2"></i></span><div><b id="bLocL">${T("กำลังหาตำแหน่งของคุณ…","Finding your location…")}</b><small id="bLocS"></small></div>
+          <button type="button" class="lnk" id="bLockB" hidden></button></div>
+        <button type="button" class="btn s w" id="bGps" style="margin-top:8px;min-height:44px"><i class="ti ti-current-location"></i> ${T("ใช้ตำแหน่งปัจจุบัน","Use my location")}</button></div>
+      <button type="button" class="morebtn" id="bMoreB"><i class="ti ti-plus"></i>${T("เพิ่มรายละเอียด หรือแนบรูป","Add details or photos")} <small>${T("ไม่บังคับ","optional")}</small></button>
+      <div id="bMore" hidden><label class="fld"><span>${T("รายละเอียดเพิ่มเติม","More details")}</span><input class="inp" id="bNote" maxlength="300" placeholder="${T("เช่น รถจอดอยู่ใต้ต้นไม้ ประตูบ้านสีเขียว","e.g. parked under the tree, green gate")}"/></label>
+        <div class="fld"><span>${T("รูปถ่าย (สูงสุด 3)","Photos (up to 3)")}</span><div class="docs" id="bPh"></div><input type="file" id="bFile" accept="image/*" hidden/></div></div>
+      <label class="fld"><span>${T("เบอร์โทร","Phone")} <small>(${T("ช่างเห็นหลังคุณยืนยันราคา","shown to the mechanic after you accept a quote")})</small></span><input class="inp" id="bPhone" type="tel" inputmode="tel" value="${esc(prev.phone||"")}" placeholder="08xxxxxxxx"/></label>`,
+    pos:()=>L.pos,
     mount(){
-      if(cars.length)wireSeg("bCar",v=>{$("bCarX").hidden=v!=="__";if(v==="__")$("bCarX").focus()});
+      if(G.length){
+        const chg=()=>{$("bCarPick").hidden=false;$("bCarC").hidden=true};
+        $("bCarChg").onclick=chg;
+        wireSeg("bCar",v=>{if(v==="__"){$("bCarX").hidden=false;$("bCarX").focus();return}ci=+v;$("bCarX").hidden=true;$("bCarC").innerHTML=carCard();$("bCarC").hidden=false;$("bCarPick").hidden=true;$("bCarChg").onclick=chg});
+      }
       if($("bMode"))wireSeg("bMode");
       if($("bWhen"))wireSeg("bWhen",v=>{$("bWhenX").hidden=v!=="__";if(v==="__")$("bWhenX").focus()});
+      $("bMoreB").onclick=()=>{$("bMore").hidden=false;$("bMoreB").hidden=true;$("bNote").focus()};
+      const drawPh=()=>{$("bPh").innerHTML=L.photos.map((d,i)=>`<div class="doc"><img src="${d}" alt=""/><button type="button" class="rm" data-i="${i}"><i class="ti ti-x"></i></button></div>`).join("")+(L.photos.length<3?`<button type="button" class="doc" id="bAddPh"><i class="ti ti-camera-plus"></i>${T("เพิ่มรูป","Add photo")}</button>`:"");
+        $("bPh").querySelectorAll(".rm").forEach(b=>b.onclick=()=>{L.photos.splice(+b.dataset.i,1);drawPh()});if($("bAddPh"))$("bAddPh").onclick=()=>{$("bFile").value="";$("bFile").click()}};
+      drawPh();
+      $("bFile").onchange=async()=>{const f=$("bFile").files[0];if(!f)return;try{L.photos.push(await shrink(f,1100));drawPh()}catch(e){$("err").textContent=e.message}};
+      /* ── หมุด: GPS → ล็อกทันที ── ล็อกแล้วแผนที่ลากไม่ได้ กันหมุดเลื่อนเพราะนิ้วโดนตอนเลื่อนหน้า */
+      const show=async()=>{
+        const p=L.pos;if(!p)return;
+        $("bLockI").innerHTML=`<i class="ti ${L.locked?"ti-lock":"ti-lock-open"}"></i>`;$("bLockI").style.setProperty("--c1",L.locked?"#16a34a":"#f59e0b");
+        $("bMap").classList.toggle("locked",L.locked);
+        $("bLockB").hidden=false;$("bLockB").textContent=L.locked?T("ย้ายหมุด","Move pin"):T("ล็อกตรงนี้","Lock here");
+        $("bLocS").textContent=(L.locked?T("ล็อกตำแหน่งจริงแล้ว · ","Exact location locked · "):T("เลื่อนแผนที่ให้หมุดตรงรถ · ","Drag the map under the pin · "))+p.lat.toFixed(5)+", "+p.lng.toFixed(5);
+        if(!L.line){$("bLocL").textContent=T("ตำแหน่งที่ปักไว้","Pinned location")}
+        const g=await revgeo(p);if(L.pos!==p)return;L.line=g.line;L.area=g.area;
+        $("bLocL").textContent=g.line||g.area||T("ตำแหน่งที่ปักไว้","Pinned location");
+      };
+      const lock=on=>{L.locked=on;const m=L.map;if(m){["dragging","touchZoom","doubleClickZoom","scrollWheelZoom"].forEach(h=>m[h]&&(on?m[h].disable():m[h].enable()))}show()};
+      const setPos=(p,lk)=>{L.pos={lat:+p.lat.toFixed(6),lng:+p.lng.toFixed(6)};L.line="";if(L.map)L.map.setView([p.lat,p.lng],17);lock(!!lk)};
+      if(window.L){
+        const c=HERE||{lat:13.7563,lng:100.5018};
+        L.map=window.L.map($("bMap").querySelector(".lm"),{zoomControl:false,attributionControl:false}).setView([c.lat,c.lng],HERE?16:11);
+        window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(L.map);
+        L.map.on("moveend",()=>{if(L.locked)return;const q=L.map.getCenter();L.pos={lat:+q.lat.toFixed(6),lng:+q.lng.toFixed(6)};L.line="";show()});
+        setTimeout(()=>L.map.invalidateSize(),420);
+      }else $("bMap").querySelector(".lm").innerHTML=`<div class="noleaf">${T("กดใช้ตำแหน่งปัจจุบัน","Tap “Use my location”")}</div>`;
+      $("bLockB").onclick=()=>lock(!L.locked);
+      const gps=async()=>{const p=await locate();if(p)setPos(p,true);else if(!L.pos){$("bLocL").textContent=T("ไม่ได้ตำแหน่ง — เลื่อนแผนที่แล้วกดล็อก","No GPS — drag the map and lock");if(L.map){const q=L.map.getCenter();L.pos={lat:q.lat,lng:q.lng};lock(false)}}};
+      $("bGps").onclick=e=>busy(e.currentTarget,gps);
+      gps();
     },
     read(){
-      const car=cars.length&&segVal("bCar")!=="__"?segVal("bCar"):$("bCarX").value.trim();
+      const car=G.length&&!$("bCarPick").hidden&&segVal("bCar")==="__"||(!G.length)?$("bCarX").value.trim():(c=>lab(c)+(c.mileage?" · "+money(c.mileage)+" กม.":""))(G[ci]);
+      if(!L.pos)throw new Error(T("ปักหมุดตำแหน่งรถก่อน","Pin your car's location first"));
+      if(!L.locked)throw new Error(T("กด “ล็อกตรงนี้” เพื่อยืนยันตำแหน่ง","Tap “Lock here” to confirm the location"));
       const when=o.urgent?"ด่วน — ตอนนี้ ("+new Date().toLocaleTimeString(LOC,{hour:"2-digit",minute:"2-digit"})+(TH?" น.)":")"):segVal("bWhen")==="__"?$("bWhenX").value.trim():segVal("bWhen");
+      const p=L.pos,coord=p.lat.toFixed(5)+", "+p.lng.toFixed(5);
+      const area=(L.area||(T("พิกัด ","Coords ")+coord)).slice(0,160);
+      const address=[L.line,"แผนที่ https://maps.google.com/?q="+p.lat+","+p.lng].filter(Boolean).join(" · ");
       const v={car,symptom:$("bSym")?$("bSym").value.trim():"",mode:o.urgent?"mobile":segVal("bMode"),requestedTime:when,
-        area:$("bArea").value.trim(),address:$("bAddr").value.trim(),phone:$("bPhone").value.replace(/[\s-]/g,"")};
-      ls.set("spire_tech_contact",{area:v.area,address:o.urgent?prev.address:v.address,phone:v.phone});
+        area,address,lat:p.lat,lng:p.lng,note:$("bNote").value.trim(),photos:L.photos.slice(),phone:$("bPhone").value.replace(/[\s-]/g,"")};
+      ls.set("spire_tech_contact",{phone:v.phone});
       return v;
     }};
+  return api2;
 }
 function book(t,sym){
   if(!U)return needLogin();
@@ -1461,27 +1543,25 @@ async function urgentCall(){
   const cf=contactForm({urgent:true});
   const pickList=()=>{
     let l=TECHS.filter(t=>t.mobile&&t.urgent);if(!l.length)l=TECHS.filter(t=>t.mobile);
-    return l.map(t=>({...t,dist:km(HERE,t)})).filter(t=>t.dist==null||t.dist<=Math.max(t.radius||30,30)).sort((a,b)=>(a.dist??1e9)-(b.dist??1e9)).slice(0,3);
+    const at=cf.pos()||HERE;
+    return l.map(t=>({...t,dist:km(at,t)})).filter(t=>t.dist==null||t.dist<=Math.max(t.radius||30,30)).sort((a,b)=>(a.dist??1e9)-(b.dist??1e9)).slice(0,3);
   };
   sheet({title:"",body:`
     <div class="urg">${WF}<h2><i class="ti ti-urgent"></i> เรียกช่างด่วน</h2><p>ส่งถึงร้านใกล้คุณที่สุดพร้อมกัน ร้านไหนตอบก่อน เลือกได้เลย</p></div>
     <div class="qk" id="uQk">${QK.map(q=>`<button type="button">${q}</button>`).join("")}</div>
     <label class="fld"><span>เกิดอะไรขึ้น</span><textarea class="inp" id="uSym" placeholder="เล่าสั้น ๆ"></textarea></label>
-    <p class="note" id="uLoc"><i class="ti ti-loader"></i>กำลังหาตำแหน่งของคุณ…</p>
-    <div id="uTo"></div>`+cf.html,
+    `+cf.html+`<div id="uTo"></div>`,
     foot:'<button class="btn w" id="uGo" style="background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff">เรียกช่างตอนนี้</button>',
     async mount(){
       cf.mount();
       $("uQk").querySelectorAll("button").forEach(b=>b.onclick=()=>{b.classList.toggle("on");$("uSym").value=[...$("uQk").querySelectorAll(".on")].map(x=>x.textContent).join(" ")+($("uSym").value.includes(" · ")?"":"")});
       const showTo=()=>{const l=pickList();$("uTo").innerHTML=l.length?`<div class="kv"><p><span>จะส่งถึง</span><b>${l.map(t=>esc(t.shop||t.name)+(t.dist!=null?` (${distTxt(t.dist)})`:"")).join("<br>")}</b></p></div>`:'<div class="err" style="animation:none">ตอนนี้ยังไม่มีช่างที่ออกนอกสถานที่ใกล้คุณ</div>'};
-      const p=HERE||await locate();
-      $("uLoc").innerHTML=p?`<i class="ti ti-map-pin-filled" style="color:var(--danger)"></i>ตำแหน่งของคุณ ${p.lat.toFixed(4)}, ${p.lng.toFixed(4)} <button class="lnk" id="uRe">หาใหม่</button>`:'<i class="ti ti-map-pin-off"></i>ไม่ได้ตำแหน่ง ใส่จุดสังเกตให้ละเอียด';
-      if($("uRe"))$("uRe").onclick=async()=>{await locate();showTo()};
       showTo();
+      /* หมุดขยับ → รายชื่อร้านที่จะส่งถึงคิดใหม่ตามตำแหน่งจริง */
+      new MutationObserver(showTo).observe($("bLocS"),{childList:true,characterData:true,subtree:true});
       $("uGo").onclick=e=>busy(e.currentTarget,async()=>{
         const l=pickList();if(!l.length)throw new Error("ตอนนี้ยังไม่มีช่างที่ออกนอกสถานที่ใกล้คุณ");
         const v=cf.read();v.symptom=$("uSym").value.trim();
-        if(HERE)v.address=(v.address?v.address+" · ":"")+`แผนที่ https://maps.google.com/?q=${HERE.lat},${HERE.lng}`;
         await sendGroup(l,v);
       });
     }});
@@ -1642,6 +1722,8 @@ function drawJob(j,push){
       <button class="ic" id="jChat" aria-label="แชต"><i class="ti ti-message-circle"></i>${unread?`<span class="dot">${unread}</span>`:""}</button></div>
     ${q?`<div class="quote"><span class="pill act">ราคา</span><div class="tot">฿${money(q.total)}</div><div class="ln"><span>ค่าแรง ${money(q.labor)}</span><span>อะไหล่ ${money(q.parts)}</span><span>เดินทาง ${money(q.travel)}</span></div><p>${esc(q.scope)}</p><p class="note" style="margin:8px 0 0"><i class="ti ti-calendar"></i>${esc(q.appointment)} · รับประกัน ${q.warranty} วัน</p></div>`:""}
     <div class="kv"><p><span>อาการ</span><b>${esc(j.symptom)}</b></p><p><span>ซ่อมที่</span><b>${j.mode==="mobile"?"ช่างมาหา":"ที่อู่"}</b></p><p><span>เวลา</span><b>${esc(j.requestedTime)}</b></p><p><span>พื้นที่</span><b>${esc(j.area)}</b></p>${j.address?`<p><span>ที่อยู่</span><b>${esc(j.address)}</b></p>`:""}</div>
+    ${j.note?`<div class="kv"><p><span>${T("ลูกค้าบอกเพิ่ม","Customer's note")}</span><b class="nt">${esc(j.note)}</b></p></div>`:""}
+    ${(j.photos||[]).length?`<div class="gal">${j.photos.map(u=>`<img src="${u}" data-z="${u}" alt=""/>`).join("")}</div>`:""}
     ${j.completion?`<div class="kv"><p><span>สรุปงาน</span><b>${esc(j.completion)}</b></p></div>`:""}
     ${j.dispute?`<div class="kv"><p><span>ปัญหา</span><b style="color:var(--danger)">${esc(j.dispute)}</b></p>${j.resolution?`<p><span>ผล</span><b>${esc(j.resolution)}</b></p>`:""}</div>`:""}
     ${j.review?`<div class="kv"><p><span>คะแนน</span><b>${"★".repeat(j.review.rating)}${"☆".repeat(5-j.review.rating)}</b></p><p><span>รีวิว</span><b>${esc(j.review.text)}</b></p></div>`:""}
@@ -1650,6 +1732,7 @@ function drawJob(j,push){
     foot:A.map(([k,l,c])=>`<button class="btn ${c}" data-a="${k}">${esc(l)}</button>`).join(""),
     mount(b,f){
       $("jChat").onclick=()=>openChat(j);
+      b.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z));
       [...b.querySelectorAll("[data-a]"),...f.querySelectorAll("[data-a]")].forEach(x=>x.onclick=()=>act(j,x.dataset.a,x));
     }});
   JOB={id:j.id,rev:j.revision,msgs:(j.messages||[]).length};
@@ -2109,6 +2192,8 @@ function openPost(p){
       <p><span>${T("ต้องการ","When")}</span><b class="nt">${esc(p.requestedTime)}</b></p><p><span>${T("ซ่อมที่","Where")}</span><b>${p.mode==="mobile"?T("ช่างไปหา","At the car"):T("เอาเข้าอู่","At the garage")}</b></p>
       <p><span>${T("ระยะทาง","Distance")}</span><b>${p.dist} ${T("กม.","km")} · <a class="lnk" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}">${T("นำทาง","Directions")}</a></b></p>
       <p><span>${T("ประกาศเมื่อ","Posted")}</span><b>${ago(p.createdAt)}</b></p></div>
+    ${p.note?`<div class="kv"><p><span>${T("ลูกค้าบอกเพิ่ม","Customer's note")}</span><b class="nt">${esc(p.note)}</b></p></div>`:""}
+    ${p.photos?`<div class="gal" id="oGal"><div class="ph skel" style="height:190px"></div></div>`:""}
     ${p.mine?`<p class="note"><i class="ti ti-info-circle"></i>${T("คุณเสนอไปแล้ว ฿","You quoted ฿")}${money(p.mine.total)} — ${T("ส่งใหม่เพื่อแก้ราคา","send again to update")}</p>`:""}
     <p class="h4" style="margin-top:6px">${T("เสนอราคา","Your quote")}</p>
     <div class="two"><label class="fld"><span>${T("ค่าแรง","Labour")}</span><input class="inp" id="oL" type="number" inputmode="decimal" placeholder="0"/></label><label class="fld"><span>${T("อะไหล่","Parts")}</span><input class="inp" id="oP" type="number" inputmode="decimal" placeholder="0"/></label></div>
@@ -2117,7 +2202,9 @@ function openPost(p){
     <div class="two"><label class="fld"><span>${T("ไปถึง / นัด","Arrival / appointment")}</span><input class="inp" id="oA" placeholder="${T("เช่น 30 นาที","e.g. 30 min")}"/></label><label class="fld"><span>${T("รับประกัน (วัน)","Warranty (days)")}</span><input class="inp" id="oW" type="number" value="30"/></label></div>
     <p class="note"><i class="ti ti-lock"></i>${T("เบอร์และที่อยู่ลูกค้าเปิดเมื่อลูกค้าเลือกคุณ","Customer's phone and address unlock when they pick you")}</p>`,
     foot:`<button class="btn p w" id="oGo">${T("ส่งราคา","Send quote")} <b id="oSum"></b></button>`,
-    mount(){const sum=()=>{$("oSum").textContent=" ฿"+money((+$("oL").value||0)+(+$("oP").value||0)+(+$("oT").value||0))};["oL","oP","oT"].forEach(k=>$(k).oninput=sum);sum();
+    mount(){
+      if(p.photos)api("/api/tech/posts/"+p.id).then(d=>{const g=$("oGal");if(!g)return;g.innerHTML=(d.post.photos||[]).map(u=>`<img src="${u}" data-z="${u}" alt=""/>`).join("");g.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z))}).catch(()=>{});
+      const sum=()=>{$("oSum").textContent=" ฿"+money((+$("oL").value||0)+(+$("oP").value||0)+(+$("oT").value||0))};["oL","oP","oT"].forEach(k=>$(k).oninput=sum);sum();
       $("oGo").onclick=e=>busy(e.currentTarget,async()=>{
         await api(`/api/tech/posts/${p.id}/offer`,{body:{labor:+$("oL").value||0,parts:+$("oP").value||0,travel:+$("oT").value||0,scope:$("oS").value.trim(),appointment:$("oA").value.trim(),warranty:+$("oW").value||0}});
         closeSheet();toast(T("ส่งราคาแล้ว รอลูกค้าเลือก","Quote sent — waiting for the customer"));refreshJobs();if(DT==="find")tabFind();
@@ -2211,21 +2298,16 @@ function stopAlerts(){clearTimeout(alertT)}
 /* ═══ ลูกค้า: ประกาศหาช่าง ═══ */
 function openPostForm(sym,cat){
   if(!U)return needLogin();
-  let pos=HERE,gps=!!HERE;cat=cat||catsOf(sym)[0]||"";
+  cat=cat||catsOf(sym)[0]||"";
   const cf=contactForm({sym:sym??$("q").value.trim(),mobile:true});
   sheet({title:T("ประกาศหาช่าง","Post a job"),body:`
     <p class="note"><i class="ti ti-speakerphone"></i>${T("ช่างรอบตัวจะเห็นหมุดของคุณบนแผนที่ แล้วเสนอราคาแข่งกัน คุณเลือกเองว่าจะใช้ใคร","Nearby mechanics see your pin and send competing quotes — you choose")}</p>
-    <div class="picker" id="pMap"></div><p class="coord" id="pXY"></p>
-    <button class="btn s w" id="pGps" style="margin-bottom:14px"><i class="ti ti-current-location"></i> ${T("ใช้ตำแหน่งปัจจุบัน","Use my location")}</button>
     <div class="fld"><span>${T("หมวดงาน","Category")}</span>${segs("pCat",[["",T("ไม่แน่ใจ","Not sure")],...["air","eng","tyre","ev","body"].map(k=>[k,CAT[k].th])],cat)}</div>`+cf.html,
     foot:`<button class="btn p w" id="pGo"><i class="ti ti-speakerphone"></i> ${T("ประกาศเลย","Post now")}</button>`,
     mount(){cf.mount();wireSeg("pCat");
-      const pk=picker($("pMap"),pos,p=>{pos=p;$("pXY").textContent=p.lat.toFixed(5)+", "+p.lng.toFixed(5)});
-      $("pGps").onclick=e=>busy(e.currentTarget,async()=>{const p=await locate();if(p){pk.set(p);gps=true}});
       $("pGo").onclick=e=>busy(e.currentTarget,async()=>{
-        if(!window.L&&!gps)throw new Error(T("กดใช้ตำแหน่งปัจจุบันก่อน","Tap “Use my location” first"));
         const id=crypto.randomUUID(),v=cf.read();
-        await api("/api/tech/posts",{body:{id,...v,cat:segVal("pCat"),lat:pos.lat,lng:pos.lng}});
+        await api("/api/tech/posts",{body:{id,...v,cat:segVal("pCat")}});
         toast(T("ประกาศแล้ว รอช่างเสนอราคา","Posted — waiting for quotes"));await refreshJobs();openPostView(id);
       });
     }});

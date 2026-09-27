@@ -243,7 +243,7 @@ html[data-theme="dark"] .e3{box-shadow:inset 0 1px 0 rgba(255,255,255,var(--glos
 .dot[hidden]{display:none}
 
 /* ── แถบบน ── */
-.top{position:sticky;top:0;z-index:500;padding:calc(env(safe-area-inset-top) + 10px) 16px 10px;background:linear-gradient(var(--bg) 70%,transparent)}
+.top{position:sticky;top:0;z-index:500;padding:calc(env(safe-area-inset-top) + 10px) 16px 10px;background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:blur(16px) saturate(1.4);backdrop-filter:blur(16px) saturate(1.4)}
 .bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;max-width:1180px;margin:0 auto}
 .brand{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
 .brand svg{width:24px;height:28px;color:#E8943C;flex-shrink:0;filter:drop-shadow(0 3px 6px rgba(232,148,60,.35))}
@@ -253,7 +253,7 @@ html[data-theme="dark"] .e3{box-shadow:inset 0 1px 0 rgba(255,255,255,var(--glos
 .tabs button{position:relative;z-index:1;height:36px;border-radius:11px;font-size:13.5px;font-weight:600;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:5px;transition:color .25s}
 .tabs button.on{color:var(--on-acc,#fff)}
 .tabs .knob{position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);border-radius:11px;background:var(--grad);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 6px 14px -6px var(--accent);transition:transform .45s var(--spring)}
-.tabs.map .knob{transform:translateX(100%)}
+.tabs.right .knob{transform:translateX(100%)}
 .view{position:relative;z-index:1;animation:fadeup .4s var(--ease)}
 .view[hidden]{display:none}
 
@@ -633,6 +633,36 @@ textarea.inp{min-height:92px;resize:vertical}
   .chat{left:auto;width:500px;box-shadow:-10px 0 40px -20px rgba(0,0,0,.4)}
   .carousel{justify-content:safe center}
 }
+/* ── แผนที่: แถบบนลอยแถวเดียว ทับบนแผนที่เต็มจอ ── */
+body.onmap .top{position:fixed;left:0;right:0;background:none;padding-bottom:0}
+body.onmap .brand{display:none}
+body.onmap .bar{flex-wrap:nowrap}
+body.onmap .tabs{order:0;flex:1 1 auto;max-width:none;margin:0;background:var(--surface);box-shadow:0 8px 22px -10px rgba(0,0,0,.55),0 0 0 1px var(--line-2)}
+body.onmap .ic{box-shadow:0 8px 22px -10px rgba(0,0,0,.55),0 0 0 1px var(--line-2)}
+body.onmap .mapv{top:0}
+body.onmap .mfilt{top:calc(var(--mtop,70px) + 6px)}
+
+/* ── มือถือ: ให้พื้นที่หายใจ ── ปุ่มหมวดไม่มีกล่องครอบ (แบบ Grab) ไอคอนใหญ่ ชื่อขึ้นสองบรรทัดได้
+   กล่องเรียกด่วนเต็มแถว อีกสองกล่องแบ่งครึ่ง */
+@media(max-width:639px){
+  .top{padding-top:calc(env(safe-area-inset-top) + 8px)}
+  .tabs{margin-top:10px;max-width:none}
+  .tabs button{height:38px}
+  .greet{font-size:28px}
+  .hello{padding:4px 2px 14px}
+  .grid{gap:16px 4px;margin-top:20px}
+  .qa,html .qa.e3,html[data-theme] .qa.e3{background:none;box-shadow:none;padding:2px 0;gap:8px;font-size:12px;font-weight:500;line-height:1.25}
+  .qa::after,.qa .deco{display:none}
+  .qa .sq{width:58px;height:58px;font-size:27px;border-radius:19px}
+  .qa span:last-child{white-space:normal;text-align:center;max-width:80px}
+  .qa.on{box-shadow:none}.qa.on .sq{outline:2.5px solid var(--c1);outline-offset:3px}
+  .bento{grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:10px;margin-top:22px}
+  .feat.big{grid-column:1/-1;grid-row:auto;flex-direction:row;align-items:center;gap:14px;min-height:0;padding:16px 18px}
+  .feat.big b{font-size:19px}
+  .feat.big .pulse{top:50%;margin-top:-27px}
+  .feat{min-height:124px;padding:14px}
+  .feat b{font-size:15px}
+}
 @media(max-width:360px){.qa{font-size:11.5px}.qa .sq{width:44px;height:44px;font-size:21px}.feat small{display:none}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
@@ -658,7 +688,7 @@ textarea.inp{min-height:92px;resize:vertical}
     <div class="staff" id="staff" hidden></div>
     <label class="search e3" id="sbox">
       <i class="ti ti-search"></i>
-      <input id="q" type="search" autocomplete="off" enterkeyhint="search" data-t-ph="รถเป็นอะไร? พิมพ์อาการ หรือชื่ออู่|What's wrong with your car? Symptom or shop"/>
+      <input id="q" type="search" autocomplete="off" enterkeyhint="search" data-t-ph="พิมพ์อาการ หรือชื่ออู่|Symptom or shop name"/>
       <button class="x" id="qx" type="button" aria-label="Clear"><i class="ti ti-x"></i></button>
       <button class="ai sq" id="qAi" type="button"><i class="ti ti-sparkles"></i><span>AI</span></button>
     </label>
@@ -888,7 +918,7 @@ const CATS=[
   {id:"all", th:"ทั้งหมด",     ic:"ti-apps"},
   {id:"air", th:"แอร์",        ic:"ti-air-conditioning", c:"#2f9bd8", c2:"#62B6DE"},
   {id:"eng", th:"เครื่องยนต์",  ic:"ti-engine",           c:"#e0673a", c2:"#E8A23C"},
-  {id:"tyre",th:"ยาง/ช่วงล่าง", ic:"ti-tire",             c:"#4b5563", c2:"#9ca3af"},
+  {id:"tyre",th:"ยาง & ช่วงล่าง", ic:"ti-steering-wheel",             c:"#4b5563", c2:"#9ca3af"},
   {id:"ev",  th:"ไฟฟ้า/EV",    ic:"ti-bolt",             c:"#22a06b", c2:"#5BC28C"},
   {id:"body",th:"ตัวถัง/สี",    ic:"ti-spray",            c:"#9B5DE0", c2:"#C470DB"},
   {id:"mobile",th:"มาถึงที่",   ic:"ti-truck",            c:"#0d9488", c2:"#2dd4bf"},
@@ -986,14 +1016,18 @@ function zoom(src){const z=document.createElement("div");z.className="zoom";z.in
 let VIEW="menu";
 function setView(v,noHist){
   VIEW=v;
-  $("tabs").classList.toggle("map",v==="map");
+  $("tabs").classList.toggle("right",v==="map");
   $("tabs").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));
   $("vMenu").hidden=v!=="menu";$("vMap").hidden=v!=="map";
+  /* หน้าแผนที่ใช้แถบบนแบบลอยแถวเดียว (ย้อน · สลับ · งาน · บัญชี)
+     ต้องเลื่อนหน้ากลับบนสุดก่อน ไม่งั้นแถบบนที่ติดหนึบจะค้างตำแหน่งเดิมของเมนูแล้วซ้อนกัน */
+  document.body.classList.toggle("onmap",v==="map");
+  window.scrollTo(0,0);
   if(v==="map"){
     document.documentElement.style.setProperty("--mtop",$("top").offsetHeight+"px");
     if(!MAP)initMap();else{MAP.invalidateSize();drawPins(true)}
     renderCarousel();
-  }else window.scrollTo({top:0});
+  }
   if(!noHist)try{const u=new URL(location.href);if(v==="map")u.searchParams.set("view","map");else u.searchParams.delete("view");history.replaceState(history.state,"",u)}catch(e){}
 }
 $("tabs").querySelectorAll("button").forEach(b=>b.onclick=()=>setView(b.dataset.v));
@@ -1034,7 +1068,8 @@ function focusCard(id){
   const c=$("carousel").querySelector(`[data-id="${CSS.escape(id)}"]`);
   $("carousel").querySelectorAll(".card").forEach(x=>x.classList.toggle("hl",x===c));
   document.querySelectorAll(".pin").forEach(p=>p.classList.toggle("hl",p.dataset.pin===id));
-  if(c)c.scrollIntoView({behavior:"smooth",inline:"center",block:"nearest"});
+  /* เลื่อนเฉพาะแถบการ์ด — scrollIntoView จะลากทั้งหน้าไปด้วยแล้วแถบบนเพี้ยน */
+  if(c){const box=$("carousel");box.scrollTo({left:c.offsetLeft-(box.clientWidth-c.clientWidth)/2,behavior:"smooth"})}
 }
 function locate(btn){
   return new Promise(res=>{

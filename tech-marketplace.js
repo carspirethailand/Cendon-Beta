@@ -2,6 +2,11 @@
 (function(){
   'use strict';
   let me=null, selectedJob=null, lastFocus=null, testList=[], requestId=null;
+  /* แชตสด — ถามเซิร์ฟเวอร์เฉพาะข้อความที่ใหม่กว่าที่เห็นแล้ว ทุกสามวินาทีตอนเปิดใบงานอยู่
+     ไม่ใช้ WebSocket เพราะ Worker ธรรมดาถือการเชื่อมต่อค้างไว้ไม่ได้
+     สามวินาทีเร็วพอให้รู้สึกว่าคุยกันสด และถูกพอที่จะไม่เปลืองโควตา */
+  let live=null;
+  function stopLive(){if(live){clearTimeout(live.timer);live=null;}}
   const statusNames={requested:'รอช่างเสนอราคา',quoted:'รอยืนยันราคา',accepted:'ยืนยันนัดแล้ว',enroute:'ช่างกำลังเดินทาง',working:'กำลังซ่อม',done:'รอลูกค้าตรวจงาน',completed:'เสร็จสมบูรณ์',cancelled:'ยกเลิกแล้ว',disputed:'แจ้งปัญหาแล้ว'};
   const checkNames={identity:'ตรวจตัวตนและชื่อเจ้าของบัญชี',phone:'โทรยืนยันเบอร์ที่ติดต่อได้',portfolio:'ตรวจผลงานจริงอย่างน้อย 3 งาน',skills:'สัมภาษณ์ทักษะหรือสอบทานใบรับรอง (EV ต้องมีทักษะไฟแรงสูง)',equipment:'ตรวจอู่หรือเครื่องมือช่างนอกสถานที่',terms:'ยืนยันราคา ขอบเขตบริการ และเงื่อนไขรับประกัน'};
   const date=x=>new Date(x).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'});
@@ -11,7 +16,8 @@
   const errorBox='<p class="market-error" id="marketError" role="alert"></p>';
   function error(e){const el=$('marketError');if(el){el.textContent=e.message||String(e);el.scrollIntoView({block:'nearest'})}else toast(e.message||String(e),'ti-alert-triangle');}
   function panel(title,html){
-    lastFocus=document.activeElement;
+    stopLive();
+    if(!$('sheet').classList.contains('on'))lastFocus=document.activeElement;
     $('pnT').textContent=title; $('pnB').innerHTML=html;
     $('sheet').classList.add('on'); document.body.style.overflow='hidden';
     const dialog=$('sheet').querySelector('.pn')||$('pnB').parentElement;
@@ -19,7 +25,7 @@
     requestAnimationFrame(()=>{const el=$('pnB').querySelector('input,textarea,button,a'); if(el)el.focus({preventScroll:true});});
   }
   const oldClose=closeSheet;
-  closeSheet=function(){oldClose();selectedJob=null;lastFocus?.focus?.({preventScroll:true});};
+  closeSheet=function(){stopLive();oldClose();selectedJob=null;lastFocus?.focus?.({preventScroll:true});};
   document.addEventListener('keydown',e=>{
     if(e.key!=='Tab'||!$('sheet').classList.contains('on'))return;
     const items=[...$('sheet').querySelectorAll('button:not(:disabled),a[href],input:not(:disabled),select,textarea')].filter(x=>x.getClientRects().length);
@@ -50,7 +56,19 @@
     $('marketAuth').textContent=auth?.currentUser?'บัญชีของฉัน':'เข้าสู่ระบบ';
     if(auth?.currentUser){try{me=await api('/api/tech/me');CAN=me.admin;}catch{CAN=false;}}
     else CAN=false;
-    adminBar();run();
+    badge();adminBar();run();
+  }
+  /* ตัวเลขบนปุ่ม "งานของฉัน" — ยังไม่มี SMS แจ้งเตือน ช่างจึงต้องเห็นจากตรงนี้ว่ามีลูกค้ารออยู่
+     ถามใหม่ทุกนาทีตอนเปิดหน้าไว้ เบากว่าแชตมาก เพราะแค่นับ */
+  let badgeTimer=0;
+  function badge(){
+    const b=document.querySelector('.market-nav button');if(!b)return;
+    let el=b.querySelector('.nav-badge');
+    const n=me?.attention||0;
+    if(n&&!el){el=document.createElement('span');el.className='nav-badge';b.appendChild(el);}
+    if(el){el.textContent=n;el.hidden=!n;}
+    clearTimeout(badgeTimer);
+    if(auth?.currentUser)badgeTimer=setTimeout(async()=>{if(!document.hidden)try{me=await api('/api/tech/me');}catch{}badge();},60000);
   }
   function findTech(id){return [...Techs.all(),...testList].find(x=>x.id===id);}
   openTech=function(id){
@@ -84,7 +102,7 @@
     if(!await requireMe())return;
     panel(all?'งานทั้งหมด / ผู้ดูแล':'งานของฉัน',`<div class="market-empty"><p>กำลังโหลดใบงาน…</p></div>${errorBox}`);
     const result=await api('/api/tech/jobs'+(all?'?all=1':''));
-    $('pnB').innerHTML=`<div class="market-section-head"><p>คำขอ นัดหมาย และประวัติงาน</p>${button('รีเฟรช','refresh')}</div>${result.jobs.length?result.jobs.map(j=>`<button class="market-job" data-job="${j.id}"><span class="market-job-state">${j.test?'ทดสอบ · ':''}${statusNames[j.status]}</span><strong>${esc(j.techName)}</strong><span>${esc(j.symptom)}</span><small>${esc(j.car)} · ${date(j.createdAt)}</small><i class="ti ti-arrow-up-right"></i></button>`).join(''):'<div class="market-empty"><i class="ti ti-clipboard-text"></i><h3>เริ่มใบงานแรกของคุณ</h3><p>เลือกช่างและส่งอาการเพื่อขอราคา เมื่อช่างตอบ คุณจะพบใบเสนอราคาและข้อความที่นี่</p></div>'}${errorBox}`;
+    $('pnB').innerHTML=`<div class="market-section-head"><p>คำขอ นัดหมาย และประวัติงาน</p>${button('รีเฟรช','refresh')}</div>${result.jobs.length?result.jobs.map(j=>`<button class="market-job" data-job="${j.id}"><span class="market-job-state">${j.test?'ทดสอบ · ':''}${statusNames[j.status]}${j.side==='technician'?' · งานที่ลูกค้าส่งมา':''}${j.needsMe?' · <em class="job-wait">รอคุณ</em>':''}</span>${j.unread?`<span class="job-unread">${j.unread} ข้อความใหม่</span>`:''}<strong>${esc(j.techName)}</strong><span>${esc(j.symptom)}</span><small>${esc(j.car)} · ${date(j.createdAt)}</small><i class="ti ti-arrow-up-right"></i></button>`).join(''):'<div class="market-empty"><i class="ti ti-clipboard-text"></i><h3>เริ่มใบงานแรกของคุณ</h3><p>เลือกช่างและส่งอาการเพื่อขอราคา เมื่อช่างตอบ คุณจะพบใบเสนอราคาและข้อความที่นี่</p></div>'}${errorBox}`;
     $('pnB').querySelectorAll('[data-job]').forEach(b=>b.onclick=()=>task(()=>job(b.dataset.job)));
     actions({refresh:()=>inbox(all)});
   }
@@ -103,20 +121,71 @@
     if((customer||tech)&&['requested','quoted','accepted','enroute'].includes(s))controls+=button('ยกเลิกงาน','cancel');
     if((customer||tech)&&['accepted','enroute','working','done','completed'].includes(s))controls+=button('แจ้งปัญหา','dispute');
     if(me?.admin&&s==='disputed')controls+=button('บันทึกผลการช่วยเหลือ','resolve');
-    panel('ใบงาน '+id.slice(0,8),`<div class="market-section-head"><span class="market-job-state">${j.test?'งานทดสอบ · ':''}${statusNames[s]}</span>${button('รีเฟรช','refresh')}</div><h2>${esc(j.techName)}</h2><p>${esc(j.car)}</p><p class="market-copy">${esc(j.symptom)}</p><div class="market-facts"><p><span>บริการ</span><strong>${j.mode==='mobile'?'นอกสถานที่':'ที่อู่'}</strong></p><p><span>พื้นที่ / เวลาที่ขอ</span><strong>${esc(j.area)}<br>${esc(j.requestedTime)}</strong></p>${j.address?`<p><span>ที่อยู่ลูกค้า</span><strong>${esc(j.address)}</strong></p>`:''}</div>
+    panel('ใบงาน '+id.slice(0,8),`<div class="market-section-head"><span class="market-job-state">${j.test?'งานทดสอบ · ':''}${statusNames[s]}</span><span class="head-btns">${button('<i class="ti ti-message-circle"></i> แชต'+(j.messages.length?' ('+j.messages.length+')':''),'toChat')}${button('รีเฟรช','refresh')}</span></div><h2>${esc(j.techName)}</h2><p>${esc(j.car)}</p><p class="market-copy">${esc(j.symptom)}</p><div class="market-facts"><p><span>บริการ</span><strong>${j.mode==='mobile'?'นอกสถานที่':'ที่อู่'}</strong></p><p><span>พื้นที่ / เวลาที่ขอ</span><strong>${esc(j.area)}<br>${esc(j.requestedTime)}</strong></p>${j.address?`<p><span>ที่อยู่ลูกค้า</span><strong>${esc(j.address)}</strong></p>`:''}</div>
       ${q?`<section class="market-quote"><p class="market-kicker">ใบเสนอราคา</p><strong class="market-total">฿${money(q.total)}</strong><div class="market-price-lines"><span>ค่าแรง ฿${money(q.labor)}</span><span>อะไหล่ ฿${money(q.parts)}</span><span>เดินทาง ฿${money(q.travel)}</span></div><p>${esc(q.scope)}</p><p>นัด: ${esc(q.appointment)} · รับประกันโดยช่าง ${q.warranty} วัน</p></section>`:''}
       ${j.acceptedAt?`<section class="market-contact"><h3>ติดต่อนัดหมาย</h3><p>ใช้เบอร์จริงที่ทั้งสองฝ่ายแจ้งไว้</p>${j.customerPhone?`<a href="tel:${esc(j.customerPhone)}"><i class="ti ti-phone"></i> ลูกค้า ${esc(j.customerPhone)}</a>`:''}${/^0\d{8,9}$/.test(j.technicianPhone||'')?`<a href="tel:${esc(j.technicianPhone)}"><i class="ti ti-phone"></i> ช่าง ${esc(j.technicianPhone)}</a>`:'<p>ช่างยังไม่ได้ระบุเบอร์ที่โทรได้ ใช้ข้อความในใบงานเพื่อนัดหมาย</p>'}</section>`:'<p class="market-note">เบอร์โทรและที่อยู่ละเอียดเปิดหลังลูกค้ายืนยันราคาและนัดหมาย</p>'}
       ${j.completion?`<p class="market-note">สรุปการซ่อม: ${esc(j.completion)}</p>`:''}${j.dispute?`<p class="market-error">ปัญหาที่แจ้ง: ${esc(j.dispute)}</p>`:''}${j.resolution?`<p>ผลการช่วยเหลือ: ${esc(j.resolution)}</p>`:''}${j.review?`<p class="market-review"><i class="ti ti-star-filled"></i> ${j.review.rating}/5 · ${esc(j.review.text)}</p>`:''}
       <div class="market-actions">${controls}</div><p class="market-note">ชำระกับช่างตามข้อตกลง Cendon ยังไม่รับชำระหรือพักเงิน การยืนยันว่างานเสร็จไม่ได้เป็นหลักฐานชำระเงิน</p>
-      <section class="market-messages"><h3>คุยรายละเอียดงาน</h3>${j.messages.length?j.messages.map(m=>`<div class="market-message ${m.role==='customer'?'customer':''}"><small>${m.role==='customer'?'ลูกค้า':'ช่าง'} · ${date(m.at)}</small><p>${esc(m.text)}</p></div>`).join(''):'<p class="market-copy">แจ้งอาการ เครื่องมือที่ต้องเตรียม และรายละเอียดนัดหมายได้ที่นี่</p>'}</section>
-      ${(customer||tech)&&!['completed','cancelled'].includes(s)?`<form id="marketForm" class="market-form">${area('message','ข้อความถึงอีกฝ่าย','',1)}<button type="submit" class="p">ส่งข้อความ</button></form>`:''}
+      <section class="market-messages"><h3>คุยกับ${customer&&!tech?'ช่าง':tech&&!customer?'ลูกค้า':'อีกฝ่าย'} <span class="chat-live" title="ข้อความใหม่ขึ้นเองอัตโนมัติ"><i></i>สด</span></h3>
+        <div class="chat-box" id="chatBox" aria-live="polite">${j.messages.length?'':'<p class="market-copy chat-empty">ถามอาการ นัดเวลา หรือขอรูปเพิ่มได้ที่นี่ ข้อความขึ้นให้อีกฝ่ายเห็นทันที</p>'}</div>
+        ${(customer||tech)&&!['completed','cancelled'].includes(s)?`<form id="chatForm" class="chat-form">${j.role==='both'?`<div class="chat-as" role="group" aria-label="พิมพ์ในบท"><button type="button" data-as="customer" class="on">พิมพ์เป็นลูกค้า</button><button type="button" data-as="technician">พิมพ์เป็นช่าง</button></div>`:''}<div class="chat-row"><textarea id="chatIn" rows="1" maxlength="2000" placeholder="พิมพ์ข้อความ…" aria-label="ข้อความ"></textarea><button type="submit" class="p chat-send" aria-label="ส่ง"><i class="ti ti-send"></i></button></div>${j.acceptedAt?'':'<p class="chat-hint">เบอร์โทรและไลน์ในแชตจะถูกซ่อนจนกว่าลูกค้ายืนยันราคา หลังจากนั้นคุยกันได้ตามปกติ</p>'}</form>`:'<p class="chat-hint">ใบงานปิดแล้ว อ่านข้อความย้อนหลังได้</p>'}</section>
       <details class="market-history"><summary>ประวัติสถานะ (${j.history.length})</summary>${j.history.map(h=>`<p>${date(h.at)} · ${statusNames[h.status]||h.status}</p>`).join('')}</details>${errorBox}<div class="market-actions">${button('กลับไปงานทั้งหมด','back')}</div>`);
     selectedJob=j;
     const update=async(action,body={})=>{await api('/api/tech/jobs/'+id,{method:'POST',body:{action,revision:j.revision,...body}});await job(id);};
-    actions({refresh:()=>job(id),back:()=>inbox(),quote:()=>quote(j),accept:()=>confirmAccept(j),
+    actions({toChat:()=>{$('chatBox')?.closest('section').scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>$('chatIn')?.focus({preventScroll:true}),350)},refresh:()=>job(id),back:()=>inbox(),quote:()=>quote(j),accept:()=>confirmAccept(j),
       enroute:()=>update('enroute'),start:()=>update('start'),complete:()=>confirmComplete(j),
       done:()=>noteAction(j,'done','สรุปงานที่ซ่อมเสร็จ'),cancel:()=>noteAction(j,'cancel','เหตุผลที่ยกเลิก'),dispute:()=>noteAction(j,'dispute','รายละเอียดปัญหาที่ต้องการให้ช่วย'),review:()=>noteAction(j,'review','รีวิวงานที่เสร็จแล้ว'),resolve:()=>noteAction(j,'resolve','ผลการช่วยเหลือ / ผู้ดูแล')});
-    if($('marketForm'))wireForm(values=>update('message',values));
+    chat(j,id);
+  }
+  function chat(j,id){
+    const box=$('chatBox');if(!box)return;
+    const mineRole=()=>j.role==='both'?live.as:j.role==='customer'?'customer':j.role==='technician'?'technician':null;
+    live={id,after:0,rev:j.revision,as:'customer',timer:0,all:[]};
+    const bubble=m=>{const mine=m.role===mineRole();return `<div class="market-message ${mine?'mine':''} ${m.role}" data-mid="${m.id}"><small>${m.role==='customer'?'ลูกค้า':'ช่าง'} · ${date(m.at)}</small><p>${esc(m.text)}</p></div>`;};
+    const add=list=>{
+      if(!live||live.id!==id)return;
+      const fresh=list.filter(m=>m.id>live.after);if(!fresh.length)return;
+      const atEnd=box.scrollHeight-box.scrollTop-box.clientHeight<80;
+      box.querySelector('.chat-empty')?.remove();
+      live.all.push(...fresh);box.insertAdjacentHTML('beforeend',fresh.map(bubble).join(''));
+      live.after=fresh[fresh.length-1].id;
+      /* เลื่อนลงเฉพาะตอนที่คนอ่านอยู่ท้ายสุดแล้ว ถ้าเขากำลังเลื่อนอ่านย้อนหลัง อย่ากระชากเขาลงมา */
+      if(atEnd||fresh.some(m=>m.role===mineRole()))box.scrollTop=box.scrollHeight;
+    };
+    add(j.messages);box.scrollTop=box.scrollHeight;
+    const form=$('chatForm'),input=$('chatIn');
+    if(form){
+      form.querySelectorAll('[data-as]').forEach(b=>b.onclick=()=>{live.as=b.dataset.as;form.querySelectorAll('[data-as]').forEach(x=>x.classList.toggle('on',x===b));
+        const all=live.all;box.innerHTML='';live.all=[];live.after=0;add(all);box.scrollTop=box.scrollHeight;});
+      const grow=()=>{input.style.height='auto';input.style.height=Math.min(input.scrollHeight,140)+'px';};
+      input.addEventListener('input',grow);
+      /* Enter ส่ง, Shift+Enter ขึ้นบรรทัดใหม่ — แบบเดียวกับแอปแชตทั่วไป
+         แต่ไม่ส่งระหว่างกำลังเลือกคำในแป้นพิมพ์ภาษาไทย/ญี่ปุ่น (isComposing) ไม่งั้นคำขาดกลาง */
+      input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();form.requestSubmit();}});
+      form.addEventListener('submit',async e=>{
+        e.preventDefault();const text=input.value.trim();if(!text||!live)return;
+        const btn=form.querySelector('.chat-send');btn.disabled=true;
+        try{
+          const r=await api('/api/tech/jobs/'+id,{method:'POST',body:{action:'message',message:text,as:live.as}});
+          input.value='';grow();add([r.message]);
+        }catch(err){error(err)}finally{btn.disabled=false;input.focus();}
+      });
+      if(matchMedia('(pointer:fine)').matches)input.focus({preventScroll:true});
+    }
+    const tick=()=>{live.timer=setTimeout(async()=>{
+      if(!live||live.id!==id)return;
+      try{
+        const d=await api(`/api/tech/jobs/${id}/messages?after=${live.after}`);
+        add(d.messages);
+        /* อีกฝ่ายกดเปลี่ยนสถานะ (เสนอราคา ยืนยัน ส่งงาน) — วาดใบงานใหม่ทั้งใบ
+           แต่เก็บข้อความที่พิมพ์ค้างไว้ ไม่ให้หายไปกลางประโยค */
+        if(d.revision!==live.rev){const draft=input?.value||'';const as=live.as;await job(id);
+          if(draft&&$('chatIn'))$('chatIn').value=draft;
+          if(as==='technician')$('chatForm')?.querySelector('[data-as="technician"]')?.click();return;}
+      }catch(e){}
+      if(live&&live.id===id)tick();
+    },document.hidden?15000:3000);};
+    tick();
   }
   async function change(j,action,values={}){await api('/api/tech/jobs/'+j.id,{method:'POST',body:{...values,action,revision:j.revision}});await job(j.id);}
   function quote(j){const q=j.quote||{};panel('ใบเสนอราคา',`<form class="market-form" id="marketForm"><div class="two">${field('labor','ค่าแรง (บาท)','number',q.labor||0,true,'min="0" max="1000000" step="0.01"')}${field('parts','อะไหล่ (บาท)','number',q.parts||0,true,'min="0" max="1000000" step="0.01"')}</div>${field('travel','เดินทาง (บาท)','number',q.travel||0,true,'min="0" max="100000" step="0.01"')}${area('scope','งานที่รวม / ไม่รวม และเงื่อนไข',q.scope||'',10)}${field('appointment','วัน เวลา และจุดนัดหมาย','text',q.appointment||'',true,'minlength="4" maxlength="200"')}${field('warranty','รับประกันงานนี้ (วัน)','number',q.warranty??7,true,'min="0" max="365"')}<p class="market-note">ช่างยินยอมให้เปิดเผยเบอร์ที่สมัครไว้แก่ลูกค้าหลังยืนยันนัด หากต้องเปลี่ยนราคาเพิ่มเติม ต้องตกลงกับลูกค้าและบันทึกหลักฐานก่อนลงมือ</p>${errorBox}<button type="submit" class="p">ส่งใบเสนอราคา</button></form>`);wireForm(v=>change(j,'quote',v));}

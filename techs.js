@@ -2,7 +2,7 @@
    ระบบช่าง — คลังข้อมูลช่างและเครื่องมือค้นหา
    ───────────────────────────────────────────────────────────────────
    ไฟล์นี้ถูกใช้ร่วมกันสามที่ จึงไม่ผูกกับหน้าไหนเลย
-     techs.html  หน้าตลาดช่าง
+     tech.html   หน้าตลาดช่าง
      index.html  ทางลัดหน้าหลัก
      chat.html   ให้ AI รู้จักช่างทุกคนและค้นหาแทนผู้ใช้ได้
 
@@ -193,7 +193,7 @@ function line(t){
   return `${t.id} | ${t.name} (${t.shop}) | ${t.area}`
     +(t.dist!=null?` ~${t.dist}กม.`:"")
     +` | ${t.reviewCount?t.rating+'★':'ยังไม่มีรีวิว'} ${t.jobs}งาน ${t.years}ปี`
-    +` | ${t.from.toLocaleString()}-${t.to.toLocaleString()}บ.`
+    +` | ${t.to?t.from.toLocaleString()+'-'+t.to.toLocaleString():'เริ่ม '+t.from.toLocaleString()}บ.`
     +` | ${t.reply!=null?'ตอบ~'+t.reply+'น. ':''}รับประกันโดยช่าง${t.warranty}วันตามข้อตกลง`
     +(t.verified?" | ตรวจสอบแล้ว":"")+(t.mobile?" | ออกนอกสถานที่":"")+(t.urgent?" | งานด่วน":"")
     +` | ถนัด: ${(t.skills||[]).join(", ")}`;
@@ -443,7 +443,7 @@ function useApi(fn){ API=fn }
 async function load(backend){
   g.Techs.loading=true; g.Techs.error="";
   try{
-    const r=await fetch((g.TECH_API_URL||"https://spireone-techs.carspirethailand.workers.dev")+"/api/tech",{cache:"no-store"});
+    const r=await fetch((g.TECH_API_URL||"https://spireonebackend.carspirethailand.workers.dev")+"/api/tech",{cache:"no-store"});
     if(!r.ok)throw new Error("โหลดรายชื่อช่างไม่สำเร็จ กรุณาลองใหม่");
     const d=await r.json();
     if(!Array.isArray(d.techs))throw new Error("ข้อมูลรายชื่อช่างไม่ถูกต้อง");

@@ -4266,7 +4266,7 @@ input,select,textarea,.input,.odo-i{
 </script>
 <link rel="prefetch" href="./garage.html">
 <link rel="prefetch" href="./spares.html">
-<link rel="prefetch" href="./techs.html">
+<link rel="prefetch" href="./tech.html">
 <!-- คลังช่าง — ใช้ในช่องค้นหาของมือถือ เพื่อให้พิมพ์ "แอร์" แล้วไปหน้าช่างหมวดแอร์ได้เลย -->
 <script src="./techs.js" defer></script>
 <link rel="prefetch" href="./news.html">
@@ -4569,7 +4569,7 @@ window.spireI18nCoverage=code=>{
         <button class="avatar" id="avatarBtn"><span class="fb" id="navFb">?</span></button>
         <div class="dd" id="dd">
           <button data-view="profile"><i class="ti ti-user"></i> <span data-i18n="menu.profile">โปรไฟล์ & ตั้งค่า</span></button>
-          <button onclick="location.href='techs.html'"><i class="ti ti-tool"></i> <span data-i18n="menu.techs">หาช่าง</span></button>
+          <button onclick="location.href='tech.html'"><i class="ti ti-tool"></i> <span data-i18n="menu.techs">หาช่าง</span></button>
           <button id="ddAdmin" style="display:none" onclick="location.href='admin.html'"><i class="ti ti-shield-lock"></i> <span data-i18n="menu.admin">แผงควบคุมแอดมิน</span></button>
           <hr/>
           <button id="logoutBtn"><i class="ti ti-logout"></i> <span data-i18n="menu.logout">ออกจากระบบ</span></button>
@@ -4631,7 +4631,7 @@ window.spireI18nCoverage=code=>{
               <button class="qa" data-open="video"><i class="ti ti-video qa-deco" aria-hidden="true"></i><div class="qa-ic"><i class="ti ti-video"></i></div><div class="qa-t" data-i18n="qa.video">วิดีโอ</div></button>
               <!-- ช่องที่สี่ของตารางว่างอยู่แต่แรก จึงใส่ทางลัดหาช่างตรงนี้ได้โดยไม่ดันของเดิม
                    วินิจฉัยเสร็จแล้วขั้นต่อไปคือหาคนซ่อม ทางลัดจึงควรอยู่ติดกันแบบนี้ -->
-              <button class="qa qa-tech" onclick="location.href='techs.html'"><i class="ti ti-tool qa-deco" aria-hidden="true"></i><div class="qa-ic"><i class="ti ti-tool"></i></div><div class="qa-t" data-i18n="qa.tech">หาช่าง</div></button>
+              <button class="qa qa-tech" onclick="location.href='tech.html'"><i class="ti ti-tool qa-deco" aria-hidden="true"></i><div class="qa-ic"><i class="ti ti-tool"></i></div><div class="qa-t" data-i18n="qa.tech">หาช่าง</div></button>
             </div>
           </div>
 
@@ -15252,7 +15252,7 @@ function searchIndex(){
                                      ic,c:"#7B8CF0",go:()=>go(k)}));
   ix.push({t:T("หาช่าง","Find a pro"),kw:"หาช่าง ช่าง อู่ Find a pro mechanic garage",
            s:T("หน้า","Page"),ic:"ti-tool",c:"#E8743C",
-           go:()=>location.href="techs.html"});
+           go:()=>location.href="tech.html"});
   /* รถของตัวเอง — พิมพ์ชื่อรถแล้วเข้าไปที่คันนั้นได้เลย */
   try{ (window.cars?window.cars():[]).forEach(c=>ix.push({
     t:c.name||`${c.make||""} ${c.model||""}`.trim(),
@@ -15262,7 +15262,7 @@ function searchIndex(){
   try{ if(window.Techs)Techs.CATS.forEach(c=>ix.push({
     t:T("ช่าง","Pros")+" "+T(c.th,c.en),kw:"ช่าง "+c.th+" "+c.en+" "+(c.desc||""),
     s:T("หมวดช่าง","Pro category"),ic:c.ic,c:"#2E9E78",
-    go:()=>location.href="techs.html?cat="+c.id})) }catch(e){}
+    go:()=>location.href="tech.html?cat="+c.id})) }catch(e){}
   return ix;
 }
 function topbar(){
@@ -15280,7 +15280,7 @@ function topbar(){
       <i class="ti ti-tool"></i></button></div>`;
   free.insertBefore(bar,free.firstChild);
   bar.querySelector(".mfind").onclick=openFind;
-  bar.querySelector(".mfind-x").onclick=()=>location.href="techs.html";
+  bar.querySelector(".mfind-x").onclick=()=>location.href="tech.html";
 }
 
 let findEl=null;
@@ -15348,7 +15348,7 @@ function run(k){
   close();
   const f=FEATS.find(x=>x.k===k); if(!f)return;
   if(k==="spares"){ try{window.switchView("shop")}catch(e){location.href="spares.html"} return }
-  if(k==="techs"){ location.href="techs.html"; return }
+  if(k==="techs"){ location.href="tech.html"; return }
   if(k==="text"||k==="image"||k==="video"){
     try{ if(typeof window.openChat==="function"){window.openChat({attach:k});return} }catch(e){}
     location.href="chat.html?attach="+encodeURIComponent(k); return;
@@ -16323,8 +16323,8 @@ window.spireApplyPrimary=()=>apply(read());
         <button class="p" data-job="${b.id}"><i class="ti ti-send"></i> ${tx("ส่งใบงานให้ช่าง","Send job sheet")}</button>
       </div>
     </div>`;
-    out.querySelector("[data-open]").onclick=()=>location.href="techs.html?q="+encodeURIComponent(q);
-    out.querySelector("[data-all]").onclick=()=>location.href="techs.html?q="+encodeURIComponent(q);
+    out.querySelector("[data-open]").onclick=()=>location.href="tech.html?q="+encodeURIComponent(q);
+    out.querySelector("[data-all]").onclick=()=>location.href="tech.html?q="+encodeURIComponent(q);
     out.querySelector("[data-job]").onclick=()=>{
       /* ใบงานเดียวกับที่หน้าช่างสร้าง — AI ได้ข้อมูลรถและอาการครบตั้งแต่ข้อความแรก */
       const brief=Techs.jobBrief({car,symptom:q});

@@ -193,7 +193,7 @@ function line(t){
   return `${t.id} | ${t.name} (${t.shop}) | ${t.area}`
     +(t.dist!=null?` ~${t.dist}กม.`:"")
     +` | ${t.reviewCount?t.rating+'★':'ยังไม่มีรีวิว'} ${t.jobs}งาน ${t.years}ปี`
-    +` | ${t.from.toLocaleString()}-${t.to.toLocaleString()}บ.`
+    +` | ${t.to?t.from.toLocaleString()+'-'+t.to.toLocaleString():'เริ่ม '+t.from.toLocaleString()}บ.`
     +` | ${t.reply!=null?'ตอบ~'+t.reply+'น. ':''}รับประกันโดยช่าง${t.warranty}วันตามข้อตกลง`
     +(t.verified?" | ตรวจสอบแล้ว":"")+(t.mobile?" | ออกนอกสถานที่":"")+(t.urgent?" | งานด่วน":"")
     +` | ถนัด: ${(t.skills||[]).join(", ")}`;

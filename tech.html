@@ -633,35 +633,72 @@ textarea.inp{min-height:92px;resize:vertical}
   .chat{left:auto;width:500px;box-shadow:-10px 0 40px -20px rgba(0,0,0,.4)}
   .carousel{justify-content:safe center}
 }
-/* ── แผนที่: แถบบนลอยแถวเดียว ทับบนแผนที่เต็มจอ ── */
-body.onmap .top{position:fixed;left:0;right:0;background:none;padding-bottom:0}
-body.onmap .brand{display:none}
-body.onmap .bar{flex-wrap:nowrap}
-body.onmap .tabs{order:0;flex:1 1 auto;max-width:none;margin:0;background:var(--surface);box-shadow:0 8px 22px -10px rgba(0,0,0,.55),0 0 0 1px var(--line-2)}
-body.onmap .ic{box-shadow:0 8px 22px -10px rgba(0,0,0,.55),0 0 0 1px var(--line-2)}
+/* ══ ความหนาแน่นแบบ Grab ══
+   ของเดิมใหญ่และแน่นจนอึดอัด — ย่อทุกอย่างลงให้มีที่ว่างรอบ ๆ แทน
+   ไอคอน 48px ตัวหนังสือ 12–15px การ์ดเตี้ย ช่องว่างระหว่างส่วนกว้างขึ้น */
+body{font-size:14px}
+.top{padding:calc(env(safe-area-inset-top) + 8px) 14px 8px}
+.bar{flex-wrap:nowrap;gap:8px}
+.bar .ic{width:40px;height:40px;border-radius:14px;font-size:19px;flex-shrink:0}
+.search.hs{flex:1;min-width:0;height:44px;border-radius:22px;padding:0 4px 0 12px;gap:8px;box-shadow:inset 0 1px 0 rgba(255,255,255,var(--gloss-card)),0 0 0 1px var(--line-2)}
+.search.hs .clogo{width:17px;height:20px;color:#E8943C;flex-shrink:0}
+.search.hs input{font-size:15px}
+.search.hs .ai{height:36px;padding:0 11px;border-radius:18px;font-size:12.5px}
+.search.hs .x{width:30px;height:30px}
+.menu{padding:6px 16px calc(40px + env(safe-area-inset-bottom))}
+.staff{margin:4px -16px 4px}
+.staff button{height:30px;padding:0 11px;border-radius:10px;font-size:12px}
+.sec{margin:24px 2px 10px}
+.sec h2{font-size:16px}
+.grid{grid-template-columns:repeat(4,1fr);gap:16px 4px;margin-top:16px}
+.qa,html .qa.e3,html[data-theme] .qa.e3{background:none;box-shadow:none;padding:0;gap:7px;font-size:12.5px;font-weight:400;line-height:1.25}
+.qa::after,.qa .deco{display:none}
+.qa .sq{width:50px;height:50px;font-size:24px;border-radius:16px}
+.qa span:last-child{white-space:normal;text-align:center;max-width:84px}
+.qa.on{box-shadow:none}.qa.on .sq{outline:2px solid var(--c1);outline-offset:3px}
+.qa:hover{transform:none}
+/* แผนที่ย่อ แทนแท็บแผนที่ */
+.mapw{display:block;width:100%;margin-top:22px;border-radius:20px;overflow:hidden;background:var(--surface);text-align:left;transition:transform .2s var(--ease);animation:rise .5s var(--ease) both}
+.mapw:active{transform:scale(.98)}
+.mapw .mm{height:118px;pointer-events:none;background:var(--surface-2);position:relative}
+.mapw .mm .leaflet-container{background:var(--surface-2)}
+html[data-theme="dark"] .mapw .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.82) contrast(.9) saturate(.6)}
+.mapw .mwi{display:flex;align-items:center;gap:10px;padding:10px 12px}
+.mapw .mwi .sq{width:34px;height:34px;border-radius:11px;font-size:18px;flex-shrink:0}
+.mapw .mwi div{flex:1;min-width:0}.mapw .mwi b{display:block;font-size:14px;font-weight:600}.mapw .mwi small{font-size:12px;color:var(--muted)}
+.mapw .mwi>.ti{color:var(--muted)}
+/* ฟีเจอร์ — กล่องเตี้ยแบบกล่องบัญชีของ Grab */
+.bento,.bento{grid-template-columns:1fr 1fr;grid-template-rows:auto;gap:10px;margin-top:12px}
+.feat,.feat.big{grid-column:auto;grid-row:auto;min-height:0;flex-direction:row;align-items:center;justify-content:flex-start;gap:10px;padding:12px;border-radius:18px}
+.feat.big{grid-column:1/-1}
+.feat .fi,.feat.big .fi{width:36px;height:36px;border-radius:12px;font-size:19px;flex-shrink:0}
+.feat b,.feat.big b{font-size:14px}
+.feat small{font-size:11.5px;margin-top:1px}
+.feat .ring{width:80px;height:80px;border-width:12px;right:-22px;top:-22px}
+.feat.big .pulse{width:36px;height:36px;border-radius:12px;left:12px;top:50%;margin-top:-18px}
+.feat .wf{height:120%}
+/* การ์ดช่าง */
+.list{gap:10px}
+.card{padding:10px;gap:12px;border-radius:18px}
+.thumb{width:64px;height:64px;border-radius:15px;font-size:24px}
+.thumb .tag{font-size:9px;left:4px;top:4px;padding:0 5px}
+.cb .nm{font-size:15px}
+.meta{font-size:12px}
+.price b{font-size:14px}
+.mini span{font-size:10.5px}
+.act{padding:11px;border-radius:18px}.act .sq{width:40px;height:40px;font-size:17px}
+.used{flex-basis:112px;padding:12px 8px;border-radius:18px}.used .sq{width:46px;height:46px;font-size:19px}
+.join{margin-top:22px;padding:13px 14px;border-radius:18px}.join .sq{width:40px;height:40px;font-size:20px}.join b{font-size:15px}
+/* แผนที่เต็มจอ — ไม่มีแถบบน มีแค่ปุ่มย้อนลอย */
+body.onmap .top{display:none}
 body.onmap .mapv{top:0}
-body.onmap .mfilt{top:calc(var(--mtop,70px) + 6px)}
-
-/* ── มือถือ: ให้พื้นที่หายใจ ── ปุ่มหมวดไม่มีกล่องครอบ (แบบ Grab) ไอคอนใหญ่ ชื่อขึ้นสองบรรทัดได้
-   กล่องเรียกด่วนเต็มแถว อีกสองกล่องแบ่งครึ่ง */
-@media(max-width:639px){
-  .top{padding-top:calc(env(safe-area-inset-top) + 8px)}
-  .tabs{margin-top:10px;max-width:none}
-  .tabs button{height:38px}
-  .greet{font-size:28px}
-  .hello{padding:4px 2px 14px}
-  .grid{gap:16px 4px;margin-top:20px}
-  .qa,html .qa.e3,html[data-theme] .qa.e3{background:none;box-shadow:none;padding:2px 0;gap:8px;font-size:12px;font-weight:500;line-height:1.25}
-  .qa::after,.qa .deco{display:none}
-  .qa .sq{width:58px;height:58px;font-size:27px;border-radius:19px}
-  .qa span:last-child{white-space:normal;text-align:center;max-width:80px}
-  .qa.on{box-shadow:none}.qa.on .sq{outline:2.5px solid var(--c1);outline-offset:3px}
-  .bento{grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:10px;margin-top:22px}
-  .feat.big{grid-column:1/-1;grid-row:auto;flex-direction:row;align-items:center;gap:14px;min-height:0;padding:16px 18px}
-  .feat.big b{font-size:19px}
-  .feat.big .pulse{top:50%;margin-top:-27px}
-  .feat{min-height:124px;padding:14px}
-  .feat b{font-size:15px}
+.mapback{position:absolute;left:16px;top:calc(env(safe-area-inset-top) + 12px);z-index:450;box-shadow:0 8px 22px -10px rgba(0,0,0,.55),0 0 0 1px var(--line-2)}
+body.onmap .mfilt{left:68px;top:calc(env(safe-area-inset-top) + 16px)}
+@media(min-width:1024px){
+  .bar{max-width:1180px}.search.hs{max-width:720px;margin:0 auto}
+  .grid{gap:20px 8px}.qa .sq{width:56px;height:56px;font-size:26px}
+  .mapw .mm{height:180px}
+  .feat,.feat.big{padding:16px}
 }
 @media(max-width:360px){.qa{font-size:11.5px}.qa .sq{width:44px;height:44px;font-size:21px}.feat small{display:none}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
@@ -672,11 +709,12 @@ body.onmap .mfilt{top:calc(var(--mtop,70px) + 6px)}
 <header class="top" id="top">
   <div class="bar">
     <a class="ic" href="index.html" aria-label="Back"><i class="ti ti-arrow-left"></i></a>
-    <div class="brand"><svg viewBox="-6.0 -6.0 94.8 112.0" aria-hidden="true"><path fill="currentColor" d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg><b>Cendon <span>Care</span></b></div>
-    <div class="tabs" id="tabs" role="tablist"><i class="knob"></i>
-      <button role="tab" data-v="menu" class="on"><i class="ti ti-layout-grid"></i><span data-t="เมนู|Menu">เมนู</span></button>
-      <button role="tab" data-v="map"><i class="ti ti-map-2"></i><span data-t="แผนที่|Map">แผนที่</span></button>
-    </div>
+    <label class="search hs" id="sbox">
+      <svg class="clogo" viewBox="-6.0 -6.0 94.8 112.0" aria-hidden="true"><path fill="currentColor" d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg>
+      <input id="q" type="search" autocomplete="off" enterkeyhint="search" data-t-ph="ค้นหาอาการ หรืออู่|Search"/>
+      <button class="x" id="qx" type="button" aria-label="Clear"><i class="ti ti-x"></i></button>
+      <button class="ai sq" id="qAi" type="button"><i class="ti ti-sparkles"></i><span>AI</span></button>
+    </label>
     <button class="ic" id="bJobs" aria-label="Jobs"><i class="ti ti-clipboard-list"></i><span class="dot" id="jobDot" hidden></span></button>
     <button class="ic" id="bMe" aria-label="Account"><i class="ti ti-user"></i></button>
   </div>
@@ -684,16 +722,13 @@ body.onmap .mfilt{top:calc(var(--mtop,70px) + 6px)}
 
 <section class="view menu" id="vMenu">
   <div class="left">
-    <div class="hello"><h1 class="greet" id="greet"></h1><p class="sub" id="greetSub"></p></div>
     <div class="staff" id="staff" hidden></div>
-    <label class="search e3" id="sbox">
-      <i class="ti ti-search"></i>
-      <input id="q" type="search" autocomplete="off" enterkeyhint="search" data-t-ph="พิมพ์อาการ หรือชื่ออู่|Symptom or shop name"/>
-      <button class="x" id="qx" type="button" aria-label="Clear"><i class="ti ti-x"></i></button>
-      <button class="ai sq" id="qAi" type="button"><i class="ti ti-sparkles"></i><span>AI</span></button>
-    </label>
     <div id="active"></div>
     <div class="grid" id="grid"></div>
+    <button class="mapw e3" id="mapW" type="button">
+      <div class="mm" id="miniMap"></div>
+      <div class="mwi"><span class="sq" style="--c1:#0284c7;--c2:#38bdf8"><i class="ti ti-map-pin-filled"></i></span><div><b data-t="ช่างรอบตัวคุณ|Mechanics around you">ช่างรอบตัวคุณ</b><small id="mwN"></small></div><i class="ti ti-chevron-right"></i></div>
+    </button>
     <div class="bento">
       <button class="feat big" id="fUrgent" style="--c1:#ef4444;--c2:#9f1239"><i class="pulse"></i><span class="ring"></span><svg class="wf" viewBox="0 0 252 152" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M42 82 L42 68 L86 62 L118 36 L176 36 L204 60 L240 64 L240 82 Z" stroke-dasharray="3 2" opacity=".4"/><line x1="16" y1="86" x2="42" y2="68" opacity=".38"/><line x1="60" y1="80" x2="86" y2="62" opacity=".38"/><line x1="92" y1="54" x2="118" y2="36" opacity=".38"/><line x1="150" y1="54" x2="176" y2="36" opacity=".38"/><line x1="178" y1="78" x2="204" y2="60" opacity=".38"/><line x1="214" y1="82" x2="240" y2="64" opacity=".38"/><path d="M16 100 L16 86 L60 80 L92 54 L150 54 L178 78 L214 82 L214 100 Z"/><path d="M88 78 L98 56 L148 56 L170 78"/><circle cx="84" cy="82" r="14" stroke-dasharray="3 2" opacity=".4"/><circle cx="58" cy="100" r="18"/><circle cx="58" cy="100" r="7.6"/><circle cx="204" cy="82" r="14" stroke-dasharray="3 2" opacity=".4"/><circle cx="178" cy="100" r="18"/><circle cx="178" cy="100" r="7.6"/></svg><span class="fi"><i class="ti ti-urgent"></i></span><div><b data-t="เรียกช่างด่วน|Emergency call">เรียกช่างด่วน</b><small data-t="ส่งถึงร้านใกล้สุด 3 ร้านพร้อมกัน|Reaches the 3 nearest shops at once">ส่งถึงร้านใกล้สุด 3 ร้านพร้อมกัน</small></div></button>
       <button class="feat" id="fMulti" style="--c1:var(--accent);--c2:var(--accent-d)"><span class="ring"></span><span class="fi"><i class="ti ti-arrows-exchange"></i></span><div><b data-t="ขอราคา 3 ร้าน|Compare 3 quotes">ขอราคา 3 ร้าน</b><small data-t="เทียบก่อนตัดสินใจ|Decide with prices side by side">เทียบก่อนตัดสินใจ</small></div></button>
@@ -711,6 +746,7 @@ body.onmap .mfilt{top:calc(var(--mtop,70px) + 6px)}
 
 <section class="view mapv" id="vMap" hidden>
   <div class="map" id="map"><div class="map-off"><i class="ti ti-map-2"></i></div></div>
+  <button class="ic mapback" id="mapBack" aria-label="Back"><i class="ti ti-arrow-left"></i></button>
   <div class="mfilt" id="mFilt"></div>
   <button class="ic locate" id="bLocate" aria-label="My location"><i class="ti ti-current-location"></i></button>
   <div class="carousel" id="carousel"></div>
@@ -1016,8 +1052,6 @@ function zoom(src){const z=document.createElement("div");z.className="zoom";z.in
 let VIEW="menu";
 function setView(v,noHist){
   VIEW=v;
-  $("tabs").classList.toggle("right",v==="map");
-  $("tabs").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));
   $("vMenu").hidden=v!=="menu";$("vMap").hidden=v!=="map";
   /* หน้าแผนที่ใช้แถบบนแบบลอยแถวเดียว (ย้อน · สลับ · งาน · บัญชี)
      ต้องเลื่อนหน้ากลับบนสุดก่อน ไม่งั้นแถบบนที่ติดหนึบจะค้างตำแหน่งเดิมของเมนูแล้วซ้อนกัน */
@@ -1030,7 +1064,21 @@ function setView(v,noHist){
   }
   if(!noHist)try{const u=new URL(location.href);if(v==="map")u.searchParams.set("view","map");else u.searchParams.delete("view");history.replaceState(history.state,"",u)}catch(e){}
 }
-$("tabs").querySelectorAll("button").forEach(b=>b.onclick=()=>setView(b.dataset.v));
+$("mapW").onclick=()=>setView("map");
+$("mapBack").onclick=()=>setView("menu");
+/* แผนที่ย่อในเมนู — ดูอย่างเดียว แตะแล้วเปิดแผนที่เต็มจอ (Leaflet ไม่รับการลากในกล่องนี้) */
+let MINI=null,MINIL=null;
+function drawMini(){
+  const n=shown().length;$("mwN").textContent=LOADED?(TH?`${n} ร้าน${HERE?" · เรียงตามระยะ":""}`:`${n} shops${HERE?" · by distance":""}`):"";
+  if(!window.L)return;
+  if(!MINI){$("miniMap").innerHTML="";MINI=L.map("miniMap",{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,touchZoom:false,boxZoom:false,keyboard:false,tap:false});
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(MINI);MINIL=L.layerGroup().addTo(MINI)}
+  MINIL.clearLayers();const pts=[];
+  shown().slice(0,40).forEach(t=>{if(t.lat==null)return;pts.push([t.lat,t.lng]);L.circleMarker([t.lat,t.lng],{radius:6,color:"#fff",weight:2,fillColor:colorOf(t),fillOpacity:1}).addTo(MINIL)});
+  if(HERE){pts.push([HERE.lat,HERE.lng]);L.circleMarker([HERE.lat,HERE.lng],{radius:7,color:"#fff",weight:3,fillColor:"#3b82f6",fillOpacity:1}).addTo(MINIL)}
+  MINI.invalidateSize();
+  if(pts.length>1)MINI.fitBounds(pts,{padding:[18,18],maxZoom:14});else MINI.setView(pts[0]||[13.7563,100.5018],pts.length?13:10);
+}
 addEventListener("resize",()=>{if(VIEW==="map"){document.documentElement.style.setProperty("--mtop",$("top").offsetHeight+"px");MAP&&MAP.invalidateSize()}});
 
 /* ═══ แผนที่ ═══ */
@@ -1150,6 +1198,7 @@ function render(){
   renderCarousel();
 }
 function renderCarousel(){
+  try{drawMini()}catch(e){}
   if(VIEW!=="map")return;
   const l=shown(),c=$("carousel");
   $("mFilt").innerHTML=filtChip();$("mFilt").querySelector("[data-clear]")?.addEventListener("click",clearFilter);
@@ -1874,6 +1923,7 @@ async function refreshMe(){
 
 /* ═══ คำทักทาย — แบบเดียวกับหน้าหลัก ═══ */
 function greet(){
+  if(!$("greet"))return;
   const h=new Date().getHours();
   const part=h<5?T("ดึกแล้ว","Late night"):h<12?T("สวัสดีตอนเช้า","Good morning"):h<17?T("สวัสดีตอนบ่าย","Good afternoon"):T("สวัสดีตอนเย็น","Good evening");
   let nm="";try{const c=JSON.parse(localStorage.getItem("spire_cachedUser")||localStorage.getItem("cachedUser")||"null");nm=(c&&(c.name||c.displayName)||"").split(" ")[0]}catch(e){}

@@ -443,7 +443,7 @@ function useApi(fn){ API=fn }
 async function load(backend){
   g.Techs.loading=true; g.Techs.error="";
   try{
-    const r=await fetch((g.TECH_API_URL||"https://spireone-techs.carspirethailand.workers.dev")+"/api/tech",{cache:"no-store"});
+    const r=await fetch((g.TECH_API_URL||"https://spireonebackend.carspirethailand.workers.dev")+"/api/tech",{cache:"no-store"});
     if(!r.ok)throw new Error("โหลดรายชื่อช่างไม่สำเร็จ กรุณาลองใหม่");
     const d=await r.json();
     if(!Array.isArray(d.techs))throw new Error("ข้อมูลรายชื่อช่างไม่ถูกต้อง");

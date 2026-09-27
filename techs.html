@@ -911,7 +911,7 @@ async function api(path,opts){
   if(!auth||!auth.currentUser)throw new Error("ยังไม่ได้เข้าสู่ระบบ");
   const headers=Object.assign({"Authorization":"Bearer "+await auth.currentUser.getIdToken()},opts.headers||{});
   if(opts.body)headers["Content-Type"]="application/json";
-  const r=await fetch((window.TECH_API_URL||"https://spireone-techs.carspirethailand.workers.dev")+path,{method:opts.method||"GET",headers,
+  const r=await fetch((window.TECH_API_URL||"https://spireonebackend.carspirethailand.workers.dev")+path,{method:opts.method||"GET",headers,
     body:opts.body?JSON.stringify(opts.body):undefined});
   let d=null; try{ d=await r.json() }catch(e){}
   if(!r.ok)throw new Error((d&&d.error)||("Error "+r.status));

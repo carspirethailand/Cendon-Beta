@@ -436,8 +436,9 @@ html[data-theme="light"] .tier::after,html[data-theme="plant"] .tier::after{
 <script>
 const D=document, $=id=>D.getElementById(id);
 const BACKEND_URL="https://spireonebackend.carspirethailand.workers.dev";
-const lang=(()=>{ try{ return JSON.parse(localStorage.getItem("lang")||'"th"') }catch(e){ return "th" } })();
-const en=lang==="en";
+/* ภาษาที่ผู้ใช้ตั้งไว้เก็บที่ spire_lang (คีย์ "lang" เป็นของรุ่นเก่า) — ภาษาอื่นที่ไม่ใช่ไทยใช้อังกฤษ */
+const lang=(()=>{ try{ return JSON.parse(localStorage.getItem("spire_lang")||localStorage.getItem("lang")||'"th"') }catch(e){ return "th" } })();
+const en=lang!=="th";
 const L=(th,e)=>en?e:th;
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const nf=x=>Number(x||0).toLocaleString(en?"en-US":"th-TH");
@@ -623,6 +624,11 @@ function wire(){
             "Noted — we'll tell you the moment it opens"));
     try{ localStorage.setItem("spire_plan_interest",JSON.stringify(
       {plan:b.dataset.plan,at:Date.now()})) }catch(e){}
+    /* เดิมเก็บแค่ในเครื่อง ทีมงานไม่มีทางรู้ว่ามีคนอยากได้แพ็กเกจไหน
+       ส่งเข้ากล่องความเห็นในแผงควบคุมด้วย (ไม่ได้ล็อกอินก็ข้ามไปเงียบ ๆ) */
+    (async()=>{try{const u=window.firebase&&firebase.auth&&firebase.auth().currentUser;if(!u)return;
+      await fetch(BACKEND_URL+"/api/feedback",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+await u.getIdToken()},
+        body:JSON.stringify({kind:"idea",page:"plan.html",message:"สนใจแพ็กเกจ "+b.dataset.plan+" (กดจากหน้าแพ็กเกจ รอเปิดขาย)"})})}catch(e){}})();
   });
 }
 

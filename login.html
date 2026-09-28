@@ -252,8 +252,9 @@ h1{margin:0 0 9px;font-size:clamp(28px,4vw,36px);font-weight:500;letter-spacing:
 
   /* ── ภาษา — อ่านค่าที่ผู้ใช้เลือกไว้จากหน้าหลัก ── */
   var lang = "th";
-  try{ lang = JSON.parse(localStorage.getItem("lang")) || "th" }catch(e){}
-  if(lang === "en"){
+  /* ภาษาที่ผู้ใช้ตั้งไว้เก็บที่ spire_lang (คีย์ "lang" เป็นของรุ่นเก่า) — ภาษาอื่นที่ไม่ใช่ไทยใช้อังกฤษ */
+  try{ lang = JSON.parse(localStorage.getItem("spire_lang")||localStorage.getItem("lang")) || "th" }catch(e){}
+  if(lang !== "th"){
     $("h1").textContent  = "Log into your account";
     $("sub").textContent = "Look after your car, get warned before it's due, and check any garage quote.";
     $("bGoogle").querySelector("span").textContent = "Login with Google";

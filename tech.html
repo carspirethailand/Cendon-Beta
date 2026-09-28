@@ -2384,6 +2384,19 @@ function greet(){
 }
 
 /* ═══ เริ่มทำงาน ═══ */
+/* เครื่องใหม่ที่ยังไม่มีรถในเครื่อง — ดึงรถของบัญชีจากเซิร์ฟเวอร์มาให้ ฟอร์มจะได้ใส่รถให้เองโดยไม่ต้องพิมพ์
+   รูปแบบเดียวกับที่หน้าแชตเก็บ (spire_garage) ถ้ามีรถในเครื่องอยู่แล้วไม่แตะเลย */
+async function pullCars(){
+  try{
+    if((ls.get("spire_garage",[])||[]).length)return;
+    const r=await fetch(API+"/api/cars",{headers:{Authorization:"Bearer "+await U.getIdToken()}});
+    if(!r.ok)return;const arr=await r.json();if(!Array.isArray(arr)||!arr.length)return;
+    if((ls.get("spire_garage",[])||[]).length)return;
+    ls.set("spire_garage",arr.map(c=>({id:c.id,make:c.make||"",model:c.model||"",name:`${c.make||""} ${c.model||""}`.trim(),
+      year:c.year!=null?String(c.year):"",mileage:c.mileage!=null?String(c.mileage):"",type:"sedan",history:[]})));
+    if(!ls.get("spire_selCar",null))ls.set("spire_selCar",arr[0].id);
+  }catch(e){}
+}
 (function init(){
   const p=new URLSearchParams(location.search);
   if(p.get("q")){$("q").value=p.get("q");F.q=p.get("q");$("sbox").classList.add("has")}
@@ -2399,7 +2412,7 @@ function greet(){
     try{
       if(!firebase.apps||!firebase.apps.length)firebase.initializeApp(fbConfig);
       auth=firebase.auth();
-      auth.onAuthStateChanged(async u=>{U=u||null;greet();await refreshMe();if(U)await load();else diag()});
+      auth.onAuthStateChanged(async u=>{U=u||null;greet();if(U)pullCars();await refreshMe();if(U)await load();else diag()});
     }catch(e){}
   })();
 })();

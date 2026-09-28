@@ -5082,6 +5082,17 @@ const SYMPTOMS_DATABASE={
    ตรงนี้อ่านทีละก้อนจากเซิร์ฟเวอร์แล้ววาดทันที ทั้งสถานะที่กำลังทำ
    ความคิด และตัวคำตอบ  ถ้าเซิร์ฟเวอร์ยังไม่รองรับ จะตกไปใช้ทางเดิมเอง
    ═══════════════════════════════════════════════════════════════════ */
+/* ชั้นกันที่สอง — หลังบ้านกรองคำสั่งเรียกเครื่องมือดิบ ๆ ออกแล้ว แต่ถ้าหลุดมาได้ (เช่นหลังบ้านยังเป็นรุ่นเก่า)
+   ผู้ใช้ต้องไม่เห็น <|tool_call_start|>[google(query=…)] แบบในรูปที่เจอ */
+function noTools(t){
+  return String(t||"")
+    .replace(/<\|tool_call_start\|>[\s\S]*?(<\|tool_call_end\|>|$)/g,"")
+    .replace(/<tool_call>[\s\S]*?(<\/tool_call>|$)/g,"")
+    .replace(/\[TOOL_CALLS\][\s\S]*$/g,"")
+    .replace(/<\|[a-z_]+\|>/g,"")
+    .replace(/^\s*\[?\s*(google|google_search|web_search|search)\s*\([^)]*\)[\s,\]]*$/gim,"")
+    .trim();
+}
 async function streamAnswer(contents,opts){
   opts=opts||{};
   if(!(useFb&&auth&&auth.currentUser))throw new Error(lang==="en"?"Please sign in first":"กรุณาเข้าสู่ระบบก่อนใช้งาน");
@@ -5140,8 +5151,8 @@ async function streamAnswer(contents,opts){
         let d=null; try{ d=JSON.parse(t.slice(5).trim()) }catch(e){ continue }
         if(d.type==="status"){ m.status=d.text; paintLive(nodes,m) }
         else if(d.type==="reasoning"){ m.reasoning+=d.delta; paintLive(nodes,m) }
-        else if(d.type==="text"){ m.text+=d.delta; paintLive(nodes,m) }
-        else if(d.type==="text_done"){ m.text=d.text||m.text; paintLive(nodes,m) }
+        else if(d.type==="text"){ m.text+=d.delta; if(/<\||tool_call|\[TOOL_CALLS/.test(m.text))m.text=noTools(m.text); paintLive(nodes,m) }
+        else if(d.type==="text_done"){ m.text=noTools(d.text||m.text); paintLive(nodes,m) }
         else if(d.type==="done"){ usage=d.usage }
         else if(d.type==="error"){ failed=d.message }
       }
@@ -6161,9 +6172,10 @@ async function sendMsg(){
     }
     messages.push({role:"ai",typing:true});renderMessages();
 
-    const raw=await gemini(contents,{system:sys,search:!hasMedia,temp:0.5,skillIds,
+    const raw0=await gemini(contents,{system:sys,search:!hasMedia,temp:0.5,skillIds,
       fresh:window.__freshOnce===true});
     window.__freshOnce=false;
+    const raw=noTools(raw0);
     const parsed=parseAsk(raw);
     const ans=parsed.text;
     /* ผูกฟอร์มที่ AI ขอ กับสถานะว่าคำตอบนี้มาจากคลังคำตอบเก่าหรือไม่

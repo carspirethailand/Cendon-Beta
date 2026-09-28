@@ -5929,7 +5929,9 @@ function typewrite(fullText,done){
   function step(){
     if(window.__stopped)return;      /* ผู้ใช้กดหยุดระหว่างข้อความกำลังไหลออกมา */
     if(i>=words.length){renderMessages();if(done)done();return}
-    i=Math.min(words.length,i+2);
+    /* ทางสำรองเท่านั้น (ทางหลักสตรีมอยู่แล้ว) — คำตอบมาถึงครบแล้ว อย่าให้ผู้ใช้รอแอนิเมชันนาน
+       แสดงให้จบในราว 0.5 วินาทีไม่ว่าคำตอบยาวแค่ไหน */
+    i=Math.min(words.length,i+Math.max(2,Math.ceil(words.length/30)));
     bubble.innerHTML=md(words.slice(0,i).join(""))+`<span class="cursor"></span>`;
     scrollBottom();
     setTimeout(step,16);
@@ -6115,9 +6117,15 @@ async function sendMsg(){
   messages.push({role:"ai",typing:true});renderMessages();
   try{
     const hasMedia=messages.some(m=>m.atts&&m.atts.some(a=>a.b64));
-    const contents=messages.filter(m=>!m.typing&&m.role!=="sum").slice(-12).map(m=>{
+    /* รูป/วิดีโอเก่าไม่ต้องอัปโหลดซ้ำทุกข้อความ (รูปละหลาย MB บนเน็ตมือถือคือหลายวินาที)
+       ส่งไฟล์จริงเฉพาะ 2 ข้อความล่าสุดที่มีไฟล์ ที่เหลือส่งแค่ป้ายบอกว่าเคยแนบ */
+    const hist=messages.filter(m=>!m.typing&&m.role!=="sum").slice(-12);
+    const mediaKeep=new Set(hist.filter(m=>m.role==="user"&&m.atts&&m.atts.some(a=>a.b64)).slice(-2));
+    const contents=hist.map(m=>{
       const parts=[];if(m.text)parts.push({text:m.text});
-      (m.atts||[]).forEach(a=>{if(a.b64)parts.push({inline_data:{mime_type:a.mime,data:a.b64}})});
+      (m.atts||[]).forEach(a=>{if(!a.b64)return;
+        if(mediaKeep.has(m))parts.push({inline_data:{mime_type:a.mime,data:a.b64}});
+        else parts.push({text:"[แนบไฟล์ไว้ก่อนหน้า]"})});
       if(!parts.length)parts.push({text:""});
       return{role:m.role==="user"?"user":"model",parts}});
     /* สกิลที่ผู้ใช้เลือกไว้ (ชิป /ชื่อ) ถูกแนบเข้ากับคำสั่งระบบของรอบนี้
@@ -6134,10 +6142,10 @@ async function sendMsg(){
        ระหว่างรอหลังบ้านแก้ ให้คำถามที่ต้องใช้ข้อมูลสดวิ่งไปทางปกติแทน
        ผู้ใช้จะได้คำตอบที่ถูกต้องวันนี้ แลกกับการไม่เห็นความคิดไหลเท่านั้น
        พอหลังบ้านแก้แล้ว ลบเงื่อนไขนี้ทิ้งได้เลย ทุกอย่างกลับไปวิ่งทางสตรีมเหมือนเดิม */
-    const needWeb=NEEDS_WEB.test(text||"");
+    /* ตอนนี้หลังบ้านค้นเว็บในทางสตรีมได้แล้ว (Gemini ค้นและตอบในการเรียกครั้งเดียว)
+       ทุกคำถามจึงวิ่งทางสตรีม เห็นคำตอบไหลออกมาทันที ไม่ต้องรอจนจบแล้วค่อยพิมพ์ทีละคำ */
     let streamed=null;
-    if(needWeb&&!hasMedia){ streamed=null }
-    else try{ streamed=await streamAnswer(contents,{skillIds,system:sys,search:!hasMedia}) }
+    try{ streamed=await streamAnswer(contents,{skillIds,system:sys,search:true}) }
     catch(e){
       if(window.__stopped||(e&&e.name==="AbortError")){ window.__stopped=false; return }
       if(/โควตา|quota/i.test(e.message||""))throw e;

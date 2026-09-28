@@ -422,6 +422,7 @@ html[data-theme="dark"] .map .leaflet-tile-pane{filter:invert(1) hue-rotate(180d
 textarea.inp{min-height:92px;resize:vertical}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .seg{display:flex;gap:8px;flex-wrap:wrap}
+.pvs{margin-bottom:14px}
 .seg button{flex:1 1 auto;min-height:46px;padding:0 14px;border-radius:14px;background:var(--surface);font-size:14px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 0 0 1px var(--line-2);transition:background .2s,color .2s,transform .2s var(--spring),box-shadow .2s}
 .seg button:active{transform:scale(.94)}
 .seg button.on{background:var(--c-acc-soft);color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent)}
@@ -1883,8 +1884,10 @@ async function openJoin(){
   /* ทีมงานเลือกได้ว่าจะเป็นช่างทีมงาน (ไม่ต้องใช้อะไร เห็นเฉพาะทีมงาน) หรือลองยื่นแบบพาร์ทเนอร์จริง */
   if(ME&&ME.staff&&!(a&&!a.test))return sheet({title:"สมัครเป็นช่าง",body:`
     <button class="jl" id="jStaff"><span class="av sq" style="--c1:var(--accent)"><i class="ti ti-shield-check"></i></span><span class="jb"><b>${t&&t.test?"ช่างทีมงานของฉัน":"เป็นช่างทีมงานทันที"}</b><small>ใช้แค่ตำแหน่งอู่ · เห็นเฉพาะทีมงาน Cendon</small></span><i class="ti ti-chevron-right"></i></button>
-    <button class="jl" id="jReal"><span class="av sq" style="--c1:#334155"><i class="ti ti-file-certificate"></i></span><span class="jb"><b>ใบสมัครพาร์ทเนอร์</b><small>ขั้นตอนเต็มแบบที่ช่างทั่วไปเห็น</small></span><i class="ti ti-chevron-right"></i></button>`,
-    mount(){$("jStaff").onclick=testTech;$("jReal").onclick=()=>landing(true)}});
+    <button class="jl" id="jReal"><span class="av sq" style="--c1:#334155"><i class="ti ti-file-certificate"></i></span><span class="jb"><b>ใบสมัครพาร์ทเนอร์</b><small>ขั้นตอนเต็มแบบที่ช่างทั่วไปเห็น</small></span><i class="ti ti-chevron-right"></i></button>
+    <button class="jl" id="jSkip"><span class="av sq" style="--c1:#0ea5e9"><i class="ti ti-player-skip-forward"></i></span><span class="jb"><b>ข้ามไปแดชบอร์ดช่าง</b><small>ไม่ต้องกรอกอะไร · เข้าไปดูความเรียบร้อยได้เลย</small></span><i class="ti ti-chevron-right"></i></button>
+    <button class="jl" id="jStat"><span class="av sq" style="--c1:#8b5cf6"><i class="ti ti-timeline"></i></span><span class="jb"><b>ดูหน้าสถานะใบสมัคร</b><small>ตัวอย่างทุกสถานะ: รอตรวจ · ต้องแก้ไข · อนุมัติ</small></span><i class="ti ti-chevron-right"></i></button>`,
+    mount(){$("jStaff").onclick=testTech;$("jReal").onclick=()=>landing(true);$("jSkip").onclick=e=>busy(e.currentTarget,quickTech);$("jStat").onclick=()=>previewStatus("pending",true)}});
   if(a&&!a.test)return statusPage(a);
   landing();
 }
@@ -1942,7 +1945,7 @@ function step(n){
         if(ageOf(APP.birth)<18)e.push("อายุ 18 ปีขึ้นไป");if(!/^0\d{8,9}$/.test((APP.phone||"").replace(/[\s-]/g,"")))e.push("เบอร์โทรศัพท์");
         if(!(+APP.years>=2))e.push("ประสบการณ์ 2 ปีขึ้นไป");if(!APP.cats.length)e.push("ประเภทงาน");
         if(!(+APP.from>0))e.push("ราคาเริ่มต้น");if(!(+APP.warranty>=7))e.push("รับประกันอย่างน้อย 7 วัน");
-        if(e.length){$("err").textContent="กรุณาตรวจสอบ: "+e.join(", ");$("err").scrollIntoView({block:"nearest"});return}step(2)};
+        if(e.length&&!PREV()){$("err").textContent="กรุณาตรวจสอบ: "+e.join(", ");$("err").scrollIntoView({block:"nearest"});return}if(e.length)skipped(e.length);step(2)};
     }});
   if(n===2)return sheet({full:true,title:"ใบสมัครพาร์ทเนอร์",body:stepHd(2)+`
     <p class="note"><i class="ti ti-info-circle"></i>เลื่อนแผนที่ให้หมุดอยู่ที่อู่ หรือจุดที่คุณออกรับงาน</p>
@@ -1955,7 +1958,7 @@ function step(n){
       const pk=picker($("aMap"),APP.lat?{lat:APP.lat,lng:APP.lng}:null,p=>{APP.lat=p.lat;APP.lng=p.lng;$("aXY").textContent=p.lat.toFixed(5)+", "+p.lng.toFixed(5)});
       $("aGps").onclick=e=>busy(e.currentTarget,async()=>{const p=await locate();if(p){pk.set(p);APP.gps=true}});
       $("aBk").onclick=()=>{keep();step(1)};
-      $("aNx").onclick=()=>{keep();if(!window.L&&!APP.gps){$("err").textContent="กดใช้ตำแหน่งปัจจุบันก่อน";return}if((APP.area||"").length<3){$("err").textContent="กรุณาระบุเขต / อำเภอ / จังหวัด";return}step(3)};
+      $("aNx").onclick=()=>{keep();if(PREV()){if((APP.area||"").length<3)skipped(1);return step(3)}if(!window.L&&!APP.gps){$("err").textContent="กดใช้ตำแหน่งปัจจุบันก่อน";return}if((APP.area||"").length<3){$("err").textContent="กรุณาระบุเขต / อำเภอ / จังหวัด";return}step(3)};
     }});
   if(n===3)return sheet({full:true,title:"ใบสมัครพาร์ทเนอร์",body:stepHd(3)+`<p class="note"><i class="ti ti-camera"></i>ถ่ายให้เห็นข้อความชัด ไม่มีแสงสะท้อน · บัตรประชาชนใช้ตรวจตัวตนเท่านั้น และถูกลบหลังพิจารณา</p>`+DK.map(([k,l,min,max,ic])=>`<div class="dgrp"><h4>${l} <small>${min?(min===max?min+" รูป":min+"–"+max+" รูป"):"ไม่บังคับ"}</small><i class="ti ti-circle-check-filled okk" ${(APP.docs[k]||[]).length>=min&&min?"":"hidden"}></i></h4><div class="docs" data-k="${k}"></div></div>`).join("")
     +'<input type="file" id="aFile" accept="image/*" hidden/>',
@@ -1970,7 +1973,7 @@ function step(n){
       DK.forEach(([k])=>draw(k));
       $("aFile").onchange=async()=>{const f=$("aFile").files[0];if(!f||!cur)return;try{const d=await shrink(f,cur==="id"||cur==="selfie"?1400:1100);(APP.docs[cur]=APP.docs[cur]||[]).push(d);draw(cur)}catch(e){$("err").textContent=e.message}};
       $("aBk").onclick=()=>step(2);
-      $("aNx").onclick=()=>{const miss=DK.filter(([k,,min])=>(APP.docs[k]||[]).length<min).map(d=>d[1]);if(miss.length){$("err").textContent="ยังขาดเอกสาร: "+miss.join(", ");return}step(4)};
+      $("aNx").onclick=()=>{const miss=DK.filter(([k,,min])=>(APP.docs[k]||[]).length<min).map(d=>d[1]);if(miss.length&&!PREV()){$("err").textContent="ยังขาดเอกสาร: "+miss.join(", ");return}if(miss.length)skipped(miss.length);step(4)};
     }});
   if(n===4){const nd=Object.values(APP.docs).reduce((a,l)=>a+l.length,0);
     const sec=(t,to,rows)=>`<div class="sect"><h5>${t}<button data-to="${to}">แก้ไข</button></h5>${rows.map(([k,v])=>`<p><span>${k}</span><b>${v}</b></p>`).join("")}</div>`;
@@ -1983,10 +1986,11 @@ function step(n){
     <label class="chk"><input type="checkbox" class="dec"/> ข้าพเจ้าขอรับรองว่าข้อมูลและเอกสารทั้งหมดเป็นความจริง</label>
     <label class="chk"><input type="checkbox" class="dec"/><span>ข้าพเจ้าได้อ่านและยอมรับ <button type="button" class="lnk" id="dTerms">ข้อตกลงพาร์ทเนอร์</button></span></label>
     <label class="chk"><input type="checkbox" class="dec"/> ยินยอมให้ Cendon เก็บและใช้ข้อมูลส่วนบุคคลเพื่อพิจารณาใบสมัคร และโทรติดต่อยืนยันตัวตน</label>`,
-    foot:'<button class="btn s" id="aBk">ย้อนกลับ</button><button class="btn p" id="aGo" disabled>ยื่นใบสมัคร</button>',
+    foot:'<button class="btn s" id="aBk">ย้อนกลับ</button>'+(PREV()?'<button class="btn p" id="aPv"><i class="ti ti-eye"></i> ดูหน้าหลังยื่น (ตัวอย่าง)</button>':'<button class="btn p" id="aGo" disabled>ยื่นใบสมัคร</button>'),
     mount(b){
       b.querySelectorAll("[data-to]").forEach(x=>x.onclick=()=>step(+x.dataset.to));
       $("dTerms").onclick=e=>{e.preventDefault();terms()};
+      if(PREV()){$("aBk").onclick=()=>step(3);$("aPv").onclick=()=>previewStatus("pending",true);return}
       const decs=[...b.querySelectorAll(".dec")];decs.forEach(x=>x.onchange=()=>$("aGo").disabled=!decs.every(y=>y.checked));
       $("aBk").onclick=()=>step(3);
       $("aGo").onclick=e=>busy(e.currentTarget,async()=>{
@@ -1997,21 +2001,40 @@ function step(n){
       })}});}
 }
 /* สถานะใบสมัคร — มีเลขที่ใบสมัครอ้างอิง และเห็นว่าอยู่ขั้นไหนของการพิจารณา */
-function statusPage(a,fresh){
+function statusPage(a,fresh,pv){
   const st=a.status,d=a.submittedAt||a.createdAt;
   const n=st==="approved"?5:st==="rejected"?2:2;
-  sheet({full:true,title:"ใบสมัครพาร์ทเนอร์",body:`
+  sheet({push:pv&&pv.push,full:true,title:"ใบสมัครพาร์ทเนอร์",body:(pv?`<div class="seg pvs" id="pvS">${[["pending","รอตรวจ"],["rejected","ต้องแก้ไข"],["approved","อนุมัติ"]].map(([k,l])=>`<button type="button" data-v="${k}" class="${k===pv.st?"on":""}">${l}</button>`).join("")}</div>`:"")+`
     ${fresh?'<div class="state"><div class="big" style="background:rgba(62,158,110,.14);color:var(--ok)"><i class="ti ti-send"></i></div><h2>ยื่นใบสมัครเรียบร้อย</h2><p>ทีมงานจะติดต่อกลับภายใน 3 วันทำการ</p></div>':""}
     <div class="appno"><div><small>เลขที่ใบสมัคร</small><b>${esc(a.appNo||"—")}</b></div><div style="text-align:right"><small>วันที่ยื่น</small><b style="font-size:14px">${d?new Date(d).toLocaleDateString(LOC,{day:"numeric",month:"short",year:"numeric"}):"—"}</b></div></div>
     <p class="h4">สถานะการพิจารณา</p>
     <div class="tl">${[["ยื่นใบสมัครออนไลน์",esc(a.name)],["ตรวจสอบเอกสาร",st==="rejected"?"ต้องแก้ไขเพิ่มเติม":"1–3 วันทำการ"],["โทรยืนยันตัวตนและทักษะ","ทีมงานโทรหา "+esc(a.phone||"")],["อนุมัติ เริ่มรับงาน",st==="approved"?"ร้านของคุณแสดงในแอปแล้ว":""]].map(([b,s],i)=>`<div data-n="${i+1}" class="${i+1<n?"ok":i+1===n&&st!=="approved"?"on":""}"><b>${b}</b><small>${s}</small></div>`).join("")}</div>
     ${st==="rejected"?`<div class="err" style="animation:none"><b>หมายเหตุจากทีมงาน:</b> ${esc(a.review&&a.review.note||"")}</div>`:""}`,
     foot:st==="rejected"?'<button class="btn p w" id="sFix">แก้ไขและยื่นใหม่</button>':st==="approved"?'<button class="btn p w" id="sJobs">เปิดงานของฉัน</button>':'<button class="btn s w" id="sOk">ปิด</button>',
-    mount(){if($("sFix"))$("sFix").onclick=()=>landing(true);if($("sJobs"))$("sJobs").onclick=()=>jobs();if($("sOk"))$("sOk").onclick=()=>closeSheet()}});
+    mount(){if(pv){$("pvS").querySelectorAll("button").forEach(b=>b.onclick=()=>previewStatus(b.dataset.v,false));if($("sFix"))$("sFix").onclick=()=>landing(true);if($("sJobs"))$("sJobs").onclick=()=>{closeSheet();setMode("tech")};if($("sOk"))$("sOk").onclick=()=>closeSheet();return}
+      if($("sFix"))$("sFix").onclick=()=>landing(true);if($("sJobs"))$("sJobs").onclick=()=>jobs();if($("sOk"))$("sOk").onclick=()=>closeSheet()}});
 }
 $("bJoin").onclick=()=>openJoin();
 
 /* ═══ ทีมงาน ═══ */
+/* ผู้ดูแลและทีมงาน Cendon เข้าดูได้ทุกหน้า — ข้ามการกรอก/ตรวจ เพื่อตรวจความเรียบร้อยของระบบ */
+function PREV(){return !!(ME&&ME.staff)}
+function skipped(n){toast("ทีมงาน: ข้ามช่องที่ยังไม่กรอก "+n+" รายการ","ti-player-skip-forward")}
+/* เปิดร้านทีมงานทันทีโดยไม่ถามอะไร — ใช้ GPS ถ้าได้ ไม่ได้ก็ให้ backend ใช้ตำแหน่งกลาง แล้วแก้ทีหลังในแท็บร้าน */
+async function quickTech(){
+  if(!(ME.technician&&ME.technician.test)){
+    const p=await Promise.race([locate().catch(()=>null),new Promise(r=>setTimeout(()=>r(null),4000))]);
+    await api("/api/tech/apply",{body:{test:true,...(p?{lat:p.lat,lng:p.lng}:{})}});
+    await refreshMe();load();
+  }
+  closeSheet();setMode("tech");toast("เข้าแดชบอร์ดช่างแล้ว (ร้านทีมงาน)");
+}
+/* หน้าสถานะใบสมัครแบบตัวอย่าง — ไม่ยื่นจริง ไม่สร้างข้อมูล สลับดูได้ทุกสถานะ */
+function previewStatus(st,push){
+  const nm=(APP&&APP.name)||"ตัวอย่าง ผู้สมัคร";
+  statusPage({appNo:"CP-PREVIEW",status:st,name:nm,submittedAt:Date.now(),review:st==="rejected"?{note:"ตัวอย่างหมายเหตุจากทีมงาน: รูปบัตรไม่ชัด กรุณาถ่ายใหม่"}:null},false,{st,push});
+}
+
 function staffBar(){
   const s=$("staff");
   if(!ME||!ME.staff){s.hidden=true;s.innerHTML="";return}
@@ -2125,7 +2148,7 @@ async function dash(){
   if(!t){
     $("dHead").innerHTML="";$("dStats").innerHTML="";$("dTabs").hidden=true;
     $("dBody").innerHTML=`<div class="cta e3"><span class="sq" style="--c1:var(--accent)"><i class="ti ti-tool"></i></span><b>${T("ยังไม่มีร้าน","No shop yet")}</b><p>${ME&&ME.staff?T("ทีมงานเปิดร้านทีมงานได้ทันที ใช้แค่ตำแหน่งอู่ ลูกค้าจริงไม่เห็น","Staff can open a staff shop instantly — location only, hidden from customers"):T("สมัครเป็นพาร์ทเนอร์เพื่อเริ่มรับงาน","Apply as a partner to start taking jobs")}</p><button class="btn p" id="dGo">${ME&&ME.staff?T("เปิดร้านทีมงาน","Open staff shop"):T("สมัครเป็นช่าง","Apply")}</button></div>`;
-    $("dGo").onclick=()=>ME&&ME.staff?testTech():openJoin();return;
+    $("dGo").onclick=e=>PREV()?busy(e.currentTarget,quickTech):openJoin();return;
   }
   $("dTabs").hidden=false;
   drawHead(t);

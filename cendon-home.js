@@ -187,6 +187,30 @@ body.ch-on .navwrap{display:none!important}
   .ch-car{padding:18px!important}
   .ch-car h2{font-size:26px}
 }
+/* ════ สีเรียบ ไม่มีไล่สี ════
+   ใช้สีทึบสีเดียวต่อชิ้น — ส้ม Cendon เป็นสีของการ์ดรถ (ตัวเด่นหนึ่งเดียวของหน้า)
+   ที่เหลือเป็นพื้นกับตัวหนังสือ ไอคอนเป็นสีทึบแบนไม่มีเงาเรือง */
+body.ch-on .one-aura{display:none!important}
+.ch-car{background:#F28C38!important;color:#1A0F07!important;box-shadow:none!important}
+.ch-car::before{display:none}
+.ch-car .eye{color:rgba(26,15,7,.62)}
+.ch-car .eye i{background:#1A0F07;box-shadow:none}
+.ch-car .sub{color:rgba(26,15,7,.7)}
+.ch-car .sw{background:rgba(26,15,7,.12)!important;color:#1A0F07;backdrop-filter:none}
+.ch-silo{filter:none}
+.ch-silo .body{fill:#1A0F07}.ch-silo .glass{fill:#F28C38;opacity:.35}
+.ch-silo .wheel{fill:#1A0F07;stroke:#F28C38;stroke-width:3}
+.ch-silo .light{fill:#FFF3E0;filter:none}.ch-silo .beam{display:none}
+.ch-silo path[stroke]{stroke:rgba(242,140,56,.35)}
+.ch-stat{background:rgba(26,15,7,.1)!important;backdrop-filter:none;color:#1A0F07}
+.ch-stat small,.ch-stat b em{color:rgba(26,15,7,.6)!important}
+.ch-ask button{background:#F28C38!important;box-shadow:none!important;color:#1A0F07}
+.ch-ask i.lead{color:var(--muted)}
+.ch-act i{background:var(--c)!important;box-shadow:none!important}
+.ch-ring{background:conic-gradient(#F28C38 calc(var(--p)*1%),rgba(127,127,127,.18) 0)}
+.ch-av{background:#F28C38!important;box-shadow:none!important;color:#1A0F07}
+.ch-logo{filter:none}
+.ch-row i{background:rgba(127,127,127,.1)!important;color:var(--ink)!important}
 .ch-in{animation:chIn .7s cubic-bezier(.2,.9,.25,1) both}
 @keyframes chIn{from{opacity:0;transform:translateY(14px);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
 @media (prefers-reduced-motion:reduce){.ch-in{animation:none}}

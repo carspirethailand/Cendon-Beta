@@ -72,6 +72,24 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   background:linear-gradient(180deg,color-mix(in srgb,var(--c) 82%,#fff),var(--c));
   box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -2px 0 rgba(0,0,0,.12),0 10px 18px -12px var(--c)}
 
+/* ── รถของฉัน / คุยล่าสุด ── */
+.duo{display:grid;grid-template-columns:1fr;gap:4px}
+.more{font-size:13px;color:var(--mut)}
+.pane{display:block;background:var(--bg2);border-radius:22px;padding:16px 18px;box-shadow:inset 0 1px 0 var(--hi),0 12px 26px -16px var(--sh)}
+.carrow{display:flex;align-items:center;gap:14px}
+.carrow .key{width:48px;height:48px;border-radius:16px;font-size:22px}
+.carrow b{display:block;font-size:16px;font-weight:600}.carrow small{font-size:12.5px;color:var(--mut)}
+.km{display:flex;justify-content:space-between;font-size:12.5px;color:var(--mut);margin-top:14px}
+.km b{color:var(--ink);font-weight:600}
+.trk{height:8px;border-radius:8px;background:var(--bg3);margin-top:8px;overflow:hidden}
+.trk i{display:block;height:100%;border-radius:8px;background:linear-gradient(180deg,var(--or2),var(--or))}
+.list{padding:4px 18px}
+.row{display:flex;align-items:center;gap:12px;padding:12px 0;font-size:14px}
+.row+.row{border-top:1px solid var(--line)}
+.row i{color:var(--faint);font-size:17px}
+.row span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(min-width:900px){.duo{grid-template-columns:1fr 1fr;gap:20px}}
+
 /* ── แถบล่าง ── */
 .tab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom));width:min(428px,calc(100% - 24px));height:66px;border-radius:24px;
   display:grid;grid-template-columns:repeat(5,1fr);z-index:20;background:color-mix(in srgb,var(--bg2) 90%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
@@ -94,6 +112,33 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .sheet .grid{row-gap:18px}
 .in{animation:in .6s cubic-bezier(.2,.9,.25,1) both}
 @keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ════ จอคอม: แถบเมนูซ้าย · เนื้อหากว้าง · การ์ดสรุปเรียงสามใบ · เครื่องมือแถวยาว ════ */
+@media(min-width:900px){
+  body{display:block}
+  .app{max-width:1180px;padding:36px 40px 60px 290px}
+  .logo{position:fixed;top:34px;left:max(40px,calc(50% - 590px + 40px));margin:0;width:24px;height:28px}
+  .tab{left:max(24px,calc(50% - 590px + 24px));top:88px;bottom:auto;transform:none;width:220px;height:auto;display:flex;flex-direction:column;gap:4px;
+    padding:10px;border-radius:24px}
+  .tab a{flex-direction:row;justify-content:flex-start;gap:12px;padding:11px 12px;border-radius:14px;font-size:14.5px}
+  .tab a i{width:auto;height:auto;background:none!important;font-size:20px}
+  .tab a.on{background:color-mix(in srgb,var(--or) 14%,transparent)}
+  .tab a:hover:not(.on){background:var(--bg3);color:var(--ink)}
+  .search{height:54px;font-size:15px}.fab{width:54px;height:54px}
+  .deck{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:16px;overflow:visible;margin:22px 0 0;padding:0}
+  .brief{height:190px}
+  .dots{display:none}
+  .h{margin:34px 4px 18px}
+  .grid{grid-template-columns:repeat(8,1fr)}
+  .key{width:64px;height:64px;border-radius:21px;font-size:27px}
+  .tool{font-size:13px}
+  .tool:hover .key{transform:translateY(-3px)}
+  .sheet{top:50%;bottom:auto;width:min(720px,92vw);max-height:80vh;border-radius:28px;padding:22px 28px 30px;
+    transform:translate(-50%,-46%) scale(.97);opacity:0;pointer-events:none;transition:transform .3s cubic-bezier(.2,.9,.25,1),opacity .25s}
+  .open-all .sheet{transform:translate(-50%,-50%);opacity:1;pointer-events:auto}
+  .sheet .grid{grid-template-columns:repeat(6,1fr)}
+  .grab{display:none}
+}
 @media(prefers-reduced-motion:reduce){.in{animation:none}.sheet{transition:none}}
 </style>
 </head>
@@ -111,6 +156,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
   <div class="h in" style="animation-delay:.15s"><b>เครื่องมือ</b><button id="allBtn">ทั้งหมด</button></div>
   <div class="grid in" id="home" style="animation-delay:.18s"></div>
+
+  <!-- ล่าง: รถของฉัน + คุยล่าสุด (บนคอมเรียงคู่กัน บนมือถือเรียงลงมา) -->
+  <div class="duo in" style="animation-delay:.22s">
+    <div><div class="h"><b>รถของฉัน</b><a href="garage.html" class="more">การาจ</a></div><a class="pane" id="myCar" href="garage.html"></a></div>
+    <div><div class="h"><b>คุยล่าสุด</b><a href="chat.html" class="more">ทั้งหมด</a></div><div class="pane list" id="recent"></div></div>
+  </div>
 </main>
 
 <nav class="tab"><a class="on" href="home-new.html"><i class="ti ti-home"></i>หน้าหลัก</a><a href="garage.html"><i class="ti ti-car"></i>การาจ</a><a href="chat.html"><i class="ti ti-message-2"></i>แชต</a><a href="news.html"><i class="ti ti-book-2"></i>นิตยสาร</a><a href="profile.html"><i class="ti ti-user"></i>บัญชี</a></nav>
@@ -172,6 +223,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     {cls:"night",eye:"ti-sparkles",k:"ถาม CENDON",t:"รถเป็นอะไร?",p:"เล่าอาการ ส่งรูป หรืออัดเสียงก็ได้",pill:"แอร์ไม่เย็น · เสียงดังตอนเบรก",temp:"",go:"chat.html?attach=text"}
   ];
   $("deck").innerHTML=cards.map(function(x){return '<a class="brief '+x.cls+'" href="'+x.go+'">'+art()+'<small><i class="ti '+x.eye+'"></i>'+x.k+'</small><h3>'+x.t+'</h3><p>'+x.p+'</p>'+(x.temp?'<div class="temp">'+x.temp+'</div>':'')+'<span class="pill">'+x.pill+'</span><span class="open">เปิด <i class="ti ti-arrow-right"></i></span></a>'}).join("");
+  var kmL=km?10000-km%10000:0, pc=km?(km%10000)/100:0;
+  $("myCar").innerHTML=c?'<div class="carrow"><span class="key" style="--c:#E07B45"><i class="ti ti-car"></i></span><div><b>'+(c.name||"")+'</b><small>'+[c.year,c.make].filter(Boolean).join(" · ")+'</small></div></div>'+
+    '<div class="km"><span>เลขไมล์ <b>'+(km?km.toLocaleString("en-US"):"—")+'</b> กม.</span><span>เช็กระยะอีก <b>'+(km?kmL.toLocaleString("en-US"):"—")+'</b> กม.</span></div><div class="trk"><i style="width:'+pc+'%"></i></div>'
+    :'<div class="carrow"><span class="key" style="--c:#6C7686"><i class="ti ti-plus"></i></span><div><b>เพิ่มรถคันแรก</b><small>แล้ว Cendon จะดูแลที่เหลือให้</small></div></div>';
+  var ss=(rd("chatSessions",[])||[]).slice().sort(function(a,b){return(b.t||0)-(a.t||0)}).slice(0,3);
+  $("recent").innerHTML=ss.length?ss.map(function(x){return '<a class="row" href="chat.html?session='+encodeURIComponent(x.id)+'"><i class="ti ti-message-2"></i><span>'+String(x.title||"แชต").replace(/</g,"&lt;")+'</span><i class="ti ti-chevron-right"></i></a>'}).join(""):'<div class="row"><i class="ti ti-message-2"></i><span style="color:var(--mut)">ยังไม่มีบทสนทนา</span></div>';
   $("dots").innerHTML=cards.map(function(_,i){return '<i'+(i?'':' class="on"')+'></i>'}).join("");
   $("deck").addEventListener("scroll",function(){var i=Math.round(this.scrollLeft/this.clientWidth);[].forEach.call($("dots").children,function(d,j){d.classList.toggle("on",i===j)})},{passive:true});
 })();

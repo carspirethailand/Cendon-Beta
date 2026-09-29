@@ -461,7 +461,9 @@ const ROLE_RANK={owner:4,admin:3,moderator:2,user:1};
 const rank=r=>ROLE_RANK[r]||0;
 const ROLE_TH={owner:"เจ้าของระบบ",admin:"ผู้ดูแลระบบ",moderator:"ผู้ควบคุม",user:"ผู้ใช้"};
 
-function gate(msg,actions){ $("gmsg").innerHTML=msg; $("gact").innerHTML=actions||"" }
+/* openNda ซ่อนกล่องนี้ไว้ — ถ้าไม่เปิดกลับ ข้อความหลังลงนาม (เช่น "ยังไม่มีเนื้อหา" หรือ error) จะถูกเขียนลงกล่องที่มองไม่เห็น
+   ผู้ใช้เห็นแต่จอดำ จึงต้องแสดงกล่องทุกครั้งที่มีข้อความ */
+function gate(msg,actions){ $("gmsg").innerHTML=msg; $("gact").innerHTML=actions||""; $("gate").style.display="" }
 
 async function api(path,opt){
   const u=auth&&auth.currentUser;
@@ -1005,5 +1007,7 @@ function wire(){
   $("nav").addEventListener("click",e=>{ if(e.target.closest(".nv")&&innerWidth<=940) toc(false) });
 }
 </script>
+<!-- แผงผู้ดูแลแบบลอย: โหลดทุกหน้า แต่แสดงเฉพาะผู้ดูแลที่เปิดไว้ในตั้งค่า -->
+<script src="cendon-admin.js" defer></script>
 </body>
 </html>

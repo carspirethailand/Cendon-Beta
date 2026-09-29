@@ -13630,82 +13630,58 @@ body.w-busy .w-sweep i,body.w-busy .w-sweep b{animation-play-state:running!impor
 .rs-i:last-child span{background:linear-gradient(90deg,var(--c-faint) 0%,var(--c-ink) 50%,var(--c-faint) 100%);background-size:220% 100%;
   -webkit-background-clip:text;background-clip:text;color:transparent;animation:wShimmer 2s linear infinite}
 .rs-l div{display:flex;gap:8px;align-items:center;padding:2px 0}.rs-l i{color:#F28C38}
-/* ════ สวิตช์โหมด AI 3 ตำแหน่ง แบบสวิตช์โลหะของจริง ════
-   ขนาดกล่องนอกคงที่ 78×34 เท่าปุ่มเดิม ช่องพิมพ์จึงไม่ขยับ · ทุกชิ้นวาดด้วย CSS ไม่มีรูป
-   --p = ตำแหน่งปุ่ม 0..1 (JS ตั้งให้) · --glow = ความสว่างไฟตามโหมด */
-.dsw{--p:.5;--glow:.65;--travel:46px;position:relative;flex:none;width:78px;height:34px;cursor:pointer;touch-action:none;
+/* ════ ปุ่มโหมด AI ในช่องพิมพ์ (เหมือนเดิม) ════ */
+.dp-btn{display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 11px;border-radius:999px;border:1px solid var(--c-line2);
+  background:none;color:var(--c-mut);font:inherit;font-size:12.5px;cursor:pointer;flex:none;white-space:nowrap}
+.dp-btn:hover{color:var(--c-ink);border-color:var(--c-line)}
+.dp-btn i{font-size:15px;color:#F28C38}
+/* ════ กล่องที่เด้งขึ้น: สวิตช์โลหะ 3 ตำแหน่งแบบของจริง ════
+   ตัวสวิตช์ไม่มีตัวหนังสือ ชื่อโหมดโผล่เป็นป้ายตอนชี้ · ทุกชิ้นวาดด้วย CSS
+   --p = ตำแหน่งปุ่ม 0..1 (JS ตั้งให้) */
+.dp-pop{position:fixed;z-index:9500;width:272px;padding:14px 26px 20px;border-radius:22px;background:var(--sheet-bg);border:1px solid var(--c-line);
+  box-shadow:0 24px 60px -18px rgba(0,0,0,.45),0 2px 6px rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.12);
+  -webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);
+  transform-origin:50% 100%;animation:dpIn .34s cubic-bezier(.34,1.56,.64,1)}
+@keyframes dpIn{from{opacity:0;transform:translateY(8px) scale(.94)}to{opacity:1;transform:none}}
+.dp-pop h5{margin:0 0 10px;font-size:10.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--c-faint);text-align:center}
+.dp-pop h5 b{color:#F28C38;font-weight:700}
+.dp-stage{position:relative;display:flex;justify-content:center}
+/* สวิตช์สีขาวบาง ๆ สมจริงด้วยเงาอย่างเดียว: รางบาง ร่องจมตื้น ปุ่มลอยมีเงาตกกระทบนุ่ม ๆ */
+.dsw{--p:.5;--travel:176px;position:relative;flex:none;width:220px;height:40px;cursor:grab;touch-action:none;
   -webkit-tap-highlight-color:transparent;outline:none;border-radius:999px;user-select:none;-webkit-user-select:none}
-/* ขอบโครเมียมรอบร่อง */
-.dsw::before{content:"";position:absolute;inset:3px 0;border-radius:999px;
-  background:linear-gradient(180deg,#f7f3ee 0%,#b9b2a8 38%,#8a8278 52%,#d8d2ca 78%,#fbf8f4 100%);
-  box-shadow:0 1px 1.5px rgba(0,0,0,.28),0 4px 10px -3px rgba(40,24,8,.35),inset 0 .5px 0 rgba(255,255,255,.9)}
-.dsw:focus-visible::before{box-shadow:0 0 0 2px rgba(242,140,56,.55),0 4px 10px -3px rgba(40,24,8,.35)}
-/* ร่องที่ปุ่มวิ่ง: อะโนไดซ์เข้ม ฝังลึก */
-.dsw-well{position:absolute;inset:5px 2px;border-radius:999px;overflow:hidden;
-  background:linear-gradient(180deg,#0d0b0a 0%,#221d19 55%,#2c2621 100%);
-  box-shadow:inset 0 2.5px 4px rgba(0,0,0,.8),inset 0 -1px 1px rgba(255,255,255,.07),inset 0 0 0 .5px rgba(0,0,0,.6)}
-/* เกล็ดโลหะแบบสีรถหรู + ประกายส้มลอยช้า ๆ */
-.dsw-flake{position:absolute;inset:0;opacity:.9;mix-blend-mode:screen;
-  background:
-   radial-gradient(circle at 31% 43%,rgba(255,226,190,.7) 0 .22px,transparent .5px) 0 0/3px 5px,
-   radial-gradient(circle at 67% 21%,rgba(255,255,255,.4) 0 .2px,transparent .45px) 1px 2px/5px 3px,
-   radial-gradient(circle at 13% 71%,rgba(242,140,56,.75) 0 .3px,transparent .6px) 2px 1px/7px 4px,
-   radial-gradient(circle at 83% 57%,rgba(255,190,110,.55) 0 .25px,transparent .55px) 3px 0/11px 6px,
-   radial-gradient(circle at 47% 89%,rgba(255,240,220,.85) 0 .35px,transparent .8px) 0 3px/17px 7px,
-   radial-gradient(circle at 59% 33%,rgba(255,160,70,.9) 0 .4px,transparent 1px) 5px 2px/23px 9px;
-  animation:dswFlake 11s linear infinite}
-@keyframes dswFlake{to{background-position:3px 0,-5px 2px,9px 1px,-8px 0,17px 3px,-18px 2px}}
-/* แสงวิ่งผ่านเกล็ดเป็นระยะ เหมือนแสงไฟสะท้อนสีรถ */
-.dsw-flake::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,220,180,.35) 48%,transparent 62%);
-  background-size:260% 100%;animation:dswSheen 5.5s ease-in-out infinite}
-@keyframes dswSheen{0%,55%{background-position:120% 0}100%{background-position:-60% 0}}
-/* ไฟ LED ส้มไหลตามปุ่ม สว่างขึ้นตามโหมด */
-.dsw-led{position:absolute;left:0;top:0;bottom:0;width:calc(14px + var(--p) * var(--travel));border-radius:999px;opacity:var(--glow);
-  background:linear-gradient(90deg,rgba(242,140,56,.05),rgba(242,140,56,.55));transition:width .46s cubic-bezier(.34,1.56,.64,1),opacity .4s}
-.dsw-led::after{content:"";position:absolute;left:6px;right:4px;top:50%;height:1.5px;margin-top:-.75px;border-radius:2px;
-  background:linear-gradient(90deg,rgba(255,190,120,.2),#ffb36b);box-shadow:0 0 5px 1px rgba(242,140,56,.85)}
-/* รอยบาก 3 จุดล็อก */
-.dsw-n{position:absolute;top:50%;width:3px;height:3px;margin:-1.5px 0 0 -1.5px;border-radius:50%;
-  background:#050404;box-shadow:0 .5px 0 rgba(255,255,255,.18),inset 0 .5px 1px rgba(0,0,0,.9)}
-.dsw-n:nth-child(3){left:14px}.dsw-n:nth-child(4){left:37px}.dsw-n:nth-child(5){left:60px}
-/* ปุ่มเลื่อน: แคปซูลโลหะขัด มีเงาตกกระทบ แสงสะท้อนขยับตามตำแหน่ง */
-.dsw-knob{position:absolute;top:2px;left:calc(var(--p) * var(--travel));width:32px;height:30px;border-radius:999px;
-  background:
-   radial-gradient(ellipse 70% 45% at calc(30% + var(--p) * 40%) 16%,rgba(255,255,255,.95),rgba(255,255,255,0) 70%),
-   conic-gradient(from calc(190deg + var(--p) * 60deg) at 50% 55%,#cfc9c0,#fbf8f3,#a39c92,#e9e4dc,#b8b1a7,#fdfbf7,#cfc9c0);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -2px 3px rgba(60,40,20,.22),0 0 0 .5px rgba(0,0,0,.4),
-   0 2px 2.5px rgba(0,0,0,.35),0 7px 12px -4px rgba(0,0,0,.5);
-  transition:left .46s cubic-bezier(.34,1.56,.64,1),transform .16s ease,box-shadow .16s ease;will-change:left}
-/* ลายกันลื่น (knurl) สองข้างของปุ่ม */
-.dsw-knob::before,.dsw-knob::after{content:"";position:absolute;top:8px;bottom:8px;width:5px;border-radius:1px;
-  background:repeating-linear-gradient(90deg,rgba(70,55,40,.3) 0 .5px,rgba(255,255,255,.7) .5px 1.25px);
-  -webkit-mask:linear-gradient(180deg,transparent,#000 25%,#000 75%,transparent);mask:linear-gradient(180deg,transparent,#000 25%,#000 75%,transparent)}
-.dsw-knob::before{left:6px}.dsw-knob::after{right:6px}
-/* อัญมณีไฟกลางปุ่ม เรืองตามโหมด */
-.dsw-cap{position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;
-  background:radial-gradient(circle at 35% 30%,#fff3e3 0 18%,#ffae5c 40%,#d4661a 80%);
-  box-shadow:inset 0 -.5px 1px rgba(90,30,0,.6),0 0 calc(2px + var(--glow) * 8px) calc(var(--glow) * 1.5px) rgba(242,140,56,calc(.3 + var(--glow) * .6));
-  transition:box-shadow .4s}
-.dsw:hover .dsw-knob{box-shadow:inset 0 1px 0 #fff,inset 0 -2px 3px rgba(60,40,20,.22),0 0 0 .5px rgba(0,0,0,.4),0 2px 3px rgba(0,0,0,.35),0 9px 14px -4px rgba(0,0,0,.5)}
-/* กดลง: ปุ่มจมลงในร่อง เงาสั้นลง */
-.dsw.press .dsw-knob{transform:translateY(.8px) scale(.965);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.8),inset 0 -1px 2px rgba(60,40,20,.25),0 0 0 .5px rgba(0,0,0,.45),0 1px 1.5px rgba(0,0,0,.4),0 3px 6px -3px rgba(0,0,0,.45)}
-.dsw.drag .dsw-knob,.dsw.drag .dsw-led{transition:none}
+/* ตัวเรือน */
+.dsw::before{content:"";position:absolute;inset:10px 0;border-radius:999px;
+  background:linear-gradient(180deg,#ffffff 0%,#f6f5f3 100%);
+  box-shadow:inset 0 1px 0 #fff,0 0 0 .5px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.06),0 5px 12px -6px rgba(0,0,0,.14)}
+.dsw:focus-visible::before{box-shadow:0 0 0 3px rgba(242,140,56,.4),0 5px 12px -6px rgba(0,0,0,.14)}
+/* ร่องที่ปุ่มวิ่ง: จมลงไปในตัวเรือน */
+.dsw-well{position:absolute;inset:13px 3px;border-radius:999px;
+  background:linear-gradient(180deg,#ebe8e4 0%,#f3f1ee 60%,#f9f8f6 100%);
+  box-shadow:inset 0 1.5px 3px rgba(0,0,0,.12),inset 0 .5px 1px rgba(0,0,0,.08),inset 0 -1px 0 rgba(255,255,255,.95)}
+/* รอยบาก 3 จุดล็อก: หลุมเล็ก ๆ */
+.dsw-n{position:absolute;top:50%;width:4px;height:4px;margin:-2px 0 0 -2px;border-radius:50%;
+  background:#e2dfdb;box-shadow:inset 0 .5px 1px rgba(0,0,0,.2),0 .5px 0 rgba(255,255,255,.95)}
+.dsw-n:nth-child(1){left:19px}.dsw-n:nth-child(2){left:107px}.dsw-n:nth-child(3){left:195px}
+/* ปุ่มเลื่อน: ขาวนวล ลอยเหนือร่อง เงาสองชั้น (เงาชิด + เงานุ่มไกล) */
+.dsw-knob{position:absolute;top:6px;left:calc(var(--p) * var(--travel));width:44px;height:28px;border-radius:999px;
+  background:radial-gradient(ellipse 90% 70% at 50% 18%,#ffffff 0%,#fcfbfa 55%,#f0eeea 100%);
+  box-shadow:inset 0 1px 0 #fff,inset 0 -2px 4px rgba(0,0,0,.04),0 0 0 .5px rgba(0,0,0,.08),
+   0 1px 2px rgba(0,0,0,.12),0 4px 8px -3px rgba(0,0,0,.16),0 10px 18px -8px rgba(0,0,0,.18);
+  transition:left .5s cubic-bezier(.34,1.56,.64,1),transform .16s ease,box-shadow .16s ease;will-change:left}
+/* หลุมตรงกลางปุ่มไว้วางนิ้ว */
+.dsw-cap{position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;
+  background:radial-gradient(circle at 50% 70%,#ffffff 0%,#f4f2ef 60%,#ebe8e4 100%);
+  box-shadow:inset 0 1px 1.5px rgba(0,0,0,.1),0 .5px 0 rgba(255,255,255,.9)}
+.dsw:hover .dsw-knob{box-shadow:inset 0 1px 0 #fff,inset 0 -2px 4px rgba(0,0,0,.04),0 0 0 .5px rgba(0,0,0,.08),
+   0 1.5px 2.5px rgba(0,0,0,.12),0 6px 10px -3px rgba(0,0,0,.18),0 14px 22px -8px rgba(0,0,0,.2)}
+/* กดลง: ปุ่มจมลง เงาสั้นลง */
+.dsw.press .dsw-knob{transform:translateY(1px) scale(.97);
+  box-shadow:inset 0 1px 0 #fff,inset 0 -1px 3px rgba(0,0,0,.05),0 0 0 .5px rgba(0,0,0,.1),0 .5px 1px rgba(0,0,0,.16),0 2px 4px -2px rgba(0,0,0,.18)}
+.dsw.drag .dsw-knob{transition:none}
 .dsw.drag{cursor:grabbing}
 /* "กึก" ตอนล็อกเข้าจุด */
-.dsw.snap .dsw-knob{animation:dswThunk .3s ease-out}
-@keyframes dswThunk{0%{transform:scale(1.06,.93)}45%{transform:scale(.98,1.03)}100%{transform:none}}
-.dsw-sp{position:absolute;width:3px;height:3px;border-radius:50%;pointer-events:none;background:#ffc27a;
-  box-shadow:0 0 4px 1px rgba(242,140,56,.9);animation:dswSpark .6s cubic-bezier(.2,.7,.3,1) forwards}
-@keyframes dswSpark{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.3)}}
-/* ธีมมืด: โครเมียมเป็นไทเทเนียมเข้ม */
-html[data-theme="dark"] .dsw::before,html[data-theme="ocean"] .dsw::before,html[data-theme="magma"] .dsw::before{
-  background:linear-gradient(180deg,#8d8a86 0%,#4a4642 40%,#2b2825 55%,#5d5954 80%,#a19d97 100%);
-  box-shadow:0 1px 1.5px rgba(0,0,0,.6),0 4px 10px -3px rgba(0,0,0,.7),inset 0 .5px 0 rgba(255,255,255,.35)}
-html[data-theme="dark"] .dsw-knob,html[data-theme="ocean"] .dsw-knob,html[data-theme="magma"] .dsw-knob{
-  background:
-   radial-gradient(ellipse 70% 45% at calc(30% + var(--p) * 40%) 16%,rgba(255,255,255,.7),rgba(255,255,255,0) 70%),
-   conic-gradient(from calc(190deg + var(--p) * 60deg) at 50% 55%,#8e8983,#d9d4cd,#5f5a54,#b3ada6,#6f6a64,#e2ddd6,#8e8983)}
+.dsw.snap .dsw-knob{animation:dswThunk .32s ease-out}
+@keyframes dswThunk{0%{transform:scale(1.04,.95)}45%{transform:scale(.99,1.02)}100%{transform:none}}
 /* ป้ายชื่อโหมด โผล่ตอนชี้ */
 .dsw-tip{position:fixed;z-index:9600;left:0;top:0;max-width:230px;padding:8px 11px 9px;border-radius:13px;pointer-events:none;
   background:var(--sheet-bg);border:1px solid var(--c-line);box-shadow:0 10px 28px -8px rgba(0,0,0,.35);
@@ -13718,8 +13694,8 @@ html[data-theme="dark"] .dsw-knob,html[data-theme="ocean"] .dsw-knob,html[data-t
   background:linear-gradient(90deg,#b8641c,#F28C38 50%,#d9892f);-webkit-background-clip:text;background-clip:text;color:transparent}
 .dsw-tip b i{width:6px;height:6px;border-radius:50%;background:#F28C38;box-shadow:0 0 6px #F28C38;flex:none}
 .dsw-tip span{display:block;font-size:11.5px;line-height:1.45;color:var(--c-mut);margin-top:2px}
-@media (prefers-reduced-motion:reduce){.dsw-flake,.dsw-flake::after,.dsw.snap .dsw-knob{animation:none}
-  .dsw-knob,.dsw-led{transition-timing-function:ease}}
+@media (prefers-reduced-motion:reduce){.dsw.snap .dsw-knob,.dp-pop{animation:none}
+  .dsw-knob{transition-timing-function:ease}}
 </style>
 <script id="feat-js">
 (function(){
@@ -13775,83 +13751,99 @@ D.addEventListener("input",function(e){
 });
 D.addEventListener("keydown",function(e){ if(e.key==="Enter"&&e.target.closest&&e.target.closest(".iq-card")){ e.preventDefault(); var b=e.target.closest(".iq-card").querySelector(".iq-next"); if(!b.disabled)b.click() } });
 
-/* ── สวิตช์โหมด AI 3 ตำแหน่ง ในช่องพิมพ์ ──
+/* ── โหมด AI: ปุ่มในช่องพิมพ์ กดแล้วเด้งกล่องที่มีสวิตช์ 3 ตำแหน่งแบบของจริง ──
    ตัวสวิตช์ไม่มีตัวหนังสือ ชื่อโผล่เป็นป้ายตอนชี้ (มือถือโผล่หลังเปลี่ยนโหมด)
    ลากได้ ปล่อยแล้วดีดเข้าจุดล็อกที่ใกล้สุด · คลิกตรงไหนก็ไปตำแหน่งนั้น · ←/→ ได้ */
-var MODES=[{th:"Sprint",en:"Sprint",dth:"ฉับไว — ตอบทันที สั้น กระชับ",den:"Swift — instant, short, to the point",g:.35},
-           {th:"Grand Tour",en:"Grand Tour",dth:"สง่า สมดุล — Cendon เลือกให้ว่าเรื่องไหนควรคิดแค่ไหน",den:"Poised balance — Cendon decides how deep to think",g:.65},
-           {th:"Atelier",en:"Atelier",dth:"ประณีตที่สุด — คิดลึก ค้นหลายแหล่ง ตรวจไขว้ ช้ากว่าแต่แม่นสุด",den:"Finest craft — deeper thinking, more sources, cross-checked",g:1}];
-var TRAVEL=46, W=78;
-var calm=matchMedia("(prefers-reduced-motion: reduce)").matches;
+var MODES=[{ic:"ti-bolt",th:"Sprint",en:"Sprint",dth:"ฉับไว — ตอบทันที สั้น กระชับ",den:"Swift — instant, short, to the point",g:.35},
+           {ic:"ti-steering-wheel",th:"Grand Tour",en:"Grand Tour",dth:"สง่า สมดุล — Cendon เลือกให้ว่าเรื่องไหนควรคิดแค่ไหน",den:"Poised balance — Cendon decides how deep to think",g:.65},
+           {ic:"ti-diamond",th:"Atelier",en:"Atelier",dth:"ประณีตที่สุด — คิดลึก ค้นหลายแหล่ง ตรวจไขว้ ช้ากว่าแต่แม่นสุด",den:"Finest craft — deeper thinking, more sources, cross-checked",g:1}];
+var TRAVEL=176, HALF=22;   /* ระยะวิ่งของปุ่ม และครึ่งความกว้างปุ่ม (ตรงกับ CSS) */
+var calm=matchMedia("(prefers-reduced-motion: reduce)").matches, noHover=matchMedia("(hover: none)").matches;
 function get(){ try{ var r=localStorage.getItem("spire_depth"); if(r==null)return 1; var v=+JSON.parse(r); return v===0||v===2?v:1 }catch(e){ return 1 } }
 function paint(){ var v=get(), m=MODES[v];
+  D.querySelectorAll(".dp-btn").forEach(function(b){ b.innerHTML='<i class="ti '+m.ic+'"></i>'+T(m.th,m.en) });
   D.querySelectorAll(".dsw").forEach(function(s){ if(s.classList.contains("drag"))return;
-    s.style.setProperty("--p",v/2); s.style.setProperty("--glow",m.g); s.dataset.v=v;
+    s.style.setProperty("--p",v/2); s.dataset.v=v;
     s.setAttribute("aria-valuenow",v); s.setAttribute("aria-valuetext",T(m.th,m.en)) }) }
 function set(v,sw){ var old=get(); try{ localStorage.setItem("spire_depth",JSON.stringify(v)) }catch(e){} paint();
   if(sw)thunk(sw,v!==old); }
-/* จังหวะ "กึก": ปุ่มสะเทือน + ประกายส้มแตกออก + มือถือสั่นสั้น ๆ */
+/* จังหวะ "กึก": ปุ่มสะเทือนหนึ่งที + มือถือสั่นสั้น ๆ */
 function thunk(sw,changed){
   sw.classList.remove("snap"); void sw.offsetWidth; sw.classList.add("snap");
-  setTimeout(function(){ sw.classList.remove("snap") },320);
-  if(!changed||calm)return;
-  try{ navigator.vibrate&&navigator.vibrate(8) }catch(e){}
-  var cx=16+get()/2*TRAVEL, n=9;
-  for(var i=0;i<n;i++){ var d=D.createElement("i"), a=Math.PI*2*i/n+Math.random()*.5, r=10+Math.random()*9;
-    d.className="dsw-sp"; d.style.left=(cx-1.5)+"px"; d.style.top="15.5px";
-    d.style.setProperty("--dx",(Math.cos(a)*r).toFixed(1)+"px"); d.style.setProperty("--dy",(Math.sin(a)*r*.7).toFixed(1)+"px");
-    d.style.animationDelay=(Math.random()*60|0)+"ms"; sw.appendChild(d); setTimeout(d.remove.bind(d),720) }
+  setTimeout(function(){ sw.classList.remove("snap") },340);
+  if(changed&&!calm)try{ navigator.vibrate&&navigator.vibrate(8) }catch(e){}
 }
 /* ป้ายชื่อ: ใช้ตัวเดียวทั้งหน้า ลอยแบบ fixed จึงไม่ดันเลย์เอาต์ */
 var tip, tipT;
 function showTip(sw,i,ms){
   if(!tip){ tip=D.createElement("div"); tip.className="dsw-tip"; tip.setAttribute("aria-hidden","true"); D.body.appendChild(tip) }
-  var m=MODES[i], r=sw.getBoundingClientRect(), x=r.left+16+i/2*TRAVEL;
+  var m=MODES[i], r=sw.getBoundingClientRect(), x=r.left+HALF+i/2*TRAVEL;
+  /* อยู่ในกล่องเด้ง: ป้ายลอยเหนือกล่อง ไม่บังหัวกล่อง */
+  var box=sw.closest(".dp-pop"), top=box?box.getBoundingClientRect().top-4:r.top+2;
   tip.innerHTML="<b>"+(i===get()?"<i></i>":"")+T(m.th,m.en)+"</b><span>"+T(m.dth,m.den)+"</span>";
   var w=Math.min(230,tip.offsetWidth||200), lx=Math.max(10+w/2,Math.min(x,innerWidth-10-w/2));
-  tip.style.left=lx+"px"; tip.style.top=(r.top-8)+"px"; tip.style.setProperty("--ax",(w/2+(x-lx))+"px");
+  tip.style.left=lx+"px"; tip.style.top=top+"px"; tip.style.setProperty("--ax",(w/2+(x-lx))+"px");
   tip.classList.add("on"); clearTimeout(tipT); if(ms)tipT=setTimeout(hideTip,ms);
 }
 function hideTip(){ clearTimeout(tipT); if(tip)tip.classList.remove("on") }
-function zoneOf(sw,clientX){ var r=sw.getBoundingClientRect(); return Math.max(0,Math.min(2,Math.round((clientX-r.left-16)/(TRAVEL/2)))) }
+function zoneOf(sw,clientX){ var r=sw.getBoundingClientRect(); return Math.max(0,Math.min(2,Math.round((clientX-r.left-HALF)/(TRAVEL/2)))) }
 function build(){
   var s=D.createElement("div"); s.className="dsw"; s.tabIndex=0;
   s.setAttribute("role","slider"); s.setAttribute("aria-valuemin","0"); s.setAttribute("aria-valuemax","2");
   s.setAttribute("aria-label",T("โหมดของ Cendon AI","Cendon AI mode"));
-  s.innerHTML='<span class="dsw-well"><span class="dsw-flake"></span><span class="dsw-led"></span><i class="dsw-n"></i><i class="dsw-n"></i><i class="dsw-n"></i></span><span class="dsw-knob"><span class="dsw-cap"></span></span>';
+  s.innerHTML='<span class="dsw-well"><i class="dsw-n"></i><i class="dsw-n"></i><i class="dsw-n"></i></span><span class="dsw-knob"><span class="dsw-cap"></span></span>';
   var st=null;
   s.addEventListener("pointerdown",function(e){ if(e.button>0)return;
     st={x:e.clientX,p:get()/2,moved:false,zone:get(),touch:e.pointerType!=="mouse"};
     s.classList.add("press"); try{ s.setPointerCapture(e.pointerId) }catch(_){} });
   s.addEventListener("pointermove",function(e){
     if(!st){ if(e.pointerType==="mouse")showTip(s,zoneOf(s,e.clientX)); return }
-    var dx=e.clientX-st.x; if(!st.moved&&Math.abs(dx)<3)return;
+    var dx=e.clientX-st.x; if(!st.moved&&Math.abs(dx)<4)return;
     st.moved=true; s.classList.add("drag");
     var p=Math.max(0,Math.min(1,st.p+dx/TRAVEL)); s.style.setProperty("--p",p);
     /* ผ่านจุดล็อกแต่ละจุด = สั่นเบา ๆ เหมือนนิ้วรู้สึกรอยบาก */
     var z=Math.round(p*2); if(z!==st.zone){ st.zone=z; if(!calm)try{ navigator.vibrate&&navigator.vibrate(4) }catch(_){} }
-    s.style.setProperty("--glow",MODES[z].g); showTip(s,z) });
+    showTip(s,z) });
   function end(e){ if(!st)return; var was=st; st=null; s.classList.remove("press","drag");
     var v=was.moved?Math.round(parseFloat(s.style.getPropertyValue("--p"))*2):zoneOf(s,e.clientX);
-    set(v,s); if(was.touch||e.pointerType!=="mouse")showTip(s,v,1400); else showTip(s,v) }
+    set(v,s); if(was.touch)showTip(s,v,1400); else showTip(s,v) }
   s.addEventListener("pointerup",end);
   s.addEventListener("pointercancel",function(){ st=null; s.classList.remove("press","drag"); paint() });
   s.addEventListener("pointerleave",function(e){ if(!st&&e.pointerType==="mouse")hideTip() });
   s.addEventListener("keydown",function(e){ var v=get(), k=e.key, n=v;
     if(k==="ArrowRight"||k==="ArrowUp")n=Math.min(2,v+1); else if(k==="ArrowLeft"||k==="ArrowDown")n=Math.max(0,v-1);
-    else if(k==="Home")n=0; else if(k==="End")n=2; else return;
+    else if(k==="Home")n=0; else if(k==="End")n=2; else if(k==="Escape"){ closePop(); return } else return;
     e.preventDefault(); if(n!==v){ set(n,s); showTip(s,n,1600) } });
-  s.addEventListener("blur",hideTip);
   return s;
 }
 function mount(){
   var spots=[["#composer .crow","#sendBtn"],["#v-welcome .w-row","#wSend"]];
   spots.forEach(function(sp){ var row=D.querySelector(sp[0]), before=D.querySelector(sp[1]);
-    if(!row||!before||row.querySelector(".dsw"))return;
-    row.insertBefore(build(),before) });
+    if(!row||!before||row.querySelector(".dp-btn"))return;
+    var b=D.createElement("button"); b.type="button"; b.className="dp-btn"; b.setAttribute("aria-label",T("โหมดของ Cendon AI","Cendon AI mode"));
+    row.insertBefore(b,before); b.onclick=function(e){ e.stopPropagation(); pop(b,e.detail===0) } });
   paint();
 }
-addEventListener("scroll",hideTip,true);
+var popEl=null, offFn=null;
+function closePop(){ hideTip(); if(popEl){ popEl.remove(); popEl=null } if(offFn){ D.removeEventListener("pointerdown",offFn,true); offFn=null } }
+function pop(anchor,kb){
+  if(popEl){ closePop(); return }
+  var p=D.createElement("div"); p.className="dp-pop"; popEl=p;
+  p.innerHTML='<h5><b>Cendon</b> AI</h5><div class="dp-stage"></div>';
+  var sw=build(); p.querySelector(".dp-stage").appendChild(sw);
+  D.body.appendChild(p); paint();
+  var r=anchor.getBoundingClientRect(), w=p.offsetWidth, h=p.offsetHeight;
+  p.style.left=Math.max(10,Math.min(r.left+r.width/2-w/2,innerWidth-w-10))+"px";
+  p.style.top=(r.top-h-12>10?r.top-h-12:r.bottom+12)+"px";
+  /* เปิดด้วยคีย์บอร์ด = โฟกัสสวิตช์ให้กด ←/→ ต่อได้เลย */
+  if(kb)try{ sw.focus({preventScroll:true}) }catch(e){}
+  /* มือถือไม่มีการชี้: เปิดมาแล้วบอกโหมดปัจจุบันสั้น ๆ */
+  if(noHover)setTimeout(function(){ if(popEl===p)showTip(sw,get(),1400) },380);
+  setTimeout(function(){ offFn=function(e){ if(!p.contains(e.target)&&!anchor.contains(e.target))closePop() };
+    D.addEventListener("pointerdown",offFn,true) },0);
+}
+addEventListener("scroll",function(e){ if(!popEl||!popEl.contains(e.target))closePop() },true);
+addEventListener("resize",closePop);
 if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",mount); else mount();
 setTimeout(mount,800); setTimeout(mount,2500);
 })();

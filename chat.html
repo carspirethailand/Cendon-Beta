@@ -6261,7 +6261,12 @@ async function sendMsg(){
     /* ผู้ใช้กดหยุดเอง ไม่ใช่ระบบพัง stopGen จัดการหน้าจอไปแล้ว */
     if(window.__stopped||(e&&e.name==="AbortError")){ window.__stopped=false; return }
     messages.pop();
-    messages.push({role:"ai",text:(lang==="en"?"Sorry, AI error 🙏\n":"ขออภัย AI ขัดข้อง 🙏\n")+e.message+(location.protocol==="file:"?"\n\n(เปิดผ่าน localhost ถ้า AI ไม่ทำงานบน file://)":"")});
+    /* ผู้ใช้ไม่ต้องเห็นข้อความเทคนิคของระบบหลังบ้าน (ชื่อผู้ให้บริการ โควตา รหัสผิดพลาด)
+       บอกแค่สิ่งที่เขาทำได้ — รายละเอียดจริงบันทึกไว้ให้ผู้ดูแลที่หน้าตรวจระบบแล้ว */
+    const quota=/โควตา|quota/i.test(e.message||"");
+    messages.push({role:"ai",text:quota?(lang==="en"?"You've reached today's usage limit. Please try again later 🙏":"วันนี้ใช้งานครบโควตาแล้ว ลองใหม่อีกครั้งภายหลังนะครับ 🙏")
+      :(lang==="en"?"Sorry, Cendon couldn't answer right now. Please try again in a moment 🙏":"ขออภัยครับ ตอนนี้ Cendon ตอบไม่ได้ชั่วคราว ลองส่งใหม่อีกครั้งนะครับ 🙏")});
+    try{ console.warn("AI error:",e&&e.message) }catch(err){}
     renderMessages();saveSession();
     try{ window.slideRelease&&window.slideRelease() }catch(e){}
     sending=false;updateSend();renderChips();

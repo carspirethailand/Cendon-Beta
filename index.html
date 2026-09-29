@@ -15094,5 +15094,249 @@ window.switchView=function(v){
   }
 })();
 </script>
+<!-- ════════════════════════════════════════════════════════════════════
+     หน้าหลักมือถือแบบหน้าเดียว (ทั้งแนวตั้งและแนวนอน)
+     บน: โลโก้ C · ช่องค้นหา · บัญชี   →   billboard เลื่อนซ้ายขวา (ขนาดล็อกคงที่)
+     กลาง: เครื่องมือสองแถว ตัวสุดท้าย "ทั้งหมด"   →   ล่าง: แถบนำทาง (ขนาดล็อก ไฮไลต์ตามหน้าที่เปิด)
+     ทุกชิ้นรวมเป็นก้อนเดียว จัดกึ่งกลางทั้งแกน x และ y
+     ของเดิมของหน้า (จอเลื่อนสามจอ) ยังอยู่ครบ แค่ซ่อนไว้บนมือถือ — จอคอมไม่ถูกแตะเลย
+     ════════════════════════════════════════════════════════════════════ -->
+<style id="mhome-css">
+body.mh-on #v-home>.scroll,body.mh-on #mnav,body.mh-on .fab-dock{display:none!important}
+body.mh-on{overflow:hidden}
+#mh{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:calc(12px + env(safe-area-inset-top)) 16px calc(96px + env(safe-area-inset-bottom));
+  background:var(--bg);color:var(--ink);font-family:var(--kb)}
+#mh *{box-sizing:border-box}
+#mh .mh-in{width:100%;max-width:420px;display:flex;flex-direction:column;gap:22px}
+/* บน */
+#mh .mh-top{display:flex;align-items:center;gap:10px}
+#mh .mh-logo{width:24px;height:28px;flex:none;color:#F08A3D}
+#mh .mh-find{flex:1;min-width:0;height:44px;display:flex;align-items:center;gap:9px;padding:0 15px;border-radius:22px;border:0;
+  background:var(--surface);color:var(--faint);font:inherit;font-size:14px;text-align:left;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 8px 18px -12px rgba(0,0,0,.55)}
+#mh .mh-find i{font-size:18px;color:var(--muted)}
+#mh .mh-av{width:40px;height:40px;flex:none;border-radius:50%;border:0;overflow:hidden;display:grid;place-items:center;
+  font:inherit;font-weight:700;color:#fff;background:linear-gradient(180deg,#F6A04F,#EE8132);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 6px 14px -6px #EE8132}
+#mh .mh-av img{width:100%;height:100%;object-fit:cover}
+/* billboard — ทุกใบสูงเท่ากันเสมอ (ล็อกด้วย aspect-ratio ของกรอบ ไม่ใช่เนื้อหา) */
+#mh .mh-bb{position:relative;width:100%;aspect-ratio:2.05;border-radius:22px;overflow:hidden;
+  box-shadow:0 16px 30px -18px rgba(0,0,0,.6)}
+#mh .mh-track{display:flex;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+#mh .mh-track::-webkit-scrollbar{display:none}
+#mh .mh-card{position:relative;flex:0 0 100%;height:100%;scroll-snap-align:center;padding:16px 18px;color:#fff;text-align:left;border:0;font:inherit;
+  display:flex;flex-direction:column;overflow:hidden;cursor:pointer}
+#mh .mh-card small{display:flex;align-items:center;gap:6px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;opacity:.85}
+#mh .mh-card h3{font-size:21px;font-weight:600;margin:5px 0 1px;line-height:1.2}
+#mh .mh-card p{font-size:12.5px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#mh .mh-card .go{position:relative;z-index:1;margin-top:auto;display:flex;align-items:center;justify-content:space-between;font-size:12.5px;font-weight:500}
+#mh .mh-card .go span{padding:5px 11px;border-radius:99px;background:rgba(255,255,255,.2)}
+#mh .mh-card .big{position:absolute;right:-6px;top:6px;font-size:96px;opacity:.14}
+#mh .c-brief{background:linear-gradient(160deg,#6FA3D9,#3F70B0)}
+#mh .c-garage{background:linear-gradient(160deg,#EC9A5E,#C9612F)}
+#mh .c-mag{background:linear-gradient(160deg,#4D5A7E,#2A3150)}
+#mh .c-more{background:linear-gradient(160deg,#4FB38C,#2B7F63)}
+#mh .mh-dots{display:flex;justify-content:center;gap:6px;margin-top:10px}
+#mh .mh-dots i{width:6px;height:6px;border-radius:6px;background:var(--line);transition:width .3s,background .3s}
+#mh .mh-dots i.on{width:18px;background:#F08A3D}
+/* เครื่องมือ */
+#mh .mh-grid,#mhAll .mh-grid{display:grid;grid-template-columns:repeat(4,1fr);row-gap:16px}
+#mh .mh-t,#mhAll .mh-t{display:flex;flex-direction:column;align-items:center;gap:7px;border:0;background:none;font:inherit;font-size:11.5px;color:var(--muted);cursor:pointer}
+#mh .mh-k,#mhAll .mh-k{width:52px;height:52px;border-radius:17px;display:grid;place-items:center;font-size:23px;color:#fff;transition:transform .12s;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--c) 80%,#fff),var(--c));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -2px 0 rgba(0,0,0,.12),0 8px 16px -10px var(--c)}
+#mh .mh-t:active .mh-k,#mhAll .mh-t:active .mh-k{transform:scale(.92)}
+/* แถบนำทาง — ขนาดล็อก เหมือนกันทุกหน้า */
+#mhNav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom));z-index:101;
+  width:min(420px,calc(100% - 24px));height:64px;border-radius:22px;display:grid;grid-template-columns:repeat(5,1fr);
+  background:var(--surface);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 14px 30px -14px rgba(0,0,0,.6)}
+#mhNav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:0;background:none;font:inherit;font-size:10.5px;color:var(--faint);cursor:pointer}
+#mhNav button span{width:40px;height:26px;border-radius:13px;display:grid;place-items:center;font-size:20px;overflow:hidden}
+#mhNav button span img{width:24px;height:24px;border-radius:50%;object-fit:cover}
+#mhNav button.on{color:#F08A3D}
+#mhNav button.on span{background:rgba(240,138,61,.16)}
+/* แผ่นทั้งหมด (+ ค้นหา + เรียงลำดับ) */
+#mhAll{position:fixed;inset:0;z-index:120;display:none}
+#mhAll.on{display:block}
+#mhAll .bg{position:absolute;inset:0;background:rgba(0,0,0,.45);animation:mhF .2s}
+#mhAll .sh{position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:min(460px,100%);max-height:86%;overflow:auto;
+  background:var(--surface);border-radius:26px 26px 0 0;padding:10px 16px calc(22px + env(safe-area-inset-bottom));animation:mhU .32s cubic-bezier(.2,.9,.25,1)}
+#mhAll .grab{width:38px;height:5px;border-radius:5px;background:var(--line);margin:0 auto 12px}
+#mhAll .q{display:flex;align-items:center;gap:8px;height:42px;padding:0 14px;border-radius:21px;background:var(--bg)}
+#mhAll .q input{flex:1;min-width:0;border:0;outline:0;background:none;color:var(--ink);font:inherit;font-size:14.5px}
+#mhAll .q i{color:var(--muted)}
+#mhAll .sort{display:flex;gap:6px;margin:12px 0 4px}
+#mhAll .sort button{border:0;font:inherit;font-size:12.5px;padding:6px 12px;border-radius:99px;background:var(--bg);color:var(--muted);cursor:pointer}
+#mhAll .sort button.on{background:#F08A3D;color:#fff}
+#mhAll h4{font-size:12px;font-weight:500;color:var(--muted);margin:14px 4px 10px}
+#mhAll .mh-grid{row-gap:16px}
+#mhAll .none{padding:20px;text-align:center;color:var(--muted);font-size:13px}
+@keyframes mhF{from{opacity:0}}@keyframes mhU{from{transform:translate(-50%,100%)}}
+/* แนวนอน (ความสูงน้อย): สองคอลัมน์ ซ้าย = บน + billboard · ขวา = เครื่องมือ — ยังอยู่กลางจอ */
+@media(orientation:landscape) and (max-height:520px){
+  #mh{padding:calc(8px + env(safe-area-inset-top)) calc(20px + env(safe-area-inset-right)) 84px calc(20px + env(safe-area-inset-left))}
+  #mh .mh-in{max-width:760px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:24px;row-gap:12px;align-items:center}
+  #mh .mh-top{grid-column:1/3}
+  #mh .mh-bbw{grid-column:1;min-width:0}
+  #mh .mh-in>.mh-grid{grid-column:2;row-gap:10px;min-width:0}
+  #mh .mh-bb{aspect-ratio:auto;height:min(46vh,190px)}
+  #mh .mh-t{font-size:10.5px}
+  #mh .mh-k{width:44px;height:44px;border-radius:14px;font-size:20px}
+  #mhNav{height:56px;bottom:calc(8px + env(safe-area-inset-bottom))}
+}
+@media(prefers-reduced-motion:reduce){#mhAll .bg,#mhAll .sh{animation:none}}
+</style>
+<script id="mhome-js">
+(function(){
+"use strict";
+var D=document,$=function(i){return D.getElementById(i)};
+/* มือถือแนวตั้ง หรือมือถือแนวนอน (จอเตี้ย + นิ้วแตะ) */
+var MQ=matchMedia("(max-width:760px), (orientation:landscape) and (max-height:520px) and (pointer:coarse)");
+function en(){try{return (JSON.parse(localStorage.getItem("spire_lang"))||"th")==="en"}catch(e){return false}}
+function T(th,e){return en()?e:th}
+function rd(k,d){try{var v=JSON.parse(localStorage.getItem("spire_"+k));return v==null?d:v}catch(e){return d}}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+
+/* เครื่องมือทั้งหมด — cat = หมวด สำหรับเรียงตามหมวด */
+var TOOLS=[
+  {k:"text",  ic:"ti-message-2",    c:"#4F8FF7",th:"พิมพ์ถาม",  en:"Ask",       cat:0},
+  {k:"image", ic:"ti-camera",       c:"#A46BF5",th:"ถ่ายรูป",   en:"Photo",     cat:0},
+  {k:"video", ic:"ti-video",        c:"#E85DA6",th:"วิดีโอ",    en:"Video",     cat:0},
+  {k:"listen",ic:"ti-ear",          c:"#37C08A",th:"ฟังเสียง",  en:"Listen",    cat:0},
+  {k:"techs", ic:"ti-tool",         c:"#E8743C",th:"หาช่าง",    en:"Find a pro",cat:1},
+  {k:"quote", ic:"ti-receipt-2",    c:"#E8A33D",th:"เช็กราคา",  en:"Quote",     cat:1},
+  {k:"shake", ic:"ti-activity",     c:"#3FC3D6",th:"วัดการสั่น", en:"Shake",     cat:1},
+  {k:"park",  ic:"ti-map-pin",      c:"#F0655C",th:"จำที่จอด",  en:"Parking",   cat:1},
+  {k:"own",   ic:"ti-report-money", c:"#7B8CF0",th:"ต้นทุน",    en:"Costs",     cat:1},
+  {k:"spares",ic:"ti-package",      c:"#F08A3D",th:"อะไหล่",    en:"Spares",    cat:1},
+  {k:"garage",ic:"ti-car-garage",   c:"#6B7A90",th:"การาจ",     en:"Garage",    cat:2},
+  {k:"magazine",ic:"ti-book-2",     c:"#B07A5A",th:"นิตยสาร",   en:"Magazine",  cat:2},
+  {k:"profile",ic:"ti-settings",    c:"#6B7A90",th:"ตั้งค่า",    en:"Settings",  cat:2}
+];
+var CATS=[["ถาม AI","Ask AI"],["ดูแลรถ","Car care"],["อื่น ๆ","More"]];
+var HOME7=["text","image","techs","listen","quote","shake","park"];
+function find(k){for(var i=0;i<TOOLS.length;i++)if(TOOLS[i].k===k)return TOOLS[i]}
+function tile(t){return '<button class="mh-t" data-k="'+t.k+'"><span class="mh-k" style="--c:'+t.c+'"><i class="ti '+t.ic+'"></i></span>'+esc(T(t.th,t.en))+'</button>'}
+
+/* เปิดเครื่องมือด้วยทางเดิมของหน้า */
+function run(k){
+  closeAll();
+  if(k==="techs"){location.href="tech.html";return}
+  if(k==="garage"||k==="magazine"||k==="profile"||k==="spares"){nav(k==="spares"?"shop":k);return}
+  if(k==="text"||k==="image"||k==="video"){
+    try{if(typeof window.openChat==="function"){window.openChat({attach:k});return}}catch(e){}
+    location.href="chat.html?attach="+encodeURIComponent(k);return;
+  }
+  try{if(typeof window.openTool==="function"){hide();window.openTool(k);watchBack();return}}catch(e){}
+  location.href="chat.html?attach="+encodeURIComponent(k);
+}
+function nav(k){
+  if(k==="home"){return}
+  if(k==="chat"){location.href="chat.html";return}
+  if(k==="account"){ var a=$("avatarBtn"); if(!(a&&getComputedStyle(a).display!=="none")){var s=$("signinBtn");if(s){s.click();return}} k="profile" }
+  location.href=({garage:"garage.html",magazine:"news.html",shop:"spares.html",profile:"profile.html"})[k]||"index.html";
+}
+/* เครื่องมือบางอย่างเปิดเป็นแผงในหน้าเดิม — ซ่อนหน้าหลักระหว่างนั้น แล้วคืนเมื่อแผงปิด */
+function hide(){D.body.classList.remove("mh-on");$("mh").style.display="none";$("mhNav").style.display="none"}
+function watchBack(){ var n=0,iv=setInterval(function(){ n++;
+  var open=D.querySelector(".lg-host.on,.pm-ov.on,.pn-ov.on,[class*='-ov'].on,.modal.on");
+  if(!open&&n>3){clearInterval(iv);show()} },500) }
+function show(){ if(!MQ.matches)return; D.body.classList.add("mh-on"); $("mh").style.display=""; $("mhNav").style.display="" }
+
+function avatarHTML(){
+  var u=rd("cachedUser",{})||{}, a=$("avatarBtn");
+  if(a&&getComputedStyle(a).display!=="none"){var img=a.querySelector("img");if(img)return '<img src="'+esc(img.src)+'" alt="" referrerpolicy="no-referrer">'}
+  return u.name?esc(u.name[0].toUpperCase()):'<i class="ti ti-user"></i>';
+}
+
+function cards(){
+  var g=rd("garage",[])||[], c=g.filter(function(x){return x.id===rd("selCar","")})[0]||g[0];
+  var km=c?+String(c.mileage||"").replace(/\D/g,""):0, h=new Date().getHours();
+  var when=h<11?T("เช้านี้","This morning"):h<16?T("บ่ายนี้","This afternoon"):h<19?T("เย็นนี้","This evening"):T("คืนนี้","Tonight");
+  var date=new Date().toLocaleDateString(en()?"en-GB":"th-TH",{weekday:"long",day:"numeric",month:"long"});
+  return [
+    {cls:"c-brief",eye:"ti-sunrise",k:"TODAY'S BRIEF",t:T("สรุป","Brief · ")+when,p:date,pill:c?T("ดูสิ่งที่ต้องทำวันนี้","See today"):T("เพิ่มรถเพื่อเริ่ม","Add a car"),big:"ti-sun",go:"brief"},
+    {cls:"c-garage",eye:"ti-car-garage",k:"GARAGE",t:c?esc(c.name||((c.make||"")+" "+(c.model||""))):T("ยังไม่มีรถ","No car yet"),
+      p:c?(km?km.toLocaleString("en-US")+T(" กม. · เช็กระยะอีก "," km · service in ")+(10000-km%10000).toLocaleString("en-US")+T(" กม."," km"):T("ใส่เลขไมล์เพื่อให้ระบบเตือน","Add your odometer")):T("เพิ่มรถคันแรกของคุณ","Add your first car"),
+      pill:T("เปิดการาจ","Open garage"),big:"ti-car",go:"garage"},
+    {cls:"c-mag",eye:"ti-book-2",k:"MAGAZINE",t:T("เรื่องรถวันนี้","Today in cars"),p:T("ข่าว รีวิว และเคล็ดลับดูแลรถ","News, reviews and tips"),pill:T("อ่านเลย","Read"),big:"ti-news",go:"magazine"},
+    {cls:"c-more",eye:"ti-layout-grid",k:"MORE",t:T("เครื่องมือทั้งหมด","All tools"),p:T("ทุกอย่างที่ Cendon ทำได้ในที่เดียว","Everything Cendon can do"),pill:T("ดูทั้งหมด","See all"),big:"ti-apps",go:"more"}
+  ];
+}
+
+var sortMode="cat",query="";
+function allBody(){
+  var list=TOOLS.filter(function(t){var q=query.trim().toLowerCase();return !q||(t.th+" "+t.en).toLowerCase().indexOf(q)>-1});
+  if(!list.length)return '<div class="none">'+T("ไม่พบเครื่องมือที่ค้นหา","No tools found")+'</div>';
+  if(sortMode==="az"){
+    list=list.slice().sort(function(a,b){return T(a.th,a.en).localeCompare(T(b.th,b.en),en()?"en":"th")});
+    return '<div class="mh-grid" style="margin-top:14px">'+list.map(tile).join("")+'</div>';
+  }
+  return CATS.map(function(c,i){var l=list.filter(function(t){return t.cat===i});
+    return l.length?'<h4>'+T(c[0],c[1])+'</h4><div class="mh-grid">'+l.map(tile).join("")+'</div>':""}).join("");
+}
+function openAll(focus){
+  var w=$("mhAll");
+  w.innerHTML='<div class="bg"></div><div class="sh" role="dialog" aria-modal="true"><div class="grab"></div>'+
+    '<label class="q"><i class="ti ti-search"></i><input id="mhQ" placeholder="'+T("ค้นหาเครื่องมือ","Search tools")+'" value="'+esc(query)+'"></label>'+
+    '<div class="sort"><button data-s="cat"'+(sortMode==="cat"?' class="on"':"")+'>'+T("ตามหมวด","By category")+'</button><button data-s="az"'+(sortMode==="az"?' class="on"':"")+'>'+T("ก–ฮ","A–Z")+'</button></div>'+
+    '<div id="mhAllB">'+allBody()+'</div></div>';
+  w.classList.add("on");
+  w.querySelector(".bg").onclick=closeAll;
+  $("mhQ").oninput=function(){query=this.value;$("mhAllB").innerHTML=allBody()};
+  w.querySelectorAll("[data-s]").forEach(function(b){b.onclick=function(){sortMode=b.dataset.s;
+    w.querySelectorAll("[data-s]").forEach(function(x){x.classList.toggle("on",x===b)});$("mhAllB").innerHTML=allBody()}});
+  w.querySelector(".sh").addEventListener("click",function(e){var b=e.target.closest("[data-k]");if(b)run(b.dataset.k)});
+  if(focus)setTimeout(function(){$("mhQ").focus()},60);
+}
+function closeAll(){var w=$("mhAll");if(w){w.classList.remove("on");w.innerHTML=""}}
+addEventListener("keydown",function(e){if(e.key==="Escape")closeAll()});
+
+function build(){
+  if(!$("v-home"))return;
+  if(!$("mh")){
+    var m=D.createElement("div"); m.id="mh"; D.body.appendChild(m);
+    var n=D.createElement("nav"); n.id="mhNav"; D.body.appendChild(n);
+    var a=D.createElement("div"); a.id="mhAll"; D.body.appendChild(a);
+    m.addEventListener("click",function(e){
+      var t=e.target.closest("[data-k]"); if(t){ t.dataset.k==="all"?openAll():run(t.dataset.k); return }
+      var c=e.target.closest("[data-go]"); if(c){ var g=c.dataset.go;
+        if(g==="more")openAll(); else if(g==="brief"){ var b=$("briefCard"); if(b){hide();b.click();watchBack()} else location.href="chat.html" } else nav(g); return }
+      if(e.target.closest(".mh-find")){openAll(true);return}
+      if(e.target.closest(".mh-av"))nav("account");
+    });
+    n.addEventListener("click",function(e){var b=e.target.closest("[data-n]");if(b)nav(b.dataset.n)});
+  }
+  var cs=cards();
+  $("mh").innerHTML='<div class="mh-in">'+
+    '<div class="mh-top"><svg class="mh-logo" viewBox="-6 -6 94.8 112" aria-label="Cendon"><path fill="currentColor" d="M79.33 .29Q79.62 0 79.97 .21L81.37 1.05Q82.8 1.91 82.8 3.58V4.36Q82.8 6.37 82.17 8.27L75.34 28.74Q74.52 31.21 71.93 30.97L49.09 28.9Q46.5 28.66 44.6 30.44L37.56 37.07Q35.67 38.85 34.46 41.16L29.87 49.93Q28.66 52.23 28.92 54.82L29.04 56.01Q29.3 58.6 31.49 60L45.43 68.97Q47.13 70.06 49.14 69.78L49.59 69.71Q51.59 69.43 52.63 67.68L60.46 54.47Q61.78 52.23 64.32 52.79L64.98 52.94Q67.52 53.5 68.61 55.86L70.25 59.42Q71.34 61.78 70.55 64.26L63.84 85.42Q63.06 87.9 60.77 89.13L48.79 95.58Q46.5 96.82 43.96 96.25L43.14 96.07Q40.76 95.54 39.04 97.26L38.66 97.64Q36.94 99.36 34.52 99.61L33.16 99.74Q30.57 100 30.7 97.4L31.08 89.86Q31.21 87.26 29.02 85.87L5.38 70.82Q3.18 69.43 2.55 66.9L.63 59.21Q0 56.69 1.41 54.5L27.26 14.29Q28.66 12.1 29.48 9.64L31.02 5.01Q31.85 2.55 34.36 3.22L45.9 6.33Q48.41 7.01 51.01 7.01H61.73Q64.33 7.01 66.72 5.97L78.61 .8Q78.98 .64 79.27 .35Z"/></svg>'+
+      '<button class="mh-find"><i class="ti ti-search"></i>'+T("ค้นหาเครื่องมือ รถ หรือช่าง","Search tools, cars or pros")+'</button>'+
+      '<button class="mh-av" aria-label="'+T("บัญชี","Account")+'">'+avatarHTML()+'</button></div>'+
+    '<div class="mh-bbw"><div class="mh-bb"><div class="mh-track" id="mhTrack">'+cs.map(function(x){
+      return '<div class="mh-card '+x.cls+'" data-go="'+x.go+'" role="button"><small><i class="ti '+x.eye+'"></i>'+x.k+'</small><h3>'+x.t+'</h3><p>'+x.p+'</p>'+
+        '<div class="go"><span>'+x.pill+'</span><i class="ti ti-arrow-right"></i></div><i class="ti '+x.big+' big"></i></div>'}).join("")+'</div></div>'+
+      '<div class="mh-dots" id="mhDots">'+cs.map(function(_,i){return '<i'+(i?"":' class="on"')+'></i>'}).join("")+'</div></div>'+
+    '<div class="mh-grid">'+HOME7.map(function(k){return tile(find(k))}).join("")+
+      '<button class="mh-t" data-k="all"><span class="mh-k" style="--c:#6B7A90"><i class="ti ti-layout-grid"></i></span>'+T("ทั้งหมด","All")+'</button></div>'+
+  '</div>';
+  var tr=$("mhTrack");
+  tr.addEventListener("scroll",function(){var i=Math.round(tr.scrollLeft/tr.clientWidth);[].forEach.call($("mhDots").children,function(d,j){d.classList.toggle("on",i===j)})},{passive:true});
+  var TABS=[["home","ti-home","หน้าหลัก","Home"],["garage","ti-car","การาจ","Garage"],["chat","ti-message-2","แชต","Chat"],["magazine","ti-book-2","นิตยสาร","Magazine"],["account","ti-user","บัญชี","Account"]];
+  $("mhNav").innerHTML=TABS.map(function(t){return '<button class="'+(t[0]==="home"?"on":"")+'" data-n="'+t[0]+'"'+(t[0]==="home"?' aria-current="page"':"")+'><span>'+(t[0]==="account"&&/img/.test(avatarHTML())?avatarHTML():'<i class="ti '+t[1]+'"></i>')+'</span>'+T(t[2],t[3])+'</button>'}).join("");
+}
+
+function apply(){
+  if(MQ.matches){ build(); show() }
+  else{ D.body.classList.remove("mh-on"); ["mh","mhNav","mhAll"].forEach(function(i){var e=$(i);if(e)e.remove()}) }
+}
+if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",apply); else apply();
+(MQ.addEventListener?MQ.addEventListener("change",apply):MQ.addListener(apply));
+/* ข้อมูลรถ/ชื่อ ซิงก์มาทีหลัง — วาดใหม่เมื่อเปลี่ยน */
+var sig="";setInterval(function(){ if(!MQ.matches||!$("mh"))return;
+  var s=JSON.stringify([rd("garage",[]),rd("selCar",""),rd("cachedUser",{}),rd("lang","th")]);
+  if(s!==sig){var first=!sig;sig=s;if(!first)build()} },1500);
+})();
+</script>
 </body>
 </html>

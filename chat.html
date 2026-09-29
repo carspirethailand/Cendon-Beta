@@ -5913,7 +5913,7 @@ function aiSig(thinking){
     if(st&&!st.querySelector(".w-aura")){ const a=document.createElement("div"); a.className="w-aura"; a.setAttribute("aria-hidden","true");
       a.innerHTML='<i class="a1"></i><i class="a2"></i><i class="a3"></i>'; st.appendChild(a) }
     if(st&&!st.querySelector(".w-sweep")){ const w=document.createElement("div"); w.className="w-sweep"; w.setAttribute("aria-hidden","true");
-      w.innerHTML='<i></i>'; st.appendChild(w) }
+      w.innerHTML='<i></i><b></b>'; st.appendChild(w) }
     document.querySelectorAll(".composer").forEach(el=>{ if(!el.querySelector(":scope>.w-ring")){ const r=document.createElement("span"); r.className="w-ring"; el.appendChild(r) } });
   };
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",add); else add();
@@ -6743,6 +6743,8 @@ function wrap(){
          เมนูหน้าอื่น (การาจ อะไหล่ หน้าหลัก) ย้ายไปอยู่ในเมนูบัญชี
          ตัวเลือกรถย้ายขึ้นแถบบน เพราะมันคือ "คุยเรื่องรถคันไหน" ของทั้งหน้า ไม่ใช่ของแถบซ้าย -->
     <button class="side-new" id="sideNew"><i class="ti ti-edit"></i><span></span></button>
+    <!-- ทางกลับหน้าหลักต้องเห็นตลอด ไม่ใช่ซ่อนอยู่ในเมนูบัญชีอย่างเดียว -->
+    <button class="side-new side-home" id="sideHome"><i class="ti ti-home"></i><span></span></button>
     <div class="side-lbl" id="sideHistLbl"></div>
     <div class="side-list" id="sideList"></div>
     <div class="side-foot">
@@ -6824,6 +6826,13 @@ function wrap(){
     b.onclick=()=>D.body.dataset.side=D.body.dataset.side==="1"?"0":"1";
     pill.insertBefore(b,pill.firstChild);
   }
+  if(pill&&!$("pHome")){
+    const h=D.createElement("button");
+    h.className="p-btn p-home"; h.id="pHome"; h.setAttribute("aria-label",t("หน้าหลัก","Home"));
+    h.innerHTML='<i class="ti ti-home"></i>';
+    h.onclick=()=>window.goNav("home");
+    const bg=$("sideBurger"); pill.insertBefore(h,bg?bg.nextSibling:pill.firstChild);
+  }
   /* ทำเครื่องหมายปุ่มซ้ำใน pill เพื่อซ่อนบนจอกว้าง */
   D.querySelectorAll("header.pill .p-btn").forEach(x=>{
     const o=(x.getAttribute("onclick")||"");
@@ -6847,6 +6856,7 @@ function wrap(){
   $("sideX").onclick=()=>D.body.dataset.side="0";
   $("sideNew").onclick=()=>{if(window.newSession)window.newSession();closeSideIfDrawer()};
   $("sideAcct").onclick=acctMenu;
+  $("sideHome").onclick=()=>window.goNav("home");
 }
 
 /* ── เมนูบัญชีผู้ใช้ (แบบเดียวกับเครื่องมือ AI ทั่วไป) ── */
@@ -7302,6 +7312,7 @@ window.spireCarMenu=carMenu;
 function paint(){
   if(!$("side"))return;
   $("sideNew").querySelector("span").textContent=t("แชตใหม่","New chat");
+  if($("sideHome"))$("sideHome").querySelector("span").textContent=t("หน้าหลัก","Home");
   $("sideHistLbl").textContent=t("ล่าสุด","Recents");
   /* currentUser เป็นตัวแปรในสโคปของสคริปต์หลัก — อ่านจากที่แคชไว้แทน */
   let u=null; try{ u=JSON.parse(localStorage.getItem("spire_cachedUser")||"null") }catch(e){}
@@ -13203,10 +13214,13 @@ body{background:var(--c-bg0)!important}
     background:none!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important}
   header.pill .p-title,header.pill #pSet,header.pill #pHist,header.pill .p-close,
   header.pill .p-brand,header.pill .p-sep{display:none!important}
-  header.pill .p-car{display:inline-flex!important;margin:0 auto;max-width:calc(100vw - 120px)!important;min-width:0;
+  header.pill{position:relative}
+  header.pill .p-new{margin-left:auto}
+  header.pill .p-car{display:inline-flex!important;position:absolute!important;left:50%;top:50%;transform:translate(-50%,-50%);
+    max-width:calc(100vw - 190px)!important;min-width:0;
     padding:8px 12px!important;border-radius:12px!important;background:none!important;border:0!important;box-shadow:none!important;
     font-family:var(--kd);font-size:16.5px!important;font-weight:600!important;color:var(--c-ink)!important;gap:6px!important}
-  header.pill .p-car:active{background:var(--c-glass)!important}
+  header.pill .p-car:active{background:var(--c-glass)!important;transform:translate(-50%,-50%)!important}
   header.pill .p-car>.ti-car{display:none}
   header.pill .p-car>.ti-chevron-down{font-size:14px!important;color:var(--c-faint)!important}
   header.pill .p-drop{display:none!important}
@@ -13238,7 +13252,7 @@ body .w-q:hover{background:var(--c-glass)!important;color:var(--c-ink)!important
 body .w-q i{color:var(--c-faint)!important;font-size:16px!important}
 .big-logo,.hint-logo{filter:none!important}
 .logo-halo{animation:none!important}
-.hint-logo{color:var(--c-ink)!important;opacity:.9}
+.hint-logo{opacity:.95}
 
 /* ทุกชิ้นบนหน้าแรกค่อย ๆ ลอยขึ้นมา เบลอเป็นคม */
 body[data-phase="welcome"] #v-welcome .pane-inner>*,
@@ -13277,7 +13291,8 @@ body[data-phase="login"] #v-login .pane-inner>*{animation:wRise .9s cubic-bezier
 
 /* ── 7 · ตอน AI คิด: ตรา C สีกลาง หายใจช้า ๆ + คำสถานะแสงวิ่งสีเทา ── */
 .ai-sig{gap:10px}
-.ai-sig .mark{color:var(--c-ink)!important;background:none!important;box-shadow:none!important}
+.ai-sig .mark{color:var(--c-acc,#F28C38)!important;background:none!important;box-shadow:none!important}
+.side-mark,.hint-logo{color:var(--c-acc,#F28C38)!important}
 .ai-sig.thinking .mark{animation:wPulse 1.7s ease-in-out infinite!important;filter:none!important}
 .ai-sig .mark::before,.ai-sig .mark::after{content:none!important}
 @keyframes wPulse{0%,100%{opacity:.32;transform:scale(.9)}50%{opacity:1;transform:scale(1)}}
@@ -13373,14 +13388,14 @@ body.w-idle .w-aura{opacity:var(--w-aura-op);transform:none;
   transition:opacity 1.6s ease .1s,transform 2.2s cubic-bezier(.22,1,.36,1),left .28s cubic-bezier(.2,.9,.25,1)}
 /* ปลายไล่สีเป็น "สีเดียวกันแต่ใส" ไม่ใช่ transparent (ดำใส) — ขอบแสงจึงไม่หม่นเป็นวงตอนจาง */
 .w-aura i{position:absolute;display:block;border-radius:50%;will-change:transform;
-  width:max(46%,340px);aspect-ratio:1.45}
-.w-aura .a1{left:37%;top:46%;background:radial-gradient(closest-side,var(--f-a),color-mix(in srgb,var(--f-a) 0%,transparent));opacity:.46;animation:wA1 19s ease-in-out infinite alternate}
-.w-aura .a2{left:63%;top:42%;background:radial-gradient(closest-side,var(--f-b),color-mix(in srgb,var(--f-b) 0%,transparent));opacity:.38;animation:wA2 23s ease-in-out infinite alternate}
-.w-aura .a3{left:50%;top:60%;width:max(36%,280px);background:radial-gradient(closest-side,var(--f-d),color-mix(in srgb,var(--f-d) 0%,transparent));opacity:.32;animation:wA3 27s ease-in-out infinite alternate}
+  width:max(80%,520px);aspect-ratio:1.7}
+.w-aura .a1{left:37%;top:46%;background:radial-gradient(closest-side,var(--f-a) 0%,color-mix(in srgb,var(--f-a) 74%,transparent) 22%,color-mix(in srgb,var(--f-a) 42%,transparent) 46%,color-mix(in srgb,var(--f-a) 16%,transparent) 70%,color-mix(in srgb,var(--f-a) 4%,transparent) 88%,color-mix(in srgb,var(--f-a) 0%,transparent) 100%);opacity:.46;animation:wA1 19s ease-in-out infinite alternate}
+.w-aura .a2{left:63%;top:42%;background:radial-gradient(closest-side,var(--f-b) 0%,color-mix(in srgb,var(--f-b) 74%,transparent) 22%,color-mix(in srgb,var(--f-b) 42%,transparent) 46%,color-mix(in srgb,var(--f-b) 16%,transparent) 70%,color-mix(in srgb,var(--f-b) 4%,transparent) 88%,color-mix(in srgb,var(--f-b) 0%,transparent) 100%);opacity:.38;animation:wA2 23s ease-in-out infinite alternate}
+.w-aura .a3{left:50%;top:62%;width:max(56%,380px);background:radial-gradient(closest-side,var(--f-d) 0%,color-mix(in srgb,var(--f-d) 74%,transparent) 22%,color-mix(in srgb,var(--f-d) 42%,transparent) 46%,color-mix(in srgb,var(--f-d) 16%,transparent) 70%,color-mix(in srgb,var(--f-d) 4%,transparent) 88%,color-mix(in srgb,var(--f-d) 0%,transparent) 100%);opacity:.32;animation:wA3 27s ease-in-out infinite alternate}
 @keyframes wA1{0%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-42%,-56%) scale(1.08)}100%{transform:translate(-55%,-44%) scale(.95)}}
 @keyframes wA2{0%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-58%,-44%) scale(1.1)}100%{transform:translate(-46%,-55%) scale(.94)}}
 @keyframes wA3{0%{transform:translate(-50%,-50%) scale(.95)}50%{transform:translate(-44%,-58%) scale(1.12)}100%{transform:translate(-56%,-46%) scale(1)}}
-@media(min-width:700px){.w-aura{filter:blur(44px)}}
+@media(min-width:700px){.w-aura{filter:blur(60px)}}
 html[data-theme="light"] .w-aura .a1{opacity:.3}
 html[data-theme="light"] .w-aura .a2{opacity:.24}
 html[data-theme="light"] .w-aura .a3{opacity:.2}
@@ -13391,19 +13406,27 @@ body[data-phase="thread"] .w-aura .a1,body[data-phase="thread"] .w-aura .a2{top:
    ขอบช่องพิมพ์มีเส้นแสงวิ่งไปทางเดียวกันในจังหวะเดียวกัน
    ตอบจบ แสงค่อย ๆ จางหาย ทุกอย่างกลับเป็นสีกลางเหมือนเดิม
    ตอนไม่ทำงาน แอนิเมชันถูกหยุดไว้ (paused) ไม่ใช่ลบทิ้ง — ทั้งสองชั้นจึงเดินพร้อมกันเสมอ */
-.w-sweep{top:auto;height:240px;opacity:0;transition:opacity 1.1s ease,left .28s cubic-bezier(.2,.9,.25,1);
-  -webkit-mask-image:linear-gradient(90deg,transparent,#000 16%,#000 84%,transparent),linear-gradient(0deg,#000 20%,transparent);
-  -webkit-mask-composite:source-in;
-  mask-image:linear-gradient(90deg,transparent,#000 16%,#000 84%,transparent),linear-gradient(0deg,#000 20%,transparent);
-  mask-composite:intersect}
-.w-sweep i{position:absolute;left:0;bottom:-70px;width:50%;height:210px;border-radius:50%;display:block;will-change:transform;
-  background:linear-gradient(90deg,var(--f-c),var(--f-a) 30%,var(--f-b) 64%,var(--f-d));filter:blur(40px);opacity:.85;
-  animation:wSweep 3.4s cubic-bezier(.65,0,.35,1) infinite alternate;animation-play-state:paused}
-body.w-busy .w-sweep{opacity:var(--w-sweep-op);transition:opacity .7s ease,left .28s cubic-bezier(.2,.9,.25,1)}
-body.w-busy .w-sweep i{animation-play-state:running}
-@keyframes wSweep{from{transform:translate3d(-10%,0,0)}to{transform:translate3d(110%,0,0)}}
-@media(max-width:699px){.w-sweep{height:170px}.w-sweep i{height:150px;bottom:-50px;filter:blur(28px);width:60%}}
-html[data-theme="light"] .w-sweep i{opacity:.6}
+/* แสงเป็นผืนกว้างเต็มขอบล่างของห้องแชต (ไม่ใช่ก้อนกลม) ไล่สีต่อเนื่อง อำพัน→ส้ม→ชมพู→ม่วง
+   ชั้นหน้าไหลไปทางหนึ่ง ชั้นหลังไหลสวนช้ากว่า สีจึงผสมกันเปลี่ยนไปเรื่อย ๆ เหมือนของเหลว
+   ขอบบนจางยาวขึ้นไปครึ่งจอ แสงจึงดูฟุ้ง ไม่มีขอบ */
+.w-sweep{top:auto;height:58vh;opacity:0;overflow:hidden;transition:opacity 1.2s ease,left .28s cubic-bezier(.2,.9,.25,1);
+  -webkit-mask-image:linear-gradient(0deg,#000 0%,rgba(0,0,0,.7) 22%,rgba(0,0,0,.28) 55%,transparent 100%);
+          mask-image:linear-gradient(0deg,#000 0%,rgba(0,0,0,.7) 22%,rgba(0,0,0,.28) 55%,transparent 100%)}
+.w-sweep i,.w-sweep b{position:absolute;left:-10%;display:block;width:240%;will-change:transform;
+  animation-play-state:paused}
+.w-sweep i{bottom:-12%;height:70%;opacity:.9;filter:blur(56px);
+  background:linear-gradient(90deg,var(--f-c) 0%,var(--f-a) 11%,var(--f-b) 24%,var(--f-d) 37%,var(--f-b) 50%,var(--f-a) 63%,var(--f-c) 76%,var(--f-a) 88%,var(--f-b) 100%);
+  animation:wFlowA 7s cubic-bezier(.45,0,.55,1) infinite alternate;animation-play-state:paused}
+.w-sweep b{bottom:4%;height:62%;opacity:.55;filter:blur(70px);
+  background:linear-gradient(90deg,var(--f-d) 0%,var(--f-b) 16%,var(--f-a) 33%,var(--f-c) 50%,var(--f-b) 66%,var(--f-d) 83%,var(--f-a) 100%);
+  animation:wFlowB 9s cubic-bezier(.45,0,.55,1) infinite alternate;animation-play-state:paused}
+body.w-busy .w-sweep{opacity:var(--w-sweep-op);transition:opacity .8s ease,left .28s cubic-bezier(.2,.9,.25,1)}
+body.w-busy .w-sweep i,body.w-busy .w-sweep b{animation-play-state:running}
+@keyframes wFlowA{from{transform:translate3d(0,0,0)}to{transform:translate3d(-52%,0,0)}}
+@keyframes wFlowB{from{transform:translate3d(-50%,0,0) scaleY(.9)}to{transform:translate3d(0,0,0) scaleY(1.08)}}
+@media(max-width:699px){.w-sweep{height:46vh}.w-sweep i{filter:blur(38px)}.w-sweep b{filter:blur(46px)}}
+html[data-theme="light"] .w-sweep i{opacity:.55}
+html[data-theme="light"] .w-sweep b{opacity:.35}
 
 .composer .w-ring{position:absolute;inset:-1px;border-radius:inherit;padding:1px;pointer-events:none;z-index:3;
   background:linear-gradient(90deg,transparent 22%,var(--f-c) 34%,var(--f-a) 42%,var(--f-b) 53%,var(--f-d) 63%,transparent 76%);
@@ -13414,7 +13437,7 @@ html[data-theme="light"] .w-sweep i{opacity:.6}
   animation:wRing 3.4s cubic-bezier(.65,0,.35,1) infinite alternate;animation-play-state:paused}
 body.w-busy .composer .w-ring{opacity:1;animation-play-state:running;transition:opacity .5s ease}
 @keyframes wRing{from{background-position:76% 0}to{background-position:16% 0}}
-.w-hidden-tab .w-aura i,.w-hidden-tab .w-sweep i,.w-hidden-tab .w-ring{animation-play-state:paused!important}
+.w-hidden-tab .w-aura i,.w-hidden-tab .w-sweep i,.w-hidden-tab .w-sweep b,.w-hidden-tab .w-ring{animation-play-state:paused!important}
 
 /* ── 13 · เลื่อนจอ ────────────────────────────────────────────── */
 .thread-scroll{scroll-behavior:auto!important}
@@ -13422,7 +13445,7 @@ body.w-busy .composer .w-ring{opacity:1;animation-play-state:running;transition:
 
 @media (prefers-reduced-motion:reduce){
   .msg.w-in,.ai-sig.w-in,.pane-inner>*,.chip-row .chip,.composer,.ai-sig.thinking .mark,.ai-sig .st,.w-caret,
-  .w-aura i,.w-sweep i,.w-ring,.acct-drop{animation:none!important}
+  .w-aura i,.w-sweep i,.w-sweep b,.w-ring,.acct-drop{animation:none!important}
   .car-pop,.w-aura,.w-sweep{transition:none!important}
 }
 </style>

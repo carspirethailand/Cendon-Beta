@@ -1,0 +1,131 @@
+/* ════════════════════════════════════════════════════════════════════
+   Cendon One — ชั้นดีไซน์กลางของทุกหน้า (หน้าหลัก การาจ นิตยสาร อะไหล่ บัญชี แพ็กเกจ)
+   ภาษาเดียวกับห้องแชต:
+   • พื้นสีกลางล้วน (มืด = ดำลึก · สว่าง = ขาว) ไม่มีโทนฟ้า/ครีมเจือ ไม่มีเงามันวาว
+   • สีสันอยู่ที่ "แสง" ด้านบนของหน้าเท่านั้น — นุ่ม ฟุ้ง ลอยช้า ๆ (อำพัน ส้ม ชมพู ม่วง)
+   • สีส้มของ Cendon เหลือไว้ที่โลโก้และจุดที่ต้องการให้กดจริง ๆ
+   ไฟล์นี้โหลดท้ายสุดของแต่ละหน้า จึงทับของเดิมได้ โดยไม่แตะขนาด/ตำแหน่งของโครงหน้าเลย
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ── 1 · สี (ทั้งชุดตัวแปรของหน้าทั่วไป และชุด --c-* ของหน้าแพ็กเกจ) ── */
+html[data-theme="dark"],html[data-theme="midnight"],html[data-theme="ocean"],
+html[data-theme="carbon"],html[data-theme="cyber"],html[data-theme="wire"]{
+  --bg:#080808;--surface:#111111;--surface-2:#171717;--ink:#ECECEC;--muted:#9C9C9C;--faint:#666666;
+  --line:rgba(255,255,255,.09);--line-2:rgba(255,255,255,.055);
+  --nav-bg:rgba(16,16,16,.72);--nav-link:#9C9C9C;
+  --shadow:0 18px 50px -28px rgba(0,0,0,.9);--shadow-sm:0 8px 24px -16px rgba(0,0,0,.7);
+  --gloss:0;--gloss-card:0;--edge-sh:transparent;--sk-glow:0;
+  --c-bg0:#080808;--c-bg1:#0E0E0E;--c-bg2:#161616;--c-card:#111111;--c-card2:#171717;
+  --c-ink:#ECECEC;--c-mut:#9C9C9C;--c-faint:#666666;
+  --c-line:rgba(255,255,255,.09);--c-line2:rgba(255,255,255,.055);
+  --o-ink:#ECECEC;--o-glass:rgba(255,255,255,.05);--o-glass2:rgba(255,255,255,.085);
+  --o-aura:.9;
+}
+html:not([data-theme]),html[data-theme="light"],html[data-theme="warm"],html[data-theme="emerald"],html[data-theme="pearl"],html[data-theme="plant"]{
+  --bg:#FCFCFC;--surface:#FFFFFF;--surface-2:#F6F6F6;--ink:#161616;--muted:#6A6A6A;--faint:#A2A2A2;
+  --line:rgba(0,0,0,.09);--line-2:rgba(0,0,0,.055);
+  --nav-bg:rgba(255,255,255,.78);--nav-link:#6A6A6A;
+  --shadow:0 18px 44px -30px rgba(0,0,0,.28);--shadow-sm:0 8px 22px -18px rgba(0,0,0,.22);
+  --gloss:0;--gloss-card:0;--edge-sh:transparent;--sk-glow:0;
+  --c-bg0:#FCFCFC;--c-bg1:#F5F5F5;--c-bg2:#FFFFFF;--c-card:#FFFFFF;--c-card2:#F6F6F6;
+  --c-ink:#161616;--c-mut:#6A6A6A;--c-faint:#A2A2A2;
+  --c-line:rgba(0,0,0,.09);--c-line2:rgba(0,0,0,.055);
+  --o-ink:#161616;--o-glass:rgba(0,0,0,.04);--o-glass2:rgba(0,0,0,.065);
+  --o-aura:.6;
+}
+/* สีของแสง — ตระกูลเดียวกับห้องแชต */
+:root{--o-a:#F28C38;--o-b:#FF4D7A;--o-c:#FFB547;--o-d:#8B6BFF}
+/* พื้นอยู่ที่ <html> ส่วน <body> ใส — ชั้นแสง (z-index ติดลบ) จึงอยู่ระหว่างพื้นกับเนื้อหาได้พอดี
+   โดยไม่ต้องไปยุ่งกับ z-index/position ของโครงหน้าเดิม */
+html{background:var(--bg,var(--c-bg0))!important}
+body{background:transparent!important}
+body::before{display:none!important}
+#livingBg,#lightPool,#cpRoom,#cpVeil{display:none!important}
+
+/* ── 2 · แสงสีด้านบนของหน้า ─────────────────────────────────────
+   สามดวงฟุ้ง ๆ ลอยช้ามาก ปลายไล่สีแบบโค้งจึงไม่เห็นขอบเป็นวง
+   อยู่หลังเนื้อหาทั้งหมด กดทะลุได้ ไม่ดันอะไร */
+.one-aura{position:fixed;left:0;right:0;top:0;height:78vh;z-index:-1;pointer-events:none;overflow:hidden;
+  opacity:var(--o-aura);
+  -webkit-mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.7) 45%,transparent 100%);
+          mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.7) 45%,transparent 100%)}
+.one-aura.in{position:absolute;height:100%}
+.one-aura i{position:absolute;display:block;border-radius:50%;will-change:transform;width:max(70%,520px);aspect-ratio:1.8}
+.one-aura .a1{left:24%;top:-4%;opacity:.42;animation:oA1 22s ease-in-out infinite alternate;
+  background:radial-gradient(closest-side,var(--o-a) 0%,color-mix(in srgb,var(--o-a) 70%,transparent) 22%,color-mix(in srgb,var(--o-a) 38%,transparent) 46%,color-mix(in srgb,var(--o-a) 13%,transparent) 70%,color-mix(in srgb,var(--o-a) 3%,transparent) 88%,color-mix(in srgb,var(--o-a) 0%,transparent) 100%)}
+.one-aura .a2{left:76%;top:2%;opacity:.34;animation:oA2 27s ease-in-out infinite alternate;
+  background:radial-gradient(closest-side,var(--o-b) 0%,color-mix(in srgb,var(--o-b) 70%,transparent) 22%,color-mix(in srgb,var(--o-b) 38%,transparent) 46%,color-mix(in srgb,var(--o-b) 13%,transparent) 70%,color-mix(in srgb,var(--o-b) 3%,transparent) 88%,color-mix(in srgb,var(--o-b) 0%,transparent) 100%)}
+.one-aura .a3{left:52%;top:26%;opacity:.26;width:max(56%,420px);animation:oA3 31s ease-in-out infinite alternate;
+  background:radial-gradient(closest-side,var(--o-d) 0%,color-mix(in srgb,var(--o-d) 70%,transparent) 22%,color-mix(in srgb,var(--o-d) 38%,transparent) 46%,color-mix(in srgb,var(--o-d) 13%,transparent) 70%,color-mix(in srgb,var(--o-d) 3%,transparent) 88%,color-mix(in srgb,var(--o-d) 0%,transparent) 100%)}
+@keyframes oA1{0%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-40%,-44%) scale(1.1)}100%{transform:translate(-56%,-54%) scale(.95)}}
+@keyframes oA2{0%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-60%,-42%) scale(1.12)}100%{transform:translate(-46%,-56%) scale(.94)}}
+@keyframes oA3{0%{transform:translate(-50%,-50%) scale(.95)}50%{transform:translate(-42%,-58%) scale(1.14)}100%{transform:translate(-58%,-46%) scale(1)}}
+@media(min-width:700px){.one-aura{filter:blur(56px)}}
+.one-hidden-tab .one-aura i{animation-play-state:paused}
+
+/* ── 3 · แถบนำทาง ────────────────────────────────────────────── */
+.nav{background:var(--nav-bg)!important;border:1px solid var(--line)!important;
+  box-shadow:0 10px 30px -22px rgba(0,0,0,.6)!important;backdrop-filter:blur(22px) saturate(1.1)!important;-webkit-backdrop-filter:blur(22px) saturate(1.1)!important}
+.nav::before,.nav-ind::after,.nav-links a.active::after{display:none!important}
+.nav-ind{background:var(--o-glass2)!important;background-image:none!important;border:0!important;box-shadow:none!important}
+.nav-links a{color:var(--muted)!important;font-weight:500!important}
+.nav-links a:hover,.nav-links a.active{color:var(--ink)!important}
+.brand .mark,.brand .cmk,.nav .cmk{color:#F28C38!important}
+body[data-deck="1"] .nav{background:rgba(16,16,16,.72)!important}
+body[data-deck="1"] .nav-links a{color:#9C9C9C!important}
+body[data-deck="1"] .nav-links a.active,body[data-deck="1"] .nav-links a:hover{color:#ECECEC!important}
+.mnav{background:var(--nav-bg)!important;border:1px solid var(--line)!important;
+  box-shadow:0 14px 34px -22px rgba(0,0,0,.6)!important;backdrop-filter:blur(22px) saturate(1.1)!important;-webkit-backdrop-filter:blur(22px) saturate(1.1)!important}
+.mtab{color:var(--faint)!important}
+.mtab.on{color:var(--ink)!important}
+.mtab.on .mt-i{background:var(--o-glass2)!important}
+.mtab .mt-dot{background:#F28C38!important}
+
+/* ── 4 · การ์ด ปุ่ม ช่องกรอก: เรียบ แบน เส้นบาง ───────────────────── */
+.card,.widget,.qa,.su-card{background:var(--surface)!important;border:1px solid var(--line)!important;
+  box-shadow:none!important;background-image:none!important}
+.card::before,.card::after,.widget::before,.qa::after,.qa-deco{display:none!important}
+.btn{background:var(--surface)!important;background-image:none!important;border:1px solid var(--line)!important;
+  box-shadow:none!important;color:var(--ink)!important;animation:none!important}
+.btn:hover{border-color:var(--faint)!important;color:var(--ink)!important;transform:none!important}
+.btn.primary,.btn-signin,.fab,.cdiag{background:var(--o-ink)!important;background-image:none!important;color:var(--bg)!important;
+  border:0!important;box-shadow:none!important;animation:none!important}
+.btn.primary:hover,.btn-signin:hover,.fab:hover{opacity:.86;transform:none!important;color:var(--bg)!important}
+.btn.primary i,.fab i{color:inherit!important}
+.btn.danger{background:transparent!important;color:var(--danger)!important;border-color:color-mix(in srgb,var(--danger) 40%,transparent)!important}
+.input,.custom-select-trigger,select,textarea.input{background:var(--surface)!important;border:1px solid var(--line)!important;box-shadow:none!important;
+  background-image:none!important}
+.custom-select-trigger:not(.disabled),.input:focus{border-color:var(--faint)!important}
+.qa-ic,.lt-ic{background:var(--o-glass2)!important;background-image:none!important;color:var(--ink)!important;box-shadow:none!important}
+/* ไอคอนเครื่องมือบนมือถือ: จากกล่องสีรุ้ง → กล่องแก้วสีกลาง ไอคอนสีตัวหนังสือ */
+.mtool .mt-ic{background:var(--o-glass2)!important;background-image:none!important;color:var(--ink)!important;
+  box-shadow:none!important;border:1px solid var(--line-2)}
+.mtool{color:var(--ink)!important}
+h1,h2,.section-title{letter-spacing:-.01em}
+
+/* ── 5 · ห้องนักบิน (หน้าหลักบนคอม) — จากโทนฟ้าเรืองแสง → กระจกสีกลาง ──
+   ฉากหลังเป็นดำลึกเสมอ (ทั้งธีมมืดและสว่าง) เพราะแผงถูกออกแบบให้อยู่บนพื้นมืด
+   แสงสีลอยอยู่ด้านหลังแผง ส่วนตัวแผงถอดสีออกทั้งหมด (saturate 0) จึงดูเป็นเครื่องมือจริงจัง */
+.hpage{background:#080808;color:#ECECEC!important}
+.cockpit .pane,.cockpit .screen,.control,.hpage .nx,.hscroll{filter:saturate(0)}
+.cockpit .screen::after,.pane::after,.control::after{opacity:0!important}
+.cockpit .screen{box-shadow:0 0 0 1px rgba(255,255,255,.08),0 50px 110px -50px #000!important}
+
+/* ── 6 · หน้าอะไหล่: ลายหัวหน้าแบบกระดาษ → พื้นเรียบ ── */
+.sp-art::before{opacity:0!important}
+
+@media (prefers-reduced-motion:reduce){.one-aura i{animation:none!important}}
+
+/* ── 7 · เก็บรายละเอียดที่ยังมีสีเกิน ──────────────────────────────── */
+/* เกล็ดวิบวับบนปุ่ม → ปุ่มเรียบ */
+.btn.primary::after,.cdiag::after,.fab::after,.btn-signin::after,.nav-ind::after{display:none!important}
+/* ลายเสาหินหลังหน้าอะไหล่ → พื้นเรียบ ให้แสงด้านบนเป็นฉากเดียว */
+#v-shop .scroll::before,#v-shop .scroll::after{display:none!important}
+.sp-offline{background:var(--surface)!important;border-color:var(--line)!important}
+.sp-offline i{color:var(--muted)!important}
+/* ปกบทความที่ยังไม่มีรูป: จากสีเขียว/ฟ้า/ทอง → กระจกสีกลาง ไอคอนจาง ๆ */
+.mag-cover{background:var(--surface-2)!important;background-image:none!important;color:var(--faint)!important;
+  border:1px solid var(--line-2)}
+.mag-hero .bg{background:linear-gradient(160deg,#1A1A1A,#0C0C0C)!important}
+/* ปุ่มลัดเครื่องมือข้างช่องค้นหาบนมือถือ: สีเขียว → สีเดียวกับปุ่มหลัก */
+.mfind-x{background:var(--o-ink)!important;background-image:none!important;color:var(--bg)!important;box-shadow:none!important}

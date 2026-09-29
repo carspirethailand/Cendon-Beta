@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Cendon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+/* ════════════════════════════════════════════════════════════════════
+   Cendon — หน้าหลักฉบับใหม่ทั้งหมด (ไม่ใช้ของเดิมเลย)
+   เอกลักษณ์ Cendon มี 3 อย่าง:
+   1) ตรา C สีส้ม — ที่นี่เป็นวัตถุ 3 มิติจริง (ซ้อนชั้นเป็นความหนา) หมุนช้า ๆ กลางห้อง
+   2) ห้องนักบิน — พื้นเส้นตารางวิ่งเข้าหาจุดรวมสายตา ทั้งหน้าคือห้องเดียวกัน
+   3) ส้ม Cendon บนดำอุ่น — สีทึบ ไม่ไล่สี ไม่มีกรอบรกตา
+   ทุกอย่างเอียงตามนิ้ว/เมาส์เล็กน้อย จึงรู้สึกว่ามีความลึกจริง
+   ════════════════════════════════════════════════════════════════════ */
+:root{
+  --bg:#0B0A09;--bg2:#141210;--bg3:#1C1916;--ink:#F3EEE8;--mut:#9A928A;--faint:#5E5750;
+  --or:#F28C38;--or-d:#C9651B;--or-dd:#8E430F;--line:rgba(243,238,232,.08);
+  --kd:'Kanit',system-ui,sans-serif;--rx:0deg;--ry:0deg;
+}
+html[data-theme="light"]{--bg:#F4EFE7;--bg2:#FFFDF9;--bg3:#EAE3D8;--ink:#1A140F;--mut:#6E655C;--faint:#A89E93;--line:rgba(26,20,15,.1)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font-family:var(--kd);-webkit-font-smoothing:antialiased}
+body{min-height:100vh;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+/* ── ห้องนักบิน: พื้นเส้นตาราง 3 มิติ ── */
+.room{position:fixed;inset:0;z-index:0;pointer-events:none;perspective:700px;perspective-origin:50% 35%;overflow:hidden}
+.floor{position:absolute;left:-60%;right:-60%;bottom:-10%;height:80%;transform-origin:50% 100%;transform:rotateX(78deg);
+  background-image:linear-gradient(var(--line) 1.5px,transparent 1.5px),linear-gradient(90deg,var(--line) 1.5px,transparent 1.5px);
+  background-size:80px 80px;animation:drive 6s linear infinite;
+  -webkit-mask-image:linear-gradient(0deg,#000 10%,transparent 85%);mask-image:linear-gradient(0deg,#000 10%,transparent 85%)}
+@keyframes drive{to{background-position:0 80px}}
+
+.wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:calc(18px + env(safe-area-inset-top)) 20px 120px}
+
+/* ── แถบบน ── */
+.top{display:flex;align-items:center;gap:14px;margin-bottom:10px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand svg{width:26px;height:30px;color:var(--or)}
+.brand b{font-weight:700;letter-spacing:.28em;font-size:15px}
+.nav{margin-left:auto;display:flex;gap:4px}
+.nav a{padding:9px 14px;border-radius:12px;font-size:14px;color:var(--mut);transition:.2s}
+.nav a:hover,.nav a.on{color:var(--ink);background:var(--bg3)}
+.av{width:38px;height:38px;border-radius:50%;background:var(--or);color:var(--bg);display:grid;place-items:center;font-weight:700;margin-left:6px}
+
+/* ── ฮีโร่: รถของฉัน + ตรา C สามมิติ ── */
+.hero{display:grid;grid-template-columns:1.05fr 1fr;align-items:center;gap:10px;min-height:440px}
+.greet{font-size:14px;color:var(--mut)}
+.car-name{font-size:clamp(40px,6vw,76px);font-weight:700;line-height:1;letter-spacing:-.03em;margin:10px 0 6px}
+.car-name span{color:var(--or)}
+.car-sub{font-size:15px;color:var(--mut);display:flex;align-items:center;gap:8px}
+.car-sub i.dot{width:8px;height:8px;border-radius:50%;background:#4ED39A;display:inline-block}
+.switch{margin-left:6px;font-size:13px;color:var(--or);display:inline-flex;align-items:center;gap:4px}
+.stats{display:flex;gap:28px;margin-top:30px}
+.stat small{display:block;font-size:12px;color:var(--mut);margin-bottom:2px}
+.stat b{font-size:32px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.stat b em{font-style:normal;font-size:14px;color:var(--mut);font-weight:400;margin-left:4px}
+.bar{height:6px;width:220px;border-radius:6px;background:var(--bg3);margin-top:10px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--or);border-radius:6px;width:0;transition:width 1.4s cubic-bezier(.2,.9,.25,1)}
+
+.stage{position:relative;height:420px;perspective:1100px;display:grid;place-items:center}
+.obj{position:relative;width:200px;height:240px;transform-style:preserve-3d;
+  transform:rotateX(var(--rx)) rotateY(var(--ry));transition:transform .5s cubic-bezier(.2,.9,.25,1)}
+/* โยกช้า ๆ ไม่หมุนรอบ — ตรา C ต้องอ่านออกตลอด เห็นความหนาตอนเอียง */
+.spin{position:absolute;inset:0;transform-style:preserve-3d;animation:rock 7s ease-in-out infinite alternate}
+@keyframes rock{from{transform:rotateY(-38deg) rotateX(6deg)}to{transform:rotateY(38deg) rotateX(-4deg)}}
+@keyframes spin{to{transform:rotateX(74deg) translateZ(-110px) rotateZ(360deg)}}
+.spin svg{position:absolute;inset:0;width:100%;height:100%}
+.shadow{position:absolute;width:260px;height:60px;bottom:40px;border-radius:50%;background:rgba(242,140,56,.28);filter:blur(28px);
+  animation:breathe 7s ease-in-out infinite}
+@keyframes breathe{50%{transform:scaleX(.8)}}
+.ring3d{position:absolute;width:360px;height:360px;border-radius:50%;border:1.5px solid var(--line);transform:rotateX(74deg) translateZ(-110px)}
+.ring3d.b{width:260px;height:260px;border:2px dashed rgba(242,140,56,.45);animation:spin 30s linear infinite}
+
+/* ── ถาม Cendon ── */
+.ask{display:flex;align-items:center;gap:12px;background:var(--bg2);border-radius:20px;padding:8px 8px 8px 20px;margin-top:8px;
+  box-shadow:0 1px 0 rgba(255,255,255,.04) inset,0 30px 60px -40px #000}
+.ask i{font-size:20px;color:var(--or)}
+.ask input{flex:1;min-width:0;background:none;border:0;outline:0;color:var(--ink);font:inherit;font-size:16px;padding:12px 0}
+.ask input::placeholder{color:var(--faint)}
+.ask button{width:48px;height:48px;border-radius:15px;background:var(--or);color:#1A0F07;font-size:20px;display:grid;place-items:center;
+  box-shadow:0 5px 0 var(--or-dd);transition:transform .12s,box-shadow .12s}
+.ask button:active{transform:translateY(4px);box-shadow:0 1px 0 var(--or-dd)}
+
+/* ── ปุ่มลัด: ก้อน 3 มิติ มีความหนา กดแล้วยุบจริง ── */
+.sec{display:flex;align-items:baseline;justify-content:space-between;margin:40px 2px 16px}
+.sec b{font-size:13px;font-weight:500;color:var(--mut);letter-spacing:.08em}
+.sec a{font-size:13px;color:var(--mut)}
+.acts{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;perspective:900px}
+.act{display:flex;flex-direction:column;align-items:flex-start;gap:26px;padding:18px;border-radius:22px;text-align:left;
+  background:var(--bg2);transform-style:preserve-3d;transition:transform .35s cubic-bezier(.2,.9,.25,1);position:relative}
+.act:hover{transform:rotateX(8deg) translateY(-4px)}
+.act .cube{width:50px;height:50px;border-radius:15px;display:grid;place-items:center;font-size:23px;color:#fff;background:var(--c);
+  box-shadow:0 6px 0 color-mix(in srgb,var(--c) 55%,#000);transform:translateZ(24px);transition:transform .15s,box-shadow .15s}
+.act:active .cube{transform:translateZ(24px) translateY(5px);box-shadow:0 1px 0 color-mix(in srgb,var(--c) 55%,#000)}
+.act b{font-size:15px;font-weight:600}
+.act small{display:block;font-size:12.5px;color:var(--mut);font-weight:400;margin-top:3px}
+
+/* ── ล่าง: รอบเช็กระยะ + คุยล่าสุด ── */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.panel{background:var(--bg2);border-radius:22px;padding:20px}
+.cycle{display:flex;align-items:center;gap:18px}
+.dial{--p:0;width:78px;height:78px;border-radius:50%;flex:none;display:grid;place-items:center;position:relative;
+  background:conic-gradient(var(--or) calc(var(--p)*1%),var(--bg3) 0)}
+.dial::after{content:"";position:absolute;inset:8px;border-radius:50%;background:var(--bg2)}
+.dial span{position:relative;z-index:1;font-weight:600;font-size:17px}
+.cycle b{font-size:16px}.cycle p{font-size:13.5px;color:var(--mut);margin-top:4px;line-height:1.55}
+.row{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}
+.row i{font-size:18px;color:var(--or)}
+.row span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14.5px}
+.row small{color:var(--faint);font-size:12px}
+.panel h4{font-size:13px;font-weight:500;color:var(--mut);letter-spacing:.08em;margin-bottom:8px}
+
+/* ── แถบล่างมือถือ ── */
+.tab{display:none}
+@media(max-width:860px){
+  .nav{display:none}
+  .av{margin-left:auto}
+  .hero{grid-template-columns:1fr;min-height:0;gap:0}
+  .stage{height:250px;order:-1;margin:-6px 0 -10px}
+  .obj{width:130px;height:156px}
+  .ring3d{width:240px;height:240px}.ring3d.b{width:170px;height:170px}.shadow{width:170px;bottom:20px}
+  .car-name{font-size:40px}
+  .stats{gap:22px;margin-top:20px}.stat b{font-size:24px}
+  .bar{width:100%}
+  .ask{margin-top:24px}
+  .sec{margin:30px 2px 12px}
+  .acts{gap:10px}
+  .act{align-items:center;padding:14px 4px;gap:10px;background:none}
+  .act .cube{width:54px;height:54px;border-radius:17px}
+  .act b{font-size:12px;font-weight:500;text-align:center}.act small{display:none}
+  .two{grid-template-columns:1fr}
+  .tab{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:5;
+    height:64px;border-radius:22px;background:color-mix(in srgb,var(--bg2) 88%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+  .tab a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:10.5px;color:var(--mut)}
+  .tab a i{font-size:21px}
+  .tab a.on{color:var(--or)}
+}
+.in{animation:in .8s cubic-bezier(.2,.9,.25,1) both}
+@keyframes in{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.floor,.spin,.shadow,.ring3d.b,.in{animation:none}}
+</style>
+</head>
+<body>
+<div class="room" aria-hidden="true"><div class="floor"></div></div>
+
+<div class="wrap">
+  <header class="top in">
+    <a class="brand" href="home-new.html"><svg viewBox="-6 -6 94.8 112"><path fill="currentColor" id="cpath" d="M79.33 .29Q79.62 0 79.97 .21L81.37 1.05Q82.8 1.91 82.8 3.58V4.36Q82.8 6.37 82.17 8.27L75.34 28.74Q74.52 31.21 71.93 30.97L49.09 28.9Q46.5 28.66 44.6 30.44L37.56 37.07Q35.67 38.85 34.46 41.16L29.87 49.93Q28.66 52.23 28.92 54.82L29.04 56.01Q29.3 58.6 31.49 60L45.43 68.97Q47.13 70.06 49.14 69.78L49.59 69.71Q51.59 69.43 52.63 67.68L60.46 54.47Q61.78 52.23 64.32 52.79L64.98 52.94Q67.52 53.5 68.61 55.86L70.25 59.42Q71.34 61.78 70.55 64.26L63.84 85.42Q63.06 87.9 60.77 89.13L48.79 95.58Q46.5 96.82 43.96 96.25L43.14 96.07Q40.76 95.54 39.04 97.26L38.66 97.64Q36.94 99.36 34.52 99.61L33.16 99.74Q30.57 100 30.7 97.4L31.08 89.86Q31.21 87.26 29.02 85.87L5.38 70.82Q3.18 69.43 2.55 66.9L.63 59.21Q0 56.69 1.41 54.5L27.26 14.29Q28.66 12.1 29.48 9.64L31.02 5.01Q31.85 2.55 34.36 3.22L45.9 6.33Q48.41 7.01 51.01 7.01H61.73Q64.33 7.01 66.72 5.97L78.61 .8Q78.98 .64 79.27 .35Z"/></svg><b>CENDON</b></a>
+    <nav class="nav"><a class="on" href="home-new.html">หน้าหลัก</a><a href="garage.html">การาจ</a><a href="chat.html">แชต</a><a href="news.html">นิตยสาร</a><a href="spares.html">อะไหล่</a></nav>
+    <a class="av" id="av" href="profile.html">C</a>
+  </header>
+
+  <section class="hero">
+    <div class="in" style="animation-delay:.08s">
+      <div class="greet" id="greet">สวัสดี</div>
+      <h1 class="car-name" id="carName">Honda <span>City</span></h1>
+      <div class="car-sub"><i class="dot"></i><span id="carSub">2020 · พร้อมใช้งาน</span><a class="switch" href="garage.html">เปลี่ยนรถ <i class="ti ti-chevron-right"></i></a></div>
+      <div class="stats">
+        <div class="stat"><small>เลขไมล์</small><b><span id="km">0</span><em>กม.</em></b></div>
+        <div class="stat"><small>ถึงเช็กระยะอีก</small><b><span id="left">—</span><em>กม.</em></b></div>
+      </div>
+      <div class="bar"><i id="barFill"></i></div>
+    </div>
+    <div class="stage" id="stage" aria-hidden="true">
+      <div class="ring3d"></div><div class="ring3d b"></div><div class="shadow"></div>
+      <div class="obj" id="obj"><div class="spin" id="spin"></div></div>
+    </div>
+  </section>
+
+  <form class="ask in" id="ask" style="animation-delay:.16s">
+    <i class="ti ti-sparkles"></i>
+    <input id="q" placeholder="รถเป็นอะไร ถาม Cendon ได้เลย…" autocomplete="off" enterkeyhint="send">
+    <button aria-label="ถาม"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A0F07" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+  </form>
+
+  <div class="sec in" style="animation-delay:.22s"><b>ทำบ่อย</b><a href="chat.html">เครื่องมือทั้งหมด</a></div>
+  <div class="acts in" style="animation-delay:.26s">
+    <a class="act" href="chat.html?attach=image" style="--c:#8B5CF6"><span class="cube"><i class="ti ti-camera"></i></span><b>ถ่ายรูปอาการ<small>ให้ AI ดูให้</small></b></a>
+    <a class="act" href="chat.html?attach=mic" style="--c:#22B07D"><span class="cube"><i class="ti ti-ear"></i></span><b>ฟังเสียงเครื่อง<small>จับเสียงผิดปกติ</small></b></a>
+    <a class="act" href="tech.html" style="--c:#F28C38"><span class="cube"><i class="ti ti-tool"></i></span><b>หาช่าง<small>ใกล้ตัวคุณ</small></b></a>
+    <a class="act" href="index.html#park" style="--c:#EF5350"><span class="cube"><i class="ti ti-map-pin"></i></span><b>จำที่จอด<small>กดตอนจอด</small></b></a>
+  </div>
+
+  <div class="sec in" style="animation-delay:.3s"><b>วันนี้</b></div>
+  <div class="two in" style="animation-delay:.34s">
+    <div class="panel cycle"><div class="dial" id="dial"><span id="pct">—</span></div>
+      <div><b>รอบเช็กระยะนี้</b><p id="cycleTx">ใส่เลขไมล์ในการาจ แล้ว Cendon จะเตือนให้เอง</p></div></div>
+    <div class="panel"><h4>คุยล่าสุด</h4><div id="recent"></div></div>
+  </div>
+</div>
+
+<nav class="tab"><a class="on" href="home-new.html"><i class="ti ti-home"></i>หน้าหลัก</a><a href="garage.html"><i class="ti ti-car"></i>การาจ</a><a href="chat.html"><i class="ti ti-message-2"></i>แชต</a><a href="news.html"><i class="ti ti-book-2"></i>นิตยสาร</a><a href="profile.html"><i class="ti ti-user"></i>บัญชี</a></nav>
+
+<script>
+/* ── ข้อมูลจริงจากแอป (ถ้ามี) ไม่งั้นใช้ตัวอย่าง ── */
+(function(){
+  var D=document,$=function(i){return D.getElementById(i)};
+  function rd(k,d){try{var v=JSON.parse(localStorage.getItem("spire_"+k));return v==null?d:v}catch(e){return d}}
+  try{var th=JSON.parse(localStorage.getItem("spire_theme")); if(th==="light")D.documentElement.dataset.theme="light"}catch(e){}
+  var g=rd("garage",[])||[], c=g.find(function(x){return x.id===rd("selCar","")})||g[0]||{name:"Honda City",year:"2020",mileage:"45000"};
+  var u=rd("cachedUser",{})||{}, h=new Date().getHours();
+  $("greet").textContent=(h<11?"สวัสดีตอนเช้า":h<16?"สวัสดีตอนบ่าย":h<19?"สวัสดีตอนเย็น":"สวัสดีตอนค่ำ")+(u.name?" คุณ "+u.name.split(" ")[0]:"");
+  if(u.name)$("av").textContent=u.name[0].toUpperCase();
+  var nm=(c.name||((c.make||"")+" "+(c.model||""))).trim().split(" ");
+  $("carName").innerHTML=nm.slice(0,-1).join(" ")+(nm.length>1?" ":"")+"<span>"+nm.slice(-1)[0]+"</span>";
+  $("carSub").textContent=[c.year,"พร้อมใช้งาน"].filter(Boolean).join(" · ");
+  var km=+String(c.mileage||"").replace(/\D/g,"")||0, left=km?10000-km%10000:0, pct=km?Math.round(km%10000/100):0;
+  $("left").textContent=km?left.toLocaleString("en-US"):"—";
+  $("pct").textContent=km?pct+"%":"—"; $("dial").style.setProperty("--p",pct);
+  if(km)$("cycleTx").textContent="ใช้ไปแล้ว "+pct+"% ของ 10,000 กม. อีก "+left.toLocaleString("en-US")+" กม. ค่อยเข้าศูนย์";
+  setTimeout(function(){ $("barFill").style.width=pct+"%" },300);
+  /* เลขไมล์นับขึ้นเหมือนหน้าปัดตอนสตาร์ท */
+  var t0=performance.now();(function f(t){var p=Math.min(1,(t-t0)/1300),e=1-Math.pow(1-p,3);$("km").textContent=Math.round(km*e).toLocaleString("en-US");if(p<1)requestAnimationFrame(f)})(t0);
+
+  var s=(rd("chatSessions",[])||[]).slice().sort(function(a,b){return(b.t||0)-(a.t||0)}).slice(0,3);
+  if(!s.length)s=[{title:"แอร์ไม่เย็นตอนรถติด"},{title:"เสียงดังตอนเบรก"},{title:"ถึงเวลาเปลี่ยนน้ำมันเครื่องยัง"}];
+  $("recent").innerHTML=s.map(function(x){return '<a class="row" href="chat.html'+(x.id?"?session="+encodeURIComponent(x.id):"")+'"><i class="ti ti-message-2"></i><span>'+String(x.title||"แชต").replace(/</g,"&lt;")+'</span><small><i class="ti ti-chevron-right" style="color:var(--faint);font-size:15px"></i></small></a>'}).join("");
+
+  $("ask").onsubmit=function(e){e.preventDefault();var q=$("q").value.trim();
+    try{if(q)localStorage.setItem("spire_deckQ",JSON.stringify(q))}catch(err){} location.href="chat.html"+(q?"":"?attach=text")};
+
+  /* ── ตรา C สามมิติ: ซ้อนตรา 18 ชั้นตามแกนลึก = มีความหนาจริง ── */
+  var path=D.getElementById("cpath").getAttribute("d"), N=18, html="";
+  for(var i=0;i<N;i++){
+    var z=(i-(N-1)/2)*2.2, face=i===0||i===N-1;
+    var col=face?"#F28C38":(i%2?"#B8581A":"#A94F16");
+    html+='<svg viewBox="-6 -6 94.8 112" style="transform:translateZ('+z+'px)"><path fill="'+col+'" d="'+path+'"/></svg>';
+  }
+  $("spin").innerHTML=html;
+  /* เอียงตามเมาส์/นิ้ว */
+  function tilt(x,y){ D.documentElement.style.setProperty("--ry",((x/innerWidth-.5)*30)+"deg"); D.documentElement.style.setProperty("--rx",((.5-y/innerHeight)*18)+"deg") }
+  addEventListener("pointermove",function(e){tilt(e.clientX,e.clientY)},{passive:true});
+  addEventListener("deviceorientation",function(e){ if(e.gamma!=null)tilt(innerWidth/2+e.gamma*8,innerHeight/2+(e.beta-45)*6) },{passive:true});
+})();
+</script>
+</body>
+</html>

@@ -5060,7 +5060,7 @@ async function streamAnswer(contents,opts){
    ตัวที่เพิ่งโผล่ค่อย ๆ ชัดขึ้นจากจางและเบลอเล็กน้อย เหมือนหมึกซึม
    ย่อหน้าที่จบแล้ววาดครั้งเดียวแล้วไม่แตะอีก จอจึงไม่กระพริบ */
 const W_MARK=/[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E\u0300-\u036F\uFE0F\u200D\uDC00-\uDFFF]/;
-const W_FADE=260;
+const W_FADE=520;
 function flowNew(body){return{body,target:"",shown:0,acc:0,stamps:[],settled:0,active:null,caret:null,raf:0,last:0,done:false,wait:null,user:false}}
 /* ข้อความที่จะแสดง — ตัดบล็อกฟอร์มถามกลับ [[ASK]] ออก (มันจะกลายเป็นฟอร์มหลังคำตอบจบ ไม่ใช่ขึ้นเป็นโค้ดดิบระหว่างไหล) */
 function flowText(t){return String(t||"").replace(/\[\[ASK\]\][\s\S]*$/,"").replace(/\[(\[(A(S(K)?)?)?)?$/,"")}
@@ -5132,7 +5132,7 @@ function flowFade(f,now,tailLen){
   if(!f.stamps.length||!f.active)return;
   const segs=[]; let sum=0;
   /* จางเฉพาะคำท้าย ๆ ไม่เกินราว 40 ตัว ตอนเน็ตส่งมาเป็นก้อนใหญ่จะไม่กลายเป็นย่อหน้าผีทั้งก้อน */
-  for(let i=f.stamps.length-1;i>=0&&sum<Math.min(tailLen,40);i--){
+  for(let i=f.stamps.length-1;i>=0&&sum<Math.min(tailLen,70);i--){
     const len=f.stamps[i][1]-f.stamps[i][0]; if(len<=0)continue;
     segs.push([len,Math.min(1,(now-f.stamps[i][2])/W_FADE)]); sum+=len;
   }
@@ -5148,9 +5148,9 @@ function flowFade(f,now,tailLen){
       const p=segs[si][1], ease=1-(1-p)*(1-p);
       const sp=document.createElement("span");
       sp.style.opacity=(0.06+0.94*ease).toFixed(3);
-      if(p<.55)sp.style.filter="blur("+((1-p/.55)*1.8).toFixed(2)+"px)";
-      /* ตัวหนังสือที่เพิ่งมาเป็นสีกลางล้วน (จางจากเบลอเป็นคม) — ไม่แต้มสี
-         สีสันมีเฉพาะแถบแสงใต้ช่องพิมพ์ตอน AI ทำงาน ตัวคำตอบต้องอ่านสบายที่สุด */
+      if(p<.7)sp.style.filter="blur("+((1-p/.7)*3).toFixed(2)+"px)";
+      /* ตัวหนังสือที่เพิ่งมาเริ่มเป็นสีส้ม Cendon แล้วค่อย ๆ กลายเป็นสีปกติ — ไล่สีตามคำที่ไหลมา */
+      if(p<.9)sp.style.color="color-mix(in oklab,#F28C38 "+Math.round((1-p/.9)*100)+"%,var(--c-ink))";
       right.parentNode.insertBefore(sp,right); sp.appendChild(right);
       need-=took;
       if(need<=0){ si++; need=si<segs.length?segs[si][0]:0 }
@@ -13482,6 +13482,18 @@ body .w-q:hover{border-color:rgba(242,140,56,.45)!important}
 .car-pick i,header.pill .p-car>.ti-chevron-down{color:#F28C38!important}
 .chip.sumchip{border-color:rgba(242,140,56,.4)!important}.chip.sumchip i{color:#F28C38!important}
 .w-h1 .w-hi{color:#F2A24E!important}
+
+/* ════ ตอน AI คิด: คลื่นแสงขึ้นลงซ้ายขวา · โลโก้หมุนแล้วหยุด ════ */
+@keyframes wWave{0%{transform:translate3d(0,0,0) scaleY(1)}25%{transform:translate3d(-13%,-9%,0) scaleY(1.18)}
+  50%{transform:translate3d(-26%,4%,0) scaleY(.9)}75%{transform:translate3d(-13%,-6%,0) scaleY(1.12)}100%{transform:translate3d(0,0,0) scaleY(1)}}
+@keyframes wWaveB{0%{transform:translate3d(-40%,4%,0) scaleY(.95)}33%{transform:translate3d(-24%,-10%,0) scaleY(1.2)}
+  66%{transform:translate3d(-8%,2%,0) scaleY(.92)}100%{transform:translate3d(-40%,4%,0) scaleY(.95)}}
+.w-sweep i{animation:wWave 6s ease-in-out infinite!important;animation-play-state:paused;transform-origin:50% 100%}
+.w-sweep b{animation:wWaveB 8.5s ease-in-out infinite!important;animation-play-state:paused;transform-origin:50% 100%}
+body.w-busy .w-sweep i,body.w-busy .w-sweep b{animation-play-state:running!important}
+@keyframes wSpinStop{0%{transform:rotate(0)}35%{transform:rotate(360deg)}100%{transform:rotate(360deg)}}
+.ai-sig.thinking .mark{animation:wSpinStop 1.6s cubic-bezier(.65,0,.35,1) infinite!important;opacity:1!important;filter:none!important}
+@media(prefers-reduced-motion:reduce){.ai-sig.thinking .mark,.w-sweep i,.w-sweep b{animation:none!important}}
 </style>
 </body>
 </html>

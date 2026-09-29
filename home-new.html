@@ -3,160 +3,177 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#F2EEE8">
+<meta name="theme-color" content="#121110">
 <title>Cendon</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <style>
 /* ════════════════════════════════════════════════════════════════════
-   Cendon — หน้าหลักแบบแอป (เฉพาะที่จำเป็น)
-   • สามมิติแบบนุ่ม: ทุกชิ้นเหมือนวัสดุจริง — ขอบบนมีแสง ใต้ชิ้นมีเงานุ่ม ปุ่มนูน กดแล้วยุบ
-   • ไม่มีโลโก้ใหญ่ ไม่มีฮีโร่แบบเว็บ — เปิดมาเห็นรถ ถาม และทำสิ่งที่ต้องทำได้ทันที
-   • หนึ่งคอลัมน์แบบแอป (บนคอมก็เป็นคอลัมน์แอปกลางจอ)
+   Cendon — หน้าหลักออกแบบใหม่ ในสไตล์เดิมของแอป
+   (โลโก้ C เล็กด้านบน · ช่องค้นหา · การ์ดสรุปวันนี้แบบภาพวาด · ตารางเครื่องมือสี · ทั้งหมด · แถบล่าง)
+   สิ่งที่ทำใหม่: สีนุ่มลง ระยะหายใจมากขึ้น ปุ่มเป็นวัสดุนูนนุ่ม การ์ดสรุปมีหลายใบเลื่อนได้
+   และ "ทั้งหมด" เปิดแผ่นรวมเครื่องมือทุกอย่าง แบ่งเป็นหมวด
    ════════════════════════════════════════════════════════════════════ */
 :root{
-  --bg:#F2EEE8;--card:#FBF9F6;--ink:#211C17;--mut:#7A7168;--faint:#B0A79D;
-  --or:#EE8132;--or2:#F6A04F;
-  --hi:rgba(255,255,255,.95);--sh:rgba(120,90,55,.18);--sh2:rgba(120,90,55,.10);
+  --bg:#121110;--bg2:#1B1917;--bg3:#24211E;--ink:#F2EDE7;--mut:#9B938A;--faint:#625B54;
+  --or:#EE8132;--or2:#F7A456;--line:rgba(255,255,255,.06);
+  --hi:rgba(255,255,255,.08);--sh:rgba(0,0,0,.55);
   --kd:'Kanit',system-ui,sans-serif;
 }
-html[data-theme="dark"]{
-  --bg:#17140F;--card:#221E18;--ink:#F1EBE3;--mut:#A39A90;--faint:#6D655C;
-  --hi:rgba(255,255,255,.07);--sh:rgba(0,0,0,.55);--sh2:rgba(0,0,0,.3);
-}
-*{box-sizing:border-box;margin:0;padding:0}
+html[data-theme="light"]{--bg:#F4F0EA;--bg2:#FFFDFA;--bg3:#ECE6DD;--ink:#1F1A15;--mut:#7B7268;--faint:#B3A99E;
+  --line:rgba(0,0,0,.06);--hi:rgba(255,255,255,.95);--sh:rgba(110,80,45,.2)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{background:var(--bg);color:var(--ink);font-family:var(--kd);-webkit-font-smoothing:antialiased}
+body{min-height:100vh}
 a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
-.app{max-width:480px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top)) 18px calc(110px + env(safe-area-inset-bottom))}
+.app{max-width:460px;margin:0 auto;padding:calc(22px + env(safe-area-inset-top)) 16px calc(112px + env(safe-area-inset-bottom))}
 
-/* วัสดุนุ่ม: ไฮไลต์ขอบบน + เงาสองชั้น (ใกล้คม ไกลฟุ้ง) */
-.soft{background:var(--card);border-radius:24px;
-  box-shadow:inset 0 1px 0 var(--hi),0 1px 2px var(--sh2),0 12px 28px -12px var(--sh)}
+/* ── โลโก้เล็กกลางบน ── */
+.logo{display:block;width:26px;height:30px;margin:6px auto 22px;color:var(--or)}
 
-/* ── หัว ── */
-.top{display:flex;align-items:center;justify-content:space-between;margin:4px 2px 18px}
-.top small{display:block;font-size:13px;color:var(--mut)}
-.top b{font-size:22px;font-weight:600;letter-spacing:-.01em}
-.av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:600;color:#fff;
-  background:linear-gradient(180deg,var(--or2),var(--or));box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 6px 14px -6px var(--or)}
+/* ── ค้นหา ── */
+.find{display:flex;gap:10px;align-items:center}
+.search{flex:1;display:flex;align-items:center;gap:10px;height:50px;padding:0 18px;border-radius:25px;background:var(--bg2);color:var(--faint);font-size:14.5px;
+  box-shadow:inset 0 1px 0 var(--hi),0 10px 22px -14px var(--sh)}
+.search i{font-size:19px;color:var(--mut)}
+.fab{width:50px;height:50px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:21px;flex:none;
+  background:linear-gradient(180deg,var(--or2),var(--or));box-shadow:inset 0 1px 0 rgba(255,255,255,.4),inset 0 -2px 0 rgba(0,0,0,.12),0 10px 20px -10px var(--or)}
+.fab:active,.key:active{transform:scale(.93)}
 
-/* ── รถ ── */
-.car{padding:18px 18px 16px}
-.car-h{display:flex;align-items:center;gap:12px}
-.car-ic{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;font-size:23px;color:#fff;flex:none;
-  background:linear-gradient(180deg,var(--or2),var(--or));box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 8px 16px -8px var(--or)}
-.car-h div{flex:1;min-width:0}
-.car-h b{display:block;font-size:18px;font-weight:600}
-.car-h small{font-size:13px;color:var(--mut)}
-.car-h .ok{font-size:12px;color:#2E9E6B;background:rgba(46,158,107,.12);padding:4px 10px;border-radius:99px;flex:none}
-.meter{margin-top:16px;display:flex;justify-content:space-between;align-items:flex-end}
-.meter b{font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
-.meter b em{font-style:normal;font-size:13px;color:var(--mut);font-weight:400;margin-left:4px}
-.meter small{font-size:12.5px;color:var(--mut);text-align:right}
-.track{height:10px;border-radius:10px;margin-top:10px;background:var(--bg);box-shadow:inset 0 1px 3px var(--sh2)}
-.track i{display:block;height:100%;width:0;border-radius:10px;background:linear-gradient(180deg,var(--or2),var(--or));
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.45);transition:width 1.2s cubic-bezier(.2,.9,.25,1)}
+/* ── การ์ดสรุป (เลื่อนซ้ายขวา) ── */
+.deck{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:18px -16px 0;padding:4px 16px 14px;scrollbar-width:none}
+.deck::-webkit-scrollbar{display:none}
+.brief{position:relative;flex:0 0 100%;scroll-snap-align:center;height:168px;border-radius:24px;overflow:hidden;padding:18px 20px;color:#fff;isolation:isolate;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 16px 30px -18px rgba(0,0,0,.6)}
+.brief.sky{background:linear-gradient(165deg,#6FA3D9,#4F84C4 55%,#3E6FAF)}
+.brief.dusk{background:linear-gradient(165deg,#E9A06A,#D9784F 60%,#B85B45)}
+.brief.night{background:linear-gradient(165deg,#3B4468,#2A3152 60%,#1E2440)}
+.brief .art{position:absolute;inset:0;z-index:-1;width:100%;height:100%}
+.brief small{display:flex;align-items:center;gap:6px;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;opacity:.85}
+.brief h3{font-size:22px;font-weight:600;margin:6px 0 1px}
+.brief p{font-size:13px;opacity:.85}
+.brief .pill{position:absolute;left:20px;bottom:16px;font-size:12px;font-weight:500;padding:6px 12px;border-radius:99px;background:rgba(255,255,255,.2);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.brief .open{position:absolute;right:18px;bottom:18px;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:4px}
+.brief .temp{position:absolute;right:20px;top:16px;font-size:26px;font-weight:600;display:flex;align-items:center;gap:6px}
+.dots{display:flex;justify-content:center;gap:6px}
+.dots i{width:6px;height:6px;border-radius:6px;background:var(--bg3);transition:width .3s,background .3s}
+.dots i.on{width:20px;background:var(--or)}
 
-/* ── ถาม ── */
-.ask{display:flex;align-items:center;gap:10px;margin-top:14px;padding:6px 6px 6px 16px;border-radius:20px}
-.ask i{font-size:19px;color:var(--or)}
-.ask input{flex:1;min-width:0;border:0;outline:0;background:none;color:var(--ink);font:inherit;font-size:15px;padding:10px 0}
-.ask input::placeholder{color:var(--faint)}
-.go{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;color:#fff;
-  background:linear-gradient(180deg,var(--or2),var(--or));box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 4px 0 #C4631F,0 8px 14px -6px var(--or);
-  transition:transform .1s,box-shadow .1s}
-.go:active{transform:translateY(3px);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 1px 0 #C4631F}
-
-/* ── ปุ่มลัด ── */
-.h{font-size:13px;color:var(--mut);margin:24px 4px 12px;display:flex;justify-content:space-between}
-.h a{color:var(--mut)}
-.acts{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.act{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:12px;color:var(--mut)}
-.key{width:62px;height:62px;border-radius:20px;display:grid;place-items:center;font-size:25px;color:var(--c);
-  background:var(--card);box-shadow:inset 0 1px 0 var(--hi),0 1px 2px var(--sh2),0 10px 20px -10px var(--sh);
-  transition:transform .12s,box-shadow .12s}
-.act:active .key{transform:scale(.94);box-shadow:inset 0 2px 6px var(--sh2)}
-
-/* ── ล่าสุด ── */
-.list{padding:4px 16px}
-.row{display:flex;align-items:center;gap:12px;padding:13px 0}
-.row+.row{border-top:1px solid color-mix(in srgb,var(--ink) 7%,transparent)}
-.row i{font-size:18px;color:var(--faint)}
-.row span{flex:1;min-width:0;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* ── เครื่องมือ ── */
+.h{display:flex;justify-content:space-between;align-items:baseline;margin:26px 4px 16px}
+.h b{font-size:17px;font-weight:600}
+.h button{font-size:13px;color:var(--mut)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);row-gap:20px}
+.tool{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:12px;color:var(--mut)}
+.key{width:56px;height:56px;border-radius:19px;display:grid;place-items:center;font-size:24px;color:#fff;transition:transform .12s;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--c) 82%,#fff),var(--c));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -2px 0 rgba(0,0,0,.12),0 10px 18px -12px var(--c)}
 
 /* ── แถบล่าง ── */
-.tab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom));width:min(444px,calc(100% - 28px));
-  height:64px;border-radius:24px;display:grid;grid-template-columns:repeat(5,1fr);z-index:5}
-.tab a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:10.5px;color:var(--faint)}
-.tab a i{font-size:22px}
+.tab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom));width:min(428px,calc(100% - 24px));height:66px;border-radius:24px;
+  display:grid;grid-template-columns:repeat(5,1fr);z-index:20;background:color-mix(in srgb,var(--bg2) 90%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  box-shadow:inset 0 1px 0 var(--hi),0 14px 30px -14px var(--sh)}
+.tab a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10.5px;color:var(--faint)}
+.tab a i{font-size:21px;width:40px;height:26px;display:grid;place-items:center;border-radius:13px}
 .tab a.on{color:var(--or)}
+.tab a.on i{background:color-mix(in srgb,var(--or) 16%,transparent)}
+
+/* ── แผ่น "ทั้งหมด" ── */
+.veil{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .25s}
+.sheet{position:fixed;left:50%;bottom:0;z-index:41;width:min(460px,100%);max-height:84vh;overflow:auto;border-radius:28px 28px 0 0;background:var(--bg2);
+  padding:10px 18px calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,100%);transition:transform .38s cubic-bezier(.2,.9,.25,1);
+  box-shadow:0 -20px 40px -20px var(--sh)}
+.open-all .veil{opacity:1;pointer-events:auto}
+.open-all .sheet{transform:translate(-50%,0)}
+.grab{width:38px;height:5px;border-radius:5px;background:var(--bg3);margin:0 auto 14px}
+.sheet h4{font-size:12.5px;font-weight:500;color:var(--mut);margin:16px 4px 12px}
+.sheet h4:first-of-type{margin-top:4px}
+.sheet .grid{row-gap:18px}
 .in{animation:in .6s cubic-bezier(.2,.9,.25,1) both}
 @keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-@media(prefers-reduced-motion:reduce){.in{animation:none}}
+@media(prefers-reduced-motion:reduce){.in{animation:none}.sheet{transition:none}}
 </style>
 </head>
 <body>
 <main class="app">
-  <header class="top in">
-    <div><small id="greet">สวัสดี</small><b id="name">Cendon</b></div>
-    <a class="av" id="av" href="profile.html">C</a>
-  </header>
+  <svg class="logo in" viewBox="-6 -6 94.8 112" aria-label="Cendon"><path fill="currentColor" d="M79.33 .29Q79.62 0 79.97 .21L81.37 1.05Q82.8 1.91 82.8 3.58V4.36Q82.8 6.37 82.17 8.27L75.34 28.74Q74.52 31.21 71.93 30.97L49.09 28.9Q46.5 28.66 44.6 30.44L37.56 37.07Q35.67 38.85 34.46 41.16L29.87 49.93Q28.66 52.23 28.92 54.82L29.04 56.01Q29.3 58.6 31.49 60L45.43 68.97Q47.13 70.06 49.14 69.78L49.59 69.71Q51.59 69.43 52.63 67.68L60.46 54.47Q61.78 52.23 64.32 52.79L64.98 52.94Q67.52 53.5 68.61 55.86L70.25 59.42Q71.34 61.78 70.55 64.26L63.84 85.42Q63.06 87.9 60.77 89.13L48.79 95.58Q46.5 96.82 43.96 96.25L43.14 96.07Q40.76 95.54 39.04 97.26L38.66 97.64Q36.94 99.36 34.52 99.61L33.16 99.74Q30.57 100 30.7 97.4L31.08 89.86Q31.21 87.26 29.02 85.87L5.38 70.82Q3.18 69.43 2.55 66.9L.63 59.21Q0 56.69 1.41 54.5L27.26 14.29Q28.66 12.1 29.48 9.64L31.02 5.01Q31.85 2.55 34.36 3.22L45.9 6.33Q48.41 7.01 51.01 7.01H61.73Q64.33 7.01 66.72 5.97L78.61 .8Q78.98 .64 79.27 .35Z"/></svg>
 
-  <a class="soft car in" href="garage.html" style="display:block;animation-delay:.05s">
-    <div class="car-h">
-      <span class="car-ic"><i class="ti ti-car"></i></span>
-      <div><b id="carName">Honda City</b><small id="carSub">2020</small></div>
-      <span class="ok">พร้อมใช้งาน</span>
-    </div>
-    <div class="meter">
-      <b><span id="km">0</span><em>กม.</em></b>
-      <small>เช็กระยะอีก <span id="left">—</span> กม.</small>
-    </div>
-    <div class="track"><i id="fill"></i></div>
-  </a>
-
-  <form class="soft ask in" id="ask" style="animation-delay:.1s">
-    <i class="ti ti-sparkles"></i>
-    <input id="q" placeholder="รถเป็นอะไร ถาม Cendon ได้เลย" autocomplete="off" enterkeyhint="send">
-    <button class="go" aria-label="ถาม"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
-  </form>
-
-  <div class="h in" style="animation-delay:.15s"><span>ทำบ่อย</span></div>
-  <div class="acts in" style="animation-delay:.18s">
-    <a class="act" href="chat.html?attach=image"><span class="key" style="--c:#8B5CF6"><i class="ti ti-camera"></i></span>ถ่ายรูป</a>
-    <a class="act" href="chat.html?attach=mic"><span class="key" style="--c:#22A673"><i class="ti ti-ear"></i></span>ฟังเสียง</a>
-    <a class="act" href="tech.html"><span class="key" style="--c:#EE8132"><i class="ti ti-tool"></i></span>หาช่าง</a>
-    <a class="act" href="index.html#park"><span class="key" style="--c:#E5484D"><i class="ti ti-map-pin"></i></span>ที่จอด</a>
+  <div class="find in" style="animation-delay:.05s">
+    <a class="search" href="chat.html"><i class="ti ti-search"></i>ค้นหาเครื่องมือ รถ หรือช่าง</a>
+    <a class="fab" href="tech.html" aria-label="หาช่าง"><i class="ti ti-tool"></i></a>
   </div>
 
-  <div class="h in" style="animation-delay:.22s"><span>คุยล่าสุด</span><a href="chat.html">ทั้งหมด</a></div>
-  <div class="soft list in" id="recent" style="animation-delay:.25s"></div>
+  <div class="deck in" id="deck" style="animation-delay:.1s"></div>
+  <div class="dots" id="dots"></div>
+
+  <div class="h in" style="animation-delay:.15s"><b>เครื่องมือ</b><button id="allBtn">ทั้งหมด</button></div>
+  <div class="grid in" id="home" style="animation-delay:.18s"></div>
 </main>
 
-<nav class="soft tab"><a class="on" href="home-new.html"><i class="ti ti-home"></i>หน้าหลัก</a><a href="garage.html"><i class="ti ti-car"></i>การาจ</a><a href="chat.html"><i class="ti ti-message-2"></i>แชต</a><a href="news.html"><i class="ti ti-book-2"></i>นิตยสาร</a><a href="profile.html"><i class="ti ti-user"></i>บัญชี</a></nav>
+<nav class="tab"><a class="on" href="home-new.html"><i class="ti ti-home"></i>หน้าหลัก</a><a href="garage.html"><i class="ti ti-car"></i>การาจ</a><a href="chat.html"><i class="ti ti-message-2"></i>แชต</a><a href="news.html"><i class="ti ti-book-2"></i>นิตยสาร</a><a href="profile.html"><i class="ti ti-user"></i>บัญชี</a></nav>
+
+<div class="veil" id="veil"></div>
+<div class="sheet" id="sheet" role="dialog" aria-label="เครื่องมือทั้งหมด"><div class="grab"></div><div id="allBody"></div></div>
 
 <script>
 (function(){
   var D=document,$=function(i){return D.getElementById(i)};
   function rd(k,d){try{var v=JSON.parse(localStorage.getItem("spire_"+k));return v==null?d:v}catch(e){return d}}
-  if(rd("theme","")==="dark")D.documentElement.dataset.theme="dark";
-  var g=rd("garage",[])||[], c=g.find(function(x){return x.id===rd("selCar","")})||g[0]||{name:"Honda City",year:"2020",mileage:"45000"};
-  var u=rd("cachedUser",{})||{}, h=new Date().getHours();
-  $("greet").textContent=h<11?"สวัสดีตอนเช้า":h<16?"สวัสดีตอนบ่าย":h<19?"สวัสดีตอนเย็น":"สวัสดีตอนค่ำ";
-  if(u.name){ $("name").textContent="คุณ "+u.name.split(" ")[0]; $("av").textContent=u.name[0].toUpperCase() }
-  $("carName").textContent=c.name||((c.make||"")+" "+(c.model||"")).trim();
-  $("carSub").textContent=[c.year,c.make].filter(Boolean).join(" · ");
-  var km=+String(c.mileage||"").replace(/\D/g,"")||0, left=km?10000-km%10000:0, pct=km?(km%10000)/100:0;
-  $("left").textContent=km?left.toLocaleString("en-US"):"—";
-  setTimeout(function(){ $("fill").style.width=pct+"%" },250);
-  var t0=performance.now();(function f(t){var p=Math.min(1,(t-t0)/1000),e=1-Math.pow(1-p,3);$("km").textContent=Math.round(km*e).toLocaleString("en-US");if(p<1)requestAnimationFrame(f)})(t0);
-  var s=(rd("chatSessions",[])||[]).slice().sort(function(a,b){return(b.t||0)-(a.t||0)}).slice(0,3);
-  $("recent").innerHTML=s.length?s.map(function(x){return '<a class="row" href="chat.html?session='+encodeURIComponent(x.id)+'"><i class="ti ti-message-2"></i><span>'+String(x.title||"แชต").replace(/</g,"&lt;")+'</span><i class="ti ti-chevron-right"></i></a>'}).join("")
-    :'<div class="row"><i class="ti ti-message-2"></i><span style="color:var(--mut)">ยังไม่มีบทสนทนา</span></div>';
-  $("ask").onsubmit=function(e){e.preventDefault();var q=$("q").value.trim();
-    try{if(q)localStorage.setItem("spire_deckQ",JSON.stringify(q))}catch(err){} location.href="chat.html"+(q?"":"?attach=text")};
+  if(rd("theme","")==="light")D.documentElement.dataset.theme="light";
+
+  /* ── เครื่องมือทั้งหมด (ชุดเดียวกับแอปเดิม) ── */
+  var T={
+    text:  {ic:"ti-message-2",   c:"#5B8FE0",n:"พิมพ์ถาม",   go:"chat.html?attach=text"},
+    image: {ic:"ti-camera",      c:"#9A6FE0",n:"ถ่ายรูป",     go:"chat.html?attach=image"},
+    video: {ic:"ti-video",       c:"#D9679F",n:"วิดีโอ",      go:"chat.html?attach=video"},
+    listen:{ic:"ti-ear",         c:"#3FAE83",n:"ฟังเสียง",    go:"chat.html?attach=mic"},
+    call:  {ic:"ti-phone",       c:"#3FAE83",n:"โทรคุย AI",   go:"chat.html?attach=call"},
+    techs: {ic:"ti-tool",        c:"#E07B45",n:"หาช่าง",      go:"tech.html"},
+    quote: {ic:"ti-receipt-2",   c:"#D9A04A",n:"เช็กราคา",    go:"index.html#quote"},
+    shake: {ic:"ti-activity",    c:"#45AFC0",n:"วัดการสั่น",   go:"index.html#shake"},
+    park:  {ic:"ti-map-pin",     c:"#DE6560",n:"จำที่จอด",    go:"index.html#park"},
+    own:   {ic:"ti-report-money",c:"#7E8BE0",n:"ต้นทุน",      go:"index.html#own"},
+    spares:{ic:"ti-package",     c:"#E0894A",n:"อะไหล่",      go:"spares.html"},
+    garage:{ic:"ti-car-garage",  c:"#6C7A8E",n:"การาจ",       go:"garage.html"},
+    desk:  {ic:"ti-layout-board",c:"#6479D6",n:"โต๊ะทำงาน",   go:"chat.html?pane=desk"},
+    news:  {ic:"ti-book-2",      c:"#B07A5A",n:"นิตยสาร",     go:"news.html"},
+    hb:    {ic:"ti-book",        c:"#8C7A6A",n:"คู่มือรถ",    go:"handbook.html"},
+    plan:  {ic:"ti-rocket",      c:"#E0894A",n:"แพ็กเกจ",     go:"plan.html"},
+    set:   {ic:"ti-settings",    c:"#6C7A8E",n:"ตั้งค่า",      go:"profile.html"},
+    help:  {ic:"ti-help-circle", c:"#6C7A8E",n:"ช่วยเหลือ",   go:"help.html"}
+  };
+  function tile(k){var t=T[k];return '<a class="tool" href="'+t.go+'"><span class="key" style="--c:'+t.c+'"><i class="ti '+t.ic+'"></i></span>'+t.n+'</a>'}
+  $("home").innerHTML=["text","image","techs","listen","quote","shake","park"].map(tile).join("")+
+    '<button class="tool" id="allTile"><span class="key" style="--c:#6C7686"><i class="ti ti-layout-grid"></i></span>ทั้งหมด</button>';
+  var GROUPS=[["ถาม AI",["text","image","video","listen","call"]],["ดูแลรถ",["techs","quote","shake","park","own","spares"]],["อื่น ๆ",["garage","desk","news","hb","plan","set","help"]]];
+  $("allBody").innerHTML=GROUPS.map(function(g){return '<h4>'+g[0]+'</h4><div class="grid">'+g[1].map(tile).join("")+'</div>'}).join("");
+  function openAll(on){D.body.classList.toggle("open-all",on)}
+  $("allBtn").onclick=$("allTile").onclick=function(){openAll(true)};
+  $("veil").onclick=function(){openAll(false)};
+  addEventListener("keydown",function(e){if(e.key==="Escape")openAll(false)});
+
+  /* ── การ์ดสรุป 3 ใบ ภาพวาดแบบเดิม (ฟ้า เมือง รถ) สีตามช่วงเวลา ── */
+  var g=rd("garage",[])||[], c=g.find(function(x){return x.id===rd("selCar","")})||g[0]||null;
+  var km=c?+String(c.mileage||"").replace(/\D/g,""):0, h=new Date().getHours();
+  var tone=h>=6&&h<16?"sky":h<19&&h>=16?"dusk":"night", when=h<11?"สรุปเช้านี้":h<16?"สรุปบ่ายนี้":h<19?"สรุปเย็นนี้":"สรุปคืนนี้";
+  var date=new Date().toLocaleDateString("th-TH",{weekday:"long",day:"numeric",month:"long"});
+  function art(){var b="";for(var i=0;i<14;i++){var w=16+(i*7)%12,hh=14+(i*37)%26;b+='<rect x="'+(i*30)+'" y="'+(140-hh)+'" width="'+w+'" height="'+hh+'" rx="2" fill="rgba(255,255,255,.1)"/>'}
+    return '<svg class="art" viewBox="0 0 420 176" preserveAspectRatio="xMidYMax slice" aria-hidden="true">'+
+      '<ellipse cx="250" cy="40" rx="40" ry="13" fill="rgba(255,255,255,.12)"/><ellipse cx="280" cy="34" rx="24" ry="11" fill="rgba(255,255,255,.12)"/>'+b+
+      '<rect y="140" width="420" height="36" fill="rgba(0,0,0,.08)"/><g fill="rgba(255,255,255,.35)">'+[0,1,2,3,4,5,6].map(function(i){return '<rect x="'+(40+i*60)+'" y="160" width="30" height="3" rx="1.5"/>'}).join("")+'</g>'+
+      '<g transform="translate(150 12) scale(.8)"><path d="M28 146 Q30 132 52 129 L74 127 Q86 116 106 114 Q128 113 140 121 L156 128 Q164 131 164 140 L163 146Z" fill="rgba(255,255,255,.6)"/>'+
+      '<circle cx="62" cy="147" r="8" fill="rgba(0,0,0,.3)"/><circle cx="140" cy="147" r="8" fill="rgba(0,0,0,.3)"/></g></svg>'}
+  var cards=[
+    {cls:tone,eye:"ti-sunrise",k:"TODAY'S BRIEF",t:when,p:date,pill:c?"วันนี้ไม่มีอะไรต้องทำ":"เพิ่มรถเพื่อเริ่ม",temp:'<i class="ti ti-sun"></i>31°',go:"chat.html"},
+    {cls:"dusk",eye:"ti-gauge",k:"รอบเช็กระยะ",t:c?(km?(10000-km%10000).toLocaleString("en-US")+" กม.":"ใส่เลขไมล์"):"ยังไม่มีรถ",p:c?(c.name||"")+" · อีกเท่านี้ค่อยเข้าศูนย์":"เพิ่มรถในการาจ",pill:c?"เลขไมล์ "+(km?km.toLocaleString("en-US"):"—")+" กม.":"เพิ่มรถ",temp:"",go:"garage.html"},
+    {cls:"night",eye:"ti-sparkles",k:"ถาม CENDON",t:"รถเป็นอะไร?",p:"เล่าอาการ ส่งรูป หรืออัดเสียงก็ได้",pill:"แอร์ไม่เย็น · เสียงดังตอนเบรก",temp:"",go:"chat.html?attach=text"}
+  ];
+  $("deck").innerHTML=cards.map(function(x){return '<a class="brief '+x.cls+'" href="'+x.go+'">'+art()+'<small><i class="ti '+x.eye+'"></i>'+x.k+'</small><h3>'+x.t+'</h3><p>'+x.p+'</p>'+(x.temp?'<div class="temp">'+x.temp+'</div>':'')+'<span class="pill">'+x.pill+'</span><span class="open">เปิด <i class="ti ti-arrow-right"></i></span></a>'}).join("");
+  $("dots").innerHTML=cards.map(function(_,i){return '<i'+(i?'':' class="on"')+'></i>'}).join("");
+  $("deck").addEventListener("scroll",function(){var i=Math.round(this.scrollLeft/this.clientWidth);[].forEach.call($("dots").children,function(d,j){d.classList.toggle("on",i===j)})},{passive:true});
 })();
 </script>
 </body>

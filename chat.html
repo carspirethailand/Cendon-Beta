@@ -13089,26 +13089,26 @@ window.spireApplyPrimary=()=>apply(read());
 
 /* ── 1 · สี ─────────────────────────────────────────────────────── */
 html:not([data-theme="light"]){
-  --c-bg0:#080808;--c-bg1:#0E0E0E;--c-bg2:#161616;
+  --c-bg0:#0B0A09;--c-bg1:#11100E;--c-bg2:#191613;
   --c-ink:#ECECEC;--c-mut:#9C9C9C;--c-faint:#666666;
   --c-glass:rgba(255,255,255,.05);--c-glass2:rgba(255,255,255,.085);
   --c-line:rgba(255,255,255,.09);--c-line2:rgba(255,255,255,.06);--c-line3:rgba(255,255,255,.16);
   --c-compose:rgba(24,24,24,.78);--c-ai-bubble:transparent;
   --c-me:rgba(255,255,255,.075);--c-me-line:transparent;
   --pill-bg:transparent;--sheet-bg:rgba(20,20,20,.97);--star-op:0;
-  --w-side:#0E0E0E;
+  --w-side:#100E0C;
   --w-shadow:0 18px 50px -28px rgba(0,0,0,.95);--w-dim:rgba(0,0,0,.55);
   --w-aura-op:1;--w-sweep-op:.95;
 }
 html[data-theme="light"]{
-  --c-bg0:#FCFCFC;--c-bg1:#F5F5F5;--c-bg2:#FFFFFF;
+  --c-bg0:#F7F4EE;--c-bg1:#F0EBE2;--c-bg2:#FFFEFB;
   --c-ink:#161616;--c-mut:#6A6A6A;--c-faint:#A2A2A2;
   --c-glass:rgba(0,0,0,.04);--c-glass2:rgba(0,0,0,.065);
   --c-line:rgba(0,0,0,.1);--c-line2:rgba(0,0,0,.065);--c-line3:rgba(0,0,0,.2);
   --c-compose:rgba(255,255,255,.86);--c-ai-bubble:transparent;
   --c-me:rgba(0,0,0,.05);--c-me-line:transparent;
   --pill-bg:transparent;--sheet-bg:rgba(255,255,255,.98);--star-op:0;
-  --w-side:#F5F5F5;
+  --w-side:#F0EBE2;
   --w-shadow:0 14px 40px -26px rgba(0,0,0,.28);--w-dim:rgba(0,0,0,.22);
   --w-aura-op:.75;--w-sweep-op:.7;
 }
@@ -13349,7 +13349,7 @@ body[data-phase="thread"] .composer{animation:wUp .55s cubic-bezier(.22,1,.36,1)
   font-weight:500!important;color:var(--c-faint)!important}
 .pl-it{color:var(--c-ink)!important}
 .pl-it:hover{background:var(--c-glass)!important}
-.pl-it>i{background:var(--c-glass2)!important;color:var(--c-ink)!important}
+.pl-it>i{background:color-mix(in srgb,var(--plc) 20%,transparent)!important;color:var(--plc)!important;border:1px solid color-mix(in srgb,var(--plc) 35%,transparent)}
 .pl-it>span>b{font-weight:500!important}
 .pl-it>span>small{color:var(--c-faint)!important}
 .pl-menu hr.pl-sep{border-top-color:var(--c-line2)!important}
@@ -13448,6 +13448,35 @@ body.w-busy .composer .w-ring{opacity:1;animation-play-state:running;transition:
   .w-aura i,.w-sweep i,.w-sweep b,.w-ring,.acct-drop{animation:none!important}
   .car-pop,.w-aura,.w-sweep{transition:none!important}
 }
+
+/* ════ ลายเซ็น Cendon: ไฟแอมเบียนต์ในห้องโดยสาร ════
+   ปุ่มหลักเป็นไฟถ่านอุ่น (อำพัน→ส้ม→แดงอิฐ) มีแสงรอบตัว
+   ช่องพิมพ์มีเส้นไฟบาง ๆ เรืองที่ขอบบนเหมือนไฟคอนโซลรถหรู — จำได้ทันทีว่านี่คือ Cendon
+   ไอคอนแต่ละอย่างมีสีของตัวเอง แบบแก้วนุ่ม ไม่ใช่สีทึบแสบตา */
+:root{--ember:linear-gradient(135deg,#FFB547 0%,#F28C38 45%,#E4572E 100%)}
+.send,.w-send:not(:disabled){background:var(--ember)!important;color:#fff!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 8px 22px -8px rgba(242,110,40,.8)!important}
+.send:disabled{background:var(--c-glass2)!important;box-shadow:none!important}
+.composer::after,.w-box::after{content:"";position:absolute;left:14%;right:14%;top:-1px;height:1px;pointer-events:none;border-radius:2px;
+  background:linear-gradient(90deg,transparent,#FFB547 25%,#F28C38 50%,#FF4D7A 75%,transparent);
+  box-shadow:0 0 12px 1px rgba(242,140,56,.6),0 0 36px 3px rgba(255,77,122,.2);opacity:.9;transition:opacity .4s,left .5s,right .5s}
+.composer:focus-within::after,.w-box:focus-within::after{left:4%;right:4%;opacity:1}
+.w-box{position:relative}
+body .w-q i{font-size:17px!important}
+body .w-quick .w-q:nth-child(1) i{color:#FF8A5B!important}
+body .w-quick .w-q:nth-child(2) i{color:#5BC2A0!important}
+body .w-quick .w-q:nth-child(3) i{color:#8B9BFF!important}
+body .w-q:hover{border-color:rgba(242,140,56,.45)!important}
+.side-item.cur{background:linear-gradient(90deg,rgba(242,140,56,.16),rgba(242,140,56,.04))!important;box-shadow:inset 2px 0 0 #F28C38!important}
+.side-new i{color:#F28C38!important}
+.side-acct .av{background:var(--ember)!important;color:#fff!important}
+.msg.me .bubble{background:linear-gradient(135deg,rgba(242,140,56,.16),rgba(255,77,122,.09))!important;
+  box-shadow:inset 0 0 0 1px rgba(242,140,56,.22)!important}
+.w-h{padding-left:10px!important;border-left:2px solid #F28C38!important}
+.bubble li::before{background:#F28C38!important;box-shadow:0 0 8px rgba(242,140,56,.6)!important}
+.car-pick i,header.pill .p-car>.ti-chevron-down{color:#F28C38!important}
+.chip.sumchip{border-color:rgba(242,140,56,.4)!important}.chip.sumchip i{color:#F28C38!important}
+.w-h1 .w-hi{color:#F2A24E!important}
 </style>
 </body>
 </html>

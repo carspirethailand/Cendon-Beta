@@ -10,7 +10,7 @@
 /* ── 1 · สี (ทั้งชุดตัวแปรของหน้าทั่วไป และชุด --c-* ของหน้าแพ็กเกจ) ── */
 html[data-theme="dark"],html[data-theme="midnight"],html[data-theme="ocean"],
 html[data-theme="carbon"],html[data-theme="cyber"],html[data-theme="wire"]{
-  --bg:#080808;--surface:#111111;--surface-2:#171717;--ink:#ECECEC;--muted:#9C9C9C;--faint:#666666;
+  --bg:#0B0A09;--surface:#141210;--surface-2:#1B1815;--ink:#ECECEC;--muted:#9C9C9C;--faint:#666666;
   --line:rgba(255,255,255,.09);--line-2:rgba(255,255,255,.055);
   --nav-bg:rgba(16,16,16,.72);--nav-link:#9C9C9C;
   --shadow:0 18px 50px -28px rgba(0,0,0,.9);--shadow-sm:0 8px 24px -16px rgba(0,0,0,.7);
@@ -22,7 +22,7 @@ html[data-theme="carbon"],html[data-theme="cyber"],html[data-theme="wire"]{
   --o-aura:.9;
 }
 html:not([data-theme]),html[data-theme="light"],html[data-theme="warm"],html[data-theme="emerald"],html[data-theme="pearl"],html[data-theme="plant"]{
-  --bg:#FCFCFC;--surface:#FFFFFF;--surface-2:#F6F6F6;--ink:#161616;--muted:#6A6A6A;--faint:#A2A2A2;
+  --bg:#F7F4EE;--surface:#FFFEFB;--surface-2:#F1ECE3;--ink:#161616;--muted:#6A6A6A;--faint:#A2A2A2;
   --line:rgba(0,0,0,.09);--line-2:rgba(0,0,0,.055);
   --nav-bg:rgba(255,255,255,.78);--nav-link:#6A6A6A;
   --shadow:0 18px 44px -30px rgba(0,0,0,.28);--shadow-sm:0 8px 22px -18px rgba(0,0,0,.22);
@@ -34,13 +34,13 @@ html:not([data-theme]),html[data-theme="light"],html[data-theme="warm"],html[dat
   --o-aura:.6;
 }
 /* สีของแสง — ตระกูลเดียวกับห้องแชต */
-:root{--o-a:#F28C38;--o-b:#FF4D7A;--o-c:#FFB547;--o-d:#8B6BFF}
+:root{--o-ember:linear-gradient(135deg,#FFB547 0%,#F28C38 45%,#E4572E 100%);--o-a:#F28C38;--o-b:#FF4D7A;--o-c:#FFB547;--o-d:#8B6BFF}
 /* พื้นอยู่ที่ <html> ส่วน <body> ใส — ชั้นแสง (z-index ติดลบ) จึงอยู่ระหว่างพื้นกับเนื้อหาได้พอดี
    โดยไม่ต้องไปยุ่งกับ z-index/position ของโครงหน้าเดิม */
 html{background:var(--bg,var(--c-bg0))!important}
 body{background:transparent!important}
 body::before{display:none!important}
-#livingBg,#lightPool,#cpRoom,#cpVeil{display:none!important}
+#livingBg,#lightPool{display:none!important}
 
 /* ── 2 · แสงสีด้านบนของหน้า ─────────────────────────────────────
    สามดวงฟุ้ง ๆ ลอยช้ามาก ปลายไล่สีแบบโค้งจึงไม่เห็นขอบเป็นวง
@@ -67,65 +67,55 @@ body::before{display:none!important}
 .nav{background:var(--nav-bg)!important;border:1px solid var(--line)!important;
   box-shadow:0 10px 30px -22px rgba(0,0,0,.6)!important;backdrop-filter:blur(22px) saturate(1.1)!important;-webkit-backdrop-filter:blur(22px) saturate(1.1)!important}
 .nav::before,.nav-ind::after,.nav-links a.active::after{display:none!important}
-.nav-ind{background:var(--o-glass2)!important;background-image:none!important;border:0!important;box-shadow:none!important}
+.nav-ind{background:var(--o-ember)!important;border:0!important;box-shadow:0 0 0 1px rgba(255,190,120,.35) inset,0 8px 26px -6px rgba(242,120,40,.65)!important}
 .nav-links a{color:var(--muted)!important;font-weight:500!important}
-.nav-links a:hover,.nav-links a.active{color:var(--ink)!important}
+.nav-links a:hover{color:var(--ink)!important}.nav-links a.active{color:#fff!important}
 .brand .mark,.brand .cmk,.nav .cmk{color:#F28C38!important}
 body[data-deck="1"] .nav{background:rgba(16,16,16,.72)!important}
 body[data-deck="1"] .nav-links a{color:#9C9C9C!important}
-body[data-deck="1"] .nav-links a.active,body[data-deck="1"] .nav-links a:hover{color:#ECECEC!important}
+body[data-deck="1"] .nav-links a:hover{color:#ECECEC!important}body[data-deck="1"] .nav-links a.active{color:#fff!important}
 .mnav{background:var(--nav-bg)!important;border:1px solid var(--line)!important;
   box-shadow:0 14px 34px -22px rgba(0,0,0,.6)!important;backdrop-filter:blur(22px) saturate(1.1)!important;-webkit-backdrop-filter:blur(22px) saturate(1.1)!important}
 .mtab{color:var(--faint)!important}
-.mtab.on{color:var(--ink)!important}
-.mtab.on .mt-i{background:var(--o-glass2)!important}
+.mtab.on{color:#F28C38!important}
+.mtab.on .mt-i{background:rgba(242,140,56,.16)!important;box-shadow:0 0 18px -2px rgba(242,140,56,.55)}
 .mtab .mt-dot{background:#F28C38!important}
 
-/* ── 4 · การ์ด ปุ่ม ช่องกรอก: เรียบ แบน เส้นบาง ───────────────────── */
-.card,.widget,.qa,.su-card{background:var(--surface)!important;border:1px solid var(--line)!important;
-  box-shadow:none!important;background-image:none!important}
-.card::before,.card::after,.widget::before,.qa::after,.qa-deco{display:none!important}
-.btn{background:var(--surface)!important;background-image:none!important;border:1px solid var(--line)!important;
-  box-shadow:none!important;color:var(--ink)!important;animation:none!important}
-.btn:hover{border-color:var(--faint)!important;color:var(--ink)!important;transform:none!important}
-.btn.primary,.btn-signin,.fab,.cdiag{background:var(--o-ink)!important;background-image:none!important;color:var(--bg)!important;
-  border:0!important;box-shadow:none!important;animation:none!important}
-.btn.primary:hover,.btn-signin:hover,.fab:hover{opacity:.86;transform:none!important;color:var(--bg)!important}
-.btn.primary i,.fab i{color:inherit!important}
-.btn.danger{background:transparent!important;color:var(--danger)!important;border-color:color-mix(in srgb,var(--danger) 40%,transparent)!important}
-.input,.custom-select-trigger,select,textarea.input{background:var(--surface)!important;border:1px solid var(--line)!important;box-shadow:none!important;
-  background-image:none!important}
-.custom-select-trigger:not(.disabled),.input:focus{border-color:var(--faint)!important}
-.qa-ic,.lt-ic{background:var(--o-glass2)!important;background-image:none!important;color:var(--ink)!important;box-shadow:none!important}
-/* ไอคอนเครื่องมือบนมือถือ: จากกล่องสีรุ้ง → กล่องแก้วสีกลาง ไอคอนสีตัวหนังสือ */
-.mtool .mt-ic{background:var(--o-glass2)!important;background-image:none!important;color:var(--ink)!important;
-  box-shadow:none!important;border:1px solid var(--line-2)}
-.mtool{color:var(--ink)!important}
-h1,h2,.section-title{letter-spacing:-.01em}
-
-/* ── 5 · ห้องนักบิน (หน้าหลักบนคอม) — จากโทนฟ้าเรืองแสง → กระจกสีกลาง ──
-   ฉากหลังเป็นดำลึกเสมอ (ทั้งธีมมืดและสว่าง) เพราะแผงถูกออกแบบให้อยู่บนพื้นมืด
-   แสงสีลอยอยู่ด้านหลังแผง ส่วนตัวแผงถอดสีออกทั้งหมด (saturate 0) จึงดูเป็นเครื่องมือจริงจัง */
-.hpage{background:#080808;color:#ECECEC!important}
-.cockpit .pane,.cockpit .screen,.control,.hpage .nx,.hscroll{filter:saturate(0)}
-.cockpit .screen::after,.pane::after,.control::after{opacity:0!important}
-.cockpit .screen{box-shadow:0 0 0 1px rgba(255,255,255,.08),0 50px 110px -50px #000!important}
-
-/* ── 6 · หน้าอะไหล่: ลายหัวหน้าแบบกระดาษ → พื้นเรียบ ── */
-.sp-art::before{opacity:0!important}
-
-@media (prefers-reduced-motion:reduce){.one-aura i{animation:none!important}}
-
-/* ── 7 · เก็บรายละเอียดที่ยังมีสีเกิน ──────────────────────────────── */
-/* เกล็ดวิบวับบนปุ่ม → ปุ่มเรียบ */
+/* ════════════════════════════════════════════════════════════════════
+   ลายเซ็นของ Cendon: "ไฟแอมเบียนต์ในห้องโดยสาร"
+   รถหรูทุกคันมีเส้นไฟบาง ๆ เรืองอยู่ตามขอบคอนโซลและประตู — Cendon ใช้ภาษาเดียวกัน:
+   การ์ดทุกใบมีเส้นไฟอำพันเรืองที่ขอบบน ปุ่มหลักเป็นไฟถ่าน (ember) ที่อุ่นและมีแสงรอบตัว
+   ไอคอนเครื่องมือยังคงสีของตัวเอง (แต่นุ่มลง) ให้จำได้ทันทีว่าอันไหนคืออะไร
+   พื้นเป็นดำอุ่นแบบห้องโดยสารตอนกลางคืน / งาช้างตอนกลางวัน ไม่ใช่เทาจืด
+   ════════════════════════════════════════════════════════════════════ */
+.card,.widget,.su-card{position:relative;background:var(--surface)!important;border:1px solid var(--line)!important;
+  box-shadow:0 22px 50px -34px rgba(0,0,0,.55)!important}
+.card::after,.widget:not(.wbrief):not(.wspares)::after{content:""!important;display:block!important;position:absolute;left:18%;right:18%;top:-1px;height:1px;
+  border-radius:2px;pointer-events:none;opacity:.95;
+  background:linear-gradient(90deg,transparent,#FFB547 25%,#F28C38 50%,#FF4D7A 75%,transparent);
+  box-shadow:0 0 12px 1px rgba(242,140,56,.55),0 0 34px 2px rgba(255,77,122,.18)}
+.card::before{display:none!important}
+.btn{border-radius:14px!important}
+.btn.primary,.btn-signin,.fab,.cdiag{background:var(--o-ember)!important;color:#fff!important;border:0!important;animation:none!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -1px 0 rgba(0,0,0,.18),0 10px 28px -10px rgba(242,110,40,.75)!important;
+  text-shadow:0 1px 0 rgba(0,0,0,.15)}
+.btn.primary:hover,.btn-signin:hover,.fab:hover,.cdiag:hover{filter:brightness(1.07) saturate(1.05);color:#fff!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 14px 34px -10px rgba(242,110,40,.9)!important}
 .btn.primary::after,.cdiag::after,.fab::after,.btn-signin::after,.nav-ind::after{display:none!important}
-/* ลายเสาหินหลังหน้าอะไหล่ → พื้นเรียบ ให้แสงด้านบนเป็นฉากเดียว */
-#v-shop .scroll::before,#v-shop .scroll::after{display:none!important}
-.sp-offline{background:var(--surface)!important;border-color:var(--line)!important}
-.sp-offline i{color:var(--muted)!important}
-/* ปกบทความที่ยังไม่มีรูป: จากสีเขียว/ฟ้า/ทอง → กระจกสีกลาง ไอคอนจาง ๆ */
-.mag-cover{background:var(--surface-2)!important;background-image:none!important;color:var(--faint)!important;
-  border:1px solid var(--line-2)}
-.mag-hero .bg{background:linear-gradient(160deg,#1A1A1A,#0C0C0C)!important}
-/* ปุ่มลัดเครื่องมือข้างช่องค้นหาบนมือถือ: สีเขียว → สีเดียวกับปุ่มหลัก */
-.mfind-x{background:var(--o-ink)!important;background-image:none!important;color:var(--bg)!important;box-shadow:none!important}
+.input:focus,.custom-select-trigger:not(.disabled):hover{border-color:rgba(242,140,56,.55)!important;box-shadow:0 0 0 4px rgba(242,140,56,.12)!important}
+/* ไอคอนเครื่องมือ: คงสีของแต่ละอย่าง แต่เป็นแก้วสีนุ่ม + ไอคอนสีสด (จำง่าย ดูแพง ไม่แสบตา) */
+.mtool .mt-ic,.qa-ic{background:color-mix(in srgb,var(--c,var(--qc,#F28C38)) 18%,var(--surface))!important;
+  color:color-mix(in srgb,var(--c,var(--qc,#F28C38)) 85%,#fff)!important;
+  border:1px solid color-mix(in srgb,var(--c,var(--qc,#F28C38)) 35%,transparent)!important;
+  box-shadow:0 10px 26px -14px var(--c,var(--qc,#F28C38)),inset 0 1px 0 rgba(255,255,255,.08)!important}
+html[data-theme="light"] .mtool .mt-ic,html:not([data-theme]) .mtool .mt-ic{color:color-mix(in srgb,var(--c,#F28C38) 88%,#000)!important}
+.mfind-x{background:var(--o-ember)!important;color:#fff!important;box-shadow:0 10px 24px -10px rgba(242,110,40,.8)!important}
+/* ห้องนักบิน: คืนห้องสามมิติเดิม แต่เปลี่ยนไฟจากฟ้าเย็นเป็นอำพันอุ่นของ Cendon */
+.cockpit .pane,.cockpit .screen,.control,.hpage .nx,.hscroll{filter:hue-rotate(185deg) saturate(.75)}
+/* ปุ่มวินิจฉัยอยู่ในแผงที่ถูกหมุนสี — หมุนกลับให้เป็นสีถ่านอุ่นจริง */
+.cockpit .pane .cdiag{background:var(--o-ember)!important;filter:hue-rotate(-185deg) saturate(1.33)}
+#cpRoom{filter:hue-rotate(185deg) saturate(.6) brightness(.9)}
+/* หน้าอะไหล่ */
+#v-shop .scroll::before,#v-shop .scroll::after{opacity:.5}
+.mag-hero .bg{background:radial-gradient(120% 90% at 85% 0%,rgba(242,140,56,.45),transparent 60%),linear-gradient(160deg,#241A12,#0E0B09)!important}
+@media (prefers-reduced-motion:reduce){.one-aura i{animation:none!important}}

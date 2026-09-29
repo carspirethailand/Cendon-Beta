@@ -4986,6 +4986,7 @@ async function streamAnswer(contents,opts){
       carId:car.id||null,make:car.make||car.name||"",model:car.model||"",
       year:car.year||"",mileage:car.mileage||"",
       skillIds:opts.skillIds||[],
+      depth:(()=>{ try{ const r=localStorage.getItem("spire_depth"); const v=r==null?1:+JSON.parse(r); return v===0||v===2?v:1 }catch(e){ return 1 } })(),
       userName:(()=>{ try{ const su=JSON.parse(localStorage.getItem("spire_setup")||"null");
         return (su&&su.name)||(currentUser&&currentUser.name)||"" }catch(e){ return "" } })()})});
 
@@ -5021,6 +5022,7 @@ async function streamAnswer(contents,opts){
         if(!t.startsWith("data:"))continue;
         let d=null; try{ d=JSON.parse(t.slice(5).trim()) }catch(e){ continue }
         if(d.type==="status"){ m.status=d.text; paintLive(nodes,m) }
+        else if(d.type==="research"){ (m.research=m.research||[]).push(d.q); paintResearch(nodes,m) }
         else if(d.type==="reasoning"){ m.reasoning+=d.delta; paintLive(nodes,m) }
         else if(d.type==="text"){ m.text+=d.delta; if(/<\||tool_call|\[TOOL_CALLS/.test(m.text))m.text=noTools(m.text); paintLive(nodes,m) }
         else if(d.type==="text_done"){ m.text=noTools(d.text||m.text); paintLive(nodes,m) }
@@ -5042,7 +5044,7 @@ async function streamAnswer(contents,opts){
 
   /* แกะฟอร์มที่ AI ขอ ออกจากข้อความก่อนแสดงผลจริง */
   const parsed=parseAsk(m.text);
-  m.text=parsed.text; if(parsed.ask)m.ask=parsed.ask;
+  m.text=parsed.text; if(parsed.ask)m.ask=parsed.ask; if(parsed.next&&parsed.next.length)m.next=parsed.next;
   try{ if(usage)window.quotaUpdate&&window.quotaUpdate(usage) }catch(e){}
   renderMessages();
   return m.text;
@@ -5063,7 +5065,7 @@ const W_MARK=/[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E\u0300-\u036F\uFE0F\u200D\uDC00-\
 const W_FADE=520;
 function flowNew(body){return{body,target:"",shown:0,acc:0,stamps:[],settled:0,active:null,caret:null,raf:0,last:0,done:false,wait:null,user:false}}
 /* ข้อความที่จะแสดง — ตัดบล็อกฟอร์มถามกลับ [[ASK]] ออก (มันจะกลายเป็นฟอร์มหลังคำตอบจบ ไม่ใช่ขึ้นเป็นโค้ดดิบระหว่างไหล) */
-function flowText(t){return String(t||"").replace(/\[\[ASK\]\][\s\S]*$/,"").replace(/\[(\[(A(S(K)?)?)?)?$/,"")}
+function flowText(t){return String(t||"").replace(/\[\[(ASK|NEXT)\]\][\s\S]*$/,"").replace(/\[(\[([AN](S(K)?|E(X(T)?)?)?)?)?$/,"")}
 function flowSet(f,text){
   if(!f)return;
   f.target=flowText(text);
@@ -5272,23 +5274,28 @@ let lastMeta={cached:false,cacheId:""};
    ถ้าแกะไม่ได้ ก็แค่ทิ้งบล็อกนั้นไป ผู้ใช้จะไม่เห็นโค้ดดิบ ๆ โผล่มาในแชต */
 function parseAsk(txt){
   const t=String(txt||"");
-  const m=t.match(/\[\[ASK\]\]([\s\S]*?)\[\[\/ASK\]\]/);
-  if(!m)return{text:t,ask:null};
-  const clean=t.replace(m[0],"").trim();
+  /* คำถามต่อ [[NEXT]]["..",".."][[/NEXT]] — แกะออกเป็นปุ่มใต้คำตอบ */
+  let next=null;
+  const nx=t.match(/\[\[NEXT\]\]([\s\S]*?)(\[\[\/NEXT\]\]|$)/);
+  if(nx){ try{ next=JSON.parse(nx[1].trim()).filter(x=>typeof x==="string"&&x.trim()).slice(0,3).map(x=>x.slice(0,60)) }catch(e){} }
+  const t0=nx?t.replace(nx[0],"").trim():t;
+  const m=t0.match(/\[\[ASK\]\]([\s\S]*?)\[\[\/ASK\]\]/);
+  if(!m)return{text:t0,ask:null,next};
+  const clean=t0.replace(m[0],"").trim();
   let ask=null;
   try{
     const o=JSON.parse(m[1].trim());
     const fields=(o.fields||[]).filter(f=>f&&f.k&&f.label).slice(0,4).map(f=>({
       k:String(f.k).slice(0,24),
       label:String(f.label).slice(0,90),
-      type:["number","choice","text","yesno"].includes(f.type)?f.type:"text",
+      type:["number","choice","multi","text","yesno"].includes(f.type)?f.type:"text",
       unit:String(f.unit||"").slice(0,16),
       optional:!!f.optional,
-      options:(f.options||[]).slice(0,6).map(x=>String(x).slice(0,40)),
+      options:(f.options||[]).slice(0,6).map(x=>typeof x==="object"&&x?{label:String(x.label||"").slice(0,48),desc:String(x.desc||"").slice(0,90)}:{label:String(x).slice(0,48),desc:""}).filter(o=>o.label),
     }));
     if(fields.length)ask={title:String(o.title||"").slice(0,90),fields};
   }catch(e){}
-  return{text:clean,ask};
+  return{text:clean,ask,next};
 }
 async function gemini(contents,opts){opts=opts||{};
   if(!(useFb&&auth&&auth.currentUser))throw new Error(lang==="en"?"Please sign in first":"กรุณาเข้าสู่ระบบก่อนใช้งาน");
@@ -5310,6 +5317,7 @@ async function gemini(contents,opts){opts=opts||{};
       year:(selCar()||{}).year||"",
       mileage:(selCar()||{}).mileage||"",
       skillIds:opts.skillIds||[],
+      depth:(()=>{ try{ const r=localStorage.getItem("spire_depth"); const v=r==null?1:+JSON.parse(r); return v===0||v===2?v:1 }catch(e){ return 1 } })(),
       userName:(()=>{ try{
         const su=JSON.parse(localStorage.getItem("spire_setup")||"null");
         return (su&&su.name)||(currentUser&&currentUser.name)||"";
@@ -5780,11 +5788,24 @@ function techHits(text){
       +l2.map(Techs.line).join("\n");
   }catch(e){ return"" }
 }
-function md(t){let s=esc(t);const lines=s.split("\n");let out="",inList=false;
-  lines.forEach(l=>{const hd=l.match(/^\s*\*\*([^*]+?)\*\*\s*:?\s*$/);
+/* ตารางแบบ markdown (| a | b |) → ตารางจริง เทียบรุ่นได้ในจอเดียว ไม่ต้องเลื่อนขึ้นลงหา
+   คอลัมน์แรกติดซ้ายตอนเลื่อนข้าง แถวหัวตารางเป็นชื่อสิ่งที่เทียบ */
+function mdTable(rows){
+  const cells=r=>r.trim().replace(/^\|/,"").replace(/\|$/,"").split("|").map(c=>c.trim());
+  const head=cells(rows[0]), body=rows.slice(rows[1]&&/^\s*\|?\s*:?-{2,}/.test(rows[1])?2:1).map(cells);
+  const fmt=c=>c.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");
+  return`<div class="w-tbl"><table><thead><tr>${head.map(h=>`<th>${fmt(h)}</th>`).join("")}</tr></thead><tbody>${
+    body.map(r=>`<tr>${head.map((_,i)=>`<td>${fmt(r[i]||"")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+}
+function md(t){let s=esc(t);const lines=s.split("\n");let out="",inList=false,tbl=[];
+  const flushT=()=>{ if(tbl.length){ out+=tbl.length>1?mdTable(tbl):tbl[0]+"<br>"; tbl=[] } };
+  lines.forEach(l=>{
+    if(/^\s*\|.*\|\s*$/.test(l)){ if(inList){out+="</ul>";inList=false} tbl.push(l); return }
+    flushT();const hd=l.match(/^\s*\*\*([^*]+?)\*\*\s*:?\s*$/);
     /* บรรทัดที่เป็นตัวหนาทั้งบรรทัด = หัวข้อ แสดงเป็นหัวข้อจริง ไม่ใช่ตัวหนาไฮไลต์กลางย่อหน้า */
     if(hd){if(inList){out+="</ul>";inList=false}out+=`<b class="w-h">${hd[1]}</b>`;return}
     if(/^\s*[-*]\s+/.test(l)){if(!inList){out+="<ul>";inList=true}out+="<li>"+l.replace(/^\s*[-*]\s+/,"")+"</li>"}else{if(inList){out+="</ul>";inList=false}out+=l+"<br>"}});
+  flushT();
   if(inList)out+="</ul>";return out.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/(<br>)+$/,"")}
 /* แบ่งคำตอบเป็นย่อหน้าตามบรรทัดว่าง — ตอนไหลกับตอนจบใช้โครงเดียวกันเป๊ะ ภาพจึงไม่กระโดดตอนคำตอบจบ */
 function mdBlocks(t){return String(t||"").split(/\n{2,}/).filter(b=>b.trim()).map(b=>`<div class="blk">${md(b)}</div>`).join("")}
@@ -5799,8 +5820,8 @@ function msgHTML(m){
   if(m.role==="user")return`<div class="msg me"><div class="av">${userAv()}</div><div class="bubble">${attHTML(m.atts)}${esc(m.text)||""}</div></div>`;
   if(m.role==="sum")return sumHTML(m.data);
   if(m.typing)return""; /* thinking renders as the spinning mark below (Claude-style) */
-  return`<div class="msg ai"><div class="bubble">${m.reasoning?thinkHTML(m):""}${
-    mdBlocks(m.text)}${m.cached?cachedHTML(m):""}${m.ask?askHTML(m):""}</div></div>`;
+  return`<div class="msg ai"><div class="bubble">${m.research&&m.research.length?researchHTML(m):""}${m.reasoning?thinkHTML(m):""}${
+    mdBlocks(m.text)}${m.cached?cachedHTML(m):""}${m.ask?askHTML(m):""}${m.next&&!m.ask?nextHTML(m):""}</div></div>`;
 }
 
 /* ── กระบวนการคิดของ AI ──
@@ -5830,36 +5851,47 @@ function cachedHTML(m){
 
 /* ฟอร์มที่ AI ขอข้อมูลเพิ่ม — กดเลือกหรือพิมพ์แล้วส่งกลับได้เลย
    ไม่ต้องให้ผู้ใช้เรียบเรียงคำตอบเองว่าจะพิมพ์กลับไปยังไง */
+/* ── ถามแบบมีตัวเลือก (แบบเดียวกับ Claude) ──
+   ทีละคำถาม มีตัวเลือกพร้อมคำอธิบายสั้น ๆ เลือกได้ข้อเดียวหรือหลายข้อ และพิมพ์คำตอบเองได้เสมอ
+   ครบแล้วส่งเป็นข้อความปกติของผู้ใช้ ประวัติแชตจึงอ่านย้อนหลังรู้เรื่อง */
 function askHTML(m){
-  const en=lang==="en";
-  const a=m.ask, id="ask"+Math.random().toString(36).slice(2,8);
-  m.askId=id;
-  const row=f=>{
-    if(f.type==="choice")
-      return`<div class="ask-f"><label>${esc(f.label)}</label>
-        <div class="ask-opts">${f.options.map(o=>
-          `<button type="button" class="ask-o" data-k="${esc(f.k)}" data-v="${esc(o)}">${esc(o)}</button>`).join("")}</div></div>`;
-    if(f.type==="yesno")
-      return`<div class="ask-f"><label>${esc(f.label)}</label>
-        <div class="ask-opts">
-          <button type="button" class="ask-o" data-k="${esc(f.k)}" data-v="${en?"Yes":"ใช่"}">${en?"Yes":"ใช่"}</button>
-          <button type="button" class="ask-o" data-k="${esc(f.k)}" data-v="${en?"No":"ไม่ใช่"}">${en?"No":"ไม่ใช่"}</button>
-        </div></div>`;
-    return`<div class="ask-f"><label>${esc(f.label)}${f.optional?` <em>${en?"optional":"ไม่ใส่ก็ได้"}</em>`:""}</label>
-      <div class="ask-in"><input data-k="${esc(f.k)}" type="${f.type==="number"?"number":"text"}"
-        inputmode="${f.type==="number"?"numeric":"text"}"
-        placeholder="${esc(f.type==="number"?(en?"e.g. 82000":"เช่น 82000"):(en?"Type here":"พิมพ์ตรงนี้"))}">
-        ${f.unit?`<span class="ask-u">${esc(f.unit)}</span>`:""}</div></div>`;
+  const en=lang==="en", a=m.ask, n=a.fields.length;
+  const step=(f,i)=>{
+    let body="";
+    if(f.type==="choice"||f.type==="multi"||f.type==="yesno"){
+      const opts=f.type==="yesno"?[{label:en?"Yes":"ใช่",desc:""},{label:en?"No":"ไม่ใช่",desc:""}]:f.options;
+      body=`<div class="iq-opts" data-multi="${f.type==="multi"?1:0}">${opts.map(o=>
+        `<button type="button" class="iq-o" data-v="${esc(o.label)}"><span class="iq-dot"></span><span class="iq-tx"><b>${esc(o.label)}</b>${o.desc?`<small>${esc(o.desc)}</small>`:""}</span></button>`).join("")}
+        <label class="iq-o iq-other"><span class="iq-dot"></span><input type="text" placeholder="${en?"Other — type your answer":"อื่น ๆ — พิมพ์คำตอบเอง"}"></label></div>`;
+    }else{
+      body=`<div class="iq-in"><input type="${f.type==="number"?"number":"text"}" inputmode="${f.type==="number"?"numeric":"text"}" placeholder="${esc(f.type==="number"?(en?"e.g. 82000":"เช่น 82000"):(en?"Type here":"พิมพ์ตรงนี้"))}">${f.unit?`<span>${esc(f.unit)}</span>`:""}</div>`;
+    }
+    return`<div class="iq-step${i?"":" on"}" data-i="${i}" data-label="${esc(f.label)}" data-unit="${esc(f.unit||"")}"><div class="iq-q">${esc(f.label)}${f.type==="multi"?`<em>${en?"Pick any":"เลือกได้หลายข้อ"}</em>`:""}</div>${body}</div>`;
   };
-  return`<div class="ask-card" id="${id}">
-    <div class="ask-h"><i class="ti ti-help-circle"></i>
-      <b>${esc(a.title||(en?"A bit more detail":"ขอข้อมูลเพิ่มอีกนิด"))}</b></div>
-    ${a.fields.map(row).join("")}
-    <div class="ask-act">
-      <button type="button" class="ask-skip">${en?"Skip":"ข้ามไปก่อน"}</button>
-      <button type="button" class="ask-send">${en?"Send":"ส่งให้ Cendon"}</button>
-    </div>
+  return`<div class="iq-card" data-n="${n}" data-at="0">
+    <div class="iq-h"><i class="ti ti-message-question"></i><b>${esc(a.title||(en?"A few quick questions":"ขอถามเพิ่มอีกนิด"))}</b><span class="iq-c">1/${n}</span></div>
+    ${a.fields.map(step).join("")}
+    <div class="iq-act"><button type="button" class="iq-skip">${en?"Skip":"ข้าม"}</button><span class="iq-g"></span>
+      <button type="button" class="iq-back" hidden>${en?"Back":"ย้อนกลับ"}</button>
+      <button type="button" class="iq-next">${n>1?(en?"Next":"ถัดไป"):(en?"Send":"ส่ง")}</button></div>
   </div>`;
+}
+function nextHTML(m){
+  return`<div class="nx-q">${m.next.map(q=>`<button type="button" class="nx-b" data-q="${esc(q)}"><i class="ti ti-corner-down-right"></i>${esc(q)}</button>`).join("")}</div>`;
+}
+function researchHTML(m){
+  const en=lang==="en";
+  return`<details class="think-box rs"><summary><i class="ti ti-world-search"></i><span>${en?"Searched the web":"ค้นเว็บ"} ${m.research.length} ${en?"times":"ครั้ง"}</span><i class="ti ti-chevron-down ch"></i></summary>
+    <div class="think-in rs-l">${m.research.map(q=>`<div><i class="ti ti-search"></i>${esc(q)}</div>`).join("")}</div></details>`;
+}
+/* ระหว่างคิด: รายการสิ่งที่กำลังค้นโผล่ขึ้นทีละบรรทัด ให้เห็นว่ากำลัง research อะไร */
+function paintResearch(n,m){
+  if(!n||!n.bubble)return;
+  let box=n.bubble.querySelector(".rs-live");
+  if(!box){ box=document.createElement("div"); box.className="rs-live"; n.bubble.insertBefore(box,n.bubble.firstChild) }
+  const have=box.children.length;
+  m.research.slice(have).forEach(q=>{ const d=document.createElement("div"); d.className="rs-i";
+    d.innerHTML=`<i class="ti ti-search"></i><span>${esc(q)}</span>`; box.appendChild(d) });
 }
 /* คำบอกสถานะตอนกำลังคิด สลับไปเรื่อย ๆ ตามเวลาที่รอ
    นิ่งอยู่คำเดียวนาน ๆ ทำให้รู้สึกเหมือนแอปค้าง ทั้งที่มันทำงานอยู่ */
@@ -13513,6 +13545,15 @@ body.w-busy .w-sweep i,body.w-busy .w-sweep b{animation-play-state:running!impor
 .composer:focus-within,.w-box:focus-within{box-shadow:var(--w-shadow),0 0 26px -6px rgba(242,140,56,.45)!important}
 .w-glowc{position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;opacity:var(--wn,0);transition:opacity .25s ease;
   background:radial-gradient(220px circle at var(--wx,50%) var(--wy,50%),rgba(242,140,56,.18),transparent 70%);box-shadow:0 0 30px -4px rgba(242,140,56,calc(var(--wn,0)*.55))}
+
+/* ════ ตารางเทียบในคำตอบ ════ */
+.w-tbl{margin:.6em 0 .2em;overflow-x:auto;border-radius:14px;border:1px solid var(--c-line);-webkit-overflow-scrolling:touch;max-width:100%}
+.w-tbl table{border-collapse:separate;border-spacing:0;width:100%;min-width:max-content;font-size:14px;line-height:1.5}
+.w-tbl th,.w-tbl td{padding:9px 14px;text-align:left;vertical-align:top;border-bottom:1px solid var(--c-line2);white-space:normal;min-width:110px;max-width:260px}
+.w-tbl thead th{background:color-mix(in srgb,#F28C38 14%,var(--c-bg1));color:var(--c-ink);font-weight:600;position:sticky;top:0}
+.w-tbl tbody tr:last-child td{border-bottom:0}
+.w-tbl th:first-child,.w-tbl td:first-child{position:sticky;left:0;z-index:1;background:var(--c-bg1);font-weight:600;color:var(--c-mut);min-width:96px}
+.w-tbl thead th:first-child{background:color-mix(in srgb,#F28C38 14%,var(--c-bg1))}
 </style>
 <script>
 /* จุดสว่างตามเมาส์: ทำงานเฉพาะกล่องที่ถูกเลือกอยู่ และเฉพาะตอนเมาส์ห่างขอบกล่องไม่เกิน 90px
@@ -13533,6 +13574,157 @@ body.w-busy .w-sweep i,body.w-busy .w-sweep b{animation-play-state:running!impor
       b.style.setProperty("--wn",n.toFixed(3));
     }) },{passive:true});
   document.addEventListener("focusout",function(){ setTimeout(function(){ document.querySelectorAll(".composer,.w-box").forEach(function(b){ if(!b.matches(":focus-within"))b.style.setProperty("--wn",0) }) },0) });
+})();
+</script>
+<style id="feat-css">
+/* ════ ถามแบบมีตัวเลือก (แบบ Claude) ════ */
+.iq-card{margin-top:14px;border-radius:18px;background:var(--c-bg1);border:1px solid var(--c-line);padding:14px 14px 12px;max-width:560px;
+  box-shadow:0 12px 30px -20px rgba(0,0,0,.6);animation:iqIn .35s cubic-bezier(.2,.9,.25,1)}
+@keyframes iqIn{from{opacity:0;transform:translateY(6px)}}
+.iq-h{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--c-mut);margin-bottom:10px}
+.iq-h i{color:#F28C38;font-size:17px}.iq-h b{flex:1;font-weight:500;color:var(--c-ink)}
+.iq-c{font-variant-numeric:tabular-nums;font-size:12px;color:var(--c-faint)}
+.iq-step{display:none}.iq-step.on{display:block;animation:iqIn .3s ease}
+.iq-q{font-size:15.5px;font-weight:600;color:var(--c-ink);margin:2px 2px 10px;line-height:1.45}
+.iq-q em{font-style:normal;font-weight:400;font-size:12px;color:var(--c-faint);margin-left:8px}
+.iq-opts{display:flex;flex-direction:column;gap:6px}
+.iq-o{display:flex;align-items:flex-start;gap:11px;width:100%;padding:11px 12px;border-radius:13px;border:1px solid var(--c-line2);
+  background:var(--c-glass);color:var(--c-ink);text-align:left;font:inherit;cursor:pointer;transition:border-color .15s,background .15s}
+.iq-o:hover{border-color:var(--c-line)}
+.iq-o.on{border-color:#F28C38;background:rgba(242,140,56,.1)}
+.iq-dot{width:18px;height:18px;flex:none;margin-top:1px;border-radius:50%;border:1.5px solid var(--c-faint);display:grid;place-items:center;transition:.15s}
+.iq-opts[data-multi="1"] .iq-dot{border-radius:5px}
+.iq-o.on .iq-dot{border-color:#F28C38;background:#F28C38;box-shadow:inset 0 0 0 3px var(--c-bg1)}
+.iq-opts[data-multi="1"] .iq-o.on .iq-dot{box-shadow:none;background:#F28C38 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5L20 7'/%3E%3C/svg%3E") center/12px no-repeat}
+.iq-tx b{display:block;font-size:14px;font-weight:500}.iq-tx small{display:block;font-size:12.5px;color:var(--c-mut);margin-top:2px;line-height:1.45}
+.iq-other{align-items:center;cursor:text}
+.iq-other input{flex:1;min-width:0;border:0;outline:0;background:none;color:var(--c-ink);font:inherit;font-size:14px}
+.iq-in{display:flex;align-items:center;gap:8px;padding:10px 13px;border-radius:13px;border:1px solid var(--c-line);background:var(--c-glass)}
+.iq-in input{flex:1;min-width:0;border:0;outline:0;background:none;color:var(--c-ink);font:inherit;font-size:15px}
+.iq-in span{color:var(--c-mut);font-size:13px}
+.iq-act{display:flex;align-items:center;gap:8px;margin-top:12px}
+.iq-g{flex:1}
+.iq-act button{border:0;font:inherit;font-size:13.5px;padding:8px 15px;border-radius:11px;cursor:pointer}
+.iq-skip,.iq-back{background:none;color:var(--c-mut)}
+.iq-skip:hover,.iq-back:hover{color:var(--c-ink)}
+.iq-next{background:#F28C38;color:#1A0F07;font-weight:600}
+.iq-next:disabled{opacity:.4;cursor:default}
+.iq-card.done .iq-act,.iq-card.done .iq-step{display:none}
+.iq-card.done{opacity:.7}
+.iq-sum{font-size:13px;color:var(--c-mut);line-height:1.6}
+/* ════ คำถามต่อ ════ */
+.nx-q{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-top:14px}
+.nx-b{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--c-line);background:none;color:var(--c-ink);font:inherit;font-size:13.5px;
+  padding:7px 13px;border-radius:999px;cursor:pointer;transition:border-color .15s,background .15s;animation:iqIn .4s both}
+.nx-b:nth-child(2){animation-delay:.06s}.nx-b:nth-child(3){animation-delay:.12s}
+.nx-b i{color:#F28C38}
+.nx-b:hover{border-color:rgba(242,140,56,.5);background:rgba(242,140,56,.06)}
+.msg.ai:has(~ .msg) .nx-q{display:none}
+/* ════ กำลังค้นอะไร ════ */
+.rs-live{display:flex;flex-direction:column;gap:4px;margin:0 0 10px}
+.rs-i{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--c-mut);animation:iqIn .35s ease both}
+.rs-i i{color:#F28C38;font-size:14px}
+.rs-i:last-child span{background:linear-gradient(90deg,var(--c-faint) 0%,var(--c-ink) 50%,var(--c-faint) 100%);background-size:220% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;animation:wShimmer 2s linear infinite}
+.rs-l div{display:flex;gap:8px;align-items:center;padding:2px 0}.rs-l i{color:#F28C38}
+/* ════ แถบเลือกความเร็ว/ความละเอียด ════ */
+.dp-btn{display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 11px;border-radius:999px;border:1px solid var(--c-line2);
+  background:none;color:var(--c-mut);font:inherit;font-size:12.5px;cursor:pointer;flex:none;white-space:nowrap}
+.dp-btn:hover{color:var(--c-ink);border-color:var(--c-line)}
+.dp-btn i{font-size:15px;color:#F28C38}
+.dp-pop{position:fixed;z-index:9500;width:280px;padding:14px 16px 12px;border-radius:18px;background:var(--sheet-bg);border:1px solid var(--c-line);
+  box-shadow:var(--w-shadow);animation:iqIn .2s ease}
+.dp-pop h5{font-size:13px;font-weight:600;margin:0 0 12px;color:var(--c-ink)}
+.dp-pop input[type=range]{width:100%;accent-color:#F28C38;margin:0}
+.dp-lb{display:flex;justify-content:space-between;font-size:11.5px;color:var(--c-faint);margin-top:6px}
+.dp-lb span.on{color:#F28C38;font-weight:600}
+.dp-desc{font-size:12.5px;color:var(--c-mut);margin-top:10px;line-height:1.5}
+</style>
+<script id="feat-js">
+(function(){
+"use strict";
+var D=document;
+function en(){return (window.lang||"th")==="en"}
+function T(th,e){return en()?e:th}
+function send(text){ var inp=D.getElementById("inp"); if(!inp)return;
+  if(D.body.dataset.phase!=="thread"&&window.enterThread)window.enterThread();
+  inp.value=text; try{window.autoSize&&window.autoSize()}catch(e){} if(window.sendMsg)window.sendMsg() }
+
+/* ── การ์ดถาม: เลือก ถัดไป ย้อนกลับ ส่ง ── */
+function answerOf(st){
+  var sel=[].map.call(st.querySelectorAll(".iq-o.on:not(.iq-other)"),function(b){return b.dataset.v});
+  var ot=st.querySelector(".iq-other input"); if(ot&&ot.value.trim())sel.push(ot.value.trim());
+  var inp=st.querySelector(".iq-in input"); if(inp&&inp.value.trim())sel.push(inp.value.trim()+(st.dataset.unit?" "+st.dataset.unit:""));
+  return sel;
+}
+function sync(card){
+  var at=+card.dataset.at, n=+card.dataset.n, st=card.querySelector('.iq-step[data-i="'+at+'"]');
+  card.querySelectorAll(".iq-step").forEach(function(s){s.classList.toggle("on",s===st)});
+  card.querySelector(".iq-c").textContent=(at+1)+"/"+n;
+  card.querySelector(".iq-back").hidden=at===0;
+  card.querySelector(".iq-next").textContent=at===n-1?T("ส่ง","Send"):T("ถัดไป","Next");
+  card.querySelector(".iq-next").disabled=!answerOf(st).length;
+}
+D.addEventListener("click",function(e){
+  var o=e.target.closest(".iq-o:not(.iq-other)");
+  if(o){ var box=o.closest(".iq-opts"), multi=box.dataset.multi==="1";
+    if(multi)o.classList.toggle("on");
+    else{ box.querySelectorAll(".iq-o").forEach(function(b){b.classList.toggle("on",b===o)}); var ot=box.querySelector(".iq-other input"); if(ot)ot.value="" }
+    var card=o.closest(".iq-card"); sync(card);
+    /* เลือกข้อเดียว = ไปคำถามถัดไปเองเลย (แบบ Claude) */
+    if(!multi&&+card.dataset.at<+card.dataset.n-1)setTimeout(function(){card.dataset.at=+card.dataset.at+1;sync(card)},220);
+    return }
+  var nx=e.target.closest(".iq-next");
+  if(nx){ var c=nx.closest(".iq-card"), at=+c.dataset.at, n=+c.dataset.n;
+    if(at<n-1){ c.dataset.at=at+1; sync(c); return }
+    var lines=[].map.call(c.querySelectorAll(".iq-step"),function(st){var a=answerOf(st);return a.length?st.dataset.label+": "+a.join(", "):""}).filter(Boolean);
+    if(!lines.length)return;
+    c.classList.add("done"); c.insertAdjacentHTML("beforeend",'<div class="iq-sum">'+lines.map(function(l){return l.replace(/</g,"&lt;")}).join("<br>")+'</div>');
+    send(lines.join("\n")); return }
+  var bk=e.target.closest(".iq-back"); if(bk){ var c2=bk.closest(".iq-card"); c2.dataset.at=Math.max(0,+c2.dataset.at-1); sync(c2); return }
+  var sk=e.target.closest(".iq-skip"); if(sk){ sk.closest(".iq-card").remove(); return }
+  var q=e.target.closest(".nx-b"); if(q){ send(q.dataset.q); return }
+});
+D.addEventListener("input",function(e){
+  var st=e.target.closest&&e.target.closest(".iq-step"); if(!st)return;
+  if(e.target.closest(".iq-other")&&e.target.value.trim()){ var box=st.querySelector(".iq-opts");
+    if(box&&box.dataset.multi!=="1")box.querySelectorAll(".iq-o:not(.iq-other)").forEach(function(b){b.classList.remove("on")}) }
+  var o=st.querySelector(".iq-other"); if(o)o.classList.toggle("on",!!e.target.value.trim()&&!!e.target.closest(".iq-other"));
+  sync(st.closest(".iq-card"));
+});
+D.addEventListener("keydown",function(e){ if(e.key==="Enter"&&e.target.closest&&e.target.closest(".iq-card")){ e.preventDefault(); var b=e.target.closest(".iq-card").querySelector(".iq-next"); if(!b.disabled)b.click() } });
+
+/* ── แถบความเร็ว/ความละเอียด ในช่องพิมพ์ ── */
+var MODES=[{ic:"ti-bolt",th:"เร็ว",en:"Fast",dth:"ตอบทันที สั้น กระชับ เหมาะกับคำถามง่าย ๆ",den:"Instant, short answers for simple questions"},
+           {ic:"ti-adjustments",th:"สมดุล",en:"Balanced",dth:"Cendon เลือกให้เองว่าเรื่องไหนควรคิดมากแค่ไหน",den:"Cendon decides how much to think"},
+           {ic:"ti-brain",th:"ละเอียด",en:"Deep",dth:"คิดลึก ค้นหลายแหล่ง ตรวจตัวเลขไขว้กัน — ช้ากว่า แต่แม่นที่สุด",den:"Thinks deeper and checks more sources — slower, most accurate"}];
+function get(){ try{ var r=localStorage.getItem("spire_depth"); if(r==null)return 1; var v=+JSON.parse(r); return v===0||v===2?v:1 }catch(e){ return 1 } }
+function set(v){ try{ localStorage.setItem("spire_depth",JSON.stringify(v)) }catch(e){} paint() }
+function paint(){ var m=MODES[get()]; D.querySelectorAll(".dp-btn").forEach(function(b){ b.innerHTML='<i class="ti '+m.ic+'"></i>'+T(m.th,m.en) }) }
+function mount(){
+  var spots=[["#composer .crow","#sendBtn"],["#v-welcome .w-row","#wSend"]];
+  spots.forEach(function(s){ var row=D.querySelector(s[0]), before=D.querySelector(s[1]);
+    if(!row||!before||row.querySelector(".dp-btn"))return;
+    var b=D.createElement("button"); b.type="button"; b.className="dp-btn"; b.setAttribute("aria-label",T("ความเร็วและความละเอียด","Speed and depth"));
+    row.insertBefore(b,before); b.onclick=function(e){ e.stopPropagation(); pop(b) } });
+  paint();
+}
+function pop(anchor){
+  var old=D.querySelector(".dp-pop"); if(old){ old.remove(); return }
+  var p=D.createElement("div"); p.className="dp-pop";
+  function body(){ var v=get(), m=MODES[v];
+    p.innerHTML='<h5>'+T("ความเร็ว ↔ ความละเอียด","Speed ↔ Depth")+'</h5><input type="range" min="0" max="2" step="1" value="'+v+'">'+
+      '<div class="dp-lb">'+MODES.map(function(x,i){return '<span'+(i===v?' class="on"':'')+'>'+T(x.th,x.en)+'</span>'}).join("")+'</div>'+
+      '<div class="dp-desc">'+T(m.dth,m.den)+'</div>';
+    p.querySelector("input").oninput=function(){ set(+this.value); body() } }
+  body(); D.body.appendChild(p);
+  var r=anchor.getBoundingClientRect(), w=280, h=p.offsetHeight;
+  p.style.left=Math.max(10,Math.min(r.left+r.width/2-w/2,innerWidth-w-10))+"px";
+  p.style.top=(r.top-h-10>10?r.top-h-10:r.bottom+10)+"px";
+  setTimeout(function(){ D.addEventListener("click",function off(e){ if(!p.contains(e.target)){ p.remove(); D.removeEventListener("click",off,true) } },true) },0);
+}
+if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",mount); else mount();
+setTimeout(mount,800); setTimeout(mount,2500);
 })();
 </script>
 </body>

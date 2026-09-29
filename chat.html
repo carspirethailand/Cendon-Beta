@@ -13492,8 +13492,43 @@ body .w-q:hover{border-color:rgba(242,140,56,.45)!important}
 .w-sweep b{animation:wWaveB 8.5s ease-in-out infinite!important;animation-play-state:paused;transform-origin:50% 100%}
 body.w-busy .w-sweep i,body.w-busy .w-sweep b{animation-play-state:running!important}
 @keyframes wSpinC{to{transform:rotate(360deg)}}
-.ai-sig.thinking .mark{animation:wSpinC 1.1s linear infinite!important;opacity:1!important;filter:none!important}
+.ai-sig.thinking .mark{animation:wSpinC .22s linear infinite!important;opacity:1!important;filter:blur(.6px)!important}
 @media(prefers-reduced-motion:reduce){.ai-sig.thinking .mark,.w-sweep i,.w-sweep b{animation:none!important}}
+
+/* ════ ช่องพิมพ์: แสงรอบกล่องตอนเลือก + จุดสว่างตามเมาส์ (เฉพาะตอนเมาส์อยู่ใกล้) ════ */
+.composer,.w-box{position:relative}
+.w-edge{position:absolute;inset:-1px;border-radius:inherit;padding:2px;pointer-events:none;z-index:4;
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+          mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);
+  background:linear-gradient(90deg,rgba(255,181,71,.55),rgba(242,140,56,.55),rgba(255,77,122,.5),rgba(139,107,255,.5),rgba(255,181,71,.55));
+  opacity:0;transition:opacity .4s ease}
+.w-edge::after{content:"";position:absolute;inset:0;border-radius:inherit;opacity:var(--wn,0);transition:opacity .25s ease;
+  background:radial-gradient(160px circle at var(--wx,50%) var(--wy,50%),#fff,#FFD08A 25%,rgba(242,140,56,.9) 45%,transparent 70%)}
+.composer:focus-within .w-edge,.w-box:focus-within .w-edge{opacity:1}
+.composer:focus-within,.w-box:focus-within{box-shadow:var(--w-shadow),0 0 26px -6px rgba(242,140,56,.45)!important}
+.w-glowc{position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;opacity:var(--wn,0);transition:opacity .25s ease;
+  background:radial-gradient(220px circle at var(--wx,50%) var(--wy,50%),rgba(242,140,56,.18),transparent 70%);box-shadow:0 0 30px -4px rgba(242,140,56,calc(var(--wn,0)*.55))}
 </style>
+<script>
+/* จุดสว่างตามเมาส์: ทำงานเฉพาะกล่องที่ถูกเลือกอยู่ และเฉพาะตอนเมาส์ห่างขอบกล่องไม่เกิน 90px
+   ไกลกว่านั้นจุดสว่างจางหาย เหลือแค่แสงรอบกล่องปกติ */
+(function(){
+  var R=90;
+  function add(){ document.querySelectorAll(".composer,.w-box").forEach(function(b){
+    if(b.querySelector(":scope>.w-edge"))return;
+    var e=document.createElement("span");e.className="w-edge";var g=document.createElement("span");g.className="w-glowc";
+    b.appendChild(g);b.appendChild(e) }) }
+  add(); setTimeout(add,800); setTimeout(add,2500);
+  addEventListener("pointermove",function(ev){
+    document.querySelectorAll(".composer,.w-box").forEach(function(b){
+      var r=b.getBoundingClientRect(); if(!r.width)return;
+      var dx=Math.max(r.left-ev.clientX,0,ev.clientX-r.right), dy=Math.max(r.top-ev.clientY,0,ev.clientY-r.bottom);
+      var d=Math.hypot(dx,dy), n=b.matches(":focus-within")?Math.max(0,1-d/R):0;
+      b.style.setProperty("--wx",(ev.clientX-r.left)+"px"); b.style.setProperty("--wy",(ev.clientY-r.top)+"px");
+      b.style.setProperty("--wn",n.toFixed(3));
+    }) },{passive:true});
+  document.addEventListener("focusout",function(){ setTimeout(function(){ document.querySelectorAll(".composer,.w-box").forEach(function(b){ if(!b.matches(":focus-within"))b.style.setProperty("--wn",0) }) },0) });
+})();
+</script>
 </body>
 </html>

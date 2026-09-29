@@ -6298,6 +6298,9 @@ async function sendMsg(){
     messages.push({role:"ai",text:quota?(lang==="en"?"You've reached today's usage limit. Please try again later 🙏":"วันนี้ใช้งานครบโควตาแล้ว ลองใหม่อีกครั้งภายหลังนะครับ 🙏")
       :(lang==="en"?"Sorry, Cendon couldn't answer right now. Please try again in a moment 🙏":"ขออภัยครับ ตอนนี้ Cendon ตอบไม่ได้ชั่วคราว ลองส่งใหม่อีกครั้งนะครับ 🙏")});
     try{ console.warn("AI error:",e&&e.message) }catch(err){}
+    /* ผู้ดูแลเท่านั้น: โชว์สาเหตุจริงใต้ข้อความ จะได้รู้ทันทีว่าติดคีย์ โควตา หรือชื่อรุ่น — ผู้ใช้ทั่วไปไม่เห็น */
+    try{ const cu=JSON.parse(localStorage.getItem("spire_cachedUser")||"null");
+      if(cu&&(cu.admin||/admin|owner/i.test(cu.role||""))&&!quota){ const last=messages[messages.length-1]; if(last)last.text+="\n\n(ผู้ดูแลเห็นเท่านั้น) สาเหตุ: "+String(e&&e.message||e).slice(0,300) } }catch(err){}
     renderMessages();saveSession();
     try{ window.slideRelease&&window.slideRelease() }catch(e){}
     sending=false;updateSend();renderChips();

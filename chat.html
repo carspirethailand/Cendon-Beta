@@ -4995,7 +4995,7 @@ async function streamAnswer(contents,opts){
     let d=null; try{ d=await r.json() }catch(e){}
     if(r.status===429||(d&&d.error==="quota")){
       try{ window.quotaHit&&window.quotaHit((d&&d.quota)||null) }catch(e){}
-      throw new Error(lang==="en"?"You've used up this window's quota":"ใช้โควตาช่วงนี้ครบแล้ว");
+      { const qe=new Error(lang==="en"?"You've used up this window's quota":"ใช้โควตาช่วงนี้ครบแล้ว"); qe.userQuota=true; throw qe }
     }
     return null;
   }
@@ -5333,8 +5333,7 @@ async function gemini(contents,opts){opts=opts||{};
       /* โควตาหมด — เด้งกล่องบอกเวลาที่จะได้ใช้ต่อ พร้อมแผนเติม
          แล้วล็อกช่องพิมพ์ไว้จนกว่าจะถึงเวลานั้น เหมือน AI เจ้าอื่น */
       try{ window.quotaHit&&window.quotaHit((d&&d.quota)||null) }catch(e){}
-      throw new Error(lang==="en"?"You've used up this window's quota"
-                                 :"ใช้โควตาช่วงนี้ครบแล้ว");
+      { const qe=new Error(lang==="en"?"You've used up this window's quota":"ใช้โควตาช่วงนี้ครบแล้ว"); qe.userQuota=true; throw qe }
     }
     if(r.status===503||err==="maintenance")throw new Error(lang==="en"?"System is under maintenance":"ระบบกำลังปิดปรับปรุงชั่วคราว");
     if(r.status===403)throw new Error(lang==="en"?"Account suspended":"บัญชีถูกระงับการใช้งาน");
@@ -6262,7 +6261,7 @@ async function sendMsg(){
     try{ streamed=await streamAnswer(contents,{skillIds,system:sys,search:true}) }
     catch(e){
       if(window.__stopped||(e&&e.name==="AbortError")){ window.__stopped=false; return }
-      if(/โควตา|quota/i.test(e.message||""))throw e;
+      if(e&&e.userQuota)throw e;     /* โควตาของผู้ใช้เองเท่านั้น — โควตาผู้ให้บริการเต็มให้ลองทางอื่นต่อ */
       streamed=null;
     }
     if(streamed!==null){
@@ -6295,7 +6294,7 @@ async function sendMsg(){
     messages.pop();
     /* ผู้ใช้ไม่ต้องเห็นข้อความเทคนิคของระบบหลังบ้าน (ชื่อผู้ให้บริการ โควตา รหัสผิดพลาด)
        บอกแค่สิ่งที่เขาทำได้ — รายละเอียดจริงบันทึกไว้ให้ผู้ดูแลที่หน้าตรวจระบบแล้ว */
-    const quota=/โควตา|quota/i.test(e.message||"");
+    const quota=!!(e&&e.userQuota);
     messages.push({role:"ai",text:quota?(lang==="en"?"You've reached today's usage limit. Please try again later 🙏":"วันนี้ใช้งานครบโควตาแล้ว ลองใหม่อีกครั้งภายหลังนะครับ 🙏")
       :(lang==="en"?"Sorry, Cendon couldn't answer right now. Please try again in a moment 🙏":"ขออภัยครับ ตอนนี้ Cendon ตอบไม่ได้ชั่วคราว ลองส่งใหม่อีกครั้งนะครับ 🙏")});
     try{ console.warn("AI error:",e&&e.message) }catch(err){}

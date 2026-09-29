@@ -5780,11 +5780,24 @@ function techHits(text){
       +l2.map(Techs.line).join("\n");
   }catch(e){ return"" }
 }
-function md(t){let s=esc(t);const lines=s.split("\n");let out="",inList=false;
-  lines.forEach(l=>{const hd=l.match(/^\s*\*\*([^*]+?)\*\*\s*:?\s*$/);
+/* ตารางแบบ markdown (| a | b |) → ตารางจริง เทียบรุ่นได้ในจอเดียว ไม่ต้องเลื่อนขึ้นลงหา
+   คอลัมน์แรกติดซ้ายตอนเลื่อนข้าง แถวหัวตารางเป็นชื่อสิ่งที่เทียบ */
+function mdTable(rows){
+  const cells=r=>r.trim().replace(/^\|/,"").replace(/\|$/,"").split("|").map(c=>c.trim());
+  const head=cells(rows[0]), body=rows.slice(rows[1]&&/^\s*\|?\s*:?-{2,}/.test(rows[1])?2:1).map(cells);
+  const fmt=c=>c.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");
+  return`<div class="w-tbl"><table><thead><tr>${head.map(h=>`<th>${fmt(h)}</th>`).join("")}</tr></thead><tbody>${
+    body.map(r=>`<tr>${head.map((_,i)=>`<td>${fmt(r[i]||"")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+}
+function md(t){let s=esc(t);const lines=s.split("\n");let out="",inList=false,tbl=[];
+  const flushT=()=>{ if(tbl.length){ out+=tbl.length>1?mdTable(tbl):tbl[0]+"<br>"; tbl=[] } };
+  lines.forEach(l=>{
+    if(/^\s*\|.*\|\s*$/.test(l)){ if(inList){out+="</ul>";inList=false} tbl.push(l); return }
+    flushT();const hd=l.match(/^\s*\*\*([^*]+?)\*\*\s*:?\s*$/);
     /* บรรทัดที่เป็นตัวหนาทั้งบรรทัด = หัวข้อ แสดงเป็นหัวข้อจริง ไม่ใช่ตัวหนาไฮไลต์กลางย่อหน้า */
     if(hd){if(inList){out+="</ul>";inList=false}out+=`<b class="w-h">${hd[1]}</b>`;return}
     if(/^\s*[-*]\s+/.test(l)){if(!inList){out+="<ul>";inList=true}out+="<li>"+l.replace(/^\s*[-*]\s+/,"")+"</li>"}else{if(inList){out+="</ul>";inList=false}out+=l+"<br>"}});
+  flushT();
   if(inList)out+="</ul>";return out.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/(<br>)+$/,"")}
 /* แบ่งคำตอบเป็นย่อหน้าตามบรรทัดว่าง — ตอนไหลกับตอนจบใช้โครงเดียวกันเป๊ะ ภาพจึงไม่กระโดดตอนคำตอบจบ */
 function mdBlocks(t){return String(t||"").split(/\n{2,}/).filter(b=>b.trim()).map(b=>`<div class="blk">${md(b)}</div>`).join("")}
@@ -13513,6 +13526,16 @@ body.w-busy .w-sweep i,body.w-busy .w-sweep b{animation-play-state:running!impor
 .composer:focus-within,.w-box:focus-within{box-shadow:var(--w-shadow),0 0 26px -6px rgba(242,140,56,.45)!important}
 .w-glowc{position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;opacity:var(--wn,0);transition:opacity .25s ease;
   background:radial-gradient(220px circle at var(--wx,50%) var(--wy,50%),rgba(242,140,56,.18),transparent 70%);box-shadow:0 0 30px -4px rgba(242,140,56,calc(var(--wn,0)*.55))}
+
+/* ════ ตารางเทียบในคำตอบ ════ */
+.w-tbl{margin:.6em 0 .2em;overflow-x:auto;border-radius:14px;border:1px solid var(--c-line);-webkit-overflow-scrolling:touch;max-width:100%}
+.w-tbl table{border-collapse:separate;border-spacing:0;width:100%;min-width:max-content;font-size:14px;line-height:1.5}
+.w-tbl th,.w-tbl td{padding:9px 14px;text-align:left;vertical-align:top;border-bottom:1px solid var(--c-line2);white-space:normal;min-width:110px;max-width:260px}
+.w-tbl thead th{background:color-mix(in srgb,#F28C38 14%,var(--c-bg1));color:var(--c-ink);font-weight:600;position:sticky;top:0}
+.w-tbl tbody tr:last-child td{border-bottom:0}
+.w-tbl tbody tr:nth-child(even) td{background:var(--c-glass)}
+.w-tbl th:first-child,.w-tbl td:first-child{position:sticky;left:0;z-index:1;background:var(--c-bg1);font-weight:600;color:var(--c-mut);min-width:96px}
+.w-tbl thead th:first-child{background:color-mix(in srgb,#F28C38 14%,var(--c-bg1))}
 </style>
 <script>
 /* จุดสว่างตามเมาส์: ทำงานเฉพาะกล่องที่ถูกเลือกอยู่ และเฉพาะตอนเมาส์ห่างขอบกล่องไม่เกิน 90px

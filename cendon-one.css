@@ -110,12 +110,37 @@ body[data-deck="1"] .nav-links a:hover{color:#ECECEC!important}body[data-deck="1
   box-shadow:0 10px 26px -14px var(--c,var(--qc,#F28C38)),inset 0 1px 0 rgba(255,255,255,.08)!important}
 html[data-theme="light"] .mtool .mt-ic,html:not([data-theme]) .mtool .mt-ic{color:color-mix(in srgb,var(--c,#F28C38) 88%,#000)!important}
 .mfind-x{background:var(--o-ember)!important;color:#fff!important;box-shadow:0 10px 24px -10px rgba(242,110,40,.8)!important}
-/* ห้องนักบิน: คืนห้องสามมิติเดิม แต่เปลี่ยนไฟจากฟ้าเย็นเป็นอำพันอุ่นของ Cendon */
-.cockpit .pane,.cockpit .screen,.control,.hpage .nx,.hscroll{filter:hue-rotate(185deg) saturate(.75)}
-/* ปุ่มวินิจฉัยอยู่ในแผงที่ถูกหมุนสี — หมุนกลับให้เป็นสีถ่านอุ่นจริง */
-.cockpit .pane .cdiag{background:var(--o-ember)!important;filter:hue-rotate(-185deg) saturate(1.33)}
-#cpRoom{filter:hue-rotate(185deg) saturate(.6) brightness(.9)}
+/* ห้องนักบิน: กราไฟต์ลึก ไม่ใช่ฟ้า/เหลือง — สีมาจากไฟ ไม่ได้มาจากแผง */
+.cockpit .pane,.cockpit .screen,.control,.hpage .nx,.hscroll{filter:saturate(.12) brightness(1.08)}
+.cockpit .pane .cdiag{background:var(--o-ember)!important;filter:saturate(8)}
+#cpRoom{filter:saturate(.15) brightness(.85)}
+.hpage::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
+  background:radial-gradient(60% 45% at 50% 108%,rgba(242,120,40,.22),transparent 70%),radial-gradient(40% 40% at 8% 20%,rgba(139,107,255,.14),transparent 70%),radial-gradient(40% 40% at 92% 18%,rgba(255,77,122,.12),transparent 70%)}
 /* หน้าอะไหล่ */
 #v-shop .scroll::before,#v-shop .scroll::after{opacity:.5}
 .mag-hero .bg{background:radial-gradient(120% 90% at 85% 0%,rgba(242,140,56,.45),transparent 60%),linear-gradient(160deg,#241A12,#0E0B09)!important}
 @media (prefers-reduced-motion:reduce){.one-aura i{animation:none!important}}
+
+/* ════ มิติ: กระจกหลายชั้น + ไฟตามนิ้ว/เมาส์ + เส้นไฟวิ่งรอบขอบ ════
+   ความ "แพง" มาจากแสงที่ตอบสนองต่อผู้ใช้ ไม่ใช่สีเรียบ ๆ
+   • การ์ดเป็นกระจกสองชั้น: ไฮไลต์ขอบบน เงาลึกด้านล่าง
+   • เมาส์/นิ้วไปตรงไหน แสงอุ่นตามไปตรงนั้น (--mx/--my จาก cendon-one.js)
+   • ชี้ค้าง: เส้นไฟแอมเบียนต์วิ่งรอบขอบการ์ดหนึ่งรอบ เหมือนไฟในรถที่ติดตอนเปิดประตู */
+@property --o-ang{syntax:'<angle>';inherits:false;initial-value:0deg}
+.card,.widget:not(.wbrief):not(.wspares),.su-card,.mtool .mt-ic,.qa{
+  background:linear-gradient(180deg,color-mix(in srgb,var(--surface) 92%,#fff 8%),var(--surface) 38%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07),inset 0 -1px 0 rgba(0,0,0,.35),0 1px 2px rgba(0,0,0,.3),0 28px 60px -34px rgba(0,0,0,.8)!important;
+  transition:transform .5s cubic-bezier(.2,.9,.25,1),box-shadow .5s!important}
+.o-spot{position:relative;isolation:isolate}
+.o-spot>.o-glow{position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;opacity:0;transition:opacity .45s;
+  background:radial-gradient(420px circle at var(--mx,50%) var(--my,0%),rgba(242,140,56,.13),transparent 45%)}
+.o-spot>.o-edge{position:absolute;inset:-1px;border-radius:inherit;padding:1px;pointer-events:none;z-index:2;opacity:0;
+  background:conic-gradient(from var(--o-ang),transparent 0 62%,#FFB547 72%,#F28C38 78%,#FF4D7A 84%,transparent 92%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);transition:opacity .4s}
+.o-spot:hover>.o-glow{opacity:1}
+.o-spot:hover>.o-edge{opacity:1;animation:oTrace 2.4s cubic-bezier(.45,0,.2,1) infinite}
+.o-spot:hover{transform:translateY(-2px)}
+@keyframes oTrace{to{--o-ang:360deg}}
+@media(hover:none){.o-spot.o-touch>.o-glow{opacity:1}}
+@media (prefers-reduced-motion:reduce){.o-spot:hover>.o-edge{animation:none}.o-spot:hover{transform:none}}

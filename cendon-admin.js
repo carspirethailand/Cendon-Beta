@@ -92,6 +92,8 @@ function paintFab(){ var d=fab&&fab.querySelector(".d"); if(d)d.className="d "+h
 
 function chainHTML(){
   var h='<div class="cxa-h">Gemini (ตัวหลัก ตามลำดับที่ลอง)</div>';
+  var gq=(data.parked||[]).filter(function(p){return p.key==="gemini|quota"})[0];
+  if(gq)h+='<div class="cxa-row"><b style="color:#e5484d">โควตาคีย์ Gemini หมด</b><small>ข้าม Gemini ทั้งหมด · กลับมาลองใน '+Math.ceil((gq.backInSec||0)/60)+' นาที</small></div>';
   h+=data.chain.map(function(c){ var st=c.parked?"r":c.searchParked?"y":"g";
     return '<div class="cxa-r"><span class="cxa-dot '+st+'"></span><span class="n">'+esc(c.name)+'</span><small>'+
       (c.parked?"พักอยู่ อีก "+c.parked.backInSec+" วิ":c.searchParked?"ค้นเว็บพัก "+c.searchParked.backInSec+" วิ":"พร้อม")+'</small></div>' }).join("");

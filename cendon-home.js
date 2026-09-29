@@ -156,6 +156,37 @@ body.ch-on .navwrap{display:none!important}
   .ch-today .go{width:30px;height:30px;border-radius:10px}
   .ch-row{padding:8px 6px;gap:10px}.ch-row i{width:30px;height:30px;font-size:15px}.ch-row b{font-size:13px}
 }
+/* ════ ลำดับความสำคัญชัด + ไม่มีกรอบ + หายใจได้ ════
+   ตัวเด่นมีหนึ่งเดียว: การ์ดรถ (ใหญ่ ไล่สีเต็ม ไม่มีเส้นขอบ)
+   ที่เหลือไม่มีกล่อง ไม่มีเส้น — แยกกันด้วยระยะห่างและขนาดตัวหนังสือแทน */
+.ch-car{box-shadow:0 40px 80px -40px rgba(242,110,40,.55),0 30px 60px -30px rgba(0,0,0,.7)!important;
+  background:radial-gradient(120% 100% at 100% 0%,rgba(255,150,60,.65),transparent 55%),radial-gradient(100% 90% at 0% 100%,rgba(139,107,255,.45),transparent 60%),linear-gradient(160deg,#2A1E16,#120D0A)!important}
+.ch-stat{background:rgba(0,0,0,.22);border:0}
+.ch-car .sw{border:0;background:rgba(0,0,0,.25)}
+.ch-ask{border:0;background:rgba(127,127,127,.09);box-shadow:none}
+.ch-ask::after{display:none}
+.ch-chips{display:none}
+.ch-act{border:0!important;background:none!important;box-shadow:none!important;padding:4px 0!important}
+.ch-act:hover{transform:translateY(-2px)}
+.ch-act small{display:none}
+.ch-card{border:0;background:none;box-shadow:none;padding:0}
+.ch-h b{font-size:13px;font-weight:500;color:var(--muted);letter-spacing:.02em}
+.ch-row{padding:10px 0}
+.ch-today .go{border:0;background:rgba(127,127,127,.1)}
+.ch-grid{gap:30px}
+.ch-left,.ch-right{gap:30px!important}
+.ch-act{align-items:center;text-align:center}
+.ch-act i{width:58px;height:58px;border-radius:19px;font-size:24px}
+.ch-act b{font-weight:500;color:var(--muted)}
+@media(max-width:899px){
+  .ch-grid{gap:26px}
+  .ch-acts{gap:4px}
+  .ch-act{align-items:center}
+  .ch-act i{width:52px!important;height:52px!important;border-radius:17px!important;font-size:22px!important}
+  .ch-act b{font-size:11.5px;font-weight:500;color:var(--muted)}
+  .ch-car{padding:18px!important}
+  .ch-car h2{font-size:26px}
+}
 .ch-in{animation:chIn .7s cubic-bezier(.2,.9,.25,1) both}
 @keyframes chIn{from{opacity:0;transform:translateY(14px);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
 @media (prefers-reduced-motion:reduce){.ch-in{animation:none}}

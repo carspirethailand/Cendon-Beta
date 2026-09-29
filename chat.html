@@ -7384,6 +7384,11 @@ setTimeout(boot,400); setInterval(paint,4000);
   try{localStorage.removeItem("spire_deckQ")}catch(e){}
   const put=()=>{
     const inp=$("inp"); if(!inp)return false;
+    /* ถามมาจากหน้าหลักแล้วกดส่งแล้ว — ส่งต่อให้เลย ไม่ต้องให้กดซ้ำ */
+    if(D.body.dataset.phase==="welcome"&&$("wAsk")&&$("wSend")){
+      $("wAsk").value=q; $("wAsk").dispatchEvent(new Event("input",{bubbles:true}));
+      setTimeout(()=>{ $("wSend").disabled=false; $("wSend").click() },80); return true;
+    }
     if(D.body.dataset.phase!=="thread")return false;
     inp.value=q; inp.dispatchEvent(new Event("input",{bubbles:true}));
     try{window.autoSize&&window.autoSize();window.updateSend&&window.updateSend()}catch(e){}

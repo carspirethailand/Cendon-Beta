@@ -6090,7 +6090,8 @@ ${convo}`}]}],{temp:0.3});
     else{messages.push({role:"ai",text:txt||"(สรุปไม่สำเร็จ)"});renderMessages();saveSession()}
   }catch(e){
     messages.pop();
-    messages.push({role:"ai",text:(lang==="en"?"Summary failed 🙏 ":"สรุปผลไม่สำเร็จ 🙏 ")+e.message});
+    let adm=false; try{ const cu=JSON.parse(localStorage.getItem("spire_cachedUser")||"null"); adm=!!(cu&&(cu.admin||/admin|owner/i.test(cu.role||""))) }catch(err){}
+    messages.push({role:"ai",text:(lang==="en"?"Couldn't make the summary right now. Please try again in a moment 🙏":"ตอนนี้สรุปผลไม่ได้ชั่วคราว ลองใหม่อีกครั้งนะครับ 🙏")+(adm?"\n\n(ผู้ดูแลเห็นเท่านั้น) สาเหตุ: "+String(e&&e.message||e).slice(0,300):"")});
     renderMessages();
   }
   sending=false;renderChips();updateSend();

@@ -6810,13 +6810,21 @@ $("callUI")&&$("callUI").addEventListener("pointerdown",()=>{[callCtx,playCtx].f
 /* UI ไหลเข้าทีละชิ้นหลังหน้าโหลด: เลื่อนขึ้น + ชัดขึ้นจากเบลอ จังหวะแบบ iOS ไม่มีเด้ง */
 function uiEnter(){
   if(matchMedia("(prefers-reduced-motion:reduce)").matches)return;
-  const sel=".su-card > *:not(.su-prov), .su-prov > *, .side, .colwrap > .tbar, .pill, .wrap .pane.on:not(#v-login) .pane-inner > *, .wrap .pane.on .msg, .chip-row, .composer";
+  const sel=".su-card > *:not(.su-prov), .su-prov > *, .side, .colwrap > .tbar, .pill, .wrap .pane.on:not(#v-login) .pane-inner > *, #thread > *, #thread .msg, .chip-row, .composer";
   const els=[...document.querySelectorAll(sel)].filter(e=>e.getClientRects().length)
     .sort((a,b)=>a.getBoundingClientRect().top-b.getBoundingClientRect().top);   /* ไล่จากบนลงล่าง */
-  els.slice(0,30).forEach((e,i)=>{
-    try{e.animate([{opacity:0,transform:"translateY(26px)",filter:"blur(12px)"},{opacity:1,transform:"translateY(0)",filter:"blur(0)"}],
-      {duration:950,delay:40+i*45,easing:"cubic-bezier(.22,.61,.12,1)",fill:"backwards"})}catch(_){}
+  const rise=(e,d)=>{try{e.animate([{opacity:0,transform:"translateY(26px)",filter:"blur(12px)"},{opacity:1,transform:"translateY(0)",filter:"blur(0)"}],
+      {duration:950,delay:d,easing:"cubic-bezier(.22,.61,.12,1)",fill:"backwards"})}catch(_){}};
+  const seen=new WeakSet();
+  els.slice(0,40).forEach((e,i)=>{seen.add(e);rise(e,40+i*45)});
+  /* ข้อความ/การ์ดสรุป/โลโก้ AI ที่วาดตามมาหลังหน้าโหลดหาย (โหลดประวัติช้ากว่า) ก็ไหลขึ้นด้วย ภายใน 3 วินาทีแรก */
+  const th=$("thread");if(!th)return;
+  const t0=performance.now();let k=0;
+  const mo=new MutationObserver(()=>{
+    if(performance.now()-t0>3000){mo.disconnect();return}
+    [...th.children].forEach(e=>{if(!seen.has(e)&&e.getClientRects().length){seen.add(e);rise(e,k++*45)}});
   });
+  mo.observe(th,{childList:true});setTimeout(()=>mo.disconnect(),3100);
 }
 /* warp intro dismissal */
 (function(){

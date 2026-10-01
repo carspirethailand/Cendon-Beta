@@ -117,7 +117,7 @@ a{color:inherit;text-decoration:none}
 body[data-phase="thread"] .meteor{display:none}
 
 /* ============ WARP INTRO (opening loader) ============ */
-.warp{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;overflow:hidden;
+.warp{position:fixed;top:0;left:0;right:auto;bottom:auto;width:100vw;height:100vh;height:100dvh;z-index:2147483000;display:grid;place-items:center;overflow:hidden;
   /* ใช้สีพื้นเดียวกับห้องแชทตรง ๆ ไม่ใส่ลวดลายอะไรทับ
      ตอนหน้าโหลดหายไป ภาพจึงต่อกับห้องแชทสนิท ไม่มีรอยสะดุดของพื้นหลัง */
   background:var(--c-bg0);transition:opacity .34s ease}
@@ -5700,10 +5700,12 @@ function pickSymptom(idx){
   $("inp").value=prompt;autoSize();updateSend();
   sendMsg();
 }
+const touchUI=matchMedia("(pointer:coarse)").matches;
+function autoFocusInp(ms){if(!touchUI)setTimeout(()=>$("inp").focus(),ms)}
 function enterThread(opts){
   opts=opts||{};
   setPhase("thread");
-  if(opts.focus)setTimeout(()=>$("inp").focus(),120);
+  if(opts.focus)autoFocusInp(120);
 }
 
 /* ช่องพิมพ์บนหน้าเริ่มแชต — ส่งต่อเข้าช่องจริงในห้องแชตแล้วยิงเลย
@@ -6811,9 +6813,9 @@ $("callUI")&&$("callUI").addEventListener("pointerdown",()=>{[callCtx,playCtx].f
 function uiEnter(){
   if(matchMedia("(prefers-reduced-motion:reduce)").matches)return;
   const sel=".su-card > *:not(.su-prov), .su-prov > *, .side, .colwrap > .tbar, .pill, .wrap .pane.on:not(#v-login) .pane-inner > *, #thread > *, #thread .msg, .chip-row, .composer";
-  const els=[...document.querySelectorAll(sel)].filter(e=>e.getClientRects().length)
+  const els=[...document.querySelectorAll(sel)].filter(e=>{const r=e.getBoundingClientRect();return r.width&&r.height&&r.right>0&&r.left<innerWidth&&r.bottom>0&&r.top<innerHeight})
     .sort((a,b)=>a.getBoundingClientRect().top-b.getBoundingClientRect().top);   /* ไล่จากบนลงล่าง */
-  const rise=(e,d)=>{try{e.animate([{opacity:0,transform:"translateY(26px)",filter:"blur(12px)"},{opacity:1,transform:"translateY(0)",filter:"blur(0)"}],
+  const rise=(e,d)=>{try{e.animate([{opacity:0,translate:"0 26px",filter:"blur(12px)"},{opacity:1,translate:"0 0",filter:"blur(0)"}],
       {duration:950,delay:d,easing:"cubic-bezier(.22,.61,.12,1)",fill:"backwards"})}catch(_){}};
   const seen=new WeakSet();
   els.slice(0,40).forEach((e,i)=>{seen.add(e);rise(e,40+i*45)});
@@ -6890,12 +6892,12 @@ function runEntry(){
   }else if(p.q){
     enterThread({});
     $("inp").value=p.q; autoSize(); updateSend();
-    setTimeout(()=>$("inp").focus(),150);
+    autoFocusInp(150);
   }else if(p.starter&&!messages.length){
     enterThread({});
     const c=selCar();
     $("inp").value=lang==="en"?`Please check my ${c?c.name:"car"} — any issues to look at?`:`ช่วยตรวจรถ ${c?c.name:""} ให้หน่อย มีอะไรต้องดูไหม?`;
-    autoSize();updateSend();setTimeout(()=>$("inp").focus(),150);
+    autoSize();updateSend();autoFocusInp(150);
   }
 }
 </script>

@@ -482,38 +482,83 @@ body[data-phase="thread"] .composer{display:block;animation:compIn .5s cubic-bez
   background:var(--c-grad);color:#fff;font-weight:700;font-size:14px;box-shadow:0 12px 26px -10px var(--c-acc);transition:.2s}
 .hist-new:hover{transform:translateY(-2px)}
 
-/* ===== VOICE CALL UI ===== */
-.call-ui{position:fixed;inset:0;z-index:320;display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;
-  background:radial-gradient(120% 100% at 50% 32%,var(--c-bg1),var(--c-bg0) 78%);padding:30px;text-align:center}
-.call-ui.show{display:flex;animation:paneIn .4s cubic-bezier(.2,.9,.25,1)}
-.call-logo{width:120px;height:120px;border-radius:34px;display:grid;place-items:center;color:#fff;cursor:pointer;
-  background-image:linear-gradient(180deg,rgba(255,255,255,.3),rgba(255,255,255,.05) 46%,rgba(0,0,0,.16)),var(--c-grad);
-  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.45),0 24px 60px -18px var(--c-acc);transition:transform .3s}
-.call-logo svg{width:52%;height:52%}.call-logo path{fill:currentColor}
-.call-logo.listening{animation:callPulse 2s ease-out infinite}
-.call-logo.thinking{animation:sigSpin 1.2s linear infinite}
-.call-logo.speaking{animation:speakBounce .5s ease-in-out infinite alternate}
-@keyframes callPulse{0%{box-shadow:0 0 0 0 var(--c-acc-soft),0 24px 60px -18px var(--c-acc)}100%{box-shadow:0 0 0 30px transparent,0 24px 60px -18px var(--c-acc)}}
-@keyframes speakBounce{from{transform:scale(1)}to{transform:scale(1.07)}}
-.call-status{font-size:15px;font-weight:600;color:var(--c-mut);min-height:22px}
-.call-caption{min-height:52px;max-width:520px;font-size:16px;line-height:1.65;color:var(--c-ink)}
-.call-timer{font-size:13px;color:var(--c-faint);font-variant-numeric:tabular-nums}
-.call-btns{display:flex;gap:18px;margin-top:6px}
-.call-btn{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;font-size:24px;color:var(--c-ink);
-  background:var(--c-glass2);border:1px solid var(--c-line);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,var(--gloss,.15)),0 1px 2px rgba(0,0,0,.3),0 8px 18px -8px rgba(0,0,0,.5);
-  transition:transform .3s cubic-bezier(.3,1.5,.4,1)}
-.call-btn:active{transform:scale(.92)}
-.call-btn.muted{background:#fff;color:#1a1a1a}
-.call-btn.end{color:#fff;border:1px solid rgba(0,0,0,.25);
-  background-image:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,.04) 46%,rgba(0,0,0,.16)),linear-gradient(135deg,#E25555,#C43A3A);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 10px 24px -8px rgba(214,74,74,.6)}
-.call-hint{font-size:11.5px;color:var(--c-faint)}
-.call-cam{position:absolute;top:calc(16px + env(safe-area-inset-top));right:16px;width:118px;border-radius:16px;overflow:hidden;
-  border:1.5px solid var(--c-line);box-shadow:0 12px 30px -10px rgba(0,0,0,.6);display:none;background:#000}
-.call-cam.show{display:block;animation:paneIn .3s}
-.call-cam video{width:100%;display:block}
-.call-btn.on{border-color:var(--c-acc);color:var(--c-acc);box-shadow:inset 0 1px 0 rgba(255,255,255,.15),0 0 0 3px var(--c-acc-soft)}
+/* ===== LIVE CALL — "Dyno Bay" อู่ไดโนกลางคืน: หน้าปัดสองวง คุณ/Cendon เข็มขยับตามเสียงจริง ===== */
+.dyno{position:fixed;inset:0;z-index:320;display:none;flex-direction:column;align-items:center;justify-content:space-between;
+  padding:calc(14px + env(safe-area-inset-top)) 16px calc(18px + env(safe-area-inset-bottom));overflow:hidden;color:#f3efe8;
+  background:radial-gradient(120% 70% at 50% 108%,rgba(255,106,26,.22),transparent 60%),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.025) 0 1px,transparent 1px 46px),
+    linear-gradient(180deg,#0d0e10,#15171a 55%,#0b0b0c);font-family:inherit}
+.dyno.show{display:flex;animation:paneIn .4s cubic-bezier(.2,.9,.25,1)}
+.dy-floor{position:absolute;left:-20%;right:-20%;bottom:0;height:34%;pointer-events:none;
+  background:repeating-linear-gradient(135deg,rgba(255,190,40,.08) 0 18px,transparent 18px 36px);
+  -webkit-mask:linear-gradient(transparent,#000 70%);mask:linear-gradient(transparent,#000 70%);transform:perspective(400px) rotateX(38deg);transform-origin:bottom}
+.dy-cam,.dy-guide{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;pointer-events:none}
+.dy-guide path{fill:none;stroke-width:3;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.g-g{stroke:#3be27a}.g-y{stroke:#ffd23f}.g-r{stroke:#ff4a3a}
+.dyno.cam .dy-cam,.dyno.cam .dy-guide{display:block}
+.dyno.cam .dy-floor{display:none}
+.dyno.cam::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.55),transparent 30%,transparent 55%,rgba(0,0,0,.75));pointer-events:none;z-index:0}
+.dyno>*:not(.dy-cam):not(.dy-guide):not(.dy-floor){position:relative;z-index:1}
+
+.dy-top{display:flex;align-items:center;gap:10px;width:100%;max-width:560px;font-size:14px}
+.dy-top b{flex:1;font-weight:600;letter-spacing:.2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dy-led{width:10px;height:10px;border-radius:50%;background:#ffb020;box-shadow:0 0 10px #ffb020;animation:dyBlink 1s steps(2) infinite}
+.dy-led.on{background:#3be27a;box-shadow:0 0 12px #3be27a;animation:none}
+.dy-led.off{background:#ff4a3a;box-shadow:0 0 12px #ff4a3a;animation:none}
+@keyframes dyBlink{50%{opacity:.25}}
+.dy-odo{font:600 15px/1 ui-monospace,Menlo,monospace;letter-spacing:2px;padding:6px 9px;border-radius:6px;color:#ffcf9a;
+  background:linear-gradient(#050505,#1b1b1b);border:1px solid #2c2c2c;box-shadow:inset 0 2px 6px #000}
+
+.dy-cluster{display:flex;align-items:center;justify-content:center;gap:clamp(6px,3vw,26px);width:100%;max-width:640px;flex:1;transition:transform .4s,opacity .4s}
+.dy-gauge{position:relative;width:clamp(120px,36vw,220px);aspect-ratio:1;border-radius:50%;padding:8px;
+  background:conic-gradient(from 200deg,#2a2c30,#5a5e66,#22242a,#62666e,#2a2c30);
+  box-shadow:0 18px 40px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.08)}
+.dy-gauge svg{width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 50% 40%,#1d2024,#08090a 72%);box-shadow:inset 0 0 18px #000}
+.dy-gauge .arc{fill:none;stroke:#2c3036;stroke-width:6}
+.dy-gauge .red{fill:none;stroke:#ff4a3a;stroke-width:6;opacity:.8}
+.dy-gauge .ticks line{stroke:#9aa0a8;stroke-width:2}.dy-gauge .ticks line.mj{stroke:#f3efe8;stroke-width:3}
+.dy-gauge .needle{transform-origin:100px 100px;transform:rotate(-135deg)}
+.dy-gauge .needle path{stroke:#ff6a1a;stroke-width:4;stroke-linecap:round;filter:drop-shadow(0 0 4px #ff6a1a)}
+.dy-gauge .needle circle{fill:#2a2c30;stroke:#777;stroke-width:2}
+.dy-gauge.ai .needle path{stroke:#4fd1ff;filter:drop-shadow(0 0 4px #4fd1ff)}
+.dy-gauge.hot{box-shadow:0 18px 40px rgba(0,0,0,.6),0 0 26px rgba(255,106,26,.45),inset 0 0 0 1px rgba(255,255,255,.1)}
+.dy-gauge.ai.hot{box-shadow:0 18px 40px rgba(0,0,0,.6),0 0 26px rgba(79,209,255,.45),inset 0 0 0 1px rgba(255,255,255,.1)}
+.dy-cap{position:absolute;left:0;right:0;top:58%;text-align:center;line-height:1.25;pointer-events:none}
+.dy-cap b{display:block;font-size:12px;letter-spacing:2px;color:#cfc8bd}
+.dy-cap small{font-size:11px;color:#8a8f96}
+.dy-cap small.ok{color:#3be27a}
+.dy-vu{position:absolute;left:18%;right:18%;bottom:-20px;display:flex;gap:3px;height:9px}
+.dy-vu i{flex:1;border-radius:2px;background:#24272b;transition:background .08s,box-shadow .08s}
+.dy-vu i.l{background:#3be27a;box-shadow:0 0 6px #3be27a}.dy-vu i.l.y{background:#ffd23f;box-shadow:0 0 6px #ffd23f}.dy-vu i.l.r{background:#ff4a3a;box-shadow:0 0 6px #ff4a3a}
+
+.dy-core{width:clamp(64px,17vw,96px);aspect-ratio:1;border-radius:50%;border:0;cursor:pointer;display:grid;place-items:center;color:#fff;flex:none;
+  background:radial-gradient(circle at 35% 30%,#ff9a4a,#ff6a1a 45%,#b83c00);
+  box-shadow:0 0 0 6px #1a1c1f,0 0 0 8px #3a3d42,0 10px 30px rgba(255,106,26,.45);transition:transform .12s}
+.dy-core svg{width:46%;height:46%}.dy-core path{fill:currentColor}
+.dy-core.think{animation:sigSpin 1.4s linear infinite}
+
+.dy-lcd{position:relative;width:100%;max-width:560px;min-height:74px;border-radius:12px;padding:12px 16px;overflow:hidden;margin-top:26px;
+  background:linear-gradient(#0f1a12,#0a120c);border:1px solid #1f3a26;box-shadow:inset 0 0 22px rgba(0,0,0,.8)}
+.dy-lcd p{margin:0;font-size:15px;line-height:1.6;color:#9dffbd;text-shadow:0 0 6px rgba(80,255,140,.45);max-height:4.8em;overflow:hidden}
+.dy-lcd p:empty::before{content:"▌";animation:dyBlink 1s steps(2) infinite}
+.dy-scan{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(transparent 0 2px,rgba(0,0,0,.25) 2px 3px)}
+
+.dy-ctrl{display:flex;align-items:center;justify-content:center;gap:clamp(14px,5vw,30px);margin-top:16px}
+.dy-sw{width:66px;height:66px;border-radius:14px;border:1px solid #3a3d42;color:#e8e2d8;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  background:linear-gradient(#2c2f34,#18191c);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 6px 0 #0a0a0b,0 10px 18px rgba(0,0,0,.5);transition:transform .1s,box-shadow .1s}
+.dy-sw:active{transform:translateY(5px);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 1px 0 #0a0a0b}
+.dy-sw .ti{font-size:22px}.dy-sw span{font-size:10.5px;color:#9a9fa6}
+.dy-sw .lamp{width:16px;height:4px;border-radius:2px;background:#333;margin-bottom:2px}
+.dy-sw.on .lamp{background:#3be27a;box-shadow:0 0 8px #3be27a}
+.dy-sw.muted .lamp{background:#ff4a3a;box-shadow:0 0 8px #ff4a3a}
+.dy-stop{width:92px;height:92px;border-radius:50%;cursor:pointer;color:#fff;font:800 12px/1.15 inherit;letter-spacing:1px;
+  border:3px solid #6d0d06;background:radial-gradient(circle at 40% 30%,#ff5a45,#d01a0c 55%,#7a0b04);
+  box-shadow:0 0 0 7px #202226,0 0 0 9px #44474c,0 8px 26px rgba(208,26,12,.55),inset 0 -4px 8px rgba(0,0,0,.35);transition:transform .1s}
+.dy-stop:active{transform:scale(.93)}
+.dy-flip{position:absolute;right:-56px;width:44px;height:44px;border-radius:50%;border:1px solid #3a3d42;background:#1a1c1f;color:#fff;font-size:20px;cursor:pointer}
+.dyno.cam .dy-cluster{transform:scale(.62) translateY(-18%);opacity:.92}
+@media (max-width:420px){.dy-flip{right:auto;left:50%;top:-60px;transform:translateX(-50%)}.dy-stop{width:80px;height:80px}.dy-sw{width:58px;height:58px}}
+@media (prefers-reduced-motion:reduce){.dy-led,.dy-core.think{animation:none}}
 
 /* ===== PRESS BOUNCE + THEME CROSSFADE ===== */
 .chip,.sheet-btn,.hist-item,.th-opt,.lang-opt,.p-btn,.att-btn,.back-btn{transition:transform .35s cubic-bezier(.3,1.6,.4,1),border-color .18s,background-color .18s,color .18s,opacity .18s,box-shadow .25s}
@@ -4630,20 +4675,52 @@ window.spireSetupVersion=SETUP_VERSION;
   <div class="sheet-body" id="histBody"></div>
 </div>
 
-<!-- LIVE CALL OVERLAY (Gemini Live — realtime voice + camera) -->
-<div class="call-ui" id="callUI">
-  <div class="call-cam" id="callCamWrap"><video id="callCam" muted playsinline></video></div>
+<!-- LIVE CALL — "Dyno Bay": หน้าปัดรถสองวง (คุณ / Cendon) บอกทันทีว่าเสียงเข้าไหม · กล้องกลายเป็นกล้องถอยหลังมีเส้นกะระยะ -->
+<div class="dyno" id="callUI" aria-hidden="true">
+  <video class="dy-cam" id="callCam" muted playsinline></video>
+  <svg class="dy-guide" viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M70 300 C120 230 150 190 165 150" class="g-g"/><path d="M330 300 C280 230 250 190 235 150" class="g-g"/>
+    <path d="M118 236 L282 236" class="g-y"/><path d="M150 190 L250 190" class="g-r"/>
+  </svg>
   <canvas id="camCanvas" hidden></canvas>
-  <div class="call-status" id="callStatus">กำลังเชื่อมต่อ...</div>
-  <div class="call-logo" id="callLogo"><svg viewBox="-6.0 -6.0 94.8 112.0"><path d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg></div>
-  <div class="call-caption" id="callCaption"></div>
-  <div class="call-timer" id="callTimer">00:00</div>
-  <div class="call-btns">
-    <button class="call-btn" id="callMuteBtn" onclick="toggleCallMute()" title="ปิด/เปิดไมค์"><i class="ti ti-microphone"></i></button>
-    <button class="call-btn" id="callCamBtn" onclick="toggleCamera()" title="เปิดกล้องให้ AI ดู"><i class="ti ti-video"></i></button>
-    <button class="call-btn end" onclick="endCall()" title="วางสาย"><i class="ti ti-phone-off"></i></button>
-  </div>
-  <div class="call-hint">พูดแทรกได้ทันที · เปิดกล้องส่องรถให้ AI ดูสดๆ ได้เลย</div>
+  <div class="dy-floor"></div>
+
+  <header class="dy-top">
+    <span class="dy-led" id="dyLink"></span><b id="callStatus">กำลังเชื่อมต่อ...</b>
+    <span class="dy-odo" id="callTimer">00:00</span>
+  </header>
+
+  <section class="dy-cluster">
+    <div class="dy-gauge" id="gUser">
+      <svg viewBox="0 0 200 200"><g class="ticks"></g>
+        <path class="arc" d="M43.4 156.6 A80 80 0 1 1 156.6 156.6"/><path class="red" d="M180 100 A80 80 0 0 1 156.6 156.6"/>
+        <g class="needle"><path d="M100 104 L100 30"/><circle cx="100" cy="100" r="9"/></g></svg>
+      <div class="dy-cap"><b>คุณ</b><small id="heardTag">พูดได้เลย</small></div>
+      <div class="dy-vu" id="vuUser"></div>
+    </div>
+
+    <button class="dy-core" id="callLogo" type="button" aria-label="Cendon">
+      <svg viewBox="-6.0 -6.0 94.8 112.0"><path d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg>
+    </button>
+
+    <div class="dy-gauge ai" id="gAi">
+      <svg viewBox="0 0 200 200"><g class="ticks"></g>
+        <path class="arc" d="M43.4 156.6 A80 80 0 1 1 156.6 156.6"/><path class="red" d="M180 100 A80 80 0 0 1 156.6 156.6"/>
+        <g class="needle"><path d="M100 104 L100 30"/><circle cx="100" cy="100" r="9"/></g></svg>
+      <div class="dy-cap"><b>CENDON</b><small id="aiTag">รอฟัง</small></div>
+      <div class="dy-vu" id="vuAi"></div>
+    </div>
+  </section>
+
+  <div class="dy-lcd"><div class="dy-scan"></div><p id="callCaption"></p></div>
+
+  <footer class="dy-ctrl">
+    <button class="dy-sw" id="callMuteBtn" onclick="toggleCallMute()" type="button"><i class="lamp"></i><i class="ti ti-microphone"></i><span>ไมค์</span></button>
+    <button class="dy-stop" onclick="endCall()" type="button" aria-label="วางสาย"><span>ENGINE<br>STOP</span></button>
+    <button class="dy-sw" id="callCamBtn" onclick="toggleCamera()" type="button"><i class="lamp"></i><i class="ti ti-video"></i><span>กล้อง</span></button>
+    <button class="dy-flip" id="callFlipBtn" onclick="flipCamera()" type="button" aria-label="สลับกล้อง" hidden><i class="ti ti-camera-rotate"></i></button>
+  </footer>
+</div>
 </div>
 
 <input type="file" id="fileImg" accept="image/*" hidden><input type="file" id="fileVid" accept="video/*" hidden>
@@ -6460,39 +6537,127 @@ function goGarage(){try{sessionStorage.setItem("spire_stayHome","1")}catch(e){}l
 /* ===== TOAST ===== */
 let tt;function toast(m,ic){const el=$("toast");el.innerHTML=`<i class="ti ${ic||"ti-check"}"></i>${esc(m)}`;el.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("show"),3200)}
 
-/* ===== LIVE CALL — Gemini Live API over WebSocket (ephemeral token)
- * Real-time two-way audio; camera can stream frames so the AI "sees".
- * Interruption is handled natively by server-side VAD — just talk over it. */
+/* ===== LIVE CALL — Gemini Live API (ephemeral token) · หน้าจอ "Dyno Bay"
+ * เสียงทั้งหมดอยู่ใน AudioContext เดียว สร้างตอนกดปุ่ม (มือถือจะไม่บล็อก)
+ * ไมค์: AudioWorklet ย่อเหลือ 16kHz เอง ไม่พึ่ง sampleRate ที่บางเครื่องไม่ยอมทำตาม
+ * เข็มหน้าปัดสองวงขยับตามระดับเสียงจริง → เห็นทันทีว่าไมค์เข้า และ AI ได้ยินแล้วหรือยัง */
 let callActive=false,callMuted=false,callTimerInt=null,callT0=0;
-let callWS=null,callMicStream=null,callAudioCtx=null,callMicSrc=null,callMicNode=null;
-let playCtx=null,playTime=0,playingCount=0;
-let camStream=null,camTimer=null,camOn=false;
-let liveUserText="",liveAiText="";
+let callWS=null,callMicStream=null,callCtx=null,callMicSrc=null,callMicNode=null,callSink=null;
+let playGain=null,playAnalyser=null,playTime=0,playSrcs=[];
+let camStream=null,camTimer=null,camOn=false,camFacing="environment";
+let liveUserText="",liveAiText="",micLevel=0,aiLevel=0,heardAt=0,callRaf=0;
+const gNeedle={u:0,uv:0,a:0,av:0};
+const CL=(th,en)=>lang==="en"?en:th;
 
-function setCallState(state,txt){
-  const l=$("callLogo");l.className="call-logo"+(state?" "+state:"");
-  $("callStatus").textContent=txt||"";
-}
 function b64FromBytes(bytes){
   let bin="";const chunk=0x8000;
   for(let i=0;i<bytes.length;i+=chunk)bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+chunk));
   return btoa(bin);
 }
 function liveSystemPrompt(){
-  return sysPrompt()+"\nตอนนี้กำลังคุยกันด้วยเสียงแบบเรียลไทม์ ตอบสั้นกระชับเป็นธรรมชาติเหมือนคุยโทรศัพท์ ห้ามใช้ markdown ห้ามใช้อีโมจิ ถ้าผู้ใช้เปิดกล้อง ให้ดูภาพที่ส่งมาประกอบการวิเคราะห์ด้วย";
+  return sysPrompt()+"\nตอนนี้กำลังคุยกันด้วยเสียงแบบเรียลไทม์ ตอบสั้นกระชับเป็นธรรมชาติเหมือนช่างคุยโทรศัพท์ ห้ามใช้ markdown ห้ามใช้อีโมจิ ถ้าผู้ใช้เปิดกล้อง ให้ดูภาพที่ส่งมาประกอบการวิเคราะห์ด้วย";
+}
+function setCallState(state,txt){
+  $("callStatus").textContent=txt||"";
+  const led=$("dyLink");led.className="dy-led"+(state==="link"?" on":state==="off"?" off":"");
+  $("callLogo").classList.toggle("think",state==="wait");
+}
+function setTag(id,txt,ok){const t=$(id);if(t.textContent!==txt)t.textContent=txt;t.classList.toggle("ok",!!ok)}
+
+/* วาดขีดหน้าปัด + ไฟ VU ครั้งเดียว */
+function buildGauges(){
+  document.querySelectorAll("#callUI .ticks").forEach(g=>{
+    if(g.childNodes.length)return;
+    let s="";
+    for(let i=0;i<=20;i++){const a=(-135+i*13.5)*Math.PI/180,mj=i%5===0,r1=mj?62:67;
+      s+=`<line class="${mj?"mj":""}" x1="${100+r1*Math.sin(a)}" y1="${100-r1*Math.cos(a)}" x2="${100+74*Math.sin(a)}" y2="${100-74*Math.cos(a)}"/>`}
+    g.innerHTML=s;
+  });
+  ["vuUser","vuAi"].forEach(id=>{const v=$(id);if(!v.childNodes.length)
+    v.innerHTML=Array.from({length:12},(_,i)=>`<i class="${i>=10?"r":i>=7?"y":""}"></i>`).join("")});
+}
+/* เข็มแบบสปริง ดูเหมือนเข็มรอบจริง */
+function gaugeLoop(){
+  if(!callActive&&!$("callUI").classList.contains("show")){callRaf=0;return}
+  if(playAnalyser){
+    const buf=new Float32Array(playAnalyser.fftSize);playAnalyser.getFloatTimeDomainData(buf);
+    let s=0;for(let i=0;i<buf.length;i++)s+=buf[i]*buf[i];
+    aiLevel=Math.min(1,Math.sqrt(s/buf.length)*5);
+  }
+  const mu=callMuted?0:Math.min(1,micLevel*6);
+  micLevel*=.86;
+  for(const [k,v,t] of [["u","uv",mu],["a","av",aiLevel]]){
+    gNeedle[v]+=(t-gNeedle[k])*.28;gNeedle[v]*=.62;gNeedle[k]+=gNeedle[v];
+  }
+  const draw=(gid,vid,x)=>{
+    x=Math.max(0,Math.min(1.04,x));
+    $(gid).querySelector(".needle").style.transform=`rotate(${-135+270*x}deg)`;
+    $(gid).classList.toggle("hot",x>.12);
+    const n=Math.round(x*12);$(vid).querySelectorAll("i").forEach((el,i)=>el.classList.toggle("l",i<n));
+  };
+  draw("gUser","vuUser",gNeedle.u);draw("gAi","vuAi",gNeedle.a);
+  if(callActive){
+    if(callMuted)setTag("heardTag",CL("ปิดไมค์อยู่","Muted"));
+    else if(Date.now()-heardAt<1800)setTag("heardTag",CL("AI ได้ยินแล้ว ✓","Heard you ✓"),true);
+    else if(mu>.08)setTag("heardTag",CL("ไมค์รับเสียงอยู่","Mic picking up"));
+    else setTag("heardTag",CL("พูดได้เลย","Go ahead"));
+    setTag("aiTag",aiLevel>.04?CL("กำลังพูด","Talking"):CL("รอฟัง","Listening"),aiLevel>.04);
+  }
+  callRaf=requestAnimationFrame(gaugeLoop);
+}
+
+/* โมดูล worklet: ย่อเสียงจากอัตราจริงของเครื่อง → 16kHz Int16 ส่งออกทีละ ~40ms พร้อมระดับเสียง */
+const MIC_WORKLET=`class P extends AudioWorkletProcessor{constructor(){super();this.r=sampleRate/16000;this.p=0;this.b=new Int16Array(640);this.n=0;this.e=0}
+process(i){const c=i[0]&&i[0][0];if(!c)return true;let e=0;for(let k=0;k<c.length;k++)e+=c[k]*c[k];this.e=Math.max(this.e,Math.sqrt(e/c.length));
+for(;this.p<c.length;this.p+=this.r){const s=Math.max(-1,Math.min(1,c[this.p|0]));this.b[this.n++]=s<0?s*32768:s*32767;
+if(this.n===640){this.port.postMessage({pcm:this.b.slice(0).buffer,lv:this.e},[]);this.n=0;this.e=0}}this.p-=c.length;return true}}
+registerProcessor("cendon-mic",P);`;
+function sendPcm(buf){
+  if(!callActive||callMuted||!callWS||callWS.readyState!==1)return;
+  try{callWS.send(JSON.stringify({realtimeInput:{audio:{data:b64FromBytes(new Uint8Array(buf)),mimeType:"audio/pcm;rate=16000"}}}))}catch(e){}
+}
+async function startMicStream(){
+  callMicSrc=callCtx.createMediaStreamSource(callMicStream);
+  callSink=callCtx.createGain();callSink.gain.value=0;callSink.connect(callCtx.destination); // ให้โหนดทำงานต่อโดยไม่สะท้อนเสียงไมค์ออกลำโพง
+  try{
+    const url=URL.createObjectURL(new Blob([MIC_WORKLET],{type:"application/javascript"}));
+    await callCtx.audioWorklet.addModule(url);URL.revokeObjectURL(url);
+    callMicNode=new AudioWorkletNode(callCtx,"cendon-mic");
+    callMicNode.port.onmessage=e=>{micLevel=Math.max(micLevel,e.data.lv);sendPcm(e.data.pcm)};
+  }catch(err){
+    /* เครื่องเก่าไม่มี worklet → ScriptProcessor แต่ย่อเสียงแบบเดียวกัน */
+    const r=callCtx.sampleRate/16000;let p=0;
+    callMicNode=callCtx.createScriptProcessor(2048,1,1);
+    callMicNode.onaudioprocess=e=>{
+      const c=e.inputBuffer.getChannelData(0);let en=0;for(let k=0;k<c.length;k++)en+=c[k]*c[k];
+      micLevel=Math.max(micLevel,Math.sqrt(en/c.length));
+      const out=new Int16Array(Math.ceil((c.length-p)/r));let n=0;
+      for(;p<c.length;p+=r){const s=Math.max(-1,Math.min(1,c[p|0]));out[n++]=s<0?s*32768:s*32767}
+      p-=c.length;sendPcm(out.slice(0,n).buffer);
+    };
+  }
+  callMicSrc.connect(callMicNode);callMicNode.connect(callSink);
 }
 
 async function startCall(){
   if(!(useFb&&auth&&auth.currentUser)){toast(tr("login.title"),"ti-lock");return}
-  if(!(navigator.mediaDevices&&window.AudioContext&&window.WebSocket)){toast(lang==="en"?"Browser not supported":"เบราว์เซอร์นี้ไม่รองรับโหมดโทร","ti-phone-off");return}
-  $("callUI").classList.add("show");
+  const AC=window.AudioContext||window.webkitAudioContext;
+  if(!(navigator.mediaDevices&&AC&&window.WebSocket)){toast(CL("เบราว์เซอร์นี้ไม่รองรับโหมดโทร","Browser not supported"),"ti-phone-off");return}
+  if(callActive||callWS)return;
+  /* สร้าง+ปลุก AudioContext ทันทีในจังหวะที่กด (ก่อน await ใดๆ) — ต้นเหตุ "เดี๋ยวได้ยินเดี๋ยวไม่ได้ยิน" บนมือถือ */
+  try{callCtx=new AC();callCtx.resume()}catch(e){toast(e.message,"ti-phone-off");return}
+  playGain=callCtx.createGain();playAnalyser=callCtx.createAnalyser();playAnalyser.fftSize=512;
+  playGain.connect(playAnalyser);playAnalyser.connect(callCtx.destination);
+  buildGauges();
+  $("callUI").classList.add("show");$("callUI").setAttribute("aria-hidden","false");
   $("callCaption").textContent="";
-  setCallState("thinking",lang==="en"?"Connecting...":"กำลังเชื่อมต่อ...");
-  callT0=Date.now();clearInterval(callTimerInt);
+  setCallState("wait",CL("กำลังสตาร์ทเครื่อง...","Starting engine..."));
+  callT0=Date.now();clearInterval(callTimerInt);$("callTimer").textContent="00:00";
   callTimerInt=setInterval(()=>{const s=Math.floor((Date.now()-callT0)/1000);
     $("callTimer").textContent=String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")},1000);
+  if(!callRaf)callRaf=requestAnimationFrame(gaugeLoop);
   try{
-    callMicStream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true}});
+    callMicStream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
     const tok=await auth.currentUser.getIdToken();
     const r=await fetch(`${BACKEND_URL}/api/ai/live-token`,{method:"POST",
       headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok},
@@ -6500,62 +6665,59 @@ async function startCall(){
     const d=await r.json().catch(()=>({}));
     if(!r.ok){
       const err=(d&&d.error)||"";
-      if(r.status===429||err==="quota")throw new Error(lang==="en"?"Daily AI quota reached":"โควตา AI วันนี้หมดแล้ว");
-      if(r.status===503||err==="maintenance")throw new Error(lang==="en"?"System under maintenance":"ระบบกำลังปิดปรับปรุง");
+      if(r.status===429||err==="quota")throw new Error(CL("โควตา AI วันนี้หมดแล้ว","Daily AI quota reached"));
+      if(r.status===503||err==="maintenance")throw new Error(CL("ระบบกำลังปิดปรับปรุง","System under maintenance"));
       throw new Error(err||("token error "+r.status));
     }
     await openLiveWS(d.token,d.model);
   }catch(e){
     endCall();
-    toast((lang==="en"?"Call failed: ":"โทรไม่สำเร็จ: ")+e.message,"ti-phone-off");
+    toast(CL("โทรไม่สำเร็จ: ","Call failed: ")+e.message,"ti-phone-off");
   }
 }
 
 function openLiveWS(token,model){
   return new Promise((resolve,reject)=>{
-    const wsUrl="wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContentConstrained?access_token="+encodeURIComponent(token);
-    callWS=new WebSocket(wsUrl);
+    callWS=new WebSocket("wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContentConstrained?access_token="+encodeURIComponent(token));
     let settled=false;
-    /* รุ่นที่หลังบ้านเลือกให้ (ถาม Google ว่ารุ่นไหนคุยสดได้) — ส่งชื่อไปด้วยเพื่อให้ตรงกับที่ล็อกไว้ในโทเคน */
     callWS.onopen=()=>{try{callWS.send(JSON.stringify({setup:model?{model:"models/"+model}:{}}))}catch(e){}};
     callWS.onmessage=async ev=>{
-      let txt=ev.data;
-      if(txt instanceof Blob)txt=await txt.text();
+      let txt=ev.data;if(txt instanceof Blob)txt=await txt.text();
       let msg;try{msg=JSON.parse(txt)}catch(e){return}
       if(msg.setupComplete){
         if(!settled){settled=true;callActive=true;
-          startMicStream();
-          setCallState("listening",lang==="en"?"Listening — just talk":"เชื่อมต่อแล้ว พูดได้เลยครับ");
+          try{await startMicStream()}catch(e){reject(e);return}
+          if(callCtx&&callCtx.state!=="running")callCtx.resume();
+          setCallState("link",CL("ติดเครื่องแล้ว พูดได้เลยครับ","Engine on — just talk"));
           resolve()}
         return;
       }
+      if(msg.goAway)setCallState("link",CL("สายใกล้หมดเวลา","Session ending soon"));
       handleLiveMsg(msg);
     };
-    callWS.onerror=()=>{if(!settled){settled=true;reject(new Error(lang==="en"?"connection failed":"เชื่อมต่อไม่สำเร็จ"))}};
+    callWS.onerror=()=>{if(!settled){settled=true;reject(new Error(CL("เชื่อมต่อไม่สำเร็จ","connection failed")))}};
     callWS.onclose=e=>{
-      if(!settled){settled=true;reject(new Error((lang==="en"?"connection closed ":"การเชื่อมต่อถูกปิด ")+(e.reason||e.code)))}
-      else if(callActive){endCall();toast(lang==="en"?"Call ended":"จบการสนทนา","ti-phone-off")}
+      const why=(e.reason||"")+" ("+e.code+")";
+      if(!settled){settled=true;reject(new Error(CL("การเชื่อมต่อถูกปิด ","connection closed ")+why))}
+      else if(callActive){endCall();toast(CL("สายหลุด ","Call dropped ")+(e.code===1000?"":why),"ti-phone-off")}
     };
   });
 }
 
 function handleLiveMsg(msg){
-  const sc=msg.serverContent;
-  if(!sc)return;
-  if(sc.interrupted){flushPlayback();setCallState("listening",lang==="en"?"Listening...":"ฟังอยู่ครับ...");return}
+  const sc=msg.serverContent;if(!sc)return;
+  if(sc.interrupted){flushPlayback();return}
   if(sc.inputTranscription&&sc.inputTranscription.text){
+    heardAt=Date.now();
     liveUserText+=sc.inputTranscription.text;
-    $("callCaption").textContent=liveUserText.slice(-160);
+    $("callCaption").textContent="› "+liveUserText.slice(-160);
   }
   if(sc.outputTranscription&&sc.outputTranscription.text){
     liveAiText+=sc.outputTranscription.text;
-    $("callCaption").textContent=liveAiText.slice(-160);
+    $("callCaption").textContent=liveAiText.slice(-180);
   }
-  if(sc.modelTurn&&sc.modelTurn.parts){
-    for(const p of sc.modelTurn.parts){
-      if(p.inlineData&&p.inlineData.data)queuePcm(p.inlineData.data);
-    }
-  }
+  if(sc.modelTurn&&sc.modelTurn.parts)
+    for(const p of sc.modelTurn.parts)if(p.inlineData&&p.inlineData.data)queuePcm(p.inlineData.data);
   if(sc.turnComplete){
     if(liveUserText.trim())messages.push({role:"user",text:liveUserText.trim()});
     if(liveAiText.trim())messages.push({role:"ai",text:liveAiText.trim()});
@@ -6564,80 +6726,60 @@ function handleLiveMsg(msg){
   }
 }
 
-function startMicStream(){
-  callAudioCtx=new (window.AudioContext||window.webkitAudioContext)({sampleRate:16000});
-  callAudioCtx.resume();
-  callMicSrc=callAudioCtx.createMediaStreamSource(callMicStream);
-  callMicNode=callAudioCtx.createScriptProcessor(4096,1,1);
-  const mute=callAudioCtx.createGain();mute.gain.value=0; // keep the node alive without echoing the mic
-  callMicNode.onaudioprocess=e=>{
-    if(!callActive||callMuted||!callWS||callWS.readyState!==1)return;
-    const f=e.inputBuffer.getChannelData(0);
-    const i16=new Int16Array(f.length);
-    for(let i=0;i<f.length;i++){const s=Math.max(-1,Math.min(1,f[i]));i16[i]=s<0?s*0x8000:s*0x7FFF}
-    try{callWS.send(JSON.stringify({realtimeInput:{audio:{data:b64FromBytes(new Uint8Array(i16.buffer)),mimeType:"audio/pcm;rate=16000"}}}))}catch(e2){}
-  };
-  callMicSrc.connect(callMicNode);callMicNode.connect(mute);mute.connect(callAudioCtx.destination);
-}
-
-/* AI voice playback — 24kHz PCM chunks, gapless scheduling */
+/* เสียง AI 24kHz เล่นต่อกันไม่มีช่องว่าง ใน context เดียวกับไมค์ (เบราว์เซอร์แปลงอัตราให้เอง) */
 function queuePcm(b64){
+  if(!callCtx)return;
   try{
-    if(!playCtx){playCtx=new (window.AudioContext||window.webkitAudioContext)({sampleRate:24000});playTime=playCtx.currentTime}
-    const bin=atob(b64);const len=bin.length>>1;
-    const f32=new Float32Array(len);
+    if(callCtx.state!=="running")callCtx.resume();
+    const bin=atob(b64),len=bin.length>>1,f32=new Float32Array(len);
     for(let i=0;i<len;i++){let v=bin.charCodeAt(2*i)|(bin.charCodeAt(2*i+1)<<8);if(v>=0x8000)v-=0x10000;f32[i]=v/0x8000}
-    const buf=playCtx.createBuffer(1,len,24000);
-    buf.getChannelData(0).set(f32);
-    const src=playCtx.createBufferSource();src.buffer=buf;src.connect(playCtx.destination);
-    const t=Math.max(playCtx.currentTime+0.02,playTime);
+    const buf=callCtx.createBuffer(1,len,24000);buf.getChannelData(0).set(f32);
+    const src=callCtx.createBufferSource();src.buffer=buf;src.connect(playGain);
+    const t=Math.max(callCtx.currentTime+0.03,playTime);
     src.start(t);playTime=t+buf.duration;
-    playingCount++;
-    setCallState("speaking",lang==="en"?"Speaking — talk to interrupt":"กำลังพูด (พูดแทรกได้เลย)");
-    src.onended=()=>{playingCount--;if(playingCount<=0&&callActive)setCallState("listening",lang==="en"?"Listening...":"ฟังอยู่ครับ...")};
+    playSrcs.push(src);src.onended=()=>{playSrcs=playSrcs.filter(s=>s!==src)};
   }catch(e){}
 }
 function flushPlayback(){
-  if(playCtx){try{playCtx.close()}catch(e){}}
-  playCtx=null;playTime=0;playingCount=0;
+  playSrcs.forEach(s=>{try{s.stop()}catch(e){}});playSrcs=[];
+  playTime=callCtx?callCtx.currentTime:0;
 }
 
-/* Video call — stream camera frames so the AI can SEE (1 fps JPEG) */
+/* กล้อง: เต็มจอเหมือนกล้องถอยหลัง มีเส้นกะระยะ ส่งภาพให้ AI 1 เฟรม/วินาที */
 async function toggleCamera(){
   if(!callActive)return;
   if(camOn){stopCamera();return}
   try{
-    camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment",width:{ideal:640}}});
-    const v=$("callCam");v.srcObject=camStream;v.play();
-    $("callCamWrap").classList.add("show");
-    $("callCamBtn").classList.add("on");
+    camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:camFacing,width:{ideal:640}}});
+    const v=$("callCam");v.srcObject=camStream;v.style.transform=camFacing==="user"?"scaleX(-1)":"";v.play().catch(()=>{});
+    $("callUI").classList.add("cam");$("callCamBtn").classList.add("on");$("callFlipBtn").hidden=false;
     camOn=true;
     camTimer=setInterval(()=>{
       if(!callActive||!callWS||callWS.readyState!==1)return;
       const vd=$("callCam");if(!vd.videoWidth)return;
-      const c=$("camCanvas");
-      const w=640,h=Math.round(vd.videoHeight/vd.videoWidth*640)||480;
-      c.width=w;c.height=h;
-      c.getContext("2d").drawImage(vd,0,0,w,h);
+      const c=$("camCanvas"),w=640,h=Math.round(vd.videoHeight/vd.videoWidth*640)||480;
+      c.width=w;c.height=h;c.getContext("2d").drawImage(vd,0,0,w,h);
       const data=c.toDataURL("image/jpeg",0.6).split(",")[1];
       try{callWS.send(JSON.stringify({realtimeInput:{video:{data,mimeType:"image/jpeg"}}}))}catch(e){}
     },1000);
-    toast(lang==="en"?"AI can see your camera now":"AI มองเห็นภาพจากกล้องแล้ว ส่องให้ดูได้เลย","ti-video");
-  }catch(e){toast((lang==="en"?"Camera unavailable: ":"เปิดกล้องไม่ได้: ")+e.message,"ti-video-off")}
+    toast(CL("AI มองเห็นภาพจากกล้องแล้ว ส่องให้ดูได้เลย","AI can see your camera now"),"ti-video");
+  }catch(e){toast(CL("เปิดกล้องไม่ได้: ","Camera unavailable: ")+e.message,"ti-video-off")}
 }
 function stopCamera(){
   camOn=false;clearInterval(camTimer);camTimer=null;
   if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null}
   const v=$("callCam");if(v)v.srcObject=null;
-  $("callCamWrap").classList.remove("show");
-  $("callCamBtn").classList.remove("on");
+  $("callUI").classList.remove("cam");$("callCamBtn").classList.remove("on");$("callFlipBtn").hidden=true;
+}
+async function flipCamera(){
+  camFacing=camFacing==="environment"?"user":"environment";
+  if(camOn){stopCamera();await toggleCamera()}
 }
 
 function toggleCallMute(){
   callMuted=!callMuted;
-  $("callMuteBtn").innerHTML=callMuted?'<i class="ti ti-microphone-off"></i>':'<i class="ti ti-microphone"></i>';
-  $("callMuteBtn").classList.toggle("muted",callMuted);
-  setCallState(callMuted?"":"listening",callMuted?(lang==="en"?"Muted":"ปิดไมค์อยู่"):(lang==="en"?"Listening...":"ฟังอยู่ครับ..."));
+  const b=$("callMuteBtn");b.classList.toggle("muted",callMuted);
+  b.querySelector(".ti").className="ti "+(callMuted?"ti-microphone-off":"ti-microphone");
 }
 function endCall(){
   callActive=false;
@@ -6646,14 +6788,16 @@ function endCall(){
   try{callWS&&callWS.close()}catch(e){}callWS=null;
   try{callMicNode&&callMicNode.disconnect()}catch(e){}callMicNode=null;
   try{callMicSrc&&callMicSrc.disconnect()}catch(e){}callMicSrc=null;
-  try{callAudioCtx&&callAudioCtx.close()}catch(e){}callAudioCtx=null;
   if(callMicStream){callMicStream.getTracks().forEach(t=>t.stop());callMicStream=null}
   flushPlayback();
-  liveUserText="";liveAiText="";callMuted=false;
-  $("callMuteBtn").innerHTML='<i class="ti ti-microphone"></i>';$("callMuteBtn").classList.remove("muted");
-  $("callUI").classList.remove("show");
+  try{callCtx&&callCtx.close()}catch(e){}callCtx=null;playGain=null;playAnalyser=null;callSink=null;
+  liveUserText="";liveAiText="";callMuted=false;micLevel=0;aiLevel=0;heardAt=0;
+  $("callMuteBtn").classList.remove("muted");$("callMuteBtn").querySelector(".ti").className="ti ti-microphone";
+  $("callUI").classList.remove("show");$("callUI").setAttribute("aria-hidden","true");
   renderMessages();updateHint();renderChips();setPhase("thread");
 }
+/* แตะตรงไหนก็ได้ = ปลุกเสียงอีกรอบ (iOS บางทีพักเสียงเองตอนสลับแอป) */
+$("callUI")&&$("callUI").addEventListener("pointerdown",()=>{if(callCtx&&callCtx.state!=="running")callCtx.resume()});
 
 /* ===== INIT ===== */
 /* warp intro dismissal */

@@ -915,7 +915,7 @@ loadSiteConfig();
   document.addEventListener("pointerout",e=>{
     const el=e.target.closest(SEL);if(!el)return;
     if(e.relatedTarget&&el.contains(e.relatedTarget))return;
-    el.style.transition="transform .55s cubic-bezier(.2,.9,.3,1.2)";
+    el.style.transition="transform .55s cubic-bezier(.32,.72,0,1)";
     el.style.transform="";
   });
 })();

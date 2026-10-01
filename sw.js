@@ -5,13 +5,13 @@
    ไม่งั้นผู้ใช้จะติดอยู่กับเวอร์ชันเก่าโดยไม่รู้ตัว
    ══════════════════════════════════════════════════════════════════ */
 <<<<<<< HEAD
-const CACHE = 'cendon-v142-cap';
+const CACHE = 'cendon-v143-firm';
 =======
-const CACHE = 'cendon-v142-cap';
+const CACHE = 'cendon-v143-firm';
 >>>>>>> 003615fc922cf17ae7ebb4671b7851d57ff281ba
 /* แต่ละหน้าเป็นไฟล์เดี่ยวที่สมบูรณ์ในตัว โหลดล่วงหน้าไว้ทั้งชุด
    การเปิด URL ของหน้าไหนตรง ๆ จึงไม่ต้องรอเน็ต */
-const SHELL = ['./', './call-orb.png', './index.html', './garage.html', './news.html',
+const SHELL = ['./', './fluid.js', './call-orb.png', './index.html', './garage.html', './news.html',
   './spares.html', './profile.html', './chat.html',
   './about.html', './help.html', './terms.html', './privacy.html',
   './plan.html', './handbook.html',

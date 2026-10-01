@@ -6643,13 +6643,13 @@ async function startCall(){
   if(!(navigator.mediaDevices&&AC&&window.WebSocket)){toast(CL("เบราว์เซอร์นี้ไม่รองรับโหมดโทร","Browser not supported"),"ti-phone-off");return}
   if(callActive||callWS)return;
   /* สร้าง+ปลุก AudioContext ทันทีในจังหวะที่กด (ก่อน await ใดๆ) — ต้นเหตุ "เดี๋ยวได้ยินเดี๋ยวไม่ได้ยิน" บนมือถือ */
+  callChime(null,true);
   try{callCtx=new AC();callCtx.resume()}catch(e){toast(e.message,"ti-phone-off");return}
   /* เสียง AI แยก context 24kHz ของตัวเอง (แบบเดิมที่เคยได้ยินชัวร์) สร้างในจังหวะกดเหมือนกัน
    * iPhone: ตั้ง audioSession ให้เล่นได้แม้เปิดโหมดเงียบ และไม่โดนไมค์แย่งลำโพง */
   try{if(navigator.audioSession)navigator.audioSession.type="play-and-record"}catch(e){}
   try{playCtx=new AC({sampleRate:24000})}catch(e){playCtx=new AC()}
   playCtx.resume();
-  callChime(playCtx,true);
   playGain=playCtx.createGain();playAnalyser=playCtx.createAnalyser();playAnalyser.fftSize=512;
   playGain.connect(playAnalyser);playAnalyser.connect(playCtx.destination);
   playTime=0;
@@ -6663,6 +6663,7 @@ async function startCall(){
     $("callTimer").textContent=String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")},1000);
   if(!callRaf)callRaf=requestAnimationFrame(gaugeLoop);
   try{
+    await new Promise(r=>setTimeout(r,450));
     callMicStream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
     liveRetries=0;
     await liveConnect();
@@ -6817,29 +6818,49 @@ function toggleCallMute(){
   b.querySelector(".ti").className="ti "+(callMuted?"ti-microphone-off":"ti-microphone");
 }
 /* เสียงประกอบสายแบบหรู: โน้ตระฆังนุ่ม (sine + ฮาร์มอนิกจางๆ) ไล่ขึ้นตอนต่อสาย ไล่ลงตอนวางสาย มีหางเสียงก้องสั้นๆ */
-function callChime(ctx,up){
-  try{
-    if(!ctx)return;
-    const now=ctx.currentTime+.02,out=ctx.createGain();out.gain.value=.22;
-    const dl=ctx.createDelay(.5),fb=ctx.createGain(),wet=ctx.createGain();
-    dl.delayTime.value=.13;fb.gain.value=.28;wet.gain.value=.25;
-    out.connect(ctx.destination);out.connect(dl);dl.connect(fb);fb.connect(dl);dl.connect(wet);wet.connect(ctx.destination);
-    const notes=up?[659.25,987.77,1318.5]:[987.77,739.99,493.88];   // E5 B5 E6 · B5 F#5 B4
-    notes.forEach((f,i)=>{
-      const t=now+i*.11;
-      [[1,1],[2,.12],[3,.04]].forEach(([m,a])=>{
-        const o=ctx.createOscillator(),g=ctx.createGain();
-        o.type="sine";o.frequency.value=f*m;
-        g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(a*(i===notes.length-1?1:.8),t+.012);
-        g.gain.exponentialRampToValueAtTime(.0001,t+(i===notes.length-1?1.1:.5));
-        o.connect(g);g.connect(out);o.start(t);o.stop(t+1.2);
-      });
+/* เสียงต่อสาย/วางสาย: วาดเสียงระฆังล่วงหน้าเป็นไฟล์ WAV (OfflineAudioContext) แล้วเล่นผ่าน <audio>
+ * ทำไมไม่เล่นสดใน AudioContext: iPhone ปิดเสียง Web Audio ตามสวิตช์เงียบ และพอเปิดไมค์ระบบจะแย่ง/กดเสียงลง
+ * <audio> เล่นได้เสมอ และสั่งเล่นได้ทันทีในจังหวะที่กดปุ่ม */
+const CHIME={};
+function chimeNotes(ctx,dest,up){
+  const now=.02,out=ctx.createGain();out.gain.value=.5;
+  const dl=ctx.createDelay(.5),fb=ctx.createGain(),wet=ctx.createGain();
+  dl.delayTime.value=.13;fb.gain.value=.28;wet.gain.value=.25;
+  out.connect(dest);out.connect(dl);dl.connect(fb);fb.connect(dl);dl.connect(wet);wet.connect(dest);
+  const notes=up?[659.25,987.77,1318.5]:[987.77,739.99,493.88];
+  notes.forEach((f,i)=>{
+    const t=now+i*.11,last=i===notes.length-1;
+    [[1,1],[2,.12],[3,.04]].forEach(([m,a])=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.type="sine";o.frequency.value=f*m;
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(a*(last?1:.8),t+.012);
+      g.gain.exponentialRampToValueAtTime(.0001,t+(last?1.1:.5));
+      o.connect(g);g.connect(out);o.start(t);o.stop(t+1.2);
     });
-  }catch(e){}
+  });
+}
+function wavURL(buf){
+  const d=buf.getChannelData(0),n=d.length,v=new DataView(new ArrayBuffer(44+n*2)),w=(o,str)=>{for(let i=0;i<str.length;i++)v.setUint8(o+i,str.charCodeAt(i))};
+  w(0,"RIFF");v.setUint32(4,36+n*2,true);w(8,"WAVE");w(12,"fmt ");v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);
+  v.setUint32(24,buf.sampleRate,true);v.setUint32(28,buf.sampleRate*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,"data");v.setUint32(40,n*2,true);
+  for(let i=0;i<n;i++){const x=Math.max(-1,Math.min(1,d[i]));v.setInt16(44+i*2,x<0?x*32768:x*32767,true)}
+  return URL.createObjectURL(new Blob([v],{type:"audio/wav"}));
+}
+async function prepChimes(){
+  const OAC=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!OAC)return;
+  for(const up of [true,false]){
+    try{const c=new OAC(1,Math.round(44100*1.6),44100);chimeNotes(c,c.destination,up);
+      const buf=await c.startRendering();const a=new Audio(wavURL(buf));a.preload="auto";CHIME[up?"on":"off"]=a}catch(e){}
+  }
+}
+setTimeout(prepChimes,1500);
+function callChime(_ctx,up){
+  const a=CHIME[up?"on":"off"];if(!a)return;
+  try{a.currentTime=0;a.volume=.9;const p=a.play();p&&p.catch(()=>{})}catch(e){}
 }
 function endCall(){
   /* เสียงวางสาย: context ใหม่สั้นๆ เพราะตัวเดิมกำลังจะปิด (กดปุ่ม = มีสิทธิ์เล่นเสียง) */
-  if(callActive||callWS){try{const AC=window.AudioContext||window.webkitAudioContext,c=new AC();callChime(c,false);setTimeout(()=>c.close(),1600)}catch(e){}}
+  if(callActive||callWS)callChime(null,false);
   callActive=false;
   clearInterval(callTimerInt);
   stopCamera();

@@ -6965,6 +6965,9 @@ let pendingEntry=null,entered=false;
                 q:q.get("q")};
   if(location.search)history.replaceState(null,"",location.pathname);
   if(useFb){setPhase("login")} // onAuthStateChanged will route us onward
+  /* เคยล็อกอินบนเครื่องนี้แล้ว + มีรถในเครื่อง → เข้าหน้าแชทเลยทันที ไม่ต้องรอ Firebase/หลังบ้าน (จอดำตอนรีเฟรช)
+     ถ้าตรวจแล้วจริงๆ หลุดล็อกอิน onAuthStateChanged จะพากลับหน้าเข้าสู่ระบบเอง */
+  if(useFb&&currentUser&&currentUser.uid&&garage().length){try{runEntry()}catch(e){}}
   else{
     // Firebase unavailable — cannot authenticate, show the gate with an error
     setPhase("login");

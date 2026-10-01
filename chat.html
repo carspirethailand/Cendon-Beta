@@ -6504,19 +6504,20 @@ async function startCall(){
       if(r.status===503||err==="maintenance")throw new Error(lang==="en"?"System under maintenance":"ระบบกำลังปิดปรับปรุง");
       throw new Error(err||("token error "+r.status));
     }
-    await openLiveWS(d.token);
+    await openLiveWS(d.token,d.model);
   }catch(e){
     endCall();
     toast((lang==="en"?"Call failed: ":"โทรไม่สำเร็จ: ")+e.message,"ti-phone-off");
   }
 }
 
-function openLiveWS(token){
+function openLiveWS(token,model){
   return new Promise((resolve,reject)=>{
     const wsUrl="wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContentConstrained?access_token="+encodeURIComponent(token);
     callWS=new WebSocket(wsUrl);
     let settled=false;
-    callWS.onopen=()=>{try{callWS.send(JSON.stringify({setup:{}}))}catch(e){}};
+    /* รุ่นที่หลังบ้านเลือกให้ (ถาม Google ว่ารุ่นไหนคุยสดได้) — ส่งชื่อไปด้วยเพื่อให้ตรงกับที่ล็อกไว้ในโทเคน */
+    callWS.onopen=()=>{try{callWS.send(JSON.stringify({setup:model?{model:"models/"+model}:{}}))}catch(e){}};
     callWS.onmessage=async ev=>{
       let txt=ev.data;
       if(txt instanceof Blob)txt=await txt.text();

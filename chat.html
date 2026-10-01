@@ -3157,6 +3157,7 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 </style>
 <!-- คลังช่าง ใช้ร่วมกับหน้า tech.html และหน้าหลัก
      โหลดตรงนี้เพื่อให้ AI หยิบข้อมูลช่างชุดเดียวกับที่ผู้ใช้เห็นบนหน้าเว็บ -->
+<script src="call-sounds.js?v=1" defer></script>
 <script src="./techs.js"></script>
 </head>
 <body data-phase="welcome">
@@ -6513,10 +6514,11 @@ function goGarage(){try{sessionStorage.setItem("spire_stayHome","1")}catch(e){}l
 let tt;function toast(m,ic){const el=$("toast");el.innerHTML=`<i class="ti ${ic||"ti-check"}"></i>${esc(m)}`;el.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("show"),3200)}
 
 /* ===== LIVE CALL — Gemini Live API (ephemeral token) · หน้าจอ "Hearth"
- * เสียงทั้งหมดอยู่ใน AudioContext เดียว สร้างตอนกดปุ่ม (มือถือจะไม่บล็อก)
+ * สร้างและปลุก audio contexts ในจังหวะกดปุ่ม · เสียงปุ่มแยกจากเสียงสนทนา
  * ไมค์: AudioWorklet ย่อเหลือ 16kHz เอง ไม่พึ่ง sampleRate ที่บางเครื่องไม่ยอมทำตาม
  * ลูกไฟพองตามเสียง AI · ระลอกแสงตามเสียงผู้ใช้ → เห็นทันทีว่าไมค์เข้า และ AI ได้ยินแล้วหรือยัง */
 let callActive=false,callMuted=false,callTimerInt=null,callT0=0;
+let callConnecting=false,callSession=0,callAbort=null;
 let callWS=null,callMicStream=null,callCtx=null,callMicSrc=null,callMicNode=null,callSink=null;
 let playCtx=null,playGain=null,playAnalyser=null,playTime=0,playSrcs=[];
 let camStream=null,camTimer=null,camOn=false,camFacing="environment";
@@ -6614,19 +6616,27 @@ function sendPcm(buf){
   if(!callActive||callMuted||!callWS||callWS.readyState!==1)return;
   try{callWS.send(JSON.stringify({realtimeInput:{audio:{data:b64FromBytes(new Uint8Array(buf)),mimeType:"audio/pcm;rate=16000"}}}))}catch(e){}
 }
-async function startMicStream(){
-  callMicSrc=callCtx.createMediaStreamSource(callMicStream);
-  callSink=callCtx.createGain();callSink.gain.value=0;callSink.connect(callCtx.destination); // ให้โหนดทำงานต่อโดยไม่สะท้อนเสียงไมค์ออกลำโพง
+async function startMicStream(session=callSession){
+  const ctx=callCtx,stream=callMicStream;
+  if(!ctx||!stream||session!==callSession)return;
+  const source=ctx.createMediaStreamSource(stream),sink=ctx.createGain();
+  let node;
+  sink.gain.value=0;sink.connect(ctx.destination); // keep processing without microphone echo
+  const stale=()=>session!==callSession||ctx!==callCtx;
+  const discard=()=>{try{source.disconnect();sink.disconnect();node&&node.disconnect();}catch{}};
   try{
     const url=URL.createObjectURL(new Blob([MIC_WORKLET],{type:"application/javascript"}));
-    await callCtx.audioWorklet.addModule(url);URL.revokeObjectURL(url);
-    callMicNode=new AudioWorkletNode(callCtx,"cendon-mic");
-    callMicNode.port.onmessage=e=>{micLevel=Math.max(micLevel,e.data.lv);sendPcm(e.data.pcm)};
+    try{await ctx.audioWorklet.addModule(url)}finally{URL.revokeObjectURL(url)}
+    if(stale()){discard();return;}
+    node=new AudioWorkletNode(ctx,"cendon-mic");
+    node.port.onmessage=e=>{if(stale())return;micLevel=Math.max(micLevel,e.data.lv);sendPcm(e.data.pcm)};
   }catch(err){
+    if(stale()){discard();return;}
     /* เครื่องเก่าไม่มี worklet → ScriptProcessor แต่ย่อเสียงแบบเดียวกัน */
-    const r=callCtx.sampleRate/16000;let p=0;
-    callMicNode=callCtx.createScriptProcessor(2048,1,1);
-    callMicNode.onaudioprocess=e=>{
+    const r=ctx.sampleRate/16000;let p=0;
+    node=ctx.createScriptProcessor(2048,1,1);
+    node.onaudioprocess=e=>{
+      if(stale())return;
       const c=e.inputBuffer.getChannelData(0);let en=0;for(let k=0;k<c.length;k++)en+=c[k]*c[k];
       micLevel=Math.max(micLevel,Math.sqrt(en/c.length));
       const out=new Int16Array(Math.ceil((c.length-p)/r));let n=0;
@@ -6634,22 +6644,28 @@ async function startMicStream(){
       p-=c.length;sendPcm(out.slice(0,n).buffer);
     };
   }
-  callMicSrc.connect(callMicNode);callMicNode.connect(callSink);
+  if(stale()){discard();return;}
+  callMicSrc=source;callSink=sink;callMicNode=node;
+  source.connect(node);node.connect(sink);
 }
 
 async function startCall(){
   if(!(useFb&&auth&&auth.currentUser)){toast(tr("login.title"),"ti-lock");return}
   const AC=window.AudioContext||window.webkitAudioContext;
   if(!(navigator.mediaDevices&&AC&&window.WebSocket)){toast(CL("เบราว์เซอร์นี้ไม่รองรับโหมดโทร","Browser not supported"),"ti-phone-off");return}
-  if(callActive||callWS)return;
+  if(callActive||callWS||callConnecting)return;
+  const session=++callSession;
+  callConnecting=true;callAbort=new AbortController();
+  /* iPhone: เลือกเส้นทางเสียงก่อนเล่นเสียงปุ่มและเปิดไมค์ */
+  try{if(navigator.audioSession)navigator.audioSession.type="play-and-record"}catch(e){}
   /* สร้าง+ปลุก AudioContext ทันทีในจังหวะที่กด (ก่อน await ใดๆ) — ต้นเหตุ "เดี๋ยวได้ยินเดี๋ยวไม่ได้ยิน" บนมือถือ */
   callChime(null,true);
-  try{callCtx=new AC();callCtx.resume()}catch(e){toast(e.message,"ti-phone-off");return}
+  try{callCtx=new AC();callCtx.resume().catch(()=>{})}catch(e){endCall();toast(e.message,"ti-phone-off");return}
   /* เสียง AI แยก context 24kHz ของตัวเอง (แบบเดิมที่เคยได้ยินชัวร์) สร้างในจังหวะกดเหมือนกัน
-   * iPhone: ตั้ง audioSession ให้เล่นได้แม้เปิดโหมดเงียบ และไม่โดนไมค์แย่งลำโพง */
-  try{if(navigator.audioSession)navigator.audioSession.type="play-and-record"}catch(e){}
-  try{playCtx=new AC({sampleRate:24000})}catch(e){playCtx=new AC()}
-  playCtx.resume();
+   * ไม่รอเสียงปุ่มจบก่อนเริ่มต่อสาย */
+  try{try{playCtx=new AC({sampleRate:24000})}catch(e){playCtx=new AC()}}
+  catch(e){endCall();toast(e.message,"ti-phone-off");return;}
+  playCtx.resume().catch(()=>{});
   playGain=playCtx.createGain();playAnalyser=playCtx.createAnalyser();playAnalyser.fftSize=512;
   playGain.connect(playAnalyser);playAnalyser.connect(playCtx.destination);
   playTime=0;
@@ -6663,11 +6679,16 @@ async function startCall(){
     $("callTimer").textContent=String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")},1000);
   if(!callRaf)callRaf=requestAnimationFrame(gaugeLoop);
   try{
-    await new Promise(r=>setTimeout(r,450));
-    callMicStream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+    // Prepare auth while asking for the mic. No fixed pause for the UI cue,
+    // and no metered Live token request until microphone access succeeds.
+    const identity=auth.currentUser.getIdToken();identity.catch(()=>{});
+    const stream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+    if(session!==callSession){stream.getTracks().forEach(t=>t.stop());return;}
+    callMicStream=stream;
     liveRetries=0;
-    await liveConnect();
+    await liveConnect(session,identity);
   }catch(e){
+    if(session!==callSession)return;
     endCall();
     toast(CL("โทรไม่สำเร็จ: ","Call failed: ")+e.message,"ti-phone-off");
   }
@@ -6676,12 +6697,24 @@ async function startCall(){
 /* รุ่นที่ทำสายหลุดโดยยังไม่ทันพูด จำไว้ 6 ชม. แล้วขอรุ่นอื่นแทน */
 let liveRetries=0,liveModel="",liveGotAudio=false;
 function liveBad(){const now=Date.now(),b=LS.get("live_bad",{});for(const k in b)if(now-b[k]>6*3600e3)delete b[k];return b}
-async function liveConnect(){
-  const tok=await auth.currentUser.getIdToken();
-  const r=await fetch(`${BACKEND_URL}/api/ai/live-token`,{method:"POST",
-    headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok},
-    body:JSON.stringify({system:liveSystemPrompt(),skip:Object.keys(liveBad())})});
-  const d=await r.json().catch(()=>({}));
+async function liveConnect(session=callSession,identity){
+  const tok=await (identity||auth.currentUser.getIdToken());
+  if(session!==callSession)return;
+  const requestAbort=callAbort;
+  const requestTimer=setTimeout(()=>requestAbort&&requestAbort.abort(),15000);
+  let r,d;
+  try{
+    r=await fetch(`${BACKEND_URL}/api/ai/live-token`,{method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok},
+      signal:requestAbort&&requestAbort.signal,
+      body:JSON.stringify({system:liveSystemPrompt(),skip:Object.keys(liveBad())})});
+    d=await r.json().catch(()=>({}));
+  }catch(e){
+    if(session!==callSession)return;
+    if(e.name==="AbortError")throw new Error(CL("เชื่อมต่อนานเกินไป ลองโทรใหม่อีกครั้งครับ","Connection timed out. Please try again"));
+    throw e;
+  }finally{clearTimeout(requestTimer)}
+  if(session!==callSession)return;
   if(!r.ok){
     const err=(d&&d.error)||"";
     if(r.status===429||err==="quota")throw new Error(CL("โควตา AI วันนี้หมดแล้ว","Daily AI quota reached"));
@@ -6690,27 +6723,37 @@ async function liveConnect(){
     throw new Error(err||("token error "+r.status));
   }
   liveModel=d.model||"";liveGotAudio=false;
-  await openLiveWS(d.token,d.model);
+  await openLiveWS(d.token,d.model,session);
 }
 /* สายหลุดผิดปกติ → ต่อใหม่เองเงียบๆ (ถ้ายังไม่ได้ยินเสียง AI เลย = รุ่นนี้มีปัญหา เปลี่ยนรุ่น) */
 async function liveRecover(code,why){
+  const session=callSession;
   if(!liveGotAudio&&liveModel){const b=liveBad();b[liveModel]=Date.now();LS.set("live_bad",b)}
   if(liveRetries>=3){endCall();toast(CL("สายหลุด ","Call dropped ")+why,"ti-phone-off");return}
   liveRetries++;callActive=false;flushPlayback();
   setCallState("wait",CL("สายสะดุด กำลังต่อใหม่...","Reconnecting..."));
-  try{await liveConnect()}catch(e){endCall();toast(CL("โทรไม่สำเร็จ: ","Call failed: ")+e.message,"ti-phone-off")}
+  try{await liveConnect(session)}catch(e){if(session!==callSession)return;endCall();toast(CL("โทรไม่สำเร็จ: ","Call failed: ")+e.message,"ti-phone-off")}
 }
-function openLiveWS(token,model){
+function openLiveWS(token,model,session=callSession){
   return new Promise((resolve,reject)=>{
+    if(session!==callSession){resolve();return;}
     callWS=new WebSocket("wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContentConstrained?access_token="+encodeURIComponent(token));
     let settled=false;const ws=callWS;
-    callWS.onopen=()=>{try{callWS.send(JSON.stringify({setup:model?{model:"models/"+model}:{}}))}catch(e){}};
+    const connectTimer=setTimeout(()=>{
+      if(settled)return;settled=true;
+      reject(new Error(CL("เชื่อมต่อนานเกินไป ลองโทรใหม่อีกครั้งครับ","Connection timed out. Please try again")));
+      try{ws.close()}catch{}
+    },12000);
+    callWS.onopen=()=>{if(session!==callSession||ws!==callWS)return;try{ws.send(JSON.stringify({setup:model?{model:"models/"+model}:{}}))}catch(e){}};
     callWS.onmessage=async ev=>{
       let txt=ev.data;if(txt instanceof Blob)txt=await txt.text();
+      if(session!==callSession||ws!==callWS)return;
       let msg;try{msg=JSON.parse(txt)}catch(e){return}
       if(msg.setupComplete){
-        if(!settled){settled=true;callActive=true;
-          try{if(!callMicNode)await startMicStream()}catch(e){reject(e);return}
+        if(!settled){settled=true;clearTimeout(connectTimer);callActive=true;
+          try{if(!callMicNode)await startMicStream(session)}catch(e){reject(e);return}
+          if(session!==callSession||ws!==callWS){resolve();return;}
+          callConnecting=false;
           if(callCtx&&callCtx.state!=="running")callCtx.resume();
           if(playCtx&&playCtx.state!=="running")playCtx.resume();
           setCallState("link",CL("ต่อสายแล้ว พูดได้เลยครับ","Connected — just talk"));
@@ -6720,10 +6763,11 @@ function openLiveWS(token,model){
       if(msg.goAway)setCallState("link",CL("สายใกล้หมดเวลา","Session ending soon"));
       handleLiveMsg(msg);
     };
-    callWS.onerror=()=>{if(!settled){settled=true;reject(new Error(CL("เชื่อมต่อไม่สำเร็จ","connection failed")))}};
+    callWS.onerror=()=>{if(!settled){settled=true;clearTimeout(connectTimer);reject(new Error(CL("เชื่อมต่อไม่สำเร็จ","connection failed")))}};
     callWS.onclose=e=>{
+      clearTimeout(connectTimer);
       const why=(e.reason||"")+" ("+e.code+")";
-      if(ws!==callWS)return;
+      if(ws!==callWS||session!==callSession){settled=true;resolve();return;}
       if(!settled){settled=true;
         if(e.code===1011&&liveRetries<3){liveRecover(e.code,why).then(resolve,reject)}
         else reject(new Error(CL("การเชื่อมต่อถูกปิด ","connection closed ")+why))}
@@ -6763,9 +6807,9 @@ function handleLiveMsg(msg){
   }
 }
 
-/* เสียง AI 24kHz เล่นต่อกันไม่มีช่องว่าง ใน context เดียวกับไมค์ (เบราว์เซอร์แปลงอัตราให้เอง) */
+/* เสียง AI 24kHz เล่นต่อกันใน playback context แยกจากไมค์และเสียงปุ่ม */
 function queuePcm(b64){
-  if(!playCtx)return;
+  if(!callActive||!playCtx)return;
   try{
     if(playCtx.state!=="running")playCtx.resume();
     const bin=atob(b64),len=bin.length>>1,f32=new Float32Array(len);
@@ -6818,64 +6862,26 @@ function toggleCallMute(){
   const b=$("callMuteBtn");b.classList.toggle("muted",callMuted);
   b.querySelector(".ti").className="ti "+(callMuted?"ti-microphone-off":"ti-microphone");
 }
-/* เสียงประกอบสายแบบหรู: โน้ตระฆังนุ่ม (sine + ฮาร์มอนิกจางๆ) ไล่ขึ้นตอนต่อสาย ไล่ลงตอนวางสาย มีหางเสียงก้องสั้นๆ */
-/* เสียงต่อสาย/วางสาย: วาดเสียงระฆังล่วงหน้าเป็นไฟล์ WAV (OfflineAudioContext) แล้วเล่นผ่าน <audio>
- * ทำไมไม่เล่นสดใน AudioContext: iPhone ปิดเสียง Web Audio ตามสวิตช์เงียบ และพอเปิดไมค์ระบบจะแย่ง/กดเสียงลง
- * <audio> เล่นได้เสมอ และสั่งเล่นได้ทันทีในจังหวะที่กดปุ่ม */
-const CHIME={};
-/* เสียงแตะแก้วนุ่มๆ สั้นๆ แบบเสียง UI ของ iPhone — ไม่มีเสียงก้อง ไม่ยาว ฟังทุกวันไม่รำคาญ
- * ต่อสาย: สองโน้ตไล่ขึ้นเบาๆ (C6→G6) · วางสาย: โน้ตเดียวไถลลงสั้นๆ */
-function chimeNotes(ctx,dest,up){
-  const out=ctx.createGain();out.gain.value=.32;
-  const lp=ctx.createBiquadFilter();lp.type="lowpass";lp.frequency.value=up?5200:3600;lp.Q.value=.3;
-  out.connect(lp);lp.connect(dest);
-  const tone=(t,f,f2,len,amp)=>{
-    const o=ctx.createOscillator(),g=ctx.createGain();o.type="sine";
-    o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+len*.8);
-    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(amp,t+.004);g.gain.exponentialRampToValueAtTime(.0001,t+len);
-    o.connect(g);g.connect(out);o.start(t);o.stop(t+len+.02);
-    const o2=ctx.createOscillator(),g2=ctx.createGain();o2.type="sine";o2.frequency.value=(f2||f)*2.01;   /* ประกายแก้วจางๆ */
-    g2.gain.setValueAtTime(0,t);g2.gain.linearRampToValueAtTime(amp*.08,t+.003);g2.gain.exponentialRampToValueAtTime(.0001,t+len*.5);
-    o2.connect(g2);g2.connect(out);o2.start(t);o2.stop(t+len);
-  };
-  if(up){tone(0,1046.5,0,.22,.9);tone(.075,1568,0,.32,.75)}
-  else tone(0,880,587.3,.2,.85);
-}
-function wavURL(buf){
-  const d=buf.getChannelData(0),n=d.length,v=new DataView(new ArrayBuffer(44+n*2)),w=(o,str)=>{for(let i=0;i<str.length;i++)v.setUint8(o+i,str.charCodeAt(i))};
-  w(0,"RIFF");v.setUint32(4,36+n*2,true);w(8,"WAVE");w(12,"fmt ");v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);
-  v.setUint32(24,buf.sampleRate,true);v.setUint32(28,buf.sampleRate*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,"data");v.setUint32(40,n*2,true);
-  for(let i=0;i<n;i++){const x=Math.max(-1,Math.min(1,d[i]));v.setInt16(44+i*2,x<0?x*32768:x*32767,true)}
-  return URL.createObjectURL(new Blob([v],{type:"audio/wav"}));
-}
-async function prepChimes(){
-  const OAC=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!OAC)return;
-  for(const up of [true,false]){
-    try{const c=new OAC(1,Math.round(44100*(up?.45:.28)),44100);chimeNotes(c,c.destination,up);
-      const buf=await c.startRendering();const a=new Audio(wavURL(buf));a.preload="auto";CHIME[up?"on":"off"]=a}catch(e){}
-  }
-}
-setTimeout(prepChimes,1500);
+/* Sound is a separate, reusable player: tap feedback never blocks the Live connection. */
 function callChime(_ctx,up){
-  const a=CHIME[up?"on":"off"];if(!a)return;
-  try{a.currentTime=0;a.volume=.9;const p=a.play();p&&p.catch(()=>{})}catch(e){}
+  try{window.CendonCallSounds&&window.CendonCallSounds.play(up?"start":"end")}catch(e){}
 }
 function endCall(){
-  /* เสียงวางสาย: context ใหม่สั้นๆ เพราะตัวเดิมกำลังจะปิด (กดปุ่ม = มีสิทธิ์เล่นเสียง) */
-  if(callActive||callWS){
-    const pc=playCtx;
-    if(pc&&pc.state==="running"){try{chimeNotes(pc,pc.destination,false)}catch(e){}playCtx=null;setTimeout(()=>{try{pc.close()}catch(e){}},400)}
-    else callChime(null,false);
-  }
+  const hadCall=callConnecting||callActive||callWS||$("callUI").classList.contains("show");
+  // Invalidate pending permissions/token requests before any stale callback can reopen a call.
+  callSession++;callConnecting=false;
+  try{callAbort&&callAbort.abort()}catch(e){}callAbort=null;
+  if(hadCall)callChime(null,false);
   callActive=false;
-  clearInterval(callTimerInt);
+  clearInterval(callTimerInt);callTimerInt=null;
   stopCamera();
-  try{callWS&&callWS.close()}catch(e){}callWS=null;
+  const oldWS=callWS;callWS=null;try{oldWS&&oldWS.close()}catch(e){}
   try{callMicNode&&callMicNode.disconnect()}catch(e){}callMicNode=null;
   try{callMicSrc&&callMicSrc.disconnect()}catch(e){}callMicSrc=null;
   if(callMicStream){callMicStream.getTracks().forEach(t=>t.stop());callMicStream=null}
   flushPlayback();
-  try{callCtx&&callCtx.close()}catch(e){}callCtx=null;try{playCtx&&playCtx.close()}catch(e){}playCtx=null;playGain=null;playAnalyser=null;callSink=null;
+  for(const ctx of [callCtx,playCtx])try{ctx&&ctx.close().catch(()=>{})}catch(e){}
+  callCtx=null;playCtx=null;playGain=null;playAnalyser=null;callSink=null;
   liveUserText="";liveAiText="";callMuted=false;micLevel=0;aiLevel=0;heardAt=0;
   $("callMuteBtn").classList.remove("muted");$("callMuteBtn").querySelector(".ti").className="ti ti-microphone";
   $("callUI").classList.remove("show");$("callUI").setAttribute("aria-hidden","true");

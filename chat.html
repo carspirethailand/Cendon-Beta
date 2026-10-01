@@ -6823,22 +6823,23 @@ function toggleCallMute(){
  * ทำไมไม่เล่นสดใน AudioContext: iPhone ปิดเสียง Web Audio ตามสวิตช์เงียบ และพอเปิดไมค์ระบบจะแย่ง/กดเสียงลง
  * <audio> เล่นได้เสมอ และสั่งเล่นได้ทันทีในจังหวะที่กดปุ่ม */
 const CHIME={};
+/* เสียงแตะแก้วนุ่มๆ สั้นๆ แบบเสียง UI ของ iPhone — ไม่มีเสียงก้อง ไม่ยาว ฟังทุกวันไม่รำคาญ
+ * ต่อสาย: สองโน้ตไล่ขึ้นเบาๆ (C6→G6) · วางสาย: โน้ตเดียวไถลลงสั้นๆ */
 function chimeNotes(ctx,dest,up){
-  const now=.02,out=ctx.createGain();out.gain.value=.5;
-  const dl=ctx.createDelay(.5),fb=ctx.createGain(),wet=ctx.createGain();
-  dl.delayTime.value=.13;fb.gain.value=.28;wet.gain.value=.25;
-  out.connect(dest);out.connect(dl);dl.connect(fb);fb.connect(dl);dl.connect(wet);wet.connect(dest);
-  const notes=up?[659.25,987.77,1318.5]:[987.77,739.99,493.88];
-  notes.forEach((f,i)=>{
-    const t=now+i*.11,last=i===notes.length-1;
-    [[1,1],[2,.12],[3,.04]].forEach(([m,a])=>{
-      const o=ctx.createOscillator(),g=ctx.createGain();
-      o.type="sine";o.frequency.value=f*m;
-      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(a*(last?1:.8),t+.012);
-      g.gain.exponentialRampToValueAtTime(.0001,t+(last?1.1:.5));
-      o.connect(g);g.connect(out);o.start(t);o.stop(t+1.2);
-    });
-  });
+  const out=ctx.createGain();out.gain.value=.32;
+  const lp=ctx.createBiquadFilter();lp.type="lowpass";lp.frequency.value=up?5200:3600;lp.Q.value=.3;
+  out.connect(lp);lp.connect(dest);
+  const tone=(t,f,f2,len,amp)=>{
+    const o=ctx.createOscillator(),g=ctx.createGain();o.type="sine";
+    o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+len*.8);
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(amp,t+.004);g.gain.exponentialRampToValueAtTime(.0001,t+len);
+    o.connect(g);g.connect(out);o.start(t);o.stop(t+len+.02);
+    const o2=ctx.createOscillator(),g2=ctx.createGain();o2.type="sine";o2.frequency.value=(f2||f)*2.01;   /* ประกายแก้วจางๆ */
+    g2.gain.setValueAtTime(0,t);g2.gain.linearRampToValueAtTime(amp*.08,t+.003);g2.gain.exponentialRampToValueAtTime(.0001,t+len*.5);
+    o2.connect(g2);g2.connect(out);o2.start(t);o2.stop(t+len);
+  };
+  if(up){tone(0,1046.5,0,.22,.9);tone(.075,1568,0,.32,.75)}
+  else tone(0,880,587.3,.2,.85);
 }
 function wavURL(buf){
   const d=buf.getChannelData(0),n=d.length,v=new DataView(new ArrayBuffer(44+n*2)),w=(o,str)=>{for(let i=0;i<str.length;i++)v.setUint8(o+i,str.charCodeAt(i))};
@@ -6850,7 +6851,7 @@ function wavURL(buf){
 async function prepChimes(){
   const OAC=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!OAC)return;
   for(const up of [true,false]){
-    try{const c=new OAC(1,Math.round(44100*1.6),44100);chimeNotes(c,c.destination,up);
+    try{const c=new OAC(1,Math.round(44100*(up?.45:.28)),44100);chimeNotes(c,c.destination,up);
       const buf=await c.startRendering();const a=new Audio(wavURL(buf));a.preload="auto";CHIME[up?"on":"off"]=a}catch(e){}
   }
 }
@@ -6861,7 +6862,11 @@ function callChime(_ctx,up){
 }
 function endCall(){
   /* เสียงวางสาย: context ใหม่สั้นๆ เพราะตัวเดิมกำลังจะปิด (กดปุ่ม = มีสิทธิ์เล่นเสียง) */
-  if(callActive||callWS)callChime(null,false);
+  if(callActive||callWS){
+    const pc=playCtx;
+    if(pc&&pc.state==="running"){try{chimeNotes(pc,pc.destination,false)}catch(e){}playCtx=null;setTimeout(()=>{try{pc.close()}catch(e){}},400)}
+    else callChime(null,false);
+  }
   callActive=false;
   clearInterval(callTimerInt);
   stopCamera();

@@ -6471,7 +6471,7 @@ let tt;function toast(m,ic){const el=$("toast");el.innerHTML=`<i class="ti ${ic|
  * ลูกไฟพองตามเสียง AI · ระลอกแสงตามเสียงผู้ใช้ → เห็นทันทีว่าไมค์เข้า และ AI ได้ยินแล้วหรือยัง */
 let callActive=false,callMuted=false,callTimerInt=null,callT0=0;
 let callWS=null,callMicStream=null,callCtx=null,callMicSrc=null,callMicNode=null,callSink=null;
-let playGain=null,playAnalyser=null,playTime=0,playSrcs=[];
+let playCtx=null,playGain=null,playAnalyser=null,playTime=0,playSrcs=[];
 let camStream=null,camTimer=null,camOn=false,camFacing="environment";
 let liveUserText="",liveAiText="",micLevel=0,aiLevel=0,heardAt=0,callRaf=0;
 const gNeedle={u:0,uv:0,a:0,av:0};
@@ -6601,8 +6601,14 @@ async function startCall(){
   if(callActive||callWS)return;
   /* สร้าง+ปลุก AudioContext ทันทีในจังหวะที่กด (ก่อน await ใดๆ) — ต้นเหตุ "เดี๋ยวได้ยินเดี๋ยวไม่ได้ยิน" บนมือถือ */
   try{callCtx=new AC();callCtx.resume()}catch(e){toast(e.message,"ti-phone-off");return}
-  playGain=callCtx.createGain();playAnalyser=callCtx.createAnalyser();playAnalyser.fftSize=512;
-  playGain.connect(playAnalyser);playAnalyser.connect(callCtx.destination);
+  /* เสียง AI แยก context 24kHz ของตัวเอง (แบบเดิมที่เคยได้ยินชัวร์) สร้างในจังหวะกดเหมือนกัน
+   * iPhone: ตั้ง audioSession ให้เล่นได้แม้เปิดโหมดเงียบ และไม่โดนไมค์แย่งลำโพง */
+  try{if(navigator.audioSession)navigator.audioSession.type="play-and-record"}catch(e){}
+  try{playCtx=new AC({sampleRate:24000})}catch(e){playCtx=new AC()}
+  playCtx.resume();
+  playGain=playCtx.createGain();playAnalyser=playCtx.createAnalyser();playAnalyser.fftSize=512;
+  playGain.connect(playAnalyser);playAnalyser.connect(playCtx.destination);
+  playTime=0;
   $("callUI").classList.add("show");$("callUI").setAttribute("aria-hidden","false");
   buildGauges();
   $("callCaption").textContent="";
@@ -6643,6 +6649,7 @@ function openLiveWS(token,model){
         if(!settled){settled=true;callActive=true;
           try{await startMicStream()}catch(e){reject(e);return}
           if(callCtx&&callCtx.state!=="running")callCtx.resume();
+          if(playCtx&&playCtx.state!=="running")playCtx.resume();
           setCallState("link",CL("ต่อสายแล้ว พูดได้เลยครับ","Connected — just talk"));
           resolve()}
         return;
@@ -6683,21 +6690,21 @@ function handleLiveMsg(msg){
 
 /* เสียง AI 24kHz เล่นต่อกันไม่มีช่องว่าง ใน context เดียวกับไมค์ (เบราว์เซอร์แปลงอัตราให้เอง) */
 function queuePcm(b64){
-  if(!callCtx)return;
+  if(!playCtx)return;
   try{
-    if(callCtx.state!=="running")callCtx.resume();
+    if(playCtx.state!=="running")playCtx.resume();
     const bin=atob(b64),len=bin.length>>1,f32=new Float32Array(len);
     for(let i=0;i<len;i++){let v=bin.charCodeAt(2*i)|(bin.charCodeAt(2*i+1)<<8);if(v>=0x8000)v-=0x10000;f32[i]=v/0x8000}
-    const buf=callCtx.createBuffer(1,len,24000);buf.getChannelData(0).set(f32);
-    const src=callCtx.createBufferSource();src.buffer=buf;src.connect(playGain);
-    const t=Math.max(callCtx.currentTime+0.03,playTime);
+    const buf=playCtx.createBuffer(1,len,24000);buf.getChannelData(0).set(f32);
+    const src=playCtx.createBufferSource();src.buffer=buf;src.connect(playGain);
+    const t=Math.max(playCtx.currentTime+0.05,playTime);
     src.start(t);playTime=t+buf.duration;
     playSrcs.push(src);src.onended=()=>{playSrcs=playSrcs.filter(s=>s!==src)};
   }catch(e){}
 }
 function flushPlayback(){
   playSrcs.forEach(s=>{try{s.stop()}catch(e){}});playSrcs=[];
-  playTime=callCtx?callCtx.currentTime:0;
+  playTime=playCtx?playCtx.currentTime:0;
 }
 
 /* กล้อง: เต็มจอเหมือนกล้องถอยหลัง มีเส้นกะระยะ ส่งภาพให้ AI 1 เฟรม/วินาที */
@@ -6745,14 +6752,14 @@ function endCall(){
   try{callMicSrc&&callMicSrc.disconnect()}catch(e){}callMicSrc=null;
   if(callMicStream){callMicStream.getTracks().forEach(t=>t.stop());callMicStream=null}
   flushPlayback();
-  try{callCtx&&callCtx.close()}catch(e){}callCtx=null;playGain=null;playAnalyser=null;callSink=null;
+  try{callCtx&&callCtx.close()}catch(e){}callCtx=null;try{playCtx&&playCtx.close()}catch(e){}playCtx=null;playGain=null;playAnalyser=null;callSink=null;
   liveUserText="";liveAiText="";callMuted=false;micLevel=0;aiLevel=0;heardAt=0;
   $("callMuteBtn").classList.remove("muted");$("callMuteBtn").querySelector(".ti").className="ti ti-microphone";
   $("callUI").classList.remove("show");$("callUI").setAttribute("aria-hidden","true");
   renderMessages();updateHint();renderChips();setPhase("thread");
 }
 /* แตะตรงไหนก็ได้ = ปลุกเสียงอีกรอบ (iOS บางทีพักเสียงเองตอนสลับแอป) */
-$("callUI")&&$("callUI").addEventListener("pointerdown",()=>{if(callCtx&&callCtx.state!=="running")callCtx.resume()});
+$("callUI")&&$("callUI").addEventListener("pointerdown",()=>{[callCtx,playCtx].forEach(c=>{if(c&&c.state!=="running")c.resume()})});
 
 /* ===== INIT ===== */
 /* warp intro dismissal */

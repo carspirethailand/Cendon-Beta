@@ -12028,7 +12028,7 @@ function renderTool(){
   if(tool==="quote"){ b.innerHTML=quoteBody(); wireQuote() }
   else if(tool==="listen"){ b.innerHTML=listenBody(); wireListen();
     /* เข้าแท็บแล้วอัดเลย ไม่ต้องกดปุ่มก่อน — คนเปิดหน้านี้เพราะรถกำลังมีเสียงอยู่ */
-    if(!lArmed&&!lRec&&!lUrl&&!lRes&&!lBusy&&car()){ lArmed=true; startRec() } }
+    /* Recording starts only after an explicit user gesture. */ }
   else if(tool==="shake"){ b.innerHTML=shakeBody(); wireShake() }
   else if(tool==="park"){ b.innerHTML=parkBody(); wirePark() }
   else { b.innerHTML=ownBody(); wireOwn() }
@@ -12039,6 +12039,7 @@ function renderTool(){
   else if(rb) rb.innerHTML="";
   const nb=$("lgNotifBox");
   if(nb){ if(tool==="quote"){ renderNotifCard() } else nb.innerHTML="" }
+  if(window.CendonFeatureAI)window.CendonFeatureAI.mount(tool);
 }
 
 function wireQuote(){
@@ -12890,10 +12891,10 @@ function shakeBody(){
         "It's printed on the tyre wall. It must be right — we compute wheel rotation from it")}</p>
 
       <div class="sk-how">${[
-        [T("1. ขับให้ได้ความเร็วที่รถสั่น","1. Get to the speed where it shakes"),
-         T("ปกติคือ 80–120 กม./ชม. บนถนนเรียบ","Usually 80–120 km/h on smooth tarmac")],
-        [T("2. รักษาความเร็วให้นิ่ง","2. Hold that speed steady"),
-         T("อย่าเร่ง อย่าเบรก อย่าเปลี่ยนเลน ระหว่างวัด","No accelerating, braking or lane changes while it records")],
+        [T("1. ให้ผู้โดยสารเตรียมการวัด","1. Let a passenger prepare the test"),
+         T("ยึดโทรศัพท์ให้แน่น ผู้ขับห้ามใช้งานมือถือระหว่างขับ","Secure the phone. The driver must not operate it while driving.")],
+        [T("2. ขับตามสภาพถนนอย่างปลอดภัย","2. Drive safely for the road conditions"),
+         T("ห้ามเร่งเพื่อทดสอบ หากสั่นรุนแรงให้หยุดในจุดปลอดภัย","Never accelerate for the test. Stop safely if vibration is severe.")],
         [T("3. ปล่อยให้วัด 20 วินาที","3. Let it record for 20 seconds"),
          T("ระบบจะบอกเองเมื่อเสร็จ","We'll tell you when it's done")]
       ].map(([a,b2])=>`<div class="sk-step"><b>${esc(a)}</b><small>${esc(b2)}</small></div>`).join("")}</div>
@@ -12920,10 +12921,10 @@ function shakeRun(){
     </div>
     <div class="lg-prog" style="margin-top:12px"><i style="width:${pct}%"></i></div>
     ${slow?`<div class="lg-tip"><i class="ti ti-gauge"></i>${T(
-      "ความเร็วยังต่ำ ต้องเกิน 40 กม./ชม. ขึ้นไปถึงจะแยกความถี่ของล้อออกจากการสั่นทั่วไปได้",
-      "Too slow — above 40 km/h is needed to separate wheel frequencies from general shake")}</div>`
+      "ข้อมูลความเร็วช่วงนี้อาจไม่พอเทียบรอบล้อ ไม่ต้องเพิ่มความเร็วเพื่อวัด",
+      "The speed data may be insufficient for wheel matching. Do not accelerate for a test.")}</div>`
       :`<div class="lg-tip"><i class="ti ti-check"></i>${T(
-      "ดีแล้ว รักษาความเร็วนี้ไว้จนกว่าจะครบ","Good — hold this speed until it finishes")}</div>`}
+      "กำลังเก็บข้อมูล ความปลอดภัยสำคัญกว่าการวัดให้ครบ","Recording. Safe driving takes priority over completing the test.")}</div>`}
     <div class="lg-acts"><button class="btn" id="skStop">${T("หยุด","Stop")}</button></div>
   </div>`;
 }
@@ -12931,8 +12932,8 @@ function shakeResult(){
   const r=sk.res;
   if(!r||!r.ok)return `<div class="lg-card">
     <div class="lg-empty"><i class="ti ti-alert-triangle"></i>
-      ${esc(sk.err||T("ข้อมูลไม่พอ ลองวัดใหม่โดยขับให้เร็วขึ้นและนิ่งกว่านี้",
-        "Not enough data — try again at a steadier, higher speed"))}</div>
+      ${esc(sk.err||T("ข้อมูลไม่พอ ตรวจตำแหน่งโทรศัพท์และสิทธิ์เซ็นเซอร์ โดยไม่เพิ่มความเร็ว",
+        "Not enough data. Check phone placement and sensor permissions; do not increase speed."))}</div>
     <div class="lg-acts"><button class="btn primary" id="skAgain">${T("วัดใหม่","Measure again")}</button></div>
   </div>`;
 
@@ -12944,11 +12945,11 @@ function shakeResult(){
            "Nothing stood out at this speed. If you still feel it, try another speed")}
     : linked.length
       ? {c:"hit",t:T("การสั่นล็อกกับรอบหมุนของล้อ","The vibration tracks your wheel rotation"),
-         s:T("แปลว่าต้นเหตุหมุนไปพร้อมล้อ ไม่ใช่เครื่องยนต์",
-             "That means the source turns with the wheel, not the engine")}
+         s:T("ความถี่ใกล้รอบล้อเป็นเพียงเบาะแส ยังแยกสาเหตุจากเครื่องยนต์หรือถนนไม่ได้",
+             "Wheel-frequency similarity is a clue, not proof; engine and road effects remain possible.")}
       : {c:"other",t:T("สั่นจริง แต่ไม่ล็อกกับรอบล้อ","There's vibration, but not at a wheel order"),
-         s:T("น่าจะมาจากเครื่องยนต์ เพลา หรือยางแท่นเครื่อง มากกว่าล้อและยาง",
-             "More likely the engine, driveline or mounts than the wheels")};
+         s:T("ยังระบุชิ้นส่วนไม่ได้ อาจมีผลจากเครื่องยนต์ ถนน หรือการติดตั้งโทรศัพท์",
+             "No part can be identified yet; engine, road surface and phone mounting may contribute.")};
 
   const rows=r.peaks.map(p=>`<div class="sk-peak${p.kind?" on":""}">
       <div class="hd"><b>${p.hz.toFixed(1)} Hz</b>
@@ -13816,12 +13817,35 @@ function renderNotifCard(){
 }
 
 /* ══════════ ทางเข้า ══════════ */
-function openQuote(which){
+function openQuote(which,inline){
+  if(!inline&&D.getElementById("composer")&&window.CendonFeatureAI){window.CendonFeatureAI.select(which||"quote");return;}
   if(which&&TOOLS.some(x=>x.k===which))tool=which;
-  try{ window.switchView("quote") }catch(e){}
+  if(!inline){try{ window.switchView("quote") }catch(e){}}
   renderTool();
   const v=$("v-quote"); if(v){const s=v.querySelector(".scroll"); if(s)s.scrollTop=0}
 }
+/* Narrow bridge: keep sensor, parking and accounting logic in the existing tool module. */
+const featureBridge={
+  current:()=>tool,
+  open:(key,inline)=>openQuote(key,inline),
+  stop:()=>{stopShake();if(sk.stage==="run")sk.stage="idle";try{lRec&&lRec.stop()}catch(e){}lArmed=false;if(!dv.on)stopPkWatch();},
+  context:key=>{
+    const c=car(),context={car:carParts(c)};
+    if(key==="shake")context.measurement=sk.res?{...sk.res,averageSpeedKmh:sk.avgSpeed||0,tyre:sk.tyre||carTyre(),sampleCount:sk.samples.length}:null;
+    if(key==="park"){const p=getPark();context.parking=p?{note:p.note||"",elapsedMinutes:Math.max(0,Math.round((Date.now()-p.t)/60000)),accuracyMeters:p.acc||null,remainingMinutes:p.timerAt?Math.round((p.timerAt-Date.now())/60000):null}:null;}
+    if(key==="own"&&c){const o=ownData(c);context.cost={fuel:o.sFuel,service:o.sSvc,total:o.total,recordedDistanceKm:o.span,months:o.months,perKm:o.span>0?o.perKm:null,perMonth:o.months>0?o.perMonth:null,entryCount:o.entries.length,entries:o.entries.slice(0,35).map(x=>({type:x.type,date:x.date,amount:x.amount,km:x.km,service:x.k,note:String(x.note||"").slice(0,160)}))};}
+    if(key==="quote")context.previousAnalysis=qRes;
+    if(key==="listen")context.recordingCondition=lTake;
+    return context;
+  },
+  media:async key=>{
+    if(key==="quote"&&qImg)return [{mime:qMime||"image/jpeg",b64:qImg.replace(/^data:[^,]+,/,"")}];
+    if(key==="listen"&&lBlob)return [{mime:lBlob.type||"audio/webm",b64:(await blobB64(lBlob)).replace(/^data:[^,]+,/,"")}];
+    return [];
+  }
+};
+D.addEventListener("DOMContentLoaded",()=>window.CendonFeatureAI&&window.CendonFeatureAI.register(featureBridge));
+
 window.openQuote=openQuote;
 window.openTool=openQuote;
 
@@ -15100,5 +15124,7 @@ window.switchView=function(v){
 <script src="cendon-one.js" defer></script>
 <!-- แผงผู้ดูแลแบบลอย: โหลดทุกหน้า แต่แสดงเฉพาะผู้ดูแลที่เปิดไว้ในตั้งค่า -->
 <script src="cendon-admin.js" defer></script>
+<link rel="stylesheet" href="feature-ai.css?v=1">
+<script src="feature-ai.js?v=1"></script>
 </body>
 </html>

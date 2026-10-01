@@ -3095,14 +3095,14 @@ window.sysBackfill=sysBackfill; window.sysExport=sysExport; window.sysClearAudit
    แก้ที่นี่ไม่ได้ แต่ช่วยให้เตรียมคำสั่งที่ถูกต้องได้โดยไม่ต้องจำรูปแบบเอง
    ซึ่งเป็นจุดที่คนพิมพ์ผิดบ่อยที่สุด */
 const ENV_FIELDS=[
- {k:"AI_MODEL",       th:"โมเดลหลัก",            kind:"var"},
- {k:"AI_FALLBACK_MODEL",th:"โมเดลสำรอง",         kind:"var"},
- {k:"AI_LIVE_MODEL",  th:"โมเดลสำหรับโทรคุย",     kind:"var"},
+ {k:"GEMINI_MODEL",   th:"โมเดล Gemini",         kind:"var"},
+ {k:"GEMINI_SEARCH_MODEL",th:"โมเดลค้นเว็บ",      kind:"var"},
+ {k:"GEMINI_LIVE_MODEL",th:"โมเดลสำหรับโทรคุย",   kind:"var"},
  {k:"AI_DAILY_LIMIT", th:"โควตาต่อคนต่อวัน",      kind:"var"},
- {k:"ANON_DAILY_LIMIT",th:"โควตาผู้ที่ไม่ล็อกอิน", kind:"var"},
+ {k:"AI_ANON_DAILY_LIMIT",th:"โควตาผู้ที่ไม่ล็อกอิน",kind:"var"},
  {k:"ALLOWED_ORIGINS",th:"โดเมนที่อนุญาตให้เรียก API",kind:"var",
   warn:"ถ้าเป็น * แปลว่าเว็บไหนก็เรียก API ของเราได้ ควรตั้งเป็นโดเมนจริง"},
- {k:"GEMINI_API_KEY", th:"คีย์ Google Gemini",   kind:"secret"},
+ {k:"GEMINI_KEY",     th:"คีย์ Google Gemini",   kind:"secret"},
  {k:"OPENROUTER_API_KEY",th:"คีย์ OpenRouter",   kind:"secret"},
 ];
 let ENV_NOW={};
@@ -3117,26 +3117,28 @@ function drawEnv(){
       <div class="env-id"><b>${esc(f.th)}</b><code>${esc(f.k)}</code>
         ${f.warn&&String(cur)==="*"?`<small class="env-warn">${esc(f.warn)}</small>`:""}</div>
       <div class="env-now">${esc(shown)}</div>
-      <input class="input env-in" id="env_${f.k}" placeholder="${f.kind==="secret"?"ใส่คีย์ใหม่":"ค่าใหม่"}"
-        ${f.kind==="secret"?'type="password" autocomplete="new-password"':""}>
+      <input class="input env-in" id="env_${f.k}" placeholder="${f.kind==="secret"?"ใส่คีย์ใน Terminal หลังรันคำสั่ง":"ค่าใหม่"}"
+        ${f.kind==="secret"?'type="password" readonly aria-label="'+esc(f.th)+' — ตั้งผ่าน Terminal"':""}>
       <button class="btn sm" onclick="envCmd('${f.k}','${f.kind}')">
         <i class="ti ti-clipboard"></i> คัดลอกคำสั่ง</button>
     </div>`}).join("")
     +`<div class="env-foot">
       <b>วิธีใช้</b>
-      <p>กรอกค่าที่ต้องการ กดคัดลอกคำสั่ง แล้วนำไปวางใน Terminal ที่โฟลเดอร์ของหลังบ้าน
-      จากนั้นสั่ง <code>npx wrangler deploy</code> อีกครั้ง ค่าใหม่จึงจะมีผล</p>
+      <p>ค่าทั่วไป: กรอกค่าใหม่ คัดลอกคำแนะนำไปแก้ส่วน <code>vars</code> ใน <code>wrangler.jsonc</code>
+      แล้วสั่ง <code>npx wrangler deploy</code> เพื่อเผยแพร่<br>
+      คีย์ลับ: คัดลอกคำสั่งของคีย์นั้น รันใน Terminal ที่โฟลเดอร์หลังบ้าน แล้วใส่คีย์เมื่อระบบถาม
+      คำสั่งนี้อัปเดต Worker จริงทันที ไม่ต้องใส่คีย์ในหน้านี้หรือใน GitHub</p>
       <button class="btn sm ghost" onclick="envAllCmd()">
         <i class="ti ti-clipboard-list"></i> คัดลอกคำสั่งของทุกช่องที่กรอกไว้</button>
     </div>`;
 }
 function cmdFor(k,kind){
+  /* ให้ Wrangler รับคีย์ลับโดยตรง ไม่ใส่คีย์ในคลิปบอร์ดหรือประวัติคำสั่ง */
+  if(kind==="secret")return `npx wrangler secret put ${k}`;
   const v=($("env_"+k)||{}).value||"";
   if(!v.trim())return "";
-  return kind==="secret"
-    ? `echo "${v.trim()}" | npx wrangler secret put ${k}`
-    /* ค่าธรรมดาอยู่ใน wrangler.jsonc ไม่ใช่ secret จึงบอกให้แก้ไฟล์แล้ว deploy */
-    : `# แก้ในไฟล์ wrangler.jsonc ที่ส่วน "vars" แล้วสั่ง deploy\n#   "${k}": "${v.trim()}"`;
+  /* JSON escaping ป้องกันค่าเครื่องหมายคำพูด/ขึ้นบรรทัดใหม่ทำให้ไฟล์ตั้งค่าพัง */
+  return `# แก้ในไฟล์ wrangler.jsonc ที่ส่วน "vars" แล้วสั่ง deploy\n#   ${JSON.stringify(k)}: ${JSON.stringify(v.trim())}`;
 }
 function copyText(t,msg){
   const done=()=>toast(msg||"คัดลอกแล้ว","ti-clipboard-check");
@@ -3158,7 +3160,8 @@ function envCmd(k,kind){
   copyText(c,"คัดลอกคำสั่งของ "+k+" แล้ว");
 }
 function envAllCmd(){
-  const all=ENV_FIELDS.map(f=>cmdFor(f.k,f.kind)).filter(Boolean);
+  /* คีย์ลับตั้งทีละตัวด้วย prompt เท่านั้น ไม่รวมในชุดคำสั่งค่าทั่วไป */
+  const all=ENV_FIELDS.filter(f=>f.kind!=="secret").map(f=>cmdFor(f.k,f.kind)).filter(Boolean);
   if(!all.length){ alert("ยังไม่ได้กรอกช่องไหนเลย"); return }
   copyText(all.join("\n\n")+"\n\nnpx wrangler deploy","คัดลอกครบทุกคำสั่งแล้ว");
 }
@@ -5374,9 +5377,9 @@ async function loadHealth(){
     const h=await api("/api/admin/health");
     const sc=h.schema||{},en=h.env||{};
     /* เอาค่าที่กำลังใช้อยู่จริงมาแสดงคู่กับช่องกรอก จะได้เห็นว่ากำลังจะเปลี่ยนจากอะไรเป็นอะไร */
-    ENV_NOW={AI_MODEL:en.model,AI_FALLBACK_MODEL:en.fallbackModel,AI_LIVE_MODEL:en.liveModel,
-      AI_DAILY_LIMIT:en.aiDailyLimit,ANON_DAILY_LIMIT:en.anonDailyLimit,
-      ALLOWED_ORIGINS:en.allowedOrigins,GEMINI_API_KEY:en.aiConfigured,
+    ENV_NOW={GEMINI_MODEL:en.model,GEMINI_SEARCH_MODEL:en.searchModel,GEMINI_LIVE_MODEL:en.liveModel,
+      AI_DAILY_LIMIT:en.aiDailyLimit,AI_ANON_DAILY_LIMIT:en.anonDailyLimit,
+      ALLOWED_ORIGINS:en.allowedOrigins,GEMINI_KEY:en.aiConfigured,
       OPENROUTER_API_KEY:en.openrouterConfigured};
     drawEnv(); sysVecStatus();
     const tick=(ok,y,n)=>`<span class="tick ${ok?"ok":"bad"}"><i class="ti ${ok?"ti-circle-check":"ti-alert-triangle"}"></i>${ok?y:n}</span>`;
@@ -5403,7 +5406,7 @@ async function loadHealth(){
         <div class="hgrid">
           <div class="hcell ${en.aiConfigured?"ok":"bad"}"><small>คีย์ AI</small><b>${en.aiConfigured?"ตั้งค่าแล้ว":"ยังไม่ได้ตั้งค่า"}</b></div>
           <div class="hcell"><small>โมเดลหลัก</small><b>${esc(en.model||"-")}</b></div>
-          <div class="hcell"><small>โมเดลสำรอง</small><b>${esc(en.fallbackModel||"-")}</b></div>
+          <div class="hcell"><small>โมเดลค้นเว็บ</small><b>${esc(en.searchModel||"-")}</b></div>
           <div class="hcell"><small>โมเดลโทรคุย</small><b>${esc(en.liveModel||"-")}</b></div>
           <div class="hcell"><small>โควตา/คน/วัน</small><b>${en.aiDailyLimit??"-"}</b></div>
           <div class="hcell"><small>โควตาผู้ไม่ล็อกอิน</small><b>${en.anonDailyLimit??"-"}</b></div>

@@ -64,6 +64,11 @@ html[data-theme="dark"]{
   --star-op:1;--star-c:255,255,255;
 }
 
+.aib{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;color:var(--c);border:1px solid var(--c);border-radius:99px;padding:1px 7px;margin-right:6px;white-space:nowrap}
+.aic{border:1px solid var(--c,#999);border-left-width:4px;border-radius:12px;padding:10px 12px;margin:10px 0 12px;display:grid;gap:6px}
+.aih{display:flex;align-items:center;justify-content:space-between;gap:8px}.aih b{color:var(--c);display:flex;align-items:center;gap:5px}
+.aic ul{margin:0;padding:0;list-style:none;display:grid;gap:4px}.aic li{display:flex;gap:6px;align-items:flex-start;font-size:13px;line-height:1.45}.aic li i{color:var(--c);margin-top:2px}
+.aic p{margin:0;font-size:13px}.aic small{color:var(--muted);font-size:11.5px}
 </style>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
@@ -1358,6 +1363,8 @@ function openTech(id){
     foot:`${ME&&ME.staff&&!t.test?'<button class="btn s" id="bSus" style="flex:0 0 auto"><i class="ti ti-eye-off"></i></button>':""}<button class="btn p" id="bBook">ขอราคา${t.from?` · เริ่ม ฿${money(t.from)}`:""}</button>`,
     mount(b){
       b.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z));
+      const rerun=()=>{const btn=$("aiRe");if(!btn)return;btn.onclick=()=>busy(btn,async()=>{
+        const r=await api("/api/tech/rescreen",{body:{uid:a.uid}});a.ai=r.ai;$("aiBox").innerHTML=aiCard(r.ai);rerun();toast("AI ตรวจใหม่แล้ว")})};rerun();
       $("bBook").onclick=()=>book(t);
       if($("bSus"))$("bSus").onclick=e=>busy(e.currentTarget,async()=>{if(!confirm("ซ่อนช่างคนนี้จากรายชื่อ?"))return;await api("/api/tech/moderate",{body:{id:t.id,suspend:true}});closeSheet();toast("ซ่อนแล้ว");load()});
     }});
@@ -2068,11 +2075,22 @@ async function reviewList(){
   sheet({title:"ตรวจใบสมัคร",body:'<div class="skel"></div>'});
   try{
     const L=(await api("/api/tech/applications")).applications||[];
-    sheet({title:"ตรวจใบสมัคร",body:(L.length?L.map((a,i)=>`<button class="jl" data-i="${i}" style="animation-delay:${i*35}ms"><span class="av sq" style="--c1:${PALETTE[i%PALETTE.length]}">${initial(a.name)}</span><span class="jb"><b>${esc(a.name)}</b><small>${esc(a.shop||"")} · ${esc(a.area)} · ${a.years} ปี</small></span><i class="ti ti-chevron-right"></i></button>`).join("")
+    sheet({title:"ตรวจใบสมัคร",body:(L.length?L.map((a,i)=>`<button class="jl" data-i="${i}" style="animation-delay:${i*35}ms"><span class="av sq" style="--c1:${PALETTE[i%PALETTE.length]}">${initial(a.name)}</span><span class="jb"><b>${esc(a.name)}</b><small>${esc(a.shop||"")} · ${esc(a.area)} · ${a.years} ปี</small></span>${aiBadge(a.ai)}<i class="ti ti-chevron-right"></i></button>`).join("")
       :'<div class="empty"><i class="ti ti-inbox"></i><b>ไม่มีใบสมัครรอตรวจ</b></div>'),
       mount(b){b.querySelectorAll("[data-i]").forEach(x=>x.onclick=()=>reviewOne(L[+x.dataset.i]))}});
   }catch(e){$("bsB").innerHTML=`<div class="empty"><i class="ti ti-cloud-off"></i><b>${esc(e.message)}</b></div>`}
 }
+/* ── ผล AI คัดกรองใบสมัคร (ทีมงานเห็นเท่านั้น) — AI ไม่ได้อนุมัติแทนคน แค่ชี้ว่าควรดูตรงไหน ── */
+const AIV={pass:["ผ่าน","#1a7f4b","ti-circle-check"],review:["ต้องดู","#b7791f","ti-alert-triangle"],fail:["ไม่ผ่าน","#c0392b","ti-circle-x"]};
+function aiBadge(ai){if(!ai)return"";const v=AIV[ai.verdict]||AIV.review;return`<span class="aib" style="--c:${v[1]}"><i class="ti ${v[2]}"></i>${v[0]}</span>`}
+function aiCard(ai){
+  if(!ai)return`<div class="aic"><div class="aih"><b><i class="ti ti-robot"></i> AI คัดกรอง</b><button class="btn s" id="aiRe">ตรวจด้วย AI</button></div><small>ยังไม่มีผล — ใบนี้ส่งก่อนเปิดระบบ หรือ AI ล้มตอนส่ง</small></div>`;
+  const v=AIV[ai.verdict]||AIV.review, L={high:["#c0392b","ti-alert-octagon"],medium:["#b7791f","ti-alert-triangle"],low:["#6b7280","ti-info-circle"]};
+  return`<div class="aic" style="--c:${v[1]}"><div class="aih"><b><i class="ti ${v[2]}"></i> AI: ${v[0]} · ${ai.score}/100</b><button class="btn s" id="aiRe">ตรวจอีกครั้ง</button></div>
+    ${ai.flags&&ai.flags.length?`<ul class="nt">${ai.flags.map(f=>`<li style="--c:${(L[f.level]||L.low)[0]}"><i class="ti ${(L[f.level]||L.low)[1]}"></i>${esc(f.msg)}</li>`).join("")}</ul>`:'<small>ไม่พบจุดน่าสงสัย</small>'}
+    ${ai.summary?`<p class="nt">${esc(ai.summary)}</p>`:""}
+    <small>${esc(ai.vision||"")}${ai.error?" · "+esc(ai.error):""} · ${new Date(ai.at).toLocaleString("th-TH")}</small>
+    <small>AI ช่วยชี้จุดสงสัยเท่านั้น ผู้ตรวจยังต้องดูเอกสารและติ๊กเองทุกข้อ</small></div>`}
 const CHECKS=[["identity","บัตรตรงกับหน้าในรูปคู่บัตร ชื่อตรง อายุ 18+"],["phone","โทรติดต่อได้ ยืนยันตัวตนแล้ว"],["work","รูปผลงานเป็นงานจริงของผู้สมัคร"],["skills","มีใบรับรอง หรือสัมภาษณ์ทักษะผ่าน"],["shop","อู่/เครื่องมือมีจริง ตำแหน่งตรง"],["terms","ตกลงราคา ขอบเขตงาน และรับประกันแล้ว"]];
 async function reviewOne(a){
   sheet({push:true,title:a.name,body:'<div class="skel"></div>'});
@@ -2081,6 +2099,7 @@ async function reviewOne(a){
   sheet({title:a.name,body:`
     <div class="gal">${docs.map(d=>`<img src="${d.url}" data-z="${d.url}" alt="${esc(lab[d.kind])}" title="${esc(lab[d.kind])}"/>`).join("")||'<div class="ph" style="background:var(--surface-2);color:var(--muted);font-size:14px">ไม่มีเอกสาร</div>'}</div>
     <div class="kv"><p><span>เบอร์</span><b><a href="tel:${esc(a.phone)}" style="color:var(--accent)">${esc(a.phone)}</a></b></p><p><span>อู่</span><b>${esc(a.shop||"–")}</b></p><p><span>อายุ / ประสบการณ์</span><b>${a.age} ปี / ${a.years} ปี</b></p><p><span>พื้นที่</span><b>${esc(a.area)}${a.lat?` · <a href="https://maps.google.com/?q=${a.lat},${a.lng}" target="_blank" rel="noopener" style="color:var(--accent)">แผนที่</a>`:""}</b></p><p><span>งาน</span><b>${(a.cats||[]).map(c=>CAT[c]?CAT[c].th:c).join(", ")}</b></p><p><span>ราคา / รับประกัน</span><b>฿${money(a.from)} / ${a.warranty} วัน</b></p><p><span>ใบรับรอง</span><b>${a.hasCert?"มี":"ไม่มี — ต้องสัมภาษณ์"}</b></p>${a.about?`<p><span>ถนัด</span><b>${esc(a.about)}</b></p>`:""}</div>
+    <div id="aiBox">${aiCard(a.ai)}</div>
     ${CHECKS.map(([k,l])=>`<label class="chk"><input type="checkbox" data-k="${k}"/> ${l}</label>`).join("")}
     <label class="fld"><span>บันทึก</span><textarea class="inp" id="rvN" placeholder="ตรวจอะไรไปบ้าง / ต้องแก้อะไร"></textarea></label>`,
     foot:'<button class="btn s" id="rvNo">ให้แก้ไข</button><button class="btn p" id="rvOk" disabled>อนุมัติ</button>',

@@ -6619,35 +6619,52 @@ async function startCall(){
   if(!callRaf)callRaf=requestAnimationFrame(gaugeLoop);
   try{
     callMicStream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
-    const tok=await auth.currentUser.getIdToken();
-    const r=await fetch(`${BACKEND_URL}/api/ai/live-token`,{method:"POST",
-      headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok},
-      body:JSON.stringify({system:liveSystemPrompt()})});
-    const d=await r.json().catch(()=>({}));
-    if(!r.ok){
-      const err=(d&&d.error)||"";
-      if(r.status===429||err==="quota")throw new Error(CL("โควตา AI วันนี้หมดแล้ว","Daily AI quota reached"));
-      if(r.status===503||err==="maintenance")throw new Error(CL("ระบบกำลังปิดปรับปรุง","System under maintenance"));
-      throw new Error(err||("token error "+r.status));
-    }
-    await openLiveWS(d.token,d.model);
+    liveRetries=0;
+    await liveConnect();
   }catch(e){
     endCall();
     toast(CL("โทรไม่สำเร็จ: ","Call failed: ")+e.message,"ti-phone-off");
   }
 }
 
+/* รุ่นที่ทำสายหลุดโดยยังไม่ทันพูด จำไว้ 6 ชม. แล้วขอรุ่นอื่นแทน */
+let liveRetries=0,liveModel="",liveGotAudio=false;
+function liveBad(){const now=Date.now(),b=LS.get("live_bad",{});for(const k in b)if(now-b[k]>6*3600e3)delete b[k];return b}
+async function liveConnect(){
+  const tok=await auth.currentUser.getIdToken();
+  const r=await fetch(`${BACKEND_URL}/api/ai/live-token`,{method:"POST",
+    headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok},
+    body:JSON.stringify({system:liveSystemPrompt(),skip:Object.keys(liveBad())})});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok){
+    const err=(d&&d.error)||"";
+    if(r.status===429||err==="quota")throw new Error(CL("โควตา AI วันนี้หมดแล้ว","Daily AI quota reached"));
+    if(r.status===503||err==="maintenance")throw new Error(CL("ระบบกำลังปิดปรับปรุง","System under maintenance"));
+    if(/no working live model/.test(err)){LS.del("live_bad")}
+    throw new Error(err||("token error "+r.status));
+  }
+  liveModel=d.model||"";liveGotAudio=false;
+  await openLiveWS(d.token,d.model);
+}
+/* สายหลุดผิดปกติ → ต่อใหม่เองเงียบๆ (ถ้ายังไม่ได้ยินเสียง AI เลย = รุ่นนี้มีปัญหา เปลี่ยนรุ่น) */
+async function liveRecover(code,why){
+  if(!liveGotAudio&&liveModel){const b=liveBad();b[liveModel]=Date.now();LS.set("live_bad",b)}
+  if(liveRetries>=3){endCall();toast(CL("สายหลุด ","Call dropped ")+why,"ti-phone-off");return}
+  liveRetries++;callActive=false;flushPlayback();
+  setCallState("wait",CL("สายสะดุด กำลังต่อใหม่...","Reconnecting..."));
+  try{await liveConnect()}catch(e){endCall();toast(CL("โทรไม่สำเร็จ: ","Call failed: ")+e.message,"ti-phone-off")}
+}
 function openLiveWS(token,model){
   return new Promise((resolve,reject)=>{
     callWS=new WebSocket("wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContentConstrained?access_token="+encodeURIComponent(token));
-    let settled=false;
+    let settled=false;const ws=callWS;
     callWS.onopen=()=>{try{callWS.send(JSON.stringify({setup:model?{model:"models/"+model}:{}}))}catch(e){}};
     callWS.onmessage=async ev=>{
       let txt=ev.data;if(txt instanceof Blob)txt=await txt.text();
       let msg;try{msg=JSON.parse(txt)}catch(e){return}
       if(msg.setupComplete){
         if(!settled){settled=true;callActive=true;
-          try{await startMicStream()}catch(e){reject(e);return}
+          try{if(!callMicNode)await startMicStream()}catch(e){reject(e);return}
           if(callCtx&&callCtx.state!=="running")callCtx.resume();
           if(playCtx&&playCtx.state!=="running")playCtx.resume();
           setCallState("link",CL("ต่อสายแล้ว พูดได้เลยครับ","Connected — just talk"));
@@ -6660,8 +6677,13 @@ function openLiveWS(token,model){
     callWS.onerror=()=>{if(!settled){settled=true;reject(new Error(CL("เชื่อมต่อไม่สำเร็จ","connection failed")))}};
     callWS.onclose=e=>{
       const why=(e.reason||"")+" ("+e.code+")";
-      if(!settled){settled=true;reject(new Error(CL("การเชื่อมต่อถูกปิด ","connection closed ")+why))}
-      else if(callActive){endCall();toast(CL("สายหลุด ","Call dropped ")+(e.code===1000?"":why),"ti-phone-off")}
+      if(ws!==callWS)return;
+      if(!settled){settled=true;
+        if(e.code===1011&&liveRetries<3){liveRecover(e.code,why).then(resolve,reject)}
+        else reject(new Error(CL("การเชื่อมต่อถูกปิด ","connection closed ")+why))}
+      else if(callActive){
+        if(e.code===1000){endCall();toast(CL("จบการสนทนา","Call ended"),"ti-phone-off")}
+        else liveRecover(e.code,why)}
     };
   });
 }
@@ -6679,7 +6701,7 @@ function handleLiveMsg(msg){
     $("callCaption").textContent=liveAiText.slice(-180);
   }
   if(sc.modelTurn&&sc.modelTurn.parts)
-    for(const p of sc.modelTurn.parts)if(p.inlineData&&p.inlineData.data)queuePcm(p.inlineData.data);
+    for(const p of sc.modelTurn.parts)if(p.inlineData&&p.inlineData.data){liveGotAudio=true;queuePcm(p.inlineData.data)}
   if(sc.turnComplete){
     if(liveUserText.trim())messages.push({role:"user",text:liveUserText.trim()});
     if(liveAiText.trim())messages.push({role:"ai",text:liveAiText.trim()});

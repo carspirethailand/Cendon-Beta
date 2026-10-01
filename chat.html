@@ -6563,7 +6563,7 @@ function drawOrb(){
     g.beginPath();g.arc(C,C,R*(1.12+r.p*.7),0,Math.PI*2);
     g.strokeStyle=`rgba(${orb.light?"214,120,80":"255,226,206"},${(1-r.p)*(1-r.p)*.28*r.s})`;g.lineWidth=1.5;g.stroke();
   }
-  const breathe=1+Math.sin(t*(orb.wait?2.2:.75))*.02+A*.09+orb.u*.025;
+  const breathe=1+Math.sin(t*(orb.wait?4.5:.75))*(orb.wait?.05:.02)+A*.09+orb.u*.025;
   const S=W*.95*breathe; // รูปต้นฉบับมีหมอกรอบนอก จึงวาดใหญ่เกือบเต็มกรอบ
   const layer=(rot,sc,al,dx,dy)=>{
     g.save();g.globalAlpha=al;g.translate(C+dx,C+dy);g.rotate(rot);g.scale(sc,sc*(1+Math.sin(t*.5+rot)*.015));
@@ -6744,7 +6744,7 @@ function handleLiveMsg(msg){
   const sc=msg.serverContent;if(!sc)return;
   if(sc.interrupted){flushPlayback();return}
   if(sc.inputTranscription&&sc.inputTranscription.text){
-    heardAt=Date.now();
+    heardAt=Date.now();orb.wait=true;   /* ได้ยินแล้ว → ลูกไฟ "หายใจเร็ว" บอกว่ากำลังคิด จนกว่าเสียงตอบจะมา */
     liveUserText+=sc.inputTranscription.text;
     setCaption("user",liveUserText);
   }
@@ -6753,7 +6753,8 @@ function handleLiveMsg(msg){
     setCaption("ai",liveAiText);
   }
   if(sc.modelTurn&&sc.modelTurn.parts)
-    for(const p of sc.modelTurn.parts)if(p.inlineData&&p.inlineData.data){liveGotAudio=true;queuePcm(p.inlineData.data)}
+    for(const p of sc.modelTurn.parts)if(p.inlineData&&p.inlineData.data){liveGotAudio=true;orb.wait=false;queuePcm(p.inlineData.data)}
+  if(sc.turnComplete||sc.interrupted)orb.wait=false;
   if(sc.turnComplete){
     if(liveUserText.trim())messages.push({role:"user",text:liveUserText.trim()});
     if(liveAiText.trim())messages.push({role:"ai",text:liveAiText.trim()});

@@ -4680,6 +4680,19 @@ window.spireSetupVersion=SETUP_VERSION;
 <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
+/* มือถือ: แป้นพิมพ์เปิดเฉพาะตอนผู้ใช้แตะเอง — โค้ดส่วนไหนสั่ง focus ช่องพิมพ์เองโดยไม่มีการแตะนำ จะถูกข้าม */
+(function(){
+  if(!matchMedia("(pointer:coarse)").matches)return;
+  const f=HTMLElement.prototype.focus;
+  HTMLElement.prototype.focus=function(o){
+    const typing=this.matches&&this.matches("input:not([type=button]):not([type=checkbox]):not([type=radio]),textarea,[contenteditable=true]");
+    const act=navigator.userActivation?navigator.userActivation.isActive:false;
+    if(typing&&!act)return;
+    return f.call(this,o);
+  };
+})();
+</script>
+<script>
 "use strict";
 const $=id=>document.getElementById(id);
 const esc=s=>(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -6841,7 +6854,13 @@ function uiEnter(){
   setTimeout(()=>{try{navigator.vibrate&&navigator.vibrate(12)}catch(e){}},900);
   const bye=()=>{
     if(gone)return;gone=true;
-    const ready=()=>document.body.dataset.phase!=="login"||document.querySelector(".su-card")||performance.now()-t0>8000;
+    /* รอจน "หน้าปลายทางนิ่ง" — ระบบอาจสลับ login→welcome→thread หลายทอดตอนโหลดประวัติ
+       ถ้าเปิดหน้าโหลดเร็วไป ผู้ใช้จะเห็นหน้าคั่นกลาง (แถบนำทาง) แวบแล้วเด้งไป */
+    let lastPh=document.body.dataset.phase,phAt=performance.now();
+    new MutationObserver(()=>{if(document.body.dataset.phase!==lastPh){lastPh=document.body.dataset.phase;phAt=performance.now()}})
+      .observe(document.body,{attributes:true,attributeFilter:["data-phase"]});
+    const ready=()=>performance.now()-t0>8000||document.querySelector(".su-card")||
+      (document.body.dataset.phase!=="login"&&performance.now()-phAt>450);
     const go=()=>{const b=w.querySelector(".w-bar i");if(b){b.style.animation="none";b.style.transition="transform .22s ease-out";b.style.transform="scaleX(1)"}setTimeout(()=>{w.classList.add("done");uiEnter();setTimeout(()=>w.remove(),500)},230)};
     const tick=()=>{if(performance.now()-t0>=MIN&&ready())go();else setTimeout(tick,40)};
     tick();

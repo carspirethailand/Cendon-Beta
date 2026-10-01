@@ -536,6 +536,16 @@ body[data-phase="thread"] .composer{display:block;animation:compIn .5s cubic-bez
 .hearth.cam .hh-stage{position:absolute;right:22px;bottom:calc(150px + env(safe-area-inset-bottom));width:120px;height:120px;flex:none;z-index:2}
 .hearth.cam #hhOrb{width:120px}
 .hearth.cam .hh-cap{height:3.5em;font-size:16px}
+/* ธีมสว่าง (ตามที่ตั้งไว้ในตั้งค่า): พื้นครีมอุ่น ตัวหนังสือน้ำตาลเข้ม ปุ่มกระจกเข้ม */
+.hearth.light{color:#3a2418;background:radial-gradient(90% 55% at 50% 42%,rgba(255,170,120,var(--glow,.16)),transparent 70%),
+  radial-gradient(120% 60% at 50% 115%,rgba(255,140,150,.14),transparent 65%),linear-gradient(180deg,#fffaf4,#fbf1e6 60%,#f6e9dc)}
+.hearth.light .hh-name{background:rgba(58,36,24,.06)}
+.hearth.light .hh-time{color:rgba(58,36,24,.5)}
+.hearth.light .hh-cap{color:#2b1a12}
+.hearth.light .hh-cap.user{color:#9a5a36}
+.hearth.light .hh-btn{background:rgba(58,36,24,.07);color:#3a2418}
+.hearth.light .hh-btn.on,.hearth.light .hh-btn.muted{background:#3a2418;color:#fff4e8}
+.hearth.light .hh-btn.end{background:#ff5a4e;color:#fff}
 @media (prefers-reduced-motion:reduce){.hearth.show{animation:none}.hh-name i{animation:none}}
 
 /* ===== PRESS BOUNCE + THEME CROSSFADE ===== */
@@ -6551,7 +6561,7 @@ function drawOrb(){
   for(const r of orb.rings){
     r.p+=.008;
     g.beginPath();g.arc(C,C,R*(1.12+r.p*.7),0,Math.PI*2);
-    g.strokeStyle=`rgba(255,226,206,${(1-r.p)*(1-r.p)*.28*r.s})`;g.lineWidth=1.5;g.stroke();
+    g.strokeStyle=`rgba(${orb.light?"214,120,80":"255,226,206"},${(1-r.p)*(1-r.p)*.28*r.s})`;g.lineWidth=1.5;g.stroke();
   }
   const breathe=1+Math.sin(t*(orb.wait?2.2:.75))*.02+A*.09+orb.u*.025;
   const S=W*.95*breathe; // รูปต้นฉบับมีหมอกรอบนอก จึงวาดใหญ่เกือบเต็มกรอบ
@@ -6570,6 +6580,7 @@ function drawOrb(){
   }
 }
 function gaugeLoop(){
+  orb.light=$("callUI").classList.contains("light");
   if(!$("callUI").classList.contains("show")){callRaf=0;return}
   if(playAnalyser){
     const buf=new Float32Array(playAnalyser.fftSize);playAnalyser.getFloatTimeDomainData(buf);
@@ -6638,9 +6649,11 @@ async function startCall(){
   try{if(navigator.audioSession)navigator.audioSession.type="play-and-record"}catch(e){}
   try{playCtx=new AC({sampleRate:24000})}catch(e){playCtx=new AC()}
   playCtx.resume();
+  callChime(playCtx,true);
   playGain=playCtx.createGain();playAnalyser=playCtx.createAnalyser();playAnalyser.fftSize=512;
   playGain.connect(playAnalyser);playAnalyser.connect(playCtx.destination);
   playTime=0;
+  $("callUI").classList.toggle("light",((window.spireTheme&&window.spireTheme())||"dark")==="light");
   $("callUI").classList.add("show");$("callUI").setAttribute("aria-hidden","false");
   buildGauges();
   $("callCaption").textContent="";
@@ -6803,7 +6816,30 @@ function toggleCallMute(){
   const b=$("callMuteBtn");b.classList.toggle("muted",callMuted);
   b.querySelector(".ti").className="ti "+(callMuted?"ti-microphone-off":"ti-microphone");
 }
+/* เสียงประกอบสายแบบหรู: โน้ตระฆังนุ่ม (sine + ฮาร์มอนิกจางๆ) ไล่ขึ้นตอนต่อสาย ไล่ลงตอนวางสาย มีหางเสียงก้องสั้นๆ */
+function callChime(ctx,up){
+  try{
+    if(!ctx)return;
+    const now=ctx.currentTime+.02,out=ctx.createGain();out.gain.value=.22;
+    const dl=ctx.createDelay(.5),fb=ctx.createGain(),wet=ctx.createGain();
+    dl.delayTime.value=.13;fb.gain.value=.28;wet.gain.value=.25;
+    out.connect(ctx.destination);out.connect(dl);dl.connect(fb);fb.connect(dl);dl.connect(wet);wet.connect(ctx.destination);
+    const notes=up?[659.25,987.77,1318.5]:[987.77,739.99,493.88];   // E5 B5 E6 · B5 F#5 B4
+    notes.forEach((f,i)=>{
+      const t=now+i*.11;
+      [[1,1],[2,.12],[3,.04]].forEach(([m,a])=>{
+        const o=ctx.createOscillator(),g=ctx.createGain();
+        o.type="sine";o.frequency.value=f*m;
+        g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(a*(i===notes.length-1?1:.8),t+.012);
+        g.gain.exponentialRampToValueAtTime(.0001,t+(i===notes.length-1?1.1:.5));
+        o.connect(g);g.connect(out);o.start(t);o.stop(t+1.2);
+      });
+    });
+  }catch(e){}
+}
 function endCall(){
+  /* เสียงวางสาย: context ใหม่สั้นๆ เพราะตัวเดิมกำลังจะปิด (กดปุ่ม = มีสิทธิ์เล่นเสียง) */
+  if(callActive||callWS){try{const AC=window.AudioContext||window.webkitAudioContext,c=new AC();callChime(c,false);setTimeout(()=>c.close(),1600)}catch(e){}}
   callActive=false;
   clearInterval(callTimerInt);
   stopCamera();

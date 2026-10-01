@@ -141,11 +141,12 @@ body[data-phase="thread"] .meteor{display:none}
   transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
   background:radial-gradient(circle,rgba(233,124,67,.30),rgba(233,124,67,.10) 42%,transparent 68%)}
 .warp-core svg{position:relative;width:100%;height:auto;display:block;
-  animation:coreIn .42s cubic-bezier(.2,.9,.25,1) both,corePulse 1.9s ease-in-out .42s infinite;
+  animation:wFade .3s ease-out both,sigSpin .9s linear .12s 1;
   will-change:transform}
 /* โผล่ขึ้นมาแล้วค่อยหายใจ  ไม่ใช่ปรากฏทันทีแล้วเต้นเลย
    จังหวะหายใจขยับแต่ขนาด ไม่แตะความทึบ จะได้ไม่ต้องผสมสีใหม่ทุกเฟรม */
 @keyframes coreIn{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:scale(1)}}
+@keyframes wFade{from{opacity:0}to{opacity:1}}
 @keyframes corePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
 @media(prefers-reduced-motion:reduce){.warp{display:none}}
 
@@ -1435,10 +1436,18 @@ html[data-level="basic"] .hfree{
 .su-wrap.on .su-card{transform:none}
 .su-card.wide{width:min(1020px,100%)}
 
-.su-mark{width:54px;height:54px;margin:0 auto 18px;border-radius:16px;
-  display:grid;place-items:center;background:var(--grad,linear-gradient(160deg,#F0894F,#D95E3C));
-  box-shadow:0 16px 38px -14px rgba(217,94,60,.9)}
-.su-mark .cmk{height:26px;width:auto;color:#fff}
+.su-mark{position:relative;width:76px;height:76px;margin:4px auto 30px;display:grid;place-items:center}
+/* ตราลอยเดี่ยวๆ มีแสงนวลนิ่งๆ ข้างหลัง — ไม่มีกรอบ ไม่มีคำ */
+.su-mark::before{content:"";position:absolute;inset:-60%;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,rgba(233,124,67,.32),rgba(233,124,67,.08) 45%,transparent 70%)}
+.su-mark .cmk{position:relative;height:64px;width:auto;color:#EE7C43;filter:drop-shadow(0 10px 22px rgba(217,94,60,.45))}
+.su-card>*{animation:suIn .8s cubic-bezier(.32,.72,0,1) both}
+.su-card>*:nth-child(2){animation-delay:.07s}.su-card>*:nth-child(3){animation-delay:.14s}.su-card>*:nth-child(4){animation-delay:.21s}
+.su-card>*:nth-child(5){animation-delay:.28s}.su-card>*:nth-child(n+6){animation-delay:.35s}
+.su-prov>*{animation:suIn .8s cubic-bezier(.32,.72,0,1) both}
+.su-prov>*:nth-child(1){animation-delay:.1s}.su-prov>*:nth-child(2){animation-delay:.16s}.su-prov>*:nth-child(3){animation-delay:.22s}.su-prov>*:nth-child(4){animation-delay:.28s}
+@keyframes suIn{from{opacity:0;transform:translateY(20px) scale(.985);filter:blur(8px)}to{opacity:1;transform:none;filter:none}}
+@media(prefers-reduced-motion:reduce){.su-card>*,.su-prov>*{animation:none}}
 .su-h{text-align:center;margin-bottom:22px}
 .su-h h1{font-size:25px;font-weight:700;color:#F2F2F2;margin:0 0 7px;line-height:1.25}
 .su-h p{margin:0;font-size:13.5px;line-height:1.6;color:rgba(255,255,255,.7)}
@@ -3768,12 +3777,6 @@ function authHTML(){
   const up=mode==="up";
   return `<div class="su-card">
     <div class="su-mark">${MARK}</div>
-    <div class="su-h">
-      <h1>${up?L("สร้างบัญชี Cendon","Create your Cendon account")
-              :L("เข้าสู่ระบบ Cendon","Sign in to Cendon")}</h1>
-      <p>${up?L("ผู้ช่วยดูแลรถที่จำทุกอย่างแทนคุณ","The car assistant that remembers everything for you")
-             :L("ยินดีต้อนรับกลับมา","Welcome back")}</p>
-    </div>
 
     <div class="su-prov">
       <button class="su-p" data-prov="google">${GOOGLE_SVG}
@@ -4470,8 +4473,8 @@ window.spireSetupVersion=SETUP_VERSION;
   <section class="pane pane-center" id="v-login">
     <div class="pane-inner">
       <div class="logo-halo"><div class="big-logo"><svg viewBox="-6.0 -6.0 94.8 112.0"><path d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg></div></div>
-      <div class="w-greet" data-t="login.title">เข้าสู่ระบบเพื่อใช้ Cendon</div>
-      <div class="w-sub" data-t="login.sub">ล็อกอินด้วย Google เพื่อคุยกับ AI อย่างปลอดภัย ประวัติและโควตาผูกกับบัญชีของคุณ</div>
+      <div class="w-greet" data-t="login.title" hidden>เข้าสู่ระบบเพื่อใช้ Cendon</div>
+      <div class="w-sub" data-t="login.sub" hidden>ล็อกอินด้วย Google เพื่อคุยกับ AI อย่างปลอดภัย ประวัติและโควตาผูกกับบัญชีของคุณ</div>
       <div class="w-actions">
         <button class="act-btn primary" id="loginBtn" onclick="signIn()" style="display:none">
           <span class="ic"><i class="ti ti-brand-google"></i></span>
@@ -6786,6 +6789,16 @@ function endCall(){
 $("callUI")&&$("callUI").addEventListener("pointerdown",()=>{[callCtx,playCtx].forEach(c=>{if(c&&c.state!=="running")c.resume()})});
 
 /* ===== INIT ===== */
+/* UI ไหลเข้าทีละชิ้นหลังหน้าโหลด: เลื่อนขึ้น + ชัดขึ้นจากเบลอ จังหวะแบบ iOS ไม่มีเด้ง */
+function uiEnter(){
+  if(matchMedia("(prefers-reduced-motion:reduce)").matches)return;
+  const els=[...document.querySelectorAll(".pill, .wrap .pane.on .pane-inner > *, .chip-row, .composer")]
+    .filter(e=>e.getClientRects().length);
+  els.slice(0,24).forEach((e,i)=>{
+    try{e.animate([{opacity:0,transform:"translateY(22px) scale(.985)",filter:"blur(8px)"},{opacity:1,transform:"none",filter:"blur(0)"}],
+      {duration:780,delay:60+i*55,easing:"cubic-bezier(.32,.72,0,1)",fill:"backwards"})}catch(_){}
+  });
+}
 /* warp intro dismissal */
 (function(){
   const w=$("warp");if(!w)return;
@@ -6794,13 +6807,15 @@ $("callUI")&&$("callUI").addEventListener("pointerdown",()=>{[callCtx,playCtx].f
      แปลว่าต่อให้หน้าพร้อมตั้งแต่ 200ms ผู้ใช้ก็ยังต้องนั่งดูโลโก้อีกวินาทีครึ่ง
      ตรงนี้คือ "โหลดนาน" ที่รู้สึกได้ ทั้งที่ไม่มีงานอะไรค้างอยู่จริง
      ตอนนี้รอแค่ให้หน้าวาดเสร็จจริง แล้วเผื่อขั้นต่ำไว้กันภาพกระพริบ */
-  const MIN=260, t0=performance.now();
+  /* หมุนครบหนึ่งรอบ (~1 วิ) แล้วไปเลย — ไม่รอ load (รอฟอนต์/Firebase/รูปทั้งหมด = ช้า) */
+  const MIN=1000, t0=performance.now();let gone=false;
   const bye=()=>{
+    if(gone)return;gone=true;
     const wait=Math.max(0,MIN-(performance.now()-t0));
-    setTimeout(()=>{w.classList.add("done");setTimeout(()=>w.remove(),360)},wait);
+    setTimeout(()=>{w.classList.add("done");uiEnter();setTimeout(()=>w.remove(),360)},wait);
   };
-  if(document.readyState==="complete")requestAnimationFrame(bye);
-  else addEventListener("load",()=>requestAnimationFrame(bye),{once:true});
+  if(document.readyState!=="loading")requestAnimationFrame(bye);
+  else addEventListener("DOMContentLoaded",()=>requestAnimationFrame(bye),{once:true});
   setTimeout(bye,3000);   /* กันเหนียว ถ้ามีอะไรค้างจนไม่เกิด load */
 })();
 /* ของเดิมตั้ง midnight (ดำออกน้ำเงิน) เป็นค่าเริ่มต้นของห้องแชต แล้วซิงก์ไปทับธีมที่ผู้ใช้เลือกไว้ทั้งแอป

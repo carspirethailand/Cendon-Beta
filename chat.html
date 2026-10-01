@@ -500,8 +500,9 @@ body[data-phase="thread"] .composer{display:block;animation:compIn .5s cubic-bez
 #hhOrb{width:min(92vw,440px);aspect-ratio:1;max-height:100%}
 .hh-state{margin:0 0 6px;font-size:14px;color:rgba(255,236,214,.65);min-height:20px;transition:color .3s;position:relative;z-index:2}
 .hh-state.ok{color:#ffd9a8}
-.hh-cap{margin:0;width:100%;max-width:520px;min-height:3.4em;max-height:5.1em;overflow:hidden;text-align:center;font-size:18px;line-height:1.7;
-  color:#fff4e8;position:relative;z-index:2;-webkit-mask:linear-gradient(transparent,#000 35%);mask:linear-gradient(transparent,#000 35%);display:flex;flex-direction:column;justify-content:flex-end}
+.hh-cap{margin:0;width:100%;max-width:520px;height:5.2em;overflow:hidden;text-align:center;font-size:18px;line-height:1.75;
+  color:#fff4e8;position:relative;z-index:2;-webkit-mask:linear-gradient(transparent,#000 40%);mask:linear-gradient(transparent,#000 40%);word-break:break-word}
+.hh-cap.user{color:rgba(255,236,214,.6);font-size:16px}
 .hh-ctrl{display:flex;gap:14px;margin-top:22px;position:relative;z-index:2}
 .hh-btn{width:60px;height:60px;border-radius:50%;border:0;display:grid;place-items:center;font-size:24px;color:#fff4e8;cursor:pointer;
   background:rgba(255,236,214,.1);backdrop-filter:blur(16px);transition:transform .15s,background .2s}
@@ -515,7 +516,7 @@ body[data-phase="thread"] .composer{display:block;animation:compIn .5s cubic-bez
 .hearth.cam .hh-cam{display:block;animation:hhIn .4s}
 .hearth.cam .hh-stage{position:absolute;right:22px;bottom:calc(150px + env(safe-area-inset-bottom));width:120px;height:120px;flex:none;z-index:2}
 .hearth.cam #hhOrb{width:120px}
-.hearth.cam .hh-cap{max-height:3.4em;font-size:16px}
+.hearth.cam .hh-cap{height:3.5em;font-size:16px}
 @media (prefers-reduced-motion:reduce){.hearth.show{animation:none}.hh-name i{animation:none}}
 
 /* ===== PRESS BOUNCE + THEME CROSSFADE ===== */
@@ -4640,7 +4641,7 @@ window.spireSetupVersion=SETUP_VERSION;
   <header class="hh-top"><span class="hh-name"><i id="hhDot"></i>Cendon</span><span class="hh-time" id="callTimer">00:00</span></header>
   <div class="hh-stage"><canvas id="hhOrb"></canvas></div>
   <p class="hh-state" id="heardTag">กำลังเชื่อมต่อ...</p>
-  <p class="hh-cap" id="callCaption"></p>
+  <p class="hh-cap nt" id="callCaption"></p>
   <span id="callStatus" hidden></span>
   <footer class="hh-ctrl">
     <button class="hh-btn" id="callCamBtn" onclick="toggleCamera()" type="button" aria-label="กล้อง"><i class="ti ti-video"></i></button>
@@ -6483,7 +6484,7 @@ function b64FromBytes(bytes){
   return btoa(bin);
 }
 function liveSystemPrompt(){
-  return sysPrompt()+"\nตอนนี้กำลังคุยกันด้วยเสียงแบบเรียลไทม์ ตอบสั้นกระชับเป็นธรรมชาติเหมือนช่างคุยโทรศัพท์ ห้ามใช้ markdown ห้ามใช้อีโมจิ ถ้าผู้ใช้เปิดกล้อง ให้ดูภาพที่ส่งมาประกอบการวิเคราะห์ด้วย";
+  return sysPrompt()+"\n"+(lang==="th"||!lang?"พูดภาษาไทยเสมอ ด้วยสำเนียงไทยกลางที่เป็นธรรมชาติ สุภาพ อบอุ่น ลงท้ายด้วยครับ ยกเว้นผู้ใช้พูดภาษาอื่นก่อน ให้ตอบภาษานั้น":"Reply in the same language the user speaks.")+"\nตอนนี้กำลังคุยกันด้วยเสียงแบบเรียลไทม์ ตอบสั้นกระชับเป็นธรรมชาติเหมือนช่างคุยโทรศัพท์ ห้ามใช้ markdown ห้ามใช้อีโมจิ ถ้าผู้ใช้เปิดกล้อง ให้ดูภาพที่ส่งมาประกอบการวิเคราะห์ด้วย";
 }
 function setCallState(state,txt){
   $("callStatus").textContent=txt||"";
@@ -6514,28 +6515,42 @@ function blobPath(g,cx,cy,r,t,amp,seed){
 }
 function drawOrb(){
   const g=orb.ctx;if(!g)return;
-  const W=orb.w,C=W/2,R=W*.26,t=orb.t;
+  const W=orb.w,C=W/2,R=W*.27,t=orb.t,A=orb.a;
   g.clearRect(0,0,W,W);
-  /* ระลอกเสียงผู้ใช้ */
+  /* ระลอกเสียงผู้ใช้ — บางๆ จางเร็ว */
   orb.rings=orb.rings.filter(r=>r.p<1);
   for(const r of orb.rings){
-    r.p+=.012;
-    g.beginPath();g.arc(C,C,R*(1.05+r.p*.85),0,Math.PI*2);
-    g.strokeStyle=`rgba(255,236,214,${(1-r.p)*.45*r.s})`;g.lineWidth=W*.006*(1-r.p)+1;g.stroke();
+    r.p+=.008;
+    g.beginPath();g.arc(C,C,R*(1.08+r.p*.7),0,Math.PI*2);
+    g.strokeStyle=`rgba(255,236,214,${(1-r.p)*(1-r.p)*.32*r.s})`;g.lineWidth=1.5;g.stroke();
   }
-  /* ไอร้อนรอบลูกไฟ */
-  const halo=g.createRadialGradient(C,C,R*.6,C,C,Math.min(C,R*(1.7+orb.a*.4)));
-  halo.addColorStop(0,`rgba(255,140,70,${.28+orb.a*.3})`);halo.addColorStop(1,"rgba(255,140,70,0)");
+  /* แสงรอบตัว */
+  const halo=g.createRadialGradient(C,C,R*.8,C,C,Math.min(C,R*1.75));
+  halo.addColorStop(0,`rgba(255,140,70,${.22+A*.25})`);halo.addColorStop(1,"rgba(255,140,70,0)");
   g.fillStyle=halo;g.fillRect(0,0,W,W);
-  const breathe=1+Math.sin(t*(orb.wait?3:1.1))*.025+orb.a*.16+orb.u*.05;
-  g.globalCompositeOperation="screen";
-  ORB_LAYERS.forEach(([col,sc,seed,al],i)=>{
-    const ox=Math.cos(t*.5+seed)*R*.08*(1+orb.a),oy=Math.sin(t*.6+seed)*R*.08*(1+orb.a);
-    const r=R*sc*breathe,gr=g.createRadialGradient(C+ox-r*.3,C+oy-r*.35,r*.1,C+ox,C+oy,r*1.1);
-    gr.addColorStop(0,`rgba(${col},${al})`);gr.addColorStop(.7,`rgba(${col},${al*.55})`);gr.addColorStop(1,`rgba(${col},0)`);
-    g.fillStyle=gr;blobPath(g,C+ox,C+oy,r,t*(1+orb.a*2)+i,.04+orb.a*.14,seed);g.fill();
+  const rr=R*(1+Math.sin(t*(orb.wait?2.4:.8))*.012+A*.04);
+  g.save();g.beginPath();g.arc(C,C,rr,0,Math.PI*2);g.clip();
+  /* เนื้อลูกแสง: ไล่สีพีชบน → ส้มกลาง → ชมพูล่าง */
+  const body=g.createLinearGradient(0,C-rr,0,C+rr);
+  body.addColorStop(0,"#ffe2bd");body.addColorStop(.5,"#ff9a52");body.addColorStop(1,"#e8577a");
+  g.fillStyle=body;g.fillRect(C-rr,C-rr,rr*2,rr*2);
+  /* คลื่นไหลผ่าน 3 ชั้น — ความสูงคลื่นตามเสียง AI แบบนุ่ม */
+  const waves=[["255,244,226",.35,.9,0],["255,170,110",.45,1.25,2],["255,110,140",.4,.7,4]];
+  waves.forEach(([col,al,sp,ph],i)=>{
+    const base=C+rr*(.05+i*.2)-A*rr*.15,amp=rr*(.05+A*.22)*(1-i*.15);
+    g.beginPath();g.moveTo(C-rr,C+rr);
+    for(let x=-rr;x<=rr;x+=rr/40){
+      const k=x/rr;
+      g.lineTo(C+x,base+Math.sin(k*2.6+t*sp+ph)*amp*Math.cos(k*1.4));
+    }
+    g.lineTo(C+rr,C+rr);g.closePath();
+    g.fillStyle=`rgba(${col},${al})`;g.fill();
   });
-  g.globalCompositeOperation="source-over";
+  /* เงาเงาแก้วด้านบน */
+  const gl=g.createRadialGradient(C-rr*.35,C-rr*.45,0,C-rr*.35,C-rr*.45,rr*.9);
+  gl.addColorStop(0,"rgba(255,255,255,.45)");gl.addColorStop(1,"rgba(255,255,255,0)");
+  g.fillStyle=gl;g.fillRect(C-rr,C-rr,rr*2,rr*2);
+  g.restore();
 }
 function gaugeLoop(){
   if(!$("callUI").classList.contains("show")){callRaf=0;return}
@@ -6545,9 +6560,9 @@ function gaugeLoop(){
     aiLevel=Math.min(1,Math.sqrt(s/buf.length)*5);
   }
   const mu=callMuted?0:Math.min(1,micLevel*6);micLevel*=.86;
-  orb.a+=(aiLevel-orb.a)*(aiLevel>orb.a?.35:.08);
+  orb.a+=(Math.min(1,aiLevel*1.4)-orb.a)*(aiLevel>orb.a?.06:.03);
   orb.u+=(mu-orb.u)*(mu>orb.u?.4:.1);
-  orb.t+=1/60;
+  orb.t+=(1+orb.a*1.2)/60;
   if(orb.u>.1&&performance.now()-orb.lastRing>420){orb.rings.push({p:0,s:Math.min(1,orb.u*1.6)});orb.lastRing=performance.now()}
   $("callUI").style.setProperty("--glow",(.14+orb.a*.22).toFixed(3));
   drawOrb();
@@ -6688,17 +6703,23 @@ function openLiveWS(token,model){
   });
 }
 
+function setCaption(who,txt){
+  const el=$("callCaption");
+  el.className="hh-cap nt "+who;
+  el.textContent=(txt||"").replace(/\s+/g," ").trim();
+  el.scrollTop=el.scrollHeight;
+}
 function handleLiveMsg(msg){
   const sc=msg.serverContent;if(!sc)return;
   if(sc.interrupted){flushPlayback();return}
   if(sc.inputTranscription&&sc.inputTranscription.text){
     heardAt=Date.now();
     liveUserText+=sc.inputTranscription.text;
-    $("callCaption").textContent="› "+liveUserText.slice(-160);
+    setCaption("user",liveUserText);
   }
   if(sc.outputTranscription&&sc.outputTranscription.text){
     liveAiText+=sc.outputTranscription.text;
-    $("callCaption").textContent=liveAiText.slice(-180);
+    setCaption("ai",liveAiText);
   }
   if(sc.modelTurn&&sc.modelTurn.parts)
     for(const p of sc.modelTurn.parts)if(p.inlineData&&p.inlineData.data){liveGotAudio=true;queuePcm(p.inlineData.data)}

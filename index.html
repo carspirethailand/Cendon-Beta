@@ -2004,7 +2004,9 @@ const RAIL=[
   {id:"tow",base:"mobile",th:"รถยก ลากรถ",ic:"ti-truck-loading",c:"#b45309",c2:"#fbbf24"},
   {id:"urgent",th:"งานด่วน",ic:"ti-urgent",c:"#e11d48",c2:"#fb7185"},
   {id:"map",th:"แผนที่",ic:"ti-map-2",c:"#0369a1",c2:"#38bdf8"}];
-const railIc=c=>`<span class="lx-ri" style="--a:${c.c||"#F07A36"};--b:${c.c2||c.c||"#F07A36"}"><img src="img/cat/${c.id}.png" alt="" onerror="this.remove()"/><i class="ti ${c.ic}"></i></span>`;
+/* รูปไอคอน 3D: ใส่ชื่อหมวดที่มีไฟล์จริงใน img/cat/ ลงรายการนี้ — ไม่มีไฟล์ไม่ต้องโหลด (กันคำขอ 404 ทั้งแถวบนมือถือ) */
+const CAT_IMG=new Set([]);
+const railIc=c=>`<span class="lx-ri" style="--a:${c.c||"#F07A36"};--b:${c.c2||c.c||"#F07A36"}">${CAT_IMG.has(c.id)?`<img src="img/cat/${c.id}.png" alt="" onerror="this.remove()"/>`:""}<i class="ti ${c.ic}"></i></span>`;
 function profCard(t,i){
   const cov=t.cover,av=t.avatar,d=t.dist!=null?distTxt(t.dist):"";
   return `<button class="lx-pc" data-id="${esc(t.id)}" style="animation-delay:${Math.min(i*50,500)}ms">

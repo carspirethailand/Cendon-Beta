@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-<title>Cendon Care</title>
+<title>Cendon Fix</title>
 <meta name="theme-color" content="#131316"/>
 <link rel="manifest" href="./manifest.webmanifest"/>
 <link rel="icon" href="./favicon.png"/>
@@ -715,7 +715,7 @@ body.onmap .mfilt{left:68px;top:calc(env(safe-area-inset-top) + 16px)}
 body.onmap .modes{display:none}
 /* ══ dashboard ช่าง ══ */
 .dash{max-width:1180px;margin:0 auto;padding:8px 16px calc(40px + env(safe-area-inset-bottom))}
-/* ═══ SPLASH Cendon Care ═══ */
+/* ═══ SPLASH Cendon Fix ═══ */
 .cc-splash{position:fixed;top:0;left:0;width:100vw;height:100vh;height:100dvh;z-index:2147483000;overflow:hidden;background:#0d0b0a;color:#fff4e8;
   transition:opacity .6s cubic-bezier(.32,.72,0,1),filter .6s}
 .cc-splash.out{opacity:0;filter:blur(10px);pointer-events:none}
@@ -748,15 +748,22 @@ body.onmap .modes{display:none}
 .cc-sign .sh path{fill:#0a0706}
 @keyframes ccShade{from{transform:translate(-2%,0) skewX(-3deg) scale(1);filter:blur(6px)}to{transform:translate(3%,2%) skewX(3deg) scale(1.04);filter:blur(10px)}}
 .cc-vig{position:absolute;inset:0;background:radial-gradient(120% 90% at 40% 45%,transparent 40%,rgba(0,0,0,.65));pointer-events:none}
-/* ชื่อ: Cendon Care → กระโดดถอยหลังแบบเหลว → ช่างใกล้คุณ */
+/* ชื่อ: Cendon + คำว่าซ่อมหลายภาษา เขียนสลับกันแบบลากปากกา */
 .cc-title{position:absolute;left:0;right:0;top:42%;display:grid;place-items:center;perspective:800px}
-.cc-a,.cc-b{grid-area:1/1;display:flex;align-items:center;gap:14px;white-space:nowrap}
-.cc-a b,.cc-b b{font-family:var(--kd,inherit);font-weight:700;font-size:clamp(30px,7vmin,54px);letter-spacing:-.5px}
+.cc-a{grid-area:1/1;display:flex;align-items:center;gap:14px;white-space:nowrap}
+.cc-a b{font-family:var(--kd,inherit);font-weight:700;font-size:clamp(30px,7vmin,54px);letter-spacing:-.5px}
+ /* คำที่เขียนสลับภาษา: เส้นปากกาลากตามรูปตัวอักษร + หน้ากากเปิดจากซ้ายไปขวาตามหัวปากกา แล้วหมึกค่อยเติมเต็ม */
+.cc-w{height:clamp(40px,8.6vmin,70px);width:auto;aspect-ratio:330/80;overflow:visible;margin-left:4px}
+.cc-a{transform:translateX(calc(clamp(40px,8.6vmin,70px)*-1.5))}
+.cc-w text{font-family:var(--kd,inherit);font-weight:700;font-size:56px;fill:url(#ccPen);fill-opacity:0;stroke:#ffd2a6;stroke-width:1.3;stroke-linejoin:round;
+  stroke-dasharray:var(--len,600);stroke-dashoffset:var(--len,600)}
+.cc-w text.draw{animation:ccInk .95s cubic-bezier(.45,.05,.3,1) forwards}
+.cc-w text.erase{animation:ccErase .32s ease-in forwards}
+@keyframes ccInk{60%{fill-opacity:0}100%{stroke-dashoffset:0;fill-opacity:1;stroke-opacity:.15}}
+@keyframes ccErase{from{stroke-dashoffset:0;fill-opacity:1;filter:blur(0)}to{stroke-dashoffset:0;fill-opacity:0;stroke-opacity:0;filter:blur(6px);transform:translateY(-6px)}}
+#ccNib{fill:#fff4e8;filter:drop-shadow(0 0 6px #f08a4b);opacity:0}
 .cc-mk{width:clamp(34px,7vmin,52px);display:block}.cc-mk svg{width:100%;display:block}.cc-mk path{fill:#f08a4b}
-.cc-a{animation:ccIn .7s cubic-bezier(.22,.61,.12,1) .1s both,ccJump .95s cubic-bezier(.5,0,.2,1) 1.35s forwards}
-.cc-a .cc-mk{animation:ccGoo .95s cubic-bezier(.5,0,.2,1) 1.35s both}
-.cc-b{opacity:0;animation:ccRise .9s cubic-bezier(.22,.61,.12,1) 1.95s forwards}
-.cc-b b{background:linear-gradient(90deg,#fff4e8,#ffc58f);-webkit-background-clip:text;background-clip:text;color:transparent}
+.cc-a{animation:ccIn .7s cubic-bezier(.22,.61,.12,1) .1s both}
 @keyframes ccIn{from{opacity:0;transform:translateY(18px);filter:blur(10px)}to{opacity:1;transform:none;filter:none}}
 /* กระโดดถอยหลัง: ยุบลงก่อน (เตรียมตัว) แล้วพุ่งขึ้นไกลลงไปในจอ เล็กลง เบลอ จาง */
 @keyframes ccJump{0%{transform:none}18%{transform:translateY(6px) scale(1.04,.92)}45%{transform:translate3d(0,-26px,-120px) scale(.9,1.06);filter:blur(1px);opacity:1}
@@ -769,7 +776,7 @@ body.onmap .modes{display:none}
   animation:ccLoad 2.6s cubic-bezier(.32,.72,0,1) .15s forwards}
 @keyframes ccLoad{to{transform:scaleX(.92)}}
 .cc-splash.done .cc-bar i{animation:none;transform:scaleX(1);transition:transform .25s ease-out}
-@media(prefers-reduced-motion:reduce){.cc-room,.cc-a,.cc-a .cc-mk,.cc-b{animation:none}.cc-b{opacity:1}.cc-a{opacity:0}}
+@media(prefers-reduced-motion:reduce){.cc-room,.cc-a{animation:none}}
 /* ไม่มีปุ่มสลับลูกค้า/ช่างแล้ว — Studio เข้าจากปุ่มโปรไฟล์ */
 .modes{display:none!important}
 .studio-bar{display:flex;align-items:center;gap:10px;margin-bottom:12px}
@@ -885,13 +892,16 @@ html[data-theme="dark"] .fmap .leaflet-tile-pane{filter:invert(1) hue-rotate(180
 </style>
 </head>
 <body>
-<!-- SPLASH "Cendon Care": ห้องมุม 3/4 มีโลโก้ติดผนังมุมขวาล่าง ฉากขยับช้าๆ · ชื่อ Cendon Care กระโดดถอยไปข้างหลังแบบเหลว แล้ว "ช่างใกล้คุณ" โผล่ขึ้นมาแทน · แถบโหลดบางเฉียบขอบล่างจอ -->
+<!-- SPLASH "Cendon Fix": ห้องมุม 3/4 ฉากขยับช้าๆ · ชื่อ Cendon Care กระโดดถอยไปข้างหลังแบบเหลว แล้ว "ช่างใกล้คุณ" โผล่ขึ้นมาแทน · แถบโหลดบางเฉียบขอบล่างจอ -->
 <div class="cc-splash" id="ccSplash" aria-hidden="true">
   <div class="cc-room"><div class="cc-wall l"></div><div class="cc-wall r"></div><div class="cc-floor"></div></div>
   <div class="cc-vig"></div>
   <div class="cc-title">
-    <div class="cc-a"><span class="cc-mk"><svg viewBox="-6.0 -6.0 94.8 112.0" aria-hidden="true"><path d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg></span><b>Cendon Care</b></div>
-    <div class="cc-b"><b>ช่างใกล้คุณ</b></div>
+    <div class="cc-a"><span class="cc-mk"><svg viewBox="-6.0 -6.0 94.8 112.0" aria-hidden="true"><path d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg></span><b>Cendon</b>
+      <svg class="cc-w" id="ccW" viewBox="0 0 330 80" aria-hidden="true"><defs><linearGradient id="ccPen" x1="0" x2="1"><stop offset="0" stop-color="#ffd7b0"/><stop offset="1" stop-color="#f08a4b"/></linearGradient>
+        <mask id="ccRev"><rect id="ccRevR" x="0" y="0" width="0" height="80" fill="#fff"/></mask></defs>
+        <text id="ccTx" x="2" y="58" mask="url(#ccRev)">Fix</text><circle id="ccNib" r="3.2" cx="0" cy="58"/></svg>
+    </div>
   </div>
   <div class="cc-bar"><i></i></div>
 </div>
@@ -1453,9 +1463,33 @@ async function load(){
 }
 /* ปิดหน้าโหลด: รอให้แอนิเมชันชื่อเล่นจบ (~2.9 วิ) และรายชื่อช่างพร้อม แล้วเติมแถบเต็ม → จางหายแบบเบลอ */
 const CC_T0=performance.now();let ccGone=false;
+/* Cendon + "ซ่อม" ในหลายภาษา สลับทุก ~1.7 วิ เขียนเหมือนลากปากกา */
+(function(){
+  const W=["Fix","ซ่อม","修理","수리","Repara","Répare","Repariert","Perbaiki","Sửa"];
+  const tx=document.getElementById("ccTx");if(!tx)return;
+  const rr=document.getElementById("ccRevR"),nib=document.getElementById("ccNib"),svg=document.getElementById("ccW");
+  let i=0,raf=0;
+  const write=w=>{
+    tx.textContent=w;tx.classList.remove("draw","erase");
+    let bb;try{bb=tx.getBBox()}catch(e){bb={x:0,width:120}}
+    tx.style.setProperty("--len",Math.round(bb.width*9+200));
+    void tx.getBBox();tx.classList.add("draw");
+    const t0=performance.now(),D=900;cancelAnimationFrame(raf);
+    const step=t=>{const k=Math.min(1,(t-t0)/D),e=1-Math.pow(1-k,2.2),x=bb.x+bb.width*e+4;
+      rr.setAttribute("width",x);nib.setAttribute("cx",x);nib.setAttribute("cy",58-Math.sin(k*Math.PI*6)*7-10);
+      nib.style.opacity=k<1?1:0;if(k<1)raf=requestAnimationFrame(step)};
+    rr.setAttribute("width",0);raf=requestAnimationFrame(step);
+  };
+  write(W[0]);
+  const loop=setInterval(()=>{
+    if(!document.getElementById("ccSplash")){clearInterval(loop);return}
+    tx.classList.remove("draw");tx.classList.add("erase");
+    setTimeout(()=>{i=(i+1)%W.length;write(W[i])},330);
+  },1750);
+})();
 function ccDone(){
   const el=$("ccSplash");if(!el||ccGone)return;ccGone=true;
-  const wait=Math.max(0,2900-(performance.now()-CC_T0));
+  const wait=Math.max(0,3500-(performance.now()-CC_T0));
   setTimeout(()=>{el.classList.add("done");setTimeout(()=>{el.classList.add("out");setTimeout(()=>el.remove(),650)},260)},wait);
 }
 setTimeout(ccDone,7000);

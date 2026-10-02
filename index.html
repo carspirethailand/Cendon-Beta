@@ -1140,6 +1140,25 @@ body{background:var(--bg);letter-spacing:-.005em}
 .lx-addcar .lx-cart small{white-space:normal;line-height:1.45;margin-top:2px}
 .lx-plus{width:34px;height:34px;flex:none;border-radius:50%;display:grid;place-items:center;color:#fff;background:var(--co)}
 .lx-dxcar{margin:0 0 14px;font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:center;flex-wrap:wrap}.lx-dxcar b{color:var(--ink);font-weight:600}.lx-dxcar a{color:var(--co)}
+
+/* Cendon เลือกช่างให้ */
+.lx-pick:empty{display:none}
+.lx-pick{margin:0 0 22px}
+.lx-res.find .lx-pick{order:-1}
+.lx-pkh{margin:0 0 10px;font:600 13px var(--kb);color:var(--muted);display:flex;gap:6px;align-items:center}.lx-pkh .ti{color:var(--co)}
+.lx-pk{border-radius:20px;overflow:hidden;border:1px solid color-mix(in srgb,var(--co) 45%,var(--line));background:var(--surface);box-shadow:var(--shadow);animation:chIn .5s cubic-bezier(.32,.72,0,1)}
+.lx-pkv{aspect-ratio:21/7;background:radial-gradient(120% 140% at 85% 0%,var(--co-soft),transparent 60%),var(--surface-2) center/cover}
+.lx-pkb{display:flex;gap:12px;padding:0 18px}.lx-pkb .lx-pav{width:64px;height:64px;margin-top:-28px;font-size:24px}
+.lx-pkt{padding-top:10px;min-width:0}.lx-pkt b{font:700 18px/1.3 var(--kd);display:block}.lx-pkt b .ti{font-size:.8em;color:var(--muted)}.lx-pkt small{color:var(--muted);font-size:13px}
+.lx-why{list-style:none;margin:12px 18px 0;padding:0;display:grid;gap:6px}
+.lx-why li{display:flex;gap:8px;align-items:center;font-size:14px}.lx-why .ti{color:var(--co);font-size:16px}
+.lx-pka{display:flex;gap:8px;flex-wrap:wrap;padding:16px 18px 18px}.lx-pka .lx-cta{flex:1}
+.lx-pks{margin:16px 0 8px;font-size:12.5px;color:var(--muted)}
+.lx-pkalt{display:grid;gap:8px}
+.lx-pkm{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);text-align:left;cursor:pointer}
+.lx-pkm:hover{border-color:var(--co)}.lx-pkm .lx-pav{width:40px;height:40px;margin:0;font-size:16px;border-width:0}
+.lx-pkm>span:nth-child(2){flex:1;min-width:0;display:flex;flex-direction:column}.lx-pkm b{font-weight:600}.lx-pkm small{font-size:12px;color:var(--muted)}
+.lx-res{display:flex;flex-direction:column}.lx-res>.lx-cath{order:-2}
 </style>
 <style id="navcss">
 /* navbar เดิม ยกมาจากหน้าอื่นทั้งชุด */
@@ -1391,6 +1410,7 @@ html[data-theme="light"] .mnav,html[data-theme="plant"] .mnav{
 <section class="view lx-cat lx-res" id="vRes" hidden>
   <div class="lx-cath"><button class="lx-gh lx-ic" id="resBack" aria-label="กลับ"><i class="ti ti-arrow-left"></i></button>
     <div><p class="lx-eyebrow">อาการที่คุณเล่า</p><h1 id="resQ" class="nt"></h1></div></div>
+  <div class="lx-pick" id="resPick"></div>
   <div class="lx-ai" id="resAi"></div>
   <div class="lx-sh" id="resSh" hidden><h2 id="resT">ช่างที่ซ่อมได้ใกล้คุณ</h2><button class="lx-link" id="resMulti" type="button">ขอราคา 3 ร้านพร้อมกัน <i class="ti ti-arrow-right"></i></button></div>
   <div class="lx-cards" id="resList"></div>
@@ -1914,6 +1934,8 @@ function openRes(q,noHist){
   $("resQ").textContent=q;$("vMenu").hidden=true;$("vCat").hidden=true;$("vRes").hidden=false;window.scrollTo(0,0);
   if(!noHist)try{history.pushState({res:q},"")}catch(e){}
   const cat=catsOf(q)[0]||"";
+  const findOnly=/หาช่าง|หาร้าน|หาอู่|ร้านไหน|อู่ไหน|ช่างใกล้|แนะนำช่าง|แนะนำร้าน|แนะนำอู่/.test(q);
+  $("vRes").classList.toggle("find",findOnly);
   drawResTechs(cat);
   $("resAi").innerHTML='<div class="lx-think"><span class="lx-orb"></span><div><b>กำลังดูอาการให้…</b><small>วิเคราะห์สาเหตุ ความรุนแรง และค่าซ่อมโดยประมาณ</small></div></div>';
   const cars=ls.get("spire_garage",[]),car=cars.find(c=>c.id===ls.get("spire_selCar",""))||cars[0]||null;
@@ -1934,7 +1956,46 @@ function openRes(q,noHist){
     </article>`;
   }).catch(err=>{if(RESQ!==q)return;$("resAi").innerHTML=`<div class="lx-think off"><i class="ti ti-cloud-off"></i><div><b>${/quota|429/.test(err.message)?"วันนี้ใช้ AI ครบโควตาแล้ว":"ตอนนี้วิเคราะห์ไม่ได้"}</b><small>ดูช่างที่เกี่ยวข้องด้านล่างได้เลย หรือ <a href="chat.html?q=${encodeURIComponent(q)}">คุยกับ AI</a></small></div></div>`});
 }
+/* ═══ Cendon เลือกช่างให้ ═══
+   ให้คะแนนทุกร้านจาก: ตรงหมวดงาน · เปิดรับงานอยู่ · คะแนนรีวิว+จำนวนรีวิว · ระยะทาง · ยืนยันตัวตน · มาถึงที่ (ถ้าอาการดูด่วน)
+   แล้วยกร้านที่ดีที่สุดขึ้นจอพร้อมเหตุผลที่เลือก ไม่ต้องไล่ดูเอง */
+const URGENT_RE=/ด่วน|กลางทาง|สตาร์ทไม่ติด|ยางแบน|แบตหมด|ควัน|ไฟไหม้|เบรกไม่อยู่|ข้างทาง/;
+function pickTechs(cat,q){
+  const urgent=URGENT_RE.test(q||"");
+  return TECHS.map(t=>({...t,dist:km(HERE,t)})).map(t=>{
+    const why=[];let sc=0;
+    if(cat&&(t.cats||[]).includes(cat)){sc+=40;why.push(`ถนัดงาน${CAT[cat].th}`)}else if(cat)sc-=30;
+    if(t.online){sc+=14;why.push("เปิดรับงานอยู่ตอนนี้")}
+    if(t.reviewCount){sc+=t.rating*7+Math.min(10,Math.log2(1+t.reviewCount)*2);if(t.rating>=4.5)why.push(`รีวิว ★${Number(t.rating).toFixed(1)} จาก ${t.reviewCount} คน`)}
+    if(t.dist!=null){sc-=Math.min(30,t.dist*1.2);if(t.dist<=5)why.push(`ใกล้คุณ ${distTxt(t.dist)}`)}
+    if(t.verified){sc+=5;why.push("ยืนยันตัวตนแล้ว")}
+    if(urgent&&t.mobile){sc+=18;why.push("ออกไปซ่อมถึงที่ได้")}
+    if(urgent&&t.urgent){sc+=10;why.push("รับงานด่วน")}
+    if(t.jobs>=20){sc+=4;why.push(`ซ่อมสำเร็จแล้ว ${t.jobs} งาน`)}
+    return {t,sc,why};
+  }).filter(x=>!cat||(x.t.cats||[]).includes(cat)||x.sc>0).sort((a,b)=>b.sc-a.sc).slice(0,3);
+}
+function drawPick(cat){
+  const host=$("resPick");if(!LOADED||!TECHS.length){host.innerHTML="";return}
+  const P=pickTechs(cat,RESQ);if(!P.length){host.innerHTML="";return}
+  const [top,...alt]=P,t=top.t,cov=t.cover,av=t.avatar;
+  host.innerHTML=`<p class="lx-pkh"><i class="ti ti-sparkles"></i>Cendon เลือกช่างให้คุณ</p>
+    <article class="lx-pk">
+      <div class="lx-pkv"${cov?` style="background-image:url('${img(cov)}')"`:""}></div>
+      <div class="lx-pkb">
+        <span class="lx-pav"${av?` style="background-image:url('${img(av)}')"`:""}>${av?"":initial(t.shop||t.name)}</span>
+        <div class="lx-pkt"><b class="nt">${esc(t.shop||t.name)}${t.verified?' <i class="ti ti-rosette-discount-check-filled"></i>':""}</b>
+          <small>${t.reviewCount?`★ ${Number(t.rating).toFixed(1)} (${t.reviewCount})`:"ร้านใหม่"}${t.dist!=null?" · "+distTxt(t.dist):""}${t.from?` · เริ่ม ฿${money(t.from)}`:""}</small></div>
+      </div>
+      <ul class="lx-why">${top.why.slice(0,4).map(w=>`<li><i class="ti ti-check"></i>${w}</li>`).join("")}</ul>
+      <div class="lx-pka"><button class="lx-cta" id="pkBook">ขอราคาร้านนี้</button><button class="lx-gh" id="pkOpen">ดูหน้าร้าน</button>${t.phone?`<a class="lx-gh lx-ic" href="tel:${esc(t.phone)}" aria-label="โทร"><i class="ti ti-phone"></i></a>`:""}</div>
+    </article>
+    ${alt.length?`<p class="lx-pks">ตัวเลือกอื่นที่ใกล้เคียง</p><div class="lx-pkalt">${alt.map(x=>`<button class="lx-pkm" data-id="${esc(x.t.id)}"><span class="lx-pav"${x.t.avatar?` style="background-image:url('${img(x.t.avatar)}')"`:""}>${x.t.avatar?"":initial(x.t.shop||x.t.name)}</span><span><b class="nt">${esc(x.t.shop||x.t.name)}</b><small>${x.why[0]||""}</small></span><i class="ti ti-chevron-right"></i></button>`).join("")}</div>`:""}`;
+  $("pkBook").onclick=()=>book(t);$("pkOpen").onclick=()=>openTech(t.id);
+  host.querySelectorAll(".lx-pkm").forEach(b=>b.onclick=()=>openTech(b.dataset.id));
+}
 function drawResTechs(cat){
+  drawPick(cat);
   const l=shown({cat:cat||"all",q:cat?"":RESQ}).slice(0,9);
   $("resSh").hidden=false;$("resT").textContent=cat&&CAT[cat]?`ช่าง${CAT[cat].th}ใกล้คุณ`:"ช่างใกล้คุณ";
   $("resList").innerHTML=!LOADED?'<div class="skel"></div><div class="skel"></div>':l.length?l.map(profCard).join(""):'<div class="empty"><b>ยังไม่มีช่างในหมวดนี้แถวนี้</b>ลองขอราคาหลายร้านพร้อมกัน</div>';
@@ -1973,6 +2034,8 @@ function drawQuick(){
 (function(){
   const go=v=>{v=(v||"").trim();if(v.length<3){$("hq").focus();return}openRes(v)};
   $("hForm").onsubmit=e=>{e.preventDefault();go($("hq").value)};
+  /* มือถือบางรุ่น/บางเบราว์เซอร์ไม่ยิง submit จากปุ่มในฟอร์มที่มี textarea — ผูกที่ปุ่มตรงๆ ด้วย */
+  $("hForm").querySelector(".lx-cta").addEventListener("click",e=>{e.preventDefault();go($("hq").value)});
   const tags=["แอร์ไม่เย็น","เบรกมีเสียง","สตาร์ทไม่ติด","ไฟเช็กเอนจิ้นขึ้น","เครื่องสั่น","ยางรั่ว"];
   $("hTags").innerHTML=tags.map(t=>`<button type="button">${t}</button>`).join("");
   $("hTags").querySelectorAll("button").forEach(b=>b.onclick=()=>{$("hq").value=b.textContent;go(b.textContent)});
@@ -3306,7 +3369,8 @@ async function pullCars(){
     const who=u!==undefined?u:c;
     $("signinBtn").style.display=who?"none":"flex";$("avatarBtn").style.display=who?"block":"none";
     if(who){const ph=who.photoURL||who.photo,nm=who.displayName||who.name||who.email||"?";
-      $("avatarBtn").innerHTML=ph?`<img src="${ph}" alt="" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:`<span class="fb">${String(nm).trim().charAt(0).toUpperCase()}</span>`}
+      /* รูปแบบเดียวกับหน้าอื่นเป๊ะ (picHTML) — แถบล่างมือถือคัดลอกก้อนนี้ไปใส่แท็บบัญชี */
+      $("avatarBtn").innerHTML=ph?`<img src="${ph}" referrerpolicy="no-referrer">`:`<span class="fb">${String(nm).trim().charAt(0).toUpperCase()}</span>`}
   };
   navPaint();
 })();

@@ -715,6 +715,42 @@ body.onmap .mfilt{left:68px;top:calc(env(safe-area-inset-top) + 16px)}
 body.onmap .modes{display:none}
 /* ══ dashboard ช่าง ══ */
 .dash{max-width:1180px;margin:0 auto;padding:8px 16px calc(40px + env(safe-area-inset-bottom))}
+/* ═══ หน้าร้าน (storefront) ═══ */
+.bs.store .hd{position:absolute;top:0;left:0;right:0;z-index:3;background:none;border:0}
+.bs.store .hd .ib,.bs.store .hd button{background:rgba(0,0,0,.38);color:#fff;backdrop-filter:blur(10px)}
+.bs.store .bd{padding-top:0}
+.sf{margin:0 -16px}
+.sf-cover{position:relative;height:clamp(170px,30vh,260px);background:linear-gradient(135deg,var(--c1),color-mix(in srgb,var(--c1) 55%,#000));background-size:cover;background-position:center;cursor:zoom-in}
+.sf-cover::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.25),transparent 35%,transparent 60%,rgba(0,0,0,.35));pointer-events:none}
+.sf-mine,.sf-live{position:absolute;z-index:1;left:16px;bottom:14px;display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;font-size:12px;font-weight:600;color:#fff;background:rgba(0,0,0,.45);backdrop-filter:blur(10px)}
+.sf-live{left:auto;right:16px}
+.sf-mine{left:auto;right:16px;bottom:56px}.sf-live i{width:7px;height:7px;border-radius:50%;background:#3be27a;box-shadow:0 0 8px #3be27a}
+.sf-id{display:flex;align-items:flex-end;gap:12px;padding:0 16px;margin-top:-34px;position:relative;z-index:2}
+.sf-av{width:76px;height:76px;flex:none;border-radius:22px;display:grid;place-items:center;font-size:30px;font-weight:700;color:#fff;background:var(--c1);border:4px solid var(--surface);box-shadow:0 10px 24px rgba(0,0,0,.25)}
+.sf-nm{min-width:0;padding-top:40px}
+.sf-nm h2{margin:0;font-family:var(--kd);font-size:21px;line-height:1.25;display:flex;align-items:center;gap:6px}
+.sf-nm p{margin:3px 0 0;font-size:13px;color:var(--muted)}
+.sf-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:8px;margin:16px;}
+.sf-stats div{padding:12px 8px;border-radius:14px;background:var(--surface-2);text-align:center}
+.sf-stats b{display:block;font-size:16px}.sf-stats small{font-size:11.5px;color:var(--muted)}
+.sf .tags{padding:0 16px}
+.sf-about{margin:14px 16px 0;font-size:14px;line-height:1.75;white-space:pre-wrap}
+.sf-empty{color:var(--muted);font-style:italic}
+.sf-info{margin:14px 16px 0;border-radius:14px;background:var(--surface-2);overflow:hidden}
+.sf-info div{display:flex;gap:10px;align-items:center;padding:11px 14px;font-size:13.5px}
+.sf-info div+div{border-top:1px solid var(--line)}
+.sf-info .ti{color:var(--accent);font-size:18px}
+.sf-h{margin:20px 16px 8px;font-weight:700;font-size:14px}
+.sf-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:0 16px 8px}
+.sf-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;cursor:zoom-in}
+.sf-prev{border-radius:20px;overflow:hidden;background:var(--surface);padding:0 16px 14px}
+.sf-prev .sf-cover{cursor:default}
+.sf-ed{height:150px;border-radius:16px;display:grid;place-items:center;margin-bottom:6px;cursor:default}
+.sf-ed .btn{position:relative;z-index:1;background:rgba(0,0,0,.5);color:#fff;border:0}
+.doc .cv{position:absolute;left:4px;bottom:4px;width:26px;height:26px;border-radius:50%;border:0;display:grid;place-items:center;background:rgba(0,0,0,.5);color:#fff;font-size:14px}
+.doc .cv.on{background:#f5a623}
+.mine-tag{margin-left:6px;padding:2px 8px;border-radius:999px;font-style:normal;font-size:11px;font-weight:600;color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.dhead #dStore{width:38px;height:38px;border-radius:12px;border:0;flex:none;display:grid;place-items:center;font-size:19px;color:var(--ink);background:var(--surface-2);cursor:pointer}
 .dhead{position:relative;overflow:hidden;isolation:isolate;display:flex;align-items:center;gap:12px;padding:14px;border-radius:20px;background:var(--surface)}
 .dhead .wf{z-index:-1}
 .dhead .sq{width:48px;height:48px;font-size:20px;font-weight:700;flex-shrink:0;background-size:cover!important;background-position:center!important}
@@ -1126,7 +1162,7 @@ function sheet(o){
   $("bsB").innerHTML=(o.body||"")+'<p class="err" id="err" role="alert"></p>';
   $("bsF").innerHTML=o.foot||"";
   $("bsBack").hidden=!SH.stack.length;
-  bs.classList.toggle("full",!!o.full);
+  bs.classList.toggle("full",!!o.full);bs.classList.toggle("store",!!o.store);
   $("bsB").scrollTop=0;
   if(!was){bs.classList.add("on");bs.setAttribute("aria-hidden","false");document.body.style.overflow="hidden";try{history.pushState({sheet:1},"")}catch(e){}}
   if(o.mount)o.mount($("bsB"),$("bsF"));
@@ -1134,7 +1170,7 @@ function sheet(o){
 function back(){const prev=SH.stack.pop();if(prev){prev.push=false;sheet(prev)}else closeSheet()}
 function closeSheet(fromPop){
   const bs=$("bs");if(!bs.classList.contains("on"))return;
-  bs.classList.remove("on");bs.setAttribute("aria-hidden","true");document.body.style.overflow="";
+  bs.classList.remove("on","store");bs.setAttribute("aria-hidden","true");document.body.style.overflow="";
   SH.stack=[];stopJob();
   const cb=SH.onClose;SH.onClose=null;if(cb)cb();
   if(!fromPop&&history.state&&history.state.sheet)goBack();
@@ -1148,6 +1184,14 @@ function zoom(src){const z=document.createElement("div");z.className="zoom";z.in
    แผนที่สร้างตอนเปิดครั้งแรกเท่านั้น — สร้างตอนซ่อนอยู่ Leaflet วัดขนาดเป็นศูนย์
    แล้วซูมออกไปทั้งทวีป (อาการที่เห็นในภาพหน้าจอ) */
 let VIEW="menu";
+/* แผนที่ทุกอันในหน้านี้: เหลือโลกเดียว (ของเดิมซูมออกแล้วเห็นโลกซ้ำหลายอัน) */
+function oneWorld(m){
+  try{const B=window.L.latLngBounds([[-85,-180],[85,180]]);
+    m.setMaxBounds(B);m.options.maxBoundsViscosity=1;
+    const fit=()=>{const z=m.getBoundsZoom(B,true);m.setMinZoom(Math.max(2,Math.ceil(z)))};
+    fit();m.on("resize",fit);}catch(e){}
+  return m;
+}
 function setView(v,noHist){
   VIEW=v;
   $("vMenu").hidden=v!=="menu";$("vMap").hidden=v!=="map";
@@ -1169,8 +1213,8 @@ let MINI=null,MINIL=null;
 function drawMini(){
   const n=shown().length;$("mwN").textContent=LOADED?(TH?`${n} ร้าน${HERE?" · เรียงตามระยะ":""}`:`${n} shops${HERE?" · by distance":""}`):"";
   if(!window.L)return;
-  if(!MINI){$("miniMap").innerHTML="";MINI=L.map("miniMap",{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,touchZoom:false,boxZoom:false,keyboard:false,tap:false});
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(MINI);MINIL=L.layerGroup().addTo(MINI)}
+  if(!MINI){$("miniMap").innerHTML="";MINI=oneWorld(L.map("miniMap",{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,touchZoom:false,boxZoom:false,keyboard:false,tap:false}));
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,noWrap:true,bounds:[[-85,-180],[85,180]]}).addTo(MINI);MINIL=L.layerGroup().addTo(MINI)}
   MINIL.clearLayers();const pts=[];
   shown().slice(0,40).forEach(t=>{if(t.lat==null)return;pts.push([t.lat,t.lng]);L.circleMarker([t.lat,t.lng],{radius:6,color:"#fff",weight:2,fillColor:colorOf(t),fillOpacity:1}).addTo(MINIL)});
   if(HERE){pts.push([HERE.lat,HERE.lng]);L.circleMarker([HERE.lat,HERE.lng],{radius:7,color:"#fff",weight:3,fillColor:"#3b82f6",fillOpacity:1}).addTo(MINIL)}
@@ -1186,8 +1230,8 @@ function initMap(){
   if(!window.L){$("map").innerHTML='<div class="map-off"><i class="ti ti-map-off"></i></div>';return}
   $("map").innerHTML="";
   const c=HERE||{lat:13.7563,lng:100.5018};
-  MAP=L.map("map",{zoomControl:false,attributionControl:false}).setView([c.lat,c.lng],HERE?13:11);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(MAP);
+  MAP=oneWorld(L.map("map",{zoomControl:false,attributionControl:false})).setView([c.lat,c.lng],HERE?13:11);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,noWrap:true,bounds:[[-85,-180],[85,180]]}).addTo(MAP);
   LAYER=L.layerGroup().addTo(MAP);
   setTimeout(()=>{MAP.invalidateSize();drawPins(true)},60);drawMe();
 }
@@ -1262,7 +1306,7 @@ const distTxt=d=>d==null?"":d<1?Math.round(d*1000)+" ม.":d+" กม.";
 function card(t,i){
   const stars=t.reviewCount?`<span class="st"><i class="ti ti-star-filled"></i> ${Number(t.rating).toFixed(1)}</span><span>(${t.reviewCount})</span>`:'<span class="new">ใหม่</span>';
   return `<button class="card e3" data-id="${esc(t.id)}" style="animation-delay:${Math.min(i*45,450)}ms">${WF}${thumb(t)}
-    <span class="cb"><span class="nm">${esc(t.shop||t.name)}${t.verified?'<i class="ti ti-rosette-discount-check-filled" title="ตรวจแล้ว"></i>':""}</span>
+    <span class="cb"><span class="nm">${esc(t.shop||t.name)}${t.verified?'<i class="ti ti-rosette-discount-check-filled" title="ตรวจแล้ว"></i>':""}${isMine(t)?`<em class="mine-tag">${T("ร้านของคุณ","Your shop")}</em>`:""}</span>
     <span class="meta">${stars}${t.dist!=null?`<span>·</span><span>${distTxt(t.dist)}</span>`:""}${t.mobile?'<span>·</span><span>มาถึงที่</span>':""}</span>
     <span class="row3"><span class="mini">${(t.cats||[]).slice(0,2).map(c=>CAT[c]?`<span>${CAT[c].th}</span>`:"").join("")}</span>${t.from?`<span class="price">เริ่ม <b>฿${money(t.from)}</b></span>`:""}</span></span></button>`;
 }
@@ -1332,7 +1376,10 @@ async function load(){
     TECHS=Array.isArray(d.techs)?d.techs:[];SERVER=true;
   }catch(e){SERVER=false;TECHS=[]}
   LOADED=true;render();renderUsed();diag();
+  /* ลิงก์แชร์ร้าน ?shop=<id> → เปิดหน้าร้านทันที (ครั้งเดียว) */
+  if(SHOPLINK&&TECHS.some(t=>t.id===SHOPLINK)){const id=SHOPLINK;SHOPLINK=null;openTech(id)}
 }
+let SHOPLINK=new URLSearchParams(location.search).get("shop");
 /* ข้อความวินิจฉัยเซิร์ฟเวอร์ — โชว์เฉพาะเจ้าของแอป คนทั่วไปเห็นแค่ "เชื่อมต่อไม่ได้" */
 async function diag(){
   const box=$("diag");box.innerHTML="";
@@ -1344,27 +1391,53 @@ async function diag(){
 }
 
 /* ═══ โปรไฟล์ช่าง ═══ */
-function openTech(id){
-  const t=TECHS.find(x=>x.id===id);if(!t)return;
-  const d=km(HERE,t);
-  const pics=(t.photos||[]).map(p=>`<img src="${API}/api/tech/img/${p}" alt="" loading="lazy" data-z="${API}/api/tech/img/${p}"/>`).join("");
-  sheet({title:"",body:`
-    <div class="gal">${pics||`<div class="ph" style="background:${colorOf(t)}">${initial(t.shop||t.name)}</div>`}</div>
-    <div class="pf"><h2>${esc(t.shop||t.name)}${t.verified?'<i class="ti ti-rosette-discount-check-filled" style="color:#3b82f6"></i>':""}</h2>
-      <p class="sub">${esc(t.name)}${t.area?" · "+esc(t.area):""}${t.test?' · <span class="pill act">ช่างทีมงาน · เห็นเฉพาะทีมงาน</span>':""}</p></div>
-    <div class="stats">
-      <div><b>${t.reviewCount?Number(t.rating).toFixed(1):"–"}</b><small>${t.reviewCount?t.reviewCount+" รีวิว":"ยังไม่มีรีวิว"}</small></div>
-      <div><b>${t.jobs||0}</b><small>งานสำเร็จ</small></div>
-      <div><b>${d!=null?d:"–"}</b><small>กม.</small></div>
-      <div><b>${t.warranty||0}</b><small>วันรับประกัน</small></div>
+/* ═══ หน้าร้าน (storefront) ═══
+   หน้าเดียวกันทั้งลูกค้าและเจ้าของร้าน ต่างกันแค่ปุ่มล่าง:
+   ลูกค้า → ขอราคา · เจ้าของร้าน → แก้ไขร้าน (ไม่มีทางสั่งงานตัวเองได้อีก) */
+const isMine=t=>!!(ME&&ME.technician&&t&&ME.technician.id===t.id);
+const img=id=>`${API}/api/tech/img/${id}`;
+function storeHTML(t,mine){
+  const d=mine?null:km(HERE,t),cover=t.cover||(t.photos||[])[0],pics=(t.photos||[]).filter(p=>p!==cover);
+  const info=[t.hours&&["ti-clock",esc(t.hours)],t.from&&["ti-cash",T("เริ่มต้น ฿","From ฿")+money(t.from)],t.radius&&["ti-radar-2",T(`รับงานในรัศมี ${t.radius} กม.`,`Serves within ${t.radius} km`)],t.area&&["ti-map-pin",esc(t.area)]].filter(Boolean);
+  return `<div class="sf">
+    <div class="sf-cover" style="--c1:${colorOf(t)}${cover?`;background-image:url('${img(cover)}')`:""}" ${cover?`data-z="${img(cover)}"`:""}>
+      ${mine?`<span class="sf-mine"><i class="ti ti-eye"></i>${T("ลูกค้าเห็นหน้านี้","This is what customers see")}</span>`:""}
+      ${t.online?`<span class="sf-live"><i></i>${T("เปิดรับงาน","Open now")}</span>`:""}
     </div>
-    <div class="tags">${(t.cats||[]).map(c=>CAT[c]?`<span><i class="ti ${CAT[c].ic}"></i>${CAT[c].th}</span>`:"").join("")}${t.mobile?'<span><i class="ti ti-truck"></i>มาถึงที่</span>':""}${t.urgent?'<span><i class="ti ti-flame"></i>รับงานด่วน</span>':""}${t.years?`<span><i class="ti ti-award"></i>${t.years} ปี</span>`:""}</div>
-    ${t.about?`<p class="about">${esc(t.about)}</p>`:""}`,
-    foot:`${ME&&ME.staff&&!t.test?'<button class="btn s" id="bSus" style="flex:0 0 auto"><i class="ti ti-eye-off"></i></button>':""}<button class="btn p" id="bBook">ขอราคา${t.from?` · เริ่ม ฿${money(t.from)}`:""}</button>`,
+    <div class="sf-id">
+      <span class="sf-av" style="--c1:${colorOf(t)}">${initial(t.shop||t.name)}</span>
+      <div class="sf-nm"><h2 class="nt">${esc(t.shop||t.name)}${t.verified?' <i class="ti ti-rosette-discount-check-filled" style="color:#3b82f6"></i>':""}</h2>
+        <p class="nt">${esc(t.name||"")}${t.years?` · ${t.years} ${T("ปีประสบการณ์","yrs")}`:""}${t.test?` · <span class="pill act">${T("ร้านทีมงาน","Staff shop")}</span>`:""}</p></div>
+    </div>
+    <div class="sf-stats">
+      <div><b>${t.reviewCount?"★ "+Number(t.rating).toFixed(1):"–"}</b><small>${t.reviewCount?t.reviewCount+T(" รีวิว"," reviews"):T("ยังไม่มีรีวิว","No reviews")}</small></div>
+      <div><b>${t.jobs||0}</b><small>${T("งานสำเร็จ","Jobs done")}</small></div>
+      <div><b>${t.warranty||0}</b><small>${T("วันรับประกัน","Day warranty")}</small></div>
+      ${d!=null?`<div><b>${d}</b><small>${T("กม. จากคุณ","km away")}</small></div>`:""}
+    </div>
+    <div class="tags">${(t.cats||[]).map(c=>CAT[c]?`<span><i class="ti ${CAT[c].ic}"></i>${CAT[c].th}</span>`:"").join("")}${t.mobile?`<span><i class="ti ti-truck"></i>${T("มาถึงที่","On-site")}</span>`:""}${t.urgent?`<span><i class="ti ti-flame"></i>${T("รับงานด่วน","Urgent")}</span>`:""}</div>
+    ${t.about?`<p class="sf-about nt">${esc(t.about)}</p>`:mine?`<p class="sf-about sf-empty">${T("ยังไม่มีคำอธิบายร้าน — เล่าความถนัดให้ลูกค้ามั่นใจ","No description yet — tell customers what you're great at")}</p>`:""}
+    ${info.length?`<div class="sf-info">${info.map(([i,x])=>`<div><i class="ti ${i}"></i><span class="nt">${x}</span></div>`).join("")}</div>`:""}
+    ${pics.length?`<p class="sf-h">${T("ผลงานและหน้าร้าน","Work & shop")}</p><div class="sf-grid">${pics.map(p=>`<img src="${img(p)}" alt="" loading="lazy" data-z="${img(p)}"/>`).join("")}</div>`:""}
+  </div>`;
+}
+function openTech(id){
+  let t=TECHS.find(x=>x.id===id);
+  const mine=ME&&ME.technician&&ME.technician.id===id;
+  if(mine)t={...(t||{}),...ME.technician};
+  if(!t)return;
+  sheet({title:"",full:true,store:true,body:storeHTML(t,mine),
+    foot:mine
+      ?`<button class="btn s" id="bShare" style="flex:0 0 auto"><i class="ti ti-share"></i></button><button class="btn p" id="bEdit"><i class="ti ti-pencil"></i> ${T("แก้ไขร้าน","Edit shop")}</button>`
+      :`${ME&&ME.staff&&!t.test?'<button class="btn s" id="bSus" style="flex:0 0 auto"><i class="ti ti-eye-off"></i></button>':""}<button class="btn p" id="bBook">${T("ขอราคา","Get a quote")}${t.from?` · ${T("เริ่ม","from")} ฿${money(t.from)}`:""}</button>`,
     mount(b){
       b.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z));
-      const rerun=()=>{const btn=$("aiRe");if(!btn)return;btn.onclick=()=>busy(btn,async()=>{
-        const r=await api("/api/tech/rescreen",{body:{uid:a.uid}});a.ai=r.ai;$("aiBox").innerHTML=aiCard(r.ai);rerun();toast("AI ตรวจใหม่แล้ว")})};rerun();
+      if(mine){
+        $("bEdit").onclick=()=>openShopEdit();
+        $("bShare").onclick=async()=>{const u=location.origin+location.pathname+"?shop="+encodeURIComponent(t.id);
+          try{if(navigator.share)await navigator.share({title:t.shop||t.name,url:u});else{await navigator.clipboard.writeText(u);toast(T("คัดลอกลิงก์ร้านแล้ว","Shop link copied"))}}catch(e){}};
+        return;
+      }
       $("bBook").onclick=()=>book(t);
       if($("bSus"))$("bSus").onclick=e=>busy(e.currentTarget,async()=>{if(!confirm("ซ่อนช่างคนนี้จากรายชื่อ?"))return;await api("/api/tech/moderate",{body:{id:t.id,suspend:true}});closeSheet();toast("ซ่อนแล้ว");load()});
     }});
@@ -1442,8 +1515,8 @@ function contactForm(o){
       const setPos=(p,lk)=>{L.pos={lat:+p.lat.toFixed(6),lng:+p.lng.toFixed(6)};L.line="";if(L.map)L.map.setView([p.lat,p.lng],17);lock(!!lk)};
       if(window.L){
         const c=HERE||{lat:13.7563,lng:100.5018};
-        L.map=window.L.map($("bMap").querySelector(".lm"),{zoomControl:false,attributionControl:false}).setView([c.lat,c.lng],HERE?16:11);
-        window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(L.map);
+        L.map=oneWorld(window.L.map($("bMap").querySelector(".lm"),{zoomControl:false,attributionControl:false})).setView([c.lat,c.lng],HERE?16:11);
+        window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,noWrap:true,bounds:[[-85,-180],[85,180]]}).addTo(L.map);
         L.map.on("moveend",()=>{if(L.locked)return;const q=L.map.getCenter();L.pos={lat:+q.lat.toFixed(6),lng:+q.lng.toFixed(6)};L.line="";show()});
         setTimeout(()=>L.map.invalidateSize(),420);
       }else $("bMap").querySelector(".lm").innerHTML=`<div class="noleaf">${T("กดใช้ตำแหน่งปัจจุบัน","Tap “Use my location”")}</div>`;
@@ -1851,8 +1924,8 @@ function picker(host,start,onMove){
   host.innerHTML='<div class="lm"></div><i class="ti ti-map-pin-filled cross"></i>';
   let val={...c};onMove(val);
   if(!window.L){host.innerHTML='<div class="noleaf"><div><i class="ti ti-map-pin" style="font-size:34px;display:block;margin-bottom:6px"></i>กดปุ่มด้านล่างเพื่อใช้ตำแหน่งปัจจุบัน</div></div>';return{set(p){val=p;onMove(p)}}}
-  const m=L.map(host.querySelector(".lm"),{zoomControl:false,attributionControl:false}).setView([c.lat,c.lng],start||HERE?16:11);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(m);
+  const m=oneWorld(L.map(host.querySelector(".lm"),{zoomControl:false,attributionControl:false})).setView([c.lat,c.lng],start||HERE?16:11);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,noWrap:true,bounds:[[-85,-180],[85,180]]}).addTo(m);
   m.on("moveend",()=>{const p=m.getCenter();val={lat:+p.lat.toFixed(5),lng:+p.lng.toFixed(5)};onMove(val)});
   setTimeout(()=>m.invalidateSize(),450);
   return{set(p){m.setView([p.lat,p.lng],17);val=p;onMove(p)}};
@@ -2179,7 +2252,9 @@ function drawHead(t){
   const on=DSTATS?DSTATS.online:!!t.online,ph=(t.photos||[])[0];
   $("dHead").innerHTML=`${WF}<span class="sq" style="--c1:${colorOf(t)};${ph?`background-image:url('${API}/api/tech/img/${ph}')`:""}">${ph?"":initial(t.shop||t.name)}</span>
     <div class="who2"><b>${esc(t.shop||t.name)}</b><small>${t.reviewCount?"★ "+Number(t.rating).toFixed(1)+" ("+t.reviewCount+") · ":""}${t.test?T("ร้านทีมงาน · เห็นเฉพาะทีมงาน","Staff shop · staff only"):T("พาร์ทเนอร์ Cendon","Cendon partner")}</small></div>
+    <button class="ib" id="dStore" title="${T("ดูหน้าร้าน","View storefront")}" aria-label="${T("ดูหน้าร้าน","View storefront")}"><i class="ti ti-building-store"></i></button>
     <button class="sw ${on?"on":""}" id="dOn" aria-pressed="${on}">${on?T("รับงาน","Online"):T("ปิดรับ","Offline")}<i class="k"></i></button>`;
+  $("dStore").onclick=()=>openTech(t.id);
   $("dOn").onclick=e=>busy(e.currentTarget,async()=>{
     const want=!(DSTATS&&DSTATS.online);unlockAudio();
     await api("/api/tech/online",{body:{online:want}});
@@ -2217,8 +2292,8 @@ async function tabFind(){
   $("fList").querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>openPost(LP.find(p=>p.id===b.dataset.p)));
   if(!window.L)return;
   if(FMAP){FMAP.remove();FMAP=null}
-  FMAP=L.map("fMap",{zoomControl:false,attributionControl:false}).setView([NEAR.center.lat,NEAR.center.lng],12);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(FMAP);
+  FMAP=oneWorld(L.map("fMap",{zoomControl:false,attributionControl:false})).setView([NEAR.center.lat,NEAR.center.lng],12);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,noWrap:true,bounds:[[-85,-180],[85,180]]}).addTo(FMAP);
   L.circle([NEAR.center.lat,NEAR.center.lng],{radius:NEAR.radius*1000,color:getComputedStyle(document.documentElement).getPropertyValue("--accent").trim()||"#E8943C",weight:1.5,fillOpacity:.05}).addTo(FMAP);
   L.marker([NEAR.center.lat,NEAR.center.lng],{icon:L.divIcon({className:"",iconSize:[18,18],html:'<div class="me-dot" style="background:var(--accent)"></div>'})}).addTo(FMAP);
   const pts=[[NEAR.center.lat,NEAR.center.lng]];
@@ -2266,11 +2341,23 @@ function tabQueue(){
 
 /* ── ร้านของฉัน ── */
 let SHOPED=null;
+/* แท็บร้านของฉัน: ตัวอย่างหน้าร้านแบบที่ลูกค้าเห็น + ปุ่มแก้ไข (ฟอร์มย้ายไปอยู่ในแผ่นแยก ไม่ปนกับหน้าร้าน) */
 function tabShop(){
   const t=ME.technician;
-  SHOPED={add:[],remove:[],lat:t.lat,lng:t.lng};
-  $("dBody").innerHTML=`
-    <p class="h4" style="margin-top:0">${T("รูปร้านและผลงาน","Shop & work photos")}</p><div class="phg" id="sPh"></div><input type="file" id="sFile" accept="image/*" hidden/>
+  $("dBody").innerHTML=`<div class="sf-prev e3">${storeHTML(t,true)}</div>
+    <div class="two" style="margin-top:12px"><button class="btn s w" id="sView"><i class="ti ti-eye"></i> ${T("ดูแบบลูกค้า","View as customer")}</button>
+    <button class="btn p w" id="sEditB"><i class="ti ti-pencil"></i> ${T("แก้ไขร้าน","Edit shop")}</button></div>`;
+  $("dBody").querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z));
+  $("sView").onclick=()=>openTech(t.id);
+  $("sEditB").onclick=()=>openShopEdit();
+}
+function openShopEdit(){
+  const t=ME.technician;
+  SHOPED={add:[],remove:[],lat:t.lat,lng:t.lng,cover:t.cover||null,newCover:null};
+  sheet({title:T("แก้ไขร้าน","Edit shop"),full:true,push:true,body:`
+    <p class="h4" style="margin-top:0">${T("รูปปก (แบนเนอร์)","Cover banner")}</p>
+    <div class="sf-cover sf-ed" id="sCov" style="--c1:${colorOf(t)}"><button class="btn s" id="sCovB"><i class="ti ti-photo"></i> ${T("เปลี่ยนรูปปก","Change cover")}</button></div><input type="file" id="sCovF" accept="image/*" hidden/>
+    <p class="h4">${T("รูปร้านและผลงาน","Shop & work photos")} <small style="font-weight:400;color:var(--muted)">${T("· แตะ ★ เพื่อใช้เป็นปก","· tap ★ to use as cover")}</small></p><div class="phg" id="sPh"></div><input type="file" id="sFile" accept="image/*" hidden/>
     <label class="fld"><span>${T("ชื่อร้าน","Shop name")}</span><input class="inp" id="sN" value="${esc(t.shop||"")}"/></label>
     <label class="fld"><span>${T("ความถนัด / เครื่องมือ","Expertise / tools")}</span><textarea class="inp" id="sA">${esc(t.about||"")}</textarea></label>
     <div class="two"><label class="fld"><span>${T("ราคาเริ่มต้น","Starting price")}</span><input class="inp" id="sF" type="number" value="${t.from||""}"/></label><label class="fld"><span>${T("รับประกัน (วัน)","Warranty (days)")}</span><input class="inp" id="sW" type="number" value="${t.warranty||""}"/></label></div>
@@ -2279,25 +2366,38 @@ function tabShop(){
     <div class="fld"><span>${T("บริการ","Options")}</span><div class="seg" id="sM"><button type="button" data-v="mobile" class="${t.mobile?"on":""}"><i class="ti ti-truck"></i>${T("ออกหน้างาน","On-site")}</button><button type="button" data-v="urgent" class="${t.urgent?"on":""}"><i class="ti ti-urgent"></i>${T("รับงานด่วน","Urgent jobs")}</button></div></div>
     <button class="btn s w" id="sLoc" style="margin-bottom:12px"><i class="ti ti-map-pin"></i> ${T("ย้ายตำแหน่งร้าน","Move shop location")}</button>
     <p class="err" id="sErr"></p>
-    <button class="btn p w" id="sSave">${T("บันทึกร้าน","Save shop")}</button>`;
+`,foot:`<button class="btn p w" id="sSave">${T("บันทึกร้าน","Save shop")}</button>`,mount(){
+  const drawCov=()=>{const c=SHOPED.newCover?SHOPED.newCover.data:SHOPED.cover&&!SHOPED.remove.includes(SHOPED.cover)?img(SHOPED.cover):null;
+    $("sCov").style.backgroundImage=c?`url('${c}')`:""};
+  drawCov();
+  $("sCovB").onclick=()=>{$("sCovF").value="";$("sCovF").click()};
+  $("sCovF").onchange=async()=>{const f=$("sCovF").files[0];if(!f)return;try{SHOPED.newCover={data:await shrink(f,1600)};drawCov()}catch(e){$("sErr").textContent=e.message}};
   const drawPh=()=>{const cur=(t.photos||[]).filter(id=>!SHOPED.remove.includes(id));
-    $("sPh").innerHTML=cur.map(id=>`<div class="doc"><img src="${API}/api/tech/img/${id}" alt=""/><button class="rm" data-rm="${id}"><i class="ti ti-x"></i></button></div>`).join("")+SHOPED.add.map((a,i)=>`<div class="doc"><img src="${a.data}" alt=""/><button class="rm" data-ra="${i}"><i class="ti ti-x"></i></button></div>`).join("")+`<button class="doc" id="sAdd"><i class="ti ti-camera-plus"></i>${T("เพิ่ม","Add")}</button>`;
-    $("sPh").querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{SHOPED.remove.push(+b.dataset.rm);drawPh()});
+    $("sPh").innerHTML=cur.map(id=>`<div class="doc"><img src="${API}/api/tech/img/${id}" alt=""/><button class="rm" data-rm="${id}"><i class="ti ti-x"></i></button><button class="cv ${!SHOPED.newCover&&SHOPED.cover===id?"on":""}" data-cv="${id}" title="${T("ใช้เป็นปก","Use as cover")}"><i class="ti ti-star${!SHOPED.newCover&&SHOPED.cover===id?"-filled":""}"></i></button></div>`).join("")+SHOPED.add.map((a,i)=>`<div class="doc"><img src="${a.data}" alt=""/><button class="rm" data-ra="${i}"><i class="ti ti-x"></i></button></div>`).join("")+`<button class="doc" id="sAdd"><i class="ti ti-camera-plus"></i>${T("เพิ่ม","Add")}</button>`;
+    $("sPh").querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{SHOPED.remove.push(+b.dataset.rm);drawPh();drawCov()});
+    $("sPh").querySelectorAll("[data-cv]").forEach(b=>b.onclick=()=>{SHOPED.cover=+b.dataset.cv;SHOPED.newCover=null;drawPh();drawCov()});
     $("sPh").querySelectorAll("[data-ra]").forEach(b=>b.onclick=()=>{SHOPED.add.splice(+b.dataset.ra,1);drawPh()});
     $("sAdd").onclick=()=>{$("sFile").value="";$("sFile").click()}};
   drawPh();
   $("sFile").onchange=async()=>{const f=$("sFile").files[0];if(!f)return;try{SHOPED.add.push({kind:"work",data:await shrink(f,1100)});drawPh()}catch(e){$("sErr").textContent=e.message}};
   ["sC","sM"].forEach(id=>$(id).querySelectorAll("button").forEach(b=>b.onclick=()=>b.classList.toggle("on")));
-  $("sLoc").onclick=()=>{let pos={lat:SHOPED.lat,lng:SHOPED.lng};sheet({title:T("ตำแหน่งร้าน","Shop location"),body:'<div class="picker" id="lMap"></div><p class="coord" id="lXY"></p><button class="btn s w" id="lGps"><i class="ti ti-current-location"></i> '+T("ใช้ตำแหน่งปัจจุบัน","Use my location")+'</button>',
+  if(SHOPED.snap){const sn=SHOPED.snap;Object.entries(sn.v).forEach(([k,v])=>$(k).value=v);
+    ["sC","sM"].forEach(id=>$(id).querySelectorAll("button").forEach(b=>b.classList.toggle("on",sn.on.includes(id+":"+b.dataset.v))))}
+  $("sLoc").onclick=()=>{
+    /* จำค่าที่พิมพ์ไว้ก่อนเปิดแผนที่ — กลับมาแล้วฟอร์มถูกวาดใหม่ */
+    SHOPED.snap={v:Object.fromEntries(["sN","sA","sF","sW","sR","sH"].map(k=>[k,$(k).value])),on:[...$("bsB").querySelectorAll("#sC .on,#sM .on")].map(b=>b.parentNode.id+":"+b.dataset.v)};
+    let pos={lat:SHOPED.lat,lng:SHOPED.lng};sheet({push:true,title:T("ตำแหน่งร้าน","Shop location"),body:'<div class="picker" id="lMap"></div><p class="coord" id="lXY"></p><button class="btn s w" id="lGps"><i class="ti ti-current-location"></i> '+T("ใช้ตำแหน่งปัจจุบัน","Use my location")+'</button>',
     foot:`<button class="btn p w" id="lOk">${T("ใช้ตำแหน่งนี้","Use this location")}</button>`,mount(){const pk=picker($("lMap"),pos.lat?pos:null,p=>{pos=p;$("lXY").textContent=p.lat.toFixed(5)+", "+p.lng.toFixed(5)});
-      $("lGps").onclick=e=>busy(e.currentTarget,async()=>{const p=await locate();if(p)pk.set(p)});$("lOk").onclick=()=>{SHOPED.lat=pos.lat;SHOPED.lng=pos.lng;closeSheet();toast(T("ย้ายตำแหน่งแล้ว กดบันทึกร้าน","Moved — tap Save shop"))}}})};
+      $("lGps").onclick=e=>busy(e.currentTarget,async()=>{const p=await locate();if(p)pk.set(p)});$("lOk").onclick=()=>{SHOPED.lat=pos.lat;SHOPED.lng=pos.lng;back();toast(T("ย้ายตำแหน่งแล้ว กดบันทึกร้าน","Moved — tap Save shop"))}}})};
   $("sSave").onclick=e=>busy(e.currentTarget,async()=>{
     try{await api("/api/tech/shop",{body:{shop:$("sN").value,about:$("sA").value,from:+$("sF").value||0,warranty:+$("sW").value||0,radius:+$("sR").value||0,hours:$("sH").value,
       cats:[...$("sC").querySelectorAll(".on")].map(b=>b.dataset.v),mobile:$("sM").querySelector('[data-v="mobile"]').classList.contains("on"),urgent:$("sM").querySelector('[data-v="urgent"]').classList.contains("on"),
-      lat:SHOPED.lat,lng:SHOPED.lng,addPhotos:SHOPED.add,removePhotos:SHOPED.remove}})}
+      lat:SHOPED.lat,lng:SHOPED.lng,addPhotos:SHOPED.add,removePhotos:SHOPED.remove,
+      ...(SHOPED.newCover?{addCover:SHOPED.newCover}:{cover:SHOPED.remove.includes(SHOPED.cover)?0:(SHOPED.cover||0)})}})}
     catch(err){$("sErr").textContent=tr(err.message);throw err}
-    toast(T("บันทึกร้านแล้ว","Shop saved"));await refreshMe();await load();tabShop();drawHead(ME.technician);
+    toast(T("บันทึกร้านแล้ว","Shop saved"));await refreshMe();await load();closeSheet();if(DT==="shop")tabShop();drawHead(ME.technician);
   });
+  }});
 }
 
 /* ── AI แนะนำร้าน ── */

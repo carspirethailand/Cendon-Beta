@@ -1002,6 +1002,73 @@ body{background:var(--bg);letter-spacing:-.005em}
 .lx-sw i{display:block;width:46px;height:28px;margin-top:8px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);position:relative;transition:background .2s}
 .lx-sw i::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--ink);transition:transform .25s cubic-bezier(.32,.72,0,1),background .2s}
 .lx-sw input:checked+i{background:var(--co);border-color:var(--co)}.lx-sw input:checked+i::after{transform:translateX(18px);background:#fff}
+
+/* ═══ โครงหน้าหลักใหม่ (Navbar · หัวข้อ · ค้นหา · หมวด · ช่างแนะนำ) ═══ */
+#vMenu>.left,#vMenu>.right{display:none!important}
+#vMenu:not([hidden]){display:block!important;max-width:1180px}
+/* Navbar: แคปซูลลอยกลางจอ */
+.top{background:transparent!important;border:0!important;backdrop-filter:none!important;padding-top:calc(12px + env(safe-area-inset-top))!important}
+.top .bar{max-width:880px;margin:0 auto;padding:6px 6px 6px 8px!important;border-radius:999px;gap:6px;
+  background:color-mix(in srgb,var(--surface) 78%,transparent);border:1px solid var(--line);backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);box-shadow:var(--shadow)}
+.top .bar .ic{width:40px;height:40px;border-radius:50%!important;border:0!important}
+.top .bar .ic:hover{background:var(--surface-2)!important}
+#sbox{display:none!important}
+.lx-brand{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;color:var(--ink);font:600 16px/1 var(--kd);letter-spacing:-.01em}
+.lx-brand b{font-weight:700;color:var(--muted)}
+#bMe{background:var(--ink)!important;color:var(--bg)!important}
+/* แถวหมวด: ไอคอนนูนมีสี + ชื่อ · เส้นส้ม 2px ใต้ตัวที่ชี้อยู่ */
+.lx-rail{display:flex;gap:6px;justify-content:center;overflow-x:auto;scrollbar-width:none;padding:8px 4px 4px;margin:6px auto 0;max-width:1060px;
+  -webkit-mask:linear-gradient(90deg,transparent,#000 16px,#000 calc(100% - 16px),transparent);mask:linear-gradient(90deg,transparent,#000 16px,#000 calc(100% - 16px),transparent)}
+.lx-rail::-webkit-scrollbar{display:none}
+@media(max-width:900px){.lx-rail{justify-content:flex-start}}
+.lx-rail button{position:relative;flex:none;width:104px;display:flex;flex-direction:column;align-items:center;gap:10px;padding:10px 4px 14px;border:0;background:none;cursor:pointer;color:var(--muted)}
+.lx-rail button::after{content:"";position:absolute;left:22px;right:22px;bottom:0;height:2px;border-radius:2px;background:var(--co);transform:scaleX(0);transition:transform .35s cubic-bezier(.32,.72,0,1)}
+.lx-rail button:hover::after{transform:scaleX(1)}
+.lx-rail button:hover{color:var(--ink)}
+.lx-rt{font:500 13px/1.3 var(--kb);text-align:center}
+/* ไอคอนนูน 3D แบบ CSS (ก่อนมีรูปจริง): ก้อนมนไล่สีของหมวด มีแสงด้านบน เงานุ่มด้านล่าง ลอยขึ้นเมื่อชี้ */
+.lx-ri{position:relative;width:58px;height:58px;display:grid;place-items:center;border-radius:18px;
+  background:linear-gradient(155deg,color-mix(in srgb,var(--b) 88%,#fff) 0%,var(--a) 55%,color-mix(in srgb,var(--a) 70%,#000) 100%);
+  box-shadow:inset 0 2px 1px rgba(255,255,255,.45),inset 0 -6px 12px rgba(0,0,0,.18),0 10px 18px -8px color-mix(in srgb,var(--a) 70%,transparent),0 2px 3px rgba(0,0,0,.12);
+  transition:transform .4s cubic-bezier(.32,.72,0,1)}
+.lx-ri::before{content:"";position:absolute;left:12%;right:12%;top:6%;height:38%;border-radius:12px 12px 40% 40%;background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,0))}
+.lx-ri .ti{position:relative;font-size:27px;color:#fff;filter:drop-shadow(0 2px 2px rgba(0,0,0,.25))}
+.lx-ri img{position:absolute;inset:-14%;width:128%;height:128%;object-fit:contain;z-index:2}
+.lx-ri:has(img){background:none;box-shadow:none}.lx-ri:has(img)::before,.lx-ri:has(img) .ti{display:none}
+.lx-rail button:hover .lx-ri{transform:translateY(-4px) rotate(-3deg)}
+/* หัวข้อส่วน */
+.lx-sec{margin:34px auto 0;max-width:1180px}
+.lx-sh{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 16px}
+.lx-sh h2{margin:0;font:700 clamp(20px,2.4vw,26px)/1.2 var(--kd);letter-spacing:-.02em}
+.lx-sh h2 span{font:500 14px var(--kb);color:var(--muted);letter-spacing:0}
+.lx-link{border:0;background:none;color:var(--muted);font:600 13.5px var(--kb);cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+.lx-link:hover{color:var(--co)}
+/* การ์ดโปรไฟล์ช่าง */
+.lx-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}
+.lx-pc{display:block;text-align:left;padding:0;border-radius:18px;overflow:hidden;cursor:pointer;color:var(--ink);background:var(--surface);border:1px solid var(--line);
+  box-shadow:var(--shadow-sm);animation:pcIn .7s cubic-bezier(.22,.61,.12,1) backwards;transition:transform .4s cubic-bezier(.32,.72,0,1),border-color .25s,box-shadow .4s}
+.lx-pc:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--co) 50%,var(--line));box-shadow:var(--shadow)}
+@keyframes pcIn{from{opacity:0;transform:translateY(14px);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+.lx-pcv{position:relative;display:block;aspect-ratio:16/9;background:radial-gradient(120% 120% at 85% 0%,var(--co-soft),transparent 60%),var(--surface-2) center/cover}
+.lx-live{position:absolute;right:10px;top:10px;display:inline-flex;gap:6px;align-items:center;padding:5px 10px;border-radius:999px;font:600 11.5px var(--kb);font-style:normal;color:#fff;background:rgba(9,9,11,.55);backdrop-filter:blur(8px)}
+.lx-live i{width:6px;height:6px;border-radius:50%;background:var(--co)}
+.lx-pcb{position:relative;z-index:1;display:flex;gap:12px;padding:0 16px 16px}
+.lx-pav{flex:none;width:52px;height:52px;margin-top:-20px;border-radius:50%;display:grid;place-items:center;font:700 20px var(--kd);color:var(--ink);background:var(--surface-2) center/cover;border:3px solid var(--surface);box-shadow:0 4px 10px rgba(0,0,0,.12)}
+.lx-pct{min-width:0;padding-top:10px;display:flex;flex-direction:column;gap:4px}
+.lx-pct b{font:600 15.5px/1.3 var(--kd);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lx-pct b .ti{color:var(--muted);font-size:.85em}
+.lx-pct small{font-size:12.5px;color:var(--muted)}
+.lx-pcc{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.lx-pcc span{font-size:11.5px;padding:3px 9px;border-radius:999px;background:var(--surface-2);color:var(--muted)}
+/* หน้าหมวด */
+.lx-cat{max-width:1180px;margin:0 auto;padding:18px 16px 60px}
+.lx-cath{display:flex;align-items:center;gap:16px;margin:8px 0 18px}
+.lx-cath h1{margin:0;font:700 clamp(24px,3.4vw,36px)/1.15 var(--kd);letter-spacing:-.025em}
+.lx-cath p{margin:4px 0 0;color:var(--muted);font-size:13.5px}
+.lx-subs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin-bottom:20px}
+.lx-subs button{flex:none;height:36px;padding:0 15px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);font:600 13px var(--kb);cursor:pointer}
+.lx-subs button.on{color:var(--ink);border-color:var(--ink)}
+.lx-subs button:hover{border-color:var(--co)}
+@media(max-width:560px){.lx-cards{grid-template-columns:1fr;gap:14px}.lx-pcv{aspect-ratio:21/8}.lx-rail button{width:84px}.lx-ri{width:52px;height:52px}}
 </style>
 </head>
 <body>
@@ -1023,6 +1090,7 @@ body{background:var(--bg);letter-spacing:-.005em}
 <header class="top" id="top">
   <div class="bar">
     <a class="ic" href="index.html" aria-label="Back"><i class="ti ti-arrow-left"></i></a>
+    <a class="lx-brand nt" href="tech.html" aria-label="Cendon Fix"><span class="lx-dot"></span>Cendon <b>Fix</b></a>
     <label class="search hs" id="sbox">
       <svg class="clogo" viewBox="-6.0 -6.0 94.8 112.0" aria-hidden="true"><path fill="currentColor" d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg>
       <input id="q" type="search" autocomplete="off" enterkeyhint="search" data-t-ph="ค้นหาอาการ หรืออู่|Search"/>
@@ -1047,6 +1115,12 @@ body{background:var(--bg);letter-spacing:-.005em}
     </form>
     <div class="lx-tags nt" id="hTags"></div>
   </header>
+  <!-- หมวดช่าง: แถวไอคอน 3D (ใส่รูปที่ img/cat/<หมวด>.png ได้เลย ไม่มีรูปใช้ไอคอนสีแทน) · กดแล้วเข้าหน้าหมวด -->
+  <nav class="lx-rail" id="hRail" aria-label="หมวดช่าง"></nav>
+  <section class="lx-sec">
+    <div class="lx-sh"><h2>ช่างแนะนำ<span id="sugN"></span></h2><button class="lx-link" id="sugAll" type="button">ดูทั้งหมด <i class="ti ti-arrow-right"></i></button></div>
+    <div class="lx-cards" id="sugList"></div>
+  </section>
   <div class="left">
     <div class="staff" id="staff" hidden></div>
     <div id="active"></div>
@@ -1069,6 +1143,13 @@ body{background:var(--bg);letter-spacing:-.005em}
     <button class="join e3" id="bJoin"><svg class="wf" viewBox="0 0 252 152" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M42 82 L42 68 L86 62 L118 36 L176 36 L204 60 L240 64 L240 82 Z" stroke-dasharray="3 2" opacity=".4"/><line x1="16" y1="86" x2="42" y2="68" opacity=".38"/><line x1="60" y1="80" x2="86" y2="62" opacity=".38"/><line x1="92" y1="54" x2="118" y2="36" opacity=".38"/><line x1="150" y1="54" x2="176" y2="36" opacity=".38"/><line x1="178" y1="78" x2="204" y2="60" opacity=".38"/><line x1="214" y1="82" x2="240" y2="64" opacity=".38"/><path d="M16 100 L16 86 L60 80 L92 54 L150 54 L178 78 L214 82 L214 100 Z"/><path d="M88 78 L98 56 L148 56 L170 78"/><circle cx="84" cy="82" r="14" stroke-dasharray="3 2" opacity=".4"/><circle cx="58" cy="100" r="18"/><circle cx="58" cy="100" r="7.6"/><circle cx="204" cy="82" r="14" stroke-dasharray="3 2" opacity=".4"/><circle cx="178" cy="100" r="18"/><circle cx="178" cy="100" r="7.6"/></svg><span class="sq"><i class="ti ti-tool"></i></span><div><b id="joinT"></b><small id="joinS"></small></div><i class="ti ti-chevron-right"></i></button>
     <div id="diag"></div>
   </div>
+</section>
+
+<section class="view lx-cat" id="vCat" hidden>
+  <div class="lx-cath"><button class="lx-gh lx-ic" id="catBack" aria-label="กลับ"><i class="ti ti-arrow-left"></i></button>
+    <span class="lx-cati" id="catIc"></span><div><h1 id="catT"></h1><p id="catN"></p></div></div>
+  <div class="lx-subs nt" id="catSubs"></div>
+  <div class="lx-cards" id="catList"></div>
 </section>
 
 <section class="view dash" id="vTech" hidden>
@@ -1523,6 +1604,7 @@ function filtChip(){
 }
 function clearFilter(){F.cat="all";F.q="";$("q").value="";$("sbox").classList.remove("has");drawGrid();render()}
 function render(){
+  try{drawHome();drawCat()}catch(e){}
   const l=shown();
   $("secT").innerHTML=F.q||F.cat!=="all"?filtChip():`<i class="ti ti-sparkles" style="color:var(--accent)"></i>${HERE?"ช่างแนะนำใกล้คุณ":"ช่างแนะนำ"}`;
   $("secN").textContent=LOADED&&l.length?l.length+" ร้าน":"";
@@ -1572,12 +1654,58 @@ function drawGrid(){
 }
 /* HERO: ค้นหาจากช่องใหญ่ = ใช้ตัวกรองเดียวกับช่องบน · ป้ายอาการยอดฮิตกดแล้วค้นทันที */
 (function(){
-  const go=v=>{v=(v||"").trim();$("q").value=v;$("sbox").classList.toggle("has",!!v);F.q=v;render();$("secT").scrollIntoView({behavior:"smooth",block:"start"})};
+  const go=v=>{v=(v||"").trim();if(!v)return;CATQ=v;const k=(catsOf(v)||[])[0];openCat("all");CATQ=v;$("catT").textContent=`ผลค้นหา “${v}”`;drawCat()};
   $("hForm").onsubmit=e=>{e.preventDefault();go($("hq").value)};
   const tags=["แอร์ไม่เย็น","เปลี่ยนยาง","แบตหมด","เบรกมีเสียง","เปลี่ยนน้ำมันเครื่อง","ช่างมาถึงที่"];
   $("hTags").innerHTML=tags.map(t=>`<button type="button">${t}</button>`).join("");
   $("hTags").querySelectorAll("button").forEach(b=>b.onclick=()=>{$("hq").value=b.textContent;go(b.textContent)});
 })();
+/* ═══ หน้าหลักใหม่: แถวหมวด + ช่างแนะนำ + หน้าหมวด ═══ */
+const RAIL=[{id:"all",th:"ยอดนิยม",ic:"ti-flame",c:"#F07A36"},...CATS.filter(c=>c.id!=="all"),{id:"map",th:"แผนที่",ic:"ti-map-2",c:"#0284c7",c2:"#38bdf8"}];
+const railIc=c=>`<span class="lx-ri" style="--a:${c.c||"#F07A36"};--b:${c.c2||c.c||"#F07A36"}"><img src="img/cat/${c.id}.png" alt="" onerror="this.remove()"/><i class="ti ${c.ic}"></i></span>`;
+function profCard(t,i){
+  const cov=t.cover,av=t.avatar,d=t.dist!=null?distTxt(t.dist):"";
+  return `<button class="lx-pc" data-id="${esc(t.id)}" style="animation-delay:${Math.min(i*50,500)}ms">
+    <span class="lx-pcv"${cov?` style="background-image:url('${img(cov)}')"`:""}>${t.online?'<em class="lx-live"><i></i>เปิดรับงาน</em>':""}</span>
+    <span class="lx-pcb"><span class="lx-pav"${av?` style="background-image:url('${img(av)}')"`:""}>${av?"":initial(t.shop||t.name)}</span>
+      <span class="lx-pct"><b class="nt">${esc(t.shop||t.name)}${t.verified?' <i class="ti ti-rosette-discount-check-filled"></i>':""}${isMine(t)?' <em class="mine-tag">ร้านของคุณ</em>':""}</b>
+      <small>${t.reviewCount?`★ ${Number(t.rating).toFixed(1)} (${t.reviewCount})`:"ร้านใหม่"}${d?" · "+d:""}${t.from?` · เริ่ม ฿${money(t.from)}`:""}</small>
+      <span class="lx-pcc">${(t.cats||[]).slice(0,3).map(c=>CAT[c]?`<span>${CAT[c].th}</span>`:"").join("")}</span></span></span></button>`;
+}
+function wireCards(host){host.querySelectorAll(".lx-pc").forEach(b=>b.onclick=()=>openTech(b.dataset.id))}
+function drawHome(){
+  $("hRail").innerHTML=RAIL.map(c=>`<button type="button" data-k="${c.id}">${railIc(c)}<span class="lx-rt">${c.th}</span></button>`).join("");
+  $("hRail").querySelectorAll("button").forEach(b=>b.onclick=()=>b.dataset.k==="map"?setView("map"):openCat(b.dataset.k));
+  const host=$("sugList");
+  if(!LOADED){host.innerHTML='<div class="skel"></div><div class="skel"></div><div class="skel"></div>';return}
+  const l=shown({cat:"all",q:""});
+  $("sugN").textContent=l.length?` · ${l.length} ร้าน`:"";
+  host.innerHTML=l.length?l.slice(0,innerWidth<640?6:9).map(profCard).join(""):`<div class="empty"><b>${SERVER===false?"เชื่อมต่อไม่ได้":"ยังไม่มีช่างในพื้นที่"}</b>${SERVER===false?"ลองใหม่อีกครั้ง":"กำลังรับสมัครช่าง"}</div>`;
+  wireCards(host);
+}
+$("sugAll").onclick=()=>openCat("all");
+let CATK="all",CATSUB="",CATQ="";
+function openCat(k,noHist){
+  CATK=k;CATSUB="";CATQ="";const c=RAIL.find(x=>x.id===k)||RAIL[0];
+  $("catIc").innerHTML=railIc(c);$("catT").textContent=k==="all"?"ช่างทั้งหมด":c.th;
+  $("vMenu").hidden=true;$("vCat").hidden=false;window.scrollTo(0,0);
+  if(!noHist)try{history.pushState({cat:k},"")}catch(e){}
+  drawCat();
+}
+function drawCat(){
+  if($("vCat").hidden)return;
+  let l=shown({cat:CATK,q:CATQ});
+  if(CATSUB==="mobile")l=l.filter(t=>t.mobile);if(CATSUB==="urgent")l=l.filter(t=>t.urgent);if(CATSUB==="open")l=l.filter(t=>t.online);
+  $("catN").textContent=LOADED?`${l.length} ร้าน${HERE?" · เรียงจากใกล้คุณ":""}`:"กำลังโหลด…";
+  $("catSubs").innerHTML=[["","ทั้งหมด"],["open","เปิดรับงานตอนนี้"],["mobile","มาถึงที่"],["urgent","รับงานด่วน"]].map(([k,t])=>`<button type="button" class="${CATSUB===k?"on":""}" data-s="${k}">${t}</button>`).join("");
+  $("catSubs").querySelectorAll("button").forEach(b=>b.onclick=()=>{CATSUB=b.dataset.s;drawCat()});
+  const host=$("catList");
+  host.innerHTML=!LOADED?'<div class="skel"></div><div class="skel"></div>':l.length?l.map(profCard).join(""):`<div class="empty"><b>ยังไม่มีช่างในหมวดนี้</b>ลองหมวดอื่น หรือให้ AI ช่วยดูอาการ</div>`;
+  wireCards(host);
+}
+function closeCat(){if($("vCat").hidden)return;$("vCat").hidden=true;$("vMenu").hidden=false;window.scrollTo(0,0)}
+$("catBack").onclick=()=>{if(history.state&&history.state.cat)history.back();else closeCat()};
+addEventListener("popstate",()=>{if(!(history.state&&history.state.cat))closeCat()});
 let qT=0;
 $("q").addEventListener("input",()=>{$("sbox").classList.toggle("has",!!$("q").value);clearTimeout(qT);qT=setTimeout(()=>{F.q=$("q").value;render()},140)});
 $("q").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();F.q=$("q").value;render();$("q").blur();$("secT").scrollIntoView({behavior:"smooth",block:"start"})}});

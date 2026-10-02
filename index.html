@@ -1020,7 +1020,7 @@ body{background:var(--bg);letter-spacing:-.005em}
 .lx-rail{display:flex;gap:6px;justify-content:center;overflow-x:auto;scrollbar-width:none;padding:8px 4px 4px;margin:6px auto 0;max-width:1060px;
   -webkit-mask:linear-gradient(90deg,transparent,#000 16px,#000 calc(100% - 16px),transparent);mask:linear-gradient(90deg,transparent,#000 16px,#000 calc(100% - 16px),transparent)}
 .lx-rail::-webkit-scrollbar{display:none}
-@media(max-width:900px){.lx-rail{justify-content:flex-start}}
+.lx-rail{justify-content:flex-start!important}
 .lx-rail button{position:relative;flex:none;width:104px;display:flex;flex-direction:column;align-items:center;gap:10px;padding:10px 4px 14px;border:0;background:none;cursor:pointer;color:var(--muted)}
 .lx-rail button::after{content:"";position:absolute;left:22px;right:22px;bottom:0;height:2px;border-radius:2px;background:var(--co);transform:scaleX(0);transition:transform .35s cubic-bezier(.32,.72,0,1)}
 .lx-rail button:hover::after{transform:scaleX(1)}
@@ -1141,10 +1141,191 @@ body{background:var(--bg);letter-spacing:-.005em}
 .lx-plus{width:34px;height:34px;flex:none;border-radius:50%;display:grid;place-items:center;color:#fff;background:var(--co)}
 .lx-dxcar{margin:0 0 14px;font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:center;flex-wrap:wrap}.lx-dxcar b{color:var(--ink);font-weight:600}.lx-dxcar a{color:var(--co)}
 </style>
+<style id="navcss">
+/* navbar เดิม ยกมาจากหน้าอื่นทั้งชุด */
+.navwrap{position:relative;z-index:20;display:flex;justify-content:center;padding:14px 14px 6px;flex-shrink:0}
+.nav{display:flex;align-items:center;gap:6px;width:max-content;max-width:100%;padding:7px 7px 7px 13px;border-radius:30px;
+  background:var(--nav-bg,rgba(255,255,255,.84));backdrop-filter:blur(18px) saturate(1.3);-webkit-backdrop-filter:blur(18px) saturate(1.3);
+  border:1px solid var(--line);box-shadow:var(--shadow-sm)}
+.nav-links a{position:relative;z-index:1;display:flex;align-items:center;gap:7px;padding:9px 14px;border-radius:30px;font-weight:600;font-size:14px;color:var(--nav-link,var(--muted));transition:color .3s;white-space:nowrap}
+.brand{display:flex;align-items:center;gap:9px;cursor:pointer;padding-right:10px}
+.brand .cmk{height:25px;width:auto;display:block}
+.brand b{font-size:17px;font-weight:700;letter-spacing:.2px;font-family:var(--kd)}
+.nav-links{display:flex;gap:2px;justify-content:center;position:relative}
+.nav-ind{position:absolute;top:50%;left:0;height:38px;width:0;transform:translateY(-50%);border-radius:30px;z-index:0;pointer-events:none;
+  background:var(--grad);box-shadow:0 8px 20px -8px rgba(217,94,60,.6);transition:transform .42s cubic-bezier(.5,0,.1,1),width .42s cubic-bezier(.5,0,.1,1)}
+.nav-links a .ti{font-size:18px}
+.nav-links a:hover{color:var(--ink)}
+.nav-links a.active{color:#fff}
+.nav-right{display:flex;align-items:center;gap:8px;position:relative}
+.btn-signin{display:flex;align-items:center;gap:7px;padding:9px 16px;border-radius:30px;font-weight:600;font-size:13.5px;background:var(--grad);color:#fff;box-shadow:0 8px 18px -8px rgba(217,94,60,.6)}
+.avatar{width:40px;height:40px;border-radius:50%;overflow:hidden;border:2px solid #fff;box-shadow:var(--shadow-sm);display:none;cursor:pointer}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.avatar .fb{width:100%;height:100%;display:grid;place-items:center;font-weight:700;color:#fff;background:var(--grad)}
+.dd{position:absolute;top:54px;right:0;width:210px;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:8px;opacity:0;transform:translateY(-8px);pointer-events:none;transition:.18s;z-index:30}
+.dd.show{opacity:1;transform:none;pointer-events:auto}
+.dd button{display:flex;align-items:center;gap:11px;width:100%;padding:10px;border-radius:10px;font-weight:600;font-size:14px;color:var(--muted);text-align:left}
+.dd button .ti{font-size:19px}
+.dd button:hover{background:var(--surface-2);color:var(--ink)}
+.dd hr{border:none;border-top:1px solid var(--line);margin:6px 4px}
+@media(max-width:780px){.nav-links a span{display:none}
+.nav-links a{padding:9px 13px}
+}.dash-head h3,.widget-header h3,.brand b{font-weight:700;letter-spacing:.02em}
+.btn.primary,.cdiag,.fab,.btn-signin{box-shadow:inset 0 1.5px 0 rgba(255,255,255,.42),inset 0 -2px 3px rgba(0,0,0,.16),0 10px 24px -10px rgba(217,94,60,.55)}
+.btn.primary:active,.cdiag:active,.fab:active,.btn-signin:active{box-shadow:inset 0 2px 6px rgba(0,0,0,.25)}
+.btn.primary,.cdiag,.fab,.btn-signin,.nav-ind{
+  background-image:linear-gradient(180deg,rgba(255,255,255,.30),rgba(255,255,255,.05) 46%,rgba(0,0,0,.14)),var(--grad);
+  border:1px solid rgba(0,0,0,.16);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -1.5px 0 rgba(0,0,0,.22),0 1px 2px rgba(0,0,0,.25),0 8px 18px -8px rgba(217,94,60,.55);
+}
+.btn.primary:active,.cdiag:active,.fab:active,.btn-signin:active{box-shadow:inset 0 2px 6px rgba(0,0,0,.3),0 1px 2px rgba(0,0,0,.2)}
+.nav{box-shadow:inset 0 1px 0 rgba(255,255,255,var(--gloss-card)),0 1px 2px var(--edge-sh),0 12px 30px -16px rgba(40,34,18,.35)}
+.nav-links a.active{text-shadow:0 1px 2px rgba(0,0,0,.25)}
+.qa-ic,.mag-widget-icon,.mag-cover,.ccard .ci,.gcar .gi,.brand .mark{position:relative;overflow:hidden}
+.qa-ic::after,.mag-widget-icon::after,.mag-cover::after,.ccard .ci::after,.gcar .gi::after,.brand .mark::after{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.32),rgba(255,255,255,.03) 50%,rgba(0,0,0,.16));
+}
+[data-theme="grid"] .card,[data-theme="grid"] .widget,[data-theme="grid"] .ccard,
+[data-theme="grid"] .qa,[data-theme="grid"] .nav,[data-theme="grid"] .mag-card{border-radius:3px}
+[data-theme="grid"] .nav-links a{border-radius:2px}
+.btn.primary,.cdiag,.fab,.btn-signin,
+.odo-in button,.odo-ask .acts button.go,.cl-tab[aria-selected="true"]{
+  position:relative;
+}
+.btn.primary::after,.cdiag::after,.fab::after,.btn-signin::after,
+.odo-in button::after,.odo-ask .acts button.go::after{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background-image:var(--flake);background-size:160px 160px;
+  opacity:.20;mix-blend-mode:screen;z-index:0;
+}
+.btn.primary>*,.cdiag>*,.fab>*,.btn-signin>*,.odo-in button>*{position:relative;z-index:1}
+.nav{background-image:none}
+.nav::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background-image:var(--flake-lg);background-size:160px 160px;opacity:.14;mix-blend-mode:multiply}
+[data-theme="cyber"] .nav::before,[data-theme="carbon"] .nav::before,
+[data-theme="wire"] .nav::before{mix-blend-mode:screen;opacity:.3}
+.nav{position:relative}
+.nav>*{position:relative;z-index:1}
+.nav-ind::after,.nav-links a.active::after{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background-image:var(--flake);background-size:160px 160px;opacity:.18;mix-blend-mode:screen}
+.nav-links a{position:relative}
+.nav-links a>*{position:relative;z-index:1}
+body[data-flake="0"] .btn.primary::after,body[data-flake="0"] .cdiag::after,
+body[data-flake="0"] .fab::after,body[data-flake="0"] .btn-signin::after,
+body[data-flake="0"] .nav::before,body[data-flake="0"] .nav-ind::after,
+body[data-flake="0"] .nav-links a.active::after,
+body[data-flake="0"] .odo-in button::after,
+body[data-flake="0"] .odo-ask .acts button.go::after{display:none}
+body[data-flake="0"] .nav{background-image:none}
+body[data-brief-open="1"] .navwrap,
+body[data-brief-open="1"] .fab,
+body[data-brief-open="1"] .site-announce{display:none!important}
+.navwrap{position:fixed;top:0;left:0;right:0;z-index:60;pointer-events:none}
+.navwrap>*{pointer-events:auto}
+body[data-deck="1"] .nav{background:rgba(9,17,32,.66)!important;
+  border-color:rgba(120,180,240,.26);
+  box-shadow:inset 0 1px 0 rgba(160,215,255,.16),0 18px 44px -22px rgba(0,0,0,.85)}
+body[data-deck="1"] .nav .brand b,body[data-deck="1"] .nav .brand .cmk,body[data-deck="1"] .nav-links a{color:rgba(214,234,255,.74)}
+body[data-deck="1"] .nav-links a:hover{color:#fff}
+body[data-deck="1"] .nav-links a.active{color:#04212B}
+body[data-deck="1"] .brand .mark{background:rgba(150,205,255,.16);color:#CFE9FF}
+body[data-deck="1"] .nav::before{opacity:.2;mix-blend-mode:screen}
+html[data-gate="1"] .navwrap,
+html[data-gate="1"] .main,
+html[data-gate="1"] .fab-dock,
+html[data-level="pending"] .navwrap,
+html[data-level="pending"] .main,
+html[data-level="pending"] .fab-dock{visibility:hidden}
+@media(max-width:760px){.navwrap{display:none!important}
+.mnav{
+  position:fixed;z-index:120;
+  left:var(--m-3);right:var(--m-3);
+  bottom:calc(var(--m-nav-gap) + env(safe-area-inset-bottom));
+  height:var(--m-nav);
+  display:grid;grid-auto-flow:column;grid-auto-columns:1fr;
+  align-items:center;
+  padding:0 var(--m-1);
+  border-radius:26px;
+  background:rgba(16,20,28,.80);
+  -webkit-backdrop-filter:blur(26px) saturate(180%);
+  backdrop-filter:blur(26px) saturate(180%);
+  border:1px solid var(--m-line);
+  box-shadow:0 8px 30px rgba(0,0,0,.44)}
+html[data-theme="light"] .mnav,html[data-theme="plant"] .mnav{
+  background:rgba(255,255,255,.86);
+  box-shadow:0 8px 30px rgba(70,48,20,.16)}
+.mtab{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;height:100%;min-width:0;padding:0;
+  border:0;background:none;cursor:pointer;font-family:inherit;
+  color:var(--muted,rgba(190,205,225,.60));
+  -webkit-tap-highlight-color:transparent}
+.mtab .mt-i{
+  width:38px;height:26px;display:grid;place-items:center;
+  border-radius:13px;
+  transition:background .22s cubic-bezier(.4,0,.2,1),color .18s ease}
+.mtab .mt-i i{font-size:19px;line-height:1}
+.mtab .mt-i img,.mtab .mt-i .fb{
+  width:21px;height:21px;border-radius:50%;object-fit:cover;
+  display:grid;place-items:center;font-size:10px;font-weight:700}
+.mtab b{
+  font-size:var(--m-t-lbl);font-weight:600;line-height:1.1;letter-spacing:0;
+  max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mtab.on{color:var(--accent,#D9733C)}
+.mtab.on .mt-i{background:color-mix(in srgb,var(--accent,#D9733C) 20%,transparent)}
+@supports not (color:color-mix(in srgb,red 50%,blue)){.mtab.on .mt-i{background:rgba(217,115,60,.20)}
+}.mtab:active .mt-i{transform:scale(.96)}
+.mtab.on b{font-weight:700}
+.mtab .mt-dot{position:absolute;top:9px;right:calc(50% - 13px);
+  width:7px;height:7px;border-radius:50%;background:var(--accent,#D9733C)}
+.mtab{position:relative}
+}@media(prefers-reduced-motion:reduce){.mtab .mt-i,.mtool .mt-ic,.msheet{transition:none}
+}#navInd{view-transition-name:navind}
+
+/* แถบบนแบบใหม่ของหน้านี้ไม่ใช้แล้ว (เหลือไว้แค่ให้ปุ่มในโค้ดเดิมยังเรียกได้) */
+.top{display:none!important}
+/* ค่าขนาดของแถบล่างมือถือ (ชุดเดียวกับหน้าอื่น) */
+@media(max-width:760px){
+  :root{--m-1:4px;--m-2:8px;--m-3:12px;--m-4:16px;--m-r:14px;--m-tap:44px;--m-nav:64px;--m-nav-gap:10px;--m-pad:14px;--m-t-lbl:10px;
+    --m-line:rgba(255,255,255,.08);--m-fill:rgba(255,255,255,.055);--m-fill-2:rgba(255,255,255,.10)}
+  html[data-theme="light"],html[data-theme="plant"]{--m-line:rgba(20,16,8,.09);--m-fill:rgba(20,16,8,.045);--m-fill-2:rgba(20,16,8,.08)}
+}
+@media(max-width:360px){:root{--m-nav:60px}}
+/* คอม: navbar ลอยอยู่บนสุด เว้นที่ให้เนื้อหาไม่ถูกทับ */
+@media(min-width:761px){body{padding-top:84px}}
+@media(max-width:760px){.navwrap{display:none}body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}}
+</style>
 </head>
 <body>
 
 
+<!-- NAVBAR เดิมของแอป (เหมือนทุกหน้า: คอม = แคปซูลบน · มือถือ = แถบล่าง) -->
+  <div class="navwrap">
+    <nav class="nav">
+      <div class="brand" data-view="home"><svg class="cmk" viewBox="-6.0 -6.0 94.8 112.0" role="img" aria-label="Cendon"><title>Cendon</title><path fill="currentColor" d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg></div>
+      <div class="nav-links">
+        <span class="nav-ind" id="navInd"></span>
+        <a href="index.html" data-view="home" class="active"><i class="ti ti-layout-dashboard"></i> <span data-i18n="nav.home">หน้าหลัก</span></a>
+        <a href="garage.html" data-view="garage"><i class="ti ti-car-garage"></i> <span data-i18n="nav.garage">การาจ</span></a>
+        <a href="news.html" data-view="magazine"><i class="ti ti-book-2"></i> <span data-i18n="nav.magazine">นิตยสาร</span></a>
+        <a href="spares.html" data-view="shop"><i class="ti ti-shopping-cart"></i> <span data-i18n="nav.shop">ร้านค้า</span></a>
+      </div>
+      <div class="nav-right">
+        <button class="btn-signin" id="signinBtn"><i class="ti ti-brand-google"></i> <span data-i18n="signin">เข้าสู่ระบบ</span></button>
+        <button class="avatar" id="avatarBtn"><span class="fb" id="navFb">?</span></button>
+        <div class="dd" id="dd">
+          <button id="ddJobs"><i class="ti ti-clipboard-list"></i> <span>งานของฉัน</span></button>
+          <button id="ddStudio"><i class="ti ti-building-store"></i> <span>Cendon Studio · ร้านช่าง</span></button>
+          <button data-view="profile"><i class="ti ti-user"></i> <span data-i18n="menu.profile">โปรไฟล์ & ตั้งค่า</span></button>
+          <button id="ddAdmin" style="display:none" onclick="location.href='admin.html'"><i class="ti ti-shield-lock"></i> <span data-i18n="menu.admin">แผงควบคุมแอดมิน</span></button>
+          <hr/>
+          <button id="logoutBtn"><i class="ti ti-logout"></i> <span data-i18n="menu.logout">ออกจากระบบ</span></button>
+        </div>
+      </div>
+    </nav>
+  </div>
 <header class="top" id="top">
   <div class="bar">
     <a class="lx-brand nt" href="index.html" aria-label="Cendon Fix"><span class="lx-dot"></span>Cendon <b>Fix</b></a>
@@ -3094,7 +3275,7 @@ async function pullCars(){
     try{
       if(!firebase.apps||!firebase.apps.length)firebase.initializeApp(fbConfig);
       auth=firebase.auth();
-      auth.onAuthStateChanged(async u=>{U=u||null;greet();if(U)pullCars();await refreshMe();if(U)await load();else diag()});
+      auth.onAuthStateChanged(async u=>{U=u||null;try{navPaint(U)}catch(e){}greet();if(U)pullCars();await refreshMe();if(U)await load();else diag()});
     }catch(e){}
   })();
 })();
@@ -3102,5 +3283,361 @@ async function pullCars(){
 <!-- แผงผู้ดูแลแบบลอย: โหลดทุกหน้า แต่แสดงเฉพาะผู้ดูแลที่เปิดไว้ในตั้งค่า -->
 <script src="cendon-admin.js" defer></script>
 <script src="fluid.js" defer></script>
+<script>
+/* ต่อ navbar เดิมเข้ากับหน้านี้: ตัวชี้แท็บ · เมนูโปรไฟล์ · ปุ่มเข้าสู่ระบบ · รูป/ตัวอักษรผู้ใช้ */
+(function(){
+  const $=id=>document.getElementById(id);
+  const moveInd=()=>{const ind=$("navInd"),a=document.querySelector(".nav-links a.active");if(!ind||!a)return;ind.style.width=a.offsetWidth+"px";ind.style.transform=`translate(${a.offsetLeft}px,-50%)`};
+  addEventListener("load",moveInd);addEventListener("resize",moveInd);setTimeout(moveInd,300);try{document.fonts.ready.then(moveInd)}catch(e){}
+  const dd=$("dd");
+  $("avatarBtn").onclick=e=>{e.stopPropagation();dd.classList.toggle("show")};
+  document.addEventListener("click",e=>{if(!e.target.closest("#dd"))dd.classList.remove("show")});
+  $("signinBtn").onclick=()=>{try{needLogin()}catch(e){location.href="login.html?next=index.html"}};
+  document.querySelectorAll('.navwrap [data-view="home"]').forEach(x=>x.addEventListener("click",ev=>{ev.preventDefault();location.href="index.html"}));
+  dd.querySelector('[data-view="profile"]').onclick=()=>location.href="profile.html";
+  $("ddJobs").onclick=()=>{dd.classList.remove("show");try{jobs()}catch(e){}};
+  $("ddStudio").onclick=()=>{dd.classList.remove("show");try{$("bMe").onclick()}catch(e){}};
+  $("logoutBtn").onclick=()=>{try{firebase.auth().signOut().then(()=>location.reload())}catch(e){location.reload()}};
+  /* วาดสถานะผู้ใช้: ใช้ cachedUser ทันที (ไม่ต้องรอ Firebase) แล้ววาดซ้ำเมื่อรู้ผลจริง */
+  window.navPaint=u=>{
+    let c=null;try{c=JSON.parse(localStorage.getItem("spire_cachedUser"))}catch(e){}
+    const who=u!==undefined?u:c;
+    $("signinBtn").style.display=who?"none":"flex";$("avatarBtn").style.display=who?"block":"none";
+    if(who){const ph=who.photoURL||who.photo,nm=who.displayName||who.name||who.email||"?";
+      $("avatarBtn").innerHTML=ph?`<img src="${ph}" alt="" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:`<span class="fb">${String(nm).trim().charAt(0).toUpperCase()}</span>`}
+  };
+  navPaint();
+})();
+</script>
+<script id="mjs">
+/* ══════════════════════════════════════════════════════════════════
+   Cendon — ตัวประกอบหน้าจอมือถือ (เขียนใหม่ทั้งหมด)
+
+   ไฟล์นี้ทำสามอย่าง แล้วหยุด:
+     1. สร้างแถบล่าง 5 แท็บ (ไอคอน + ชื่อ) แทนแถบบนของเดสก์ท็อป
+     2. จัดหน้าหลักเป็นสามจอที่เลื่อนแล้วล็อก
+        จอ 1 ห้องนักบิน · จอ 2 สิ่งที่แชตบอตทำไม่ได้ · จอ 3 เครื่องมือ+วิดเจ็ต
+     3. สร้างตารางเครื่องมือ 4 ช่องแบบ Grab พร้อมแผ่นเลื่อน "ทั้งหมด"
+
+   กติกาเหล็กสองข้อ:
+     • จอคอมต้องไม่ขยับ — ทุกอย่างทำงานเมื่อ matchMedia ตรงเท่านั้น
+       และถอนคืนให้ครบเมื่อหน้าจอกว้างขึ้น (หมุนเครื่อง / เปิดบนแท็บเล็ต)
+     • ไม่เขียนตัวนำทางเอง — เรียก window.switchView ที่มีอยู่แล้ว
+       เพราะมันรู้เรื่องการข้ามไฟล์ (index/garage/news/…) ซึ่งถ้าเขียนใหม่
+       จะพลาดเรื่องที่มองไม่เห็น เช่นการรอ auth ก่อนเปลี่ยนหน้า
+   ══════════════════════════════════════════════════════════════════ */
+(function(){
+"use strict";
+const D=document,$=id=>D.getElementById(id);
+const T=(th,en)=>(window.spireT?window.spireT(th,en):"th"===(window.spireLang?window.spireLang():"th")?th:en);
+const MQ=matchMedia("(max-width:760px)");
+
+/* ─────────── 1. แถบล่าง 5 แท็บ ─────────── */
+/* ร้านค้าไม่ได้เป็นแท็บแล้ว — มันย้ายไปเป็นไอคอนในตารางเครื่องมือ
+   ห้าแท็บคือเพดานที่นิ้วยังกดแม่นบนจอ 360px ถ้ามีหกจะเริ่มกดพลาด */
+const TABS=[
+  {k:"home",     ic:"ti-home",      th:"หน้าหลัก", en:"Home"},
+  {k:"garage",   ic:"ti-car",       th:"การาจ",    en:"Garage"},
+  {k:"chat",     ic:"ti-message-2", th:"แชต",      en:"Chat"},
+  {k:"magazine", ic:"ti-book-2",    th:"นิตยสาร",  en:"Magazine"},
+  {k:"account",  ic:"ti-user",      th:"บัญชี",    en:"Account"}
+];
+
+function page(){
+  try{ if(window.__SPIRE_PAGE__)return window.__SPIRE_PAGE__ }catch(e){}
+  const f=(location.pathname.split("/").pop()||"index.html").toLowerCase();
+  return ({"garage.html":"garage","news.html":"magazine","spares.html":"shop",
+           "profile.html":"profile","chat.html":"chat"})[f]||"home";
+}
+
+/* เข้าสู่ระบบแล้วหรือยัง — อ่านจากปุ่มของเดิมที่ renderAuthUI คุมอยู่
+   ไม่ไปแตะ currentUser เพราะมันเป็นตัวแปรระดับบนสุดใน <script> ธรรมดา
+   ซึ่ง "ไม่" ผูกกับ window (ต่างจาก function declaration) จึงอ่านไม่ได้ */
+function signedIn(){
+  const a=$("avatarBtn");
+  return !!(a&&getComputedStyle(a).display!=="none");
+}
+
+function navHTML(){
+  const cur=page();
+  return TABS.map(t=>{
+    /* หน้าอะไหล่ไม่มีแท็บของตัวเองแล้ว (ย้ายไปอยู่ในตารางเครื่องมือ)
+       แต่ต้องมีแท็บสว่างอยู่หนึ่งอันเสมอ ไม่งั้นผู้ใช้จะไม่รู้ว่าตัวเองอยู่ตรงไหน
+       — ชี้กลับไปที่หน้าหลัก ซึ่งเป็นทางที่เขาเดินเข้ามาจริง */
+    const on=(t.k===cur)||(t.k==="account"&&cur==="profile")
+             ||(t.k==="home"&&cur==="shop");
+    return `<button class="mtab${on?" on":""}" data-mnav="${t.k}"
+      aria-label="${T(t.th,t.en)}"${on?' aria-current="page"':""}>
+      <span class="mt-i" data-mslot="${t.k}"><i class="ti ${t.ic}"></i></span>
+      <b>${T(t.th,t.en)}</b></button>`;
+  }).join("");
+}
+
+function mountNav(){
+  /* หน้าแชตมีแถบเครื่องมือและช่องพิมพ์ของตัวเองที่ขอบล่างอยู่แล้ว
+     ใส่แถบซ้อนลงไปจะทับกันพอดี — ดูจากว่าหน้านั้นมีแถบเดสก์ท็อปไหม */
+  if(!D.querySelector(".navwrap"))return;
+  let n=$("mnav");
+  if(!n){
+    n=D.createElement("nav"); n.className="mnav"; n.id="mnav";
+    n.setAttribute("role","navigation");
+    D.body.appendChild(n);
+    n.addEventListener("click",e=>{
+      const b=e.target.closest("[data-mnav]"); if(!b)return;
+      go(b.dataset.mnav);
+    });
+  }
+  n.innerHTML=navHTML();
+  paintAvatar();
+}
+
+function go(k){
+  if(k==="chat"){ location.href="chat.html"; return }
+  if(k==="account"){
+    /* ยังไม่ได้เข้าระบบ → กดปุ่มเดิมของหน้า ซึ่งผูกกับ Firebase ไว้แล้ว */
+    if(!signedIn()){ const b=$("signinBtn"); if(b){b.click();return} }
+    k="profile";
+  }
+  try{ if(typeof window.switchView==="function"){window.switchView(k);return} }catch(e){}
+  const f=({home:"index.html",garage:"garage.html",magazine:"news.html",
+            shop:"spares.html",profile:"profile.html"})[k];
+  if(f)location.href=f;
+}
+
+/* แท็บบัญชีโชว์รูปโปรไฟล์จริงเมื่อเข้าระบบแล้ว เหมือน Grab กับ Uber
+   คนจำหน้าตัวเองได้เร็วกว่าจำไอคอนคนทั่วไป */
+function paintAvatar(){
+  const slot=D.querySelector('[data-mslot="account"]'); if(!slot)return;
+  const a=$("avatarBtn");
+  if(signedIn()&&a&&a.innerHTML.trim()){
+    if(slot.dataset.av!==a.innerHTML){slot.dataset.av=a.innerHTML;slot.innerHTML=a.innerHTML}
+  }else if(slot.dataset.av!==undefined||!slot.querySelector("i")){
+    delete slot.dataset.av;
+    slot.innerHTML='<i class="ti ti-user"></i>';
+  }
+}
+
+/* ─────────── 2. สามจอที่เลื่อนแล้วล็อก ─────────── */
+/* โครงเดิมของหน้าหลักคือ  .scroll > [#hstack, #hfree]  โดย #hhero อยู่ใน #hfree
+   สิ่งที่ต้องทำมีอย่างเดียว: ยก #hhero ออกมาเป็นพี่น้อง แล้วติดคลาสให้ทั้งสาม
+   ไม่ต้องย้ายอย่างอื่นเลย — ยิ่งย้ายน้อย ยิ่งพังยาก */
+function arrange(){
+  const view=$("v-home"); if(!view)return;
+  const sc=view.querySelector(".scroll"); if(!sc)return;
+  const stack=$("hstack"),hero=$("hhero"),free=$("hfree");
+  if(!free)return;
+
+  if(hero&&hero.parentElement!==sc)sc.insertBefore(hero,free);
+
+  if(stack){stack.classList.add("msnap","msnap-1")}
+  if(hero){hero.classList.add("msnap","msnap-2")}
+  free.classList.add("msnap","msnap-3");
+
+  /* ระดับพื้นฐานไม่มีห้องนักบิน (#hstack) จอแรกจึงเป็นจอฮีโร่แทน
+     ไม่งั้นจะเหลือสองจอโดยจอแรกว่างเปล่า */
+  if(!stack&&hero){hero.classList.remove("msnap-2");hero.classList.add("msnap-1")}
+
+  hint(stack||hero);
+  hint(stack?hero:null);
+  tools();
+
+  /* ครั้งแรกที่จัดเสร็จ ต้องอยู่ที่จอแรกพอดี
+     การย้าย #hhero ทำให้ความสูงเหนือจุดเลื่อนเปลี่ยน เบราว์เซอร์บางตัว
+     จึงชดเชยจนค้างกลางจอ — เห็นเป็นหน้าที่ "เปิดมาแล้วเลื่อนไปเองแล้ว" */
+  /* เปิดหน้ามาต้องอยู่จอแรกเสมอ
+     ระหว่างบูตมีทั้งการย้าย #hhero และ scroll-snap ที่เข้าที่เอง
+     ทำให้บางจังหวะหน้าเด้งไปค้างที่จอ 2 ตั้งแต่ยังไม่มีใครแตะ */
+  if(!arrange.done){
+    arrange.done=true; at=0;
+    if(sc.scrollTop)sc.scrollTop=0;
+  }
+  wireSnap(sc);
+}
+
+/* ─────────── ตัวบังคับล็อกจอ ───────────
+   scroll-snap ของ CSS อาศัย "การปัดจบ" ของเบราว์เซอร์ ซึ่งแต่ละตัวตัดสินใจ
+   ไม่เหมือนกัน — บางเครื่องปัดสั้น ๆ แล้วค้างกลางจอ เห็นสองจอครึ่ง ๆ พร้อมกัน
+   ซึ่งเป็นภาพที่แย่กว่าไม่ล็อกเลย จึงมีตัวเก็บกวาดหลังเลื่อนหยุดอีกชั้น
+   ทำงานเฉพาะสองจอแรกเท่านั้น จอ 3 สูงกว่าจอ ต้องเลื่อนอ่านได้อิสระ */
+let settling=false,at=0;
+/* เกณฑ์ 20% ของความสูงจอ — เท่ากับที่แอปอ่านนิยาย/สไลด์ใช้กัน
+   ต่ำกว่านี้ปัดโดนโดยไม่ตั้งใจก็เปลี่ยนจอ สูงกว่านี้ต้องออกแรงปัดยาวจนเมื่อย */
+const STEP=.20;
+function settle(sc){
+  if(settling)return;
+  const h=sc.clientHeight; if(h<200)return;
+  const t=sc.scrollTop;
+  if(t>=h*2-6){at=2;return}                 /* เข้าจอ 3 แล้ว ปล่อยเลื่อนอิสระ */
+  const d=t-at*h;
+  let to=at;
+  if(d>h*STEP)to=Math.min(at+1,2);
+  else if(d<-h*STEP)to=Math.max(at-1,0);
+  at=to;
+  const target=to*h;
+  if(Math.abs(t-target)<3)return;
+  settling=true;
+  sc.scrollTo({top:target,behavior:"smooth"});
+  setTimeout(()=>{settling=false},520);
+}
+/* ยังไม่มีใครแตะจอ = ต้องอยู่จอแรก
+   ระหว่างบูต เลเยอร์อื่นวาดของเพิ่มเรื่อย ๆ (ห้องนักบิน ข่าว วิดเจ็ต)
+   ความสูงเปลี่ยนทีไรตำแหน่งเลื่อนขยับตาม จนหน้าเปิดมาค้างที่จอ 2 เอง
+   ล็อกไว้จนกว่าจะมีการปัด/แตะ/กดปุ่มจริง แล้วค่อยปล่อยให้ผู้ใช้คุม */
+let touched=false;
+function wireSnap(sc){
+  if(sc.__msnap)return; sc.__msnap=true;
+  let e=null;
+  /* ต้องรอให้ผู้ใช้แตะก่อนถึงจะเริ่มล็อกจอ
+     ระหว่างบูตความสูงยังโตอยู่ (ห้องนักบิน · ข่าว · วิดเจ็ตทยอยมา)
+     ทุกครั้งที่โตจะมี scroll event หลุดออกมาหนึ่งครั้ง ถ้าล็อกทันที
+     ระบบจะคิดว่า "ผู้ใช้ปัดลงมาแล้ว" แล้วพาไปจอ 2 ตั้งแต่ยังไม่มีใครแตะ */
+  const end=()=>{ if(MQ.matches&&touched)settle(sc) };
+  if("onscrollend" in sc)sc.addEventListener("scrollend",end);
+  else sc.addEventListener("scroll",()=>{clearTimeout(e);e=setTimeout(end,140)},{passive:true});
+
+  const mark=()=>{touched=true};
+  ["wheel","touchstart","keydown","pointerdown"].forEach(t=>
+    addEventListener(t,mark,{passive:true,once:true}));
+  sc.addEventListener("scroll",()=>{
+    if(touched||settling||!MQ.matches)return;
+    if(sc.scrollTop)sc.scrollTop=0;
+  },{passive:true});
+}
+
+/* ลูกศรกระพริบใต้จอ บอกว่ายังมีจอถัดไป */
+function hint(el){
+  if(!el||el.querySelector(".mhint"))return;
+  const h=D.createElement("div"); h.className="mhint"; h.setAttribute("aria-hidden","true");
+  h.innerHTML='<i class="ti ti-chevron-down"></i>';
+  el.appendChild(h);
+}
+
+/* ─────────── 3. ตารางเครื่องมือแบบ Grab ─────────── */
+/* เจ็ดตัวที่ใช้บ่อยขึ้นหน้าแรก ที่เหลืออยู่ในแผ่น "ทั้งหมด"
+   สองแถวคือเพดานก่อนที่ตารางจะเริ่มดูเป็นกำแพงไอคอน */
+const FEATS=[
+  {k:"text",  ic:"ti-message-2",    c:"#4F8FF7", th:"พิมพ์ถาม",       en:"Ask"},
+  {k:"image", ic:"ti-camera",       c:"#A46BF5", th:"ถ่ายรูป",        en:"Photo"},
+  {k:"video", ic:"ti-video",        c:"#E85DA6", th:"วิดีโอ",         en:"Video"},
+  {k:"listen",ic:"ti-ear",          c:"#37C08A", th:"ฟังเสียง",       en:"Listen"},
+  {k:"quote", ic:"ti-receipt-2",    c:"#E8A33D", th:"เช็กราคา",       en:"Quote"},
+  {k:"shake", ic:"ti-activity",     c:"#3FC3D6", th:"วัดการสั่น",     en:"Shake"},
+  {k:"park",  ic:"ti-map-pin",      c:"#F0655C", th:"จำที่จอด",       en:"Parking"},
+  {k:"own",   ic:"ti-report-money", c:"#7B8CF0", th:"ต้นทุน",         en:"Costs"},
+  {k:"spares",ic:"ti-package",      c:"#F08A3D", th:"อะไหล่",         en:"Spares"}
+];
+const HOME7=["text","image","listen","quote","shake","park","spares"];
+
+const tile=f=>`<button class="mtool" data-mfeat="${f.k}">
+  <span class="mt-ic" style="--c:${f.c}"><i class="ti ${f.ic}"></i></span>
+  <b>${T(f.th,f.en)}</b></button>`;
+
+function tools(){
+  const free=$("hfree"); if(!free)return;
+  let g=$("mtools");
+  if(!g){
+    g=D.createElement("section"); g.id="mtools";
+    free.insertBefore(g,free.firstChild);
+    g.addEventListener("click",e=>{
+      const all=e.target.closest("[data-mall]"); if(all){sheet();return}
+      const b=e.target.closest("[data-mfeat]"); if(b)run(b.dataset.mfeat);
+    });
+  }
+  g.innerHTML=`<h2 class="mgrid-t">${T("เครื่องมือ","Tools")}</h2>
+    <div class="mgrid">
+      ${HOME7.map(k=>tile(FEATS.find(f=>f.k===k))).join("")}
+      <button class="mtool" data-mall="1">
+        <span class="mt-ic" style="--c:#6B7A90"><i class="ti ti-layout-grid"></i></span>
+        <b>${T("ทั้งหมด","All")}</b></button>
+    </div>`;
+}
+
+function run(k){
+  close();
+  const f=FEATS.find(x=>x.k===k); if(!f)return;
+  if(k==="spares"){ try{window.switchView("shop")}catch(e){location.href="spares.html"} return }
+  if(k==="text"||k==="image"||k==="video"){
+    try{ if(typeof window.openChat==="function"){window.openChat({attach:k});return} }catch(e){}
+    location.href="chat.html?attach="+encodeURIComponent(k); return;
+  }
+  try{ if(typeof window.openTool==="function"){window.openTool(k);return} }catch(e){}
+  location.href="chat.html?attach="+encodeURIComponent(k);
+}
+
+/* แผ่นเลื่อนขึ้น "เครื่องมือทั้งหมด" */
+let bg=null,sh=null;
+function sheet(){
+  if(sh)return;
+  bg=D.createElement("div"); bg.className="msheet-bg";
+  sh=D.createElement("div"); sh.className="msheet";
+  sh.setAttribute("role","dialog"); sh.setAttribute("aria-modal","true");
+  sh.innerHTML=`<div class="msheet-h"></div>
+    <h2 class="mgrid-t">${T("เครื่องมือทั้งหมด","All tools")}</h2>
+    <div class="mgrid">${FEATS.map(tile).join("")}</div>`;
+  D.body.appendChild(bg); D.body.appendChild(sh);
+  requestAnimationFrame(()=>{bg.classList.add("on");sh.classList.add("on")});
+  bg.addEventListener("click",close);
+  sh.addEventListener("click",e=>{
+    const b=e.target.closest("[data-mfeat]"); if(b)run(b.dataset.mfeat);
+  });
+  addEventListener("keydown",esc);
+}
+function esc(e){ if(e.key==="Escape")close() }
+function close(){
+  if(!sh)return;
+  removeEventListener("keydown",esc);
+  const a=bg,b=sh; bg=sh=null;
+  a.classList.remove("on"); b.classList.remove("on");
+  setTimeout(()=>{a.remove();b.remove()},320);
+}
+
+/* ─────────── ถอนคืนเมื่อกลับไปจอกว้าง ─────────── */
+/* หมุนเครื่องเป็นแนวนอนหรือเปิดบนแท็บเล็ตแล้วต้องได้หน้าเดิมของเดสก์ท็อปกลับมา
+   ครบทุกชิ้น ไม่ใช่ครึ่ง ๆ กลาง ๆ — จึงต้องเก็บทุกอย่างที่เราสร้าง */
+function teardown(){
+  close();
+  const n=$("mnav"); if(n)n.remove();
+  const g=$("mtools"); if(g)g.remove();
+  D.querySelectorAll(".mhint").forEach(h=>h.remove());
+  D.querySelectorAll(".msnap").forEach(el=>
+    el.classList.remove("msnap","msnap-1","msnap-2","msnap-3"));
+  /* #hhero ต้องกลับเข้า #hfree ตำแหน่งเดิม ไม่งั้นเดสก์ท็อปจะเห็นมันลอยผิดที่ */
+  const hero=$("hhero"),free=$("hfree");
+  if(hero&&free&&hero.parentElement!==free)free.insertBefore(hero,free.firstChild);
+}
+
+/* ─────────── วงจรชีวิต ─────────── */
+/* แอปวาดใหม่ตลอด (เปลี่ยนรถ · เข้าระบบเสร็จ · โหลดข่าวเสร็จ · เปลี่ยนภาษา)
+   ทุกครั้งที่วาดใหม่ #hhero จะถูกยัดกลับเข้า #hfree และแท็บจะหายรูปโปรไฟล์
+   จึงต้องเฝ้า ไม่ใช่ทำครั้งเดียว — หน่วงไว้ไม่ให้วิ่งทุก mutation */
+let t=null;
+const kick=()=>{clearTimeout(t);t=setTimeout(apply,140)};
+
+function apply(){
+  if(!MQ.matches){teardown();return}
+  mountNav(); arrange();
+}
+
+function boot(){
+  apply();
+  new MutationObserver(m=>{
+    for(const r of m){
+      /* ของที่เราสร้างเองก็เป็น mutation ถ้าไม่กรองจะวนไม่จบ */
+      const t=r.target;
+      if(t&&t.closest&&t.closest("#mnav,#mtools,.msheet,.mhint"))continue;
+      kick(); return;
+    }
+  }).observe(D.body,{childList:true,subtree:true,attributes:true,
+    attributeFilter:["style","class"]});
+  MQ.addEventListener?MQ.addEventListener("change",apply):MQ.addListener(apply);
+  addEventListener("spire:lang",kick);
+  try{ window.spireOnLang&&window.spireOnLang(kick) }catch(e){}
+  /* เข้าระบบเสร็จรูปโปรไฟล์เพิ่งมา — เก็บตกอีกสองจังหวะ */
+  setTimeout(apply,1200); setTimeout(apply,3000);
+}
+if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",boot);
+else boot();
+})();
+</script>
 </body>
 </html>

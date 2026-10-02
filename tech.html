@@ -740,7 +740,6 @@ body.onmap .modes{display:none}
   .cc-wall.r::before{left:34%;height:74%}
   .cc-floor{clip-path:polygon(0 84%,34% 74%,100% 90%,100% 100%,0 100%)}
   .cc-sign{left:70%;top:58%;width:min(110vw,80vh)}
-  .cc-title{top:72%!important}
 }
 /* เงาโลโก้ทอดบนผนัง (ไม่ใช่ป้าย) — เหมือนมีไฟส่องผ่านโลโก้ที่อยู่หน้ากล้อง ขอบนุ่มแบบเงาจริง เงาเลื่อนช้าๆ ตามไฟที่ไหว */
 .cc-sign .mk{display:none}
@@ -753,8 +752,7 @@ body.onmap .modes{display:none}
 .cc-a{grid-area:1/1;display:flex;align-items:center;gap:14px;white-space:nowrap}
 .cc-a b{font-family:var(--kd,inherit);font-weight:700;font-size:clamp(30px,7vmin,54px);letter-spacing:-.5px}
  /* คำที่เขียนสลับภาษา: เส้นปากกาลากตามรูปตัวอักษร + หน้ากากเปิดจากซ้ายไปขวาตามหัวปากกา แล้วหมึกค่อยเติมเต็ม */
-.cc-w{height:clamp(40px,8.6vmin,70px);width:auto;aspect-ratio:330/80;overflow:visible;margin-left:4px}
-.cc-a{transform:translateX(calc(clamp(40px,8.6vmin,70px)*-1.5))}
+.cc-w{--h:clamp(40px,8.6vmin,70px);height:var(--h);width:calc(var(--h)*var(--r,1));overflow:visible;margin-left:4px;transition:width .5s cubic-bezier(.32,.72,0,1)}
 .cc-w text{font-family:var(--kd,inherit);font-weight:700;font-size:56px;fill:url(#ccPen);fill-opacity:0;stroke:#ffd2a6;stroke-width:1.3;stroke-linejoin:round;
   stroke-dasharray:var(--len,600);stroke-dashoffset:var(--len,600)}
 .cc-w text.draw{animation:ccInk .95s cubic-bezier(.45,.05,.3,1) forwards}
@@ -1472,6 +1470,8 @@ const CC_T0=performance.now();let ccGone=false;
   const write=w=>{
     tx.textContent=w;tx.classList.remove("draw","erase");
     let bb;try{bb=tx.getBBox()}catch(e){bb={x:0,width:120}}
+    /* กรอบคำกว้างตามคำจริง และค่อยๆ ยืด/หด → โลโก้+ชื่อทั้งชุดอยู่กลางจอเสมอ เลื่อนนุ่มๆ ไม่กระตุก */
+    const vw=Math.max(40,bb.x+bb.width+6);svg.setAttribute("viewBox",`0 0 ${vw} 80`);svg.style.setProperty("--r",(vw/80).toFixed(3));
     tx.style.setProperty("--len",Math.round(bb.width*9+200));
     void tx.getBBox();tx.classList.add("draw");
     const t0=performance.now(),D=900;cancelAnimationFrame(raf);

@@ -715,6 +715,55 @@ body.onmap .mfilt{left:68px;top:calc(env(safe-area-inset-top) + 16px)}
 body.onmap .modes{display:none}
 /* ══ dashboard ช่าง ══ */
 .dash{max-width:1180px;margin:0 auto;padding:8px 16px calc(40px + env(safe-area-inset-bottom))}
+/* ═══ SPLASH Cendon Care ═══ */
+.cc-splash{position:fixed;top:0;left:0;width:100vw;height:100vh;height:100dvh;z-index:2147483000;overflow:hidden;background:#0d0b0a;color:#fff4e8;
+  transition:opacity .6s cubic-bezier(.32,.72,0,1),filter .6s}
+.cc-splash.out{opacity:0;filter:blur(10px);pointer-events:none}
+/* ห้องมุม 3/4: ผนังซ้าย (เงา) ผนังขวา (ไฟส่อง) พื้น — ตัดด้วย clip-path ให้เส้นรอยต่อเอียงแบบมุมมองจริง ฉากลอยขยับช้าๆ */
+.cc-room{position:absolute;inset:-5%;animation:ccDrift 16s ease-in-out infinite alternate;will-change:transform}
+@keyframes ccDrift{from{transform:translate3d(-1.2%,.6%,0) scale(1.02)}to{transform:translate3d(1.2%,-.8%,0) scale(1.07)}}
+.cc-wall,.cc-floor{position:absolute;inset:0}
+.cc-wall.l{clip-path:polygon(0 0,60% 0,60% 76%,0 90%);background:linear-gradient(100deg,#0f0c0b 0%,#1f1915 60%,#2a221c 100%)}
+.cc-wall.r{clip-path:polygon(60% 0,100% 0,100% 86%,60% 76%);
+  background:radial-gradient(55% 45% at 78% 52%,rgba(255,170,110,.26),transparent 70%),linear-gradient(90deg,#2e251f,#221b17 55%,#15110f)}
+.cc-wall.r::before{content:"";position:absolute;left:60%;top:0;width:6px;height:76%;background:linear-gradient(90deg,rgba(0,0,0,.45),transparent)}
+.cc-floor{clip-path:polygon(0 90%,60% 76%,100% 86%,100% 100%,0 100%);background:linear-gradient(180deg,#1b1512,#0a0807)}
+.cc-wall::after,.cc-floor::after{content:"";position:absolute;inset:0;opacity:.22;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+/* โลโก้ติดผนังขวา (มุมขวาล่าง) หมุนตามระนาบผนัง มีความหนาโลหะ + เงาทอด + ไฟส่องจากบน */
+.cc-sign{position:absolute;right:9%;top:54%;width:clamp(80px,13vmin,150px);transform:perspective(700px) rotateY(-26deg)}
+.cc-sign svg{display:block;width:100%;height:auto}
+.cc-sign .mk{position:relative;z-index:1;filter:drop-shadow(1px 1px 0 #a9482a) drop-shadow(1px 1px 0 #93401f) drop-shadow(1px 1px 0 #7d351a) drop-shadow(2px 3px 2px rgba(0,0,0,.5))}
+.cc-sign .sh{position:absolute;left:0;top:0;z-index:0;transform:translate(16px,20px) skewX(-6deg);filter:blur(9px);opacity:.6}
+.cc-sign::before{content:"";position:absolute;left:-70%;right:-70%;top:-80%;height:200%;pointer-events:none;background:radial-gradient(50% 45% at 50% 35%,rgba(255,200,150,.2),transparent 70%)}
+.cc-vig{position:absolute;inset:0;background:radial-gradient(120% 90% at 40% 45%,transparent 40%,rgba(0,0,0,.65));pointer-events:none}
+/* ชื่อ: Cendon Care → กระโดดถอยหลังแบบเหลว → ช่างใกล้คุณ */
+.cc-title{position:absolute;left:0;right:0;top:42%;display:grid;place-items:center;perspective:800px}
+.cc-a,.cc-b{grid-area:1/1;display:flex;align-items:center;gap:14px;white-space:nowrap}
+.cc-a b,.cc-b b{font-family:var(--kd,inherit);font-weight:700;font-size:clamp(30px,7vmin,54px);letter-spacing:-.5px}
+.cc-mk{width:clamp(34px,7vmin,52px);display:block}.cc-mk svg{width:100%;display:block}.cc-mk path{fill:#f08a4b}
+.cc-a{animation:ccIn .7s cubic-bezier(.22,.61,.12,1) .1s both,ccJump .95s cubic-bezier(.5,0,.2,1) 1.35s forwards}
+.cc-a .cc-mk{animation:ccGoo .95s cubic-bezier(.5,0,.2,1) 1.35s both}
+.cc-b{opacity:0;animation:ccRise .9s cubic-bezier(.22,.61,.12,1) 1.95s forwards}
+.cc-b b{background:linear-gradient(90deg,#fff4e8,#ffc58f);-webkit-background-clip:text;background-clip:text;color:transparent}
+@keyframes ccIn{from{opacity:0;transform:translateY(18px);filter:blur(10px)}to{opacity:1;transform:none;filter:none}}
+/* กระโดดถอยหลัง: ยุบลงก่อน (เตรียมตัว) แล้วพุ่งขึ้นไกลลงไปในจอ เล็กลง เบลอ จาง */
+@keyframes ccJump{0%{transform:none}18%{transform:translateY(6px) scale(1.04,.92)}45%{transform:translate3d(0,-26px,-120px) scale(.9,1.06);filter:blur(1px);opacity:1}
+  100%{transform:translate3d(0,-60px,-900px) scale(.6);filter:blur(14px);opacity:0}}
+/* โลโก้เหลว: ยืด-หด-บิดคนละจังหวะกับตัวหนังสือ เหมือนหยดน้ำ */
+@keyframes ccGoo{0%{transform:none}20%{transform:scale(1.18,.8) skewX(-4deg)}50%{transform:scale(.82,1.25) skewX(6deg)}75%{transform:scale(1.06,.94)}100%{transform:scale(.9)}}
+@keyframes ccRise{from{opacity:0;transform:translateY(26px) scale(.98);filter:blur(12px);letter-spacing:6px}to{opacity:1;transform:none;filter:none;letter-spacing:-.5px}}
+.cc-bar{position:absolute;left:0;right:0;bottom:0;height:2px;background:rgba(255,255,255,.06)}
+.cc-bar i{position:absolute;inset:0;transform-origin:left;transform:scaleX(0);background:linear-gradient(90deg,rgba(240,138,75,.2),#f08a4b 70%,#ffe2c4);
+  animation:ccLoad 2.6s cubic-bezier(.32,.72,0,1) .15s forwards}
+@keyframes ccLoad{to{transform:scaleX(.92)}}
+.cc-splash.done .cc-bar i{animation:none;transform:scaleX(1);transition:transform .25s ease-out}
+@media(prefers-reduced-motion:reduce){.cc-room,.cc-a,.cc-a .cc-mk,.cc-b{animation:none}.cc-b{opacity:1}.cc-a{opacity:0}}
+/* ไม่มีปุ่มสลับลูกค้า/ช่างแล้ว — Studio เข้าจากปุ่มโปรไฟล์ */
+.modes{display:none!important}
+.studio-bar{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.studio-bar b{font-family:var(--kd);font-size:18px;flex:1}
+.studio-bar .btn{flex:0 0 auto}
 /* ═══ หน้าร้าน (storefront) ═══ */
 .bs.store .hd{position:absolute;top:0;left:0;right:0;z-index:3;background:none;border:0}
 .bs.store .hd .ib,.bs.store .hd button{background:rgba(0,0,0,.38);color:#fff;backdrop-filter:blur(10px)}
@@ -825,6 +874,17 @@ html[data-theme="dark"] .fmap .leaflet-tile-pane{filter:invert(1) hue-rotate(180
 </style>
 </head>
 <body>
+<!-- SPLASH "Cendon Care": ห้องมุม 3/4 มีโลโก้ติดผนังมุมขวาล่าง ฉากขยับช้าๆ · ชื่อ Cendon Care กระโดดถอยไปข้างหลังแบบเหลว แล้ว "ช่างใกล้คุณ" โผล่ขึ้นมาแทน · แถบโหลดบางเฉียบขอบล่างจอ -->
+<div class="cc-splash" id="ccSplash" aria-hidden="true">
+  <div class="cc-room"><div class="cc-wall l"></div><div class="cc-wall r"><div class="cc-sign"><svg class="sh" viewBox="-6.0 -6.0 94.8 112.0" aria-hidden="true"><path fill="#000" d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg><svg class="mk" viewBox="-6.0 -6.0 94.8 112.0" aria-hidden="true"><defs><linearGradient id="ccG" x1="0" y1="0" x2=".4" y2="1"><stop offset="0" stop-color="#ffb07a"/><stop offset=".55" stop-color="#ef7d43"/><stop offset="1" stop-color="#c9522c"/></linearGradient></defs><path fill="url(#ccG)" d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg></div></div><div class="cc-floor"></div></div>
+  <div class="cc-vig"></div>
+  <div class="cc-title">
+    <div class="cc-a"><span class="cc-mk"><svg viewBox="-6.0 -6.0 94.8 112.0" aria-hidden="true"><path d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg></span><b>Cendon Care</b></div>
+    <div class="cc-b"><b>ช่างใกล้คุณ</b></div>
+  </div>
+  <div class="cc-bar"><i></i></div>
+</div>
+<script>try{if(sessionStorage.getItem("cc_seen")&&(performance.getEntriesByType("navigation")[0]||{}).type==="reload")document.getElementById("ccSplash").remove();else sessionStorage.setItem("cc_seen","1")}catch(e){}</script>
 
 <header class="top" id="top">
   <div class="bar">
@@ -867,6 +927,7 @@ html[data-theme="dark"] .fmap .leaflet-tile-pane{filter:invert(1) hue-rotate(180
 </section>
 
 <section class="view dash" id="vTech" hidden>
+  <div class="studio-bar"><button class="btn s" onclick="setMode('customer')"><i class="ti ti-arrow-left"></i></button><b>Cendon Studio</b></div>
   <div class="dhead e3" id="dHead"></div>
   <div class="dstats" id="dStats"></div>
   <div class="dtabs" id="dTabs" role="tablist">
@@ -1375,10 +1436,18 @@ async function load(){
     const d=await api("/api/tech");
     TECHS=Array.isArray(d.techs)?d.techs:[];SERVER=true;
   }catch(e){SERVER=false;TECHS=[]}
-  LOADED=true;render();renderUsed();diag();
+  LOADED=true;render();renderUsed();diag();ccDone();
   /* ลิงก์แชร์ร้าน ?shop=<id> → เปิดหน้าร้านทันที (ครั้งเดียว) */
   if(SHOPLINK&&TECHS.some(t=>t.id===SHOPLINK)){const id=SHOPLINK;SHOPLINK=null;openTech(id)}
 }
+/* ปิดหน้าโหลด: รอให้แอนิเมชันชื่อเล่นจบ (~2.9 วิ) และรายชื่อช่างพร้อม แล้วเติมแถบเต็ม → จางหายแบบเบลอ */
+const CC_T0=performance.now();let ccGone=false;
+function ccDone(){
+  const el=$("ccSplash");if(!el||ccGone)return;ccGone=true;
+  const wait=Math.max(0,2900-(performance.now()-CC_T0));
+  setTimeout(()=>{el.classList.add("done");setTimeout(()=>{el.classList.add("out");setTimeout(()=>el.remove(),650)},260)},wait);
+}
+setTimeout(ccDone,7000);
 let SHOPLINK=new URLSearchParams(location.search).get("shop");
 /* ข้อความวินิจฉัยเซิร์ฟเวอร์ — โชว์เฉพาะเจ้าของแอป คนทั่วไปเห็นแค่ "เชื่อมต่อไม่ได้" */
 async function diag(){
@@ -2193,14 +2262,15 @@ $("bMe").onclick=()=>{
   const t=ME&&ME.technician,a=ME&&ME.application;
   sheet({title:"บัญชี",body:`<div class="who"><span class="av sq" style="--c1:var(--accent)">${initial(U.email)}</span><div><b>${esc(U.displayName||U.email)}</b><small>${esc(U.email)}${ME&&ME.staff?" · ทีมงาน":""}</small></div></div>
     <button class="jl" id="mJobs"><span class="av sq" style="--c1:#2f9bd8"><i class="ti ti-clipboard-list"></i></span><span class="jb"><b>งานของฉัน</b></span><i class="ti ti-chevron-right"></i></button>
-    <button class="jl" id="mJoin"><span class="av sq" style="--c1:#22a06b"><i class="ti ti-tool"></i></span><span class="jb"><b>${t&&!t.test?"พื้นที่ช่าง":a&&!a.test?"ใบสมัครพาร์ทเนอร์ ("+({pending:"กำลังพิจารณา",rejected:"ต้องแก้ไข",approved:"อนุมัติแล้ว"}[a.status]||a.status)+")":"สมัครเป็นช่าง"}</b></span><i class="ti ti-chevron-right"></i></button>`,
-    mount(){$("mJobs").onclick=()=>jobs();$("mJoin").onclick=()=>openJoin()}});
+    <button class="jl" id="mJoin"><span class="av sq" style="--c1:#22a06b"><i class="ti ti-tool"></i></span><span class="jb"><b>${t&&!t.test?"Cendon Studio — จัดการร้าน":a&&!a.test?"ใบสมัครพาร์ทเนอร์ ("+({pending:"กำลังพิจารณา",rejected:"ต้องแก้ไข",approved:"อนุมัติแล้ว"}[a.status]||a.status)+")":"สมัครเป็นช่าง"}</b></span><i class="ti ti-chevron-right"></i></button>${ME&&ME.staff?`<button class="jl" id="mStaff"><span class="av sq" style="--c1:#7c5cff"><i class="ti ti-shield-check"></i></span><span class="jb"><b>มุมทีมงาน</b></span><i class="ti ti-chevron-right"></i></button>`:""}`,
+    mount(){$("mJobs").onclick=()=>jobs();$("mJoin").onclick=()=>{if(t&&!t.test||(ME&&ME.staff&&t)){closeSheet();setMode("tech")}else openJoin()};
+      if($("mStaff"))$("mStaff").onclick=()=>{closeSheet();setMode("staff")}}});
 };
 
 /* ═══ มุมมอง ลูกค้า / ช่าง / ทีมงาน ═══
    ทีมงาน Cendon Experience สลับดูได้ทุกมุมโดยไม่ต้องสมัครอะไร — ใช้ทดสอบระบบทั้งสองฝั่งด้วยบัญชีเดียว
    ช่างที่ผ่านการอนุมัติสลับได้ระหว่างลูกค้ากับช่าง คนทั่วไปเห็นมุมลูกค้าอย่างเดียว (ไม่มีปุ่มสลับ) */
-let MODE=ls.get("spire_tech_mode",null);
+let MODE="customer";
 function modesAvail(){
   const m=["customer"];
   if(ME&&(ME.staff||(ME.technician&&!ME.technician.test)))m.push("tech");
@@ -2211,15 +2281,14 @@ function drawModes(){
   const av=modesAvail();
   /* ค่าที่ผู้ใช้เลือกเองมาก่อนเสมอ ถ้ายังไม่เคยเลือก ทีมงานเริ่มที่มุมทีมงาน คนอื่นเริ่มที่มุมลูกค้า
      ต้องคิดใหม่ทุกครั้งที่รู้ข้อมูลผู้ใช้เพิ่ม — ตอนเปิดหน้ายังไม่รู้ว่าใครล็อกอิน */
-  const saved=ls.get("spire_tech_mode",null);
-  MODE=saved&&av.includes(saved)?saved:(ME&&ME.staff?"staff":"customer");
+  if(!av.includes(MODE))MODE="customer";
   const el=$("modes");el.hidden=av.length<2;
   const L={customer:["ti-user",T("ลูกค้า","Customer")],tech:["ti-tool",T("ช่าง","Mechanic")],staff:["ti-shield-check",T("ทีมงาน","Staff")]};
   el.innerHTML=av.map(m=>`<button data-m="${m}" class="${m===MODE?"on":""}"><i class="ti ${L[m][0]}"></i>${L[m][1]}</button>`).join("");
   el.querySelectorAll("button").forEach(b=>b.onclick=()=>setMode(b.dataset.m));
   applyMode();
 }
-function setMode(m){MODE=m;ls.set("spire_tech_mode",m);drawModes();window.scrollTo(0,0);if(m==="tech")dash()}
+function setMode(m){MODE=m;drawModes();window.scrollTo(0,0);if(m==="tech")dash()}
 function applyMode(){
   const tech=MODE==="tech";
   if(tech&&VIEW==="map"){VIEW="menu";document.body.classList.remove("onmap");$("vMap").hidden=true}

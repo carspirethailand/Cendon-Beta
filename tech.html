@@ -731,10 +731,19 @@ body.onmap .modes{display:none}
 .cc-wall::after,.cc-floor::after{content:"";position:absolute;inset:0;opacity:.22;mix-blend-mode:overlay;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 /* โลโก้ติดผนังขวา (มุมขวาล่าง) หมุนตามระนาบผนัง มีความหนาโลหะ + เงาทอด + ไฟส่องจากบน */
-.cc-sign{position:absolute;right:9%;top:54%;width:clamp(80px,13vmin,150px);transform:perspective(700px) rotateY(-26deg)}
+.cc-sign{position:absolute;left:80%;top:42%;width:min(30vw,52vh);transform:translate(-50%,-50%) perspective(1000px) rotateY(-28deg)}
 .cc-sign svg{display:block;width:100%;height:auto}
-.cc-sign .mk{position:relative;z-index:1;filter:drop-shadow(1px 1px 0 #a9482a) drop-shadow(1px 1px 0 #93401f) drop-shadow(1px 1px 0 #7d351a) drop-shadow(2px 3px 2px rgba(0,0,0,.5))}
-.cc-sign .sh{position:absolute;left:0;top:0;z-index:0;transform:translate(16px,20px) skewX(-6deg);filter:blur(9px);opacity:.6}
+/* จอแนวตั้ง: ขยับรอยต่อมุมไปทางซ้าย ให้ผนังขวากว้างพอติดโลโก้ใหญ่เต็มผนัง */
+@media (max-aspect-ratio:4/5){
+  .cc-wall.l{clip-path:polygon(0 0,34% 0,34% 74%,0 84%)}
+  .cc-wall.r{clip-path:polygon(34% 0,100% 0,100% 90%,34% 74%)}
+  .cc-wall.r::before{left:34%;height:74%}
+  .cc-floor{clip-path:polygon(0 84%,34% 74%,100% 90%,100% 100%,0 100%)}
+  .cc-sign{left:68%;top:36%;width:min(54vw,40vh)}
+  .cc-title{top:72%!important}
+}
+.cc-sign .mk{position:relative;z-index:1;filter:drop-shadow(2px 2px 0 #a9482a) drop-shadow(2px 2px 0 #93401f) drop-shadow(2px 2px 0 #7d351a) drop-shadow(3px 3px 0 #66290f) drop-shadow(6px 10px 8px rgba(0,0,0,.55))}
+.cc-sign .sh{position:absolute;left:0;top:0;z-index:0;transform:translate(9%,8%) skewX(-6deg);filter:blur(18px);opacity:.65}
 .cc-sign::before{content:"";position:absolute;left:-70%;right:-70%;top:-80%;height:200%;pointer-events:none;background:radial-gradient(50% 45% at 50% 35%,rgba(255,200,150,.2),transparent 70%)}
 .cc-vig{position:absolute;inset:0;background:radial-gradient(120% 90% at 40% 45%,transparent 40%,rgba(0,0,0,.65));pointer-events:none}
 /* ชื่อ: Cendon Care → กระโดดถอยหลังแบบเหลว → ช่างใกล้คุณ */

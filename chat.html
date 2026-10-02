@@ -504,6 +504,10 @@ body[data-phase="thread"] .composer{display:block;animation:compIn .5s cubic-bez
   background:var(--c-grad);color:#fff;font-weight:700;font-size:14px;box-shadow:0 12px 26px -10px var(--c-acc);transition:.2s}
 .hist-new:hover{transform:translateY(-2px)}
 
+.side-tech{color:var(--c-acc,#E8743C)!important;font-weight:600}
+.side-tech .ti{color:#fff!important;background:linear-gradient(160deg,#F0894F,#D95E3C);border-radius:8px;padding:3px}
+.side-l.hot{color:var(--c-acc,#E8743C);font-weight:600}
+.side-l.hot .ti{color:#fff;background:linear-gradient(160deg,#F0894F,#D95E3C);border-radius:8px;padding:3px;box-shadow:0 4px 12px -4px rgba(217,94,60,.7)}
 /* ===== LIVE CALL — "Hearth" อบอุ่นเหมือนนั่งคุยข้างกองไฟ: ลูกไฟของ Cendon + ระลอกเสียงผู้ใช้ ===== */
 .hearth{position:fixed;inset:0;z-index:320;display:none;flex-direction:column;align-items:center;overflow:hidden;color:#fff4e8;
   padding:calc(14px + env(safe-area-inset-top)) 16px calc(22px + env(safe-area-inset-bottom));
@@ -7031,7 +7035,9 @@ const MARK='<svg viewBox="-6.0 -6.0 94.8 112.0"><path d="M 79.33 0.29 Q 79.62 0.
 /* เมนูหลักของแอปอยู่บนสุดของลิ้นชัก ประวัติแชตอยู่ล่าง — โครงเดียวกับ Claude
    เดิมลิ้นชักมีแต่ประวัติแชต ทำให้ต้องกลับไปหน้าหลักทุกครั้งที่จะไปที่อื่น */
 const NAVI=[
-  {k:"tools",   ic:"ti-tool",           th:"เครื่องมือ",   en:"Tools"},
+  /* เมนูแรก: เรียกช่าง — เข้าแอปมาแล้วต้องรู้ทันทีว่าที่นี่หาช่างได้ ไม่ใช่แค่แชต AI */
+  {k:"techs",   ic:"ti-tool",           th:"เรียกช่าง",    en:"Find a mechanic", hot:1},
+  {k:"tools",   ic:"ti-category",       th:"เครื่องมือ",   en:"Tools"},
   {k:"garage",  ic:"ti-car-garage",     th:"การาจ",       en:"Garage"},
   {k:"spares",  ic:"ti-package",        th:"อะไหล่",      en:"Spares"},
   {k:"home",    ic:"ti-layout-dashboard",th:"หน้าหลัก",   en:"Dashboard"}
@@ -7042,6 +7048,7 @@ function goNav(k){
      ตัวเชื่อมเครื่องมือครอบ goNav ไว้อีกชั้นและดักคำนี้ก่อนถึงตรงนี้ */
   if(k==="tools"){ if(window.spireToolsMenu)window.spireToolsMenu(document.getElementById("wPlus")||document.body); return }
   /* ทุกหน้าแยกไฟล์แล้ว ลิงก์ตรงไปไฟล์นั้นได้เลย ไม่ต้องผ่าน index แล้วค่อยสลับ */
+  if(k==="techs"){ location.href="tech.html"; return }
   const F={home:"index.html",garage:"garage.html",magazine:"news.html",
            news:"news.html",shop:"spares.html",spares:"spares.html",
            profile:"profile.html"};
@@ -7060,8 +7067,8 @@ function syncSideNav(){
   const nav=$("sideNav"); if(!nav)return;
   const ok=k=>{ try{ return !window.spireHasFeature||window.spireHasFeature(k) }
                catch(e){ return true } };
-  nav.innerHTML=NAVI.filter(n=>ok(n.k)).map(n=>
-    `<button class="side-l" data-nav="${n.k}">
+  nav.innerHTML=NAVI.filter(n=>n.k==="techs"||ok(n.k)).map(n=>
+    `<button class="side-l${n.hot?" hot":""}" data-nav="${n.k}">
       <i class="ti ${n.ic}"></i><span>${t(n.th,n.en)}</span>
       ${n.tag?`<em>${n.tag}</em>`:""}</button>`).join("");
   nav.querySelectorAll("[data-nav]").forEach(b=>b.onclick=()=>window.goNav(b.dataset.nav));
@@ -7102,6 +7109,8 @@ function wrap(){
     <button class="side-new" id="sideNew"><i class="ti ti-edit"></i><span></span></button>
     <!-- ทางกลับหน้าหลักต้องเห็นตลอด ไม่ใช่ซ่อนอยู่ในเมนูบัญชีอย่างเดียว -->
     <button class="side-new side-home" id="sideHome"><i class="ti ti-home"></i><span></span></button>
+    <!-- เรียกช่าง: ทางเข้าหน้าช่างที่เห็นตลอด ไม่ต้องรู้ว่าซ่อนอยู่ในเครื่องมือ -->
+    <button class="side-new side-tech" id="sideTech"><i class="ti ti-tool"></i><span>${t("เรียกช่าง","Find a mechanic")}</span></button>
     <div class="side-lbl" id="sideHistLbl"></div>
     <div class="side-list" id="sideList"></div>
     <div class="side-foot">
@@ -7214,6 +7223,7 @@ function wrap(){
   $("sideNew").onclick=()=>{if(window.newSession)window.newSession();closeSideIfDrawer()};
   $("sideAcct").onclick=acctMenu;
   $("sideHome").onclick=()=>window.goNav("home");
+  $("sideTech").onclick=()=>window.goNav("techs");
 }
 
 /* ── เมนูบัญชีผู้ใช้ (แบบเดียวกับเครื่องมือ AI ทั่วไป) ── */

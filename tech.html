@@ -1069,6 +1069,13 @@ body{background:var(--bg);letter-spacing:-.005em}
 .lx-subs button.on{color:var(--ink);border-color:var(--ink)}
 .lx-subs button:hover{border-color:var(--co)}
 @media(max-width:560px){.lx-cards{grid-template-columns:1fr;gap:14px}.lx-pcv{aspect-ratio:21/8}.lx-rail button{width:84px}.lx-ri{width:52px;height:52px}}
+
+/* มือถือ: แถวหมวด 2 บรรทัด เลื่อนข้างได้ */
+@media(max-width:700px){
+  .lx-rail{display:grid;grid-template-rows:repeat(2,auto);grid-auto-flow:column;grid-auto-columns:84px;justify-content:start;gap:4px 2px;padding:6px 12px 4px}
+  .lx-rail button{width:auto;padding:8px 2px 12px;gap:8px}
+  .lx-rt{font-size:12px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+}
 </style>
 </head>
 <body>
@@ -1116,7 +1123,7 @@ body{background:var(--bg);letter-spacing:-.005em}
     <div class="lx-tags nt" id="hTags"></div>
   </header>
   <!-- หมวดช่าง: แถวไอคอน 3D (ใส่รูปที่ img/cat/<หมวด>.png ได้เลย ไม่มีรูปใช้ไอคอนสีแทน) · กดแล้วเข้าหน้าหมวด -->
-  <nav class="lx-rail" id="hRail" aria-label="หมวดช่าง"></nav>
+  <nav class="lx-rail nt" id="hRail" aria-label="หมวดช่าง"></nav>
   <section class="lx-sec">
     <div class="lx-sh"><h2>ช่างแนะนำ<span id="sugN"></span></h2><button class="lx-link" id="sugAll" type="button">ดูทั้งหมด <i class="ti ti-arrow-right"></i></button></div>
     <div class="lx-cards" id="sugList"></div>
@@ -1661,7 +1668,32 @@ function drawGrid(){
   $("hTags").querySelectorAll("button").forEach(b=>b.onclick=()=>{$("hq").value=b.textContent;go(b.textContent)});
 })();
 /* ═══ หน้าหลักใหม่: แถวหมวด + ช่างแนะนำ + หน้าหมวด ═══ */
-const RAIL=[{id:"all",th:"ยอดนิยม",ic:"ti-flame",c:"#F07A36"},...CATS.filter(c=>c.id!=="all"),{id:"map",th:"แผนที่",ic:"ti-map-2",c:"#0284c7",c2:"#38bdf8"}];
+/* หมวดละเอียด: แต่ละอันผูกกับหมวดหลักของร้าน (base) ที่ช่างเลือกไว้ตอนสมัคร — กดแล้วเห็นร้านในหมวดหลักนั้น */
+const RAIL=[
+  {id:"all",th:"ยอดนิยม",ic:"ti-flame",c:"#F07A36",c2:"#FFB067"},
+  {id:"air",th:"แอร์รถยนต์",ic:"ti-air-conditioning",c:"#2f9bd8",c2:"#7cc8ee"},
+  {id:"air-clean",base:"air",th:"ล้างแอร์ เติมน้ำยา",ic:"ti-droplet",c:"#38bdf8",c2:"#a5e3fb"},
+  {id:"eng",th:"เครื่องยนต์",ic:"ti-engine",c:"#e0673a",c2:"#f2a161"},
+  {id:"oil",base:"eng",th:"เปลี่ยนน้ำมันเครื่อง",ic:"ti-oil",c:"#d97706",c2:"#fbbf24"},
+  {id:"service",base:"eng",th:"เช็กระยะ",ic:"ti-clipboard-check",c:"#16a34a",c2:"#6ee7a0"},
+  {id:"gear",base:"eng",th:"เกียร์ คลัตช์",ic:"ti-manual-gearbox",c:"#64748b",c2:"#a3b1c6"},
+  {id:"cool",base:"eng",th:"หม้อน้ำ ระบบหล่อเย็น",ic:"ti-temperature",c:"#0ea5e9",c2:"#7dd3fc"},
+  {id:"exhaust",base:"eng",th:"ท่อไอเสีย",ic:"ti-wind",c:"#78716c",c2:"#b8b1ab"},
+  {id:"tyre",th:"ยาง ปะยาง",ic:"ti-circle-dot",c:"#4b5563",c2:"#9ca3af"},
+  {id:"brake",base:"tyre",th:"เบรก ผ้าเบรก",ic:"ti-hand-stop",c:"#dc2626",c2:"#f87171"},
+  {id:"susp",base:"tyre",th:"ช่วงล่าง โช้ค",ic:"ti-steering-wheel",c:"#475569",c2:"#94a3b8"},
+  {id:"align",base:"tyre",th:"ตั้งศูนย์ ถ่วงล้อ",ic:"ti-target",c:"#334155",c2:"#7c8ba1"},
+  {id:"ev",th:"ระบบไฟ EV",ic:"ti-bolt",c:"#22a06b",c2:"#6fd3a0"},
+  {id:"battery",base:"ev",th:"แบตเตอรี่",ic:"ti-battery-charging",c:"#15803d",c2:"#4ade80"},
+  {id:"audio",base:"ev",th:"เครื่องเสียง กล้องติดรถ",ic:"ti-device-speaker",c:"#4f46e5",c2:"#a5b4fc"},
+  {id:"body",th:"เคาะ พ่นสี",ic:"ti-spray",c:"#9B5DE0",c2:"#C9A0F2"},
+  {id:"detail",base:"body",th:"ขัดสี เคลือบเงา",ic:"ti-sparkles",c:"#c026d3",c2:"#f0abfc"},
+  {id:"glass",base:"body",th:"กระจก ฟิล์ม",ic:"ti-window",c:"#0891b2",c2:"#67e8f9"},
+  {id:"wash",base:"body",th:"ล้างรถ",ic:"ti-bucket-droplet",c:"#0284c7",c2:"#7dd3fc"},
+  {id:"mobile",th:"ช่างมาถึงที่",ic:"ti-truck",c:"#0d9488",c2:"#5eead4"},
+  {id:"tow",base:"mobile",th:"รถยก ลากรถ",ic:"ti-truck-loading",c:"#b45309",c2:"#fbbf24"},
+  {id:"urgent",th:"งานด่วน",ic:"ti-urgent",c:"#e11d48",c2:"#fb7185"},
+  {id:"map",th:"แผนที่",ic:"ti-map-2",c:"#0369a1",c2:"#38bdf8"}];
 const railIc=c=>`<span class="lx-ri" style="--a:${c.c||"#F07A36"};--b:${c.c2||c.c||"#F07A36"}"><img src="img/cat/${c.id}.png" alt="" onerror="this.remove()"/><i class="ti ${c.ic}"></i></span>`;
 function profCard(t,i){
   const cov=t.cover,av=t.avatar,d=t.dist!=null?distTxt(t.dist):"";
@@ -1694,7 +1726,7 @@ function openCat(k,noHist){
 }
 function drawCat(){
   if($("vCat").hidden)return;
-  let l=shown({cat:CATK,q:CATQ});
+  const rc=RAIL.find(x=>x.id===CATK);let l=shown({cat:rc&&rc.base?rc.base:CATK,q:CATQ});
   if(CATSUB==="mobile")l=l.filter(t=>t.mobile);if(CATSUB==="urgent")l=l.filter(t=>t.urgent);if(CATSUB==="open")l=l.filter(t=>t.online);
   $("catN").textContent=LOADED?`${l.length} ร้าน${HERE?" · เรียงจากใกล้คุณ":""}`:"กำลังโหลด…";
   $("catSubs").innerHTML=[["","ทั้งหมด"],["open","เปิดรับงานตอนนี้"],["mobile","มาถึงที่"],["urgent","รับงานด่วน"]].map(([k,t])=>`<button type="button" class="${CATSUB===k?"on":""}" data-s="${k}">${t}</button>`).join("");

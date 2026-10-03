@@ -1967,7 +1967,7 @@ html.lg-lock,body.lg-lock{overflow:hidden}
   -webkit-overflow-scrolling:touch}
 
 /* ══ อะตอมของเว็บหลักที่ ledger ใช้แต่ห้องแชตไม่มี ══
-   ปุ่ม ช่องกรอก และหัวเรื่อง คัดมาจาก index.html ตรง ๆ เพื่อให้หน้าตาตรงกัน
+   ปุ่ม ช่องกรอก และหัวเรื่อง คัดมาจาก / ตรง ๆ เพื่อให้หน้าตาตรงกัน
    ขังไว้ใต้ .lg-host ทั้งหมด จะได้ไม่ไปชนสไตล์ของห้องแชตที่ใช้ชื่อเดียวกัน */
 .lg-host .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;
   border-radius:14px;font-weight:600;font-size:14px;transition:.15s;cursor:pointer;
@@ -1994,7 +1994,7 @@ html.lg-lock,body.lg-lock{overflow:hidden}
 @media(max-width:560px){.lg-host .grid2{grid-template-columns:1fr}}
 
 /* ══ เมนูปุ่มบวก ══
-   เดิมปุ่มนี้เด้งออกไป index.html ทั้งที่เครื่องมืออยู่ในห้องแชตได้แล้ว */
+   เดิมปุ่มนี้เด้งออกไป / ทั้งที่เครื่องมืออยู่ในห้องแชตได้แล้ว */
 .pl-veil{position:fixed;inset:0;z-index:150;background:rgba(3,6,12,.5);
   opacity:0;transition:opacity .18s;backdrop-filter:blur(2px)}
 .pl-veil.on{opacity:1}
@@ -3039,14 +3039,14 @@ input,select,textarea,.input,.odo-i{
      eagerness moderate คือเริ่มเตรียมตอนเมาส์ค้างหรือแตะค้าง ไม่ใช่เตรียมทุกลิงก์ทิ้งไว้
      ตัวไหนไม่รองรับ speculation rules จะตกไปใช้ prefetch ข้างล่างแทน -->
 <script type="speculationrules">
-{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}],
- "prefetch":[{"where":{"href_matches":"/*.html"},"eagerness":"conservative"}]}
+{"prerender":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}],
+ "prefetch":[{"where":{"href_matches":"/*"},"eagerness":"conservative"}]}
 </script>
-<link rel="prefetch" href="./index.html">
-<link rel="prefetch" href="./garage.html">
-<link rel="prefetch" href="./spares.html">
-<link rel="prefetch" href="./news.html">
-<link rel="prefetch" href="./profile.html">
+<link rel="prefetch" href="/">
+<link rel="prefetch" href="/garage">
+<link rel="prefetch" href="/spares">
+<link rel="prefetch" href="/news">
+<link rel="prefetch" href="/profile">
 <script id="perfraf">
 /* ══════════════════════════════════════════════════════════════════
    ตัวคุมจังหวะการวาดของ canvas
@@ -3162,7 +3162,7 @@ html[data-idle="1"] *{animation-play-state:paused!important}
     transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
 </style>
-<!-- คลังช่าง ใช้ร่วมกับหน้า tech.html และหน้าหลัก
+<!-- คลังช่าง ใช้ร่วมกับหน้า /tech และหน้าหลัก
      โหลดตรงนี้เพื่อให้ AI หยิบข้อมูลช่างชุดเดียวกับที่ผู้ใช้เห็นบนหน้าเว็บ -->
 <script src="call-sounds.js?v=1" defer></script>
 <script src="./techs.js"></script>
@@ -4733,7 +4733,7 @@ const LS={
           try{window.cloudMark&&window.cloudMark(k)}catch(e){}}};
 window.LS=LS;
 
-/* ===== CONFIG (same as index.html — do not change) ===== */
+/* ===== CONFIG (same as / — do not change) ===== */
 const BACKEND_URL="https://spireonebackend.carspirethailand.workers.dev";
 
 /* ตัวช่วยแปลภาษาสำหรับสคริปต์ก้อนนี้
@@ -4873,7 +4873,7 @@ let lang=LS.get("lang",(["th","en","ja","zh","de","es"].indexOf((window.spireLan
 /* auth · currentUser · lang · BACKEND_URL ประกาศด้วย let/const ที่ระดับบนสุด
    ของสคริปต์ ซึ่งภาษาไม่เอาขึ้นไปไว้บน window เลเยอร์อื่น (หน้าเข้าสู่ระบบ
    และตัวช่วยตั้งค่า) จึงมองไม่เห็น แล้วขึ้นว่า "ระบบล็อกอินยังไม่พร้อม"
-   ตลอดกาล — เปิด getter ให้อ่านค่าจริงได้ เหมือนที่ index.html ทำไว้แล้ว */
+   ตลอดกาล — เปิด getter ให้อ่านค่าจริงได้ เหมือนที่ / ทำไว้แล้ว */
 
 /* ── ดึงช่างจากฐานข้อมูลตอนเปิดหน้า ──
    ในโค้ดไม่มีช่างตัวอย่างเหลืออยู่แล้ว ถ้าหน้านี้ไม่ดึงเอง
@@ -5418,7 +5418,7 @@ async function gemini(contents,opts){opts=opts||{};
 function gParse(t){if(!t)return null;let s=t.replace(/```json/gi,"").replace(/```/g,"").trim();const m=s.match(/[\[{][\s\S]*[\]}]/);if(m)s=m[0];try{return JSON.parse(s)}catch{return null}}
 const blobB64=b=>new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result.split(",")[1]);r.readAsDataURL(b)});
 
-/* ===== GARAGE (shared with index.html via localStorage) ===== */
+/* ===== GARAGE (shared with / via localStorage) ===== */
 function garage(){return LS.get("garage",[])}
 function saveGarage(g){LS.set("garage",g)}
 function selCar(){const id=LS.get("selCar","");return garage().find(c=>c.id===id)||null}
@@ -5836,7 +5836,7 @@ const sysPrompt=()=>`คุณคือ Cendon ผู้ช่วย AI ดู�
    มันจะไม่รู้ว่ามีใครอยู่ในระบบบ้าง แล้วจะแต่งชื่ออู่ขึ้นมาเอง
    ซึ่งอันตรายกว่าตอบว่าไม่รู้ — คนรถเสียอาจขับตามไปหาที่ที่ไม่มีอยู่จริง
 
-   รายชื่อนี้เป็นชุดเดียวกับที่หน้า tech.html ใช้ ผู้ใช้กดตามไปแล้วจึงเจอเสมอ */
+   รายชื่อนี้เป็นชุดเดียวกับที่หน้า /tech ใช้ ผู้ใช้กดตามไปแล้วจึงเจอเสมอ */
 function techPrompt(){
   try{
     if(!window.Techs)return"";
@@ -6512,7 +6512,7 @@ function markTheme(){
   document.querySelectorAll(".th-opt").forEach(b=>b.classList.toggle("sel",b.dataset.th===cur));
 }
 
-/* ===== LANGUAGE (shared with index.html via spire_lang) ===== */
+/* ===== LANGUAGE (shared with / via spire_lang) ===== */
 function setLang(l){
   lang=l;LS.set("lang",l);document.documentElement.lang=l;
   applyT();updateGreeting();renderCarUI();renderChips();updateHint();
@@ -6524,8 +6524,8 @@ function setLang(l){
 function markLang(){document.querySelectorAll(".lang-opt").forEach(b=>b.classList.toggle("sel",b.dataset.l===lang))}
 
 /* ===== NAVIGATION ===== */
-function goHome(){try{sessionStorage.setItem("spire_stayHome","1")}catch(e){}location.href="index.html"}
-function goGarage(){try{sessionStorage.setItem("spire_stayHome","1")}catch(e){}location.href="garage.html"}
+function goHome(){try{sessionStorage.setItem("spire_stayHome","1")}catch(e){}location.href="/"}
+function goGarage(){try{sessionStorage.setItem("spire_stayHome","1")}catch(e){}location.href="/garage"}
 
 /* ===== TOAST ===== */
 let tt;function toast(m,ic){const el=$("toast");el.innerHTML=`<i class="ti ${ic||"ti-check"}"></i>${esc(m)}`;el.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("show"),3200)}
@@ -7048,11 +7048,11 @@ function goNav(k){
      ตัวเชื่อมเครื่องมือครอบ goNav ไว้อีกชั้นและดักคำนี้ก่อนถึงตรงนี้ */
   if(k==="tools"){ if(window.spireToolsMenu)window.spireToolsMenu(document.getElementById("wPlus")||document.body); return }
   /* ทุกหน้าแยกไฟล์แล้ว ลิงก์ตรงไปไฟล์นั้นได้เลย ไม่ต้องผ่าน index แล้วค่อยสลับ */
-  if(k==="techs"){ location.href="tech.html"; return }
-  const F={home:"index.html",garage:"garage.html",magazine:"news.html",
-           news:"news.html",shop:"spares.html",spares:"spares.html",
-           profile:"profile.html"};
-  location.href=F[k]||"index.html";
+  if(k==="techs"){ location.href="/tech"; return }
+  const F={home:"/",garage:"/garage",magazine:"/news",
+           news:"/news",shop:"/spares",spares:"/spares",
+           profile:"/profile"};
+  location.href=F[k]||"/";
 }
 /* ตัวเชื่อมเครื่องมือครอบฟังก์ชันนี้เพื่อดัก "tools" ให้เปิดเมนูในห้องแชต
    จึงต้องยกขึ้น window และให้ทุกปุ่มเรียกผ่าน window.goNav ไม่ใช่ตัวในสโคป
@@ -7254,9 +7254,9 @@ function acctMenu(){
     try{ window.spireCloseSideIfDrawer&&window.spireCloseSideIfDrawer() }catch(err){}
     if(a==="out"){ try{window.firebase&&firebase.auth().signOut()}catch(err){}
       try{localStorage.removeItem("spire_cachedUser")}catch(err){}
-      location.href="index.html"; return }
+      location.href="/"; return }
     /* แพ็กเกจเป็นหน้าแยกแล้ว ส่ง from มาด้วยเพื่อให้ปุ่มกลับพากลับมาที่เดิม */
-    if(a==="plan"){ location.href="plan.html?from=chat.html"; return }
+    if(a==="plan"){ location.href="/plan?from=/chat"; return }
     if(a.indexOf("go:")===0){ window.goNav(a.slice(3)); return }
     openSettings(a==="set"?"general":a);
   };
@@ -7278,7 +7278,7 @@ const SETS=[
   {k:"chat",    ic:"ti-message-2-cog",th:"แชตบอท",      en:"Chat assistant"},
   {k:"acct",    ic:"ti-user",        th:"บัญชี",        en:"Account"},
   {k:"usage",   ic:"ti-gauge",       th:"โควตา",        en:"Usage & credits"},
-  /* แพ็กเกจย้ายไปเป็นหน้าของตัวเอง (plan.html) แล้ว
+  /* แพ็กเกจย้ายไปเป็นหน้าของตัวเอง (/plan) แล้ว
      หน้าขายของควรมีที่ทางของมันเอง ไม่ใช่ซ่อนอยู่ในแท็บของหน้าตั้งค่า
      ทางเข้าอยู่ที่เมนูบัญชี และปุ่มในแท็บโควตา */
   {k:"fb",      ic:"ti-message-report",th:"ส่งความเห็น",en:"Feedback"},
@@ -8650,7 +8650,7 @@ addEventListener("keydown",e=>{
   const h=$("lgHost"); if(h&&h.classList.contains("on"))closePane();
 });
 
-/* ─────────── ยึดปุ่มที่เคยเด้งออกไป index.html ───────────
+/* ─────────── ยึดปุ่มที่เคยเด้งออกไป / ───────────
    ปุ่มพวกนี้ถูกผูก onclick ไว้ตอนวาดหน้า จึงต้องมาทับเป็นระยะ
    ใช้ธง __lg กันผูกซ้ำ ไม่งั้นกดหนึ่งครั้งเมนูเปิดแล้วปิดทันที */
 function claim(){
@@ -8663,7 +8663,7 @@ function claim(){
     b.onclick=e=>{ e.preventDefault(); openMenu(b) };
   });
 }
-/* goNav("tools") เคยตั้ง location.href ไป index.html#tools — ตัดทางนั้นออก */
+/* goNav("tools") เคยตั้ง location.href ไป /#tools — ตัดทางนั้นออก */
 (function wrapNav(){
   const o=window.goNav;
   if(typeof o!=="function"){ setTimeout(wrapNav,200); return }
@@ -11915,7 +11915,7 @@ const TABS=[
 
 function page(){
   try{ if(window.__SPIRE_PAGE__)return window.__SPIRE_PAGE__ }catch(e){}
-  const f=(location.pathname.split("/").pop()||"index.html").toLowerCase();
+  const f=(location.pathname.split("/").pop()||"/").toLowerCase();
   return ({"garage.html":"garage","news.html":"magazine","spares.html":"shop",
            "profile.html":"profile","chat.html":"chat"})[f]||"home";
 }
@@ -11962,15 +11962,15 @@ function mountNav(){
 }
 
 function go(k){
-  if(k==="chat"){ location.href="chat.html"; return }
+  if(k==="chat"){ location.href="/chat"; return }
   if(k==="account"){
     /* ยังไม่ได้เข้าระบบ → กดปุ่มเดิมของหน้า ซึ่งผูกกับ Firebase ไว้แล้ว */
     if(!signedIn()){ const b=$("signinBtn"); if(b){b.click();return} }
     k="profile";
   }
   try{ if(typeof window.switchView==="function"){window.switchView(k);return} }catch(e){}
-  const f=({home:"index.html",garage:"garage.html",magazine:"news.html",
-            shop:"spares.html",profile:"profile.html"})[k];
+  const f=({home:"/",garage:"/garage",magazine:"/news",
+            shop:"/spares",profile:"/profile"})[k];
   if(f)location.href=f;
 }
 
@@ -12125,13 +12125,13 @@ function tools(){
 function run(k){
   close();
   const f=FEATS.find(x=>x.k===k); if(!f)return;
-  if(k==="spares"){ try{window.switchView("shop")}catch(e){location.href="spares.html"} return }
+  if(k==="spares"){ try{window.switchView("shop")}catch(e){location.href="/spares"} return }
   if(k==="text"||k==="image"||k==="video"){
     try{ if(typeof window.openChat==="function"){window.openChat({attach:k});return} }catch(e){}
-    location.href="chat.html?attach="+encodeURIComponent(k); return;
+    location.href="/chat?attach="+encodeURIComponent(k); return;
   }
   try{ if(typeof window.openTool==="function"){window.openTool(k);return} }catch(e){}
-  location.href="chat.html?attach="+encodeURIComponent(k);
+  location.href="/chat?attach="+encodeURIComponent(k);
 }
 
 /* แผ่นเลื่อนขึ้น "เครื่องมือทั้งหมด" */

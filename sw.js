@@ -4,14 +4,14 @@
    หน้าเว็บเป็นไฟล์เดียวที่เปลี่ยนบ่อย จึงใช้ network-first เสมอ
    ไม่งั้นผู้ใช้จะติดอยู่กับเวอร์ชันเก่าโดยไม่รู้ตัว
    ══════════════════════════════════════════════════════════════════ */
-const CACHE = 'cendon-v184-cfpages';
+const CACHE = 'cendon-v185-cleanurl';
 /* แต่ละหน้าเป็นไฟล์เดี่ยวที่สมบูรณ์ในตัว โหลดล่วงหน้าไว้ทั้งชุด
    การเปิด URL ของหน้าไหนตรง ๆ จึงไม่ต้องรอเน็ต */
-const SHELL = ['./', './fluid.js', './call-orb.png', './call-sounds.js?v=1', './index.html', './garage.html', './news.html',
-  './spares.html', './profile.html', './chat.html',
-  './about.html', './help.html', './terms.html', './privacy.html',
-  './plan.html', './handbook.html',
-  './tech.html', './dashboard.html', './techs.js', './cendon-one.css', './cendon-one.js', './cendon-home.js', './cendon-admin.js',
+const SHELL = ['./fluid.js', './call-orb.png', './call-sounds.js?v=1', './', './garage', './news',
+  './spares', './profile', './chat',
+  './about', './help', './terms', './privacy',
+  './plan', './handbook',
+  './tech', './dashboard', './techs.js', './cendon-one.css', './cendon-one.js', './cendon-home.js', './cendon-admin.js',
   './theme.css', './theme.js', './feature-ai.css', './feature-ai.js'];
 
 self.addEventListener('install', (e) => {
@@ -60,7 +60,7 @@ self.addEventListener('fetch', (e) => {
       // ออฟไลน์ค่อยหยิบของที่เก็บไว้ อย่างน้อยเปิดดูข้อมูลรถได้
       const hit = await caches.match(req);
       if (hit) return hit;
-      const home = await caches.match('./index.html');
+      const home = await caches.match('./');
       if (home) return home;
       throw err;
     }

@@ -36,7 +36,7 @@
 
   /* ══ สีเน้น — ชุดเดียวกับเว็บหลัก ══
      ของเดิมผมหม่นสีลงเองเพราะกลัวแสบตาบนพื้นมืด ผลคือแอดมินดูซีดกว่าเว็บหลัก
-     ทั้งที่เป็นแบรนด์เดียวกัน ตอนนี้ยกค่าจาก index.html มาตรง ๆ
+     ทั้งที่เป็นแบรนด์เดียวกัน ตอนนี้ยกค่าจาก / มาตรง ๆ
      ความสดใสได้จากตัวสี ไม่ใช่จากการเพิ่มแสงเรือง */
   --acc:#E8943C; --acc-lo:#D95E3C; --acc-hi:#F0A93C;
   --acc-2:#E8A23C; --acc-d:#B85A2A;
@@ -622,15 +622,15 @@ td>.empty,td.empty{border:0;padding:26px}
      eagerness moderate คือเริ่มเตรียมตอนเมาส์ค้างหรือแตะค้าง ไม่ใช่เตรียมทุกลิงก์ทิ้งไว้
      ตัวไหนไม่รองรับ speculation rules จะตกไปใช้ prefetch ข้างล่างแทน -->
 <script type="speculationrules">
-{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}],
- "prefetch":[{"where":{"href_matches":"/*.html"},"eagerness":"conservative"}]}
+{"prerender":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}],
+ "prefetch":[{"where":{"href_matches":"/*"},"eagerness":"conservative"}]}
 </script>
-<link rel="prefetch" href="./index.html">
-<link rel="prefetch" href="./garage.html">
-<link rel="prefetch" href="./spares.html">
-<link rel="prefetch" href="./news.html">
-<link rel="prefetch" href="./profile.html">
-<link rel="prefetch" href="./chat.html">
+<link rel="prefetch" href="/">
+<link rel="prefetch" href="/garage">
+<link rel="prefetch" href="/spares">
+<link rel="prefetch" href="/news">
+<link rel="prefetch" href="/profile">
+<link rel="prefetch" href="/chat">
 <script id="perfraf">
 /* ══════════════════════════════════════════════════════════════════
    ตัวคุมจังหวะการวาดของ canvas
@@ -1745,7 +1745,7 @@ td .empty::before,td.empty::before{display:none}
 
       <div class="ng" data-mods="handbook,chat">
         <span class="ng-t">เอกสาร</span>
-        <a href="./handbook.html" data-mod="handbook"><i class="ti ti-book-2"></i> คู่มือระบบ</a>
+        <a href="/handbook" data-mod="handbook"><i class="ti ti-book-2"></i> คู่มือระบบ</a>
         <a data-tab="legal" data-mod="chat"><i class="ti ti-gavel"></i> กฎการใช้งาน</a>
       </div>
     </nav>
@@ -1762,7 +1762,7 @@ td .empty::before,td.empty::before{display:none}
       <div class="foot-row">
         <button class="btn sm" id="ndaBtn" hidden onclick="go('nda')"
           title="ผู้ลงนาม NDA"><i class="ti ti-writing-sign"></i></button>
-        <button class="btn sm" onclick="location.replace('index.html')"
+        <button class="btn sm" onclick="location.replace('/')"
           title="กลับหน้าเว็บ"><i class="ti ti-arrow-left"></i></button>
         <button class="btn sm" onclick="hardReset()"
           title="ล้างแคชและโหลดใหม่"><i class="ti ti-refresh-alert"></i></button>
@@ -2795,7 +2795,7 @@ async function signIn(){
     gateMsg((M[code]||"เข้าสู่ระบบไม่สำเร็จ")+"  ("+code+")");
   }
 }
-function doLogout(){if(useFb)auth.signOut();location.href="index.html"}
+function doLogout(){if(useFb)auth.signOut();location.href="/"}
 
 if(useFb)auth.onAuthStateChanged(async u=>{
   if(!u){
@@ -4853,7 +4853,7 @@ async function hardReset(){
     }
   }catch(e){ console.warn("hardReset",e) }
   /* ต่อพารามิเตอร์กันเบราว์เซอร์หยิบหน้าเดิมจากแคชของตัวเองอีกชั้น */
-  location.replace("index.html?fresh="+Date.now());
+  location.replace("/?fresh="+Date.now());
 }
 window.hardReset=hardReset;
 
@@ -5663,7 +5663,7 @@ async function loadKb(){
     if(nda)bits.push(`<b>ลายมือชื่อ NDA ${nda} รายการ</b>`);
     const hbNote=bits.length?`<div class="empty" style="text-align:left;border-style:solid">
       ${bits.join(" · ")} ถูกซ่อนจากรายการนี้ เพราะไม่ใช่ความรู้ที่สอน AI
-      ${hb?'<a href="./handbook.html" style="color:var(--acc)">เปิดคู่มือ</a>':""}
+      ${hb?'<a href="/handbook" style="color:var(--acc)">เปิดคู่มือ</a>':""}
       ${nda?'<a href="#" onclick="document.querySelector(\'[data-tab=nda]\').click();return false" style="color:var(--acc)">ดูผู้ลงนาม</a>':""}
       </div>`:"";
     if(!arr.length){ $("kbList").innerHTML=hbNote+`<div class="empty">ยังไม่มีความรู้ในคลัง — กดเพิ่มความรู้เพื่อเริ่มสอน AI</div>`; return }

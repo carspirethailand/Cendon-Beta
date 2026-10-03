@@ -427,7 +427,7 @@ html{scroll-behavior:smooth}
       </div>
       <div class="nav" id="nav"></div>
       <div class="rail-foot">
-        <a href="./admin.html"><i class="ti ti-arrow-left"></i> แผงควบคุม</a>
+        <a href="/admin"><i class="ti ti-arrow-left"></i> แผงควบคุม</a>
         <button id="reload">โหลดใหม่</button>
       </div>
     </nav>
@@ -496,7 +496,7 @@ function signIn(){
   });
 }
 window.signIn=signIn;
-function signOut(){ auth&&auth.signOut(); location.href="index.html" }
+function signOut(){ auth&&auth.signOut(); location.href="/" }
 window.signOut=signOut;
 
 if(!auth){
@@ -518,7 +518,7 @@ if(!auth){
       gate("บัญชี <b>"+esc(me.email)+"</b> ไม่มีสิทธิ์อ่านคู่มือนี้<br>"+
            "<small>ต้องเป็นผู้ควบคุมขึ้นไป</small>",
         '<button class="btn" onclick="signOut()">ออกจากระบบ</button>'+
-        '<a class="btn" href="index.html">กลับหน้าหลัก</a>');
+        '<a class="btn" href="/">กลับหน้าหลัก</a>');
       return;
     }
     await afterAuth();
@@ -747,7 +747,7 @@ function show(rows){
       '<label class="btn primary" style="cursor:pointer">'+
       '<i class="ti ti-upload"></i> เลือกไฟล์ HANDBOOK.md'+
       '<input type="file" accept=".md,text/markdown,text/plain" id="mdFile" hidden></label>'+
-      '<a class="btn" href="admin.html">กลับแผงควบคุม</a>');
+      '<a class="btn" href="/admin">กลับแผงควบคุม</a>');
     $("mdFile").onchange=e=>{
       const f=e.target.files[0]; if(!f)return;
       const rd=new FileReader();

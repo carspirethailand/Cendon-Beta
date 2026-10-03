@@ -222,16 +222,16 @@ function fmt(n){ n=+String(n||"").replace(/[^\d.]/g,""); return n?n.toLocaleStri
 
 /* เรียกเครื่องมือเดิมของหน้า — ไม่เขียนใหม่ ไม่มีอะไรหาย */
 function tool(k){
-  if(k==="techs"){ location.href="tech.html"; return }
+  if(k==="techs"){ location.href="/tech"; return }
   var b=D.querySelector('.mtool[data-mfeat="'+k+'"]');
   if(b){ b.click(); return }
   if(window.openTool){ try{ window.openTool(k); return }catch(e){} }
-  location.href="chat.html?attach="+encodeURIComponent(k);
+  location.href="/chat?attach="+encodeURIComponent(k);
 }
 function ask(q){
   q=(q||"").trim();
   try{ if(q)localStorage.setItem("spire_deckQ",JSON.stringify(q)) }catch(e){}
-  location.href="chat.html"+(q?"":"?attach=text");
+  location.href="/chat"+(q?"":"?attach=text");
 }
 
 function render(){
@@ -244,8 +244,8 @@ function render(){
   el.innerHTML=
    '<div class="ch-top ch-in">'+MARK+
      '<div class="ch-hi"><small>'+esc(greet())+'</small><b>'+esc(nm?(en()?nm:"คุณ "+nm):"Cendon")+'</b></div>'+
-     '<nav class="ch-links"><a href="garage.html">'+T("การาจ","Garage")+'</a><a href="news.html">'+T("นิตยสาร","Magazine")+'</a><a href="spares.html">'+T("อะไหล่","Spares")+'</a><a href="chat.html">'+T("แชต","Chat")+'</a></nav>'+
-     '<a class="ch-av" href="profile.html" aria-label="'+T("บัญชี","Account")+'">'+(u.photo?'<img src="'+esc(u.photo)+'" referrerpolicy="no-referrer" alt="">':esc((u.name||"C")[0].toUpperCase()))+'</a>'+
+     '<nav class="ch-links"><a href="/garage">'+T("การาจ","Garage")+'</a><a href="/news">'+T("นิตยสาร","Magazine")+'</a><a href="/spares">'+T("อะไหล่","Spares")+'</a><a href="/chat">'+T("แชต","Chat")+'</a></nav>'+
+     '<a class="ch-av" href="/profile" aria-label="'+T("บัญชี","Account")+'">'+(u.photo?'<img src="'+esc(u.photo)+'" referrerpolicy="no-referrer" alt="">':esc((u.name||"C")[0].toUpperCase()))+'</a>'+
    '</div>'+
    '<div class="ch-grid"><div class="ch-left">'+
      '<div class="ch-car ch-in" id="chCar" style="animation-delay:.05s">'+
@@ -270,7 +270,7 @@ function render(){
        '<div class="ch-ring" style="--p:'+pct+'"><span>'+(km?pct+"%":"—")+'</span></div>'+
        '<div><b>'+T("รอบเช็กระยะนี้","This service cycle")+'</b><p>'+(km?T("ใช้ไปแล้ว "+pct+"% ของ 10,000 กม. อีก "+fmt(left)+" กม. ค่อยเข้าศูนย์","Used "+pct+"% of 10,000 km · "+fmt(left)+" km to go"):T("ใส่เลขไมล์ แล้ว Cendon จะเตือนให้เอง","Add your odometer and Cendon will remind you"))+'</p></div>'+
        '<button class="go" id="chCycle" aria-label="'+T("เปิด","Open")+'"><i class="ti ti-chevron-right"></i></button></div></div>'+
-     '<div class="ch-card ch-in" style="animation-delay:.26s"><div class="ch-h" style="margin-top:0"><b>'+T("คุยล่าสุด","Recent chats")+'</b><a href="chat.html">'+T("ดูทั้งหมด","See all")+'</a></div>'+
+     '<div class="ch-card ch-in" style="animation-delay:.26s"><div class="ch-h" style="margin-top:0"><b>'+T("คุยล่าสุด","Recent chats")+'</b><a href="/chat">'+T("ดูทั้งหมด","See all")+'</a></div>'+
        '<div class="ch-list">'+(sess.length?sess.map(function(s){return '<button class="ch-row" data-s="'+esc(s.id)+'"><i class="ti ti-message-2"></i><span><b>'+esc(s.title||T("แชต","Chat"))+'</b><small>'+(s.t?new Date(s.t).toLocaleDateString(en()?"en-GB":"th-TH",{day:"numeric",month:"short"}):"")+'</small></span><i class="ti ti-chevron-right" style="background:none;color:var(--faint)"></i></button>'}).join("")
          :'<div class="ch-empty">'+T("ยังไม่มีบทสนทนา — ลองถามเรื่องรถดูสักข้อ","No chats yet — ask anything about your car")+'</div>')+'</div></div>'+
    '</div></div>';
@@ -279,10 +279,10 @@ function render(){
   $("chQ").onkeydown=function(e){ if(e.key==="Enter"){ e.preventDefault(); ask($("chQ").value) } };
   el.querySelectorAll("[data-q]").forEach(function(b){ b.onclick=function(){ ask(b.dataset.q) } });
   el.querySelectorAll("[data-k]").forEach(function(b){ b.onclick=function(){ tool(b.dataset.k) } });
-  el.querySelectorAll("[data-s]").forEach(function(b){ b.onclick=function(){ location.href="chat.html?session="+encodeURIComponent(b.dataset.s) } });
-  $("chCar").onclick=function(){ location.href="garage.html" };
-  $("chCycle").onclick=function(){ location.href="garage.html" };
-  $("chAll").onclick=function(){ var b=D.querySelector('.mtool[data-mall]'); if(b)b.click(); else location.href="chat.html" };
+  el.querySelectorAll("[data-s]").forEach(function(b){ b.onclick=function(){ location.href="/chat?session="+encodeURIComponent(b.dataset.s) } });
+  $("chCar").onclick=function(){ location.href="/garage" };
+  $("chCycle").onclick=function(){ location.href="/garage" };
+  $("chAll").onclick=function(){ var b=D.querySelector('.mtool[data-mall]'); if(b)b.click(); else location.href="/chat" };
   /* เลขไมล์นับขึ้นตอนเปิด — เหมือนหน้าปัดรถตอนสตาร์ท */
   var cnt=el.querySelector("[data-count]"), to=+cnt.dataset.count;
   if(to&&!render.done){ var t0=performance.now(); (function f(t){ var p=Math.min(1,(t-t0)/1100), e=1-Math.pow(1-p,3);

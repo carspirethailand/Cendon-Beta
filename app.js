@@ -616,13 +616,13 @@ document.querySelector("#v-home").addEventListener("click",e=>{
 });
 $("dashCars").addEventListener("click",e=>{const d=e.target.closest("[data-diag]");if(d)openChat({car:d.dataset.diag,starter:true})});
 
-/* ===== CHAT — moved to standalone app (chat.html) ===== */
+/* ===== CHAT — moved to standalone app (/chat) ===== */
 function openChat(opts){opts=opts||{};
   if(opts.car)LS.set("selCar",opts.car);
   const p=new URLSearchParams();
   if(opts.attach)p.set("attach",opts.attach);
   if(opts.starter)p.set("starter","1");
-  location.href="chat.html"+(p.toString()?"?"+p.toString():"");
+  location.href="/chat"+(p.toString()?"?"+p.toString():"");
 }
 function updateFabBadge(){
   const badge=$("fabBadge");if(!badge)return;
@@ -887,13 +887,13 @@ loadSiteConfig();
 (function(){
   const v=new URLSearchParams(location.search).get("view");
   if(v){switchView(v);history.replaceState(null,"",location.pathname);return}
-  // Auto-resume: if the selected car has a saved conversation, jump straight into chat.html
+  // Auto-resume: if the selected car has a saved conversation, jump straight into /chat
   try{
     if(sessionStorage.getItem("spire_stayHome"))return;
     const c=selCar();if(!c)return;
     const sess=LS.get("sess_"+c.id,[]);
     const legacy=LS.get("chatMsgs_"+c.id,[]);
-    if((Array.isArray(sess)&&sess.some(s=>s.msgs&&s.msgs.length))||(legacy&&legacy.length))location.replace("chat.html");
+    if((Array.isArray(sess)&&sess.some(s=>s.msgs&&s.msgs.length))||(legacy&&legacy.length))location.replace("/chat");
   }catch(e){}
 })();
 /* Card hover 3D tilt — desktop pointers only */
@@ -2227,7 +2227,7 @@ D.addEventListener("click",e=>{
     const q=T(`รถ ${c.name||""} มีอาการ: ${x.t} (พบเมื่อ ${x.date} ที่ ${num(x.km)} กม.) น่าจะเกิดจากอะไร`,
               `My ${c.name||"car"} has this symptom: ${x.t} (noticed ${x.date} at ${num(x.km)} km). What could cause it?`);
     try{ localStorage.setItem("spire_deckQ",JSON.stringify(q)) }catch(err){}
-    location.href="chat.html?attach=text"; return;
+    location.href="/chat?attach=text"; return;
   }
 
   const dn=e.target.closest("[data-done]");
@@ -3936,7 +3936,7 @@ function dial(lab,val,unit,cls){
    เดิมมีทั้งแผงซ้ายและปุ่มในหน้าอื่น ผู้ใช้ต้องเดาว่าอะไรอยู่ตรงไหน
    ตอนนี้เข้าถึงได้สองทางที่ชี้ไปที่เดียวกัน: เลื่อนจอกลาง หรือกด + ข้างช่องพิมพ์
 
-   mode = โหมดของห้องแชต (ส่งไป chat.html)  ·  tool = เครื่องมือในหน้านี้
+   mode = โหมดของห้องแชต (ส่งไป /chat)  ·  tool = เครื่องมือในหน้านี้
    สีแยกกันทุกตัวเพื่อให้จำด้วยสีได้ ไม่ต้องอ่านทุกครั้ง               */
 const FEATS=[
   {k:"text",  kind:"mode", ic:"ti-message-2",      c:"#4F8FF7", th:"พิมพ์ถาม",      en:"Ask"},
@@ -3957,7 +3957,7 @@ function runFeat(k){
   /* โหมดแชตเรียกตัวเปิดห้องแชตของหน้าหลักตรง ๆ
      เดิมยิงผ่านปุ่มที่ซ่อนอยู่ในวิดเจ็ต ซึ่งพึ่ง event delegation อีกชั้นโดยไม่จำเป็น */
   try{ if(typeof window.openChat==="function"){ window.openChat({attach:f.k}); return } }catch(e){}
-  location.href="chat.html?attach="+encodeURIComponent(f.k);
+  location.href="/chat?attach="+encodeURIComponent(f.k);
 }
 const featTiles=()=>FEATS.map(f=>`<button class="ft" data-feat="${f.k}" style="--c:${f.c}">
     <span class="ic"><i class="ti ${f.ic}"></i></span>
@@ -4136,7 +4136,7 @@ function toFree(){ if(sc)sc.scrollTo({top:sc.clientHeight,behavior:"smooth"}) }
 
 function go(q){
   try{ if(q)localStorage.setItem("spire_deckQ",JSON.stringify(q)) }catch(e){}
-  location.href="chat.html?attach=text";
+  location.href="/chat?attach=text";
 }
 function wire(){
   /* ปุ่มฟีเจอร์มีทั้งในจอเลื่อนและในตัวเลือก ใช้ตัวจัดการเดียวกันทั้งหมด */
@@ -4206,7 +4206,7 @@ function build(){
       if(sw){ try{localStorage.setItem("spire_selCar",JSON.stringify(sw.dataset.hcar))}catch(err){}
         rebuild(); try{window.updateFabBadge&&window.updateFabBadge()}catch(err){} return }
       const b=e.target.closest("[data-hact]"); if(!b)return;
-      if(b.dataset.hact==="chat")location.href="chat.html";
+      if(b.dataset.hact==="chat")location.href="/chat";
       else if(b.dataset.hact==="detail"){const c=active(); if(c&&window.openCarDetail)window.openCarDetail(c.id)}
       else if(b.dataset.hact==="down")toFree();
     });

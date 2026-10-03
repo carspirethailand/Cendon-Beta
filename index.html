@@ -1191,14 +1191,6 @@ body{background:var(--bg);letter-spacing:-.005em}
 .lx-gcs{display:flex;align-items:center;gap:6px;min-width:0}.lx-gcs small{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lx-pav.sm{width:22px;height:22px;margin:0;border-width:0;font-size:10px}
 .lx-gp{font:700 15px var(--kd);color:var(--ink)}.lx-gr{font-size:12px;color:var(--muted)}
-.lx-gd{margin:0 -16px}
-.lx-gph{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 16px;scrollbar-width:none}
-.lx-gph img{flex:none;width:min(88%,560px);aspect-ratio:4/3;object-fit:cover;border-radius:16px;scroll-snap-align:start;cursor:zoom-in}
-.lx-gph0{width:100%;aspect-ratio:21/8;border-radius:16px;background:radial-gradient(120% 140% at 85% 0%,var(--co-soft),transparent 60%),var(--surface-2)}
-.lx-gdb{padding:16px}
-.lx-gdb h1{margin:4px 0 6px;font:700 clamp(20px,3vw,28px)/1.25 var(--kd)}
-.lx-gdp{margin:0 0 10px;font:700 22px var(--kd);color:var(--co)}
-.lx-gdt{white-space:pre-wrap;line-height:1.75;font-size:15px;margin:0 0 14px}
 /* เวลาทำการรายวัน */
 .wk{display:grid;gap:6px}
 .wkr{display:grid;grid-template-columns:46px 26px 1fr 12px 1fr;align-items:center;gap:6px}
@@ -1207,6 +1199,21 @@ body{background:var(--bg);letter-spacing:-.005em}
 .lx-sw.sm input{width:38px;height:22px;bottom:auto;top:0}
 .seg.wrap{flex-wrap:wrap}
 
+/* บริการแบ่งตามหมวด: มือถือเลื่อนข้างทีละแถว · คอมเป็นตาราง 3–4 ใบต่อแถว */
+.lx-gsecs{display:grid;gap:30px}
+.lx-gsh{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px}
+.lx-gst{display:flex;align-items:center;gap:10px;min-width:0}
+.lx-gst .lx-ri{width:32px;height:32px;border-radius:10px;flex:none}.lx-gst .lx-ri .ti{font-size:17px}.lx-gst .lx-ri::before{border-radius:8px 8px 40% 40%}
+.lx-gst b{font:700 17px/1.2 var(--kd);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lx-gst small{flex:none;font-size:13px;color:var(--muted)}
+.lx-grow{display:grid;grid-auto-flow:column;grid-auto-columns:min(72%,260px);gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;
+  margin:0 -16px;padding:2px 16px 6px;scroll-padding:0 16px;scrollbar-width:none}
+.lx-grow::-webkit-scrollbar{display:none}
+.lx-grow>.lx-gc{scroll-snap-align:start}
+@media(min-width:700px){.lx-grow{grid-auto-flow:row;grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible;margin:0;padding:0;gap:16px}.lx-grow>.lx-gc:nth-child(n+4){display:none}}
+@media(min-width:1100px){.lx-grow{grid-template-columns:repeat(4,minmax(0,1fr))}.lx-grow>.lx-gc:nth-child(4){display:flex}}
+#catGigs:not(:empty){margin:4px 0 28px}
+.lx-shops{margin-top:4px}
 /* การ์ดบริการ: หัว (ร้าน) · แบนเนอร์ · ท้าย (คะแนน / ราคา) */
 .lx-gch{display:flex;align-items:center;gap:8px;min-width:0;padding:10px 12px}
 .lx-gch .lx-pav{width:28px;height:28px;margin:0;border-width:0;font-size:12px;flex:none}
@@ -1221,10 +1228,71 @@ body{background:var(--bg);letter-spacing:-.005em}
 .lx-gcf .lx-gp{align-self:flex-end;font:700 16px var(--kd)}
 /* โพสต์เป็นรูปแนวนอน 16:9 (ขนาดเดียวกับ YouTube) */
 .lx-gcv{aspect-ratio:16/9!important}
-.lx-gph img{width:min(88%,640px)!important;aspect-ratio:16/9!important}
-.lx-gph0{aspect-ratio:16/9!important}
 #gPh .doc{aspect-ratio:16/9;height:auto}
 
+/* ═══ หน้ารายละเอียดบริการ ═══ */
+.gd{display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:"gal" "side" "body";gap:0 36px;padding-bottom:28px}
+.gd-gal{grid-area:gal;margin:0 -16px;min-width:0}
+.gd-hero{position:relative;aspect-ratio:16/9;background:var(--surface-2) center/cover no-repeat;cursor:zoom-in;touch-action:pan-y;-webkit-user-select:none;user-select:none}
+.gd-hero.none{display:grid;place-items:center;font-size:40px;color:var(--faint);cursor:default;background:radial-gradient(120% 140% at 85% 0%,var(--co-soft),transparent 60%),var(--surface-2)}
+.gd-nav{position:absolute;top:50%;width:42px;height:42px;margin-top:-21px;border:0;border-radius:50%;display:grid;place-items:center;font-size:20px;color:#fff;
+  background:rgba(9,9,11,.5);backdrop-filter:blur(8px);cursor:pointer;opacity:0;transition:opacity .2s}
+.gd-nav.l{left:14px}.gd-nav.r{right:14px}.gd-hero:hover .gd-nav{opacity:1}
+@media(hover:none){.gd-nav{display:none}}
+.gd-cnt{position:absolute;right:12px;bottom:12px;padding:4px 10px;border-radius:999px;font:600 12px var(--kb);color:#fff;background:rgba(9,9,11,.55);backdrop-filter:blur(8px)}
+.gd-th{display:flex;gap:8px;overflow-x:auto;padding:10px 16px 0;scrollbar-width:none}
+.gd-th button{flex:none;width:84px;aspect-ratio:16/9;padding:0;border-radius:8px;border:2px solid transparent;background:var(--surface-2) center/cover;cursor:pointer;opacity:.55;transition:opacity .2s,border-color .2s}
+.gd-th button:hover{opacity:.85}.gd-th button.on{opacity:1;border-color:var(--co)}
+.gd-side{grid-area:side;min-width:0}
+.gd-card{padding:18px 0 0}
+.gd-path{display:flex;flex-wrap:wrap;align-items:center;gap:2px;margin:0 0 8px;font-size:12.5px;color:var(--muted)}
+.gd-path button{border:0;background:none;padding:2px 0;color:inherit;font:inherit;cursor:pointer}.gd-path button:hover{color:var(--ink);text-decoration:underline}
+.gd-path .ti{font-size:13px;opacity:.6}
+.gd-t{margin:0;font:700 clamp(21px,2.3vw,27px)/1.35 var(--kd);letter-spacing:-.01em;overflow-wrap:anywhere}
+.gd-rt{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:10px 0 0;font-size:14px;color:var(--muted)}
+.gd-rt .ti{font-size:16px;color:#f5b301}.gd-rt b{font-weight:600;color:var(--ink)}
+.gd-price{margin:16px 0 0;padding:14px 16px;border-radius:14px;background:var(--surface-2)}
+.gd-price b{display:block;font:700 30px/1.1 var(--kd);letter-spacing:-.02em}
+.gd-price small{display:block;margin-top:6px;font-size:12.5px;line-height:1.5;color:var(--muted)}
+.gd-act{display:none}
+.gd-shop{display:flex;align-items:center;gap:12px;width:100%;margin-top:14px;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);text-align:left;cursor:pointer;transition:border-color .2s}
+.gd-shop:hover{border-color:color-mix(in srgb,var(--co) 45%,var(--line))}
+.gd-shop .lx-pav{flex:none;width:44px;height:44px;margin:0;border-width:0;font-size:17px}
+.gd-shop>span:nth-child(2){flex:1;min-width:0}
+.gd-shop b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.gd-shop b .ti{font-size:15px;color:var(--muted)}
+.gd-shop small{display:block;margin-top:2px;font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gd-shop>.ti{color:var(--muted)}
+.gd-trust{display:grid;gap:9px;margin:16px 0 0;padding:0;list-style:none;font-size:13px;color:var(--muted)}
+.gd-trust li{display:flex;align-items:center;gap:9px}.gd-trust .ti{font-size:17px;color:var(--ink)}
+.gd-body{grid-area:body;min-width:0}
+.gd-sec{padding:22px 0;border-top:1px solid var(--line)}
+.gd-sec:first-child{margin-top:22px}
+.gd-sec h2{margin:0 0 12px;font:700 17px/1.3 var(--kd)}
+.gd-desc{margin:0;max-width:68ch;white-space:pre-wrap;font-size:15px;line-height:1.85}
+.gd-muted{margin:0;font-size:14px;color:var(--muted)}
+.gd-dl{display:grid;margin:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
+.gd-dl div{display:grid;grid-template-columns:minmax(118px,36%) 1fr;gap:12px;padding:12px 16px;font-size:14px;line-height:1.55}
+.gd-dl div+div{border-top:1px solid var(--line)}
+.gd-dl dt{display:flex;align-items:center;gap:8px;color:var(--muted)}.gd-dl dt .ti{font-size:17px}
+.gd-dl dd{margin:0;color:var(--ink)}
+.gd-sec .rv-sum{padding-top:0}
+.gd-more{margin-top:12px}
+/* แถบล่าง (มือถือ): ราคาซ้าย · ปุ่มจองขวา */
+.gd-ft{display:flex;align-items:center;gap:10px;width:100%}
+.gd-fp{flex:1;min-width:0}.gd-fp small{display:block;font-size:11.5px;color:var(--muted)}.gd-fp b{font:700 20px/1.2 var(--kd)}
+.gd-ft>.lx-cta:last-child{flex:0 0 auto;min-width:44%}
+@media(min-width:900px){
+  .gd{grid-template-columns:minmax(0,1fr) 360px;grid-template-areas:"gal side" "body side";align-items:start;padding:20px 0 56px}
+  .gd-gal{margin:0}
+  .gd-hero{border-radius:18px;overflow:hidden}
+  .gd-th{padding:12px 0 0}
+  .gd-side{position:sticky;top:20px}
+  .gd-card{padding:22px;border:1px solid var(--line);border-radius:18px;background:var(--surface)}
+  .gd-act{display:grid;gap:8px;margin-top:14px}
+  .gd-act .lx-cta,.gd-act .lx-gh{width:100%;height:48px}
+  .gd-2{display:flex;gap:8px}.gd-2>*{flex:1}
+  .bs.store .ft:has(.gd-ft){display:none}
+}
 /* รูปที่ใส่ผ่าน style="background-image:url()" ต้องเต็มกรอบเสมอ
    (การ์ดที่พื้นหลังมีหลายชั้น พอแทนรูปเข้าไป ขนาดรูปจะกลายเป็นขนาดจริง เห็นแค่มุมเดียว) */
 [style*="background-image:url"]{background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important}
@@ -1506,6 +1574,8 @@ html[data-theme="light"] .mnav,html[data-theme="plant"] .mnav{
   <div class="lx-cath"><button class="lx-gh lx-ic" id="catBack" aria-label="กลับ"><i class="ti ti-arrow-left"></i></button>
     <span class="lx-cati" id="catIc"></span><div><h1 id="catT"></h1><p id="catN"></p></div></div>
   <div class="lx-sym nt" id="catSym"></div>
+  <div id="catGigs"></div>
+  <header class="lx-gsh lx-shops" id="catShopsH" hidden></header>
   <div class="lx-subs nt" id="catSubs"></div>
   <div class="lx-cards" id="catList"></div>
 </section>
@@ -2153,6 +2223,12 @@ const RAIL=[
   {id:"tow",base:"mobile",th:"รถยก ลากรถ",ic:"ti-truck-loading",c:"#b45309",c2:"#fbbf24"},
   {id:"urgent",th:"งานด่วน",ic:"ti-urgent",c:"#e11d48",c2:"#fb7185"},
   {id:"map",th:"แผนที่",ic:"ti-map-2",c:"#0369a1",c2:"#38bdf8"}];
+/* หมวดหมู่ของบริการ = หมวดในแถวหน้าแรก (ยกเว้น ยอดนิยม/แผนที่/งานด่วน ซึ่งไม่ใช่ประเภทงาน) */
+const NOT_GCAT=["all","map","urgent"];
+const topOf=id=>{const r=RAIL.find(x=>x.id===id);return r&&!NOT_GCAT.includes(r.id)?(r.base||r.id):null};
+const OTHER_CAT={id:"other",th:"บริการอื่น ๆ",ic:"ti-tool",c:"#64748b",c2:"#a3b1c6"};
+/* หมวดของโพสต์: หมวดที่ช่างเลือก → โพสต์เก่าที่ยังไม่มีหมวด เดาจากคำในหัวข้อ → ไม่ได้จริง ๆ เป็น "อื่น ๆ" */
+function gigCat(g){for(const c of g.cats||[])if(topOf(c))return c;const w=catsOf((g.title||"")+" "+(g.body||""));return w[0]||"other"}
 /* รูปไอคอน 3D: ใส่ชื่อหมวดที่มีไฟล์จริงใน img/cat/ ลงรายการนี้ — ไม่มีไฟล์ไม่ต้องโหลด (กันคำขอ 404 ทั้งแถวบนมือถือ) */
 const CAT_IMG=new Set([]);
 const railIc=c=>`<span class="lx-ri" style="--a:${c.c||"#F07A36"};--b:${c.c2||c.c||"#F07A36"}">${CAT_IMG.has(c.id)?`<img src="img/cat/${c.id}.png" alt="" onerror="this.remove()"/>`:""}<i class="ti ${c.ic}"></i></span>`;
@@ -2174,7 +2250,7 @@ function drawJobsBtn(){
 }
 /* ═══ โพสต์บริการของช่าง (ร้านละไม่เกิน 2 รายการ) ═══ */
 let GIGS=null;
-async function loadGigs(){try{GIGS=(await api("/api/tech/gigs")).gigs||[]}catch(e){GIGS=GIGS||[]}drawHome()}
+async function loadGigs(){try{GIGS=(await api("/api/tech/gigs")).gigs||[]}catch(e){GIGS=GIGS||[]}drawHome();drawCat()}
 function myCarText(){const cars=ls.get("spire_garage",[]),c=cars.find(x=>x.id===ls.get("spire_selCar",""))||cars[0];return c?[c.make,c.name,c.model].filter(Boolean).join(" ").toLowerCase():""}
 /* เรียง: ตรงกับรถของผู้ใช้ (ยี่ห้อที่ถนัด/ในข้อความ) ก่อน แล้วใกล้ แล้วใหม่ */
 function rankGigs(list){
@@ -2199,21 +2275,72 @@ function gigCard(g,i){
       <span class="lx-gp">฿${money(g.price)}</span>
     </span></button>`;
 }
+/* ═══ หน้ารายละเอียดบริการ ═══
+   คอม: ซ้าย = รูป + รายละเอียด · ขวา = การ์ดราคา/ปุ่มจอง/ร้าน ติดอยู่กับที่ตอนเลื่อน
+   มือถือ: รูป → หัวข้อ/ราคา/ร้าน → รายละเอียด → ข้อมูลบริการ → รีวิว · ปุ่มจองอยู่แถบล่าง */
 function openGig(id){
-  const g=(GIGS||[]).find(x=>x.id==id);if(!g)return;const t=g.tech||{},mine=isMine(t);
-  sheet({title:"",full:true,store:true,gig:g.id,body:`<div class="lx-gd">
-    <div class="lx-gph">${(g.photos||[]).length?g.photos.map(p=>`<img src="${img(p)}" alt="" data-z="${img(p)}"/>`).join(""):'<div class="lx-gph0"></div>'}</div>
-    <div class="lx-gdb"><p class="lx-eyebrow">บริการ${(g.cats||[]).map(c=>CAT[c]?" · "+CAT[c].th:"").join("")}</p>
-      <h1 class="nt">${esc(g.title)}</h1><p class="lx-gdp">฿${money(g.price)}</p>
-      ${g.body?`<p class="lx-gdt nt">${esc(g.body)}</p>`:""}
-      ${(g.brands||[]).length?`<div class="ch-chips">${g.brands.map(b=>`<span>${esc(b)}</span>`).join("")}</div>`:""}
-      <button class="lx-pkm" id="gShop"><span class="lx-pav"${t.avatar?` style="background-image:url('${img(t.avatar)}')"`:""}>${t.avatar?"":initial(t.shop||t.name)}</span><span><b class="nt">${esc(t.shop||t.name)}</b><small>${t.reviewCount?`★ ${Number(t.rating).toFixed(1)} (${t.reviewCount}) · `:""}ดูหน้าร้าน</small></span><i class="ti ti-chevron-right"></i></button>
+  const g=(GIGS||[]).find(x=>x.id==id);if(!g)return;
+  const t0=g.tech||{},t={...t0,...(TECHS.find(x=>x.id===t0.id)||{})},mine=isMine(t),P=g.photos||[];
+  const c=RAIL.find(x=>x.id===gigCat(g)),top=c&&c.base?RAIL.find(x=>x.id===c.base):null,path=[top,c].filter(Boolean);
+  const d=mine?null:km(HERE,t),av=t.avatar;
+  const facts=[
+    path.length&&["ti-category","หมวดหมู่",path.map(x=>x.th).join(" › ")],
+    (g.brands||[]).length&&["ti-car","ยี่ห้อรถที่ถนัด",g.brands.join(", ")],
+    ["ti-truck","สถานที่ทำงาน",t.mobile?"ช่างไปหาถึงที่ หรือนำรถเข้าร้าน":"นำรถเข้าร้าน"],
+    t.warranty&&["ti-shield-check","รับประกันงาน",`${t.warranty} วัน`],
+    (t.area||d!=null)&&["ti-map-pin","พื้นที่",[t.area,d!=null?`ห่างจากคุณ ${distTxt(d)}`:""].filter(Boolean).join(" · ")],
+    ["ti-calendar","ลงประกาศ",new Date(g.createdAt).toLocaleDateString(LOC,{day:"numeric",month:"short",year:"numeric"})]].filter(Boolean);
+  const rating=t.reviewCount?`<i class="ti ti-star-filled"></i><b>${Number(t.rating).toFixed(1)}</b><span>(${t.reviewCount} รีวิว)</span>`:`<span>ยังไม่มีรีวิว</span>`;
+  const pav=`<span class="lx-pav"${av?` style="background-image:url('${img(av)}')"`:""}>${av?"":initial(t.shop||t.name)}</span>`;
+  sheet({title:"",full:true,store:true,gig:g.id,body:`<div class="gd">
+    <div class="gd-gal">${P.length?`<div class="gd-hero" id="gdHero" style="background-image:url('${img(P[0])}')" role="img" aria-label="${esc(g.title)}">
+        ${P.length>1?`<button class="gd-nav l" data-d="-1" type="button" aria-label="รูปก่อนหน้า"><i class="ti ti-chevron-left"></i></button><button class="gd-nav r" data-d="1" type="button" aria-label="รูปถัดไป"><i class="ti ti-chevron-right"></i></button><span class="gd-cnt" id="gdCnt">1 / ${P.length}</span>`:""}</div>
+      ${P.length>1?`<div class="gd-th">${P.map((p,i)=>`<button type="button" class="${i?"":"on"}" data-i="${i}" style="background-image:url('${img(p)}')" aria-label="รูปที่ ${i+1}"></button>`).join("")}</div>`:""}`
+      :`<div class="gd-hero none"><i class="ti ti-photo-off"></i></div>`}</div>
+    <aside class="gd-side"><div class="gd-card">
+      ${path.length?`<p class="gd-path">${path.map(x=>`<button type="button" data-cat="${x.id}">${esc(x.th)}</button>`).join('<i class="ti ti-chevron-right"></i>')}</p>`:""}
+      <h1 class="gd-t nt">${esc(g.title)}</h1>
+      <p class="gd-rt">${rating}${t.jobs?`<span class="gd-dot">·</span><span>${t.jobs} งานสำเร็จ</span>`:""}</p>
+      <div class="gd-price"><b>฿${money(g.price)}</b><small>ราคาเริ่มต้น · ช่างยืนยันราคาจริงก่อนเริ่มงาน</small></div>
+      <div class="gd-act">${mine?`<button class="lx-cta" data-a="edit" type="button"><i class="ti ti-pencil"></i>แก้ไขบริการ</button><button class="lx-gh" data-a="del" type="button"><i class="ti ti-trash"></i>ลบบริการนี้</button>`
+        :`<button class="lx-cta" data-a="book" type="button">จองบริการนี้</button><div class="gd-2"><button class="lx-gh" data-a="msg" type="button"><i class="ti ti-message-circle"></i>ทักช่าง</button>${t.phone?`<a class="lx-gh" href="tel:${esc(t.phone)}"><i class="ti ti-phone"></i>โทร</a>`:""}</div>`}</div>
+      <button class="gd-shop" data-a="shop" type="button">${pav}<span><b class="nt">${esc(t.shop||t.name||"")}${t.verified?' <i class="ti ti-rosette-discount-check-filled"></i>':""}</b><small>${[t.area,d!=null?distTxt(d):"","ดูหน้าร้าน"].filter(Boolean).join(" · ")}</small></span><i class="ti ti-chevron-right"></i></button>
+      <ul class="gd-trust"><li><i class="ti ti-cash"></i>จ่ายเงินกับช่างโดยตรงเมื่องานเสร็จ</li>${t.warranty?`<li><i class="ti ti-shield-check"></i>รับประกันงาน ${t.warranty} วัน</li>`:""}${t.verified?`<li><i class="ti ti-id-badge-2"></i>ช่างผ่านการตรวจสอบตัวตนแล้ว</li>`:""}</ul>
+    </div></aside>
+    <div class="gd-body">
+      <section class="gd-sec"><h2>รายละเอียดบริการ</h2>${g.body?`<p class="gd-desc nt">${esc(g.body)}</p>`:`<p class="gd-muted">ช่างยังไม่ได้ใส่รายละเอียด — กดทักช่างเพื่อสอบถามได้เลย</p>`}</section>
+      <section class="gd-sec"><h2>ข้อมูลบริการ</h2><dl class="gd-dl">${facts.map(([i,k,v])=>`<div><dt><i class="ti ${i}"></i>${k}</dt><dd class="nt">${esc(v)}</dd></div>`).join("")}</dl></section>
+      <section class="gd-sec" id="gdRev"><h2>รีวิวจากลูกค้า</h2>${reviewsHTML(t,null)}</section>
     </div></div>`,
-    foot:mine?`<button class="lx-gh" id="gDel"><i class="ti ti-trash"></i>ลบ</button><button class="lx-cta" id="gEdit" style="flex:1"><i class="ti ti-pencil"></i>แก้ไขโพสต์</button>`
-      :`${t.phone?`<a class="lx-gh lx-ic" href="tel:${esc(t.phone)}"><i class="ti ti-phone"></i></a>`:""}<button class="lx-cta" id="gBook" style="flex:1">จองบริการนี้ · ฿${money(g.price)}</button>`,
-    mount(b){b.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z));$("gShop").onclick=()=>openTech(t.id);
-      if(mine){$("gEdit").onclick=()=>gigForm(g);$("gDel").onclick=e=>busy(e.currentTarget,async()=>{if(!confirm("ลบโพสต์นี้?"))return;await api("/api/tech/gig/delete",{body:{id:g.id}});toast("ลบแล้ว");await afterGig()})}
-      else $("gBook").onclick=()=>book(TECHS.find(x=>x.id===t.id)||t,"สนใจบริการ: "+g.title)}});
+    foot:mine?`<div class="gd-ft"><button class="lx-gh" data-a="del" type="button"><i class="ti ti-trash"></i>ลบ</button><button class="lx-cta" data-a="edit" type="button" style="flex:1"><i class="ti ti-pencil"></i>แก้ไขบริการ</button></div>`
+      :`<div class="gd-ft"><span class="gd-fp"><small>ราคาเริ่มต้น</small><b>฿${money(g.price)}</b></span>${t.phone?`<a class="lx-gh lx-ic" href="tel:${esc(t.phone)}" aria-label="โทร"><i class="ti ti-phone"></i></a>`:""}<button class="lx-cta" data-a="book" type="button">จองบริการนี้</button></div>`,
+    mount(b,f){
+      const tech=()=>TECHS.find(x=>x.id===t.id)||t;
+      const A={book:()=>book(tech(),"สนใจบริการ: "+g.title),msg:()=>book(tech()),shop:()=>openTech(t.id),edit:()=>gigForm(g),
+        del:e=>busy(e.currentTarget,async()=>{if(!confirm("ลบบริการนี้?"))return;await api("/api/tech/gig/delete",{body:{id:g.id}});toast("ลบแล้ว");await afterGig()})};
+      [b,f].forEach(r=>r.querySelectorAll("[data-a]").forEach(x=>x.onclick=e=>A[x.dataset.a](e)));
+      b.querySelectorAll(".gd-path [data-cat]").forEach(x=>x.onclick=()=>{closeSheet();openCat(x.dataset.cat)});
+      /* แกลเลอรี: ปุ่มซ้ายขวา (คอม) · ปัดซ้ายขวา (มือถือ) · แตะรูปเพื่อขยาย · รูปย่อด้านล่าง */
+      const hero=b.querySelector("#gdHero");let gi=0;
+      const show=i=>{gi=(i+P.length)%P.length;hero.style.backgroundImage=`url('${img(P[gi])}')`;
+        const cn=b.querySelector("#gdCnt");if(cn)cn.textContent=`${gi+1} / ${P.length}`;
+        b.querySelectorAll(".gd-th button").forEach((x,k)=>x.classList.toggle("on",k===gi))};
+      if(hero){
+        b.querySelectorAll(".gd-nav").forEach(x=>x.onclick=e=>{e.stopPropagation();show(gi+ +x.dataset.d)});
+        b.querySelectorAll(".gd-th button").forEach(x=>x.onclick=()=>show(+x.dataset.i));
+        let sx=null;
+        hero.addEventListener("pointerdown",e=>{if(!e.target.closest(".gd-nav"))sx=e.clientX});
+        hero.addEventListener("pointerup",e=>{if(sx==null)return;const dx=e.clientX-sx;sx=null;
+          if(Math.abs(dx)>40&&P.length>1)show(gi+(dx<0?1:-1));else if(Math.abs(dx)<8)zoom(img(P[gi]))});
+      }
+      /* รีวิวโหลดแยก หน้าขึ้นก่อนไม่ต้องรอ */
+      api("/api/tech/reviews?id="+encodeURIComponent(t.id)).then(r=>r.reviews||[]).catch(()=>[]).then(list=>{
+        const h=b.querySelector("#gdRev");if(!h)return;
+        h.innerHTML=`<h2>รีวิวจากลูกค้า</h2>${reviewsHTML(t,list,3)}${list.length>3?`<button class="lx-gh gd-more" type="button">ดูรีวิวทั้งหมด ${list.length} รีวิว</button>`:""}`;
+        h.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z));
+        const m=h.querySelector(".gd-more");if(m)m.onclick=()=>{openTech(t.id);const r=document.querySelector('.ch-tabs [data-ct="rev"]');if(r)r.click()};
+      });
+    }});
 }
 /* ฟอร์มโพสต์บริการ: รูป · หัวข้อ · ราคา · รายละเอียด · หมวด · ยี่ห้อรถ (ร้านละไม่เกิน GIG_MAX รายการ) */
 const asData=f=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f)});
@@ -2236,12 +2363,12 @@ function gigForm(g){
     <label class="fld"><span>หัวข้อ</span><input class="inp" id="gT" maxlength="100" value="${esc(g.title||"")}" placeholder="เช่น ล้างแอร์ครบชุด ถอดตู้ล้าง พร้อมเติมน้ำยา"/></label>
     <label class="fld"><span>ราคา (บาท)</span><input class="inp" id="gP" type="number" inputmode="numeric" value="${g.price||""}" placeholder="1200"/></label>
     <label class="fld"><span>รายละเอียด</span><textarea class="inp" id="gB" rows="5" placeholder="ทำอะไรบ้าง ใช้เวลากี่ชั่วโมง รับประกันกี่วัน">${esc(g.body||"")}</textarea></label>
-    <div class="fld"><span>หมวดงาน</span><div class="seg" id="gC">${["air","eng","tyre","ev","body"].map(k=>`<button type="button" data-v="${k}" class="${F2.cats.includes(k)?"on":""}">${CAT[k].th}</button>`).join("")}</div></div>
+    <label class="fld"><span>หมวดหมู่บริการ</span><select class="inp" id="gC"><option value="">เลือกหมวดหมู่…</option>${RAIL.filter(c=>!c.base&&!NOT_GCAT.includes(c.id)).map(top=>`<optgroup label="${top.th}"><option value="${top.id}">${top.th} (ทั่วไป)</option>${RAIL.filter(x=>x.base===top.id).map(x=>`<option value="${x.id}">${x.th}</option>`).join("")}</optgroup>`).join("")}</select></label>
     <label class="fld"><span>ยี่ห้อรถที่ถนัด (คั่นด้วย ,)</span><input class="inp" id="gBr" value="${esc((g.brands||[]).join(", "))}" placeholder="Toyota, Honda, BMW"/></label>
     <p class="err" id="gErr"></p>`,
     foot:`<button class="lx-cta" id="gSave" style="flex:1">${g.id?"บันทึก":"โพสต์เลย"}</button>`,
     mount(){
-      $("gC").querySelectorAll("button").forEach(b=>b.onclick=()=>b.classList.toggle("on"));
+      if(g.id){const gc=gigCat(g);if(topOf(gc))$("gC").value=gc}
       const draw=()=>{$("gPh").innerHTML=F2.keep.map((id,i)=>`<div class="doc"><img src="${img(id)}" alt=""/><button class="rm" data-k="${i}"><i class="ti ti-x"></i></button></div>`).join("")+F2.add.map((a,i)=>`<div class="doc"><img src="${a.data}" alt=""/><button class="rm" data-a="${i}"><i class="ti ti-x"></i></button></div>`).join("")+`<button class="doc" id="gAdd" type="button"><i class="ti ti-camera-plus"></i>เพิ่มรูป</button>`;
         $("gPh").querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{F2.keep.splice(+b.dataset.k,1);draw()});
         $("gPh").querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{F2.add.splice(+b.dataset.a,1);draw()});
@@ -2250,8 +2377,9 @@ function gigForm(g){
       $("gFile").onchange=async()=>{for(const f of [...$("gFile").files]){try{F2.add.push({data:await asData(f)})}catch(e){}}draw()};
       $("gSave").onclick=e=>busy(e.currentTarget,async()=>{
         try{
+          if(!$("gC").value)throw new Error("เลือกหมวดหมู่บริการก่อน — ลูกค้าจะหาบริการนี้เจอในหมวดนั้น");
           const base={kind:"package",title:$("gT").value,price:+$("gP").value||0,body:$("gB").value,
-            cats:[...$("gC").querySelectorAll(".on")].map(b=>b.dataset.v),brands:$("gBr").value.split(",").map(x=>x.trim()).filter(Boolean)};
+            cats:[$("gC").value],brands:$("gBr").value.split(",").map(x=>x.trim()).filter(Boolean)};
           /* รูปไม่จำกัด: ส่งทีละ 4 รูป ต่อท้ายโพสต์เดิม */
           let id=g.id,keep=[...F2.keep],rest=[...F2.add];
           do{const part=rest.splice(0,4);$("gSave").textContent=rest.length?`กำลังอัปโหลด… เหลือ ${rest.length} รูป`:"กำลังบันทึก…";
@@ -2284,9 +2412,23 @@ function drawHome(){
   if(GIGS===null){host.innerHTML='<div class="skel"></div><div class="skel"></div><div class="skel"></div>';if(!loadGigs.started){loadGigs.started=1;loadGigs()}return}
   const l=rankGigs(GIGS);
   $("sugN").textContent=l.length?` · ${l.length} รายการ`:"";
-  host.className="lx-gigs";
-  host.innerHTML=l.length?l.slice(0,30).map(gigCard).join(""):`<div class="empty"><b>ยังไม่มีบริการจากช่าง</b>เมื่อช่างโพสต์บริการพร้อมราคา จะขึ้นที่นี่</div>`;
+  host.className="lx-gsecs";
+  if(!l.length){host.innerHTML=`<div class="empty"><b>ยังไม่มีบริการจากช่าง</b>เมื่อช่างโพสต์บริการพร้อมราคา จะขึ้นที่นี่</div>`;return}
+  /* แบ่งตามหมวดหลัก เรียงตามแถวหมวดด้านบน — ในแต่ละหมวดยังเรียงตามรถของคุณ/ระยะทางเหมือนเดิม */
+  const G=new Map();for(const g of l){const k=topOf(gigCat(g))||"other";if(!G.has(k))G.set(k,[]);G.get(k).push(g)}
+  const order=[...RAIL.filter(c=>!c.base&&G.has(c.id)).map(c=>c.id),...(G.has("other")?["other"]:[])];
+  host.innerHTML=order.map(k=>gigRow(RAIL.find(x=>x.id===k)||OTHER_CAT,G.get(k),k!=="other")).join("");
+  wireGigRows(host);
+}
+/* หนึ่งแถวหมวด: หัว (ไอคอน ชื่อ จำนวน · ดูทั้งหมด) + การ์ด — มือถือเลื่อนข้าง คอมเป็นตาราง */
+/* all = หน้าหมวด: แสดงครบทุกใบเป็นตาราง (หน้าแรกแสดงแถวเดียว แล้วกดดูทั้งหมด) */
+function gigRow(c,list,more,all){
+  return `<section class="lx-gsec"><header class="lx-gsh"><span class="lx-gst">${railIc(c)}<b>${esc(c.th)}</b><small>${list.length} บริการ</small></span>${more?`<button class="lx-link" type="button" data-cat="${c.id}">ดูทั้งหมด <i class="ti ti-arrow-right"></i></button>`:""}</header>
+    <div class="${all?"lx-gigs":"lx-grow"}">${(all?list:list.slice(0,8)).map(gigCard).join("")}</div></section>`;
+}
+function wireGigRows(host){
   host.querySelectorAll(".lx-gc").forEach(b=>b.onclick=()=>openGig(b.dataset.g));
+  host.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>openCat(b.dataset.cat));
 }
 $("sugAll").onclick=()=>openCat("all");
 $("hJobs").onclick=()=>{try{jobs()}catch(e){}};
@@ -2310,6 +2452,12 @@ function drawCat(){
   const sb=(RAIL.find(x=>x.id===CATK)||{}).base||CATK,sy=SYM[sb]||[];
   $("catSym").innerHTML=sy.length&&!CATQ?`<p><i class="ti ti-sparkles"></i>ไม่แน่ใจว่าเป็นอะไร? แตะอาการ ให้ AI ดูก่อนเลือกช่าง</p><div>${sy.map(x=>`<button type="button">${x}</button>`).join("")}</div>`:"";
   $("catSym").querySelectorAll("button").forEach(b=>b.onclick=()=>openRes(b.textContent));
+  /* บริการพร้อมราคา: หมวดหลักรวมหมวดย่อยทั้งหมด · หมวดย่อยเอาเฉพาะของหมวดนั้น · ยอดนิยมเอาทุกหมวด */
+  const gl=GIGS?rankGigs(GIGS).filter(g=>{const gc=gigCat(g);return CATK==="all"||(rc&&rc.base?gc===CATK:topOf(gc)===CATK||gc===CATK)}):[];
+  $("catGigs").innerHTML=gl.length?gigRow({...(rc||OTHER_CAT),th:"บริการพร้อมราคา"},gl,false,true):"";
+  if(gl.length)wireGigRows($("catGigs"));
+  $("catShopsH").hidden=!gl.length;
+  $("catShopsH").innerHTML=`<span class="lx-gst">${railIc(rc||OTHER_CAT)}<b>ร้านช่างในหมวดนี้</b><small>${LOADED?l.length+" ร้าน":""}</small></span>`;
   $("catSubs").innerHTML=[["","ทั้งหมด"],["open","เปิดรับงานตอนนี้"],["mobile","มาถึงที่"],["urgent","รับงานด่วน"]].map(([k,t])=>`<button type="button" class="${CATSUB===k?"on":""}" data-s="${k}">${t}</button>`).join("");
   $("catSubs").querySelectorAll("button").forEach(b=>b.onclick=()=>{CATSUB=b.dataset.s;drawCat()});
   const host=$("catList");
@@ -2384,12 +2532,12 @@ const img=id=>`${API}/api/tech/img/${id}`;
 const agoTh=at=>{const m=Math.round((Date.now()-at)/6e4);return m<1?"เมื่อกี้":m<60?m+" นาที":m<1440?Math.round(m/60)+" ชม.":m<43200?Math.round(m/1440)+" วัน":new Date(at).toLocaleDateString(LOC,{day:"numeric",month:"short",year:"2-digit"})};
 const starTxt=n=>"★".repeat(Math.round(n))+"☆".repeat(5-Math.round(n));
 /* รีวิวลูกค้า: คะแนน ข้อความ รูปจากลูกค้า — ไม่มีชื่อลูกค้า */
-function reviewsHTML(t,list){
+function reviewsHTML(t,list,lim){
   if(!list)return '<div class="skel"></div><div class="skel"></div>';
   if(!list.length)return `<p class="ch-empty">${T("ยังไม่มีรีวิว — รีวิวมาจากลูกค้าที่ใช้บริการผ่านแอปเท่านั้น","No reviews yet")}</p>`;
   const avg=list.reduce((a,r)=>a+r.rating,0)/list.length;
   return `<div class="rv-sum"><span class="rv-big">${avg.toFixed(1)}</span><div><span class="rv-st">${starTxt(avg)}</span><small>${list.length} ${T("รีวิวจากลูกค้าที่ใช้บริการจริง","verified reviews")}</small></div></div>
-    <div class="rv-list">${list.map(r=>`<article class="rv"><header><span class="rv-st">${starTxt(r.rating)}</span><small>${agoTh(r.at)}</small></header>
+    <div class="rv-list">${list.slice(0,lim||list.length).map(r=>`<article class="rv"><header><span class="rv-st">${starTxt(r.rating)}</span><small>${agoTh(r.at)}</small></header>
       ${r.text?`<p class="nt">${esc(r.text)}</p>`:""}
       ${(r.photos||[]).length?`<div class="rv-ph">${r.photos.map(p=>`<img src="${img(p)}" alt="" loading="lazy" data-z="${img(p)}"/>`).join("")}</div>`:""}</article>`).join("")}</div>`;
 }

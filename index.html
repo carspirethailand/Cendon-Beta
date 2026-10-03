@@ -1222,34 +1222,28 @@ body{background:var(--bg);letter-spacing:-.005em}
 .cr-bt{display:flex;align-items:center;gap:12px;padding:14px 22px calc(18px + env(safe-area-inset-bottom))}
 .cr-bt input{flex:1;accent-color:var(--co)}
 
-/* หน้าร้านแบบ Facebook */
-.fb-wrap{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
-@media(max-width:899px){.fb-side{display:none}}
+/* รูปที่ใส่ผ่าน style="background-image:url()" ต้องเต็มกรอบเสมอ
+   (การ์ดที่พื้นหลังมีหลายชั้น พอแทนรูปเข้าไป ขนาดรูปจะกลายเป็นขนาดจริง เห็นแค่มุมเดียว) */
+[style*="background-image:url"]{background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important}
 .ch-pv{top:auto!important;bottom:14px}
-@media(min-width:900px){.fb-wrap{grid-template-columns:340px minmax(0,1fr);align-items:start}.fb-side{position:sticky;top:12px}}
-.fb-box{padding:16px;border-radius:16px;border:1px solid var(--line);background:var(--surface)}
-.fb-box h3{margin:0 0 8px;font:700 17px var(--kd)}.fb-box p{margin:0 0 12px;line-height:1.7;font-size:14px}
-.fb-comp{padding:14px;border-radius:16px;border:1px solid var(--line);background:var(--surface);display:grid;grid-template-columns:auto 1fr;gap:10px;margin-bottom:14px}
-.fb-comp .lx-pav{width:42px;height:42px;margin:0;border-width:0;font-size:16px}
-.fb-ask{text-align:left;height:42px;padding:0 16px;border-radius:999px;border:0;background:var(--surface-2);color:var(--muted);font:500 14.5px var(--kb);cursor:pointer}
-.fb-ask:hover{background:color-mix(in srgb,var(--co) 8%,var(--surface-2))}
-.fb-acts{grid-column:1/-1;display:flex;gap:6px;border-top:1px solid var(--line);padding-top:8px}
-.fb-acts button{flex:1;height:38px;border:0;border-radius:10px;background:none;color:var(--muted);font:600 13.5px var(--kb);display:flex;gap:6px;align-items:center;justify-content:center;cursor:pointer}
-.fb-acts button:hover{background:var(--surface-2);color:var(--ink)}.fb-acts .ti{color:var(--co);font-size:18px}
-.fb-feed{display:grid;gap:14px}
-.fb-post{border-radius:16px;border:1px solid var(--line);background:var(--surface);overflow:hidden}
-.fb-post header{display:flex;gap:10px;align-items:center;padding:12px 14px}
-.fb-post header .lx-pav{width:40px;height:40px;margin:0;border-width:0;font-size:15px}
-.fb-post header b{display:block;font-weight:600}.fb-post header small{font-size:12px;color:var(--muted)}
-.fb-t{margin:0;padding:0 14px 12px;white-space:pre-wrap;line-height:1.65;font-size:14.5px}.fb-t b{font-weight:600}
-.fb-ph{display:grid;gap:3px}
-.fb-ph span{position:relative;display:block;background:var(--surface-2) center/cover;cursor:zoom-in;aspect-ratio:16/9}
-.fb-ph.n2{grid-template-columns:1fr 1fr}.fb-ph.n2 span{aspect-ratio:1}
-.fb-ph.n3{grid-template-columns:1fr 1fr}.fb-ph.n3 span:first-child{grid-column:1/-1}
-.fb-ph.n4{grid-template-columns:1fr 1fr}
-.fb-ph.n5{grid-template-columns:repeat(6,1fr)}.fb-ph.n5 span:nth-child(-n+2){grid-column:span 3}.fb-ph.n5 span:nth-child(n+3){grid-column:span 2;aspect-ratio:1}
-.fb-ph em{position:absolute;inset:0;display:grid;place-items:center;font:700 28px var(--kd);font-style:normal;color:#fff;background:rgba(0,0,0,.5)}
-.fb-post footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-top:1px solid var(--line)}
+/* หน้าร้าน: บริการ (ไม่เกิน 2) · รีวิว · เกี่ยวกับ */
+.ch-svc{grid-template-columns:repeat(2,minmax(0,1fr))!important;max-width:760px}
+@media(max-width:560px){.ch-svc{grid-template-columns:1fr!important}}
+.ch-add{display:flex;align-items:center;justify-content:center;gap:8px;min-height:120px;border-radius:16px;border:1.5px dashed var(--line);background:none;color:var(--muted);font:600 14px var(--kb);cursor:pointer;transition:border-color .2s,color .2s}
+.ch-add:hover{border-color:var(--co);color:var(--ink)}.ch-add .ti{font-size:20px;color:var(--co)}
+.ch-cap{margin:14px 0 0;font-size:12.5px;color:var(--muted)}
+.rv-sum{display:flex;align-items:center;gap:18px;padding:4px 0 18px;max-width:760px}
+.rv-big{font:700 40px/1 var(--kd)}.rv-sum small{display:block;color:var(--muted);font-size:13px;margin-top:4px}
+.rv-st{color:#f5b301;letter-spacing:1px;font-size:14px}
+.rv-list{display:grid;gap:12px;max-width:760px}
+.rv{padding:14px 16px;border-radius:14px;border:1px solid var(--line);background:var(--surface)}
+.rv header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+.rv header small{font-size:12px;color:var(--muted)}
+.rv p{margin:0;white-space:pre-wrap;line-height:1.7;font-size:14.5px}
+.rv-ph{display:flex;gap:6px;margin-top:10px;overflow-x:auto;scrollbar-width:none}
+.rv-ph img{flex:none;width:92px;height:92px;object-fit:cover;border-radius:10px;cursor:zoom-in;background:var(--surface-2)}
+.ch-h{margin:22px 0 10px;font:600 14px var(--kb);color:var(--muted)}
+#rPh{grid-template-columns:repeat(4,1fr)}
 </style>
 <style id="navcss">
 /* navbar เดิม ยกมาจากหน้าอื่นทั้งชุด */
@@ -1469,7 +1463,7 @@ html[data-theme="light"] .mnav,html[data-theme="plant"] .mnav{
   <!-- หมวดช่าง: แถวไอคอน 3D (ใส่รูปที่ img/cat/<หมวด>.png ได้เลย ไม่มีรูปใช้ไอคอนสีแทน) · กดแล้วเข้าหน้าหมวด -->
   <nav class="lx-rail nt" id="hRail" aria-label="หมวดช่าง"></nav>
   <section class="lx-sec">
-    <div class="lx-sh"><h2>บริการและผลงานจากช่าง<span id="sugN"></span></h2><button class="lx-link" id="sugAll" type="button">ดูร้านทั้งหมด <i class="ti ti-arrow-right"></i></button></div>
+    <div class="lx-sh"><h2>บริการจากช่าง<span id="sugN"></span></h2><button class="lx-link" id="sugAll" type="button">ดูร้านทั้งหมด <i class="ti ti-arrow-right"></i></button></div>
     <div class="lx-cards" id="sugList"></div>
   </section>
   <div class="left">
@@ -1521,7 +1515,7 @@ html[data-theme="light"] .mnav,html[data-theme="plant"] .mnav{
     <button data-t2="find" class="on"><i class="ti ti-radar-2"></i><span data-t="หางาน|Find work">หางาน</span><i class="bdg" id="findDot" hidden></i></button>
     <button data-t2="queue"><i class="ti ti-list-check"></i><span data-t="คิวงาน|Queue">คิวงาน</span><i class="bdg" id="queueDot" hidden></i></button>
     <button data-t2="shop"><i class="ti ti-building-store"></i><span data-t="ร้านของฉัน|My shop">ร้านของฉัน</span></button>
-    <button data-t2="posts"><i class="ti ti-photo-plus"></i><span>โพสต์ของฉัน</span></button>
+    <button data-t2="posts"><i class="ti ti-tag"></i><span>บริการของฉัน</span></button>
     <button data-t2="ai"><i class="ti ti-sparkles"></i><span data-t="AI แนะนำ|AI coach">AI แนะนำ</span></button>
   </div>
   <div id="dBody"></div>
@@ -2175,7 +2169,7 @@ function drawJobsBtn(){
   const n=$("active")?$("active").querySelectorAll(".hs>*").length:0;
   b.hidden=!n;$("hJobsN").textContent=n>9?"9+":n||"";
 }
-/* ═══ โพสต์ของช่าง (บริการพร้อมราคา / ผลงาน) ═══ */
+/* ═══ โพสต์บริการของช่าง (ร้านละไม่เกิน 2 รายการ) ═══ */
 let GIGS=null;
 async function loadGigs(){try{GIGS=(await api("/api/tech/gigs")).gigs||[]}catch(e){GIGS=GIGS||[]}drawHome()}
 function myCarText(){const cars=ls.get("spire_garage",[]),c=cars.find(x=>x.id===ls.get("spire_selCar",""))||cars[0];return c?[c.make,c.name,c.model].filter(Boolean).join(" ").toLowerCase():""}
@@ -2188,35 +2182,34 @@ function rankGigs(list){
     if(car&&(g.title+" "+g.body).toLowerCase().split(/\s+/).some(w=>w.length>2&&car.includes(w)))sc+=15;
     if(d!=null)sc-=Math.min(40,d*1.5);
     sc+=Math.max(0,10-(Date.now()-g.createdAt)/864e5);
-    if(g.kind==="package")sc+=3;
     return {...g,dist:d,sc}}).sort((a,b)=>b.sc-a.sc);
 }
 function gigCard(g,i){
   const t=g.tech||{},ph=(g.photos||[])[0],av=t.avatar;
   return `<button class="lx-gc" data-g="${g.id}" style="animation-delay:${Math.min(i*50,500)}ms">
-    <span class="lx-gcv"${ph?` style="background-image:url('${img(ph)}')"`:""}>${g.kind==="work"?'<em class="lx-gk">ผลงาน</em>':""}${(g.photos||[]).length>1?`<em class="lx-gn"><i class="ti ti-photo"></i>${g.photos.length}</em>`:""}</span>
+    <span class="lx-gcv"${ph?` style="background-image:url('${img(ph)}')"`:""}>${(g.photos||[]).length>1?`<em class="lx-gn"><i class="ti ti-photo"></i>${g.photos.length}</em>`:""}</span>
     <span class="lx-gcb"><b class="nt">${esc(g.title)}</b>
       <span class="lx-gcs"><span class="lx-pav sm"${av?` style="background-image:url('${img(av)}')"`:""}>${av?"":initial(t.shop||t.name)}</span><small class="nt">${esc(t.shop||t.name||"")}${g.dist!=null?" · "+distTxt(g.dist):""}${isMine(t)?' · <em class="mine-tag">ของคุณ</em>':""}</small></span>
-      ${g.kind==="package"?`<span class="lx-gp">฿${money(g.price)}</span>`:t.reviewCount?`<span class="lx-gr">★ ${Number(t.rating).toFixed(1)}</span>`:""}</span></button>`;
+      <span class="lx-gp">฿${money(g.price)}${t.reviewCount?` <span class="lx-gr">· ★ ${Number(t.rating).toFixed(1)}</span>`:""}</span></span></button>`;
 }
 function openGig(id){
   const g=(GIGS||[]).find(x=>x.id==id);if(!g)return;const t=g.tech||{},mine=isMine(t);
-  sheet({title:"",full:true,store:true,body:`<div class="lx-gd">
+  sheet({title:"",full:true,store:true,gig:g.id,body:`<div class="lx-gd">
     <div class="lx-gph">${(g.photos||[]).length?g.photos.map(p=>`<img src="${img(p)}" alt="" data-z="${img(p)}"/>`).join(""):'<div class="lx-gph0"></div>'}</div>
-    <div class="lx-gdb"><p class="lx-eyebrow">${g.kind==="package"?"บริการ":"ผลงาน"}${(g.cats||[]).map(c=>CAT[c]?" · "+CAT[c].th:"").join("")}</p>
-      <h1 class="nt">${esc(g.title)}</h1>${g.kind==="package"?`<p class="lx-gdp">฿${money(g.price)}</p>`:""}
+    <div class="lx-gdb"><p class="lx-eyebrow">บริการ${(g.cats||[]).map(c=>CAT[c]?" · "+CAT[c].th:"").join("")}</p>
+      <h1 class="nt">${esc(g.title)}</h1><p class="lx-gdp">฿${money(g.price)}</p>
       ${g.body?`<p class="lx-gdt nt">${esc(g.body)}</p>`:""}
       ${(g.brands||[]).length?`<div class="ch-chips">${g.brands.map(b=>`<span>${esc(b)}</span>`).join("")}</div>`:""}
       <button class="lx-pkm" id="gShop"><span class="lx-pav"${t.avatar?` style="background-image:url('${img(t.avatar)}')"`:""}>${t.avatar?"":initial(t.shop||t.name)}</span><span><b class="nt">${esc(t.shop||t.name)}</b><small>${t.reviewCount?`★ ${Number(t.rating).toFixed(1)} (${t.reviewCount}) · `:""}ดูหน้าร้าน</small></span><i class="ti ti-chevron-right"></i></button>
     </div></div>`,
     foot:mine?`<button class="lx-gh" id="gDel"><i class="ti ti-trash"></i>ลบ</button><button class="lx-cta" id="gEdit" style="flex:1"><i class="ti ti-pencil"></i>แก้ไขโพสต์</button>`
-      :`${t.phone?`<a class="lx-gh lx-ic" href="tel:${esc(t.phone)}"><i class="ti ti-phone"></i></a>`:""}<button class="lx-cta" id="gBook" style="flex:1">${g.kind==="package"?`จองบริการนี้ · ฿${money(g.price)}`:"ขอราคางานแบบนี้"}</button>`,
+      :`${t.phone?`<a class="lx-gh lx-ic" href="tel:${esc(t.phone)}"><i class="ti ti-phone"></i></a>`:""}<button class="lx-cta" id="gBook" style="flex:1">จองบริการนี้ · ฿${money(g.price)}</button>`,
     mount(b){b.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z));$("gShop").onclick=()=>openTech(t.id);
-      if(mine){$("gEdit").onclick=()=>gigForm(g);$("gDel").onclick=e=>busy(e.currentTarget,async()=>{if(!confirm("ลบโพสต์นี้?"))return;await api("/api/tech/gig/delete",{body:{id:g.id}});closeSheet();toast("ลบแล้ว");loadGigs()})}
-      else $("gBook").onclick=()=>book(TECHS.find(x=>x.id===t.id)||t,(g.kind==="package"?"สนใจบริการ: ":"อยากได้งานแบบ: ")+g.title)}});
+      if(mine){$("gEdit").onclick=()=>gigForm(g);$("gDel").onclick=e=>busy(e.currentTarget,async()=>{if(!confirm("ลบโพสต์นี้?"))return;await api("/api/tech/gig/delete",{body:{id:g.id}});toast("ลบแล้ว");await afterGig()})}
+      else $("gBook").onclick=()=>book(TECHS.find(x=>x.id===t.id)||t,"สนใจบริการ: "+g.title)}});
 }
-/* ฟอร์มโพสต์: เลือกแบบ · รูป · หัวข้อ · ราคา (เฉพาะบริการ) · รายละเอียด · หมวด · ยี่ห้อรถ */
-/* ครอปรูป 9:16 ในแอป: ลากเลื่อน · บีบนิ้ว/ล้อเมาส์/สไลเดอร์ซูม → JPEG 1080×1920 */
+/* ฟอร์มโพสต์บริการ: รูป · หัวข้อ · ราคา · รายละเอียด · หมวด · ยี่ห้อรถ (ร้านละไม่เกิน GIG_MAX รายการ) */
+/* ครอปรูป 16:9 ในแอป: ลากเลื่อน · บีบนิ้ว/ล้อเมาส์/สไลเดอร์ซูม → JPEG 1920×1080 */
 function crop169(file){return new Promise(res=>{
   const url=URL.createObjectURL(file),im=new Image();
   im.onload=()=>{
@@ -2247,33 +2240,41 @@ function crop169(file){return new Promise(res=>{
   };
   im.onerror=()=>{URL.revokeObjectURL(url);res(null)};im.src=url;
 })}
+const GIG_MAX=2;
+/* หลังโพสต์/แก้/ลบ: ถอยกลับหน้าก่อน แล้ววาดหน้าร้านหรือรายละเอียดโพสต์ใหม่ด้วยข้อมูลล่าสุด */
+async function afterGig(){
+  if(SH.stack.length)back();else closeSheet();
+  await loadGigs();if(DT==="posts")tabPosts();
+  const c=$("bs").classList.contains("on")&&SH.cur;
+  if(c&&c.shop)openTech(c.shop);
+  else if(c&&c.gig){if((GIGS||[]).some(x=>x.id==c.gig))openGig(c.gig);else back()}
+}
+const myGigs=()=>(GIGS||[]).filter(g=>isMine(g.tech));
 function gigForm(g){
-  g=g||{kind:"package",photos:[],cats:[],brands:[]};
-  const F2={kind:g.kind,keep:[...(g.photos||[])],add:[],cats:[...(g.cats||[])]};
+  if(!(g&&g.id)&&myGigs().length>=GIG_MAX)return toast(`โพสต์บริการได้ร้านละ ${GIG_MAX} รายการ — แก้หรือลบรายการเดิมแทน`,"ti-info-circle");
+  g=g||{photos:[],cats:[],brands:[]};
+  const F2={keep:[...(g.photos||[])],add:[],cats:[...(g.cats||[])]};
   sheet({push:true,full:true,title:g.id?"แก้ไขโพสต์":"โพสต์ใหม่",body:`
-    <div class="seg" id="gKind"><button type="button" data-v="package">บริการพร้อมราคา</button><button type="button" data-v="work">ผลงาน</button></div>
     <p class="h4">รูป <small style="font-weight:400;color:var(--muted)">· แนวนอน 16:9 ครอปในแอปได้ · ใส่ได้ไม่จำกัด รูปแรกเป็นปก</small></p><div class="phg" id="gPh"></div><input type="file" id="gFile" accept="image/*" multiple hidden/>
     <label class="fld"><span>หัวข้อ</span><input class="inp" id="gT" maxlength="100" value="${esc(g.title||"")}" placeholder="เช่น ล้างแอร์ครบชุด ถอดตู้ล้าง พร้อมเติมน้ำยา"/></label>
-    <label class="fld" id="gPriceF"><span>ราคา (บาท)</span><input class="inp" id="gP" type="number" inputmode="numeric" value="${g.price||""}" placeholder="1200"/></label>
+    <label class="fld"><span>ราคา (บาท)</span><input class="inp" id="gP" type="number" inputmode="numeric" value="${g.price||""}" placeholder="1200"/></label>
     <label class="fld"><span>รายละเอียด</span><textarea class="inp" id="gB" rows="5" placeholder="ทำอะไรบ้าง ใช้เวลากี่ชั่วโมง รับประกันกี่วัน">${esc(g.body||"")}</textarea></label>
     <div class="fld"><span>หมวดงาน</span><div class="seg" id="gC">${["air","eng","tyre","ev","body"].map(k=>`<button type="button" data-v="${k}" class="${F2.cats.includes(k)?"on":""}">${CAT[k].th}</button>`).join("")}</div></div>
     <label class="fld"><span>ยี่ห้อรถที่ถนัด (คั่นด้วย ,)</span><input class="inp" id="gBr" value="${esc((g.brands||[]).join(", "))}" placeholder="Toyota, Honda, BMW"/></label>
     <p class="err" id="gErr"></p>`,
     foot:`<button class="lx-cta" id="gSave" style="flex:1">${g.id?"บันทึก":"โพสต์เลย"}</button>`,
     mount(){
-      const kind=()=>{$("gKind").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===F2.kind));$("gPriceF").hidden=F2.kind!=="package"};kind();
-      $("gKind").querySelectorAll("button").forEach(b=>b.onclick=()=>{F2.kind=b.dataset.v;kind()});
       $("gC").querySelectorAll("button").forEach(b=>b.onclick=()=>b.classList.toggle("on"));
       const draw=()=>{$("gPh").innerHTML=F2.keep.map((id,i)=>`<div class="doc"><img src="${img(id)}" alt=""/><button class="rm" data-k="${i}"><i class="ti ti-x"></i></button></div>`).join("")+F2.add.map((a,i)=>`<div class="doc"><img src="${a.data}" alt=""/><button class="rm" data-a="${i}"><i class="ti ti-x"></i></button></div>`).join("")+`<button class="doc" id="gAdd" type="button"><i class="ti ti-camera-plus"></i>เพิ่มรูป</button>`;
         $("gPh").querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{F2.keep.splice(+b.dataset.k,1);draw()});
         $("gPh").querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{F2.add.splice(+b.dataset.a,1);draw()});
         if($("gAdd"))$("gAdd").onclick=()=>{$("gFile").value="";$("gFile").click()}};draw();
-      /* ทุกรูปเป็น 9:16 — เลือกแล้วเข้าหน้าครอปทีละรูป (ลาก/บีบ/สไลด์ซูม) */
+      /* ทุกรูปเป็น 16:9 — เลือกแล้วเข้าหน้าครอปทีละรูป (ลาก/บีบ/สไลด์ซูม) */
       $("gFile").onchange=async()=>{const fs=[...$("gFile").files];
         for(const f of fs){try{const d=await crop169(f);if(d)F2.add.push({data:d})}catch(e){}}draw()};
       $("gSave").onclick=e=>busy(e.currentTarget,async()=>{
         try{
-          const base={kind:F2.kind,title:$("gT").value,price:+$("gP").value||0,body:$("gB").value,
+          const base={kind:"package",title:$("gT").value,price:+$("gP").value||0,body:$("gB").value,
             cats:[...$("gC").querySelectorAll(".on")].map(b=>b.dataset.v),brands:$("gBr").value.split(",").map(x=>x.trim()).filter(Boolean)};
           /* รูปไม่จำกัด: ส่งทีละ 4 รูป ต่อท้ายโพสต์เดิม */
           let id=g.id,keep=[...F2.keep],rest=[...F2.add];
@@ -2282,16 +2283,17 @@ function gigForm(g){
             if(rest.length){const cur=(await api("/api/tech/gigs?mine=1")).gigs.find(x=>x.id===id);keep=cur?cur.photos:keep}
           }while(rest.length);
         }catch(err){$("gErr").textContent=err.message;throw err}
-        toast(g.id?"บันทึกแล้ว":"โพสต์แล้ว — ขึ้นหน้าแรกให้ลูกค้าเห็นแล้ว");closeSheet();await loadGigs();if(DT==="posts")tabPosts();
+        toast(g.id?"บันทึกแล้ว":"โพสต์แล้ว — ขึ้นหน้าแรกให้ลูกค้าเห็นแล้ว");await afterGig();
       });
     }});
 }
 async function tabPosts(){
-  const B=$("dBody");B.innerHTML=`<button class="lx-cta w" id="pNew" style="width:100%;margin-bottom:14px"><i class="ti ti-plus"></i>โพสต์บริการหรือผลงาน</button><div class="lx-cards" id="pList"><div class="skel"></div></div>`;
-  $("pNew").onclick=()=>gigForm();
+  const B=$("dBody");B.innerHTML=`<div id="pTop"></div><div class="lx-gigs ch-svc" id="pList"><div class="skel"></div></div><p class="ch-cap">โพสต์บริการพร้อมราคาได้ร้านละ ${GIG_MAX} รายการ · ลูกค้าดูความน่าเชื่อถือจากรีวิวที่ลูกค้าจริงเขียน (แนบรูปได้)</p>`;
   let mine=[];try{mine=(await api("/api/tech/gigs?mine=1")).gigs||[]}catch(e){}
   GIGS=[...(GIGS||[]).filter(g=>!mine.some(m=>m.id===g.id)),...mine];
-  $("pList").innerHTML=mine.length?mine.map(gigCard).join(""):`<div class="empty"><b>ยังไม่มีโพสต์</b>โพสต์บริการพร้อมราคา หรือรูปผลงาน แล้วจะขึ้นหน้าแรกให้ลูกค้าเห็น</div>`;
+  $("pTop").innerHTML=mine.length<GIG_MAX?`<button class="lx-cta w" id="pNew" style="width:100%;margin-bottom:14px"><i class="ti ti-plus"></i>เพิ่มบริการ (${mine.length}/${GIG_MAX})</button>`:"";
+  if($("pNew"))$("pNew").onclick=()=>gigForm();
+  $("pList").innerHTML=mine.length?mine.map(gigCard).join(""):`<div class="empty"><b>ยังไม่มีบริการ</b>โพสต์บริการพร้อมราคา แล้วจะขึ้นหน้าแรกให้ลูกค้าเห็น</div>`;
   $("pList").querySelectorAll(".lx-gc").forEach(b=>b.onclick=()=>openGig(b.dataset.g));
 }
 function drawHome(){
@@ -2305,9 +2307,9 @@ function drawHome(){
   if(!LOADED){host.innerHTML='<div class="skel"></div><div class="skel"></div><div class="skel"></div>';return}
   if(GIGS===null){host.innerHTML='<div class="skel"></div><div class="skel"></div><div class="skel"></div>';if(!loadGigs.started){loadGigs.started=1;loadGigs()}return}
   const l=rankGigs(GIGS);
-  $("sugN").textContent=l.length?` · ${l.length} โพสต์`:"";
+  $("sugN").textContent=l.length?` · ${l.length} รายการ`:"";
   host.className="lx-gigs";
-  host.innerHTML=l.length?l.slice(0,30).map(gigCard).join(""):`<div class="empty"><b>ยังไม่มีโพสต์จากช่าง</b>เมื่อช่างโพสต์บริการหรือผลงาน จะขึ้นที่นี่</div>`;
+  host.innerHTML=l.length?l.slice(0,30).map(gigCard).join(""):`<div class="empty"><b>ยังไม่มีบริการจากช่าง</b>เมื่อช่างโพสต์บริการพร้อมราคา จะขึ้นที่นี่</div>`;
   host.querySelectorAll(".lx-gc").forEach(b=>b.onclick=()=>openGig(b.dataset.g));
 }
 $("sugAll").onclick=()=>openCat("all");
@@ -2403,17 +2405,17 @@ async function diag(){
    ลูกค้า → ขอราคา · เจ้าของร้าน → แก้ไขร้าน (ไม่มีทางสั่งงานตัวเองได้อีก) */
 const isMine=t=>!!(ME&&ME.technician&&t&&ME.technician.id===t.id);
 const img=id=>`${API}/api/tech/img/${id}`;
-/* โพสต์แบบ Facebook: หัว (รูป ชื่อร้าน เวลา) · ข้อความ · รูปเรียงตาราง · ราคา/ปุ่มจอง */
-const agoTh=at=>{const m=Math.round((Date.now()-at)/6e4);return m<1?"เมื่อกี้":m<60?m+" นาที":m<1440?Math.round(m/60)+" ชม.":Math.round(m/1440)+" วัน"};
-function fbPost(g,t){
-  const P=g.photos||[],n=P.length,show=P.slice(0,5),more=n-5;
-  return `<article class="fb-post" data-g="${g.id}">
-    <header><span class="lx-pav"${t.avatar?` style="background-image:url('${img(t.avatar)}')"`:""}>${t.avatar?"":initial(t.shop||t.name)}</span>
-      <div><b class="nt">${esc(t.shop||t.name)}</b><small>${agoTh(g.createdAt)} · ${g.kind==="package"?"บริการ":"ผลงาน"}</small></div></header>
-    <p class="fb-t nt"><b>${esc(g.title)}</b>${g.body?"\n"+esc(g.body):""}</p>
-    ${n?`<div class="fb-ph n${Math.min(n,5)}">${show.map((p,i)=>`<span style="background-image:url('${img(p)}')" data-z="${img(p)}">${i===4&&more>0?`<em>+${more}</em>`:""}</span>`).join("")}</div>`:""}
-    ${g.kind==="package"?`<footer><span class="lx-gp">฿${money(g.price)}</span><button class="lx-cta fb-open" data-g="${g.id}">ดูบริการ</button></footer>`:`<footer><button class="lx-gh fb-open" data-g="${g.id}">ดูโพสต์</button></footer>`}
-  </article>`;
+const agoTh=at=>{const m=Math.round((Date.now()-at)/6e4);return m<1?"เมื่อกี้":m<60?m+" นาที":m<1440?Math.round(m/60)+" ชม.":m<43200?Math.round(m/1440)+" วัน":new Date(at).toLocaleDateString(LOC,{day:"numeric",month:"short",year:"2-digit"})};
+const starTxt=n=>"★".repeat(Math.round(n))+"☆".repeat(5-Math.round(n));
+/* รีวิวลูกค้า: คะแนน ข้อความ รูปจากลูกค้า — ไม่มีชื่อลูกค้า */
+function reviewsHTML(t,list){
+  if(!list)return '<div class="skel"></div><div class="skel"></div>';
+  if(!list.length)return `<p class="ch-empty">${T("ยังไม่มีรีวิว — รีวิวมาจากลูกค้าที่ใช้บริการผ่านแอปเท่านั้น","No reviews yet")}</p>`;
+  const avg=list.reduce((a,r)=>a+r.rating,0)/list.length;
+  return `<div class="rv-sum"><span class="rv-big">${avg.toFixed(1)}</span><div><span class="rv-st">${starTxt(avg)}</span><small>${list.length} ${T("รีวิวจากลูกค้าที่ใช้บริการจริง","verified reviews")}</small></div></div>
+    <div class="rv-list">${list.map(r=>`<article class="rv"><header><span class="rv-st">${starTxt(r.rating)}</span><small>${agoTh(r.at)}</small></header>
+      ${r.text?`<p class="nt">${esc(r.text)}</p>`:""}
+      ${(r.photos||[]).length?`<div class="rv-ph">${r.photos.map(p=>`<img src="${img(p)}" alt="" loading="lazy" data-z="${img(p)}"/>`).join("")}</div>`:""}</article>`).join("")}</div>`;
 }
 function storeHTML(t,mine){
   const d=mine?null:km(HERE,t),cover=t.cover,av=t.avatar;
@@ -2422,8 +2424,8 @@ function storeHTML(t,mine){
   const info=[wk?["ti-clock",wk]:t.hours&&["ti-clock",esc(t.hours)],t.address&&["ti-building-store",esc(t.address)],t.line&&["ti-brand-line",`LINE: ${esc(t.line)}`],t.facebook&&["ti-brand-facebook",`<a href="${esc(/^https?:/.test(t.facebook)?t.facebook:"https://facebook.com/"+t.facebook)}" target="_blank" rel="noopener">Facebook</a>`],(t.brands2||[]).length&&["ti-car",`ถนัด: ${esc(t.brands2.join(", "))}`],t.from&&["ti-cash",T("เริ่มต้น ฿","From ฿")+money(t.from)],t.radius&&["ti-radar-2",T(`รับงานในรัศมี ${t.radius} กม.`,`Serves within ${t.radius} km`)],t.area&&["ti-map-pin",esc(t.area)],t.warranty&&["ti-shield-check",T(`รับประกันงาน ${t.warranty} วัน`,`${t.warranty}-day warranty`)]].filter(Boolean);
   const meta=[t.reviewCount?`<b>★ ${Number(t.rating).toFixed(1)}</b> ${T("จาก","from")} ${t.reviewCount} ${T("รีวิว","reviews")}`:T("ร้านใหม่","New shop"),`${t.jobs||0} ${T("งานสำเร็จ","jobs done")}`,d!=null?`${d} ${T("กม.","km")}`:""].filter(Boolean).join(" · ");
   const tel=!mine&&t.phone;
-  const feed=(GIGS||[]).filter(g=>g.tech&&g.tech.id===t.id).sort((a,b)=>b.createdAt-a.createdAt);
-  const allPics=[...feed.flatMap(g=>g.photos||[]),...pics];
+  const svc=(GIGS||[]).filter(g=>g.tech&&g.tech.id===t.id).sort((a,b)=>b.createdAt-a.createdAt).slice(0,GIG_MAX);
+  const first=svc.length||mine?"svc":"rev";
   return `<div class="ch">
     <div class="ch-cover${cover?"":" none"}" ${cover?`style="background-image:url('${img(cover)}')" data-z="${img(cover)}"`:""}>${mine?`<span class="ch-pv"><i class="ti ti-eye"></i>${T("ตัวอย่าง — ลูกค้าเห็นหน้านี้","Preview — customers see this")}</span>`:""}</div>
     <div class="ch-id">
@@ -2441,24 +2443,18 @@ function storeHTML(t,mine){
         </div>
       </div>
     </div>
-    <nav class="ch-tabs" role="tablist"><button class="on" data-ct="feed">${T("โพสต์","Posts")}</button><button data-ct="about">${T("เกี่ยวกับ","About")}</button><button data-ct="photos">${T("รูปภาพ","Photos")}</button></nav>
-    <section class="ch-pane on" data-cp="feed"><div class="fb-wrap">
-      <aside class="fb-side">
-        <div class="fb-box"><h3>${T("แนะนำตัว","Intro")}</h3>${t.about?`<p class="nt">${esc(t.about)}</p>`:""}
-          ${info.length?`<div class="ch-info">${info.map(([i,x])=>`<div><i class="ti ${i}"></i><span class="nt">${x}</span></div>`).join("")}</div>`:""}
-          <div class="ch-chips" style="margin-top:12px">${(t.cats||[]).map(c=>CAT[c]?`<span><i class="ti ${CAT[c].ic}"></i>${CAT[c].th}</span>`:"").join("")}</div></div>
-      </aside>
-      <div class="fb-main">
-        ${mine?`<div class="fb-comp"><span class="lx-pav"${av?` style="background-image:url('${img(av)}')"`:""}>${av?"":initial(t.shop||t.name)}</span><button class="fb-ask" data-new="package">${T("โพสต์บริการหรือผลงานให้ลูกค้าเห็น…","Post a service or your work…")}</button>
-          <div class="fb-acts"><button data-new="work"><i class="ti ti-photo"></i>${T("รูปผลงาน","Work photos")}</button><button data-new="package"><i class="ti ti-tag"></i>${T("บริการพร้อมราคา","Service + price")}</button></div></div>`:""}
-        <div class="fb-feed">${feed.length?feed.map(g=>fbPost(g,t)).join(""):`<p class="ch-empty">${mine?T("ยังไม่มีโพสต์ — โพสต์แรกของคุณจะขึ้นหน้าแรกให้ลูกค้าเห็น","No posts yet"):T("ร้านนี้ยังไม่มีโพสต์","No posts yet")}</p>`}</div>
-      </div></div></section>
+    <nav class="ch-tabs" role="tablist"><button class="${first==="svc"?"on":""}" data-ct="svc">${T("บริการ","Services")}${svc.length?`<em>${svc.length}</em>`:""}</button><button class="${first==="rev"?"on":""}" data-ct="rev">${T("รีวิว","Reviews")}${t.reviewCount?`<em>${t.reviewCount}</em>`:""}</button><button data-ct="about">${T("เกี่ยวกับ","About")}</button></nav>
+    <section class="ch-pane${first==="svc"?" on":""}" data-cp="svc"><div class="lx-gigs ch-svc">${svc.map(gigCard).join("")}${mine&&svc.length<GIG_MAX?`<button class="ch-add" data-new="1"><i class="ti ti-plus"></i>${T(`เพิ่มบริการ (${svc.length}/${GIG_MAX})`,`Add a service (${svc.length}/${GIG_MAX})`)}</button>`:""}</div>
+      ${!svc.length&&!mine?`<p class="ch-empty">${T("ร้านนี้ยังไม่ได้ลงบริการพร้อมราคา — กดขอราคาได้เลย","No listed services yet")}</p>`:""}
+      ${mine?`<p class="ch-cap">${T(`ลงบริการพร้อมราคาได้ ${GIG_MAX} รายการ ลูกค้าดูความน่าเชื่อถือจากรีวิว`,`Up to ${GIG_MAX} services`)}</p>`:""}</section>
+    <section class="ch-pane${first==="rev"?" on":""}" data-cp="rev" id="chRev">${reviewsHTML(t,null)}</section>
     <section class="ch-pane" data-cp="about">
       ${t.about?`<p class="ch-about nt">${esc(t.about)}</p>`:""}
       ${info.length?`<div class="ch-info">${info.map(([i,x])=>`<div><i class="ti ${i}"></i><span class="nt">${x}</span></div>`).join("")}</div>`:""}
+      ${(t.cats||[]).length?`<div class="ch-chips" style="margin-top:16px">${t.cats.map(c=>CAT[c]?`<span><i class="ti ${CAT[c].ic}"></i>${CAT[c].th}</span>`:"").join("")}</div>`:""}
       ${t.years?`<p class="ch-fine">${T(`ประสบการณ์ ${t.years} ปี`,`${t.years} years of experience`)}${t.verified?T(" · ตรวจสอบตัวตนแล้ว"," · Identity verified"):""}</p>`:""}
+      ${pics.length?`<p class="ch-h">${T("รูปร้าน","Shop photos")}</p><div class="ch-grid">${pics.slice(0,12).map(p=>`<img src="${img(p)}" alt="" loading="lazy" data-z="${img(p)}"/>`).join("")}</div>`:""}
     </section>
-    <section class="ch-pane" data-cp="photos">${allPics.length?`<div class="ch-grid">${allPics.map(p=>`<img src="${img(p)}" alt="" loading="lazy" data-z="${img(p)}"/>`).join("")}</div>`:`<p class="ch-empty">${T("ยังไม่มีรูป","No photos yet")}</p>`}</section>
   </div>`;
 }
 function openTech(id){
@@ -2466,15 +2462,19 @@ function openTech(id){
   const mine=ME&&ME.technician&&ME.technician.id===id;
   if(mine)t={...(t||{}),...ME.technician};
   if(!t)return;
-  sheet({title:"",full:true,store:true,body:storeHTML(t,mine),
+  sheet({title:"",full:true,store:true,shop:id,body:storeHTML(t,mine),
     foot:"",
     mount(b){
       b.querySelectorAll(".ch-tabs button").forEach(x=>x.onclick=()=>{
         b.querySelectorAll(".ch-tabs button").forEach(y=>y.classList.toggle("on",y===x));
         b.querySelectorAll(".ch-pane").forEach(p=>p.classList.toggle("on",p.dataset.cp===x.dataset.ct))});
-      b.querySelectorAll(".lx-gc,.fb-open").forEach(x=>x.onclick=()=>openGig(x.dataset.g));
-      b.querySelectorAll("[data-new]").forEach(x=>x.onclick=()=>gigForm({kind:x.dataset.new,photos:[],cats:[],brands:[]}));
+      b.querySelectorAll(".lx-gc").forEach(x=>x.onclick=()=>openGig(x.dataset.g));
+      b.querySelectorAll("[data-new]").forEach(x=>x.onclick=()=>gigForm());
       b.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z));
+      /* รีวิวโหลดแยก — หน้าร้านขึ้นทันที ไม่ต้องรอ */
+      api("/api/tech/reviews?id="+encodeURIComponent(t.id)).then(r=>r.reviews||[]).catch(()=>[]).then(list=>{
+        const h=b.querySelector("#chRev");if(!h)return;h.innerHTML=reviewsHTML(t,list);
+        h.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z))});
       if(mine){
         $("bEdit").onclick=()=>openShopEdit();
         $("bShare").onclick=async()=>{const u=location.origin+location.pathname+"?shop="+encodeURIComponent(t.id);
@@ -2897,9 +2897,14 @@ function act(j,a,btn){
     foot:'<button class="btn p w" id="cGo" disabled>ยืนยัน</button>',mount(){$("cOk").onchange=()=>$("cGo").disabled=!$("cOk").checked;$("cGo").onclick=e=>change(j,"accept",{consent:true},e.currentTarget)}});
   if(a==="complete")return sheet({push:true,title:"ตรวจรับงาน",body:`<div class="state"><div class="big" style="background:rgba(62,158,110,.14);color:var(--ok)"><i class="ti ti-circle-check"></i></div><h2>งานเรียบร้อยแล้ว?</h2><p>${esc(j.completion||"")}</p></div>`,
     foot:'<button class="btn s" id="cNo">ยังมีปัญหา</button><button class="btn p" id="cGo">เรียบร้อย</button>',mount(){$("cNo").onclick=()=>act(j,"dispute");$("cGo").onclick=e=>change(j,"complete",{},e.currentTarget)}});
-  if(a==="review"){let r=5;return sheet({push:true,title:"ให้คะแนน",body:`<div class="stars" id="rS">${[1,2,3,4,5].map(n=>`<button data-n="${n}" class="on"><i class="ti ti-star-filled"></i></button>`).join("")}</div><label class="fld"><span>เล่าสั้น ๆ</span><textarea class="inp" id="rT" placeholder="เช่น มาตรงเวลา งานเรียบร้อย"></textarea></label>`,
+  if(a==="review"){let r=5;const RP=[];return sheet({push:true,title:"ให้คะแนน",body:`<div class="stars" id="rS">${[1,2,3,4,5].map(n=>`<button data-n="${n}" class="on"><i class="ti ti-star-filled"></i></button>`).join("")}</div><label class="fld"><span>เล่าสั้น ๆ</span><textarea class="inp" id="rT" placeholder="เช่น มาตรงเวลา งานเรียบร้อย"></textarea></label>
+      <p class="h4">รูปงานที่ได้ <small style="font-weight:400;color:var(--muted)">· ไม่บังคับ สูงสุด 4 รูป · ขึ้นในหน้าร้านพร้อมรีวิว</small></p><div class="phg" id="rPh"></div><input type="file" id="rFile" accept="image/*" multiple hidden/><p class="err" id="rErr"></p>`,
     foot:'<button class="btn p w" id="rGo">ส่งคะแนน</button>',mount(){$("rS").querySelectorAll("button").forEach(b=>b.onclick=()=>{r=+b.dataset.n;$("rS").querySelectorAll("button").forEach(x=>x.classList.toggle("on",+x.dataset.n<=r))});
-      $("rGo").onclick=e=>change(j,"review",{rating:r,note:$("rT").value.trim()},e.currentTarget)}});}
+      const draw=()=>{$("rPh").innerHTML=RP.map((d,i)=>`<div class="doc"><img src="${d}" alt=""/><button class="rm" data-i="${i}" type="button"><i class="ti ti-x"></i></button></div>`).join("")+(RP.length<4?`<button class="doc" id="rAdd" type="button"><i class="ti ti-camera-plus"></i>เพิ่มรูป</button>`:"");
+        $("rPh").querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>{RP.splice(+b.dataset.i,1);draw()});
+        if($("rAdd"))$("rAdd").onclick=()=>{$("rFile").value="";$("rFile").click()}};draw();
+      $("rFile").onchange=async()=>{for(const f of [...$("rFile").files].slice(0,4-RP.length)){try{RP.push(await shrink(f,1600))}catch(e){$("rErr").textContent=e.message}}draw()};
+      $("rGo").onclick=e=>change(j,"review",{rating:r,note:$("rT").value.trim(),photos:RP.map(d=>({data:d}))},e.currentTarget)}});}
   const T={done:["สรุปงานที่ทำ","เช่น เปลี่ยนโอริง เติมน้ำยา 600 กรัม"],cancel:["เหตุผลที่ยกเลิก","เช่น ติดธุระ ขอเลื่อน"],dispute:["เกิดปัญหาอะไร","เล่าสิ่งที่เกิดขึ้น ทีมงานจะติดต่อกลับ"],resolve:["ผลการช่วยเหลือ","สรุปว่าแก้อย่างไร"]}[a];
   if(!T)return;
   sheet({push:true,title:T[0],body:`<label class="fld"><textarea class="inp" id="nT" placeholder="${T[1]}"></textarea></label>${a==="resolve"?segs("nO",[["completed","ปิดงานสำเร็จ"],["cancelled","ยกเลิกงาน"]],"completed"):""}`,
@@ -3403,10 +3408,10 @@ function openShopEdit(){
   SHOPED={add:[],remove:[],lat:t.lat,lng:t.lng,cover:t.cover||null,newCover:null};
   sheet({title:T("แก้ไขร้าน","Edit shop"),full:true,push:true,body:`
     <p class="h4" style="margin-top:0">${T("รูปโปรไฟล์ร้าน","Shop profile photo")}</p>
-    <div class="ed-av"><span class="ch-av" id="sAv">${initial(t.shop||t.name)}</span><div><button class="lx-gh" id="sAvB" type="button"><i class="ti ti-camera"></i> ${T("เปลี่ยนรูปโปรไฟล์","Change photo")}</button><small>${T("แยกจากรูปผลงาน · แนะนำโลโก้ร้านหรือรูปหน้าร้าน","Separate from work photos · your logo or storefront")}</small></div></div><input type="file" id="sAvF" accept="image/*" hidden/>
+    <div class="ed-av"><span class="ch-av" id="sAv">${initial(t.shop||t.name)}</span><div><button class="lx-gh" id="sAvB" type="button"><i class="ti ti-camera"></i> ${T("เปลี่ยนรูปโปรไฟล์","Change photo")}</button><small>${T("แนะนำโลโก้ร้านหรือรูปหน้าร้าน","Your logo or storefront")}</small></div></div><input type="file" id="sAvF" accept="image/*" hidden/>
     <p class="h4">${T("รูปปก (แบนเนอร์)","Cover banner")}</p>
     <div class="sf-cover sf-ed" id="sCov" style="--c1:${colorOf(t)}"><button class="btn s" id="sCovB"><i class="ti ti-photo"></i> ${T("เปลี่ยนรูปปก","Change cover")}</button></div><input type="file" id="sCovF" accept="image/*" hidden/>
-    <p class="h4">${T("รูปร้านและผลงาน","Shop & work photos")} <small style="font-weight:400;color:var(--muted)">${T("· แตะ ★ เพื่อใช้เป็นปก","· tap ★ to use as cover")}</small></p><div class="phg" id="sPh"></div><input type="file" id="sFile" accept="image/*" hidden/>
+    <p class="h4">${T("รูปร้าน","Shop photos")} <small style="font-weight:400;color:var(--muted)">${T("· แตะ ★ เพื่อใช้เป็นปก","· tap ★ to use as cover")}</small></p><div class="phg" id="sPh"></div><input type="file" id="sFile" accept="image/*" hidden/>
     <label class="fld"><span>${T("ชื่อร้าน","Shop name")}</span><input class="inp" id="sN" value="${esc(t.shop||"")}"/></label>
     <label class="fld"><span>${T("ความถนัด / เครื่องมือ","Expertise / tools")}</span><textarea class="inp" id="sA">${esc(t.about||"")}</textarea></label>
     <div class="two"><label class="fld"><span>${T("ราคาเริ่มต้น","Starting price")}</span><input class="inp" id="sF" type="number" value="${t.from||""}"/></label><label class="fld"><span>${T("รับประกัน (วัน)","Warranty (days)")}</span><input class="inp" id="sW" type="number" value="${t.warranty||""}"/></label></div>

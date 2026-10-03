@@ -1176,6 +1176,36 @@ body{background:var(--bg);letter-spacing:-.005em}
 .lx-jobs em{position:absolute;top:-3px;right:-3px;min-width:19px;height:19px;padding:0 5px;border-radius:999px;display:grid;place-items:center;
   font:700 11px/1 var(--kb);font-style:normal;color:#fff;background:var(--co);border:2px solid var(--bg)}
 
+
+/* โพสต์ของช่าง */
+.lx-gigs{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+@media(max-width:560px){.lx-gigs{grid-template-columns:repeat(2,1fr);gap:10px}}
+.lx-gc{display:flex;flex-direction:column;padding:0;text-align:left;border-radius:16px;overflow:hidden;cursor:pointer;color:var(--ink);background:var(--surface);border:1px solid var(--line);
+  animation:pcIn .7s cubic-bezier(.22,.61,.12,1) backwards;transition:transform .4s cubic-bezier(.32,.72,0,1),border-color .25s}
+.lx-gc:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--co) 50%,var(--line))}
+.lx-gcv{position:relative;display:block;aspect-ratio:4/3;background:radial-gradient(120% 120% at 85% 0%,var(--co-soft),transparent 60%),var(--surface-2) center/cover}
+.lx-gk,.lx-gn{position:absolute;top:8px;font-style:normal;font:600 11px var(--kb);padding:4px 8px;border-radius:999px;color:#fff;background:rgba(9,9,11,.55);backdrop-filter:blur(8px)}
+.lx-gk{left:8px}.lx-gn{right:8px;display:flex;gap:4px;align-items:center}
+.lx-gcb{display:flex;flex-direction:column;gap:6px;padding:10px 12px 12px;flex:1}
+.lx-gcb>b{font:600 14px/1.4 var(--kb);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.lx-gcs{display:flex;align-items:center;gap:6px;min-width:0}.lx-gcs small{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lx-pav.sm{width:22px;height:22px;margin:0;border-width:0;font-size:10px}
+.lx-gp{font:700 15px var(--kd);color:var(--ink)}.lx-gr{font-size:12px;color:var(--muted)}
+.lx-gd{margin:0 -16px}
+.lx-gph{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 16px;scrollbar-width:none}
+.lx-gph img{flex:none;width:min(88%,560px);aspect-ratio:4/3;object-fit:cover;border-radius:16px;scroll-snap-align:start;cursor:zoom-in}
+.lx-gph0{width:100%;aspect-ratio:21/8;border-radius:16px;background:radial-gradient(120% 140% at 85% 0%,var(--co-soft),transparent 60%),var(--surface-2)}
+.lx-gdb{padding:16px}
+.lx-gdb h1{margin:4px 0 6px;font:700 clamp(20px,3vw,28px)/1.25 var(--kd)}
+.lx-gdp{margin:0 0 10px;font:700 22px var(--kd);color:var(--co)}
+.lx-gdt{white-space:pre-wrap;line-height:1.75;font-size:15px;margin:0 0 14px}
+/* เวลาทำการรายวัน */
+.wk{display:grid;gap:6px}
+.wkr{display:grid;grid-template-columns:46px 26px 1fr 12px 1fr;align-items:center;gap:6px}
+.wkr .inp{height:38px;padding:0 8px}.wkr span{text-align:center;color:var(--muted)}
+.lx-sw.sm i{width:38px;height:22px;margin:0}.lx-sw.sm i::after{width:16px;height:16px}.lx-sw.sm input:checked+i::after{transform:translateX(16px)}
+.lx-sw.sm input{width:38px;height:22px;bottom:auto;top:0}
+.seg.wrap{flex-wrap:wrap}
 </style>
 <style id="navcss">
 /* navbar เดิม ยกมาจากหน้าอื่นทั้งชุด */
@@ -1395,7 +1425,7 @@ html[data-theme="light"] .mnav,html[data-theme="plant"] .mnav{
   <!-- หมวดช่าง: แถวไอคอน 3D (ใส่รูปที่ img/cat/<หมวด>.png ได้เลย ไม่มีรูปใช้ไอคอนสีแทน) · กดแล้วเข้าหน้าหมวด -->
   <nav class="lx-rail nt" id="hRail" aria-label="หมวดช่าง"></nav>
   <section class="lx-sec">
-    <div class="lx-sh"><h2>ช่างแนะนำ<span id="sugN"></span></h2><button class="lx-link" id="sugAll" type="button">ดูทั้งหมด <i class="ti ti-arrow-right"></i></button></div>
+    <div class="lx-sh"><h2>บริการและผลงานจากช่าง<span id="sugN"></span></h2><button class="lx-link" id="sugAll" type="button">ดูร้านทั้งหมด <i class="ti ti-arrow-right"></i></button></div>
     <div class="lx-cards" id="sugList"></div>
   </section>
   <div class="left">
@@ -1447,6 +1477,7 @@ html[data-theme="light"] .mnav,html[data-theme="plant"] .mnav{
     <button data-t2="find" class="on"><i class="ti ti-radar-2"></i><span data-t="หางาน|Find work">หางาน</span><i class="bdg" id="findDot" hidden></i></button>
     <button data-t2="queue"><i class="ti ti-list-check"></i><span data-t="คิวงาน|Queue">คิวงาน</span><i class="bdg" id="queueDot" hidden></i></button>
     <button data-t2="shop"><i class="ti ti-building-store"></i><span data-t="ร้านของฉัน|My shop">ร้านของฉัน</span></button>
+    <button data-t2="posts"><i class="ti ti-photo-plus"></i><span>โพสต์ของฉัน</span></button>
     <button data-t2="ai"><i class="ti ti-sparkles"></i><span data-t="AI แนะนำ|AI coach">AI แนะนำ</span></button>
   </div>
   <div id="dBody"></div>
@@ -1977,7 +2008,7 @@ function openRes(q,noHist){
 const URGENT_RE=/ด่วน|กลางทาง|สตาร์ทไม่ติด|ยางแบน|แบตหมด|ควัน|ไฟไหม้|เบรกไม่อยู่|ข้างทาง/;
 function pickTechs(cat,q){
   const urgent=URGENT_RE.test(q||"");
-  return TECHS.map(t=>({...t,dist:km(HERE,t)})).map(t=>{
+  return TECHS.filter(t=>!isMine(t)).map(t=>({...t,dist:km(HERE,t)})).map(t=>{
     const why=[];let sc=0;
     if(cat&&(t.cats||[]).includes(cat)){sc+=40;why.push(`ถนัดงาน${CAT[cat].th}`)}else if(cat)sc-=30;
     if(t.online){sc+=14;why.push("เปิดรับงานอยู่ตอนนี้")}
@@ -2100,6 +2131,85 @@ function drawJobsBtn(){
   const n=$("active")?$("active").querySelectorAll(".hs>*").length:0;
   b.hidden=!n;$("hJobsN").textContent=n>9?"9+":n||"";
 }
+/* ═══ โพสต์ของช่าง (บริการพร้อมราคา / ผลงาน) ═══ */
+let GIGS=null;
+async function loadGigs(){try{GIGS=(await api("/api/tech/gigs")).gigs||[]}catch(e){GIGS=GIGS||[]}drawHome()}
+function myCarText(){const cars=ls.get("spire_garage",[]),c=cars.find(x=>x.id===ls.get("spire_selCar",""))||cars[0];return c?[c.make,c.name,c.model].filter(Boolean).join(" ").toLowerCase():""}
+/* เรียง: ตรงกับรถของผู้ใช้ (ยี่ห้อที่ถนัด/ในข้อความ) ก่อน แล้วใกล้ แล้วใหม่ */
+function rankGigs(list){
+  const car=myCarText();
+  return list.map(g=>{const t=g.tech||{},d=km(HERE,t);let sc=0;
+    const brands=[...(g.brands||[]),...(t.brands2||[])].map(x=>x.toLowerCase());
+    if(car&&brands.some(b=>b&&car.includes(b)))sc+=50;
+    if(car&&(g.title+" "+g.body).toLowerCase().split(/\s+/).some(w=>w.length>2&&car.includes(w)))sc+=15;
+    if(d!=null)sc-=Math.min(40,d*1.5);
+    sc+=Math.max(0,10-(Date.now()-g.createdAt)/864e5);
+    if(g.kind==="package")sc+=3;
+    return {...g,dist:d,sc}}).sort((a,b)=>b.sc-a.sc);
+}
+function gigCard(g,i){
+  const t=g.tech||{},ph=(g.photos||[])[0],av=t.avatar;
+  return `<button class="lx-gc" data-g="${g.id}" style="animation-delay:${Math.min(i*50,500)}ms">
+    <span class="lx-gcv"${ph?` style="background-image:url('${img(ph)}')"`:""}>${g.kind==="work"?'<em class="lx-gk">ผลงาน</em>':""}${(g.photos||[]).length>1?`<em class="lx-gn"><i class="ti ti-photo"></i>${g.photos.length}</em>`:""}</span>
+    <span class="lx-gcb"><b class="nt">${esc(g.title)}</b>
+      <span class="lx-gcs"><span class="lx-pav sm"${av?` style="background-image:url('${img(av)}')"`:""}>${av?"":initial(t.shop||t.name)}</span><small class="nt">${esc(t.shop||t.name||"")}${g.dist!=null?" · "+distTxt(g.dist):""}${isMine(t)?' · <em class="mine-tag">ของคุณ</em>':""}</small></span>
+      ${g.kind==="package"?`<span class="lx-gp">฿${money(g.price)}</span>`:t.reviewCount?`<span class="lx-gr">★ ${Number(t.rating).toFixed(1)}</span>`:""}</span></button>`;
+}
+function openGig(id){
+  const g=(GIGS||[]).find(x=>x.id==id);if(!g)return;const t=g.tech||{},mine=isMine(t);
+  sheet({title:"",full:true,store:true,body:`<div class="lx-gd">
+    <div class="lx-gph">${(g.photos||[]).length?g.photos.map(p=>`<img src="${img(p)}" alt="" data-z="${img(p)}"/>`).join(""):'<div class="lx-gph0"></div>'}</div>
+    <div class="lx-gdb"><p class="lx-eyebrow">${g.kind==="package"?"บริการ":"ผลงาน"}${(g.cats||[]).map(c=>CAT[c]?" · "+CAT[c].th:"").join("")}</p>
+      <h1 class="nt">${esc(g.title)}</h1>${g.kind==="package"?`<p class="lx-gdp">฿${money(g.price)}</p>`:""}
+      ${g.body?`<p class="lx-gdt nt">${esc(g.body)}</p>`:""}
+      ${(g.brands||[]).length?`<div class="ch-chips">${g.brands.map(b=>`<span>${esc(b)}</span>`).join("")}</div>`:""}
+      <button class="lx-pkm" id="gShop"><span class="lx-pav"${t.avatar?` style="background-image:url('${img(t.avatar)}')"`:""}>${t.avatar?"":initial(t.shop||t.name)}</span><span><b class="nt">${esc(t.shop||t.name)}</b><small>${t.reviewCount?`★ ${Number(t.rating).toFixed(1)} (${t.reviewCount}) · `:""}ดูหน้าร้าน</small></span><i class="ti ti-chevron-right"></i></button>
+    </div></div>`,
+    foot:mine?`<button class="lx-gh" id="gDel"><i class="ti ti-trash"></i>ลบ</button><button class="lx-cta" id="gEdit" style="flex:1"><i class="ti ti-pencil"></i>แก้ไขโพสต์</button>`
+      :`${t.phone?`<a class="lx-gh lx-ic" href="tel:${esc(t.phone)}"><i class="ti ti-phone"></i></a>`:""}<button class="lx-cta" id="gBook" style="flex:1">${g.kind==="package"?`จองบริการนี้ · ฿${money(g.price)}`:"ขอราคางานแบบนี้"}</button>`,
+    mount(b){b.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z));$("gShop").onclick=()=>openTech(t.id);
+      if(mine){$("gEdit").onclick=()=>gigForm(g);$("gDel").onclick=e=>busy(e.currentTarget,async()=>{if(!confirm("ลบโพสต์นี้?"))return;await api("/api/tech/gig/delete",{body:{id:g.id}});closeSheet();toast("ลบแล้ว");loadGigs()})}
+      else $("gBook").onclick=()=>book(TECHS.find(x=>x.id===t.id)||t,(g.kind==="package"?"สนใจบริการ: ":"อยากได้งานแบบ: ")+g.title)}});
+}
+/* ฟอร์มโพสต์: เลือกแบบ · รูป · หัวข้อ · ราคา (เฉพาะบริการ) · รายละเอียด · หมวด · ยี่ห้อรถ */
+function gigForm(g){
+  g=g||{kind:"package",photos:[],cats:[],brands:[]};
+  const F2={kind:g.kind,keep:[...(g.photos||[])],add:[],cats:[...(g.cats||[])]};
+  sheet({push:true,full:true,title:g.id?"แก้ไขโพสต์":"โพสต์ใหม่",body:`
+    <div class="seg" id="gKind"><button type="button" data-v="package">บริการพร้อมราคา</button><button type="button" data-v="work">ผลงาน</button></div>
+    <p class="h4">รูป <small style="font-weight:400;color:var(--muted)">· ถ่ายเองได้เลย สูงสุด 8 รูป รูปแรกเป็นปก</small></p><div class="phg" id="gPh"></div><input type="file" id="gFile" accept="image/*" multiple hidden/>
+    <label class="fld"><span>หัวข้อ</span><input class="inp" id="gT" maxlength="100" value="${esc(g.title||"")}" placeholder="เช่น ล้างแอร์ครบชุด ถอดตู้ล้าง พร้อมเติมน้ำยา"/></label>
+    <label class="fld" id="gPriceF"><span>ราคา (บาท)</span><input class="inp" id="gP" type="number" inputmode="numeric" value="${g.price||""}" placeholder="1200"/></label>
+    <label class="fld"><span>รายละเอียด</span><textarea class="inp" id="gB" rows="5" placeholder="ทำอะไรบ้าง ใช้เวลากี่ชั่วโมง รับประกันกี่วัน">${esc(g.body||"")}</textarea></label>
+    <div class="fld"><span>หมวดงาน</span><div class="seg" id="gC">${["air","eng","tyre","ev","body"].map(k=>`<button type="button" data-v="${k}" class="${F2.cats.includes(k)?"on":""}">${CAT[k].th}</button>`).join("")}</div></div>
+    <label class="fld"><span>ยี่ห้อรถที่ถนัด (คั่นด้วย ,)</span><input class="inp" id="gBr" value="${esc((g.brands||[]).join(", "))}" placeholder="Toyota, Honda, BMW"/></label>
+    <p class="err" id="gErr"></p>`,
+    foot:`<button class="lx-cta" id="gSave" style="flex:1">${g.id?"บันทึก":"โพสต์เลย"}</button>`,
+    mount(){
+      const kind=()=>{$("gKind").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===F2.kind));$("gPriceF").hidden=F2.kind!=="package"};kind();
+      $("gKind").querySelectorAll("button").forEach(b=>b.onclick=()=>{F2.kind=b.dataset.v;kind()});
+      $("gC").querySelectorAll("button").forEach(b=>b.onclick=()=>b.classList.toggle("on"));
+      const draw=()=>{$("gPh").innerHTML=F2.keep.map((id,i)=>`<div class="doc"><img src="${img(id)}" alt=""/><button class="rm" data-k="${i}"><i class="ti ti-x"></i></button></div>`).join("")+F2.add.map((a,i)=>`<div class="doc"><img src="${a.data}" alt=""/><button class="rm" data-a="${i}"><i class="ti ti-x"></i></button></div>`).join("")+(F2.keep.length+F2.add.length<8?`<button class="doc" id="gAdd" type="button"><i class="ti ti-camera-plus"></i>เพิ่มรูป</button>`:"");
+        $("gPh").querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{F2.keep.splice(+b.dataset.k,1);draw()});
+        $("gPh").querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{F2.add.splice(+b.dataset.a,1);draw()});
+        if($("gAdd"))$("gAdd").onclick=()=>{$("gFile").value="";$("gFile").click()}};draw();
+      $("gFile").onchange=async()=>{for(const f of [...$("gFile").files].slice(0,8-F2.keep.length-F2.add.length)){try{F2.add.push({data:await shrink(f,1400)})}catch(e){}}draw()};
+      $("gSave").onclick=e=>busy(e.currentTarget,async()=>{
+        try{await api("/api/tech/gig",{body:{id:g.id,kind:F2.kind,title:$("gT").value,price:+$("gP").value||0,body:$("gB").value,
+          cats:[...$("gC").querySelectorAll(".on")].map(b=>b.dataset.v),brands:$("gBr").value.split(",").map(x=>x.trim()).filter(Boolean),keep:F2.keep,addPhotos:F2.add}})}
+        catch(err){$("gErr").textContent=err.message;throw err}
+        toast(g.id?"บันทึกแล้ว":"โพสต์แล้ว — ขึ้นหน้าแรกให้ลูกค้าเห็นแล้ว");closeSheet();await loadGigs();if(DT==="posts")tabPosts();
+      });
+    }});
+}
+async function tabPosts(){
+  const B=$("dBody");B.innerHTML=`<button class="lx-cta w" id="pNew" style="width:100%;margin-bottom:14px"><i class="ti ti-plus"></i>โพสต์บริการหรือผลงาน</button><div class="lx-cards" id="pList"><div class="skel"></div></div>`;
+  $("pNew").onclick=()=>gigForm();
+  let mine=[];try{mine=(await api("/api/tech/gigs?mine=1")).gigs||[]}catch(e){}
+  GIGS=[...(GIGS||[]).filter(g=>!mine.some(m=>m.id===g.id)),...mine];
+  $("pList").innerHTML=mine.length?mine.map(gigCard).join(""):`<div class="empty"><b>ยังไม่มีโพสต์</b>โพสต์บริการพร้อมราคา หรือรูปผลงาน แล้วจะขึ้นหน้าแรกให้ลูกค้าเห็น</div>`;
+  $("pList").querySelectorAll(".lx-gc").forEach(b=>b.onclick=()=>openGig(b.dataset.g));
+}
 function drawHome(){
   drawMyCar();if(!$("hQuick").childNodes.length)drawQuick();
   /* งานที่กำลังดำเนินอยู่ ขึ้นบนสุดของหน้าแรก */
@@ -2109,10 +2219,12 @@ function drawHome(){
   $("hRail").querySelectorAll("button").forEach(b=>b.onclick=()=>b.dataset.k==="map"?setView("map"):openCat(b.dataset.k));
   const host=$("sugList");
   if(!LOADED){host.innerHTML='<div class="skel"></div><div class="skel"></div><div class="skel"></div>';return}
-  const l=shown({cat:"all",q:""});
-  $("sugN").textContent=l.length?` · ${l.length} ร้าน`:"";
-  host.innerHTML=l.length?l.slice(0,innerWidth<640?6:9).map(profCard).join(""):`<div class="empty"><b>${SERVER===false?"เชื่อมต่อไม่ได้":"ยังไม่มีช่างในพื้นที่"}</b>${SERVER===false?"ลองใหม่อีกครั้ง":"กำลังรับสมัครช่าง"}</div>`;
-  wireCards(host);
+  if(GIGS===null){host.innerHTML='<div class="skel"></div><div class="skel"></div><div class="skel"></div>';if(!loadGigs.started){loadGigs.started=1;loadGigs()}return}
+  const l=rankGigs(GIGS);
+  $("sugN").textContent=l.length?` · ${l.length} โพสต์`:"";
+  host.className="lx-gigs";
+  host.innerHTML=l.length?l.slice(0,30).map(gigCard).join(""):`<div class="empty"><b>ยังไม่มีโพสต์จากช่าง</b>เมื่อช่างโพสต์บริการหรือผลงาน จะขึ้นที่นี่</div>`;
+  host.querySelectorAll(".lx-gc").forEach(b=>b.onclick=()=>openGig(b.dataset.g));
 }
 $("sugAll").onclick=()=>openCat("all");
 $("hJobs").onclick=()=>{try{jobs()}catch(e){}};
@@ -2129,6 +2241,8 @@ function openCat(k,noHist){
 function drawCat(){
   if($("vCat").hidden)return;
   const rc=RAIL.find(x=>x.id===CATK);let l=shown({cat:rc&&rc.base?rc.base:CATK,q:CATQ});
+  /* หมวดย่อย: ร้านที่ติ๊กหมวดย่อยนี้ขึ้นก่อน ร้านที่ยังไม่ได้ตั้งหมวดย่อยตามมา (ร้านที่ตั้งแล้วแต่ไม่ได้ติ๊ก ตัดออก) */
+  if(rc&&rc.base){l=l.filter(t=>!(t.subs||[]).length||t.subs.includes(rc.id)).sort((a,b)=>((b.subs||[]).includes(rc.id))-((a.subs||[]).includes(rc.id)))}
   if(CATSUB==="mobile")l=l.filter(t=>t.mobile);if(CATSUB==="urgent")l=l.filter(t=>t.urgent);if(CATSUB==="open")l=l.filter(t=>t.online);
   $("catN").textContent=LOADED?`${l.length} ร้าน${HERE?" · เรียงจากใกล้คุณ":""}`:"กำลังโหลด…";
   const sb=(RAIL.find(x=>x.id===CATK)||{}).base||CATK,sy=SYM[sb]||[];
@@ -2208,7 +2322,8 @@ const img=id=>`${API}/api/tech/img/${id}`;
 function storeHTML(t,mine){
   const d=mine?null:km(HERE,t),cover=t.cover,av=t.avatar;
   const pics=(t.photos||[]).filter(p=>p!==cover&&p!==av);
-  const info=[t.hours&&["ti-clock",esc(t.hours)],t.from&&["ti-cash",T("เริ่มต้น ฿","From ฿")+money(t.from)],t.radius&&["ti-radar-2",T(`รับงานในรัศมี ${t.radius} กม.`,`Serves within ${t.radius} km`)],t.area&&["ti-map-pin",esc(t.area)],t.warranty&&["ti-shield-check",T(`รับประกันงาน ${t.warranty} วัน`,`${t.warranty}-day warranty`)]].filter(Boolean);
+  const DN=["จ","อ","พ","พฤ","ศ","ส","อา"],wk=t.week&&t.week.some(w=>w.on)?t.week.map((w,i)=>w.on?`${DN[i]} ${w.open}–${w.close}`:"").filter(Boolean).join(" · "):"";
+  const info=[wk?["ti-clock",wk]:t.hours&&["ti-clock",esc(t.hours)],t.address&&["ti-building-store",esc(t.address)],t.line&&["ti-brand-line",`LINE: ${esc(t.line)}`],t.facebook&&["ti-brand-facebook",`<a href="${esc(/^https?:/.test(t.facebook)?t.facebook:"https://facebook.com/"+t.facebook)}" target="_blank" rel="noopener">Facebook</a>`],(t.brands2||[]).length&&["ti-car",`ถนัด: ${esc(t.brands2.join(", "))}`],t.from&&["ti-cash",T("เริ่มต้น ฿","From ฿")+money(t.from)],t.radius&&["ti-radar-2",T(`รับงานในรัศมี ${t.radius} กม.`,`Serves within ${t.radius} km`)],t.area&&["ti-map-pin",esc(t.area)],t.warranty&&["ti-shield-check",T(`รับประกันงาน ${t.warranty} วัน`,`${t.warranty}-day warranty`)]].filter(Boolean);
   const meta=[t.reviewCount?`<b>★ ${Number(t.rating).toFixed(1)}</b> ${T("จาก","from")} ${t.reviewCount} ${T("รีวิว","reviews")}`:T("ร้านใหม่","New shop"),`${t.jobs||0} ${T("งานสำเร็จ","jobs done")}`,d!=null?`${d} ${T("กม.","km")}`:""].filter(Boolean).join(" · ");
   const tel=!mine&&t.phone;
   return `<div class="ch">
@@ -2228,11 +2343,12 @@ function storeHTML(t,mine){
         </div>
       </div>
     </div>
-    <nav class="ch-tabs" role="tablist"><button class="on" data-ct="home">${T("หน้าแรก","Home")}</button><button data-ct="work">${T("ผลงาน","Work")}<em>${pics.length}</em></button><button data-ct="about">${T("เกี่ยวกับ","About")}</button></nav>
+    <nav class="ch-tabs" role="tablist"><button class="on" data-ct="home">${T("หน้าแรก","Home")}</button><button data-ct="gigs">${T("บริการ","Services")}<em>${(GIGS||[]).filter(g=>g.tech&&g.tech.id===t.id).length}</em></button><button data-ct="work">${T("ผลงาน","Work")}<em>${pics.length}</em></button><button data-ct="about">${T("เกี่ยวกับ","About")}</button></nav>
     <section class="ch-pane on" data-cp="home">
       <div class="ch-chips">${(t.cats||[]).map(c=>CAT[c]?`<span><i class="ti ${CAT[c].ic}"></i>${CAT[c].th}</span>`:"").join("")}${t.mobile?`<span><i class="ti ti-truck"></i>${T("มาถึงที่","On-site")}</span>`:""}${t.urgent?`<span><i class="ti ti-bolt"></i>${T("รับงานด่วน","Urgent")}</span>`:""}</div>
       ${pics.length?`<div class="ch-grid">${pics.slice(0,6).map(p=>`<img src="${img(p)}" alt="" loading="lazy" data-z="${img(p)}"/>`).join("")}</div>`:`<p class="ch-empty">${mine?T("ยังไม่มีรูปผลงาน — เพิ่มในแก้ไขร้าน ลูกค้าตัดสินใจจากรูปมากที่สุด","No work photos yet — add some in Edit shop"):T("ร้านนี้ยังไม่ได้ลงรูปผลงาน","No work photos yet")}</p>`}
     </section>
+    <section class="ch-pane" data-cp="gigs">${(()=>{const L=(GIGS||[]).filter(g=>g.tech&&g.tech.id===t.id);return L.length?`<div class="lx-gigs">${L.map(gigCard).join("")}</div>`:`<p class="ch-empty">${mine?"ยังไม่มีโพสต์ — โพสต์บริการได้ที่ Studio › โพสต์ของฉัน":"ร้านนี้ยังไม่ได้โพสต์บริการ"}</p>`})()}</section>
     <section class="ch-pane" data-cp="work">${pics.length?`<div class="ch-grid">${pics.map(p=>`<img src="${img(p)}" alt="" loading="lazy" data-z="${img(p)}"/>`).join("")}</div>`:`<p class="ch-empty">${T("ยังไม่มีรูปผลงาน","No work photos yet")}</p>`}</section>
     <section class="ch-pane" data-cp="about">
       ${t.about?`<p class="ch-about nt">${esc(t.about)}</p>`:""}
@@ -2252,6 +2368,7 @@ function openTech(id){
       b.querySelectorAll(".ch-tabs button").forEach(x=>x.onclick=()=>{
         b.querySelectorAll(".ch-tabs button").forEach(y=>y.classList.toggle("on",y===x));
         b.querySelectorAll(".ch-pane").forEach(p=>p.classList.toggle("on",p.dataset.cp===x.dataset.ct))});
+      b.querySelectorAll(".lx-gc").forEach(x=>x.onclick=()=>openGig(x.dataset.g));
       b.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z));
       if(mine){
         $("bEdit").onclick=()=>openShopEdit();
@@ -2365,6 +2482,7 @@ function contactForm(o){
 }
 function book(t,sym){
   if(!U)return needLogin();
+  if(isMine(t))return toast("นี่คือร้านของคุณ — ขอราคาร้านตัวเองไม่ได้");
   const reqId=crypto.randomUUID();
   const cf=contactForm({sym:sym??F.q,mobile:t.mobile});
   sheet({push:true,title:"ขอราคา · "+(t.shop||t.name),body:cf.html,
@@ -2393,7 +2511,7 @@ function openMulti(sym,cat){
   if(!U)return needLogin();
   let c=cat||catsOf(sym)[0]||"all";
   const draw=()=>{
-    const cand=shown({cat:c,q:""}).slice(0,8);
+    const cand=shown({cat:c,q:""}).filter(t=>!isMine(t)).slice(0,8);
     $("mList").innerHTML=cand.length?cand.map((t,i)=>`<label class="pick"><input type="checkbox" value="${esc(t.id)}" ${i<3?"checked":""}/><span class="av sq" style="--c1:${colorOf(t)}">${initial(t.shop||t.name)}</span><div><b>${esc(t.shop||t.name)}${t.test?' <span class="pill act">ทีมงาน</span>':""}</b><small>${t.reviewCount?"★ "+Number(t.rating).toFixed(1)+" · ":""}${t.dist!=null?distTxt(t.dist)+" · ":""}เริ่ม ฿${money(t.from)}</small></div></label>`).join("")
       :'<div class="empty"><b>ยังไม่มีช่างหมวดนี้</b>ลองเลือกหมวดอื่น</div>';
   };
@@ -2446,7 +2564,7 @@ async function urgentCall(){
   const QK=["สตาร์ทไม่ติด","แบตหมด","ยางแตก","เครื่องร้อนจัด","รถดับกลางทาง","กุญแจติดในรถ"];
   const cf=contactForm({urgent:true});
   const pickList=()=>{
-    let l=TECHS.filter(t=>t.mobile&&t.urgent);if(!l.length)l=TECHS.filter(t=>t.mobile);
+    const TS=TECHS.filter(t=>!isMine(t));let l=TS.filter(t=>t.mobile&&t.urgent);if(!l.length)l=TS.filter(t=>t.mobile);
     const at=cf.pos()||HERE;
     return l.map(t=>({...t,dist:km(at,t)})).filter(t=>t.dist==null||t.dist<=Math.max(t.radius||30,30)).sort((a,b)=>(a.dist??1e9)-(b.dist??1e9)).slice(0,3);
   };
@@ -3076,7 +3194,7 @@ function drawHead(t){
   $("dHead").innerHTML=`${WF}<span class="sq" style="--c1:${colorOf(t)};${ph?`background-image:url('${API}/api/tech/img/${ph}')`:""}">${ph?"":initial(t.shop||t.name)}</span>
     <div class="who2"><b>${esc(t.shop||t.name)}</b><small>${t.reviewCount?"★ "+Number(t.rating).toFixed(1)+" ("+t.reviewCount+") · ":""}${t.test?T("ร้านทีมงาน · เห็นเฉพาะทีมงาน","Staff shop · staff only"):T("พาร์ทเนอร์ Cendon","Cendon partner")}</small></div>
     <button class="ib" id="dStore" title="${T("ดูหน้าร้าน","View storefront")}" aria-label="${T("ดูหน้าร้าน","View storefront")}"><i class="ti ti-building-store"></i></button>
-    <button class="sw ${on?"on":""}" id="dOn" aria-pressed="${on}">${on?T("รับงาน","Online"):T("ปิดรับ","Offline")}<i class="k"></i></button>`;
+    <button class="sw ${on?"on":""}" id="dOn" aria-pressed="${on}" hidden>${on?T("รับงาน","Online"):T("ปิดรับ","Offline")}<i class="k"></i></button>`;
   $("dStore").onclick=()=>openTech(t.id);
   $("dOn").onclick=e=>busy(e.currentTarget,async()=>{
     const want=!(DSTATS&&DSTATS.online);unlockAudio();
@@ -3096,7 +3214,7 @@ function drawStats(){
 $("dTabs").querySelectorAll("button").forEach(b=>b.onclick=()=>{DT=b.dataset.t2;$("dTabs").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));drawTab()});
 function drawTab(){
   $("dTabs").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x.dataset.t2===DT));
-  ({find:tabFind,queue:tabQueue,shop:tabShop,ai:tabAi})[DT]();
+  ({find:tabFind,queue:tabQueue,shop:tabShop,ai:tabAi,posts:tabPosts})[DT]();
 }
 
 /* ── หางาน: รถเสียรอบตัว บนแผนที่ + รายการ ── */
@@ -3192,6 +3310,11 @@ function openShopEdit(){
     <div class="fld"><span>${T("บริการ","Options")}</span><div class="seg" id="sM"><button type="button" data-v="mobile" class="${t.mobile?"on":""}"><i class="ti ti-truck"></i>${T("ออกหน้างาน","On-site")}</button><button type="button" data-v="urgent" class="${t.urgent?"on":""}"><i class="ti ti-urgent"></i>${T("รับงานด่วน","Urgent jobs")}</button></div></div>
     <div class="two"><label class="fld"><span>${T("เบอร์โทรร้าน","Shop phone")}</span><input class="inp" id="sTel" type="tel" inputmode="tel" value="${esc(t.phone||"")}" placeholder="08x-xxx-xxxx"/></label>
       <label class="fld lx-sw"><span>${T("ให้ลูกค้าโทรหาได้เลย","Let customers call you")}</span><input type="checkbox" id="sShowTel" ${t.showPhone?"checked":""}/><i></i></label></div>
+    <div class="fld"><span>${T("หมวดย่อยที่รับ (ให้ลูกค้าค้นเจอแม่นขึ้น)","Specialties")}</span><div class="seg wrap" id="sSub">${RAIL.filter(r=>r.base).map(r=>`<button type="button" data-v="${r.id}" class="${(t.subs||[]).includes(r.id)?"on":""}">${r.th}</button>`).join("")}</div></div>
+    <label class="fld"><span>${T("ยี่ห้อรถที่ถนัด (คั่นด้วย ,)","Car brands")}</span><input class="inp" id="sBr" value="${esc((t.brands2||[]).join(", "))}" placeholder="Toyota, Honda, BMW, EV"/></label>
+    <div class="fld"><span>${T("เวลาทำการรายวัน","Opening hours")}</span><div class="wk" id="sWk">${["จ","อ","พ","พฤ","ศ","ส","อา"].map((d,i)=>{const w=(t.week||[])[i]||{on:i<6,open:"08:00",close:"18:00"};return `<div class="wkr"><label class="lx-sw sm"><input type="checkbox" ${w.on?"checked":""}/><i></i></label><b>${d}</b><input class="inp" type="time" value="${w.open}"/><span>–</span><input class="inp" type="time" value="${w.close}"/></div>`}).join("")}</div></div>
+    <div class="two"><label class="fld"><span>LINE ID</span><input class="inp" id="sLine" value="${esc(t.line||"")}" placeholder="@myshop"/></label><label class="fld"><span>Facebook</span><input class="inp" id="sFb" value="${esc(t.facebook||"")}" placeholder="ลิงก์เพจ"/></label></div>
+    <label class="fld"><span>${T("ที่อยู่ร้าน","Address")}</span><textarea class="inp" id="sAddr" rows="2">${esc(t.address||"")}</textarea></label>
     <button class="btn s w" id="sLoc" style="margin-bottom:12px"><i class="ti ti-map-pin"></i> ${T("ย้ายตำแหน่งร้าน","Move shop location")}</button>
     <p class="err" id="sErr"></p>
 `,foot:`<button class="btn p w" id="sSave">${T("บันทึกร้าน","Save shop")}</button>`,mount(){
@@ -3211,7 +3334,7 @@ function openShopEdit(){
     $("sAdd").onclick=()=>{$("sFile").value="";$("sFile").click()}};
   drawPh();
   $("sFile").onchange=async()=>{const f=$("sFile").files[0];if(!f)return;try{SHOPED.add.push({kind:"work",data:await shrink(f,1100)});drawPh()}catch(e){$("sErr").textContent=e.message}};
-  ["sC","sM"].forEach(id=>$(id).querySelectorAll("button").forEach(b=>b.onclick=()=>b.classList.toggle("on")));
+  ["sC","sM","sSub"].forEach(id=>$(id).querySelectorAll("button").forEach(b=>b.onclick=()=>b.classList.toggle("on")));
   if(SHOPED.snap){const sn=SHOPED.snap;Object.entries(sn.v).forEach(([k,v])=>$(k).value=v);
     ["sC","sM"].forEach(id=>$(id).querySelectorAll("button").forEach(b=>b.classList.toggle("on",sn.on.includes(id+":"+b.dataset.v))))}
   $("sLoc").onclick=()=>{
@@ -3224,7 +3347,10 @@ function openShopEdit(){
     try{await api("/api/tech/shop",{body:{shop:$("sN").value,about:$("sA").value,from:+$("sF").value||0,warranty:+$("sW").value||0,radius:+$("sR").value||0,hours:$("sH").value,
       cats:[...$("sC").querySelectorAll(".on")].map(b=>b.dataset.v),mobile:$("sM").querySelector('[data-v="mobile"]').classList.contains("on"),urgent:$("sM").querySelector('[data-v="urgent"]').classList.contains("on"),
       lat:SHOPED.lat,lng:SHOPED.lng,addPhotos:SHOPED.add,removePhotos:SHOPED.remove,
-      phone:$("sTel").value,showPhone:$("sShowTel").checked,...(SHOPED.newAvatar?{addAvatar:SHOPED.newAvatar}:{}),
+      phone:$("sTel").value,showPhone:$("sShowTel").checked,
+      subs:[...$("sSub").querySelectorAll(".on")].map(b=>b.dataset.v),brands2:$("sBr").value.split(",").map(x=>x.trim()).filter(Boolean),
+      week:[...$("sWk").querySelectorAll(".wkr")].map(r=>{const i=r.querySelectorAll("input");return {on:i[0].checked,open:i[1].value,close:i[2].value}}),
+      line:$("sLine").value,facebook:$("sFb").value,address:$("sAddr").value,...(SHOPED.newAvatar?{addAvatar:SHOPED.newAvatar}:{}),
       ...(SHOPED.newCover?{addCover:SHOPED.newCover}:{cover:SHOPED.remove.includes(SHOPED.cover)?0:(SHOPED.cover||0)})}})}
     catch(err){$("sErr").textContent=tr(err.message);throw err}
     toast(T("บันทึกร้านแล้ว","Shop saved"));await refreshMe();await load();closeSheet();if(DT==="shop")tabShop();drawHead(ME.technician);

@@ -1206,6 +1206,21 @@ body{background:var(--bg);letter-spacing:-.005em}
 .lx-sw.sm i{width:38px;height:22px;margin:0}.lx-sw.sm i::after{width:16px;height:16px}.lx-sw.sm input:checked+i::after{transform:translateX(16px)}
 .lx-sw.sm input{width:38px;height:22px;bottom:auto;top:0}
 .seg.wrap{flex-wrap:wrap}
+
+/* โพสต์เป็นรูปแนวตั้ง 9:16 */
+.lx-gcv{aspect-ratio:9/16!important}
+.lx-gph img{width:min(62vw,360px)!important;aspect-ratio:9/16!important}
+.lx-gph0{aspect-ratio:9/16!important;width:min(62vw,360px)!important}
+#gPh .doc{aspect-ratio:9/16;height:auto}
+/* หน้าครอป */
+.cr{position:fixed;inset:0;z-index:2147483600;display:flex;flex-direction:column;background:#09090B;color:#fff}
+.cr-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px}
+.cr-top b{font:600 15px var(--kb)}.cr-top .lx-gh{color:#fff;border-color:rgba(255,255,255,.2)}
+.cr-st{flex:1;display:grid;place-items:center;min-height:0;padding:8px}
+.cr-fr{position:relative;height:100%;max-height:78vh;aspect-ratio:9/16;max-width:92vw;overflow:hidden;border-radius:14px;touch-action:none;cursor:grab;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
+.cr-fr img{position:absolute;left:0;top:0;max-width:none;user-select:none;-webkit-user-drag:none;transform-origin:0 0}
+.cr-bt{display:flex;align-items:center;gap:12px;padding:14px 22px calc(18px + env(safe-area-inset-bottom))}
+.cr-bt input{flex:1;accent-color:var(--co)}
 </style>
 <style id="navcss">
 /* navbar เดิม ยกมาจากหน้าอื่นทั้งชุด */
@@ -2172,12 +2187,43 @@ function openGig(id){
       else $("gBook").onclick=()=>book(TECHS.find(x=>x.id===t.id)||t,(g.kind==="package"?"สนใจบริการ: ":"อยากได้งานแบบ: ")+g.title)}});
 }
 /* ฟอร์มโพสต์: เลือกแบบ · รูป · หัวข้อ · ราคา (เฉพาะบริการ) · รายละเอียด · หมวด · ยี่ห้อรถ */
+/* ครอปรูป 9:16 ในแอป: ลากเลื่อน · บีบนิ้ว/ล้อเมาส์/สไลเดอร์ซูม → JPEG 1080×1920 */
+function crop916(file){return new Promise(res=>{
+  const url=URL.createObjectURL(file),im=new Image();
+  im.onload=()=>{
+    const ov=document.createElement("div");ov.className="cr nt";
+    ov.innerHTML=`<div class="cr-top"><button type="button" class="lx-gh" data-x>ยกเลิก</button><b>ครอปรูป 9:16</b><button type="button" class="lx-cta" data-ok>ใช้รูปนี้</button></div>
+      <div class="cr-st"><div class="cr-fr"><img alt=""/></div></div>
+      <div class="cr-bt"><i class="ti ti-zoom-out"></i><input type="range" min="1" max="4" step="0.01" value="1"/><i class="ti ti-zoom-in"></i></div>`;
+    document.body.appendChild(ov);
+    const fr=ov.querySelector(".cr-fr"),pic=ov.querySelector("img"),rg=ov.querySelector("input");pic.src=url;
+    let W,H,base,z=1,x=0,y=0;
+    const fit=()=>{W=fr.clientWidth;H=fr.clientHeight;base=Math.max(W/im.width,H/im.height)};
+    const clamp=()=>{const w=im.width*base*z,h=im.height*base*z;x=Math.min(0,Math.max(W-w,x));y=Math.min(0,Math.max(H-h,y))};
+    const paint=()=>{clamp();pic.style.width=im.width*base*z+"px";pic.style.transform=`translate(${x}px,${y}px)`};
+    fit();x=(W-im.width*base)/2;y=(H-im.height*base)/2;paint();
+    const zoomTo=(nz,cx=W/2,cy=H/2)=>{nz=Math.max(1,Math.min(4,nz));x=cx-(cx-x)*nz/z;y=cy-(cy-y)*nz/z;z=nz;rg.value=z;paint()};
+    rg.oninput=()=>zoomTo(+rg.value);
+    fr.addEventListener("wheel",e=>{e.preventDefault();const r=fr.getBoundingClientRect();zoomTo(z*(e.deltaY<0?1.08:.92),e.clientX-r.left,e.clientY-r.top)},{passive:false});
+    const pts=new Map();let last=null,pd=0;
+    fr.onpointerdown=e=>{fr.setPointerCapture(e.pointerId);pts.set(e.pointerId,[e.clientX,e.clientY])};
+    fr.onpointermove=e=>{if(!pts.has(e.pointerId))return;const p0=pts.get(e.pointerId);pts.set(e.pointerId,[e.clientX,e.clientY]);
+      if(pts.size===2){const [a,b]=[...pts.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1]);if(pd){const r=fr.getBoundingClientRect();zoomTo(z*d/pd,(a[0]+b[0])/2-r.left,(a[1]+b[1])/2-r.top)}pd=d}
+      else{x+=e.clientX-p0[0];y+=e.clientY-p0[1];paint()}};
+    fr.onpointerup=fr.onpointercancel=e=>{pts.delete(e.pointerId);pd=0};
+    const done=v=>{ov.remove();URL.revokeObjectURL(url);res(v)};
+    ov.querySelector("[data-x]").onclick=()=>done(null);
+    ov.querySelector("[data-ok]").onclick=()=>{const c=document.createElement("canvas");c.width=1080;c.height=1920;
+      const k=im.width*base*z/im.width;c.getContext("2d").drawImage(im,-x/k,-y/k,W/k,H/k,0,0,1080,1920);done(c.toDataURL("image/jpeg",.86))};
+  };
+  im.onerror=()=>{URL.revokeObjectURL(url);res(null)};im.src=url;
+})}
 function gigForm(g){
   g=g||{kind:"package",photos:[],cats:[],brands:[]};
   const F2={kind:g.kind,keep:[...(g.photos||[])],add:[],cats:[...(g.cats||[])]};
   sheet({push:true,full:true,title:g.id?"แก้ไขโพสต์":"โพสต์ใหม่",body:`
     <div class="seg" id="gKind"><button type="button" data-v="package">บริการพร้อมราคา</button><button type="button" data-v="work">ผลงาน</button></div>
-    <p class="h4">รูป <small style="font-weight:400;color:var(--muted)">· ถ่ายเองได้เลย สูงสุด 8 รูป รูปแรกเป็นปก</small></p><div class="phg" id="gPh"></div><input type="file" id="gFile" accept="image/*" multiple hidden/>
+    <p class="h4">รูป <small style="font-weight:400;color:var(--muted)">· แนวตั้ง 9:16 ครอปในแอปได้ · สูงสุด 8 รูป รูปแรกเป็นปก</small></p><div class="phg" id="gPh"></div><input type="file" id="gFile" accept="image/*" multiple hidden/>
     <label class="fld"><span>หัวข้อ</span><input class="inp" id="gT" maxlength="100" value="${esc(g.title||"")}" placeholder="เช่น ล้างแอร์ครบชุด ถอดตู้ล้าง พร้อมเติมน้ำยา"/></label>
     <label class="fld" id="gPriceF"><span>ราคา (บาท)</span><input class="inp" id="gP" type="number" inputmode="numeric" value="${g.price||""}" placeholder="1200"/></label>
     <label class="fld"><span>รายละเอียด</span><textarea class="inp" id="gB" rows="5" placeholder="ทำอะไรบ้าง ใช้เวลากี่ชั่วโมง รับประกันกี่วัน">${esc(g.body||"")}</textarea></label>
@@ -2193,7 +2239,9 @@ function gigForm(g){
         $("gPh").querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{F2.keep.splice(+b.dataset.k,1);draw()});
         $("gPh").querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{F2.add.splice(+b.dataset.a,1);draw()});
         if($("gAdd"))$("gAdd").onclick=()=>{$("gFile").value="";$("gFile").click()}};draw();
-      $("gFile").onchange=async()=>{for(const f of [...$("gFile").files].slice(0,8-F2.keep.length-F2.add.length)){try{F2.add.push({data:await shrink(f,1400)})}catch(e){}}draw()};
+      /* ทุกรูปเป็น 9:16 — เลือกแล้วเข้าหน้าครอปทีละรูป (ลาก/บีบ/สไลด์ซูม) */
+      $("gFile").onchange=async()=>{const fs=[...$("gFile").files].slice(0,8-F2.keep.length-F2.add.length);
+        for(const f of fs){try{const d=await crop916(f);if(d)F2.add.push({data:d})}catch(e){}}draw()};
       $("gSave").onclick=e=>busy(e.currentTarget,async()=>{
         try{await api("/api/tech/gig",{body:{id:g.id,kind:F2.kind,title:$("gT").value,price:+$("gP").value||0,body:$("gB").value,
           cats:[...$("gC").querySelectorAll(".on")].map(b=>b.dataset.v),brands:$("gBr").value.split(",").map(x=>x.trim()).filter(Boolean),keep:F2.keep,addPhotos:F2.add}})}

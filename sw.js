@@ -4,7 +4,7 @@
    หน้าเว็บเป็นไฟล์เดียวที่เปลี่ยนบ่อย จึงใช้ network-first เสมอ
    ไม่งั้นผู้ใช้จะติดอยู่กับเวอร์ชันเก่าโดยไม่รู้ตัว
    ══════════════════════════════════════════════════════════════════ */
-const CACHE = 'cendon-v183-jobsalign';
+const CACHE = 'cendon-v184-cfpages';
 /* แต่ละหน้าเป็นไฟล์เดี่ยวที่สมบูรณ์ในตัว โหลดล่วงหน้าไว้ทั้งชุด
    การเปิด URL ของหน้าไหนตรง ๆ จึงไม่ต้องรอเน็ต */
 const SHELL = ['./', './fluid.js', './call-orb.png', './call-sounds.js?v=1', './index.html', './garage.html', './news.html',
@@ -42,6 +42,15 @@ self.addEventListener('fetch', (e) => {
       const fresh = isPage
         ? await fetch(req.url, { cache: 'reload', credentials: 'same-origin' })
         : await fetch(req);
+      /* Cloudflare Pages ตัด .html ออกเอง (/index.html → 308 → /)
+         คำตอบที่ผ่านการ redirect ส่งกลับให้การเปิดหน้า (navigate) ไม่ได้ — เบราว์เซอร์จะขึ้น ERR_FAILED
+         จึงห่อใหม่เป็นคำตอบธรรมดาก่อนส่ง */
+      if (fresh && fresh.redirected) {
+        const body = await fresh.blob();
+        const clean = new Response(body, { status: fresh.status, statusText: fresh.statusText, headers: fresh.headers });
+        if (clean.ok) { const c = await caches.open(CACHE); c.put(req, clean.clone()); }
+        return clean;
+      }
       if (fresh && fresh.ok) {
         const c = await caches.open(CACHE);
         c.put(req, fresh.clone());

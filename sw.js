@@ -4,7 +4,7 @@
    หน้าเว็บเป็นไฟล์เดียวที่เปลี่ยนบ่อย จึงใช้ network-first เสมอ
    ไม่งั้นผู้ใช้จะติดอยู่กับเวอร์ชันเก่าโดยไม่รู้ตัว
    ══════════════════════════════════════════════════════════════════ */
-const CACHE = 'cendon-v192-studio';
+const CACHE = 'cendon-v194-boot';
 /* แต่ละหน้าเป็นไฟล์เดี่ยวที่สมบูรณ์ในตัว โหลดล่วงหน้าไว้ทั้งชุด
    การเปิด URL ของหน้าไหนตรง ๆ จึงไม่ต้องรอเน็ต */
 const SHELL = ['./fluid.js', './crop.js', './call-orb.png', './call-sounds.js?v=1', './', './garage', './news',
@@ -39,9 +39,19 @@ self.addEventListener('fetch', (e) => {
   const isPage = req.mode === 'navigate' || /\.html$/.test(url.pathname);
   e.respondWith((async () => {
     try {
-      const fresh = isPage
-        ? await fetch(req.url, { cache: 'reload', credentials: 'same-origin' })
-        : await fetch(req);
+      const net = isPage
+        ? fetch(req.url, { cache: 'reload', credentials: 'same-origin' })
+        : fetch(req);
+      /* เน็ตมือถือค้าง (ส่งไม่ออก/ไม่ตอบ) เคยทำให้จอขาวหรือ splash ค้างไม่มีกำหนด
+         ถ้ามีของในแคชและเน็ตไม่ตอบใน 4 วินาที ใช้ของในแคชก่อน — เน็ตตอบทีหลังก็เก็บลงแคชไว้รอบหน้า */
+      const cached = await caches.match(req);
+      const fresh = cached
+        ? await Promise.race([net, new Promise((r) => setTimeout(() => r(null), 4000))])
+        : await net;
+      if (!fresh) {
+        e.waitUntil(net.then(async (r) => { if (r && r.ok && !r.redirected) (await caches.open(CACHE)).put(req, r.clone()); }).catch(() => {}));
+        return cached;
+      }
       /* Cloudflare Pages ตัด .html ออกเอง (/index.html → 308 → /)
          คำตอบที่ผ่านการ redirect ส่งกลับให้การเปิดหน้า (navigate) ไม่ได้ — เบราว์เซอร์จะขึ้น ERR_FAILED
          จึงห่อใหม่เป็นคำตอบธรรมดาก่อนส่ง */

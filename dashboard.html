@@ -6,7 +6,7 @@
 <title>Cendon — ผู้ช่วย AI ดูแลรถ</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css" media="print" onload="this.media='all'"/>
-<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css"/></noscript>
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css"></noscript></noscript>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chonburi&family=Charm:wght@400;700&family=Chakra+Petch:wght@400;600;700&family=Anuphan:wght@400;500;700&display=swap" media="print" onload="this.media='all'">
@@ -4578,8 +4578,12 @@ window.spireI18nCoverage=code=>{
 <div class="toast" id="toast"></div>
 
 <!-- defer: ตัวแปลภาษาเดินต่อได้เลย ไม่ต้องหยุดรอสองไฟล์นี้จากเซิร์ฟเวอร์ของ Google -->
-<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+/* โหลดระบบล็อกอิน (Firebase) แบบไม่บล็อกหน้า — เดิมใช้ defer ซึ่งทำให้หน้าต้องรอไฟล์จาก gstatic ก่อนเริ่มทำงาน
+   เน็ตมือถือช้าหรือ gstatic โดนบล็อก = จอขาว / splash ค้างทั้งแอป · สคริปต์ที่แทรกเองไม่บล็อก DOMContentLoaded
+   async=false ให้ไฟล์ auth รันหลังไฟล์ app ตามลำดับ */
+(function(){["https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js","https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"].forEach(function(u){var s=document.createElement("script");s.src=u;s.async=false;document.head.appendChild(s)})})();
+</script>
 <script>
 "use strict";
 const $=id=>document.getElementById(id);
@@ -4617,8 +4621,8 @@ let auth=null,useFb=false;
       }catch(e){console.warn("fb",e);auth=null;useFb=false}
       res(useFb);
     }
-    if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",go,{once:true});
-    else go();
+    /* รอไฟล์ Firebase มาถึง (โหลดแบบไม่บล็อกหน้าแล้ว) — 20 วินาทียังไม่มา ถือว่าใช้ล็อกอินไม่ได้ หน้ายังใช้งานต่อได้ */
+    var tries=0;(function wait(){if(window.firebase&&firebase.auth)return go();if(++tries>160){auth=null;useFb=false;return res(false)}setTimeout(wait,125)})();
   });
 })();
 let currentUser=LS.get("cachedUser",null),lang=LS.get("lang","th");

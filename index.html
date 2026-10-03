@@ -1207,20 +1207,23 @@ body{background:var(--bg);letter-spacing:-.005em}
 .lx-sw.sm input{width:38px;height:22px;bottom:auto;top:0}
 .seg.wrap{flex-wrap:wrap}
 
+/* การ์ดบริการ: หัว (ร้าน) · แบนเนอร์ · ท้าย (คะแนน / ราคา) */
+.lx-gch{display:flex;align-items:center;gap:8px;min-width:0;padding:10px 12px}
+.lx-gch .lx-pav{width:28px;height:28px;margin:0;border-width:0;font-size:12px;flex:none}
+.lx-gch b{font:600 13.5px/1.3 var(--kb);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lx-gch .mine-tag{flex:none;font-size:11px}
+.lx-gcf{display:flex;flex:1;flex-direction:column;gap:2px;padding:10px 12px 12px}
+.lx-gct{margin-bottom:4px;font:600 14px/1.4 var(--kb);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.lx-gcr{margin-top:auto}
+.lx-gcr{display:flex;align-items:center;gap:4px;min-width:0;font-size:13px;color:var(--muted);white-space:nowrap}
+.lx-gcr .ti{font-size:15px;color:#f5b301}.lx-gcr .ti-star{color:var(--faint,var(--muted))}
+.lx-gcr b{font-weight:600;color:var(--ink)}.lx-gcr small{font-size:12.5px;overflow:hidden;text-overflow:ellipsis}
+.lx-gcf .lx-gp{align-self:flex-end;font:700 16px var(--kd)}
 /* โพสต์เป็นรูปแนวนอน 16:9 (ขนาดเดียวกับ YouTube) */
 .lx-gcv{aspect-ratio:16/9!important}
 .lx-gph img{width:min(88%,640px)!important;aspect-ratio:16/9!important}
 .lx-gph0{aspect-ratio:16/9!important}
 #gPh .doc{aspect-ratio:16/9;height:auto}
-/* หน้าครอป */
-.cr{position:fixed;inset:0;z-index:2147483600;display:flex;flex-direction:column;background:#09090B;color:#fff}
-.cr-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px}
-.cr-top b{font:600 15px var(--kb)}.cr-top .lx-gh{color:#fff;border-color:rgba(255,255,255,.2)}
-.cr-st{flex:1;display:grid;place-items:center;min-height:0;padding:8px}
-.cr-fr{position:relative;width:92vw;max-width:900px;aspect-ratio:16/9;max-height:70vh;overflow:hidden;border-radius:14px;touch-action:none;cursor:grab;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
-.cr-fr img{position:absolute;left:0;top:0;max-width:none;user-select:none;-webkit-user-drag:none;transform-origin:0 0}
-.cr-bt{display:flex;align-items:center;gap:12px;padding:14px 22px calc(18px + env(safe-area-inset-bottom))}
-.cr-bt input{flex:1;accent-color:var(--co)}
 
 /* รูปที่ใส่ผ่าน style="background-image:url()" ต้องเต็มกรอบเสมอ
    (การ์ดที่พื้นหลังมีหลายชั้น พอแทนรูปเข้าไป ขนาดรูปจะกลายเป็นขนาดจริง เห็นแค่มุมเดียว) */
@@ -2184,13 +2187,17 @@ function rankGigs(list){
     sc+=Math.max(0,10-(Date.now()-g.createdAt)/864e5);
     return {...g,dist:d,sc}}).sort((a,b)=>b.sc-a.sc);
 }
+/* การ์ดบริการ: บน = รูปโปรไฟล์ + ชื่อร้าน · กลาง = แบนเนอร์ 16:9 · ล่าง = หัวข้อ → ดาว/คะแนน/จำนวนรีวิว (ซ้าย) → ราคา (ขวา) */
 function gigCard(g,i){
-  const t=g.tech||{},ph=(g.photos||[])[0],av=t.avatar;
+  const t=g.tech||{},ph=(g.photos||[])[0],av=t.avatar,n=t.reviewCount||0;
   return `<button class="lx-gc" data-g="${g.id}" style="animation-delay:${Math.min(i*50,500)}ms">
+    <span class="lx-gch"><span class="lx-pav"${av?` style="background-image:url('${img(av)}')"`:""}>${av?"":initial(t.shop||t.name)}</span><b class="nt">${esc(t.shop||t.name||"")}</b>${isMine(t)?'<em class="mine-tag">ของคุณ</em>':""}</span>
     <span class="lx-gcv"${ph?` style="background-image:url('${img(ph)}')"`:""}>${(g.photos||[]).length>1?`<em class="lx-gn"><i class="ti ti-photo"></i>${g.photos.length}</em>`:""}</span>
-    <span class="lx-gcb"><b class="nt">${esc(g.title)}</b>
-      <span class="lx-gcs"><span class="lx-pav sm"${av?` style="background-image:url('${img(av)}')"`:""}>${av?"":initial(t.shop||t.name)}</span><small class="nt">${esc(t.shop||t.name||"")}${g.dist!=null?" · "+distTxt(g.dist):""}${isMine(t)?' · <em class="mine-tag">ของคุณ</em>':""}</small></span>
-      <span class="lx-gp">฿${money(g.price)}${t.reviewCount?` <span class="lx-gr">· ★ ${Number(t.rating).toFixed(1)}</span>`:""}</span></span></button>`;
+    <span class="lx-gcf">
+      <b class="lx-gct nt">${esc(g.title)}</b>
+      <span class="lx-gcr">${n?`<i class="ti ti-star-filled"></i><b>${Number(t.rating).toFixed(1)}</b><small>(${n} รีวิว)</small>`:`<i class="ti ti-star"></i><small>ยังไม่มีรีวิว</small>`}</span>
+      <span class="lx-gp">฿${money(g.price)}</span>
+    </span></button>`;
 }
 function openGig(id){
   const g=(GIGS||[]).find(x=>x.id==id);if(!g)return;const t=g.tech||{},mine=isMine(t);
@@ -2209,37 +2216,7 @@ function openGig(id){
       else $("gBook").onclick=()=>book(TECHS.find(x=>x.id===t.id)||t,"สนใจบริการ: "+g.title)}});
 }
 /* ฟอร์มโพสต์บริการ: รูป · หัวข้อ · ราคา · รายละเอียด · หมวด · ยี่ห้อรถ (ร้านละไม่เกิน GIG_MAX รายการ) */
-/* ครอปรูป 16:9 ในแอป: ลากเลื่อน · บีบนิ้ว/ล้อเมาส์/สไลเดอร์ซูม → JPEG 1920×1080 */
-function crop169(file){return new Promise(res=>{
-  const url=URL.createObjectURL(file),im=new Image();
-  im.onload=()=>{
-    const ov=document.createElement("div");ov.className="cr nt";
-    ov.innerHTML=`<div class="cr-top"><button type="button" class="lx-gh" data-x>ยกเลิก</button><b>ครอปรูป 16:9</b><button type="button" class="lx-cta" data-ok>ใช้รูปนี้</button></div>
-      <div class="cr-st"><div class="cr-fr"><img alt=""/></div></div>
-      <div class="cr-bt"><i class="ti ti-zoom-out"></i><input type="range" min="1" max="4" step="0.01" value="1"/><i class="ti ti-zoom-in"></i></div>`;
-    document.body.appendChild(ov);
-    const fr=ov.querySelector(".cr-fr"),pic=ov.querySelector("img"),rg=ov.querySelector("input");pic.src=url;
-    let W,H,base,z=1,x=0,y=0;
-    const fit=()=>{W=fr.clientWidth;H=fr.clientHeight;base=Math.max(W/im.width,H/im.height)};
-    const clamp=()=>{const w=im.width*base*z,h=im.height*base*z;x=Math.min(0,Math.max(W-w,x));y=Math.min(0,Math.max(H-h,y))};
-    const paint=()=>{clamp();pic.style.width=im.width*base*z+"px";pic.style.transform=`translate(${x}px,${y}px)`};
-    fit();x=(W-im.width*base)/2;y=(H-im.height*base)/2;paint();
-    const zoomTo=(nz,cx=W/2,cy=H/2)=>{nz=Math.max(1,Math.min(4,nz));x=cx-(cx-x)*nz/z;y=cy-(cy-y)*nz/z;z=nz;rg.value=z;paint()};
-    rg.oninput=()=>zoomTo(+rg.value);
-    fr.addEventListener("wheel",e=>{e.preventDefault();const r=fr.getBoundingClientRect();zoomTo(z*(e.deltaY<0?1.08:.92),e.clientX-r.left,e.clientY-r.top)},{passive:false});
-    const pts=new Map();let last=null,pd=0;
-    fr.onpointerdown=e=>{fr.setPointerCapture(e.pointerId);pts.set(e.pointerId,[e.clientX,e.clientY])};
-    fr.onpointermove=e=>{if(!pts.has(e.pointerId))return;const p0=pts.get(e.pointerId);pts.set(e.pointerId,[e.clientX,e.clientY]);
-      if(pts.size===2){const [a,b]=[...pts.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1]);if(pd){const r=fr.getBoundingClientRect();zoomTo(z*d/pd,(a[0]+b[0])/2-r.left,(a[1]+b[1])/2-r.top)}pd=d}
-      else{x+=e.clientX-p0[0];y+=e.clientY-p0[1];paint()}};
-    fr.onpointerup=fr.onpointercancel=e=>{pts.delete(e.pointerId);pd=0};
-    const done=v=>{ov.remove();URL.revokeObjectURL(url);res(v)};
-    ov.querySelector("[data-x]").onclick=()=>done(null);
-    ov.querySelector("[data-ok]").onclick=()=>{const c=document.createElement("canvas");c.width=1920;c.height=1080;
-      const k=im.width*base*z/im.width;c.getContext("2d").drawImage(im,-x/k,-y/k,W/k,H/k,0,0,1920,1080);done(c.toDataURL("image/jpeg",.86))};
-  };
-  im.onerror=()=>{URL.revokeObjectURL(url);res(null)};im.src=url;
-})}
+const asData=f=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f)});
 const GIG_MAX=2;
 /* หลังโพสต์/แก้/ลบ: ถอยกลับหน้าก่อน แล้ววาดหน้าร้านหรือรายละเอียดโพสต์ใหม่ด้วยข้อมูลล่าสุด */
 async function afterGig(){
@@ -2255,7 +2232,7 @@ function gigForm(g){
   g=g||{photos:[],cats:[],brands:[]};
   const F2={keep:[...(g.photos||[])],add:[],cats:[...(g.cats||[])]};
   sheet({push:true,full:true,title:g.id?"แก้ไขโพสต์":"โพสต์ใหม่",body:`
-    <p class="h4">รูป <small style="font-weight:400;color:var(--muted)">· แนวนอน 16:9 ครอปในแอปได้ · ใส่ได้ไม่จำกัด รูปแรกเป็นปก</small></p><div class="phg" id="gPh"></div><input type="file" id="gFile" accept="image/*" multiple hidden/>
+    <p class="h4">รูป <small style="font-weight:400;color:var(--muted)">· แนวนอน 16:9 ครอปในแอปได้ · ใส่ได้ไม่จำกัด รูปแรกเป็นปก</small></p><div class="phg" id="gPh"></div><input type="file" id="gFile" accept="image/*" multiple hidden data-crop="16:9" data-crop-w="1920" data-crop-exact data-crop-title="ครอปรูป 16:9"/>
     <label class="fld"><span>หัวข้อ</span><input class="inp" id="gT" maxlength="100" value="${esc(g.title||"")}" placeholder="เช่น ล้างแอร์ครบชุด ถอดตู้ล้าง พร้อมเติมน้ำยา"/></label>
     <label class="fld"><span>ราคา (บาท)</span><input class="inp" id="gP" type="number" inputmode="numeric" value="${g.price||""}" placeholder="1200"/></label>
     <label class="fld"><span>รายละเอียด</span><textarea class="inp" id="gB" rows="5" placeholder="ทำอะไรบ้าง ใช้เวลากี่ชั่วโมง รับประกันกี่วัน">${esc(g.body||"")}</textarea></label>
@@ -2269,9 +2246,8 @@ function gigForm(g){
         $("gPh").querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{F2.keep.splice(+b.dataset.k,1);draw()});
         $("gPh").querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{F2.add.splice(+b.dataset.a,1);draw()});
         if($("gAdd"))$("gAdd").onclick=()=>{$("gFile").value="";$("gFile").click()}};draw();
-      /* ทุกรูปเป็น 16:9 — เลือกแล้วเข้าหน้าครอปทีละรูป (ลาก/บีบ/สไลด์ซูม) */
-      $("gFile").onchange=async()=>{const fs=[...$("gFile").files];
-        for(const f of fs){try{const d=await crop169(f);if(d)F2.add.push({data:d})}catch(e){}}draw()};
+      /* ทุกรูปเป็น 16:9 — crop.js ให้ครอปทีละรูปก่อนถึงตรงนี้ (data-crop บน input) */
+      $("gFile").onchange=async()=>{for(const f of [...$("gFile").files]){try{F2.add.push({data:await asData(f)})}catch(e){}}draw()};
       $("gSave").onclick=e=>busy(e.currentTarget,async()=>{
         try{
           const base={kind:"package",title:$("gT").value,price:+$("gP").value||0,body:$("gB").value,
@@ -2902,7 +2878,7 @@ function act(j,a,btn){
     foot:'<button class="btn p w" id="rGo">ส่งคะแนน</button>',mount(){$("rS").querySelectorAll("button").forEach(b=>b.onclick=()=>{r=+b.dataset.n;$("rS").querySelectorAll("button").forEach(x=>x.classList.toggle("on",+x.dataset.n<=r))});
       const draw=()=>{$("rPh").innerHTML=RP.map((d,i)=>`<div class="doc"><img src="${d}" alt=""/><button class="rm" data-i="${i}" type="button"><i class="ti ti-x"></i></button></div>`).join("")+(RP.length<4?`<button class="doc" id="rAdd" type="button"><i class="ti ti-camera-plus"></i>เพิ่มรูป</button>`:"");
         $("rPh").querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>{RP.splice(+b.dataset.i,1);draw()});
-        if($("rAdd"))$("rAdd").onclick=()=>{$("rFile").value="";$("rFile").click()}};draw();
+        if($("rAdd"))$("rAdd").onclick=()=>{$("rFile").value="";$("rFile").dataset.cropMax=4-RP.length;$("rFile").click()}};draw();
       $("rFile").onchange=async()=>{for(const f of [...$("rFile").files].slice(0,4-RP.length)){try{RP.push(await shrink(f,1600))}catch(e){$("rErr").textContent=e.message}}draw()};
       $("rGo").onclick=e=>change(j,"review",{rating:r,note:$("rT").value.trim(),photos:RP.map(d=>({data:d}))},e.currentTarget)}});}
   const T={done:["สรุปงานที่ทำ","เช่น เปลี่ยนโอริง เติมน้ำยา 600 กรัม"],cancel:["เหตุผลที่ยกเลิก","เช่น ติดธุระ ขอเลื่อน"],dispute:["เกิดปัญหาอะไร","เล่าสิ่งที่เกิดขึ้น ทีมงานจะติดต่อกลับ"],resolve:["ผลการช่วยเหลือ","สรุปว่าแก้อย่างไร"]}[a];
@@ -3408,9 +3384,9 @@ function openShopEdit(){
   SHOPED={add:[],remove:[],lat:t.lat,lng:t.lng,cover:t.cover||null,newCover:null};
   sheet({title:T("แก้ไขร้าน","Edit shop"),full:true,push:true,body:`
     <p class="h4" style="margin-top:0">${T("รูปโปรไฟล์ร้าน","Shop profile photo")}</p>
-    <div class="ed-av"><span class="ch-av" id="sAv">${initial(t.shop||t.name)}</span><div><button class="lx-gh" id="sAvB" type="button"><i class="ti ti-camera"></i> ${T("เปลี่ยนรูปโปรไฟล์","Change photo")}</button><small>${T("แนะนำโลโก้ร้านหรือรูปหน้าร้าน","Your logo or storefront")}</small></div></div><input type="file" id="sAvF" accept="image/*" hidden/>
+    <div class="ed-av"><span class="ch-av" id="sAv">${initial(t.shop||t.name)}</span><div><button class="lx-gh" id="sAvB" type="button"><i class="ti ti-camera"></i> ${T("เปลี่ยนรูปโปรไฟล์","Change photo")}</button><small>${T("แนะนำโลโก้ร้านหรือรูปหน้าร้าน","Your logo or storefront")}</small></div></div><input type="file" id="sAvF" accept="image/*" hidden data-crop="1:1" data-crop-round data-crop-w="640" data-crop-title="${T("รูปโปรไฟล์ร้าน","Shop photo")}"/>
     <p class="h4">${T("รูปปก (แบนเนอร์)","Cover banner")}</p>
-    <div class="sf-cover sf-ed" id="sCov" style="--c1:${colorOf(t)}"><button class="btn s" id="sCovB"><i class="ti ti-photo"></i> ${T("เปลี่ยนรูปปก","Change cover")}</button></div><input type="file" id="sCovF" accept="image/*" hidden/>
+    <div class="sf-cover sf-ed" id="sCov" style="--c1:${colorOf(t)}"><button class="btn s" id="sCovB"><i class="ti ti-photo"></i> ${T("เปลี่ยนรูปปก","Change cover")}</button></div><input type="file" id="sCovF" accept="image/*" hidden data-crop="3:1" data-crop-w="1800" data-crop-title="${T("รูปปกร้าน","Cover photo")}"/>
     <p class="h4">${T("รูปร้าน","Shop photos")} <small style="font-weight:400;color:var(--muted)">${T("· แตะ ★ เพื่อใช้เป็นปก","· tap ★ to use as cover")}</small></p><div class="phg" id="sPh"></div><input type="file" id="sFile" accept="image/*" hidden/>
     <label class="fld"><span>${T("ชื่อร้าน","Shop name")}</span><input class="inp" id="sN" value="${esc(t.shop||"")}"/></label>
     <label class="fld"><span>${T("ความถนัด / เครื่องมือ","Expertise / tools")}</span><textarea class="inp" id="sA">${esc(t.about||"")}</textarea></label>
@@ -3607,6 +3583,7 @@ async function pullCars(){
 <!-- แผงผู้ดูแลแบบลอย: โหลดทุกหน้า แต่แสดงเฉพาะผู้ดูแลที่เปิดไว้ในตั้งค่า -->
 <script src="cendon-admin.js" defer></script>
 <script src="fluid.js" defer></script>
+<script src="crop.js" defer></script>
 <script>
 /* ต่อ navbar เดิมเข้ากับหน้านี้: ตัวชี้แท็บ · เมนูโปรไฟล์ · ปุ่มเข้าสู่ระบบ · รูป/ตัวอักษรผู้ใช้ */
 (function(){

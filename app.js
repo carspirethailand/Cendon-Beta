@@ -5000,7 +5000,7 @@ function bulkBody(){
       <p class="lg-sub">${T(
         "ยิ่งประวัติครบ ระบบยิ่งเตือนได้ตรง และตอนขายรถเอกสารชุดนี้ทำให้ได้ราคาดีกว่า",
         "The fuller the history, the sharper the reminders — and it's what lifts the price when you sell")}</p>
-      <input type="file" id="blFiles" accept="image/*" multiple hidden>
+      <input type="file" id="blFiles" accept="image/*" multiple hidden data-crop-max="12">
       <div class="lg-acts">
         <button class="btn primary" id="blPick"><i class="ti ti-files"></i>${
           T("เลือกรูปใบเสร็จ","Choose receipt photos")}</button></div>

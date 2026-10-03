@@ -4,10 +4,10 @@
    หน้าเว็บเป็นไฟล์เดียวที่เปลี่ยนบ่อย จึงใช้ network-first เสมอ
    ไม่งั้นผู้ใช้จะติดอยู่กับเวอร์ชันเก่าโดยไม่รู้ตัว
    ══════════════════════════════════════════════════════════════════ */
-const CACHE = 'cendon-v189-svc';
+const CACHE = 'cendon-v190-crop';
 /* แต่ละหน้าเป็นไฟล์เดี่ยวที่สมบูรณ์ในตัว โหลดล่วงหน้าไว้ทั้งชุด
    การเปิด URL ของหน้าไหนตรง ๆ จึงไม่ต้องรอเน็ต */
-const SHELL = ['./fluid.js', './call-orb.png', './call-sounds.js?v=1', './', './garage', './news',
+const SHELL = ['./fluid.js', './crop.js', './call-orb.png', './call-sounds.js?v=1', './', './garage', './news',
   './spares', './profile', './chat',
   './about', './help', './terms', './privacy',
   './plan', './handbook',

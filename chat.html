@@ -7,7 +7,7 @@
 <title>Cendon — AI Assistant</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css" media="print" onload="this.media='all'"/>
-<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css"/></noscript>
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css"></noscript></noscript>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
 <style>
@@ -165,6 +165,9 @@ body[data-phase="thread"] .meteor{display:none}
 .warp.done .warp-core{transform:scale(1.14);opacity:0}
 /* หน้ารอสถานะล็อกอินเดิม (กล่องโลโก้ + กำลังตรวจสอบ...) ไม่แสดงแล้ว — หน้าโหลดค้างไว้แทนจนรู้ผล */
 #v-login .pane-inner{visibility:hidden}
+html.pre-enter body>*{opacity:0}
+/* ระหว่างรอเช็กล็อกอิน (รีเฟรช/ไม่มีหน้าโหลด) ไม่โชว์แสงฟุ้งของหน้าแรกค้างบนจอเปล่า */
+body[data-phase="login"] .w-aura,body[data-phase="login"] .w-sweep,body[data-phase="login"] .stage{display:none!important}
 @keyframes corePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
 @media(prefers-reduced-motion:reduce){.warp{display:none}}
 
@@ -501,6 +504,10 @@ body[data-phase="thread"] .composer{display:block;animation:compIn .5s cubic-bez
   background:var(--c-grad);color:#fff;font-weight:700;font-size:14px;box-shadow:0 12px 26px -10px var(--c-acc);transition:.2s}
 .hist-new:hover{transform:translateY(-2px)}
 
+.side-tech{color:var(--c-acc,#E8743C)!important;font-weight:600}
+.side-tech .ti{color:#fff!important;background:linear-gradient(160deg,#F0894F,#D95E3C);border-radius:8px;padding:3px}
+.side-l.hot{color:var(--c-acc,#E8743C);font-weight:600}
+.side-l.hot .ti{color:#fff;background:linear-gradient(160deg,#F0894F,#D95E3C);border-radius:8px;padding:3px;box-shadow:0 4px 12px -4px rgba(217,94,60,.7)}
 /* ===== LIVE CALL — "Hearth" อบอุ่นเหมือนนั่งคุยข้างกองไฟ: ลูกไฟของ Cendon + ระลอกเสียงผู้ใช้ ===== */
 .hearth{position:fixed;inset:0;z-index:320;display:none;flex-direction:column;align-items:center;overflow:hidden;color:#fff4e8;
   padding:calc(14px + env(safe-area-inset-top)) 16px calc(22px + env(safe-area-inset-bottom));
@@ -1960,7 +1967,7 @@ html.lg-lock,body.lg-lock{overflow:hidden}
   -webkit-overflow-scrolling:touch}
 
 /* ══ อะตอมของเว็บหลักที่ ledger ใช้แต่ห้องแชตไม่มี ══
-   ปุ่ม ช่องกรอก และหัวเรื่อง คัดมาจาก index.html ตรง ๆ เพื่อให้หน้าตาตรงกัน
+   ปุ่ม ช่องกรอก และหัวเรื่อง คัดมาจาก / ตรง ๆ เพื่อให้หน้าตาตรงกัน
    ขังไว้ใต้ .lg-host ทั้งหมด จะได้ไม่ไปชนสไตล์ของห้องแชตที่ใช้ชื่อเดียวกัน */
 .lg-host .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;
   border-radius:14px;font-weight:600;font-size:14px;transition:.15s;cursor:pointer;
@@ -1987,7 +1994,7 @@ html.lg-lock,body.lg-lock{overflow:hidden}
 @media(max-width:560px){.lg-host .grid2{grid-template-columns:1fr}}
 
 /* ══ เมนูปุ่มบวก ══
-   เดิมปุ่มนี้เด้งออกไป index.html ทั้งที่เครื่องมืออยู่ในห้องแชตได้แล้ว */
+   เดิมปุ่มนี้เด้งออกไป / ทั้งที่เครื่องมืออยู่ในห้องแชตได้แล้ว */
 .pl-veil{position:fixed;inset:0;z-index:150;background:rgba(3,6,12,.5);
   opacity:0;transition:opacity .18s;backdrop-filter:blur(2px)}
 .pl-veil.on{opacity:1}
@@ -3032,14 +3039,14 @@ input,select,textarea,.input,.odo-i{
      eagerness moderate คือเริ่มเตรียมตอนเมาส์ค้างหรือแตะค้าง ไม่ใช่เตรียมทุกลิงก์ทิ้งไว้
      ตัวไหนไม่รองรับ speculation rules จะตกไปใช้ prefetch ข้างล่างแทน -->
 <script type="speculationrules">
-{"prerender":[{"where":{"href_matches":"/*.html"},"eagerness":"moderate"}],
- "prefetch":[{"where":{"href_matches":"/*.html"},"eagerness":"conservative"}]}
+{"prerender":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}],
+ "prefetch":[{"where":{"href_matches":"/*"},"eagerness":"conservative"}]}
 </script>
-<link rel="prefetch" href="./index.html">
-<link rel="prefetch" href="./garage.html">
-<link rel="prefetch" href="./spares.html">
-<link rel="prefetch" href="./news.html">
-<link rel="prefetch" href="./profile.html">
+<link rel="prefetch" href="/">
+<link rel="prefetch" href="/garage">
+<link rel="prefetch" href="/spares">
+<link rel="prefetch" href="/news">
+<link rel="prefetch" href="/profile">
 <script id="perfraf">
 /* ══════════════════════════════════════════════════════════════════
    ตัวคุมจังหวะการวาดของ canvas
@@ -3155,7 +3162,7 @@ html[data-idle="1"] *{animation-play-state:paused!important}
     transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
 </style>
-<!-- คลังช่าง ใช้ร่วมกับหน้า tech.html และหน้าหลัก
+<!-- คลังช่าง ใช้ร่วมกับหน้า /tech และหน้าหลัก
      โหลดตรงนี้เพื่อให้ AI หยิบข้อมูลช่างชุดเดียวกับที่ผู้ใช้เห็นบนหน้าเว็บ -->
 <script src="call-sounds.js?v=1" defer></script>
 <script src="./techs.js"></script>
@@ -4048,7 +4055,7 @@ function stepHTML(){
           ?`<img src="${esc(ph)}" referrerpolicy="no-referrer">`
           :esc((nm||"?").charAt(0).toUpperCase())}</span>
         <div><button id="suPicBtn">${L("เลือกรูป","Choose a photo")}</button>
-        <input type="file" id="suPicFile" accept="image/*" hidden></div>
+        <input type="file" id="suPicFile" accept="image/*" hidden data-crop="1:1" data-crop-round data-crop-w="512"></div>
       </div>
       <div class="su-f"><input class="su-i" id="suNick" type="text"
         value="${esc(nm)}" placeholder="${L("ชื่อเล่นหรือชื่อจริง","Nickname or full name")}"></div>`;
@@ -4462,7 +4469,17 @@ window.spireSetupVersion=SETUP_VERSION;
 
 
 <!-- WARP INTRO -->
-<div class="warp" id="warp" style="background:#0b0a0a"><script>try{if(JSON.parse(localStorage.getItem("spire_theme"))==="light")document.getElementById("warp").style.background="#f4f1ea"}catch(e){}</script>
+<div class="warp" id="warp" style="background:#0b0a0a"><script>try{if(JSON.parse(localStorage.getItem("spire_theme"))==="light")document.getElementById("warp").style.background="#f4f1ea"}catch(e){}</script><script>
+/* หน้าโหลดแสดงเฉพาะตอนมาจากหน้าหลักเท่านั้น — รีเฟรช/เปิดตรง/มาจากหน้าอื่น เข้าหน้าแชทเลย */
+(function(){try{
+  const nav=(performance.getEntriesByType("navigation")[0]||{}).type;
+  let fromHome=false;
+  if(document.referrer){const r=new URL(document.referrer);fromHome=r.origin===location.origin&&/(^|\/)(index\.html)?$/.test(r.pathname)}
+  if(nav==="reload"||!fromHome){const w=document.getElementById("warp");if(w)w.remove();
+    /* ไม่มีหน้าโหลด: ซ่อนเนื้อหาไว้ก่อน แล้วค่อยไหลขึ้นแบบเดียวกับหลังหน้าโหลด */
+    if(!matchMedia("(prefers-reduced-motion:reduce)").matches)document.documentElement.classList.add("pre-enter")}
+}catch(e){}})();
+</script>
   <div class="w-bar" aria-hidden="true"><i></i></div><div class="warp-core"><svg viewBox="-6.0 -6.0 94.8 112.0" aria-hidden="true"><defs><linearGradient id="wgrad" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#F5A05E"/><stop offset=".55" stop-color="#EE7C43"/><stop offset="1" stop-color="#D2512F"/></linearGradient><linearGradient id="wshine" x1="0" y1="0" x2="1" y2=".35"><stop offset=".35" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".75"/><stop offset=".65" stop-color="#fff" stop-opacity="0"/><animateTransform attributeName="gradientTransform" type="translate" from="-1.2 0" to="1.2 0" begin="0.95s" dur="0.75s" fill="freeze"/></linearGradient></defs><path fill="url(#wgrad)" d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/><path fill="url(#wshine)" d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z" style="mix-blend-mode:soft-light"/></svg></div>
 </div>
 
@@ -4688,8 +4705,12 @@ window.spireSetupVersion=SETUP_VERSION;
 <div class="toast" id="toast"></div>
 
 <!-- defer: ตัวแปลภาษาเดินต่อได้เลย ไม่ต้องหยุดรอสองไฟล์นี้จากเซิร์ฟเวอร์ของ Google -->
-<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+/* โหลดระบบล็อกอิน (Firebase) แบบไม่บล็อกหน้า — เดิมใช้ defer ซึ่งทำให้หน้าต้องรอไฟล์จาก gstatic ก่อนเริ่มทำงาน
+   เน็ตมือถือช้าหรือ gstatic โดนบล็อก = จอขาว / splash ค้างทั้งแอป · สคริปต์ที่แทรกเองไม่บล็อก DOMContentLoaded
+   async=false ให้ไฟล์ auth รันหลังไฟล์ app ตามลำดับ */
+(function(){["https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js","https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"].forEach(function(u){var s=document.createElement("script");s.src=u;s.async=false;document.head.appendChild(s)})})();
+</script>
 <script>
 /* มือถือ: แป้นพิมพ์เปิดเฉพาะตอนผู้ใช้แตะเอง — โค้ดส่วนไหนสั่ง focus ช่องพิมพ์เองโดยไม่มีการแตะนำ จะถูกข้าม */
 (function(){
@@ -4716,7 +4737,7 @@ const LS={
           try{window.cloudMark&&window.cloudMark(k)}catch(e){}}};
 window.LS=LS;
 
-/* ===== CONFIG (same as index.html — do not change) ===== */
+/* ===== CONFIG (same as / — do not change) ===== */
 const BACKEND_URL="https://spireonebackend.carspirethailand.workers.dev";
 
 /* ตัวช่วยแปลภาษาสำหรับสคริปต์ก้อนนี้
@@ -4846,8 +4867,8 @@ let auth=null,useFb=false,currentUser=LS.get("cachedUser",null),myRole="user",is
       }catch(e){console.warn("fb",e);auth=null;useFb=false}
       res(useFb);
     }
-    if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",go,{once:true});
-    else go();
+    /* รอไฟล์ Firebase มาถึง (โหลดแบบไม่บล็อกหน้าแล้ว) — 20 วินาทียังไม่มา ถือว่าใช้ล็อกอินไม่ได้ หน้ายังใช้งานต่อได้ */
+    var tries=0;(function wait(){if(window.firebase&&firebase.auth)return go();if(++tries>160){auth=null;useFb=false;return res(false)}setTimeout(wait,125)})();
   });
 })();
 /* ค่าตั้งต้นต้องมาจากตัวเลือกภาษาชุดกลาง ไม่ใช่ "th" ตายตัว
@@ -4856,7 +4877,7 @@ let lang=LS.get("lang",(["th","en","ja","zh","de","es"].indexOf((window.spireLan
 /* auth · currentUser · lang · BACKEND_URL ประกาศด้วย let/const ที่ระดับบนสุด
    ของสคริปต์ ซึ่งภาษาไม่เอาขึ้นไปไว้บน window เลเยอร์อื่น (หน้าเข้าสู่ระบบ
    และตัวช่วยตั้งค่า) จึงมองไม่เห็น แล้วขึ้นว่า "ระบบล็อกอินยังไม่พร้อม"
-   ตลอดกาล — เปิด getter ให้อ่านค่าจริงได้ เหมือนที่ index.html ทำไว้แล้ว */
+   ตลอดกาล — เปิด getter ให้อ่านค่าจริงได้ เหมือนที่ / ทำไว้แล้ว */
 
 /* ── ดึงช่างจากฐานข้อมูลตอนเปิดหน้า ──
    ในโค้ดไม่มีช่างตัวอย่างเหลืออยู่แล้ว ถ้าหน้านี้ไม่ดึงเอง
@@ -5401,7 +5422,7 @@ async function gemini(contents,opts){opts=opts||{};
 function gParse(t){if(!t)return null;let s=t.replace(/```json/gi,"").replace(/```/g,"").trim();const m=s.match(/[\[{][\s\S]*[\]}]/);if(m)s=m[0];try{return JSON.parse(s)}catch{return null}}
 const blobB64=b=>new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result.split(",")[1]);r.readAsDataURL(b)});
 
-/* ===== GARAGE (shared with index.html via localStorage) ===== */
+/* ===== GARAGE (shared with / via localStorage) ===== */
 function garage(){return LS.get("garage",[])}
 function saveGarage(g){LS.set("garage",g)}
 function selCar(){const id=LS.get("selCar","");return garage().find(c=>c.id===id)||null}
@@ -5819,7 +5840,7 @@ const sysPrompt=()=>`คุณคือ Cendon ผู้ช่วย AI ดู�
    มันจะไม่รู้ว่ามีใครอยู่ในระบบบ้าง แล้วจะแต่งชื่ออู่ขึ้นมาเอง
    ซึ่งอันตรายกว่าตอบว่าไม่รู้ — คนรถเสียอาจขับตามไปหาที่ที่ไม่มีอยู่จริง
 
-   รายชื่อนี้เป็นชุดเดียวกับที่หน้า tech.html ใช้ ผู้ใช้กดตามไปแล้วจึงเจอเสมอ */
+   รายชื่อนี้เป็นชุดเดียวกับที่หน้า /tech ใช้ ผู้ใช้กดตามไปแล้วจึงเจอเสมอ */
 function techPrompt(){
   try{
     if(!window.Techs)return"";
@@ -6495,7 +6516,7 @@ function markTheme(){
   document.querySelectorAll(".th-opt").forEach(b=>b.classList.toggle("sel",b.dataset.th===cur));
 }
 
-/* ===== LANGUAGE (shared with index.html via spire_lang) ===== */
+/* ===== LANGUAGE (shared with / via spire_lang) ===== */
 function setLang(l){
   lang=l;LS.set("lang",l);document.documentElement.lang=l;
   applyT();updateGreeting();renderCarUI();renderChips();updateHint();
@@ -6507,8 +6528,8 @@ function setLang(l){
 function markLang(){document.querySelectorAll(".lang-opt").forEach(b=>b.classList.toggle("sel",b.dataset.l===lang))}
 
 /* ===== NAVIGATION ===== */
-function goHome(){try{sessionStorage.setItem("spire_stayHome","1")}catch(e){}location.href="index.html"}
-function goGarage(){try{sessionStorage.setItem("spire_stayHome","1")}catch(e){}location.href="index.html?view=garage"}
+function goHome(){try{sessionStorage.setItem("spire_stayHome","1")}catch(e){}location.href="/"}
+function goGarage(){try{sessionStorage.setItem("spire_stayHome","1")}catch(e){}location.href="/garage"}
 
 /* ===== TOAST ===== */
 let tt;function toast(m,ic){const el=$("toast");el.innerHTML=`<i class="ti ${ic||"ti-check"}"></i>${esc(m)}`;el.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("show"),3200)}
@@ -6912,7 +6933,17 @@ function uiEnter(){
 }
 /* warp intro dismissal */
 (function(){
-  const w=$("warp");if(!w)return;
+  const w=$("warp");
+  if(!w){
+    /* เข้าแบบไม่มีหน้าโหลด (รีเฟรช/เปิดตรง): รอหน้าปลายทางนิ่ง แล้วให้ทุกอย่างไหลขึ้น */
+    const R=document.documentElement;if(!R.classList.contains("pre-enter"))return;
+    const t0=performance.now();let ph=document.body.dataset.phase,at=t0;
+    const tick=()=>{
+      if(document.body.dataset.phase!==ph){ph=document.body.dataset.phase;at=performance.now()}
+      const ok=document.querySelector(".su-card")||(ph!=="login"&&performance.now()-at>120)||performance.now()-t0>6000;
+      if(ok){R.classList.remove("pre-enter");uiEnter()}else setTimeout(tick,30);
+    };tick();return;
+  }
   if(matchMedia("(prefers-reduced-motion:reduce)").matches){w.remove();return}
   /* ของเดิมตั้งเวลาไว้ตายตัว 950ms แล้วค่อยจางอีก 600ms
      แปลว่าต่อให้หน้าพร้อมตั้งแต่ 200ms ผู้ใช้ก็ยังต้องนั่งดูโลโก้อีกวินาทีครึ่ง
@@ -6955,6 +6986,9 @@ let pendingEntry=null,entered=false;
                 q:q.get("q")};
   if(location.search)history.replaceState(null,"",location.pathname);
   if(useFb){setPhase("login")} // onAuthStateChanged will route us onward
+  /* เคยล็อกอินบนเครื่องนี้แล้ว + มีรถในเครื่อง → เข้าหน้าแชทเลยทันที ไม่ต้องรอ Firebase/หลังบ้าน (จอดำตอนรีเฟรช)
+     ถ้าตรวจแล้วจริงๆ หลุดล็อกอิน onAuthStateChanged จะพากลับหน้าเข้าสู่ระบบเอง */
+  if(useFb&&currentUser&&currentUser.uid&&garage().length){try{runEntry()}catch(e){}}
   else{
     // Firebase unavailable — cannot authenticate, show the gate with an error
     setPhase("login");
@@ -7005,7 +7039,9 @@ const MARK='<svg viewBox="-6.0 -6.0 94.8 112.0"><path d="M 79.33 0.29 Q 79.62 0.
 /* เมนูหลักของแอปอยู่บนสุดของลิ้นชัก ประวัติแชตอยู่ล่าง — โครงเดียวกับ Claude
    เดิมลิ้นชักมีแต่ประวัติแชต ทำให้ต้องกลับไปหน้าหลักทุกครั้งที่จะไปที่อื่น */
 const NAVI=[
-  {k:"tools",   ic:"ti-tool",           th:"เครื่องมือ",   en:"Tools"},
+  /* เมนูแรก: เรียกช่าง — เข้าแอปมาแล้วต้องรู้ทันทีว่าที่นี่หาช่างได้ ไม่ใช่แค่แชต AI */
+  {k:"techs",   ic:"ti-tool",           th:"เรียกช่าง",    en:"Find a mechanic", hot:1},
+  {k:"tools",   ic:"ti-category",       th:"เครื่องมือ",   en:"Tools"},
   {k:"garage",  ic:"ti-car-garage",     th:"การาจ",       en:"Garage"},
   {k:"spares",  ic:"ti-package",        th:"อะไหล่",      en:"Spares"},
   {k:"home",    ic:"ti-layout-dashboard",th:"หน้าหลัก",   en:"Dashboard"}
@@ -7016,10 +7052,11 @@ function goNav(k){
      ตัวเชื่อมเครื่องมือครอบ goNav ไว้อีกชั้นและดักคำนี้ก่อนถึงตรงนี้ */
   if(k==="tools"){ if(window.spireToolsMenu)window.spireToolsMenu(document.getElementById("wPlus")||document.body); return }
   /* ทุกหน้าแยกไฟล์แล้ว ลิงก์ตรงไปไฟล์นั้นได้เลย ไม่ต้องผ่าน index แล้วค่อยสลับ */
-  const F={home:"index.html",garage:"garage.html",magazine:"news.html",
-           news:"news.html",shop:"spares.html",spares:"spares.html",
-           profile:"profile.html"};
-  location.href=F[k]||"index.html";
+  if(k==="techs"){ location.href="/tech"; return }
+  const F={home:"/",garage:"/garage",magazine:"/news",
+           news:"/news",shop:"/spares",spares:"/spares",
+           profile:"/profile"};
+  location.href=F[k]||"/";
 }
 /* ตัวเชื่อมเครื่องมือครอบฟังก์ชันนี้เพื่อดัก "tools" ให้เปิดเมนูในห้องแชต
    จึงต้องยกขึ้น window และให้ทุกปุ่มเรียกผ่าน window.goNav ไม่ใช่ตัวในสโคป
@@ -7034,8 +7071,8 @@ function syncSideNav(){
   const nav=$("sideNav"); if(!nav)return;
   const ok=k=>{ try{ return !window.spireHasFeature||window.spireHasFeature(k) }
                catch(e){ return true } };
-  nav.innerHTML=NAVI.filter(n=>ok(n.k)).map(n=>
-    `<button class="side-l" data-nav="${n.k}">
+  nav.innerHTML=NAVI.filter(n=>n.k==="techs"||ok(n.k)).map(n=>
+    `<button class="side-l${n.hot?" hot":""}" data-nav="${n.k}">
       <i class="ti ${n.ic}"></i><span>${t(n.th,n.en)}</span>
       ${n.tag?`<em>${n.tag}</em>`:""}</button>`).join("");
   nav.querySelectorAll("[data-nav]").forEach(b=>b.onclick=()=>window.goNav(b.dataset.nav));
@@ -7076,6 +7113,8 @@ function wrap(){
     <button class="side-new" id="sideNew"><i class="ti ti-edit"></i><span></span></button>
     <!-- ทางกลับหน้าหลักต้องเห็นตลอด ไม่ใช่ซ่อนอยู่ในเมนูบัญชีอย่างเดียว -->
     <button class="side-new side-home" id="sideHome"><i class="ti ti-home"></i><span></span></button>
+    <!-- เรียกช่าง: ทางเข้าหน้าช่างที่เห็นตลอด ไม่ต้องรู้ว่าซ่อนอยู่ในเครื่องมือ -->
+    <button class="side-new side-tech" id="sideTech"><i class="ti ti-tool"></i><span>${t("เรียกช่าง","Find a mechanic")}</span></button>
     <div class="side-lbl" id="sideHistLbl"></div>
     <div class="side-list" id="sideList"></div>
     <div class="side-foot">
@@ -7188,6 +7227,7 @@ function wrap(){
   $("sideNew").onclick=()=>{if(window.newSession)window.newSession();closeSideIfDrawer()};
   $("sideAcct").onclick=acctMenu;
   $("sideHome").onclick=()=>window.goNav("home");
+  $("sideTech").onclick=()=>window.goNav("techs");
 }
 
 /* ── เมนูบัญชีผู้ใช้ (แบบเดียวกับเครื่องมือ AI ทั่วไป) ── */
@@ -7218,9 +7258,9 @@ function acctMenu(){
     try{ window.spireCloseSideIfDrawer&&window.spireCloseSideIfDrawer() }catch(err){}
     if(a==="out"){ try{window.firebase&&firebase.auth().signOut()}catch(err){}
       try{localStorage.removeItem("spire_cachedUser")}catch(err){}
-      location.href="index.html"; return }
+      location.href="/"; return }
     /* แพ็กเกจเป็นหน้าแยกแล้ว ส่ง from มาด้วยเพื่อให้ปุ่มกลับพากลับมาที่เดิม */
-    if(a==="plan"){ location.href="plan.html?from=chat.html"; return }
+    if(a==="plan"){ location.href="/plan?from=/chat"; return }
     if(a.indexOf("go:")===0){ window.goNav(a.slice(3)); return }
     openSettings(a==="set"?"general":a);
   };
@@ -7242,7 +7282,7 @@ const SETS=[
   {k:"chat",    ic:"ti-message-2-cog",th:"แชตบอท",      en:"Chat assistant"},
   {k:"acct",    ic:"ti-user",        th:"บัญชี",        en:"Account"},
   {k:"usage",   ic:"ti-gauge",       th:"โควตา",        en:"Usage & credits"},
-  /* แพ็กเกจย้ายไปเป็นหน้าของตัวเอง (plan.html) แล้ว
+  /* แพ็กเกจย้ายไปเป็นหน้าของตัวเอง (/plan) แล้ว
      หน้าขายของควรมีที่ทางของมันเอง ไม่ใช่ซ่อนอยู่ในแท็บของหน้าตั้งค่า
      ทางเข้าอยู่ที่เมนูบัญชี และปุ่มในแท็บโควตา */
   {k:"fb",      ic:"ti-message-report",th:"ส่งความเห็น",en:"Feedback"},
@@ -8614,7 +8654,7 @@ addEventListener("keydown",e=>{
   const h=$("lgHost"); if(h&&h.classList.contains("on"))closePane();
 });
 
-/* ─────────── ยึดปุ่มที่เคยเด้งออกไป index.html ───────────
+/* ─────────── ยึดปุ่มที่เคยเด้งออกไป / ───────────
    ปุ่มพวกนี้ถูกผูก onclick ไว้ตอนวาดหน้า จึงต้องมาทับเป็นระยะ
    ใช้ธง __lg กันผูกซ้ำ ไม่งั้นกดหนึ่งครั้งเมนูเปิดแล้วปิดทันที */
 function claim(){
@@ -8627,7 +8667,7 @@ function claim(){
     b.onclick=e=>{ e.preventDefault(); openMenu(b) };
   });
 }
-/* goNav("tools") เคยตั้ง location.href ไป index.html#tools — ตัดทางนั้นออก */
+/* goNav("tools") เคยตั้ง location.href ไป /#tools — ตัดทางนั้นออก */
 (function wrapNav(){
   const o=window.goNav;
   if(typeof o!=="function"){ setTimeout(wrapNav,200); return }
@@ -9000,7 +9040,7 @@ function bulkBody(){
       <p class="lg-sub">${T(
         "ยิ่งประวัติครบ ระบบยิ่งเตือนได้ตรง และตอนขายรถเอกสารชุดนี้ทำให้ได้ราคาดีกว่า",
         "The fuller the history, the sharper the reminders — and it's what lifts the price when you sell")}</p>
-      <input type="file" id="blFiles" accept="image/*" multiple hidden>
+      <input type="file" id="blFiles" accept="image/*" multiple hidden data-crop-max="12">
       <div class="lg-acts">
         <button class="btn primary" id="blPick"><i class="ti ti-files"></i>${
           T("เลือกรูปใบเสร็จ","Choose receipt photos")}</button></div>
@@ -11879,7 +11919,7 @@ const TABS=[
 
 function page(){
   try{ if(window.__SPIRE_PAGE__)return window.__SPIRE_PAGE__ }catch(e){}
-  const f=(location.pathname.split("/").pop()||"index.html").toLowerCase();
+  const f=(location.pathname.split("/").pop()||"/").toLowerCase();
   return ({"garage.html":"garage","news.html":"magazine","spares.html":"shop",
            "profile.html":"profile","chat.html":"chat"})[f]||"home";
 }
@@ -11926,15 +11966,15 @@ function mountNav(){
 }
 
 function go(k){
-  if(k==="chat"){ location.href="chat.html"; return }
+  if(k==="chat"){ location.href="/chat"; return }
   if(k==="account"){
     /* ยังไม่ได้เข้าระบบ → กดปุ่มเดิมของหน้า ซึ่งผูกกับ Firebase ไว้แล้ว */
     if(!signedIn()){ const b=$("signinBtn"); if(b){b.click();return} }
     k="profile";
   }
   try{ if(typeof window.switchView==="function"){window.switchView(k);return} }catch(e){}
-  const f=({home:"index.html",garage:"garage.html",magazine:"news.html",
-            shop:"spares.html",profile:"profile.html"})[k];
+  const f=({home:"/",garage:"/garage",magazine:"/news",
+            shop:"/spares",profile:"/profile"})[k];
   if(f)location.href=f;
 }
 
@@ -12089,13 +12129,13 @@ function tools(){
 function run(k){
   close();
   const f=FEATS.find(x=>x.k===k); if(!f)return;
-  if(k==="spares"){ try{window.switchView("shop")}catch(e){location.href="spares.html"} return }
+  if(k==="spares"){ try{window.switchView("shop")}catch(e){location.href="/spares"} return }
   if(k==="text"||k==="image"||k==="video"){
     try{ if(typeof window.openChat==="function"){window.openChat({attach:k});return} }catch(e){}
-    location.href="chat.html?attach="+encodeURIComponent(k); return;
+    location.href="/chat?attach="+encodeURIComponent(k); return;
   }
   try{ if(typeof window.openTool==="function"){window.openTool(k);return} }catch(e){}
-  location.href="chat.html?attach="+encodeURIComponent(k);
+  location.href="/chat?attach="+encodeURIComponent(k);
 }
 
 /* แผ่นเลื่อนขึ้น "เครื่องมือทั้งหมด" */
@@ -14252,5 +14292,6 @@ setTimeout(mount,800); setTimeout(mount,2500);
 <link rel="stylesheet" href="feature-ai.css?v=1">
 <script src="feature-ai.js?v=1"></script>
 <script src="fluid.js" defer></script>
+<script src="crop.js" defer></script>
 </body>
 </html>

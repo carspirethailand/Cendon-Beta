@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <!-- ซ่อนแพ็กเกจไว้ก่อนใน 1.0 (ยังไม่มีระบบรับเงินผ่าน Google Play Billing) — ใครเข้าลิงก์ตรงให้กลับหน้าก่อนหน้า -->
-<script>try{var f=new URLSearchParams(location.search).get("from");location.replace(f&&/^[a-z]+\.html$/.test(f)?f:"index.html")}catch(e){location.replace("index.html")}</script>
+<script>try{var f=new URLSearchParams(location.search).get("from");location.replace(f&&/^\/?[a-z]+(\.html)?$/.test(f)?"/"+f.replace(/^\//,"").replace(/\.html$/,""):"/")}catch(e){location.replace("/")}</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>แพ็กเกจ · Cendon</title>
@@ -14,8 +14,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <!-- Kanit ใช้ทั้งตัวไทยและตัวเลข หน้าอื่นในแอปโหลดตัวนี้อยู่แล้ว
      หน้านี้ไม่ได้โหลด ตัวเลขจึงตกไปใช้ฟอนต์ระบบซึ่งหน้าตาคนละเรื่องกับทั้งแอป -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.7.0/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap"></noscript>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.7.0/dist/tabler-icons.min.css" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.7.0/dist/tabler-icons.min.css"></noscript>
 
 <!-- ตั้งธีมก่อนวาดหน้า ไม่งั้นจะเห็นจอขาวแวบหนึ่งก่อนเปลี่ยนเป็นธีมมืด -->
 <script>(function(){try{
@@ -395,7 +395,7 @@ html[data-theme="light"] .tier::after,html[data-theme="plant"] .tier::after{
   <section class="pane" id="paneTop">
     <div class="pane-in">
       <div class="top">
-        <a class="back" href="./chat.html"><i class="ti ti-arrow-left"></i><span id="backTx">กลับ</span></a>
+        <a class="back" href="/chat"><i class="ti ti-arrow-left"></i><span id="backTx">กลับ</span></a>
       </div>
 
       <header class="head">
@@ -630,7 +630,7 @@ function wire(){
        ส่งเข้ากล่องความเห็นในแผงควบคุมด้วย (ไม่ได้ล็อกอินก็ข้ามไปเงียบ ๆ) */
     (async()=>{try{const u=window.firebase&&firebase.auth&&firebase.auth().currentUser;if(!u)return;
       await fetch(BACKEND_URL+"/api/feedback",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+await u.getIdToken()},
-        body:JSON.stringify({kind:"idea",page:"plan.html",message:"สนใจแพ็กเกจ "+b.dataset.plan+" (กดจากหน้าแพ็กเกจ รอเปิดขาย)"})})}catch(e){}})();
+        body:JSON.stringify({kind:"idea",page:"/plan",message:"สนใจแพ็กเกจ "+b.dataset.plan+" (กดจากหน้าแพ็กเกจ รอเปิดขาย)"})})}catch(e){}})();
   });
 }
 

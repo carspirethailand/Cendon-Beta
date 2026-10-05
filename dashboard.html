@@ -408,37 +408,6 @@ a{color:inherit;text-decoration:none}button{font-family:inherit;cursor:pointer;b
 
 /* ===== 3/4 WIREFRAME CARD BACKGROUNDS ===== */
 .gcard-wrap{position:relative;overflow:hidden}
-/* ── การ์ดรถแนวนอน ──
-   สามชิ้นเรียงจากซ้าย: ประเภทรถ · ชื่อรถ · ทางเข้าไปดูต่อ
-   ทั้งใบเป็นปุ่มเดียว จึงกดที่ไหนก็เข้าได้ ไม่ต้องเล็ง */
-.gdeck{
-  width:100%;display:flex;align-items:center;gap:13px;
-  padding:13px 14px;margin-bottom:10px;
-  border:1px solid var(--line);border-radius:var(--radius,18px);
-  background:var(--surface);box-shadow:var(--shadow-sm);
-  cursor:pointer;text-align:left;font-family:inherit;color:var(--ink);
-  transition:transform .16s cubic-bezier(.32,.72,0,1),border-color .16s}
-.gdeck:hover{border-color:var(--accent)}
-.gdeck:active{transform:scale(.985)}
-.gd-ic{
-  width:44px;height:44px;flex:0 0 44px;border-radius:14px;
-  display:grid;place-items:center;font-size:23px;color:#fff;
-  background:var(--grad)}
-.gd-t{flex:1;min-width:0}
-.gd-t b{display:block;font-size:15px;font-weight:700;letter-spacing:-.01em;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.gd-t small{display:block;font-size:12px;color:var(--muted);
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.gd-go{
-  width:36px;height:36px;flex:0 0 36px;border-radius:12px;
-  display:grid;place-items:center;font-size:19px;
-  color:var(--accent);background:var(--surface-2);border:1px solid var(--line-2)}
-@media(max-width:520px){
-  .gdeck{gap:11px;padding:11px 12px;margin-bottom:8px}
-  .gd-ic{width:40px;height:40px;flex:0 0 40px;font-size:21px;border-radius:13px}
-  .gd-t b{font-size:14px}.gd-t small{font-size:11px}
-  .gd-go{width:32px;height:32px;flex:0 0 32px;font-size:17px}
-}
 .ccard{position:relative;overflow:hidden}
 .gcar-wireframe-bg {
   position: absolute;
@@ -2901,10 +2870,6 @@ html[data-level="basic"] .hfree{
 .su-p.ghost{background:rgba(255,255,255,.05);color:#DCE9F8;
   border-color:rgba(150,190,240,.22)}
 .su-p.ghost:hover{background:rgba(255,255,255,.1)}
-.su-p-off{opacity:.42;cursor:default;pointer-events:none}
-.su-p-off:hover{transform:none;box-shadow:none}
-.su-p-tag{margin-left:auto;font-size:10.5px;font-weight:700;letter-spacing:.04em;
-  text-transform:uppercase;opacity:.8}
 
 .su-or{display:flex;align-items:center;gap:12px;margin:16px 0;
   font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;
@@ -3623,15 +3588,14 @@ button.lg-card:active,.cl-card:active{
   --m-pad:14px;          /* ขอบซ้ายขวาของหน้า */
 
   /* ตัวอักษร — เทียบจาก Grab/Uber โดยตรง ไม่ใช่ย่อจากสเกลเดสก์ท็อป */
-  /* ย่อลงหนึ่งระดับทั้งแถว ให้ตรงกับหน้าหลัก */
-  --m-t-lbl:9.5px;       /* ชื่อแท็บใต้ไอคอน */
-  --m-t-xs:10.5px;       /* ป้ายกำกับ */
-  --m-t-sm:11.5px;       /* คำอธิบายรอง */
-  --m-t:13px;            /* เนื้อความ */
-  --m-t-md:14px;         /* หัวข้อในแถว */
-  --m-t-lg:15.5px;       /* หัวการ์ด */
-  --m-t-xl:18px;         /* หัวจอ */
-  --m-num:20px;          /* ตัวเลขเด่น */
+  --m-t-lbl:10px;        /* ชื่อแท็บใต้ไอคอน */
+  --m-t-xs:11px;         /* ป้ายกำกับ */
+  --m-t-sm:12px;         /* คำอธิบายรอง */
+  --m-t:14px;            /* เนื้อความ */
+  --m-t-md:15px;         /* หัวข้อในแถว */
+  --m-t-lg:17px;         /* หัวการ์ด */
+  --m-t-xl:20px;         /* หัวจอ */
+  --m-num:22px;          /* ตัวเลขเด่น */
 
   --m-line:rgba(255,255,255,.08);
   --m-fill:rgba(255,255,255,.055);
@@ -4141,7 +4105,7 @@ input,select,textarea,.input,.odo-i{
 {"prerender":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}],
  "prefetch":[{"where":{"href_matches":"/*"},"eagerness":"conservative"}]}
 </script>
-<link rel="prefetch" href="/">
+<link rel="prefetch" href="/garage">
 <link rel="prefetch" href="/spares">
 <link rel="prefetch" href="/news">
 <link rel="prefetch" href="/profile">
@@ -4322,8 +4286,6 @@ function read(){
 
 /* พจนานุกรมมาจากไฟล์ i18n_dict ที่โหลดก่อนหน้า ถ้าไม่มีก็ทำงานได้แบบสองภาษา */
 const DICT=(window.__SPIRE_DICT__||{});
-/* คำที่ตกหล่นจากพจนานุกรมหลัก (ชิปอาการ ชื่อธีม ยศ ปุ่มปิด) — เติมเข้าไปโดยไม่ทับของเดิม */
-(function(x){for(const c in x){DICT[c]=DICT[c]||{};for(const k in x[c])if(!DICT[c][k])DICT[c][k]=x[c][k]}})({"en":{"ปิด":"Close","ใหม่":"New","ดูทั้งหมด":"See all","เปลี่ยนน้ำมันเครื่อง":"Oil change","ยาง 4 เส้น":"4 tyres","ไส้กรองอากาศ":"Air filter","แอร์ไม่เย็น":"A/C not cold","ช่วงล่างมีเสียง":"Suspension noise","สตาร์ทไม่ติด":"Won't start","เช็กระยะ":"Scheduled service","เจ้าของระบบ":"System owner","ผู้ดูแลระบบ":"Administrator","ผู้ควบคุม":"Moderator","อบอุ่นดินเผา":"Warm Clay","มรกตมินต์":"Emerald Mint","ไซเบอร์ลึก":"Deep Cyber","คาร์บอนแดง":"Red Carbon","ซันเซ็ต 77":"Sunset 77","มอสส์ฟีลด์":"Moss Field","ไนต์ไวร์":"Night Wire","กริด 72":"Grid 72","พื้นหลังมีชีวิต":"Living background","ภาพเคลื่อนไหวประจำแต่ละธีม":"Each theme's own animation","ความลึก 3 มิติ":"3D depth","การ์ดย่อยเอียงเล็กน้อย · เงาตามแสง":"Cards tilt slightly · shadows follow the light","แสงตามการเอียงเครื่อง":"Light follows device tilt","ใช้เซนเซอร์มือถือขยับแสงทั้งจอ":"Uses your phone's sensors to move the light across the screen"},"zh":{"ปิด":"关闭","ใหม่":"新","ดูทั้งหมด":"查看全部","เปลี่ยนน้ำมันเครื่อง":"更换机油","ยาง 4 เส้น":"4 条轮胎","ไส้กรองอากาศ":"空气滤清器","แอร์ไม่เย็น":"空调不冷","ช่วงล่างมีเสียง":"底盘异响","สตาร์ทไม่ติด":"无法启动","เช็กระยะ":"定期保养","เจ้าของระบบ":"系统所有者","ผู้ดูแลระบบ":"管理员","ผู้ควบคุม":"版主","อบอุ่นดินเผา":"暖陶","มรกตมินต์":"翡翠薄荷","ไซเบอร์ลึก":"深度赛博","คาร์บอนแดง":"红碳","ซันเซ็ต 77":"日落 77","มอสส์ฟีลด์":"苔原","ไนต์ไวร์":"夜线","กริด 72":"网格 72","พื้นหลังมีชีวิต":"动态背景","ภาพเคลื่อนไหวประจำแต่ละธีม":"每个主题专属动画","ความลึก 3 มิติ":"3D 纵深","การ์ดย่อยเอียงเล็กน้อย · เงาตามแสง":"卡片轻微倾斜 · 阴影随光","แสงตามการเอียงเครื่อง":"光随设备倾斜","ใช้เซนเซอร์มือถือขยับแสงทั้งจอ":"使用手机传感器移动整屏光线"},"ja":{"ปิด":"閉じる","ใหม่":"新規","ดูทั้งหมด":"すべて見る","เปลี่ยนน้ำมันเครื่อง":"オイル交換","ยาง 4 เส้น":"タイヤ4本","ไส้กรองอากาศ":"エアフィルター","แอร์ไม่เย็น":"エアコンが効かない","ช่วงล่างมีเสียง":"足回りの異音","สตาร์ทไม่ติด":"エンジンがかからない","เช็กระยะ":"定期点検","เจ้าของระบบ":"システム所有者","ผู้ดูแลระบบ":"管理者","ผู้ควบคุม":"モデレーター","อบอุ่นดินเผา":"ウォームクレイ","มรกตมินต์":"エメラルドミント","ไซเบอร์ลึก":"ディープサイバー","คาร์บอนแดง":"レッドカーボン","ซันเซ็ต 77":"サンセット 77","มอสส์ฟีลด์":"モスフィールド","ไนต์ไวร์":"ナイトワイヤー","กริด 72":"グリッド 72","พื้นหลังมีชีวิต":"動く背景","ภาพเคลื่อนไหวประจำแต่ละธีม":"テーマごとのアニメーション","ความลึก 3 มิติ":"3D の奥行き","การ์ดย่อยเอียงเล็กน้อย · เงาตามแสง":"カードが少し傾く · 光に合わせた影","แสงตามการเอียงเครื่อง":"端末の傾きで光が動く","ใช้เซนเซอร์มือถือขยับแสงทั้งจอ":"スマホのセンサーで画面全体の光を動かす"},"ko":{"ปิด":"닫기","ใหม่":"새로","ดูทั้งหมด":"전체 보기","เปลี่ยนน้ำมันเครื่อง":"엔진오일 교체","ยาง 4 เส้น":"타이어 4개","ไส้กรองอากาศ":"에어필터","แอร์ไม่เย็น":"에어컨이 시원하지 않음","ช่วงล่างมีเสียง":"하체 소음","สตาร์ทไม่ติด":"시동이 안 걸림","เช็กระยะ":"정기 점검","เจ้าของระบบ":"시스템 소유자","ผู้ดูแลระบบ":"관리자","ผู้ควบคุม":"운영자","อบอุ่นดินเผา":"웜 클레이","มรกตมินต์":"에메랄드 민트","ไซเบอร์ลึก":"딥 사이버","คาร์บอนแดง":"레드 카본","ซันเซ็ต 77":"선셋 77","มอสส์ฟีลด์":"모스 필드","ไนต์ไวร์":"나이트 와이어","กริด 72":"그리드 72","พื้นหลังมีชีวิต":"살아있는 배경","ภาพเคลื่อนไหวประจำแต่ละธีม":"테마별 애니메이션","ความลึก 3 มิติ":"3D 깊이","การ์ดย่อยเอียงเล็กน้อย · เงาตามแสง":"카드가 살짝 기울고 · 빛을 따라 그림자","แสงตามการเอียงเครื่อง":"기기 기울기에 따른 빛","ใช้เซนเซอร์มือถือขยับแสงทั้งจอ":"휴대폰 센서로 화면 전체의 빛을 움직입니다"},"id":{"ปิด":"Tutup","ใหม่":"Baru","ดูทั้งหมด":"Lihat semua","เปลี่ยนน้ำมันเครื่อง":"Ganti oli","ยาง 4 เส้น":"4 ban","ไส้กรองอากาศ":"Filter udara","แอร์ไม่เย็น":"AC tidak dingin","ช่วงล่างมีเสียง":"Kaki-kaki berbunyi","สตาร์ทไม่ติด":"Tidak bisa distarter","เช็กระยะ":"Servis berkala","เจ้าของระบบ":"Pemilik sistem","ผู้ดูแลระบบ":"Administrator","ผู้ควบคุม":"Moderator","อบอุ่นดินเผา":"Tanah Liat Hangat","มรกตมินต์":"Mint Zamrud","ไซเบอร์ลึก":"Siber Dalam","คาร์บอนแดง":"Karbon Merah","ซันเซ็ต 77":"Sunset 77","มอสส์ฟีลด์":"Padang Lumut","ไนต์ไวร์":"Night Wire","กริด 72":"Grid 72","พื้นหลังมีชีวิต":"Latar hidup","ภาพเคลื่อนไหวประจำแต่ละธีม":"Animasi khas tiap tema","ความลึก 3 มิติ":"Kedalaman 3D","การ์ดย่อยเอียงเล็กน้อย · เงาตามแสง":"Kartu sedikit miring · bayangan ikut cahaya","แสงตามการเอียงเครื่อง":"Cahaya ikut kemiringan perangkat","ใช้เซนเซอร์มือถือขยับแสงทั้งจอ":"Memakai sensor ponsel untuk menggerakkan cahaya"},"vi":{"ปิด":"Đóng","ใหม่":"Mới","ดูทั้งหมด":"Xem tất cả","เปลี่ยนน้ำมันเครื่อง":"Thay nhớt","ยาง 4 เส้น":"4 lốp","ไส้กรองอากาศ":"Lọc gió","แอร์ไม่เย็น":"Điều hòa không mát","ช่วงล่างมีเสียง":"Gầm xe kêu","สตาร์ทไม่ติด":"Không nổ máy","เช็กระยะ":"Bảo dưỡng định kỳ","เจ้าของระบบ":"Chủ hệ thống","ผู้ดูแลระบบ":"Quản trị viên","ผู้ควบคุม":"Người kiểm duyệt","อบอุ่นดินเผา":"Đất nung ấm","มรกตมินต์":"Ngọc lục bảo","ไซเบอร์ลึก":"Cyber sâu","คาร์บอนแดง":"Carbon đỏ","ซันเซ็ต 77":"Hoàng hôn 77","มอสส์ฟีลด์":"Cánh đồng rêu","ไนต์ไวร์":"Dây đêm","กริด 72":"Lưới 72","พื้นหลังมีชีวิต":"Nền động","ภาพเคลื่อนไหวประจำแต่ละธีม":"Hoạt ảnh riêng cho từng giao diện","ความลึก 3 มิติ":"Chiều sâu 3D","การ์ดย่อยเอียงเล็กน้อย · เงาตามแสง":"Thẻ hơi nghiêng · bóng theo ánh sáng","แสงตามการเอียงเครื่อง":"Ánh sáng theo độ nghiêng máy","ใช้เซนเซอร์มือถือขยับแสงทั้งจอ":"Dùng cảm biến điện thoại để di chuyển ánh sáng"},"ms":{"ปิด":"Tutup","ใหม่":"Baharu","ดูทั้งหมด":"Lihat semua","เปลี่ยนน้ำมันเครื่อง":"Tukar minyak enjin","ยาง 4 เส้น":"4 tayar","ไส้กรองอากาศ":"Penapis udara","แอร์ไม่เย็น":"Aircond tak sejuk","ช่วงล่างมีเสียง":"Bunyi pada suspensi","สตาร์ทไม่ติด":"Tak boleh hidup","เช็กระยะ":"Servis berkala","เจ้าของระบบ":"Pemilik sistem","ผู้ดูแลระบบ":"Pentadbir","ผู้ควบคุม":"Moderator","อบอุ่นดินเผา":"Tanah Liat Hangat","มรกตมินต์":"Pudina Zamrud","ไซเบอร์ลึก":"Siber Dalam","คาร์บอนแดง":"Karbon Merah","ซันเซ็ต 77":"Sunset 77","มอสส์ฟีลด์":"Padang Lumut","ไนต์ไวร์":"Night Wire","กริด 72":"Grid 72","พื้นหลังมีชีวิต":"Latar hidup","ภาพเคลื่อนไหวประจำแต่ละธีม":"Animasi khas setiap tema","ความลึก 3 มิติ":"Kedalaman 3D","การ์ดย่อยเอียงเล็กน้อย · เงาตามแสง":"Kad condong sedikit · bayang ikut cahaya","แสงตามการเอียงเครื่อง":"Cahaya ikut kecondongan peranti","ใช้เซนเซอร์มือถือขยับแสงทั้งจอ":"Guna sensor telefon untuk gerakkan cahaya"},"de":{"ปิด":"Schließen","ใหม่":"Neu","ดูทั้งหมด":"Alle ansehen","เปลี่ยนน้ำมันเครื่อง":"Ölwechsel","ยาง 4 เส้น":"4 Reifen","ไส้กรองอากาศ":"Luftfilter","แอร์ไม่เย็น":"Klima kühlt nicht","ช่วงล่างมีเสียง":"Fahrwerksgeräusch","สตาร์ทไม่ติด":"Springt nicht an","เช็กระยะ":"Inspektion","เจ้าของระบบ":"Systeminhaber","ผู้ดูแลระบบ":"Administrator","ผู้ควบคุม":"Moderator","อบอุ่นดินเผา":"Warmer Ton","มรกตมินต์":"Smaragdminze","ไซเบอร์ลึก":"Deep Cyber","คาร์บอนแดง":"Rotes Carbon","ซันเซ็ต 77":"Sunset 77","มอสส์ฟีลด์":"Moosfeld","ไนต์ไวร์":"Night Wire","กริด 72":"Raster 72","พื้นหลังมีชีวิต":"Lebendiger Hintergrund","ภาพเคลื่อนไหวประจำแต่ละธีม":"Eigene Animation je Design","ความลึก 3 มิติ":"3D-Tiefe","การ์ดย่อยเอียงเล็กน้อย · เงาตามแสง":"Karten neigen sich leicht · Schatten folgen dem Licht","แสงตามการเอียงเครื่อง":"Licht folgt der Neigung","ใช้เซนเซอร์มือถือขยับแสงทั้งจอ":"Nutzt die Handy-Sensoren, um das Licht zu bewegen"},"fr":{"ปิด":"Fermer","ใหม่":"Nouveau","ดูทั้งหมด":"Tout voir","เปลี่ยนน้ำมันเครื่อง":"Vidange","ยาง 4 เส้น":"4 pneus","ไส้กรองอากาศ":"Filtre à air","แอร์ไม่เย็น":"Clim pas froide","ช่วงล่างมีเสียง":"Bruit de suspension","สตาร์ทไม่ติด":"Ne démarre pas","เช็กระยะ":"Révision","เจ้าของระบบ":"Propriétaire du système","ผู้ดูแลระบบ":"Administrateur","ผู้ควบคุม":"Modérateur","อบอุ่นดินเผา":"Argile chaude","มรกตมินต์":"Menthe émeraude","ไซเบอร์ลึก":"Cyber profond","คาร์บอนแดง":"Carbone rouge","ซันเซ็ต 77":"Sunset 77","มอสส์ฟีลด์":"Champ de mousse","ไนต์ไวร์":"Fil de nuit","กริด 72":"Grille 72","พื้นหลังมีชีวิต":"Arrière-plan vivant","ภาพเคลื่อนไหวประจำแต่ละธีม":"Animation propre à chaque thème","ความลึก 3 มิติ":"Profondeur 3D","การ์ดย่อยเอียงเล็กน้อย · เงาตามแสง":"Cartes légèrement inclinées · ombres selon la lumière","แสงตามการเอียงเครื่อง":"La lumière suit l'inclinaison","ใช้เซนเซอร์มือถือขยับแสงทั้งจอ":"Utilise les capteurs du téléphone pour déplacer la lumière"},"es":{"ปิด":"Cerrar","ใหม่":"Nuevo","ดูทั้งหมด":"Ver todo","เปลี่ยนน้ำมันเครื่อง":"Cambio de aceite","ยาง 4 เส้น":"4 neumáticos","ไส้กรองอากาศ":"Filtro de aire","แอร์ไม่เย็น":"El aire no enfría","ช่วงล่างมีเสียง":"Ruido en la suspensión","สตาร์ทไม่ติด":"No arranca","เช็กระยะ":"Revisión periódica","เจ้าของระบบ":"Propietario del sistema","ผู้ดูแลระบบ":"Administrador","ผู้ควบคุม":"Moderador","อบอุ่นดินเผา":"Arcilla cálida","มรกตมินต์":"Menta esmeralda","ไซเบอร์ลึก":"Ciber profundo","คาร์บอนแดง":"Carbono rojo","ซันเซ็ต 77":"Sunset 77","มอสส์ฟีลด์":"Campo de musgo","ไนต์ไวร์":"Hilo nocturno","กริด 72":"Cuadrícula 72","พื้นหลังมีชีวิต":"Fondo animado","ภาพเคลื่อนไหวประจำแต่ละธีม":"Animación propia de cada tema","ความลึก 3 มิติ":"Profundidad 3D","การ์ดย่อยเอียงเล็กน้อย · เงาตามแสง":"Tarjetas algo inclinadas · sombras según la luz","แสงตามการเอียงเครื่อง":"La luz sigue la inclinación","ใช้เซนเซอร์มือถือขยับแสงทั้งจอ":"Usa los sensores del móvil para mover la luz"},"pt":{"ปิด":"Fechar","ใหม่":"Novo","ดูทั้งหมด":"Ver tudo","เปลี่ยนน้ำมันเครื่อง":"Mudança de óleo","ยาง 4 เส้น":"4 pneus","ไส้กรองอากาศ":"Filtro de ar","แอร์ไม่เย็น":"Ar não gela","ช่วงล่างมีเสียง":"Ruído na suspensão","สตาร์ทไม่ติด":"Não pega","เช็กระยะ":"Revisão periódica","เจ้าของระบบ":"Proprietário do sistema","ผู้ดูแลระบบ":"Administrador","ผู้ควบคุม":"Moderador","อบอุ่นดินเผา":"Argila quente","มรกตมินต์":"Menta esmeralda","ไซเบอร์ลึก":"Ciber profundo","คาร์บอนแดง":"Carbono vermelho","ซันเซ็ต 77":"Sunset 77","มอสส์ฟีลด์":"Campo de musgo","ไนต์ไวร์":"Fio noturno","กริด 72":"Grelha 72","พื้นหลังมีชีวิต":"Fundo animado","ภาพเคลื่อนไหวประจำแต่ละธีม":"Animação própria de cada tema","ความลึก 3 มิติ":"Profundidade 3D","การ์ดย่อยเอียงเล็กน้อย · เงาตามแสง":"Cartões ligeiramente inclinados · sombras seguem a luz","แสงตามการเอียงเครื่อง":"A luz segue a inclinação","ใช้เซนเซอร์มือถือขยับแสงทั้งจอ":"Usa os sensores do telemóvel para mover a luz"},"ar":{"ปิด":"إغلاق","ใหม่":"جديد","ดูทั้งหมด":"عرض الكل","เปลี่ยนน้ำมันเครื่อง":"تغيير الزيت","ยาง 4 เส้น":"4 إطارات","ไส้กรองอากาศ":"فلتر الهواء","แอร์ไม่เย็น":"المكيف لا يبرد","ช่วงล่างมีเสียง":"صوت في نظام التعليق","สตาร์ทไม่ติด":"لا تعمل","เช็กระยะ":"صيانة دورية","เจ้าของระบบ":"مالك النظام","ผู้ดูแลระบบ":"المسؤول","ผู้ควบคุม":"المشرف","อบอุ่นดินเผา":"طين دافئ","มรกตมินต์":"نعناع زمردي","ไซเบอร์ลึก":"سايبر عميق","คาร์บอนแดง":"كربون أحمر","ซันเซ็ต 77":"غروب 77","มอสส์ฟีลด์":"حقل الطحالب","ไนต์ไวร์":"سلك الليل","กริด 72":"شبكة 72","พื้นหลังมีชีวิต":"خلفية حيّة","ภาพเคลื่อนไหวประจำแต่ละธีม":"حركة خاصة بكل مظهر","ความลึก 3 มิติ":"عمق ثلاثي الأبعاد","การ์ดย่อยเอียงเล็กน้อย · เงาตามแสง":"بطاقات مائلة قليلاً · ظلال تتبع الضوء","แสงตามการเอียงเครื่อง":"الضوء يتبع ميل الجهاز","ใช้เซนเซอร์มือถือขยับแสงทั้งจอ":"يستخدم مستشعرات الهاتف لتحريك الضوء"}});
 
 let cur=read();
 
@@ -4360,26 +4322,6 @@ function paintDom(root){
   });
 }
 
-
-/* ข้อความที่ถูกวาดโดยไม่มี data-i18n (ชิป ชื่อธีม ปุ่มปิด ฯลฯ) — แปลเฉพาะที่ "ตรงทั้งข้อความ" กับพจนานุกรม
-   ข้อความของผู้ใช้ (แชต ชื่อรถ บทความ) แทบไม่มีทางตรงคำในพจนานุกรมเป๊ะ จึงไม่ถูกแตะ
-   จำต้นฉบับไทยไว้ที่โหนด สลับกลับเป็นไทยได้ */
-const TH_RE=/[\u0E00-\u0E7F]/;
-function paintText(root){
-  if(cur==="th"&&!paintText.used)return;
-  const tbl=DICT[cur]||{},en=DICT.en||{};
-  const w=D.createTreeWalker(root||D.body,NodeFilter.SHOW_TEXT);let n;
-  while((n=w.nextNode())){
-    const p=n.parentNode;if(!p||p.closest&&p.closest("script,style,textarea,[contenteditable],[data-th-src],.msg,.bubble"))continue;
-    const src=n.__th||n.nodeValue.trim();if(!src||!TH_RE.test(src))continue;
-    const hit=cur==="th"?src:(tbl[src]||en[src]);if(!hit)continue;
-    if(!n.__th)n.__th=src;paintText.used=true;
-    const want=n.nodeValue.replace(n.nodeValue.trim(),hit);if(n.nodeValue!==want)n.nodeValue=want;
-  }
-}
-let ptq=0;
-function paintSoon(){if(ptq)return;ptq=requestAnimationFrame(()=>{ptq=0;try{paintText()}catch(e){}})}
-try{new MutationObserver(paintSoon).observe(D.documentElement,{childList:true,subtree:true,characterData:false})}catch(e){}
 function apply(){
   const el=D.documentElement;
   el.lang=cur;
@@ -4387,7 +4329,6 @@ function apply(){
   el.dir=rtl?"rtl":"ltr";
   el.dataset.rtl=rtl?"1":"0";
   paintDom();
-  if(D.body)paintText();
 }
 
 function set(code){
@@ -4456,8 +4397,8 @@ window.spireI18nCoverage=code=>{
       <div class="brand" data-view="home"><svg class="cmk" viewBox="-6.0 -6.0 94.8 112.0" role="img" aria-label="Cendon"><title>Cendon</title><path fill="currentColor" d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg></div>
       <div class="nav-links">
         <span class="nav-ind" id="navInd"></span>
-        <a href="/" data-view="home"><i class="ti ti-layout-dashboard"></i> <span data-i18n="nav.home">หน้าหลัก</span></a>
-        <a href="/garage" data-view="garage" class="active"><i class="ti ti-car-garage"></i> <span data-i18n="nav.garage">การาจ</span></a>
+        <a href="/" data-view="home" class="active"><i class="ti ti-layout-dashboard"></i> <span data-i18n="nav.home">หน้าหลัก</span></a>
+        <a href="/garage" data-view="garage"><i class="ti ti-car-garage"></i> <span data-i18n="nav.garage">การาจ</span></a>
         <a href="/news" data-view="magazine"><i class="ti ti-book-2"></i> <span data-i18n="nav.magazine">นิตยสาร</span></a>
         <a href="/spares" data-view="shop"><i class="ti ti-shopping-cart"></i> <span data-i18n="nav.shop">ร้านค้า</span></a>
       </div>
@@ -4476,78 +4417,137 @@ window.spireI18nCoverage=code=>{
 
   <div class="main">
     <!-- HOME / DASHBOARD -->
-    <section class="view active" id="v-garage">
+    <section class="view active" id="v-home">
       <div class="scroll">
-        <h2 class="section-title" data-i18n="garage.title">การาจของฉัน</h2>
-        <p class="section-sub" data-i18n="garage.sub">บันทึกรถของคุณ — ประวัติอาการที่เคยวินิจฉัยจะถูกเก็บไว้ในแต่ละคัน</p>
-        <div id="garageList"></div>
-        <div class="card" style="margin-top:6px; overflow:visible;">
-          <h3 style="font-weight:700;margin-bottom:14px"><i class="ti ti-plus"></i> <span data-i18n="garage.add">เพิ่มรถ</span></h3>
-          
-          <div class="grid2" style="overflow:visible; margin-bottom:12px;">
-            <!-- Custom Dropdown: Make -->
-            <div class="custom-select" id="gMakeSelect">
-              <div class="custom-select-trigger" onclick="toggleCustomSelect('gMakeSelect')">
-                <span class="val" data-i18n="select.make">เลือกยี่ห้อ...</span>
-                <i class="ti ti-chevron-down"></i>
-              </div>
-              <div class="custom-select-options">
-                <input type="text" class="custom-select-search" placeholder="ค้นหายี่ห้อ..." oninput="filterCustomSelect('gMakeSelect', this.value)">
-                <div class="options-list" id="gMakeList"></div>
+        <div class="greet-wrap" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:10px;">
+          <div class="greet" id="greet"></div>
+          <button class="btn" id="customizeBtn" onclick="toggleEditMode()"><i class="ti ti-adjustments-alt"></i> <span data-i18n="dash.customize">แต่งหน้าหลัก</span></button>
+        </div>
+        <p class="dash-sub" data-i18n="dash.sub">เลือกวิธีวินิจฉัย หรือกดวินิจฉัยรถในการาจของคุณได้เลย</p>
+        
+        <!-- Customize Panel (Visible only in edit mode) -->
+        <div class="customize-panel" id="customizePanel" style="display:none; background:var(--surface-2); border:1px dashed var(--accent); border-radius:18px; padding:16px; margin-bottom:20px;">
+          <h4 style="font-weight:700; margin-bottom:10px; color:var(--ink);"><i class="ti ti-settings"></i> เปิด/ปิดวิดเจ็ตหน้าหลัก</h4>
+          <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:12px;">
+            <label class="toggle-label"><input type="checkbox" id="chk-ai" onchange="toggleWidget('w-ai', this.checked)"> <span data-i18n="dash.widget_ai">ผู้ช่วย AI (ด่วน)</span></label>
+            <label class="toggle-label"><input type="checkbox" id="chk-magazine" onchange="toggleWidget('w-magazine', this.checked)"> <span data-i18n="dash.widget_news">ข่าวสารล่าสุด</span></label>
+            <label class="toggle-label"><input type="checkbox" id="chk-settings" onchange="toggleWidget('w-settings', this.checked)"> <span data-i18n="dash.widget_settings">ตั้งค่าธีมและสี</span></label>
+            <label class="toggle-label"><input type="checkbox" id="chk-shop" onchange="toggleWidget('w-shop', this.checked)"> <span data-i18n="dash.widget_shop">ร้านค้า 3D</span></label>
+          </div>
+          <p style="font-size:12px; color:var(--muted);"><i class="ti ti-info-circle"></i> คุณสามารถลากย้ายสลับตำแหน่งวิดเจ็ตต่างๆ ด้านล่างได้เลยโดยใช้เมาส์ หรือใช้ปุ่มลูกศรควบคุมตำแหน่ง</p>
+        </div>
+
+        <div class="widget-grid" id="widgetGrid">
+          <!-- Widget 1: Cars List -->
+          <div class="widget" id="w-cars" draggable="true">
+            <div class="widget-header">
+              <span class="widget-drag-handle"><i class="ti ti-hand-grab"></i></span>
+              <h3 data-i18n="dash.cars">รถของฉัน</h3>
+              <div class="widget-actions">
+                <button class="widget-nav-btn" onclick="moveWidget('w-cars', -1); event.stopPropagation();"><i class="ti ti-arrow-narrow-up"></i></button>
+                <button class="widget-nav-btn" onclick="moveWidget('w-cars', 1); event.stopPropagation();"><i class="ti ti-arrow-narrow-down"></i></button>
+                <span class="dash-link" data-view="garage" data-i18n="dash.manage">จัดการ →</span>
               </div>
             </div>
+            <div class="cars-grid" id="dashCars"></div>
+          </div>
 
-            <!-- Custom Dropdown: Model -->
-            <div class="custom-select" id="gModelSelect">
-              <div class="custom-select-trigger disabled" id="gModelTrigger" onclick="toggleCustomSelect('gModelSelect')">
-                <span class="val" data-i18n="select.model">เลือกรุ่น...</span>
-                <i class="ti ti-chevron-down"></i>
+          <!-- Widget 2: Quick Diagnostic Tools -->
+          <div class="widget" id="w-quick-actions" draggable="true">
+            <div class="widget-header">
+              <span class="widget-drag-handle"><i class="ti ti-hand-grab"></i></span>
+              <h3 data-i18n="dash.diagnose_opt">วินิจฉัยปัญหาด่วน</h3>
+              <div class="widget-actions">
+                <button class="widget-nav-btn" onclick="moveWidget('w-quick-actions', -1); event.stopPropagation();"><i class="ti ti-arrow-narrow-up"></i></button>
+                <button class="widget-nav-btn" onclick="moveWidget('w-quick-actions', 1); event.stopPropagation();"><i class="ti ti-arrow-narrow-down"></i></button>
               </div>
-              <div class="custom-select-options">
-                <input type="text" class="custom-select-search" placeholder="ค้นหารุ่น..." oninput="filterCustomSelect('gModelSelect', this.value)">
-                <div class="options-list" id="gModelList"></div>
+            </div>
+            <div class="qa-grid">
+              <button class="qa" data-open="text"><i class="ti ti-message-2 qa-deco" aria-hidden="true"></i><div class="qa-ic"><i class="ti ti-message-2"></i></div><div class="qa-t" data-i18n="qa.text">พิมพ์ถาม</div></button>
+              <button class="qa" data-open="image"><i class="ti ti-camera qa-deco" aria-hidden="true"></i><div class="qa-ic"><i class="ti ti-camera"></i></div><div class="qa-t" data-i18n="qa.image">ถ่ายรูป</div></button>
+              <button class="qa" data-open="video"><i class="ti ti-video qa-deco" aria-hidden="true"></i><div class="qa-ic"><i class="ti ti-video"></i></div><div class="qa-t" data-i18n="qa.video">วิดีโอ</div></button>
+              
+            </div>
+          </div>
+
+          <!-- Widget 3: Quick AI Chatbot Widget (Optional) -->
+          <div class="widget" id="w-ai" draggable="true" style="display:none;">
+            <div class="widget-header">
+              <span class="widget-drag-handle"><i class="ti ti-hand-grab"></i></span>
+              <h3 data-i18n="dash.widget_ai">ผู้ช่วย AI (ด่วน)</h3>
+              <div class="widget-actions">
+                <button class="widget-nav-btn" onclick="moveWidget('w-ai', -1); event.stopPropagation();"><i class="ti ti-arrow-narrow-up"></i></button>
+                <button class="widget-nav-btn" onclick="moveWidget('w-ai', 1); event.stopPropagation();"><i class="ti ti-arrow-narrow-down"></i></button>
+              </div>
+            </div>
+            <div class="card" style="padding:16px; display:flex; flex-direction:column; gap:10px;">
+              <p style="font-size:13.5px; color:var(--muted)">เริ่มต้นการวินิจฉัยปัญหาของรถยนต์ร่วมกับ AI ผู้เชี่ยวชาญแบบส่วนตัว</p>
+              <button class="btn primary" onclick="openChat({})" style="width:fit-content; padding:8px 16px;"><i class="ti ti-message-chatbot"></i> เปิดห้องแชตผู้ช่วย</button>
+            </div>
+          </div>
+
+          <!-- Widget 4: Magazine feed (Optional) -->
+          <div class="widget" id="w-magazine" draggable="true" style="display:none;">
+            <div class="widget-header">
+              <span class="widget-drag-handle"><i class="ti ti-hand-grab"></i></span>
+              <h3 data-i18n="dash.widget_news">ข่าวสารล่าสุด</h3>
+              <div class="widget-actions">
+                <button class="widget-nav-btn" onclick="moveWidget('w-magazine', -1); event.stopPropagation();"><i class="ti ti-arrow-narrow-up"></i></button>
+                <button class="widget-nav-btn" onclick="moveWidget('w-magazine', 1); event.stopPropagation();"><i class="ti ti-arrow-narrow-down"></i></button>
+              </div>
+            </div>
+            <div id="w-magBody" class="card" style="padding:16px; border:none; box-shadow:none; background:transparent;">
+              <div style="text-align:center;color:var(--muted);padding:20px"><i class="ti ti-loader" style="font-size:24px"></i><br/><span data-i18n="mag.loading">กำลังโหลดข่าว...</span></div>
+            </div>
+          </div>
+
+          <!-- Widget 5: Theme settings (Optional) -->
+          <div class="widget" id="w-settings" draggable="true" style="display:none;">
+            <div class="widget-header">
+              <span class="widget-drag-handle"><i class="ti ti-hand-grab"></i></span>
+              <h3 data-i18n="dash.widget_settings">ตั้งค่าธีมและสี</h3>
+              <div class="widget-actions">
+                <button class="widget-nav-btn" onclick="moveWidget('w-settings', -1); event.stopPropagation();"><i class="ti ti-arrow-narrow-up"></i></button>
+                <button class="widget-nav-btn" onclick="moveWidget('w-settings', 1); event.stopPropagation();"><i class="ti ti-arrow-narrow-down"></i></button>
+              </div>
+            </div>
+            <div class="card" style="padding:16px; display:flex; flex-direction:column; gap:12px;">
+              <div>
+                <h4 style="font-size:13.5px; font-weight:700; margin-bottom:6px; color:var(--ink);" data-i18n="set.theme">ธีมระบบ</h4>
+                <div class="theme-grid"></div>
+              </div>
+              <div>
+                <h4 style="font-size:13.5px; font-weight:700; margin-bottom:4px; color:var(--ink);" data-i18n="set.opacity">ความชัดเจนพื้นหลังการาจ</h4>
+                <input type="range" class="slider" min="0" max="0.6" step="0.05" id="wireframeOpacitySlider" oninput="setWireframeOpacity(this.value)" style="width:100%;">
               </div>
             </div>
           </div>
 
-          <div class="grid2" style="overflow:visible;">
-            <!-- Year Dropdown -->
-            <div class="custom-select" id="gYearSelect">
-              <div class="custom-select-trigger disabled" id="gYearTrigger" onclick="toggleCustomSelect('gYearSelect')">
-                <span class="val" data-i18n="select.year">เลือกปี...</span>
-                <i class="ti ti-chevron-down"></i>
-              </div>
-              <div class="custom-select-options">
-                <input type="text" class="custom-select-search" placeholder="ค้นหาปี..." oninput="filterCustomSelect('gYearSelect', this.value)">
-                <div class="options-list" id="gYearList"></div>
+          <!-- Widget 6: Shop -->
+          <div class="widget" id="w-shop" draggable="true" style="display:none;">
+            <div class="widget-header" style="margin-bottom:0">
+              <span class="widget-drag-handle"><i class="ti ti-hand-grab"></i></span>
+              <h3 data-i18n="dash.widget_shop">ร้านค้า 3D</h3>
+              <div class="widget-actions">
+                <button class="widget-nav-btn" onclick="moveWidget('w-shop', -1); event.stopPropagation();"><i class="ti ti-arrow-narrow-up"></i></button>
+                <button class="widget-nav-btn" onclick="moveWidget('w-shop', 1); event.stopPropagation();"><i class="ti ti-arrow-narrow-down"></i></button>
               </div>
             </div>
-            
-            <input class="input" id="gMileage" data-i18n-ph="garage.km" placeholder="เลขไมล์ปัจจุบัน (กม.)"/>
-          </div>
-
-          <div id="gCustomBox" style="display:none; margin-top:12px; overflow:visible;">
-            <div class="grid2" style="overflow:visible; margin-bottom:12px;">
-              <input class="input" id="gCustomMake" placeholder="ยี่ห้อ (พิมพ์เอง)"/>
-              <input class="input" id="gCustomModel" placeholder="รุ่น (พิมพ์เอง)"/>
-            </div>
-            <div class="custom-select" id="gBodySelect">
-              <div class="custom-select-trigger" onclick="toggleCustomSelect('gBodySelect')">
-                <span class="val">ประเภทตัวถัง...</span>
-                <i class="ti ti-chevron-down"></i>
-              </div>
-              <div class="custom-select-options">
-                <div class="options-list" id="gBodyList"></div>
+            <div class="shop-widget-wrap" onclick="switchView('shop')" style="cursor:pointer">
+              <div class="shop-widget-3d-item"></div>
+              <h3 style="font-size:22px; font-weight:800; font-family:var(--kd); color:#3B2D16; margin-bottom:4px;">Premium Parts</h3>
+              <p style="font-size:13px; color:#5E4A2B; font-weight:600;">ค้นหาอะไหล่ระดับไฮเอนด์และของตกแต่งยอดฮิตสำหรับรถคุณ</p>
+              <div style="margin-top:16px; font-weight:700; font-size:12px; color:#D9A03C; text-transform:uppercase; letter-spacing:1px; display:flex; align-items:center; gap:4px">
+                Explore Shop <i class="ti ti-arrow-right"></i>
               </div>
             </div>
           </div>
 
-          <button class="btn primary" id="gAdd" style="margin-top:14px"><i class="ti ti-plus"></i> <span data-i18n="garage.add">เพิ่มรถ</span></button>
         </div>
       </div>
     </section>
 
-    <!-- MAGAZINE -->
+    <!-- GARAGE -->
     
   </div>
 </div>
@@ -4625,10 +4625,8 @@ let auth=null,useFb=false;
     var tries=0;(function wait(){if(window.firebase&&firebase.auth)return go();if(++tries>160){auth=null;useFb=false;return res(false)}setTimeout(wait,125)})();
   });
 })();
-/* ค่าตั้งต้นต้องมาจากตัวเลือกภาษาชุดกลาง ไม่ใช่ "th" ตายตัว
-   ไม่งั้น applyLang() ตอนบูตจะเขียน "th" ทับสิ่งที่ชุดกลางเลือกไว้ */
-let currentUser=LS.get("cachedUser",null),lang=LS.get("lang",(["th","en","ja","zh","de","es"].indexOf((window.spireLang&&window.spireLang())||"")>=0?window.spireLang():"th"));
-try{window.BACKEND_URL=BACKEND_URL;Object.defineProperty(window,"spireAuth",{configurable:true,get:function(){return auth}});Object.defineProperty(window,"auth",{configurable:true,get:function(){return auth}});Object.defineProperty(window,"lang",{configurable:true,get:function(){return lang},set:function(v){lang=v}});Object.defineProperty(window,"currentUser",{configurable:true,get:function(){return currentUser},set:function(v){currentUser=v}});window.spireAwaitUser=function(ms){return new Promise(function(res){try{if(!auth)return res(null);if(auth.currentUser)return res(auth.currentUser);var done=false;var t=setTimeout(function(){if(done)return;done=true;res(auth.currentUser||null)},ms||8000);var un=auth.onAuthStateChanged(function(u){if(done)return;done=true;clearTimeout(t);try{un&&un()}catch(e){}res(u||null)});}catch(e){res(null)}})};}catch(e){}
+let currentUser=LS.get("cachedUser",null),lang=LS.get("lang","th");
+try{window.BACKEND_URL=BACKEND_URL;Object.defineProperty(window,"spireAuth",{configurable:true,get:function(){return auth}});Object.defineProperty(window,"lang",{configurable:true,get:function(){return lang},set:function(v){lang=v}});Object.defineProperty(window,"currentUser",{configurable:true,get:function(){return currentUser},set:function(v){currentUser=v}});window.spireAwaitUser=function(ms){return new Promise(function(res){try{if(!auth)return res(null);if(auth.currentUser)return res(auth.currentUser);var done=false;var t=setTimeout(function(){if(done)return;done=true;res(auth.currentUser||null)},ms||8000);var un=auth.onAuthStateChanged(function(u){if(done)return;done=true;clearTimeout(t);try{un&&un()}catch(e){}res(u||null)});}catch(e){res(null)}})};}catch(e){}
 let currentTheme = LS.get("theme", "warm");
 let wireframeOpacity = LS.get("opacity", 0.15);
 
@@ -5251,21 +5249,6 @@ function saveGarage(g){LS.set("garage",g)}
 /* ===== BACKEND CAR SYNC (Cloudflare D1 via /api/cars) ===== */
 function carsAreRemote(){return !!(currentUser && useFb && auth && auth.currentUser && location.protocol!=="file:")}
 async function carTok(){return await auth.currentUser.getIdToken()}
-async function pushCar(c){
-  const r=await fetch(`${BACKEND_URL}/api/cars`,{method:"POST",
-    headers:{"Content-Type":"application/json","Authorization":"Bearer "+await carTok()},
-    body:JSON.stringify({id:c.id,make:c.make||c.name||"",model:c.model||"",
-                         year:c.year||"",mileage:c.mileage||""})});
-  if(!r.ok)throw new Error("HTTP "+r.status);
-  return await r.json();
-}
-/* ═══ ซิงก์รถกับ D1 แบบสองทาง ═══
- * ของเดิมอ่านรายการจากเซิร์ฟเวอร์แล้ว saveGarage(ผลลัพธ์) ทันที
- * ถ้าเซิร์ฟเวอร์ตอบว่าง (บัญชีใหม่ / รถถูกเพิ่มไว้ตอนยังไม่ล็อกอิน /
- * เน็ตสะดุดจนได้ลิสต์เปล่า) มันจะเขียนทับการาจในเครื่องให้ว่างไปด้วย
- * นั่นคือสาเหตุที่เข้าใหม่ทีไรต้องตั้งค่ารถใหม่ทุกครั้ง
- * ตอนนี้รวมสองฝั่งด้วย id แล้วดันคันที่เซิร์ฟเวอร์ยังไม่มีขึ้นไป ไม่ลบของในเครื่อง
- */
 async function syncCars(){
   if(!carsAreRemote())return;
   try{
@@ -5273,35 +5256,12 @@ async function syncCars(){
     if(!r.ok)throw new Error(r.status+" "+r.statusText);
     const arr=await r.json(); if(!Array.isArray(arr))return;
     const local=garage();
-    const byId={};
-    local.forEach(c=>{ if(c&&c.id)byId[c.id]=Object.assign({},c) });
-    arr.forEach(c=>{
+    const merged=arr.map(c=>{
       const name=`${c.make||""} ${c.model||""}`.trim();
-      const prev=byId[c.id]||{};
-      byId[c.id]=Object.assign({},prev,{
-        id:c.id,make:c.make||"",model:c.model||"",name:name||prev.name||"",
-        year:(c.year!=null?String(c.year):""),
-        mileage:(c.mileage!=null?String(c.mileage):""),
-        type:prev.type||getBodyStyle(name),history:prev.history||[]});
+      const prev=local.find(x=>x.id===c.id)||{};
+      return {id:c.id,make:c.make||"",model:c.model||"",name,year:(c.year!=null?String(c.year):""),mileage:(c.mileage!=null?String(c.mileage):""),type:prev.type||getBodyStyle(name),history:prev.history||[]};
     });
-    const remoteIds=new Set(arr.map(c=>c.id));
-    for(const c of local){
-      if(!c||!c.id||remoteIds.has(c.id))continue;
-      if(!(c.make||c.model||c.name))continue;
-      try{
-        const saved=await pushCar(c);
-        if(saved&&saved.id&&saved.id!==c.id){
-          byId[saved.id]=Object.assign({},byId[c.id],{id:saved.id});
-          delete byId[c.id];
-          if(LS.get("selCar","")===c.id)LS.set("selCar",saved.id);
-        }
-      }catch(e){ console.warn("pushCar",c.id,e) }
-    }
-    const merged=Object.keys(byId).map(k=>byId[k]);
-    if(!merged.length&&local.length)return;   /* ไม่ล้างของที่มีอยู่เด็ดขาด */
     saveGarage(merged);
-    const sel=LS.get("selCar","");
-    if(merged.length&&!merged.some(c=>c.id===sel))LS.set("selCar",merged[0].id);
     const _act=id=>{const e=$(id);return !!e&&e.classList.contains("active")};
     if(_act("v-garage"))renderGarage();
     if(_act("v-home"))renderDashboard();
@@ -5312,17 +5272,6 @@ function selCar(){const id=LS.get("selCar","");return garage().find(c=>c.id===id
 function renderCarSel(){const el=$("carSel");if(!el)return;const g=garage(),cur=LS.get("selCar","");
   el.innerHTML=`<option value="">${(window.spireT?window.spireT("ไม่ระบุรถ","No car"):(lang==="en"?"No car":"ไม่ระบุรถ"))}</option>`+g.map(c=>`<option value="${c.id}" ${c.id===cur?"selected":""}>${esc(c.name)}</option>`).join("")}
 
-/* ชื่อและไอคอนประจำประเภทรถ สำหรับการ์ดในหน้าการาจ
-   ใช้ไอคอนเส้นแทนภาพโครงรถของเดสก์ท็อป เพราะย่อลงมาขนาดนี้
-   ภาพโครงรถจะกลายเป็นก้อนเส้นที่แยกกระบะกับเก๋งไม่ออก */
-const GD_BODY={
-  sedan:{th:"ซีดาน",en:"Sedan",ic:"ti-car"},
-  hatchback:{th:"แฮทช์แบ็ก",en:"Hatchback",ic:"ti-car"},
-  suv:{th:"เอสยูวี",en:"SUV",ic:"ti-car-suv"},
-  pickup:{th:"กระบะ",en:"Pickup",ic:"ti-car-crane"},
-  mpv:{th:"เอ็มพีวี",en:"MPV",ic:"ti-bus"},
-  ev:{th:"ไฟฟ้า",en:"Electric",ic:"ti-charging-pile"}
-};
 function renderGarage(){if(!document.getElementById("garageList"))return;const g=garage();const w=$("garageList");if(!w)return;
   if(!g.length){
     w.innerHTML=`<div class="card" style="text-align:center;color:var(--muted);margin-bottom:6px">${tr("garage.empty")}</div>`;
@@ -5331,34 +5280,17 @@ function renderGarage(){if(!document.getElementById("garageList"))return;const g
   }
   w.innerHTML=g.map(c=>{
     const bodyStyle = c.type || getBodyStyle(c.name);
-    const lbl=GD_BODY[bodyStyle]||GD_BODY.sedan;
-    const tx=(th,en)=>(window.spireT?window.spireT(th,en):((window.lang||"th")==="en"?en:th));
-    /* ── การ์ดรถแนวนอน ──
-       อ่านจากซ้ายไปขวาได้ในครั้งเดียว: นี่รถอะไร → คันไหน → เข้าไปดูต่อ
-
-       ของเดิมแต่ละใบพ่วงบทสนทนากับ AI แปดรายการมาด้วย
-       การ์ดจึงยาวเป็นเมตรและล้นกรอบ ทั้งที่ตอนกวาดตาหารถ
-       ไม่มีใครอยากอ่านว่าเมื่อเดือนก่อนถาม AI ว่าอะไร
-       ประวัติพวกนั้นย้ายไปอยู่ในหน้าของรถคันนั้นแทน ที่ที่มันควรอยู่ */
-    return `<button class="gdeck" data-open="${c.id}">
-      <span class="gd-ic"><i class="ti ${lbl.ic}"></i></span>
-      <span class="gd-t">
-        <b>${esc(c.name)}</b>
-        <small>${esc(tx(lbl.th,lbl.en))} · ${esc(c.year||"-")} · ${
-          c.mileage?Number(c.mileage).toLocaleString("en-US"):"-"} ${tx("กม.","km")}</small>
-      </span>
-      <span class="gd-go" aria-hidden="true"><i class="ti ti-car-garage"></i></span>
-    </button>`
+    const wireframeSvg = WIREFRAME_SVGs[bodyStyle] || WIREFRAME_SVGs.sedan;
+    return `<div class="card gcard-wrap" style="margin-bottom:14px;">${wireframeSvg}
+      <div class="gcar" style="position:relative; z-index:1;"><div class="gi"><i class="ti ti-car"></i></div>
+      <div style="flex:1"><h4>${esc(c.name)}</h4><div class="gs">${esc(c.year||"-")} · ${c.mileage?Number(c.mileage).toLocaleString("en-US"):"-"} กม.</div></div>
+      <button class="btn primary" data-diag2="${c.id}" style="padding:8px 14px"><i class="ti ti-stethoscope"></i> ${(window.spireT?window.spireT("วินิจฉัย","Diagnose"):(lang==="en"?"Diagnose":"วินิจฉัย"))}</button>
+      <button class="btn danger" data-del="${c.id}" style="padding:8px 12px"><i class="ti ti-trash"></i></button></div>
+      <div class="ghist" style="position:relative; z-index:1;"><div class="h">${tr("garage.hist")}</div>${(c.history&&c.history.length)?c.history.slice(0,8).map(h=>`<div class="hrow"><div class="q">${esc(h.q)}</div><div class="a">${esc(h.a)}</div><div class="t">${new Date(h.t).toLocaleString((window.spireT?window.spireT("th-TH","en-US"):(lang==="en"?"en-US":"th-TH")),{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</div></div>`).join(""):`<div style="color:var(--faint);font-size:13px">${tr("garage.nohist")}</div>`}</div></div>`
   }).join("");
   renderCarSel()}
 
-$("garageList")?.addEventListener("click",async e=>{
-  /* กดที่ไหนของการ์ดก็เข้าหน้ารถคันนั้น ไม่ต้องเล็งปุ่มเล็ก ๆ
-     ปุ่มวินิจฉัยกับปุ่มลบย้ายเข้าไปอยู่ในหน้านั้นแล้ว ซึ่งปลอดภัยกว่าด้วย
-     เพราะปุ่มลบที่อยู่ติดนิ้วบนหน้ารายการคือปุ่มที่รอวันโดนกดพลาด */
-  const op=e.target.closest("[data-open]");
-  if(op){ try{window.openCarDetail(op.dataset.open)}catch(err){} return }
-  const dg=e.target.closest("[data-diag2]");if(dg){openChat({car:dg.dataset.diag2,starter:true});return}
+$("garageList")?.addEventListener("click",async e=>{const dg=e.target.closest("[data-diag2]");if(dg){openChat({car:dg.dataset.diag2,starter:true});return}
   const d=e.target.closest("[data-del]");if(d){const id=d.dataset.del;
     if(carsAreRemote()){try{await fetch(`${BACKEND_URL}/api/cars/${encodeURIComponent(id)}`,{method:"DELETE",headers:{"Authorization":"Bearer "+await carTok()}})}catch(err){console.warn("delete car failed",err)}}
     const g=garage().filter(c=>c.id!==id);saveGarage(g);renderGarage();renderDashboard();toast((window.spireT?window.spireT("ลบรถแล้ว","Car removed"):(lang==="en"?"Car removed":"ลบรถแล้ว")),"ti-trash")}});
@@ -5481,16 +5413,7 @@ async function signIn(){
   if(!useFb){toast((window.spireT?window.spireT("ระบบล็อกอินไม่พร้อม","Auth unavailable"):(lang==="en"?"Auth unavailable":"ระบบล็อกอินไม่พร้อม")),"ti-alert-triangle");return}
   if(location.protocol==="file:"){toast("ล็อกอิน Google ต้องเปิดผ่าน localhost/เว็บจริง (file:// ใช้ไม่ได้) — แต่ใช้แชต/การาจได้เลย","ti-info-circle");return}
   const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:"select_account"});
-  try{await auth.signInWithPopup(p)}catch(e){
-    const code=(e&&e.code)||"unknown";
-    if(code==="auth/popup-closed-by-user"||code==="auth/cancelled-popup-request")return;
-    /* ของเดิมต่อ e.code ดิบ ๆ เข้าไปในข้อความ error ที่ไม่ใช่ของ Firebase ไม่มี .code
-       ผู้ใช้จึงเห็นคำว่า "ล็อกอินไม่สำเร็จ: undefined" ซึ่งไม่บอกอะไรเลย
-       ใช้ตัวแปลข้อความชุดเดียวกับหน้าล็อกอินหลัก จะได้พูดภาษาเดียวกันทั้งแอป */
-    if(code==="auth/operation-not-allowed"||code==="auth/admin-restricted-operation")
-      authMarkDead("google");
-    toast(authMsg(code)||L("เข้าสู่ระบบไม่สำเร็จ","Sign-in failed"),"ti-alert-triangle");
-  }}
+  try{await auth.signInWithPopup(p)}catch(e){if(e.code==="auth/popup-closed-by-user")return;toast("ล็อกอินไม่สำเร็จ: "+e.code,"ti-alert-triangle")}}
 window.signIn=signIn;
 ($("signinBtn")||{}).onclick=signIn;
 ($("logoutBtn")||{}).onclick=async()=>{if(useFb)await auth.signOut();$("dd").classList.remove("show");switchView("home");toast((window.spireT?window.spireT("ออกจากระบบแล้ว","Logged out"):(lang==="en"?"Logged out":"ออกจากระบบแล้ว")),"ti-logout")};
@@ -5641,11 +5564,12 @@ const EN=()=>(window.lang||"th")==="en";
 const T=(th,en)=>(window.spireT?window.spireT(th,en):((window.lang||"th")==="en"?en:th));
 const KEY="spire_theme";
 
-/* ธีมคุมแค่โครงสีพื้นหลังกับตัวหนังสือ ส่วนสีปุ่มแยกไปเป็น "สีหลัก" เลือกได้อิสระ
-   ของเดิมผูกสีปุ่มติดมากับธีม อยากได้ปุ่มสีฟ้าก็ต้องยอมเปลี่ยนพื้นหลังทั้งแอปไปด้วย */
 const THEMES=[
-  {k:"light", th:"สว่าง", en:"Light"},
-  {k:"dark",  th:"มืด",   en:"Dark"}
+  {k:"light", th:"สว่าง",   en:"Light"},
+  {k:"dark",  th:"มืด",     en:"Dark"},
+  {k:"ocean", th:"มหาสมุทร",en:"Ocean"},
+  {k:"plant", th:"ต้นไม้",  en:"Plant"},
+  {k:"magma", th:"ลาวา",    en:"Magma"}
 ];
 const KEYS=THEMES.map(x=>x.k);
 
@@ -5653,11 +5577,9 @@ const KEYS=THEMES.map(x=>x.k);
    ไม่งั้นคนที่เคยตั้งไว้จะเปิดมาเจอธีมผิดโดยไม่รู้ว่าทำไม */
 const OLD={warm:"light",pearl:"light",
            carbon:"dark",night:"dark",midnight:"dark",cyber:"dark",
-           /* สามธีมสีที่เลิกใช้ ให้ตกลงมาที่โครงสีที่ใกล้ที่สุด
-              สีเด่นของมันย้ายไปอยู่ในตัวเลือกสีหลักแทน */
-           aurora:"dark",ocean:"dark",
-           emerald:"light",plant:"light",moss:"light",
-           sunset:"dark",magma:"dark"};
+           aurora:"ocean",
+           emerald:"plant",moss:"plant",
+           sunset:"magma"};
 
 function read(){
   let v=null;
@@ -6012,9 +5934,6 @@ const CURR=[["THB","฿ บาท","฿ Baht"],["USD","$ ดอลลาร์",
 
 /* ════════════ สถานะ ════════════ */
 const KEY="spire_setup", SETUP_VERSION=3;
-/* ภาษาในขั้นเลือกภาษา — เดิมอ้าง LANGS ที่ไม่มีอยู่จริง ขั้นนี้จึงพังและถูกข้ามไปเงียบๆ
-   ชุดเดียวกับรายการภาษาในตั้งค่า ชื่อเขียนด้วยภาษาของตัวเอง */
-const LANGS=[["th","🇹🇭 ไทย"],["en","🇬🇧 English"],["zh","🇨🇳 中文"],["ja","🇯🇵 日本語"],["ko","🇰🇷 한국어"],["id","🇮🇩 Indonesia"],["vi","🇻🇳 Tiếng Việt"],["ms","🇲🇾 Melayu"],["de","🇩🇪 Deutsch"],["fr","🇫🇷 Français"],["es","🇪🇸 Español"],["pt","🇵🇹 Português"],["ar","🇸🇦 العربية"]];
 function read(){ try{ const v=JSON.parse(localStorage.getItem(KEY));
   return v&&typeof v==="object"?v:null }catch(e){ return null } }
 function done(){ const v=read(); return !!(v&&v.v===SETUP_VERSION&&v.level) }
@@ -6033,21 +5952,6 @@ let authBusy=false, authErr="";
 
 /* ข้อความผิดพลาดของ Firebase เป็นรหัสภาษาอังกฤษล้วน แปลให้อ่านรู้เรื่อง
    ที่สำคัญคือบอกด้วยว่าต้องทำอะไรต่อ ไม่ใช่แค่บอกว่าผิด */
-/* ── จำวิธีเข้าระบบที่ยังไม่ได้เปิด ──
-   เก็บใน sessionStorage ไม่ใช่ localStorage เพราะถ้าเจ้าของระบบเพิ่งไปเปิด provider
-   ผู้ใช้แค่เปิดแท็บใหม่ก็ได้ปุ่มกลับมาครบ ไม่ต้องรอให้ใครมาบอกให้ล้างแคช */
-const AUTH_DEAD_KEY="spire_auth_off";
-function authDeadList(){
-  try{ return JSON.parse(sessionStorage.getItem(AUTH_DEAD_KEY)||"[]") }catch(e){ return [] }
-}
-function authDead(kind){ return authDeadList().indexOf(kind)>=0 }
-function authMarkDead(kind){
-  if(!kind||authDead(kind))return;
-  try{
-    const l=authDeadList(); l.push(kind);
-    sessionStorage.setItem(AUTH_DEAD_KEY,JSON.stringify(l));
-  }catch(e){}
-}
 function authMsg(code){
   const M={
     "auth/invalid-email":["อีเมลไม่ถูกต้อง","That email doesn't look right"],
@@ -6061,8 +5965,7 @@ function authMsg(code){
     "auth/popup-blocked":["เบราว์เซอร์บล็อกหน้าต่างล็อกอิน กรุณาอนุญาตป๊อปอัป","Your browser blocked the sign-in window — allow pop-ups"],
     "auth/too-many-requests":["ลองมากเกินไป รอสักครู่แล้วลองใหม่","Too many attempts — wait a moment and try again"],
     "auth/network-request-failed":["เชื่อมต่อไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองใหม่","Can't connect — check your internet and try again"],
-    "auth/operation-not-allowed":["วิธีนี้ยังเปิดให้ใช้ไม่ได้ ตอนนี้เข้าด้วย Google ได้เลย","That method isn't available yet — use Google for now"],
-    "auth/admin-restricted-operation":["วิธีนี้ยังเปิดให้ใช้ไม่ได้ ตอนนี้เข้าด้วย Google ได้เลย","That method isn't available yet — use Google for now"],
+    "auth/operation-not-allowed":["วิธีนี้ยังไม่ได้เปิดใช้งานในระบบ","That sign-in method isn't enabled yet"],
     "auth/invalid-phone-number":["เบอร์โทรไม่ถูกต้อง","That phone number isn't valid"],
     "auth/invalid-verification-code":["รหัสยืนยันไม่ถูกต้อง","That verification code is wrong"],
     "auth/unauthorized-domain":["โดเมนนี้ยังไม่ได้รับอนุญาตใน Firebase — เพิ่มโดเมนที่ Authentication → Settings → Authorized domains",
@@ -6173,12 +6076,7 @@ async function providerSignIn(kind){
       try{ await auth.signInWithRedirect(p); return }
       catch(err){ authErr=authMsg((err&&err.code)||code) }
     }
-    else if(code!=="auth/popup-closed-by-user"){
-      /* ระบบยังไม่ได้เปิดวิธีนี้ — จำไว้ ผู้ใช้จะได้ไม่ต้องมากดซ้ำแล้วเจอกำแพงเดิม */
-      if(code==="auth/operation-not-allowed"||code==="auth/admin-restricted-operation")
-        authMarkDead(kind);
-      authErr=authMsg(code);
-    }
+    else if(code!=="auth/popup-closed-by-user"){ authErr=authMsg(code) }
   }
   authBusy=false; render();
 }
@@ -6200,13 +6098,7 @@ async function emailSubmit(){
     }else{
       await auth.signInWithEmailAndPassword(mail.trim(),pass);
     }
-  }catch(e){
-    const code=(e&&e.code)||"unknown";
-    /* สมัครด้วยอีเมลถูกปิดอยู่ ก็ควรบอกให้ไปทางที่เปิดอยู่ แทนที่จะปล่อยให้ลองใหม่เรื่อย ๆ */
-    if(code==="auth/operation-not-allowed"||code==="auth/admin-restricted-operation")
-      authMarkDead("email");
-    authErr=authMsg(code);
-  }
+  }catch(e){ authErr=authMsg(e&&e.code||"unknown") }
   authBusy=false; render();
 }
 
@@ -6271,13 +6163,7 @@ async function phoneGo(){
       if(!phoneConfirm)throw {code:"auth/invalid-verification-code"};
       await phoneConfirm.confirm(code);
     }
-  }catch(e){
-    const pc=(e&&e.code)||"unknown";
-    if(pc==="auth/operation-not-allowed"||pc==="auth/admin-restricted-operation"){
-      authMarkDead("phone"); phase="auth";
-    }
-    authErr=authMsg(pc);
-  }
+  }catch(e){ authErr=authMsg(e&&e.code||"unknown") }
   authBusy=false; render();
 }
 
@@ -6413,52 +6299,22 @@ function stepHTML(){
 /* ════════════ ประกอบหน้าจอ ════════════ */
 let phase="auth";   /* auth · phone · wizard */
 
-function restoreHTML(){
-  return `<div class="su-card sp-anim is-in" style="text-align:center">
-    <div class="su-mark"><svg class="cmk" viewBox="-6.0 -6.0 94.8 112.0"><path d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg></div>
-    <div class="su-h">
-      <h1>${L("กำลังดึงการตั้งค่าของคุณ","Restoring your setup")}</h1>
-      <p>${L("รอสักครู่ ระบบกำลังดูว่าบัญชีนี้เคยตั้งค่าไว้แล้วหรือยัง",
-             "One moment — checking whether this account is already set up")}</p>
-    </div>
-    <div class="su-dots"><i></i><i></i><i></i></div>
-  </div>`;
-}
 function render(){
   const w=$("suWrap"); if(!w)return;
   /* หน้าล็อกอินกินเต็มจอแบ่งครึ่ง ส่วนตัวช่วยตั้งค่ากับหน้าเบอร์โทร
      ยังเป็นการ์ดกลางจอเหมือนเดิม แยกด้วยคลาสเดียวไม่ต้องมี CSS ซ้ำสองชุด */
   w.classList.toggle("auth", phase==="auth");
   const host=w.querySelector(".su-in"); if(!host)return;
-  host.innerHTML=phase==="phone"?phoneHTML():phase==="wizard"?stepHTML()
-    :phase==="restore"?restoreHTML():authHTML();
+  host.innerHTML=phase==="phone"?phoneHTML():phase==="wizard"?stepHTML():authHTML();
   wire();
 }
 
 function wire(){
   const w=$("suWrap"); if(!w)return;
   /* ── หน้าเข้าสู่ระบบ ── */
-  /* ── ปุ่มที่ระบบยังไม่ได้เปิดให้ใช้ ──
-     Firebase ตอบ auth/operation-not-allowed เมื่อ provider นั้นยังไม่ถูกเปิดใน Console
-     ของเดิมปล่อยให้ผู้ใช้กดชนกำแพงทีละปุ่มจนครบ โดยไม่มีอะไรบอกว่าปุ่มไหนใช้ได้จริง
-     ตอนนี้จำไว้ว่าอันไหนตาย แล้วหรี่มันลงพร้อมป้ายกำกับ เหลือทางที่เดินได้ให้เห็นชัด */
-  w.querySelectorAll("[data-prov]").forEach(b=>{
-    const kind=b.dataset.prov;
-    if(authDead(kind)){
-      b.disabled=true;
-      b.classList.add("su-p-off");
-      if(!b.querySelector(".su-p-tag")){
-        const tag=document.createElement("span");
-        tag.className="su-p-tag";
-        tag.textContent=L("ยังไม่เปิด","not available");
-        b.appendChild(tag);
-      }
-      return;
-    }
-    b.onclick=()=>{
-      if(kind==="phone"){ phase="phone"; phoneStage=0; authErr=""; render(); return }
-      providerSignIn(kind);
-    };
+  w.querySelectorAll("[data-prov]").forEach(b=>b.onclick=()=>{
+    if(b.dataset.prov==="phone"){ phase="phone"; phoneStage=0; authErr=""; render(); return }
+    providerSignIn(b.dataset.prov);
   });
   /* รูปโมโนลิธจะโผล่ก็ต่อเมื่อโหลดสำเร็จจริง ถ้าไฟล์ยังไม่ขึ้นเซิร์ฟเวอร์
      ให้ทิ้งไว้เป็นเลข 1 ที่วาดด้วย CSS แทน จะได้ไม่เหลือกรอบดำเปล่า ๆ
@@ -6665,31 +6521,10 @@ window.spireWireDanger=root=>{
 };
 
 /* ════════════ ทางเข้า ════════════ */
-/* idle = ยังไม่เคยถามคลาวด์ · busy = กำลังถาม · done = ถามแล้ว */
-let cloudTry="idle";
 function gate(){
   /* ยังไม่ล็อกอิน = ยังไม่ให้เข้าแอป ตามที่ตกลงไว้ว่าต้องล็อกอินก่อน */
-  if(!user()){
-    cloudTry="idle";
-    if(!$("suWrap")||phase!=="auth"&&phase!=="phone")open("auth");
-    return;
-  }
+  if(!user()){ if(!$("suWrap")||phase!=="auth"&&phase!=="phone")open("auth"); return }
   if(!done()){
-    /* บัญชีนี้อาจตั้งค่าไว้แล้วจากเครื่องอื่น ต้องไปถามคลาวด์ก่อนเสมอ
-       ไม่ใช่ผลักให้ตั้งค่าใหม่ทันทีที่ไม่เจอข้อมูลในเครื่อง */
-    if(cloudTry==="idle"){
-      cloudTry="busy";
-      open("restore");
-      (async()=>{
-        for(let i=0;i<40&&!window.cloudPullNow;i++)
-          await new Promise(r=>setTimeout(r,250));
-        try{ if(window.cloudPullNow)await window.cloudPullNow(9000) }catch(e){}
-        cloudTry="done"; gate();
-      })();
-      return;
-    }
-    if(cloudTry==="busy")return;
-    if(done()){ close(); return }
     if(phase!=="wizard"||!$("suWrap")){
       const u=user()||{}, cur=read()||{};
       step=0;
@@ -6700,7 +6535,6 @@ function gate(){
     }
     return;
   }
-  cloudTry="done";
   close();
 }
 
@@ -8087,221 +7921,19 @@ async function askAI(c){
 }
 
 /* ═══════════ โมดัลรายละเอียดรถ ═══════════ */
-/* แถวปุ่มลงมือทำ — อยู่เหนือแท็บข้อมูลเสมอ */
-(function(){const st=document.createElement("style");st.textContent=`
-/* ══════════════════════════════════════════════════════════════════
-   หน้าของรถคันนั้น — เขียนใหม่ทั้งหน้า
-   ───────────────────────────────────────────────────────────────────
-   ของเดิมยืมกล่องโมดัลของหน้าอื่นมาใช้ แล้วเอาสไตล์ไปแปะทับ
-   ผลคือได้กล่องข้อความที่บังเอิญมีข้อมูลรถอยู่ข้างใน ไม่ใช่หน้าของรถ
-
-   รอบนี้มีโครงของตัวเอง ชื่อคลาสของตัวเอง และลำดับที่ตั้งใจ
-     แถบหัว   ป้ายชื่อรถ + ตัวเลขสามตัวที่ตอบว่าต้องกังวลไหม
-     ปุ่มลงมือ อยู่เหนือข้อมูลเสมอ เพราะคนเปิดหน้านี้ตอนรถมีเรื่อง
-     แท็บ     สำหรับคนที่อยากรู้ลึก ไม่ใช่ด่านที่ต้องผ่านก่อน
-
-   ความลึกใช้สามชั้นบาง ๆ เส้นสว่างบน เส้นมืดล่าง เงากว้างจาง
-   ระยะห่างเป็นสเกลเดียว 4 8 12 16 20 24 ไม่มีตัวเลขนอกสเกล
-   ══════════════════════════════════════════════════════════════════ */
-.carx-bd{
-  position:fixed;inset:0;z-index:120;display:none;
-  align-items:center;justify-content:center;padding:24px;
-  background:rgba(6,5,3,.62);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-.carx-bd.show{display:flex;animation:carxFade .24s ease}
-@keyframes carxFade{from{opacity:0}}
-.carx{
-  width:min(680px,100%);max-height:min(88dvh,900px);
-  display:flex;flex-direction:column;overflow:hidden;
-  background:var(--bg);border:1px solid var(--line);
-  border-radius:26px;
-  box-shadow:0 40px 90px -30px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.06);
-  animation:carxUp .34s cubic-bezier(.2,.9,.3,1)}
-@keyframes carxUp{from{opacity:0;transform:translateY(20px) scale(.98)}}
-
-/* ── แถบหัว ── */
-.carx-hero{
-  position:relative;overflow:hidden;flex:0 0 auto;
-  padding:24px 24px 20px;border-bottom:1px solid var(--line-2);
-  background:linear-gradient(140deg,
-    color-mix(in srgb,var(--accent) 18%,var(--surface)),
-    color-mix(in srgb,var(--accent) 5%,var(--surface)) 58%,
-    var(--surface))}
-/* ประกายมุมขวาบน ให้แถบไม่แบนเป็นสีทาเรียบ */
-.carx-hero::after{
-  content:"";position:absolute;right:-90px;top:-120px;width:300px;height:300px;
-  border-radius:50%;pointer-events:none;
-  background:radial-gradient(circle,color-mix(in srgb,var(--accent) 26%,transparent),transparent 68%)}
-.carx-hero>*{position:relative;z-index:1}
-.carx-x{
-  position:absolute;right:16px;top:16px;z-index:2;
-  width:34px;height:34px;border-radius:12px;cursor:pointer;
-  border:1px solid var(--line);background:var(--surface);color:var(--ink);
-  display:grid;place-items:center;font-size:17px;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 4px 12px -8px rgba(0,0,0,.6);
-  transition:transform .16s,border-color .16s}
-.carx-x:hover{border-color:var(--accent)}
-.carx-x:active{transform:scale(.96)}
-.carx-id{display:flex;align-items:center;gap:16px;padding-right:44px}
-.carx-ic{
-  width:56px;height:56px;flex:0 0 56px;border-radius:18px;display:grid;
-  place-items:center;font-size:27px;color:var(--on-acc,#fff);background:var(--grad);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.32),
-             0 10px 22px -12px color-mix(in srgb,var(--accent) 88%,transparent)}
-.carx-id h2{margin:0;font-size:21px;font-weight:700;letter-spacing:-.03em;line-height:1.2;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.carx-sub{font-size:13px;color:var(--muted);margin-top:2px;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
-/* ── ตัวเลขสามตัว ── */
-.carx-kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:20px}
-.kpi{
-  background:color-mix(in srgb,var(--bg) 55%,transparent);
-  border:1px solid var(--line-2);border-radius:15px;padding:12px 10px;text-align:center;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
-.kpi b{display:block;font-size:19px;font-weight:700;letter-spacing:-.03em;
-  font-variant-numeric:tabular-nums;line-height:1.2}
-.kpi span{font-size:10.5px;color:var(--faint)}
-/* มีของเลยกำหนด ต้องเห็นด้วยหางตา ไม่ต้องอ่านตัวเลขก่อน */
-.kpi.warn{border-color:color-mix(in srgb,var(--danger) 45%,transparent);
-  background:color-mix(in srgb,var(--danger) 10%,transparent)}
-.kpi.warn b{color:var(--danger)}
-
-/* ── ปุ่มลงมือ ── */
-.carx-act{display:flex;gap:8px;padding:16px 24px 4px;flex:0 0 auto}
-.cl-a{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;
-  padding:13px 12px;border-radius:15px;border:1px solid var(--line);
-  background:var(--surface);color:var(--ink);font-family:inherit;
-  font-size:13.5px;font-weight:600;cursor:pointer;min-width:0;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 8px 18px -16px rgba(0,0,0,.6);
-  transition:transform .18s cubic-bezier(.32,.72,0,1),box-shadow .18s,border-color .18s}
-.cl-a span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cl-a i{font-size:17px;flex:0 0 auto}
-.cl-a:hover{transform:translateY(-2px);
-  border-color:color-mix(in srgb,var(--accent) 50%,transparent);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.09),0 16px 28px -18px rgba(0,0,0,.7)}
-.cl-a.p{
-  /* ปุ่มหลัก — ผิวโค้งที่มีประกายวิ่งผ่าน
-     ไล่สีอ่อนบนเข้มล่างคือผิวโค้งที่รับแสงจากด้านบน
-     แถบแสงเฉียงที่วิ่งผ่านตอนชี้คือสิ่งที่บอกว่าผิวมัน ไม่ใช่ผิวด้าน */
-  position:relative;overflow:hidden;isolation:isolate;border-color:transparent;
-  color:var(--on-acc,#fff);
-  background:
-    linear-gradient(180deg,rgba(255,255,255,.22) 0,rgba(255,255,255,.05) 46%,
-      rgba(0,0,0,.06) 47%,rgba(0,0,0,.12) 100%),
-    var(--grad);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.42),
-    inset 0 -1px 0 rgba(0,0,0,.28),
-    0 2px 4px -2px color-mix(in srgb,var(--accent) 60%,transparent),
-    0 12px 26px -12px color-mix(in srgb,var(--accent) 80%,transparent)}
-.cl-a.p::after{
-  content:"";position:absolute;top:-60%;bottom:-60%;left:-140%;width:55%;
-  z-index:1;pointer-events:none;transform:skewX(-22deg);
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.34),transparent);
-  transition:left .62s cubic-bezier(.25,.8,.3,1)}
-.cl-a.p:hover::after{left:150%}
-.cl-a.p>*{position:relative;z-index:2}
-.cl-a.p:hover{box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.5),
-    inset 0 -1px 0 rgba(0,0,0,.3),
-    0 20px 38px -14px color-mix(in srgb,var(--accent) 88%,transparent)}
-.cl-a.p:active{box-shadow:
-    inset 0 2px 6px rgba(0,0,0,.34),
-    inset 0 -1px 0 rgba(255,255,255,.14)}
-/* ก้อนไอคอนรถ ก็เป็นวัตถุมันวาวเหมือนกัน */
-.carx-ic{
-  background:
-    linear-gradient(180deg,rgba(255,255,255,.26) 0,rgba(255,255,255,.04) 48%,
-      rgba(0,0,0,.07) 49%,rgba(0,0,0,.15) 100%),
-    var(--grad);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.45),
-    inset 0 -1px 0 rgba(0,0,0,.24),
-    0 2px 4px -2px color-mix(in srgb,var(--accent) 55%,transparent),
-    0 12px 26px -12px color-mix(in srgb,var(--accent) 80%,transparent)}
-@media (prefers-reduced-motion:reduce){.cl-a.p::after{display:none}}
-.cl-a.x{flex:0 0 48px;color:var(--danger)}
-.cl-a.x:hover{border-color:color-mix(in srgb,var(--danger) 55%,transparent)}
-.cl-a:active{transform:translateY(1px);box-shadow:inset 0 2px 6px rgba(0,0,0,.24)}
-
-/* ── แท็บ ── */
-.carx-tabs{
-  display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:0 0 auto;
-  padding:16px 24px 14px;border-bottom:1px solid var(--line-2)}
-.carx-tabs::-webkit-scrollbar{display:none}
-.cl-tab{
-  flex:0 0 auto;display:flex;align-items:center;gap:6px;
-  padding:9px 15px;border-radius:12px;font-family:inherit;
-  font-size:12.5px;font-weight:600;white-space:nowrap;cursor:pointer;
-  border:1px solid transparent;background:transparent;color:var(--muted);
-  transition:.16s}
-.cl-tab:hover{background:var(--surface-2);color:var(--ink)}
-.cl-tab[aria-selected="true"]{
-  background:var(--grad);color:var(--on-acc,#fff);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),
-             0 8px 16px -10px color-mix(in srgb,var(--accent) 88%,transparent)}
-.cl-tab i{font-size:15px}
-
-/* ── เนื้อหา ── */
-.carx-body{flex:1;min-height:0;overflow-y:auto;padding:20px 24px 28px}
-
-/* ── ทุกจอ — ลดทีละขั้น ของที่หายคือระยะห่าง ไม่ใช่เนื้อหา ── */
-@media(max-width:640px){
-  .carx-bd{padding:0;align-items:flex-end}
-  .carx{width:100%;max-height:94dvh;border-radius:26px 26px 0 0;border-bottom:0;
-    animation:carxSheet .34s cubic-bezier(.2,.9,.3,1)}
-  @keyframes carxSheet{from{transform:translateY(40px);opacity:0}}
-  .carx-hero{padding:20px 18px 16px}
-  .carx-ic{width:48px;height:48px;flex:0 0 48px;border-radius:16px;font-size:23px}
-  .carx-id h2{font-size:18px}
-  .carx-kpi{margin-top:16px;gap:6px}
-  .kpi{padding:10px 6px;border-radius:13px}
-  .kpi b{font-size:17px}
-  .carx-act{padding:12px 18px 2px;gap:7px}
-  .cl-a{padding:12px 9px;font-size:12.5px;border-radius:13px}
-  .cl-a.x{flex:0 0 44px}
-  .carx-tabs{padding:12px 18px 11px}
-  .carx-body{padding:16px 18px 24px}
-}
-@media(max-width:400px){
-  /* จอเล็กมาก ตัวหนังสือบนปุ่มรองซ่อนไป เหลือไอคอน
-     แต่ปุ่มหลักยังมีคำ เพราะมันคือสิ่งที่เขามาทำ */
-  .cl-a:not(.p) span{display:none}
-  .cl-a:not(.p){flex:0 0 48px}
-}
-@media (prefers-reduced-motion:reduce){
-  .carx,.carx-bd,.cl-a{animation:none!important;transition:none!important}
-}
-`;document.head.appendChild(st)})();
 let modal=null, curCar=null, curTab="spec";
 function ensureModal(){
   if(modal)return modal;
   modal=D.createElement("div");
-  modal.className="mag-modal-backdrop carx-bd"; modal.id="clModal";
-  /* ── หน้าของรถคันนั้น ──
-     เขียนโครงใหม่ทั้งก้อนและใช้ชื่อคลาสของตัวเอง (carx-)
-     เพื่อไม่ให้สไตล์ไปชนกับกล่องอื่นที่ใช้ mag-modal ร่วมกันอยู่
-
-     ลำดับบนหน้าเรียงตามลำดับที่คนใช้จริง ไม่ใช่ลำดับที่ข้อมูลถูกเก็บ
-       1 นี่รถคันไหน       ป้ายชื่อใหญ่ ๆ ให้แน่ใจว่าเปิดถูกคัน
-       2 ตอนนี้เป็นยังไง   ตัวเลขสามตัวที่ตอบได้ทันทีว่าต้องกังวลไหม
-       3 จะทำอะไรกับมัน    ปุ่มลงมือ
-       4 รายละเอียด        แท็บข้อมูล สำหรับคนที่อยากรู้ลึก */
-  modal.innerHTML=`<div class="carx" role="dialog" aria-modal="true">
-    <div class="carx-hero">
-      <button class="carx-x" id="clX" aria-label="ปิด"><i class="ti ti-x"></i></button>
-      <div class="carx-id">
-        <span class="carx-ic" id="clIc"><i class="ti ti-car"></i></span>
-        <div style="min-width:0">
-          <h2 id="clName">—</h2>
-          <div class="carx-sub" id="clSub">—</div>
-        </div>
-      </div>
-      <div class="carx-kpi" id="clKpi"></div>
+  modal.className="mag-modal-backdrop"; modal.id="clModal";
+  modal.innerHTML=`<div class="mag-modal-sheet" role="dialog" aria-modal="true">
+    <div class="cl-head">
+      <div class="ic"><i class="ti ti-car"></i></div>
+      <div style="flex:1;min-width:0"><h2 id="clName">—</h2><div class="sub" id="clSub">—</div></div>
+      <button class="mag-modal-close" id="clX" aria-label="ปิด"><i class="ti ti-x"></i></button>
     </div>
-    <div class="carx-act" id="clAct"></div>
-    <div class="carx-tabs" role="tablist" id="clTabs"></div>
-    <div class="carx-body" id="clBody"></div>
+    <div class="cl-tabs" role="tablist" id="clTabs"></div>
+    <div class="mag-modal-body" id="clBody"></div>
   </div>`;
   D.body.appendChild(modal);
   modal.addEventListener("click",e=>{if(e.target===modal)closeCL()});
@@ -8325,26 +7957,7 @@ window.openCarDetail=function(id){
   curCar=c; ensureModal();
   ($("clName")||{}).textContent=c.name||`${c.make||""} ${c.model||""}`.trim()||T("รถของฉัน","My car");
   const b=BODY[bodyOf(c)];
-  ($("clSub")||{}).textContent=[c.year||"—",T(b.th,b.en),c.make||""].filter(Boolean).join(" · ");
-  /* ตัวเลขสามตัวที่ตอบได้ทันทีว่าต้องกังวลไหม
-     เลือกสามตัวนี้เพราะมันคือคำถามแรกที่คนถามเวลาเปิดดูรถของตัวเอง
-     ไม่ใช่เพราะมันเป็นข้อมูลที่เรามีเยอะที่สุด */
-  const due=(()=>{ try{
-    return planFor(c).map(pp=>dueOf(c,pp)).filter(d=>d.left<=0).length;
-  }catch(e){ return 0 } })();
-  ($("clKpi")||{}).innerHTML=`
-    <div class="kpi"><b>${num(KM(c))}</b><span>${T("กิโลเมตร","kilometres")}</span></div>
-    <div class="kpi"><b>${c.year||"—"}</b><span>${T("ปีจดทะเบียน","model year")}</span></div>
-    <div class="kpi${due?" warn":""}"><b>${due||"0"}</b><span>${T("รายการที่ถึงกำหนด","items due")}</span></div>`;
-  /* หาสาเหตุกับ AI ก่อน แล้วค่อยเรียกช่างพร้อมอาการที่สรุปไว้แล้ว
-     ลำดับนี้สำคัญ: ถ้าเรียกช่างโดยยังไม่รู้ว่าเป็นอะไร ทั้งสองฝ่ายเสียเวลา */
-  ($("clAct")||{}).innerHTML=`
-    <button class="cl-a p" data-act="diag"><i class="ti ti-stethoscope"></i>
-      <span>${T("หาสาเหตุกับ AI","Diagnose with AI")}</span></button>
-    <button class="cl-a" data-act="tech"><i class="ti ti-tool"></i>
-      <span>${T("เรียกช่าง","Call a pro")}</span></button>
-    <button class="cl-a x" data-act="del" aria-label="${T("ลบรถคันนี้","Remove car")}">
-      <i class="ti ti-trash"></i></button>`;
+  ($("clSub")||{}).textContent=`${c.year||"—"} · ${T(b.th,b.en)} · ${num(KM(c))} ${T("กม.","km")}`;
   ($("clTabs")||{}).innerHTML=TABS.map(t=>
     `<button class="cl-tab" role="tab" data-tab="${t.k}" aria-selected="${t.k===curTab}">
        <i class="ti ${t.ic}"></i> ${T(t.th,t.en)}</button>`).join("");
@@ -8352,26 +7965,6 @@ window.openCarDetail=function(id){
   modal.classList.add("show");
 };
 D.addEventListener("click",e=>{
-  const a=e.target.closest("[data-act]");
-  if(a&&a.closest("#clAct")&&curCar){
-    const c=curCar, k=a.dataset.act;
-    if(k==="diag"){
-      /* ส่งรถคันนี้ไปให้ห้องแชตพร้อมกัน AI จะได้ไม่ต้องถามว่ารถอะไรอีก */
-      try{ if(window.openChat){ closeCL(); window.openChat({car:c.id,starter:true}); return } }catch(err){}
-      location.href="/chat?car="+encodeURIComponent(c.id)+"&starter=1"; return;
-    }
-    if(k==="tech"){
-      /* พาไปหน้าช่างพร้อมข้อมูลรถ ระบบจะได้กรองช่างที่รับยี่ห้อนี้ให้ */
-      const q=[c.make||"",c.model||"",c.name||""].filter(Boolean).join(" ").trim();
-      location.href="/tech"+(q?"?q="+encodeURIComponent(q):""); return;
-    }
-    if(k==="del"){
-      if(!confirm(T("ลบรถคันนี้ออกจากการาจ?","Remove this car from your garage?")))return;
-      try{ const g=garage().filter(x=>x.id!==c.id); saveGarage(g);
-        closeCL(); if(window.renderGarage)window.renderGarage() }catch(err){}
-      return;
-    }
-  }
   const t=e.target.closest("[data-tab]");
   if(t&&t.closest("#clTabs")){curTab=t.dataset.tab;
     $("clTabs").querySelectorAll(".cl-tab").forEach(x=>x.setAttribute("aria-selected",x.dataset.tab===curTab));
@@ -10174,8 +9767,7 @@ function palmAt(x,base,h,lean){
   }
   cx.restore();
 }
-/* cv เป็นตัวแปรใน initCanvas — อ้างตรงนี้ไม่ได้ ลูปจะพังตั้งแต่เฟรมแรก จึงหา canvas จาก id แทน */
-function loop(){ if(running&&window.spireAwake($("briefCanvas"))){tick++;draw()} requestAnimationFrame(loop) }
+function loop(){ if(running&&window.spireAwake(cv)){tick++;draw()} requestAnimationFrame(loop) }
 requestAnimationFrame(loop);
 
 /* ═══════════ สร้างหน้า ═══════════ */
@@ -15433,7 +15025,7 @@ else boot();
 })();
 </script>
 <script>
-window.__SPIRE_PAGE__="garage";
+window.__SPIRE_PAGE__="home";
 window.__SPIRE_FILES__={"home": "/", "garage": "/garage", "magazine": "/news", "shop": "/spares", "profile": "/profile"};
 (function(){
 "use strict";
@@ -15530,507 +15122,250 @@ window.switchView=function(v){
   }
 })();
 </script>
-<style id="sudots">
-.su-dots{display:flex;gap:6px;justify-content:center;margin-top:4px}
-.su-dots i{width:7px;height:7px;border-radius:50%;background:#F0894F;opacity:.35;
-  animation:suDot 1.1s ease-in-out infinite}
-.su-dots i:nth-child(2){animation-delay:.16s}
-.su-dots i:nth-child(3){animation-delay:.32s}
-@keyframes suDot{0%,100%{opacity:.3;transform:translateY(0)}45%{opacity:1;transform:translateY(-4px)}}
-@media (prefers-reduced-motion:reduce){.su-dots i{animation:none;opacity:.7}}
+<!-- ════════════════════════════════════════════════════════════════════
+     หน้าหลักมือถือแบบหน้าเดียว (ทั้งแนวตั้งและแนวนอน)
+     บน: โลโก้ C · ช่องค้นหา · บัญชี   →   billboard เลื่อนซ้ายขวา (ขนาดล็อกคงที่)
+     กลาง: เครื่องมือสองแถว ตัวสุดท้าย "ทั้งหมด"   →   ล่าง: แถบนำทาง (ขนาดล็อก ไฮไลต์ตามหน้าที่เปิด)
+     ทุกชิ้นรวมเป็นก้อนเดียว จัดกึ่งกลางทั้งแกน x และ y
+     ของเดิมของหน้า (จอเลื่อนสามจอ) ยังอยู่ครบ แค่ซ่อนไว้บนมือถือ — จอคอมไม่ถูกแตะเลย
+     ════════════════════════════════════════════════════════════════════ -->
+<style id="mhome-css">
+body.mh-on #v-home>.scroll,body.mh-on #mnav,body.mh-on .fab-dock{display:none!important}
+body.mh-on{overflow:hidden}
+#mh{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:calc(12px + env(safe-area-inset-top)) 16px calc(96px + env(safe-area-inset-bottom));
+  background:var(--bg);color:var(--ink);font-family:var(--kb)}
+#mh *{box-sizing:border-box}
+#mh .mh-in{width:100%;max-width:420px;display:flex;flex-direction:column;gap:22px}
+/* บน */
+#mh .mh-top{display:flex;align-items:center;gap:10px}
+#mh .mh-logo{width:24px;height:28px;flex:none;color:#F08A3D}
+#mh .mh-find{flex:1;min-width:0;height:44px;display:flex;align-items:center;gap:9px;padding:0 15px;border-radius:22px;border:0;
+  background:var(--surface);color:var(--faint);font:inherit;font-size:14px;text-align:left;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 8px 18px -12px rgba(0,0,0,.55)}
+#mh .mh-find i{font-size:18px;color:var(--muted)}
+#mh .mh-av{width:40px;height:40px;flex:none;border-radius:50%;border:0;overflow:hidden;display:grid;place-items:center;
+  font:inherit;font-weight:700;color:#fff;background:linear-gradient(180deg,#F6A04F,#EE8132);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 6px 14px -6px #EE8132}
+#mh .mh-av img{width:100%;height:100%;object-fit:cover}
+/* billboard — ทุกใบสูงเท่ากันเสมอ (ล็อกด้วย aspect-ratio ของกรอบ ไม่ใช่เนื้อหา) */
+#mh .mh-bb{position:relative;width:100%;aspect-ratio:2.05;border-radius:22px;overflow:hidden;
+  box-shadow:0 16px 30px -18px rgba(0,0,0,.6)}
+#mh .mh-track{display:flex;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+#mh .mh-track::-webkit-scrollbar{display:none}
+#mh .mh-card{position:relative;flex:0 0 100%;height:100%;scroll-snap-align:center;padding:16px 18px;color:#fff;text-align:left;border:0;font:inherit;
+  display:flex;flex-direction:column;overflow:hidden;cursor:pointer}
+#mh .mh-card small{display:flex;align-items:center;gap:6px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;opacity:.85}
+#mh .mh-card h3{font-size:21px;font-weight:600;margin:5px 0 1px;line-height:1.2}
+#mh .mh-card p{font-size:12.5px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#mh .mh-card .go{position:relative;z-index:1;margin-top:auto;display:flex;align-items:center;justify-content:space-between;font-size:12.5px;font-weight:500}
+#mh .mh-card .go span{padding:5px 11px;border-radius:99px;background:rgba(255,255,255,.2)}
+#mh .mh-card .big{position:absolute;right:-6px;top:6px;font-size:96px;opacity:.14}
+#mh .c-brief{background:linear-gradient(160deg,#6FA3D9,#3F70B0)}
+#mh .c-garage{background:linear-gradient(160deg,#EC9A5E,#C9612F)}
+#mh .c-mag{background:linear-gradient(160deg,#4D5A7E,#2A3150)}
+#mh .c-more{background:linear-gradient(160deg,#4FB38C,#2B7F63)}
+#mh .mh-dots{display:flex;justify-content:center;gap:6px;margin-top:10px}
+#mh .mh-dots i{width:6px;height:6px;border-radius:6px;background:var(--line);transition:width .3s,background .3s}
+#mh .mh-dots i.on{width:18px;background:#F08A3D}
+/* เครื่องมือ */
+#mh .mh-grid,#mhAll .mh-grid{display:grid;grid-template-columns:repeat(4,1fr);row-gap:16px}
+#mh .mh-t,#mhAll .mh-t{display:flex;flex-direction:column;align-items:center;gap:7px;border:0;background:none;font:inherit;font-size:11.5px;color:var(--muted);cursor:pointer}
+#mh .mh-k,#mhAll .mh-k{width:52px;height:52px;border-radius:17px;display:grid;place-items:center;font-size:23px;color:#fff;transition:transform .12s;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--c) 80%,#fff),var(--c));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -2px 0 rgba(0,0,0,.12),0 8px 16px -10px var(--c)}
+#mh .mh-t:active .mh-k,#mhAll .mh-t:active .mh-k{transform:scale(.96)}
+/* แถบนำทาง — ขนาดล็อก เหมือนกันทุกหน้า */
+#mhNav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom));z-index:101;
+  width:min(420px,calc(100% - 24px));height:64px;border-radius:22px;display:grid;grid-template-columns:repeat(5,1fr);
+  background:var(--surface);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 14px 30px -14px rgba(0,0,0,.6)}
+#mhNav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:0;background:none;font:inherit;font-size:10.5px;color:var(--faint);cursor:pointer}
+#mhNav button span{width:40px;height:26px;border-radius:13px;display:grid;place-items:center;font-size:20px;overflow:hidden}
+#mhNav button span img{width:24px;height:24px;border-radius:50%;object-fit:cover}
+#mhNav button.on{color:#F08A3D}
+#mhNav button.on span{background:rgba(240,138,61,.16)}
+/* แผ่นทั้งหมด (+ ค้นหา + เรียงลำดับ) */
+#mhAll{position:fixed;inset:0;z-index:120;display:none}
+#mhAll.on{display:block}
+#mhAll .bg{position:absolute;inset:0;background:rgba(0,0,0,.45);animation:mhF .2s}
+#mhAll .sh{position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:min(460px,100%);max-height:86%;overflow:auto;
+  background:var(--surface);border-radius:26px 26px 0 0;padding:10px 16px calc(22px + env(safe-area-inset-bottom));animation:mhU .32s cubic-bezier(.2,.9,.25,1)}
+#mhAll .grab{width:38px;height:5px;border-radius:5px;background:var(--line);margin:0 auto 12px}
+#mhAll .q{display:flex;align-items:center;gap:8px;height:42px;padding:0 14px;border-radius:21px;background:var(--bg)}
+#mhAll .q input{flex:1;min-width:0;border:0;outline:0;background:none;color:var(--ink);font:inherit;font-size:14.5px}
+#mhAll .q i{color:var(--muted)}
+#mhAll .sort{display:flex;gap:6px;margin:12px 0 4px}
+#mhAll .sort button{border:0;font:inherit;font-size:12.5px;padding:6px 12px;border-radius:99px;background:var(--bg);color:var(--muted);cursor:pointer}
+#mhAll .sort button.on{background:#F08A3D;color:#fff}
+#mhAll h4{font-size:12px;font-weight:500;color:var(--muted);margin:14px 4px 10px}
+#mhAll .mh-grid{row-gap:16px}
+#mhAll .none{padding:20px;text-align:center;color:var(--muted);font-size:13px}
+@keyframes mhF{from{opacity:0}}@keyframes mhU{from{transform:translate(-50%,100%)}}
+/* แนวนอน (ความสูงน้อย): สองคอลัมน์ ซ้าย = บน + billboard · ขวา = เครื่องมือ — ยังอยู่กลางจอ */
+@media(orientation:landscape) and (max-height:520px){
+  #mh{padding:calc(8px + env(safe-area-inset-top)) calc(20px + env(safe-area-inset-right)) 84px calc(20px + env(safe-area-inset-left))}
+  #mh .mh-in{max-width:760px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:24px;row-gap:12px;align-items:center}
+  #mh .mh-top{grid-column:1/3}
+  #mh .mh-bbw{grid-column:1;min-width:0}
+  #mh .mh-in>.mh-grid{grid-column:2;row-gap:10px;min-width:0}
+  #mh .mh-bb{aspect-ratio:auto;height:min(46vh,190px)}
+  #mh .mh-t{font-size:10.5px}
+  #mh .mh-k{width:44px;height:44px;border-radius:14px;font-size:20px}
+  #mhNav{height:56px;bottom:calc(8px + env(safe-area-inset-bottom))}
+}
+@media(prefers-reduced-motion:reduce){#mhAll .bg,#mhAll .sh{animation:none}}
 </style>
-<script>
-/* ═══════════════════════════════════════════════════════════════════
-   CENDON CLOUD — ข้อมูลผู้ใช้ตามบัญชี ไม่ใช่ตามเครื่อง
-   ───────────────────────────────────────────────────────────────────
-   เดิมทุกอย่างอยู่ใน localStorage ล้วน ๆ เข้าบัญชีเดียวกันจากมือถือกับ
-   คอมจึงเห็นธีมคนละสีและบทสนทนาคนละชุด ตัวนี้ทำหน้าที่:
-     • ดึงของบนคลาวด์ลงมารวมกับของในเครื่องตอนล็อกอิน (ของใหม่กว่าชนะ)
-     • ส่งทุกการเปลี่ยนแปลงขึ้นคลาวด์ให้เองแบบหน่วงสั้น ๆ
-   ผู้ใช้ไม่ต้องกดปุ่มซิงก์ ไม่ต้องตั้งค่าอะไรเลย
-   ═══════════════════════════════════════════════════════════════════ */
+<script id="mhome-js">
 (function(){
-const D=document, $=id=>D.getElementById(id);
-const L=(th,en)=>(window.spireT?window.spireT(th,en):((window.lang||"th")==="en"?en:th));
+"use strict";
+var D=document,$=function(i){return D.getElementById(i)};
+/* มือถือแนวตั้ง หรือมือถือแนวนอน (จอเตี้ย + นิ้วแตะ) */
+var MQ=matchMedia("(max-width:760px), (orientation:landscape) and (max-height:520px) and (pointer:coarse)");
+function en(){try{return (JSON.parse(localStorage.getItem("spire_lang"))||"th")==="en"}catch(e){return false}}
+function T(th,e){return en()?e:th}
+function rd(k,d){try{var v=JSON.parse(localStorage.getItem("spire_"+k));return v==null?d:v}catch(e){return d}}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 
-const META="spire___meta";                 /* เวลาแก้ล่าสุดของแต่ละคีย์ */
-const PULLED="spire___pulled";             /* บัญชีที่ดึงลงมาแล้วรอบนี้ */
-/* คีย์ที่ต้องเหมือนกันทุกเครื่อง — sess_/cursess_ ต่อท้ายด้วยรหัสรถ */
-/* setup = ก้อนการตั้งค่าบัญชีทั้งหมด (ระดับการใช้งาน ภาษา ธีม หน่วย การแจ้งเตือน)
-   ไม่เคยอยู่ในรายการซิงก์มาก่อน จึงเป็นอีกสาเหตุที่เข้าเครื่องใหม่แล้วต้องตั้งค่าใหม่ */
-const FIXED=["setup","theme","chatTheme","primary","lang","chatStyle","garage","selCar",
-             "skills","skillcat","chatSessions","units","notify"];
-const isTracked=k=>FIXED.indexOf(k)>=0||/^(sess|cursess|chatMsgs)_/.test(k);
-
-const SYNCED="spire___synced";             /* ส่งขึ้นสำเร็จถึงเวลาไหนแล้ว ต่อคีย์ */
-const SEEN="spire___seen";                 /* ลายเซ็นที่เห็นครั้งก่อน ใช้จับว่าแก้บนเครื่องนี้จริงไหม */
-const meta=()=>{ try{ return JSON.parse(localStorage.getItem(META))||{} }catch(e){ return {} } };
-const setMeta=m=>{ try{ localStorage.setItem(META,JSON.stringify(m)) }catch(e){} };
-const synced=()=>{ try{ return JSON.parse(localStorage.getItem(SYNCED))||{} }catch(e){ return {} } };
-/* ลายเซ็นสั้น ๆ ของค่าในคีย์ ใช้จับว่า "เนื้อข้อมูลเปลี่ยนจริงไหม"
-   บางคีย์ (เช่น setup, theme) ถูกเขียนด้วย localStorage ตรง ๆ ไม่ผ่าน LS.set
-   ตัวแจ้งเตือน cloudMark จึงไม่เคยทำงาน ถ้าดูแต่เวลาที่จดไว้จะพลาดตลอด */
-function sig(str){
-  let h=5381;
-  for(let i=0;i<str.length;i++)h=((h*33)^str.charCodeAt(i))>>>0;
-  return str.length+":"+h.toString(36);
-}
-const setSynced=m=>{ try{ localStorage.setItem(SYNCED,JSON.stringify(m)) }catch(e){} };
-const seen=()=>{ try{ return JSON.parse(localStorage.getItem(SEEN))||{} }catch(e){ return {} } };
-const setSeen=m=>{ try{ localStorage.setItem(SEEN,JSON.stringify(m)) }catch(e){} };
-const raw=k=>localStorage.getItem("spire_"+k);
-
-let dirty=new Set(), timer=null, busy=false, pulled=false, fails=0, retryT=null;
-
-window.cloudMark=function(k){
-  if(!isTracked(k))return;
-  const m=meta(); m[k]=Date.now(); setMeta(m);
-  dirty.add(k);
-  clearTimeout(timer);
-  timer=setTimeout(push,1500);            /* หน่วงไว้ พิมพ์รัว ๆ จะได้ไม่ยิงทุกตัวอักษร */
-};
-
-/* คีย์ที่ต้องส่งขึ้น = ทุกคีย์ที่ยัง "ส่งไม่ถึง" เวลาแก้ล่าสุดของมัน
-   ของเดิมดูจาก dirty ซึ่งเป็นตัวแปรในหน่วยความจำ พอรีเฟรชหน้าก็ว่างเปล่า
-   บวกกับ meta ที่ถูกตั้งไว้ตั้งแต่รอบก่อน ทำให้ไม่มีคีย์ไหนเข้าเงื่อนไขเลย
-   ผลคือหลังจากส่งพลาดครั้งแรก มันจะไม่พยายามส่งอะไรอีกเลยตลอดไป
-   ต่อให้ deploy เซิร์ฟเวอร์เสร็จแล้วก็ตาม */
-function collect(){
-  const m=meta(), sy=synced(), sn=seen(), out={};
-  const keys=new Set(dirty);
-  for(let i=0;i<localStorage.length;i++){
-    const full=localStorage.key(i);
-    if(!full||full.indexOf("spire_")!==0)continue;
-    const k=full.slice(6);
-    if(!isTracked(k))continue;
-    const v=localStorage.getItem(full);
-    if(v===null)continue;
-    const now=sig(v), rec=sy[k]||{};
-    /* ── เวลาแก้ล่าสุด ต้องหมายถึง "ผู้ใช้แก้บนเครื่องนี้" จริง ๆ เท่านั้น ──
-       ของเดิมประทับเวลาปัจจุบันให้ทุกคีย์ที่ยังไม่เคยส่งสำเร็จ
-       ค่าเก่าที่วางอยู่เฉย ๆ จึงดูใหม่กว่าค่าที่อีกเครื่องเพิ่งเปลี่ยนจริง
-       ผลคือเครื่องนี้ไม่ยอมรับของใหม่ แถมยังดันของเก่าทับกลับไป
-       ธีมที่เปลี่ยนในมือถือจึงเด้งกลับเป็นของเดิมตามคอม
-       แก้โดยจำ "ลายเซ็นที่เห็นครั้งก่อน" ไว้ แล้วขยับเวลาเฉพาะตอนที่มันต่างจริง */
-    if(sn[k]===undefined){
-      /* เห็นครั้งแรก ยังไม่รู้ว่าใครแก้ทีหลัง อย่าเพิ่งอ้างว่าเป็นของใหม่ */
-      sn[k]=now;
-      if(!m[k])m[k]=1;
-    }else if(sn[k]!==now){
-      sn[k]=now; m[k]=Date.now();        /* ผู้ใช้แก้บนเครื่องนี้จริง */
-    }
-    if(rec.h!==now)keys.add(k);          /* ยังส่งไม่ถึงเซิร์ฟเวอร์ ต้องส่ง */
-  }
-  setMeta(m); setSeen(sn);
-  keys.forEach(k=>{
-    const v=raw(k);
-    if(v===null)return;
-    let parsed=null; try{ parsed=JSON.parse(v) }catch(e){ parsed=v }
-    out[k]={v:parsed,t:m[k]||Date.now()};
-  });
-  return out;
-}
-
-async function req(path,opt){
-  const A=window.auth||window.spireAuth; const u=A&&A.currentUser;
-  if(!u||!window.BACKEND_URL)throw new Error("offline");
-  const tok=await u.getIdToken();
-  const r=await fetch(window.BACKEND_URL+path,Object.assign({},opt,{
-    headers:Object.assign({"Content-Type":"application/json","Authorization":"Bearer "+tok},
-                          (opt&&opt.headers)||{})}));
-  if(!r.ok)throw new Error("HTTP "+r.status);
-  return await r.json();
-}
-
-/* บันทึกสถานะไว้ให้ตรวจได้ ของเดิมกลืนข้อผิดพลาดทั้งหมดจนไม่รู้ว่าพังตรงไหน
-   พิมพ์ cloudStatus() ใน console เพื่อดูว่าซิงก์ล่าสุดสำเร็จหรือไม่ เพราะอะไร */
-const St={pulled:null,pushed:null,error:null,keys:0,user:null,url:null};
-window.cloudStatus=()=>Object.assign({},St,{
-  user:(()=>{const A=window.auth||window.spireAuth;return A&&A.currentUser?A.currentUser.email||"signed-in":"NOT SIGNED IN"})(),
-  url:window.BACKEND_URL||"(missing)"});
-
-async function push(){
-  if(busy)return; busy=true;
-  try{
-    const state=collect();
-    if(Object.keys(state).length){
-      await req("/api/state",{method:"PUT",body:JSON.stringify({state})});
-      dirty.clear();
-      /* จดไว้ว่าคีย์ไหนไปถึงเซิร์ฟเวอร์แล้ว รอบหน้าจะได้ไม่ส่งซ้ำ
-         และถ้ารอบนี้พลาด รอบหน้ามันจะถูกหยิบมาส่งใหม่เองอัตโนมัติ */
-      const sy=synced();
-      Object.keys(state).forEach(k=>{
-        const v=localStorage.getItem("spire_"+k);
-        sy[k]={t:state[k].t,h:v===null?null:sig(v)};
-      });
-      setSynced(sy);
-      St.pushed=new Date().toISOString(); St.keys=Object.keys(state).length;
-    }
-    St.error=null; fails=0;
-    await flushFeedback();
-  }catch(e){
-    St.error=String(e&&e.message||e);
-    fails++;
-    console.warn("[cloud] ส่งข้อมูลขึ้นคลาวด์ไม่สำเร็จ:",St.error,
-      "— ถ้าเป็น HTTP 404 แปลว่า Worker ยังไม่ได้ deploy เวอร์ชันใหม่");
-    /* ลองใหม่เองโดยถอยห่างขึ้นเรื่อย ๆ 15 วิ → 30 → 60 → 120 → สูงสุด 5 นาที
-       ผู้ใช้ไม่ต้องกดอะไร พอ deploy เสร็จเมื่อไรมันจะไปเองในรอบถัดไป */
-    clearTimeout(retryT);
-    retryT=setTimeout(()=>{ busy=false; boot() },Math.min(300000,15000*Math.pow(2,Math.min(fails,5))));
-  }
-  busy=false;
-}
-
-/* ความเห็นที่ส่งไม่สำเร็จตอนออฟไลน์ ค้างอยู่ในคิว ลองส่งใหม่ทุกครั้งที่ซิงก์ */
-async function flushFeedback(){
-  let q=[]; try{ q=JSON.parse(localStorage.getItem("spire_fbQueue"))||[] }catch(e){}
-  if(!q.length)return;
-  const left=[];
-  for(const item of q){
-    try{ await req("/api/feedback",{method:"POST",body:JSON.stringify(item)}) }
-    catch(e){ left.push(item) }
-  }
-  try{ localStorage.setItem("spire_fbQueue",JSON.stringify(left)) }catch(e){}
-}
-
-/* ดึงลงมารวม — เทียบทีละคีย์ ของที่แก้ทีหลังชนะ ไม่ต้องถามผู้ใช้ว่าจะเอาอันไหน */
-async function pull(){
-  const d=await req("/api/state");
-  St.pulled=new Date().toISOString(); St.error=null;
-  const m=meta(), st=d.state||{};
-  let touched=[];
-  Object.keys(st).forEach(k=>{
-    if(!isTracked(k))return;
-    const remote=st[k], mine=m[k]||0;
-    if(!(remote.t>mine))return;
-    const str=JSON.stringify(remote.v);
-    try{ localStorage.setItem("spire_"+k,str) }catch(e){ return }
-    m[k]=remote.t; touched.push(k);
-    /* ของที่เพิ่งรับมา ถือว่าตรงกับเซิร์ฟเวอร์แล้ว ไม่ต้องส่งกลับไปอีก */
-    const sy=synced(); sy[k]={t:remote.t,h:sig(str)}; setSynced(sy);
-    const sn=seen(); sn[k]=sig(str); setSeen(sn);
-  });
-  setMeta(m);
-  if(touched.length)apply(touched);
-  return touched;
-}
-
-/* วาดหน้าใหม่เฉพาะส่วนที่ค่าเปลี่ยนจริง จะได้ไม่กระพริบทั้งหน้า
-   ทุกอย่างที่นี่คือ "อีกเครื่องเปลี่ยนแล้วเครื่องนี้ต้องเปลี่ยนตามทันที" */
-function apply(keys){
-  const has=x=>keys.indexOf(x)>=0;
-  const rd=k=>{ try{ return JSON.parse(localStorage.getItem("spire_"+k)) }catch(e){ return null } };
-  try{
-    /* ธีม — ก้อน setup ก็เก็บธีมไว้ด้วย เปลี่ยนที่ไหนก็ต้องตามทั้งคู่ */
-    if(has("theme")||has("chatTheme")||has("setup")){
-      const su=rd("setup")||{};
-      const t=rd("chatTheme")||rd("theme")||su.theme;
-      if(t){
-        D.documentElement.setAttribute("data-ctheme",t);
-        D.documentElement.setAttribute("data-theme",t);
-        /* เขียนกลับให้ทั้งสองคีย์ตรงกัน โค้ดเก่าบางส่วนยังอ่านคีย์เดิมอยู่ */
-        try{ localStorage.setItem("spire_chatTheme",JSON.stringify(t));
-             localStorage.setItem("spire_theme",JSON.stringify(t)) }catch(e){}
-        window.markTheme&&window.markTheme();
-        try{ const mt=D.querySelector('meta[name="theme-color"]');
-             if(mt){ const c=getComputedStyle(D.documentElement).getPropertyValue("--c-bg0").trim();
-                     if(c)mt.setAttribute("content",c) } }catch(e){}
-      }
-    }
-    /* ภาษา */
-    if(has("lang")||has("setup")){
-      const l=rd("lang")||(rd("setup")||{}).lang;
-      if(l&&l!==window.lang){
-        if(window.spireSetLang)window.spireSetLang(l);
-        else if(window.setLang)window.setLang(l);
-      }
-    }
-    /* ระดับการใช้งานและหน่วยวัด อยู่ในก้อน setup */
-    if(has("setup")){
-      const su=rd("setup")||{};
-      if(su.level&&window.spireLevel&&window.spireLevel()!==su.level){
-        D.documentElement.dataset.level=su.level;
-        try{ window.spireApplySetup&&window.spireApplySetup() }catch(e){}
-      }
-    }
-    /* สีหลักที่เปลี่ยนจากอีกเครื่อง ต้องทาทับทันทีเหมือนธีม */
-    if(has("primary"))window.spireApplyPrimary&&window.spireApplyPrimary();
-    if(has("garage")||has("selCar"))window.renderCarUI&&window.renderCarUI();
-    /* บทสนทนา — ห้ามวาดทับตอนผู้ใช้กำลังพิมพ์หรือกำลังรอคำตอบอยู่
-       ไม่งั้นข้อความที่เพิ่งพิมพ์จะหายไปต่อหน้าต่อตา */
-    if(keys.some(k=>/^(sess|cursess|chatMsgs)_/.test(k))){
-      const typing=(()=>{ try{
-        const el=D.getElementById("inp");
-        return (window.sending===true)||!!(el&&el.value.trim());
-      }catch(e){ return false } })();
-      window.renderHist&&window.renderHist();
-      window.paintSide&&window.paintSide();
-      if(!typing){
-        window.loadSession&&window.loadSession();
-        window.renderMessages&&window.renderMessages();
-      }
-    }
-    if(has("chatStyle"))window.renderChatPrefs&&window.renderChatPrefs();
-    if(window.paintSync)window.paintSync();
-  }catch(e){ console.warn("[cloud] apply",e) }
-  try{ window.spireSkillsRefresh&&window.spireSkillsRefresh() }catch(e){}
-}
-
-/* ── จังหวะการทำงาน ──
-   ล็อกอินเสร็จ → ดึงลงหนึ่งครั้ง แล้วส่งขึ้นทุกครั้งที่มีการแก้
-   สลับแท็บกลับมา / ก่อนปิดหน้า → ซิงก์อีกรอบ กันของหายตอนปิดเครื่อง */
-async function boot(){
-  const A=window.auth||window.spireAuth; const u=A&&A.currentUser;
-  if(!u){ pulled=false; return }
-  if(busy)return;
-  /* ต้องดึงลงซ้ำเรื่อย ๆ ไม่ใช่ครั้งเดียวตอนเปิดหน้า
-     ไม่งั้นอีกเครื่องเปลี่ยนธีมหรือภาษาแล้วเครื่องนี้จะไม่มีวันรู้เลย
-     จนกว่าจะปิดเปิดหน้าใหม่ */
-  if(pulled){
-    busy=true;
-    try{ await pull() }catch(e){ St.error=String(e&&e.message||e) }
-    busy=false;
-    await push();
-    return;
-  }
-  pulled=true;
-  try{ await pull() }catch(e){
-    pulled=false;
-    St.error=String(e&&e.message||e);
-    console.warn("[cloud] ดึงข้อมูลจากคลาวด์ไม่สำเร็จ:",St.error,
-      "— HTTP 404 = Worker ยังเป็นเวอร์ชันเก่า, HTTP 401 = ยังไม่ล็อกอิน");
-    /* ดึงลงไม่ได้ไม่ได้แปลว่าส่งขึ้นไม่ได้ ให้ push ลองต่อ
-       และตัว push มีตัวนับถอยกลับไปลองใหม่ให้เองอยู่แล้ว */
-  }
-  await push();
-}
-window.cloudSync=()=>{ pulled=false; return boot() };
-/* ดึงจากคลาวด์เดี๋ยวนี้แล้วรอผล ใช้ตอนตัดสินใจว่าต้องให้ผู้ใช้ตั้งค่าใหม่ไหม
-   คืนค่า true ถ้าได้ข้อมูลลงมาจริง ไม่ว่าจะสำเร็จหรือไม่ก็ไม่ค้างเกินเวลาที่กำหนด */
-window.cloudPullNow=async function(ms){
-  const A=window.auth||window.spireAuth;
-  if(!A||!A.currentUser)return false;
-  try{
-    await Promise.race([pull(),new Promise((_,rj)=>setTimeout(()=>rj(new Error("timeout")),ms||7000))]);
-    return true;
-  }catch(e){ St.error=String(e&&e.message||e); return false }
-};
-
-/* เฝ้ารอผู้ใช้ล็อกอินตลอดอายุของหน้า ไม่เลิกรอหลังหนึ่งนาทีเหมือนเดิม
-   เพราะบางคนเปิดหน้าค้างไว้แล้วค่อยกดเข้าสู่ระบบทีหลัง */
-let lastUid=null;
-setInterval(()=>{
-  const A=window.auth||window.spireAuth;
-  const u=A&&A.currentUser;
-  const uid=u?u.uid:null;
-  if(uid!==lastUid){ lastUid=uid; pulled=false; if(uid)boot() }
-},1500);
-/* จังหวะการตรวจปรับตามการใช้งานจริง
-   กำลังใช้อยู่ตอนนี้ = ตรวจถี่ 5 วินาที เปลี่ยนธีมอีกเครื่องแล้วตามทันแทบจะทันที
-   เปิดค้างไว้เฉย ๆ = 20 วินาที · สลับไปแท็บอื่น = 60 วินาที
-   ไม่งั้นเปิดทิ้งไว้ทั้งวันจะยิงเข้าเซิร์ฟเวอร์เป็นพันครั้งโดยไม่มีใครดู */
-let beat=null, lastAct=Date.now();
-["pointerdown","keydown","touchstart","focus"].forEach(ev=>
-  addEventListener(ev,()=>{ lastAct=Date.now() },{passive:true,capture:true}));
-function gap(){
-  if(D.hidden)return 60000;
-  return (Date.now()-lastAct<120000)?5000:20000;
-}
-function heart(){
-  clearTimeout(beat);
-  beat=setTimeout(function tick(){
-    boot();
-    clearTimeout(beat);
-    beat=setTimeout(tick,gap());
-  },gap());
-}
-heart();
-D.addEventListener("visibilitychange",()=>{ lastAct=Date.now(); heart() });
-D.addEventListener("visibilitychange",()=>{ if(!D.hidden){ pulled=false; boot() } });
-addEventListener("online",()=>{ pulled=false; fails=0; boot() });
-addEventListener("pagehide",()=>{ push() });
-})();
-</script>
-<style id="primcss">
-/* ── ตัวเลือกสีหลัก ── */
-.pri-wrap{display:flex;flex-wrap:wrap;gap:9px;align-items:center}
-.pri-sw{width:38px;height:38px;border-radius:12px;cursor:pointer;padding:0;position:relative;
-  border:2px solid transparent;box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
-.pri-sw.on{border-color:var(--c-ink,#fff);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 0 0 3px var(--c-acc-soft,rgba(232,148,60,.2))}
-.pri-sw.on::after{content:"";position:absolute;inset:0;margin:auto;width:11px;height:6px;
-  border-left:2.5px solid #fff;border-bottom:2.5px solid #fff;transform:rotate(-45deg) translate(1px,-2px);
-  filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
-.pri-any{width:38px;height:38px;border-radius:12px;cursor:pointer;display:grid;place-items:center;
-  border:1px dashed var(--c-line2,rgba(255,255,255,.25));color:var(--c-mut);font-size:17px;
-  background:conic-gradient(from 0deg,#E2574C,#E8943C,#B08A3C,#3E9E6E,#2FA8C7,#4F8FF7,#8E63D6,#D9548E,#E2574C);
-  position:relative;overflow:hidden}
-.pri-any input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;border:0;padding:0}
-.pri-now{display:flex;align-items:center;gap:9px;margin-top:10px;font-size:12.5px;color:var(--c-mut)}
-.pri-now b{font-family:ui-monospace,monospace;font-size:12.5px;color:var(--c-ink);
-  padding:3px 9px;border-radius:7px;background:rgba(127,127,127,.12)}
-.pri-dot{width:15px;height:15px;border-radius:50%;flex-shrink:0}
-</style>
-<script>
-/* ═══════════════════════════════════════════════════════════════════
-   สีหลักของแอป — เลือกได้ทุกสี ไม่จำกัด
-   ───────────────────────────────────────────────────────────────────
-   ธีมเหลือแค่สว่างกับมืด ซึ่งคุมโครงสี พื้นหลัง และตัวหนังสือ
-   ส่วน "สีหลัก" คือสีปุ่มและตัวเน้น แยกออกมาให้เลือกอิสระ
-   ทำงานด้วยการเขียนตัวแปร CSS ทับลงที่ <html> ตรง ๆ
-   ค่าที่เขียนแบบนี้ชนะสไตล์ชีทเสมอ จึงใช้ได้กับทุกธีมโดยไม่ต้องแก้ CSS เดิม
-   ═══════════════════════════════════════════════════════════════════ */
-(function(){
-const D=document, KEY="spire_primary", DEF="#E8943C";
-
-const PRESETS=[
-  {k:"#E8943C",th:"ส้มอบอุ่น",en:"Warm orange"},
-  {k:"#E2574C",th:"แดงอิฐ",   en:"Brick red"},
-  {k:"#D9548E",th:"ชมพู",     en:"Pink"},
-  {k:"#8E63D6",th:"ม่วง",     en:"Purple"},
-  {k:"#4F8FF7",th:"น้ำเงิน",  en:"Blue"},
-  {k:"#2FA8C7",th:"ฟ้าคราม",  en:"Teal"},
-  {k:"#3E9E6E",th:"เขียว",    en:"Green"},
-  {k:"#B08A3C",th:"ทอง",      en:"Gold"},
-  {k:"#6B7280",th:"เทา",      en:"Graphite"},
+/* เครื่องมือทั้งหมด — cat = หมวด สำหรับเรียงตามหมวด */
+var TOOLS=[
+  {k:"text",  ic:"ti-message-2",    c:"#4F8FF7",th:"พิมพ์ถาม",  en:"Ask",       cat:0},
+  {k:"image", ic:"ti-camera",       c:"#A46BF5",th:"ถ่ายรูป",   en:"Photo",     cat:0},
+  {k:"video", ic:"ti-video",        c:"#E85DA6",th:"วิดีโอ",    en:"Video",     cat:0},
+  {k:"listen",ic:"ti-ear",          c:"#37C08A",th:"ฟังเสียง",  en:"Listen",    cat:0},
+  {k:"techs", ic:"ti-tool",         c:"#E8743C",th:"หาช่าง",    en:"Find a pro",cat:1},
+  {k:"quote", ic:"ti-receipt-2",    c:"#E8A33D",th:"เช็กราคา",  en:"Quote",     cat:1},
+  {k:"shake", ic:"ti-activity",     c:"#3FC3D6",th:"วัดการสั่น", en:"Shake",     cat:1},
+  {k:"park",  ic:"ti-map-pin",      c:"#F0655C",th:"จำที่จอด",  en:"Parking",   cat:1},
+  {k:"own",   ic:"ti-report-money", c:"#7B8CF0",th:"ต้นทุน",    en:"Costs",     cat:1},
+  {k:"spares",ic:"ti-package",      c:"#F08A3D",th:"อะไหล่",    en:"Spares",    cat:1},
+  {k:"garage",ic:"ti-car-garage",   c:"#6B7A90",th:"การาจ",     en:"Garage",    cat:2},
+  {k:"magazine",ic:"ti-book-2",     c:"#B07A5A",th:"นิตยสาร",   en:"Magazine",  cat:2},
+  {k:"profile",ic:"ti-settings",    c:"#6B7A90",th:"ตั้งค่า",    en:"Settings",  cat:2}
 ];
+var CATS=[["ถาม AI","Ask AI"],["ดูแลรถ","Car care"],["อื่น ๆ","More"]];
+var HOME7=["text","image","techs","listen","quote","shake","park"];
+function find(k){for(var i=0;i<TOOLS.length;i++)if(TOOLS[i].k===k)return TOOLS[i]}
+function tile(t){return '<button class="mh-t" data-k="'+t.k+'"><span class="mh-k" style="--c:'+t.c+'"><i class="ti '+t.ic+'"></i></span>'+esc(T(t.th,t.en))+'</button>'}
 
-/* ── สีเลข ── */
-function hex2rgb(h){
-  h=String(h||"").trim().replace(/^#/,"");
-  if(h.length===3)h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
-  if(!/^[0-9a-f]{6}$/i.test(h))return null;
-  return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];
+/* เปิดเครื่องมือด้วยทางเดิมของหน้า */
+function run(k){
+  closeAll();
+  if(k==="techs"){location.href="/tech";return}
+  if(k==="garage"||k==="magazine"||k==="profile"||k==="spares"){nav(k==="spares"?"shop":k);return}
+  if(k==="text"||k==="image"||k==="video"){
+    try{if(typeof window.openChat==="function"){window.openChat({attach:k});return}}catch(e){}
+    location.href="/chat?attach="+encodeURIComponent(k);return;
+  }
+  try{if(typeof window.openTool==="function"){hide();window.openTool(k);watchBack();return}}catch(e){}
+  location.href="/chat?attach="+encodeURIComponent(k);
 }
-const rgb2hex=(r,g,b)=>"#"+[r,g,b].map(x=>Math.max(0,Math.min(255,Math.round(x)))
-  .toString(16).padStart(2,"0")).join("");
-function rgb2hsl(r,g,b){
-  r/=255;g/=255;b/=255;
-  const mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;
-  let h=0;
-  if(d){ h=mx===r?((g-b)/d+(g<b?6:0)):mx===g?((b-r)/d+2):((r-g)/d+4); h*=60 }
-  const l=(mx+mn)/2;
-  const s=d?d/(1-Math.abs(2*l-1)):0;
-  return [h,s,l];
+function nav(k){
+  if(k==="home"){return}
+  if(k==="chat"){location.href="/chat";return}
+  if(k==="account"){ var a=$("avatarBtn"); if(!(a&&getComputedStyle(a).display!=="none")){var s=$("signinBtn");if(s){s.click();return}} k="profile" }
+  location.href=({garage:"/garage",magazine:"/news",shop:"/spares",profile:"/profile"})[k]||"/";
 }
-function hsl2rgb(h,s,l){
-  h=((h%360)+360)%360;
-  const c=(1-Math.abs(2*l-1))*s, x=c*(1-Math.abs((h/60)%2-1)), m=l-c/2;
-  let t=[0,0,0];
-  if(h<60)t=[c,x,0]; else if(h<120)t=[x,c,0]; else if(h<180)t=[0,c,x];
-  else if(h<240)t=[0,x,c]; else if(h<300)t=[x,0,c]; else t=[c,0,x];
-  return [(t[0]+m)*255,(t[1]+m)*255,(t[2]+m)*255];
-}
-const shift=(hex,dl,dh)=>{
-  const c=hex2rgb(hex); if(!c)return hex;
-  let [h,s,l]=rgb2hsl(c[0],c[1],c[2]);
-  l=Math.max(0,Math.min(1,l+dl));
-  return rgb2hex(...hsl2rgb(h+(dh||0),s,l));
-};
+/* เครื่องมือบางอย่างเปิดเป็นแผงในหน้าเดิม — ซ่อนหน้าหลักระหว่างนั้น แล้วคืนเมื่อแผงปิด */
+function hide(){D.body.classList.remove("mh-on");$("mh").style.display="none";$("mhNav").style.display="none"}
+function watchBack(){ var n=0,iv=setInterval(function(){ n++;
+  var open=D.querySelector(".lg-host.on,.pm-ov.on,.pn-ov.on,[class*='-ov'].on,.modal.on");
+  if(!open&&n>3){clearInterval(iv);show()} },500) }
+function show(){ if(!MQ.matches)return; D.body.classList.add("mh-on"); $("mh").style.display=""; $("mhNav").style.display="" }
 
-/* สีอ่อนเกินไปจะทำให้ตัวหนังสือสีขาวบนปุ่มอ่านไม่ออก
-   จึงหรี่ความสว่างลงมาให้อยู่ในระดับที่ยังอ่านได้เสมอ */
-function safe(hex){
-  const c=hex2rgb(hex); if(!c)return DEF;
-  let [h,s,l]=rgb2hsl(c[0],c[1],c[2]);
-  if(l>0.62)l=0.62;
-  if(l<0.18)l=0.18;
-  if(s>0.95)s=0.95;
-  return rgb2hex(...hsl2rgb(h,s,l));
+function avatarHTML(){
+  var u=rd("cachedUser",{})||{}, a=$("avatarBtn");
+  if(a&&getComputedStyle(a).display!=="none"){var img=a.querySelector("img");if(img)return '<img src="'+esc(img.src)+'" alt="" referrerpolicy="no-referrer">'}
+  return u.name?esc(u.name[0].toUpperCase()):'<i class="ti ti-user"></i>';
 }
 
-function read(){
-  try{ const v=JSON.parse(localStorage.getItem(KEY)); if(hex2rgb(v))return v }catch(e){}
-  return DEF;
+function cards(){
+  var g=rd("garage",[])||[], c=g.filter(function(x){return x.id===rd("selCar","")})[0]||g[0];
+  var km=c?+String(c.mileage||"").replace(/\D/g,""):0, h=new Date().getHours();
+  var when=h<11?T("เช้านี้","This morning"):h<16?T("บ่ายนี้","This afternoon"):h<19?T("เย็นนี้","This evening"):T("คืนนี้","Tonight");
+  var date=new Date().toLocaleDateString(en()?"en-GB":"th-TH",{weekday:"long",day:"numeric",month:"long"});
+  return [
+    {cls:"c-brief",eye:"ti-sunrise",k:"TODAY'S BRIEF",t:T("สรุป","Brief · ")+when,p:date,pill:c?T("ดูสิ่งที่ต้องทำวันนี้","See today"):T("เพิ่มรถเพื่อเริ่ม","Add a car"),big:"ti-sun",go:"brief"},
+    {cls:"c-garage",eye:"ti-car-garage",k:"GARAGE",t:c?esc(c.name||((c.make||"")+" "+(c.model||""))):T("ยังไม่มีรถ","No car yet"),
+      p:c?(km?km.toLocaleString("en-US")+T(" กม. · เช็กระยะอีก "," km · service in ")+(10000-km%10000).toLocaleString("en-US")+T(" กม."," km"):T("ใส่เลขไมล์เพื่อให้ระบบเตือน","Add your odometer")):T("เพิ่มรถคันแรกของคุณ","Add your first car"),
+      pill:T("เปิดการาจ","Open garage"),big:"ti-car",go:"garage"},
+    {cls:"c-mag",eye:"ti-book-2",k:"MAGAZINE",t:T("เรื่องรถวันนี้","Today in cars"),p:T("ข่าว รีวิว และเคล็ดลับดูแลรถ","News, reviews and tips"),pill:T("อ่านเลย","Read"),big:"ti-news",go:"magazine"},
+    {cls:"c-more",eye:"ti-layout-grid",k:"MORE",t:T("เครื่องมือทั้งหมด","All tools"),p:T("ทุกอย่างที่ Cendon ทำได้ในที่เดียว","Everything Cendon can do"),pill:T("ดูทั้งหมด","See all"),big:"ti-apps",go:"more"}
+  ];
 }
 
-const listeners=[];
-function apply(raw){
-  const base=safe(raw);
-  const c=hex2rgb(base)||hex2rgb(DEF);
-  const soft=(a)=>`rgba(${c[0]},${c[1]},${c[2]},${a})`;
-  const light=shift(base,.10,10), dark=shift(base,-.12,-6);
-  const st=D.documentElement.style;
-  const set=(k,v)=>st.setProperty(k,v);
-  /* ชื่อตัวแปรของหน้าแดชบอร์ดกับห้องแชตไม่เหมือนกัน ตั้งให้ครบทั้งสองชุด */
-  set("--accent",base); set("--accent-2",light); set("--accent-d",dark);
-  set("--grad",`linear-gradient(135deg,${light},${dark})`);
-  set("--c-acc",base); set("--c-acc-soft",soft(.16));
-  set("--c-grad",`linear-gradient(135deg,${light},${dark})`);
-  set("--c-user",`linear-gradient(135deg,${light},${dark})`);
-  set("--c-aura1",soft(.12));
-  /* สีตัวหนังสือบนพื้นสีหลัก คำนวณจากความสว่างจริง ไม่ใช่เดา */
-  const lum=(0.299*c[0]+0.587*c[1]+0.114*c[2])/255;
-  set("--on-acc",lum>0.62?"#1A1204":"#ffffff");
-  try{
-    const mt=D.querySelector('meta[name="theme-color"]');
-    if(mt){ const bg=getComputedStyle(D.documentElement).getPropertyValue("--c-bg0").trim()
-                 ||getComputedStyle(D.documentElement).getPropertyValue("--bg").trim();
-            if(bg)mt.setAttribute("content",bg) }
-  }catch(e){}
-  listeners.forEach(fn=>{ try{ fn(base) }catch(e){} });
+var sortMode="cat",query="";
+function allBody(){
+  var list=TOOLS.filter(function(t){var q=query.trim().toLowerCase();return !q||(t.th+" "+t.en).toLowerCase().indexOf(q)>-1});
+  if(!list.length)return '<div class="none">'+T("ไม่พบเครื่องมือที่ค้นหา","No tools found")+'</div>';
+  if(sortMode==="az"){
+    list=list.slice().sort(function(a,b){return T(a.th,a.en).localeCompare(T(b.th,b.en),en()?"en":"th")});
+    return '<div class="mh-grid" style="margin-top:14px">'+list.map(tile).join("")+'</div>';
+  }
+  return CATS.map(function(c,i){var l=list.filter(function(t){return t.cat===i});
+    return l.length?'<h4>'+T(c[0],c[1])+'</h4><div class="mh-grid">'+l.map(tile).join("")+'</div>':""}).join("");
+}
+function openAll(focus){
+  var w=$("mhAll");
+  w.innerHTML='<div class="bg"></div><div class="sh" role="dialog" aria-modal="true"><div class="grab"></div>'+
+    '<label class="q"><i class="ti ti-search"></i><input id="mhQ" placeholder="'+T("ค้นหาเครื่องมือ","Search tools")+'" value="'+esc(query)+'"></label>'+
+    '<div class="sort"><button data-s="cat"'+(sortMode==="cat"?' class="on"':"")+'>'+T("ตามหมวด","By category")+'</button><button data-s="az"'+(sortMode==="az"?' class="on"':"")+'>'+T("ก–ฮ","A–Z")+'</button></div>'+
+    '<div id="mhAllB">'+allBody()+'</div></div>';
+  w.classList.add("on");
+  w.querySelector(".bg").onclick=closeAll;
+  $("mhQ").oninput=function(){query=this.value;$("mhAllB").innerHTML=allBody()};
+  w.querySelectorAll("[data-s]").forEach(function(b){b.onclick=function(){sortMode=b.dataset.s;
+    w.querySelectorAll("[data-s]").forEach(function(x){x.classList.toggle("on",x===b)});$("mhAllB").innerHTML=allBody()}});
+  w.querySelector(".sh").addEventListener("click",function(e){var b=e.target.closest("[data-k]");if(b)run(b.dataset.k)});
+  if(focus)setTimeout(function(){$("mhQ").focus()},60);
+}
+function closeAll(){var w=$("mhAll");if(w){w.classList.remove("on");w.innerHTML=""}}
+addEventListener("keydown",function(e){if(e.key==="Escape")closeAll()});
+
+function build(){
+  if(!$("v-home"))return;
+  if(!$("mh")){
+    var m=D.createElement("div"); m.id="mh"; D.body.appendChild(m);
+    var n=D.createElement("nav"); n.id="mhNav"; D.body.appendChild(n);
+    var a=D.createElement("div"); a.id="mhAll"; D.body.appendChild(a);
+    m.addEventListener("click",function(e){
+      var t=e.target.closest("[data-k]"); if(t){ t.dataset.k==="all"?openAll():run(t.dataset.k); return }
+      var c=e.target.closest("[data-go]"); if(c){ var g=c.dataset.go;
+        if(g==="more")openAll(); else if(g==="brief"){ var b=$("briefCard"); if(b){hide();b.click();watchBack()} else location.href="/chat" } else nav(g); return }
+      if(e.target.closest(".mh-find")){openAll(true);return}
+      if(e.target.closest(".mh-av"))nav("account");
+    });
+    n.addEventListener("click",function(e){var b=e.target.closest("[data-n]");if(b)nav(b.dataset.n)});
+  }
+  var cs=cards();
+  $("mh").innerHTML='<div class="mh-in">'+
+    '<div class="mh-top"><svg class="mh-logo" viewBox="-6 -6 94.8 112" aria-label="Cendon"><path fill="currentColor" d="M79.33 .29Q79.62 0 79.97 .21L81.37 1.05Q82.8 1.91 82.8 3.58V4.36Q82.8 6.37 82.17 8.27L75.34 28.74Q74.52 31.21 71.93 30.97L49.09 28.9Q46.5 28.66 44.6 30.44L37.56 37.07Q35.67 38.85 34.46 41.16L29.87 49.93Q28.66 52.23 28.92 54.82L29.04 56.01Q29.3 58.6 31.49 60L45.43 68.97Q47.13 70.06 49.14 69.78L49.59 69.71Q51.59 69.43 52.63 67.68L60.46 54.47Q61.78 52.23 64.32 52.79L64.98 52.94Q67.52 53.5 68.61 55.86L70.25 59.42Q71.34 61.78 70.55 64.26L63.84 85.42Q63.06 87.9 60.77 89.13L48.79 95.58Q46.5 96.82 43.96 96.25L43.14 96.07Q40.76 95.54 39.04 97.26L38.66 97.64Q36.94 99.36 34.52 99.61L33.16 99.74Q30.57 100 30.7 97.4L31.08 89.86Q31.21 87.26 29.02 85.87L5.38 70.82Q3.18 69.43 2.55 66.9L.63 59.21Q0 56.69 1.41 54.5L27.26 14.29Q28.66 12.1 29.48 9.64L31.02 5.01Q31.85 2.55 34.36 3.22L45.9 6.33Q48.41 7.01 51.01 7.01H61.73Q64.33 7.01 66.72 5.97L78.61 .8Q78.98 .64 79.27 .35Z"/></svg>'+
+      '<button class="mh-find"><i class="ti ti-search"></i>'+T("ค้นหาเครื่องมือ รถ หรือช่าง","Search tools, cars or pros")+'</button>'+
+      '<button class="mh-av" aria-label="'+T("บัญชี","Account")+'">'+avatarHTML()+'</button></div>'+
+    '<div class="mh-bbw"><div class="mh-bb"><div class="mh-track" id="mhTrack">'+cs.map(function(x){
+      return '<div class="mh-card '+x.cls+'" data-go="'+x.go+'" role="button"><small><i class="ti '+x.eye+'"></i>'+x.k+'</small><h3>'+x.t+'</h3><p>'+x.p+'</p>'+
+        '<div class="go"><span>'+x.pill+'</span><i class="ti ti-arrow-right"></i></div><i class="ti '+x.big+' big"></i></div>'}).join("")+'</div></div>'+
+      '<div class="mh-dots" id="mhDots">'+cs.map(function(_,i){return '<i'+(i?"":' class="on"')+'></i>'}).join("")+'</div></div>'+
+    '<div class="mh-grid">'+HOME7.map(function(k){return tile(find(k))}).join("")+
+      '<button class="mh-t" data-k="all"><span class="mh-k" style="--c:#6B7A90"><i class="ti ti-layout-grid"></i></span>'+T("ทั้งหมด","All")+'</button></div>'+
+  '</div>';
+  var tr=$("mhTrack");
+  tr.addEventListener("scroll",function(){var i=Math.round(tr.scrollLeft/tr.clientWidth);[].forEach.call($("mhDots").children,function(d,j){d.classList.toggle("on",i===j)})},{passive:true});
+  var TABS=[["home","ti-home","หน้าหลัก","Home"],["garage","ti-car","การาจ","Garage"],["chat","ti-message-2","แชต","Chat"],["magazine","ti-book-2","นิตยสาร","Magazine"],["account","ti-user","บัญชี","Account"]];
+  $("mhNav").innerHTML=TABS.map(function(t){return '<button class="'+(t[0]==="home"?"on":"")+'" data-n="'+t[0]+'"'+(t[0]==="home"?' aria-current="page"':"")+'><span>'+(t[0]==="account"&&/img/.test(avatarHTML())?avatarHTML():'<i class="ti '+t[1]+'"></i>')+'</span>'+T(t[2],t[3])+'</button>'}).join("");
 }
 
-function set(hex){
-  if(!hex2rgb(hex))return;
-  try{ localStorage.setItem(KEY,JSON.stringify(hex)) }catch(e){}
-  try{ window.cloudMark&&window.cloudMark("primary") }catch(e){}
-  apply(hex);
+function apply(){
+  if(MQ.matches){ build(); show() }
+  else{ D.body.classList.remove("mh-on"); ["mh","mhNav","mhAll"].forEach(function(i){var e=$(i);if(e)e.remove()}) }
 }
-
-apply(read());                         /* ทาสีทันทีตั้งแต่สคริปต์ถูกอ่าน */
-if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",()=>apply(read()));
-
-window.spirePrimary=read;
-window.spireSetPrimary=set;
-window.spirePrimaryPresets=()=>PRESETS.slice();
-window.spireOnPrimary=fn=>{ if(typeof fn==="function")listeners.push(fn) };
-/* ให้ตัวซิงก์คลาวด์เรียกได้เมื่อค่ามาจากเครื่องอื่น */
-window.spireApplyPrimary=()=>apply(read());
+if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",apply); else apply();
+(MQ.addEventListener?MQ.addEventListener("change",apply):MQ.addListener(apply));
+/* ข้อมูลรถ/ชื่อ ซิงก์มาทีหลัง — วาดใหม่เมื่อเปลี่ยน */
+var sig="";setInterval(function(){ if(!MQ.matches||!$("mh"))return;
+  var s=JSON.stringify([rd("garage",[]),rd("selCar",""),rd("cachedUser",{}),rd("lang","th")]);
+  if(s!==sig){var first=!sig;sig=s;if(!first)build()} },1500);
 })();
-
 </script>
-<style id="primfix">
-/* ── ให้ทุกที่ที่เคยฝังสีส้มไว้ ไปตามสีหลักที่ผู้ใช้เลือกแทน ──
-   ของเดิมเขียนค่า rgba สีส้มไว้ตรง ๆ หลายสิบจุด เลือกสีอื่นแล้วจะเหลือคราบส้ม
-   ตรงนี้เขียนทับเฉพาะจุดที่ผู้ใช้เห็นจริง โดยอ้างตัวแปรแทนค่าคงที่ */
-.set-l.on{background:var(--c-acc-soft) !important;color:var(--c-acc) !important}
-.set-opt.on{border-color:var(--c-acc) !important;background:var(--c-acc-soft) !important;color:var(--c-acc) !important}
-.set-btn{background:var(--c-acc) !important;color:var(--on-acc,#fff) !important}
-.pl.now{border-color:var(--c-acc) !important;background:var(--c-acc-soft) !important}
-.wbtn.ai:hover{background:var(--c-acc-soft) !important}
-.w-box:focus-within{border-color:var(--c-acc) !important;
-  box-shadow:0 20px 50px -24px var(--c-acc-soft) !important}
-.think .typing i:nth-child(1){background:var(--c-acc) !important}
-.w-q i{color:var(--c-acc) !important}
-/* กล่องโควตาและแถบเตือน */
-.quota-bar{background:var(--c-acc-soft) !important;border-color:var(--c-acc) !important;color:var(--c-acc) !important}
-.quota-bar i{color:var(--c-acc) !important}
-.quota-bar b{color:var(--c-ink) !important}
-.quota-bar button{background:var(--c-acc) !important;color:var(--on-acc,#fff) !important}
-.qp-ic{color:var(--c-acc) !important;background:var(--c-acc-soft) !important}
-.qp-price,.qp-tok i{color:var(--c-acc) !important}
-.qp-card:hover{border-color:var(--c-acc) !important}
-.qp-b1{background:var(--c-grad) !important;color:var(--on-acc,#fff) !important}
-/* ฟอร์มที่ AI ถามกลับ */
-.ask-card{background:var(--c-acc-soft) !important}
-.ask-h i{color:var(--c-acc) !important}
-.ask-o.on{background:var(--c-acc) !important;color:var(--on-acc,#1A1204) !important}
-.ask-o:hover{border-color:var(--c-acc) !important}
-.ask-send{background:var(--c-grad) !important;color:var(--on-acc,#fff) !important}
-.ask-in input:focus{border-color:var(--c-acc) !important}
-.ask-warn{color:var(--c-acc) !important}
-/* สกิล ชิป และจุดกระพริบตอนกำลังโหลด */
-.sk-chip{background:var(--c-acc-soft) !important;color:var(--c-acc) !important}
-.su-dots i{background:var(--c-acc) !important}
-.ai-sig.thinking .dots i{background:var(--c-acc) !important}
-.ai-sig.thinking::before{border-color:var(--c-acc) !important}
-/* ปุ่มหลักและโลโก้ */
-.send,.w-send,.hist-new,.side-new{background:var(--c-grad) !important;color:var(--on-acc,#fff) !important}
-.p-mark,.hint-logo,.side-mark{color:var(--c-acc)}
-</style>
-<!-- Cendon One: ชั้นดีไซน์กลาง (พื้นสีกลาง + แสงสีฟุ้งด้านบน) — โหลดท้ายสุดเพื่อทับของเดิม -->
-<link rel="stylesheet" href="cendon-one.css">
-<script src="cendon-one.js" defer></script>
 <!-- แผงผู้ดูแลแบบลอย: โหลดทุกหน้า แต่แสดงเฉพาะผู้ดูแลที่เปิดไว้ในตั้งค่า -->
 <script src="cendon-admin.js" defer></script>
 <link rel="stylesheet" href="feature-ai.css?v=1">

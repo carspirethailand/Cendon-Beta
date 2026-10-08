@@ -10,17 +10,18 @@
   var still = function () { return matchMedia('(prefers-reduced-motion: reduce)').matches; };
   function fluid(el) {
     if (!el || still()) return;
+    // A sheet's own CSS transition already supplies motion. Never stack two entrances.
+    if (el.getAnimations && el.getAnimations().some(function(a){ return a.playState === 'running'; })) return;
     var r = el.getBoundingClientRect(); if (!r.width || !r.height) return;
     var fresh = Date.now() - tap.t < 900;
     var ox = fresh ? Math.max(0, Math.min(r.width, tap.x - r.left)) : r.width / 2;
     var oy = fresh ? Math.max(0, Math.min(r.height, tap.y - r.top)) : r.height / 2;
-    var s = Math.max(.14, Math.min(.5, 70 / Math.max(r.width, r.height)));
+    var s = .985;
     var o = ox + 'px ' + oy + 'px';
     el.animate([
-      { transformOrigin: o, scale: s + ' ' + (s * 1.3), opacity: 0, filter: 'blur(12px)', borderRadius: '44px' },
-      { transformOrigin: o, opacity: 1, filter: 'blur(3px)', offset: .3 },
-      { transformOrigin: o, scale: '1 1', opacity: 1, filter: 'blur(0px)' }
-    ], { duration: 540, easing: EASE });
+      { transformOrigin: o, scale: String(s), opacity: .9 },
+      { transformOrigin: o, scale: '1', opacity: 1 }
+    ], { duration: 180, easing: EASE });
   }
   window.cendonFluid = fluid;
   /* เฝ้าทุกหน้า: .modal-bg / .sheet / [data-fluid] ได้คลาส show หรือ open = เพิ่งเปิด */

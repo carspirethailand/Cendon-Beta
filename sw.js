@@ -4,7 +4,7 @@
    หน้าเว็บเป็นไฟล์เดียวที่เปลี่ยนบ่อย จึงถามเน็ตก่อนเสมอ (ไม่งั้นผู้ใช้จะติดอยู่กับเวอร์ชันเก่า)
    แต่รอแค่ครู่เดียว — เน็ตมือถือช้า/ค้าง ต้องไม่ทำให้แอปค้างหน้าจอโหลด
    ══════════════════════════════════════════════════════════════════ */
-const CACHE = 'cendon-v206-linemenu';
+const CACHE = 'cendon-v207-stable-navigation';
 /* หน้าเว็บที่โหลดสำเร็จล่าสุด แยกตู้ไว้และ "ไม่ลบตอนอัปเดตเวอร์ชัน"
    เดิมทุกครั้งที่ deploy ตู้เก่าถูกล้างหมด เปิดแอปครั้งแรกหลังอัปเดตจึงไม่มีของสำรอง
    ต้องรอเน็ตอย่างเดียว — เน็ตมือถือช้าเมื่อไรก็ค้างหน้าจอโหลดของมือถือ */
@@ -14,7 +14,16 @@ const WAIT = 1500;
 /* โหลดล่วงหน้าเฉพาะไฟล์เล็กที่หน้าแรกใช้จริง
    เดิมโหลดทุกหน้า (~7 MB) แย่งเน็ตตอนผู้ใช้กำลังเปิดแอป และในรายการมีไฟล์ที่ไม่มีอยู่จริง
    (cendon-one.css, about, help, privacy) ทำให้ addAll ล้มทั้งชุด = ไม่เคยเก็บอะไรได้เลย */
-const CORE = ['./fluid.js', './crop.js', './cendon-admin.js', './call-sounds.js?v=1', './cendon-search.js', './cendon-line.js', './manifest.webmanifest', './icon192.png'];
+const CORE = ['./stability.css', './stability.js', './mobile-ui.js', './fluid.js', './crop.js', './cendon-admin.js', './call-sounds.js?v=1', './cendon-search.js', './cendon-line.js', './manifest.webmanifest', './icon192.png'];
+const BUILD_HEADER = 'X-Cendon-Shell';
+const SHELL_ROUTES = new Set(['/', '/index', '/garage', '/news', '/spares', '/profile', '/chat', '/dashboard', '/plan', '/handbook', '/tech', '/techs', '/terms', '/login']);
+function stored(r) {
+  const headers = new Headers(r.headers);
+  headers.set(BUILD_HEADER, CACHE);
+  // fetch() has decoded the stream already; don't attach wire-level lengths/encoding.
+  headers.delete('Content-Length'); headers.delete('Content-Encoding');
+  return new Response(r.body, { status:r.status, statusText:r.statusText, headers });
+}
 
 /* ชื่อหน้าแบบสะอาดตามที่ Cloudflare Pages ใช้ (/index.html → /, /chat.html → /chat)
    ขอชื่อนี้ตรง ๆ ไม่ต้องเสียรอบ redirect 308 และใช้เป็นกุญแจในตู้ (ไม่รวม ?shop= ?trip= — ไฟล์เดียวกัน) */
@@ -33,14 +42,16 @@ self.addEventListener('install', (e) => {
     await Promise.all(CORE.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => {})));
     /* หน้าแรกรุ่นใหม่เก็บไว้ตั้งแต่ติดตั้ง — โหลดไม่สำเร็จก็ยังมีรุ่นก่อนหน้าอยู่ในตู้ */
     const home = new URL('./', self.location).href;
-    await caches.open(PAGES).then((p) => p.add(new Request(home, { cache: 'reload' }))).catch(() => {});
+    await fetch(home, {cache:'reload'}).then(plain).then(async r => {
+      if(r.ok)await (await caches.open(PAGES)).put(home,stored(r));
+    }).catch(() => {});
   })());
 });
 
 self.addEventListener('activate', (e) => {
   e.waitUntil((async () => {
     const keys = await caches.keys();
-    await Promise.all(keys.filter((k) => k !== CACHE && k !== PAGES).map((k) => caches.delete(k)));
+    await Promise.all(keys.filter((k) => k.startsWith('cendon-') && k !== CACHE && k !== PAGES).map((k) => caches.delete(k)));
     /* ให้เบราว์เซอร์เริ่มขอหน้าจากเน็ตไปพร้อมกับปลุก service worker (มือถือปลุกช้าได้หลายร้อย ms) */
     try { if (self.registration.navigationPreload) await self.registration.navigationPreload.enable(); } catch (err) {}
     await self.clients.claim();
@@ -52,8 +63,11 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;   // API และ CDN ปล่อยผ่าน
-  const isPage = req.mode === 'navigate' || /\.html$/.test(url.pathname);
+  if (/^\/api(?:\/|$)/.test(url.pathname) || req.headers.has('Authorization')) return;
+  const route=url.pathname.replace(/\.html$/,'').replace(/\/index$/,'/');
+  const isPage = SHELL_ROUTES.has(route) && (req.mode === 'navigate' || /\.html$/.test(url.pathname) || !req.destination);
   if (isPage) return openPage(e, url);
+  if (!/\.(?:js|css|png|webp|svg|ico|woff2?|webmanifest|json)$/.test(url.pathname)) return;
   e.respondWith(asset(e, req));
 });
 
@@ -67,7 +81,7 @@ function openPage(e, url) {
     .then((r) => (r && r.ok ? r : fetch(key + url.search, { cache: 'no-cache', credentials: 'same-origin' })))
     .then(plain)
     .then((r) => {
-      if (r.ok) { const copy = r.clone(); saved = caches.open(PAGES).then((c) => c.put(key, copy)); }
+      if (r.ok) { const copy = stored(r.clone()); saved = caches.open(PAGES).then((c) => c.put(key, copy)); }
       return r;
     });
   /* เน็ตตอบช้ากว่าที่รอ ก็ยังเก็บหน้าใหม่ลงตู้ให้ครั้งหน้า */
@@ -77,6 +91,9 @@ function openPage(e, url) {
     const pages = await caches.open(PAGES);
     const cached = await pages.match(key);
     if (cached) {
+      // Current-build public HTML is ready now. Fetch refreshes it in the background.
+      // Older builds still check the network first, so deployment fixes aren't hidden.
+      if(cached.headers.get(BUILD_HEADER)===CACHE && !['reload','no-cache'].includes(e.request.cache))return cached;
       const fresh = await Promise.race([net.catch(() => null), wait(WAIT)]);
       return fresh && fresh.ok ? fresh : cached;
     }
@@ -91,14 +108,14 @@ function openPage(e, url) {
 
 /* ไฟล์ประกอบ (js/css/รูป): ถามเน็ตก่อนเหมือนกัน รอไม่เกิน WAIT ถ้ามีของในตู้ */
 async function asset(e, req) {
-  const net = fetch(req);
-  const cached = await caches.match(req);
-  const keep = (r) => { if (r && r.ok) { const copy = r.clone(); e.waitUntil(caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {})); } return r; };
-  if (!cached) return net.then(keep);
-  const fresh = await Promise.race([net.catch(() => null), wait(WAIT)]);
-  if (fresh && fresh.ok) return keep(fresh);
-  e.waitUntil(net.then((r) => { if (r.ok) return caches.open(CACHE).then((c) => c.put(req, r)); }).catch(() => {}));
-  return cached;
+  const cache=await caches.open(CACHE),cached=await cache.match(req);
+  const net=fetch(req).then(r=>{if(r.ok)e.waitUntil(cache.put(req,r.clone()).catch(()=>{}));return r});
+  if(cached && !['reload','no-cache'].includes(req.cache)){
+    e.waitUntil(net.catch(()=>{}));return cached;
+  }
+  if(!cached)return net;
+  const fresh=await Promise.race([net.catch(()=>null),wait(WAIT)]);
+  e.waitUntil(net.catch(()=>{}));return fresh&&fresh.ok?fresh:cached;
 }
 
 self.addEventListener('push', (e) => {

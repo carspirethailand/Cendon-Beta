@@ -3039,14 +3039,8 @@ input,select,textarea,.input,.odo-i{
      eagerness moderate คือเริ่มเตรียมตอนเมาส์ค้างหรือแตะค้าง ไม่ใช่เตรียมทุกลิงก์ทิ้งไว้
      ตัวไหนไม่รองรับ speculation rules จะตกไปใช้ prefetch ข้างล่างแทน -->
 <script type="speculationrules">
-{"prerender":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}],
- "prefetch":[{"where":{"href_matches":"/*"},"eagerness":"conservative"}]}
+{"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"conservative"}]}
 </script>
-<link rel="prefetch" href="/">
-<link rel="prefetch" href="/garage">
-<link rel="prefetch" href="/spares">
-<link rel="prefetch" href="/news">
-<link rel="prefetch" href="/profile">
 <script id="perfraf">
 /* ══════════════════════════════════════════════════════════════════
    ตัวคุมจังหวะการวาดของ canvas
@@ -3174,6 +3168,8 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 ::view-transition-new(root){animation-duration:.26s}
 @media(prefers-reduced-motion:reduce){@view-transition{navigation:none}}
 </style>
+<link rel="stylesheet" href="stability.css">
+<script src="stability.js" defer></script>
 </head>
 <body data-phase="welcome">
 <script id="i18ndict">
@@ -4478,14 +4474,11 @@ window.spireSetupVersion=SETUP_VERSION;
 
 <!-- WARP INTRO -->
 <div class="warp" id="warp" style="background:#0b0a0a"><script>try{if(JSON.parse(localStorage.getItem("spire_theme"))==="light")document.getElementById("warp").style.background="#f4f1ea"}catch(e){}</script><script>
-/* หน้าโหลดแสดงเฉพาะตอนมาจากหน้าหลักเท่านั้น — รีเฟรช/เปิดตรง/มาจากหน้าอื่น เข้าหน้าแชทเลย */
+/* Navigation must show the usable shell immediately, not a timed logo or blank screen.
+   Authentication still decides which pane/data is visible in the existing app logic. */
 (function(){try{
-  const nav=(performance.getEntriesByType("navigation")[0]||{}).type;
-  let fromHome=false;
-  if(document.referrer){const r=new URL(document.referrer);fromHome=r.origin===location.origin&&/(^|\/)(index\.html)?$/.test(r.pathname)}
-  if(nav==="reload"||!fromHome){const w=document.getElementById("warp");if(w)w.remove();
-    /* ไม่มีหน้าโหลด: ซ่อนเนื้อหาไว้ก่อน แล้วค่อยไหลขึ้นแบบเดียวกับหลังหน้าโหลด */
-    if(!matchMedia("(prefers-reduced-motion:reduce)").matches)document.documentElement.classList.add("pre-enter")}
+  const w=document.getElementById("warp");if(w)w.remove();
+  document.documentElement.classList.remove("pre-enter");
 }catch(e){}})();
 </script>
   <div class="w-bar" aria-hidden="true"><i></i></div><div class="warp-core"><svg viewBox="-6.0 -6.0 94.8 112.0" aria-hidden="true"><defs><linearGradient id="wgrad" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#F5A05E"/><stop offset=".55" stop-color="#EE7C43"/><stop offset="1" stop-color="#D2512F"/></linearGradient><linearGradient id="wshine" x1="0" y1="0" x2="1" y2=".35"><stop offset=".35" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".75"/><stop offset=".65" stop-color="#fff" stop-opacity="0"/><animateTransform attributeName="gradientTransform" type="translate" from="-1.2 0" to="1.2 0" begin="0.95s" dur="0.75s" fill="freeze"/></linearGradient></defs><path fill="url(#wgrad)" d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/><path fill="url(#wshine)" d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z" style="mix-blend-mode:soft-light"/></svg></div>
@@ -6941,19 +6934,19 @@ $("callUI")&&$("callUI").addEventListener("pointerdown",()=>{[callCtx,playCtx].f
 /* UI ไหลเข้าทีละชิ้นหลังหน้าโหลด: เลื่อนขึ้น + ชัดขึ้นจากเบลอ จังหวะแบบ iOS ไม่มีเด้ง */
 function uiEnter(){
   if(matchMedia("(prefers-reduced-motion:reduce)").matches)return;
-  const sel=".su-card > *:not(.su-prov), .su-prov > *, .side, .colwrap > .tbar, .pill, .wrap .pane.on:not(#v-login) .pane-inner > *, #thread > *, #thread .msg, .chip-row, .composer";
+  const sel=".wrap .pane.on:not(#v-login) .pane-inner > *, #thread > *, .chip-row";
   const els=[...document.querySelectorAll(sel)].filter(e=>{const r=e.getBoundingClientRect();return r.width&&r.height&&r.right>0&&r.left<innerWidth&&r.bottom>0&&r.top<innerHeight})
     .sort((a,b)=>a.getBoundingClientRect().top-b.getBoundingClientRect().top);   /* ไล่จากบนลงล่าง */
-  const rise=(e,d)=>{try{e.animate([{opacity:0,translate:"0 26px",filter:"blur(12px)"},{opacity:1,translate:"0 0",filter:"blur(0)"}],
-      {duration:950,delay:d,easing:"cubic-bezier(.22,.61,.12,1)",fill:"backwards"})}catch(_){}};
+  const rise=(e,d)=>{try{e.animate([{opacity:.96,translate:"0 4px"},{opacity:1,translate:"0 0"}],
+      {duration:140,delay:d,easing:"ease-out",fill:"backwards"})}catch(_){}};
   const seen=new WeakSet();
-  els.slice(0,40).forEach((e,i)=>{seen.add(e);rise(e,40+i*45)});
+  els.slice(0,12).forEach((e,i)=>{seen.add(e);rise(e,Math.min(i*8,40))});
   /* ข้อความ/การ์ดสรุป/โลโก้ AI ที่วาดตามมาหลังหน้าโหลดหาย (โหลดประวัติช้ากว่า) ก็ไหลขึ้นด้วย ภายใน 3 วินาทีแรก */
   const th=$("thread");if(!th)return;
   const t0=performance.now();let k=0;
   const mo=new MutationObserver(()=>{
     if(performance.now()-t0>3000){mo.disconnect();return}
-    [...th.children].forEach(e=>{if(!seen.has(e)&&e.getClientRects().length){seen.add(e);rise(e,k++*45)}});
+    [...th.children].forEach(e=>{if(!seen.has(e)&&e.getClientRects().length){seen.add(e);rise(e,Math.min(k++*8,40))}});
   });
   mo.observe(th,{childList:true});setTimeout(()=>mo.disconnect(),3100);
 }
@@ -11909,336 +11902,7 @@ setInterval(flush,60000);
 setInterval(pull,15*60000);
 })();
 </script>
-<script id="mjs">
-/* ══════════════════════════════════════════════════════════════════
-   Cendon — ตัวประกอบหน้าจอมือถือ (เขียนใหม่ทั้งหมด)
-
-   ไฟล์นี้ทำสามอย่าง แล้วหยุด:
-     1. สร้างแถบล่าง 5 แท็บ (ไอคอน + ชื่อ) แทนแถบบนของเดสก์ท็อป
-     2. จัดหน้าหลักเป็นสามจอที่เลื่อนแล้วล็อก
-        จอ 1 ห้องนักบิน · จอ 2 สิ่งที่แชตบอตทำไม่ได้ · จอ 3 เครื่องมือ+วิดเจ็ต
-     3. สร้างตารางเครื่องมือ 4 ช่องแบบ Grab พร้อมแผ่นเลื่อน "ทั้งหมด"
-
-   กติกาเหล็กสองข้อ:
-     • จอคอมต้องไม่ขยับ — ทุกอย่างทำงานเมื่อ matchMedia ตรงเท่านั้น
-       และถอนคืนให้ครบเมื่อหน้าจอกว้างขึ้น (หมุนเครื่อง / เปิดบนแท็บเล็ต)
-     • ไม่เขียนตัวนำทางเอง — เรียก window.switchView ที่มีอยู่แล้ว
-       เพราะมันรู้เรื่องการข้ามไฟล์ (index/garage/news/…) ซึ่งถ้าเขียนใหม่
-       จะพลาดเรื่องที่มองไม่เห็น เช่นการรอ auth ก่อนเปลี่ยนหน้า
-   ══════════════════════════════════════════════════════════════════ */
-(function(){
-"use strict";
-const D=document,$=id=>D.getElementById(id);
-const T=(th,en)=>(window.spireT?window.spireT(th,en):"th"===(window.spireLang?window.spireLang():"th")?th:en);
-const MQ=matchMedia("(max-width:760px)");
-
-/* ─────────── 1. แถบล่าง 5 แท็บ ─────────── */
-/* ร้านค้าไม่ได้เป็นแท็บแล้ว — มันย้ายไปเป็นไอคอนในตารางเครื่องมือ
-   ห้าแท็บคือเพดานที่นิ้วยังกดแม่นบนจอ 360px ถ้ามีหกจะเริ่มกดพลาด */
-const TABS=[
-  {k:"home",     ic:"ti-home",      th:"หน้าหลัก", en:"Home"},
-  {k:"garage",   ic:"ti-car",       th:"การาจ",    en:"Garage"},
-  {k:"chat",     ic:"ti-message-2", th:"แชต",      en:"Chat"},
-  {k:"magazine", ic:"ti-book-2",    th:"นิตยสาร",  en:"Magazine"},
-  {k:"account",  ic:"ti-user",      th:"บัญชี",    en:"Account"}
-];
-
-function page(){
-  try{ if(window.__SPIRE_PAGE__)return window.__SPIRE_PAGE__ }catch(e){}
-  const f=(location.pathname.split("/").pop()||"/").toLowerCase();
-  return ({"garage.html":"garage","news.html":"magazine","spares.html":"shop",
-           "profile.html":"profile","chat.html":"chat"})[f]||"home";
-}
-
-/* เข้าสู่ระบบแล้วหรือยัง — อ่านจากปุ่มของเดิมที่ renderAuthUI คุมอยู่
-   ไม่ไปแตะ currentUser เพราะมันเป็นตัวแปรระดับบนสุดใน <script> ธรรมดา
-   ซึ่ง "ไม่" ผูกกับ window (ต่างจาก function declaration) จึงอ่านไม่ได้ */
-function signedIn(){
-  const a=$("avatarBtn");
-  return !!(a&&getComputedStyle(a).display!=="none");
-}
-
-function navHTML(){
-  const cur=page();
-  return TABS.map(t=>{
-    /* หน้าอะไหล่ไม่มีแท็บของตัวเองแล้ว (ย้ายไปอยู่ในตารางเครื่องมือ)
-       แต่ต้องมีแท็บสว่างอยู่หนึ่งอันเสมอ ไม่งั้นผู้ใช้จะไม่รู้ว่าตัวเองอยู่ตรงไหน
-       — ชี้กลับไปที่หน้าหลัก ซึ่งเป็นทางที่เขาเดินเข้ามาจริง */
-    const on=(t.k===cur)||(t.k==="account"&&cur==="profile")
-             ||(t.k==="home"&&cur==="shop");
-    return `<button class="mtab${on?" on":""}" data-mnav="${t.k}"
-      aria-label="${T(t.th,t.en)}"${on?' aria-current="page"':""}>
-      <span class="mt-i" data-mslot="${t.k}"><i class="ti ${t.ic}"></i></span>
-      <b>${T(t.th,t.en)}</b></button>`;
-  }).join("");
-}
-
-function mountNav(){
-  /* หน้าแชตมีแถบเครื่องมือและช่องพิมพ์ของตัวเองที่ขอบล่างอยู่แล้ว
-     ใส่แถบซ้อนลงไปจะทับกันพอดี — ดูจากว่าหน้านั้นมีแถบเดสก์ท็อปไหม */
-  if(!D.querySelector(".navwrap"))return;
-  let n=$("mnav");
-  if(!n){
-    n=D.createElement("nav"); n.className="mnav"; n.id="mnav";
-    n.setAttribute("role","navigation");
-    D.body.appendChild(n);
-    n.addEventListener("click",e=>{
-      const b=e.target.closest("[data-mnav]"); if(!b)return;
-      go(b.dataset.mnav);
-    });
-  }
-  n.innerHTML=navHTML();
-  paintAvatar();
-}
-
-function go(k){
-  if(k==="chat"){ location.href="/chat"; return }
-  if(k==="account"){
-    /* ยังไม่ได้เข้าระบบ → กดปุ่มเดิมของหน้า ซึ่งผูกกับ Firebase ไว้แล้ว */
-    if(!signedIn()){ const b=$("signinBtn"); if(b){b.click();return} }
-    k="profile";
-  }
-  try{ if(typeof window.switchView==="function"){window.switchView(k);return} }catch(e){}
-  const f=({home:"/",garage:"/garage",magazine:"/news",
-            shop:"/spares",profile:"/profile"})[k];
-  if(f)location.href=f;
-}
-
-/* แท็บบัญชีโชว์รูปโปรไฟล์จริงเมื่อเข้าระบบแล้ว เหมือน Grab กับ Uber
-   คนจำหน้าตัวเองได้เร็วกว่าจำไอคอนคนทั่วไป */
-function paintAvatar(){
-  const slot=D.querySelector('[data-mslot="account"]'); if(!slot)return;
-  const a=$("avatarBtn");
-  if(signedIn()&&a&&a.innerHTML.trim()){
-    if(slot.dataset.av!==a.innerHTML){slot.dataset.av=a.innerHTML;slot.innerHTML=a.innerHTML}
-  }else if(slot.dataset.av!==undefined||!slot.querySelector("i")){
-    delete slot.dataset.av;
-    slot.innerHTML='<i class="ti ti-user"></i>';
-  }
-}
-
-/* ─────────── 2. สามจอที่เลื่อนแล้วล็อก ─────────── */
-/* โครงเดิมของหน้าหลักคือ  .scroll > [#hstack, #hfree]  โดย #hhero อยู่ใน #hfree
-   สิ่งที่ต้องทำมีอย่างเดียว: ยก #hhero ออกมาเป็นพี่น้อง แล้วติดคลาสให้ทั้งสาม
-   ไม่ต้องย้ายอย่างอื่นเลย — ยิ่งย้ายน้อย ยิ่งพังยาก */
-function arrange(){
-  const view=$("v-home"); if(!view)return;
-  const sc=view.querySelector(".scroll"); if(!sc)return;
-  const stack=$("hstack"),hero=$("hhero"),free=$("hfree");
-  if(!free)return;
-
-  if(hero&&hero.parentElement!==sc)sc.insertBefore(hero,free);
-
-  if(stack){stack.classList.add("msnap","msnap-1")}
-  if(hero){hero.classList.add("msnap","msnap-2")}
-  free.classList.add("msnap","msnap-3");
-
-  /* ระดับพื้นฐานไม่มีห้องนักบิน (#hstack) จอแรกจึงเป็นจอฮีโร่แทน
-     ไม่งั้นจะเหลือสองจอโดยจอแรกว่างเปล่า */
-  if(!stack&&hero){hero.classList.remove("msnap-2");hero.classList.add("msnap-1")}
-
-  hint(stack||hero);
-  hint(stack?hero:null);
-  tools();
-
-  /* ครั้งแรกที่จัดเสร็จ ต้องอยู่ที่จอแรกพอดี
-     การย้าย #hhero ทำให้ความสูงเหนือจุดเลื่อนเปลี่ยน เบราว์เซอร์บางตัว
-     จึงชดเชยจนค้างกลางจอ — เห็นเป็นหน้าที่ "เปิดมาแล้วเลื่อนไปเองแล้ว" */
-  /* เปิดหน้ามาต้องอยู่จอแรกเสมอ
-     ระหว่างบูตมีทั้งการย้าย #hhero และ scroll-snap ที่เข้าที่เอง
-     ทำให้บางจังหวะหน้าเด้งไปค้างที่จอ 2 ตั้งแต่ยังไม่มีใครแตะ */
-  if(!arrange.done){
-    arrange.done=true; at=0;
-    if(sc.scrollTop)sc.scrollTop=0;
-  }
-  wireSnap(sc);
-}
-
-/* ─────────── ตัวบังคับล็อกจอ ───────────
-   scroll-snap ของ CSS อาศัย "การปัดจบ" ของเบราว์เซอร์ ซึ่งแต่ละตัวตัดสินใจ
-   ไม่เหมือนกัน — บางเครื่องปัดสั้น ๆ แล้วค้างกลางจอ เห็นสองจอครึ่ง ๆ พร้อมกัน
-   ซึ่งเป็นภาพที่แย่กว่าไม่ล็อกเลย จึงมีตัวเก็บกวาดหลังเลื่อนหยุดอีกชั้น
-   ทำงานเฉพาะสองจอแรกเท่านั้น จอ 3 สูงกว่าจอ ต้องเลื่อนอ่านได้อิสระ */
-let settling=false,at=0;
-/* เกณฑ์ 20% ของความสูงจอ — เท่ากับที่แอปอ่านนิยาย/สไลด์ใช้กัน
-   ต่ำกว่านี้ปัดโดนโดยไม่ตั้งใจก็เปลี่ยนจอ สูงกว่านี้ต้องออกแรงปัดยาวจนเมื่อย */
-const STEP=.20;
-function settle(sc){
-  if(settling)return;
-  const h=sc.clientHeight; if(h<200)return;
-  const t=sc.scrollTop;
-  if(t>=h*2-6){at=2;return}                 /* เข้าจอ 3 แล้ว ปล่อยเลื่อนอิสระ */
-  const d=t-at*h;
-  let to=at;
-  if(d>h*STEP)to=Math.min(at+1,2);
-  else if(d<-h*STEP)to=Math.max(at-1,0);
-  at=to;
-  const target=to*h;
-  if(Math.abs(t-target)<3)return;
-  settling=true;
-  sc.scrollTo({top:target,behavior:"smooth"});
-  setTimeout(()=>{settling=false},520);
-}
-/* ยังไม่มีใครแตะจอ = ต้องอยู่จอแรก
-   ระหว่างบูต เลเยอร์อื่นวาดของเพิ่มเรื่อย ๆ (ห้องนักบิน ข่าว วิดเจ็ต)
-   ความสูงเปลี่ยนทีไรตำแหน่งเลื่อนขยับตาม จนหน้าเปิดมาค้างที่จอ 2 เอง
-   ล็อกไว้จนกว่าจะมีการปัด/แตะ/กดปุ่มจริง แล้วค่อยปล่อยให้ผู้ใช้คุม */
-let touched=false;
-function wireSnap(sc){
-  if(sc.__msnap)return; sc.__msnap=true;
-  let e=null;
-  /* ต้องรอให้ผู้ใช้แตะก่อนถึงจะเริ่มล็อกจอ
-     ระหว่างบูตความสูงยังโตอยู่ (ห้องนักบิน · ข่าว · วิดเจ็ตทยอยมา)
-     ทุกครั้งที่โตจะมี scroll event หลุดออกมาหนึ่งครั้ง ถ้าล็อกทันที
-     ระบบจะคิดว่า "ผู้ใช้ปัดลงมาแล้ว" แล้วพาไปจอ 2 ตั้งแต่ยังไม่มีใครแตะ */
-  const end=()=>{ if(MQ.matches&&touched)settle(sc) };
-  if("onscrollend" in sc)sc.addEventListener("scrollend",end);
-  else sc.addEventListener("scroll",()=>{clearTimeout(e);e=setTimeout(end,140)},{passive:true});
-
-  const mark=()=>{touched=true};
-  ["wheel","touchstart","keydown","pointerdown"].forEach(t=>
-    addEventListener(t,mark,{passive:true,once:true}));
-  sc.addEventListener("scroll",()=>{
-    if(touched||settling||!MQ.matches)return;
-    if(sc.scrollTop)sc.scrollTop=0;
-  },{passive:true});
-}
-
-/* ลูกศรกระพริบใต้จอ บอกว่ายังมีจอถัดไป */
-function hint(el){
-  if(!el||el.querySelector(".mhint"))return;
-  const h=D.createElement("div"); h.className="mhint"; h.setAttribute("aria-hidden","true");
-  h.innerHTML='<i class="ti ti-chevron-down"></i>';
-  el.appendChild(h);
-}
-
-/* ─────────── 3. ตารางเครื่องมือแบบ Grab ─────────── */
-/* เจ็ดตัวที่ใช้บ่อยขึ้นหน้าแรก ที่เหลืออยู่ในแผ่น "ทั้งหมด"
-   สองแถวคือเพดานก่อนที่ตารางจะเริ่มดูเป็นกำแพงไอคอน */
-const FEATS=[
-  {k:"text",  ic:"ti-message-2",    c:"#4F8FF7", th:"พิมพ์ถาม",       en:"Ask"},
-  {k:"image", ic:"ti-camera",       c:"#A46BF5", th:"ถ่ายรูป",        en:"Photo"},
-  {k:"video", ic:"ti-video",        c:"#E85DA6", th:"วิดีโอ",         en:"Video"},
-  {k:"listen",ic:"ti-ear",          c:"#37C08A", th:"ฟังเสียง",       en:"Listen"},
-  {k:"quote", ic:"ti-receipt-2",    c:"#E8A33D", th:"เช็กราคา",       en:"Quote"},
-  {k:"shake", ic:"ti-activity",     c:"#3FC3D6", th:"วัดการสั่น",     en:"Shake"},
-  {k:"park",  ic:"ti-map-pin",      c:"#F0655C", th:"จำที่จอด",       en:"Parking"},
-  {k:"own",   ic:"ti-report-money", c:"#7B8CF0", th:"ต้นทุน",         en:"Costs"},
-  {k:"spares",ic:"ti-package",      c:"#F08A3D", th:"อะไหล่",         en:"Spares"}
-];
-const HOME7=["text","image","listen","quote","shake","park","spares"];
-
-const tile=f=>`<button class="mtool" data-mfeat="${f.k}">
-  <span class="mt-ic" style="--c:${f.c}"><i class="ti ${f.ic}"></i></span>
-  <b>${T(f.th,f.en)}</b></button>`;
-
-function tools(){
-  const free=$("hfree"); if(!free)return;
-  let g=$("mtools");
-  if(!g){
-    g=D.createElement("section"); g.id="mtools";
-    free.insertBefore(g,free.firstChild);
-    g.addEventListener("click",e=>{
-      const all=e.target.closest("[data-mall]"); if(all){sheet();return}
-      const b=e.target.closest("[data-mfeat]"); if(b)run(b.dataset.mfeat);
-    });
-  }
-  g.innerHTML=`<h2 class="mgrid-t">${T("เครื่องมือ","Tools")}</h2>
-    <div class="mgrid">
-      ${HOME7.map(k=>tile(FEATS.find(f=>f.k===k))).join("")}
-      <button class="mtool" data-mall="1">
-        <span class="mt-ic" style="--c:#6B7A90"><i class="ti ti-layout-grid"></i></span>
-        <b>${T("ทั้งหมด","All")}</b></button>
-    </div>`;
-}
-
-function run(k){
-  close();
-  const f=FEATS.find(x=>x.k===k); if(!f)return;
-  if(k==="spares"){ try{window.switchView("shop")}catch(e){location.href="/spares"} return }
-  if(k==="text"||k==="image"||k==="video"){
-    try{ if(typeof window.openChat==="function"){window.openChat({attach:k});return} }catch(e){}
-    location.href="/chat?attach="+encodeURIComponent(k); return;
-  }
-  try{ if(typeof window.openTool==="function"){window.openTool(k);return} }catch(e){}
-  location.href="/chat?attach="+encodeURIComponent(k);
-}
-
-/* แผ่นเลื่อนขึ้น "เครื่องมือทั้งหมด" */
-let bg=null,sh=null;
-function sheet(){
-  if(sh)return;
-  bg=D.createElement("div"); bg.className="msheet-bg";
-  sh=D.createElement("div"); sh.className="msheet";
-  sh.setAttribute("role","dialog"); sh.setAttribute("aria-modal","true");
-  sh.innerHTML=`<div class="msheet-h"></div>
-    <h2 class="mgrid-t">${T("เครื่องมือทั้งหมด","All tools")}</h2>
-    <div class="mgrid">${FEATS.map(tile).join("")}</div>`;
-  D.body.appendChild(bg); D.body.appendChild(sh);
-  requestAnimationFrame(()=>{bg.classList.add("on");sh.classList.add("on")});
-  bg.addEventListener("click",close);
-  sh.addEventListener("click",e=>{
-    const b=e.target.closest("[data-mfeat]"); if(b)run(b.dataset.mfeat);
-  });
-  addEventListener("keydown",esc);
-}
-function esc(e){ if(e.key==="Escape")close() }
-function close(){
-  if(!sh)return;
-  removeEventListener("keydown",esc);
-  const a=bg,b=sh; bg=sh=null;
-  a.classList.remove("on"); b.classList.remove("on");
-  setTimeout(()=>{a.remove();b.remove()},320);
-}
-
-/* ─────────── ถอนคืนเมื่อกลับไปจอกว้าง ─────────── */
-/* หมุนเครื่องเป็นแนวนอนหรือเปิดบนแท็บเล็ตแล้วต้องได้หน้าเดิมของเดสก์ท็อปกลับมา
-   ครบทุกชิ้น ไม่ใช่ครึ่ง ๆ กลาง ๆ — จึงต้องเก็บทุกอย่างที่เราสร้าง */
-function teardown(){
-  close();
-  const n=$("mnav"); if(n)n.remove();
-  const g=$("mtools"); if(g)g.remove();
-  D.querySelectorAll(".mhint").forEach(h=>h.remove());
-  D.querySelectorAll(".msnap").forEach(el=>
-    el.classList.remove("msnap","msnap-1","msnap-2","msnap-3"));
-  /* #hhero ต้องกลับเข้า #hfree ตำแหน่งเดิม ไม่งั้นเดสก์ท็อปจะเห็นมันลอยผิดที่ */
-  const hero=$("hhero"),free=$("hfree");
-  if(hero&&free&&hero.parentElement!==free)free.insertBefore(hero,free.firstChild);
-}
-
-/* ─────────── วงจรชีวิต ─────────── */
-/* แอปวาดใหม่ตลอด (เปลี่ยนรถ · เข้าระบบเสร็จ · โหลดข่าวเสร็จ · เปลี่ยนภาษา)
-   ทุกครั้งที่วาดใหม่ #hhero จะถูกยัดกลับเข้า #hfree และแท็บจะหายรูปโปรไฟล์
-   จึงต้องเฝ้า ไม่ใช่ทำครั้งเดียว — หน่วงไว้ไม่ให้วิ่งทุก mutation */
-let t=null;
-const kick=()=>{clearTimeout(t);t=setTimeout(apply,140)};
-
-function apply(){
-  if(!MQ.matches){teardown();return}
-  mountNav(); arrange();
-}
-
-function boot(){
-  apply();
-  new MutationObserver(m=>{
-    for(const r of m){
-      /* ของที่เราสร้างเองก็เป็น mutation ถ้าไม่กรองจะวนไม่จบ */
-      const t=r.target;
-      if(t&&t.closest&&t.closest("#mnav,#mtools,.msheet,.mhint"))continue;
-      kick(); return;
-    }
-  }).observe(D.body,{childList:true,subtree:true,attributes:true,
-    attributeFilter:["style","class"]});
-  MQ.addEventListener?MQ.addEventListener("change",apply):MQ.addListener(apply);
-  addEventListener("spire:lang",kick);
-  try{ window.spireOnLang&&window.spireOnLang(kick) }catch(e){}
-  /* เข้าระบบเสร็จรูปโปรไฟล์เพิ่งมา — เก็บตกอีกสองจังหวะ */
-  setTimeout(apply,1200); setTimeout(apply,3000);
-}
-if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",boot);
-else boot();
-})();
-</script>
+<script src="mobile-ui.js" defer></script>
 <script id="perfjs">
 /* ══════════════════════════════════════════════════════════════════
    ชั้นประสิทธิภาพ ฝั่งสคริปต์ — ทำสามอย่าง ไม่ยุ่งกับตรรกะของแอปเลย

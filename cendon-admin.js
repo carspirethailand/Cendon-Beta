@@ -16,14 +16,29 @@ function rd(k,d){try{var v=JSON.parse(localStorage.getItem(k));return v==null?d:
 function wr(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 /* ผู้ดูแลหรือไม่: ถามเซิร์ฟเวอร์ตรง ๆ (ไม่เชื่อค่าในเครื่องอย่างเดียว) แล้วจำไว้ 10 นาที
    บางหน้าเก็บข้อมูลผู้ใช้แบบไม่มีบทบาท จึงต้องถามจริง — ผู้ใช้ทั่วไปได้ 403 และไม่เห็นอะไรเลย */
-var checking=false;
+var checking=false, checkUid=null, nextCheckAt=0;
+function sameUser(uid){
+  var u=rd("spire_cachedUser",null), a=currentAuth();
+  return !!(u&&u.uid===uid&&(!a||(a.currentUser&&a.currentUser.uid===uid)));
+}
 function isAdmin(){
   var c=rd("spire_isAdminChk",null), u=rd("spire_cachedUser",null);
+  var uid=u&&u.uid||null;
+  if(checkUid!==uid){ checkUid=uid; nextCheckAt=0; data=null }
   if(c&&u&&c.uid===u.uid&&Date.now()-c.at<600000)return !!c.ok;
-  if(!checking&&u&&u.uid){ checking=true;
-    call("/api/admin/live").then(function(j){ data=j; wr("spire_isAdminChk",{uid:u.uid,ok:true,at:Date.now()}) })
-      .catch(function(e){ if(!/ยังไม่ได้เข้าสู่ระบบ/.test(e.message))wr("spire_isAdminChk",{uid:u.uid,ok:false,at:Date.now()}) })
-      .then(function(){ checking=false; boot() }) }
+  if(!checking&&uid&&Date.now()>=nextCheckAt){ checking=true;
+    call("/api/admin/live",null,uid)
+      .then(function(j){ if(sameUser(uid)){ data=j; wr("spire_isAdminChk",{uid:uid,ok:true,at:Date.now()}) } })
+      .catch(function(e){
+        if(checkUid!==uid)return;
+        // Only a real permission denial is cached. Slow/offline auth can retry later.
+        if(e.status===403&&sameUser(uid))wr("spire_isAdminChk",{uid:uid,ok:false,at:Date.now()});
+        nextCheckAt=Date.now()+(e.code==="AUTH_NOT_READY"?2000:10000);
+      })
+      .then(function(){ checking=false });
+    // Never call boot() from this promise: an unresolved login must yield to the
+    // browser. The existing 2-second timer handles both retries and repainting.
+  }
   return !!(u&&(u.admin||/admin|owner/i.test(u.role||"")));
 }
 function enabled(){ return rd(KEY,true)!==false }
@@ -66,16 +81,36 @@ var CSS=`
 `;
 
 var tab="live", data=null, timer=null, fab=null, pnl=null;
-function token(){
-  var a=window.spireAuth; if(!a){ try{ a=window.firebase&&firebase.apps&&firebase.apps.length?firebase.auth():null }catch(e){} }
-  var u=a&&a.currentUser;
-  if(u)return u.getIdToken();
-  return (window.spireAwaitUser?window.spireAwaitUser(4000):Promise.resolve(null)).then(function(x){return x?x.getIdToken():null});
+function currentAuth(){
+  try{ return window.spireAuth||(window.firebase&&firebase.apps&&firebase.apps.length?firebase.auth():null) }catch(e){ return null }
 }
-function call(path,opt){
-  return token().then(function(t){ if(!t)throw new Error("ยังไม่ได้เข้าสู่ระบบ");
-    return fetch(API()+path,Object.assign({headers:{Authorization:"Bearer "+t,"Content-Type":"application/json"}},opt||{}))
-      .then(function(r){ return r.json().then(function(j){ if(!r.ok)throw new Error(j.error||("HTTP "+r.status)); return j }) }) });
+function token(expectedUid){
+  var a=currentAuth();
+  var u=a&&a.currentUser;
+  function read(x){ return x&&(!expectedUid||x.uid===expectedUid)?x.getIdToken():null }
+  if(u)return read(u);
+  return (window.spireAwaitUser?window.spireAwaitUser(4000):Promise.resolve(null)).then(read);
+}
+function call(path,opt,expectedUid){
+  return new Promise(function(resolve,reject){
+    var done=false, controller=typeof AbortController!=="undefined"?new AbortController():null;
+    function finish(fn,value){ if(done)return; done=true; clearTimeout(limit); fn(value) }
+    var limit=setTimeout(function(){
+      var e=new Error("ระบบตอบช้า ลองใหม่อีกครั้ง"); e.code="TIMEOUT";
+      finish(reject,e); if(controller)controller.abort();
+    },15000);
+    Promise.resolve().then(function(){ return token(expectedUid) }).then(function(t){
+      if(done)return;
+      if(!t||(expectedUid&&!sameUser(expectedUid))){ var e=new Error("ยังไม่ได้เข้าสู่ระบบ"); e.code="AUTH_NOT_READY"; throw e }
+      var options=Object.assign({},opt||{});
+      options.headers=Object.assign({},options.headers||{},{Authorization:"Bearer "+t,"Content-Type":"application/json"});
+      if(controller)options.signal=controller.signal;
+      return fetch(API()+path,options).then(function(r){ return r.json().then(function(j){
+        if(!r.ok){ var e=new Error(j&&j.error||("HTTP "+r.status)); e.status=r.status; throw e }
+        return j;
+      }) });
+    }).then(function(j){ finish(resolve,j) },function(e){ finish(reject,e) });
+  });
 }
 function health(){
   if(!data)return "";

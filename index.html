@@ -1311,6 +1311,27 @@ body{background:var(--bg);letter-spacing:-.005em}
 .sa-f b{text-align:right}.sa-f small{color:var(--muted);font-size:12px}
 .sa-tip{position:fixed;z-index:2000;transform:translate(-50%,-100%);padding:6px 10px;border-radius:8px;background:#09090B;color:#fff;font:600 12px var(--kb);pointer-events:none;opacity:0;transition:opacity .12s;white-space:nowrap}
 .sa-tip.on{opacity:1}
+/* ใบงาน: กล่องความปลอดภัย */
+.safe{margin:12px 0;padding:14px 16px 8px;border-radius:16px;border:1px solid var(--line);background:var(--surface)}
+.safe .h4 .ti{color:var(--muted)}.safe .jl{width:100%}.safe-x{display:block;margin:-4px 0 8px 58px;font-size:13px}
+/* ใบงาน: รหัสเริ่มงาน / งานเพิ่ม */
+.sc{margin:0 0 12px;padding:16px;border-radius:16px;border:1px solid var(--line);background:var(--surface);text-align:center}
+.sc small{display:block;font-size:12.5px;color:var(--muted)}
+.sc>b{display:block;margin:4px 0 8px;font:700 38px/1 ui-monospace,Menlo,monospace;letter-spacing:.3em}
+.sc p{margin:0 0 6px;font-size:13px;line-height:1.6;color:var(--muted)}.sc p b{color:var(--ink)}
+.sc-in{font:700 26px ui-monospace,Menlo,monospace;letter-spacing:.4em;text-align:center}
+.ext{margin:0 0 12px;padding:14px 16px;border-radius:16px;border:1px solid var(--line);background:var(--surface)}
+.ext-i{display:grid;grid-template-columns:1fr auto;gap:4px 10px;padding:10px 0;border-top:1px solid var(--line)}
+.ext-i:first-of-type{border-top:0}.ext-i b{font-weight:600}.ext-i small{display:block;font-size:12px;color:var(--muted)}
+.ext-i>span{font-weight:700}.ext-i em{grid-column:1/-1;font-style:normal;font-size:12.5px;color:var(--muted)}
+.ext-i.pending em{color:#b7791f}.ext-i.declined b{text-decoration:line-through;color:var(--muted)}
+.ext-a{grid-column:1/-1;display:flex;gap:8px}.ext-a .btn{flex:1}
+.ext-t{display:flex;justify-content:space-between;margin:8px 0 0;padding-top:10px;border-top:1px dashed var(--line)}.ext-t b{font-size:17px}
+/* ป้ายตรวจของร้าน */
+.cs-vet{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 0}
+.cs-vet span{display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:12.5px;color:var(--ink)}
+.cs-vet span .ti{font-size:15px;color:var(--th)}
+.cs-vet .cs-vd{border-style:dashed;color:var(--muted)}
 /* ═══ สมัครช่าง: ตรวจเลขบัตร ═══ */
 .idh{display:block;min-height:18px;margin-top:6px;font-size:12.5px;color:var(--muted)}
 .idh.ok{color:#15803d}.idh.bad{color:#b91c1c}
@@ -2442,6 +2463,8 @@ function openGig(id){
 /* ฟอร์มโพสต์บริการ: รูป · หัวข้อ · ราคา · รายละเอียด · หมวด · ยี่ห้อรถ (ร้านละไม่เกิน GIG_MAX รายการ) */
 const asData=f=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f)});
 const GIG_MAX=2;
+/* ลงบริการได้เฉพาะหมวดที่ผ่านการตรวจทักษะ (backend บังคับเหมือนกัน) — ร้านทดสอบลงได้ทุกหมวด */
+const gigAllowed=top=>{const t=ME&&ME.technician;if(!t||t.test)return true;return top==="mobile"?!!t.mobile:(t.cats||[]).includes(top)};
 /* หลังโพสต์/แก้/ลบ: ถอยกลับหน้าก่อน แล้ววาดหน้าร้านหรือรายละเอียดโพสต์ใหม่ด้วยข้อมูลล่าสุด */
 async function afterGig(){
   if(SH.stack.length)back();else closeSheet();
@@ -2460,7 +2483,7 @@ function gigForm(g){
     <label class="fld"><span>หัวข้อ</span><input class="inp" id="gT" maxlength="100" value="${esc(g.title||"")}" placeholder="เช่น ล้างแอร์ครบชุด ถอดตู้ล้าง พร้อมเติมน้ำยา"/></label>
     <label class="fld"><span>ราคา (บาท)</span><input class="inp" id="gP" type="number" inputmode="numeric" value="${g.price||""}" placeholder="1200"/></label>
     <label class="fld"><span>รายละเอียด</span><textarea class="inp" id="gB" rows="5" placeholder="ทำอะไรบ้าง ใช้เวลากี่ชั่วโมง รับประกันกี่วัน">${esc(g.body||"")}</textarea></label>
-    <label class="fld"><span>หมวดหมู่บริการ</span><select class="inp" id="gC"><option value="">เลือกหมวดหมู่…</option>${RAIL.filter(c=>!c.base&&!NOT_GCAT.includes(c.id)).map(top=>`<optgroup label="${top.th}"><option value="${top.id}">${top.th} (ทั่วไป)</option>${RAIL.filter(x=>x.base===top.id).map(x=>`<option value="${x.id}">${x.th}</option>`).join("")}</optgroup>`).join("")}</select></label>
+    <label class="fld"><span>หมวดหมู่บริการ <small style="font-weight:400;color:var(--muted)">· เฉพาะหมวดที่ผ่านการตรวจทักษะ</small></span><select class="inp" id="gC"><option value="">เลือกหมวดหมู่…</option>${RAIL.filter(c=>!c.base&&!NOT_GCAT.includes(c.id)&&gigAllowed(c.id)).map(top=>`<optgroup label="${top.th}"><option value="${top.id}">${top.th} (ทั่วไป)</option>${RAIL.filter(x=>x.base===top.id).map(x=>`<option value="${x.id}">${x.th}</option>`).join("")}</optgroup>`).join("")}</select></label>
     <label class="fld"><span>ยี่ห้อรถที่ถนัด (คั่นด้วย ,)</span><input class="inp" id="gBr" value="${esc((g.brands||[]).join(", "))}" placeholder="Toyota, Honda, BMW"/></label>
     <p class="err" id="gErr"></p>`,
     foot:`<button class="lx-cta" id="gSave" style="flex:1">${g.id?"บันทึก":"โพสต์เลย"}</button>`,
@@ -2610,6 +2633,22 @@ function ccDone(){
 }
 setTimeout(ccDone,7000);
 let SHOPLINK=new URLSearchParams(location.search).get("shop");
+/* ลิงก์ใบงานที่ลูกค้าแชร์ให้คนที่ไว้ใจ ?trip=<token> — เปิดดูได้โดยไม่ต้องล็อกอิน อ่านอย่างเดียว */
+const TRIPLINK=new URLSearchParams(location.search).get("trip");
+async function openTrip(token){
+  let d;try{d=(await api("/api/tech/share/"+encodeURIComponent(token))).trip}catch(e){return sheet({title:"ลิงก์ใบงาน",body:`<div class="empty"><i class="ti ti-link-off"></i><b>${esc(e.message)}</b></div>`})}
+  const t=d.tech,rk=RANK[d.status];
+  sheet({title:"ใบงานที่ถูกแชร์ให้คุณ",body:`
+    ${d.status==="cancelled"?'<p class="pill bad" style="margin-bottom:14px">ยกเลิกแล้ว</p>':`<div class="track">${FLOW.map(([k,l,ic],i)=>`<div class="s ${i<=rk?"done":""} ${i===rk&&d.status!=="completed"?"now":""}"><i class="ti ${ic}"></i>${l}</div>`).join("")}</div>`}
+    <div class="who e3"><span class="av sq" style="--c1:#475569${t.avatar?`;background-image:url('${img(t.avatar)}')`:""}">${t.avatar?"":initial(t.name)}</span><div><b>${esc(t.name)}</b><small>${t.vetting?"ยืนยันตัวตนแล้ว"+((t.vetting.cats||[]).length?" · ตรวจทักษะ "+esc(t.vetting.cats.map(c=>CAT[c]?CAT[c].th:c).join(", ")):""):t.verified?"ผ่านการตรวจโดยทีมงาน":""}</small></div></div>
+    <div class="kv"><p><span>สถานะ</span><b>${esc(STATUS[d.status]||d.status)}</b></p><p><span>อัปเดตล่าสุด</span><b>${new Date(d.updatedAt).toLocaleString(LOC,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</b></p>
+      <p><span>รถ</span><b>${esc(d.car)}</b></p><p><span>นัด</span><b>${esc(d.appointment||"")}</b></p><p><span>ซ่อมที่</span><b>${d.mode==="mobile"?"ช่างไปหา":"ที่อู่"} · ${esc(d.area||"")}</b></p></div>
+    <p class="note"><i class="ti ti-shield-heart"></i>เจ้าของใบงานแชร์ให้คุณเพื่อความปลอดภัย · ไม่มีที่อยู่หรือเบอร์โทร · ลิงก์ใช้ได้ถึง ${new Date(d.expiresAt).toLocaleString(LOC,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})} · ถ้ากังวล ติดต่อเจ้าของใบงานโดยตรง หรือโทร 191</p>`,
+    foot:'<a class="btn s w" href="tel:191"><i class="ti ti-phone-call"></i> โทร 191 เหตุด่วนเหตุร้าย</a>'});
+  /* อัปเดตสถานะเองทุก 30 วินาทีระหว่างเปิดอยู่ */
+  clearTimeout(openTrip.t);openTrip.t=setTimeout(()=>{if($("bs").classList.contains("on")&&$("bsT").textContent==="ใบงานที่ถูกแชร์ให้คุณ")openTrip(token)},30000);
+}
+if(TRIPLINK)setTimeout(()=>openTrip(TRIPLINK),400);
 /* ข้อความวินิจฉัยเซิร์ฟเวอร์ — โชว์เฉพาะเจ้าของแอป คนทั่วไปเห็นแค่ "เชื่อมต่อไม่ได้" */
 async function diag(){
   const box=$("diag");box.innerHTML="";
@@ -2643,6 +2682,18 @@ function reviewsHTML(t,list,lim){
    ลูกค้า → ขอราคา/ทัก/โทร ในการ์ด · เจ้าของ → แถบ Studio ลอยด้านล่าง (โพสต์ แก้ไข ตั้งค่า สถิติ งาน) */
 const THEME={orange:"#E8590C",blue:"#2563eb",green:"#16a34a",violet:"#7c3aed",rose:"#e11d48",slate:"#475569",amber:"#d97706",teal:"#0d9488"};
 const thColor=t=>THEME[t&&t.theme]||THEME.orange;
+/* ป้ายตรวจแยกเรื่อง พร้อมวันที่ — บอกตรง ๆ ว่าทีมงานตรวจอะไรไปแล้ว (ยืนยันตัวตน ≠ รับรองฝีมือ ≠ รับประกันความปลอดภัย) */
+function vetBadges(t){
+  const v=t.vetting;
+  if(!t.verified)return t.test?['<span><i class="ti ti-flask"></i>ร้านทดสอบของทีมงาน</span>']:[];
+  if(!v)return['<span><i class="ti ti-rosette-discount-check"></i>ผ่านการตรวจโดยทีมงาน</span>'];
+  const SH={site_visit:"ตรวจสถานที่จริงแล้ว",video_call:"ตรวจอู่ผ่านวิดีโอคอลแล้ว",document_review:"ตรวจหลักฐานสถานที่แล้ว"},SK={interview:"สัมภาษณ์",certificate_review:"ใบรับรอง"};
+  const cats=(v.cats||[]).map(c=>CAT[c]&&CAT[c].th).filter(Boolean);
+  return [v.identity&&'<span><i class="ti ti-id-badge-2"></i>ยืนยันตัวตนแล้ว</span>',v.phone&&'<span><i class="ti ti-phone-check"></i>โทรยืนยันแล้ว</span>',
+    v.shop&&`<span><i class="ti ti-building-store"></i>${SH[v.shop]||"ตรวจสถานที่แล้ว"}</span>`,
+    cats.length&&`<span><i class="ti ti-tool"></i>ตรวจทักษะ: ${esc(cats.join(" · "))}${SK[v.skills]?` (${SK[v.skills]})`:""}</span>`,
+    v.at&&`<span class="cs-vd">ตรวจเมื่อ ${new Date(v.at).toLocaleDateString(LOC,{day:"numeric",month:"short",year:"numeric"})}</span>`].filter(Boolean);
+}
 function storeHTML(t,mine){
   const d=mine?null:km(HERE,t),av=t.avatar||t.cover;
   const pics=(t.photos||[]).filter(p=>p!==t.avatar);
@@ -2662,11 +2713,12 @@ function storeHTML(t,mine){
       <div class="cs-top">
         <span class="cs-av"${av?` style="background-image:url('${img(av)}')" data-z="${img(av)}"`:""}>${av?"":initial(t.shop||t.name)}${t.online&&!v?'<i class="cs-on" title="เปิดรับงาน"></i>':""}</span>
         <div class="cs-nm">
-          <p class="cs-ey">${t.verified?`<i class="ti ti-rosette-discount-check-filled"></i>ช่างที่ผ่านการตรวจสอบ`:"ร้านช่าง"}${t.test?" · ทีมงาน":""}</p>
+          <p class="cs-ey">${t.verified?`<i class="ti ti-rosette-discount-check-filled"></i>ช่างที่ผ่านการคัดเลือก`:"ร้านช่าง"}${t.test?" · ทีมงาน":""}</p>
           <h2 class="nt">${esc(t.shop||t.name)}</h2>
           ${cats.length?`<p class="cs-cats">${cats.map(esc).join(" · ")}</p>`:""}
         </div>
       </div>
+      ${vetBadges(t).length?`<div class="cs-vet">${vetBadges(t).join("")}</div>`:""}
       <dl class="cs-st">${stat.map(([v,k,i])=>`<div><dt><i class="ti ${i}"></i>${k}</dt><dd>${v}</dd></div>`).join("")}</dl>
       ${t.greet||t.about?`<p class="cs-greet nt">${esc(t.greet||t.about)}</p>`:""}
       ${mine?"":`<div class="cs-act"><button class="lx-cta" id="bBook"${v?" disabled":""}>${v?"ปิดรับงานชั่วคราว":T("ขอราคา","Get a quote")+(t.from?` · ${T("เริ่ม","from")} ฿${money(t.from)}`:"")}</button>
@@ -2682,7 +2734,8 @@ function storeHTML(t,mine){
     <section class="ch-pane" data-cp="about">
       ${t.about?`<p class="ch-about nt">${esc(t.about)}</p>`:""}
       ${info.length?`<dl class="gd-dl">${info.map(([i,k,x])=>`<div><dt><i class="ti ${i}"></i>${k}</dt><dd class="nt">${x}</dd></div>`).join("")}</dl>`:""}
-      ${t.years||t.verified?`<p class="ch-fine">${t.years?`ประสบการณ์ ${t.years} ปี`:""}${t.years&&t.verified?" · ":""}${t.verified?"ตรวจสอบตัวตนและสถานประกอบการแล้ว":""}</p>`:""}
+      ${t.years?`<p class="ch-fine">ประสบการณ์ ${t.years} ปี</p>`:""}
+      ${t.verified?`<p class="ch-fine">ป้ายบนการ์ดร้านบอกว่าทีมงานตรวจอะไรไปแล้ว ไม่ได้รับประกันผลงานหรือความปลอดภัยทุกครั้ง ถ้ามีปัญหา กด "แจ้งปัญหา" ในใบงานได้ตลอด</p>`:""}
       ${pics.length?`<p class="ch-h">${T("รูปร้าน","Shop photos")}</p><div class="ch-grid">${pics.slice(0,12).map(p=>`<img src="${img(p)}" alt="" loading="lazy" data-z="${img(p)}"/>`).join("")}</div>`:""}
     </section>
     ${mine?`<nav class="cs-dock" aria-label="Studio"><b class="cs-dk-t">Studio</b>
@@ -3187,14 +3240,26 @@ function drawJob(j,push){
   if(ME&&ME.staff&&s==="disputed")A.push(["resolve","ปิดเรื่อง","p"]);
   const more=[];
   if((cust||tech)&&["requested","quoted","accepted","enroute"].includes(s))more.push(["cancel","ยกเลิกงาน"]);
-  if((cust||tech)&&["accepted","enroute","working","done","completed"].includes(s))more.push(["dispute","แจ้งปัญหา"]);
+  if(tech&&["accepted","enroute","working"].includes(s)&&!(j.extras||[]).some(x=>x.status==="pending"))more.push(["extra","เสนองานเพิ่ม"]);
+  /* ลูกค้าระหว่างงาน: ปุ่มแจ้งปัญหาอยู่ในกล่องความปลอดภัยแทน */
+  const safe=cust&&["accepted","enroute","working","done"].includes(s);
+  if((cust||tech)&&["accepted","enroute","working","done","completed"].includes(s)&&!safe)more.push(["dispute","แจ้งปัญหา"]);
   const phone=cust&&!tech?j.technicianPhone:j.customerPhone;
   sheet({push,job:true,full:true,title:(j.test?"ทดสอบ · ":"")+(STATUS[s]||s),body:`
     ${track}
-    <div class="who e3">${WF}<span class="av sq" style="--c1:${PALETTE[j.id.charCodeAt(0)%PALETTE.length]}">${initial(other)}</span><div><b>${esc(other)}</b><small>${esc(j.car)}</small></div>
+    <div class="who e3">${WF}<span class="av sq" style="--c1:${PALETTE[j.id.charCodeAt(0)%PALETTE.length]}${cust&&!tech&&j.techAvatar?`;background-image:url('${img(j.techAvatar)}')`:""}">${cust&&!tech&&j.techAvatar?"":initial(other)}</span><div><b>${esc(other)}</b><small>${esc(j.car)}${cust&&!tech&&j.techVetting?` · ยืนยันตัวตนแล้ว${(j.techVetting.cats||[]).length?" · ตรวจทักษะ "+esc(j.techVetting.cats.map(c=>CAT[c]?CAT[c].th:c).join(", ")):""}`:""}</small></div>
       ${phone&&/^0\d{8,9}$/.test(phone)?`<a class="ic" href="tel:${esc(phone)}" aria-label="โทร"><i class="ti ti-phone"></i></a>`:""}
       <button class="ic" id="jChat" aria-label="แชต"><i class="ti ti-message-circle"></i>${unread?`<span class="dot">${unread}</span>`:""}</button></div>
     ${q?`<div class="quote"><span class="pill act">ราคา</span><div class="tot">฿${money(q.total)}</div><div class="ln"><span>ค่าแรง ${money(q.labor)}</span><span>อะไหล่ ${money(q.parts)}</span><span>เดินทาง ${money(q.travel)}</span></div><p>${esc(q.scope)}</p><p class="note" style="margin:8px 0 0"><i class="ti ti-calendar"></i>${esc(q.appointment)} · รับประกัน ${q.warranty} วัน</p></div>`:""}
+    ${cust&&j.startCode?`<div class="sc"><small>รหัสเริ่มงาน</small><b class="nt">${esc(j.startCode)}</b>
+      <p>บอกรหัสนี้กับช่าง<b>หลังพบกันแล้ว</b> — ตรวจว่าเป็นคนเดียวกับรูปโปรไฟล์ และตรวจรายละเอียดงานกับราคาก่อน · ใช้ได้ครั้งเดียว · หมดอายุ ${new Date(j.startCodeExp).toLocaleDateString(LOC,{day:"numeric",month:"short"})}</p>
+      <button class="lnk" data-a="newcode">ขอรหัสใหม่</button></div>`:""}
+    ${tech&&!cust&&j.startCodeRequired?'<p class="note"><i class="ti ti-key"></i>เมื่อพบลูกค้า ขอ "รหัสเริ่มงาน" 4 หลักจากลูกค้า แล้วกดเริ่มซ่อม</p>':""}
+    ${(j.extras||[]).length?`<div class="ext"><p class="h4" style="margin-top:0">งานเพิ่ม</p>${j.extras.map(x=>`<div class="ext-i ${x.status}"><div><b class="nt">${esc(x.desc)}</b><small>ค่าแรง ${money(x.labor)} · อะไหล่ ${money(x.parts)}</small></div><span>฿${money(x.total)}</span>
+      ${x.status==="pending"?(cust?`<div class="ext-a"><button class="btn s" data-a="extra_no:${esc(x.id)}">ไม่ทำเพิ่ม</button><button class="btn p" data-a="extra_ok:${esc(x.id)}">ยอมรับ +฿${money(x.total)}</button></div>`:'<em>รอลูกค้าตอบ</em>'):`<em>${x.status==="accepted"?"ลูกค้ายอมรับแล้ว":"ลูกค้าไม่ทำเพิ่ม"}</em>`}</div>`).join("")}
+      <p class="ext-t"><span>ยอดที่ตกลงแล้ว</span><b>฿${money(j.agreedTotal)}</b></p></div>`:""}
+    ${(j.photosBefore||[]).length?`<p class="h4">รูปก่อนเริ่มซ่อม</p><div class="gal">${j.photosBefore.map(u=>`<img src="${u}" data-z="${u}" alt=""/>`).join("")}</div>`:""}
+    ${(j.photosAfter||[]).length?`<p class="h4">รูปหลังซ่อมเสร็จ</p><div class="gal">${j.photosAfter.map(u=>`<img src="${u}" data-z="${u}" alt=""/>`).join("")}</div>`:""}
     <div class="kv"><p><span>อาการ</span><b>${esc(j.symptom)}</b></p><p><span>ซ่อมที่</span><b>${j.mode==="mobile"?"ช่างมาหา":"ที่อู่"}</b></p><p><span>เวลา</span><b>${esc(j.requestedTime)}</b></p><p><span>พื้นที่</span><b>${esc(j.area)}</b></p>${j.address?`<p><span>ที่อยู่</span><b>${esc(j.address)}</b></p>`:""}</div>
     ${j.note?`<div class="kv"><p><span>${T("ลูกค้าบอกเพิ่ม","Customer's note")}</span><b class="nt">${esc(j.note)}</b></p></div>`:""}
     ${(j.photos||[]).length?`<div class="gal">${j.photos.map(u=>`<img src="${u}" data-z="${u}" alt=""/>`).join("")}</div>`:""}
@@ -3202,6 +3267,11 @@ function drawJob(j,push){
     ${j.dispute?`<div class="kv"><p><span>ปัญหา</span><b style="color:var(--danger)">${esc(j.dispute)}</b></p>${j.resolution?`<p><span>ผล</span><b>${esc(j.resolution)}</b></p>`:""}</div>`:""}
     ${j.review?`<div class="kv"><p><span>คะแนน</span><b>${"★".repeat(j.review.rating)}${"☆".repeat(5-j.review.rating)}</b></p><p><span>รีวิว</span><b>${esc(j.review.text)}</b></p></div>`:""}
     ${!j.acceptedAt&&tech&&!cust?'<p class="note"><i class="ti ti-lock"></i>เบอร์และที่อยู่ลูกค้าจะเปิดเมื่อลูกค้ายืนยันราคา</p>':""}
+    ${safe?`<div class="safe"><p class="h4" style="margin-top:0"><i class="ti ti-shield-heart"></i> ความปลอดภัย</p>
+      <button class="jl" data-a="share"><span class="av sq" style="--c1:#0d9488"><i class="ti ti-share"></i></span><span class="jb"><b>แชร์ใบงานให้คนที่ไว้ใจ</b><small>${j.share?`ลิงก์ใช้งานอยู่ ถึง ${new Date(j.share.expiresAt).toLocaleString(LOC,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})} · กดเพื่อส่งอีกครั้ง`:"เห็นชื่อช่าง รูป รถ เวลานัด และสถานะ (ไม่มีที่อยู่/เบอร์) · ลิงก์อายุ 24 ชม."}</small></span><i class="ti ti-chevron-right"></i></button>
+      ${j.share?'<button class="lnk safe-x" data-a="unshare">ยกเลิกลิงก์ที่แชร์</button>':""}
+      <button class="jl" data-a="dispute"><span class="av sq" style="--c1:#b45309"><i class="ti ti-flag"></i></span><span class="jb"><b>แจ้งปัญหาให้ทีมงาน</b><small>เปิดเรื่องพร้อมรายละเอียด ทีมงานติดต่อกลับ (ไม่ได้เฝ้าระวังตลอด 24 ชม.)</small></span><i class="ti ti-chevron-right"></i></button>
+      <a class="jl" href="tel:191"><span class="av sq" style="--c1:#b91c1c"><i class="ti ti-phone-call"></i></span><span class="jb"><b>โทร 191 · เหตุด่วนเหตุร้าย</b><small>โทรออกจริงถึงตำรวจ ใช้เมื่อไม่ปลอดภัย</small></span></a></div>`:""}
     ${more.length?`<div class="seg" style="margin-top:6px">${more.map(([k,l])=>`<button data-a="${k}" style="color:var(--muted)">${l}</button>`).join("")}</div>`:""}`,
     foot:A.map(([k,l,c])=>`<button class="btn ${c}" data-a="${k}">${esc(l)}</button>`).join(""),
     mount(b,f){
@@ -3226,8 +3296,31 @@ async function change(j,action,extra,btn){
     while(SH.stack.length&&SH.stack[SH.stack.length-1].job)SH.stack.pop();drawJob(nj,false);refreshMe();
   });
 }
+/* แนบรูปในขั้นตอนงาน (ไม่บังคับ สูงสุด 3) — เก็บกับใบงานเป็นหลักฐาน */
+function stagePics(id,arr){const draw=()=>{$(id).innerHTML=arr.map((d,i)=>`<div class="doc"><img src="${d}" alt=""/><button class="rm" data-i="${i}" type="button"><i class="ti ti-x"></i></button></div>`).join("")+(arr.length<3?`<button class="doc" data-add type="button"><i class="ti ti-camera-plus"></i>เพิ่มรูป</button>`:"");
+  $(id).querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>{arr.splice(+b.dataset.i,1);draw()});
+  const add=$(id).querySelector("[data-add]");if(add)add.onclick=()=>{const f=$(id+"F");f.value="";f.dataset.cropMax=3-arr.length;f.click()}};
+  $(id+"F").onchange=async()=>{for(const f of [...$(id+"F").files].slice(0,3-arr.length)){try{arr.push(await shrink(f,1400))}catch(e){}}draw()};draw()}
 function act(j,a,btn){
-  if(["enroute","start"].includes(a))return change(j,a,{},btn);
+  if(a==="enroute")return change(j,a,{},btn);
+  if(a==="unshare")return busy(btn,async()=>{await api("/api/tech/jobs/"+j.id,{body:{action:"unshare"}});drawJob((await api("/api/tech/jobs/"+j.id)).job,false);toast("ยกเลิกลิงก์แล้ว")});
+  if(a==="share")return busy(btn,async()=>{
+    const r=await api("/api/tech/jobs/"+j.id,{body:{action:"share"}}),u=location.origin+"/?trip="+encodeURIComponent(r.token);
+    try{if(navigator.share)await navigator.share({title:"ใบงานซ่อมรถของฉัน (Cendon)",text:"ติดตามสถานะงานซ่อมรถของฉัน ลิงก์ใช้ได้ 24 ชม.",url:u});else{await navigator.clipboard.writeText(u);toast("คัดลอกลิงก์แล้ว ส่งให้คนที่ไว้ใจได้เลย","ti-copy")}}catch(e){}
+    drawJob((await api("/api/tech/jobs/"+j.id)).job,false)});
+  if(a==="newcode")return busy(btn,async()=>{await api("/api/tech/jobs/"+j.id,{body:{action:"newcode"}});const nj=(await api("/api/tech/jobs/"+j.id)).job;drawJob(nj,false);toast("ได้รหัสเริ่มงานใหม่แล้ว","ti-key")});
+  if(a.startsWith("extra_ok:")||a.startsWith("extra_no:")){const [k,id]=a.split(":");if(k==="extra_no"&&!confirm("ไม่ทำงานเพิ่มรายการนี้?"))return;return change(j,k,{extraId:id},btn)}
+  if(a==="start"){const P=[];return sheet({push:true,title:"เริ่มซ่อม",body:`${j.startCodeRequired?`<label class="fld"><span>รหัสเริ่มงานจากลูกค้า (4 หลัก)</span><input class="inp sc-in" id="sC" inputmode="numeric" maxlength="4" autocomplete="one-time-code" placeholder="••••"/></label>
+      <p class="note"><i class="ti ti-info-circle"></i>ขอรหัสจากลูกค้าเมื่อพบกันแล้ว ใส่ผิดได้ไม่เกิน 5 ครั้ง</p>`:""}
+      <p class="h4">รูปรถก่อนเริ่มซ่อม <small style="font-weight:400;color:var(--muted)">· ไม่บังคับ สูงสุด 3 รูป · ช่วยเป็นหลักฐานทั้งสองฝ่าย</small></p><div class="phg" id="sP"></div><input type="file" id="sPF" accept="image/*" multiple hidden/>`,
+    foot:'<button class="btn p w" id="sGo">เริ่มซ่อม</button>',mount(){stagePics("sP",P);$("sGo").onclick=e=>change(j,"start",{code:$("sC")?$("sC").value.trim():"",photos:P},e.currentTarget)}})}
+  if(a==="done"){const P=[];return sheet({push:true,title:"ซ่อมเสร็จแล้ว",body:`<label class="fld"><span>สรุปงานที่ทำ</span><textarea class="inp" id="nT" placeholder="เช่น เปลี่ยนโอริง เติมน้ำยา 600 กรัม"></textarea></label>
+      <p class="h4">รูปหลังซ่อมเสร็จ <small style="font-weight:400;color:var(--muted)">· ไม่บังคับ สูงสุด 3 รูป</small></p><div class="phg" id="dP"></div><input type="file" id="dPF" accept="image/*" multiple hidden/>`,
+    foot:'<button class="btn p w" id="nGo">แจ้งลูกค้าว่าซ่อมเสร็จ</button>',mount(){stagePics("dP",P);$("nGo").onclick=e=>change(j,"done",{note:$("nT").value.trim(),photos:P},e.currentTarget)}})}
+  if(a==="extra")return sheet({push:true,title:"เสนองานเพิ่ม",body:`<p class="note"><i class="ti ti-info-circle"></i>ราคาที่ลูกค้ายืนยันแล้วแก้ไม่ได้ งานที่เจอเพิ่มต้องให้ลูกค้ากดยอมรับก่อนทำ</p>
+      <label class="fld"><span>ต้องทำอะไรเพิ่ม และทำไม</span><textarea class="inp" id="xD" placeholder="เช่น วาล์วแอร์รั่ว ต้องเปลี่ยนใหม่"></textarea></label>
+      <div class="two"><label class="fld"><span>ค่าแรง</span><input class="inp" id="xL" type="number" inputmode="decimal" placeholder="0"/></label><label class="fld"><span>อะไหล่</span><input class="inp" id="xP" type="number" inputmode="decimal" placeholder="0"/></label></div>`,
+    foot:'<button class="btn p w" id="xGo">ส่งให้ลูกค้าตัดสินใจ</button>',mount(){$("xGo").onclick=e=>change(j,"extra",{desc:$("xD").value.trim(),labor:+$("xL").value||0,parts:+$("xP").value||0},e.currentTarget)}});
   if(a==="quote"){const q=j.quote||{};return sheet({push:true,title:"เสนอราคา",body:`
       <div class="two"><label class="fld"><span>ค่าแรง</span><input class="inp" id="qL" type="number" inputmode="decimal" value="${q.labor||""}" placeholder="0"/></label>
       <label class="fld"><span>อะไหล่</span><input class="inp" id="qP" type="number" inputmode="decimal" value="${q.parts||""}" placeholder="0"/></label></div>
@@ -3240,7 +3333,8 @@ function act(j,a,btn){
       $("qGo").onclick=e=>change(j,"quote",{labor:+$("qL").value||0,parts:+$("qP").value||0,travel:+$("qT").value||0,scope:$("qS").value.trim(),appointment:$("qA").value.trim(),warranty:+$("qW").value||0},e.currentTarget)}});}
   if(a==="accept")return sheet({push:true,title:"ยืนยันราคา",body:`<div class="quote"><div class="tot">฿${money(j.quote.total)}</div><p>${esc(j.quote.scope)}</p><p class="note" style="margin:8px 0 0"><i class="ti ti-calendar"></i>${esc(j.quote.appointment)}</p></div>
       <label class="chk"><input type="checkbox" id="cOk"/> ตกลงราคานี้ และให้ช่างเห็นเบอร์กับที่อยู่ของฉันเพื่อนัดซ่อม</label>
-      <p class="note"><i class="ti ti-info-circle"></i>จ่ายเงินกับช่างโดยตรงเมื่องานเสร็จ</p>`,
+      <p class="note"><i class="ti ti-info-circle"></i>จ่ายเงินกับช่างโดยตรงเมื่องานเสร็จ — <b>Cendon ไม่ได้ถือเงิน และยังไม่มีระบบคืนเงิน</b> ถ้ามีปัญหากด "แจ้งปัญหา" ในใบงาน ทีมงานช่วยประสานให้</p>
+      <p class="note"><i class="ti ti-key"></i>หลังยืนยัน คุณจะได้ "รหัสเริ่มงาน" — บอกช่างเมื่อพบกันแล้วเท่านั้น งานเพิ่มทุกรายการต้องให้คุณกดยอมรับก่อน</p>`,
     foot:'<button class="btn p w" id="cGo" disabled>ยืนยัน</button>',mount(){$("cOk").onchange=()=>$("cGo").disabled=!$("cOk").checked;$("cGo").onclick=e=>change(j,"accept",{consent:true},e.currentTarget)}});
   if(a==="complete")return sheet({push:true,title:"ตรวจรับงาน",body:`<div class="state"><div class="big" style="background:rgba(62,158,110,.14);color:var(--ok)"><i class="ti ti-circle-check"></i></div><h2>งานเรียบร้อยแล้ว?</h2><p>${esc(j.completion||"")}</p></div>`,
     foot:'<button class="btn s" id="cNo">ยังมีปัญหา</button><button class="btn p" id="cGo">เรียบร้อย</button>',mount(){$("cNo").onclick=()=>act(j,"dispute");$("cGo").onclick=e=>change(j,"complete",{},e.currentTarget)}});
@@ -3743,6 +3837,8 @@ async function tabFind(){
   L.marker([NEAR.center.lat,NEAR.center.lng],{icon:L.divIcon({className:"",iconSize:[18,18],html:'<div class="me-dot" style="background:var(--accent)"></div>'})}).addTo(FMAP);
   const pts=[[NEAR.center.lat,NEAR.center.lng]];
   NEAR.posts.forEach((p,i)=>{pts.push([p.lat,p.lng]);
+    /* ช่างเห็นแค่พื้นที่โดยประมาณ (วงกลม) — หมุดจริงเปิดในใบงานหลังลูกค้าเลือกและยืนยันราคาแล้ว */
+    if(p.approxKm)L.circle([p.lat,p.lng],{radius:p.approxKm*1000,color:"#64748b",weight:1,fillOpacity:.08,dashArray:"4 4"}).addTo(FMAP);
     L.marker([p.lat,p.lng],{icon:L.divIcon({className:"",iconSize:[30,30],iconAnchor:[15,30],html:`<div class="ppin ${p.urgent?"u":""} ${p.mine?"done":""}" style="animation-delay:${i*50}ms"><b><i class="ti ${p.urgent?"ti-urgent":"ti-car"}"></i></b></div>`})}).on("click",()=>openPost(p)).addTo(FMAP)});
   setTimeout(()=>{FMAP.invalidateSize();if(pts.length>1)FMAP.fitBounds(pts,{padding:[30,30],maxZoom:14})},80);
 }
@@ -3752,7 +3848,8 @@ function openPost(p){
   sheet({title:p.urgent?T("งานด่วน","Urgent job"):T("ประกาศหาช่าง","Job post"),body:`
     <div class="kv"><p><span>${T("อาการ","Symptom")}</span><b class="nt">${esc(p.symptom)}</b></p><p><span>${T("รถ","Car")}</span><b class="nt">${esc(p.car)}</b></p>
       <p><span>${T("ต้องการ","When")}</span><b class="nt">${esc(p.requestedTime)}</b></p><p><span>${T("ซ่อมที่","Where")}</span><b>${p.mode==="mobile"?T("ช่างไปหา","At the car"):T("เอาเข้าอู่","At the garage")}</b></p>
-      <p><span>${T("ระยะทาง","Distance")}</span><b>${p.dist} ${T("กม.","km")} · <a class="lnk" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}">${T("นำทาง","Directions")}</a></b></p>
+      <p><span>${T("ระยะทาง","Distance")}</span><b>${p.approxKm?T("ประมาณ ","about "):""}${p.dist} ${T("กม.","km")} · ${esc(p.area||"")}</b></p>
+      ${p.approxKm?`<p class="note" style="margin:6px 0 0"><i class="ti ti-lock"></i>${T("แสดงพื้นที่โดยประมาณ — ที่อยู่ เบอร์ และหมุดจริงจะเปิดให้เมื่อลูกค้าเลือกคุณและยืนยันราคาแล้ว","Approximate area only — exact address, phone and pin unlock after the customer picks you and confirms the price")}</p>`:""}
       <p><span>${T("ประกาศเมื่อ","Posted")}</span><b>${ago(p.createdAt)}</b></p></div>
     ${p.note?`<div class="kv"><p><span>${T("ลูกค้าบอกเพิ่ม","Customer's note")}</span><b class="nt">${esc(p.note)}</b></p></div>`:""}
     ${p.photos?`<div class="gal" id="oGal"><div class="ph skel" style="height:190px"></div></div>`:""}

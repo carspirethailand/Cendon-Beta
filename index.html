@@ -2686,6 +2686,16 @@ function ccDone(){
 setTimeout(ccDone,7000);
 let SHOPLINK=new URLSearchParams(location.search).get("shop");
 let GIGLINK=new URLSearchParams(location.search).get("gig");
+/* ลิงก์จากการ์ดแจ้งเตือน LINE: ?job=<id> ใบงาน · ?jobs=1 งานของฉัน · ?studio=1 Studio · ?join=1 ใบสมัครช่าง
+   ต้องล็อกอินก่อน — ยังไม่ล็อกอินพาไปหน้าเข้าสู่ระบบแล้วกลับมาที่ลิงก์เดิม · เปิดแล้วล้างออกจาก URL กันเปิดซ้ำตอนรีโหลด */
+let DEEP=(()=>{const p=new URLSearchParams(location.search),j=p.get("job");
+  return j&&/^[0-9a-f-]{36}$/i.test(j)?{job:j}:p.get("jobs")?{jobs:1}:p.get("studio")?{studio:1}:p.get("join")?{join:1}:null})();
+function runDeep(){
+  if(!DEEP)return;if(!U)return needLogin();
+  const d=DEEP;DEEP=null;
+  try{const u=new URL(location.href);["job","jobs","studio","join","openExternalBrowser"].forEach(k=>u.searchParams.delete(k));history.replaceState(history.state,"",u.pathname+u.search+u.hash)}catch(e){}
+  if(d.job)openJob(d.job,true);else if(d.jobs)jobs();else if(d.studio)openStudio();else if(d.join)openJoin();
+}
 /* ลิงก์ใบงานที่ลูกค้าแชร์ให้คนที่ไว้ใจ ?trip=<token> — เปิดดูได้โดยไม่ต้องล็อกอิน อ่านอย่างเดียว */
 const TRIPLINK=new URLSearchParams(location.search).get("trip");
 async function openTrip(token){
@@ -2847,6 +2857,7 @@ function studioSettings(){
       ${swRow("ssVac","โหมดพักร้อน","ปิดรับคำขอใหม่ชั่วคราว หน้าร้านจะบอกลูกค้าให้",!!t.vacation)}
       <div class="ss-sub" id="ssVacF"><div class="two"><label class="fld"><span>ถึงวันที่</span><input class="inp" type="date" id="ssUntil" value="${until}"/></label>
         <label class="fld"><span>ข้อความถึงลูกค้า</span><input class="inp" id="ssVacN" maxlength="200" value="${esc(v.note||"")}" placeholder="เช่น ไปงานบวช กลับ 10 ต.ค."/></label></div></div></section>
+    <section class="ss-g" data-line-card style="display:none"><h3><i class="ti ti-brand-line"></i>แจ้งเตือนทาง LINE</h3><div data-line-connect></div></section>
     <section class="ss-g"><h3><i class="ti ti-message-2-bolt"></i>ข้อความ</h3>
       ${swRow("ssAr","ตอบกลับอัตโนมัติ","ส่งให้ลูกค้าทันทีที่ขอราคาเข้ามา",!!ar.on)}
       <div class="ss-sub" id="ssArF"><textarea class="inp" id="ssArT" maxlength="500" placeholder="สวัสดีครับ ได้รับคำขอแล้ว จะส่งราคาให้ภายใน 30 นาทีครับ">${esc(ar.text||"")}</textarea></div>
@@ -3320,6 +3331,7 @@ function drawJob(j,push){
     ${j.dispute?`<div class="kv"><p><span>ปัญหา</span><b style="color:var(--danger)">${esc(j.dispute)}</b></p>${j.resolution?`<p><span>ผล</span><b>${esc(j.resolution)}</b></p>`:""}</div>`:""}
     ${j.review?`<div class="kv"><p><span>คะแนน</span><b>${"★".repeat(j.review.rating)}${"☆".repeat(5-j.review.rating)}</b></p><p><span>รีวิว</span><b>${esc(j.review.text)}</b></p></div>`:""}
     ${!j.acceptedAt&&tech&&!cust?'<p class="note"><i class="ti ti-lock"></i>เบอร์และที่อยู่ลูกค้าจะเปิดเมื่อลูกค้ายืนยันราคา</p>':""}
+    ${!["completed","cancelled"].includes(s)?'<div data-line-connect="nudge" style="display:none;margin:12px 0"></div>':""}
     ${safe?`<div class="safe"><p class="h4" style="margin-top:0"><i class="ti ti-shield-heart"></i> ความปลอดภัย</p>
       <button class="jl" data-a="share"><span class="av sq" style="--c1:#0d9488"><i class="ti ti-share"></i></span><span class="jb"><b>แชร์ใบงานให้คนที่ไว้ใจ</b><small>${j.share?`ลิงก์ใช้งานอยู่ ถึง ${new Date(j.share.expiresAt).toLocaleString(LOC,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})} · กดเพื่อส่งอีกครั้ง`:"เห็นชื่อช่าง รูป รถ เวลานัด และสถานะ (ไม่มีที่อยู่/เบอร์) · ลิงก์อายุ 24 ชม."}</small></span><i class="ti ti-chevron-right"></i></button>
       ${j.share?'<button class="lnk safe-x" data-a="unshare">ยกเลิกลิงก์ที่แชร์</button>':""}
@@ -4145,7 +4157,7 @@ async function pullCars(){
     try{
       if(!firebase.apps||!firebase.apps.length)firebase.initializeApp(fbConfig);
       auth=firebase.auth();
-      auth.onAuthStateChanged(async u=>{U=u||null;try{navPaint(U)}catch(e){}greet();if(U)pullCars();await refreshMe();if(U)await load();else diag()});
+      auth.onAuthStateChanged(async u=>{U=u||null;try{navPaint(U)}catch(e){}greet();if(U)pullCars();await refreshMe();if(U)await load();else diag();runDeep()});
     }catch(e){}
   })();
   /* ลงทะเบียน service worker หลังหน้าขึ้นแล้ว — แอปที่ติดตั้งบนมือถือจะเปิดจากหน้าที่เก็บไว้ได้ทันทีตอนเน็ตช้า
@@ -4158,6 +4170,7 @@ async function pullCars(){
 <script src="cendon-admin.js" defer></script>
 <script src="fluid.js" defer></script>
 <script src="crop.js" defer></script>
+<script src="cendon-line.js" defer></script>
 <script>
 /* ต่อ navbar เดิมเข้ากับหน้านี้: ตัวชี้แท็บ · เมนูโปรไฟล์ · ปุ่มเข้าสู่ระบบ · รูป/ตัวอักษรผู้ใช้ */
 (function(){

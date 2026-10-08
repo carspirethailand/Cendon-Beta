@@ -2417,7 +2417,9 @@ function drawJobsBtn(){
 }
 /* ═══ โพสต์บริการของช่าง (ร้านละไม่เกิน 2 รายการ) ═══ */
 let GIGS=null;
-async function loadGigs(){try{GIGS=(await api("/api/tech/gigs")).gigs||[]}catch(e){GIGS=GIGS||[]}drawHome();drawCat()}
+async function loadGigs(){try{GIGS=(await api("/api/tech/gigs")).gigs||[]}catch(e){GIGS=GIGS||[]}drawHome();drawCat();
+  /* ลิงก์บริการ ?gig=<id> (เช่นจากการ์ดผลค้นหาของ AI ในหน้าแชต) → เปิดหน้ารายละเอียดทันที ครั้งเดียว */
+  if(GIGLINK&&GIGS.some(g=>String(g.id)===GIGLINK)){const id=GIGLINK;GIGLINK=null;openGig(id)}}
 function myCarText(){const cars=ls.get("spire_garage",[]),c=cars.find(x=>x.id===ls.get("spire_selCar",""))||cars[0];return c?[c.make,c.name,c.model].filter(Boolean).join(" ").toLowerCase():""}
 /* เรียง: ตรงกับรถของผู้ใช้ (ยี่ห้อที่ถนัด/ในข้อความ) ก่อน แล้วใกล้ แล้วใหม่ */
 function rankGigs(list){
@@ -2683,6 +2685,7 @@ function ccDone(){
 }
 setTimeout(ccDone,7000);
 let SHOPLINK=new URLSearchParams(location.search).get("shop");
+let GIGLINK=new URLSearchParams(location.search).get("gig");
 /* ลิงก์ใบงานที่ลูกค้าแชร์ให้คนที่ไว้ใจ ?trip=<token> — เปิดดูได้โดยไม่ต้องล็อกอิน อ่านอย่างเดียว */
 const TRIPLINK=new URLSearchParams(location.search).get("trip");
 async function openTrip(token){

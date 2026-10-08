@@ -3166,6 +3166,7 @@ html[data-idle="1"] *{animation-play-state:paused!important}
      โหลดตรงนี้เพื่อให้ AI หยิบข้อมูลช่างชุดเดียวกับที่ผู้ใช้เห็นบนหน้าเว็บ -->
 <script src="call-sounds.js?v=1" defer></script>
 <script src="./techs.js"></script>
+<script src="./cendon-search.js"></script>
 <style id="vtcss">
 /* เปลี่ยนหน้าแบบเฟด หน้าเก่าค้างจนหน้าใหม่พร้อม (ต้องเปิดทั้งสองหน้า — หน้าอื่นเปิดไว้แล้ว) */
 @view-transition{navigation:auto}
@@ -5144,7 +5145,7 @@ const W_MARK=/[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E\u0300-\u036F\uFE0F\u200D\uDC00-\
 const W_FADE=520;
 function flowNew(body){return{body,target:"",shown:0,acc:0,stamps:[],settled:0,active:null,caret:null,raf:0,last:0,done:false,wait:null,user:false}}
 /* ข้อความที่จะแสดง — ตัดบล็อกฟอร์มถามกลับ [[ASK]] ออก (มันจะกลายเป็นฟอร์มหลังคำตอบจบ ไม่ใช่ขึ้นเป็นโค้ดดิบระหว่างไหล) */
-function flowText(t){return String(t||"").replace(/\[\[(ASK|NEXT)\]\][\s\S]*$/,"").replace(/\[(\[([AN](S(K)?|E(X(T)?)?)?)?)?$/,"")}
+function flowText(t){return String(t||"").replace(/\[\[(ASK|NEXT)\]\][\s\S]*$/,"").replace(/\[\[\s*(?:ค้นหา|search)\s*:[^\]\n]*(?:\]\])?/gi,"").replace(/\[\[[^\]\n]{0,70}$/,"").replace(/\[(\[([AN](S(K)?|E(X(T)?)?)?)?)?$/,"")}
 function flowSet(f,text){
   if(!f)return;
   f.target=flowText(text);
@@ -5593,6 +5594,7 @@ function stripForSave(msgs){return msgs.filter(m=>!m.typing).slice(-40).map(m=>{
   const o={role:m.role,text:m.text||""};
   if(m.featureTool)o.featureTool=m.featureTool;
   if(m.data)o.data=m.data;
+  if(m.svc)o.svc=m.svc;
   if(m.atts&&m.atts.length)o.atts=m.atts.map(a=>({kind:a.kind}));
   return o})}
 function currentSessionId(){const k=curKey();return k?LS.get(k,null):null}
@@ -5872,6 +5874,16 @@ function techHits(text){
       +l2.map(Techs.line).join("\n");
   }catch(e){ return"" }
 }
+/* ผลค้นหาช่างของ Cendon: แนบการ์ดใต้คำตอบล่าสุด แล้วเปิดแผงด้านขวา (คอม)
+   pre = ผลที่ค้นไว้ก่อนถาม AI · ถ้าไม่มี ดูว่า AI ขอค้นเองด้วย [[ค้นหา: …]] หรือเปล่า */
+function attachSvc(pre){
+  const SV=window.CendonSearch;if(!SV)return;
+  const m=[...messages].reverse().find(x=>x.role==="ai"&&!x.typing);if(!m)return;
+  const ask=SV.takeMarker(m);
+  const done=r=>{ if(!r)return; m.svc=SV.ref(r); renderMessages(); saveSession(); SV.open(r,{auto:true}) };
+  if(pre){ done(pre); return }
+  if(ask)SV.find(ask,{label:ask}).then(done).catch(()=>{});
+}
 /* ตารางแบบ markdown (| a | b |) → ตารางจริง เทียบรุ่นได้ในจอเดียว ไม่ต้องเลื่อนขึ้นลงหา
    คอลัมน์แรกติดซ้ายตอนเลื่อนข้าง แถวหัวตารางเป็นชื่อสิ่งที่เทียบ */
 function mdTable(rows){
@@ -5892,7 +5904,7 @@ function md(t){let s=esc(t);const lines=s.split("\n");let out="",inList=false,tb
   flushT();
   if(inList)out+="</ul>";return out.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/(<br>)+$/,"")}
 /* แบ่งคำตอบเป็นย่อหน้าตามบรรทัดว่าง — ตอนไหลกับตอนจบใช้โครงเดียวกันเป๊ะ ภาพจึงไม่กระโดดตอนคำตอบจบ */
-function mdBlocks(t){return String(t||"").split(/\n{2,}/).filter(b=>b.trim()).map(b=>`<div class="blk">${md(b)}</div>`).join("")}
+function mdBlocks(t){if(window.CendonSearch)t=CendonSearch.strip(t);return String(t||"").split(/\n{2,}/).filter(b=>b.trim()).map(b=>`<div class="blk">${md(b)}</div>`).join("")}
 function attHTML(atts){if(!atts||!atts.length)return"";
   return`<div class="matt">`+atts.map(a=>a.kind==="image"&&a.b64?`<img src="data:${a.mime};base64,${a.b64}">`
     :a.kind==="video"&&a.b64?`<video src="data:${a.mime};base64,${a.b64}" muted></video>`
@@ -5905,7 +5917,7 @@ function msgHTML(m){
   if(m.role==="sum")return sumHTML(m.data);
   if(m.typing)return""; /* thinking renders as the spinning mark below (Claude-style) */
   return`<div class="msg ai"><div class="bubble">${m.research&&m.research.length?researchHTML(m):""}${m.reasoning?thinkHTML(m):""}${
-    mdBlocks(m.text)}${m.cached?cachedHTML(m):""}${m.ask?askHTML(m):""}${m.next&&!m.ask?nextHTML(m):""}</div></div>`;
+    mdBlocks(m.text)}${m.svc&&window.CendonSearch?CendonSearch.chipHTML(m.svc):""}${m.cached?cachedHTML(m):""}${m.ask?askHTML(m):""}${m.next&&!m.ask?nextHTML(m):""}</div></div>`;
 }
 
 /* ── กระบวนการคิดของ AI ──
@@ -6352,7 +6364,12 @@ async function sendMsg(){
         else parts.push({text:"[แนบไฟล์ไว้ก่อนหน้า]"})});
       if(!parts.length)parts.push({text:""});
       return{role:m.role==="user"?"user":"model",parts}});
-    let sys=sysPrompt()+techHits(text);
+    /* หาช่าง/บริการ: ค้นช่างของ Cendon ก่อน แล้วให้ AI แนะนำจากรายการนั้นเท่านั้น
+       รอบนี้ปิดค้นเว็บ ไม่งั้น AI ไปหยิบอู่ข้างนอกจาก Google มาแนะนำ */
+    const SV=window.CendonSearch;let svc=null;
+    const svcMode=!!(SV&&SV.wants(text));
+    if(svcMode){ try{ svc=await Promise.race([SV.find(text),new Promise(r=>setTimeout(()=>r(null),4000))]) }catch(e){ svc=null } }
+    let sys=sysPrompt()+(svc?SV.context(svc):techHits(text))+(SV?SV.rule():"");
     const skillIds=[];
     /* ── เลือกทางก่อน ระหว่างทางสตรีมกับทางปกติ ──
        ทางสตรีมสวยกว่าเพราะเห็นความคิดสด ๆ แต่ตอนนี้หลังบ้านยังไม่อ่าน
@@ -6365,22 +6382,23 @@ async function sendMsg(){
     /* ตอนนี้หลังบ้านค้นเว็บในทางสตรีมได้แล้ว (Gemini ค้นและตอบในการเรียกครั้งเดียว)
        ทุกคำถามจึงวิ่งทางสตรีม เห็นคำตอบไหลออกมาทันที ไม่ต้องรอจนจบแล้วค่อยพิมพ์ทีละคำ */
     let streamed=null;
-    try{ streamed=await streamAnswer(contents,{skillIds,system:sys,search:true}) }
+    try{ streamed=await streamAnswer(contents,{skillIds,system:sys,search:!svcMode}) }
     catch(e){
       if(window.__stopped||(e&&e.name==="AbortError")){ window.__stopped=false; return }
       if(e&&e.userQuota)throw e;     /* โควตาของผู้ใช้เองเท่านั้น — โควตาผู้ให้บริการเต็มให้ลองทางอื่นต่อ */
       streamed=null;
     }
     if(streamed!==null){
+      attachSvc(svc);
       saveSession();
-      if(selCar())addHistory(selCar().id,text||(lang==="en"?"media":"แนบสื่อ"),streamed);
+      if(selCar())addHistory(selCar().id,text||(lang==="en"?"media":"แนบสื่อ"),SV?SV.strip(streamed):streamed);
       try{ window.slideRelease&&window.slideRelease() }catch(e){}
       sending=false;updateSend();renderChips();
       return;
     }
     messages.push({role:"ai",typing:true});renderMessages();
 
-    const raw0=await gemini(contents,{system:sys,search:!hasMedia,temp:0.5,skillIds,
+    const raw0=await gemini(contents,{system:sys,search:!hasMedia&&!svcMode,temp:0.5,skillIds,
       fresh:window.__freshOnce===true});
     window.__freshOnce=false;
     const raw=noTools(raw0);
@@ -6390,8 +6408,9 @@ async function sendMsg(){
        ไว้กับข้อความล่าสุด เพื่อให้ตัววาดหยิบไปแสดงได้ */
     pendingAsk=parsed.ask; pendingMeta=lastMeta;
     typewrite(ans||"(ไม่มีคำตอบ)",()=>{
+      attachSvc(svc);
       saveSession();
-      if(selCar())addHistory(selCar().id,text||(lang==="en"?"media":"แนบสื่อ"),ans);
+      if(selCar())addHistory(selCar().id,text||(lang==="en"?"media":"แนบสื่อ"),SV?SV.strip(ans):ans);
       try{ window.slideRelease&&window.slideRelease() }catch(e){}
       sending=false;updateSend();renderChips();
     });

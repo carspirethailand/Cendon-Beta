@@ -1591,8 +1591,46 @@ html[data-theme="light"] .mnav,html[data-theme="plant"] .mnav{
 @media(min-width:761px){body{padding-top:84px}}
 @media(max-width:760px){.navwrap{display:none}body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}}
 </style>
+<style id="vtcss">
+/* เปลี่ยนหน้าแบบเฟด หน้าเก่าค้างจนหน้าใหม่พร้อม (ต้องเปิดทั้งสองหน้า — หน้าอื่นเปิดไว้แล้ว) */
+@view-transition{navigation:auto}
+::view-transition-old(root){animation-duration:.20s}
+::view-transition-new(root){animation-duration:.26s}
+@media(prefers-reduced-motion:reduce){@view-transition{navigation:none}}
+</style>
+<style id="mnav0css">
+/* แถบล่างมือถือ: แท็บเป็นลิงก์จริง และค้างอยู่กับที่ระหว่างเปลี่ยนหน้า (view transition จับคู่ด้วยชื่อ mnav) */
+a.mtab{text-decoration:none}
+.mnav{view-transition-name:mnav}
+::view-transition-group(mnav){animation-duration:.2s}
+</style>
+<!-- ห้ามวาดเฟรมแรกก่อนแถบล่างพร้อม — เดิมหน้าใหม่ขึ้นมาก่อนแล้วแถบตามมาทีหลัง (Chrome 124+, ที่อื่นข้าม) -->
+<link rel="expect" href="#mnav0" blocking="render">
 </head>
 <body>
+<script id="mnav0">
+/* แถบล่างมือถือ วาดทันทีที่เริ่มอ่านหน้า — เดิมสร้างหลังโหลดทั้งหน้า (~1 MB) เสร็จ
+   ทุกครั้งที่เปลี่ยนหน้าแถบเลยหายไปครึ่งถึงสองวินาที · สคริปต์ตัวเต็ม (mjs) มารับช่วงต่อทีหลัง
+   แท็บเป็นลิงก์จริง กดได้ทันทีแม้สคริปต์หลักยังไม่พร้อม และเบราว์เซอร์เตรียมหน้าล่วงหน้าได้ */
+(function(){try{
+  var D=document;if(!matchMedia("(max-width:760px)").matches||D.getElementById("mnav"))return;
+  var p=location.pathname.replace(/\.html$/,"").replace(/\/index$/,"/");
+  var cur={"/garage":"garage","/news":"magazine","/profile":"account"}[p]||"home";
+  var en=false;try{en=JSON.parse(localStorage.getItem("spire_lang"))==="en"}catch(e){}
+  var u=null;try{u=JSON.parse(localStorage.getItem("spire_cachedUser"))}catch(e){}
+  var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})};
+  var ph=u&&(u.photoURL||u.photo),nm=u&&String(u.displayName||u.name||u.email||"?").trim();
+  var av=!u?'<i class="ti ti-user"></i>':ph?'<img src="'+esc(ph)+'" referrerpolicy="no-referrer">':'<span class="fb">'+esc(nm.charAt(0).toUpperCase())+'</span>';
+  var T=[["home","ti-home","หน้าหลัก","Home","/"],["garage","ti-car","การาจ","Garage","/garage"],["chat","ti-message-2","แชต","Chat","/chat"],
+         ["magazine","ti-book-2","นิตยสาร","Magazine","/news"],["account","ti-user","บัญชี","Account",u?"/profile":"/login?next=%2Fprofile"]];
+  var n=D.createElement("nav");n.className="mnav";n.id="mnav";n.setAttribute("role","navigation");
+  n.innerHTML=T.map(function(t){var on=t[0]===cur,l=en?t[3]:t[2];
+    return '<a class="mtab'+(on?' on':'')+'" href="'+t[4]+'" data-mnav="'+t[0]+'" aria-label="'+l+'"'+(on?' aria-current="page"':'')+'>'
+      +'<span class="mt-i" data-mslot="'+t[0]+'">'+(t[0]==="account"?av:'<i class="ti '+t[1]+'"></i>')+'</span><b>'+l+'</b></a>'}).join("");
+  D.body.appendChild(n);
+}catch(e){}})();
+</script>
+
 
 
 <!-- NAVBAR เดิมของแอป (เหมือนทุกหน้า: คอม = แคปซูลบน · มือถือ = แถบล่าง) -->
@@ -1756,7 +1794,7 @@ const EN={
 "มาถึงที่":"Comes to you","รับงานด่วน":"Urgent jobs","แอร์รถยนต์":"Car air-con",
 "รอราคา":"Awaiting quote","ได้ราคาแล้ว":"Quoted","นัดแล้ว":"Booked","ช่างกำลังมา":"On the way","กำลังซ่อม":"Repairing","รอตรวจงาน":"Awaiting check",
 "เสร็จแล้ว":"Completed","ยกเลิก":"Cancelled","แจ้งปัญหา":"Report a problem","อู่":"Garage","ร้าน":"shops","ช่าง":"Mechanic",
-"เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง":"Can't connect. Please try again","ระบบยังไม่พร้อม":"Service unavailable",
+"เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง":"Can't connect. Please try again","เซิร์ฟเวอร์ตอบช้า ลองใหม่อีกครั้ง":"The server is taking too long. Please try again","ระบบยังไม่พร้อม":"Service unavailable",
 "เครื่องนี้หาตำแหน่งไม่ได้":"This device can't get a location","ไม่ได้รับอนุญาตให้ใช้ตำแหน่ง":"Location permission denied",
 "ทีมงาน":"Staff","ม":"m","กม":"km","ใหม่":"New","ตรวจแล้ว":"Verified","เริ่ม":"from","฿":"฿",
 "ช่างแนะนำใกล้คุณ":"Recommended near you","ช่างแนะนำ":"Recommended","เชื่อมต่อไม่ได้":"Can't connect","ลองใหม่อีกครั้ง":"Please try again","ลองใหม่":"Retry",
@@ -1968,8 +2006,12 @@ async function api(path,o){
   if(U){try{h.Authorization="Bearer "+await U.getIdToken()}catch(e){}}
   if(o.body)h["Content-Type"]="application/json";
   let r;
-  try{r=await fetch(API+path,{method:o.method||(o.body?"POST":"GET"),headers:h,body:o.body?JSON.stringify(o.body):undefined,cache:"no-store"})}
-  catch(e){throw new Error("เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง")}
+  /* คำขออ่านข้อมูลรอไม่เกิน 20 วิ — เน็ตหรือเซิร์ฟเวอร์ค้าง ต้องขึ้นปุ่มลองใหม่ ไม่ใช่โครงโหลดค้างไปตลอด
+     (ส่งรูป/ใบสมัครไม่ตัดเวลา เพราะไฟล์ใหญ่ใช้เวลานานได้จริง) */
+  const ac=!o.body&&window.AbortController?new AbortController():null,tm=ac&&setTimeout(()=>ac.abort(),20000);
+  try{r=await fetch(API+path,{method:o.method||(o.body?"POST":"GET"),headers:h,body:o.body?JSON.stringify(o.body):undefined,cache:"no-store",signal:ac?ac.signal:undefined})}
+  catch(e){throw new Error(ac&&ac.signal.aborted?"เซิร์ฟเวอร์ตอบช้า ลองใหม่อีกครั้ง":"เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง")}
+  finally{clearTimeout(tm)}
   let d=null;try{d=await r.json()}catch(e){}
   if(!r.ok)throw new Error((d&&d.error)||("ระบบยังไม่พร้อม ("+r.status+")"));
   return d;
@@ -2601,10 +2643,11 @@ $("qx").onclick=e=>{e.preventDefault();clearFilter()};
 $("qAi").onclick=e=>{e.preventDefault();aiDiag($("q").value.trim())};
 
 async function load(){
-  try{
-    const d=await api("/api/tech");
-    TECHS=Array.isArray(d.techs)?d.techs:[];SERVER=true;
-  }catch(e){SERVER=false;TECHS=[]}
+  /* พลาดครั้งแรก (เน็ตสะดุด / เซิร์ฟเวอร์เพิ่งตื่น) ลองให้เองอีกรอบก่อนขึ้นปุ่มลองใหม่ */
+  for(let i=0;i<2;i++){
+    try{const d=await api("/api/tech");TECHS=Array.isArray(d.techs)?d.techs:[];SERVER=true;break}
+    catch(e){SERVER=false;TECHS=[];if(!i)await new Promise(r=>setTimeout(r,1500))}
+  }
   LOADED=true;render();renderUsed();diag();ccDone();
   /* ลิงก์แชร์ร้าน ?shop=<id> → เปิดหน้าร้านทันที (ครั้งเดียว) */
   if(SHOPLINK&&TECHS.some(t=>t.id===SHOPLINK)){const id=SHOPLINK;SHOPLINK=null;openTech(id)}
@@ -4102,6 +4145,10 @@ async function pullCars(){
       auth.onAuthStateChanged(async u=>{U=u||null;try{navPaint(U)}catch(e){}greet();if(U)pullCars();await refreshMe();if(U)await load();else diag()});
     }catch(e){}
   })();
+  /* ลงทะเบียน service worker หลังหน้าขึ้นแล้ว — แอปที่ติดตั้งบนมือถือจะเปิดจากหน้าที่เก็บไว้ได้ทันทีตอนเน็ตช้า
+     (เดิมลงทะเบียนเฉพาะหน้าที่มีแจ้งเตือน คนที่ใช้แค่หน้าแรกจึงไม่มีหน้าสำรองเลย) · ทำทีหลังเพื่อไม่แย่งเน็ตตอนเปิด */
+  if("serviceWorker" in navigator){let sw=0;const reg=()=>{if(sw++)return;navigator.serviceWorker.getRegistration().then(r=>r||navigator.serviceWorker.register("./sw.js",{scope:"./"})).catch(()=>{})};
+    addEventListener("load",()=>setTimeout(reg,2500));setTimeout(reg,8000)}
 })();
 </script>
 <!-- แผงผู้ดูแลแบบลอย: โหลดทุกหน้า แต่แสดงเฉพาะผู้ดูแลที่เปิดไว้ในตั้งค่า -->
@@ -4192,10 +4239,11 @@ function navHTML(){
        — ชี้กลับไปที่หน้าหลัก ซึ่งเป็นทางที่เขาเดินเข้ามาจริง */
     const on=(t.k===cur)||(t.k==="account"&&cur==="profile")
              ||(t.k==="home"&&cur==="shop");
-    return `<button class="mtab${on?" on":""}" data-mnav="${t.k}"
+    /* ลิงก์จริง (ไม่ใช่ปุ่ม) — เบราว์เซอร์เตรียมหน้าปลายทางตอนนิ้วแตะได้ (speculation rules) */
+    return `<a class="mtab${on?" on":""}" href="${tabHref(t.k)}" data-mnav="${t.k}"
       aria-label="${T(t.th,t.en)}"${on?' aria-current="page"':""}>
       <span class="mt-i" data-mslot="${t.k}"><i class="ti ${t.ic}"></i></span>
-      <b>${T(t.th,t.en)}</b></button>`;
+      <b>${T(t.th,t.en)}</b></a>`;
   }).join("");
 }
 
@@ -4208,15 +4256,28 @@ function mountNav(){
     n=D.createElement("nav"); n.className="mnav"; n.id="mnav";
     n.setAttribute("role","navigation");
     D.body.appendChild(n);
+  }
+  /* แถบอาจถูกวาดไว้แล้วตั้งแต่ต้นหน้า (mnav0) — ผูกปุ่มครั้งเดียวพอ */
+  if(!n.dataset.wired){
+    n.dataset.wired="1";
     n.addEventListener("click",e=>{
       const b=e.target.closest("[data-mnav]"); if(!b)return;
-      go(b.dataset.mnav);
+      if(e.metaKey||e.ctrlKey||e.shiftKey||e.button)return;
+      e.preventDefault(); go(b.dataset.mnav);
     });
   }
-  n.innerHTML=navHTML();
+  /* วาดใหม่เฉพาะตอนเนื้อหาเปลี่ยน — apply() ถูกเรียกทุกครั้งที่หน้าขยับ ถ้าวาดทุกรอบรูปโปรไฟล์จะกะพริบ */
+  const h=navHTML();
+  if(n.dataset.h!==h){ n.innerHTML=h; n.dataset.h=h; if(n.querySelector('[data-mslot="account"]'))delete n.querySelector('[data-mslot="account"]').dataset.av }
   paintAvatar();
 }
 
+const FILES={home:"/",garage:"/garage",magazine:"/news",shop:"/spares",profile:"/profile"};
+function tabHref(k){
+  if(k==="chat")return "/chat";
+  if(k==="account")return signedIn()?"/profile":"/login?next=%2Fprofile";
+  return FILES[k]||"/";
+}
 function go(k){
   if(k==="chat"){ location.href="/chat"; return }
   if(k==="account"){
@@ -4224,10 +4285,17 @@ function go(k){
     if(!signedIn()){ const b=$("signinBtn"); if(b){b.click();return} }
     k="profile";
   }
-  try{ if(typeof window.switchView==="function"){window.switchView(k);return} }catch(e){}
-  const f=({home:"/",garage:"/garage",magazine:"/news",
-            shop:"/spares",profile:"/profile"})[k];
-  if(f)location.href=f;
+  /* แท็บของหน้าที่อยู่ตอนนี้ — ไม่โหลดหน้าซ้ำ แค่กลับไปบนสุด */
+  if(k===page()){
+    try{ if(typeof window.switchView==="function"){window.switchView(k);return} }catch(e){}
+    try{ scrollTo({top:0,behavior:"smooth"}); D.querySelectorAll(".scroll").forEach(s=>s.scrollTo({top:0,behavior:"smooth"})) }catch(e){}
+    return;
+  }
+  /* ผู้ใช้กดเองต้องไปทันที — switchView ของหน้าย่อยไม่รับคำสั่งย้ายหน้าจนโหลดเสร็จแล้ว 1.2 วิ
+     (กันหน้าเด้งเองตอนบูต) ช่วงนั้นกดแท็บแล้วเงียบ ผู้ใช้เลยรู้สึกว่าแอปค้าง */
+  const f=FILES[k];
+  if(f){ location.href=f; return }
+  try{ if(typeof window.switchView==="function")window.switchView(k) }catch(e){}
 }
 
 /* แท็บบัญชีโชว์รูปโปรไฟล์จริงเมื่อเข้าระบบแล้ว เหมือน Grab กับ Uber
@@ -4464,6 +4532,10 @@ function boot(){
 if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",boot);
 else boot();
 })();
+</script>
+<script type="speculationrules">
+{"prerender":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}],
+ "prefetch":[{"where":{"href_matches":"/*"},"eagerness":"conservative"}]}
 </script>
 </body>
 </html>

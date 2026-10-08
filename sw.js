@@ -1,28 +1,48 @@
 /* ══════════════════════════════════════════════════════════════════
    Cendon service worker
    หน้าที่หลักคือรับการแจ้งเตือน ส่วนแคชทำแบบระวังตัว
-   หน้าเว็บเป็นไฟล์เดียวที่เปลี่ยนบ่อย จึงใช้ network-first เสมอ
-   ไม่งั้นผู้ใช้จะติดอยู่กับเวอร์ชันเก่าโดยไม่รู้ตัว
+   หน้าเว็บเป็นไฟล์เดียวที่เปลี่ยนบ่อย จึงถามเน็ตก่อนเสมอ (ไม่งั้นผู้ใช้จะติดอยู่กับเวอร์ชันเก่า)
+   แต่รอแค่ครู่เดียว — เน็ตมือถือช้า/ค้าง ต้องไม่ทำให้แอปค้างหน้าจอโหลด
    ══════════════════════════════════════════════════════════════════ */
-const CACHE = 'cendon-v200-icon-space';
-/* แต่ละหน้าเป็นไฟล์เดี่ยวที่สมบูรณ์ในตัว โหลดล่วงหน้าไว้ทั้งชุด
-   การเปิด URL ของหน้าไหนตรง ๆ จึงไม่ต้องรอเน็ต */
-const SHELL = ['./fluid.js', './crop.js', './call-orb.png', './call-sounds.js?v=1', './', './garage', './news',
-  './spares', './profile', './chat',
-  './about', './help', './terms', './privacy',
-  './plan', './handbook',
-  './tech', './dashboard', './techs.js', './cendon-one.css', './cendon-one.js', './cendon-home.js', './cendon-admin.js',
-  './theme.css', './theme.js', './feature-ai.css', './feature-ai.js'];
+const CACHE = 'cendon-v201-fastnav';
+/* หน้าเว็บที่โหลดสำเร็จล่าสุด แยกตู้ไว้และ "ไม่ลบตอนอัปเดตเวอร์ชัน"
+   เดิมทุกครั้งที่ deploy ตู้เก่าถูกล้างหมด เปิดแอปครั้งแรกหลังอัปเดตจึงไม่มีของสำรอง
+   ต้องรอเน็ตอย่างเดียว — เน็ตมือถือช้าเมื่อไรก็ค้างหน้าจอโหลดของมือถือ */
+const PAGES = 'cendon-pages';
+/* เน็ตไม่ตอบภายในเท่านี้ ใช้หน้าที่เก็บไว้ก่อน (เน็ตตอบทีหลังก็เก็บไว้ใช้รอบหน้า) */
+const WAIT = 1500;
+/* โหลดล่วงหน้าเฉพาะไฟล์เล็กที่หน้าแรกใช้จริง
+   เดิมโหลดทุกหน้า (~7 MB) แย่งเน็ตตอนผู้ใช้กำลังเปิดแอป และในรายการมีไฟล์ที่ไม่มีอยู่จริง
+   (cendon-one.css, about, help, privacy) ทำให้ addAll ล้มทั้งชุด = ไม่เคยเก็บอะไรได้เลย */
+const CORE = ['./fluid.js', './crop.js', './cendon-admin.js', './call-sounds.js?v=1', './manifest.webmanifest', './icon192.png'];
+
+/* ชื่อหน้าแบบสะอาดตามที่ Cloudflare Pages ใช้ (/index.html → /, /chat.html → /chat)
+   ขอชื่อนี้ตรง ๆ ไม่ต้องเสียรอบ redirect 308 และใช้เป็นกุญแจในตู้ (ไม่รวม ?shop= ?trip= — ไฟล์เดียวกัน) */
+const pageKey = (u) => u.origin + u.pathname.replace(/\/index\.html$/, '/').replace(/\.html$/, '');
+const wait = (ms) => new Promise((r) => setTimeout(() => r(null), ms));
+/* คำตอบที่ผ่าน redirect ส่งให้การเปิดหน้า (navigate) ไม่ได้ — เบราว์เซอร์จะขึ้น ERR_FAILED จึงห่อใหม่ */
+const plain = async (r) => (r && r.redirected
+  ? new Response(await r.blob(), { status: r.status, statusText: r.statusText, headers: r.headers })
+  : r);
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL).catch(() => {})));
+  e.waitUntil((async () => {
+    const c = await caches.open(CACHE);
+    /* ทีละไฟล์ ไฟล์ไหนพังก็ข้าม ไม่ลากไฟล์อื่นล้มไปด้วย */
+    await Promise.all(CORE.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => {})));
+    /* หน้าแรกรุ่นใหม่เก็บไว้ตั้งแต่ติดตั้ง — โหลดไม่สำเร็จก็ยังมีรุ่นก่อนหน้าอยู่ในตู้ */
+    const home = new URL('./', self.location).href;
+    await caches.open(PAGES).then((p) => p.add(new Request(home, { cache: 'reload' }))).catch(() => {});
+  })());
 });
 
 self.addEventListener('activate', (e) => {
   e.waitUntil((async () => {
     const keys = await caches.keys();
-    await Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)));
+    await Promise.all(keys.filter((k) => k !== CACHE && k !== PAGES).map((k) => caches.delete(k)));
+    /* ให้เบราว์เซอร์เริ่มขอหน้าจากเน็ตไปพร้อมกับปลุก service worker (มือถือปลุกช้าได้หลายร้อย ms) */
+    try { if (self.registration.navigationPreload) await self.registration.navigationPreload.enable(); } catch (err) {}
     await self.clients.claim();
   })());
 });
@@ -32,50 +52,54 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;   // API และ CDN ปล่อยผ่าน
-  /* หน้าเว็บเป็นไฟล์เดียวขนาดใหญ่ที่เปลี่ยนทุกครั้งที่อัปเดต
-     GitHub Pages ส่ง Cache-Control มาให้เก็บได้ เบราว์เซอร์จึงอาจตอบ fetch()
-     ด้วยของเก่าจาก HTTP cache เอง ทั้งที่เซิร์ฟเวอร์มีของใหม่แล้ว
-     ผู้ใช้จะเห็น UI เก่าค้างอยู่โดยไม่มีทางรู้ตัว — บังคับให้ไปถามเซิร์ฟเวอร์จริง */
   const isPage = req.mode === 'navigate' || /\.html$/.test(url.pathname);
+  if (isPage) return openPage(e, url);
+  e.respondWith(asset(e, req));
+});
+
+/* หน้าเว็บ: ถามเน็ตก่อน (ได้รุ่นล่าสุดเสมอเมื่อเน็ตดี) แต่รอไม่เกิน WAIT ถ้ามีหน้าเก่าในตู้
+   cache:'no-cache' = ถามเซิร์ฟเวอร์ทุกครั้ง แต่ถ้าไฟล์ไม่เปลี่ยนได้ 304 กลับมาสั้น ๆ ไม่ต้องโหลดทั้งไฟล์ซ้ำ */
+function openPage(e, url) {
+  const key = pageKey(url), clean = key === url.origin + url.pathname;
+  const pre = clean && e.preloadResponse ? e.preloadResponse : Promise.resolve(null);
+  let saved = null;
+  const net = pre.catch(() => null)
+    .then((r) => (r && r.ok ? r : fetch(key + url.search, { cache: 'no-cache', credentials: 'same-origin' })))
+    .then(plain)
+    .then((r) => {
+      if (r.ok) { const copy = r.clone(); saved = caches.open(PAGES).then((c) => c.put(key, copy)); }
+      return r;
+    });
+  /* เน็ตตอบช้ากว่าที่รอ ก็ยังเก็บหน้าใหม่ลงตู้ให้ครั้งหน้า */
+  e.waitUntil(net.then(() => saved).catch(() => {}));
+  if (!clean && e.preloadResponse) e.waitUntil(e.preloadResponse.catch(() => {}));
   e.respondWith((async () => {
-    try {
-      const net = isPage
-        ? fetch(req.url, { cache: 'reload', credentials: 'same-origin' })
-        : fetch(req);
-      /* เน็ตมือถือค้าง (ส่งไม่ออก/ไม่ตอบ) เคยทำให้จอขาวหรือ splash ค้างไม่มีกำหนด
-         ถ้ามีของในแคชและเน็ตไม่ตอบใน 4 วินาที ใช้ของในแคชก่อน — เน็ตตอบทีหลังก็เก็บลงแคชไว้รอบหน้า */
-      const cached = await caches.match(req);
-      const fresh = cached
-        ? await Promise.race([net, new Promise((r) => setTimeout(() => r(null), 4000))])
-        : await net;
-      if (!fresh) {
-        e.waitUntil(net.then(async (r) => { if (r && r.ok && !r.redirected) (await caches.open(CACHE)).put(req, r.clone()); }).catch(() => {}));
-        return cached;
-      }
-      /* Cloudflare Pages ตัด .html ออกเอง (/index.html → 308 → /)
-         คำตอบที่ผ่านการ redirect ส่งกลับให้การเปิดหน้า (navigate) ไม่ได้ — เบราว์เซอร์จะขึ้น ERR_FAILED
-         จึงห่อใหม่เป็นคำตอบธรรมดาก่อนส่ง */
-      if (fresh && fresh.redirected) {
-        const body = await fresh.blob();
-        const clean = new Response(body, { status: fresh.status, statusText: fresh.statusText, headers: fresh.headers });
-        if (clean.ok) { const c = await caches.open(CACHE); c.put(req, clean.clone()); }
-        return clean;
-      }
-      if (fresh && fresh.ok) {
-        const c = await caches.open(CACHE);
-        c.put(req, fresh.clone());
-      }
-      return fresh;
-    } catch (err) {
-      // ออฟไลน์ค่อยหยิบของที่เก็บไว้ อย่างน้อยเปิดดูข้อมูลรถได้
-      const hit = await caches.match(req);
-      if (hit) return hit;
-      const home = await caches.match('./');
+    const pages = await caches.open(PAGES);
+    const cached = await pages.match(key);
+    if (cached) {
+      const fresh = await Promise.race([net.catch(() => null), wait(WAIT)]);
+      return fresh && fresh.ok ? fresh : cached;
+    }
+    try { return await net; } catch (err) {
+      // ออฟไลน์และไม่เคยเปิดหน้านี้ ส่งหน้าแรกที่เก็บไว้แทน อย่างน้อยเปิดแอปได้
+      const home = await pages.match(new URL('./', self.location).href);
       if (home) return home;
       throw err;
     }
   })());
-});
+}
+
+/* ไฟล์ประกอบ (js/css/รูป): ถามเน็ตก่อนเหมือนกัน รอไม่เกิน WAIT ถ้ามีของในตู้ */
+async function asset(e, req) {
+  const net = fetch(req);
+  const cached = await caches.match(req);
+  const keep = (r) => { if (r && r.ok) { const copy = r.clone(); e.waitUntil(caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {})); } return r; };
+  if (!cached) return net.then(keep);
+  const fresh = await Promise.race([net.catch(() => null), wait(WAIT)]);
+  if (fresh && fresh.ok) return keep(fresh);
+  e.waitUntil(net.then((r) => { if (r.ok) return caches.open(CACHE).then((c) => c.put(req, r)); }).catch(() => {}));
+  return cached;
+}
 
 self.addEventListener('push', (e) => {
   let d = { title: 'Cendon', body: '', url: '/' };

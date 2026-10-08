@@ -4229,8 +4229,39 @@ html[data-idle="1"] *{animation-play-state:paused!important}
     transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
 </style>
+<style id="mnav0css">
+/* แถบล่างมือถือ: แท็บเป็นลิงก์จริง และค้างอยู่กับที่ระหว่างเปลี่ยนหน้า (view transition จับคู่ด้วยชื่อ mnav) */
+a.mtab{text-decoration:none}
+.mnav{view-transition-name:mnav}
+::view-transition-group(mnav){animation-duration:.2s}
+</style>
+<!-- ห้ามวาดเฟรมแรกก่อนแถบล่างพร้อม — เดิมหน้าใหม่ขึ้นมาก่อนแล้วแถบตามมาทีหลัง (Chrome 124+, ที่อื่นข้าม) -->
+<link rel="expect" href="#mnav0" blocking="render">
 </head>
 <body>
+<script id="mnav0">
+/* แถบล่างมือถือ วาดทันทีที่เริ่มอ่านหน้า — เดิมสร้างหลังโหลดทั้งหน้า (~1 MB) เสร็จ
+   ทุกครั้งที่เปลี่ยนหน้าแถบเลยหายไปครึ่งถึงสองวินาที · สคริปต์ตัวเต็ม (mjs) มารับช่วงต่อทีหลัง
+   แท็บเป็นลิงก์จริง กดได้ทันทีแม้สคริปต์หลักยังไม่พร้อม และเบราว์เซอร์เตรียมหน้าล่วงหน้าได้ */
+(function(){try{
+  var D=document;if(!matchMedia("(max-width:760px)").matches||D.getElementById("mnav"))return;
+  var p=location.pathname.replace(/\.html$/,"").replace(/\/index$/,"/");
+  var cur={"/garage":"garage","/news":"magazine","/profile":"account"}[p]||"home";
+  var en=false;try{en=JSON.parse(localStorage.getItem("spire_lang"))==="en"}catch(e){}
+  var u=null;try{u=JSON.parse(localStorage.getItem("spire_cachedUser"))}catch(e){}
+  var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})};
+  var ph=u&&(u.photoURL||u.photo),nm=u&&String(u.displayName||u.name||u.email||"?").trim();
+  var av=!u?'<i class="ti ti-user"></i>':ph?'<img src="'+esc(ph)+'" referrerpolicy="no-referrer">':'<span class="fb">'+esc(nm.charAt(0).toUpperCase())+'</span>';
+  var T=[["home","ti-home","หน้าหลัก","Home","/"],["garage","ti-car","การาจ","Garage","/garage"],["chat","ti-message-2","แชต","Chat","/chat"],
+         ["magazine","ti-book-2","นิตยสาร","Magazine","/news"],["account","ti-user","บัญชี","Account",u?"/profile":"/login?next=%2Fprofile"]];
+  var n=D.createElement("nav");n.className="mnav";n.id="mnav";n.setAttribute("role","navigation");
+  n.innerHTML=T.map(function(t){var on=t[0]===cur,l=en?t[3]:t[2];
+    return '<a class="mtab'+(on?' on':'')+'" href="'+t[4]+'" data-mnav="'+t[0]+'" aria-label="'+l+'"'+(on?' aria-current="page"':'')+'>'
+      +'<span class="mt-i" data-mslot="'+t[0]+'">'+(t[0]==="account"?av:'<i class="ti '+t[1]+'"></i>')+'</span><b>'+l+'</b></a>'}).join("");
+  D.body.appendChild(n);
+}catch(e){}})();
+</script>
+
 <script id="i18ndict">
 /* พจนานุกรมหลายภาษา — สร้างจาก build_dict.py อย่าแก้ไฟล์นี้ตรง ๆ
    กุญแจคือข้อความไทยที่เขียนอยู่ในโค้ด ภาษาที่ยังไม่มีคำแปลจะถอยไปอังกฤษ */
@@ -7374,7 +7405,10 @@ wipe.innerHTML="<b></b>";
 body.insertBefore(cv,body.firstChild); body.appendChild(pool); body.appendChild(wipe);
 
 /* ───────── สถานะที่ผู้ใช้ตั้งได้ ───────── */
-let alive=LSg("alive",true), depth=LSg("depth",true), gyro=LSg("gyro",false);
+/* มือถือ: พื้นหลังเป็นภาพนิ่งเป็นค่าเริ่มต้น (สีเหมือนเดิม แค่ไม่ขยับ) — วาดเต็มจอซ้ำ 20 ครั้งต่อวินาที
+   ทำให้กระจกเบลอทุกชิ้นต้องวาดใหม่ตาม เครื่องไม่ว่างจนกดแท็บ/เลื่อนจอหน่วง · เปิดขยับเองได้ในตั้งค่า "พื้นหลังมีชีวิต" */
+const PHONE=matchMedia("(max-width:900px)").matches;
+let alive=LSg("alive",!PHONE), depth=LSg("depth",true), gyro=LSg("gyro",false);
 function applyFlags(){
   body.dataset.alive=alive?"1":"0";
   body.dataset.depth=(depth&&!reduce.matches)?"1":"0";
@@ -7385,6 +7419,8 @@ applyFlags();
 let lxT=50,lyT=24,lx=50,ly=24;
 function pushLight(){
   lx+=(lxT-lx)*.09; ly+=(lyT-ly)*.09;
+  /* แสงนิ่งแล้วไม่ต้องเขียนซ้ำ — เขียนตัวแปรบน <html> ทุกเฟรมบังคับให้ทั้งหน้าคำนวณสไตล์ใหม่ตลอด (ตัวการหลักที่มือถือหน่วง) */
+  const k=lx.toFixed(1)+","+ly.toFixed(1); if(k===pushLight.k)return; pushLight.k=k;
   root.style.setProperty("--lx",lx.toFixed(2)+"%");
   root.style.setProperty("--ly",ly.toFixed(2)+"%");
   root.style.setProperty("--lnx",((lx-50)/50).toFixed(3));
@@ -7591,8 +7627,14 @@ function loop(now){
     if(!reduce.matches)t+=dt/16.7;
     cx.clearRect(0,0,W,H);
     (PAINT[curTheme()]||PAINT.warm)();
+    stillKey="";
+  }else{
+    /* ภาพนิ่ง: วาดครั้งเดียวต่อธีมและขนาดจอ */
+    const k=curTheme()+":"+W+"x"+H;
+    if(k!==stillKey){ stillKey=k; cx.clearRect(0,0,W,H); (PAINT[curTheme()]||PAINT.warm)(); }
   }
 }
+let stillKey="";
 addEventListener("resize",fit); fit(); requestAnimationFrame(loop);
 
 /* ══════════ ม่านสลับธีม ══════════ */
@@ -14722,10 +14764,11 @@ function navHTML(){
        — ชี้กลับไปที่หน้าหลัก ซึ่งเป็นทางที่เขาเดินเข้ามาจริง */
     const on=(t.k===cur)||(t.k==="account"&&cur==="profile")
              ||(t.k==="home"&&cur==="shop");
-    return `<button class="mtab${on?" on":""}" data-mnav="${t.k}"
+    /* ลิงก์จริง (ไม่ใช่ปุ่ม) — เบราว์เซอร์เตรียมหน้าปลายทางตอนนิ้วแตะได้ (speculation rules) */
+    return `<a class="mtab${on?" on":""}" href="${tabHref(t.k)}" data-mnav="${t.k}"
       aria-label="${T(t.th,t.en)}"${on?' aria-current="page"':""}>
       <span class="mt-i" data-mslot="${t.k}"><i class="ti ${t.ic}"></i></span>
-      <b>${T(t.th,t.en)}</b></button>`;
+      <b>${T(t.th,t.en)}</b></a>`;
   }).join("");
 }
 
@@ -14738,15 +14781,28 @@ function mountNav(){
     n=D.createElement("nav"); n.className="mnav"; n.id="mnav";
     n.setAttribute("role","navigation");
     D.body.appendChild(n);
+  }
+  /* แถบอาจถูกวาดไว้แล้วตั้งแต่ต้นหน้า (mnav0) — ผูกปุ่มครั้งเดียวพอ */
+  if(!n.dataset.wired){
+    n.dataset.wired="1";
     n.addEventListener("click",e=>{
       const b=e.target.closest("[data-mnav]"); if(!b)return;
-      go(b.dataset.mnav);
+      if(e.metaKey||e.ctrlKey||e.shiftKey||e.button)return;
+      e.preventDefault(); go(b.dataset.mnav);
     });
   }
-  n.innerHTML=navHTML();
+  /* วาดใหม่เฉพาะตอนเนื้อหาเปลี่ยน — apply() ถูกเรียกทุกครั้งที่หน้าขยับ ถ้าวาดทุกรอบรูปโปรไฟล์จะกะพริบ */
+  const h=navHTML();
+  if(n.dataset.h!==h){ n.innerHTML=h; n.dataset.h=h; if(n.querySelector('[data-mslot="account"]'))delete n.querySelector('[data-mslot="account"]').dataset.av }
   paintAvatar();
 }
 
+const FILES={home:"/",garage:"/garage",magazine:"/news",shop:"/spares",profile:"/profile"};
+function tabHref(k){
+  if(k==="chat")return "/chat";
+  if(k==="account")return signedIn()?"/profile":"/login?next=%2Fprofile";
+  return FILES[k]||"/";
+}
 function go(k){
   if(k==="chat"){ location.href="/chat"; return }
   if(k==="account"){
@@ -14754,10 +14810,17 @@ function go(k){
     if(!signedIn()){ const b=$("signinBtn"); if(b){b.click();return} }
     k="profile";
   }
-  try{ if(typeof window.switchView==="function"){window.switchView(k);return} }catch(e){}
-  const f=({home:"/",garage:"/garage",magazine:"/news",
-            shop:"/spares",profile:"/profile"})[k];
-  if(f)location.href=f;
+  /* แท็บของหน้าที่อยู่ตอนนี้ — ไม่โหลดหน้าซ้ำ แค่กลับไปบนสุด */
+  if(k===page()){
+    try{ if(typeof window.switchView==="function"){window.switchView(k);return} }catch(e){}
+    try{ scrollTo({top:0,behavior:"smooth"}); D.querySelectorAll(".scroll").forEach(s=>s.scrollTo({top:0,behavior:"smooth"})) }catch(e){}
+    return;
+  }
+  /* ผู้ใช้กดเองต้องไปทันที — switchView ของหน้าย่อยไม่รับคำสั่งย้ายหน้าจนโหลดเสร็จแล้ว 1.2 วิ
+     (กันหน้าเด้งเองตอนบูต) ช่วงนั้นกดแท็บแล้วเงียบ ผู้ใช้เลยรู้สึกว่าแอปค้าง */
+  const f=FILES[k];
+  if(f){ location.href=f; return }
+  try{ if(typeof window.switchView==="function")window.switchView(k) }catch(e){}
 }
 
 /* แท็บบัญชีโชว์รูปโปรไฟล์จริงเมื่อเข้าระบบแล้ว เหมือน Grab กับ Uber

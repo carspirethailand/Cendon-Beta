@@ -1991,6 +1991,13 @@ td .empty::before,td.empty::before{display:none}
           <button class="btn primary" onclick="saveFeatures()"><i class="ti ti-device-floppy"></i> บันทึกฟีเจอร์</button>
         </div>
         <div class="card">
+          <h3><i class="ti ti-brand-line"></i> เมนูในห้องแชต LINE</h3>
+          <div class="sub">6 ปุ่มใต้ห้องแชต LINE ของ Cendon แต่ละปุ่มเปิดแอปในเบราว์เซอร์ของเครื่อง · กดตั้งครั้งเดียวใช้กับทุกคน (เปลี่ยนรูปเมื่อไรค่อยกดใหม่)</div>
+          <img src="./img/line-richmenu.png" alt="ตัวอย่างเมนู LINE" loading="lazy" style="display:block;width:100%;max-width:560px;margin:4px 0 14px;border:1px solid var(--line);border-radius:12px">
+          <div class="sub" id="lineMenuSt">กำลังตรวจสถานะ…</div>
+          <button class="btn primary" id="lineMenuBtn" onclick="setLineMenu()"><i class="ti ti-upload"></i> ตั้งเมนูให้ทุกคน</button>
+        </div>
+        <div class="card">
           <h3><i class="ti ti-download"></i> ส่งออกข้อมูล</h3>
           <div class="sub">ดาวน์โหลดผู้ใช้ รถ นิตยสาร ร้านค้า และบันทึกการทำงานทั้งหมดเป็นไฟล์ JSON</div>
           <button class="btn" onclick="doExport()" id="exportBtn"><i class="ti ti-file-download"></i> ส่งออกเป็น JSON</button>
@@ -2877,7 +2884,7 @@ async function enterAdmin(){
   if(can("cars"))loadCars();
   if(can("shop"))loadShop();
   if(can("system"))loadHealth();
-  if(can("config")&&rank(me.role)>=rank("admin"))loadConfig();
+  if(can("config")&&rank(me.role)>=rank("admin")){loadConfig();loadLineMenu()}
   if(can("audit")&&rank(me.role)>=rank("admin"))loadAudit();
 }
 
@@ -5237,6 +5244,20 @@ async function loadConfig(){
     featureState=c.features||{};
     if($("featureRows"))renderFeatures();
   }catch(e){}
+}
+/* เมนูในห้องแชต LINE — หลังบ้านสร้างเมนู อัปโหลดรูป แล้วตั้งให้ทุกคน (ดู line-menu.js ฝั่งหลังบ้าน) */
+async function loadLineMenu(){
+  const el=$("lineMenuSt");if(!el)return;
+  try{const s=await api("/api/admin/line/richmenu");
+    el.textContent=!s.configured?"ยังเชื่อม LINE OA กับหลังบ้านไม่เสร็จ — ตั้งค่าเสร็จแล้วค่อยกดปุ่มนี้"
+      :s.ours?"สถานะ: ใช้เมนูของ Cendon อยู่":s.current?"สถานะ: มีเมนูอื่นตั้งอยู่ กดปุ่มเพื่อเปลี่ยนเป็นเมนูนี้":"สถานะ: ยังไม่ได้ตั้งเมนู";
+    $("lineMenuBtn").disabled=!s.configured}
+  catch(e){el.textContent=e.message}
+}
+async function setLineMenu(){
+  const b=$("lineMenuBtn");b.disabled=true;
+  try{await api("/api/admin/line/richmenu",{method:"POST",body:{}});toast("ตั้งเมนู LINE ให้ทุกคนแล้ว","ti-brand-line");loadLineMenu()}
+  catch(e){toast(e.message,"ti-alert-triangle");b.disabled=false}
 }
 async function saveAnnouncement(){
   try{await api("/api/admin/config",{method:"POST",body:{announcement:{enabled:$("annEnabled").checked,text:$("annText").value.trim(),type:annType}}});toast("บันทึกประกาศแล้ว","ti-speakerphone")}

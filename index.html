@@ -1311,6 +1311,18 @@ body{background:var(--bg);letter-spacing:-.005em}
 .sa-f b{text-align:right}.sa-f small{color:var(--muted);font-size:12px}
 .sa-tip{position:fixed;z-index:2000;transform:translate(-50%,-100%);padding:6px 10px;border-radius:8px;background:#09090B;color:#fff;font:600 12px var(--kb);pointer-events:none;opacity:0;transition:opacity .12s;white-space:nowrap}
 .sa-tip.on{opacity:1}
+/* ═══ สมัครช่าง: ตรวจเลขบัตร ═══ */
+.idh{display:block;min-height:18px;margin-top:6px;font-size:12.5px;color:var(--muted)}
+.idh.ok{color:#15803d}.idh.bad{color:#b91c1c}
+.fixl{margin:12px 0;padding:14px 16px;border-radius:14px;border:1px solid color-mix(in srgb,#b91c1c 35%,var(--line));background:color-mix(in srgb,#b91c1c 6%,var(--surface))}
+.fixl b{display:flex;gap:6px;align-items:center;font-size:14.5px}.fixl b .ti{color:#b91c1c}
+.fixl ul{margin:8px 0 0;padding-left:20px;display:grid;gap:6px;font-size:14px;line-height:1.6}
+.idp{margin:0 0 12px;padding:14px 16px;border-radius:16px;border:1px solid var(--line);background:var(--surface)}
+.idp small{display:block;font-size:12px;color:var(--muted)}
+.idp>b{display:block;margin:4px 0 8px;font:700 22px/1.2 ui-monospace,Menlo,monospace;letter-spacing:.06em}
+.idp-r,.idp-f{display:flex;gap:6px;align-items:center;margin:4px 0 0;font-size:13.5px}
+.idp-r.ok{color:#15803d}.idp-r.bad{color:#b91c1c;font-weight:600}.idp-r.warn{color:#b7791f}.idp-f{color:var(--muted)}
+.ed-lock{margin:0 0 12px}
 /* ═══ หน้ารายละเอียดบริการ ═══ */
 .gd{display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:"gal" "side" "body";gap:0 36px;padding-bottom:28px}
 .gd-gal{grid-area:gal;margin:0 -16px;min-width:0}
@@ -2605,7 +2617,7 @@ async function diag(){
   let ok=false,ver=0;
   try{const r=await fetch(API+"/api/tech/ping",{cache:"no-store"});const d=await r.json();ok=r.ok&&d.ok;ver=d.version||0}catch(e){}
   if(!ok)box.innerHTML='<div class="diag"><b>สำหรับเจ้าของแอป:</b> backend ยังไม่มีระบบช่าง — ต้องอัป src/techs.js กับ src/worker.js แล้ว deploy SpireONE-backend</div>';
-  else if(ver<4)box.innerHTML='<div class="diag"><b>สำหรับเจ้าของแอป:</b> backend เป็นรุ่นเก่า — อัป src/techs.js ตัวล่าสุดแล้ว deploy ใหม่</div>';
+  else if(ver<7)box.innerHTML='<div class="diag"><b>สำหรับเจ้าของแอป:</b> backend ยังไม่มีด่านตรวจใบสมัครรุ่นใหม่ (ตรวจบัตร + หลักฐานผู้ตรวจ) — อัป SpireONE-backend ตัวล่าสุดแล้ว deploy ใหม่</div>';
 }
 
 /* ═══ โปรไฟล์ช่าง ═══ */
@@ -3348,7 +3360,7 @@ async function openJoin(){
   await refreshMe();
   const a=ME&&ME.application,t=ME&&ME.technician;
   /* ทีมงานเลือกได้ว่าจะเป็นช่างทีมงาน (ไม่ต้องใช้อะไร เห็นเฉพาะทีมงาน) หรือลองยื่นแบบพาร์ทเนอร์จริง */
-  if(ME&&ME.staff&&!(a&&!a.test))return sheet({title:"สมัครเป็นช่าง",body:`
+  if(ME&&ME.admin&&!(a&&!a.test))return sheet({title:"สมัครเป็นช่าง",body:`
     <button class="jl" id="jStaff"><span class="av sq" style="--c1:var(--accent)"><i class="ti ti-shield-check"></i></span><span class="jb"><b>${t&&t.test?"ช่างทีมงานของฉัน":"เป็นช่างทีมงานทันที"}</b><small>ใช้แค่ตำแหน่งอู่ · เห็นเฉพาะทีมงาน Cendon</small></span><i class="ti ti-chevron-right"></i></button>
     <button class="jl" id="jReal"><span class="av sq" style="--c1:#334155"><i class="ti ti-file-certificate"></i></span><span class="jb"><b>ใบสมัครพาร์ทเนอร์</b><small>ขั้นตอนเต็มแบบที่ช่างทั่วไปเห็น</small></span><i class="ti ti-chevron-right"></i></button>
     <button class="jl" id="jSkip"><span class="av sq" style="--c1:#0ea5e9"><i class="ti ti-player-skip-forward"></i></span><span class="jb"><b>ข้ามไปแดชบอร์ดช่าง</b><small>ไม่ต้องกรอกอะไร · เข้าไปดูความเรียบร้อยได้เลย</small></span><i class="ti ti-chevron-right"></i></button>
@@ -3388,30 +3400,34 @@ function step(n){
     <p class="h4" style="margin-top:0">ข้อมูลส่วนบุคคล</p>
     <div class="fld"><span>คำนำหน้า <em>*</em></span>${segs("aT",[["นาย","นาย"],["นาง","นาง"],["นางสาว","นางสาว"]],APP.title||"")}</div>
     <label class="fld"><span>ชื่อ-นามสกุล (ตามบัตรประชาชน) <em>*</em></span><input class="inp" id="aN" value="${esc(APP.name||"")}" autocomplete="name"/></label>
-    <label class="fld"><span>เลขประจำตัวประชาชน 13 หลัก <em>*</em></span><input class="inp" id="aI" inputmode="numeric" value="${esc(fmtId(APP.idNo))}" placeholder="x-xxxx-xxxxx-xx-x" maxlength="17"/></label>
+    <label class="fld"><span>เลขประจำตัวประชาชน 13 หลัก <em>*</em></span><input class="inp" id="aI" inputmode="numeric" value="${esc(fmtId(APP.idNo))}" placeholder="x-xxxx-xxxxx-xx-x" maxlength="17" autocomplete="off"/><small class="idh" id="aIh"></small></label>
     <div class="two"><label class="fld"><span>วันเกิด <em>*</em></span><input class="inp" id="aD" type="date" value="${esc(APP.birth||"")}"/></label>
     <label class="fld"><span>เบอร์โทรศัพท์ <em>*</em></span><input class="inp" id="aP" type="tel" inputmode="tel" value="${esc(APP.phone||"")}" placeholder="08xxxxxxxx"/></label></div>
     <p class="h4">ข้อมูลการให้บริการ</p>
     <label class="fld"><span>ชื่อสถานประกอบการ / ชื่อร้าน</span><input class="inp" id="aS" value="${esc(APP.shop||"")}" placeholder="ไม่มีร้าน เว้นว่างได้"/></label>
-    <label class="fld"><span>ประสบการณ์ (ปี) <em>*</em></span><input class="inp" id="aY" type="number" inputmode="numeric" value="${esc(APP.years||"")}"/></label>
+    <label class="fld"><span>ประสบการณ์ (ปี) <em>*</em></span><input class="inp" id="aY" type="number" min="2" max="60" step="1" inputmode="numeric" value="${esc(APP.years||"")}"/></label>
     <div class="fld"><span>ประเภทงานที่รับ <em>*</em></span><div class="seg" id="aC">${["air","eng","tyre","ev","body"].map(k=>`<button type="button" data-v="${k}" class="${APP.cats.includes(k)?"on":""}"><i class="ti ${CAT[k].ic}"></i>${CAT[k].th}</button>`).join("")}</div></div>
     <div class="fld"><span>บริการเสริม</span><div class="seg" id="aM"><button type="button" data-v="mobile" class="${APP.mobile?"on":""}"><i class="ti ti-truck"></i>ออกหน้างาน</button><button type="button" data-v="urgent" class="${APP.urgent?"on":""}"><i class="ti ti-urgent"></i>รับงานด่วน</button></div></div>
     <div class="two"><label class="fld"><span>ราคาเริ่มต้น (บาท) <em>*</em></span><input class="inp" id="aF" type="number" inputmode="numeric" value="${esc(APP.from||"")}"/></label>
     <label class="fld"><span>รับประกันงาน (วัน) <em>*</em></span><input class="inp" id="aW" type="number" inputmode="numeric" value="${esc(APP.warranty||30)}"/></label></div>
-    <label class="fld"><span>ความชำนาญ / เครื่องมือ</span><textarea class="inp" id="aB" placeholder="เช่น ระบบแอร์ญี่ปุ่นทุกรุ่น มีเครื่องแวคคั่มและเครื่องเติมน้ำยา">${esc(APP.about||"")}</textarea></label>`,
+    <label class="fld"><span>ความชำนาญ / เครื่องมือ <em>*</em> <small style="font-weight:400;color:var(--muted)">อย่างน้อย 30 ตัวอักษร</small></span><textarea class="inp" id="aB" placeholder="เช่น ระบบแอร์ญี่ปุ่นทุกรุ่น มีเครื่องแวคคั่มและเครื่องเติมน้ำยา">${esc(APP.about||"")}</textarea></label>`,
     foot:'<button class="btn s" id="aBk">ย้อนกลับ</button><button class="btn p" id="aNx">ถัดไป</button>',
     mount(){
       wireSeg("aT",v=>APP.title=v);
-      $("aI").addEventListener("input",()=>{const p=$("aI").selectionStart,before=$("aI").value.length;$("aI").value=fmtId($("aI").value);const d=$("aI").value.length-before;try{$("aI").setSelectionRange(p+d,p+d)}catch(e){}});
+      /* ตรวจเลขบัตรระหว่างพิมพ์: ครบ 13 หลักแล้วบอกทันทีว่าถูกตามสูตรหลักสุดท้ายไหม */
+      const idHint=()=>{const v=$("aI").value.replace(/\D/g,""),h=$("aIh");h.className="idh"+(v.length===13?(thaiId(v)?" ok":" bad"):"");
+        h.textContent=v.length<13?(v.length?`พิมพ์แล้ว ${v.length}/13 หลัก`:""):thaiId(v)?"✓ เลขถูกต้องตามรูปแบบ — ระบบจะเทียบกับรูปบัตรที่แนบอีกครั้ง":"✗ เลขไม่ถูกต้อง ตรวจทีละหลักอีกครั้ง"};
+      $("aI").addEventListener("input",()=>{const p=$("aI").selectionStart,before=$("aI").value.length;$("aI").value=fmtId($("aI").value);const d=$("aI").value.length-before;try{$("aI").setSelectionRange(p+d,p+d)}catch(e){}idHint()});idHint();
       $("aC").querySelectorAll("button").forEach(b=>b.onclick=()=>{b.classList.toggle("on");APP.cats=[...$("aC").querySelectorAll(".on")].map(x=>x.dataset.v)});
       $("aM").querySelectorAll("button").forEach(b=>b.onclick=()=>{b.classList.toggle("on");APP[b.dataset.v]=b.classList.contains("on")});
       $("aBk").onclick=()=>{keep();landing()};
       $("aNx").onclick=()=>{keep();const e=[];
-        if(!APP.title)e.push("คำนำหน้า");if((APP.name||"").length<4)e.push("ชื่อ-นามสกุล");if(!thaiId(APP.idNo))e.push("เลขประจำตัวประชาชน");
+        if(!APP.title)e.push("คำนำหน้า");if(!/^\p{L}[\p{L}\p{M}\s.'’-]+$/u.test(APP.name||"")||(APP.name||"").trim().split(/\s+/).length<2)e.push("ชื่อและนามสกุลตามเอกสาร");if(!thaiId(APP.idNo))e.push("เลขประจำตัวประชาชน");
         if(ageOf(APP.birth)<18)e.push("อายุ 18 ปีขึ้นไป");if(!/^0\d{8,9}$/.test((APP.phone||"").replace(/[\s-]/g,"")))e.push("เบอร์โทรศัพท์");
-        if(!(+APP.years>=2))e.push("ประสบการณ์ 2 ปีขึ้นไป");if(!APP.cats.length)e.push("ประเภทงาน");
+        if(!Number.isInteger(+APP.years)||+APP.years<2||+APP.years>60||+APP.years>ageOf(APP.birth)-16)e.push("ประสบการณ์ 2–60 ปี และต้องสอดคล้องกับอายุ");if(!APP.cats.length)e.push("ประเภทงาน");
+        if((APP.about||"").trim().length<30)e.push("ความถนัดและเครื่องมืออย่างน้อย 30 ตัวอักษร");
         if(!(+APP.from>0))e.push("ราคาเริ่มต้น");if(!(+APP.warranty>=7))e.push("รับประกันอย่างน้อย 7 วัน");
-        if(e.length&&!PREV()){$("err").textContent="กรุณาตรวจสอบ: "+e.join(", ");$("err").scrollIntoView({block:"nearest"});return}if(e.length)skipped(e.length);step(2)};
+        if(e.length){$("err").textContent="กรุณาตรวจสอบ: "+e.join(", ");$("err").scrollIntoView({block:"nearest"});return}step(2)};
     }});
   if(n===2)return sheet({full:true,title:"ใบสมัครพาร์ทเนอร์",body:stepHd(2)+`
     <p class="note"><i class="ti ti-info-circle"></i>เลื่อนแผนที่ให้หมุดอยู่ที่อู่ หรือจุดที่คุณออกรับงาน</p>
@@ -3424,9 +3440,10 @@ function step(n){
       const pk=picker($("aMap"),APP.lat?{lat:APP.lat,lng:APP.lng}:null,p=>{APP.lat=p.lat;APP.lng=p.lng;$("aXY").textContent=p.lat.toFixed(5)+", "+p.lng.toFixed(5)});
       $("aGps").onclick=e=>busy(e.currentTarget,async()=>{const p=await locate();if(p){pk.set(p);APP.gps=true}});
       $("aBk").onclick=()=>{keep();step(1)};
-      $("aNx").onclick=()=>{keep();if(PREV()){if((APP.area||"").length<3)skipped(1);return step(3)}if(!window.L&&!APP.gps){$("err").textContent="กดใช้ตำแหน่งปัจจุบันก่อน";return}if((APP.area||"").length<3){$("err").textContent="กรุณาระบุเขต / อำเภอ / จังหวัด";return}step(3)};
+      $("aNx").onclick=()=>{keep();if(!window.L&&!APP.gps){$("err").textContent="กดใช้ตำแหน่งปัจจุบันก่อน";return}if((APP.area||"").length<3){$("err").textContent="กรุณาระบุเขต / อำเภอ / จังหวัด";return}step(3)};
     }});
-  if(n===3)return sheet({full:true,title:"ใบสมัครพาร์ทเนอร์",body:stepHd(3)+`<p class="note"><i class="ti ti-camera"></i>ถ่ายให้เห็นข้อความชัด ไม่มีแสงสะท้อน · บัตรประชาชนใช้ตรวจตัวตนเท่านั้น และถูกลบหลังพิจารณา</p>`+DK.map(([k,l,min,max,ic])=>`<div class="dgrp"><h4>${l} <small>${min?(min===max?min+" รูป":min+"–"+max+" รูป"):"ไม่บังคับ"}</small><i class="ti ti-circle-check-filled okk" ${(APP.docs[k]||[]).length>=min&&min?"":"hidden"}></i></h4><div class="docs" data-k="${k}"></div></div>`).join("")
+  if(n===3)return sheet({full:true,title:"ใบสมัครพาร์ทเนอร์",body:stepHd(3)+`<p class="note"><i class="ti ti-camera"></i>ถ่ายให้เห็นข้อความชัด ไม่มีแสงสะท้อน · บัตรประชาชนใช้ตรวจตัวตนเท่านั้น และถูกลบหลังพิจารณา</p>
+    <p class="note"><i class="ti ti-id"></i>บัตรประชาชน: ถ่าย<b>ด้านหน้าบัตรจริง</b> (ไม่ถ่ายจากจอหรือสำเนา) ให้เห็นเลข 13 หลักชัดทุกหลัก — ระบบจะเทียบกับเลขที่คุณกรอก ถ้าไม่ตรงใบสมัครจะไม่ผ่าน</p>`+DK.map(([k,l,min,max,ic])=>`<div class="dgrp"><h4>${l} <small>${min?(min===max?min+" รูป":min+"–"+max+" รูป"):"ไม่บังคับ"}</small><i class="ti ti-circle-check-filled okk" ${(APP.docs[k]||[]).length>=min&&min?"":"hidden"}></i></h4><div class="docs" data-k="${k}"></div></div>`).join("")
     +'<input type="file" id="aFile" accept="image/*" hidden/>',
     foot:'<button class="btn s" id="aBk">ย้อนกลับ</button><button class="btn p" id="aNx">ถัดไป</button>',
     mount(){
@@ -3434,12 +3451,15 @@ function step(n){
       const draw=k=>{const [,, ,max,ic]=DK.find(d=>d[0]===k);const L=APP.docs[k]||[];const host=$("bsB").querySelector(`[data-k="${k}"]`);
         host.innerHTML=L.map((d,i)=>`<div class="doc"><img src="${d}" alt=""/><button class="rm" data-i="${i}" aria-label="ลบ"><i class="ti ti-x"></i></button></div>`).join("")+(L.length<max?`<button class="doc" data-add="${k}"><i class="ti ${ic}"></i>เพิ่มรูป</button>`:"");
         host.querySelectorAll(".rm").forEach(b=>b.onclick=()=>{L.splice(+b.dataset.i,1);draw(k)});
-        host.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{cur=k;$("aFile").value="";$("aFile").click()});
+        host.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{cur=k;const f=$("aFile");f.value="";
+          /* บัตรประชาชนครอปตามสัดส่วนบัตรจริง (85.6×54 มม.) ให้เลขบัตรเต็มกรอบ อ่านได้แม่นขึ้น */
+          if(k==="id"){f.dataset.crop="86:54";f.dataset.cropW="1400";f.dataset.cropTitle="ครอปให้พอดีบัตร"}else{delete f.dataset.crop;delete f.dataset.cropW;delete f.dataset.cropTitle}
+          f.click()});
         const min=DK.find(d=>d[0]===k)[2];host.parentElement.querySelector(".okk").hidden=!(min&&L.length>=min)};
       DK.forEach(([k])=>draw(k));
       $("aFile").onchange=async()=>{const f=$("aFile").files[0];if(!f||!cur)return;try{const d=await shrink(f,cur==="id"||cur==="selfie"?1400:1100);(APP.docs[cur]=APP.docs[cur]||[]).push(d);draw(cur)}catch(e){$("err").textContent=e.message}};
       $("aBk").onclick=()=>step(2);
-      $("aNx").onclick=()=>{const miss=DK.filter(([k,,min])=>(APP.docs[k]||[]).length<min).map(d=>d[1]);if(miss.length&&!PREV()){$("err").textContent="ยังขาดเอกสาร: "+miss.join(", ");return}if(miss.length)skipped(miss.length);step(4)};
+      $("aNx").onclick=()=>{const miss=DK.filter(([k,,min])=>(APP.docs[k]||[]).length<min).map(d=>d[1]);if(miss.length){$("err").textContent="ยังขาดเอกสาร: "+miss.join(", ");return}step(4)};
     }});
   if(n===4){const nd=Object.values(APP.docs).reduce((a,l)=>a+l.length,0);
     const sec=(t,to,rows)=>`<div class="sect"><h5>${t}<button data-to="${to}">แก้ไข</button></h5>${rows.map(([k,v])=>`<p><span>${k}</span><b>${v}</b></p>`).join("")}</div>`;
@@ -3451,18 +3471,24 @@ function step(n){
     <p class="h4">คำรับรอง</p>
     <label class="chk"><input type="checkbox" class="dec"/> ข้าพเจ้าขอรับรองว่าข้อมูลและเอกสารทั้งหมดเป็นความจริง</label>
     <label class="chk"><input type="checkbox" class="dec"/><span>ข้าพเจ้าได้อ่านและยอมรับ <button type="button" class="lnk" id="dTerms">ข้อตกลงพาร์ทเนอร์</button></span></label>
-    <label class="chk"><input type="checkbox" class="dec"/> ยินยอมให้ Cendon เก็บและใช้ข้อมูลส่วนบุคคลเพื่อพิจารณาใบสมัคร และโทรติดต่อยืนยันตัวตน</label>`,
-    foot:'<button class="btn s" id="aBk">ย้อนกลับ</button>'+(PREV()?'<button class="btn p" id="aPv"><i class="ti ti-eye"></i> ดูหน้าหลังยื่น (ตัวอย่าง)</button>':'<button class="btn p" id="aGo" disabled>ยื่นใบสมัคร</button>'),
+    <label class="chk"><input type="checkbox" class="dec"/> ยินยอมให้ Cendon เก็บและใช้ข้อมูลเพื่อพิจารณาใบสมัคร และโทรติดต่อยืนยันตัวตน</label>
+    <label class="chk"><input type="checkbox" class="dec"/> ยินยอมให้ส่งรูปอู่ รูปผลงาน และคำอธิบายงาน ให้ Google Gemini ช่วยตรวจหลักฐาน</label>
+    <label class="chk"><input type="checkbox" class="dec"/> ยินยอมให้ส่ง<b>รูปบัตรประชาชน</b>ให้ Google Gemini อ่านเลขบัตรและวันหมดอายุ เพื่อเทียบกับข้อมูลที่กรอก (เลขไม่ตรงหรืออ่านไม่ได้ ใบสมัครจะไม่ผ่าน)</label>
+    <p class="h4">ไม่บังคับ</p>
+    <label class="chk"><input type="checkbox" id="dFace"/> ยินยอมให้ส่ง<b>รูปคู่บัตร (เซลฟี่)</b>พร้อมรูปบัตรให้ Google Gemini เทียบใบหน้า — ข้อมูลใบหน้าเป็นข้อมูลอ่อนไหว ถ้าไม่ยินยอม ทีมงานจะเทียบให้เอง และอาจขอวิดีโอคอลยืนยันตัวตน</label>
+    <p class="note">AI ไม่ได้อนุมัติแทนคน ทีมงานยังต้องตรวจตัวตน โทรยืนยัน และตรวจทักษะก่อนอนุมัติ · รูปบัตรและเซลฟี่ถูกลบหลังพิจารณา · หากไม่ยินยอมให้ AI ตรวจ ติดต่อทีมงานเพื่อสอบถามทางเลือก</p>`,
+    foot:'<button class="btn s" id="aBk">ย้อนกลับ</button><button class="btn p" id="aGo" disabled>ยื่นใบสมัครจริง</button>',
     mount(b){
       b.querySelectorAll("[data-to]").forEach(x=>x.onclick=()=>step(+x.dataset.to));
       $("dTerms").onclick=e=>{e.preventDefault();terms()};
-      if(PREV()){$("aBk").onclick=()=>step(3);$("aPv").onclick=()=>previewStatus("pending",true);return}
       const decs=[...b.querySelectorAll(".dec")];decs.forEach(x=>x.onchange=()=>$("aGo").disabled=!decs.every(y=>y.checked));
       $("aBk").onclick=()=>step(3);
       $("aGo").onclick=e=>busy(e.currentTarget,async()=>{
+        /* AI ตรวจรูปและบัตรระหว่างส่ง ใช้เวลาหลายวินาที — บอกให้รอ */
+        e.currentTarget.textContent="กำลังตรวจเอกสาร…";
         const docs=[];DK.forEach(([k])=>(APP.docs[k]||[]).forEach(d=>docs.push({kind:k,data:d})));
         await api("/api/tech/apply",{body:{title:APP.title,name:APP.name,idNo:String(APP.idNo).replace(/\D/g,""),birth:APP.birth,age:ageOf(APP.birth),shop:APP.shop,phone:(APP.phone||"").replace(/[\s-]/g,""),years:+APP.years,area:APP.area,
-          from:+APP.from,warranty:+APP.warranty,radius:+APP.radius||0,cats:APP.cats,mobile:!!APP.mobile,urgent:!!APP.urgent,about:APP.about||"",lat:APP.lat,lng:APP.lng,docs,consent:true}});
+          from:+APP.from,warranty:+APP.warranty,radius:+APP.radius||0,cats:APP.cats,mobile:!!APP.mobile,urgent:!!APP.urgent,about:APP.about||"",lat:APP.lat,lng:APP.lng,docs,consent:true,aiConsent:true,idConsent:true,faceConsent:$("dFace").checked}});
         APP=null;await refreshMe();SH.stack=[];statusPage(ME.application,true);
       })}});}
 }
@@ -3471,11 +3497,13 @@ function statusPage(a,fresh,pv){
   const st=a.status,d=a.submittedAt||a.createdAt;
   const n=st==="approved"?5:st==="rejected"?2:2;
   sheet({push:pv&&pv.push,full:true,title:"ใบสมัครพาร์ทเนอร์",body:(pv?`<div class="seg pvs" id="pvS">${[["pending","รอตรวจ"],["rejected","ต้องแก้ไข"],["approved","อนุมัติ"]].map(([k,l])=>`<button type="button" data-v="${k}" class="${k===pv.st?"on":""}">${l}</button>`).join("")}</div>`:"")+`
-    ${fresh?'<div class="state"><div class="big" style="background:rgba(62,158,110,.14);color:var(--ok)"><i class="ti ti-send"></i></div><h2>ยื่นใบสมัครเรียบร้อย</h2><p>ทีมงานจะติดต่อกลับภายใน 3 วันทำการ</p></div>':""}
+    ${pv?'<p class="note"><b>โหมดตัวอย่าง UI เท่านั้น</b> · ไม่ส่งใบสมัคร ไม่ตรวจ AI และไม่อนุมัติร้านจริง</p>':st==='pending'?`<p class="note">${a.ai&&a.ai.status==='complete'?'ระบบตรวจรูปและบัตรเบื้องต้นแล้ว ยังรอทีมงานตรวจตัวตน เบอร์โทร และทักษะ':'ใบสมัครอยู่ในคิว ระบบยังตรวจไม่ครบ ทีมงานจะตรวจต่อ'}</p>`:''}
+    ${fresh&&st==='pending'?'<div class="state"><div class="big" style="background:rgba(62,158,110,.14);color:var(--ok)"><i class="ti ti-send"></i></div><h2>ยื่นใบสมัครเรียบร้อย</h2><p>ทีมงานจะติดต่อกลับภายใน 3 วันทำการ</p></div>':""}
+    ${st==='rejected'&&a.review&&a.review.auto?`<div class="fixl"><b><i class="ti ti-alert-triangle"></i> ใบสมัครยังไม่ผ่าน — แก้ข้อต่อไปนี้แล้วยื่นใหม่ได้ทันที</b><ul>${(a.review.reasons||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:""}
     <div class="appno"><div><small>เลขที่ใบสมัคร</small><b>${esc(a.appNo||"—")}</b></div><div style="text-align:right"><small>วันที่ยื่น</small><b style="font-size:14px">${d?new Date(d).toLocaleDateString(LOC,{day:"numeric",month:"short",year:"numeric"}):"—"}</b></div></div>
     <p class="h4">สถานะการพิจารณา</p>
     <div class="tl">${[["ยื่นใบสมัครออนไลน์",esc(a.name)],["ตรวจสอบเอกสาร",st==="rejected"?"ต้องแก้ไขเพิ่มเติม":"1–3 วันทำการ"],["โทรยืนยันตัวตนและทักษะ","ทีมงานโทรหา "+esc(a.phone||"")],["อนุมัติ เริ่มรับงาน",st==="approved"?"ร้านของคุณแสดงในแอปแล้ว":""]].map(([b,s],i)=>`<div data-n="${i+1}" class="${i+1<n?"ok":i+1===n&&st!=="approved"?"on":""}"><b>${b}</b><small>${s}</small></div>`).join("")}</div>
-    ${st==="rejected"?`<div class="err" style="animation:none"><b>หมายเหตุจากทีมงาน:</b> ${esc(a.review&&a.review.note||"")}</div>`:""}`,
+    ${st==="rejected"&&!(a.review&&a.review.auto)?`<div class="err" style="animation:none"><b>หมายเหตุจากทีมงาน:</b> ${esc(a.review&&a.review.note||"")}</div>`:""}`,
     foot:st==="rejected"?'<button class="btn p w" id="sFix">แก้ไขและยื่นใหม่</button>':st==="approved"?'<button class="btn p w" id="sJobs">เปิดงานของฉัน</button>':'<button class="btn s w" id="sOk">ปิด</button>',
     mount(){if(pv){$("pvS").querySelectorAll("button").forEach(b=>b.onclick=()=>previewStatus(b.dataset.v,false));if($("sFix"))$("sFix").onclick=()=>landing(true);if($("sJobs"))$("sJobs").onclick=()=>{closeSheet();setMode("tech")};if($("sOk"))$("sOk").onclick=()=>closeSheet();return}
       if($("sFix"))$("sFix").onclick=()=>landing(true);if($("sJobs"))$("sJobs").onclick=()=>jobs();if($("sOk"))$("sOk").onclick=()=>closeSheet()}});
@@ -3484,8 +3512,7 @@ $("bJoin").onclick=()=>openJoin();
 
 /* ═══ ทีมงาน ═══ */
 /* ผู้ดูแลและทีมงาน Cendon เข้าดูได้ทุกหน้า — ข้ามการกรอก/ตรวจ เพื่อตรวจความเรียบร้อยของระบบ */
-function PREV(){return !!(ME&&ME.staff)}
-function skipped(n){toast("ทีมงาน: ข้ามช่องที่ยังไม่กรอก "+n+" รายการ","ti-player-skip-forward")}
+function PREV(){return !!(ME&&ME.admin)}
 /* เปิดร้านทีมงานทันทีโดยไม่ถามอะไร — ใช้ GPS ถ้าได้ ไม่ได้ก็ให้ backend ใช้ตำแหน่งกลาง แล้วแก้ทีหลังในแท็บร้าน */
 async function quickTech(){
   if(!(ME.technician&&ME.technician.test)){
@@ -3505,8 +3532,8 @@ function staffBar(){
   const s=$("staff");
   if(!ME||!ME.staff){s.hidden=true;s.innerHTML="";return}
   s.hidden=MODE!=="staff";
-  s.innerHTML=`<button id="sTest"><i class="ti ti-shield-check"></i>${ME.technician&&ME.technician.test?"ช่างทีมงานของฉัน":"เป็นช่างทีมงาน"}</button><button id="sApps"><i class="ti ti-id-badge-2"></i>ตรวจใบสมัคร<span class="n" id="sN" hidden></span></button><button id="sAll"><i class="ti ti-list-details"></i>งานทั้งหมด</button>`;
-  $("sTest").onclick=testTech;$("sApps").onclick=reviewList;$("sAll").onclick=()=>jobs(true);
+  s.innerHTML=`${ME.admin?`<button id="sTest"><i class="ti ti-shield-check"></i>${ME.technician&&ME.technician.test?"ช่างทีมงานของฉัน":"เป็นช่างทีมงาน"}</button>`:""}<button id="sApps"><i class="ti ti-id-badge-2"></i>ตรวจใบสมัคร<span class="n" id="sN" hidden></span></button><button id="sAll"><i class="ti ti-list-details"></i>งานทั้งหมด</button>`;
+  if($("sTest"))$("sTest").onclick=testTech;$("sApps").onclick=reviewList;$("sAll").onclick=()=>jobs(true);
   api("/api/tech/applications").then(d=>{const n=(d.applications||[]).length;if(n&&$("sN")){$("sN").hidden=false;$("sN").textContent=n}}).catch(()=>{});
 }
 /* ช่างทีมงาน — ใช้แค่ตำแหน่งอู่ ไม่ต้องมีเอกสาร เห็นเฉพาะทีมงาน Cendon ลูกค้าทั่วไปไม่เห็น */
@@ -3540,33 +3567,65 @@ async function reviewList(){
   }catch(e){$("bsB").innerHTML=`<div class="empty"><i class="ti ti-cloud-off"></i><b>${esc(e.message)}</b></div>`}
 }
 /* ── ผล AI คัดกรองใบสมัคร (ทีมงานเห็นเท่านั้น) — AI ไม่ได้อนุมัติแทนคน แค่ชี้ว่าควรดูตรงไหน ── */
-const AIV={pass:["ผ่าน","#1a7f4b","ti-circle-check"],review:["ต้องดู","#b7791f","ti-alert-triangle"],fail:["ไม่ผ่าน","#c0392b","ti-circle-x"]};
+const VETTING_VERSION=3;
+const AIV={pass:["AI ตรวจเบื้องต้นแล้ว · รอทีมงาน","#1a7f4b","ti-circle-check"],review:["ต้องตรวจเพิ่ม","#b7791f","ti-alert-triangle"],fail:["ไม่ผ่าน · ต้องให้ผู้สมัครแก้","#c0392b","ti-circle-x"]};
 function aiBadge(ai){if(!ai)return"";const v=AIV[ai.verdict]||AIV.review;return`<span class="aib" style="--c:${v[1]}"><i class="ti ${v[2]}"></i>${v[0]}</span>`}
 function aiCard(ai){
   if(!ai)return`<div class="aic"><div class="aih"><b><i class="ti ti-robot"></i> AI คัดกรอง</b><button class="btn s" id="aiRe">ตรวจด้วย AI</button></div><small>ยังไม่มีผล — ใบนี้ส่งก่อนเปิดระบบ หรือ AI ล้มตอนส่ง</small></div>`;
   const v=AIV[ai.verdict]||AIV.review, L={high:["#c0392b","ti-alert-octagon"],medium:["#b7791f","ti-alert-triangle"],low:["#6b7280","ti-info-circle"]};
-  return`<div class="aic" style="--c:${v[1]}"><div class="aih"><b><i class="ti ${v[2]}"></i> AI: ${v[0]} · ${ai.score}/100</b><button class="btn s" id="aiRe">ตรวจอีกครั้ง</button></div>
-    ${ai.flags&&ai.flags.length?`<ul class="nt">${ai.flags.map(f=>`<li style="--c:${(L[f.level]||L.low)[0]}"><i class="ti ${(L[f.level]||L.low)[1]}"></i>${esc(f.msg)}</li>`).join("")}</ul>`:'<small>ไม่พบจุดน่าสงสัย</small>'}
+  return`<div class="aic" style="--c:${v[1]}"><div class="aih"><b><i class="ti ${v[2]}"></i> ${ai.status==='complete'?v[0]:'AI ยังตรวจไม่สำเร็จ'}</b><button class="btn s" id="aiRe">ตรวจอีกครั้ง</button></div>
+    ${ai.flags&&ai.flags.length?`<ul class="nt">${ai.flags.map(f=>`<li style="--c:${(L[f.level]||L.low)[0]}"><i class="ti ${f.block?"ti-ban":(L[f.level]||L.low)[1]}"></i>${f.block?"<b>ไม่ผ่าน:</b> ":""}${esc(f.msg)}</li>`).join("")}</ul>`:'<small>ไม่พบจุดน่าสงสัย</small>'}
     ${ai.summary?`<p class="nt">${esc(ai.summary)}</p>`:""}
     <small>${esc(ai.vision||"")}${ai.error?" · "+esc(ai.error):""} · ${new Date(ai.at).toLocaleString("th-TH")}</small>
-    <small>AI ช่วยชี้จุดสงสัยเท่านั้น ผู้ตรวจยังต้องดูเอกสารและติ๊กเองทุกข้อ</small></div>`}
-const CHECKS=[["identity","บัตรตรงกับหน้าในรูปคู่บัตร ชื่อตรง อายุ 18+"],["phone","โทรติดต่อได้ ยืนยันตัวตนแล้ว"],["work","รูปผลงานเป็นงานจริงของผู้สมัคร"],["skills","มีใบรับรอง หรือสัมภาษณ์ทักษะผ่าน"],["shop","อู่/เครื่องมือมีจริง ตำแหน่งตรง"],["terms","ตกลงราคา ขอบเขตงาน และรับประกันแล้ว"]];
+    <small>AI ไม่พิสูจน์ตัวตนหรือเจ้าของรูป ต้องมีหลักฐานตรวจโดยคนครบทุกข้อ</small></div>`}
+/* เลขบัตร: ที่กรอก (ตัวใหญ่ แยกกลุ่ม) เทียบกับผลที่ AI อ่านจากรูปบัตร */
+function idPanel(a){
+  const id=a.ai&&a.ai.identity||{},R={match:["ok","ti-circle-check","เลขบนรูปบัตรตรงกับที่กรอกทุกหลัก"],mismatch:["bad","ti-circle-x",`เลขบนรูปบัตร (ลงท้าย ${esc(id.last4||"")}) ไม่ตรงกับที่กรอก`],unreadable:["bad","ti-circle-x","AI อ่านเลขบนรูปบัตรไม่ได้"],not_card:["bad","ti-circle-x","รูปไม่ใช่บัตรประชาชนไทย"]};
+  const r=id.status==='complete'?R[id.result]:id.status==='failed'?["warn","ti-alert-triangle","AI ตรวจบัตรไม่สำเร็จ — กดตรวจอีกครั้ง"]:["warn","ti-eye","AI ไม่ได้ตรวจบัตร — ดูรูปบัตรแล้วเทียบเองทีละหลัก"];
+  const F={yes:"AI: หน้าในเซลฟี่ตรงกับบัตร",no:"AI: หน้าในเซลฟี่ไม่น่าตรงกับบัตร",unsure:"AI: ยืนยันใบหน้าไม่ได้",not_consented:"ผู้สมัครไม่ยินยอมให้ AI เทียบใบหน้า — เทียบเอง"};
+  return`<div class="idp"><small>เลขประจำตัวประชาชนที่กรอก</small><b class="nt">${esc(fmtId(a.idNo))}</b>
+    ${r?`<p class="idp-r ${r[0]}"><i class="ti ${r[1]}"></i>${r[2]}</p>`:""}${id.expired?`<p class="idp-r bad"><i class="ti ti-calendar-x"></i>บัตรหมดอายุแล้ว</p>`:""}
+    ${id.face?`<p class="idp-f"><i class="ti ti-face-id"></i>${F[id.face]||""}</p>`:""}</div>`;
+}
+const CHECKS=[["identity","บัตรตรงกับหน้าในรูปคู่บัตร เลขบัตรตรงกับที่กรอก ชื่อตรง อายุ 18+"],["phone","โทรติดต่อได้ ยืนยันตัวตนแล้ว"],["work","รูปผลงานเป็นงานจริงของผู้สมัคร"],["skills","มีใบรับรอง หรือสัมภาษณ์ทักษะผ่าน"],["shop","อู่/เครื่องมือมีจริง ตำแหน่งตรง"],["terms","ตกลงราคา ขอบเขตงาน และรับประกันแล้ว"]];
+/* วิธีตรวจที่ยอมรับต่อข้อ (ต้องตรงกับ EVIDENCE_METHODS ใน backend) */
+const REVIEW_METHODS={identity:[["document_review","ตรวจเอกสารโดยทีมงาน"]],phone:[["live_call","โทรยืนยันจริง"]],work:[["portfolio_review","ตรวจผลงานและรายละเอียดงาน"]],skills:[["interview","สัมภาษณ์ทักษะ"],["certificate_review","ตรวจใบรับรอง"]],shop:[["site_visit","ตรวจสถานที่"],["video_call","วิดีโอคอลดูอู่/เครื่องมือ"],["document_review","ตรวจหลักฐานสถานที่"]],terms:[["written_agreement","ตรวจข้อตกลงที่ยืนยันแล้ว"]]};
+/* จุดสงสัยของ AI (รูปผลงาน + บัตร) ที่ทีมงานต้องตรวจและบันทึกหลักฐาน — ข้อที่ไม่ผ่านแน่นอนไม่มีช่องให้ลบล้าง */
+function reviewFindings(ai){return (ai&&ai.flags||[]).filter(f=>f.source!=='rules'&&f.level!=='low'&&!f.block).map(f=>`<label class="fld"><span>${esc(f.msg)}</span><textarea class="inp" data-resolution="${esc(f.code)}" minlength="30" maxlength="1000" placeholder="ตรวจแล้วพบว่าไม่มีปัญหา ให้บันทึกหลักฐานอย่างน้อย 30 ตัวอักษร หากปัญหาจริงให้ส่งกลับแก้ไข"></textarea></label>`).join('')}
+const aiReady=(ai,a)=>!!(ai&&ai.status==='complete'&&ai.policyVersion===VETTING_VERSION&&ai.revision===a.revision&&Array.isArray(ai.flags)&&!ai.flags.some(f=>f.block||(f.source==='rules'&&f.level==='high')));
 async function reviewOne(a){
   sheet({push:true,title:a.name,body:'<div class="skel"></div>'});
   let docs=[];try{docs=(await api("/api/tech/docs?uid="+encodeURIComponent(a.uid))).docs||[]}catch(e){}
   const lab=Object.fromEntries(DK.map(d=>[d[0],d[1]]));
   sheet({title:a.name,body:`
     <div class="gal">${docs.map(d=>`<img src="${d.url}" data-z="${d.url}" alt="${esc(lab[d.kind])}" title="${esc(lab[d.kind])}"/>`).join("")||'<div class="ph" style="background:var(--surface-2);color:var(--muted);font-size:14px">ไม่มีเอกสาร</div>'}</div>
+    <div id="idBox">${idPanel(a)}</div>
     <div class="kv"><p><span>เบอร์</span><b><a href="tel:${esc(a.phone)}" style="color:var(--accent)">${esc(a.phone)}</a></b></p><p><span>อู่</span><b>${esc(a.shop||"–")}</b></p><p><span>อายุ / ประสบการณ์</span><b>${a.age} ปี / ${a.years} ปี</b></p><p><span>พื้นที่</span><b>${esc(a.area)}${a.lat?` · <a href="https://maps.google.com/?q=${a.lat},${a.lng}" target="_blank" rel="noopener" style="color:var(--accent)">แผนที่</a>`:""}</b></p><p><span>งาน</span><b>${(a.cats||[]).map(c=>CAT[c]?CAT[c].th:c).join(", ")}</b></p><p><span>ราคา / รับประกัน</span><b>฿${money(a.from)} / ${a.warranty} วัน</b></p><p><span>ใบรับรอง</span><b>${a.hasCert?"มี":"ไม่มี — ต้องสัมภาษณ์"}</b></p>${a.about?`<p><span>ถนัด</span><b>${esc(a.about)}</b></p>`:""}</div>
     <div id="aiBox">${aiCard(a.ai)}</div>
-    ${CHECKS.map(([k,l])=>`<label class="chk"><input type="checkbox" data-k="${k}"/> ${l}</label>`).join("")}
-    <label class="fld"><span>บันทึก</span><textarea class="inp" id="rvN" placeholder="ตรวจอะไรไปบ้าง / ต้องแก้อะไร"></textarea></label>`,
+    <div id="aiFindings">${reviewFindings(a.ai)}</div>
+    ${CHECKS.map(([k,l])=>`<section class="sect"><label class="chk"><input type="checkbox" data-k="${k}"/> ${l}</label><select class="inp" data-method="${k}"><option value="">เลือกวิธีที่ตรวจจริง</option>${REVIEW_METHODS[k].map(([v,n])=>`<option value="${v}">${n}</option>`).join('')}</select><textarea class="inp" data-evidence="${k}" minlength="20" maxlength="1000" placeholder="บันทึกหลักฐานที่ตรวจจริง อย่างน้อย 20 ตัวอักษร ไม่ใส่เลขบัตรเต็ม"></textarea></section>`).join("")}
+    <label class="fld"><span>บันทึก</span><textarea class="inp" id="rvN" placeholder="ตรวจอะไรไปบ้าง / ต้องแก้อะไร (อย่างน้อย 10 ตัวอักษร)"></textarea></label>
+    <p class="note" id="rvWhy"></p>`,
     foot:'<button class="btn s" id="rvNo">ให้แก้ไข</button><button class="btn p" id="rvOk" disabled>อนุมัติ</button>',
     mount(b){
       b.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z));
-      const boxes=[...b.querySelectorAll("[data-k]")];boxes.forEach(x=>x.onchange=()=>$("rvOk").disabled=!boxes.every(y=>y.checked));
+      const boxes=[...b.querySelectorAll("[data-k]")];
+      /* ปุ่มอนุมัติเปิดได้เมื่อครบทุกอย่างแบบเดียวกับที่ backend ตรวจ — บอกด้วยว่ายังขาดอะไร */
+      const ready=()=>{
+        const why=!(ME&&ME.admin)?"เฉพาะ admin ที่อนุมัติได้":ME.uid===a.uid?"อนุมัติใบสมัครของตัวเองไม่ได้":!aiReady(a.ai,a)?(a.ai&&(a.ai.flags||[]).some(f=>f.block)?"มีข้อที่ไม่ผ่านแน่นอน — กด \"ให้แก้ไข\" ส่งกลับผู้สมัคร":"AI ต้องตรวจสำเร็จด้วยข้อมูลชุดล่าสุดก่อน (กดตรวจอีกครั้ง)")
+          :!(boxes.length===CHECKS.length&&boxes.every(x=>x.checked))?"ติ๊กให้ครบทุกข้อ":!CHECKS.every(([k])=>b.querySelector(`[data-method="${k}"]`).value&&b.querySelector(`[data-evidence="${k}"]`).value.trim().length>=20)?"เลือกวิธีตรวจและบันทึกหลักฐานทุกข้อ (อย่างน้อย 20 ตัวอักษร)"
+          :![...b.querySelectorAll('[data-resolution]')].every(x=>x.value.trim().length>=30)?"บันทึกผลตรวจจุดสงสัยของ AI ทุกข้อ (อย่างน้อย 30 ตัวอักษร)":$("rvN").value.trim().length<10?"เขียนบันทึกการตรวจ":"";
+        $("rvOk").disabled=!!why;$("rvWhy").textContent=why?"ยังอนุมัติไม่ได้: "+why:"";
+      };
+      b.addEventListener('input',ready);b.addEventListener('change',ready);ready();
+      $("rvNo").disabled=!(ME&&ME.admin)||ME.uid===a.uid;
+      const bindAI=()=>{const btn=$("aiRe");if(!btn)return;btn.onclick=()=>busy(btn,async()=>{const r=await api('/api/tech/rescreen',{body:{uid:a.uid}});a.ai=r.ai;
+        $("aiBox").innerHTML=aiCard(r.ai);$("aiFindings").innerHTML=reviewFindings(r.ai);$("idBox").innerHTML=idPanel(a);bindAI();ready();
+        toast(r.ai&&r.ai.status==='complete'?'AI ตรวจครบแล้ว กรุณาตรวจหลักฐานต่อ':'AI ยังไม่สำเร็จ ยังอนุมัติไม่ได้')})};bindAI();
       const go=(decision,btn)=>busy(btn,async()=>{
-        await api("/api/tech/review",{body:{uid:a.uid,revision:a.revision,decision,note:$("rvN").value.trim(),checks:Object.fromEntries(boxes.map(x=>[x.dataset.k,x.checked]))}});
+        const evidence=Object.fromEntries(CHECKS.map(([k])=>[k,{method:b.querySelector(`[data-method="${k}"]`).value,note:b.querySelector(`[data-evidence="${k}"]`).value.trim()}]));
+        const resolutions=Object.fromEntries([...b.querySelectorAll('[data-resolution]')].map(x=>[x.dataset.resolution,{outcome:'false_positive',note:x.value.trim()}]));
+        await api("/api/tech/review",{body:{uid:a.uid,revision:a.revision,decision,note:$("rvN").value.trim(),checks:Object.fromEntries(boxes.map(x=>[x.dataset.k,x.checked])),evidence,resolutions}});
         toast(decision==="approve"?"อนุมัติแล้ว":"ส่งกลับให้แก้ไขแล้ว");await load();staffBar();reviewList();
       });
       $("rvOk").onclick=e=>go("approve",e.currentTarget);$("rvNo").onclick=e=>go("reject",e.currentTarget);
@@ -3740,15 +3799,17 @@ function tabShop(){
 }
 function openShopEdit(){
   const t=ME.technician;
+  /* ร้านที่ผ่านการตรวจแล้ว: ความถนัด งานที่รับ ตำแหน่ง และรูปร้าน/ผลงาน คือหลักฐานที่ตรวจแล้ว — เปลี่ยนต้องให้ทีมงานตรวจใหม่ (backend บังคับเหมือนกัน) */
+  const locked=!t.test;
   SHOPED={add:[],remove:[],lat:t.lat,lng:t.lng,cover:t.cover||null,newCover:null};
   sheet({title:T("แก้ไขร้าน","Edit shop"),full:true,push:true,body:`
     <p class="h4" style="margin-top:0">${T("รูปโปรไฟล์ร้าน","Shop profile photo")}</p>
     <div class="ed-av"><span class="ch-av" id="sAv">${initial(t.shop||t.name)}</span><div><button class="lx-gh" id="sAvB" type="button"><i class="ti ti-camera"></i> ${T("เปลี่ยนรูปโปรไฟล์","Change photo")}</button><small>${T("แนะนำโลโก้ร้านหรือรูปหน้าร้าน","Your logo or storefront")}</small></div></div><input type="file" id="sAvF" accept="image/*" hidden data-crop="1:1" data-crop-round data-crop-w="640" data-crop-title="${T("รูปโปรไฟล์ร้าน","Shop photo")}"/>
     <p class="h4" hidden>${T("รูปปก (แบนเนอร์)","Cover banner")}</p>
     <div class="sf-cover sf-ed" hidden id="sCov" style="--c1:${colorOf(t)}"><button class="btn s" id="sCovB"><i class="ti ti-photo"></i> ${T("เปลี่ยนรูปปก","Change cover")}</button></div><input type="file" id="sCovF" accept="image/*" hidden data-crop="3:1" data-crop-w="1800" data-crop-title="${T("รูปปกร้าน","Cover photo")}"/>
-    <p class="h4">${T("รูปร้าน","Shop photos")} <small style="font-weight:400;color:var(--muted)">${T("· แตะ ★ เพื่อใช้เป็นปก","· tap ★ to use as cover")}</small></p><div class="phg" id="sPh"></div><input type="file" id="sFile" accept="image/*" hidden/>
+    <p class="h4">${T("รูปร้าน","Shop photos")} <small style="font-weight:400;color:var(--muted)">${T("· แตะ ★ เพื่อใช้เป็นปก","· tap ★ to use as cover")}</small></p>${locked?`<p class="note ed-lock"><i class="ti ti-lock"></i>${T("รูปร้าน ความถนัด งานที่รับ และตำแหน่งร้าน เป็นหลักฐานที่ทีมงานตรวจแล้ว ถ้าต้องการเปลี่ยน ติดต่อทีมงานเพื่อตรวจใหม่ · ชื่อร้าน ราคา เวลาทำการ เบอร์ และข้อมูลอื่นแก้ได้ตามปกติ","Shop photos, expertise, services and location are reviewed evidence — contact the team to change them. Name, prices, hours, phone and other details stay editable.")}</p>`:""}<div class="phg" id="sPh"></div><input type="file" id="sFile" accept="image/*" hidden/>
     <label class="fld"><span>${T("ชื่อร้าน","Shop name")}</span><input class="inp" id="sN" value="${esc(t.shop||"")}"/></label>
-    <label class="fld"><span>${T("ความถนัด / เครื่องมือ","Expertise / tools")}</span><textarea class="inp" id="sA">${esc(t.about||"")}</textarea></label>
+    <label class="fld"><span>${T("ความถนัด / เครื่องมือ","Expertise / tools")}</span><textarea class="inp" id="sA" ${locked?"readonly":""}>${esc(t.about||"")}</textarea></label>
     <div class="two"><label class="fld"><span>${T("ราคาเริ่มต้น","Starting price")}</span><input class="inp" id="sF" type="number" value="${t.from||""}"/></label><label class="fld"><span>${T("รับประกัน (วัน)","Warranty (days)")}</span><input class="inp" id="sW" type="number" value="${t.warranty||""}"/></label></div>
     <div class="two"><label class="fld"><span>${T("รัศมีรับงาน (กม.)","Radius (km)")}</span><input class="inp" id="sR" type="number" value="${t.radius||""}"/></label><label class="fld"><span>${T("เวลาทำการ","Hours")}</span><input class="inp" id="sH" value="${esc(t.hours||"")}" placeholder="${T("จ-ส 8:00-18:00","Mon-Sat 8-18")}"/></label></div>
     <div class="fld"><span>${T("งานที่รับ","Services")}</span><div class="seg" id="sC">${["air","eng","tyre","ev","body"].map(k=>`<button type="button" data-v="${k}" class="${(t.cats||[]).includes(k)?"on":""}"><i class="ti ${CAT[k].ic}"></i>${CAT[k].th}</button>`).join("")}</div></div>
@@ -3760,7 +3821,7 @@ function openShopEdit(){
     <div class="fld"><span>${T("เวลาทำการรายวัน","Opening hours")}</span><div class="wk" id="sWk">${["จ","อ","พ","พฤ","ศ","ส","อา"].map((d,i)=>{const w=(t.week||[])[i]||{on:i<6,open:"08:00",close:"18:00"};return `<div class="wkr"><label class="lx-sw sm"><input type="checkbox" ${w.on?"checked":""}/><i></i></label><b>${d}</b><input class="inp" type="time" value="${w.open}"/><span>–</span><input class="inp" type="time" value="${w.close}"/></div>`}).join("")}</div></div>
     <div class="two"><label class="fld"><span>LINE ID</span><input class="inp" id="sLine" value="${esc(t.line||"")}" placeholder="@myshop"/></label><label class="fld"><span>Facebook</span><input class="inp" id="sFb" value="${esc(t.facebook||"")}" placeholder="ลิงก์เพจ"/></label></div>
     <label class="fld"><span>${T("ที่อยู่ร้าน","Address")}</span><textarea class="inp" id="sAddr" rows="2">${esc(t.address||"")}</textarea></label>
-    <button class="btn s w" id="sLoc" style="margin-bottom:12px"><i class="ti ti-map-pin"></i> ${T("ย้ายตำแหน่งร้าน","Move shop location")}</button>
+    <button class="btn s w" id="sLoc" style="margin-bottom:12px" ${locked?"disabled":""}><i class="ti ti-map-pin"></i> ${T("ย้ายตำแหน่งร้าน","Move shop location")}</button>
     <p class="err" id="sErr"></p>
 `,foot:`<button class="btn p w" id="sSave">${T("บันทึกร้าน","Save shop")}</button>`,mount(){
   const drawCov=()=>{const c=SHOPED.newCover?SHOPED.newCover.data:SHOPED.cover&&!SHOPED.remove.includes(SHOPED.cover)?img(SHOPED.cover):null;
@@ -3772,14 +3833,14 @@ function openShopEdit(){
   $("sCovB").onclick=()=>{$("sCovF").value="";$("sCovF").click()};
   $("sCovF").onchange=async()=>{const f=$("sCovF").files[0];if(!f)return;try{SHOPED.newCover={data:await shrink(f,1600)};drawCov()}catch(e){$("sErr").textContent=e.message}};
   const drawPh=()=>{const cur=(t.photos||[]).filter(id=>!SHOPED.remove.includes(id)&&id!==t.avatar);
-    $("sPh").innerHTML=cur.map(id=>`<div class="doc"><img src="${API}/api/tech/img/${id}" alt=""/><button class="rm" data-rm="${id}"><i class="ti ti-x"></i></button><button class="cv ${!SHOPED.newCover&&SHOPED.cover===id?"on":""}" data-cv="${id}" title="${T("ใช้เป็นปก","Use as cover")}"><i class="ti ti-star${!SHOPED.newCover&&SHOPED.cover===id?"-filled":""}"></i></button></div>`).join("")+SHOPED.add.map((a,i)=>`<div class="doc"><img src="${a.data}" alt=""/><button class="rm" data-ra="${i}"><i class="ti ti-x"></i></button></div>`).join("")+`<button class="doc" id="sAdd"><i class="ti ti-camera-plus"></i>${T("เพิ่ม","Add")}</button>`;
+    $("sPh").innerHTML=cur.map(id=>`<div class="doc"><img src="${API}/api/tech/img/${id}" alt=""/>${locked?"":`<button class="rm" data-rm="${id}"><i class="ti ti-x"></i></button>`}<button class="cv ${!SHOPED.newCover&&SHOPED.cover===id?"on":""}" data-cv="${id}" title="${T("ใช้เป็นปก","Use as cover")}"><i class="ti ti-star${!SHOPED.newCover&&SHOPED.cover===id?"-filled":""}"></i></button></div>`).join("")+SHOPED.add.map((a,i)=>`<div class="doc"><img src="${a.data}" alt=""/><button class="rm" data-ra="${i}"><i class="ti ti-x"></i></button></div>`).join("")+(locked?"":`<button class="doc" id="sAdd"><i class="ti ti-camera-plus"></i>${T("เพิ่ม","Add")}</button>`);
     $("sPh").querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{SHOPED.remove.push(+b.dataset.rm);drawPh();drawCov()});
     $("sPh").querySelectorAll("[data-cv]").forEach(b=>b.onclick=()=>{SHOPED.cover=+b.dataset.cv;SHOPED.newCover=null;drawPh();drawCov()});
     $("sPh").querySelectorAll("[data-ra]").forEach(b=>b.onclick=()=>{SHOPED.add.splice(+b.dataset.ra,1);drawPh()});
-    $("sAdd").onclick=()=>{$("sFile").value="";$("sFile").click()}};
+    if($("sAdd"))$("sAdd").onclick=()=>{$("sFile").value="";$("sFile").click()}};
   drawPh();
   $("sFile").onchange=async()=>{const f=$("sFile").files[0];if(!f)return;try{SHOPED.add.push({kind:"work",data:await shrink(f,1100)});drawPh()}catch(e){$("sErr").textContent=e.message}};
-  ["sC","sM","sSub"].forEach(id=>$(id).querySelectorAll("button").forEach(b=>b.onclick=()=>b.classList.toggle("on")));
+  ["sC","sM","sSub"].forEach(id=>$(id).querySelectorAll("button").forEach(b=>{if(locked&&id==="sC"){b.disabled=true;return}b.onclick=()=>b.classList.toggle("on")}));
   if(SHOPED.snap){const sn=SHOPED.snap;Object.entries(sn.v).forEach(([k,v])=>$(k).value=v);
     ["sC","sM"].forEach(id=>$(id).querySelectorAll("button").forEach(b=>b.classList.toggle("on",sn.on.includes(id+":"+b.dataset.v))))}
   $("sLoc").onclick=()=>{

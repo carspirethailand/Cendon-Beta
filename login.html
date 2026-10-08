@@ -74,10 +74,6 @@ h1{margin:0 0 9px;font-size:clamp(28px,4vw,36px);font-weight:500;letter-spacing:
   background:linear-gradient(180deg,#1B222C,#141922);border-color:#2E3742;
 }
 .btn.ghost{background:transparent}
-/* ปุ่ม LINE ตามแนวทางแบรนด์ของ LINE: พื้นเขียว ตัวอักษรขาว กดแล้วเข้มขึ้น */
-.btn.line{background:#06C755;border-color:#06C755;color:#fff;font-weight:600}
-.btn.line:hover{background:#05B34C;border-color:#05B34C}
-.btn[hidden]{display:none}
 .note a{color:var(--ink);font-weight:500;text-decoration:underline;text-underline-offset:2px}
 
 .or{display:flex;align-items:center;gap:14px;margin:18px 0;
@@ -174,10 +170,6 @@ h1{margin:0 0 9px;font-size:clamp(28px,4vw,36px);font-weight:500;letter-spacing:
 
     <button class="btn g-primary" id="bGoogle">
       <i class="ti ti-brand-google"></i><span>เข้าสู่ระบบด้วย Google</span>
-    </button>
-
-    <button class="btn line" id="bLine" hidden>
-      <i class="ti ti-brand-line"></i><span>เข้าสู่ระบบด้วย LINE</span>
     </button>
 
     <div class="or">หรือ</div>
@@ -304,7 +296,7 @@ h1{margin:0 0 9px;font-size:clamp(28px,4vw,36px);font-weight:500;letter-spacing:
     $("bGoogle").disabled = true;
   }else if(!auth){
     warn(T("ระบบล็อกอินยังไม่พร้อม ลองใหม่อีกครั้ง","Sign-in is unavailable right now."));
-    $("bGoogle").disabled = true; $("bLine").disabled = true;
+    $("bGoogle").disabled = true;
   }
 
   /* ── เปิดอยู่ในแอป LINE ──
@@ -319,85 +311,8 @@ h1{margin:0 0 9px;font-size:clamp(28px,4vw,36px);font-weight:500;letter-spacing:
     $("warnTx").appendChild(a); $("warn").hidden = false;
   }
 
-  /* ── เข้าสู่ระบบด้วย LINE ──
-     Firebase ไม่มี LINE ในตัว: พาไปหน้าของ LINE → LINE ส่งกลับมาที่ /login?code=…&state=…
-     → ส่ง code ให้หลังบ้านไปตรวจกับ LINE → ได้ custom token ของ Firebase กลับมา → signInWithCustomToken
-     ปุ่มโผล่เฉพาะเมื่อหลังบ้านตั้งค่า LINE Login แล้ว (config ส่ง clientId มา) */
-  var API = window.TECH_API_URL || "https://spireonebackend.carspirethailand.workers.dev";
-  var LKEY = "cendon_line_login", LID = "cendon_line_id";
-  var LABEL = T("เข้าสู่ระบบด้วย LINE","Log in with LINE");
-  var qs = new URLSearchParams(location.search);
-  var lineBusy = qs.has("state") && (qs.has("code") || qs.has("error"));
-  var lineId = "";
-  function lineBtn(on, text){ var b = $("bLine"); b.disabled = !on || !auth; b.querySelector("span").textContent = text || LABEL }
-  function showLine(id){ lineId = id || ""; $("bLine").hidden = !lineId }
-  lineBtn(true);
-  /* จำ clientId ไว้ เปิดครั้งหน้าปุ่มขึ้นทันที ไม่กระโดดตอนโหลด */
-  try{ showLine(localStorage.getItem(LID)) }catch(e){}
-  fetch(API + "/api/auth/line/config", { cache:"no-store" })
-    .then(function(r){ return r.json() })
-    .then(function(d){
-      showLine(d.clientId);
-      try{ d.clientId ? localStorage.setItem(LID, d.clientId) : localStorage.removeItem(LID) }catch(e){}
-    }).catch(function(){});
-  /* กดแล้วกดย้อนกลับจากหน้า LINE — ปุ่มต้องกดได้อีก */
-  addEventListener("pageshow", function(e){ if(e.persisted && !lineBusy) lineBtn(true) });
-
-  function rnd(){
-    var a = new Uint8Array(16); crypto.getRandomValues(a);
-    return Array.prototype.map.call(a, function(x){ return (x + 256).toString(16).slice(1) }).join("");
-  }
-  $("bLine").onclick = function(){
-    if(!lineId || !auth) return;
-    /* state กันหน้าอื่นแอบส่ง code มาให้ · nonce ผูกโทเคนของ LINE กับการกดครั้งนี้
-       เก็บใน localStorage (ไม่ใช่ sessionStorage) เพราะ LINE บนมือถืออาจส่งกลับมาในแท็บใหม่ */
-    var st = rnd(), nonce = rnd();
-    try{ localStorage.setItem(LKEY, JSON.stringify({ state:st, nonce:nonce, next:nextUrl(), at:Date.now() })) }
-    catch(e){ return warn(T("เบราว์เซอร์นี้ปิดการเก็บข้อมูล ล็อกอินด้วย LINE ไม่ได้","This browser blocks storage, so LINE sign-in can't work here.")) }
-    lineBtn(false, T("กำลังเปิด LINE…","Opening LINE…"));
-    location.href = "https://access.line.me/oauth2/v2.1/authorize?" + new URLSearchParams({
-      response_type:"code", client_id:lineId, redirect_uri:location.origin + "/login",
-      state:st, scope:"profile openid", nonce:nonce,
-      bot_prompt:"aggressive",            /* ชวนเพิ่มเพื่อน LINE ของ Cendon ต่อเลย = ได้แจ้งเตือนงานทาง LINE */
-      ui_locales:lang === "en" ? "en" : "th"
-    }).toString().replace(/\+/g, "%20");
-  };
-
-  /* LINE ส่งกลับมาที่หน้านี้ */
-  async function lineReturn(){
-    var saved = null;
-    try{ saved = JSON.parse(localStorage.getItem(LKEY) || "null"); localStorage.removeItem(LKEY) }catch(e){}
-    var code = qs.get("code"), state = qs.get("state"), err = qs.get("error");
-    var dest = saved && /^\/(?![\/\\])/.test(saved.next || "") ? saved.next : "/";
-    /* ลบ code ออกจากแถบที่อยู่ — รีเฟรชแล้วไม่ส่งซ้ำ และไม่ค้างในประวัติ */
-    history.replaceState(null, "", "/login" + (dest !== "/" ? "?next=" + encodeURIComponent(dest) : ""));
-    var fail = function(msg){ lineBusy = false; lineBtn(true); if(msg) warn(msg) };
-    if(err) return fail(err === "access_denied" ? "" : T("LINE ยกเลิกการเข้าสู่ระบบ ลองใหม่อีกครั้ง","LINE cancelled the sign-in. Please try again."));
-    if(!auth) return fail(T("ระบบล็อกอินยังไม่พร้อม ลองใหม่อีกครั้ง","Sign-in is unavailable right now."));
-    if(!saved || saved.state !== state || Date.now() - saved.at > 15 * 60e3)
-      return fail(T("หมดเวลาหรือข้อมูลไม่ตรงกัน กดเข้าสู่ระบบด้วย LINE อีกครั้ง","That sign-in expired. Tap Log in with LINE again."));
-    showLine(lineId || "-"); lineBtn(false, T("กำลังเข้าสู่ระบบด้วย LINE…","Signing in with LINE…"));
-    $("bGoogle").disabled = true;
-    try{
-      var r = await fetch(API + "/api/auth/line", { method:"POST", headers:{ "Content-Type":"application/json" },
-        body:JSON.stringify({ code:code, redirectUri:location.origin + "/login", nonce:saved.nonce }) });
-      var d = {}; try{ d = await r.json() }catch(e){}
-      if(!r.ok || !d.token) throw new Error(d.error || T("ลองใหม่อีกครั้ง","Please try again"));
-      var u = (await auth.signInWithCustomToken(d.token)).user;
-      /* ชื่อและรูปจาก LINE — ใส่เฉพาะตอนยังว่าง ไม่ทับชื่อที่ผู้ใช้แก้เองในแอป */
-      if(u && ((!u.displayName && d.name) || (!u.photoURL && d.picture)))
-        await u.updateProfile({ displayName:u.displayName || d.name || null, photoURL:u.photoURL || d.picture || null }).catch(function(){});
-      location.replace(dest);
-    }catch(e){
-      $("bGoogle").disabled = location.protocol === "file:";
-      fail(T("เข้าสู่ระบบด้วย LINE ไม่สำเร็จ: ","LINE sign-in failed: ") + ((e && e.message) || e));
-    }
-  }
-  if(lineBusy) lineReturn();
-
-  /* ล็อกอินอยู่แล้วก็ไม่ต้องให้กดซ้ำ พาเข้าแอปเลย
-     (ยกเว้นตอนกำลังรับผลจาก LINE — ต้องใส่ชื่อ/รูปให้เสร็จก่อนค่อยไป) */
-  if(auth) auth.onAuthStateChanged(function(u){ if(u && !lineBusy) location.replace(nextUrl()) });
+  /* ล็อกอินอยู่แล้วก็ไม่ต้องให้กดซ้ำ พาเข้าแอปเลย */
+  if(auth) auth.onAuthStateChanged(function(u){ if(u) location.replace(nextUrl()) });
 
   $("bGoogle").onclick = async function(){
     if(!auth) return;

@@ -267,13 +267,13 @@ css.textContent=`
 .svp-load span:nth-child(2){animation-delay:.15s}.svp-load span:nth-child(3){animation-delay:.3s}
 @keyframes svpDot{0%,100%{opacity:.25}50%{opacity:1}}
 body.svp-on #cxa-fab{display:none!important}
-/* คอมกลาง (900–1199): แผงลอยทับด้านขวา · จอใหญ่ (1200+): แชตหดไปฝั่งซ้าย เหลืออย่างน้อย ~460px แบบ Fastwork */
+/* คอม: แผงขวา แชตหดไปฝั่งซ้ายแบบ Fastwork และซ่อนแถบเมนูข้างระหว่างเปิดแผง
+   (เดิมเมนูข้าง + แผง บีบแชตเหลือแคบเกิน) ปิดแผงแล้วทุกอย่างกลับที่เดิม */
 @media(min-width:900px){
-  .svp{top:12px;right:12px;bottom:12px;width:min(560px,calc(100vw - 24px));border-radius:18px;border:1px solid var(--line,rgba(0,0,0,.1));box-shadow:0 24px 60px -24px rgba(0,0,0,.35);transform:translateX(24px)}
-}
-@media(min-width:1200px){
-  .svp{width:clamp(480px,calc(100vw - 760px),1040px)}
-  body.svp-on .colwrap{margin-right:calc(clamp(480px,calc(100vw - 760px),1040px) + 24px);transition:margin-right .35s cubic-bezier(.32,.72,0,1)}
+  .svp{top:12px;right:12px;bottom:12px;width:clamp(440px,52vw,1040px);border-radius:18px;border:1px solid var(--line,rgba(0,0,0,.1));box-shadow:0 24px 60px -24px rgba(0,0,0,.35);transform:translateX(24px)}
+  body.svp-on{--rail:0px}
+  body.svp-on .side,body.svp-on .side-scrim{display:none!important}
+  body.svp-on .colwrap{margin-right:calc(clamp(440px,52vw,1040px) + 24px);transition:margin-right .35s cubic-bezier(.32,.72,0,1)}
 }
 @media(max-width:899px){
   .svp{inset:0;padding-top:env(safe-area-inset-top);transform:translateY(16px)}

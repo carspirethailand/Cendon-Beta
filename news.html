@@ -6668,6 +6668,15 @@ function body(){
       ${row("ti-download",t("ดาวน์โหลดข้อมูลของฉัน","Download my data"),
         t("บทสนทนาและข้อมูลรถทั้งหมดเป็นไฟล์ JSON","Every conversation and car record as JSON"),
         `<button class="set-btn" data-do="export">${t("ดาวน์โหลด","Download")}</button>`)}
+      ${u.uid||u.email?"":row("ti-login",t("ยังไม่ได้เข้าสู่ระบบ","Not signed in"),
+        t("เข้าสู่ระบบเพื่อเก็บรถ ใบงาน และรับแจ้งเตือน","Sign in to keep your cars, jobs and alerts"),
+        `<a class="set-btn primary" style="margin-top:0" href="./login?next=${encodeURIComponent(location.pathname+location.search)}">${t("เข้าสู่ระบบ","Sign in")}</a>`)}
+      <section data-line-card style="display:none;margin-top:26px">
+        <h2>${t("แจ้งเตือนทาง LINE","LINE notifications")}</h2><div data-line-connect></div></section>
+      ${["owner","admin","moderator"].includes(u.role)?`<a class="set-ext" href="./admin" style="margin-top:14px">
+        <i class="ti ti-shield-lock"></i><span><b>${t("แผงควบคุมแอดมิน","Admin panel")}</b>
+        <small>${t("จัดการผู้ใช้ ช่าง และตั้งค่าเว็บ","Users, mechanics and site settings")}</small></span>
+        <i class="ti ti-arrow-up-right"></i></a>`:""}
       <h2>${t("บัญชีและความปลอดภัย","Account and safety")}</h2>
       ${(window.spireDangerHTML&&window.spireDangerHTML())||""}`;
   }
@@ -14809,5 +14818,6 @@ window.switchView=function(v){
 <script src="feature-ai.js?v=1"></script>
 <script src="fluid.js" defer></script>
 <script src="crop.js" defer></script>
+<script src="cendon-line.js" defer></script>
 </body>
 </html>

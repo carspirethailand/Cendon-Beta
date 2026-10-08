@@ -4471,48 +4471,9 @@ window.spireI18nCoverage=code=>{
 
   <div class="main">
     <!-- HOME / DASHBOARD -->
-    <section class="view active" id="v-profile">
-      <div class="scroll">
-        <div class="phead">
-          <div class="pic" id="pPic"></div>
-          <div><h2 id="pName" data-i18n="profile.guest">ผู้มาเยือน</h2><div class="em" id="pEmail" data-i18n="profile.guestsub">ยังไม่ได้เข้าสู่ระบบ</div>
-            <span class="rolechip" id="pRole" style="display:none"><i class="ti ti-shield-check"></i> ผู้ดูแลระบบ</span></div>
-        </div>
-        <div class="card set-card">
-          <h3 data-i18n="set.lang">ภาษา / Language</h3>
-          <p class="d" data-i18n="set.langd">เลือกภาษาที่ใช้ในเว็บไซต์ (มีผลกับข้อความและ AI)</p>
-          <div class="lang-grid" id="langSeg" style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px;">
-            <button class="btn" data-l="th">ไทย</button>
-            <button class="btn" data-l="en">English</button>
-            <button class="btn" data-l="ja">日本語</button>
-            <button class="btn" data-l="zh">中文</button>
-            <button class="btn" data-l="de">Deutsch</button>
-            <button class="btn" data-l="es">Español</button>
-          </div>
-        </div>
-        
-        <div class="card set-card">
-          <h3 data-i18n="set.theme">ธีมและสีของระบบ</h3>
-          <p class="d" data-i18n="set.themed">เลือกธีมสีที่ต้องการเปลี่ยนสำหรับเว็บไซต์</p>
-          <div class="theme-grid-profile"></div>
-        </div>
-        
-        <div class="card set-card">
-          <h3 data-i18n="set.opacity">ความชัดเจนของพื้นหลังการาจ</h3>
-          <p class="d" data-i18n="set.opacityd">ปรับระดับความ visible ของเส้นโครงสร้างรถ 3D</p>
-          <input type="range" class="slider" min="0" max="0.6" step="0.05" id="profileOpacitySlider" oninput="setWireframeOpacity(this.value)" style="width:100%; margin-top:8px;">
-        </div>
-        <!-- แจ้งเตือนทาง LINE (cendon-line.js วาดเองเมื่อล็อกอินแล้ว · ยังไม่ได้ตั้ง LINE ที่หลังบ้าน = การ์ดว่าง) -->
-        <div class="card set-card" id="lineCard" data-line-card style="display:none"><h3>LINE</h3><div data-line-connect></div></div>
-        <div class="card set-card"><h3 data-i18n="set.account">บัญชี</h3><p class="d" data-i18n="set.accountd">เข้าสู่ระบบด้วย Google เพื่อใช้ Admin และจดจำข้อมูล</p>
-          <div id="accountBox"></div></div>
-        <div class="card set-card" id="adminCard" style="display:none">
-          <h3><i class="ti ti-shield-lock"></i> <span data-i18n="menu.admin">แผงควบคุมแอดมิน</span></h3>
-          <p class="d" data-i18n="set.admind">จัดการผู้ใช้ ยศ นิตยสาร สถิติ และตั้งค่าเว็บทั้งหมด</p>
-          <button class="btn primary" onclick="location.href='/admin'"><i class="ti ti-external-link"></i> <span data-i18n="set.openadmin">เปิดแผงควบคุม</span></button>
-        </div>
-      </div>
-    </section>
+    <!-- หน้าโปรไฟล์แบบเก่า (ธีมเยอะ ภาษา พื้นหลังการาจ) เอาออกแล้ว — /profile เปิดหน้าตั้งค่าแบบใหม่ทับเต็มจอแทน
+         section เปล่าเก็บไว้ให้โค้ดที่สลับ view ยังหาเจอ -->
+    <section class="view active" id="v-profile"></section>
   </div>
 </div>
 
@@ -6700,6 +6661,15 @@ function body(){
       ${row("ti-download",t("ดาวน์โหลดข้อมูลของฉัน","Download my data"),
         t("บทสนทนาและข้อมูลรถทั้งหมดเป็นไฟล์ JSON","Every conversation and car record as JSON"),
         `<button class="set-btn" data-do="export">${t("ดาวน์โหลด","Download")}</button>`)}
+      ${u.uid||u.email?"":row("ti-login",t("ยังไม่ได้เข้าสู่ระบบ","Not signed in"),
+        t("เข้าสู่ระบบเพื่อเก็บรถ ใบงาน และรับแจ้งเตือน","Sign in to keep your cars, jobs and alerts"),
+        `<a class="set-btn primary" style="margin-top:0" href="./login?next=${encodeURIComponent(location.pathname+location.search)}">${t("เข้าสู่ระบบ","Sign in")}</a>`)}
+      <section data-line-card style="display:none;margin-top:26px">
+        <h2>${t("แจ้งเตือนทาง LINE","LINE notifications")}</h2><div data-line-connect></div></section>
+      ${["owner","admin","moderator"].includes(u.role)?`<a class="set-ext" href="./admin" style="margin-top:14px">
+        <i class="ti ti-shield-lock"></i><span><b>${t("แผงควบคุมแอดมิน","Admin panel")}</b>
+        <small>${t("จัดการผู้ใช้ ช่าง และตั้งค่าเว็บ","Users, mechanics and site settings")}</small></span>
+        <i class="ti ti-arrow-up-right"></i></a>`:""}
       <h2>${t("บัญชีและความปลอดภัย","Account and safety")}</h2>
       ${(window.spireDangerHTML&&window.spireDangerHTML())||""}`;
   }
@@ -6866,7 +6836,14 @@ function open(which){
   v.classList.add("on");
   render();
 }
-function close(){ const v=$("v-settings"); if(v)v.classList.remove("on") }
+/* ที่ /profile หน้าตั้งค่าคือทั้งหน้า (ไม่มีหน้าเก่าข้างหลังแล้ว) — กดกลับคือออกจากหน้านี้ */
+function close(){
+  if(window.__SPIRE_PAGE__==="profile"){
+    let fromApp=false; try{ fromApp=!!document.referrer&&new URL(document.referrer).origin===location.origin }catch(e){}
+    if(fromApp&&history.length>1)history.back(); else location.href="./";
+    return;
+  }
+  const v=$("v-settings"); if(v)v.classList.remove("on") }
 
 /* เมนูบัญชี: เพิ่มรายการ "ตั้งค่า" ที่พาเข้าหน้านี้ และให้ Skills เข้าถึงได้
    จากเว็บหลักด้วย ไม่ต้องเข้าห้องแชตก่อน */
@@ -6909,7 +6886,9 @@ setTimeout(mountMenu,800); setTimeout(mountMenu,2200);
    ไฟล์ยังอยู่เพื่อไม่ให้ลิงก์เดิมพัง แต่ไม่มีหน้าโปรไฟล์แยกอีกแล้ว */
 function autoOpenOnProfilePage(){
   if(window.__SPIRE_PAGE__!=="profile")return;
-  open("acct");
+  const v=$("v-settings");
+  if(v&&v.classList.contains("on"))return;   /* เปิดอยู่แล้ว ไม่รีเซ็ตแท็บที่ผู้ใช้กดไปแล้ว */
+  open(new URLSearchParams(location.search).get("tab")||"acct");
 }
 if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",autoOpenOnProfilePage);
 else autoOpenOnProfilePage();

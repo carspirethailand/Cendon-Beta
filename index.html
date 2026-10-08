@@ -939,6 +939,11 @@ body{background:var(--bg);letter-spacing:-.005em}
 .qa:hover .sq{border-color:var(--co)!important}.qa:hover .sq .ti{color:var(--co)}
 .qa.on .sq{border-color:var(--co)!important}.qa.on .sq .ti{color:var(--co)}
 .qa.on span:last-child{color:var(--ink);box-shadow:inset 0 -2px 0 var(--co)}
+/* ไอคอน 3D: ไม่มีกรอบ ให้วัตถุลอยแบบเดียวกับแถวหมวด · เลือกแล้วดูที่เส้นส้มใต้ชื่อ */
+.qa .sq:has(img){background:none!important;border-color:transparent!important;overflow:visible}
+.qa .sq img{position:absolute;inset:-16%;width:132%;height:132%;object-fit:contain;transition:transform .35s var(--spring)}
+.qa .sq:has(img) .ti{display:none}
+.qa:hover .sq img,.qa.on .sq img{transform:scale(1.08)}
 /* การ์ดฟีเจอร์ + แผนที่ + การ์ดช่าง: ผิวกลาง ไม่มีไล่สี */
 .feat{background:var(--surface)!important;color:var(--ink)!important;border:1px solid var(--line)!important;box-shadow:none!important}
 .feat small,.feat p{color:var(--muted)!important}
@@ -2191,7 +2196,7 @@ function renderCarousel(){
 const GRID=["air","eng","tyre","ev","body","mobile","urgent","map"];
 function drawGrid(){
   $("grid").innerHTML=GRID.map((k,i)=>{const c=k==="map"?{th:"แผนที่",ic:"ti-map-2",c:"#0284c7",c2:"#38bdf8"}:CAT[k];
-    return `<button class="qa e3 ${F.cat===k?"on":""}" data-k="${k}" style="--c1:${c.c};--c2:${c.c2||c.c};--soft:${c.c}29;animation-delay:${i*35}ms"><i class="ti ${c.ic} deco"></i><span class="sq"><i class="ti ${c.ic}"></i></span><span>${c.th}</span></button>`}).join("");
+    return `<button class="qa e3 ${F.cat===k?"on":""}" data-k="${k}" style="--c1:${c.c};--c2:${c.c2||c.c};--soft:${c.c}29;animation-delay:${i*35}ms"><i class="ti ${c.ic} deco"></i><span class="sq">${catImg(k)}<i class="ti ${c.ic}"></i></span><span>${c.th}</span></button>`}).join("");
   $("grid").querySelectorAll(".qa").forEach(b=>b.onclick=()=>{
     const k=b.dataset.k;
     if(k==="map")return setView("map");
@@ -2347,9 +2352,11 @@ const topOf=id=>{const r=RAIL.find(x=>x.id===id);return r&&!NOT_GCAT.includes(r.
 const OTHER_CAT={id:"other",th:"บริการอื่น ๆ",ic:"ti-tool",c:"#64748b",c2:"#a3b1c6"};
 /* หมวดของโพสต์: หมวดที่ช่างเลือก → โพสต์เก่าที่ยังไม่มีหมวด เดาจากคำในหัวข้อ → ไม่ได้จริง ๆ เป็น "อื่น ๆ" */
 function gigCat(g){for(const c of g.cats||[])if(topOf(c))return c;const w=catsOf((g.title||"")+" "+(g.body||""));return w[0]||"other"}
-/* รูปไอคอน 3D: ใส่ชื่อหมวดที่มีไฟล์จริงใน img/cat/ ลงรายการนี้ — ไม่มีไฟล์ไม่ต้องโหลด (กันคำขอ 404 ทั้งแถวบนมือถือ) */
-const CAT_IMG=new Set([]);
-const railIc=c=>`<span class="lx-ri" style="--a:${c.c||"#F07A36"};--b:${c.c2||c.c||"#F07A36"}">${CAT_IMG.has(c.id)?`<img src="img/cat/${c.id}.png" alt="" onerror="this.remove()"/>`:""}<i class="ti ${c.ic}"></i></span>`;
+/* รูปไอคอน 3D: ใส่ชื่อหมวดที่มีไฟล์จริงใน img/cat/ ลงรายการนี้ — ไม่มีไฟล์ไม่ต้องโหลด (กันคำขอ 404 ทั้งแถวบนมือถือ)
+   ไฟล์เป็น WebP 256px พื้นใส (ย่อจากต้นฉบับ ~2 MB เหลือ ~15 KB) · โหลดไม่ได้ก็กลับไปใช้ไอคอนเส้นเดิมเอง */
+const CAT_IMG=new Set(["all","air","air-clean","eng","oil","service","gear","cool","exhaust","tyre","brake","susp","align","ev","battery","audio","body","detail","glass","wash","mobile","tow","urgent","map","other"]);
+const catImg=id=>CAT_IMG.has(id)?`<img src="img/cat/${id}.webp" alt="" decoding="async" onerror="this.remove()"/>`:"";
+const railIc=c=>`<span class="lx-ri" style="--a:${c.c||"#F07A36"};--b:${c.c2||c.c||"#F07A36"}">${catImg(c.id)}<i class="ti ${c.ic}"></i></span>`;
 function profCard(t,i){
   const cov=t.cover,av=t.avatar,d=t.dist!=null?distTxt(t.dist):"";
   return `<button class="lx-pc" data-id="${esc(t.id)}" style="animation-delay:${Math.min(i*50,500)}ms">

@@ -40,3 +40,19 @@ test('category rail has mandatory column snapping and no faded edge in any theme
   assert.ok(!css.includes('x proximity')&&!css.includes('mask:linear-gradient'));
   assert.match(css,/scroll-padding-inline:4px/);
 });
+test('mobile pages contain eight consecutive icons and stop at each page',()=>{
+  assert.match(css,/button:nth-child\(8n \+ 1\)\{scroll-snap-align:start;scroll-snap-stop:always\}/);
+  assert.match(css,/min-height:90px;.*scroll-snap-align:none/);
+  for(const count of [1,7,8,9,24,25,31]){
+    const pages=Array.from({length:Math.ceil(count/8)},(_,p)=>Array.from({length:Math.min(8,count-p*8)},(_,i)=>p*8+i));
+    assert.deepEqual(pages.flat(),Array.from({length:count},(_,i)=>i));
+  }
+});
+test('page indicators are accessible and leave native gesture and category handlers alone',()=>{
+  const js=readFileSync(new URL('../category-pages.js',import.meta.url),'utf8');
+  assert.ok(page.includes('src="category-pages.js" defer'));
+  assert.match(js,/aria-current/);assert.match(js,/aria-label/);assert.match(js,/reduced.matches\?'auto':'smooth'/);
+  assert.ok(!js.includes('preventDefault')&&!js.includes('innerHTML')&&!js.includes('onclick'));
+  assert.match(js,/observe\(rail,\{childList:true\}\)/);
+  assert.ok(readFileSync(new URL('../sw.js',import.meta.url),'utf8').includes("'./category-pages.js'"));
+});

@@ -6,6 +6,7 @@
 #vMenu .lx-gsecs{gap:32px}
 #vMenu .lx-rail{-webkit-mask:none;mask:none;scroll-snap-type:x mandatory}
 #vMenu .lx-rail button{scroll-snap-align:start}
+#vMenu .lx-pages{display:none}
 #vMenu .lx-quick button:focus-visible,#vMenu .lx-rail button:focus-visible{
   outline:2px solid var(--co);outline-offset:3px;
 }
@@ -36,7 +37,15 @@
     scroll-snap-type:x mandatory;scroll-padding-inline:4px;
     -webkit-mask:none;mask:none;
   }
-  #vMenu .lx-rail button{box-sizing:border-box;width:auto;min-width:0;min-height:90px;gap:8px;padding:6px 2px 8px;scroll-snap-align:start}
+  #vMenu .lx-rail button{box-sizing:border-box;width:auto;min-width:0;min-height:90px;gap:8px;padding:6px 2px 8px;scroll-snap-align:none}
+  /* A page is four columns / eight consecutive buttons, not a skipped column. */
+  #vMenu .lx-rail button:nth-child(8n + 1){scroll-snap-align:start;scroll-snap-stop:always}
+  #vMenu .lx-pages{display:flex;justify-content:center;align-items:center;gap:0;margin:0 auto 4px}
+  #vMenu .lx-pages[hidden]{display:none}
+  #vMenu .lx-pages button{display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;background:none;cursor:pointer}
+  #vMenu .lx-pages button::before{content:"";width:6px;height:6px;border-radius:99px;background:var(--muted);opacity:.35;transition:width .18s ease,opacity .18s ease}
+  #vMenu .lx-pages button[aria-current="true"]::before{width:24px;background:var(--ink);opacity:1}
+  #vMenu .lx-pages button:focus-visible{outline:2px solid var(--co);outline-offset:-4px;border-radius:12px}
   #vMenu .lx-rail .lx-ri{width:46px;height:46px;flex:none}
   #vMenu .lx-rail .lx-rt{width:100%;min-height:30px;font-size:11px;line-height:15px;text-wrap:pretty}
   #vMenu .lx-sec{margin-top:28px}
@@ -44,6 +53,7 @@
   #vMenu .lx-sh h2{font-size:20px;line-height:1.35}
   #vMenu .lx-gsh{margin-bottom:14px}
 }
+@media(prefers-reduced-motion:reduce){#vMenu .lx-pages button::before{transition:none}}
 @media(hover:none){
   #vMenu .lx-rail button:hover .lx-ri,#vMenu .lx-quick button:hover{transform:none}
 }

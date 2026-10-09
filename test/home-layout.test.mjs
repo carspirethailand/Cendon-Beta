@@ -34,3 +34,9 @@ test('touch controls and quick action layout stay usable without new motion',()=
 test('new stylesheet is available in the service worker core',()=>{
   const sw=readFileSync(new URL('../sw.js',import.meta.url),'utf8');assert.ok(sw.includes("'./home-layout.css'"));
 });
+test('category rail has mandatory column snapping and no faded edge in any theme',()=>{
+  assert.match(css,/#vMenu \.lx-rail\{-webkit-mask:none;mask:none;scroll-snap-type:x mandatory\}/);
+  assert.match(css,/#vMenu \.lx-rail button\{scroll-snap-align:start\}/);
+  assert.ok(!css.includes('x proximity')&&!css.includes('mask:linear-gradient'));
+  assert.match(css,/scroll-padding-inline:4px/);
+});

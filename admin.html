@@ -1992,6 +1992,15 @@ td .empty::before,td.empty::before{display:none}
           <button class="btn primary" onclick="saveFeatures()"><i class="ti ti-device-floppy"></i> บันทึกฟีเจอร์</button>
         </div>
         <div class="card">
+          <h3><img src="./img/line-logo.svg" alt="" width="18" height="18" style="vertical-align:-3px"> การเชื่อม LINE</h3>
+          <div class="sub">บอท LINE ไม่ตอบ ดูที่นี่ก่อน — ตรวจทีละขั้นว่าติดตรงไหน และตั้ง Webhook ให้ได้ในกดเดียว</div>
+          <div id="lineStat" class="sub">กำลังตรวจ…</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+            <button class="btn primary" id="lineHookBtn" onclick="fixLineHook()"><i class="ti ti-plug-connected"></i> ตั้งและทดสอบ Webhook</button>
+            <button class="btn" onclick="loadLineStatus()"><i class="ti ti-refresh"></i> ตรวจอีกครั้ง</button>
+          </div>
+        </div>
+        <div class="card">
           <h3><img src="./img/line-logo.svg" alt="" width="18" height="18" style="vertical-align:-3px"> เมนูในห้องแชต LINE</h3>
           <div class="sub">6 ปุ่มใต้ห้องแชต LINE ของ Cendon แต่ละปุ่มเปิดแอปในเบราว์เซอร์ของเครื่อง · กดตั้งครั้งเดียวใช้กับทุกคน (เปลี่ยนรูปเมื่อไรค่อยกดใหม่)</div>
           <img src="./img/line-richmenu.png" alt="ตัวอย่างเมนู LINE" loading="lazy" style="display:block;width:100%;max-width:560px;margin:4px 0 14px;border:1px solid var(--line);border-radius:12px">
@@ -2885,7 +2894,7 @@ async function enterAdmin(){
   if(can("cars"))loadCars();
   if(can("shop"))loadShop();
   if(can("system"))loadHealth();
-  if(can("config")&&rank(me.role)>=rank("admin")){loadConfig();loadLineMenu()}
+  if(can("config")&&rank(me.role)>=rank("admin")){loadConfig();loadLineMenu();loadLineStatus()}
   if(can("audit")&&rank(me.role)>=rank("admin"))loadAudit();
 }
 
@@ -5245,6 +5254,34 @@ async function loadConfig(){
     featureState=c.features||{};
     if($("featureRows"))renderFeatures();
   }catch(e){}
+}
+/* การเชื่อม LINE — หลังบ้านตรวจค่าลับ token บัญชี OA และ Webhook ให้ แล้วบอกเป็นข้อ ๆ ว่าติดตรงไหน */
+const lnTime=ms=>ms?new Date(ms).toLocaleString("th-TH",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"";
+function lineRow(ok,label,val){return `<div style="display:flex;gap:10px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--line2)">
+  <i class="ti ${ok?"ti-circle-check":"ti-circle-x"}" style="color:${ok?"#06C755":"#E5484D"};font-size:17px;flex:none;transform:translateY(2px)"></i>
+  <span style="flex:none;width:150px;color:var(--mut)">${label}</span><span style="min-width:0;overflow-wrap:anywhere">${val}</span></div>`}
+async function loadLineStatus(){
+  const el=$("lineStat");if(!el)return;el.textContent="กำลังตรวจ…";
+  try{const s=await api("/api/admin/line/status"),w=s.webhook||{},n=s.notes||{};
+    const wantOk=w.endpoint===s.want;
+    el.innerHTML=`<div style="margin-top:6px;font-size:13px">
+      ${lineRow(s.secret&&s.token,"ค่าลับในหลังบ้าน",`Channel secret ${s.secret?"✓":"✗ ยังไม่มี"} · Access token ${s.token?"✓":"✗ ยังไม่มี"}`)}
+      ${lineRow(!!s.bot,"บัญชี LINE OA",s.bot?`${esc(s.bot.name)} <b>${esc(s.bot.basicId)}</b>`:(s.token?"token ใช้ไม่ได้":"—"))}
+      ${lineRow(wantOk,"Webhook URL",w.endpoint?esc(w.endpoint):"ยังไม่ได้ตั้ง")}
+      ${lineRow(!!w.active,"Use webhook",w.active?"เปิดอยู่":"ปิดอยู่")}
+      ${lineRow(!!n.event,"ข้อความล่าสุดจาก LINE",n.event?lnTime(n.event.at):"ยังไม่เคยได้รับ")}
+    </div>
+    ${s.problems.length?`<div style="margin-top:12px;padding:12px 14px;border-radius:12px;background:rgba(229,72,77,.08);border:1px solid rgba(229,72,77,.3);font-size:13px;line-height:1.6">
+        <b style="color:#E5484D">ยังไม่พร้อม — แก้ตามนี้ทีละข้อ</b><ol style="margin:6px 0 0 18px;padding:0">${s.problems.map(p=>`<li>${esc(p)}</li>`).join("")}</ol></div>`
+      :`<div style="margin-top:12px;padding:12px 14px;border-radius:12px;background:rgba(6,199,85,.1);border:1px solid rgba(6,199,85,.35);font-size:13px"><b style="color:#04913F">พร้อมแล้ว ✓</b> ลองพิมพ์ทักบอทใน LINE ได้เลย</div>`}`;
+  }catch(e){el.textContent=e.message}
+}
+async function fixLineHook(){
+  const b=$("lineHookBtn");b.disabled=true;
+  try{const r=await api("/api/admin/line/webhook",{method:"POST",body:{}});
+    toast(r.ok?"ตั้ง Webhook แล้ว และ LINE ทดสอบผ่าน":"ตั้งแล้ว แต่ทดสอบไม่ผ่าน: "+r.why,r.ok?"ti-circle-check":"ti-alert-triangle")}
+  catch(e){toast(e.message,"ti-alert-triangle")}
+  b.disabled=false;loadLineStatus();
 }
 /* เมนูในห้องแชต LINE — หลังบ้านสร้างเมนู อัปโหลดรูป แล้วตั้งให้ทุกคน (ดู line-menu.js ฝั่งหลังบ้าน) */
 async function loadLineMenu(){

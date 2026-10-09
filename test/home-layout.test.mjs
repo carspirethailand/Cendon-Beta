@@ -56,3 +56,8 @@ test('page indicators are accessible and leave native gesture and category handl
   assert.match(js,/observe\(rail,\{childList:true\}\)/);
   assert.ok(readFileSync(new URL('../sw.js',import.meta.url),'utf8').includes("'./category-pages.js'"));
 });
+test('page indicator is vertically compact with nearby services and usable tap areas',()=>{
+  assert.match(css,/width:44px;height:28px/);
+  assert.match(css,/width:4px;height:4px/);
+  assert.match(css,/\.lx-pages:not\(\[hidden\]\) \+ \.lx-sec\{margin-top:12px\}/);
+});

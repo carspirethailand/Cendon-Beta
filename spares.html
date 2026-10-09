@@ -4211,6 +4211,7 @@ a.mtab{text-decoration:none}
 <script src="stability.js" defer></script>
 <!-- หน้าตาชุดเดียวกับหน้าหลัก (สี การ์ด ปุ่ม พื้นหลัง) — โหลดท้ายสุดให้ชนะสไตล์เดิม -->
 <link rel="stylesheet" href="lux.css">
+<script src="carspec.js" defer></script>
 </head>
 <body>
 <script id="mnav0">
@@ -4647,7 +4648,7 @@ const BODY_TYPES=[
  {k:"pickup",th:"กระบะ (Pickup)",en:"Pickup"},
  {k:"mpv",th:"อเนกประสงค์ (MPV)",en:"MPV"},
  {k:"van",th:"รถตู้ (Van)",en:"Van"},
- {k:"coupe",th:"คูเป้/สปอร์ต",en:"Coupe / Sport"},
+ {k:"coupe",th:"รถสปอร์ต / คูเป้",en:"Sports car / Coupe"},
  {k:"ev",th:"รถไฟฟ้า (EV)",en:"Electric"}
 ];
 function bodyLabel(k){const b=BODY_TYPES.find(x=>x.k===k)||BODY_TYPES[0];return lang==="th"?b.th:b.en}
@@ -7776,6 +7777,8 @@ const BODY={
  mpv:{th:"เอ็มพีวี",en:"MPV",seat:7,door:5,kerb:1650,tank:60,l100:8.4,cc:2000,tire:"215/60 R17",batt:"75D23L / 65Ah",wiper:'26" + 16"',oil:"4.2 ลิตร"},
  ev:{th:"ไฟฟ้า",en:"Electric",seat:5,door:5,kerb:1720,tank:0,l100:0,cc:0,tire:"215/55 R18",batt:"12V เสริม 45Ah",wiper:'24" + 18"',oil:"— (ไม่มี)"}
 };
+BODY.coupe={th:"รถสปอร์ต / คูเป้",en:"Sports car / Coupe",seat:4,door:2,kerb:1500,tank:60,l100:10.5,cc:3000,tire:"245/40 R19",batt:"H6 / 70Ah",wiper:'22" + 20"',oil:"5.5 ลิตร"};
+BODY.van={th:"รถตู้",en:"Van",seat:12,door:4,kerb:2100,tank:70,l100:10.0,cc:2800,tire:"215/70 R15",batt:"95D31L / 80Ah",wiper:'26" + 18"',oil:"6.5 ลิตร"};
 const EVBRAND=["tesla","byd"];
 function normBrand(s){return String(s||"").trim().toLowerCase().replace(/\s+/g,"-")}
 function bodyOf(c){
@@ -7991,94 +7994,24 @@ function renderTab(){
 const row=(k,o)=>`<div class="cl-spec"><span class="k">${esc(k)}</span>
   <span class="v">${esc(o.v)}${o.est?' <span class="cl-est">'+T("ประมาณการ","EST")+'</span>':''}</span></div>`;
 
+/* แท็บสเปก/อุปกรณ์: ข้อมูลจริงจากคลังสเปกกลาง (carspec.js → /api/car-spec)
+   เดิมคำนวณจากประเภทตัวถัง (แรงม้า = cc × 0.075 ฯลฯ) รถทุกคันประเภทเดียวกันจึงได้สเปกเหมือนกันหมด — เลิกใช้แล้ว
+   ท้ายแท็บสเปกมีภาพรวมแบรนด์ (ข้อมูลทั่วไปของยี่ห้อ ไม่ใช่สเปกของรุ่น) */
+function brandGrp(c){
+  const br=BRANDS[normBrand(c.make)];
+  const age=new Date().getFullYear()-(parseInt(c.year)||new Date().getFullYear());
+  return `<div class="cl-grp"><h4>${T("ภาพรวมแบรนด์","About the brand")}</h4>
+    ${br?row(T("ประเทศต้นกำเนิด","Origin"),{v:T(br.o,br.oe),est:false})+row(T("การหาอะไหล่","Parts availability"),{v:T(br.parts,br.partsE),est:false})
+      +row(T("เครือข่ายศูนย์บริการ","Service network"),{v:T(br.svc,br.svcE),est:false}):""}
+    ${row(T("อายุรถ","Vehicle age"),{v:age+" "+T("ปี","yrs"),est:false})}
+  </div>`;
+}
 function paneSpec(c){
-  const s=specOf(c), b=s.body, br=s.brand, cf=s.confirmed;
-  const P=(k,fb)=>sv(s,k,fb);
-  const bd=bodyOf(c);
-  const fuel=s.ev?"":bd==="pickup"?T("ดีเซล","diesel")
-    :bd==="suv"?T("เบนซินหรือดีเซล","petrol or diesel"):T("เบนซิน","petrol");
-  const eng=s.ev?T("มอเตอร์ไฟฟ้า","Electric motor"):`${(b.cc/1000).toFixed(1)}L ${fuel}`;
-  return `
-  <div class="cl-grp"><h4>${T("เครื่องยนต์และการขับเคลื่อน","Powertrain")}</h4>
-    ${row(T("เครื่องยนต์","Engine"),P("engine",eng))}
-    ${s.ev?"":row(T("ความจุกระบอกสูบ","Displacement"),P("cc",b.cc+" cc"))}
-    ${row(T("แรงม้าโดยประมาณ","Power"),P("power",Math.round(b.cc*0.075)+" hp"))}
-    ${row(T("แรงบิด","Torque"),P("torque",Math.round(b.cc*0.11)+" Nm"))}
-    ${row(T("ระบบเกียร์","Gearbox"),P("gearbox",s.ev?T("เกียร์เดียว","Single speed"):T("อัตโนมัติ","Automatic")))}
-    ${row(T("ระบบขับเคลื่อน","Drive"),P("drive",bodyOf(c)==="pickup"?T("ขับหลัง / 4WD","RWD / 4WD"):T("ขับหน้า","FWD")))}
-  </div>
-  <div class="cl-grp"><h4>${T("ตัวถังและความจุ","Body & capacity")}</h4>
-    ${row(T("ประเภทตัวถัง","Body type"),{v:T(b.th,b.en),est:false})}
-    ${row(T("จำนวนที่นั่ง","Seats"),P("seats",b.seat+T(" ที่นั่ง"," seats")))}
-    ${row(T("จำนวนประตู","Doors"),{v:b.door,est:true})}
-    ${row(T("น้ำหนักตัวรถ","Kerb weight"),{v:num(b.kerb)+" kg",est:true})}
-    ${s.ev?"":row(T("ความจุถังน้ำมัน","Fuel tank"),P("tank",b.tank+" "+T("ลิตร","L")))}
-  </div>
-  <div class="cl-grp"><h4>${T("อัตราสิ้นเปลือง","Efficiency")}</h4>
-    ${s.ev
-      ? row(T("ใช้ไฟโดยประมาณ","Consumption"),{v:"16 kWh/100 "+T("กม.","km"),est:true})
-      : row(T("กินน้ำมันโดยประมาณ","Fuel economy"),P("l100",b.l100+" "+T("ลิตร/100 กม.","L/100km")))}
-    ${s.ev?"":row(T("เทียบเป็น กม./ลิตร","Equivalent"),{v:(100/b.l100).toFixed(1)+" "+T("กม./ลิตร","km/L"),est:true})}
-    ${s.ev?"":row(T("ระยะวิ่งต่อถัง","Range per tank"),{v:num(Math.round(b.tank*100/b.l100))+" "+T("กม.","km"),est:true})}
-  </div>
-  <div class="cl-grp"><h4>${T("แบรนด์และการดูแล","Brand & ownership")}</h4>
-    ${row(T("ประเทศต้นกำเนิด","Origin"),{v:T(br.o,br.oe),est:false})}
-    ${row(T("คะแนนความทนทาน","Reliability"),{v:br.rel+"/100",est:true})}
-    ${row(T("การหาอะไหล่","Parts availability"),{v:T(br.parts,br.partsE),est:false})}
-    ${row(T("เครือข่ายศูนย์บริการ","Service network"),{v:T(br.svc,br.svcE),est:false})}
-    ${row(T("อายุรถ","Vehicle age"),{v:(new Date().getFullYear()-(parseInt(c.year)||new Date().getFullYear()))+" "+T("ปี","yrs"),est:false})}
-  </div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
-    <button class="btn primary" id="clAI"><i class="ti ti-sparkles"></i> ${T("ให้ AI ยืนยันสเปก","Confirm with AI")}</button>
-    ${cf?`<button class="btn" id="clAIclear"><i class="ti ti-eraser"></i> ${T("ล้างค่าที่ยืนยัน","Clear")}</button>`:""}
-  </div>
-  <p style="font-size:11.5px;color:var(--faint);margin-top:10px;line-height:1.6">
-    <i class="ti ti-info-circle"></i> ${T(
-      "ค่าที่ติดป้าย ‘ประมาณการ’ คำนวณจากยี่ห้อ ประเภทตัวถัง และปีรถ ใช้เป็นแนวทางคร่าวๆ — กดปุ่มด้านบนให้ AI ช่วยยืนยันตัวเลขจริงของรุ่นคุณ",
-      "Values marked EST are derived from brand, body type and year as a rough guide — use the button above to have AI confirm your exact model.")}</p>`;
+  return window.CarSpec?window.CarSpec.pane(c,"spec",brandGrp(c)):brandGrp(c);
 }
 
 function paneEquip(c){
-  const yr=parseInt(c.year)||2015, s=specOf(c), cf=s.confirmed;
-  const seg=BRANDS[normBrand(c.make)]?.rel||80;
-  const has=(fromYear,premOnly)=>yr>=fromYear&&(!premOnly||seg>=82);
-  const SAFE=[
-   [T("ถุงลมนิรภัยคู่หน้า","Front airbags"),has(2008),"ti-shield"],
-   [T("ถุงลมด้านข้าง/ม่าน","Side & curtain airbags"),has(2016,true),"ti-shield"],
-   [T("เบรก ABS","ABS"),has(2010),"ti-disc"],
-   [T("ระบบกระจายแรงเบรก EBD","EBD"),has(2012),"ti-disc"],
-   [T("ควบคุมการทรงตัว ESC","Stability control"),has(2015),"ti-steering-wheel"],
-   [T("สัญญาณกันขโมย/อิมโมบิไลเซอร์","Immobiliser"),has(2012),"ti-lock"],
-   [T("กล้องมองหลัง","Reverse camera"),has(2016),"ti-camera"],
-   [T("เซนเซอร์ถอยจอด","Parking sensors"),has(2015),"ti-parking"],
-   [T("เตือนจุดอับสายตา","Blind spot monitor"),has(2019,true),"ti-eye"],
-   [T("เบรกฉุกเฉินอัตโนมัติ","Autonomous braking"),has(2019,true),"ti-alert-triangle"],
-   [T("ครูสคอนโทรลแบบแปรผัน","Adaptive cruise"),has(2020,true),"ti-car"],
-   [T("เตือนออกนอกเลน","Lane departure"),has(2019,true),"ti-road"]
-  ];
-  const COMF=[
-   [T("แอร์อัตโนมัติ","Auto climate"),has(2014),"ti-air-conditioning"],
-   [T("กุญแจอัจฉริยะ/ปุ่มสตาร์ท","Keyless & push start"),has(2014),"ti-key"],
-   [T("จอสัมผัสกลาง","Touchscreen"),has(2015),"ti-device-tablet"],
-   [T("Apple CarPlay / Android Auto"),has(2018),"ti-brand-apple"],
-   [T("เชื่อมบลูทูธ","Bluetooth"),has(2012),"ti-bluetooth"],
-   [T("พวงมาลัยมัลติฟังก์ชัน","Multifunction wheel"),has(2013),"ti-steering-wheel"],
-   [T("เบาะปรับไฟฟ้า","Power seats"),has(2017,true),"ti-armchair"],
-   [T("ซันรูฟ","Sunroof"),has(2018,true),"ti-sun"],
-   [T("ชาร์จไร้สาย","Wireless charging"),has(2020,true),"ti-battery-charging"]
-  ];
-  const grp=(title,arr)=>`<div class="cl-grp"><h4>${title}</h4><div class="cl-chips">${
-    arr.map(([n,ok,ic])=>`<span class="cl-chip ${ok?"yes":"no"}">
-      <i class="ti ${ok?"ti-check":"ti-minus"}"></i>${esc(n)}</span>`).join("")}</div></div>`;
-  const extra=cf&&Array.isArray(cf.safety)&&cf.safety.length
-    ? `<div class="cl-grp"><h4>${T("ยืนยันโดย AI","Confirmed by AI")}</h4><div class="cl-chips">${
-        cf.safety.map(x=>`<span class="cl-chip yes"><i class="ti ti-check"></i>${esc(x)}</span>`).join("")}</div></div>`
-    : "";
-  return extra+grp(T("ความปลอดภัย","Safety"),SAFE)+grp(T("ความสะดวกสบาย","Comfort & tech"),COMF)+
-   `<p style="font-size:11.5px;color:var(--faint);line-height:1.6">
-     <i class="ti ti-info-circle"></i> ${T(
-       "รายการนี้ประเมินจากปีรถและระดับของแบรนด์ รุ่นย่อยต่างกันอุปกรณ์อาจไม่เท่ากัน — กด ‘ให้ AI ยืนยันสเปก’ ในแท็บสเปกเพื่อความแม่นยำ",
-       "Estimated from model year and brand tier; trim levels differ. Use ‘Confirm with AI’ in the Specs tab for accuracy.")}</p>`;
+  return window.CarSpec?window.CarSpec.pane(c,"equip"):"";
 }
 
 /* แท็บ "บันทึกของรถ" — เจ้าของกรอกเองได้ทุกช่อง

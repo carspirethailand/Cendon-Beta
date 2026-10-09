@@ -1881,6 +1881,15 @@ td .empty::before,td.empty::before{display:none}
             <tbody id="carRows"><tr><td colspan="5" class="empty">กำลังโหลด...</td></tr></tbody>
           </table></div>
         </div>
+        <!-- คลังสเปกรถ: ข้อมูลที่ AI ค้นให้ (ครั้งเดียวต่อรุ่น) — รุ่นที่มีคนแจ้งผิดขึ้นก่อน -->
+        <div class="card" style="margin-top:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px">
+            <h3 style="font-size:16px;font-weight:700">คลังสเปกรถ</h3>
+            <button class="btn sm" onclick="loadSpecs()"><i class="ti ti-refresh"></i> รีเฟรช</button></div>
+          <p class="sub" style="margin:0 0 14px">AI ค้นสเปกจริงครั้งเดียวต่อ ยี่ห้อ/รุ่น/ปี (สองรอบแล้วเทียบกัน) ทุกคนใช้ชุดเดียวกัน ·
+            ผู้ใช้แจ้งข้อมูลผิดได้ · <b>ค้นใหม่</b> = ให้ AI หาใหม่และล้างรายงาน · <b>ยืนยันแล้ว</b> = ทีมงานตรวจแล้ว ล็อกไม่ให้ AI ทับ</p>
+          <div id="specRows"><div class="empty">กำลังโหลด...</div></div>
+        </div>
       </section>
 
       <!-- SHOP -->
@@ -2916,7 +2925,7 @@ async function enterAdmin(){
   if(can("overview"))loadStats();
   if(can("users"))loadUsers();
   if(can("magazine"))loadMag();
-  if(can("cars"))loadCars();
+  if(can("cars")){loadCars();loadSpecs()}
   if(can("shop"))loadShop();
   if(can("system"))loadHealth();
   if(can("config")&&rank(me.role)>=rank("admin")){loadConfig();loadLineMenu();loadLineStatus()}
@@ -5387,6 +5396,40 @@ async function loadCars(){
       <td style="color:var(--mut);font-size:12.5px">${c.created_at?new Date(c.created_at).toLocaleDateString("th-TH",{day:"numeric",month:"short",year:"2-digit"}):"-"}</td>
     </tr>`).join("");
   }catch(e){$("carRows").innerHTML=`<tr><td colspan="5" class="empty">โหลดไม่ได้: ${esc(e.message)}</td></tr>`}
+}
+
+/* ═══════════ คลังสเปกรถ ═══════════ */
+const SPEC_ST={ready:["พร้อมใช้","var(--ok,#16a34a)"],verified:["ทีมงานยืนยันแล้ว","var(--ok,#16a34a)"],pending:["กำลังค้น","var(--mut)"],
+  failed:["ค้นไม่สำเร็จ","var(--danger,#E5484D)"],notfound:["ไม่พบรุ่นนี้","var(--warn,#d97706)"]};
+async function loadSpecs(){
+  const el=$("specRows");if(!el)return;
+  try{const arr=await api("/api/admin/car-specs");
+    if(!arr.length){el.innerHTML=`<div class="empty">ยังไม่มีรุ่นในคลัง — จะเพิ่มเองเมื่อผู้ใช้เพิ่มรถหรือเปิดแท็บสเปก</div>`;return}
+    el.innerHTML=arr.map(r=>{const st=SPEC_ST[r.status]||[r.status,"var(--mut)"],sc=r.score||{};
+      return `<div style="display:flex;gap:12px;align-items:flex-start;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line2);flex-wrap:wrap">
+        <div style="min-width:0;flex:1">
+          <div style="font-weight:600">${esc(r.make)} ${esc(r.model)} <span style="color:var(--mut);font-weight:400">${esc(r.year)}</span></div>
+          <div style="font-size:12px;color:var(--mut);margin-top:3px;display:flex;flex-wrap:wrap;gap:4px 12px">
+            <span style="color:${st[1]};font-weight:600">${st[0]}</span>
+            ${sc.cells?`<span>ยืนยันซ้ำ ${sc.confirmed}/${sc.cells} ช่อง${sc.conflicts?` · ไม่ตรงกัน ${sc.conflicts}`:""}</span>`:""}
+            <span>${r.sources||0} แหล่ง</span><span>เปิดดู ${r.hits||0} ครั้ง</span>
+            ${r.reports?`<span style="color:var(--danger,#E5484D);font-weight:600">มีคนแจ้งผิด ${r.reports}</span>`:""}</div>
+          ${(r.notes||[]).map(n=>`<div style="font-size:12.5px;margin-top:6px;padding:7px 10px;border-radius:9px;background:var(--surface2)">“${esc(n.note||"")}”</div>`).join("")}
+        </div>
+        <div style="display:flex;gap:6px;flex:none">
+          <button class="btn sm" onclick="specAct('redo','${esc(r.key)}',this)"><i class="ti ti-world-search"></i> ค้นใหม่</button>
+          ${r.status==="ready"?`<button class="btn sm" onclick="specAct('verify','${esc(r.key)}',this)"><i class="ti ti-rosette-discount-check"></i> ยืนยันแล้ว</button>`
+           :r.status==="verified"?`<button class="btn sm" onclick="specAct('unverify','${esc(r.key)}',this)"><i class="ti ti-lock-open"></i> เลิกยืนยัน</button>`:""}
+        </div></div>`}).join("");
+  }catch(e){el.innerHTML=`<div class="empty">โหลดไม่ได้: ${esc(e.message)}</div>`}
+}
+async function specAct(kind,key,btn){
+  btn.disabled=true;const old=btn.innerHTML;if(kind==="redo")btn.innerHTML='<i class="ti ti-loader-2"></i> กำลังค้น (~20 วิ)';
+  try{
+    if(kind==="redo")await api("/api/admin/car-specs/redo",{method:"POST",body:{key}});
+    else await api("/api/admin/car-specs/verify",{method:"POST",body:{key,on:kind==="verify"}});
+    toast(kind==="redo"?"ค้นใหม่แล้ว":kind==="verify"?"ยืนยันแล้ว — AI จะไม่ทับข้อมูลรุ่นนี้":"เลิกยืนยันแล้ว","ti-check");loadSpecs();
+  }catch(e){toast("ไม่สำเร็จ: "+e.message,"ti-alert-triangle");btn.disabled=false;btn.innerHTML=old}
 }
 
 /* ═══════════ ร้านค้า ═══════════ */

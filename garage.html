@@ -4364,6 +4364,33 @@ a.mtab{text-decoration:none}
 .gx-sh .custom-select-options{position:static;margin-top:6px;max-height:232px;box-shadow:none!important}
 .gx-sh .btn.primary{width:100%;height:48px;justify-content:center;border-radius:14px;font-size:15px}
 html.gx-lock,html.gx-lock body{overflow:hidden}
+/* ข้อมูลเพิ่มเติม (ไม่บังคับ) — พับไว้ก่อน ไม่ให้ฟอร์มเพิ่มรถดูยาว */
+.gx-more{margin-top:16px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+.gx-more>summary{list-style:none;display:flex;align-items:center;gap:12px;padding:13px 14px;cursor:pointer}
+.gx-more>summary::-webkit-details-marker{display:none}
+.gx-more>summary>i:first-child{width:34px;height:34px;flex:none;border-radius:11px;display:grid;place-items:center;background:var(--surface-2);color:var(--co);font-size:18px}
+.gx-more>summary span{flex:1;min-width:0;font-size:14px}
+.gx-more>summary em{font-style:normal;font-size:11.5px;color:var(--faint);margin-left:4px}
+.gx-more>summary small{display:block;font-size:12px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gx-more-ar{color:var(--faint);transition:transform .2s}
+.gx-more[open] .gx-more-ar{transform:rotate(180deg)}
+.gx-more .gx-info{padding:2px 14px 14px}
+.gx-info{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 10px}
+.gx-fld{display:flex;flex-direction:column;gap:5px;min-width:0}
+.gx-fld.full{grid-column:1/-1}
+.gx-fld>span{font-size:12.5px;font-weight:600;color:var(--muted)}
+.gx-fld .input{width:100%;padding:11px 12px;border-radius:12px;font:inherit;font-size:14px}
+.gx-fld textarea.input{resize:vertical}
+.gx-fld input[data-info="vin"]{font-family:ui-monospace,SFMono-Regular,Menlo,'Kanit',monospace;letter-spacing:.06em;text-transform:uppercase}
+.gx-vin-res{font-size:12px;color:var(--faint);min-height:1em;line-height:1.5}
+.gx-vin-res.ok{color:#16a34a}.gx-vin-res.bad{color:#dc2626}.gx-vin-res.warn{color:#d97706}
+@media(max-width:420px){.gx-info{grid-template-columns:minmax(0,1fr)}}
+/* ปุ่มข้อมูลรถบนการ์ด (ข้างปุ่มวงสี) */
+.gx-infob{position:absolute;z-index:3;right:54px;top:12px;width:34px;height:34px;padding:0;border-radius:50%;cursor:pointer;
+  display:grid;place-items:center;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:17px;transition:transform .16s,border-color .16s}
+.gx-infob:hover{border-color:var(--co);color:var(--co)}
+.gx-infob:active{transform:scale(.94)}
+.gx-sub{display:block;margin-top:3px;font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:560px){.gx-sh .grid2{grid-template-columns:minmax(0,1fr)}}
 @media(min-width:760px){
   .gx-pop{align-items:center;padding:24px}
@@ -4375,6 +4402,7 @@ html.gx-lock,html.gx-lock body{overflow:hidden}
 @media(prefers-reduced-motion:reduce){.gx-sh,.gx-bd,.gx-car,.gx-empty{transition:none}}
 </style>
 <link rel="stylesheet" href="lux.css">
+<script src="carspec.js" defer></script>
 </head>
 <body>
 <script id="mnav0">
@@ -4699,8 +4727,25 @@ window.spireI18nCoverage=code=>{
             </div>
           </div>
 
+          <!-- ข้อมูลเพิ่มเติม (ไม่บังคับ) — เลขตัวถังช่วยให้รู้รุ่นย่อยและปีจริง ช่างหาอะไหล่ตรงรุ่น -->
+          <details class="gx-more" id="gxMore">
+            <summary><i class="ti ti-file-plus"></i><span><b>ข้อมูลเพิ่มเติม</b> <em>ไม่บังคับ</em><small>เลขตัวถัง · ทะเบียน · รุ่นย่อย · วันต่อภาษี/ประกัน · ขนาดยาง</small></span><i class="ti ti-chevron-down gx-more-ar"></i></summary>
+            <div class="gx-info" data-info-form></div>
+          </details>
           <button class="btn primary" id="gAdd" style="margin-top:18px"><i class="ti ti-plus"></i> <span data-i18n="garage.add">เพิ่มรถ</span></button>
           </div>
+         </div>
+        </div>
+        <!-- หน้าต่างข้อมูลรถ (ปุ่มบนการ์ด) — กรอก/แก้ข้อมูลเพิ่มเติมทีหลังได้ทุกเมื่อ -->
+        <div class="gx-pop" id="gxInfo" aria-hidden="true">
+         <div class="gx-bd" data-gx-close></div>
+         <div class="gx-sh" role="dialog" aria-modal="true" aria-labelledby="gxIT">
+          <div class="gx-sh-head">
+            <div><h3 id="gxIT">ข้อมูลรถ</h3><p id="gxIName"></p></div>
+            <button class="gx-x" type="button" data-gx-close aria-label="ปิด"><i class="ti ti-x"></i></button>
+          </div>
+          <div class="gx-info" data-info-form id="gxIForm"></div>
+          <button class="btn primary" id="gxISave" type="button" style="margin-top:18px"><i class="ti ti-check"></i> <span>บันทึกข้อมูล</span></button>
          </div>
         </div>
         <!-- หน้าต่างเปลี่ยนสีรถ (ปุ่มวงสีบนการ์ด) -->
@@ -4897,7 +4942,7 @@ const BODY_TYPES=[
  {k:"pickup",th:"กระบะ (Pickup)",en:"Pickup"},
  {k:"mpv",th:"อเนกประสงค์ (MPV)",en:"MPV"},
  {k:"van",th:"รถตู้ (Van)",en:"Van"},
- {k:"coupe",th:"คูเป้/สปอร์ต",en:"Coupe / Sport"},
+ {k:"coupe",th:"รถสปอร์ต / คูเป้",en:"Sports car / Coupe"},
  {k:"ev",th:"รถไฟฟ้า (EV)",en:"Electric"}
 ];
 function bodyLabel(k){const b=BODY_TYPES.find(x=>x.k===k)||BODY_TYPES[0];return lang==="th"?b.th:b.en}
@@ -5431,7 +5476,7 @@ async function pushCar(c){
     headers:{"Content-Type":"application/json","Authorization":"Bearer "+await carTok()},
     body:JSON.stringify({id:c.id,make:c.make||c.name||"",model:c.model||"",
                          year:c.year||"",mileage:c.mileage||"",
-                         color:c.color||undefined,body:c.type||undefined})});
+                         color:c.color||undefined,body:c.type||undefined,info:c.info||undefined})});
   if(!r.ok){const e=new Error("HTTP "+r.status);e.status=r.status;throw e}
   return await r.json();
 }
@@ -5463,7 +5508,8 @@ async function syncCars(){
         id:c.id,make:c.make||"",model:c.model||"",name:name||prev.name||"",
         year:(c.year!=null?String(c.year):""),
         mileage:(c.mileage!=null?String(c.mileage):""),
-        type:c.body||prev.type||getBodyStyle(name),color:c.color||prev.color||"",history:prev.history||[]});
+        type:c.body||prev.type||getBodyStyle(name),color:c.color||prev.color||"",
+        info:(()=>{try{const o=c.info?JSON.parse(c.info):null;return o&&Object.keys(o).length?o:prev.info}catch(e){return prev.info}})(),history:prev.history||[]});
     });
     const remoteIds=new Set(arr.map(c=>c.id));
     for(const c of local){
@@ -5507,7 +5553,7 @@ const GD_BODY={
   pickup:{th:"กระบะ",en:"Pickup",ic:"ti-truck"},
   mpv:{th:"เอ็มพีวี",en:"MPV",ic:"ti-bus"},
   van:{th:"รถตู้",en:"Van",ic:"ti-bus"},
-  coupe:{th:"คูเป้",en:"Coupe",ic:"ti-car"},
+  coupe:{th:"รถสปอร์ต",en:"Sports car",ic:"ti-car"},
   ev:{th:"ไฟฟ้า",en:"Electric",ic:"ti-charging-pile"}
 };
 /* ── ภาพรถ 3D + สีรถที่ผู้ใช้เลือก ──
@@ -5562,11 +5608,13 @@ function renderGarage(){if(!document.getElementById("garageList"))return;const g
       <span class="gx-hero" style="--car:${col}">
         ${gxArt(bodyStyle,col)}
         <span class="gx-chip"><i class="ti ${lbl.ic}"></i>${esc(tx(lbl.th,lbl.en))}</span>
+        <button class="gx-infob" type="button" data-info="${esc(c.id)}" aria-label="${tx("ข้อมูลรถ","Car details")}" title="${tx("ข้อมูลรถ / เลขตัวถัง","Car details / VIN")}"><i class="ti ti-id"></i></button>
         <button class="gx-paint" type="button" data-paint="${esc(c.id)}" aria-label="${tx("เปลี่ยนสีรถ","Change car colour")}" title="${tx("เปลี่ยนสีรถ","Change car colour")}"><span style="background:${col}"></span></button>
       </span>
       <span class="gx-cb">
         <small class="gx-make">${esc(make)}</small>
         <b class="gx-model">${esc(model)}</b>
+        ${c.info&&(c.info.plate||c.info.trim)?`<span class="gx-sub">${esc([c.info.trim,[c.info.plate,c.info.province].filter(Boolean).join(" ")].filter(Boolean).join(" · "))}</span>`:""}
         <span class="gx-stats">
           <span><small>${tx("ปี","Year")}</small><b>${esc(c.year||"-")}</b></span>
           <span><small>${tx("เลขไมล์","Mileage")}</small><b>${km}${km!=="-"?` <em>${tx("กม.","km")}</em>`:""}</b></span>
@@ -5622,6 +5670,82 @@ async function savePaint(){const g=garage(),c=g.find(x=>x.id===gxPaintId);if(!c)
   if(carsAreRemote()){try{await pushCar(c)}catch(err){console.warn("save car colour failed",err)}}}
 window.openPaint=openPaint;
 
+/* ── ข้อมูลเพิ่มเติมของรถ (ไม่บังคับทุกช่อง) ──
+   เลขตัวถัง (VIN) ถอดได้ทันทีว่าผลิตประเทศไหน ผู้ผลิตไหน รหัสปีอะไร — และใช้เลือกรุ่นย่อยในแท็บสเปกให้ตรง
+   ทะเบียน/วันต่อภาษี/ประกัน ใช้ในการเตือนและให้ช่างรู้จักรถก่อนรับงาน */
+const INFO_F=[
+  {k:"vin",th:"เลขตัวถัง (VIN)",en:"VIN",ph:"17 หลัก — ดูในเล่มทะเบียน หรือมุมกระจกหน้าฝั่งคนขับ",full:true,max:17},
+  {k:"trim",th:"รุ่นย่อย / เกรด",en:"Trim",ph:"เช่น 2.4 GT Premium 4WD",max:60},
+  {k:"engine",th:"เครื่องยนต์",en:"Engine",ph:"เช่น 2.4 ดีเซล",max:60},
+  {k:"gear",th:"เกียร์",en:"Gearbox",opts:[["","—"],["อัตโนมัติ","อัตโนมัติ"],["ธรรมดา","ธรรมดา"],["CVT","CVT"],["DCT","ดับเบิลคลัตช์ (DCT)"]]},
+  {k:"fuel",th:"เชื้อเพลิง",en:"Fuel",opts:[["","—"],["เบนซิน","เบนซิน"],["ดีเซล","ดีเซล"],["ไฮบริด","ไฮบริด"],["ปลั๊กอินไฮบริด","ปลั๊กอินไฮบริด"],["ไฟฟ้า","ไฟฟ้า"],["แก๊ส","แก๊ส LPG/NGV"]]},
+  {k:"plate",th:"ทะเบียนรถ",en:"Plate",ph:"เช่น กข 1234",max:20},
+  {k:"province",th:"จังหวัด",en:"Province",ph:"เช่น กรุงเทพมหานคร",max:40},
+  {k:"tax_due",th:"ครบกำหนดต่อภาษี",en:"Tax due",type:"date"},
+  {k:"ins_due",th:"ประกันภัยหมดอายุ",en:"Insurance expiry",type:"date"},
+  {k:"ins_co",th:"บริษัทประกัน",en:"Insurer",ph:"เช่น วิริยะ ชั้น 1",max:60},
+  {k:"tire",th:"ขนาดยาง",en:"Tyre size",ph:"เช่น 265/60 R18",max:30},
+  {k:"note",th:"บันทึกถึงช่าง",en:"Notes for mechanics",ph:"เช่น เคยแต่งช่วงล่าง ติดแก๊ส",full:true,area:true,max:300}];
+function infoFormHTML(){
+  return INFO_F.map(f=>`<label class="gx-fld${f.full?" full":""}"><span>${esc(gxT(f.th,f.en))}</span>${
+    f.opts?`<select class="input" data-info="${f.k}">${f.opts.map(([v,t])=>`<option value="${esc(v)}">${esc(t)}</option>`).join("")}</select>`
+    :f.area?`<textarea class="input" rows="2" data-info="${f.k}" maxlength="${f.max}" placeholder="${esc(f.ph||"")}"></textarea>`
+    :`<input class="input" data-info="${f.k}" ${f.type?`type="${f.type}"`:""} ${f.max?`maxlength="${f.max}"`:""} placeholder="${esc(f.ph||"")}" ${f.k==="vin"?'autocapitalize="characters" autocomplete="off" spellcheck="false"':""}>`
+  }${f.k==="vin"?'<small class="gx-vin-res" aria-live="polite"></small>':""}</label>`).join("");
+}
+function readInfo(root){if(!root)return null;const o={};
+  root.querySelectorAll("[data-info]").forEach(el=>{let v=String(el.value||"").trim();if(el.dataset.info==="vin")v=v.toUpperCase().replace(/[\s-]/g,"");if(v)o[el.dataset.info]=v});
+  if(o.vin&&!/^[A-HJ-NPR-Z0-9]{17}$/.test(o.vin))delete o.vin;
+  return Object.keys(o).length?o:null}
+function fillInfo(root,info){if(!root)return;
+  root.querySelectorAll("[data-info]").forEach(el=>{el.value=(info&&info[el.dataset.info])||""});
+  const r=root.querySelector(".gx-vin-res");if(r){r.textContent="";r.className="gx-vin-res"}
+  const v=root.querySelector('[data-info="vin"]');if(v&&v.value)vinCheck(v)}
+document.querySelectorAll("[data-info-form]").forEach(el=>{el.innerHTML=infoFormHTML()});
+/* ถอดเลขตัวถังทันทีที่ครบ 17 หลัก — ยี่ห้อไม่ตรงกับที่เลือกจะเตือน */
+let vinT=0;
+function vinCheck(inp){
+  const res=inp.closest(".gx-fld").querySelector(".gx-vin-res");if(!res)return;
+  const v=String(inp.value||"").toUpperCase().replace(/[\s-]/g,"");
+  clearTimeout(vinT);res.className="gx-vin-res";
+  if(!v){res.textContent="";return}
+  if(/[IOQ]/.test(v)){res.className="gx-vin-res bad";res.textContent=gxT("VIN ไม่มีตัว I, O, Q — น่าจะเป็นเลข 1 หรือ 0","VINs never use I, O or Q — probably 1 or 0");return}
+  if(v.length<17){res.textContent=v.length+"/17";return}
+  if(v.length>17||!/^[A-HJ-NPR-Z0-9]{17}$/.test(v)){res.className="gx-vin-res bad";res.textContent=gxT("ต้องเป็นตัวอักษร/ตัวเลข 17 หลัก","Must be 17 letters/digits");return}
+  res.textContent=gxT("กำลังตรวจเลขตัวถัง…","Checking VIN…");
+  vinT=setTimeout(async()=>{
+    try{const d=await fetch(`${BACKEND_URL}/api/vin/${v}`).then(r=>r.json());
+      if(!d.valid){res.className="gx-vin-res bad";res.textContent=d.why||gxT("เลขตัวถังไม่ถูกต้อง","Invalid VIN");return}
+      const p=d.vpic||{},bits=[d.country&&gxT("ผลิตที่","Made in")+" "+d.country,d.maker||p.make,d.year_hint&&gxT("รหัสปี ","Year code ")+d.year_hint,
+        [p.model,p.engine_l&&p.engine_l+"L",p.fuel].filter(Boolean).join(" ")].filter(Boolean);
+      res.className="gx-vin-res ok";res.textContent="✓ "+bits.join(" · ");
+      /* ยี่ห้อตาม VIN ไม่ตรงกับรถที่เลือก */
+      const pop=inp.closest(".gx-pop"),c=pop&&pop.id==="gxInfo"?garage().find(x=>x.id===infoId):null;
+      const mk=String((c&&c.make)||(customMode?($("gCustomMake")||{}).value:selectedMake)||"").toLowerCase();
+      const vm=String(d.maker||p.make||"").toLowerCase().split(" ")[0];
+      if(mk&&vm&&!vm.includes(mk.split(" ")[0])&&!mk.includes(vm)){res.className="gx-vin-res warn";
+        res.textContent+=" — "+gxT("ยี่ห้อตามเลขตัวถังไม่ตรงกับที่เลือก ตรวจอีกครั้ง","make from VIN doesn’t match — please double-check")}
+    }catch(e){res.textContent=gxT("ตรวจออนไลน์ไม่ได้ตอนนี้ แต่บันทึกได้","Can’t verify online now, you can still save")}
+  },350)}
+document.addEventListener("input",e=>{const v=e.target.closest('[data-info="vin"]');if(v)vinCheck(v)});
+
+let infoId=null;
+function openInfo(id){const c=garage().find(x=>x.id===id);if(!c)return;infoId=id;
+  const P=$("gxInfo"),set=(q,t)=>{const el=P&&P.querySelector(q);if(el)el.textContent=t};
+  set("#gxIT",gxT("ข้อมูลรถ","Car details"));set("#gxIName",(c.name||`${c.make||""} ${c.model||""}`.trim())+" · "+gxT("ทุกช่องไม่บังคับ","all optional"));
+  set("#gxISave span",gxT("บันทึกข้อมูล","Save"));
+  fillInfo($("gxIForm"),c.info||null);gxOpen("gxInfo")}
+async function saveInfo(){const g=garage(),c=g.find(x=>x.id===infoId);if(!c){gxCloseAll();return}
+  const info=readInfo($("gxIForm"));if(info)c.info=info;else delete c.info;
+  saveGarage(g);renderGarage();gxCloseAll();toast(gxT("บันทึกข้อมูลรถแล้ว","Car details saved"),"ti-check");
+  if(carsAreRemote()){try{await pushCar({...c,info:c.info||{}})}catch(err){console.warn("save car info failed",err)}}}
+window.openInfo=openInfo;
+
+/* แท็บสเปกยืนยันประเภทตัวถังจากสองแหล่งตรงกัน → ใช้ภาพรถให้ตรง (เช่นรุ่นที่ฐานข้อมูลในแอปจัดผิดประเภท) */
+document.addEventListener("carspec:body",e=>{const d=e.detail||{};const g=garage(),c=g.find(x=>x.id===d.id);
+  if(!c||!d.body||c.type===d.body)return;c.type=d.body;saveGarage(g);renderGarage();
+  if(carsAreRemote())pushCar(c).catch(()=>{})});
+
 document.addEventListener("click",e=>{
   if(e.target.closest("[data-gx-open]")){e.preventDefault();openAddCar();return}
   if(e.target.closest("[data-gx-close]")){gxCloseAll();return}
@@ -5629,6 +5753,7 @@ document.addEventListener("click",e=>{
   if(dot&&dot.closest("#gxPaint")){gxPaintColor=dot.dataset.color;gxPaintPrev();return}
   if(dot&&dot.closest("#gxPop")){gxColor=dot.dataset.color;gxPrev();return}
   if(e.target.closest("#gxPSave")){savePaint();return}
+  if(e.target.closest("#gxISave")){saveInfo();return}
   /* เลือกยี่ห้อ/รุ่น/ประเภทตัวถังแล้ว อัปเดตภาพตัวอย่าง (รอให้ตัวจัดการของช่องเลือกทำงานก่อน) */
   if(e.target.closest("#gxPop"))setTimeout(gxPrev,0)});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")gxCloseAll()});
@@ -5643,6 +5768,8 @@ $("garageList")?.addEventListener("click",async e=>{
   /* กดที่ไหนของการ์ดก็เข้าหน้ารถคันนั้น ไม่ต้องเล็งปุ่มเล็ก ๆ
      ปุ่มวินิจฉัยกับปุ่มลบย้ายเข้าไปอยู่ในหน้านั้นแล้ว ซึ่งปลอดภัยกว่าด้วย
      เพราะปุ่มลบที่อยู่ติดนิ้วบนหน้ารายการคือปุ่มที่รอวันโดนกดพลาด */
+  const ib=e.target.closest("[data-info]");
+  if(ib){ e.stopPropagation(); openInfo(ib.dataset.info); return }
   const pt=e.target.closest("[data-paint]");
   if(pt){ e.stopPropagation(); openPaint(pt.dataset.paint); return }
   const op=e.target.closest("[data-open]");
@@ -5668,22 +5795,26 @@ $("garageList")?.addEventListener("click",async e=>{
   const year = String(selectedYear);
   const mileage = $("gMileage").value.trim() || "-";
 
+  const addInfo=readInfo($("gxMore"));
   ($("gAdd")||{}).disabled=true;
   let id = "c"+Date.now();
   if(carsAreRemote()){
     try{
-      const r=await fetch(`${BACKEND_URL}/api/cars`,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+await carTok()},body:JSON.stringify({make,model,year,mileage,color:gxColor,body:type})});
+      const r=await fetch(`${BACKEND_URL}/api/cars`,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+await carTok()},body:JSON.stringify({make,model,year,mileage,color:gxColor,body:type,info:addInfo||undefined})});
       if(!r.ok)throw new Error(r.status+" "+r.statusText);
       const res=await r.json(); if(res&&res.id)id=res.id;
     }catch(err){toast(((window.spireT?window.spireT("บันทึกในเครื่องแทน (เซิร์ฟเวอร์ผิดพลาด): ","Saved locally (server error): "):(lang==="en"?"Saved locally (server error): ":"บันทึกในเครื่องแทน (เซิร์ฟเวอร์ผิดพลาด): ")))+err.message,"ti-cloud-off")}
   }
 
   const g = garage();
-  g.push({id,make,model,name,year,mileage,type,color:gxColor,history:[]});
+  g.push({id,make,model,name,year,mileage,type,color:gxColor,...(addInfo?{info:addInfo}:{}),history:[]});
+  /* คนแรกที่เพิ่มรุ่นนี้ = หลังบ้านเริ่มหาสเปกจริงเลย (ทำครั้งเดียวต่อรุ่น คนต่อไปได้ทันที) */
+  try{window.CarSpec&&window.CarSpec.ensure({id,make,model,year}).catch(()=>{})}catch(e){}
   saveGarage(g);
 
   selectedMake = ""; selectedModel = null; selectedYear = ""; customMode = false; selectedBody = "sedan";
   gxColor = "#FFFFFF";
+  fillInfo($("gxMore"),null);try{$("gxMore").open=false}catch(e){}
   $("gMakeSelect").querySelector(".val").textContent = tr("select.make");
   $("gModelTrigger").classList.add("disabled");
   $("gModelTrigger").querySelector(".val").textContent = tr("select.model");
@@ -8243,6 +8374,8 @@ const BODY={
  mpv:{th:"เอ็มพีวี",en:"MPV",seat:7,door:5,kerb:1650,tank:60,l100:8.4,cc:2000,tire:"215/60 R17",batt:"75D23L / 65Ah",wiper:'26" + 16"',oil:"4.2 ลิตร"},
  ev:{th:"ไฟฟ้า",en:"Electric",seat:5,door:5,kerb:1720,tank:0,l100:0,cc:0,tire:"215/55 R18",batt:"12V เสริม 45Ah",wiper:'24" + 18"',oil:"— (ไม่มี)"}
 };
+BODY.coupe={th:"รถสปอร์ต / คูเป้",en:"Sports car / Coupe",seat:4,door:2,kerb:1500,tank:60,l100:10.5,cc:3000,tire:"245/40 R19",batt:"H6 / 70Ah",wiper:'22" + 20"',oil:"5.5 ลิตร"};
+BODY.van={th:"รถตู้",en:"Van",seat:12,door:4,kerb:2100,tank:70,l100:10.0,cc:2800,tire:"215/70 R15",batt:"95D31L / 80Ah",wiper:'26" + 18"',oil:"6.5 ลิตร"};
 const EVBRAND=["tesla","byd"];
 function normBrand(s){return String(s||"").trim().toLowerCase().replace(/\s+/g,"-")}
 function bodyOf(c){
@@ -8703,94 +8836,24 @@ function renderTab(){
 const row=(k,o)=>`<div class="cl-spec"><span class="k">${esc(k)}</span>
   <span class="v">${esc(o.v)}${o.est?' <span class="cl-est">'+T("ประมาณการ","EST")+'</span>':''}</span></div>`;
 
+/* แท็บสเปก/อุปกรณ์: ข้อมูลจริงจากคลังสเปกกลาง (carspec.js → /api/car-spec)
+   เดิมคำนวณจากประเภทตัวถัง (แรงม้า = cc × 0.075 ฯลฯ) รถทุกคันประเภทเดียวกันจึงได้สเปกเหมือนกันหมด — เลิกใช้แล้ว
+   ท้ายแท็บสเปกมีภาพรวมแบรนด์ (ข้อมูลทั่วไปของยี่ห้อ ไม่ใช่สเปกของรุ่น) */
+function brandGrp(c){
+  const br=BRANDS[normBrand(c.make)];
+  const age=new Date().getFullYear()-(parseInt(c.year)||new Date().getFullYear());
+  return `<div class="cl-grp"><h4>${T("ภาพรวมแบรนด์","About the brand")}</h4>
+    ${br?row(T("ประเทศต้นกำเนิด","Origin"),{v:T(br.o,br.oe),est:false})+row(T("การหาอะไหล่","Parts availability"),{v:T(br.parts,br.partsE),est:false})
+      +row(T("เครือข่ายศูนย์บริการ","Service network"),{v:T(br.svc,br.svcE),est:false}):""}
+    ${row(T("อายุรถ","Vehicle age"),{v:age+" "+T("ปี","yrs"),est:false})}
+  </div>`;
+}
 function paneSpec(c){
-  const s=specOf(c), b=s.body, br=s.brand, cf=s.confirmed;
-  const P=(k,fb)=>sv(s,k,fb);
-  const bd=bodyOf(c);
-  const fuel=s.ev?"":bd==="pickup"?T("ดีเซล","diesel")
-    :bd==="suv"?T("เบนซินหรือดีเซล","petrol or diesel"):T("เบนซิน","petrol");
-  const eng=s.ev?T("มอเตอร์ไฟฟ้า","Electric motor"):`${(b.cc/1000).toFixed(1)}L ${fuel}`;
-  return `
-  <div class="cl-grp"><h4>${T("เครื่องยนต์และการขับเคลื่อน","Powertrain")}</h4>
-    ${row(T("เครื่องยนต์","Engine"),P("engine",eng))}
-    ${s.ev?"":row(T("ความจุกระบอกสูบ","Displacement"),P("cc",b.cc+" cc"))}
-    ${row(T("แรงม้าโดยประมาณ","Power"),P("power",Math.round(b.cc*0.075)+" hp"))}
-    ${row(T("แรงบิด","Torque"),P("torque",Math.round(b.cc*0.11)+" Nm"))}
-    ${row(T("ระบบเกียร์","Gearbox"),P("gearbox",s.ev?T("เกียร์เดียว","Single speed"):T("อัตโนมัติ","Automatic")))}
-    ${row(T("ระบบขับเคลื่อน","Drive"),P("drive",bodyOf(c)==="pickup"?T("ขับหลัง / 4WD","RWD / 4WD"):T("ขับหน้า","FWD")))}
-  </div>
-  <div class="cl-grp"><h4>${T("ตัวถังและความจุ","Body & capacity")}</h4>
-    ${row(T("ประเภทตัวถัง","Body type"),{v:T(b.th,b.en),est:false})}
-    ${row(T("จำนวนที่นั่ง","Seats"),P("seats",b.seat+T(" ที่นั่ง"," seats")))}
-    ${row(T("จำนวนประตู","Doors"),{v:b.door,est:true})}
-    ${row(T("น้ำหนักตัวรถ","Kerb weight"),{v:num(b.kerb)+" kg",est:true})}
-    ${s.ev?"":row(T("ความจุถังน้ำมัน","Fuel tank"),P("tank",b.tank+" "+T("ลิตร","L")))}
-  </div>
-  <div class="cl-grp"><h4>${T("อัตราสิ้นเปลือง","Efficiency")}</h4>
-    ${s.ev
-      ? row(T("ใช้ไฟโดยประมาณ","Consumption"),{v:"16 kWh/100 "+T("กม.","km"),est:true})
-      : row(T("กินน้ำมันโดยประมาณ","Fuel economy"),P("l100",b.l100+" "+T("ลิตร/100 กม.","L/100km")))}
-    ${s.ev?"":row(T("เทียบเป็น กม./ลิตร","Equivalent"),{v:(100/b.l100).toFixed(1)+" "+T("กม./ลิตร","km/L"),est:true})}
-    ${s.ev?"":row(T("ระยะวิ่งต่อถัง","Range per tank"),{v:num(Math.round(b.tank*100/b.l100))+" "+T("กม.","km"),est:true})}
-  </div>
-  <div class="cl-grp"><h4>${T("แบรนด์และการดูแล","Brand & ownership")}</h4>
-    ${row(T("ประเทศต้นกำเนิด","Origin"),{v:T(br.o,br.oe),est:false})}
-    ${row(T("คะแนนความทนทาน","Reliability"),{v:br.rel+"/100",est:true})}
-    ${row(T("การหาอะไหล่","Parts availability"),{v:T(br.parts,br.partsE),est:false})}
-    ${row(T("เครือข่ายศูนย์บริการ","Service network"),{v:T(br.svc,br.svcE),est:false})}
-    ${row(T("อายุรถ","Vehicle age"),{v:(new Date().getFullYear()-(parseInt(c.year)||new Date().getFullYear()))+" "+T("ปี","yrs"),est:false})}
-  </div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
-    <button class="btn primary" id="clAI"><i class="ti ti-sparkles"></i> ${T("ให้ AI ยืนยันสเปก","Confirm with AI")}</button>
-    ${cf?`<button class="btn" id="clAIclear"><i class="ti ti-eraser"></i> ${T("ล้างค่าที่ยืนยัน","Clear")}</button>`:""}
-  </div>
-  <p style="font-size:11.5px;color:var(--faint);margin-top:10px;line-height:1.6">
-    <i class="ti ti-info-circle"></i> ${T(
-      "ค่าที่ติดป้าย ‘ประมาณการ’ คำนวณจากยี่ห้อ ประเภทตัวถัง และปีรถ ใช้เป็นแนวทางคร่าวๆ — กดปุ่มด้านบนให้ AI ช่วยยืนยันตัวเลขจริงของรุ่นคุณ",
-      "Values marked EST are derived from brand, body type and year as a rough guide — use the button above to have AI confirm your exact model.")}</p>`;
+  return window.CarSpec?window.CarSpec.pane(c,"spec",brandGrp(c)):brandGrp(c);
 }
 
 function paneEquip(c){
-  const yr=parseInt(c.year)||2015, s=specOf(c), cf=s.confirmed;
-  const seg=BRANDS[normBrand(c.make)]?.rel||80;
-  const has=(fromYear,premOnly)=>yr>=fromYear&&(!premOnly||seg>=82);
-  const SAFE=[
-   [T("ถุงลมนิรภัยคู่หน้า","Front airbags"),has(2008),"ti-shield"],
-   [T("ถุงลมด้านข้าง/ม่าน","Side & curtain airbags"),has(2016,true),"ti-shield"],
-   [T("เบรก ABS","ABS"),has(2010),"ti-disc"],
-   [T("ระบบกระจายแรงเบรก EBD","EBD"),has(2012),"ti-disc"],
-   [T("ควบคุมการทรงตัว ESC","Stability control"),has(2015),"ti-steering-wheel"],
-   [T("สัญญาณกันขโมย/อิมโมบิไลเซอร์","Immobiliser"),has(2012),"ti-lock"],
-   [T("กล้องมองหลัง","Reverse camera"),has(2016),"ti-camera"],
-   [T("เซนเซอร์ถอยจอด","Parking sensors"),has(2015),"ti-parking"],
-   [T("เตือนจุดอับสายตา","Blind spot monitor"),has(2019,true),"ti-eye"],
-   [T("เบรกฉุกเฉินอัตโนมัติ","Autonomous braking"),has(2019,true),"ti-alert-triangle"],
-   [T("ครูสคอนโทรลแบบแปรผัน","Adaptive cruise"),has(2020,true),"ti-car"],
-   [T("เตือนออกนอกเลน","Lane departure"),has(2019,true),"ti-road"]
-  ];
-  const COMF=[
-   [T("แอร์อัตโนมัติ","Auto climate"),has(2014),"ti-air-conditioning"],
-   [T("กุญแจอัจฉริยะ/ปุ่มสตาร์ท","Keyless & push start"),has(2014),"ti-key"],
-   [T("จอสัมผัสกลาง","Touchscreen"),has(2015),"ti-device-tablet"],
-   [T("Apple CarPlay / Android Auto"),has(2018),"ti-brand-apple"],
-   [T("เชื่อมบลูทูธ","Bluetooth"),has(2012),"ti-bluetooth"],
-   [T("พวงมาลัยมัลติฟังก์ชัน","Multifunction wheel"),has(2013),"ti-steering-wheel"],
-   [T("เบาะปรับไฟฟ้า","Power seats"),has(2017,true),"ti-armchair"],
-   [T("ซันรูฟ","Sunroof"),has(2018,true),"ti-sun"],
-   [T("ชาร์จไร้สาย","Wireless charging"),has(2020,true),"ti-battery-charging"]
-  ];
-  const grp=(title,arr)=>`<div class="cl-grp"><h4>${title}</h4><div class="cl-chips">${
-    arr.map(([n,ok,ic])=>`<span class="cl-chip ${ok?"yes":"no"}">
-      <i class="ti ${ok?"ti-check":"ti-minus"}"></i>${esc(n)}</span>`).join("")}</div></div>`;
-  const extra=cf&&Array.isArray(cf.safety)&&cf.safety.length
-    ? `<div class="cl-grp"><h4>${T("ยืนยันโดย AI","Confirmed by AI")}</h4><div class="cl-chips">${
-        cf.safety.map(x=>`<span class="cl-chip yes"><i class="ti ti-check"></i>${esc(x)}</span>`).join("")}</div></div>`
-    : "";
-  return extra+grp(T("ความปลอดภัย","Safety"),SAFE)+grp(T("ความสะดวกสบาย","Comfort & tech"),COMF)+
-   `<p style="font-size:11.5px;color:var(--faint);line-height:1.6">
-     <i class="ti ti-info-circle"></i> ${T(
-       "รายการนี้ประเมินจากปีรถและระดับของแบรนด์ รุ่นย่อยต่างกันอุปกรณ์อาจไม่เท่ากัน — กด ‘ให้ AI ยืนยันสเปก’ ในแท็บสเปกเพื่อความแม่นยำ",
-       "Estimated from model year and brand tier; trim levels differ. Use ‘Confirm with AI’ in the Specs tab for accuracy.")}</p>`;
+  return window.CarSpec?window.CarSpec.pane(c,"equip"):"";
 }
 
 /* แท็บ "บันทึกของรถ" — เจ้าของกรอกเองได้ทุกช่อง

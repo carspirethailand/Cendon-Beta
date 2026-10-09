@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex,nofollow,noarchive">
 <link rel="icon" type="image/png" href="./favicon.png">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"></noscript>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"></noscript>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.7.0/dist/tabler-icons.min.css" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.7.0/dist/tabler-icons.min.css"></noscript>
 
 <!--
@@ -26,29 +26,32 @@
 
 <style>
 :root{
-  --bg:#F8F7F5; --surface:#FFFFFF; --sunken:#F2F0EC;
-  --ink:#1A1815; --mut:#6B665E; --faint:#94908A;
-  --rule:#E4E1DB; --rule2:#EFEDE8;
-  --acc:#A85E13; --acc-soft:rgba(168,94,19,.09);
+  /* สีชุดเดียวกับหน้าหลัก */
+  --bg:#FAFAF9; --surface:#FFFFFF; --sunken:#F4F4F5;
+  --ink:#09090B; --mut:#71717A; --faint:#A1A1AA;
+  --rule:rgba(9,9,11,.08); --rule2:rgba(9,9,11,.05);
+  --acc:#E9682A; --acc-soft:rgba(233,104,42,.10);
   --stop:#B3392B; --stop-bg:rgba(179,57,43,.06);
   --care:#8A5A10; --care-bg:rgba(138,90,16,.07);
   --why:#356483;  --why-bg:rgba(53,100,131,.06);
   --shadow:0 1px 2px rgba(26,24,21,.05),0 12px 28px -20px rgba(26,24,21,.28);
   --disp:'Kanit',system-ui,sans-serif;
-  --body:'IBM Plex Sans Thai','IBM Plex Sans',system-ui,sans-serif;
-  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --body:'Kanit',system-ui,sans-serif;
+  --mono:'IBM Plex Mono','Kanit',ui-monospace,Menlo,monospace;
 }
 html[data-theme="dark"],html[data-theme="midnight"],html[data-theme="aurora"],html[data-theme="sunset"]{
-  --bg:#0D0D10; --surface:#141418; --sunken:#191920;
-  --ink:#ECEAE6; --mut:#9B968E; --faint:#6E6A64;
-  --rule:#26262C; --rule2:#1E1E24;
-  --acc:#E8943C; --acc-soft:rgba(232,148,60,.12);
+  --bg:#09090B; --surface:#111113; --sunken:#18181B;
+  --ink:#FAFAFA; --mut:#A1A1AA; --faint:#52525B;
+  --rule:rgba(255,255,255,.08); --rule2:rgba(255,255,255,.05);
+  --acc:#F07A36; --acc-soft:rgba(240,122,54,.12);
   --stop:#F07A6C; --stop-bg:rgba(240,122,108,.09);
   --care:#E0AC4E; --care-bg:rgba(224,172,78,.09);
   --why:#7FB0CE;  --why-bg:rgba(127,176,206,.09);
   --shadow:0 1px 2px rgba(0,0,0,.4),0 14px 32px -22px rgba(0,0,0,.8);
 }
 *{box-sizing:border-box}
+/* ป้ายหัวข้อภาษาไทยไม่ตั้งตัวห่าง (ไทยที่ตัวห่างอ่านยาก) — แบบเดียวกับหน้าหลัก */
+:is(.gcard .gs,.brand-sub,.cover .kicker,h2.part .p-num,.n-tag,.nv-1 b){letter-spacing:.02em!important}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);
   font-size:15.5px;line-height:1.78;-webkit-font-smoothing:antialiased}
 
@@ -448,10 +451,12 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 /* ตั้งธีมตามที่ผู้ใช้เลือกไว้ในแอป ทีมงานจะได้ไม่โดนจอขาวแยงตาตอนดึก */
+/* ใช้กติกาเดียวกับหน้าหลัก: มีแค่สว่าง/มืด ธีมรุ่นเก่าตกไปที่โทนใกล้สุด ไม่เคยตั้งเลยเป็นสว่าง */
 try{
-  const t=JSON.parse(localStorage.getItem("spire_theme")||'"dark"');
-  document.documentElement.setAttribute("data-theme",t);
-}catch(e){ document.documentElement.setAttribute("data-theme","dark") }
+  const v=JSON.parse(localStorage.getItem("spire_theme")||"null");
+  const DARK=["dark","carbon","night","midnight","cyber","aurora","ocean","sunset","magma","wire"];
+  document.documentElement.setAttribute("data-theme",DARK.includes(v)?"dark":"light");
+}catch(e){ document.documentElement.setAttribute("data-theme","light") }
 
 const BACKEND_URL="https://spireonebackend.carspirethailand.workers.dev";
 const fbConfig={apiKey:"AIzaSyDDtvz4d4FRG_KOq5EQHmlDijU-x1FDZlQ",authDomain:"sp1p-82396.firebaseapp.com",databaseURL:"https://sp1p-82396-default-rtdb.firebaseio.com",projectId:"sp1p-82396",storageBucket:"sp1p-82396.appspot.com",messagingSenderId:"924479207020",appId:"1:924479207020:web:ec64428a614032f92c9f60"};

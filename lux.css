@@ -75,3 +75,44 @@ html[data-theme="light"] .w-aura,html[data-theme="dark"] .w-aura{display:none!im
   box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 8px 20px -10px var(--co)!important}
 .act-btn.primary::after{display:none!important}
 .fab{background:var(--co)!important;background-image:none!important;box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 12px 26px -12px var(--co)!important}
+
+/* ══════════════════════════════════════════════════════════════════
+   หน้าอื่นนอกห้องแชต (ห้องแชตมี body[data-phase] — ไม่แตะ)
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── ฟอนต์: ตัวหนังสือไทยใช้ Kanit ทุกหน้า (ละตินใช้ Spire09 แบบหน้าหลัก) ──
+   ธีมรุ่นเก่าบางชุดตั้งฟอนต์ไทยอื่นไว้ (Anuphan, Chakra Petch, Chonburi, Charm) — ทับทั้งหมด */
+html:root,html:root[data-theme]{--kd:'Spire09','Kanit',system-ui,sans-serif!important;--kb:'Spire09','Kanit',system-ui,sans-serif!important}
+
+/* ── สีหลักเดียวกับหน้าหลัก ──
+   หน้าเก่าใช้ "สีหลักที่ผู้ใช้ตั้ง" (ค่าเริ่มต้นสีทอง #E8943C) และไล่สีมันวาว
+   หน้าหลักใช้ส้ม Cendon เรียบ — ให้ทุกส่วนที่อ้างสีหลัก/ไล่สีกลายเป็นส้มเรียบเหมือนกัน */
+body:not([data-phase]){--accent:var(--co)!important;--accent-2:var(--co)!important;--accent-d:var(--co)!important;
+  --grad:var(--co)!important;--on-acc:#fff!important}
+
+/* ── หัวข้อเล็กภาษาไทย: ไม่ตั้งตัวห่าง (ไทยที่ตัวห่างอ่านยาก สระ/วรรณยุกต์ลอย) ── */
+body:not([data-phase]) :is(.bkicker,.bw-eye,.cl-est,.cl-grp>h4,.dial small,.gring .cen span,.hf-head small,.hud-eye,
+  .lg-head .tx small,.lt-head small,.lt-lbl,.mag-card .k,.mag-hero .k,.mag-modal-tag,.mag-widget-tag,.mzr-pts b,.pane-lbl,
+  .pk-c-tx small,.pl small,.pm-fl span,.set-main h2,.sp-art .tag,.sp-lbl,.spw-eye,.su-or,.su-step-n,.ghist .h){
+  letter-spacing:.01em!important;text-transform:none!important}
+/* หัวข้อกลุ่ม (ตั้งค่า · สเปกรถ · อะไหล่) แบบหัวข้อของหน้าหลัก: ตัวหนา สีเทา ไม่ใช่ตัวพิมพ์ใหญ่ตัวห่าง */
+body:not([data-phase]) :is(.set-main h2,.cl-grp>h4,.sp-lbl,.lt-lbl,.pane-lbl){font-size:13.5px!important;font-weight:600!important;color:var(--muted)!important}
+
+/* ── หน้าต่างรายละเอียดรถ: พื้นเรียบ ปุ่มหลักส้มเรียบ แท็บที่เลือกเป็นส้มอ่อน ── */
+body:not([data-phase]) .carx{box-shadow:0 30px 80px -34px rgba(0,0,0,.45)!important}
+body:not([data-phase]) .carx-hero{background:var(--surface)!important}
+body:not([data-phase]) .carx-hero::after{display:none!important}
+body:not([data-phase]) .carx-ic{background:var(--surface-2)!important;color:var(--co)!important;box-shadow:none!important;border:1px solid var(--line)}
+body:not([data-phase]) :is(.kpi,.carx-x){box-shadow:none!important}
+body:not([data-phase]) .kpi{background:var(--surface-2)!important;border-color:transparent!important}
+body:not([data-phase]) .cl-a{box-shadow:none!important}
+body:not([data-phase]) .cl-a:hover{transform:none!important;border-color:var(--co)!important}
+body:not([data-phase]) .cl-a.p{background:var(--co)!important;color:#fff!important;border-color:transparent!important;
+  box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 8px 20px -10px var(--co)!important}
+body:not([data-phase]) .cl-a.p::after{display:none!important}
+body:not([data-phase]) .cl-tab[aria-selected="true"]{background:var(--co-soft)!important;color:var(--co)!important;box-shadow:none!important}
+body:not([data-phase]) .cl-est{background:var(--surface-2)!important;border-color:transparent!important;color:var(--faint)!important}
+
+/* ── หน้าตั้งค่า: แถวพื้นเรียบเส้นบาง ไม่มีเงา ── */
+body:not([data-phase]) :is(.setpane,.set-row,.set-card,.su-card){box-shadow:none!important}
+body:not([data-phase]) .set-row{background:var(--surface)!important;border:1px solid var(--line)!important}

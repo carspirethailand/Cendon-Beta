@@ -7,12 +7,19 @@
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <meta name="robots" content="noindex,nofollow"/>
 <meta name="theme-color" content="#0A0A0A"/>
+<script>
+/* ธีมเดียวกับหน้าหลัก: สว่าง/มืดตามที่ผู้ใช้ตั้งในแอป ธีมรุ่นเก่าตกไปที่โทนใกล้สุด ไม่เคยตั้งเป็นสว่าง */
+(function(){var v=null,DARK=["dark","carbon","night","midnight","cyber","aurora","ocean","sunset","magma","wire"];
+  try{v=JSON.parse(localStorage.getItem("spire_theme"))}catch(e){}
+  var t=DARK.indexOf(v)>=0?"dark":"light";document.documentElement.setAttribute("data-theme",t);
+  if(t==="light")document.querySelector('meta[name="theme-color"]').setAttribute("content","#FAFAF9")})();
+</script>
 <title>Cendon Experience</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css" media="print" onload="this.media='all'"/>
 <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css"></noscript></noscript>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" media="print" onload="this.media='all'">
 <style>
 /* Spire09 เฉพาะอักษรละติน  ฝังมาในไฟล์เพื่อไม่ต้องพึ่งโฟลเดอร์ fonts
    ที่ไม่เคยถูกอัปขึ้นเซิร์ฟเวอร์  ภาษาไทยไม่อยู่ในช่วงนี้ จึงยังใช้ Kanit เหมือนเดิม
@@ -38,16 +45,19 @@
      ของเดิมผมหม่นสีลงเองเพราะกลัวแสบตาบนพื้นมืด ผลคือแอดมินดูซีดกว่าเว็บหลัก
      ทั้งที่เป็นแบรนด์เดียวกัน ตอนนี้ยกค่าจาก / มาตรง ๆ
      ความสดใสได้จากตัวสี ไม่ใช่จากการเพิ่มแสงเรือง */
-  --acc:#E8943C; --acc-lo:#D95E3C; --acc-hi:#F0A93C;
-  --acc-2:#E8A23C; --acc-d:#B85A2A;
-  --acc-08:rgba(232,148,60,.10); --acc-14:rgba(232,148,60,.18); --acc-30:rgba(232,148,60,.36);
-  --acc2:var(--acc-2); --grad:linear-gradient(135deg,#E8943C,#D95E3C); --acc-soft:var(--acc-14);
+  --acc:#F07A36; --acc-lo:#E0652A; --acc-hi:#F59157;
+  --acc-2:#F07A36; --acc-d:#C8571F;
+  --acc-08:rgba(240,122,54,.10); --acc-14:rgba(240,122,54,.16); --acc-30:rgba(240,122,54,.34);
+  --acc2:var(--acc-2); --grad:var(--acc); --acc-soft:var(--acc-14);
+  /* ฐานสีของแสง/พื้นซ้อนจาง ๆ — มืด: ขาวจาง · สว่าง: ดำจาง */
+  --hl:255,255,255;
   /* สถานะสดขึ้นตามเว็บหลัก แต่ดันความสว่างขึ้นเล็กน้อยเพราะอยู่บนพื้นมืด */
   --ok:#4DBE87; --warn:#F0A93C; --danger:#E85C5C; --info:#5BA9D9; --purple:#B07EE5;
 
-  --kd:'Outfit','Kanit',system-ui,sans-serif;
-  --kb:'Outfit','Kanit',system-ui,sans-serif;
-  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;
+  --kd:'Spire09','Kanit',system-ui,sans-serif;
+  --kb:'Spire09','Kanit',system-ui,sans-serif;
+  /* ตัวไทยในป้ายแบบโมโนตกไปที่ Kanit (JetBrains Mono ไม่มีอักษรไทย) */
+  --mono:'JetBrains Mono','Kanit',ui-monospace,SFMono-Regular,monospace;
 
   /* ระยะห่างเป็นชุดตัวเลขชุดเดียว ไม่ใช่เลขที่นึกออกตอนนั้น
      ระยะที่ไม่ได้มาจากชุดเดียวกันคือสาเหตุที่หน้าเว็บดู "เกือบตรง" แต่ไม่ตรง */
@@ -61,6 +71,20 @@
   --shadow-sm:0 1px 2px rgba(0,0,0,.3);
 }
 
+/* ══ โหมดสว่าง — สีชุดเดียวกับหน้าหลัก (#FAFAF9 · การ์ดขาว · เส้นบาง · ส้ม Cendon) ══ */
+/* ป้ายหัวข้อภาษาไทยไม่ตั้งตัวห่าง (ไทยที่ตัวห่างอ่านยาก) — แบบเดียวกับหน้าหลัก */
+:is(.ng-t,.rs-h,.rg-h,.eyebrow,.stat .l,th,.hcell small,.role-pill,.rolechip,.cmd-i .grp,.tour-step,.wk-m .hd .ps,.mag-admin .tag,.nda-meta span,.gate-card h1){letter-spacing:.02em!important}
+html[data-theme="light"]{
+  --z-1000:#FFFFFF; --z-950:#FAFAF9; --z-925:#F6F6F5; --z-900:#FFFFFF;
+  --z-850:#F4F4F5; --z-800:#EDEDEF; --z-700:#E4E4E7; --z-600:#D4D4D8;
+  --line:rgba(9,9,11,.08); --line2:rgba(9,9,11,.05); --line3:rgba(9,9,11,.14);
+  --ink:#09090B; --mut:#71717A; --faint:#A1A1AA; --disabled:#C4C4C8;
+  --acc:#E9682A; --acc-lo:#D5561C; --acc-hi:#F07A36; --acc-2:#E9682A; --acc-d:#C2501A;
+  --acc-08:rgba(233,104,42,.08); --acc-14:rgba(233,104,42,.12); --acc-30:rgba(233,104,42,.30);
+  --hl:9,9,11;
+  --shadow:0 24px 60px -30px rgba(9,9,11,.25),0 2px 8px -4px rgba(9,9,11,.08);
+  --shadow-sm:0 1px 2px rgba(9,9,11,.05);
+  color-scheme:light}
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-tap-highlight-color:transparent}
 /* ไม่มีไล่สีที่พื้นหลัง — พื้นเรียบสม่ำเสมอทั้งจอ
@@ -97,7 +121,7 @@ h1,h2,h3{font-weight:600;letter-spacing:.01em}
 /* soft-3D buttons */
 .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;font-weight:600;font-size:13.5px;
   background:var(--surface2);border:1px solid var(--line);color:var(--ink);transition:transform .3s cubic-bezier(.32,.72,0,1),border-color .18s,background .18s,box-shadow .2s;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
+  box-shadow:inset 0 1px 0 rgba(var(--hl),.06)}
 .btn:hover{border-color:var(--acc)}
 .btn:active{transform:scale(.96)}
 .btn.primary{background:var(--grad);color:#fff;border:none;box-shadow:inset 0 1.5px 0 rgba(255,255,255,.4),inset 0 -2px 3px rgba(0,0,0,.18),0 10px 24px -10px rgba(217,94,60,.6)}
@@ -257,7 +281,7 @@ main{min-width:0}
   padding:9px 2px;font-size:13px}
 .brow+.brow{border-top:1px solid var(--line)}
 .brow .lb{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.brow .bar{height:7px;border-radius:5px;background:rgba(255,255,255,.08);overflow:hidden}
+.brow .bar{height:7px;border-radius:5px;background:rgba(var(--hl),.08);overflow:hidden}
 .brow .bar i{display:block;height:100%;border-radius:5px;background:var(--grad,linear-gradient(90deg,var(--acc),var(--acc2,var(--acc))))}
 .brow .vv{font-variant-numeric:tabular-nums;font-weight:700;color:var(--mut);min-width:44px;text-align:right}
 
@@ -279,7 +303,7 @@ main{min-width:0}
 
 /* หน้าสุขภาพระบบ */
 .hgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
-.hcell{padding:13px 15px;border-radius:13px;border:1px solid var(--line);background:var(--surface-2,rgba(255,255,255,.03))}
+.hcell{padding:13px 15px;border-radius:13px;border:1px solid var(--line);background:var(--surface-2,rgba(var(--hl),.03))}
 .hcell small{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--faint)}
 .hcell b{display:block;font-size:14.5px;font-weight:700;margin-top:4px;word-break:break-word}
 .hcell.ok b{color:var(--ok,#4CC38A)} .hcell.bad b{color:var(--danger)}
@@ -294,7 +318,7 @@ main{min-width:0}
 /* ===== STATS ===== */
 .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:20px}
 .stat{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;position:relative;overflow:hidden;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);animation:fade .5s backwards}
+  box-shadow:inset 0 1px 0 rgba(var(--hl),.05);animation:fade .5s backwards}
 /* ไล่จังหวะได้ไม่จำกัดจำนวนใบ ไม่ต้องกลับมาเพิ่มบรรทัดทุกครั้งที่เพิ่มการ์ด */
 .stat{animation-delay:calc(var(--i,0) * 45ms)}
 .stat .ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:20px;color:#0A0A0A;margin-bottom:12px;background:var(--acc)}
@@ -752,10 +776,10 @@ html[data-idle="1"] *{animation-play-state:paused!important}
   background:var(--danger,#D64A4A);color:#fff}
 .nav-badge.on{display:grid}
 .fb-filter{display:flex;flex-wrap:wrap;gap:7px}
-.fb-filter button{padding:7px 13px;border-radius:999px;border:1px solid var(--line,rgba(255,255,255,.12));
+.fb-filter button{padding:7px 13px;border-radius:999px;border:1px solid var(--line,rgba(var(--hl),.12));
   background:none;color:inherit;font:inherit;font-size:13px;cursor:pointer}
 .fb-filter button.on{background:var(--acc,#E08A3C);border-color:transparent;color:#141414;font-weight:600}
-.fb-item{display:flex;gap:12px;padding:14px 4px;border-bottom:1px solid var(--line,rgba(255,255,255,.08))}
+.fb-item{display:flex;gap:12px;padding:14px 4px;border-bottom:1px solid var(--line,rgba(var(--hl),.08))}
 .fb-item:last-child{border-bottom:0}
 .fb-ic{width:36px;height:36px;flex-shrink:0;border-radius:11px;display:grid;place-items:center;font-size:18px}
 .fb-ic.bug{background:rgba(214,74,74,.15);color:#F26D6D}
@@ -769,7 +793,7 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 .fb-msg{font-size:13.5px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
 .fb-meta{margin-top:5px;font-size:11.5px;color:var(--faint,#888)}
 .fb-act{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
-.fb-act button{padding:5px 11px;border-radius:9px;border:1px solid var(--line,rgba(255,255,255,.12));
+.fb-act button{padding:5px 11px;border-radius:9px;border:1px solid var(--line,rgba(var(--hl),.12));
   background:none;color:inherit;font:inherit;font-size:12px;cursor:pointer}
 .fb-act button:hover{background:rgba(127,127,127,.14)}
 .fb-st{padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600}
@@ -780,7 +804,7 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 </style>
 <style id="kbcss">
 .kb-item{display:flex;gap:14px;padding:14px 4px;align-items:flex-start;
-  border-bottom:1px solid var(--line,rgba(255,255,255,.08))}
+  border-bottom:1px solid var(--line,rgba(var(--hl),.08))}
 .kb-item:last-child{border-bottom:0}
 .kb-bd{flex:1;min-width:0}
 .kb-h{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:5px}
@@ -795,7 +819,7 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 .kb-keys{margin-top:6px;font-size:11.5px;color:#E08A3C;opacity:.8}
 .kb-act{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
 .kb-act button{padding:6px 13px;border-radius:9px;cursor:pointer;font:inherit;font-size:12.5px;
-  border:1px solid var(--line,rgba(255,255,255,.12));background:none;color:inherit}
+  border:1px solid var(--line,rgba(var(--hl),.12));background:none;color:inherit}
 .kb-act button:hover{background:rgba(127,127,127,.14)}
 .kb-act button.danger{color:#F26D6D}
 @media(max-width:600px){.kb-item{flex-direction:column;gap:8px}.kb-act{flex-direction:row}}
@@ -853,9 +877,9 @@ h1,h2,h3{letter-spacing:-.02em;font-weight:600}
   color:var(--mut);gap:10px;border-left:0;position:relative;
   transition:background var(--t-fast) var(--ease),color var(--t-fast) var(--ease)}
 .nav a .ti{font-size:16.5px;color:var(--disabled);transition:color var(--t-fast) var(--ease)}
-.nav a:hover{background:rgba(255,255,255,.035);color:var(--ink)}
+.nav a:hover{background:rgba(var(--hl),.035);color:var(--ink)}
 .nav a:hover .ti{color:var(--mut)}
-.nav a.on{background:rgba(255,255,255,.065);color:var(--ink);font-weight:500}
+.nav a.on{background:rgba(var(--hl),.065);color:var(--ink);font-weight:500}
 .nav a.on .ti{color:var(--acc)}
 .ng{gap:1px;margin-bottom:var(--s4)}
 .ng+.ng{border-top:0;padding-top:0}
@@ -872,14 +896,14 @@ h1,h2,h3{letter-spacing:-.02em;font-weight:600}
 .me .fb{background:var(--surface2);color:var(--acc);font-family:var(--kd);font-weight:600;font-size:12px}
 .me b{font-size:12.5px;font-weight:500}
 .rolechip{font-family:var(--mono);font-size:8.5px;font-weight:500;letter-spacing:.1em;
-  padding:2px 6px;border-radius:4px;background:rgba(255,255,255,.05);color:var(--mut);
+  padding:2px 6px;border-radius:4px;background:rgba(var(--hl),.05);color:var(--mut);
   border:0;text-transform:uppercase;margin-top:3px}
 .rolechip.owner{background:var(--acc-14);color:var(--acc)}
 .rolechip .ti{display:none}
 .foot-row{display:flex;gap:3px;margin-top:var(--s2)}
 .foot-row .btn{flex:1;justify-content:center;padding:8px 0;background:transparent;
   border-color:transparent;color:var(--disabled)}
-.foot-row .btn:hover{background:rgba(255,255,255,.05);color:var(--ink);border-color:transparent}
+.foot-row .btn:hover{background:rgba(var(--hl),.05);color:var(--ink);border-color:transparent}
 .foot-row .btn .ti{font-size:16px}
 .foot-row .btn.x:hover{color:var(--danger)}
 
@@ -900,7 +924,7 @@ h1,h2,h3{letter-spacing:-.02em;font-weight:600}
 .cmdk:hover{border-color:var(--line3);background:var(--surface2);color:var(--mut)}
 .cmdk .ti{font-size:15px}
 .cmdk kbd{margin-left:auto;font-family:var(--mono);font-size:9.5px;padding:2px 5px;
-  border-radius:4px;background:rgba(255,255,255,.06);color:var(--disabled);letter-spacing:.04em}
+  border-radius:4px;background:rgba(var(--hl),.06);color:var(--disabled);letter-spacing:.04em}
 
 /* ── ปุ่ม ──
    กดแล้วต้องยุบลงเล็กน้อย เพราะการตอบสนองตอนกดคือคำยืนยันว่าระบบรับคำสั่งแล้ว
@@ -916,7 +940,7 @@ h1,h2,h3{letter-spacing:-.02em;font-weight:600}
 .btn.primary{background:var(--acc);color:var(--z-1000);border-color:var(--acc);font-weight:600}
 .btn.primary:hover{background:var(--acc-hi);border-color:var(--acc-hi)}
 .btn.ghost{background:transparent;border-color:var(--line2)}
-.btn.ghost:hover{background:rgba(255,255,255,.05)}
+.btn.ghost:hover{background:rgba(var(--hl),.05)}
 .btn.danger{background:transparent;color:var(--danger);border-color:rgba(196,115,107,.3)}
 .btn.danger:hover{background:rgba(196,115,107,.12);border-color:rgba(196,115,107,.5)}
 .btn:focus-visible,.input:focus-visible,.mini-select:focus-visible,
@@ -983,14 +1007,14 @@ h1,h2,h3{letter-spacing:-.02em;font-weight:600}
 /* ── กราฟ ── */
 .graph{height:168px}
 .graph .gl{stroke:var(--acc);stroke-width:1.5}
-.graph .gg{stroke:rgba(255,255,255,.045)}
+.graph .gg{stroke:rgba(var(--hl),.045)}
 .graph .gt{border-radius:6px;background:var(--z-800);border-color:var(--line3);
   font-family:var(--mono);font-size:10.5px;font-weight:500;padding:5px 8px;
   box-shadow:var(--shadow-sm)}
 .chart-x div{font-family:var(--mono);font-size:9px;color:var(--disabled);letter-spacing:.04em}
 .brow{padding:10px 0;font-size:12.5px}
 .brow+.brow{border-top:1px solid var(--line2)}
-.brow .bar{height:4px;border-radius:2px;background:rgba(255,255,255,.06)}
+.brow .bar{height:4px;border-radius:2px;background:rgba(var(--hl),.06)}
 .brow .bar i{background:var(--acc-lo);border-radius:2px}
 .brow .vv{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--mut)}
 
@@ -999,15 +1023,15 @@ th{padding:10px 14px;background:transparent;border-bottom:1px solid var(--line2)
   color:var(--disabled)}
 td{padding:12px 14px;border-bottom:1px solid var(--line2);font-size:13px}
 tbody tr{transition:background var(--t-fast) var(--ease)}
-tbody tr:hover{background:rgba(255,255,255,.022)}
+tbody tr:hover{background:rgba(var(--hl),.022)}
 .u-cell img,.u-cell .fb{width:28px;height:28px;border-radius:8px}
 .u-cell .fb{background:var(--surface2);color:var(--acc);font-weight:600;font-size:12px}
 .role-pill{font-family:var(--mono);font-size:9px;font-weight:500;letter-spacing:.1em;
-  padding:3px 7px;border-radius:5px;background:rgba(255,255,255,.05);color:var(--mut);
+  padding:3px 7px;border-radius:5px;background:rgba(var(--hl),.05);color:var(--mut);
   text-transform:uppercase}
 .role-pill.owner{background:var(--acc-14);color:var(--acc)}
-.role-pill.admin{background:rgba(255,255,255,.07);color:var(--ink)}
-.role-pill.moderator,.role-pill.user{background:rgba(255,255,255,.04);color:var(--faint)}
+.role-pill.admin{background:rgba(var(--hl),.07);color:var(--ink)}
+.role-pill.moderator,.role-pill.user{background:rgba(var(--hl),.04);color:var(--faint)}
 .mini-select{padding:5px 8px;font-size:12px;border-radius:6px}
 
 /* ── แท็บย่อย ── */
@@ -1093,7 +1117,7 @@ tbody tr:hover{background:rgba(255,255,255,.022)}
 .pe-pane{display:none}
 .pe-pane.on{display:block}
 #peTabs .cnt{font-family:var(--mono);font-size:9.5px;padding:1px 5px;border-radius:4px;
-  background:rgba(255,255,255,.07);color:var(--faint);margin-left:2px}
+  background:rgba(var(--hl),.07);color:var(--faint);margin-left:2px}
 #peTabs button.on .cnt{background:var(--acc-14);color:var(--acc)}
 .pe-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(252px,1fr));gap:var(--s3)}
 .pe-card{background:var(--surface);border:1px solid var(--line2);border-radius:var(--r);
@@ -1113,12 +1137,12 @@ tbody tr:hover{background:rgba(255,255,255,.022)}
   border-radius:3px;padding:1px 4px;vertical-align:middle}
 .pe-edit{width:26px;height:26px;border-radius:6px;background:none;border:0;color:var(--disabled);
   cursor:pointer;display:grid;place-items:center;font-size:16px}
-.pe-edit:hover{background:rgba(255,255,255,.06);color:var(--ink)}
+.pe-edit:hover{background:rgba(var(--hl),.06);color:var(--ink)}
 .pe-tags{display:flex;gap:6px;flex-wrap:wrap;font-size:11.5px}
 .pe-pos{display:inline-flex;align-items:center;gap:5px;color:var(--acc);
   background:var(--acc-08);border-radius:5px;padding:3px 8px}
 .pe-pos .ti{font-size:13px}
-.pe-dep{color:var(--faint);background:rgba(255,255,255,.045);border-radius:5px;padding:3px 8px}
+.pe-dep{color:var(--faint);background:rgba(var(--hl),.045);border-radius:5px;padding:3px 8px}
 .pe-ban{color:var(--danger);background:rgba(196,115,107,.12);border-radius:5px;padding:3px 8px}
 .pe-act{display:flex;gap:6px;margin-top:auto}
 .pe-self{font-size:11.5px;color:var(--disabled);margin-top:auto;padding-top:4px}
@@ -1315,10 +1339,10 @@ main{background-attachment:local}
 .rs-h span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rs-x{width:24px;height:24px;border-radius:5px;border:0;background:none;color:var(--disabled);
   cursor:pointer;display:grid;place-items:center;font-size:15px;font-family:inherit}
-.rs-x:hover{background:rgba(255,255,255,.07);color:var(--ink)}
+.rs-x:hover{background:rgba(var(--hl),.07);color:var(--ink)}
 .rs-list,.rs-sc{flex:1;overflow-y:auto;padding:8px}
 .rs-p{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:6px;position:relative}
-.rs-p:hover{background:rgba(255,255,255,.045)}
+.rs-p:hover{background:rgba(var(--hl),.045)}
 .rs-av{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex-shrink:0;
   background:var(--surface2);color:var(--acc);font-weight:600;font-size:12.5px;position:relative}
 .rs-dot{position:absolute;right:-2px;bottom:-2px;width:10px;height:10px;border-radius:50%;
@@ -1338,7 +1362,7 @@ main{background-attachment:local}
 .rs-none{font-size:11.5px;color:var(--disabled);padding:14px 8px;line-height:1.7}
 .sc{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:6px;cursor:pointer;
   font-size:12.5px;color:var(--mut);position:relative}
-.sc:hover{background:rgba(255,255,255,.045);color:var(--ink)}
+.sc:hover{background:rgba(var(--hl),.045);color:var(--ink)}
 .sc .ti{font-size:14px;color:var(--disabled);flex-shrink:0}
 .sc span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sc-x{width:20px;height:20px;border-radius:4px;border:0;background:none;color:var(--disabled);
@@ -1439,7 +1463,7 @@ main{background-attachment:local}
 .pend-load{font-size:12.5px;color:var(--faint)}
 .pend-x{width:26px;height:26px;border-radius:6px;border:0;background:none;color:var(--disabled);
   cursor:pointer;display:grid;place-items:center;font-size:15px}
-.pend-x:hover{background:rgba(255,255,255,.07);color:var(--ink)}
+.pend-x:hover{background:rgba(var(--hl),.07);color:var(--ink)}
 #wkMic.rec{color:var(--danger);border-color:rgba(196,115,107,.4);font-family:var(--mono);font-size:11px}
 .msg-img{max-width:min(320px,70%);max-height:min(260px,32vh);object-fit:cover;
   border-radius:var(--r-sm);display:block;margin-top:4px;
@@ -1455,8 +1479,8 @@ main{background-attachment:local}
 .mtwrap{display:grid;grid-template-columns:340px 1fr;gap:var(--s5);align-items:start}
 .mt{display:flex;gap:var(--s3);padding:12px;border-radius:var(--r-sm);cursor:pointer;
   border:1px solid transparent;transition:background var(--t-fast) var(--ease),border-color var(--t-fast) var(--ease)}
-.mt:hover{background:rgba(255,255,255,.03)}
-.mt.on{background:rgba(255,255,255,.055);border-color:var(--line2)}
+.mt:hover{background:rgba(var(--hl),.03)}
+.mt.on{background:rgba(var(--hl),.055);border-color:var(--line2)}
 .mt-d{text-align:center;flex-shrink:0;width:52px}
 .mt-d b{display:block;font-size:12.5px;font-weight:600;color:var(--ink)}
 .mt-d span{font-family:var(--mono);font-size:10.5px;color:var(--disabled)}
@@ -1475,7 +1499,7 @@ main{background-attachment:local}
 .mt-ag{margin:0;padding-left:20px;font-size:13.5px;line-height:1.9;color:var(--ink)}
 .mt-ag li::marker{color:var(--acc);font-family:var(--mono);font-size:11px}
 .mt-at{display:flex;flex-wrap:wrap;gap:6px}
-.mt-p{font-size:11.5px;padding:3px 9px;border-radius:5px;background:rgba(255,255,255,.05);color:var(--mut)}
+.mt-p{font-size:11.5px;padding:3px 9px;border-radius:5px;background:rgba(var(--hl),.05);color:var(--mut)}
 .mt-sum{margin-top:var(--s4);padding:var(--s4);border-radius:var(--r-sm);
   background:var(--acc-08);border:1px solid var(--acc-30)}
 .mt-sum .tx{font-size:13.5px;line-height:1.8;white-space:pre-wrap;margin-top:8px;color:var(--ink)}
@@ -1520,18 +1544,18 @@ body.chatfull #schemaBanner{display:none}
 .rg-add{width:18px;height:18px;border-radius:4px;display:grid;place-items:center;
   font-size:15px;line-height:1;color:var(--disabled);background:none;border:0;cursor:pointer;
   transition:background var(--t-fast) var(--ease),color var(--t-fast) var(--ease)}
-.rg-add:hover{background:rgba(255,255,255,.08);color:var(--ink)}
+.rg-add:hover{background:rgba(var(--hl),.08);color:var(--ink)}
 .rm{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:5px;cursor:pointer;
   font-size:13px;color:var(--faint);transition:background var(--t-fast) var(--ease),color var(--t-fast) var(--ease)}
 .rm .ti{font-size:15px;color:var(--disabled);flex-shrink:0}
 .rm .hash{font-size:15px;color:var(--disabled);flex-shrink:0;width:15px;text-align:center;font-weight:500}
 .rm .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.rm:hover{background:rgba(255,255,255,.045);color:var(--ink)}
+.rm:hover{background:rgba(var(--hl),.045);color:var(--ink)}
 .rm:hover .hash,.rm:hover .ti{color:var(--mut)}
 /* ห้องที่มีข้อความใหม่ ตัวหนังสือสว่างขึ้นเอง โดยไม่ต้องรอให้ตาไปเจอตัวเลข */
 .rm.un{color:var(--ink);font-weight:600}
 .rm.un .hash,.rm.un .ti{color:var(--mut)}
-.rm.on{background:rgba(255,255,255,.075);color:var(--ink);font-weight:500}
+.rm.on{background:rgba(var(--hl),.075);color:var(--ink);font-weight:500}
 .rm.on .ti,.rm.on .hash{color:var(--acc)}
 .rm .nav-badge{margin-left:auto}
 .hash.big{color:var(--acc);font-weight:500}
@@ -1561,7 +1585,7 @@ body.chatfull #schemaBanner{display:none}
   font-family:var(--kd);font-weight:600;font-size:13px;width:30px;height:30px}
 .wk-m .hd b{font-size:13px;font-weight:600}
 .wk-m .hd .ps{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;border:0;
-  background:rgba(255,255,255,.05);color:var(--faint);padding:2px 6px;border-radius:4px}
+  background:rgba(var(--hl),.05);color:var(--faint);padding:2px 6px;border-radius:4px}
 .wk-m .hd .tm{font-family:var(--mono);font-size:10px;color:var(--disabled)}
 .wk-m .tx{font-size:13.5px;line-height:1.7;color:var(--ink)}
 .wk-in{border-top-color:var(--line2);padding-top:var(--s4);margin-top:var(--s4)}
@@ -1645,7 +1669,7 @@ td .empty::before,td.empty::before{display:none}
 .cmd-i .ti{font-size:16px;color:var(--disabled)}
 .cmd-i .grp{margin-left:auto;font-family:var(--mono);font-size:9px;letter-spacing:.1em;
   text-transform:uppercase;color:var(--disabled)}
-.cmd-i.on{background:rgba(255,255,255,.06);color:var(--ink)}
+.cmd-i.on{background:rgba(var(--hl),.06);color:var(--ink)}
 .cmd-i.on .ti{color:var(--acc)}
 .cmd-foot{display:flex;gap:var(--s4);padding:9px 15px;border-top:1px solid var(--line2);
   font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;color:var(--disabled)}

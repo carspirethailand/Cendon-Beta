@@ -1957,7 +1957,7 @@ td .empty::before,td.empty::before{display:none}
 
       <!-- MAGAZINE -->
       <section class="view" id="v-magazine">
-        <div class="page-head"><div><h1>นิตยสาร</h1><p>ข่าวอัปเดตเองทุก 3 ชั่วโมงจากสำนักข่าวจริง · ข่าวที่ทีมงานเพิ่มเองไม่ถูกลบตอนอัปเดต และขึ้นก่อน</p></div>
+        <div class="page-head"><div><h1>นิตยสาร</h1><p>ข่าวอัปเดตเองทุก 5 ชั่วโมงจากสำนักข่าวจริง · มี 20 ช่อง ข่าวใหม่เข้า ข่าวเก่าสุดออก · ข่าวที่ทีมงานเพิ่มเองไม่นับในช่อง ไม่ถูกลบ และขึ้นก่อน</p></div>
           <div style="display:flex;gap:8px">
             <button class="btn" onclick="syncShop()" id="syncShopBtn" style="color:var(--warn)"><i class="ti ti-sparkles"></i> AI หาสินค้า Shop</button>
             <button class="btn" onclick="syncMag()" id="syncBtn"><i class="ti ti-refresh"></i> อัปเดตข่าวตอนนี้</button>
@@ -5268,7 +5268,9 @@ async function loadMagStatus(){
     const when=new Date(s.at).toLocaleString("th-TH",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
     el.innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline;font-size:13px">
         <b style="color:${s.error?"var(--danger,#E5484D)":"var(--ok,#16a34a)"}">${s.error?"รอบล่าสุดไม่สำเร็จ":"อัปเดตสำเร็จ"}</b>
-        <span>${esc(when)}</span><span>เก็บ ${s.kept||0} ข่าว จากที่คัด ${s.picked||0}</span>
+        <span>${esc(when)}</span>${s.slots?`<span>ข่าวใหม่ ${s.added||0} · ตัดข่าวเก่า ${s.removed||0} · ใช้ ${s.total||0}/${s.slots} ช่อง</span>`
+          :`<span>เก็บ ${s.kept||0} ข่าว จากที่คัด ${s.picked||0}</span>`}
+        ${s.next_at?`<span style="color:var(--mut)">รอบถัดไป ${esc(new Date(s.next_at).toLocaleString("th-TH",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}))}</span>`:""}
         <span>${s.mode==="ai"?"ใช้ AI ค้นเว็บแทน (ดึงฟีดได้น้อย)":"จากฟีดข่าว"}</span>
         <span style="color:var(--mut)">AI: ${esc(s.model||"-")} ${s.own?"· คีย์ของนิตยสาร":"· คีย์เดียวกับแชต (คนละรุ่น)"}</span></div>
       ${s.error?`<div style="margin-top:8px;font-size:13px;color:var(--danger,#E5484D)">${esc(s.error)}</div>`:""}

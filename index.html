@@ -2277,7 +2277,7 @@ function openRes(q,noHist){
       <p class="lx-dxs nt">${esc(g.summary||"")}</p>
       ${(g.possibleCauses||[]).length?`<ol class="lx-cz">${g.possibleCauses.slice(0,3).map(c=>`<li><b class="nt">${esc(c.cause)}</b>${c.likelihood?`<em>${esc(c.likelihood)}</em>`:""}<small class="nt">${esc(c.explanation||"")}</small></li>`).join("")}</ol>`:""}
       <div class="lx-kv">${g.recommendedAction?`<p><span>ควรทำ</span><b class="nt">${esc(g.recommendedAction)}</b></p>`:""}${g.estimatedCost?`<p><span>ค่าซ่อมโดยประมาณ</span><b class="nt">${esc(g.estimatedCost)}</b></p>`:lo?`<p><span>ช่างแถวนี้เริ่มที่</span><b>฿${money(lo)}</b></p>`:""}</div>
-      <p class="lx-dxcar">${car?`<i class="ti ti-car"></i>วิเคราะห์สำหรับ <b class="nt">${esc([car.name,car.year].filter(Boolean).join(" "))}</b>`:`<i class="ti ti-info-circle"></i>ยังไม่ได้ระบุรถ — <a href="/garage">เพิ่มรถ</a> แล้ว AI จะวิเคราะห์ตามรุ่นรถของคุณ`}</p>
+      <p class="lx-dxcar">${car?`<i class="ti ti-car"></i>วิเคราะห์สำหรับ <b class="nt">${esc([car.name,car.year].filter(Boolean).join(" "))}</b>`:`<i class="ti ti-info-circle"></i>ยังไม่ได้ระบุรถ — <a href="/garage?add=1">เพิ่มรถ</a> แล้ว AI จะวิเคราะห์ตามรุ่นรถของคุณ`}</p>
       <footer><a class="lx-gh" href="/chat?q=${encodeURIComponent(q)}"><i class="ti ti-message-circle"></i>คุยต่อกับ AI</a><small>${esc(g.disclaimer||"ประเมินเบื้องต้น ควรให้ช่างตรวจจริง")}</small></footer>
     </article>`;
   }).catch(err=>{if(RESQ!==q)return;$("resAi").innerHTML=`<div class="lx-think off"><i class="ti ti-cloud-off"></i><div><b>${/quota|429/.test(err.message)?"วันนี้ใช้ AI ครบโควตาแล้ว":"ตอนนี้วิเคราะห์ไม่ได้"}</b><small>ดูช่างที่เกี่ยวข้องด้านล่างได้เลย หรือ <a href="/chat?q=${encodeURIComponent(q)}">คุยกับ AI</a></small></div></div>`});
@@ -2336,7 +2336,7 @@ function drawMyCar(){
   const cars=ls.get("spire_garage",[]),c=cars.find(x=>x.id===ls.get("spire_selCar",""))||cars[0];
   const el=$("myCar");
   /* ยังไม่มีรถ: ชวนเพิ่มรถทุกครั้ง พร้อมบอกว่าได้อะไร — ข้อมูลรถคือหัวใจที่ทำให้ AI และช่างแม่นขึ้น */
-  if(!c){el.hidden=false;el.innerHTML=`<a href="/garage" class="lx-car lx-addcar"><span class="lx-cari"><i class="ti ti-car-garage"></i></span><span class="lx-cart"><b>เพิ่มรถของคุณ</b><small>AI วิเคราะห์แม่นขึ้นตามรุ่นรถ · ช่างรู้รุ่นก่อนเสนอราคา · เตือนเช็กระยะให้</small></span><span class="lx-plus"><i class="ti ti-plus"></i></span></a>`;return}
+  if(!c){el.hidden=false;el.innerHTML=`<a href="/garage?add=1" class="lx-car lx-addcar"><span class="lx-cari"><i class="ti ti-car-garage"></i></span><span class="lx-cart"><b>เพิ่มรถของคุณ</b><small>AI วิเคราะห์แม่นขึ้นตามรุ่นรถ · ช่างรู้รุ่นก่อนเสนอราคา · เตือนเช็กระยะให้</small></span><span class="lx-plus"><i class="ti ti-plus"></i></span></a>`;return}
   el.hidden=false;
   el.innerHTML=`<a href="/garage" class="lx-car"><span class="lx-cari"><i class="ti ti-car"></i></span><span class="lx-cart"><small>รถของฉัน</small><b class="nt">${esc([c.name,c.year].filter(Boolean).join(" "))}</b></span><span class="lx-carm nt">${c.mileage?money(c.mileage)+" กม.":"ดูสมุดรถ"} <i class="ti ti-chevron-right"></i></span></a>`;
 }

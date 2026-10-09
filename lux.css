@@ -1,0 +1,77 @@
+/* ══════════════════════════════════════════════════════════════════
+   LUX — หน้าตาชุดเดียวกับหน้าหลัก (index.html) สำหรับหน้าอื่นในแอป
+   (การาจ · ห้องแชต · นิตยสาร · อะไหล่ · บัญชี/ตั้งค่า · แพ็กเกจ)
+
+   สีกลางแบบแกลเลอรี · การ์ดพื้นเรียบเส้นบาง ไม่มีเงาหนา เงามัน หรือเกล็ด
+   ส้ม Cendon เป็นสีเน้นราว 10% (ปุ่มหลัก · ขอบช่องที่โฟกัส · จุดสถานะ)
+   ค่าสีชุดสว่าง/มืดต้องตรงกับบล็อก "LUX" ใน index.html — แก้ที่หนึ่งต้องแก้อีกที่
+   ไฟล์นี้โหลดท้ายสุดของ <head> จึงชนะสไตล์เดิมของแต่ละหน้า
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── สี ──
+   ใช้ html:root[...] ให้ชนะชุดสีที่แต่ละหน้าประกาศซ้ำไว้ท้ายไฟล์ (เช่นห้องแชต) ไม่ว่าจะโหลดก่อนหรือหลัง */
+html:root[data-theme="dark"]{--bg:#09090B;--surface:#111113;--surface-2:#18181B;--ink:#FAFAFA;--muted:#A1A1AA;--faint:#52525B;
+  --line:rgba(255,255,255,.08);--line-2:rgba(255,255,255,.05);--co:#F07A36;--co-soft:rgba(240,122,54,.12);
+  --shadow:0 1px 0 rgba(255,255,255,.04) inset,0 24px 48px -32px rgba(0,0,0,.9);--shadow-sm:0 1px 0 rgba(255,255,255,.03) inset;
+  /* ห้องแชตและหน้าตั้งค่าใช้ชุด --c-* */
+  --c-bg0:#09090B;--c-bg1:#09090B;--c-bg2:#111113;--c-ink:#FAFAFA;--c-mut:#A1A1AA;--c-faint:#52525B;
+  --c-line:rgba(255,255,255,.08);--c-line2:rgba(255,255,255,.05);--c-glass:rgba(255,255,255,.04);--c-glass2:rgba(255,255,255,.07);
+  --c-acc:#F07A36;--c-acc-soft:rgba(240,122,54,.12);--c-grad:#F07A36;--c-user:#F07A36;
+  --pill-bg:rgba(17,17,19,.86);--sheet-bg:rgba(17,17,19,.97);--gloss:0;--gloss-card:0}
+html:root[data-theme="light"]{--bg:#FAFAF9;--surface:#FFFFFF;--surface-2:#F4F4F5;--ink:#09090B;--muted:#71717A;--faint:#A1A1AA;
+  --line:rgba(9,9,11,.08);--line-2:rgba(9,9,11,.05);--co:#E9682A;--co-soft:rgba(233,104,42,.10);
+  --shadow:0 1px 2px rgba(9,9,11,.04),0 24px 48px -36px rgba(9,9,11,.25);--shadow-sm:0 1px 2px rgba(9,9,11,.05);
+  --c-bg0:#FAFAF9;--c-bg1:#FAFAF9;--c-bg2:#FFFFFF;--c-ink:#09090B;--c-mut:#71717A;--c-faint:#A1A1AA;
+  --c-line:rgba(9,9,11,.08);--c-line2:rgba(9,9,11,.05);--c-glass:rgba(9,9,11,.03);--c-glass2:rgba(9,9,11,.05);
+  --c-acc:#E9682A;--c-acc-soft:rgba(233,104,42,.10);--c-grad:#E9682A;--c-user:#E9682A;
+  --pill-bg:rgba(255,255,255,.86);--sheet-bg:rgba(255,255,255,.97);--gloss:0;--gloss-card:0}
+/* ธีมอื่น (มหาสมุทร ต้นไม้ ลาวา) ยังไม่มี --co — ใช้สีเน้นของธีมนั้น */
+html:not([data-theme="light"]):not([data-theme="dark"]){--co:var(--accent);--co-soft:color-mix(in srgb,var(--accent) 14%,transparent)}
+
+/* ── พื้นหลัง: แสงอุ่นจาง ๆ แบบหน้าหลัก · ไม่มีวงแสงกลางจอ ลายโครงรถ หรือออร่าใหญ่ ── */
+body{background:var(--bg)!important}
+html[data-theme="light"] body::before,html[data-theme="dark"] body::before{opacity:1!important;
+  background:radial-gradient(50% 45% at 10% 4%,var(--c-aura1),transparent 60%),radial-gradient(45% 40% at 95% 10%,var(--c-aura2),transparent 60%),
+    radial-gradient(60% 50% at 80% 100%,var(--c-aura3),transparent 60%)!important}
+#lightPool,.wf,.ring,.deco{display:none!important}
+/* ลายประดับหัวหน้าอะไหล่ (ม่าน เสา ลายตาราง) */
+#v-shop .scroll::before,#v-shop .scroll::after{display:none!important}
+html[data-theme="light"] .bg-grad,html[data-theme="dark"] .bg-grad,
+html[data-theme="light"] .w-aura,html[data-theme="dark"] .w-aura{display:none!important}
+
+/* ── การ์ด: พื้นเรียบ เส้นบาง ── */
+.card,.widget,.set-card{background:var(--surface)!important;border:1px solid var(--line)!important;box-shadow:none!important;background-image:none!important}
+.e3::after,.modes{display:none!important}
+
+/* ── ปุ่ม: ปุ่มหลักส้มเรียบแบบปุ่ม "ถาม" ของหน้าหลัก · ปุ่มรองโปร่ง เส้นบาง ── */
+.btn.primary{background:var(--co)!important;background-image:none!important;color:#fff!important;border:0!important;
+  box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 8px 20px -10px var(--co)!important;text-shadow:none!important}
+.btn.primary::before,.btn.primary::after,.fab::after,.btn-signin::after{display:none!important}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn:not(.primary){background:transparent!important;background-image:none!important;border:1px solid var(--line)!important;box-shadow:none!important;color:var(--ink)}
+.btn:not(.primary):hover{border-color:var(--co)!important;color:var(--co)}
+
+/* ── ช่องกรอก / ตัวเลือก ── */
+.input,select,textarea,.custom-select-trigger{background:var(--surface)!important;background-image:none!important;border:1px solid var(--line)!important;
+  box-shadow:none!important;color:var(--ink)}
+.custom-select-trigger.disabled{opacity:.55}
+.custom-select-options{background:var(--surface)!important;border:1px solid var(--line)!important;box-shadow:var(--shadow)!important}
+.input:focus,input:focus,textarea:focus,select:focus,.custom-select.open .custom-select-trigger{outline:none;border-color:var(--co)!important;box-shadow:0 0 0 3px var(--co-soft)!important}
+
+/* ── หัวหน้า ── */
+.section-title{letter-spacing:-.02em}
+.section-sub{color:var(--muted)}
+
+/* ── แถวรถ / ตัวเลือกรถ: แบบ "รถของฉัน" บนหน้าหลัก — พื้นเรียบ เส้นบาง ไอคอนบนพื้นเทาอ่อน ── */
+.gate-car{background:var(--surface)!important;background-image:none!important;border:1px solid var(--line)!important;box-shadow:none!important}
+.gate-car:hover{border-color:var(--co)!important}
+.gate-car .ic,.sp-car .ic{background:var(--surface-2)!important;background-image:none!important;color:var(--co)!important;box-shadow:none!important}
+.gate-car .ic::before,.gate-car .ic::after,.sp-car .ic::before,.sp-car .ic::after{display:none!important}
+
+/* ── ปุ่มหลักแบบเก่าที่ยังเป็นไล่สีทอง/มันวาว ──
+   ห้องแชต: โลโก้หน้า "เลือกรถของคุณ" และปุ่ม "ไปเพิ่มรถในการาจ" · ปุ่มแชตลอยมุมจอ (เดสก์ท็อป) */
+.big-logo{background:var(--co)!important;background-image:none!important;box-shadow:0 14px 30px -14px var(--co)!important}
+.act-btn.primary{background:var(--co)!important;background-image:none!important;
+  box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 8px 20px -10px var(--co)!important}
+.act-btn.primary::after{display:none!important}
+.fab{background:var(--co)!important;background-image:none!important;box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 12px 26px -12px var(--co)!important}

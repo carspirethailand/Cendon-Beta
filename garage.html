@@ -408,37 +408,6 @@ a{color:inherit;text-decoration:none}button{font-family:inherit;cursor:pointer;b
 
 /* ===== 3/4 WIREFRAME CARD BACKGROUNDS ===== */
 .gcard-wrap{position:relative;overflow:hidden}
-/* ── การ์ดรถแนวนอน ──
-   สามชิ้นเรียงจากซ้าย: ประเภทรถ · ชื่อรถ · ทางเข้าไปดูต่อ
-   ทั้งใบเป็นปุ่มเดียว จึงกดที่ไหนก็เข้าได้ ไม่ต้องเล็ง */
-.gdeck{
-  width:100%;display:flex;align-items:center;gap:13px;
-  padding:13px 14px;margin-bottom:10px;
-  border:1px solid var(--line);border-radius:var(--radius,18px);
-  background:var(--surface);box-shadow:var(--shadow-sm);
-  cursor:pointer;text-align:left;font-family:inherit;color:var(--ink);
-  transition:transform .16s cubic-bezier(.32,.72,0,1),border-color .16s}
-.gdeck:hover{border-color:var(--accent)}
-.gdeck:active{transform:scale(.985)}
-.gd-ic{
-  width:44px;height:44px;flex:0 0 44px;border-radius:14px;
-  display:grid;place-items:center;font-size:23px;color:#fff;
-  background:var(--grad)}
-.gd-t{flex:1;min-width:0}
-.gd-t b{display:block;font-size:15px;font-weight:700;letter-spacing:-.01em;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.gd-t small{display:block;font-size:12px;color:var(--muted);
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.gd-go{
-  width:36px;height:36px;flex:0 0 36px;border-radius:12px;
-  display:grid;place-items:center;font-size:19px;
-  color:var(--accent);background:var(--surface-2);border:1px solid var(--line-2)}
-@media(max-width:520px){
-  .gdeck{gap:11px;padding:11px 12px;margin-bottom:8px}
-  .gd-ic{width:40px;height:40px;flex:0 0 40px;font-size:21px;border-radius:13px}
-  .gd-t b{font-size:14px}.gd-t small{font-size:11px}
-  .gd-go{width:32px;height:32px;flex:0 0 32px;font-size:17px}
-}
 .ccard{position:relative;overflow:hidden}
 .gcar-wireframe-bg {
   position: absolute;
@@ -4265,6 +4234,147 @@ a.mtab{text-decoration:none}
 <link rel="expect" href="#mnav0" blocking="render">
 <link rel="stylesheet" href="stability.css">
 <script src="stability.js" defer></script>
+<!-- หน้าตาชุดเดียวกับหน้าหลัก (สี การ์ด ปุ่ม พื้นหลัง) — โหลดท้ายสุดให้ชนะสไตล์เดิม -->
+<style id="garage-v2">
+/* ══════════════════════════════════════════════════════════════
+   การาจ: การ์ดรถใบใหญ่ + ปุ่มเพิ่มรถเล็ก ๆ ที่เปิดหน้าต่างเพิ่มรถ
+   สี/เส้น/พื้นใช้ชุดเดียวกับหน้าหลัก (lux.css) · ส้มใช้แค่จุดเน้น
+   ══════════════════════════════════════════════════════════════ */
+.gx-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:18px}
+.gx-hl{min-width:0}
+.gx-hl .section-sub{margin-bottom:0}
+.gx-add{flex:none;display:inline-flex;align-items:center;gap:7px;height:38px;margin-top:2px;padding:0 15px 0 8px;border-radius:999px;
+  border:1px solid var(--line);background:var(--surface);color:var(--ink);font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer;
+  transition:border-color .2s,transform .16s}
+.gx-add i{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--co);color:#fff;font-size:14px}
+.gx-add:hover{border-color:var(--co)}
+.gx-add:active{transform:scale(.96)}
+
+/* รายการรถ: มือถือหนึ่งคอลัมน์ · จอกว้างสองคอลัมน์ (มีคันเดียวเป็นการ์ดแนวนอนเต็มแถว) */
+.gx-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
+.gx-car,.gx-empty{position:relative;display:flex;flex-direction:column;width:100%;padding:0;margin:0;border:1px solid var(--line);border-radius:22px;
+  background:var(--surface);color:var(--ink);text-align:left;font-family:inherit;cursor:pointer;overflow:hidden;
+  transition:border-color .2s,box-shadow .2s,transform .18s cubic-bezier(.32,.72,0,1)}
+.gx-car:hover,.gx-empty:hover{border-color:color-mix(in srgb,var(--co) 55%,var(--line));box-shadow:var(--shadow)}
+.gx-car:active,.gx-empty:active{transform:scale(.988)}
+.gx-car:focus-visible,.gx-empty:focus-visible,.gx-add:focus-visible{outline:2px solid var(--co);outline-offset:2px}
+
+/* ภาพบน: โครงรถตามประเภทตัวถัง บนพื้นเทาอ่อน มีแสงส้มจาง ๆ ใต้ล้อ และชื่อยี่ห้อตัวโตจาง ๆ ด้านหลัง */
+.gx-hero{position:relative;display:block;height:196px;overflow:hidden;border-bottom:1px solid var(--line-2);
+  background:linear-gradient(180deg,var(--surface-2),var(--surface))}
+/* เงานุ่ม ๆ ใต้ล้อ (รูปรถไม่มีเงาในตัว เงาจึงไม่ติดสีรถ) */
+.gx-hero::after{content:"";position:absolute;left:50%;bottom:6px;width:min(80%,300px);height:18px;transform:translateX(-50%);pointer-events:none;
+  background:radial-gradient(closest-side,color-mix(in srgb,#000 22%,transparent),transparent)}
+/* ── ภาพรถ 3D ลงสี ──
+   ชั้นสี (.car-tint) "คูณ" ทับรูปรถตัวถังขาว ใช้รูปเดียวกันเป็นหน้ากาก สีจึงลงเฉพาะตัวรถ
+   isolation กันไม่ให้สีไปคูณกับพื้นการ์ดด้านหลัง */
+.car-art{position:relative;display:block;aspect-ratio:880/474;isolation:isolate}
+.car-art img{position:absolute;inset:0;width:100%;height:100%;display:block}
+.car-tint{position:absolute;inset:0;mix-blend-mode:multiply;pointer-events:none;opacity:.9;
+  -webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+.car-art.none{display:none}
+/* ในการ์ด: รถคันโตกลางช่อง จางลงนิด ล้อแตะเงานุ่ม ๆ และมีแสงสีเดียวกับรถฟุ้งอยู่ด้านหลัง */
+.gx-hero .car-art{position:absolute;z-index:1;left:50%;bottom:10px;width:min(80%,300px);transform:translateX(-50%);opacity:.95;
+  transition:transform .35s cubic-bezier(.32,.72,0,1)}
+.gx-car:hover .gx-hero .car-art{transform:translateX(-50%) translateY(-3px)}
+.gx-hero::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(55% 60% at 50% 78%,color-mix(in srgb,var(--car,#fff) 26%,transparent),transparent 72%)}
+.gx-paint{position:absolute;z-index:3;right:12px;top:12px;width:34px;height:34px;padding:0;border-radius:50%;border:0;cursor:pointer;
+  display:grid;place-items:center;background:conic-gradient(#D64545,#F2C14E,#5BAE84,#5B9BE0,#2F4A7A,#D64545);
+  box-shadow:0 2px 8px -2px rgba(0,0,0,.25);transition:transform .16s}
+.gx-paint span{width:24px;height:24px;border-radius:50%;border:2.5px solid var(--surface);box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.gx-paint:hover{transform:scale(1.08)}
+.gx-paint:active{transform:scale(.94)}
+.gx-paint:focus-visible{outline:2px solid var(--co);outline-offset:2px}
+.gx-chip{position:absolute;z-index:2;left:14px;top:14px;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px 0 9px;border-radius:999px;
+  background:var(--surface);border:1px solid var(--line);font-size:12px;font-weight:600;color:var(--ink)}
+.gx-chip i{font-size:15px;color:var(--co)}
+
+/* ข้อมูลรถ */
+.gx-cb{display:block;padding:16px 18px 16px}
+.gx-make{display:block;font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.gx-model{display:block;margin-top:3px;font-size:26px;font-weight:800;line-height:1.18;letter-spacing:-.025em;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gx-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:14px;border:1px solid var(--line-2);border-radius:14px;background:var(--surface-2)}
+.gx-stats>span{display:block;min-width:0;padding:10px 12px}
+.gx-stats>span+span{border-left:1px solid var(--line)}
+.gx-stats small{display:block;font-size:11px;color:var(--muted)}
+.gx-stats b{display:block;margin-top:2px;font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.gx-stats em{font-style:normal;font-size:11.5px;font-weight:600;color:var(--muted)}
+.gx-foot{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid var(--line-2);
+  font-size:13px;font-weight:600;color:var(--co)}
+.gx-foot i{font-size:17px;transition:transform .2s}
+.gx-car:hover .gx-foot i{transform:translateX(3px)}
+
+/* ยังไม่มีรถ */
+.gx-empty{border-style:dashed}
+.gx-empty .gx-hero{height:150px}
+.gx-empty .gx-hero .car-art{opacity:.5;width:min(72%,270px)}
+.gx-eb{display:block;padding:18px 20px 22px;text-align:center}
+.gx-eb b{display:block;font-size:19px;font-weight:800;letter-spacing:-.02em}
+.gx-eb small{display:block;max-width:420px;margin:6px auto 0;font-size:13px;line-height:1.55;color:var(--muted)}
+.gx-cta{display:inline-flex;align-items:center;gap:7px;height:42px;margin-top:16px;padding:0 20px;border-radius:999px;background:var(--co);color:#fff;
+  font-size:14px;font-weight:700;box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 8px 20px -10px var(--co)}
+
+@media(min-width:900px){
+  .gx-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  .gx-grid.one{grid-template-columns:minmax(0,1fr)}
+  .gx-grid.one .gx-car{flex-direction:row}
+  .gx-grid.one .gx-hero{flex:1.15;height:auto;min-height:248px;border-bottom:0;border-right:1px solid var(--line-2)}
+  .gx-grid.one .gx-hero .car-art{width:min(82%,400px);bottom:22px}
+  .gx-grid.one .gx-cb{flex:1;display:flex;flex-direction:column;justify-content:center;padding:26px 26px 22px}
+  .gx-grid.one .gx-model{font-size:32px}
+}
+@media(max-width:380px){
+  .gx-hero{height:172px}.gx-model{font-size:23px}.gx-stats>span{padding:9px 10px}.gx-stats b{font-size:14px}
+}
+
+/* ── หน้าต่างเพิ่มรถ: มือถือเลื่อนขึ้นจากล่าง · จอกว้างเป็นกล่องกลางจอ ── */
+.gx-pop{position:fixed;inset:0;z-index:1300;display:flex;align-items:flex-end;justify-content:center;visibility:hidden;pointer-events:none;transition:visibility 0s .32s}
+.gx-pop.on{visibility:visible;pointer-events:auto;transition:none}
+.gx-bd{position:absolute;inset:0;background:rgba(9,9,11,.45);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0;transition:opacity .28s}
+.gx-pop.on .gx-bd{opacity:1}
+.gx-sh{position:relative;width:100%;max-width:560px;max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain;
+  background:var(--surface);border:1px solid var(--line);border-bottom:0;border-radius:24px 24px 0 0;color:var(--ink);
+  padding:10px 18px calc(20px + env(safe-area-inset-bottom));box-shadow:0 -24px 60px -30px rgba(0,0,0,.45);
+  transform:translateY(100%);transition:transform .34s cubic-bezier(.32,.72,0,1)}
+.gx-sh::before{content:"";display:block;width:40px;height:4px;margin:0 auto 14px;border-radius:4px;background:var(--line)}
+.gx-pop.on .gx-sh{transform:none}
+.gx-sh-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px}
+.gx-sh-head h3{margin:0;font-size:20px;font-weight:800;letter-spacing:-.02em}
+.gx-sh-head p{margin:4px 0 0;font-size:13px;line-height:1.5;color:var(--muted)}
+.gx-x{flex:none;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:var(--surface);
+  color:var(--ink);font-size:18px;cursor:pointer}
+.gx-x:hover{border-color:var(--co);color:var(--co)}
+.gx-sh .grid2{gap:10px}
+.gx-prev{position:relative;height:128px;margin:-4px 0 16px;border-radius:18px;overflow:hidden;border:1px solid var(--line-2);
+  background:radial-gradient(60% 70% at 50% 85%,color-mix(in srgb,var(--car,#fff) 30%,transparent),transparent 72%),linear-gradient(180deg,var(--surface-2),var(--surface))}
+.gx-prev.big{height:178px}
+.gx-prev .car-art{position:absolute;left:50%;bottom:6px;width:auto;height:88%;transform:translateX(-50%)}
+.gx-field{margin-top:16px}
+.gx-lab{display:flex;align-items:baseline;gap:8px;margin-bottom:10px;font-size:13px;color:var(--muted)}
+.gx-lab b{font-weight:700;color:var(--ink)}
+.gx-colors{display:flex;flex-wrap:wrap;gap:8px}
+.gx-dot{width:29px;height:29px;padding:0;border-radius:50%;cursor:pointer;background:var(--dot);border:1px solid var(--line);
+  box-shadow:inset 0 -6px 10px -6px rgba(0,0,0,.25);transition:transform .15s,box-shadow .15s}
+.gx-dot:hover{transform:scale(1.08)}
+.gx-dot.on{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--co),inset 0 -6px 10px -6px rgba(0,0,0,.25)}
+.gx-dot:focus-visible{outline:2px solid var(--co);outline-offset:3px}
+/* รายการตัวเลือกกางต่อลงมาในหน้าต่าง (ไม่ลอยทับ) จึงไม่โดนขอบจอตัด */
+.gx-sh .custom-select-options{position:static;margin-top:6px;max-height:232px;box-shadow:none!important}
+.gx-sh .btn.primary{width:100%;height:48px;justify-content:center;border-radius:14px;font-size:15px}
+html.gx-lock,html.gx-lock body{overflow:hidden}
+@media(max-width:560px){.gx-sh .grid2{grid-template-columns:minmax(0,1fr)}}
+@media(min-width:760px){
+  .gx-pop{align-items:center;padding:24px}
+  .gx-sh{border-bottom:1px solid var(--line);border-radius:24px;padding:22px 24px 24px;box-shadow:0 30px 80px -30px rgba(0,0,0,.5);
+    opacity:0;transform:translateY(14px) scale(.98);transition:transform .3s cubic-bezier(.32,.72,0,1),opacity .22s}
+  .gx-sh::before{display:none}
+  .gx-pop.on .gx-sh{opacity:1}
+}
+@media(prefers-reduced-motion:reduce){.gx-sh,.gx-bd,.gx-car,.gx-empty{transition:none}}
+</style>
+<link rel="stylesheet" href="lux.css">
 </head>
 <body>
 <script id="mnav0">
@@ -4505,12 +4615,27 @@ window.spireI18nCoverage=code=>{
     <!-- HOME / DASHBOARD -->
     <section class="view active" id="v-garage">
       <div class="scroll">
-        <h2 class="section-title" data-i18n="garage.title">การาจของฉัน</h2>
-        <p class="section-sub" data-i18n="garage.sub">บันทึกรถของคุณ — ประวัติอาการที่เคยวินิจฉัยจะถูกเก็บไว้ในแต่ละคัน</p>
+        <!-- หัวหน้า: ชื่อหน้า + ปุ่มเพิ่มรถเล็ก ๆ (กดแล้วเปิดหน้าต่างเพิ่มรถ) -->
+        <div class="gx-head">
+          <div class="gx-hl">
+            <h2 class="section-title" data-i18n="garage.title">การาจของฉัน</h2>
+            <p class="section-sub" data-i18n="garage.sub">บันทึกรถของคุณ — ประวัติอาการที่เคยวินิจฉัยจะถูกเก็บไว้ในแต่ละคัน</p>
+          </div>
+          <button class="gx-add" type="button" data-gx-open><i class="ti ti-plus"></i><span data-i18n="garage.add">เพิ่มรถ</span></button>
+        </div>
         <div id="garageList"></div>
-        <div class="card" style="margin-top:6px; overflow:visible;">
-          <h3 style="font-weight:700;margin-bottom:14px"><i class="ti ti-plus"></i> <span data-i18n="garage.add">เพิ่มรถ</span></h3>
-          
+        <!-- หน้าต่างเพิ่มรถ — มือถือเป็นแผ่นเลื่อนขึ้นจากล่าง เดสก์ท็อปเป็นกล่องกลางจอ
+             ฟอร์มข้างในเป็นชุดเดิมทุก id โค้ดเลือกยี่ห้อ/รุ่น/ปี และปุ่ม gAdd จึงทำงานเหมือนเดิม -->
+        <div class="gx-pop" id="gxPop" aria-hidden="true">
+         <div class="gx-bd" data-gx-close></div>
+         <div class="gx-sh" role="dialog" aria-modal="true" aria-labelledby="gxT">
+          <div class="gx-sh-head">
+            <div><h3 id="gxT" data-i18n="garage.add">เพิ่มรถ</h3><p data-gx-sub>เลือกยี่ห้อ รุ่น และปี — AI กับช่างจะรู้รุ่นรถของคุณทันที</p></div>
+            <button class="gx-x" type="button" data-gx-close aria-label="ปิด"><i class="ti ti-x"></i></button>
+          </div>
+          <div class="gx-form" id="gxForm">
+          <!-- ภาพตัวอย่าง: เปลี่ยนตามรุ่น (ประเภทตัวถัง) และสีที่เลือก -->
+          <div class="gx-prev" id="gxPrev"></div>
           <div class="grid2" style="overflow:visible; margin-bottom:12px;">
             <!-- Custom Dropdown: Make -->
             <div class="custom-select" id="gMakeSelect">
@@ -4553,6 +4678,11 @@ window.spireI18nCoverage=code=>{
             <input class="input" id="gMileage" data-i18n-ph="garage.km" placeholder="เลขไมล์ปัจจุบัน (กม.)"/>
           </div>
 
+          <div class="gx-field">
+            <div class="gx-lab"><span>สีรถ</span><b id="gxColName">ขาว</b></div>
+            <div class="gx-colors" id="gxColors" role="radiogroup" aria-label="สีรถ"></div>
+          </div>
+
           <div id="gCustomBox" style="display:none; margin-top:12px; overflow:visible;">
             <div class="grid2" style="overflow:visible; margin-bottom:12px;">
               <input class="input" id="gCustomMake" placeholder="ยี่ห้อ (พิมพ์เอง)"/>
@@ -4569,7 +4699,25 @@ window.spireI18nCoverage=code=>{
             </div>
           </div>
 
-          <button class="btn primary" id="gAdd" style="margin-top:14px"><i class="ti ti-plus"></i> <span data-i18n="garage.add">เพิ่มรถ</span></button>
+          <button class="btn primary" id="gAdd" style="margin-top:18px"><i class="ti ti-plus"></i> <span data-i18n="garage.add">เพิ่มรถ</span></button>
+          </div>
+         </div>
+        </div>
+        <!-- หน้าต่างเปลี่ยนสีรถ (ปุ่มวงสีบนการ์ด) -->
+        <div class="gx-pop" id="gxPaint" aria-hidden="true">
+         <div class="gx-bd" data-gx-close></div>
+         <div class="gx-sh" role="dialog" aria-modal="true" aria-labelledby="gxPT">
+          <div class="gx-sh-head">
+            <div><h3 id="gxPT">สีรถ</h3><p id="gxPName"></p></div>
+            <button class="gx-x" type="button" data-gx-close aria-label="ปิด"><i class="ti ti-x"></i></button>
+          </div>
+          <div class="gx-prev big" id="gxPPrev"></div>
+          <div class="gx-field">
+            <div class="gx-lab"><span>เลือกสี</span><b id="gxPColName">ขาว</b></div>
+            <div class="gx-colors" id="gxPColors" role="radiogroup" aria-label="สีรถ"></div>
+          </div>
+          <button class="btn primary" id="gxPSave" type="button" style="margin-top:18px"><i class="ti ti-check"></i> <span>ใช้สีนี้</span></button>
+         </div>
         </div>
       </div>
     </section>
@@ -5282,7 +5430,8 @@ async function pushCar(c){
   const r=await fetch(`${BACKEND_URL}/api/cars`,{method:"POST",
     headers:{"Content-Type":"application/json","Authorization":"Bearer "+await carTok()},
     body:JSON.stringify({id:c.id,make:c.make||c.name||"",model:c.model||"",
-                         year:c.year||"",mileage:c.mileage||""})});
+                         year:c.year||"",mileage:c.mileage||"",
+                         color:c.color||undefined,body:c.type||undefined})});
   if(!r.ok)throw new Error("HTTP "+r.status);
   return await r.json();
 }
@@ -5309,7 +5458,7 @@ async function syncCars(){
         id:c.id,make:c.make||"",model:c.model||"",name:name||prev.name||"",
         year:(c.year!=null?String(c.year):""),
         mileage:(c.mileage!=null?String(c.mileage):""),
-        type:prev.type||getBodyStyle(name),history:prev.history||[]});
+        type:c.body||prev.type||getBodyStyle(name),color:c.color||prev.color||"",history:prev.history||[]});
     });
     const remoteIds=new Set(arr.map(c=>c.id));
     for(const c of local){
@@ -5346,43 +5495,147 @@ const GD_BODY={
   sedan:{th:"ซีดาน",en:"Sedan",ic:"ti-car"},
   hatchback:{th:"แฮทช์แบ็ก",en:"Hatchback",ic:"ti-car"},
   suv:{th:"เอสยูวี",en:"SUV",ic:"ti-car-suv"},
-  pickup:{th:"กระบะ",en:"Pickup",ic:"ti-car-crane"},
+  pickup:{th:"กระบะ",en:"Pickup",ic:"ti-truck"},
   mpv:{th:"เอ็มพีวี",en:"MPV",ic:"ti-bus"},
+  van:{th:"รถตู้",en:"Van",ic:"ti-bus"},
+  coupe:{th:"คูเป้",en:"Coupe",ic:"ti-car"},
   ev:{th:"ไฟฟ้า",en:"Electric",ic:"ti-charging-pile"}
 };
+/* ── ภาพรถ 3D + สีรถที่ผู้ใช้เลือก ──
+   รูปใน img/cars/<ประเภท>.webp เป็นรถการ์ตูนตัวถังสีขาวล้วน ส่วนอื่น (กระจก ยาง ไฟ) เทาเข้ม พื้นใส
+   แอปลงสีเองด้วยการ "คูณ" สีที่เลือกทับตัวรถ โดยใช้รูปเดียวกันเป็นหน้ากาก:
+   ขาว × สี = สีนั้น · เงาเทา × สี = สีนั้นที่เข้มลง · ส่วนที่เทาเข้มอยู่แล้วก็ยังเข้มเหมือนเดิม
+   จึงมีรูปเดียวต่อประเภท แต่ผู้ใช้เปลี่ยนสีรถของตัวเองได้ */
+const CAR_IMG=new Set(["sedan","coupe","van","mpv","pickup"]);
+/* ประเภทที่ยังไม่มีรูปของตัวเอง ใช้รูปที่ใกล้ที่สุดไปก่อน — ได้ไฟล์แล้วเพิ่มชื่อใน CAR_IMG แล้วลบออกจากตรงนี้ */
+const CAR_IMG_ALT={hatchback:"sedan",ev:"sedan",suv:"mpv"};
+const CAR_COLORS=[
+  {c:"#FFFFFF",th:"ขาว",en:"White"},{c:"#C9CDD3",th:"เงิน",en:"Silver"},{c:"#6B707B",th:"เทา",en:"Grey"},
+  {c:"#3A3C42",th:"ดำ",en:"Black"},{c:"#D64545",th:"แดง",en:"Red"},{c:"#F07A36",th:"ส้ม",en:"Orange"},
+  {c:"#F2C14E",th:"เหลือง",en:"Yellow"},{c:"#5BAE84",th:"เขียว",en:"Green"},{c:"#5B9BE0",th:"ฟ้า",en:"Sky"},
+  {c:"#2F4A7A",th:"น้ำเงิน",en:"Navy"}];
+const gxT=(th,en)=>(window.spireT?window.spireT(th,en):((window.lang||"th")==="en"?en:th));
+const carColor=c=>/^#[0-9a-f]{6}$/i.test(c||"")?String(c).toUpperCase():"#FFFFFF";
+const carColorName=c=>{const x=CAR_COLORS.find(k=>k.c===carColor(c));return x?gxT(x.th,x.en):gxT("สีของฉัน","Custom")};
+const carTypeOf=c=>{const t=c&&(c.type||getBodyStyle(c.name||""));return GD_BODY[t]?t:"sedan"};
+function carArt(k,color){
+  const t=CAR_IMG.has(k)?k:(CAR_IMG_ALT[k]||"sedan"),src=`img/cars/${t}.webp`,col=carColor(color);
+  return `<span class="car-art" aria-hidden="true"><img src="${src}" alt="" decoding="async" onerror="this.parentNode.classList.add('none')"/>${
+    col==="#FFFFFF"?"":`<span class="car-tint" style="background:${col};-webkit-mask-image:url(${src});mask-image:url(${src})"></span>`}</span>`}
+function colorDots(sel){sel=carColor(sel);
+  return CAR_COLORS.map(x=>`<button type="button" class="gx-dot${x.c===sel?" on":""}" data-color="${x.c}" role="radio" aria-checked="${x.c===sel}" aria-label="${gxT(x.th,x.en)}" title="${gxT(x.th,x.en)}" style="--dot:${x.c}"></button>`).join("")}
+const gxArt=(k,color)=>carArt(k,color);
 function renderGarage(){if(!document.getElementById("garageList"))return;const g=garage();const w=$("garageList");if(!w)return;
+  const tx=(th,en)=>(window.spireT?window.spireT(th,en):((window.lang||"th")==="en"?en:th));
   if(!g.length){
-    w.innerHTML=`<div class="card" style="text-align:center;color:var(--muted);margin-bottom:6px">${tr("garage.empty")}</div>`;
+    /* ยังไม่มีรถ — การ์ดใหญ่ชวนเพิ่มคันแรก กดตรงไหนก็เปิดหน้าต่างเพิ่มรถ */
+    w.innerHTML=`<button class="gx-empty" type="button" data-gx-open>
+      <span class="gx-hero">${gxArt("sedan")}</span>
+      <span class="gx-eb"><b>${tx("ยังไม่มีรถในการาจ","No cars in your garage yet")}</b>
+        <small>${tx("เพิ่มรถของคุณ แล้ว AI จะวิเคราะห์ตามรุ่นรถ ช่างรู้รุ่นก่อนเสนอราคา และเตือนเช็กระยะให้","Add your car so AI answers for your model, mechanics quote for it, and service reminders arrive on time")}</small>
+        <span class="gx-cta"><i class="ti ti-plus"></i>${tx("เพิ่มรถคันแรก","Add your first car")}</span></span>
+    </button>`;
     renderCarSel();
     return;
   }
-  w.innerHTML=g.map(c=>{
-    const bodyStyle = c.type || getBodyStyle(c.name);
+  /* ── การ์ดรถใบใหญ่ ──
+     ของเดิมเป็นแถวเล็กบาง ๆ จนผู้ใช้นึกว่ายังไม่ได้เพิ่มรถ
+     ตอนนี้รถแต่ละคันได้การ์ดเต็มความกว้าง: ภาพรถ 3D ตามประเภทตัวถังในสีที่ผู้ใช้เลือก · ยี่ห้อ · รุ่นตัวใหญ่ · ปี/เลขไมล์/ประเภท
+     กดที่ไหนของการ์ดก็เข้าหน้ารถคันนั้น ยกเว้นปุ่มวงสีมุมขวาบนที่เปิดหน้าต่างเปลี่ยนสี */
+  w.innerHTML=`<div class="gx-grid${g.length===1?" one":""}">`+g.map(c=>{
+    const bodyStyle = carTypeOf(c);
     const lbl=GD_BODY[bodyStyle]||GD_BODY.sedan;
-    const tx=(th,en)=>(window.spireT?window.spireT(th,en):((window.lang||"th")==="en"?en:th));
-    /* ── การ์ดรถแนวนอน ──
-       อ่านจากซ้ายไปขวาได้ในครั้งเดียว: นี่รถอะไร → คันไหน → เข้าไปดูต่อ
-
-       ของเดิมแต่ละใบพ่วงบทสนทนากับ AI แปดรายการมาด้วย
-       การ์ดจึงยาวเป็นเมตรและล้นกรอบ ทั้งที่ตอนกวาดตาหารถ
-       ไม่มีใครอยากอ่านว่าเมื่อเดือนก่อนถาม AI ว่าอะไร
-       ประวัติพวกนั้นย้ายไปอยู่ในหน้าของรถคันนั้นแทน ที่ที่มันควรอยู่ */
-    return `<button class="gdeck" data-open="${c.id}">
-      <span class="gd-ic"><i class="ti ${lbl.ic}"></i></span>
-      <span class="gd-t">
-        <b>${esc(c.name)}</b>
-        <small>${esc(tx(lbl.th,lbl.en))} · ${esc(c.year||"-")} · ${
-          c.mileage?Number(c.mileage).toLocaleString("en-US"):"-"} ${tx("กม.","km")}</small>
+    const make=String(c.make||String(c.name||"").split(" ")[0]||"").trim();
+    const model=String(c.model||String(c.name||"").slice(make.length)||c.name||"").trim()||make;
+    const km=c.mileage&&c.mileage!=="-"&&!isNaN(Number(c.mileage))?Number(c.mileage).toLocaleString("en-US"):"-";
+    const col=carColor(c.color);
+    return `<div class="gx-car" role="button" tabindex="0" data-open="${esc(c.id)}" aria-label="${esc(make+" "+model)}">
+      <span class="gx-hero" style="--car:${col}">
+        ${gxArt(bodyStyle,col)}
+        <span class="gx-chip"><i class="ti ${lbl.ic}"></i>${esc(tx(lbl.th,lbl.en))}</span>
+        <button class="gx-paint" type="button" data-paint="${esc(c.id)}" aria-label="${tx("เปลี่ยนสีรถ","Change car colour")}" title="${tx("เปลี่ยนสีรถ","Change car colour")}"><span style="background:${col}"></span></button>
       </span>
-      <span class="gd-go" aria-hidden="true"><i class="ti ti-car-garage"></i></span>
-    </button>`
-  }).join("");
+      <span class="gx-cb">
+        <small class="gx-make">${esc(make)}</small>
+        <b class="gx-model">${esc(model)}</b>
+        <span class="gx-stats">
+          <span><small>${tx("ปี","Year")}</small><b>${esc(c.year||"-")}</b></span>
+          <span><small>${tx("เลขไมล์","Mileage")}</small><b>${km}${km!=="-"?` <em>${tx("กม.","km")}</em>`:""}</b></span>
+          <span><small>${tx("ประเภท","Body")}</small><b>${esc(tx(lbl.th,lbl.en))}</b></span>
+        </span>
+        <span class="gx-foot">${tx("ดูรายละเอียดและประวัติ","Details & history")}<i class="ti ti-arrow-right"></i></span>
+      </span>
+    </div>`
+  }).join("")+`</div>`;
   renderCarSel()}
 
+/* ── หน้าต่าง (เพิ่มรถ · เปลี่ยนสีรถ) ──
+   ย้ายไปไว้ใต้ <body> ตอนเปิดครั้งแรก เพื่อไม่ให้ภาพเคลื่อนไหวของหน้า (transform) ทำให้ position:fixed เพี้ยน
+   ปิดได้ด้วยปุ่ม × · แตะพื้นหลัง · ปุ่ม Esc · และปิดเองเมื่อบันทึกสำเร็จ */
+function gxOpen(id){const p=$(id);if(!p)return null;
+  if(p.parentNode!==document.body)document.body.appendChild(p);
+  p.classList.add("on");p.setAttribute("aria-hidden","false");document.documentElement.classList.add("gx-lock");return p}
+function gxCloseAll(){document.querySelectorAll(".gx-pop.on").forEach(p=>{p.classList.remove("on");p.setAttribute("aria-hidden","true")});
+  document.documentElement.classList.remove("gx-lock");
+  document.querySelectorAll(".gx-pop .custom-select.active").forEach(x=>x.classList.remove("active"))}
+
+/* หน้าต่างเพิ่มรถ: ภาพตัวอย่างเปลี่ยนตามรุ่นที่เลือก (ประเภทตัวถัง) และสีที่จิ้ม */
+let gxColor="#FFFFFF";
+const gxPrevType=()=>{const t=customMode?selectedBody:(selectedModel&&selectedModel.type);return GD_BODY[t]?t:"sedan"};
+function gxPrev(){const el=$("gxPrev");if(!el)return;const t=gxPrevType(),k=t+gxColor;
+  if(el.dataset.k!==k){el.dataset.k=k;el.style.setProperty("--car",gxColor);el.innerHTML=carArt(t,gxColor)}
+  const d=$("gxColors");if(d&&d.dataset.k!==gxColor){d.dataset.k=gxColor;d.innerHTML=colorDots(gxColor)}
+  const n=$("gxColName");if(n)n.textContent=carColorName(gxColor)}
+function openAddCar(){const p=gxOpen("gxPop");if(!p)return;
+  const sub=p.querySelector("[data-gx-sub]");
+  if(sub)sub.textContent=gxT("เลือกยี่ห้อ รุ่น ปี และสีรถ — AI กับช่างจะรู้รุ่นรถของคุณทันที","Pick make, model, year and colour — AI and mechanics will know your car right away");
+  const lab=p.querySelector(".gx-lab span");if(lab)lab.textContent=gxT("สีรถ","Colour");
+  gxPrev();
+  setTimeout(()=>{try{p.querySelector("#gMakeSelect .custom-select-trigger").focus({preventScroll:true})}catch(e){}},60)}
+function closeAddCar(){gxCloseAll()}
+window.openAddCar=openAddCar;window.closeAddCar=closeAddCar;
+
+/* หน้าต่างเปลี่ยนสีรถ (ปุ่มวงสีบนการ์ด) — จิ้มสีแล้วเห็นรถเปลี่ยนทันที กด "ใช้สีนี้" ถึงจะบันทึก */
+let gxPaintId=null,gxPaintColor="#FFFFFF";
+function gxPaintPrev(){const c=garage().find(x=>x.id===gxPaintId);if(!c)return;
+  const el=$("gxPPrev");if(el){el.style.setProperty("--car",gxPaintColor);el.innerHTML=carArt(carTypeOf(c),gxPaintColor)}
+  const d=$("gxPColors");if(d)d.innerHTML=colorDots(gxPaintColor);
+  const n=$("gxPColName");if(n)n.textContent=carColorName(gxPaintColor)}
+function openPaint(id){const c=garage().find(x=>x.id===id);if(!c)return;
+  gxPaintId=id;gxPaintColor=carColor(c.color);
+  const nm=$("gxPName");if(nm)nm.textContent=c.name||`${c.make||""} ${c.model||""}`.trim();
+  const P=$("gxPaint"),set=(q,t)=>{const el=P&&P.querySelector(q);if(el)el.textContent=t};
+  set("#gxPT",gxT("สีรถ","Car colour"));set(".gx-lab span",gxT("เลือกสี","Pick a colour"));set("#gxPSave span",gxT("ใช้สีนี้","Use this colour"));
+  gxPaintPrev();gxOpen("gxPaint")}
+async function savePaint(){const g=garage(),c=g.find(x=>x.id===gxPaintId);if(!c){gxCloseAll();return}
+  c.color=gxPaintColor;saveGarage(g);renderGarage();gxCloseAll();
+  toast(gxT("เปลี่ยนสีรถแล้ว","Colour updated"),"ti-palette");
+  if(carsAreRemote()){try{await pushCar(c)}catch(err){console.warn("save car colour failed",err)}}}
+window.openPaint=openPaint;
+
+document.addEventListener("click",e=>{
+  if(e.target.closest("[data-gx-open]")){e.preventDefault();openAddCar();return}
+  if(e.target.closest("[data-gx-close]")){gxCloseAll();return}
+  const dot=e.target.closest(".gx-dot");
+  if(dot&&dot.closest("#gxPaint")){gxPaintColor=dot.dataset.color;gxPaintPrev();return}
+  if(dot&&dot.closest("#gxPop")){gxColor=dot.dataset.color;gxPrev();return}
+  if(e.target.closest("#gxPSave")){savePaint();return}
+  /* เลือกยี่ห้อ/รุ่น/ประเภทตัวถังแล้ว อัปเดตภาพตัวอย่าง (รอให้ตัวจัดการของช่องเลือกทำงานก่อน) */
+  if(e.target.closest("#gxPop"))setTimeout(gxPrev,0)});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")gxCloseAll()});
+/* ลิงก์ "เพิ่มรถ" จากหน้าอื่น (/garage?add=1) เปิดหน้าต่างให้เลย แล้วล้าง ?add ออกจากแถบที่อยู่ */
+try{const q=new URLSearchParams(location.search);if(q.get("add")==="1"){
+  q.delete("add");history.replaceState(history.state,"",location.pathname+(q.toString()?"?"+q:"")+location.hash);
+  setTimeout(openAddCar,120)}}catch(e){}
+
+$("garageList")?.addEventListener("keydown",e=>{
+  if((e.key==="Enter"||e.key===" ")&&e.target.matches&&e.target.matches(".gx-car[data-open]")){e.preventDefault();e.target.click()}});
 $("garageList")?.addEventListener("click",async e=>{
   /* กดที่ไหนของการ์ดก็เข้าหน้ารถคันนั้น ไม่ต้องเล็งปุ่มเล็ก ๆ
      ปุ่มวินิจฉัยกับปุ่มลบย้ายเข้าไปอยู่ในหน้านั้นแล้ว ซึ่งปลอดภัยกว่าด้วย
      เพราะปุ่มลบที่อยู่ติดนิ้วบนหน้ารายการคือปุ่มที่รอวันโดนกดพลาด */
+  const pt=e.target.closest("[data-paint]");
+  if(pt){ e.stopPropagation(); openPaint(pt.dataset.paint); return }
   const op=e.target.closest("[data-open]");
   if(op){ try{window.openCarDetail(op.dataset.open)}catch(err){} return }
   const dg=e.target.closest("[data-diag2]");if(dg){openChat({car:dg.dataset.diag2,starter:true});return}
@@ -5410,17 +5663,18 @@ $("garageList")?.addEventListener("click",async e=>{
   let id = "c"+Date.now();
   if(carsAreRemote()){
     try{
-      const r=await fetch(`${BACKEND_URL}/api/cars`,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+await carTok()},body:JSON.stringify({make,model,year,mileage})});
+      const r=await fetch(`${BACKEND_URL}/api/cars`,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+await carTok()},body:JSON.stringify({make,model,year,mileage,color:gxColor,body:type})});
       if(!r.ok)throw new Error(r.status+" "+r.statusText);
       const res=await r.json(); if(res&&res.id)id=res.id;
     }catch(err){toast(((window.spireT?window.spireT("บันทึกในเครื่องแทน (เซิร์ฟเวอร์ผิดพลาด): ","Saved locally (server error): "):(lang==="en"?"Saved locally (server error): ":"บันทึกในเครื่องแทน (เซิร์ฟเวอร์ผิดพลาด): ")))+err.message,"ti-cloud-off")}
   }
 
   const g = garage();
-  g.push({id,make,model,name,year,mileage,type,history:[]});
+  g.push({id,make,model,name,year,mileage,type,color:gxColor,history:[]});
   saveGarage(g);
 
   selectedMake = ""; selectedModel = null; selectedYear = ""; customMode = false; selectedBody = "sedan";
+  gxColor = "#FFFFFF";
   $("gMakeSelect").querySelector(".val").textContent = tr("select.make");
   $("gModelTrigger").classList.add("disabled");
   $("gModelTrigger").querySelector(".val").textContent = tr("select.model");
@@ -5432,6 +5686,7 @@ $("garageList")?.addEventListener("click",async e=>{
   ($("gMileage")||{}).value= "";
   ($("gAdd")||{}).disabled=false;
 
+  closeAddCar();
   renderGarage();renderDashboard();toast((window.spireT?window.spireT("เพิ่มรถแล้ว","Car added"):(lang==="en"?"Car added":"เพิ่มรถแล้ว")),"ti-check")};
 
 /* ===== MAGAZINE ===== */

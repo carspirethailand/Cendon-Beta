@@ -1933,12 +1933,13 @@ td .empty::before,td.empty::before{display:none}
 
       <!-- MAGAZINE -->
       <section class="view" id="v-magazine">
-        <div class="page-head"><div><h1>นิตยสาร</h1><p>เพิ่ม แก้ไข ลบข่าว หรือให้ AI ดึงข่าวใหม่</p></div>
+        <div class="page-head"><div><h1>นิตยสาร</h1><p>ข่าวอัปเดตเองทุก 3 ชั่วโมงจากสำนักข่าวจริง · ข่าวที่ทีมงานเพิ่มเองไม่ถูกลบตอนอัปเดต และขึ้นก่อน</p></div>
           <div style="display:flex;gap:8px">
             <button class="btn" onclick="syncShop()" id="syncShopBtn" style="color:var(--warn)"><i class="ti ti-sparkles"></i> AI หาสินค้า Shop</button>
-            <button class="btn" onclick="syncMag()" id="syncBtn"><i class="ti ti-sparkles"></i> ให้ AI ดึงข่าวใหม่</button>
+            <button class="btn" onclick="syncMag()" id="syncBtn"><i class="ti ti-refresh"></i> อัปเดตข่าวตอนนี้</button>
             <button class="btn primary" onclick="openMagEditor()"><i class="ti ti-plus"></i> เพิ่มข่าว</button>
           </div></div>
+        <div class="card" id="magStat" style="margin-bottom:14px"><div class="sub" style="margin:0">กำลังตรวจสถานะการอัปเดต…</div></div>
         <div class="card"><div id="magList"><div class="empty">กำลังโหลด...</div></div></div>
       </section>
 
@@ -5193,11 +5194,12 @@ async function banUser(uid,banned,el){
 /* ===== MAGAZINE ===== */
 let magItems=[];
 async function loadMag(){
+  loadMagStatus();
   $("magList").innerHTML=`<div class="empty">กำลังโหลด...</div>`;
   try{
     const arr=await fetch(BACKEND_URL+"/api/magazine").then(r=>r.json());
     magItems=Array.isArray(arr)?arr:[];
-    if(!magItems.length){$("magList").innerHTML=`<div class="empty">ยังไม่มีข่าว — กด "ให้ AI ดึงข่าวใหม่" หรือเพิ่มเอง</div>`;return}
+    if(!magItems.length){$("magList").innerHTML=`<div class="empty">ยังไม่มีข่าว — กด "อัปเดตข่าวตอนนี้" หรือเพิ่มเอง</div>`;return}
     $("magList").innerHTML=magItems.map(m=>`<div class="mag-admin">
       <div class="tx"><span class="tag">${esc(m.type||"ข่าว")}</span><b>${esc(m.title||"")}</b><p>${esc(m.short_description||"")}</p></div>
       <div class="row-actions" style="align-items:flex-start">
@@ -5227,10 +5229,28 @@ async function delMag(id){
   catch(e){toast(e.message,"ti-alert-triangle")}
 }
 async function syncMag(){
-  $("syncBtn").disabled=true;$("syncBtn").innerHTML='<i class="ti ti-loader-2"></i> กำลังดึงข่าว...';
-  try{await api("/api/magazine/sync",{method:"POST"});toast("ดึงข่าวใหม่จาก AI สำเร็จ","ti-sparkles");loadMag()}
-  catch(e){toast("ดึงข่าวไม่สำเร็จ: "+e.message,"ti-alert-triangle")}
-  $("syncBtn").disabled=false;$("syncBtn").innerHTML='<i class="ti ti-sparkles"></i> ให้ AI ดึงข่าวใหม่';
+  $("syncBtn").disabled=true;$("syncBtn").innerHTML='<i class="ti ti-loader-2"></i> กำลังอัปเดต… (ราว 1 นาที)';
+  try{const r=await api("/api/magazine/sync",{method:"POST"});toast(`อัปเดตแล้ว ${(r.status&&r.status.kept)||0} ข่าว`,"ti-check");loadMag()}
+  catch(e){toast("อัปเดตไม่สำเร็จ: "+e.message,"ti-alert-triangle")}
+  $("syncBtn").disabled=false;$("syncBtn").innerHTML='<i class="ti ti-refresh"></i> อัปเดตข่าวตอนนี้';
+  loadMagStatus();
+}
+/* สถานะรอบอัปเดตล่าสุด: แหล่งข่าวไหนได้กี่ข่าว ใช้ไม่ได้เพราะอะไร ใช้ AI รุ่นไหน */
+async function loadMagStatus(){
+  const el=$("magStat");if(!el)return;
+  try{const s=await api("/api/magazine/status");
+    if(!s||!s.at){el.innerHTML=`<div class="sub" style="margin:0">ยังไม่เคยอัปเดตด้วยระบบใหม่ — กด "อัปเดตข่าวตอนนี้"</div>`;return}
+    const ok=(s.feeds||[]).filter(f=>f.n>0),bad=(s.feeds||[]).filter(f=>!f.n);
+    const when=new Date(s.at).toLocaleString("th-TH",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
+    el.innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline;font-size:13px">
+        <b style="color:${s.error?"var(--danger,#E5484D)":"var(--ok,#16a34a)"}">${s.error?"รอบล่าสุดไม่สำเร็จ":"อัปเดตสำเร็จ"}</b>
+        <span>${esc(when)}</span><span>เก็บ ${s.kept||0} ข่าว จากที่คัด ${s.picked||0}</span>
+        <span>${s.mode==="ai"?"ใช้ AI ค้นเว็บแทน (ดึงฟีดได้น้อย)":"จากฟีดข่าว"}</span>
+        <span style="color:var(--mut)">AI: ${esc(s.model||"-")} ${s.own?"· คีย์ของนิตยสาร":"· คีย์เดียวกับแชต (คนละรุ่น)"}</span></div>
+      ${s.error?`<div style="margin-top:8px;font-size:13px;color:var(--danger,#E5484D)">${esc(s.error)}</div>`:""}
+      <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px">${ok.map(f=>`<span class="pill" style="font-size:12px;padding:3px 9px;border-radius:999px;border:1px solid var(--line)">✓ ${esc(f.name)} · ${f.n}</span>`).join("")}
+        ${bad.map(f=>`<span class="pill" title="${esc(f.err||"")}" style="font-size:12px;padding:3px 9px;border-radius:999px;border:1px dashed var(--line);color:var(--mut)">✕ ${esc(f.name)} · ${esc(f.err||"")}</span>`).join("")}</div>`;
+  }catch(e){el.innerHTML=`<div class="sub" style="margin:0">${esc(e.message)}</div>`}
 }
 async function syncShop(){
   $("syncShopBtn").disabled=true;$("syncShopBtn").innerHTML='<i class="ti ti-loader-2"></i> กำลังหาสินค้า...';

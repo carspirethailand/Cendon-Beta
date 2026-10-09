@@ -131,3 +131,40 @@ test('production registers the cue module and caches it with a valid service wor
   assert.ok(sw.includes('./call-sounds.js?v=1'));assert.ok(!sw.includes('<<<<<<<'));
   new vm.Script(sw);assert.ok(!page.includes('setTimeout(prepChimes,1500)'));
 });
+test('interruption clears wait state but still processes the new user transcript in the same packet',()=>{
+  const f=fixture();f.run('orb.wait=true;liveAiText="old answer";livePendingAt=123');
+  f.run(`handleLiveMsg({serverContent:{interrupted:true,inputTranscription:{text:'ถามใหม่'}}})`);
+  assert.equal(f.element('callCaption').textContent,'ถามใหม่');assert.equal(f.run('liveAiText'),'');
+  assert.equal(f.run('playSrcs.length'),0);
+});
+test('idle silence alone never triggers reconnect; pending stalled responses do',async()=>{
+  const f=fixture();f.run('callActive=true;liveModel="test";callHealth()');assert.equal(f.requests.length,0);
+  f.run('livePendingAt=Date.now()-21000;liveGotAudio=true;callHealth();callHealth()');await settle();
+  assert.equal(f.requests.length,1);f.run('endCall()');
+});
+test('camera permission resolved after hangup cannot turn the camera back on',async()=>{
+  const p=deferred(),f=fixture({permission:p});f.run('callActive=true');const opening=f.run('toggleCamera()');
+  f.run('endCall()');p.resolve(f.stream);await opening;
+  assert.equal(f.track.stopped,1);assert.equal(f.run('camOn'),false);assert.equal(f.element('callCam').srcObject,null);
+});
+test('digital zoom clamps values, mirrors front camera, and resets controls on stop',()=>{
+  const f=fixture();f.run('camFacing="user";setCallZoom(10)');
+  assert.equal(f.run('camZoom'),4);assert.equal(f.element('callCam').style.transform,'scale(-4,4)');
+  f.run('stopCamera()');assert.equal(f.run('camZoom'),1);assert.equal(f.element('callZoomBox').hidden,true);
+});
+test('voice UI uses full-frame camera, bottom controls and waveform instead of orb assets',()=>{
+  const css=readFileSync(new URL('../call-ui.css',import.meta.url),'utf8');
+  assert.match(css,/width:100%!important;height:100%!important;border-radius:0/);
+  assert.match(css,/\.hh-ctrl\{position:absolute;bottom:/);assert.match(css,/\.think-box\{display:none!important\}/);
+  assert.ok(!source.includes('im.src="call-orb.png"'));assert.match(source,/getFloatTimeDomainData/);
+  assert.match(source,/\.drawImage\(vd,\(vd.videoWidth-sw\)\/2/);
+});
+test('muting signals end of input audio instead of leaving a pending turn open',()=>{
+  const f=fixture();f.run('callWS=new WebSocket("fixture");callWS.readyState=1;toggleCallMute()');
+  assert.equal(JSON.parse(f.sockets[0].sent).realtimeInput.audioStreamEnd,true);
+});
+test('a later text-only response remains eligible for recovery even after earlier audio',()=>{
+  const f=fixture();f.run('liveGotAudio=true;orb.wait=false');
+  f.run(`handleLiveMsg({serverContent:{inputTranscription:{text:'คำถามใหม่'}}});handleLiveMsg({serverContent:{turnComplete:true,outputTranscription:{text:'ไม่มีเสียง'}}})`);
+  assert.ok(f.run('livePendingAt')>0);assert.equal(f.run('liveTurnAudio'),false);
+});

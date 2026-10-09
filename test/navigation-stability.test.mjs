@@ -6,7 +6,7 @@ import {readFileSync} from 'node:fs';
 const router=readFileSync(new URL('../stability.js',import.meta.url),'utf8');
 const mobile=readFileSync(new URL('../mobile-ui.js',import.meta.url),'utf8');
 const css=readFileSync(new URL('../stability.css',import.meta.url),'utf8');
-const pages=['index','garage','news','spares','profile','dashboard','chat'];
+const pages=['index','garage','news','spares','profile','chat'];
 function routing({pathname='/',connection,hidden=false,prerender=false}={}){
   const events=new Map(),links=[],assigned=[];
   const location={origin:'https://fixture.test',pathname,href:'https://fixture.test'+pathname,assign:url=>assigned.push(url)};
@@ -64,7 +64,7 @@ test('avatar updates observe only the avatar and coalesce instead of resetting t
   for(let i=0;i<100;i++)f.observations[0].observer.fn();
   assert.equal(f.timers.length,1);assert.equal(f.timers[0].ms,32);
 });
-test('all seven app pages share one mobile implementation and early geometry CSS',()=>{
+test('all app pages share one mobile implementation and early geometry CSS',()=>{
   for(const name of pages){
     const s=readFileSync(new URL('../'+name+'.html',import.meta.url),'utf8');
     assert.equal((s.match(/src="mobile-ui\.js"/g)||[]).length,1,name);

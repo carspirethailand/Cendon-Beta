@@ -3170,6 +3170,7 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 </style>
 <link rel="stylesheet" href="stability.css">
 <link rel="stylesheet" href="call-ui.css">
+<script src="car-sync.js"></script>
 <script src="stability.js" defer></script>
 <!-- หน้าตาชุดเดียวกับหน้าหลัก (สี การ์ด ปุ่ม พื้นหลัง) — โหลดท้ายสุดให้ชนะสไตล์เดิม -->
 <link rel="stylesheet" href="lux.css">
@@ -5423,8 +5424,8 @@ function gParse(t){if(!t)return null;let s=t.replace(/```json/gi,"").replace(/``
 const blobB64=b=>new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result.split(",")[1]);r.readAsDataURL(b)});
 
 /* ===== GARAGE (shared with / via localStorage) ===== */
-function garage(){return LS.get("garage",[])}
-function saveGarage(g){LS.set("garage",g)}
+function garage(){return window.CendonCars?CendonCars.filter(LS.get("garage",[])):LS.get("garage",[])}
+function saveGarage(g){LS.set("garage",window.CendonCars?CendonCars.filter(g):g)}
 function selCar(){const id=LS.get("selCar","");return garage().find(c=>c.id===id)||null}
 function addHistory(carId,q,a){const g=garage();const c=g.find(x=>x.id===carId);if(!c)return;
   c.history=c.history||[];c.history.unshift({t:Date.now(),q,a:(a||"").slice(0,200)});
@@ -5445,17 +5446,21 @@ async function pushCar(c,tok){
     headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok},
     body:JSON.stringify({id:c.id,make:c.make||c.name||"",model:c.model||"",
                          year:c.year||"",mileage:c.mileage||""})});
-  if(!r.ok)throw new Error("HTTP "+r.status);
+  if(!r.ok){const e=new Error("HTTP "+r.status);e.status=r.status;throw e}
   return await r.json();
 }
 async function syncCars(){
   if(!carsAreRemote())return;
+  const carOwner=CendonCars.owner();
   try{
     const tok=await auth.currentUser.getIdToken();
-    const r=await fetch(`${BACKEND_URL}/api/cars`,{headers:{Authorization:"Bearer "+tok}});
+    if(CendonCars.owner()!==carOwner)return;
+    const r=await fetch(`${BACKEND_URL}/api/cars?sync=1`,{headers:{Authorization:"Bearer "+tok}});
     if(!r.ok)return;
-    const arr=await r.json();
-    if(!Array.isArray(arr))return;
+    const data=await r.json();if(CendonCars.owner()!==carOwner)return;
+    const rows=Array.isArray(data)?data:data&&data.cars;if(!Array.isArray(rows))return;
+    if(!Array.isArray(data))CendonCars.acceptDeleted(data.deleted,carOwner);
+    const arr=CendonCars.filter(rows);
 
     const local=garage();
     const byId={};
@@ -5475,10 +5480,13 @@ async function syncCars(){
     /* คันที่มีแต่ในเครื่อง ต้องดันขึ้นเซิร์ฟเวอร์ ไม่ใช่โดนลบทิ้ง */
     const remoteIds=new Set(arr.map(c=>c.id));
     for(const c of local){
+      if(CendonCars.owner()!==carOwner)return;
       if(!c||!c.id||remoteIds.has(c.id))continue;
+      if(CendonCars.isDeleted(c.id)){delete byId[c.id];continue}
       if(!(c.make||c.model||c.name))continue;
       try{
         const saved=await pushCar(c,tok);
+        if(CendonCars.owner()!==carOwner)return;
         if(saved&&saved.id&&saved.id!==c.id){
           /* เซิร์ฟเวอร์ออก id ใหม่ให้ ต้องย้ายบทสนทนาของรถคันนั้นตามไปด้วย
              ไม่งั้นประวัติแชตจะกลายเป็นของรถที่ไม่มีอยู่จริง */
@@ -5492,11 +5500,12 @@ async function syncCars(){
             if(LS.get("selCar","")===c.id)LS.set("selCar",saved.id);
           }catch(e){}
         }
-      }catch(e){ console.warn("pushCar",c.id,e) }
+      }catch(e){if(e.status===410){CendonCars.acceptDeleted([c.id],carOwner);delete byId[c.id]}else console.warn("pushCar",c.id,e)}
     }
 
-    const merged=Object.keys(byId).map(k=>byId[k]);
-    if(!merged.length&&local.length)return;   /* กันพลาดซ้ำอีกชั้น ไม่ล้างของที่มีอยู่ */
+    if(CendonCars.owner()!==carOwner)return;
+    const merged=CendonCars.filter(Object.keys(byId).map(k=>byId[k]));
+    if(!merged.length&&CendonCars.filter(local).length)return;   /* Keep unsynced additions, not deleted cars. */
     saveGarage(merged);
     /* รถที่เลือกไว้ต้องยังมีอยู่จริง ไม่งั้นหน้าแชตจะกลายเป็น "ยังไม่เลือกรถ" */
     const sel=LS.get("selCar","");
@@ -12359,7 +12368,9 @@ async function flushFeedback(){
 
 /* ดึงลงมารวม — เทียบทีละคีย์ ของที่แก้ทีหลังชนะ ไม่ต้องถามผู้ใช้ว่าจะเอาอันไหน */
 async function pull(){
+  const carOwner=CendonCars.owner();
   const d=await req("/api/state");
+  if(CendonCars.owner()!==carOwner)return [];
   St.pulled=new Date().toISOString(); St.error=null;
   const m=meta(), st=d.state||{};
   let touched=[];
@@ -12367,7 +12378,8 @@ async function pull(){
     if(!isTracked(k))return;
     const remote=st[k], mine=m[k]||0;
     if(!(remote.t>mine))return;
-    const str=JSON.stringify(remote.v);
+    const value=k==="garage"?CendonCars.filter(remote.v):(k==="selCar"&&CendonCars.isDeleted(remote.v)?"":remote.v);
+    const str=JSON.stringify(value);
     try{ localStorage.setItem("spire_"+k,str) }catch(e){ return }
     m[k]=remote.t; touched.push(k);
     /* ของที่เพิ่งรับมา ถือว่าตรงกับเซิร์ฟเวอร์แล้ว ไม่ต้องส่งกลับไปอีก */

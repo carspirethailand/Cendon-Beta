@@ -4208,6 +4208,7 @@ a.mtab{text-decoration:none}
 <!-- ห้ามวาดเฟรมแรกก่อนแถบล่างพร้อม — เดิมหน้าใหม่ขึ้นมาก่อนแล้วแถบตามมาทีหลัง (Chrome 124+, ที่อื่นข้าม) -->
 <link rel="expect" href="#mnav0" blocking="render">
 <link rel="stylesheet" href="stability.css">
+<script src="car-sync.js"></script>
 <script src="stability.js" defer></script>
 <style id="magazine">
 /* ══════════════════════════════════════════════════════════════════
@@ -5296,8 +5297,8 @@ function updateFabBadge(){
 ($("fab")||{}).onclick=()=>openChat({});
 
 /* ===== GARAGE CONTROL ===== */
-function garage(){return LS.get("garage",[])}
-function saveGarage(g){LS.set("garage",g)}
+function garage(){return window.CendonCars?CendonCars.filter(LS.get("garage",[])):LS.get("garage",[])}
+function saveGarage(g){LS.set("garage",window.CendonCars?CendonCars.filter(g):g)}
 /* ===== BACKEND CAR SYNC (Cloudflare D1 via /api/cars) ===== */
 function carsAreRemote(){return !!(currentUser && useFb && auth && auth.currentUser && location.protocol!=="file:")}
 async function carTok(){return await auth.currentUser.getIdToken()}
@@ -5344,7 +5345,7 @@ function renderGarage(){if(!document.getElementById("garageList"))return;const g
 
 $("garageList")?.addEventListener("click",async e=>{const dg=e.target.closest("[data-diag2]");if(dg){openChat({car:dg.dataset.diag2,starter:true});return}
   const d=e.target.closest("[data-del]");if(d){const id=d.dataset.del;
-    if(carsAreRemote()){try{await fetch(`${BACKEND_URL}/api/cars/${encodeURIComponent(id)}`,{method:"DELETE",headers:{"Authorization":"Bearer "+await carTok()}})}catch(err){console.warn("delete car failed",err)}}
+    try{await CendonCars.remove(id)}catch(err){toast((window.spireT?window.spireT("ลบรถไม่สำเร็จ กรุณาลองใหม่","Could not remove car. Please retry"):(lang==="en"?"Could not remove car. Please retry":"ลบรถไม่สำเร็จ กรุณาลองใหม่")),"ti-alert-triangle");return}
     const g=garage().filter(c=>c.id!==id);saveGarage(g);renderGarage();renderDashboard();toast((window.spireT?window.spireT("ลบรถแล้ว","Car removed"):(lang==="en"?"Car removed":"ลบรถแล้ว")),"ti-trash")}});
 
 ($("gAdd")||{}).onclick=async()=>{

@@ -1609,6 +1609,7 @@ a.mtab{text-decoration:none}
 <link rel="stylesheet" href="stability.css">
 <link rel="stylesheet" href="home-layout.css">
 <script src="category-pages.js" defer></script>
+<script src="car-sync.js"></script>
 <script src="stability.js" defer></script>
 </head>
 <body>
@@ -1963,7 +1964,7 @@ const T=(th,en)=>TH?th:(en??tr(th));
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money=n=>Number(n||0).toLocaleString(LOC);
-const ls={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const ls={get(k,d){try{const v=localStorage.getItem(k),p=v==null?d:JSON.parse(v);return k==="spire_garage"&&window.CendonCars?CendonCars.filter(p):p}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(k==="spire_garage"&&window.CendonCars?CendonCars.filter(v):v))}catch(e){}}};
 
 const CATS=[
   {id:"all", th:"ทั้งหมด",     ic:"ti-apps"},

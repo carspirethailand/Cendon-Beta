@@ -33,7 +33,7 @@ async function call(method,path,body){
   const t=await tok();
   const r=await fetch(API()+path,{method,headers:{"Content-Type":"application/json",...(t?{Authorization:"Bearer "+t}:{})},body:body?JSON.stringify(body):undefined});
   const j=await r.json().catch(()=>({}));
-  if(!r.ok)throw new Error(j.error||("HTTP "+r.status));
+  if(!r.ok)throw Object.assign(new Error(j.error||("HTTP "+r.status)),{status:r.status});
   return j;
 }
 
@@ -48,7 +48,7 @@ async function ensure(c){
   inflight[k]=(async()=>{
     let r=await call("POST","/api/car-spec",Q);
     /* อีกคนกำลังหาอยู่ — รอผลของเขา */
-    for(let i=0;i<25&&r.status==="pending";i++){await new Promise(z=>setTimeout(z,3000));r=await call("GET","/api/car-spec?"+new URLSearchParams(Q));}
+    for(let i=0;i<30&&r.status==="pending";i++){await new Promise(z=>setTimeout(z,3000));r=await call("GET","/api/car-spec?"+new URLSearchParams(Q));}
     if(DONE.includes(r.status))LS.set("spec_"+k,{...r,_at:Date.now()});
     return r;
   })().finally(()=>{delete inflight[k]});
@@ -159,14 +159,17 @@ function pane(c,kind,extra){
 async function fill(id,c,kind,extra){
   const el=document.getElementById(id);if(!el)return;
   let s;
-  try{s=await ensure(c)}catch(e){s={status:"error",error:e.message}}
+  try{s=await ensure(c)}catch(e){s={status:e.status===404||e.status===405?"unavailable":e.status?"error":"offline",error:e.message}}
   const el2=document.getElementById(id);if(!el2)return;
   const retry=`<button type="button" class="btn" data-cs-retry>${T("ลองใหม่","Try again")}</button>`;
   el2.innerHTML=
     s.status==="invalid"?state("ti-calendar-question",T("ระบุปีรถก่อน แล้วระบบจะหาสเปกของรุ่นนั้นให้","Add the model year to look up specs"))+extra
    :s.status==="notfound"?state("ti-search-off",T("ไม่พบข้อมูลของรุ่นนี้ในปีนี้ — ตรวจชื่อรุ่นและปีอีกครั้ง","No data for this model in this year — check the model and year"))+extra
    :s.status==="limited"?state("ti-clock-pause",T("วันนี้ค้นรุ่นใหม่ครบโควตาแล้ว ลองใหม่พรุ่งนี้ หรือเข้าสู่ระบบเพื่อค้นต่อ","Daily lookup limit reached — try tomorrow or sign in"))+extra
-   :s.status==="failed"||s.status==="error"||s.status==="pending"?state("ti-cloud-off",T("ค้นข้อมูลไม่สำเร็จในตอนนี้","Couldn’t look up specs right now"),retry)+extra
+   :s.status==="pending"?state("ti-hourglass",T("ยังค้นข้อมูลรุ่นนี้อยู่ — กลับมาเปิดแท็บนี้อีกครั้งในอีกสักครู่","Still looking this model up — check back in a moment"),retry)+extra
+   :s.status==="offline"?state("ti-wifi-off",T("เชื่อมต่ออินเทอร์เน็ตไม่ได้ ลองใหม่อีกครั้ง","No connection — please try again"),retry)+extra
+   :s.status==="unavailable"?state("ti-tools",T("ระบบข้อมูลสเปกกำลังอัปเดต ลองใหม่อีกครั้งภายหลัง","Specs are being updated — please try again later"),retry)+extra
+   :s.status==="failed"||s.status==="error"?state("ti-cloud-off",T("ค้นข้อมูลรุ่นนี้ไม่สำเร็จ ลองใหม่อีกสักครู่","Couldn’t look up this model — try again shortly"),retry)+extra
    :(kind==="equip"?equipHTML(c,s):specHTML(c,s)+extra);
   el2.dataset.car=c.id;
   /* ประเภทตัวถังที่สองแหล่งยืนยันตรงกัน → แจ้งหน้าเว็บให้ใช้ (ภาพรถในการาจ) */

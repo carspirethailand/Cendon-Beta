@@ -5414,6 +5414,7 @@ async function loadSpecs(){
             ${sc.cells?`<span>ยืนยันซ้ำ ${sc.confirmed}/${sc.cells} ช่อง${sc.conflicts?` · ไม่ตรงกัน ${sc.conflicts}`:""}</span>`:""}
             <span>${r.sources||0} แหล่ง</span><span>เปิดดู ${r.hits||0} ครั้ง</span>
             ${r.reports?`<span style="color:var(--danger,#E5484D);font-weight:600">มีคนแจ้งผิด ${r.reports}</span>`:""}</div>
+          ${r.status==="failed"&&r.error?`<div style="font-size:12px;margin-top:6px;color:var(--danger,#E5484D)">สาเหตุ: ${esc(r.error)}</div>`:""}
           ${(r.notes||[]).map(n=>`<div style="font-size:12.5px;margin-top:6px;padding:7px 10px;border-radius:9px;background:var(--surface2)">“${esc(n.note||"")}”</div>`).join("")}
         </div>
         <div style="display:flex;gap:6px;flex:none">
@@ -5421,7 +5422,9 @@ async function loadSpecs(){
           ${r.status==="ready"?`<button class="btn sm" onclick="specAct('verify','${esc(r.key)}',this)"><i class="ti ti-rosette-discount-check"></i> ยืนยันแล้ว</button>`
            :r.status==="verified"?`<button class="btn sm" onclick="specAct('unverify','${esc(r.key)}',this)"><i class="ti ti-lock-open"></i> เลิกยืนยัน</button>`:""}
         </div></div>`}).join("");
-  }catch(e){el.innerHTML=`<div class="empty">โหลดไม่ได้: ${esc(e.message)}</div>`}
+  }catch(e){el.innerHTML=/404|not found/i.test(e.message)
+    ?`<div class="empty" style="color:var(--danger,#E5484D)">หลังบ้านยังไม่ได้ deploy รุ่นที่มีคลังสเปกรถ — ผู้ใช้จะเห็น "ระบบข้อมูลสเปกกำลังอัปเดต" จนกว่าจะ deploy (git pull แล้ว npx wrangler deploy)</div>`
+    :`<div class="empty">โหลดไม่ได้: ${esc(e.message)}</div>`}
 }
 async function specAct(kind,key,btn){
   btn.disabled=true;const old=btn.innerHTML;if(kind==="redo")btn.innerHTML='<i class="ti ti-loader-2"></i> กำลังค้น (~20 วิ)';

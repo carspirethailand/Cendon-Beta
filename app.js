@@ -796,11 +796,10 @@ function closeMagModal(){$("magModal").classList.remove("show")}
 /* ===== AUTH ===== */
 const isAdmin=e=>ADMINS.includes((e||"").toLowerCase());
 function picHTML(u){return u.photo?`<img src="${u.photo}" referrerpolicy="no-referrer">`:`<span class="fb">${(u.name||"?").charAt(0).toUpperCase()}</span>`}
-async function signIn(){
-  if(!useFb){toast(lang==="en"?"Auth unavailable":"ระบบล็อกอินไม่พร้อม","ti-alert-triangle");return}
-  if(location.protocol==="file:"){toast("ล็อกอิน Google ต้องเปิดผ่าน localhost/เว็บจริง (file:// ใช้ไม่ได้) — แต่ใช้แชต/การาจได้เลย","ti-info-circle");return}
-  const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:"select_account"});
-  try{await auth.signInWithPopup(p)}catch(e){if(e.code==="auth/popup-closed-by-user")return;toast("ล็อกอินไม่สำเร็จ: "+e.code,"ti-alert-triangle")}}
+function signIn(){
+  const next=location.pathname+location.search+location.hash;
+  location.href="/login?next="+encodeURIComponent(next);
+}
 window.signIn=signIn;
 $("signinBtn").onclick=signIn;
 $("logoutBtn").onclick=async()=>{if(useFb)await auth.signOut();$("dd").classList.remove("show");switchView("home");toast(lang==="en"?"Logged out":"ออกจากระบบแล้ว","ti-logout")};

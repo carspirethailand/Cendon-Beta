@@ -25,32 +25,55 @@ function q(c){
   if(!make&&c.name){make=String(c.name).split(" ")[0];model=String(c.name).slice(make.length).trim()}
   return {make,model:model||make,year:String(c.year||"").trim()};
 }
+/* ล็อกอินอยู่ต้องส่งตัวตนไปด้วย — ไม่งั้นหลังบ้านนับเป็นผู้ไม่ล็อกอิน (โควตาตาม IP วันละ 3 รุ่น) */
 async function tok(){
-  try{const a=window.spireAuth||window.auth;if(a&&a.currentUser)return await a.currentUser.getIdToken()}catch(e){}
+  try{
+    const a=window.spireAuth||window.auth||(window.firebase&&firebase.apps&&firebase.apps.length&&firebase.auth?firebase.auth():null);
+    if(a&&a.currentUser)return await a.currentUser.getIdToken();
+  }catch(e){}
   return "";
 }
+/* บันทึกฝั่งเครื่องนี้ทุกขั้น — แผงผู้ดูแลแบบลอยอ่านไปแสดงทุกหน้า (ผู้ใช้ทั่วไปไม่เห็น อยู่แค่ในเครื่อง) */
+function clog(msg,o){
+  try{const a=JSON.parse(localStorage.getItem("spire_adminLog")||"[]");
+    a.unshift({at:Date.now(),src:"spec",page:location.pathname,msg,...(o||{})});
+    localStorage.setItem("spire_adminLog",JSON.stringify(a.slice(0,80)));
+    window.dispatchEvent(new Event("spire-adminlog"));}catch(e){}
+}
 async function call(method,path,body){
-  const t=await tok();
-  const r=await fetch(API()+path,{method,headers:{"Content-Type":"application/json",...(t?{Authorization:"Bearer "+t}:{})},body:body?JSON.stringify(body):undefined});
+  const t=await tok(),t0=Date.now();
+  let r;
+  try{r=await fetch(API()+path,{method,headers:{"Content-Type":"application/json",...(t?{Authorization:"Bearer "+t}:{})},body:body?JSON.stringify(body):undefined})}
+  catch(e){clog(method+" "+path.split("?")[0]+" เชื่อมต่อหลังบ้านไม่ได้",{err:String(e&&e.message||e),ms:Date.now()-t0,auth:!!t});throw e}
   const j=await r.json().catch(()=>({}));
-  if(!r.ok)throw Object.assign(new Error(j.error||("HTTP "+r.status)),{status:r.status});
+  if(!r.ok){
+    clog(method+" "+path.split("?")[0]+" ตอบ "+r.status+(r.status===404||r.status===405?" (หลังบ้านยังไม่มีระบบนี้ — ยังไม่ได้ deploy?)":""),{st:r.status,err:j.error||"",ms:Date.now()-t0,auth:!!t});
+    throw Object.assign(new Error(j.error||("HTTP "+r.status)),{status:r.status});
+  }
+  j._ms=Date.now()-t0;j._auth=!!t;
   return j;
 }
 
 /* ขอข้อมูลรุ่นนี้ — ในเครื่องมีแล้วใช้เลย · ยังไม่มีให้หลังบ้านหา (ครั้งแรกของรุ่นนี้ทั้งระบบเท่านั้นที่เรียก AI) */
 const inflight={};
 async function ensure(c,opt){
-  const Q=q(c),k=keyOf(Q),retry=!!(opt&&opt.retry);
-  if(!/^\d{4}$/.test(Q.year)||!Q.make)return {status:"invalid"};
+  const Q=q(c),k=keyOf(Q),retry=!!(opt&&opt.retry),car=[Q.make,Q.model,Q.year].join(" ");
+  if(!/^\d{4}$/.test(Q.year)||!Q.make){clog("ไม่ค้น: ข้อมูลรถไม่ครบ ("+(Q.make?"ไม่มีปี":"ไม่มียี่ห้อ")+")",{car});return {status:"invalid"}}
   const have=LS.get("spec_"+k);
-  if(!retry&&have&&DONE.includes(have.status)&&Date.now()-(have._at||0)<7*86400000)return have;
+  if(!retry&&have&&DONE.includes(have.status)&&Date.now()-(have._at||0)<7*86400000){
+    clog("ใช้ข้อมูลที่เก็บในเครื่อง ("+have.status+")",{car,ok:true});return have}
   if(inflight[k])return inflight[k];
   inflight[k]=(async()=>{
     /* ครั้งแรกของรุ่นนี้ หลังบ้านค้นเว็บสองรอบแล้วเทียบกัน — รอได้ถึงราว 1 นาทีครึ่ง
        "ลองใหม่" = ขอให้ค้นใหม่จริง ไม่ใช่ดึงผลที่ไม่สำเร็จเดิม */
+    const t0=Date.now();
+    clog((retry?"กดลองใหม่ — ":"")+"ขอสเปกจากหลังบ้าน",{car});
     let r=await call("POST","/api/car-spec",retry?{...Q,retry:true}:Q);
+    clog("หลังบ้านตอบ: "+r.status,{car,ok:r.status!=="failed"&&r.status!=="limited",ms:r._ms,auth:r._auth,err:r.error||"",trace:r.trace});
     /* อีกคนกำลังหาอยู่ — รอผลของเขา */
-    for(let i=0;i<40&&r.status==="pending";i++){await new Promise(z=>setTimeout(z,3000));r=await call("GET","/api/car-spec?"+new URLSearchParams(Q));}
+    let n=0;
+    for(;n<40&&r.status==="pending";n++){await new Promise(z=>setTimeout(z,3000));r=await call("GET","/api/car-spec?"+new URLSearchParams(Q));}
+    if(n)clog("รอผลค้น "+n+" รอบ → "+r.status,{car,ok:DONE.includes(r.status),ms:Date.now()-t0,err:r.error||(r.status==="pending"?"เกิน 2 นาทีแล้วยังค้นไม่เสร็จ":"")});
     if(DONE.includes(r.status))LS.set("spec_"+k,{...r,_at:Date.now()});
     return r;
   })().finally(()=>{delete inflight[k]});

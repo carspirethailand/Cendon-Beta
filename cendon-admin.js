@@ -6,6 +6,9 @@
        - ทุกครั้งที่ AI ตอบ: ใครถาม ใช้รุ่นไหน ลองอะไรไปบ้างตามลำดับ ใช้เวลาเท่าไร พังเพราะอะไร
        - ข้อผิดพลาดล่าสุด · สถิติชั่วโมงนี้ · คีย์ที่ตั้งไว้
    • ปุ่ม "ทดสอบทุกรุ่น" · "ปล่อยตัวที่ถูกพัก" · "คัดลอกทั้งหมด" (ส่งให้ Claude ได้เลย)
+   • แท็บ Log (ทุกหน้า): การค้นสเปกรถของทุกคนจากหลังบ้าน (ทุกขั้นที่เรียก Gemini + สาเหตุจริง)
+       + บันทึกของเครื่องนี้ (หน้าไหนขออะไร ได้อะไร · หลังบ้านตอบผิดพลาด · error ของหน้าเว็บ)
+       + ช่องทดสอบค้นสเปกจริงจากแผงได้เลย
    • ปิด/เปิดได้ที่ ตั้งค่า (หน้าโปรไฟล์) — ผู้ใช้ทั่วไปไม่เห็นอะไรเลย
    ════════════════════════════════════════════════════════════════════ */
 (function(){
@@ -77,10 +80,42 @@ var CSS=`
 .cxa-btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .cxa-btns button{border:0;border-radius:10px;padding:7px 11px;font:inherit;font-size:12.5px;cursor:pointer;background:rgba(255,255,255,.07);color:#EDE7E0}
 .cxa-btns button.p{background:#F28C38;color:#1A0F07;font-weight:600}
+.cxa-t{display:grid;grid-template-columns:1fr 1fr 70px;gap:6px}
+.cxa-t input{min-width:0;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#EDE7E0;border-radius:9px;padding:7px 9px;font:inherit;font-size:12.5px}
+.cxa-k{display:inline-block;font-size:10.5px;padding:1px 7px;border-radius:7px;background:rgba(255,255,255,.08);color:#CFC6BC;margin-right:4px}
+.cxa-k.spec{background:rgba(242,140,56,.16);color:#F5A35C}.cxa-k.api{background:rgba(91,141,239,.18);color:#9DB8F5}.cxa-k.js{background:rgba(240,88,79,.18);color:#F0877F}
+.cxa-sub{color:#8F877E;font-size:11.5px;margin-top:2px;word-break:break-word}
 .cxa-pre{white-space:pre-wrap;word-break:break-word;font:11.5px/1.5 ui-monospace,Menlo,monospace;color:#CFC6BC;background:rgba(0,0,0,.3);border-radius:10px;padding:8px}
 `;
 
-var tab="live", data=null, timer=null, fab=null, pnl=null;
+var tab=rd("spire_adminTab","live"), data=null, timer=null, fab=null, pnl=null;
+if(["live","models","test","log"].indexOf(tab)<0)tab="live";
+
+/* ── บันทึกของเครื่องนี้ (ทุกหน้าใช้ร่วมกัน เก็บ 80 รายการล่าสุด) ── */
+var LOGK="spire_adminLog";
+function localLog(){ var a=rd(LOGK,[]); return Array.isArray(a)?a:[] }
+function on(t,f){ try{ if(window.addEventListener)window.addEventListener(t,f) }catch(e){} }
+function addLog(e){ var a=localLog(); a.unshift(Object.assign({at:Date.now(),page:typeof location!=="undefined"?location.pathname:""},e)); wr(LOGK,a.slice(0,80)); repaintLog() }
+window.spireAdminLog=addLog;
+function repaintLog(){ if(pnl&&tab==="log")paint() }
+on("spire-adminlog",repaintLog);
+on("storage",function(e){ if(e.key===LOGK)repaintLog() });
+/* เฉพาะผู้ดูแล: จับ error ของหน้าเว็บ และคำขอไปหลังบ้านที่ไม่สำเร็จ ลงบันทึกด้วย */
+function capture(){
+  if(capture.on)return; capture.on=1;
+  on("error",function(e){ if(!e.message)return; addLog({src:"js",msg:String(e.message).slice(0,200),err:(e.filename||"").split("/").pop()+(e.lineno?":"+e.lineno:"")}) });
+  on("unhandledrejection",function(e){ var r=e.reason; addLog({src:"js",msg:"Promise: "+String(r&&r.message||r).slice(0,200)}) });
+  var of=window.fetch; if(typeof of!=="function"||of.__cxa)return;
+  var f=function(input,init){
+    var u=String(input&&input.url||input), t0=Date.now(), p=of.apply(this,arguments);
+    if(u.indexOf(API())!==0||/\/api\/admin\/live/.test(u))return p;
+    var what=((init&&init.method)||(input&&input.method)||"GET")+" "+u.slice(API().length).split("?")[0];
+    return p.then(function(r){
+      if(!r.ok)r.clone().json().catch(function(){return {}}).then(function(j){ addLog({src:"api",msg:what,st:r.status,ms:Date.now()-t0,err:j&&j.error||""}) });
+      return r },function(e){ addLog({src:"api",msg:what,ms:Date.now()-t0,err:"เชื่อมต่อไม่ได้: "+String(e&&e.message||e)}); throw e });
+  };
+  f.__cxa=1; window.fetch=f;
+}
 function currentAuth(){
   try{ return window.spireAuth||(window.firebase&&firebase.apps&&firebase.apps.length?firebase.auth():null) }catch(e){ return null }
 }
@@ -91,14 +126,14 @@ function token(expectedUid){
   if(u)return read(u);
   return (window.spireAwaitUser?window.spireAwaitUser(4000):Promise.resolve(null)).then(read);
 }
-function call(path,opt,expectedUid){
+function call(path,opt,expectedUid,ms){
   return new Promise(function(resolve,reject){
     var done=false, controller=typeof AbortController!=="undefined"?new AbortController():null;
     function finish(fn,value){ if(done)return; done=true; clearTimeout(limit); fn(value) }
     var limit=setTimeout(function(){
       var e=new Error("ระบบตอบช้า ลองใหม่อีกครั้ง"); e.code="TIMEOUT";
       finish(reject,e); if(controller)controller.abort();
-    },15000);
+    },ms||15000);
     Promise.resolve().then(function(){ return token(expectedUid) }).then(function(t){
       if(done)return;
       if(!t||(expectedUid&&!sameUser(expectedUid))){ var e=new Error("ยังไม่ได้เข้าสู่ระบบ"); e.code="AUTH_NOT_READY"; throw e }
@@ -117,6 +152,7 @@ function health(){
   var s=data.stats||{}; if(!data.keys.gemini)return "bad";
   if(s.hour&&s.fail/s.hour>.5)return "bad";
   if((data.parked||[]).length||s.fail)return "warn";
+  if((data.specLog||[]).some(function(e){ return !e.ok&&Date.now()-e.at<3600000 }))return "warn";
   return "ok";
 }
 function load(){
@@ -150,10 +186,85 @@ function eventsHTML(){
       (e.trail&&e.trail.length?'<ol>'+e.trail.map(function(s){return '<li class="'+(s.ok?"ok":"f")+'">'+esc(s.model)+(s.level?" ["+s.level+"]":"")+(s.search?" +ค้น":"")+" — "+(s.ok?"ตอบได้":"พัง")+" "+(s.ms/1000).toFixed(1)+"วิ"+(s.err?": "+esc(s.err):"")+'</li>'}).join("")+'</ol>':"")+
       (e.err?'<div class="cxa-err">'+esc(e.err)+'</div>':"")+'</div>' }).join("");
 }
+/* ── แท็บ Log ── */
+var KIND={cache:"ได้จากคลัง",wait:"มีคนกำลังค้นอยู่","failed-recent":"ไม่ค้นซ้ำ (เพิ่งพลาด < 2 นาที)",limited:"ติดโควตา",research:"ค้นใหม่",retry:"กดลองใหม่",redo:"แอดมินสั่งค้นใหม่"};
+function sec(ms){ return ms==null?"":(ms/1000).toFixed(1)+" วิ" }
+function trailHTML(t){
+  if(!t||!t.length)return "";
+  return '<ol>'+t.map(function(x){
+    if(x.step==="setup")return '<li class="'+(x.ok?"ok":"f")+'">คีย์ที่ใช้: '+esc(x.keyFrom)+' · รุ่นที่จะลอง: '+esc((x.models||[]).join(" → "))+'</li>';
+    var lab=(x.p?"รอบ "+x.p+" · ":"")+(x.step==="repair"?"ซ่อม JSON ":x.step==="cap"?"":"ค้นเว็บ ")+esc(x.m||"");
+    var det=[x.st?"HTTP "+x.st:"",sec(x.ms),x.len!=null?"ยาว "+x.len+" ตัว":"",x.src!=null?x.src+" แหล่ง":"",x.json?"JSON: "+x.json:"",
+      x.fin&&x.fin!=="STOP"?"จบเพราะ "+x.fin:"",x.retried?"ลองซ้ำแบบไม่ตั้งการคิด":""].filter(Boolean).join(" · ");
+    return '<li class="'+(x.ok?"ok":"f")+'">'+lab+(det?" — "+esc(det):"")+(x.err?'<br>'+esc(x.err):"")+
+      (x.head?'<br><span style="color:#8F877E">คำตอบขึ้นต้น: '+esc(x.head)+'</span>':"")+'</li>' }).join("")+'</ol>';
+}
+function serverLogHTML(){
+  var L=(data&&data.specLog)||[];
+  if(!data)return '<div class="cxa-r"><span class="n">กำลังโหลด…</span></div>';
+  if(!data.specLog)return '<div class="cxa-err">หลังบ้านยังไม่ส่งบันทึกนี้ — ต้อง deploy หลังบ้านรุ่นล่าสุดก่อน</div>';
+  if(!L.length)return '<div class="cxa-r"><span class="n">ยังไม่มีใครขอสเปกรถตั้งแต่ deploy ล่าสุด</span></div>';
+  return L.map(function(e){
+    return '<div class="cxa-e"><div class="t"><span class="cxa-dot '+(e.ok?"g":"r")+'"></span><span>'+esc(String(e.k||"").split("|").join(" "))+'</span><em>'+
+      esc(KIND[e.kind]||e.kind)+' · '+sec(e.ms)+' · '+ago(e.at)+'ที่แล้ว</em></div>'+
+      '<div class="cxa-sub">ผู้ใช้ '+esc(e.who||"-")+' · ผล '+esc(e.status||"-")+'</div>'+trailHTML(e.trail)+
+      (e.err?'<div class="cxa-err">'+esc(e.err)+'</div>':"")+'</div>' }).join("");
+}
+function localLogHTML(){
+  var L=localLog();
+  if(!L.length)return '<div class="cxa-r"><span class="n">ยังไม่มีบันทึกในเครื่องนี้ — เปิดหน้ารถ (แท็บสเปก) แล้วจะขึ้นทันที</span></div>';
+  return L.map(function(e){
+    var det=[e.car,e.st?"HTTP "+e.st:"",sec(e.ms),e.auth===false?"ไม่ได้ส่งตัวตน (นับเป็นผู้ไม่ล็อกอิน)":""].filter(Boolean).join(" · ");
+    return '<div class="cxa-e"><div class="t"><span class="cxa-dot '+(e.ok===true?"g":e.ok===false||e.err||e.st?"r":"x")+'"></span><span><b class="cxa-k '+esc(e.src||"")+'">'+esc(e.src||"log")+'</b>'+esc(e.msg)+'</span><em>'+ago(e.at)+'ที่แล้ว</em></div>'+
+      '<div class="cxa-sub">'+esc(e.page||"")+(det?" · "+esc(det):"")+'</div>'+trailHTML(e.trace)+(e.err?'<div class="cxa-err">'+esc(e.err)+'</div>':"")+'</div>' }).join("");
+}
+function selCar(){
+  try{ var g=rd("spire_garage",[]), id=rd("spire_selCar",""); return g.filter(function(c){return c.id===id})[0]||g[0]||null }catch(e){ return null }
+}
+function paintLog(b){
+  if(!b.dataset.log){
+    var c=selCar()||{};
+    b.innerHTML='<div class="cxa-h">ทดสอบค้นสเปกจริง (ค้นใหม่ทับ · ไม่นับโควตา)</div>'+
+      '<div class="cxa-t"><input id="cxa-mk" placeholder="ยี่ห้อ" value="'+esc(c.make||"")+'"><input id="cxa-md" placeholder="รุ่น" value="'+esc(c.model||"")+'"><input id="cxa-yr" placeholder="ปี" inputmode="numeric" value="'+esc(c.year||"")+'"></div>'+
+      '<div class="cxa-btns"><button class="p" id="cxa-spec">ค้นตอนนี้</button><button id="cxa-cp3">คัดลอก Log ทั้งหมด (ส่งให้ Claude)</button><button id="cxa-clr">ล้างบันทึกเครื่องนี้</button></div>'+
+      '<div id="cxa-sr"></div><div id="cxa-lg"></div>';
+    b.dataset.log=1;
+    D.getElementById("cxa-spec").onclick=specTest;
+    D.getElementById("cxa-cp3").onclick=function(e){ copy(JSON.stringify({page:location.href,at:new Date().toISOString(),spec:data&&data.spec,server:data&&data.specLog,device:localLog()},null,1)); e.target.textContent="คัดลอกแล้ว ✓" };
+    D.getElementById("cxa-clr").onclick=function(){ wr(LOGK,[]); paint() };
+  }
+  var lg=D.getElementById("cxa-lg"); if(!lg)return;
+  lg.innerHTML=(data&&data.spec?'<div class="cxa-h">หลังบ้านค้นสเปกด้วย</div><div class="cxa-r"><span class="cxa-dot '+(data.spec.key?"g":"r")+'"></span><span class="n">'+
+      esc(data.spec.key||"ไม่มีคีย์ Gemini!")+' · '+esc((data.spec.models||[]).join(" → "))+'</span></div>':"")+
+    '<div class="cxa-h">หลังบ้าน · ทุกคน ทุกหน้า (40 ล่าสุด)</div>'+serverLogHTML()+
+    '<div class="cxa-h">เครื่องนี้ · ทุกหน้า</div>'+localLogHTML();
+}
+function specTest(){
+  var mk=D.getElementById("cxa-mk").value.trim(), md=D.getElementById("cxa-md").value.trim(), yr=D.getElementById("cxa-yr").value.trim();
+  var out=D.getElementById("cxa-sr"), btn=D.getElementById("cxa-spec");
+  if(!mk||!/^\d{4}$/.test(yr)){ out.innerHTML='<div class="cxa-err">ใส่ยี่ห้อและปี (4 หลัก)</div>'; return }
+  btn.disabled=true; btn.textContent="กำลังค้น… (อาจถึง 90 วิ)"; var t0=Date.now();
+  out.innerHTML='<div class="cxa-r"><span class="n">ส่งคำขอแล้ว รอหลังบ้านค้นเว็บสองรอบ…</span></div>';
+  call("/api/car-spec",{method:"POST",body:JSON.stringify({make:mk,model:md||mk,year:yr,force:true})},null,120000)
+    .then(function(j){
+      addLog({src:"spec",msg:"แอดมินทดสอบค้น → "+j.status,car:[mk,md,yr].join(" "),ok:j.status==="ready"||j.status==="verified",ms:Date.now()-t0,err:j.error||"",trace:j.trace});
+      out.innerHTML='<div class="cxa-e"><div class="t"><span class="cxa-dot '+(j.status==="ready"||j.status==="verified"?"g":"r")+'"></span><span>ผล: '+esc(j.status)+'</span><em>'+sec(Date.now()-t0)+'</em></div>'+
+        (j.data?'<div class="cxa-sub">ตัวถัง '+esc(j.data.body||"-")+' · รุ่นย่อย '+((j.data.variants||[]).length)+' · แหล่ง '+((j.sources||[]).length)+'</div>':"")+
+        trailHTML(j.trace)+(j.error?'<div class="cxa-err">'+esc(j.error)+'</div>':"")+
+        (j.status==="pending"?'<div class="cxa-sub">ค้นนานเกินจะรอในคำขอเดียว — หลังบ้านทำต่อเบื้องหลัง ผลจะขึ้นในรายการด้านล่างเอง</div>':"")+'</div>';
+      load();
+    },function(e){
+      addLog({src:"spec",msg:"แอดมินทดสอบค้น — ไม่สำเร็จ",car:[mk,md,yr].join(" "),st:e.status,err:e.message});
+      out.innerHTML='<div class="cxa-err">'+esc(e.message)+(e.status===404||e.status===405?" — หลังบ้านยังไม่มีระบบนี้ (ยังไม่ได้ deploy?)":"")+'</div>';
+    })
+    .then(function(){ btn.disabled=false; btn.textContent="ค้นอีกครั้ง" });
+}
 function paint(){
   var b=D.getElementById("cxa-b"); if(!b)return;
   D.getElementById("cxa-upd").textContent=data?"อัปเดต "+new Date(data.now).toLocaleTimeString("th-TH"):"";
   D.querySelectorAll("#cxa-p nav button").forEach(function(x){x.classList.toggle("on",x.dataset.t===tab)});
+  if(tab!=="log")delete b.dataset.log;
+  if(tab==="log"){ delete b.dataset.test; paintLog(b); return }
   if(tab==="test"){ if(!b.dataset.test)b.innerHTML='<div class="cxa-btns"><button class="p" id="cxa-run">ทดสอบทุกรุ่นตอนนี้ (ใช้เวลา ~20 วิ)</button></div><div id="cxa-tr" style="margin-top:10px"></div>'; b.dataset.test=1; wireTest(); return }
   delete b.dataset.test;
   if(!data){ b.innerHTML='<div class="cxa-r"><span class="n">กำลังโหลด…</span></div>'; return }
@@ -189,13 +300,13 @@ function open(){
   if(pnl){ close(); return }
   pnl=D.createElement("div"); pnl.id="cxa-p";
   pnl.innerHTML='<header><b>🛠 Cendon Admin · สด</b><small id="cxa-upd"></small><button id="cxa-x" aria-label="ปิด">✕</button></header>'+
-    '<nav><button data-t="live">กิจกรรม AI</button><button data-t="models">รุ่นและสถานะ</button><button data-t="test">ทดสอบ</button></nav><div id="cxa-b"></div>';
+    '<nav><button data-t="live">กิจกรรม AI</button><button data-t="models">รุ่นและสถานะ</button><button data-t="test">ทดสอบ</button><button data-t="log">Log</button></nav><div id="cxa-b"></div>';
   D.body.appendChild(pnl);
   var r=fab.getBoundingClientRect(), w=pnl.offsetWidth, h=pnl.offsetHeight;
   pnl.style.left=Math.max(10,Math.min(innerWidth-w-10,r.left+r.width-w))+"px";
   pnl.style.top=(r.top>h+20?r.top-h-10:Math.min(innerHeight-h-10,r.bottom+10))+"px";
   pnl.querySelector("#cxa-x").onclick=close;
-  pnl.querySelectorAll("nav button").forEach(function(b){ b.onclick=function(){ tab=b.dataset.t; paint() } });
+  pnl.querySelectorAll("nav button").forEach(function(b){ b.onclick=function(){ tab=b.dataset.t; wr("spire_adminTab",tab); paint() } });
   draggable(pnl,pnl.querySelector("header"));
   paint(); load(); clearInterval(timer); timer=setInterval(load,5000);
 }
@@ -203,6 +314,7 @@ function close(){ if(pnl){ pnl.remove(); pnl=null } clearInterval(timer); timer=
 
 function mount(){
   if(!isAdmin()||!enabled()){ unmount(); return }
+  capture();
   if(fab)return;
   if(!D.getElementById("cxa-css")){ var s=D.createElement("style"); s.id="cxa-css"; s.textContent=CSS; D.head.appendChild(s) }
   fab=D.createElement("div"); fab.id="cxa-fab"; fab.title="Cendon Admin";

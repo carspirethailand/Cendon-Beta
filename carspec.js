@@ -39,16 +39,18 @@ async function call(method,path,body){
 
 /* ขอข้อมูลรุ่นนี้ — ในเครื่องมีแล้วใช้เลย · ยังไม่มีให้หลังบ้านหา (ครั้งแรกของรุ่นนี้ทั้งระบบเท่านั้นที่เรียก AI) */
 const inflight={};
-async function ensure(c){
-  const Q=q(c),k=keyOf(Q);
+async function ensure(c,opt){
+  const Q=q(c),k=keyOf(Q),retry=!!(opt&&opt.retry);
   if(!/^\d{4}$/.test(Q.year)||!Q.make)return {status:"invalid"};
   const have=LS.get("spec_"+k);
-  if(have&&DONE.includes(have.status)&&Date.now()-(have._at||0)<7*86400000)return have;
+  if(!retry&&have&&DONE.includes(have.status)&&Date.now()-(have._at||0)<7*86400000)return have;
   if(inflight[k])return inflight[k];
   inflight[k]=(async()=>{
-    let r=await call("POST","/api/car-spec",Q);
+    /* ครั้งแรกของรุ่นนี้ หลังบ้านค้นเว็บสองรอบแล้วเทียบกัน — รอได้ถึงราว 1 นาทีครึ่ง
+       "ลองใหม่" = ขอให้ค้นใหม่จริง ไม่ใช่ดึงผลที่ไม่สำเร็จเดิม */
+    let r=await call("POST","/api/car-spec",retry?{...Q,retry:true}:Q);
     /* อีกคนกำลังหาอยู่ — รอผลของเขา */
-    for(let i=0;i<30&&r.status==="pending";i++){await new Promise(z=>setTimeout(z,3000));r=await call("GET","/api/car-spec?"+new URLSearchParams(Q));}
+    for(let i=0;i<40&&r.status==="pending";i++){await new Promise(z=>setTimeout(z,3000));r=await call("GET","/api/car-spec?"+new URLSearchParams(Q));}
     if(DONE.includes(r.status))LS.set("spec_"+k,{...r,_at:Date.now()});
     return r;
   })().finally(()=>{delete inflight[k]});
@@ -145,7 +147,7 @@ function loadingHTML(c){
   const Q=q(c);
   return `<div class="cs-state cs-loading"><span class="cs-spin"></span>
     <p><b>${T("กำลังค้นสเปกจริงของ","Looking up real specs for")} ${esc(Q.make+" "+Q.model+" "+Q.year)}</b><br>
-    ${T("หาจากหลายแหล่งแล้วเทียบกัน — รุ่นนี้ค้นครั้งแรก ใช้เวลาราว 20 วินาที คนต่อไปจะเห็นทันที","Checking several sources — first lookup for this model takes about 20 seconds, then it’s instant for everyone")}</p></div>`;
+    ${T("หาจากหลายแหล่งแล้วเทียบกัน — รุ่นนี้ค้นครั้งแรก อาจใช้เวลาถึง 1 นาที คนต่อไปจะเห็นทันที","Checking several sources — the first lookup for this model can take up to a minute, then it’s instant for everyone")}</p></div>`;
 }
 
 /* ช่องในแท็บ: คืนตัววางที่ไว้ก่อน แล้วเติมเนื้อหาเมื่อได้ข้อมูล */
@@ -156,10 +158,10 @@ function pane(c,kind,extra){
   setTimeout(()=>fill(id,c,kind,extra||""),0);
   return `<div class="cs-wrap" id="${id}">${loadingHTML(c)}</div>`;
 }
-async function fill(id,c,kind,extra){
+async function fill(id,c,kind,extra,opt){
   const el=document.getElementById(id);if(!el)return;
   let s;
-  try{s=await ensure(c)}catch(e){s={status:e.status===404||e.status===405?"unavailable":e.status?"error":"offline",error:e.message}}
+  try{s=await ensure(c,opt)}catch(e){s={status:e.status===404||e.status===405?"unavailable":e.status?"error":"offline",error:e.message}}
   const el2=document.getElementById(id);if(!el2)return;
   const retry=`<button type="button" class="btn" data-cs-retry>${T("ลองใหม่","Try again")}</button>`;
   el2.innerHTML=
@@ -184,7 +186,7 @@ document.addEventListener("click",async e=>{
   const vb=e.target.closest("[data-cs-var]");
   const P=PANES[w.id]||{kind:"spec",extra:""};
   if(vb){LS.set("specv_"+w.dataset.car,Number(vb.dataset.csVar));const c=car();if(c)fill(w.id,c,P.kind,P.extra);return}
-  if(e.target.closest("[data-cs-retry]")){const c=car();if(c){w.innerHTML=loadingHTML(c);fill(w.id,c,P.kind,P.extra)}return}
+  if(e.target.closest("[data-cs-retry]")){const c=car();if(c){w.innerHTML=loadingHTML(c);fill(w.id,c,P.kind,P.extra,{retry:true})}return}
   const rp=e.target.closest(".cs-report");if(!rp)return;
   const form=rp.querySelector(".cs-form");
   if(e.target.closest("[data-cs-report]")){form.hidden=false;form.querySelector("textarea").focus();return}

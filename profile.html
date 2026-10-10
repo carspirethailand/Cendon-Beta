@@ -2,7 +2,10 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8"/>
+<!-- ที่อยู่แบบลึก (/profile/…) — ไฟล์ประกอบทุกตัวอ้างจากรากเว็บเสมอ -->
+<base href="/">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<script src="nav.js"></script>
 <title>Cendon — ผู้ช่วย AI ดูแลรถ</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css" media="print" onload="this.media='all'"/>
@@ -4229,7 +4232,7 @@ a.mtab{text-decoration:none}
 ::view-transition-group(mnav){animation-duration:.2s}
 </style>
 <!-- ห้ามวาดเฟรมแรกก่อนแถบล่างพร้อม — เดิมหน้าใหม่ขึ้นมาก่อนแล้วแถบตามมาทีหลัง (Chrome 124+, ที่อื่นข้าม) -->
-<link rel="expect" href="#mnav0" blocking="render">
+<link rel="expect" href="/profile#mnav0" blocking="render">
 <link rel="stylesheet" href="stability.css">
 <script src="car-sync.js"></script>
 <script src="stability.js" defer></script>
@@ -4244,7 +4247,7 @@ a.mtab{text-decoration:none}
    แท็บเป็นลิงก์จริง กดได้ทันทีแม้สคริปต์หลักยังไม่พร้อม และเบราว์เซอร์เตรียมหน้าล่วงหน้าได้ */
 (function(){try{
   var D=document;if(!matchMedia("(max-width:760px)").matches||D.getElementById("mnav"))return;
-  var p=location.pathname.replace(/\.html$/,"").replace(/\/index$/,"/");
+  var p="/"+(location.pathname.replace(/\.html$/,"").replace(/\/index$/,"/").split("/")[1]||"");
   var cur={"/garage":"garage","/news":"magazine","/profile":"account"}[p]||"home";
   var en=false;try{en=JSON.parse(localStorage.getItem("spire_lang"))==="en"}catch(e){}
   var u=null;try{u=JSON.parse(localStorage.getItem("spire_cachedUser"))}catch(e){}
@@ -10951,6 +10954,7 @@ setTimeout(build,400); setTimeout(()=>{build();rebuild()},1200); setTimeout(size
 (function(){
 "use strict";
 const D=document,$=id=>D.getElementById(id);
+let cfgL=null;   /* ชั้นของหน้าเลือกแอป (nav.js) */
 const EN=()=>(window.lang||"th")==="en";
 const T=(th,en)=>(window.spireT?window.spireT(th,en):((window.lang||"th")==="en"?en:th));
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -11030,7 +11034,9 @@ function mount(){
     </div>
     <div id="spMain"></div>
   </div>`;
-  ($("spCfgBtn")||{}).onclick=()=>{picked=null;render()};
+  ($("spCfgBtn")||{}).onclick=()=>{const was=picked;picked=null;render();
+    /* หน้าเลือกแอปมีที่อยู่ของตัวเอง (/spares/apps) — ปุ่มย้อนของเครื่องกลับไปผลลัพธ์เดิม */
+    if(window.Nav)cfgL=Nav.push({url:"/spares/apps",tag:"spcfg",close:()=>{cfgL=null;if(!picked)picked=was;render()}})};
   render();
 }
 
@@ -11108,6 +11114,7 @@ function wireCfg(){
     if(!sel.size||!car())return;
     picked=[...sel]; LSs("sparesApps",picked);
     items=null; lastErr=""; render();
+    if(cfgL){const l=cfgL;cfgL=null;Nav.drop(l)}
   };
 }
 
@@ -14650,6 +14657,7 @@ if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",start); else s
 })();
 </script>
 <script src="mobile-ui.js" defer></script>
+<script src="nav-pages.js" defer></script>
 <script>
 window.__SPIRE_PAGE__="profile";
 window.__SPIRE_FILES__={"home": "/", "garage": "/garage", "magazine": "/news", "shop": "/spares", "profile": "/profile"};

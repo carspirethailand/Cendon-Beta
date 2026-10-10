@@ -150,7 +150,7 @@ const initial=s=>esc((String(s||"C").trim().replace(/^(อู่|ร้าน|�
 const dist=d=>d==null?"":` · ${d<1?Math.round(d*1000)+" ม.":d.toFixed(1)+" กม."}`;
 function gigCard(x){
   const g=x.g,t=g.tech||{},ph=(g.photos||[])[0];
-  return `<a class="svc" href="/?gig=${encodeURIComponent(g.id)}"${tgt()}>
+  return `<a class="svc" href="/service/${encodeURIComponent(g.id)}"${tgt()}>
     <span class="svc-h"><span class="svc-av"${t.avatar?` style="background-image:url('${img(t.avatar)}')"`:""}>${t.avatar?"":initial(t.shop||t.name)}</span><b>${esc(t.shop||t.name||"")}</b>${t.verified?'<i class="ti ti-rosette-discount-check-filled svc-ok"></i>':""}</span>
     <span class="svc-v"${ph?` style="background-image:url('${img(ph)}')"`:""}>${ph?"":`<img src="img/cat/${esc(x.c)}.webp" alt="" onerror="this.remove()">`}</span>
     <span class="svc-f"><b class="svc-t">${esc(g.title)}</b>
@@ -159,7 +159,7 @@ function gigCard(x){
 }
 function shopCard(x){
   const t=x.t,cv=t.cover||(t.photos||[])[0];
-  return `<a class="svc" href="/?shop=${encodeURIComponent(t.id)}"${tgt()}>
+  return `<a class="svc" href="/tech/${encodeURIComponent(t.id)}"${tgt()}>
     <span class="svc-h"><span class="svc-av"${t.avatar?` style="background-image:url('${img(t.avatar)}')"`:""}>${t.avatar?"":initial(t.shop||t.name)}</span><b>${esc(t.shop||t.name||"")}</b>${t.verified?'<i class="ti ti-rosette-discount-check-filled svc-ok"></i>':""}</span>
     <span class="svc-v"${cv?` style="background-image:url('${img(cv)}')"`:""}>${cv?"":`<img src="img/cat/${esc(((t.cats||[])[0])||"other")}.webp" alt="" onerror="this.remove()">`}</span>
     <span class="svc-f"><b class="svc-t">${esc(t.area||T("ร้านช่าง","Mechanic shop"))}</b>
@@ -178,7 +178,7 @@ function bodyHTML(r){
   return r.groups.map(gr=>`<section class="svp-g">${head(gr.cat,L(gr.cat),gr.items.length)}<div class="svp-grid">${gr.items.map(gigCard).join("")}</div></section>`).join("")
     +(r.shops.length?`<section class="svp-g"><div class="svp-gh"><span class="svp-gi"><i class="ti ti-building-store"></i></span><b>${T("ร้านช่างที่เกี่ยวข้อง","Related shops")}</b><small>${r.shops.length} ${T("ร้าน","shops")}</small></div><div class="svp-grid">${r.shops.map(shopCard).join("")}</div></section>`:"");
 }
-let pane=null,last=null,pushed=false;
+let pane=null,last=null,pushed=false,svl=null;   /* svl = ชั้นในประวัติ (nav.js) */
 function mount(){
   if(pane)return pane;
   pane=document.createElement("aside");pane.className="svp";pane.setAttribute("role","dialog");pane.setAttribute("aria-label",T("ผลค้นหาช่าง","Mechanic search results"));
@@ -189,7 +189,7 @@ function mount(){
   document.body.appendChild(pane);
   pane.querySelector(".svp-x").onclick=close;pane.querySelector(".svp-back").onclick=close;
   addEventListener("keydown",e=>{if(e.key==="Escape"&&isOpen())close()});
-  addEventListener("popstate",()=>{if(pushed){pushed=false;close(true)}});
+  addEventListener("popstate",()=>{if(pushed&&!svl){pushed=false;close(true)}});
   return pane;
 }
 const isOpen=()=>!!(pane&&pane.classList.contains("on"));
@@ -203,7 +203,9 @@ function paint(r){
 function show(){
   const p=mount();p.classList.add("on");document.body.classList.add("svp-on");
   /* มือถือ: ปุ่มย้อนกลับของเครื่องปิดแผง ไม่ใช่ออกจากหน้าแชต */
-  if(!wide()&&!pushed){try{history.pushState({svp:1},"");pushed=true}catch(e){}}
+  if(!wide()&&!pushed){
+    if(window.Nav&&Nav.started){svl=Nav.push({slug:"results",tag:"svp",close:()=>{svl=null;pushed=false;close(true)}});pushed=!!svl}
+    else try{history.pushState({svp:1},"");pushed=true}catch(e){}}
 }
 async function open(r,o){
   o=o||{};
@@ -217,7 +219,7 @@ async function openRef(s){
 }
 function close(fromPop){
   if(!pane)return;pane.classList.remove("on");document.body.classList.remove("svp-on");
-  if(pushed&&fromPop!==true){pushed=false;try{history.back()}catch(e){}}
+  if(pushed&&fromPop!==true){pushed=false;if(svl){const l=svl;svl=null;Nav.drop(l)}else try{history.back()}catch(e){}}
 }
 document.addEventListener("click",e=>{
   const c=e.target.closest&&e.target.closest(".svc-chip");if(!c)return;

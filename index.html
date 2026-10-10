@@ -2,8 +2,11 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8"/>
+<!-- ที่อยู่แบบลึก (/tech/<ร้าน>/reviews) — ไฟล์ประกอบทุกตัวอ้างจากรากเว็บเสมอ -->
+<base href="/">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>Cendon</title>
+<script src="nav.js"></script>
 <meta name="theme-color" content="#131316"/>
 <link rel="manifest" href="./manifest.webmanifest"/>
 <link rel="icon" href="./favicon.png"/>
@@ -1605,7 +1608,7 @@ a.mtab{text-decoration:none}
 ::view-transition-group(mnav){animation-duration:.2s}
 </style>
 <!-- ห้ามวาดเฟรมแรกก่อนแถบล่างพร้อม — เดิมหน้าใหม่ขึ้นมาก่อนแล้วแถบตามมาทีหลัง (Chrome 124+, ที่อื่นข้าม) -->
-<link rel="expect" href="#mnav0" blocking="render">
+<link rel="expect" href="/#mnav0" blocking="render">
 <link rel="stylesheet" href="stability.css">
 <link rel="stylesheet" href="home-layout.css">
 <script src="category-pages.js" defer></script>
@@ -1619,7 +1622,7 @@ a.mtab{text-decoration:none}
    แท็บเป็นลิงก์จริง กดได้ทันทีแม้สคริปต์หลักยังไม่พร้อม และเบราว์เซอร์เตรียมหน้าล่วงหน้าได้ */
 (function(){try{
   var D=document;if(!matchMedia("(max-width:760px)").matches||D.getElementById("mnav"))return;
-  var p=location.pathname.replace(/\.html$/,"").replace(/\/index$/,"/");
+  var p="/"+(location.pathname.replace(/\.html$/,"").replace(/\/index$/,"/").split("/")[1]||"");
   var cur={"/garage":"garage","/news":"magazine","/profile":"account"}[p]||"home";
   var en=false;try{en=JSON.parse(localStorage.getItem("spire_lang"))==="en"}catch(e){}
   var u=null;try{u=JSON.parse(localStorage.getItem("spire_cachedUser"))}catch(e){}
@@ -2021,7 +2024,7 @@ async function api(path,o){
   if(!r.ok)throw new Error((d&&d.error)||("ระบบยังไม่พร้อม ("+r.status+")"));
   return d;
 }
-function needLogin(){location.href="/login?next="+encodeURIComponent("/"+location.search)}
+function needLogin(){location.href="/login?next="+encodeURIComponent(location.pathname+location.search)}
 /* ปุ่มที่รอเซิร์ฟเวอร์ — หมุนระหว่างรอ กดซ้ำไม่ได้ ผิดพลาดแล้วขึ้นข้อความในแผ่นเดิม */
 async function busy(btn,fn){
   if(btn&&btn.disabled)return;
@@ -2033,16 +2036,12 @@ async function busy(btn,fn){
 }
 
 /* ═══ แผ่นเลื่อนขึ้น ═══
-   ทุกขั้นตอนเปิดในแผ่นนี้ มีประวัติย้อนกลับได้ (ปุ่มย้อนของมือถือก็ปิดแผ่นได้) */
-const SH={stack:[],onClose:null};
-/* history.back() ที่เราเรียกเองจะยิง popstate กลับมา — ต้องข้ามครั้งนั้น ไม่งั้นปิดแชตแล้วแผ่นใบงานข้างใต้ปิดตามไปด้วย */
-let skipPop=0;
-function goBack(){skipPop++;history.back()}
-function sheet(o){
-  /* o: {title, body, foot, full, back, mount} */
+   ทุกขั้นตอนเปิดในแผ่นนี้ และทุกขั้นมีที่อยู่ของตัวเองในแถบที่อยู่ (nav.js)
+   เช่น /tech/<ร้าน> → /tech/<ร้าน>/quote · ปุ่มย้อนของมือถือ/เบราว์เซอร์ถอยทีละขั้น ไม่ปิดทั้งแผ่น
+   o: {title, body, foot, full, mount, push (ซ้อนขั้นใหม่), url (ที่อยู่เต็ม), slug (ต่อท้ายขั้นก่อน)} */
+const SH={stack:[],layers:[],onClose:null};
+function paintSheet(o){
   const bs=$("bs");
-  const was=bs.classList.contains("on");
-  if(o.push&&was)SH.stack.push(SH.cur);
   SH.cur=o;
   $("bsT").textContent=o.title||"";
   $("bsB").innerHTML=(o.body||"")+'<p class="err" id="err" role="alert"></p>';
@@ -2050,19 +2049,52 @@ function sheet(o){
   $("bsBack").hidden=!SH.stack.length;
   bs.classList.toggle("full",!!o.full);bs.classList.toggle("store",!!o.store);
   $("bsB").scrollTop=0;
-  if(!was){bs.classList.add("on");bs.setAttribute("aria-hidden","false");document.body.style.overflow="hidden";try{history.pushState({sheet:1},"")}catch(e){}}
-  if(o.mount)o.mount($("bsB"),$("bsF"));
+  if(o.mount)o.mount($("bsB"),$("bsF"),o);
 }
-function back(){const prev=SH.stack.pop();if(prev){prev.push=false;sheet(prev)}else closeSheet()}
-function closeSheet(fromPop){
+function sheet(o){
+  /* ถอยกลับมาขั้นที่วาดใหม่ได้ (o.redo เช่น ฟอร์มสมัครช่าง) — วาดทับขั้นเดิม ไม่แตะประวัติ */
+  if(SH.restore){const r=SH.restore;SH.restore=null;o.url=r.url;const L=SH.layers[SH.layers.length-1];if(L)L.o=o;paintSheet(o);return}
+  const bs=$("bs");
+  const was=bs.classList.contains("on");
+  if(!was){bs.classList.add("on");bs.setAttribute("aria-hidden","false");document.body.style.overflow="hidden"}
+  /* เปิดหน้าอื่นในแผ่นเดิม (เช่น จากบริการไปหน้าร้าน) = ซ้อนขั้นใหม่ กดย้อนแล้วกลับมาหน้าเดิม */
+  const moved=was&&o.push===undefined&&o.url&&SH.cur&&SH.cur.url!==o.url;
+  if(!was||!SH.layers.length){
+    SH.stack=[];
+    const L=Nav.push({url:o.url,slug:o.slug,tag:"sheet",close:()=>closeSheet(true),reopen:()=>sheet({...L.o,push:false})});
+    SH.layers=L?[L]:[];if(L){L.o=o;o.url=L.url}
+  }else if(o.push||moved){
+    SH.stack.push(SH.cur);
+    const L=Nav.push({url:o.url,slug:o.slug,tag:"sheet",close:()=>back(true),reopen:()=>sheet({...L.o,push:true})});
+    if(L){L.o=o;o.url=L.url;SH.layers.push(L)}
+  }else{
+    /* เปลี่ยนเนื้อหาในขั้นเดิม (โหลดเสร็จ / อัปเดต) — ถ้าโค้ดตัดขั้นที่ซ้อนไว้ออก (SH.stack สั้นลง) ถอยประวัติตามให้เท่ากัน */
+    const want=SH.stack.length+1;
+    if(SH.layers.length>want){const x=SH.layers.splice(want);Nav.drop(x[0])}
+    const L=SH.layers[SH.layers.length-1];if(L)L.o=o;
+    if(o.url===undefined&&SH.cur)o.url=SH.cur.url;
+  }
+  paintSheet(o);
+}
+/* เริ่มชุดขั้นตอนใหม่ในแผ่นเดิม (เช่น ส่งขอราคาแล้วไปหน้าใบงาน) — ขั้นก่อนหน้าไม่ต้องย้อนกลับไปอีก */
+function sheetFresh(){const l=SH.layers[0];SH.layers=[];SH.stack=[];if(l)Nav.drop(l)}
+/* ปุ่มย้อนในแผ่น / ปุ่มย้อนของเครื่อง (fromNav) — ถอยไปขั้นก่อนหน้า ขั้นแรกแล้วปิดแผ่น */
+function back(fromNav){
+  const prev=SH.stack.pop();
+  if(!prev)return closeSheet(fromNav);
+  const L=SH.layers.length>1?SH.layers.pop():null;
+  if(prev.redo){SH.restore=prev;try{prev.redo()}finally{if(SH.restore){SH.restore=null;paintSheet(prev)}}}else paintSheet(prev);
+  if(fromNav!==true&&L)Nav.drop(L);
+}
+function closeSheet(fromNav){
   const bs=$("bs");if(!bs.classList.contains("on"))return;
   bs.classList.remove("on","store");bs.setAttribute("aria-hidden","true");document.body.style.overflow="";
   SH.stack=[];stopJob();
+  const l=SH.layers[0];SH.layers=[];SH.cur=null;
   const cb=SH.onClose;SH.onClose=null;if(cb)cb();
-  if(!fromPop&&history.state&&history.state.sheet)goBack();
+  if(fromNav!==true&&l)Nav.drop(l);
 }
-$("bsX").onclick=()=>closeSheet();$("bsBg").onclick=()=>closeSheet();$("bsBack").onclick=back;
-addEventListener("popstate",()=>{if(skipPop){skipPop--;return}if($("chat").classList.contains("on")){closeChat(true);return}closeSheet(true)});
+$("bsX").onclick=()=>closeSheet();$("bsBg").onclick=()=>closeSheet();$("bsBack").onclick=()=>back();
 addEventListener("keydown",e=>{if(e.key==="Escape"){if($("chat").classList.contains("on"))closeChat();else closeSheet()}});
 function zoom(src){const z=document.createElement("div");z.className="zoom";z.innerHTML=`<img src="${esc(src)}" alt=""/>`;z.onclick=()=>z.remove();document.body.appendChild(z)}
 
@@ -2090,8 +2122,12 @@ function setView(v,noHist){
     if(!MAP)initMap();else{MAP.invalidateSize();drawPins(true)}
     renderCarousel();
   }
-  if(!noHist)try{const u=new URL(location.href);if(v==="map")u.searchParams.set("view","map");else u.searchParams.delete("view");history.replaceState(history.state,"",u)}catch(e){}
+  /* แผนที่เต็มจอมีที่อยู่ของตัวเอง (/map) — ปุ่มย้อนของเครื่องกลับมาหน้าเมนู */
+  if(noHist)return;
+  if(v==="map"&&!MAPL)MAPL=Nav.push({url:"/map",tag:"map",close:()=>{MAPL=null;setView("menu",true)}});
+  if(v!=="map"&&MAPL){const l=MAPL;MAPL=null;Nav.drop(l)}
 }
+let MAPL=null;
 $("mapW").onclick=()=>setView("map");
 $("mapBack").onclick=()=>setView("menu");
 /* แผนที่ย่อในเมนู — ดูอย่างเดียว แตะแล้วเปิดแผนที่เต็มจอ (Leaflet ไม่รับการลากในกล่องนี้) */
@@ -2256,10 +2292,23 @@ const SYM={air:["แอร์ไม่เย็น","แอร์มีกลิ
   tyre:["เบรกมีเสียงเอี๊ยด","พวงมาลัยสั่น","ขับแล้วรถดึงซ้าย","ช่วงล่างมีเสียงดังกึกๆ","ยางรั่วซึม"],ev:["แบตหมดบ่อย","ไฟหน้าปัดเตือน","ไดชาร์จไม่ชาร์จ","ชาร์จ EV ไม่เข้า"],
   body:["รอยบุบรอยถลอก","สีซีดด่าง","กระจกร้าว","ฟิล์มลอก"],mobile:["รถสตาร์ทไม่ติดกลางทาง","ยางแบนข้างทาง"],urgent:["รถเสียกลางทาง","แบตหมดสตาร์ทไม่ติด"]};
 let RESQ="";
-function openRes(q,noHist){
-  q=(q||"").trim();if(q.length<3)return;RESQ=q;
+/* หน้าผลลัพธ์ / หน้าหมวด เป็น "ชั้น" ของหน้าแรก: จำว่าก่อนเปิดเห็นหน้าไหนอยู่ ปิดแล้วกลับไปหน้านั้น
+   (เช่น หมวดแอร์ → แตะอาการ → ผลลัพธ์ → ย้อน = กลับหน้าหมวดแอร์ ไม่ใช่เด้งไปหน้าแรก) */
+const curView=()=>!$("vRes").hidden?{v:"res",q:RESQ}:!$("vCat").hidden?{v:"cat",k:CATK}:{v:"menu"};
+function restoreView(p){
+  if(p.v==="res")return openRes(p.q,true,true);
+  if(p.v==="cat")return openCat(p.k,true);
+  $("vRes").hidden=true;$("vCat").hidden=true;if(MODE!=="tech")$("vMenu").hidden=false;window.scrollTo(0,0);
+}
+function openRes(q,noHist,keep){
+  q=(q||"").trim();if(q.length<3)return;
+  const prev=curView();
+  /* กลับมาหน้าผลลัพธ์เดิมที่ยังอยู่บนจอ ไม่ต้องให้ AI ดูอาการซ้ำ */
+  if(keep&&RESQ===q&&$("resAi").dataset.q===q){$("vMenu").hidden=true;$("vCat").hidden=true;$("vRes").hidden=false;window.scrollTo(0,0);return}
+  RESQ=q;
   $("resQ").textContent=q;$("vMenu").hidden=true;$("vCat").hidden=true;$("vRes").hidden=false;window.scrollTo(0,0);
-  if(!noHist)try{history.pushState({res:q},"")}catch(e){}
+  if(!noHist)Nav.push({url:"/search?q="+encodeURIComponent(q),tag:"res",close:()=>restoreView(prev)});
+  $("resAi").dataset.q=q;
   const cat=catsOf(q)[0]||"";
   const findOnly=/หาช่าง|หาร้าน|หาอู่|ร้านไหน|อู่ไหน|ช่างใกล้|แนะนำช่าง|แนะนำร้าน|แนะนำอู่/.test(q);
   $("vRes").classList.toggle("find",findOnly);
@@ -2330,8 +2379,9 @@ function drawResTechs(cat){
   $("resMulti").onclick=()=>openMulti(RESQ,cat||"");
 }
 function closeRes(){if($("vRes").hidden)return;$("vRes").hidden=true;$("vMenu").hidden=false;window.scrollTo(0,0)}
-$("resBack").onclick=()=>{if(history.state&&history.state.res)history.back();else closeRes()};
-addEventListener("popstate",()=>{if(!(history.state&&history.state.res))closeRes()});
+/* ปุ่มย้อนบนหน้า = ปุ่มย้อนของเครื่อง (ถอยหนึ่งขั้น) */
+function viewBack(tag,fb){const t=Nav.top();if(t&&t.tag===tag)Nav.back(t);else fb()}
+$("resBack").onclick=()=>viewBack("res",closeRes);
 /* การ์ดรถของฉัน + ปุ่มด่วน */
 function drawMyCar(){
   const cars=ls.get("spire_garage",[]),c=cars.find(x=>x.id===ls.get("spire_selCar",""))||cars[0];
@@ -2422,9 +2472,7 @@ function drawJobsBtn(){
 }
 /* ═══ โพสต์บริการของช่าง (ร้านละไม่เกิน 2 รายการ) ═══ */
 let GIGS=null;
-async function loadGigs(){try{GIGS=(await api("/api/tech/gigs")).gigs||[]}catch(e){GIGS=GIGS||[]}drawHome();drawCat();
-  /* ลิงก์บริการ ?gig=<id> (เช่นจากการ์ดผลค้นหาของ AI ในหน้าแชต) → เปิดหน้ารายละเอียดทันที ครั้งเดียว */
-  if(GIGLINK&&GIGS.some(g=>String(g.id)===GIGLINK)){const id=GIGLINK;GIGLINK=null;openGig(id)}}
+async function loadGigs(){try{GIGS=(await api("/api/tech/gigs")).gigs||[]}catch(e){GIGS=GIGS||[]}drawHome();drawCat();READY.gigs.done()}
 function myCarText(){const cars=ls.get("spire_garage",[]),c=cars.find(x=>x.id===ls.get("spire_selCar",""))||cars[0];return c?[c.make,c.name,c.model].filter(Boolean).join(" ").toLowerCase():""}
 /* เรียง: ตรงกับรถของผู้ใช้ (ยี่ห้อที่ถนัด/ในข้อความ) ก่อน แล้วใกล้ แล้วใหม่ */
 function rankGigs(list){
@@ -2466,7 +2514,7 @@ function openGig(id){
     ["ti-calendar","ลงประกาศ",new Date(g.createdAt).toLocaleDateString(LOC,{day:"numeric",month:"short",year:"numeric"})]].filter(Boolean);
   const rating=t.reviewCount?`<i class="ti ti-star-filled"></i><b>${Number(t.rating).toFixed(1)}</b><span>(${t.reviewCount} รีวิว)</span>`:`<span>ยังไม่มีรีวิว</span>`;
   const pav=`<span class="lx-pav"${av?` style="background-image:url('${img(av)}')"`:""}>${av?"":initial(t.shop||t.name)}</span>`;
-  sheet({title:"",full:true,store:true,gig:g.id,body:`<div class="gd">
+  sheet({title:"",full:true,store:true,gig:g.id,url:"/service/"+encodeURIComponent(g.id),body:`<div class="gd">
     <div class="gd-gal">${P.length?`<div class="gd-hero" id="gdHero" style="background-image:url('${img(P[0])}')" role="img" aria-label="${esc(g.title)}">
         ${P.length>1?`<button class="gd-nav l" data-d="-1" type="button" aria-label="รูปก่อนหน้า"><i class="ti ti-chevron-left"></i></button><button class="gd-nav r" data-d="1" type="button" aria-label="รูปถัดไป"><i class="ti ti-chevron-right"></i></button><span class="gd-cnt" id="gdCnt">1 / ${P.length}</span>`:""}</div>
       ${P.length>1?`<div class="gd-th">${P.map((p,i)=>`<button type="button" class="${i?"":"on"}" data-i="${i}" style="background-image:url('${img(p)}')" aria-label="รูปที่ ${i+1}"></button>`).join("")}</div>`:""}`
@@ -2512,7 +2560,7 @@ function openGig(id){
         const h=b.querySelector("#gdRev");if(!h)return;
         h.innerHTML=`<h2>รีวิวจากลูกค้า</h2>${reviewsHTML(t,list,3)}${list.length>3?`<button class="lx-gh gd-more" type="button">ดูรีวิวทั้งหมด ${list.length} รีวิว</button>`:""}`;
         h.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z));
-        const m=h.querySelector(".gd-more");if(m)m.onclick=()=>{openTech(t.id);const r=document.querySelector('.ch-tabs [data-ct="rev"]');if(r)r.click()};
+        const m=h.querySelector(".gd-more");if(m)m.onclick=()=>{openTech(t.id);const r=document.querySelector('.cs-tabs [data-ct="rev"]');if(r)r.click()};
       });
     }});
 }
@@ -2534,7 +2582,7 @@ function gigForm(g){
   if(!(g&&g.id)&&myGigs().length>=GIG_MAX)return toast(`โพสต์บริการได้ร้านละ ${GIG_MAX} รายการ — แก้หรือลบรายการเดิมแทน`,"ti-info-circle");
   g=g||{photos:[],cats:[],brands:[]};
   const F2={keep:[...(g.photos||[])],add:[],cats:[...(g.cats||[])]};
-  sheet({push:true,full:true,title:g.id?"แก้ไขโพสต์":"โพสต์ใหม่",body:`
+  sheet({push:true,slug:g.id?"edit":"post",full:true,title:g.id?"แก้ไขโพสต์":"โพสต์ใหม่",body:`
     <p class="h4">รูป <small style="font-weight:400;color:var(--muted)">· แนวนอน 16:9 ครอปในแอปได้ · ใส่ได้ไม่จำกัด รูปแรกเป็นปก</small></p><div class="phg" id="gPh"></div><input type="file" id="gFile" accept="image/*" multiple hidden data-crop="16:9" data-crop-w="1920" data-crop-exact data-crop-title="ครอปรูป 16:9"/>
     <label class="fld"><span>หัวข้อ</span><input class="inp" id="gT" maxlength="100" value="${esc(g.title||"")}" placeholder="เช่น ล้างแอร์ครบชุด ถอดตู้ล้าง พร้อมเติมน้ำยา"/></label>
     <label class="fld"><span>ราคา (บาท)</span><input class="inp" id="gP" type="number" inputmode="numeric" value="${g.price||""}" placeholder="1200"/></label>
@@ -2609,13 +2657,14 @@ function wireGigRows(host){
 $("sugAll").onclick=()=>openCat("all");
 $("hJobs").onclick=()=>{try{jobs()}catch(e){}};
 {const _ra=renderActive;renderActive=function(){_ra.apply(this,arguments);try{drawJobsBtn()}catch(e){}}}
-addEventListener("popstate",()=>{const s=history.state||{};if(s.res&&$("vRes").hidden)openRes(s.res,true)});
 let CATK="all",CATSUB="",CATQ="";
 function openCat(k,noHist){
-  CATK=k;CATSUB="";CATQ="";const c=RAIL.find(x=>x.id===k)||RAIL[0];
+  const c=RAIL.find(x=>x.id===k)||RAIL[0];
+  const prev=curView();
+  CATK=k;CATSUB="";CATQ="";
   $("catIc").innerHTML=railIc(c);$("catT").textContent=k==="all"?"ช่างทั้งหมด":c.th;
-  $("vMenu").hidden=true;$("vCat").hidden=false;window.scrollTo(0,0);
-  if(!noHist)try{history.pushState({cat:k},"")}catch(e){}
+  $("vMenu").hidden=true;$("vRes").hidden=true;$("vCat").hidden=false;window.scrollTo(0,0);
+  if(!noHist)Nav.push({url:"/category/"+encodeURIComponent(k),tag:"cat",close:()=>restoreView(prev)});
   drawCat();
 }
 function drawCat(){
@@ -2641,8 +2690,7 @@ function drawCat(){
   wireCards(host);
 }
 function closeCat(){if($("vCat").hidden)return;$("vCat").hidden=true;$("vMenu").hidden=false;window.scrollTo(0,0)}
-$("catBack").onclick=()=>{if(history.state&&history.state.cat)history.back();else closeCat()};
-addEventListener("popstate",()=>{if(!(history.state&&history.state.cat))closeCat()});
+$("catBack").onclick=()=>viewBack("cat",closeCat);
 let qT=0;
 $("q").addEventListener("input",()=>{$("sbox").classList.toggle("has",!!$("q").value);clearTimeout(qT);qT=setTimeout(()=>{F.q=$("q").value;render()},140)});
 $("q").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();F.q=$("q").value;render();$("q").blur();$("secT").scrollIntoView({behavior:"smooth",block:"start"})}});
@@ -2655,9 +2703,7 @@ async function load(){
     try{const d=await api("/api/tech");TECHS=Array.isArray(d.techs)?d.techs:[];SERVER=true;break}
     catch(e){SERVER=false;TECHS=[];if(!i)await new Promise(r=>setTimeout(r,1500))}
   }
-  LOADED=true;render();renderUsed();diag();ccDone();
-  /* ลิงก์แชร์ร้าน ?shop=<id> → เปิดหน้าร้านทันที (ครั้งเดียว) */
-  if(SHOPLINK&&TECHS.some(t=>t.id===SHOPLINK)){const id=SHOPLINK;SHOPLINK=null;openTech(id)}
+  LOADED=true;render();renderUsed();diag();ccDone();READY.techs.done();
 }
 /* ปิดหน้าโหลด: รอให้แอนิเมชันชื่อเล่นจบ (~2.9 วิ) และรายชื่อช่างพร้อม แล้วเติมแถบเต็ม → จางหายแบบเบลอ */
 const CC_T0=performance.now();let ccGone=false;
@@ -2689,24 +2735,54 @@ function ccDone(){
   setTimeout(()=>{el.classList.add("done");setTimeout(()=>{el.classList.add("out");setTimeout(()=>el.remove(),650)},260)},wait);
 }
 setTimeout(ccDone,7000);
-let SHOPLINK=new URLSearchParams(location.search).get("shop");
-let GIGLINK=new URLSearchParams(location.search).get("gig");
-/* ลิงก์จากการ์ดแจ้งเตือน LINE: ?job=<id> ใบงาน · ?jobs=1 งานของฉัน · ?studio=1 Studio · ?join=1 ใบสมัครช่าง
-   ต้องล็อกอินก่อน — ยังไม่ล็อกอินพาไปหน้าเข้าสู่ระบบแล้วกลับมาที่ลิงก์เดิม · เปิดแล้วล้างออกจาก URL กันเปิดซ้ำตอนรีโหลด */
-let DEEP=(()=>{const p=new URLSearchParams(location.search),j=p.get("job");
-  return j&&/^[0-9a-f-]{36}$/i.test(j)?{job:j}:p.get("jobs")?{jobs:1}:p.get("studio")?{studio:1}:p.get("join")?{join:1}:null})();
-function runDeep(){
-  if(!DEEP)return;if(!U)return needLogin();
-  const d=DEEP;DEEP=null;
-  try{const u=new URL(location.href);["job","jobs","studio","join","openExternalBrowser"].forEach(k=>u.searchParams.delete(k));history.replaceState(history.state,"",u.pathname+u.search+u.hash)}catch(e){}
-  if(d.job)openJob(d.job,true);else if(d.jobs)jobs();else if(d.studio)openStudio();else if(d.join)openJoin();
+/* ═══ ที่อยู่แบบลึก (nav.js) ═══
+   ทุกหน้าย่อยของหน้าแรกมีที่อยู่ของตัวเอง แชร์/รีเฟรช/เปิดจาก LINE แล้วมาถึงหน้าเดิมเป๊ะ และกดย้อนได้ทีละขั้น
+     /tech/<ร้าน>[/services|/reviews|/about][/quote] · /service/<บริการ> · /category/<หมวด> · /search?q=อาการ · /map
+     /jobs · /jobs/<ใบงาน>[/chat] · /studio[/settings|/stats|/edit|/post] · /work[/<แท็บ>] · /staff · /join
+     /quotes · /compare/<กลุ่ม> · /urgent · /diagnose · /post[/<ประกาศ>] · /trip/<ลิงก์แชร์>
+   ข้อมูลที่ต้องรอ (รายชื่อช่าง / บริการ / ล็อกอิน) — แต่ละเส้นทางรอเฉพาะที่ตัวเองใช้ */
+const READY=(()=>{const mk=()=>{let d;const p=new Promise(r=>d=r);p.done=d;return p};return {techs:mk(),gigs:mk(),auth:mk()}})();
+setTimeout(()=>READY.auth.done(),9000);   /* ล็อกอินไม่ตอบ (เน็ตช้า/บล็อก) ก็ไม่ค้างตลอดไป */
+const needU=async()=>{await READY.auth;if(!U){needLogin();return false}return true};
+Nav.route({path:"tech/:id",name:"tech",open:async p=>{await READY.techs;await READY.gigs.catch(()=>0);openTech(p.id)}});
+Nav.route({path:":tab",name:"techTab",parent:"tech",test:p=>!!URLTAB[p.tab],open:p=>{const o=SH.cur;if(o&&o.setTab){o.setTab(URLTAB[p.tab]);Nav.push({url:o.url+"/"+p.tab,tag:"tab",close:()=>{if(SH.cur===o)o.setTab(o.first||"svc")}})}}});
+Nav.route({path:"quote",parent:["tech","techTab"],open:async()=>{if(!await needU())return;const t=SH.cur&&TECHS.find(x=>x.id===SH.cur.shop);if(t)book(t)}});
+Nav.route({path:"service/:id",name:"service",open:async p=>{await READY.gigs;openGig(p.id)}});
+Nav.route({path:"category/:k",open:async p=>{if(p.k!=="all"&&!RAIL.some(x=>x.id===p.k))return;openCat(p.k)}});
+Nav.route({path:"search",open:(p,q)=>openRes(q.get("q")||"")});
+Nav.route({path:"map",open:()=>new Promise(res=>{let mt=0;(function w(){if(window.L||++mt>60){setView("map");return res()}setTimeout(w,100)})()})});
+Nav.route({path:"jobs",name:"jobs",open:async()=>{if(await needU())return jobs()}});
+Nav.route({path:"all",parent:"jobs",open:()=>jobs(true)});
+Nav.route({path:":id",name:"job",parent:"jobs",test:p=>/^[0-9a-f-]{36}$/i.test(p.id),open:p=>openJob(p.id,true)});
+Nav.route({path:"chat",parent:"job",open:()=>{if(JOB&&SH.cur&&SH.cur.job)openChat(JOB)}});
+Nav.route({path:"studio",name:"studio",open:async()=>{if(await needU())openStudio()}});
+Nav.route({path:":k",parent:"studio",test:p=>["settings","stats","edit","post"].includes(p.k),open:p=>{if(!(ME&&ME.technician&&SH.cur&&SH.cur.shop===ME.technician.id))return;({settings:studioSettings,stats:studioStats,edit:openShopEdit,post:()=>gigForm()})[p.k]()}});
+Nav.route({path:"work",name:"work",open:async()=>{if(await needU()&&modesAvail().includes("tech"))setMode("tech")}});
+Nav.route({path:":t",parent:"work",test:p=>["find","queue","shop","ai","posts"].includes(p.t),open:p=>{if(MODE==="tech")setTab2(p.t)}});
+Nav.route({path:"staff",open:async()=>{if(await needU()&&modesAvail().includes("staff"))setMode("staff")}});
+Nav.route({path:"join",open:async()=>{if(await needU())return openJoin()}});
+Nav.route({path:"quotes",open:async()=>{await READY.techs;if(await needU())openMulti("","")}});
+Nav.route({path:"compare/:g",open:async p=>{if(await needU())return openGroup(p.g)}});
+Nav.route({path:"urgent",open:async()=>{await READY.techs;if(await needU())return urgentCall()}});
+Nav.route({path:"diagnose",open:(p,q)=>aiDiag(q.get("q")||"")});
+Nav.route({path:"post",name:"post",open:async()=>{if(await needU())openPostForm("","")}});
+Nav.route({path:"post/:id",open:async p=>{if(await needU())return openPostView(p.id)}});
+Nav.route({path:"trip/:token",open:p=>openTrip(p.token)});
+/* ลิงก์รูปแบบเก่า (?shop= ?gig= จากการ์ดแชร์ · ?job= ?jobs= ?studio= ?join= จากการ์ด LINE · ?trip= · ?view=map) ยังใช้ได้ */
+function legacyLink(u){
+  const q=u.searchParams,id=k=>encodeURIComponent(q.get(k)),j=q.get("job");
+  const to=q.get("shop")?"/tech/"+id("shop"):q.get("gig")?"/service/"+id("gig"):j&&/^[0-9a-f-]{36}$/i.test(j)?"/jobs/"+j
+    :q.get("jobs")?"/jobs":q.get("studio")?"/studio":q.get("join")?"/join":q.get("trip")?"/trip/"+id("trip"):q.get("view")==="map"?"/map":null;
+  if(!to)return null;
+  ["shop","gig","job","jobs","studio","join","trip","view","openExternalBrowser"].forEach(k=>q.delete(k));
+  return to;
 }
-/* ลิงก์ใบงานที่ลูกค้าแชร์ให้คนที่ไว้ใจ ?trip=<token> — เปิดดูได้โดยไม่ต้องล็อกอิน อ่านอย่างเดียว */
-const TRIPLINK=new URLSearchParams(location.search).get("trip");
+/* ลิงก์ใบงานที่ลูกค้าแชร์ให้คนที่ไว้ใจ /trip/<token> — เปิดดูได้โดยไม่ต้องล็อกอิน อ่านอย่างเดียว */
 async function openTrip(token){
-  let d;try{d=(await api("/api/tech/share/"+encodeURIComponent(token))).trip}catch(e){return sheet({title:"ลิงก์ใบงาน",body:`<div class="empty"><i class="ti ti-link-off"></i><b>${esc(e.message)}</b></div>`})}
+  const url="/trip/"+encodeURIComponent(token);
+  let d;try{d=(await api("/api/tech/share/"+encodeURIComponent(token))).trip}catch(e){return sheet({title:"ลิงก์ใบงาน",url,body:`<div class="empty"><i class="ti ti-link-off"></i><b>${esc(e.message)}</b></div>`})}
   const t=d.tech,rk=RANK[d.status];
-  sheet({title:"ใบงานที่ถูกแชร์ให้คุณ",body:`
+  sheet({title:"ใบงานที่ถูกแชร์ให้คุณ",url,body:`
     ${d.status==="cancelled"?'<p class="pill bad" style="margin-bottom:14px">ยกเลิกแล้ว</p>':`<div class="track">${FLOW.map(([k,l,ic],i)=>`<div class="s ${i<=rk?"done":""} ${i===rk&&d.status!=="completed"?"now":""}"><i class="ti ${ic}"></i>${l}</div>`).join("")}</div>`}
     <div class="who e3"><span class="av sq" style="--c1:#475569${t.avatar?`;background-image:url('${img(t.avatar)}')`:""}">${t.avatar?"":initial(t.name)}</span><div><b>${esc(t.name)}</b><small>${t.vetting?"ยืนยันตัวตนแล้ว"+((t.vetting.cats||[]).length?" · ตรวจทักษะ "+esc(t.vetting.cats.map(c=>CAT[c]?CAT[c].th:c).join(", ")):""):t.verified?"ผ่านการตรวจโดยทีมงาน":""}</small></div></div>
     <div class="kv"><p><span>สถานะ</span><b>${esc(STATUS[d.status]||d.status)}</b></p><p><span>อัปเดตล่าสุด</span><b>${new Date(d.updatedAt).toLocaleString(LOC,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</b></p>
@@ -2716,7 +2792,6 @@ async function openTrip(token){
   /* อัปเดตสถานะเองทุก 30 วินาทีระหว่างเปิดอยู่ */
   clearTimeout(openTrip.t);openTrip.t=setTimeout(()=>{if($("bs").classList.contains("on")&&$("bsT").textContent==="ใบงานที่ถูกแชร์ให้คุณ")openTrip(token)},30000);
 }
-if(TRIPLINK)setTimeout(()=>openTrip(TRIPLINK),400);
 /* ข้อความวินิจฉัยเซิร์ฟเวอร์ — โชว์เฉพาะเจ้าของแอป คนทั่วไปเห็นแค่ "เชื่อมต่อไม่ได้" */
 async function diag(){
   const box=$("diag");box.innerHTML="";
@@ -2814,18 +2889,31 @@ function storeHTML(t,mine){
 }
 /* นับยอดเข้าชม (ไม่นับร้านตัวเอง) — ไม่รอผล ไม่แจ้ง error */
 function track(id,kind){try{if(ME&&ME.technician&&ME.technician.id===id)return;fetch(API+"/api/tech/view",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id,kind}),keepalive:true}).catch(()=>{})}catch(e){}}
-function openTech(id){
+/* แท็บหน้าร้าน ↔ ที่อยู่: /tech/<ร้าน>/services · /reviews · /about */
+const TABURL={svc:"services",rev:"reviews",about:"about"},URLTAB={services:"svc",reviews:"rev",about:"about"};
+function openTech(id,opt){
   let t=TECHS.find(x=>x.id===id);
   const mine=ME&&ME.technician&&ME.technician.id===id;
   if(mine)t={...(t||{}),...ME.technician};
   if(!t)return;
   if(!mine)track(id,"shop");
-  sheet({title:"",full:true,store:true,shop:id,body:storeHTML(t,mine),
+  const url=(opt&&opt.url)||"/tech/"+encodeURIComponent(id);
+  sheet({title:"",full:true,store:true,shop:id,url,body:storeHTML(t,mine),
     foot:"",
-    mount(b){
-      b.querySelectorAll(".cs-tabs button").forEach(x=>x.onclick=()=>{
-        b.querySelectorAll(".cs-tabs button").forEach(y=>y.classList.toggle("on",y===x));
-        b.querySelectorAll(".ch-pane").forEach(p=>p.classList.toggle("on",p.dataset.cp===x.dataset.ct))});
+    mount(b,f,o){
+      /* เปลี่ยนแท็บ = หนึ่งขั้นในประวัติ (แบบแท็บช่อง YouTube) · กลับมาหน้านี้อีกครั้งแท็บเดิมยังอยู่ */
+      const tabs=[...b.querySelectorAll(".cs-tabs button")];
+      o.first=o.first||(tabs.find(y=>y.classList.contains("on"))||{dataset:{}}).dataset.ct;
+      const setTab=k=>{if(!tabs.some(y=>y.dataset.ct===k))return;o.tab=k;
+        tabs.forEach(y=>y.classList.toggle("on",y.dataset.ct===k));
+        b.querySelectorAll(".ch-pane").forEach(p=>p.classList.toggle("on",p.dataset.cp===k))};
+      if(o.tab)setTab(o.tab);
+      o.setTab=setTab;
+      tabs.forEach(x=>x.onclick=()=>{
+        const was=(tabs.find(y=>y.classList.contains("on"))||{}).dataset.ct,k=x.dataset.ct;
+        if(was===k)return;setTab(k);
+        Nav.push({url:o.url+"/"+TABURL[k],tag:"tab",close:()=>{if(SH.cur===o)setTab(was);else o.tab=was}});
+      });
       b.querySelectorAll(".lx-gc").forEach(x=>x.onclick=()=>openGig(x.dataset.g));
       b.querySelectorAll("[data-new]").forEach(x=>x.onclick=()=>gigForm());
       b.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z));
@@ -2833,7 +2921,7 @@ function openTech(id){
         const h=b.querySelector("#chRev");if(!h)return;h.innerHTML=reviewsHTML(t,list);
         h.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z))});
       if(mine){
-        const S={post:()=>gigForm(),edit:()=>openShopEdit(),settings:()=>studioSettings(),stats:()=>studioStats(),jobs:()=>{closeSheet();DT="queue";setMode("tech")}};
+        const S={post:()=>gigForm(),edit:()=>openShopEdit(),settings:()=>studioSettings(),stats:()=>studioStats(),jobs:()=>{closeSheet();setMode("tech");setTab2("queue")}};
         b.querySelectorAll("[data-st]").forEach(x=>x.onclick=()=>S[x.dataset.st]());
         return;
       }
@@ -2848,15 +2936,15 @@ function openStudio(){
   if(!U)return needLogin();
   const t=ME&&ME.technician;
   if(!t||(t.test&&!(ME&&ME.staff)))return openJoin();
-  openTech(t.id);
+  openTech(t.id,{url:"/studio"});
 }
 /* แถวสวิตช์ในหน้าตั้งค่า */
 const swRow=(id,title,sub,on)=>`<label class="ss-row"><span><b>${title}</b>${sub?`<small>${sub}</small>`:""}</span><span class="lx-sw"><input type="checkbox" id="${id}" ${on?"checked":""}/><i></i></span></label>`;
 function studioSettings(){
   const t=ME.technician,v=(t.vacationRaw||t.vacation)||{},ar=t.autoReply||{},sound=ls.get("spire_tech_sound",true);
   const until=v.until?new Date(v.until).toISOString().slice(0,10):"";
-  const link=location.origin+"/?shop="+encodeURIComponent(t.id);
-  sheet({push:true,full:true,store:true,title:"ตั้งค่า Studio",body:`<div class="ss">
+  const link=location.origin+"/tech/"+encodeURIComponent(t.id);
+  sheet({push:true,slug:"settings",full:true,store:true,title:"ตั้งค่า Studio",body:`<div class="ss">
     <section class="ss-g"><h3><i class="ti ti-power"></i>สถานะร้าน</h3>
       ${swRow("ssOn","เปิดรับงาน","รับแจ้งเตือนเมื่อมีคนแถวนี้ประกาศหาช่าง",DSTATS?DSTATS.online:t.online)}
       ${swRow("ssVac","โหมดพักร้อน","ปิดรับคำขอใหม่ชั่วคราว หน้าร้านจะบอกลูกค้าให้",!!t.vacation)}
@@ -2906,7 +2994,7 @@ function studioSettings(){
 }
 /* ═══ Studio → สถิติ ═══ */
 function studioStats(){
-  sheet({push:true,full:true,store:true,title:"สถิติร้าน",body:`<div class="sa" id="sa"><div class="skel"></div><div class="skel"></div></div>`,mount(){drawStats2()}});
+  sheet({push:true,slug:"stats",full:true,store:true,title:"สถิติร้าน",body:`<div class="sa" id="sa"><div class="skel"></div><div class="skel"></div></div>`,mount(){drawStats2()}});
 }
 const pct=(a,b)=>b?Math.round((a-b)/b*100):null;
 const delta=(a,b)=>{const p=pct(a,b);return p==null?`<small class="sa-d">ไม่มีข้อมูลเดือนก่อน</small>`:`<small class="sa-d ${p>=0?"up":"dn"}"><i class="ti ti-arrow-${p>=0?"up":"down"}-right"></i>${Math.abs(p)}% จากเดือนก่อน</small>`};
@@ -3059,12 +3147,12 @@ function book(t,sym){
   if(isMine(t))return toast("นี่คือร้านของคุณ — ขอราคาร้านตัวเองไม่ได้");
   const reqId=crypto.randomUUID();
   const cf=contactForm({sym:sym??F.q,mobile:t.mobile});
-  sheet({push:true,title:"ขอราคา · "+(t.shop||t.name),body:cf.html,
+  sheet({push:true,slug:"quote",title:"ขอราคา · "+(t.shop||t.name),body:cf.html,
     foot:'<button class="btn p w" id="bSend">ส่งขอราคา <i class="ti ti-arrow-right"></i></button>',
     mount(){cf.mount();
       $("bSend").onclick=e=>busy(e.currentTarget,async()=>{
         const r=await api("/api/tech/jobs",{body:{id:reqId,techId:t.id,...cf.read()}});
-        toast("ส่งแล้ว รอช่างเสนอราคา");SH.stack=[];openJob(r.id);refreshMe();
+        toast("ส่งแล้ว รอช่างเสนอราคา");sheetFresh();openJob(r.id);refreshMe();
       });
     }});
 }
@@ -3079,7 +3167,7 @@ async function sendGroup(list,v){
     catch(e){err=e.message;if(!ok&&/อาการ|รถ|พื้นที่|ที่อยู่|เบอร์|เวลา/.test(err))throw e}
   }
   if(!ok)throw new Error(err||"ส่งไม่สำเร็จ");
-  toast(`ส่งถึง ${ok} ร้านแล้ว`);refreshMe();SH.stack=[];openGroup(G);
+  toast(`ส่งถึง ${ok} ร้านแล้ว`);refreshMe();sheetFresh();openGroup(G);
 }
 function openMulti(sym,cat){
   if(!U)return needLogin();
@@ -3089,7 +3177,7 @@ function openMulti(sym,cat){
     $("mList").innerHTML=cand.length?cand.map((t,i)=>`<label class="pick"><input type="checkbox" value="${esc(t.id)}" ${i<3?"checked":""}/><span class="av sq" style="--c1:${colorOf(t)}">${initial(t.shop||t.name)}</span><div><b>${esc(t.shop||t.name)}${t.test?' <span class="pill act">ทีมงาน</span>':""}</b><small>${t.reviewCount?"★ "+Number(t.rating).toFixed(1)+" · ":""}${t.dist!=null?distTxt(t.dist)+" · ":""}เริ่ม ฿${money(t.from)}</small></div></label>`).join("")
       :'<div class="empty"><b>ยังไม่มีช่างหมวดนี้</b>ลองเลือกหมวดอื่น</div>';
   };
-  sheet({title:"ขอราคาหลายร้าน",body:`
+  sheet({title:"ขอราคาหลายร้าน",url:"/quotes",body:`
     <label class="fld"><span>อาการ</span><textarea class="inp" id="mSym" placeholder="เล่าอาการครั้งเดียว ส่งถึงทุกร้านที่เลือก">${esc(sym||"")}</textarea></label>
     <div class="fld"><span>หมวดงาน</span>${segs("mCat",[["all","ทั้งหมด"],...["air","eng","tyre","ev","body"].map(k=>[k,CAT[k].th])],c)}</div>
     <div class="fld"><span>เลือกร้าน (สูงสุด 5)</span><div id="mList"></div></div>`,
@@ -3105,7 +3193,7 @@ function openMulti(sym,cat){
         const list=ids.map(id=>TECHS.find(t=>t.id===id)).filter(Boolean);
         const s=$("mSym").value.trim();
         const cf=contactForm({sym:s,noSym:true,mobile:list.some(t=>t.mobile)});
-        sheet({push:true,title:`ขอราคา ${list.length} ร้าน`,body:`<p class="note"><i class="ti ti-info-circle"></i>ส่งถึง ${list.map(t=>esc(t.shop||t.name)).join(", ")}</p>`+cf.html,
+        sheet({push:true,slug:"send",title:`ขอราคา ${list.length} ร้าน`,body:`<p class="note"><i class="ti ti-info-circle"></i>ส่งถึง ${list.map(t=>esc(t.shop||t.name)).join(", ")}</p>`+cf.html,
           foot:'<button class="btn p w" id="mGo">ส่งขอราคาทุกร้าน</button>',
           mount(){cf.mount();$("mGo").onclick=e=>busy(e.currentTarget,()=>sendGroup(list,{...cf.read(),symptom:s}))}});
       };
@@ -3120,7 +3208,7 @@ async function openGroup(G,push){
   const quoted=L.filter(j=>j.quote&&["quoted","accepted","enroute","working","done","completed"].includes(j.status));
   const best=quoted.length>1?quoted.reduce((a,b)=>a.quote.total<=b.quote.total?a:b):null;
   const chosen=L.find(j=>!["requested","quoted","cancelled"].includes(j.status));
-  sheet({push,group:G,title:"เทียบราคา",body:`
+  sheet({push,group:G,url:"/compare/"+encodeURIComponent(G),title:"เทียบราคา",body:`
     <p class="note"><i class="ti ti-${chosen?"circle-check":"clock"}"></i>${chosen?"คุณเลือกร้านแล้ว":`ได้ราคาแล้ว ${quoted.length} จาก ${L.length} ร้าน · หน้านี้อัปเดตเอง`}</p>
     <div class="grp3">${L.map((j,i)=>`<button class="cmp ${best&&best.id===j.id&&!chosen?"best":""}" data-j="${j.id}" style="animation-delay:${i*50}ms">${best&&best.id===j.id&&!chosen?'<span class="tag">ถูกสุด</span>':""}
       <span class="av sq" style="--c1:${PALETTE[i%PALETTE.length]}">${initial(j.techName)}</span>
@@ -3142,7 +3230,7 @@ async function urgentCall(){
     const at=cf.pos()||HERE;
     return l.map(t=>({...t,dist:km(at,t)})).filter(t=>t.dist==null||t.dist<=Math.max(t.radius||30,30)).sort((a,b)=>(a.dist??1e9)-(b.dist??1e9)).slice(0,3);
   };
-  sheet({title:"",body:`
+  sheet({title:"",url:"/urgent",body:`
     <div class="urg">${WF}<h2><i class="ti ti-urgent"></i> เรียกช่างด่วน</h2><p>ส่งถึงร้านใกล้คุณที่สุดพร้อมกัน ร้านไหนตอบก่อน เลือกได้เลย</p></div>
     <div class="qk" id="uQk">${QK.map(q=>`<button type="button">${q}</button>`).join("")}</div>
     <label class="fld"><span>เกิดอะไรขึ้น</span><textarea class="inp" id="uSym" placeholder="เล่าสั้น ๆ"></textarea></label>
@@ -3166,7 +3254,7 @@ async function urgentCall(){
 /* ═══ AI ดูอาการ ═══ ใช้ /api/diagnose ของระบบหลัก แล้วต่อเข้ากับช่างจริงในระบบ */
 function aiDiag(text){
   const cars=ls.get("spire_garage",[]);
-  sheet({title:"AI ดูอาการ",body:`
+  sheet({title:"AI ดูอาการ",url:"/diagnose",body:`
     <label class="fld"><span>อาการ</span><textarea class="inp" id="aiT" placeholder="เช่น เบรกแล้วมีเสียงเอี๊ยด พวงมาลัยสั่น">${esc(text||"")}</textarea></label>
     ${cars.length?`<div class="fld"><span>รถ</span>${segs("aiCar",cars.map((c,i)=>[String(i),[c.name,c.year].filter(Boolean).join(" "),"ti-car"]).concat([["-","ไม่ระบุ"]]),"0")}</div>`:""}
     <div id="aiOut"></div>`,
@@ -3264,11 +3352,12 @@ async function refreshJobs(){
 /* ═══ งานของฉัน ═══ */
 async function jobs(all){
   if(!U)return needLogin();
-  sheet({title:all?"งานทั้งหมด":"งานของฉัน",body:'<div class="skel"></div><div class="skel" style="margin-top:10px"></div>'});
+  const url=all?"/jobs/all":"/jobs";
+  sheet({title:all?"งานทั้งหมด":"งานของฉัน",url,body:'<div class="skel"></div><div class="skel" style="margin-top:10px"></div>'});
   try{
     const d=await api("/api/tech/jobs"+(all?"?all=1":""));
     const L=d.jobs||[];
-    sheet({title:all?"งานทั้งหมด":"งานของฉัน",body:(L.length?L.map((j,i)=>{
+    sheet({title:all?"งานทั้งหมด":"งานของฉัน",url,body:(L.length?L.map((j,i)=>{
       const cls=["completed"].includes(j.status)?"ok":["cancelled","disputed"].includes(j.status)?"bad":j.needsMe?"act":"";
       const role=j.side==="technician"?'<span class="pill">ลูกค้าส่งมา</span> ':"";
       return `<button class="jl" data-j="${j.id}" style="animation-delay:${i*35}ms"><span class="av sq" style="--c1:${PALETTE[i%PALETTE.length]}">${initial(j.techName)}</span>
@@ -3314,7 +3403,7 @@ function drawJob(j,push){
   const safe=cust&&["accepted","enroute","working","done"].includes(s);
   if((cust||tech)&&["accepted","enroute","working","done","completed"].includes(s)&&!safe)more.push(["dispute","แจ้งปัญหา"]);
   const phone=cust&&!tech?j.technicianPhone:j.customerPhone;
-  sheet({push,job:true,full:true,title:(j.test?"ทดสอบ · ":"")+(STATUS[s]||s),body:`
+  sheet({push,job:true,full:true,url:"/jobs/"+encodeURIComponent(j.id),title:(j.test?"ทดสอบ · ":"")+(STATUS[s]||s),body:`
     ${track}
     <div class="who e3">${WF}<span class="av sq" style="--c1:${PALETTE[j.id.charCodeAt(0)%PALETTE.length]}${cust&&!tech&&j.techAvatar?`;background-image:url('${img(j.techAvatar)}')`:""}">${cust&&!tech&&j.techAvatar?"":initial(other)}</span><div><b>${esc(other)}</b><small>${esc(j.car)}${cust&&!tech&&j.techVetting?` · ยืนยันตัวตนแล้ว${(j.techVetting.cats||[]).length?" · ตรวจทักษะ "+esc(j.techVetting.cats.map(c=>CAT[c]?CAT[c].th:c).join(", ")):""}`:""}</small></div>
       ${phone&&/^0\d{8,9}$/.test(phone)?`<a class="ic" href="tel:${esc(phone)}" aria-label="โทร"><i class="ti ti-phone"></i></a>`:""}
@@ -3375,23 +3464,23 @@ function act(j,a,btn){
   if(a==="enroute")return change(j,a,{},btn);
   if(a==="unshare")return busy(btn,async()=>{await api("/api/tech/jobs/"+j.id,{body:{action:"unshare"}});drawJob((await api("/api/tech/jobs/"+j.id)).job,false);toast("ยกเลิกลิงก์แล้ว")});
   if(a==="share")return busy(btn,async()=>{
-    const r=await api("/api/tech/jobs/"+j.id,{body:{action:"share"}}),u=location.origin+"/?trip="+encodeURIComponent(r.token);
+    const r=await api("/api/tech/jobs/"+j.id,{body:{action:"share"}}),u=location.origin+"/trip/"+encodeURIComponent(r.token);
     try{if(navigator.share)await navigator.share({title:"ใบงานซ่อมรถของฉัน (Cendon)",text:"ติดตามสถานะงานซ่อมรถของฉัน ลิงก์ใช้ได้ 24 ชม.",url:u});else{await navigator.clipboard.writeText(u);toast("คัดลอกลิงก์แล้ว ส่งให้คนที่ไว้ใจได้เลย","ti-copy")}}catch(e){}
     drawJob((await api("/api/tech/jobs/"+j.id)).job,false)});
   if(a==="newcode")return busy(btn,async()=>{await api("/api/tech/jobs/"+j.id,{body:{action:"newcode"}});const nj=(await api("/api/tech/jobs/"+j.id)).job;drawJob(nj,false);toast("ได้รหัสเริ่มงานใหม่แล้ว","ti-key")});
   if(a.startsWith("extra_ok:")||a.startsWith("extra_no:")){const [k,id]=a.split(":");if(k==="extra_no"&&!confirm("ไม่ทำงานเพิ่มรายการนี้?"))return;return change(j,k,{extraId:id},btn)}
-  if(a==="start"){const P=[];return sheet({push:true,title:"เริ่มซ่อม",body:`${j.startCodeRequired?`<label class="fld"><span>รหัสเริ่มงานจากลูกค้า (4 หลัก)</span><input class="inp sc-in" id="sC" inputmode="numeric" maxlength="4" autocomplete="one-time-code" placeholder="••••"/></label>
+  if(a==="start"){const P=[];return sheet({push:true,slug:a,title:"เริ่มซ่อม",body:`${j.startCodeRequired?`<label class="fld"><span>รหัสเริ่มงานจากลูกค้า (4 หลัก)</span><input class="inp sc-in" id="sC" inputmode="numeric" maxlength="4" autocomplete="one-time-code" placeholder="••••"/></label>
       <p class="note"><i class="ti ti-info-circle"></i>ขอรหัสจากลูกค้าเมื่อพบกันแล้ว ใส่ผิดได้ไม่เกิน 5 ครั้ง</p>`:""}
       <p class="h4">รูปรถก่อนเริ่มซ่อม <small style="font-weight:400;color:var(--muted)">· ไม่บังคับ สูงสุด 3 รูป · ช่วยเป็นหลักฐานทั้งสองฝ่าย</small></p><div class="phg" id="sP"></div><input type="file" id="sPF" accept="image/*" multiple hidden/>`,
     foot:'<button class="btn p w" id="sGo">เริ่มซ่อม</button>',mount(){stagePics("sP",P);$("sGo").onclick=e=>change(j,"start",{code:$("sC")?$("sC").value.trim():"",photos:P},e.currentTarget)}})}
-  if(a==="done"){const P=[];return sheet({push:true,title:"ซ่อมเสร็จแล้ว",body:`<label class="fld"><span>สรุปงานที่ทำ</span><textarea class="inp" id="nT" placeholder="เช่น เปลี่ยนโอริง เติมน้ำยา 600 กรัม"></textarea></label>
+  if(a==="done"){const P=[];return sheet({push:true,slug:a,title:"ซ่อมเสร็จแล้ว",body:`<label class="fld"><span>สรุปงานที่ทำ</span><textarea class="inp" id="nT" placeholder="เช่น เปลี่ยนโอริง เติมน้ำยา 600 กรัม"></textarea></label>
       <p class="h4">รูปหลังซ่อมเสร็จ <small style="font-weight:400;color:var(--muted)">· ไม่บังคับ สูงสุด 3 รูป</small></p><div class="phg" id="dP"></div><input type="file" id="dPF" accept="image/*" multiple hidden/>`,
     foot:'<button class="btn p w" id="nGo">แจ้งลูกค้าว่าซ่อมเสร็จ</button>',mount(){stagePics("dP",P);$("nGo").onclick=e=>change(j,"done",{note:$("nT").value.trim(),photos:P},e.currentTarget)}})}
-  if(a==="extra")return sheet({push:true,title:"เสนองานเพิ่ม",body:`<p class="note"><i class="ti ti-info-circle"></i>ราคาที่ลูกค้ายืนยันแล้วแก้ไม่ได้ งานที่เจอเพิ่มต้องให้ลูกค้ากดยอมรับก่อนทำ</p>
+  if(a==="extra")return sheet({push:true,slug:a,title:"เสนองานเพิ่ม",body:`<p class="note"><i class="ti ti-info-circle"></i>ราคาที่ลูกค้ายืนยันแล้วแก้ไม่ได้ งานที่เจอเพิ่มต้องให้ลูกค้ากดยอมรับก่อนทำ</p>
       <label class="fld"><span>ต้องทำอะไรเพิ่ม และทำไม</span><textarea class="inp" id="xD" placeholder="เช่น วาล์วแอร์รั่ว ต้องเปลี่ยนใหม่"></textarea></label>
       <div class="two"><label class="fld"><span>ค่าแรง</span><input class="inp" id="xL" type="number" inputmode="decimal" placeholder="0"/></label><label class="fld"><span>อะไหล่</span><input class="inp" id="xP" type="number" inputmode="decimal" placeholder="0"/></label></div>`,
     foot:'<button class="btn p w" id="xGo">ส่งให้ลูกค้าตัดสินใจ</button>',mount(){$("xGo").onclick=e=>change(j,"extra",{desc:$("xD").value.trim(),labor:+$("xL").value||0,parts:+$("xP").value||0},e.currentTarget)}});
-  if(a==="quote"){const q=j.quote||{};return sheet({push:true,title:"เสนอราคา",body:`
+  if(a==="quote"){const q=j.quote||{};return sheet({push:true,slug:a,title:"เสนอราคา",body:`
       <div class="two"><label class="fld"><span>ค่าแรง</span><input class="inp" id="qL" type="number" inputmode="decimal" value="${q.labor||""}" placeholder="0"/></label>
       <label class="fld"><span>อะไหล่</span><input class="inp" id="qP" type="number" inputmode="decimal" value="${q.parts||""}" placeholder="0"/></label></div>
       <label class="fld"><span>ค่าเดินทาง</span><input class="inp" id="qT" type="number" inputmode="decimal" value="${q.travel||""}" placeholder="0"/></label>
@@ -3401,14 +3490,14 @@ function act(j,a,btn){
     foot:'<button class="btn p w" id="qGo">ส่งราคา <b id="qSum"></b></button>',
     mount(){const sum=()=>{$("qSum").textContent=" ฿"+money((+$("qL").value||0)+(+$("qP").value||0)+(+$("qT").value||0))};["qL","qP","qT"].forEach(k=>$(k).oninput=sum);sum();
       $("qGo").onclick=e=>change(j,"quote",{labor:+$("qL").value||0,parts:+$("qP").value||0,travel:+$("qT").value||0,scope:$("qS").value.trim(),appointment:$("qA").value.trim(),warranty:+$("qW").value||0},e.currentTarget)}});}
-  if(a==="accept")return sheet({push:true,title:"ยืนยันราคา",body:`<div class="quote"><div class="tot">฿${money(j.quote.total)}</div><p>${esc(j.quote.scope)}</p><p class="note" style="margin:8px 0 0"><i class="ti ti-calendar"></i>${esc(j.quote.appointment)}</p></div>
+  if(a==="accept")return sheet({push:true,slug:a,title:"ยืนยันราคา",body:`<div class="quote"><div class="tot">฿${money(j.quote.total)}</div><p>${esc(j.quote.scope)}</p><p class="note" style="margin:8px 0 0"><i class="ti ti-calendar"></i>${esc(j.quote.appointment)}</p></div>
       <label class="chk"><input type="checkbox" id="cOk"/> ตกลงราคานี้ และให้ช่างเห็นเบอร์กับที่อยู่ของฉันเพื่อนัดซ่อม</label>
       <p class="note"><i class="ti ti-info-circle"></i>จ่ายเงินกับช่างโดยตรงเมื่องานเสร็จ — <b>Cendon ไม่ได้ถือเงิน และยังไม่มีระบบคืนเงิน</b> ถ้ามีปัญหากด "แจ้งปัญหา" ในใบงาน ทีมงานช่วยประสานให้</p>
       <p class="note"><i class="ti ti-key"></i>หลังยืนยัน คุณจะได้ "รหัสเริ่มงาน" — บอกช่างเมื่อพบกันแล้วเท่านั้น งานเพิ่มทุกรายการต้องให้คุณกดยอมรับก่อน</p>`,
     foot:'<button class="btn p w" id="cGo" disabled>ยืนยัน</button>',mount(){$("cOk").onchange=()=>$("cGo").disabled=!$("cOk").checked;$("cGo").onclick=e=>change(j,"accept",{consent:true},e.currentTarget)}});
-  if(a==="complete")return sheet({push:true,title:"ตรวจรับงาน",body:`<div class="state"><div class="big" style="background:rgba(62,158,110,.14);color:var(--ok)"><i class="ti ti-circle-check"></i></div><h2>งานเรียบร้อยแล้ว?</h2><p>${esc(j.completion||"")}</p></div>`,
+  if(a==="complete")return sheet({push:true,slug:a,title:"ตรวจรับงาน",body:`<div class="state"><div class="big" style="background:rgba(62,158,110,.14);color:var(--ok)"><i class="ti ti-circle-check"></i></div><h2>งานเรียบร้อยแล้ว?</h2><p>${esc(j.completion||"")}</p></div>`,
     foot:'<button class="btn s" id="cNo">ยังมีปัญหา</button><button class="btn p" id="cGo">เรียบร้อย</button>',mount(){$("cNo").onclick=()=>act(j,"dispute");$("cGo").onclick=e=>change(j,"complete",{},e.currentTarget)}});
-  if(a==="review"){let r=5;const RP=[];return sheet({push:true,title:"ให้คะแนน",body:`<div class="stars" id="rS">${[1,2,3,4,5].map(n=>`<button data-n="${n}" class="on"><i class="ti ti-star-filled"></i></button>`).join("")}</div><label class="fld"><span>เล่าสั้น ๆ</span><textarea class="inp" id="rT" placeholder="เช่น มาตรงเวลา งานเรียบร้อย"></textarea></label>
+  if(a==="review"){let r=5;const RP=[];return sheet({push:true,slug:a,title:"ให้คะแนน",body:`<div class="stars" id="rS">${[1,2,3,4,5].map(n=>`<button data-n="${n}" class="on"><i class="ti ti-star-filled"></i></button>`).join("")}</div><label class="fld"><span>เล่าสั้น ๆ</span><textarea class="inp" id="rT" placeholder="เช่น มาตรงเวลา งานเรียบร้อย"></textarea></label>
       <p class="h4">รูปงานที่ได้ <small style="font-weight:400;color:var(--muted)">· ไม่บังคับ สูงสุด 4 รูป · ขึ้นในหน้าร้านพร้อมรีวิว</small></p><div class="phg" id="rPh"></div><input type="file" id="rFile" accept="image/*" multiple hidden/><p class="err" id="rErr"></p>`,
     foot:'<button class="btn p w" id="rGo">ส่งคะแนน</button>',mount(){$("rS").querySelectorAll("button").forEach(b=>b.onclick=()=>{r=+b.dataset.n;$("rS").querySelectorAll("button").forEach(x=>x.classList.toggle("on",+x.dataset.n<=r))});
       const draw=()=>{$("rPh").innerHTML=RP.map((d,i)=>`<div class="doc"><img src="${d}" alt=""/><button class="rm" data-i="${i}" type="button"><i class="ti ti-x"></i></button></div>`).join("")+(RP.length<4?`<button class="doc" id="rAdd" type="button"><i class="ti ti-camera-plus"></i>เพิ่มรูป</button>`:"");
@@ -3418,7 +3507,7 @@ function act(j,a,btn){
       $("rGo").onclick=e=>change(j,"review",{rating:r,note:$("rT").value.trim(),photos:RP.map(d=>({data:d}))},e.currentTarget)}});}
   const T={done:["สรุปงานที่ทำ","เช่น เปลี่ยนโอริง เติมน้ำยา 600 กรัม"],cancel:["เหตุผลที่ยกเลิก","เช่น ติดธุระ ขอเลื่อน"],dispute:["เกิดปัญหาอะไร","เล่าสิ่งที่เกิดขึ้น ทีมงานจะติดต่อกลับ"],resolve:["ผลการช่วยเหลือ","สรุปว่าแก้อย่างไร"]}[a];
   if(!T)return;
-  sheet({push:true,title:T[0],body:`<label class="fld"><textarea class="inp" id="nT" placeholder="${T[1]}"></textarea></label>${a==="resolve"?segs("nO",[["completed","ปิดงานสำเร็จ"],["cancelled","ยกเลิกงาน"]],"completed"):""}`,
+  sheet({push:true,slug:a,title:T[0],body:`<label class="fld"><textarea class="inp" id="nT" placeholder="${T[1]}"></textarea></label>${a==="resolve"?segs("nO",[["completed","ปิดงานสำเร็จ"],["cancelled","ยกเลิกงาน"]],"completed"):""}`,
     foot:`<button class="btn ${a==="cancel"||a==="dispute"?"s":"p"} w" id="nGo">${a==="cancel"?"ยกเลิกงาน":a==="dispute"?"ส่งเรื่อง":"บันทึก"}</button>`,
     mount(){if(a==="resolve")wireSeg("nO");$("nT").focus();$("nGo").onclick=e=>change(j,a,{note:$("nT").value.trim(),outcome:a==="resolve"?segVal("nO"):undefined},e.currentTarget)}});
 }
@@ -3453,7 +3542,7 @@ function openChat(j){
   addMsgs(j.messages||[]);
   if(!(j.messages||[]).length)$("msgs").insertAdjacentHTML("beforeend",'<p class="sys first">ส่งข้อความแรกได้เลย</p>');
   $("chat").classList.add("on");$("chat").setAttribute("aria-hidden","false");
-  try{history.pushState({chat:1},"")}catch(e){}
+  if(!CHL)CHL=Nav.push({url:"/jobs/"+encodeURIComponent(j.id)+"/chat",tag:"chat",close:()=>closeChat(true)});
   setTimeout(()=>{$("msgs").scrollTop=$("msgs").scrollHeight;if(!closed&&matchMedia("(pointer:fine)").matches)$("chIn").focus()},380);
   const tick=()=>{CH.timer=setTimeout(async()=>{
     if(!$("chat").classList.contains("on"))return;
@@ -3461,9 +3550,10 @@ function openChat(j){
     tick()},document.hidden?12000:3000)};
   tick();
 }
-function closeChat(fromPop){
+let CHL=null;
+function closeChat(fromNav){
   clearTimeout(CH.timer);$("chat").classList.remove("on");$("chat").setAttribute("aria-hidden","true");
-  if(!fromPop&&history.state&&history.state.chat)goBack();
+  const l=CHL;CHL=null;if(fromNav!==true&&l)Nav.drop(l);
   if(CH.job)openJob(CH.job.id,false).then(()=>{});
 }
 $("chX").onclick=()=>closeChat();
@@ -3524,7 +3614,7 @@ async function openJoin(){
   await refreshMe();
   const a=ME&&ME.application,t=ME&&ME.technician;
   /* ทีมงานเลือกได้ว่าจะเป็นช่างทีมงาน (ไม่ต้องใช้อะไร เห็นเฉพาะทีมงาน) หรือลองยื่นแบบพาร์ทเนอร์จริง */
-  if(ME&&ME.admin&&!(a&&!a.test))return sheet({title:"สมัครเป็นช่าง",body:`
+  if(ME&&ME.admin&&!(a&&!a.test))return sheet({title:"สมัครเป็นช่าง",url:"/join",body:`
     <button class="jl" id="jStaff"><span class="av sq" style="--c1:var(--accent)"><i class="ti ti-shield-check"></i></span><span class="jb"><b>${t&&t.test?"ช่างทีมงานของฉัน":"เป็นช่างทีมงานทันที"}</b><small>ใช้แค่ตำแหน่งอู่ · เห็นเฉพาะทีมงาน Cendon</small></span><i class="ti ti-chevron-right"></i></button>
     <button class="jl" id="jReal"><span class="av sq" style="--c1:#334155"><i class="ti ti-file-certificate"></i></span><span class="jb"><b>ใบสมัครพาร์ทเนอร์</b><small>ขั้นตอนเต็มแบบที่ช่างทั่วไปเห็น</small></span><i class="ti ti-chevron-right"></i></button>
     <button class="jl" id="jSkip"><span class="av sq" style="--c1:#0ea5e9"><i class="ti ti-player-skip-forward"></i></span><span class="jb"><b>ข้ามไปแดชบอร์ดช่าง</b><small>ไม่ต้องกรอกอะไร · เข้าไปดูความเรียบร้อยได้เลย</small></span><i class="ti ti-chevron-right"></i></button>
@@ -3533,8 +3623,12 @@ async function openJoin(){
   if(a&&!a.test)return statusPage(a);
   landing();
 }
+/* ใบสมัครช่างเป็นขั้น ๆ: /join (หน้าแนะนำ) → /join/1 … /join/4 · ปุ่ม "ย้อนกลับ" ในฟอร์ม = ปุ่มย้อนของเครื่อง
+   กลับไปขั้นก่อนแล้ววาดใหม่จากข้อมูลที่กรอกไว้ (APP) ไม่ใช่ภาพเก่าตอนเปิดครั้งแรก */
+function wizBack(n){const p=SH.stack[SH.stack.length-1];if(SH.cur&&SH.cur.wiz>n&&p&&p.wiz===n){back();return true}return false}
 function landing(push){
-  sheet({push,full:true,title:"",body:`
+  if(wizBack(0))return;
+  sheet({push,full:true,wiz:0,redo:()=>landing(false),url:SH.cur&&SH.cur.wiz>=0?undefined:"/join",title:"",body:`
     <div class="hero">${WF}<svg class="logo" viewBox="-6.0 -6.0 94.8 112.0" aria-hidden="true"><path fill="currentColor" d="${LOGO}"/></svg><small>CENDON PARTNER PROGRAM</small><h2>ร่วมเป็นพาร์ทเนอร์ช่าง</h2><p>รับงานจากเจ้าของรถในพื้นที่ของคุณ · ใช้เวลากรอกประมาณ 10 นาที</p></div>
     <div class="ben"><div><span class="sq"><i class="ti ti-map-pin"></i></span><b>งานใกล้คุณ</b>ลูกค้าในรัศมีที่เลือก</div><div><span class="sq"><i class="ti ti-receipt-off"></i></span><b>ไม่มีค่าสมัคร</b>ไม่มีค่าแรกเข้า</div><div><span class="sq"><i class="ti ti-cash"></i></span><b>ตั้งราคาเอง</b>เสนอราคาทุกงาน</div></div>
     <p class="h4">คุณสมบัติผู้สมัคร</p>
@@ -3549,7 +3643,7 @@ function landing(push){
       APP=APP||{cats:[],mobile:false,urgent:false,docs:{},...(rej?{title:a.title,name:a.name,shop:a.shop,phone:a.phone,birth:a.birth,years:a.years,area:a.area,from:a.from,warranty:a.warranty,radius:a.radius,cats:a.cats||[],mobile:a.mobile,urgent:a.urgent,lat:a.lat,lng:a.lng,about:a.about}:{})};step(1)}}});
 }
 function terms(){
-  sheet({push:true,title:"ข้อตกลงพาร์ทเนอร์ช่าง",body:`<div class="terms">
+  sheet({push:true,slug:"terms",title:"ข้อตกลงพาร์ทเนอร์ช่าง",body:`<div class="terms">
     <h5>1. คุณสมบัติและการยืนยันตัวตน</h5>ผู้สมัครต้องมีอายุ 18 ปีบริบูรณ์ ให้ข้อมูลตามบัตรประจำตัวประชาชนที่เป็นจริง และยินยอมให้ Cendon ตรวจสอบตัวตน เบอร์โทรศัพท์ ผลงาน และสถานประกอบการ ข้อมูลอันเป็นเท็จเป็นเหตุให้ยกเลิกการเป็นพาร์ทเนอร์ได้ทันที
     <h5>2. การเสนอราคาและรับงาน</h5>พาร์ทเนอร์ต้องแจกแจงค่าแรง ค่าอะไหล่ และค่าเดินทางในใบเสนอราคาก่อนเริ่มงาน หากต้องเปลี่ยนแปลงราคา ต้องได้รับความยินยอมจากลูกค้าและบันทึกไว้ในใบงานก่อนลงมือ
     <h5>3. มาตรฐานงานและการรับประกัน</h5>พาร์ทเนอร์รับประกันงานตามจำนวนวันที่ระบุในใบเสนอราคา และต้องให้บริการด้วยความสุภาพ ตรงเวลา และปลอดภัย
@@ -3559,8 +3653,11 @@ function terms(){
 }
 function stepHd(n){return `<div class="stp">${STEPS.map((l,i)=>`<div class="${i+1<n?"ok":i+1===n?"on":""}"><i></i>${i+1}. ${l}</div>`).join("")}</div>`}
 function keep(){const g=id=>$(id)?$(id).value.trim():undefined;[["name","aN"],["shop","aS"],["phone","aP"],["birth","aD"],["years","aY"],["from","aF"],["warranty","aW"],["area","aR"],["radius","aK"],["about","aB"],["idNo","aI"]].forEach(([k,id])=>{const v=g(id);if(v!==undefined)APP[k]=v})}
+/* ขั้นถัดไป = ซ้อนขั้นใหม่ · กลับไปขั้นที่อยู่ข้างใต้ = ถอยหนึ่งขั้น · กระโดดไปขั้นอื่น (แก้ไขจากหน้าสรุป) = ซ้อนเหมือนกัน */
+const wiz=n=>({wiz:n,redo:()=>step(n),url:"/join/"+n,push:!!(SH.cur&&SH.cur.wiz!=null&&SH.cur.wiz!==n)});
 function step(n){
-  if(n===1)return sheet({full:true,title:"ใบสมัครพาร์ทเนอร์",body:stepHd(1)+`
+  if(wizBack(n))return;
+  if(n===1)return sheet({...wiz(n),full:true,title:"ใบสมัครพาร์ทเนอร์",body:stepHd(1)+`
     <p class="h4" style="margin-top:0">ข้อมูลส่วนบุคคล</p>
     <div class="fld"><span>คำนำหน้า <em>*</em></span>${segs("aT",[["นาย","นาย"],["นาง","นาง"],["นางสาว","นางสาว"]],APP.title||"")}</div>
     <label class="fld"><span>ชื่อ-นามสกุล (ตามบัตรประชาชน) <em>*</em></span><input class="inp" id="aN" value="${esc(APP.name||"")}" autocomplete="name"/></label>
@@ -3593,7 +3690,7 @@ function step(n){
         if(!(+APP.from>0))e.push("ราคาเริ่มต้น");if(!(+APP.warranty>=7))e.push("รับประกันอย่างน้อย 7 วัน");
         if(e.length){$("err").textContent="กรุณาตรวจสอบ: "+e.join(", ");$("err").scrollIntoView({block:"nearest"});return}step(2)};
     }});
-  if(n===2)return sheet({full:true,title:"ใบสมัครพาร์ทเนอร์",body:stepHd(2)+`
+  if(n===2)return sheet({...wiz(n),full:true,title:"ใบสมัครพาร์ทเนอร์",body:stepHd(2)+`
     <p class="note"><i class="ti ti-info-circle"></i>เลื่อนแผนที่ให้หมุดอยู่ที่อู่ หรือจุดที่คุณออกรับงาน</p>
     <div class="picker" id="aMap"></div><p class="coord" id="aXY"></p>
     <button class="btn s w" id="aGps" style="margin-bottom:14px"><i class="ti ti-current-location"></i> ใช้ตำแหน่งปัจจุบัน</button>
@@ -3606,7 +3703,7 @@ function step(n){
       $("aBk").onclick=()=>{keep();step(1)};
       $("aNx").onclick=()=>{keep();if(!window.L&&!APP.gps){$("err").textContent="กดใช้ตำแหน่งปัจจุบันก่อน";return}if((APP.area||"").length<3){$("err").textContent="กรุณาระบุเขต / อำเภอ / จังหวัด";return}step(3)};
     }});
-  if(n===3)return sheet({full:true,title:"ใบสมัครพาร์ทเนอร์",body:stepHd(3)+`<p class="note"><i class="ti ti-camera"></i>ถ่ายให้เห็นข้อความชัด ไม่มีแสงสะท้อน · บัตรประชาชนใช้ตรวจตัวตนเท่านั้น และถูกลบหลังพิจารณา</p>
+  if(n===3)return sheet({...wiz(n),full:true,title:"ใบสมัครพาร์ทเนอร์",body:stepHd(3)+`<p class="note"><i class="ti ti-camera"></i>ถ่ายให้เห็นข้อความชัด ไม่มีแสงสะท้อน · บัตรประชาชนใช้ตรวจตัวตนเท่านั้น และถูกลบหลังพิจารณา</p>
     <p class="note"><i class="ti ti-id"></i>บัตรประชาชน: ถ่าย<b>ด้านหน้าบัตรจริง</b> (ไม่ถ่ายจากจอหรือสำเนา) ให้เห็นเลข 13 หลักชัดทุกหลัก — ระบบจะเทียบกับเลขที่คุณกรอก ถ้าไม่ตรงใบสมัครจะไม่ผ่าน</p>`+DK.map(([k,l,min,max,ic])=>`<div class="dgrp"><h4>${l} <small>${min?(min===max?min+" รูป":min+"–"+max+" รูป"):"ไม่บังคับ"}</small><i class="ti ti-circle-check-filled okk" ${(APP.docs[k]||[]).length>=min&&min?"":"hidden"}></i></h4><div class="docs" data-k="${k}"></div></div>`).join("")
     +'<input type="file" id="aFile" accept="image/*" hidden/>',
     foot:'<button class="btn s" id="aBk">ย้อนกลับ</button><button class="btn p" id="aNx">ถัดไป</button>',
@@ -3627,7 +3724,7 @@ function step(n){
     }});
   if(n===4){const nd=Object.values(APP.docs).reduce((a,l)=>a+l.length,0);
     const sec=(t,to,rows)=>`<div class="sect"><h5>${t}<button data-to="${to}">แก้ไข</button></h5>${rows.map(([k,v])=>`<p><span>${k}</span><b>${v}</b></p>`).join("")}</div>`;
-    return sheet({full:true,title:"ใบสมัครพาร์ทเนอร์",body:stepHd(4)+
+    return sheet({...wiz(n),full:true,title:"ใบสมัครพาร์ทเนอร์",body:stepHd(4)+
     sec("ข้อมูลผู้สมัคร",1,[["ชื่อ-นามสกุล",esc(APP.title+" "+APP.name)],["เลขประจำตัวประชาชน",esc(fmtId(APP.idNo))],["อายุ",ageOf(APP.birth)+" ปี"],["เบอร์โทรศัพท์",esc(APP.phone)]])+
     sec("การให้บริการ",1,[["ชื่อร้าน",esc(APP.shop||"–")],["ประสบการณ์",esc(APP.years)+" ปี"],["ประเภทงาน",APP.cats.map(c=>CAT[c].th).join(", ")],["บริการเสริม",[APP.mobile&&"ออกหน้างาน",APP.urgent&&"รับงานด่วน"].filter(Boolean).join(", ")||"–"],["ราคาเริ่มต้น","฿"+money(APP.from)],["รับประกัน",esc(APP.warranty)+" วัน"]])+
     sec("สถานที่ให้บริการ",2,[["พื้นที่",esc(APP.area)],["รัศมี",esc(APP.radius||0)+" กม."]])+
@@ -3653,14 +3750,14 @@ function step(n){
         const docs=[];DK.forEach(([k])=>(APP.docs[k]||[]).forEach(d=>docs.push({kind:k,data:d})));
         await api("/api/tech/apply",{body:{title:APP.title,name:APP.name,idNo:String(APP.idNo).replace(/\D/g,""),birth:APP.birth,age:ageOf(APP.birth),shop:APP.shop,phone:(APP.phone||"").replace(/[\s-]/g,""),years:+APP.years,area:APP.area,
           from:+APP.from,warranty:+APP.warranty,radius:+APP.radius||0,cats:APP.cats,mobile:!!APP.mobile,urgent:!!APP.urgent,about:APP.about||"",lat:APP.lat,lng:APP.lng,docs,consent:true,aiConsent:true,idConsent:true,faceConsent:$("dFace").checked}});
-        APP=null;await refreshMe();SH.stack=[];statusPage(ME.application,true);
+        APP=null;await refreshMe();sheetFresh();statusPage(ME.application,true);
       })}});}
 }
 /* สถานะใบสมัคร — มีเลขที่ใบสมัครอ้างอิง และเห็นว่าอยู่ขั้นไหนของการพิจารณา */
 function statusPage(a,fresh,pv){
   const st=a.status,d=a.submittedAt||a.createdAt;
   const n=st==="approved"?5:st==="rejected"?2:2;
-  sheet({push:pv&&pv.push,full:true,title:"ใบสมัครพาร์ทเนอร์",body:(pv?`<div class="seg pvs" id="pvS">${[["pending","รอตรวจ"],["rejected","ต้องแก้ไข"],["approved","อนุมัติ"]].map(([k,l])=>`<button type="button" data-v="${k}" class="${k===pv.st?"on":""}">${l}</button>`).join("")}</div>`:"")+`
+  sheet({push:pv&&pv.push,url:"/join",full:true,title:"ใบสมัครพาร์ทเนอร์",body:(pv?`<div class="seg pvs" id="pvS">${[["pending","รอตรวจ"],["rejected","ต้องแก้ไข"],["approved","อนุมัติ"]].map(([k,l])=>`<button type="button" data-v="${k}" class="${k===pv.st?"on":""}">${l}</button>`).join("")}</div>`:"")+`
     ${pv?'<p class="note"><b>โหมดตัวอย่าง UI เท่านั้น</b> · ไม่ส่งใบสมัคร ไม่ตรวจ AI และไม่อนุมัติร้านจริง</p>':st==='pending'?`<p class="note">${a.ai&&a.ai.status==='complete'?'ระบบตรวจรูปและบัตรเบื้องต้นแล้ว ยังรอทีมงานตรวจตัวตน เบอร์โทร และทักษะ':'ใบสมัครอยู่ในคิว ระบบยังตรวจไม่ครบ ทีมงานจะตรวจต่อ'}</p>`:''}
     ${fresh&&st==='pending'?'<div class="state"><div class="big" style="background:rgba(62,158,110,.14);color:var(--ok)"><i class="ti ti-send"></i></div><h2>ยื่นใบสมัครเรียบร้อย</h2><p>ทีมงานจะติดต่อกลับภายใน 3 วันทำการ</p></div>':""}
     ${st==='rejected'&&a.review&&a.review.auto?`<div class="fixl"><b><i class="ti ti-alert-triangle"></i> ใบสมัครยังไม่ผ่าน — แก้ข้อต่อไปนี้แล้วยื่นใหม่ได้ทันที</b><ul>${(a.review.reasons||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:""}
@@ -3828,7 +3925,21 @@ function drawModes(){
   el.querySelectorAll("button").forEach(b=>b.onclick=()=>setMode(b.dataset.m));
   applyMode();
 }
-function setMode(m){MODE=m;drawModes();window.scrollTo(0,0);if(m==="tech")dash()}
+/* มุมลูกค้า = หน้าแรก · มุมช่าง (/work) และมุมทีมงาน (/staff) เป็นชั้นที่ซ้อนขึ้นไป — ปุ่มย้อนกลับมุมเดิม */
+let MODEL=null;
+function setMode(m,fromNav){
+  const prev=MODE;MODE=m;drawModes();window.scrollTo(0,0);if(m==="tech")dash();
+  if(fromNav||prev===m)return;
+  if(m==="customer"){if(MODEL)Nav.back(MODEL);return}
+  if(MAPL){const l=MAPL;MAPL=null;Nav.drop(l)}
+  const under=MODEL;
+  MODEL=Nav.push({url:m==="tech"?"/work":"/staff",tag:"mode",close:()=>{MODEL=under;setMode(prev,true)}});
+}
+/* แท็บแดชบอร์ดช่าง (/work/find · queue · shop · ai · posts) — เปลี่ยนแท็บ = หนึ่งขั้นในประวัติ */
+function setTab2(t,fromNav){
+  const was=DT;if(was===t)return;DT=t;drawTab();
+  if(!fromNav)Nav.push({url:"/work/"+t,tag:"wtab",close:()=>setTab2(was,true)});
+}
 function applyMode(){
   const tech=MODE==="tech";
   if(tech&&VIEW==="map"){VIEW="menu";document.body.classList.remove("onmap");$("vMap").hidden=true}
@@ -3879,7 +3990,7 @@ function drawStats(){
     <div class="st e3"><b>${s.winRate}%</b><small>${T("ได้งาน","Win rate")}</small></div><div class="st e3"><b>${s.replyMin==null?"–":s.replyMin+T(" น."," m")}</b><small>${T("ตอบเฉลี่ย","Avg reply")}</small></div>
     <div class="spark e3" title="${T("รายได้ 14 วัน","14-day earnings")}">${s.daily.map((x,i)=>`<i class="${x.v?"":"z"}" style="height:${Math.max(6,x.v/mx*100)}%;animation-delay:${i*30}ms" title="฿${money(x.v)}"></i>`).join("")}</div>`;
 }
-$("dTabs").querySelectorAll("button").forEach(b=>b.onclick=()=>{DT=b.dataset.t2;$("dTabs").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));drawTab()});
+$("dTabs").querySelectorAll("button").forEach(b=>b.onclick=()=>setTab2(b.dataset.t2));
 function drawTab(){
   $("dTabs").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x.dataset.t2===DT));
   ({find:tabFind,queue:tabQueue,shop:tabShop,ai:tabAi,posts:tabPosts})[DT]();
@@ -3960,7 +4071,7 @@ function tabShop(){
     <button class="lx-gh w" id="sView" style="margin-top:12px"><i class="ti ti-arrows-maximize"></i> ${T("เปิดหน้าช่องเต็มจอ","Open full channel")}</button>`;
   const pv=$("dBody");pv.querySelectorAll(".ch-tabs button").forEach(x=>x.onclick=()=>{pv.querySelectorAll(".ch-tabs button").forEach(y=>y.classList.toggle("on",y===x));pv.querySelectorAll(".ch-pane").forEach(q=>q.classList.toggle("on",q.dataset.cp===x.dataset.ct))});
   $("bEdit").onclick=()=>openShopEdit();
-  $("bShare").onclick=()=>{const u=location.origin+location.pathname+"?shop="+encodeURIComponent(t.id);try{navigator.share?navigator.share({title:t.shop||t.name,url:u}):navigator.clipboard.writeText(u).then(()=>toast(T("คัดลอกลิงก์ร้านแล้ว","Shop link copied")))}catch(e){}};
+  $("bShare").onclick=()=>{const u=location.origin+"/tech/"+encodeURIComponent(t.id);try{navigator.share?navigator.share({title:t.shop||t.name,url:u}):navigator.clipboard.writeText(u).then(()=>toast(T("คัดลอกลิงก์ร้านแล้ว","Shop link copied")))}catch(e){}};
   $("dBody").querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z));
   $("sView").onclick=()=>openTech(t.id);
 }
@@ -3969,7 +4080,7 @@ function openShopEdit(){
   /* ร้านที่ผ่านการตรวจแล้ว: ความถนัด งานที่รับ ตำแหน่ง และรูปร้าน/ผลงาน คือหลักฐานที่ตรวจแล้ว — เปลี่ยนต้องให้ทีมงานตรวจใหม่ (backend บังคับเหมือนกัน) */
   const locked=!t.test;
   SHOPED={add:[],remove:[],lat:t.lat,lng:t.lng,cover:t.cover||null,newCover:null};
-  sheet({title:T("แก้ไขร้าน","Edit shop"),full:true,push:true,body:`
+  sheet({title:T("แก้ไขร้าน","Edit shop"),slug:"edit",full:true,push:true,body:`
     <p class="h4" style="margin-top:0">${T("รูปโปรไฟล์ร้าน","Shop profile photo")}</p>
     <div class="ed-av"><span class="ch-av" id="sAv">${initial(t.shop||t.name)}</span><div><button class="lx-gh" id="sAvB" type="button"><i class="ti ti-camera"></i> ${T("เปลี่ยนรูปโปรไฟล์","Change photo")}</button><small>${T("แนะนำโลโก้ร้านหรือรูปหน้าร้าน","Your logo or storefront")}</small></div></div><input type="file" id="sAvF" accept="image/*" hidden data-crop="1:1" data-crop-round data-crop-w="640" data-crop-title="${T("รูปโปรไฟล์ร้าน","Shop photo")}"/>
     <p class="h4" hidden>${T("รูปปก (แบนเนอร์)","Cover banner")}</p>
@@ -4013,7 +4124,7 @@ function openShopEdit(){
   $("sLoc").onclick=()=>{
     /* จำค่าที่พิมพ์ไว้ก่อนเปิดแผนที่ — กลับมาแล้วฟอร์มถูกวาดใหม่ */
     SHOPED.snap={v:Object.fromEntries(["sN","sA","sF","sW","sR","sH","sTel"].map(k=>[k,$(k).value])),on:[...$("bsB").querySelectorAll("#sC .on,#sM .on")].map(b=>b.parentNode.id+":"+b.dataset.v)};
-    let pos={lat:SHOPED.lat,lng:SHOPED.lng};sheet({push:true,title:T("ตำแหน่งร้าน","Shop location"),body:'<div class="picker" id="lMap"></div><p class="coord" id="lXY"></p><button class="btn s w" id="lGps"><i class="ti ti-current-location"></i> '+T("ใช้ตำแหน่งปัจจุบัน","Use my location")+'</button>',
+    let pos={lat:SHOPED.lat,lng:SHOPED.lng};sheet({push:true,slug:"location",title:T("ตำแหน่งร้าน","Shop location"),body:'<div class="picker" id="lMap"></div><p class="coord" id="lXY"></p><button class="btn s w" id="lGps"><i class="ti ti-current-location"></i> '+T("ใช้ตำแหน่งปัจจุบัน","Use my location")+'</button>',
     foot:`<button class="btn p w" id="lOk">${T("ใช้ตำแหน่งนี้","Use this location")}</button>`,mount(){const pk=picker($("lMap"),pos.lat?pos:null,p=>{pos=p;$("lXY").textContent=p.lat.toFixed(5)+", "+p.lng.toFixed(5)});
       $("lGps").onclick=e=>busy(e.currentTarget,async()=>{const p=await locate();if(p)pk.set(p)});$("lOk").onclick=()=>{SHOPED.lat=pos.lat;SHOPED.lng=pos.lng;back();toast(T("ย้ายตำแหน่งแล้ว กดบันทึกร้าน","Moved — tap Save shop"))}}})};
   $("sSave").onclick=e=>busy(e.currentTarget,async()=>{
@@ -4073,7 +4184,7 @@ function openPostForm(sym,cat){
   if(!U)return needLogin();
   cat=cat||catsOf(sym)[0]||"";
   const cf=contactForm({sym:sym??$("q").value.trim(),mobile:true});
-  sheet({title:T("ประกาศหาช่าง","Post a job"),body:`
+  sheet({title:T("ประกาศหาช่าง","Post a job"),url:"/post",body:`
     <p class="note"><i class="ti ti-speakerphone"></i>${T("ช่างรอบตัวจะเห็นหมุดของคุณบนแผนที่ แล้วเสนอราคาแข่งกัน คุณเลือกเองว่าจะใช้ใคร","Nearby mechanics see your pin and send competing quotes — you choose")}</p>
     <div class="fld"><span>${T("หมวดงาน","Category")}</span>${segs("pCat",[["",T("ไม่แน่ใจ","Not sure")],...["air","eng","tyre","ev","body"].map(k=>[k,CAT[k].th])],cat)}</div>`+cf.html,
     foot:`<button class="btn p w" id="pGo"><i class="ti ti-speakerphone"></i> ${T("ประกาศเลย","Post now")}</button>`,
@@ -4095,7 +4206,7 @@ async function openPostView(id,push){
   const live=offers.filter(o=>o.status!=="cancelled"),quoted=live.filter(o=>o.quote);
   const best=quoted.length>1?quoted.reduce((a,b)=>a.quote.total<=b.quote.total?a:b):null;
   const st={open:[T("กำลังหาช่าง","Finding mechanics"),"act"],matched:[T("ได้ช่างแล้ว","Matched"),"ok"],closed:[T("ปิดแล้ว","Closed"),"bad"],expired:[T("หมดเวลา","Expired"),"bad"]}[p.status]||[p.status,""];
-  sheet({push,group:id,postv:true,title:T("ประกาศของฉัน","My post"),body:`
+  sheet({push,group:id,postv:true,url:"/post/"+encodeURIComponent(id),title:T("ประกาศของฉัน","My post"),body:`
     <div class="kv"><p><span>${T("สถานะ","Status")}</span><b><span class="pill ${st[1]}">${st[0]}</span></b></p><p><span>${T("อาการ","Symptom")}</span><b class="nt">${esc(p.symptom)}</b></p><p><span>${T("รถ","Car")}</span><b class="nt">${esc(p.car)}</b></p></div>
     ${p.status==="open"?`<div class="thinking" style="padding:14px 0"><div class="orb" style="width:44px;height:44px"></div>${live.length?T(`ได้ข้อเสนอแล้ว ${live.length} ร้าน`,`${live.length} offer${live.length>1?"s":""} so far`):T("รอช่างรอบตัวเสนอราคา…","Waiting for nearby mechanics…")}</div>`:""}
     <div class="grp3">${live.map((j,i)=>`<button class="cmp ${best&&best.id===j.id&&p.status==="open"?"best":""}" data-j="${j.id}" style="animation-delay:${i*50}ms">${best&&best.id===j.id&&p.status==="open"?'<span class="tag">'+T("ถูกสุด","Best price")+'</span>':""}
@@ -4148,21 +4259,23 @@ async function pullCars(){
   }catch(e){}
 }
 (function init(){
-  const p=new URLSearchParams(location.search);
+  /* ?q= ?cat= ของหน้าแรก (กรองรายชื่อ) — ไม่ใช่ ?q= ของหน้าผลลัพธ์ /search */
+  const p=new URLSearchParams(Nav.clean(location.pathname)==="/"?location.search:"");
   if(p.get("q")){$("q").value=p.get("q");F.q=p.get("q");$("sbox").classList.add("has")}
   if(p.get("cat")&&CAT[p.get("cat")])F.cat=p.get("cat");
   paintStatic();greet();drawModes();drawGrid();render();
-  if(p.get("view")==="map"){let mt=0;(function w(){if(window.L||++mt>40)return setView("map",true);setTimeout(w,100)})()}
   /* รายชื่อโหลดทันทีโดยไม่รอล็อกอิน — คนรถเสียไม่ควรต้องรอ
      พอรู้ว่าใครเข้ามา ค่อยโหลดซ้ำ (ทีมงานจะเห็นช่างทีมงานเพิ่ม) */
   load();
+  /* เปิดตามที่อยู่ในแถบ (เช่น /tech/<ร้าน>/reviews) แล้วตั้งปุ่มย้อนให้ถอยทีละขั้น */
+  Nav.start({base:"/",legacy:legacyLink});
   let bt=0;
   (function boot(){
     if(typeof firebase==="undefined"||!firebase.initializeApp){if(++bt<150)setTimeout(boot,120);return}
     try{
       if(!firebase.apps||!firebase.apps.length)firebase.initializeApp(fbConfig);
       auth=firebase.auth();
-      auth.onAuthStateChanged(async u=>{U=u||null;try{navPaint(U)}catch(e){}greet();if(U)pullCars();await refreshMe();if(U)await load();else diag();runDeep()});
+      auth.onAuthStateChanged(async u=>{U=u||null;try{navPaint(U)}catch(e){}greet();if(U)pullCars();await refreshMe();if(U)await load();else diag();READY.auth.done()});
     }catch(e){}
   })();
   /* ลงทะเบียน service worker หลังหน้าขึ้นแล้ว — แอปที่ติดตั้งบนมือถือจะเปิดจากหน้าที่เก็บไว้ได้ทันทีตอนเน็ตช้า
@@ -4186,7 +4299,8 @@ async function pullCars(){
   $("avatarBtn").onclick=e=>{e.stopPropagation();dd.classList.toggle("show")};
   document.addEventListener("click",e=>{if(!e.target.closest("#dd"))dd.classList.remove("show")});
   $("signinBtn").onclick=()=>{try{needLogin()}catch(e){location.href="/login?next=/"}};
-  document.querySelectorAll('.navwrap [data-view="home"]').forEach(x=>x.addEventListener("click",ev=>{ev.preventDefault();location.href="/"}));
+  /* หน้าหลัก: ถ้ามีอะไรเปิดซ้อนอยู่ ถอยกลับหน้าแรก (ไม่ต้องโหลดใหม่) */
+  document.querySelectorAll('.navwrap [data-view="home"]').forEach(x=>x.addEventListener("click",ev=>{ev.preventDefault();if(window.Nav&&Nav.started&&Nav.top())Nav.home();else location.href="/"}));
   dd.querySelector('[data-view="profile"]').onclick=()=>location.href="/profile";
   $("ddJobs").onclick=()=>{dd.classList.remove("show");try{jobs()}catch(e){}};
   $("ddStudio").onclick=()=>{dd.classList.remove("show");openStudio()};

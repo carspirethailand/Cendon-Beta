@@ -2,7 +2,10 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8"/>
+<!-- ที่อยู่แบบลึก (/news/…) — ไฟล์ประกอบทุกตัวอ้างจากรากเว็บเสมอ -->
+<base href="/">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<script src="nav.js"></script>
 <title>Cendon — ผู้ช่วย AI ดูแลรถ</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css" media="print" onload="this.media='all'"/>
@@ -4206,7 +4209,7 @@ a.mtab{text-decoration:none}
 ::view-transition-group(mnav){animation-duration:.2s}
 </style>
 <!-- ห้ามวาดเฟรมแรกก่อนแถบล่างพร้อม — เดิมหน้าใหม่ขึ้นมาก่อนแล้วแถบตามมาทีหลัง (Chrome 124+, ที่อื่นข้าม) -->
-<link rel="expect" href="#mnav0" blocking="render">
+<link rel="expect" href="/news#mnav0" blocking="render">
 <link rel="stylesheet" href="stability.css">
 <script src="car-sync.js"></script>
 <script src="stability.js" defer></script>
@@ -4368,7 +4371,7 @@ a.mtab{text-decoration:none}
    แท็บเป็นลิงก์จริง กดได้ทันทีแม้สคริปต์หลักยังไม่พร้อม และเบราว์เซอร์เตรียมหน้าล่วงหน้าได้ */
 (function(){try{
   var D=document;if(!matchMedia("(max-width:760px)").matches||D.getElementById("mnav"))return;
-  var p=location.pathname.replace(/\.html$/,"").replace(/\/index$/,"/");
+  var p="/"+(location.pathname.replace(/\.html$/,"").replace(/\/index$/,"/").split("/")[1]||"");
   var cur={"/garage":"garage","/news":"magazine","/profile":"account"}[p]||"home";
   var en=false;try{en=JSON.parse(localStorage.getItem("spire_lang"))==="en"}catch(e){}
   var u=null;try{u=JSON.parse(localStorage.getItem("spire_cachedUser"))}catch(e){}
@@ -5423,7 +5426,8 @@ function mzTh(m){
 }
 function mzMono(src){return `<span class="mz-mono" style="background:${MZ_MONO[mzHash(src)%MZ_MONO.length]}">${esc([...String(src||"C")][0])}</span>`}
 function mzMeta(m){const src=m.source||"Cendon";return `<span class="mz-meta"><span class="mz-src">${mzMono(src)}${esc(src)}</span>${m.at?`<span class="mz-dot"></span><span>${esc(mzAgo(m.at))}</span>`:""}</span>`}
-const mzHref=m=>`/news?a=${encodeURIComponent(m.id)}`;
+/* ข่าวแต่ละชิ้นมีที่อยู่ของตัวเอง /news/<id> (แชร์/รีเฟรชแล้วเปิดข่าวเดิม) */
+const mzHref=m=>`/news/${encodeURIComponent(m.id)}`;
 function mzCard(m,i,d){return `<a class="mz-card mz-in" href="${mzHref(m)}" data-mz="${i}" style="animation-delay:${d||0}s">${mzTh(m)}<span class="mz-tx"><span class="mz-kind">${esc(m.tag)}</span><h3>${esc(m.title)}</h3>${mzMeta(m)}</span></a>`}
 function mzRow(m,i,d){return `<a class="mz-row mz-in" href="${mzHref(m)}" data-mz="${i}" style="animation-delay:${d||0}s"><span class="mz-tx"><span class="mz-kind">${esc(m.tag)}</span><h3>${esc(m.title)}</h3>${mzMeta(m)}</span>${mzTh(m)}</a>`}
 function mzMast(){
@@ -5492,10 +5496,10 @@ async function loadMag(force){
   if(!arr)magLoaded=false;          /* โหลดไม่สำเร็จ กดลองใหม่หรือกลับมาหน้านี้แล้วโหลดใหม่ได้ */
   renderMagArticles();
   try{renderMagWidget()}catch(e){}
-  /* ลิงก์ที่แชร์มา /news?a=<id> → เปิดข่าวนั้นเลย */
-  const want=new URLSearchParams(location.search).get("a");
-  if(want){const i=magItems.findIndex(m=>String(m.id)===want);if(i>=0)openMagModal(i,{push:false})}
+  if(window.mzReady)mzReady();
 }
+/* ที่อยู่ /news/<id> /news/section/<หมวด> เปิดได้เมื่อรายการข่าวมาแล้ว */
+const mzLoaded=new Promise(r=>{window.mzReady=r});
 function openMagModal(i,opt){
   const m=magItems[i],r=$("mzr"),b=$("mzrBody");if(!m||!r||!b)return;
   const paras=String(m.full||"").split(/\n+/).map(x=>x.trim()).filter(x=>x&&x!==m.body);
@@ -5516,33 +5520,38 @@ function openMagModal(i,opt){
   ($("mzrBarT")||{}).textContent=m.title;
   $("mzrBar").classList.remove("stuck");b.scrollTop=0;
   r.classList.add("on");r.setAttribute("aria-hidden","false");document.documentElement.style.overflow="hidden";
-  /* ปุ่มย้อนกลับของเครื่อง = ปิดข่าว (ไม่ใช่ออกจากหน้า) */
-  if(!(opt&&opt.push===false)&&mzCur<0){try{history.pushState({mz:m.id},"",mzHref(m))}catch(e){}}
-  else{try{history.replaceState(history.state&&history.state.mz?{mz:m.id}:history.state,"",mzHref(m))}catch(e){}}
+  /* ทุกข่าวที่เปิด (รวมข่าวที่เกี่ยวข้องที่กดต่อในหน้าอ่าน) = หนึ่งขั้นในประวัติ
+     ปุ่มย้อนของเครื่องกลับไปข่าวก่อนหน้า จนถึงหน้ารวมข่าว */
+  if(!(opt&&opt.nav===false)){
+    const l=Nav.push({url:mzHref(m),tag:"mz",close:()=>{mzHist.pop();const p=mzHist[mzHist.length-1];if(p)openMagModal(p.i,{nav:false});else closeMagModal(true)}});
+    if(l)mzHist.push({i,l});
+  }
   mzCur=i;
   setTimeout(()=>{const x=r.querySelector(".mzr-ic");if(x)x.focus({preventScroll:true})},60);
 }
-function closeMagModal(fromPop){
+let mzHist=[];
+function closeMagModal(fromNav){
   const r=$("mzr");if(!r||!r.classList.contains("on"))return;
   r.classList.remove("on");r.setAttribute("aria-hidden","true");document.documentElement.style.overflow="";mzCur=-1;
-  if(fromPop!==true&&history.state&&history.state.mz){history.back();return}
-  try{history.replaceState(null,"",location.pathname)}catch(e){}
+  /* ปุ่ม × ปิดหน้าอ่านทั้งหมด (ทุกข่าวที่ซ้อนกันอยู่) */
+  const f=mzHist[0];mzHist=[];if(fromNav!==true&&f)Nav.drop(f.l);
+}
+/* เปลี่ยนหมวดข่าว = หนึ่งขั้นในประวัติ (/news/section/<หมวด>) */
+function mzSetCat(c,nav){
+  const was=mzCat;if(c===was)return;mzCat=c;renderMagArticles();
+  const top=$("mz");if(top&&top.parentElement)top.parentElement.scrollTo({top:0,behavior:"smooth"});
+  if(nav!==false)Nav.push({url:c==="all"?"/news/section/all":"/news/section/"+encodeURIComponent(c),tag:"mzcat",close:()=>mzSetCat(was,false)});
 }
 /* คลิกทั้งหน้า: เปิดข่าว / เปลี่ยนหมวด / ลองใหม่ — คลิกกลาง/Ctrl ปล่อยให้เปิดแท็บใหม่ตามปกติ */
 document.addEventListener("click",e=>{
   const t=e.target.closest&&e.target.closest("[data-mz],[data-mzcat],[data-mz-retry],[data-mzr-close]");if(!t)return;
   if(t.hasAttribute("data-mzr-close")){e.preventDefault();return closeMagModal()}
   if(t.hasAttribute("data-mz-retry")){e.preventDefault();return loadMag(true)}
-  if(t.dataset.mzcat){mzCat=t.dataset.mzcat;renderMagArticles();const top=$("mz");if(top&&top.parentElement)top.parentElement.scrollTo({top:0,behavior:"smooth"});return}
+  if(t.dataset.mzcat){mzSetCat(t.dataset.mzcat);return}
   if(e.metaKey||e.ctrlKey||e.shiftKey||e.button===1)return;
   e.preventDefault();openMagModal(+t.dataset.mz);
 });
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeMagModal()});
-window.addEventListener("popstate",()=>{
-  const want=new URLSearchParams(location.search).get("a");
-  if(!want)return closeMagModal(true);
-  const i=magItems.findIndex(m=>String(m.id)===want);if(i>=0)openMagModal(i,{push:false});
-});
 (function(){
   const sc=$("mzrBody"),bar=$("mzrBar");if(sc&&bar)sc.addEventListener("scroll",()=>bar.classList.toggle("stuck",sc.scrollTop>40),{passive:true});
   const sh=$("mzrShare");if(sh)sh.addEventListener("click",async()=>{
@@ -11174,6 +11183,7 @@ setTimeout(build,400); setTimeout(()=>{build();rebuild()},1200); setTimeout(size
 (function(){
 "use strict";
 const D=document,$=id=>D.getElementById(id);
+let cfgL=null;   /* ชั้นของหน้าเลือกแอป (nav.js) */
 const EN=()=>(window.lang||"th")==="en";
 const T=(th,en)=>(window.spireT?window.spireT(th,en):((window.lang||"th")==="en"?en:th));
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -11253,7 +11263,9 @@ function mount(){
     </div>
     <div id="spMain"></div>
   </div>`;
-  ($("spCfgBtn")||{}).onclick=()=>{picked=null;render()};
+  ($("spCfgBtn")||{}).onclick=()=>{const was=picked;picked=null;render();
+    /* หน้าเลือกแอปมีที่อยู่ของตัวเอง (/spares/apps) — ปุ่มย้อนของเครื่องกลับไปผลลัพธ์เดิม */
+    if(window.Nav)cfgL=Nav.push({url:"/spares/apps",tag:"spcfg",close:()=>{cfgL=null;if(!picked)picked=was;render()}})};
   render();
 }
 
@@ -11331,6 +11343,7 @@ function wireCfg(){
     if(!sel.size||!car())return;
     picked=[...sel]; LSs("sparesApps",picked);
     items=null; lastErr=""; render();
+    if(cfgL){const l=cfgL;cfgL=null;Nav.drop(l)}
   };
 }
 
@@ -14873,6 +14886,7 @@ if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",start); else s
 })();
 </script>
 <script src="mobile-ui.js" defer></script>
+<script src="nav-pages.js" defer></script>
 <script>
 window.__SPIRE_PAGE__="magazine";
 window.__SPIRE_FILES__={"home": "/", "garage": "/garage", "magazine": "/news", "shop": "/spares", "profile": "/profile"};

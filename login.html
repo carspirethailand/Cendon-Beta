@@ -191,9 +191,9 @@ h1{margin:0 0 9px;font-size:clamp(28px,4vw,36px);font-weight:600;letter-spacing:
      หลังล็อกอิน (open redirect)                                     */
   function nextUrl(){
     var raw = new URLSearchParams(location.search).get("next") || "";
-    /* ชื่อหน้า (ห้ามมี / ซ้อน) + ?ค่าต่อท้ายได้ เช่น /?job=… ที่ลิงก์แจ้งเตือนส่งมา
+    /* เส้นทางในเว็บนี้ (หลายชั้นได้ เช่น /jobs/<id> /tech/<ร้าน>/reviews แต่ห้ามมี // ติดกัน) + ?ค่าต่อท้ายได้
        เดิมไม่รับ ?… เลย ล็อกอินเสร็จแล้วใบงานที่กดมาจาก LINE หายไป กลายเป็นหน้าแรกเปล่า ๆ */
-    var m = /^\/?([A-Za-z0-9._-]*?)(\.html)?(\?[A-Za-z0-9._~%=&+-]*)?$/.exec(raw);
+    var m = /^\/?((?:[A-Za-z0-9._~%-]+\/)*[A-Za-z0-9._~%-]*?)(\.html)?(\?[A-Za-z0-9._~%=&+-]*)?$/.exec(raw);
     if(!m) return "/";
     return "/" + m[1].replace(/^index$/,"") + (m[3] || "");
   }

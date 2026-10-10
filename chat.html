@@ -2,7 +2,10 @@
 <html lang="th" data-ctheme="midnight">
 <head>
 <meta charset="UTF-8"/>
+<!-- ที่อยู่แบบลึก (/chat/…) — ไฟล์ประกอบทุกตัวอ้างจากรากเว็บเสมอ -->
+<base href="/">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<script src="nav.js"></script>
 <meta name="theme-color" content="#05070F"/>
 <title>Cendon — AI Assistant</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
@@ -7368,8 +7371,10 @@ function renderSettings(){
   </div>`;
   /* msgs() อยู่ในสโคปของ Chat Flow ไม่ใช่ตัวแปรกลาง — เช็กจากเซสชันที่บันทึกไว้แทน */
   $("setBack").onclick=()=>{
+    /* ปุ่มกลับ = ถอยหนึ่งขั้นในประวัติ (กลับไปหน้าที่เปิดตั้งค่ามา) */
+    const t=window.Nav&&Nav.top();if(t&&t.tag==="phase"){Nav.back(t);return}
     let has=false;
-    try{ const sc=curSession&&curSession(); has=!!(sc&&sc.msgs&&sc.msgs.length) }catch(e){}
+    try{ has=!!(messages&&messages.filter(m=>!m.typing).length) }catch(e){}
     setPhase(has?"thread":"welcome");
   };
   v.querySelectorAll("[data-set]").forEach(b=>b.onclick=()=>{
@@ -8167,7 +8172,8 @@ function mount(){
       if(p!=="work"){const v=$("v-work"); if(v)v.classList.remove("on")} return r };
     f.__wsp=true; window.setPhase=f;
   }
-  $("wspBack").onclick=()=>{ try{window.setPhase(msgs().length?"thread":"welcome")}catch(e){} };
+  $("wspBack").onclick=()=>{ const t=window.Nav&&Nav.top();if(t&&t.tag==="phase"){Nav.back(t);return}
+    try{window.setPhase(msgs().length?"thread":"welcome")}catch(e){} };
   $("wspTabs").onclick=e=>{ const b=e.target.closest("[data-wtab]"); if(b){tab=b.dataset.wtab;render()} };
 }
 
@@ -11932,6 +11938,7 @@ setInterval(pull,15*60000);
 })();
 </script>
 <script src="mobile-ui.js" defer></script>
+<script src="nav-chat.js" defer></script>
 <script id="perfjs">
 /* ══════════════════════════════════════════════════════════════════
    ชั้นประสิทธิภาพ ฝั่งสคริปต์ — ทำสามอย่าง ไม่ยุ่งกับตรรกะของแอปเลย

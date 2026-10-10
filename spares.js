@@ -10,6 +10,7 @@
 (function(){
 "use strict";
 const D=document,$=id=>D.getElementById(id);
+let cfgL=null;   /* ชั้นของหน้าเลือกแอป (nav.js) */
 const EN=()=>(window.lang||"th")==="en";
 const T=(th,en)=>EN()?en:th;
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -89,7 +90,9 @@ function mount(){
     </div>
     <div id="spMain"></div>
   </div>`;
-  $("spCfgBtn").onclick=()=>{picked=null;render()};
+  $("spCfgBtn").onclick=()=>{const was=picked;picked=null;render();
+    /* หน้าเลือกแอปมีที่อยู่ของตัวเอง (/spares/apps) — ปุ่มย้อนของเครื่องกลับไปผลลัพธ์เดิม */
+    if(window.Nav)cfgL=Nav.push({url:"/spares/apps",tag:"spcfg",close:()=>{cfgL=null;if(!picked)picked=was;render()}})};
   render();
 }
 
@@ -167,6 +170,7 @@ function wireCfg(){
     if(!sel.size||!car())return;
     picked=[...sel]; LSs("sparesApps",picked);
     items=null; lastErr=""; render();
+    if(cfgL){const l=cfgL;cfgL=null;Nav.drop(l)}
   };
 }
 

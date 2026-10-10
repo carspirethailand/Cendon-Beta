@@ -4,7 +4,7 @@
    หน้าเว็บเป็นไฟล์เดียวที่เปลี่ยนบ่อย จึงถามเน็ตก่อนเสมอ (ไม่งั้นผู้ใช้จะติดอยู่กับเวอร์ชันเก่า)
    แต่รอแค่ครู่เดียว — เน็ตมือถือช้า/ค้าง ต้องไม่ทำให้แอปค้างหน้าจอโหลด
    ══════════════════════════════════════════════════════════════════ */
-const CACHE = 'cendon-v227-carspec-retry';
+const CACHE = 'cendon-v228-deep-links';
 /* หน้าเว็บที่โหลดสำเร็จล่าสุด แยกตู้ไว้และ "ไม่ลบตอนอัปเดตเวอร์ชัน"
    เดิมทุกครั้งที่ deploy ตู้เก่าถูกล้างหมด เปิดแอปครั้งแรกหลังอัปเดตจึงไม่มีของสำรอง
    ต้องรอเน็ตอย่างเดียว — เน็ตมือถือช้าเมื่อไรก็ค้างหน้าจอโหลดของมือถือ */
@@ -14,9 +14,21 @@ const WAIT = 1500;
 /* โหลดล่วงหน้าเฉพาะไฟล์เล็กที่หน้าแรกใช้จริง
    เดิมโหลดทุกหน้า (~7 MB) แย่งเน็ตตอนผู้ใช้กำลังเปิดแอป และในรายการมีไฟล์ที่ไม่มีอยู่จริง
    (cendon-one.css, about, help, privacy) ทำให้ addAll ล้มทั้งชุด = ไม่เคยเก็บอะไรได้เลย */
-const CORE = ['./car-sync.js', './carspec.js', './call-ui.css', './lux.css', './category-pages.js', './home-layout.css', './stability.css', './stability.js', './mobile-ui.js', './fluid.js', './crop.js', './cendon-admin.js', './call-sounds.js?v=1', './cendon-search.js', './cendon-line.js', './manifest.webmanifest', './icon192.png'];
+const CORE = ['./nav.js', './car-sync.js', './carspec.js', './call-ui.css', './lux.css', './category-pages.js', './home-layout.css', './stability.css', './stability.js', './mobile-ui.js', './fluid.js', './crop.js', './cendon-admin.js', './call-sounds.js?v=1', './cendon-search.js', './cendon-line.js', './manifest.webmanifest', './icon192.png'];
 const BUILD_HEADER = 'X-Cendon-Shell';
 const SHELL_ROUTES = new Set(['/', '/index', '/garage', '/news', '/spares', '/profile', '/chat', '/plan', '/handbook', '/tech', '/techs', '/terms', '/login']);
+/* ที่อยู่แบบลึก (แบบ YouTube) ใช้ไฟล์หน้าเดียวกับหน้าแม่ — ตรงกับ _redirects
+   /garage/<รถ>/spec → หน้า /garage · /tech/<ร้าน> /jobs/<งาน> ฯลฯ → หน้าแรก / */
+const DEEP_PAGES = new Set(['garage', 'news', 'spares', 'profile', 'chat']);
+const DEEP_HOME = new Set(['tech', 'service', 'category', 'search', 'map', 'jobs', 'studio', 'work', 'staff', 'join', 'trip', 'quotes', 'compare', 'urgent', 'diagnose', 'post']);
+function shellOf(pathname) {
+  const p = pathname.replace(/\.html$/, '').replace(/\/index$/, '/');
+  if (SHELL_ROUTES.has(p)) return p;
+  const seg = p.split('/')[1] || '';
+  if (DEEP_PAGES.has(seg)) return '/' + seg;
+  if (DEEP_HOME.has(seg)) return '/';
+  return null;
+}
 function stored(r) {
   const headers = new Headers(r.headers);
   headers.set(BUILD_HEADER, CACHE);
@@ -27,7 +39,7 @@ function stored(r) {
 
 /* ชื่อหน้าแบบสะอาดตามที่ Cloudflare Pages ใช้ (/index.html → /, /chat.html → /chat)
    ขอชื่อนี้ตรง ๆ ไม่ต้องเสียรอบ redirect 308 และใช้เป็นกุญแจในตู้ (ไม่รวม ?shop= ?trip= — ไฟล์เดียวกัน) */
-const pageKey = (u) => u.origin + u.pathname.replace(/\/index\.html$/, '/').replace(/\.html$/, '');
+const pageKey = (u) => u.origin + (shellOf(u.pathname) || u.pathname.replace(/\/index\.html$/, '/').replace(/\.html$/, ''));
 const wait = (ms) => new Promise((r) => setTimeout(() => r(null), ms));
 /* คำตอบที่ผ่าน redirect ส่งให้การเปิดหน้า (navigate) ไม่ได้ — เบราว์เซอร์จะขึ้น ERR_FAILED จึงห่อใหม่ */
 const plain = async (r) => (r && r.redirected
@@ -64,8 +76,7 @@ self.addEventListener('fetch', (e) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;   // API และ CDN ปล่อยผ่าน
   if (/^\/api(?:\/|$)/.test(url.pathname) || req.headers.has('Authorization')) return;
-  const route=url.pathname.replace(/\.html$/,'').replace(/\/index$/,'/');
-  const isPage = SHELL_ROUTES.has(route) && (req.mode === 'navigate' || /\.html$/.test(url.pathname) || !req.destination);
+  const isPage = shellOf(url.pathname) !== null && (req.mode === 'navigate' || /\.html$/.test(url.pathname) || !req.destination);
   if (isPage) return openPage(e, url);
   if (!/\.(?:js|css|png|webp|svg|ico|woff2?|webmanifest|json)$/.test(url.pathname)) return;
   e.respondWith(asset(e, req));

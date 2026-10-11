@@ -2,10 +2,11 @@
 (() => {
   const rail=document.getElementById('hRail');
   if(!rail)return;
+  const T=(th,en)=>typeof window!=='undefined'&&window.spireT?window.spireT(th,en):th;
   const mobile=matchMedia('(max-width:760px)');
   const reduced=matchMedia('(prefers-reduced-motion:reduce)');
   const dots=document.createElement('nav');
-  dots.className='lx-pages';dots.setAttribute('aria-label','หน้าหมวดบริการ');
+  dots.className='lx-pages';dots.setAttribute('aria-label',T('หน้าหมวดบริการ','Category pages'));
   rail.after(dots);
   let starts=[],frame=0;
   function targets(){
@@ -27,7 +28,7 @@
     if(dots.children.length!==starts.length){
       dots.replaceChildren(...starts.map((_,i)=>{
         const dot=document.createElement('button');dot.type='button';
-        dot.setAttribute('aria-label',`หมวดบริการ หน้า ${i+1} จาก ${starts.length}`);
+        dot.setAttribute('aria-label',T(`หมวดบริการ หน้า ${i+1} จาก ${starts.length}`,`Categories page ${i+1} of ${starts.length}`));
         dot.addEventListener('click',()=>rail.scrollTo({left:starts[i],behavior:reduced.matches?'auto':'smooth'}));
         return dot;
       }));

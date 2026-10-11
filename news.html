@@ -4373,7 +4373,7 @@ a.mtab{text-decoration:none}
   var D=document;if(!matchMedia("(max-width:760px)").matches||D.getElementById("mnav"))return;
   var p="/"+(location.pathname.replace(/\.html$/,"").replace(/\/index$/,"/").split("/")[1]||"");
   var cur={"/garage":"garage","/news":"magazine","/profile":"account"}[p]||"home";
-  var en=false;try{en=JSON.parse(localStorage.getItem("spire_lang"))==="en"}catch(e){}
+  var en=false;try{var lv=JSON.parse(localStorage.getItem("spire_lang"));en=lv?lv!=="th":!/^th/i.test(navigator.language||"")}catch(e){}
   var u=null;try{u=JSON.parse(localStorage.getItem("spire_cachedUser"))}catch(e){}
   var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})};
   var ph=u&&(u.photoURL||u.photo),nm=u&&String(u.displayName||u.name||u.email||"?").trim();

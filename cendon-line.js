@@ -13,7 +13,8 @@
 (function(){
 "use strict";
 const API=()=>window.TECH_API_URL||"https://spireonebackend.carspirethailand.workers.dev";
-const EN=()=>{try{return JSON.parse(localStorage.getItem("spire_lang"))==="en"}catch(e){return false}};
+/* ภาษาอื่นที่ไม่ใช่ไทย = อังกฤษ (หน้าที่มีตัวแปลภาษาบอกเองผ่าน spireLang) */
+const EN=()=>{try{if(window.spireLang)return window.spireLang()!=="th";const v=JSON.parse(localStorage.getItem("spire_lang"));return v?v!=="th":!/^th/i.test(navigator.language||"")}catch(e){return false}};
 const T=(th,en)=>EN()?en:th;
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 

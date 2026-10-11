@@ -40,15 +40,12 @@
   function wireForm(fn){const form=$('marketForm');form.addEventListener('submit',e=>{e.preventDefault();if(form.reportValidity())task(()=>fn(Object.fromEntries(new FormData(form)),form),form);});}
   function actions(map){$('pnB').querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>task(()=>map[b.dataset.action]?.()));}
   async function signIn(){
-    try{
-      if(!auth)throw new Error('กำลังเชื่อมต่อบัญชี กรุณาลองอีกครั้ง');
-      if(auth.currentUser){await authChanged();return inbox();}
-      await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
-      await authChanged();
-    }catch(e){error(e)}
+    if(auth?.currentUser){await authChanged();return inbox();}
+    const next=location.pathname+location.search+location.hash;
+    location.href="/login?next="+encodeURIComponent(next);
   }
   async function requireMe(){
-    if(!auth?.currentUser){panel('เข้าสู่ระบบเพื่อทำรายการ',`<div class="market-empty"><i class="ti ti-user-circle"></i><h3>เก็บทุกงานไว้ในบัญชีเดียว</h3><p>ใช้บัญชี Cendon เดิม เพื่อติดตามนัด พูดคุยกับช่าง และดูประวัติงานจากอุปกรณ์อื่น</p>${button('เข้าสู่ระบบด้วย Google','login',true)}${errorBox}</div>`);actions({login:signIn});return null;}
+    if(!auth?.currentUser){panel('เข้าสู่ระบบเพื่อทำรายการ',`<div class="market-empty"><i class="ti ti-user-circle"></i><h3>เก็บทุกงานไว้ในบัญชีเดียว</h3><p>ใช้บัญชี Cendon เดิม เพื่อติดตามนัด พูดคุยกับช่าง และดูประวัติงานจากอุปกรณ์อื่น</p>${button('เข้าสู่ระบบ Cendon','login',true)}${errorBox}</div>`);actions({login:signIn});return null;}
     me=await api('/api/tech/me'); CAN=me.admin;return me;
   }
   async function authChanged(){

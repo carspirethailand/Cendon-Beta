@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
+<link rel="stylesheet" href="/account.css">
+<script src="/cendon-tour.js" defer></script>
+<script src="/account-actions.js" defer></script>
+<script src="/account.js" defer></script>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <link rel="icon" type="image/png" href="./favicon.png">
@@ -2786,6 +2790,7 @@ function can(mod){
 }
 window.can=can;
 let auth=null,useFb=false,me=null;
+try{window.BACKEND_URL=BACKEND_URL;Object.defineProperty(window,"spireAuth",{configurable:true,get:function(){return auth}});}catch(e){}
 /* firebase โหลดแบบ defer แล้ว ตัวแปลภาษาจึงไม่ต้องหยุดรอเซิร์ฟเวอร์ของ Google กลางคัน
    ผลคือหน้าเว็บวาดและกดใช้งานได้ก่อน ระบบล็อกอินตามมาทีหลังไม่กี่ร้อยมิลลิวินาที
    ตอนบรรทัดนี้ทำงานยังไม่มีตัว firebase จึงวางตัวแทนไว้ก่อน
@@ -2831,31 +2836,16 @@ async function api(path,opts){
 
 /* ===== AUTH GATE ===== */
 function gateMsg(html,actions){$("gateMsg").innerHTML=html;$("gateActions").innerHTML=actions||""}
-async function signIn(){
-  if(location.protocol==="file:"){gateMsg("เปิดผ่านเว็บจริงเพื่อล็อกอิน (file:// ใช้ไม่ได้)");return}
-  const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:"select_account"});
-  try{await auth.signInWithPopup(p)}catch(e){
-    const code=(e&&e.code)||"unknown";
-    if(code==="auth/popup-closed-by-user"||code==="auth/cancelled-popup-request")return;
-    /* ของเดิมต่อ e.code ดิบ ๆ error ที่ไม่ใช่ของ Firebase ไม่มี .code
-       หน้าจอจึงขึ้นว่า "ล็อกอินไม่สำเร็จ: undefined" ซึ่งไม่ช่วยอะไรเลย
-       หน้านี้เป็นของทีมงาน จึงบอกสาเหตุกับทางแก้ไปตรง ๆ ได้ */
-    const M={
-      "auth/operation-not-allowed":"ยังไม่ได้เปิดวิธีเข้าระบบนี้ — เปิดที่ Firebase Console → Authentication → Sign-in method",
-      "auth/unauthorized-domain":"โดเมนนี้ยังไม่ได้รับอนุญาต — เพิ่มที่ Firebase Console → Authentication → Settings → Authorized domains",
-      "auth/popup-blocked":"เบราว์เซอร์บล็อกหน้าต่างล็อกอิน กรุณาอนุญาตป๊อปอัปแล้วลองใหม่",
-      "auth/network-request-failed":"เชื่อมต่อไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองใหม่",
-      "auth/user-disabled":"บัญชีนี้ถูกระงับอยู่"
-    };
-    gateMsg((M[code]||"เข้าสู่ระบบไม่สำเร็จ")+"  ("+code+")");
-  }
+function signIn(){
+  const next=location.pathname+location.search+location.hash;
+  location.href="/login?next="+encodeURIComponent(next);
 }
 function doLogout(){if(useFb)auth.signOut();location.href="/"}
 
 if(useFb)auth.onAuthStateChanged(async u=>{
   if(!u){
     gateMsg("เข้าสู่ระบบเพื่อเข้าที่ทำงาน",
-      `<button class="btn primary" style="width:100%;justify-content:center" onclick="signIn()"><i class="ti ti-brand-google"></i> เข้าสู่ระบบด้วย Google</button>`);
+      `<button class="btn primary" style="width:100%;justify-content:center" onclick="signIn()"><i class="ti ti-brand-google"></i> เข้าสู่ระบบ Cendon</button>`);
     return;
   }
   gateMsg('<i class="ti ti-loader-2"></i> กำลังยืนยันสิทธิ์...');

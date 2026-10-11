@@ -4,7 +4,7 @@
    หน้าเว็บเป็นไฟล์เดียวที่เปลี่ยนบ่อย จึงถามเน็ตก่อนเสมอ (ไม่งั้นผู้ใช้จะติดอยู่กับเวอร์ชันเก่า)
    แต่รอแค่ครู่เดียว — เน็ตมือถือช้า/ค้าง ต้องไม่ทำให้แอปค้างหน้าจอโหลด
    ══════════════════════════════════════════════════════════════════ */
-const CACHE = 'cendon-v230-home-en';
+const CACHE = 'cendon-v231-account-release';
 /* หน้าเว็บที่โหลดสำเร็จล่าสุด แยกตู้ไว้และ "ไม่ลบตอนอัปเดตเวอร์ชัน"
    เดิมทุกครั้งที่ deploy ตู้เก่าถูกล้างหมด เปิดแอปครั้งแรกหลังอัปเดตจึงไม่มีของสำรอง
    ต้องรอเน็ตอย่างเดียว — เน็ตมือถือช้าเมื่อไรก็ค้างหน้าจอโหลดของมือถือ */
@@ -14,7 +14,7 @@ const WAIT = 1500;
 /* โหลดล่วงหน้าเฉพาะไฟล์เล็กที่หน้าแรกใช้จริง
    เดิมโหลดทุกหน้า (~7 MB) แย่งเน็ตตอนผู้ใช้กำลังเปิดแอป และในรายการมีไฟล์ที่ไม่มีอยู่จริง
    (cendon-one.css, about, help, privacy) ทำให้ addAll ล้มทั้งชุด = ไม่เคยเก็บอะไรได้เลย */
-const CORE = ['./nav.js', './car-sync.js', './carspec.js', './call-ui.css', './lux.css', './category-pages.js', './home-layout.css', './stability.css', './stability.js', './mobile-ui.js', './fluid.js', './crop.js', './cendon-admin.js', './call-sounds.js?v=1', './cendon-search.js', './cendon-line.js', './manifest.webmanifest', './icon192.png'];
+const CORE = ['./account.css', './account.js', './account-actions.js', './auth-bootstrap.js', './cendon-tour.js', './nav.js', './car-sync.js', './carspec.js', './call-ui.css', './lux.css', './category-pages.js', './home-layout.css', './stability.css', './stability.js', './mobile-ui.js', './fluid.js', './crop.js', './cendon-admin.js', './call-sounds.js?v=1', './cendon-search.js', './cendon-line.js', './manifest.webmanifest', './icon192.png'];
 const BUILD_HEADER = 'X-Cendon-Shell';
 const SHELL_ROUTES = new Set(['/', '/index', '/garage', '/news', '/spares', '/profile', '/chat', '/plan', '/handbook', '/tech', '/techs', '/terms', '/login']);
 /* ที่อยู่แบบลึก (แบบ YouTube) ใช้ไฟล์หน้าเดียวกับหน้าแม่ — ตรงกับ _redirects

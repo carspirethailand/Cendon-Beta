@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {DatabaseSync} from 'node:sqlite';
-import {handleOnboarding,ONBOARDING_SQL,onboardingName} from '../../SpireONE-backend/src/onboarding.js';
+import {handleOnboarding,ONBOARDING_SQL,ONBOARDING_VERSIONS,onboardingName} from '../../SpireONE-backend/src/onboarding.js';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const PORT=4176,ORIGIN=`http://127.0.0.1:${PORT}`;
@@ -27,6 +27,12 @@ const DB={
 await DB.batch(ONBOARDING_SQL.map(sql=>DB.prepare(sql)));
 sqlite.prepare('INSERT INTO users VALUES (?,?,?,?,?)').run(UID,'ผู้ทดสอบ','preview@example.test','user',Date.now()+1000);
 const env={DB,ONBOARDING_PRIVACY_URL:'https://preview.example.test/privacy'};
+const slowCheck=process.argv.includes('--slow-check')?1200:0;
+if(process.argv.includes('--completed')){
+  // Disposable RAM-only fixture, not a real agreement or Firebase account.
+  await handleOnboarding(new Request(ORIGIN+'/api/onboarding',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({consent:true,termsVersion:ONBOARDING_VERSIONS.terms,privacyVersion:ONBOARDING_VERSIONS.privacy,name:'Cendon Test',birthDate:'2000-05-15',lang:'th',distance:'km',currency:'THB'})}),env,{payload:{sub:UID}});
+  await handleOnboarding(new Request(ORIGIN+'/api/onboarding/tutorial',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'skipped'})}),env,{payload:{sub:UID}});
+}
 let challenge=null;
 
 const authFixture=`(function(W,D){
@@ -88,6 +94,7 @@ async function api(req,res,url){
   }
   if(p.startsWith('/api/onboarding')){
     if(!authorized(req))return send(res,401,{error:'preview_authentication_required'});
+    if(slowCheck&&req.method==='GET'&&p==='/api/onboarding')await new Promise(resolve=>setTimeout(resolve,slowCheck));
     const raw=['GET','HEAD'].includes(req.method)?undefined:await body(req);
     const response=await handleOnboarding(new Request(ORIGIN+url.pathname+url.search,{method:req.method,headers:{'Content-Type':'application/json'},body:raw}),env,{payload:{sub:UID}});
     if(!response)return send(res,404,{error:'preview_route_not_found'});

@@ -73,7 +73,7 @@
     if(!modalOpen){modalOpen=true;previousFocus=D.activeElement}
     for(const node of [...(D.body.children||[])])if(node!==el&&!locked.has(node)){locked.set(node,node.inert);node.inert=true}
     el.className='ac-screen';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-labelledby','acTitle');el.hidden=false;return el}
-  function close(){const el=D.getElementById('accountFlow');if(el)el.hidden=true;
+  function close(){let el=D.getElementById('accountFlow');if(!el){el=D.createElement('main');el.id='accountFlow';el.hidden=true;D.body.appendChild(el)}else el.hidden=true;
     for(const [node,inert] of locked)node.inert=inert;locked.clear();modalOpen=false;
     if(previousFocus&&previousFocus.isConnected&&typeof previousFocus.focus==='function')previousFocus.focus({preventScroll:true});previousFocus=null;
     D.documentElement.dataset.gate='0';
@@ -214,14 +214,25 @@
     }
     if(LOGIN){location.replace(next);return}tutorial().catch(()=>{})
   }
-  async function load(u){if(W.CendonTour)CendonTour.stop();const serial=++S.serial;S.uid=u.uid;S.status=null;S.phase='loading';S.error='';S.busy=false;
-    const old=read('spire_setup',{});if(!old||old.uid!==u.uid)try{localStorage.removeItem('spire_setup')}catch(e){}
-    S.draft={};render();
+  async function load(u){if(W.CendonTour)CendonTour.stop();
+    const confirmed=S.uid===u.uid&&canonical(S.status,u.uid)?S.status:null;
+    const old=read('spire_setup',{}),cache=read('spire___account_'+u.uid+'_status',null);
+    // This is presentation only: Firebase must restore the same real UID, and
+    // both cached records must belong to it. Never publish cached completion as
+    // fresh server authority merely to avoid a navigation flash.
+    const quiet=!LOGIN&&(confirmed||canonical(cache,u.uid)&&old?.uid===u.uid&&old.v===3&&['basic','advance','enthusiast'].includes(old.level));
+    const serial=++S.serial;S.uid=u.uid;S.status=confirmed;S.phase='loading';S.error='';S.busy=false;
+    if(!old||old.uid!==u.uid)try{localStorage.removeItem('spire_setup')}catch(e){}
+    S.draft={};
+    if(quiet){close();D.documentElement.dataset.level=['basic','advance','enthusiast'].includes(old?.level)?old.level:'enthusiast'}else render();
     try{
-      await request('/api/login',{name:u.displayName||'',photo:u.photoURL||''},'POST',u.uid);
+      // Ordinary application pages already run their own authenticated login
+      // hook. A known completed account needs only the current status check.
+      if(!quiet)await request('/api/login',{name:u.displayName||'',photo:u.photoURL||''},'POST',u.uid);
       const data=await request('/api/onboarding',undefined,'GET',u.uid);if(serial!==S.serial||!uidIs(u.uid))return;
       S.status=data;
       if(canonical(data,u.uid)){publish(data);enter();return}
+      write(scoped('status'),null);
       if(data.status!=='required'||data.policy?.enabled!==true)throw new Error('onboarding_policy_unavailable');
       const cached=read(scoped('draft'),{});
       S.draft={lang:'th',distance:'km',currency:'THB',name:u.displayName||'',...cached};
@@ -230,6 +241,7 @@
     }catch(e){if(serial!==S.serial||!uidIs(u.uid))return;
       const cache=read(scoped('status'),null);
       if(canonical(cache,u.uid)&&!e.status){publish(cache);enter();return}
+      S.status=null;if(e.status===401||e.status===403)write(scoped('status'),null);
       S.phase='retry';S.error=errorText(e);render();
     }
   }
@@ -289,7 +301,9 @@
     const existing=auth();if(existing&&boundAuth.has(existing))return;
     if(LOGIN&&!S.config){request('/api/auth/config',undefined,'GET').then(data=>{S.config=data;if(S.phase==='auth'&&!S.busy)render()}).catch(()=>{S.config={emailOtpReady:false};if(S.phase==='auth'&&!S.busy)render()})}
     if(W.spireRedirectError)S.error=errorText({message:W.spireRedirectError});
-    if(LOGIN||PRIVATE.test(location.pathname))render();
+    // Do not paint the onboarding/loading sheet while a private page restores
+    // identity. The existing page gate remains until the actual auth callback.
+    if(LOGIN)render();
     const bind=()=>{const a=auth();if(a&&typeof a.onAuthStateChanged==='function'){
       if(boundAuth.has(a))return;boundAuth.add(a);
       let initial=false;const initialTimer=setTimeout(()=>{if(!initial&&(LOGIN||PRIVATE.test(location.pathname))){S.phase='retry';S.error=T('ระบบล็อกอินยังไม่ตอบ กรุณาลองเชื่อมต่ออีกครั้ง','Sign-in has not responded. Please reconnect.');render()}},12000);

@@ -18,9 +18,9 @@ const complete = (uid = 'user-A', overrides = {}) => ({ status: 'completed', com
  * the APIs this module uses and parses its real rendered inputs/buttons. Auth,
  * transport, storage and timers are test-only; no real account or email is used.
  */
-function fixture({ uid = null, pathname = '/garage', search = '', store = new Map(), sessionStore = new Map(), server = required(), transport, token, proxyAuth = false } = {}) {
+function fixture({ uid = null, pathname = '/garage', search = '', store = new Map(), sessionStore = new Map(), server = required(), transport, token, proxyAuth = false, restoreAfterMs = 0 } = {}) {
   let document, callback, clock = Date.UTC(2026, 9, 10, 12), timerId = 0;
-  const events = new Map(), timers = new Map(), calls = [], oauth = [], customTokens = [], marks = [], navigations = [], tours = [];
+  const events = new Map(), timers = new Map(), calls = [], oauth = [], customTokens = [], marks = [], navigations = [], tours = [], paints=[];
   const decode = text => String(text).replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
   const attributes = text => {
     const out = {};
@@ -64,6 +64,7 @@ function fixture({ uid = null, pathname = '/garage', search = '', store = new Ma
     querySelector(selector) { return this.querySelectorAll(selector)[0] || null; }
     get innerHTML() { return this._html || ''; }
     set innerHTML(html) {
+      if(this.id==='accountFlow'&&!this.hidden)paints.push(html);
       this._html = html; this.children = [];
       if (!html.includes('<form')) return;
       const form = this.appendChild(new Element('form'));
@@ -89,7 +90,7 @@ function fixture({ uid = null, pathname = '/garage', search = '', store = new Ma
   const storage = { getItem: key => store.get(key) ?? null, setItem: (key, value) => store.set(key, String(value)), removeItem: key => store.delete(key) };
   const sessionStorage = { getItem: key => sessionStore.get(key) ?? null, setItem: (key, value) => sessionStore.set(key, String(value)), removeItem: key => sessionStore.delete(key) };
   const user = id => id ? { uid: id, displayName: 'Fixture ' + id, photoURL: '', getIdToken: () => token?.[id]?.promise || Promise.resolve('token-' + id) } : null;
-  const auth = { currentUser: user(uid), onAuthStateChanged(fn) { callback = fn; fn(this.currentUser); return () => {}; }, getRedirectResult: async () => null,
+  const auth = { currentUser: user(uid), onAuthStateChanged(fn) { callback = fn; if(restoreAfterMs)timers.set(++timerId,{fn:()=>fn(this.currentUser),at:clock+restoreAfterMs,ms:restoreAfterMs});else fn(this.currentUser); return () => {}; }, getRedirectResult: async () => null,
     async signOut() { this.currentUser = null; callback(null); },
   };
   if (!proxyAuth) Object.assign(auth, {
@@ -141,7 +142,7 @@ function fixture({ uid = null, pathname = '/garage', search = '', store = new Ma
     for (const [key, value] of Object.entries(values)) { const el = root()?.querySelector(`[name="${key}"]`); assert.ok(el, 'Rendered field exists: ' + key); if (el.type === 'checkbox') el.checked = !!value; else el.value = String(value); emit(name, el); }
   };
   const submit = () => { assert.ok(root()?.querySelector('form')); emit('submit', root().querySelector('form')); };
-  return { window, api: window.CendonAccount, auth, sandbox, document, store, sessionStore, calls, marks, navigations, tours, oauth, customTokens, root, click, fill, submit,
+  return { window, api: window.CendonAccount, auth, sandbox, document, store, sessionStore, calls, marks, navigations, tours, oauth, customTokens, paints, root, click, fill, submit,
     value: key => JSON.parse(store.get(key) || 'null'),
     switchAccount(id) { auth.currentUser = user(id); callback(auth.currentUser); },
     advance(ms) { clock += ms; for (const [id, timer] of [...timers]) if (timer.at <= clock) { timers.delete(id); timer.fn(); } },
@@ -470,4 +471,62 @@ test('account flow: a stalled provider popup cannot keep every login button disa
   f.click('data-provider=google');await settle();assert.equal(f.root().querySelector('[data-provider="google"]').disabled,true);
   f.advance(90000);await settle();assert.equal(f.root().querySelector('[data-provider="google"]').disabled,false);assert.match(f.root().innerHTML,/หน้าต่างล็อกอินยังไม่ตอบ/);
   pending.resolve();await settle();assert.equal(f.api.ready(),false);assert.equal(f.calls.some(c=>c.path==='/api/onboarding'&&c.method==='POST'),false);
+});
+
+function completedStore(uid='user-A'){
+  const status=clone(complete(uid));delete status.profile.birthDate;
+  return new Map([['spire___account_'+uid+'_status',JSON.stringify(status)],['spire_setup',JSON.stringify({...status.profile,v:3,uid,accountComplete:true,completed:true})]]);
+}
+
+for(const pathname of ['/','/garage','/chat','/news','/spares','/profile','/garage/car-A/spec','/chat/session-A']){
+  test('completed-account navigation never paints the setup loading sheet: '+pathname,async()=>{
+    const pending=deferred(),f=fixture({uid:'user-A',pathname,store:completedStore(),transport:c=>c.path==='/api/onboarding'?pending.promise:undefined});await settle();
+    assert.equal(f.root().hidden,true);assert.equal(f.document.documentElement.dataset.gate,'0');assert.deepEqual(f.paints,[]);
+    assert.equal(f.api.completed(),false,'the cache is presentation only, not fresh authority');assert.equal(f.api.ready(),false);
+    assert.equal(f.calls.filter(c=>c.path==='/api/login').length,0,'avoid the extra sequential login round-trip');
+    assert.equal(f.calls.filter(c=>c.path==='/api/onboarding'&&c.method==='GET').length,1);
+    f.advance(1200);await settle();assert.deepEqual(f.paints,[],'even a slow status response must not introduce a splash');
+    pending.resolve(response(complete()));await settle();assert.equal(f.api.completed(),true);assert.equal(f.root().hidden,true);assert.deepEqual(f.paints,[]);
+  });
+}
+
+test('identity restoration keeps the initial gate and never flashes paper for the matching completed account',async()=>{
+  const f=fixture({uid:'user-A',store:completedStore(),server:complete(),restoreAfterMs:350});f.document.documentElement.dataset.gate='1';
+  assert.deepEqual(f.paints,[]);assert.equal(f.api.completed(),false);assert.equal(f.document.documentElement.dataset.gate,'1');
+  f.advance(350);await settle();assert.equal(f.root().hidden,true);assert.equal(f.document.documentElement.dataset.gate,'0');assert.deepEqual(f.paints,[]);
+});
+
+test('quiet navigation also accepts the server-sanitized projection without the old accountComplete alias',async()=>{
+  const store=completedStore(),projection=JSON.parse(store.get('spire_setup'));delete projection.accountComplete;projection.onboardingComplete=true;store.set('spire_setup',JSON.stringify(projection));
+  const pending=deferred(),f=fixture({uid:'user-A',store,transport:c=>c.path==='/api/onboarding'?pending.promise:undefined});await settle();
+  assert.equal(f.root().hidden,true);assert.deepEqual(f.paints,[]);assert.equal(f.api.completed(),false);
+  pending.resolve(response(complete()));await settle();assert.equal(f.api.completed(),true);assert.deepEqual(f.paints,[]);
+});
+
+test('a foreign cached UID or only an old local setup flag cannot suppress required verification',async()=>{
+  for(const store of [completedStore('user-B'),new Map([['spire_setup',JSON.stringify({uid:'user-A',v:3,level:'enthusiast',accountComplete:true})]]),new Map([['spire___account_user-A_status',JSON.stringify(complete('user-B'))],['spire_setup',JSON.stringify({uid:'user-A',v:3,level:'enthusiast',accountComplete:true})]])]){
+    const pending=deferred(),f=fixture({uid:'user-A',store,transport:c=>c.path==='/api/onboarding'?pending.promise:undefined});await settle();
+    assert.equal(f.root().hidden,false);assert.equal(f.api.completed(),false);assert.equal(f.document.documentElement.dataset.gate,'1');
+    pending.resolve(response(required()));await settle();assert.ok(f.root().querySelector('[name="terms"]'));assert.equal(f.api.ready(),false);
+  }
+});
+
+test('server-required setup overrides and invalidates a quiet completed-cache presentation',async()=>{
+  const pending=deferred(),f=fixture({uid:'user-A',store:completedStore(),transport:c=>c.path==='/api/onboarding'?pending.promise:undefined});await settle();assert.equal(f.root().hidden,true);
+  pending.resolve(response(required()));await settle();assert.equal(f.root().hidden,false);assert.ok(f.root().querySelector('[name="terms"]'));assert.equal(f.api.completed(),false);
+  assert.equal(f.value('spire___account_user-A_status'),null);assert.equal(f.document.documentElement.dataset.gate,'1');
+});
+
+test('a denied background status check revokes the quiet gate and never turns cache into authority',async()=>{
+  for(const status of [401,403]){
+    const pending=deferred(),f=fixture({uid:'user-A',store:completedStore(),transport:c=>c.path==='/api/onboarding'?pending.promise:undefined});await settle();assert.equal(f.root().hidden,true);
+    pending.resolve(response({error:'Account suspended'},status));await settle();assert.equal(f.api.ready(),false);assert.equal(f.root().hidden,false);assert.ok(f.root().querySelector('[data-retry]'));
+    assert.equal(f.value('spire___account_user-A_status'),null);assert.equal(f.document.documentElement.dataset.gate,'1');
+  }
+});
+
+test('switching identity during quiet verification immediately blocks the old account and ignores its late result',async()=>{
+  const pending=deferred(),f=fixture({uid:'user-A',store:completedStore(),transport:c=>c.path==='/api/onboarding'&&c.uid==='user-A'?pending.promise:undefined});await settle();assert.equal(f.root().hidden,true);
+  f.switchAccount('user-B');await settle();assert.equal(f.root().hidden,false);assert.ok(f.root().querySelector('[name="terms"]'));
+  pending.resolve(response(complete('user-A')));await settle();assert.equal(f.api.completed(),false);assert.equal(f.window.spireSetupRead().uid,undefined);assert.equal(f.document.documentElement.dataset.gate,'1');
 });

@@ -29,6 +29,8 @@ Existing Firebase email accounts retain their UID after verified OTP, preserving
 
 ## First use and migration
 
+Completed-account navigation uses a quiet presentation restore only after Firebase returns the same UID and both account-scoped completion cache and the matching projection are present. It does not mark cached state as fresh server authority. The authenticated status check continues in the background, without an extra sequential login write in the shared module. A required setup, denied status, changed UID or server failure still restores the blocking gate; denied or invalidated completion caches are removed. The dedicated login/first-use screen keeps its normal verification flow.
+
 At this release the owner confirmed there is no outbound email service yet. The login screen retains exactly Google, Apple and Email, but marks Email unavailable instead of claiming delivery. Apple uses the Firebase provider and still requires its own provider configuration. Do not claim either provider was verified using a real account merely because the mock tests passed. Birthday fields are also excluded from persistent draft storage; refresh requires re-entering the birthday, while completed accounts keep their authoritative server profile.
 
 New first-use setup is: agreement acknowledgement, nickname, Gregorian birthday, language, distance unit, currency, completion, then an optional spotlight tour. The current distance UI uses km / mi, preserving the app's metric / imperial behavior; the user's `m` wording still needs confirmation before changing distance semantics.

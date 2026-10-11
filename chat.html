@@ -6445,9 +6445,6 @@ function setBody(){
         t("รหัสผ่านอยู่กับ Google เราไม่เคยเห็น","Your password stays with Google — we never see it"))}
       ${setRow("ti-car",t("รถในการาจ","Cars in your garage"),"",
         `<b class="set-num">${(window.garage?window.garage():[]).length||0}</b>`)}
-      ${setRow("ti-download",t("ดาวน์โหลดข้อมูลของฉัน","Download my data"),
-        t("บทสนทนาและข้อมูลรถทั้งหมดเป็นไฟล์ JSON","Every conversation and car record as JSON"),
-        `<button class="set-btn" data-do="export">${t("ดาวน์โหลด","Download")}</button>`)}
       <section data-line-card style="display:none;margin-top:26px;border-top:1px solid var(--c-line2);padding-top:22px">
         <h2>${t("แจ้งเตือนทาง LINE","LINE notifications")}</h2><div data-line-connect></div></section>
       <h2>${t("บัญชีและความปลอดภัย","Account and safety")}</h2>
@@ -6549,7 +6546,6 @@ function wireSettings(){
     else if(a==="clear"&&window.clearCurrent){
       if(confirm(t("ล้างบทสนทนานี้ทั้งหมด?","Clear this whole conversation?")))
         {window.clearCurrent();setPhase("welcome")}}
-    else if(a==="export")exportMyData();
     else if(a==="notify"){
       /* ของเดิมเปลี่ยนแค่ตัวหนังสือแล้วเงียบ กดแล้วไม่แน่ใจว่าระบบรับรู้หรือเปล่า
          เพิ่มเครื่องหมายถูกกับจังหวะเด้งสั้น ๆ ให้รู้ทันทีว่าบันทึกความสนใจแล้ว */
@@ -6609,17 +6605,6 @@ function wireSettings(){
           "Couldn't send right now — saved, and we'll deliver it automatically when you're back online");
   };
 }
-function exportMyData(){
-  const out={exportedAt:new Date().toISOString(),user:currentUser||null,
-    cars:(window.garage?window.garage():[]),sessions:[]};
-  try{ out.sessions=JSON.parse(localStorage.getItem("spire_chatSessions")||"[]") }catch(e){}
-  const blob=new Blob([JSON.stringify(out,null,2)],{type:"application/json"});
-  const a=D.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="cendon-data-"+new Date().toISOString().slice(0,10)+".json";
-  a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),4000);
-}
-
 /* ── เลือกรถ: เมนูลอยใต้ปุ่มชื่อรถบนแถบบน (คอมและมือถือใช้ตัวเดียวกัน) ── */
 function carMenu(anchor){
   let d=$("carPop");

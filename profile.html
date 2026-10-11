@@ -5538,9 +5538,6 @@ function body(){
         t("รหัสผ่านอยู่กับผู้ให้บริการ เราไม่เคยเห็น","Your password stays with the provider — we never see it"))}
       ${row("ti-car",t("รถในการาจ","Cars in your garage"),"",
         `<b class="set-num">${cars().length}</b>`)}
-      ${row("ti-download",t("ดาวน์โหลดข้อมูลของฉัน","Download my data"),
-        t("บทสนทนาและข้อมูลรถทั้งหมดเป็นไฟล์ JSON","Every conversation and car record as JSON"),
-        `<button class="set-btn" data-do="export">${t("ดาวน์โหลด","Download")}</button>`)}
       ${u.uid||u.email?"":row("ti-login",t("ยังไม่ได้เข้าสู่ระบบ","Not signed in"),
         t("เข้าสู่ระบบเพื่อเก็บรถ ใบงาน และรับแจ้งเตือน","Sign in to keep your cars, jobs and alerts"),
         `<a class="set-btn primary" style="margin-top:0" href="./login?next=${encodeURIComponent(location.pathname+location.search)}">${t("เข้าสู่ระบบ","Sign in")}</a>`)}
@@ -5670,8 +5667,7 @@ function wire(){
   try{ window.spireWireDanger&&window.spireWireDanger(v) }catch(e){}
   v.querySelectorAll("[data-do]").forEach(b=>b.onclick=()=>{
     const a=b.dataset.do;
-    if(a==="export")exportData();
-    else if(a==="notify"){ b.disabled=true; b.textContent=t("จะแจ้งให้ทราบ","We'll let you know") }
+    if(a==="notify"){ b.disabled=true; b.textContent=t("จะแจ้งให้ทราบ","We'll let you know") }
   });
   let kind="idea";
   v.querySelectorAll("[data-fbk]").forEach(b=>b.onclick=()=>{
@@ -5694,16 +5690,6 @@ function wire(){
     msg.textContent=t("บันทึกไว้ในเครื่องแล้ว — ระบบส่งขึ้นเซิร์ฟเวอร์ยังไม่เปิด เราจะส่งให้อัตโนมัติเมื่อเปิดใช้",
       "Saved on this device — server delivery isn't live yet; it'll be sent automatically once it is");
   };
-}
-
-function exportData(){
-  const out={exportedAt:new Date().toISOString(),user:user(),cars:cars(),sessions:[]};
-  try{ out.sessions=JSON.parse(localStorage.getItem("spire_chatSessions")||"[]") }catch(e){}
-  const blob=new Blob([JSON.stringify(out,null,2)],{type:"application/json"});
-  const a=D.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="cendon-data-"+new Date().toISOString().slice(0,10)+".json";
-  a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),4000);
 }
 
 function open(which){

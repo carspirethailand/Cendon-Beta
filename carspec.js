@@ -101,7 +101,7 @@ const lab=(m,k)=>m[k]?T(m[k][0],m[k][1]):k;
 /* Saved exact variant or exact unique trim; never silently select the first. */
 function variantIdx(c,s){
   const vs=(s.data&&s.data.variants)||[];if(!vs.length)return -1;
-  if(vs.length===1)return 0;
+  if(vs.length===1&&s.verified)return 0;
   const saved=LS.get("specv_"+c.id);if(saved?.key===s.key){const i=vs.findIndex(v=>variantKey(v)===saved.variant);if(i>=0)return i}
   const hint=String(c.info?.trim||'').trim().toLowerCase();
   const matches=hint?vs.map((v,i)=>String(v.name||'').trim().toLowerCase()===hint?i:-1).filter(i=>i>=0):[];
@@ -122,9 +122,9 @@ function specHTML(c,s){
   const ev=v.fuel==="ev"||d.body==="ev";
   const l100=v.l_per_100km&&v.l_per_100km.v;
   return head(s)+
-  (vs.length>1?`<div class="cs-vars" role="radiogroup" aria-label="${T("รุ่นย่อย","Variant")}">${vs.map((x,i)=>
+  (vs.length&&(!s.verified||vs.length>1)?`<div class="cs-vars" role="radiogroup" aria-label="${T("รุ่นย่อย","Variant")}">${vs.map((x,i)=>
     `<button type="button" class="cs-var${i===vi?" on":""}" data-cs-var="${i}" role="radio" aria-checked="${i===vi}">${esc(x.name||(x.engine&&x.engine.v)||T("รุ่นย่อย ","Variant ")+(i+1))}</button>`).join("")}</div>
-    <p class="cs-hint">${T(vi<0?"เลือกรุ่นย่อยก่อนดูเครื่องยนต์ — เราจะไม่เดาว่ารถของคุณเป็นตัวแรก":"รุ่นย่อยที่คุณเลือก สเปกต่างกันตามเครื่องยนต์และระบบขับเคลื่อน",vi<0?"Choose your variant first. We will not assume your car is the first one.":"Your selected variant — specs differ by engine and drivetrain")}</p>`:"")+
+    <p class="cs-hint">${T(vi<0?"เลือกรุ่นย่อยหรือเครื่องยนต์ที่ตรงกับรถก่อน — อาจยังมีรุ่นย่อยอื่นที่ค้นไม่พบ":"รุ่นย่อยที่คุณเลือก สเปกต่างกันตามเครื่องยนต์และระบบขับเคลื่อน",vi<0?"Choose your variant first. Other variants may not have been found yet.":"Your selected variant — specs differ by engine and drivetrain")}</p>`:"")+
   `<div class="cl-grp"><h4>${T("เครื่องยนต์และการขับเคลื่อน","Powertrain")}</h4>
     ${row(T("เครื่องยนต์","Engine"),show(v.engine))}
     ${row(T("เชื้อเพลิง","Fuel"),v.fuel?esc(lab(FUEL,v.fuel))+refs(v.fuelSourceIds,s.sources):null)}

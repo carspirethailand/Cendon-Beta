@@ -55,6 +55,10 @@ test('car spec UI: disagreement and no chosen variant cannot become a numeric fu
   const f=fixture();await f.api.ensure(car);assert.equal(f.api.economy(car),null);
   const el=await f.pane(),button={dataset:{csVar:'1'}};await f.events.click({target:{closest:s=>s==='.cs-wrap'?el:s==='[data-cs-var]'?button:null}});await settle();assert.equal(f.api.economy(car),null);
 });
+test('car spec UI: one AI-discovered engine is not proof that every car in that year uses it',async()=>{
+  const reply=complete();reply.data.variants=reply.data.variants.slice(0,1);const f=fixture({reply}),el=await f.pane();
+  assert.match(el.innerHTML,/Other variants may not have been found/);assert.doesNotMatch(el.innerHTML,/Test engine Alpha/);assert.equal(f.api.economy(car),null);
+});
 test('car spec UI: parts do not use body-type battery, oil or wiper estimates',async()=>{
   const f=fixture(),el=await f.pane(car,'parts');assert.match(el.innerHTML,/No verified battery, wiper or engine-oil specification/);assert.doesNotMatch(el.innerHTML,/NS60|45Ah|3\.7|Iridium recommended/);
 });

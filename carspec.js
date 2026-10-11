@@ -54,13 +54,15 @@ async function call(method,path,body){
 }
 
 /* ขอข้อมูลรุ่นนี้ — ในเครื่องมีแล้วใช้เลย · ยังไม่มีให้หลังบ้านหา (ครั้งแรกของรุ่นนี้ทั้งระบบเท่านั้นที่เรียก AI) */
-const inflight={};
+const inflight={},recentFailures=new Map();
 async function ensure(c,opt){
   const Q=q(c),k=keyOf(Q),retry=!!(opt&&opt.retry),car=[Q.make,Q.model,Q.year].join(" ");
   if(!/^\d{4}$/.test(Q.year)||!Q.make){clog("ไม่ค้น: ข้อมูลรถไม่ครบ ("+(Q.make?"ไม่มีปี":"ไม่มียี่ห้อ")+")",{car});return {status:"invalid"}}
   const have=LS.get("spec_"+k);
   if(!retry&&have&&DONE.includes(have.status)&&(have.status==="notfound"||have.status==="verified"||have.data?.schema===2&&have.sources?.length)&&Date.now()-(have._at||0)<(have.status==="notfound"?86400000:7*86400000)){
     clog("ใช้ข้อมูลที่เก็บในเครื่อง ("+have.status+")",{car,ok:true});return have}
+  const recent=recentFailures.get(k);
+  if(!retry&&recent&&Date.now()-recent.at<120000)return recent.value;
   if(inflight[k])return inflight[k];
   inflight[k]=(async()=>{
     /* ครั้งแรกของรุ่นนี้ หลังบ้านอ่านเอกสารแล้วสกัดสองรอบ
@@ -75,7 +77,8 @@ async function ensure(c,opt){
     if(r.status==="pending")return {...r,status:"timeout",retryable:true};
     if(n)clog("รอผลค้น "+n+" รอบ → "+r.status,{car,ok:DONE.includes(r.status),ms:Date.now()-t0,err:r.error||(r.status==="pending"?"เกิน 2 นาทีแล้วยังค้นไม่เสร็จ":"")});
     if(r.key&&r.key!==k)return {status:'unconfirmed',code:'unconfirmed'};
-    if(DONE.includes(r.status))LS.set("spec_"+k,{...r,_at:Date.now()});
+    if(DONE.includes(r.status)){LS.set("spec_"+k,{...r,_at:Date.now()});recentFailures.delete(k)}
+    else if(['failed','unconfirmed','timeout'].includes(r.status)){recentFailures.set(k,{at:Date.now(),value:r});if(recentFailures.size>32)recentFailures.delete(recentFailures.keys().next().value)}
     return r;
   })().finally(()=>{delete inflight[k]});
   return inflight[k];
@@ -197,7 +200,8 @@ async function fill(id,c,kind,extra,opt){
   try{s=await ensure(c,opt)}catch(e){s={status:e.name==="AbortError"?"timeout":e.status===400?"invalid":e.status===404||e.status===405?"unavailable":e.status?"error":"offline",error:e.message}}
   const el2=document.getElementById(id);if(!el2)return;
   const retry=`<button type="button" class="btn" data-cs-retry>${T("ลองใหม่","Try again")}</button>`;
-  const code=s.code||(/429|RESOURCE_EXHAUSTED|quota/i.test(s.error||'')?'provider_quota':/401|403|API.key|permission|คีย์/i.test(s.error||'')?'provider_auth':/404|NOT_FOUND/.test(s.error||'')?'provider_model':'');
+  const code=s.code||(/source_unavailable|discovery_http/i.test(s.error||'')?'source_unavailable':/429|RESOURCE_EXHAUSTED|quota/i.test(s.error||'')?'provider_quota':/401|403|API.key|permission|คีย์/i.test(s.error||'')?'provider_auth':/404|NOT_FOUND/.test(s.error||'')?'provider_model':/แหล่ง|ground|ยืนยัน|ข้อมูลที่ใช้ได้/i.test(s.error||'')?'unconfirmed':/เกิน|timeout|AbortError/i.test(s.error||'')?'timeout':'');
+  const Q=q(c),details=`<button type="button" class="btn" data-cs-details>${T('ตรวจปีรุ่นและตลาดรถ','Check model year & market')}</button>`;
   if(s.status==="ready"&&(!s.sources?.length||!s.data?.score?.cells))s={status:"unconfirmed"};
   if(!['ready','verified','invalid','notfound','limited','pending','offline','unavailable','failed','error','unconfirmed','timeout'].includes(s.status))s={status:'unconfirmed'};
   PANES[id]={kind,extra:extra||"",spec:s};
@@ -205,8 +209,8 @@ async function fill(id,c,kind,extra,opt){
     code==="provider_quota"?state("ti-clock-pause",T("ยังสรุปสเปกไม่ได้: Gemini ปฏิเสธคำขอด้วยข้อจำกัดโควตา ผู้ดูแลต้องตรวจโปรเจกต์และโมเดล — รีเฟรชหน้าไม่ช่วย และเราไม่ใส่ตัวเลขเดาแทน","Specs unavailable: Gemini project quota was rejected. The owner must check the project/model. Refreshing cannot fix this; no guessed specs are shown."))+extra
    :code==="source_unavailable"?state("ti-file-search",T("เปิดแหล่งเอกสารไม่ได้ในขณะนี้ — ข้อมูลรถยังอยู่ ลองใหม่ภายหลังโดยไม่ต้องรีเฟรชแอป","Public documents are unavailable right now. Your car data is unchanged. Try again later without refreshing the app."),retry)+extra
    :code==="provider_auth"||code==="provider_model"?state("ti-plug-off",T("ระบบค้นสเปกยังไม่พร้อม: ผู้ดูแลต้องตรวจคีย์หรือโมเดล AI ข้อมูลรถของคุณยังอยู่","Spec search is not configured correctly. The owner must check the AI key/model. Your car data is unchanged."))+extra
-   :s.status==="unconfirmed"?state("ti-file-search",T("ยังไม่มีสเปกที่มีแหล่งอ้างอิงเพียงพอ — จะไม่แสดงข้อมูลประมาณเป็นสเปกจริง","No sufficiently sourced specification is available. Estimates will not be shown as real specs."),retry)+extra
-   :s.status==="timeout"?state("ti-hourglass",T("การค้นครั้งนี้ใช้เวลานานเกินกำหนด ยังไม่ได้ผลสเปก — ไม่จำเป็นต้องรีเฟรชทั้งแอป","This lookup timed out without a specification. You do not need to refresh the app."),retry)+extra
+   :code==="unconfirmed"||s.status==="unconfirmed"?state("ti-file-search",`<b>${esc(Q.make+' '+Q.model+' '+Q.year)}</b><br>`+T("ยังไม่มีสเปกที่มีแหล่งอ้างอิงเพียงพอและตรงกับปี/ตลาดรถ — ตรวจปีรุ่น (ไม่ใช่ปีจดทะเบียน) และตลาดในข้อมูลรถ ไม่ต้องรีเฟรชแอป เราจะไม่แสดงตัวเลขเดาเป็นสเปกจริง","No sufficiently sourced specification matches the model year and vehicle market. Check the model year (not registration year) and market in your car details; refreshing the app is not needed. Estimates will not be shown as real specs."),details+retry)+extra
+   :code==="timeout"||s.status==="timeout"?state("ti-hourglass",T("การค้นครั้งนี้ใช้เวลานานเกินกำหนด ยังไม่ได้ผลสเปก — ไม่จำเป็นต้องรีเฟรชทั้งแอป","This lookup timed out without a specification. You do not need to refresh the app."),retry)+extra
    :s.status==="invalid"?state("ti-calendar-question",T("ตรวจยี่ห้อ ชื่อรุ่น และปีรุ่นก่อนค้นสเปก","Check the make, model and model year before searching"))+extra
    :s.status==="notfound"?state("ti-search-off",T("ไม่พบข้อมูลของรุ่นนี้ในปีนี้ — ตรวจชื่อรุ่นและปีอีกครั้ง","No data for this model in this year — check the model and year"))+extra
    :s.status==="limited"?state("ti-clock-pause",T("วันนี้ค้นรุ่นใหม่ครบโควตาแล้ว ลองใหม่พรุ่งนี้ หรือเข้าสู่ระบบเพื่อค้นต่อ","Daily lookup limit reached — try tomorrow or sign in"))+extra
@@ -227,6 +231,7 @@ document.addEventListener("click",async e=>{
   const car=()=>{try{return (window.garage?window.garage():[]).find(x=>x.id===w.dataset.car)}catch(err){return null}};
   const vb=e.target.closest("[data-cs-var]");
   const P=PANES[w.id]||{kind:"spec",extra:""};
+  if(e.target.closest('[data-cs-details]')){const c=car();if(c){if(typeof window.openInfo==='function')window.openInfo(c.id);else location.assign('/garage/'+encodeURIComponent(c.id)+'/info')}return}
   if(vb){const v=P.spec?.data?.variants?.[Number(vb.dataset.csVar)];if(!v)return;LS.set("specv_"+w.dataset.car,{key:P.spec.key,variant:variantKey(v)});const c=car();if(c)fill(w.id,c,P.kind,P.extra);return}
   if(e.target.closest("[data-cs-retry]")){const c=car();if(c){w.innerHTML=loadingHTML(c);fill(w.id,c,P.kind,P.extra,{retry:true})}return}
   const rp=e.target.closest(".cs-report");if(!rp)return;

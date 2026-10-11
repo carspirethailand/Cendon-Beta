@@ -17,7 +17,7 @@ function fixture({reply=complete(),transport,token}={}){
   vm.runInNewContext(source,sandbox);
   const advance=async(ms)=>{now+=ms;for(const [i,t] of [...timers])if(t.at<=now){timers.delete(i);t.fn()}await settle()};
   async function pane(c=car,kind='spec'){const html=window.CarSpec.pane(c,kind),key=html.match(/id="(cs\d+)"/)[1],el={id:key,dataset:{},innerHTML:html};elements.set(key,el);await advance(0);return el}
-  return {api:window.CarSpec,store,calls,events,elements,pane,advance};
+  return {api:window.CarSpec,window,store,calls,events,elements,pane,advance};
 }
 test('car spec UI: simultaneous views reuse one request and shared market/year cache',async()=>{
   const f=fixture();await Promise.all([f.api.ensure(car),f.api.ensure({...car,id:'another-car'})]);assert.equal(f.calls.length,1);
@@ -38,6 +38,23 @@ test('car spec UI: old failed rows still expose quota and provider configuration
   for(const error of ['gemini quota 429','API key invalid 403','model NOT_FOUND 404']){
     const f=fixture({reply:{status:'failed',error}}),el=await f.pane();assert.doesNotMatch(el.innerHTML,/data-cs-retry/);assert.match(el.innerHTML,/quota|configured correctly/);
   }
+});
+test('car spec UI: failed HTTP-200 responses render unconfirmed and timeout codes instead of the generic failure screenshot',async()=>{
+  for(const reply of [{status:'failed',code:'unconfirmed',error:'ไม่พบข้อมูลที่ใช้ได้จากแหล่งอ้างอิง'},{status:'failed',error:'ไม่พบข้อมูลที่ใช้ได้จากแหล่งอ้างอิง'},{status:'failed',code:'timeout',error:'ค้นนานเกินกำหนด'}]){
+    const f=fixture({reply}),el=await f.pane();assert.doesNotMatch(el.innerHTML,/Couldn.t look up this model/);assert.match(el.innerHTML,/No sufficiently sourced|lookup timed out/);
+    if(reply.code!=='timeout')assert.match(el.innerHTML,/data-cs-details|not registration year/);
+  }
+});
+test('car spec UI: failed views reuse a short in-memory result, explicit retry really searches and a different year does not inherit it',async()=>{
+  const f=fixture({reply:{status:'failed',code:'unconfirmed'}});await f.api.ensure(car);await f.api.ensure(car);assert.equal(f.calls.length,1);
+  await f.api.ensure(car,{retry:true});assert.equal(f.calls.length,2);await f.api.ensure({...car,year:'2021'});assert.equal(f.calls.length,3);
+  await f.advance(120001);await f.api.ensure(car);assert.equal(f.calls.length,4);
+});
+test('car spec UI: the details action opens the existing form without changing or posting car preferences',async()=>{
+  const f=fixture({reply:{status:'failed',code:'unconfirmed'}}),el=await f.pane();let opened=null;
+  const target={closest:s=>s==='.cs-wrap'?el:s==='[data-cs-details]'?{}:null};
+  // A real page supplies this function; expose the fixture window to test it.
+  f.window.openInfo=id=>{opened=id};await f.events.click({target});assert.equal(opened,car.id);assert.equal(f.calls.length,1);
 });
 test('car spec UI: ungrounded, empty and foreign model results cannot appear as usable specs',async()=>{
   for(const reply of [{status:'none'},{...complete(),sources:[]},{...complete(),key:'other vehicle|sedan|2021'}]){

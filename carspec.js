@@ -27,12 +27,27 @@ function q(c){
   return {make,model:model||make,year:String(c.info?.model_year||c.year||"").trim(),...(c.info?.market&&c.info.market!=="TH"?{market:c.info.market}:{})};
 }
 /* ล็อกอินอยู่ต้องส่งตัวตนไปด้วย — ไม่งั้นหลังบ้านนับเป็นผู้ไม่ล็อกอิน (โควตาตาม IP วันละ 3 รุ่น) */
-async function tok(){
-  try{
-    const a=window.spireAuth||window.auth||(window.firebase&&firebase.apps&&firebase.apps.length&&firebase.auth?firebase.auth():null);
-    if(a&&a.currentUser)return await a.currentUser.getIdToken();
-  }catch(e){}
-  return "";
+const currentAuth=()=>window.spireAuth||window.auth||(window.firebase&&firebase.apps&&firebase.apps.length&&firebase.auth?firebase.auth():null);
+const authError=(code='auth_required')=>Object.assign(new Error('Could not confirm your signed-in session'),{code});
+async function tok(signal){
+  let timer,unsubscribe,stopped=false,onAbort;
+  const check=()=>{if(stopped||signal?.aborted)throw authError('auth_pending')};
+  const expiry=new Promise((_,reject)=>{onAbort=()=>{stopped=true;reject(Object.assign(authError('auth_pending'),{name:'AbortError'}))};timer=setTimeout(onAbort,8000);signal?.addEventListener('abort',onAbort,{once:true})});
+  try{return await Promise.race([expiry,(async()=>{
+    let a=currentAuth();
+    if(!a?.currentUser&&window.spireFbReady){const ready=await window.spireFbReady;check();if(ready===false)throw authError('auth_pending');a=currentAuth()}
+    check();if(!a){if(window.spireAwaitUser||window.spireInitialAuthReady)throw authError('auth_pending');return {token:'',uid:null}}
+    let u=a.currentUser;
+    if(!u){
+      if(typeof a.onAuthStateChanged==='function')u=await new Promise((resolve,reject)=>{let settled=false;const done=value=>{if(settled)return;settled=true;resolve(value)};unsubscribe=a.onAuthStateChanged(done,()=>reject(authError()));if(settled)unsubscribe?.()});
+      else if(window.spireInitialAuthReady)u=await window.spireInitialAuthReady;
+      else throw authError('auth_pending');
+    }
+    check();if(!u){if(currentAuth()?.currentUser)throw authError('auth_changed');return {token:'',uid:null}}
+    let token;try{token=await u.getIdToken()}catch(e){throw authError()}
+    check();if(!token||currentAuth()?.currentUser?.uid!==u.uid)throw authError('auth_changed');
+    return {token,uid:u.uid};
+  })()])}finally{stopped=true;clearTimeout(timer);signal?.removeEventListener('abort',onAbort);try{unsubscribe?.()}catch(e){}}
 }
 /* บันทึกฝั่งเครื่องนี้ทุกขั้น — แผงผู้ดูแลแบบลอยอ่านไปแสดงทุกหน้า (ผู้ใช้ทั่วไปไม่เห็น อยู่แค่ในเครื่อง) */
 function clog(msg,o){
@@ -45,10 +60,11 @@ async function call(method,path,body){
   const t0=Date.now(),ac=new AbortController();let timer,credential='';
   const expiry=new Promise((_,reject)=>{timer=setTimeout(()=>{ac.abort();reject(Object.assign(new Error('Spec request timed out'),{name:'AbortError'}))},method==="POST"&&path==="/api/car-spec"?65000:12000)});
   try{return await Promise.race([expiry,(async()=>{
-    credential=await tok();if(ac.signal.aborted)throw Object.assign(new Error('timed out'),{name:'AbortError'});
+    const session=await tok(ac.signal);credential=session.token;if(ac.signal.aborted)throw Object.assign(new Error('timed out'),{name:'AbortError'});
+    if((currentAuth()?.currentUser?.uid||null)!==session.uid)throw authError('auth_changed');
     const r=await fetch(API()+path,{method,signal:ac.signal,headers:{"Content-Type":"application/json",...(credential?{Authorization:"Bearer "+credential}:{})},body:body?JSON.stringify(body):undefined});
     const j=await r.json().catch(()=>({}));if(ac.signal.aborted)throw Object.assign(new Error('timed out'),{name:'AbortError'});
-    if(!r.ok)throw Object.assign(new Error(j.error||("HTTP "+r.status)),{status:r.status});
+    if(!r.ok)throw Object.assign(new Error(j.error||("HTTP "+r.status)),{status:r.status,code:j.code});
     j._ms=Date.now()-t0;j._auth=!!credential;return j;
   })()])}catch(e){clog(method+" "+path.split("?")[0]+" ไม่สำเร็จ",{st:e.status||0,err:String(e.message||e),ms:Date.now()-t0,auth:!!credential});throw e}finally{clearTimeout(timer)}
 }
@@ -197,23 +213,28 @@ function pane(c,kind,extra){
 async function fill(id,c,kind,extra,opt){
   const el=document.getElementById(id);if(!el)return;
   let s;
-  try{s=await ensure(c,opt)}catch(e){s={status:e.name==="AbortError"?"timeout":e.status===400?"invalid":e.status===404||e.status===405?"unavailable":e.status?"error":"offline",error:e.message}}
+  try{s=await ensure(c,opt)}catch(e){s={status:/^auth_/.test(e.code||'')||e.status===401?"auth":e.name==="AbortError"?"timeout":e.status===400?"invalid":e.status===404||e.status===405?"unavailable":e.status?"error":"offline",error:e.message,code:e.code}}
   const el2=document.getElementById(id);if(!el2)return;
   const retry=`<button type="button" class="btn" data-cs-retry>${T("ลองใหม่","Try again")}</button>`;
   const code=s.code||(/source_unavailable|discovery_http/i.test(s.error||'')?'source_unavailable':/429|RESOURCE_EXHAUSTED|quota/i.test(s.error||'')?'provider_quota':/401|403|API.key|permission|คีย์/i.test(s.error||'')?'provider_auth':/404|NOT_FOUND/.test(s.error||'')?'provider_model':/แหล่ง|ground|ยืนยัน|ข้อมูลที่ใช้ได้/i.test(s.error||'')?'unconfirmed':/เกิน|timeout|AbortError/i.test(s.error||'')?'timeout':'');
   const Q=q(c),details=`<button type="button" class="btn" data-cs-details>${T('ตรวจปีรุ่นและตลาดรถ','Check model year & market')}</button>`;
+  const guestLimit=code==='guest_limit'||!code&&s.scope==='guest';
+  const login=`<a class="btn" href="/login?next=${encodeURIComponent(location.pathname+(location.search||''))}">${T('เข้าสู่ระบบ','Sign in')}</a>`;
+  const limitTH=guestLimit?'คำขอนี้มาแบบไม่ได้ล็อกอิน และใช้สิทธิ์ค้นของผู้เยี่ยมชมวันนี้ครบแล้ว เข้าสู่ระบบเพื่อใช้สิทธิ์ของบัญชี — ไม่ใช่โควตา Gemini':code==='system_limit'?'สิทธิ์ค้นสเปกรวมของ Cendon วันนี้เต็มแล้ว ยังไม่ได้หักสิทธิ์ของบัญชีคุณ':code==='attempt_limit'?'วันนี้ลองค้นถึงขีดจำกัดความปลอดภัยแล้ว ยังเปิดสเปกที่มีในคลังได้':'สิทธิ์ค้นสเปกของบัญชี Cendon วันนี้เต็มแล้ว ไม่ใช่โควตา Gemini';
+  const limitEN=guestLimit?'This request is signed out and the daily guest lookup allowance is used. Sign in to use your account allowance; this is not a Gemini quota.':code==='system_limit'?'Cendon’s shared daily lookup allowance is reached. Your personal allowance was not charged.':code==='attempt_limit'?'Today’s retry safety limit is reached. Cached specifications are still available.':'Your Cendon daily lookup allowance is reached, not your Gemini quota.';
   if(s.status==="ready"&&(!s.sources?.length||!s.data?.score?.cells))s={status:"unconfirmed"};
-  if(!['ready','verified','invalid','notfound','limited','pending','offline','unavailable','failed','error','unconfirmed','timeout'].includes(s.status))s={status:'unconfirmed'};
+  if(!['ready','verified','invalid','notfound','limited','pending','offline','unavailable','failed','error','unconfirmed','timeout','auth'].includes(s.status))s={status:'unconfirmed'};
   PANES[id]={kind,extra:extra||"",spec:s};
   el2.innerHTML=
-    code==="provider_quota"?state("ti-clock-pause",T("ยังสรุปสเปกไม่ได้: Gemini ปฏิเสธคำขอด้วยข้อจำกัดโควตา ผู้ดูแลต้องตรวจโปรเจกต์และโมเดล — รีเฟรชหน้าไม่ช่วย และเราไม่ใส่ตัวเลขเดาแทน","Specs unavailable: Gemini project quota was rejected. The owner must check the project/model. Refreshing cannot fix this; no guessed specs are shown."))+extra
+    s.status==="auth"?state("ti-user-check",T("ยังยืนยันสถานะบัญชีไม่ได้ จึงยังไม่ส่งคำขอแบบผู้เยี่ยมชมและไม่หักโควตาค้นสเปก ลองอีกครั้งเมื่อระบบล็อกอินพร้อม","Your signed-in session could not be confirmed. No guest lookup was sent and no lookup allowance was charged. Try again when sign-in is ready."),retry+login)+extra
+   :code==="provider_quota"?state("ti-clock-pause",T("ยังสรุปสเปกไม่ได้: Gemini ปฏิเสธคำขอด้วยข้อจำกัดโควตา ผู้ดูแลต้องตรวจโปรเจกต์และโมเดล — รีเฟรชหน้าไม่ช่วย และเราไม่ใส่ตัวเลขเดาแทน","Specs unavailable: Gemini project quota was rejected. The owner must check the project/model. Refreshing cannot fix this; no guessed specs are shown."))+extra
    :code==="source_unavailable"?state("ti-file-search",T("เปิดแหล่งเอกสารไม่ได้ในขณะนี้ — ข้อมูลรถยังอยู่ ลองใหม่ภายหลังโดยไม่ต้องรีเฟรชแอป","Public documents are unavailable right now. Your car data is unchanged. Try again later without refreshing the app."),retry)+extra
    :code==="provider_auth"||code==="provider_model"?state("ti-plug-off",T("ระบบค้นสเปกยังไม่พร้อม: ผู้ดูแลต้องตรวจคีย์หรือโมเดล AI ข้อมูลรถของคุณยังอยู่","Spec search is not configured correctly. The owner must check the AI key/model. Your car data is unchanged."))+extra
    :code==="unconfirmed"||s.status==="unconfirmed"?state("ti-file-search",`<b>${esc(Q.make+' '+Q.model+' '+Q.year)}</b><br>`+T("ยังไม่มีสเปกที่มีแหล่งอ้างอิงเพียงพอและตรงกับปี/ตลาดรถ — ตรวจปีรุ่น (ไม่ใช่ปีจดทะเบียน) และตลาดในข้อมูลรถ ไม่ต้องรีเฟรชแอป เราจะไม่แสดงตัวเลขเดาเป็นสเปกจริง","No sufficiently sourced specification matches the model year and vehicle market. Check the model year (not registration year) and market in your car details; refreshing the app is not needed. Estimates will not be shown as real specs."),details+retry)+extra
    :code==="timeout"||s.status==="timeout"?state("ti-hourglass",T("การค้นครั้งนี้ใช้เวลานานเกินกำหนด ยังไม่ได้ผลสเปก — ไม่จำเป็นต้องรีเฟรชทั้งแอป","This lookup timed out without a specification. You do not need to refresh the app."),retry)+extra
    :s.status==="invalid"?state("ti-calendar-question",T("ตรวจยี่ห้อ ชื่อรุ่น และปีรุ่นก่อนค้นสเปก","Check the make, model and model year before searching"))+extra
    :s.status==="notfound"?state("ti-search-off",T("ไม่พบข้อมูลของรุ่นนี้ในปีนี้ — ตรวจชื่อรุ่นและปีอีกครั้ง","No data for this model in this year — check the model and year"))+extra
-   :s.status==="limited"?state("ti-clock-pause",T("วันนี้ค้นรุ่นใหม่ครบโควตาแล้ว ลองใหม่พรุ่งนี้ หรือเข้าสู่ระบบเพื่อค้นต่อ","Daily lookup limit reached — try tomorrow or sign in"))+extra
+   :s.status==="limited"?state("ti-clock-pause",T(limitTH,limitEN),guestLimit?login:'')+extra
    :s.status==="pending"?state("ti-hourglass",T("ยังค้นข้อมูลรุ่นนี้อยู่ — กลับมาเปิดแท็บนี้อีกครั้งในอีกสักครู่","Still looking this model up — check back in a moment"),retry)+extra
    :s.status==="offline"?state("ti-wifi-off",T("เชื่อมต่ออินเทอร์เน็ตไม่ได้ ลองใหม่อีกครั้ง","No connection — please try again"),retry)+extra
    :s.status==="unavailable"?state("ti-tools",T("ระบบข้อมูลสเปกกำลังอัปเดต ลองใหม่อีกครั้งภายหลัง","Specs are being updated — please try again later"),retry)+extra

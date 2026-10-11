@@ -30,6 +30,34 @@ test('car spec UI: VIN and private car fields never reach the public spec search
   assert.deepEqual(Object.keys(JSON.parse(f.calls[0].opt.body)).sort(),['make','market','model','year']);
   assert.doesNotMatch(f.calls[0].opt.body,/PRIVATE|trim/);
 });
+test('car spec UI: auth restoration must complete before a new lookup can be counted as guest',async()=>{
+  const f=fixture();let loaded,changed,unsubscribed=0;const user=f.window.spireAuth.currentUser;
+  f.window.spireFbReady=new Promise(resolve=>{loaded=resolve});f.window.spireAuth={currentUser:null,onAuthStateChanged:fn=>{changed=fn;return()=>{unsubscribed++}}};
+  const result=f.api.ensure(car);await settle();assert.equal(f.calls.length,0);
+  loaded(true);await settle();assert.equal(f.calls.length,0);f.window.spireAuth.currentUser=user;changed(user);await result;
+  assert.equal(f.calls.length,1);assert.equal(f.calls[0].opt.headers.Authorization,'Bearer fixture-only-token');assert.equal(unsubscribed,1);
+});
+test('car spec UI: token failures and auth-load failure never silently spend the guest quota',async()=>{
+  for(const mode of ['token','sdk']){const f=fixture();if(mode==='token')f.window.spireAuth.currentUser.getIdToken=async()=>{throw Error('network token failure')};else{f.window.spireAuth.currentUser=null;f.window.spireFbReady=Promise.resolve(false)}
+    const el=await f.pane();assert.equal(f.calls.length,0);assert.match(el.innerHTML,/No guest lookup was sent/);assert.doesNotMatch(el.innerHTML,/Daily lookup limit|Gemini project quota/);
+  }
+});
+test('car spec UI: an authoritative signed-out callback allows genuine guest use; a pending callback does not',async()=>{
+  const f=fixture();let changed;f.window.spireAuth={currentUser:null,onAuthStateChanged:fn=>{changed=fn;return()=>{}}};
+  const result=f.api.ensure(car);await settle();assert.equal(f.calls.length,0);changed(null);await result;assert.equal(f.calls[0].opt.headers.Authorization,undefined);
+  const pending=fixture();pending.window.spireAuth={currentUser:null,onAuthStateChanged:()=>()=>{}};const p=pending.api.ensure(car);await settle();await pending.advance(8001);await assert.rejects(p,e=>e.code==='auth_pending');assert.equal(pending.calls.length,0);
+});
+test('car spec UI: changing account while the token resolves cannot send a previous-account bearer token',async()=>{
+  const f=fixture();let release;f.window.spireAuth.currentUser.getIdToken=()=>new Promise(resolve=>{release=resolve});const p=f.api.ensure(car);await settle();f.window.spireAuth.currentUser={uid:'different-user'};release('previous-account-token');await assert.rejects(p,e=>e.code==='auth_changed');assert.equal(f.calls.length,0);
+});
+test('car spec UI: Cendon quota reasons distinguish guest, user, system and retry caps, without blaming Gemini',async()=>{
+  for(const [code,phrase] of [['guest_limit','This request is signed out'],['user_limit','Your Cendon daily lookup allowance'],['system_limit','shared daily lookup allowance'],['attempt_limit','retry safety limit']]){
+    const f=fixture({reply:{status:'limited',code,scope:code==='guest_limit'||code==='attempt_limit'?'guest':'user'}}),el=await f.pane();assert.match(el.innerHTML,new RegExp(phrase));assert.doesNotMatch(el.innerHTML,/Gemini project quota|Try again/);if(code==='guest_limit')assert.match(el.innerHTML,/\/login\?next=/);
+  }
+});
+test('car spec UI: a server-denied bearer session is an authentication state, not exhausted AI quota',async()=>{
+  const f=fixture({transport:async()=>({status:401,body:{error:'Could not confirm your signed-in session',code:'auth_required'}})}),el=await f.pane();assert.match(el.innerHTML,/signed-in session could not be confirmed/);assert.doesNotMatch(el.innerHTML,/Daily lookup limit|Gemini project quota/);
+});
 test('car spec UI: provider quota explains the real blocker and does not offer a futile retry',async()=>{
   const f=fixture({reply:{status:'failed',code:'provider_quota',retryable:false,error:'429 RESOURCE_EXHAUSTED'}}),el=await f.pane();
   assert.match(el.innerHTML,/Gemini project quota/);assert.match(el.innerHTML,/Refreshing cannot fix/);assert.doesNotMatch(el.innerHTML,/data-cs-retry|Powertrain|Test engine/);

@@ -426,11 +426,11 @@ test('account flow: tour cannot finish on a missing or foreign server acknowledg
 test('account assets resolve from the root before a deep-link base element and old wizard copies are removed',()=>{
   for(const file of ['index','garage','chat','news','spares','profile','admin','handbook','plan']){
     const html=readFileSync(new URL('../'+file+'.html',import.meta.url),'utf8');
-    for(const name of ['account.css','account.js','account-actions.js','cendon-tour.js'])assert.match(html,new RegExp('(?:href|src)="/'+name.replace('.','\\.')+'"'),file+': '+name);
+    for(const name of ['account.css','account.js','account-actions.js','cendon-tour.js'])assert.match(html,new RegExp('(?:href|src)="/'+name.replace('.','\\.')+'(?:\\?[^"\\s]*)?"'),file+': '+name);
     assert.doesNotMatch(html,/id="setup(?:js|css)"/,file);
   }
   const sw=readFileSync(new URL('../sw.js',import.meta.url),'utf8');
-  for(const name of ['account.css','account.js','account-actions.js','auth-bootstrap.js','cendon-tour.js'])assert.ok(sw.includes("'./"+name+"'"),name+' precached');
+  for(const name of ['account.css','account.js','account-actions.js','auth-bootstrap.js','cendon-tour.js'])assert.match(sw,new RegExp("'\\./"+name.replace('.','\\.')+"(?:\\?[^']*)?'"),name+' precached');
 });
 
 test('account flow: unconfigured email is visibly unavailable and cannot claim delivery',async()=>{

@@ -4149,7 +4149,7 @@ html.gx-lock,html.gx-lock body{overflow:hidden}
 @media(prefers-reduced-motion:reduce){.gx-sh,.gx-bd,.gx-car,.gx-empty{transition:none}}
 </style>
 <link rel="stylesheet" href="lux.css">
-<script src="carspec.js" defer></script>
+<script src="carspec.js?v=2026-10-11-r2" defer></script>
 </head>
 <body>
 <script id="mnav0">
@@ -4726,15 +4726,14 @@ const WIREFRAME_SVGs={};
 for(const _k in CARDEF)WIREFRAME_SVGs[_k]=buildWire(CARDEF[_k]);
 
 function getBodyStyle(name) {
-  const lower = name.toLowerCase();
-  for (const make in CAR_DATABASE) {
-    for (const model of CAR_DATABASE[make]) {
-      if (lower.includes(model.name.toLowerCase())) {
-        return model.type;
-      }
-    }
+  const lower=String(name||"").trim().toLowerCase().replace(/\s+/g," ");
+  const makes=Object.keys(CAR_DATABASE).filter(make=>lower.startsWith(make.toLowerCase()+" "));
+  const pool=makes.length?makes:Object.keys(CAR_DATABASE);
+  for(const make of pool){
+    const model=CAR_DATABASE[make].find(m=>lower===m.name.toLowerCase()||lower===make.toLowerCase()+" "+m.name.toLowerCase());
+    if(model)return model.type;
   }
-  return "sedan";
+  return null; // Unknown is not a sedan; drawings may choose their own neutral fallback.
 }
 
 /* ===== SITE CONFIG (announcement / maintenance from backend) ===== */
@@ -5181,7 +5180,7 @@ function renderDashCars(){const w=$("dashCars");if(!w)return;const g=garage();
     return;
   }
   let html=g.map(c=>{const last=(c.history&&c.history[0])||null;
-    const style = c.type || getBodyStyle(c.name);
+    const style = getBodyStyle([c.make,c.model].filter(Boolean).join(" ")||c.name) || c.type;
     const wireframe = WIREFRAME_SVGs[style] || WIREFRAME_SVGs.sedan;
     const stat=last?`<div class="cstatus"><span class="dot"></span>${(window.spireT?window.spireT("ตรวจล่าสุด","Last checked"):(lang==="en"?"Last checked":"ตรวจล่าสุด"))}: ${new Date(last.t).toLocaleDateString((window.spireT?window.spireT("th-TH","en-US"):(lang==="en"?"en-US":"th-TH")),{day:"numeric",month:"short"})}</div>`
       :`<div class="cstatus warn"><span class="dot"></span>${(window.spireT?window.spireT("ยังไม่เคยวินิจฉัย","Never diagnosed"):(lang==="en"?"Never diagnosed":"ยังไม่เคยวินิจฉัย"))}</div>`;
@@ -5255,7 +5254,7 @@ async function syncCars(){
         id:c.id,make:c.make||"",model:c.model||"",name:name||prev.name||"",
         year:(c.year!=null?String(c.year):""),
         mileage:(c.mileage!=null?String(c.mileage):""),
-        type:c.body||prev.type||getBodyStyle(name),color:c.color||prev.color||"",
+        type:getBodyStyle(name)||c.body||prev.type||null,color:c.color||prev.color||"",
         info:(()=>{try{const o=c.info?JSON.parse(c.info):null;return o&&Object.keys(o).length?o:prev.info}catch(e){return prev.info}})(),history:prev.history||[]});
     });
     const remoteIds=new Set(arr.map(c=>c.id));
@@ -5319,7 +5318,7 @@ const CAR_COLORS=[
 const gxT=(th,en)=>(window.spireT?window.spireT(th,en):((window.lang||"th")==="en"?en:th));
 const carColor=c=>/^#[0-9a-f]{6}$/i.test(c||"")?String(c).toUpperCase():"#FFFFFF";
 const carColorName=c=>{const x=CAR_COLORS.find(k=>k.c===carColor(c));return x?gxT(x.th,x.en):gxT("สีของฉัน","Custom")};
-const carTypeOf=c=>{const t=c&&(c.type||getBodyStyle(c.name||""));return GD_BODY[t]?t:"sedan"};
+const carTypeOf=c=>{const t=c&&(getBodyStyle([c.make,c.model].filter(Boolean).join(" ")||c.name)||c.type);return GD_BODY[t]?t:"sedan"};
 function carArt(k,color){
   const t=CAR_IMG.has(k)?k:(CAR_IMG_ALT[k]||"sedan"),src=`img/cars/${t}.webp`,col=carColor(color);
   return `<span class="car-art" aria-hidden="true"><img src="${src}" alt="" decoding="async" onerror="this.parentNode.classList.add('none')"/>${
@@ -5424,6 +5423,10 @@ const INFO_F=[
   {k:"vin",th:"เลขตัวถัง (VIN)",en:"VIN",ph:"17 หลัก — ดูในเล่มทะเบียน หรือมุมกระจกหน้าฝั่งคนขับ",full:true,max:17},
   {k:"trim",th:"รุ่นย่อย / เกรด",en:"Trim",ph:"เช่น 2.4 GT Premium 4WD",max:60},
   {k:"engine",th:"เครื่องยนต์",en:"Engine",ph:"เช่น 2.4 ดีเซล",max:60},
+  {k:"engine_code",th:"รหัสเครื่องยนต์",en:"Engine code",ph:"รหัสจากคู่มือหรือป้ายเครื่องยนต์",max:40},
+  {k:"model_year",th:"ปีรุ่น (ค.ศ.)",en:"Model year",ph:"แยกจากปีจดทะเบียน เช่น 2020",type:"number",max:4},
+  {k:"market",th:"ตลาดของรถ",en:"Vehicle market",opts:[["","ค่าเริ่มต้น: ไทย"],["TH","ไทย"],["JP","ญี่ปุ่น"],["US","สหรัฐฯ"],["UK","สหราชอาณาจักร"],["DE","เยอรมนี"],["AU","ออสเตรเลีย"],["EU","ยุโรป"],["GLOBAL","ไม่ระบุตลาด (ข้อมูลทั่วไป)"]]},
+  {k:"drive",th:"ระบบขับเคลื่อน",en:"Drivetrain",opts:[["","—"],["FWD","ขับหน้า (FWD)"],["RWD","ขับหลัง (RWD)"],["AWD","AWD"],["4WD","4WD"]]},
   {k:"gear",th:"เกียร์",en:"Gearbox",opts:[["","—"],["อัตโนมัติ","อัตโนมัติ"],["ธรรมดา","ธรรมดา"],["CVT","CVT"],["DCT","ดับเบิลคลัตช์ (DCT)"]]},
   {k:"fuel",th:"เชื้อเพลิง",en:"Fuel",opts:[["","—"],["เบนซิน","เบนซิน"],["ดีเซล","ดีเซล"],["ไฮบริด","ไฮบริด"],["ปลั๊กอินไฮบริด","ปลั๊กอินไฮบริด"],["ไฟฟ้า","ไฟฟ้า"],["แก๊ส","แก๊ส LPG/NGV"]]},
   {k:"plate",th:"ทะเบียนรถ",en:"Plate",ph:"เช่น กข 1234",max:20},
@@ -5438,11 +5441,12 @@ function infoFormHTML(){
     f.opts?`<select class="input" data-info="${f.k}">${f.opts.map(([v,t])=>`<option value="${esc(v)}">${esc(t)}</option>`).join("")}</select>`
     :f.area?`<textarea class="input" rows="2" data-info="${f.k}" maxlength="${f.max}" placeholder="${esc(f.ph||"")}"></textarea>`
     :`<input class="input" data-info="${f.k}" ${f.type?`type="${f.type}"`:""} ${f.max?`maxlength="${f.max}"`:""} placeholder="${esc(f.ph||"")}" ${f.k==="vin"?'autocapitalize="characters" autocomplete="off" spellcheck="false"':""}>`
-  }${f.k==="vin"?'<small class="gx-vin-res" aria-live="polite"></small>':""}</label>`).join("");
+  }${f.k==="vin"?'<small class="gx-vin-res" aria-live="polite"></small>':""}</label>${f.k==="vin"?'<div class="gx-fld full"><small>'+esc(gxT("ถ้ากดตรวจ VIN จะส่งเลขนี้ไปตรวจ NHTSA (สหรัฐฯ) ไม่ใช่ Gemini และไม่เก็บในคลังสเปกสาธารณะ ข้อมูลรถไทยอาจไม่ครบ","Check VIN sends it to NHTSA (US), not Gemini or the shared spec library. Thai-market coverage may be incomplete."))+'</small><button type="button" class="btn" data-vin-check>'+esc(gxT("ตรวจ VIN กับ NHTSA","Check VIN with NHTSA"))+'</button></div>':""}`).join("");
 }
 function readInfo(root){if(!root)return null;const o={};
   root.querySelectorAll("[data-info]").forEach(el=>{let v=String(el.value||"").trim();if(el.dataset.info==="vin")v=v.toUpperCase().replace(/[\s-]/g,"");if(v)o[el.dataset.info]=v});
-  if(o.vin&&!/^[A-HJ-NPR-Z0-9]{17}$/.test(o.vin))delete o.vin;
+  if(o.vin&&!/^[A-HJ-NPR-Z0-9]{17}$/.test(o.vin))throw new Error(gxT("VIN ต้องเป็นตัวอักษร/ตัวเลข 17 หลัก และไม่มี I, O, Q — แก้หรือเว้นช่องนี้ว่างได้","VIN needs 17 characters without I, O or Q. Correct it or leave it empty."));
+  if(o.model_year&&(!/^\d{4}$/.test(o.model_year)||Number(o.model_year)<1950||Number(o.model_year)>new Date().getFullYear()+1))throw new Error(gxT("ตรวจปีรุ่น ใช้ปี ค.ศ. 4 หลัก","Use a valid four-digit model year (Gregorian)."));
   return Object.keys(o).length?o:null}
 function fillInfo(root,info){if(!root)return;
   root.querySelectorAll("[data-info]").forEach(el=>{el.value=(info&&info[el.dataset.info])||""});
@@ -5451,7 +5455,7 @@ function fillInfo(root,info){if(!root)return;
 document.querySelectorAll("[data-info-form]").forEach(el=>{el.innerHTML=infoFormHTML()});
 /* ถอดเลขตัวถังทันทีที่ครบ 17 หลัก — ยี่ห้อไม่ตรงกับที่เลือกจะเตือน */
 let vinT=0;
-function vinCheck(inp){
+function vinCheck(inp,lookup){
   const res=inp.closest(".gx-fld").querySelector(".gx-vin-res");if(!res)return;
   const v=String(inp.value||"").toUpperCase().replace(/[\s-]/g,"");
   clearTimeout(vinT);res.className="gx-vin-res";
@@ -5459,13 +5463,15 @@ function vinCheck(inp){
   if(/[IOQ]/.test(v)){res.className="gx-vin-res bad";res.textContent=gxT("VIN ไม่มีตัว I, O, Q — น่าจะเป็นเลข 1 หรือ 0","VINs never use I, O or Q — probably 1 or 0");return}
   if(v.length<17){res.textContent=v.length+"/17";return}
   if(v.length>17||!/^[A-HJ-NPR-Z0-9]{17}$/.test(v)){res.className="gx-vin-res bad";res.textContent=gxT("ต้องเป็นตัวอักษร/ตัวเลข 17 หลัก","Must be 17 letters/digits");return}
+  if(!lookup){res.textContent=gxT("รูปแบบครบ 17 หลัก — กดตรวจเพื่อดูข้อมูลจาก NHTSA ไม่ได้ยืนยันว่า VIN นี้มีอยู่จริง","17-character format complete. Press Check for NHTSA data; format alone does not verify this VIN.");return}
   res.textContent=gxT("กำลังตรวจเลขตัวถัง…","Checking VIN…");
   vinT=setTimeout(async()=>{
     try{const d=await fetch(`${BACKEND_URL}/api/vin/${v}`).then(r=>r.json());
+      if(!inp.isConnected||String(inp.value||'').toUpperCase().replace(/[\s-]/g,'')!==v)return;
       if(!d.valid){res.className="gx-vin-res bad";res.textContent=d.why||gxT("เลขตัวถังไม่ถูกต้อง","Invalid VIN");return}
       const p=d.vpic||{},bits=[d.country&&gxT("ผลิตที่","Made in")+" "+d.country,d.maker||p.make,d.year_hint&&gxT("รหัสปี ","Year code ")+d.year_hint,
         [p.model,p.engine_l&&p.engine_l+"L",p.fuel].filter(Boolean).join(" ")].filter(Boolean);
-      res.className="gx-vin-res ok";res.textContent="✓ "+bits.join(" · ");
+      res.className="gx-vin-res ok";res.textContent=bits.length?bits.join(" · ")+" — "+gxT("ข้อมูลอ้างอิง ไม่ยืนยันรุ่นย่อยครบทุกตลาด","Reference only; not full variant confirmation for every market"):gxT("รูปแบบ VIN ถูกต้อง แต่ยังยืนยันข้อมูลรถไม่ได้","Valid VIN format, but vehicle data could not be verified");
       /* ยี่ห้อตาม VIN ไม่ตรงกับรถที่เลือก */
       const pop=inp.closest(".gx-pop"),c=pop&&pop.id==="gxInfo"?garage().find(x=>x.id===infoId):null;
       const mk=String((c&&c.make)||(customMode?($("gCustomMake")||{}).value:selectedMake)||"").toLowerCase();
@@ -5475,6 +5481,7 @@ function vinCheck(inp){
     }catch(e){res.textContent=gxT("ตรวจออนไลน์ไม่ได้ตอนนี้ แต่บันทึกได้","Can’t verify online now, you can still save")}
   },350)}
 document.addEventListener("input",e=>{const v=e.target.closest('[data-info="vin"]');if(v)vinCheck(v)});
+document.addEventListener("click",e=>{const b=e.target.closest('[data-vin-check]');if(!b)return;e.preventDefault();const inp=b.closest('[data-info-form]').querySelector('[data-info="vin"]');if(inp)vinCheck(inp,true)});
 
 let infoId=null;
 function openInfo(id){const c=garage().find(x=>x.id===id);if(!c)return;infoId=id;
@@ -5483,7 +5490,7 @@ function openInfo(id){const c=garage().find(x=>x.id===id);if(!c)return;infoId=id
   set("#gxISave span",gxT("บันทึกข้อมูล","Save"));
   fillInfo($("gxIForm"),c.info||null);gxOpen("gxInfo")}
 async function saveInfo(){const g=garage(),c=g.find(x=>x.id===infoId);if(!c){gxCloseAll();return}
-  const info=readInfo($("gxIForm"));if(info)c.info=info;else delete c.info;
+  let info;try{info=readInfo($("gxIForm"))}catch(e){toast(e.message,"ti-alert-triangle");return}if(info)c.info=info;else delete c.info;
   saveGarage(g);renderGarage();gxCloseAll();toast(gxT("บันทึกข้อมูลรถแล้ว","Car details saved"),"ti-check");
   if(carsAreRemote()){try{await pushCar({...c,info:c.info||{}})}catch(err){console.warn("save car info failed",err)}}}
 window.openInfo=openInfo;
@@ -5542,7 +5549,7 @@ $("garageList")?.addEventListener("click",async e=>{
   const year = String(selectedYear);
   const mileage = $("gMileage").value.trim() || "-";
 
-  const addInfo=readInfo($("gxMore"));
+  let addInfo;try{addInfo=readInfo($("gxMore"))}catch(e){toast(e.message,"ti-alert-triangle");return}
   ($("gAdd")||{}).disabled=true;
   let id = "c"+Date.now();
   if(carsAreRemote()){
@@ -5556,7 +5563,7 @@ $("garageList")?.addEventListener("click",async e=>{
   const g = garage();
   g.push({id,make,model,name,year,mileage,type,color:gxColor,...(addInfo?{info:addInfo}:{}),history:[]});
   /* คนแรกที่เพิ่มรุ่นนี้ = หลังบ้านเริ่มหาสเปกจริงเลย (ทำครั้งเดียวต่อรุ่น คนต่อไปได้ทันที) */
-  try{window.CarSpec&&window.CarSpec.ensure({id,make,model,year}).catch(()=>{})}catch(e){}
+  try{window.CarSpec&&window.CarSpec.ensure({id,make,model,year,info:addInfo}).catch(()=>{})}catch(e){}
   saveGarage(g);
 
   selectedMake = ""; selectedModel = null; selectedYear = ""; customMode = false; selectedBody = "sedan";
@@ -7196,43 +7203,25 @@ const BRANDS={
  kia:{o:"เกาหลี",oe:"Korea",rel:84,parts:"ปานกลาง",partsE:"Moderate",svc:"ปานกลาง",svcE:"Moderate"}
 };
 const BODY={
- sedan:{th:"ซีดาน",en:"Sedan",seat:5,door:4,kerb:1320,tank:50,l100:7.0,cc:1600,tire:"195/65 R15",batt:"NS60 / 45Ah",wiper:'24" + 16"',oil:"3.7 ลิตร"},
- hatchback:{th:"แฮทช์แบ็ก",en:"Hatchback",seat:5,door:5,kerb:1150,tank:42,l100:6.2,cc:1300,tire:"185/60 R15",batt:"NS40 / 35Ah",wiper:'22" + 14"',oil:"3.2 ลิตร"},
- suv:{th:"เอสยูวี",en:"SUV",seat:7,door:5,kerb:1850,tank:65,l100:9.2,cc:2400,tire:"225/65 R17",batt:"75D23L / 65Ah",wiper:'26" + 16"',oil:"4.5 ลิตร"},
- pickup:{th:"กระบะ",en:"Pickup",seat:5,door:4,kerb:1950,tank:76,l100:8.6,cc:2500,tire:"265/65 R17",batt:"105D31R / 80Ah",wiper:'22" + 20"',oil:"7.0 ลิตร"},
- mpv:{th:"เอ็มพีวี",en:"MPV",seat:7,door:5,kerb:1650,tank:60,l100:8.4,cc:2000,tire:"215/60 R17",batt:"75D23L / 65Ah",wiper:'26" + 16"',oil:"4.2 ลิตร"},
- ev:{th:"ไฟฟ้า",en:"Electric",seat:5,door:5,kerb:1720,tank:0,l100:0,cc:0,tire:"215/55 R18",batt:"12V เสริม 45Ah",wiper:'24" + 18"',oil:"— (ไม่มี)"}
+ sedan:{th:"ซีดาน",en:"Sedan"},hatchback:{th:"แฮทช์แบ็ก",en:"Hatchback"},suv:{th:"เอสยูวี",en:"SUV"},
+ pickup:{th:"กระบะ",en:"Pickup"},mpv:{th:"เอ็มพีวี",en:"MPV"},ev:{th:"ไฟฟ้า",en:"Electric"},
+ coupe:{th:"รถสปอร์ต / คูเป้",en:"Sports car / Coupe"},van:{th:"รถตู้",en:"Van"},
+ unknown:{th:"ยังไม่ยืนยันประเภท",en:"Body type unconfirmed"}
 };
-BODY.coupe={th:"รถสปอร์ต / คูเป้",en:"Sports car / Coupe",seat:4,door:2,kerb:1500,tank:60,l100:10.5,cc:3000,tire:"245/40 R19",batt:"H6 / 70Ah",wiper:'22" + 20"',oil:"5.5 ลิตร"};
-BODY.van={th:"รถตู้",en:"Van",seat:12,door:4,kerb:2100,tank:70,l100:10.0,cc:2800,tire:"215/70 R15",batt:"95D31L / 80Ah",wiper:'26" + 18"',oil:"6.5 ลิตร"};
-const EVBRAND=["tesla","byd"];
 function normBrand(s){return String(s||"").trim().toLowerCase().replace(/\s+/g,"-")}
 function bodyOf(c){
+  const name=[c.make,c.model].filter(Boolean).join(" ")||c.name||"";
+  const known=typeof getBodyStyle==="function"?getBodyStyle(name):null;
+  if(known&&BODY[known])return known;
   const t=String(c.type||"").toLowerCase();
-  if(BODY[t])return t;
-  const n=(c.name||"")+" "+(c.model||"");
-  if(EVBRAND.includes(normBrand(c.make)))return "ev";
-  if(/ev|electric|ไฟฟ้า/i.test(n))return "ev";
-  if(/pickup|d-max|hilux|ranger|triton|navara|กระบะ/i.test(n))return "pickup";
-  if(/suv|fortuner|pajero|crv|cr-v|everest|mu-x|x-trail/i.test(n))return "suv";
-  if(/mpv|innova|veloz|xpander|carnival/i.test(n))return "mpv";
-  if(/jazz|yaris|march|swift|brio|hatch/i.test(n))return "hatchback";
-  return "sedan";
+  return BODY[t]&&t!=="sedan"?t:"unknown";
 }
-/* สเปกประมาณการ + ค่าที่ AI/ผู้ใช้ยืนยันแล้วจะทับ */
+/* Body labels are catalog metadata, not numeric vehicle specifications. */
 function specOf(c){
-  const b=BODY[bodyOf(c)], br=BRANDS[normBrand(c.make)]||
-    {o:"ไม่ระบุ",oe:"Unknown",rel:80,parts:"ปานกลาง",partsE:"Moderate",svc:"ปานกลาง",svcE:"Moderate"};
-  const yr=parseInt(c.year)||new Date().getFullYear()-5;
-  const base={body:b,brand:br,year:yr,ev:bodyOf(c)==="ev"};
-  const saved=LG("carlab_spec_"+c.id,null);
-  return Object.assign(base,{confirmed:saved||null});
+  const br=BRANDS[normBrand(c.make)]||{o:"ไม่ระบุ",oe:"Unknown",parts:"ไม่ทราบ",partsE:"Unknown",svc:"ไม่ทราบ",svcE:"Unknown"};
+  return {body:BODY[bodyOf(c)],brand:br,year:parseInt(c.info&&c.info.model_year||c.year)||null,ev:bodyOf(c)==="ev",confirmed:null};
 }
-function sv(spec,key,fallback){
-  const cf=spec.confirmed;
-  if(cf&&cf[key]!=null&&cf[key]!=="")return {v:cf[key],est:false};
-  return {v:fallback,est:true};
-}
+
 
 /* ═══════════ ตารางบำรุงรักษา ═══════════ */
 const PLAN=[
@@ -7342,22 +7331,7 @@ function costOf(c){
           perKm:span>0?totalAll/span:0,entries:all.sort((a,b)=>new Date(b.date)-new Date(a.date))};
 }
 
-/* ═══════════ AI เติมสเปก (ถ้าหลังบ้านพร้อม) ═══════════ */
-async function askAI(c){
-  const url=(window.BACKEND_URL||"")+"/api/ai";
-  const q=`ให้ข้อมูลสเปกรถ ${c.make||""} ${c.model||""} ปี ${c.year||""} สำหรับตลาดไทย `+
-    `ตอบเป็น JSON เท่านั้น ไม่ต้องมีคำอธิบาย ใช้คีย์: engine (เช่น "1.8L 4 สูบ เบนซิน"), power (แรงม้า ตัวเลข), `+
-    `torque (นิวตันเมตร ตัวเลข), gearbox, drive (ขับหน้า/หลัง/4WD), seats (ตัวเลข), tank (ลิตร ตัวเลข), `+
-    `l100 (ลิตรต่อ100กม. ตัวเลข), tire (ขนาดยาง), batt (แบตเตอรี่), wiper (ขนาดใบปัดน้ำฝน), oil (ปริมาณน้ำมันเครื่อง), `+
-    `safety (อาร์เรย์ของสตริงอุปกรณ์ความปลอดภัยที่มี)`;
-  const r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({contents:[{role:"user",parts:[{text:q}]}],temp:.2})});
-  if(!r.ok)throw new Error("ai "+r.status);
-  const d=await r.json();
-  let s=(d.text||"").replace(/```json/gi,"").replace(/```/g,"").trim();
-  const m=s.match(/\{[\s\S]*\}/); if(m)s=m[0];
-  return JSON.parse(s);
-}
+/* Specification research uses only the shared, sourced CarSpec pipeline. */
 
 /* ═══════════ โมดัลรายละเอียดรถ ═══════════ */
 /* แถวปุ่มลงมือทำ — อยู่เหนือแท็บข้อมูลเสมอ */
@@ -7606,7 +7580,7 @@ window.openCarDetail=function(id){
     return planFor(c).map(pp=>dueOf(c,pp)).filter(d=>d.left<=0).length;
   }catch(e){ return 0 } })();
   ($("clKpi")||{}).innerHTML=`
-    <div class="kpi"><b>${num(KM(c))}</b><span>${T("กิโลเมตร","kilometres")}</span></div>
+    <div class="kpi"><b>${String(c.mileage||'').trim()||KM(c)>0?num(KM(c)):'—'}</b><span>${T("กิโลเมตร","kilometres")}</span></div>
     <div class="kpi"><b>${c.year||"—"}</b><span>${T("ปีจดทะเบียน","model year")}</span></div>
     <div class="kpi${due?" warn":""}"><b>${due||"0"}</b><span>${T("รายการที่ถึงกำหนด","items due")}</span></div>`;
   /* หาสาเหตุกับ AI ก่อน แล้วค่อยเรียกช่างพร้อมอาการที่สรุปไว้แล้ว
@@ -7765,6 +7739,7 @@ function panePlan(c){
   const items=planFor(c).map(p=>({p,d:dueOf(c,p)})).sort((a,b)=>a.d.pct-b.d.pct);
   const km=KM(c), todos=getTodos(c.id);
   return `
+  <p class="cs-hint">${T("รายการนี้ใช้รอบเตือนทั่วไปหรือค่าที่คุณปรับเอง ไม่ใช่ตารางบำรุงรักษาที่ผู้ผลิตยืนยันสำหรับรุ่นนี้ โปรดเทียบคู่มือรถ","These are general reminder intervals or your own settings, not a manufacturer-verified schedule for this variant. Check the vehicle manual.")}</p>
   <div class="cl-grp"><h4>${T("กำหนดถัดไป","Next due")}</h4>
     ${items.map(({p,d})=>`<div class="cl-mt">
       <span class="dot" style="background:${hColor(d.pct)}"></span>
@@ -7815,27 +7790,10 @@ function panePlan(c){
 }
 
 function paneParts(c){
-  const s=specOf(c), b=s.body, P=(k,fb)=>sv(s,k,fb);
-  const list=[
-   [T("ยาง","Tyres"),P("tire",b.tire),"ti-circle-dotted"],
-   [T("แบตเตอรี่","Battery"),P("batt",b.batt),"ti-battery-3"],
-   [T("ใบปัดน้ำฝน","Wiper blades"),P("wiper",b.wiper),"ti-wiper"],
-   [T("ปริมาณน้ำมันเครื่อง","Engine oil volume"),P("oil",b.oil),"ti-droplet"],
-   [T("ไส้กรองน้ำมันเครื่อง","Oil filter"),{v:s.ev?T("ไม่มี","N/A"):T("ตามรหัสรุ่น","By model code"),est:true},"ti-filter"],
-   [T("ไส้กรองอากาศ","Air filter"),{v:T("ตามรหัสรุ่น","By model code"),est:true},"ti-wind"],
-   [T("ผ้าเบรกหน้า","Front brake pads"),{v:T("ตามรหัสรุ่น","By model code"),est:true},"ti-disc"],
-   [T("หัวเทียน","Spark plugs"),{v:s.ev?T("ไม่มี","N/A"):T("อิริเดียม แนะนำ","Iridium recommended"),est:true},"ti-flame"]
-  ];
-  return `
-  <div class="cl-grp"><h4>${T("ขนาดและชนิดอะไหล่","Sizes & types")}</h4>
-    ${list.map(([k,o])=>row(k,o)).join("")}
-  </div>
-  <div class="cl-grp"><h4>${T("ซื้ออะไหล่","Buy parts")}</h4>
-    <p style="font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:12px">${T(
-      "นำขนาดด้านบนไปเทียบก่อนสั่งซื้อทุกครั้ง ขนาดยางและแบตเตอรี่ต่างกันได้ตามรุ่นย่อยและล้อที่ติดรถมา",
-      "Always match the sizes above before ordering — tyre and battery sizes vary by trim and factory wheels.")}</p>
-    <button class="btn primary" data-view="shop" id="clShop"><i class="ti ti-shopping-bag"></i> ${T("ไปที่ร้านค้า","Open shop")}</button>
-  </div>`;
+  const own=c.info||{},owner=[["ขนาดยางที่เจ้าของระบุ","Owner-entered tyre size",own.tire],["รหัสเครื่องยนต์ที่เจ้าของระบุ","Owner-entered engine code",own.engine_code]].filter(x=>x[2]);
+  return (window.CarSpec?CarSpec.pane(c,"parts"):'<p class="cs-hint">'+T("ยังไม่มีข้อมูลอะไหล่ที่มีแหล่งอ้างอิง","Sourced fitment data is not available")+'</p>')+
+    (owner.length?'<div class="cl-grp"><h4>'+T("ข้อมูลที่คุณบันทึก","Your recorded information")+'</h4>'+owner.map(x=>row(T(x[0],x[1]),{v:x[2],est:false})).join("")+'</div>':"")+
+    '<div class="cl-grp"><p class="cs-hint">'+T("ห้ามใช้ประเภทรถเดาขนาดยาง แบตเตอรี่ หรือปริมาณน้ำมันเครื่อง ให้ตรวจคู่มือ เลขอะไหล่ และรุ่นย่อยก่อนซื้อ","Body type cannot determine tyre, battery or oil specifications. Check the manual, part number and variant before buying.")+'</p><button class="btn primary" data-view="shop" id="clShop">'+T("ไปที่ร้านค้า","Open shop")+'</button></div>';
 }
 
 function paneCost(c){
@@ -7946,14 +7904,7 @@ D.addEventListener("click",async e=>{
     toastx(T("บันทึกทริปแล้ว","Trip saved"));renderTab();return}
   if(e.target.closest("#clAIclear")&&c){
     localStorage.removeItem("spire_carlab_spec_"+c.id);toastx(T("ล้างแล้ว","Cleared"));renderTab();return}
-  if(e.target.closest("#clAI")&&c){
-    const b=e.target.closest("#clAI");
-    const old=b.innerHTML; b.innerHTML='<i class="ti ti-loader-2"></i> '+T("กำลังถาม AI...","Asking AI...");
-    b.disabled=true;
-    try{const d=await askAI(c);LSt("carlab_spec_"+c.id,d);toastx(T("AI ยืนยันสเปกแล้ว","Specs confirmed"));renderTab()}
-    catch(err){b.innerHTML=old;b.disabled=false;
-      toastx(T("ยังต่อ AI ไม่ได้ — ใช้ค่าประมาณการไปก่อน","AI unavailable — using estimates"))}
-    return}
+
   if(e.target.closest("#clShop")){closeCL()}
 });
 function toastx(m){try{if(typeof window.toast==="function")return window.toast(m)}catch(e){}
@@ -8307,8 +8258,8 @@ D.addEventListener("click",e=>{
 window.SpireCarLab={
   getLog, planFor, dueOf, health, status, bodyOf, getSymptoms,
   economy:c=>{const s=specOf(c);
-    if(s.confirmed&&Number(s.confirmed.l100)>0)return Number(s.confirmed.l100);
-    return s.body.l100||7.5}
+    if(window.CarSpec&&CarSpec.economy)return CarSpec.economy(c);
+    return null}
 };
 window.clRefreshWidgets=refreshWidgets;
 window.clSections={todo:renderTodo,health:renderHealth,cost:renderCost,drive:renderDrive};
@@ -8380,7 +8331,7 @@ function carAddedAt(c){
 function economy(c){
   const CL=window.SpireCarLab;
   if(CL&&typeof CL.economy==="function"){const e=CL.economy(c);if(e>0)return e}
-  return 7.5;
+  return null;
 }
 function fuelSince(c,sinceMs){
   const CL=window.SpireCarLab;
@@ -8393,7 +8344,7 @@ function fuelSince(c,sinceMs){
     const L=Number(f.litres)||0;
     if(L>0){litres+=L;count++}
   });
-  return {litres,count,km:litres*(100/l100),l100};
+  return {litres,count,km:l100>0?litres*(100/l100):0,l100};
 }
 
 /* ═══════════ อัตราการขับที่เรียนรู้จากผู้ใช้รายคน ═══════════ */

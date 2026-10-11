@@ -29,6 +29,9 @@ sqlite.prepare('INSERT INTO users VALUES (?,?,?,?,?)').run(UID,'ผู้ทด�
 const env={DB,ONBOARDING_PRIVACY_URL:'https://preview.example.test/privacy'};
 const slowCheck=process.argv.includes('--slow-check')?1200:0;
 const slowIdentity=process.argv.includes('--slow-identity')?1200:0;
+// Deliberately wrong stored body for QA: catalog must display coupe, not sedan.
+// This car and the failed lookup are mock-only and never sent to production.
+const previewCars=process.argv.includes('--car-fixture')?[{id:'preview-only-db11',make:'Aston Martin',model:'DB11',year:'2018',mileage:'',body:'sedan',info:'{}',created_at:Date.now()}]:[];
 if(process.argv.includes('--completed')){
   // Disposable RAM-only fixture, not a real agreement or Firebase account.
   await handleOnboarding(new Request(ORIGIN+'/api/onboarding',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({consent:true,termsVersion:ONBOARDING_VERSIONS.terms,privacyVersion:ONBOARDING_VERSIONS.privacy,name:'Cendon Test',birthDate:'2000-05-15',lang:'th',distance:'km',currency:'THB'})}),env,{payload:{sub:UID}});
@@ -120,7 +123,8 @@ async function api(req,res,url){
   if(p==='/api/tech/gigs')return send(res,200,{gigs:[]});
   if(p==='/api/tech/jobs')return send(res,200,{jobs:[]});
   if(p==='/api/tech/posts'||p==='/api/tech/posts/near')return send(res,200,{posts:[],techs:[]});
-  if(p==='/api/cars')return send(res,200,[]);
+  if(p==='/api/cars')return send(res,200,url.searchParams.get('sync')==='1'?{cars:previewCars,deleted:[]}:previewCars);
+  if(p==='/api/car-spec')return send(res,200,{status:'failed',key:['Aston Martin','DB11','2018'].map(x=>x.toLowerCase()).join('|'),code:'provider_quota',retryable:false,error:'Mock only: Gemini 429 RESOURCE_EXHAUSTED'});
   if(p==='/api/state'&&req.method==='GET'){
     const state={};for(const row of sqlite.prepare('SELECT k,v,t FROM user_state WHERE uid=?').all(UID))state[row.k]={v:JSON.parse(row.v),t:row.t};return send(res,200,{state});
   }

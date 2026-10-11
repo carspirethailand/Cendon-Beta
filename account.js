@@ -57,6 +57,7 @@
   function errorText(error){
     const code=String(error&&error.message||error&&error.code||'');
     if(/invalid-email/.test(code))return T('กรุณาตรวจอีเมลให้ถูกต้อง','Please check your email address.');
+    if(/popup-timeout/.test(code))return T('หน้าต่างล็อกอินยังไม่ตอบ ตรวจว่ามีหน้าต่างเปิดอยู่หรืออนุญาต pop-up แล้วลองใหม่','Sign-in has not responded. Check the sign-in window or allow pop-ups, then try again.');
     if(/minimum_age_18/.test(code))return T('นโยบายกำหนดให้ผู้ใช้มีอายุ 18 ปีขึ้นไป','The policy requires users to be 18 or older.');
     if(/operation-not-allowed|configuration-not-found/.test(code))return T('ช่องทางนี้ยังไม่ได้เปิดใช้งาน กรุณาใช้ Google หรือติดต่อผู้ดูแล','This sign-in method is not configured. Use Google or contact support.');
     if(/recovery-required/.test(code))return T('บัญชีนี้ต้องยืนยันกับช่องทางเดิมก่อน กรุณาใช้ Google หรือ Apple ที่เคยเชื่อมไว้','Use the Google or Apple sign-in already linked to this account.');
@@ -113,7 +114,8 @@
   function render(){const root=host(),phase=S.phase,titles=[['ยินดีที่ได้เจอกัน','Good to meet you'],['เรียกคุณว่าอะไรดี','Make it yours'],['คุณเกิดเมื่อไหร่','When were you born?'],['ภาษาแบบที่คุณถนัด','Your familiar language'],['ระยะทางที่อ่านง่าย','Distance that makes sense'],['เงินในหน่วยที่คุ้นเคย','Your everyday currency']];
     let title,copy='',form='',actions='';
     if(phase==='auth'){title=T('เข้ามาคุยกัน','Welcome back');copy=T('รถของคุณ มีเราอยู่ข้าง ๆ เลือกวิธีเข้าสู่ระบบที่สะดวก','A little help for your everyday car. Choose how you would like to sign in.');
-      form=['Google','Apple','Email'].map(p=>`<button class="ac-provider" type="button" data-provider="${p.toLowerCase()}"${S.busy||p==='Email'&&S.config?.emailOtpReady===false?' disabled':''}><span class="ac-icon" aria-hidden="true">${providerIcon(p)}</span><span>${p==='Email'?T('รับรหัสทางอีเมล','Get a code by email'):T('เข้าสู่ระบบด้วย ','Continue with ')+p}</span></button>`).join('');
+      form=['Google','Apple','Email'].map(p=>`<button class="ac-provider" type="button" data-provider="${p.toLowerCase()}"${S.busy||p==='Email'&&S.config?.emailOtpReady===false||p==='Apple'&&S.config?.appleAuthReady===false?' disabled':''}><span class="ac-icon" aria-hidden="true">${providerIcon(p)}</span><span>${p==='Email'?T('รับรหัสทางอีเมล','Get a code by email'):T('เข้าสู่ระบบด้วย ','Continue with ')+p}</span></button>`).join('');
+      if(S.config?.appleAuthReady===false)form+=`<p class="ac-availability" role="status">${T('Apple ยังไม่เปิดใช้งาน กรุณาใช้ Google ก่อน','Apple sign-in is not available yet. Please use Google.')}</p>`;
       if(S.config?.emailOtpReady===false)form+=`<p class="ac-availability" role="status">${T('รหัสทางอีเมลยังไม่เปิดใช้งาน กรุณาเลือกช่องทางอื่นด้านบน','Email codes are not available yet. Please choose another method above.')}</p>`;
       actions=`<a class="ac-link" href="/">${T('กลับหน้าหลัก','Back to home')}</a>`;
     }else if(phase==='email'){title=T('อีเมลของคุณ','Your email');copy=T('เราจะส่งรหัส 6 หลัก ไม่ต้องตั้งหรือจำรหัสผ่าน','We will send a six-digit code. No password to create or remember.');
@@ -175,11 +177,11 @@
       const el=D.getElementById('accountFlow').querySelector('.ac-actions'),link=D.createElement('a');link.className='ac-primary';link.href=u.href;link.textContent=T('เปิดในเบราว์เซอร์','Open in browser');el.prepend(link);return}
     const p=kind==='google'?new firebase.auth.GoogleAuthProvider():new firebase.auth.OAuthProvider('apple.com');
     if(kind==='google')p.setCustomParameters({prompt:'select_account'});else{p.addScope('email');p.addScope('name')}
-    S.busy=true;S.error='';render();
-    try{await a.signInWithPopup(p)}catch(e){
+    S.busy=true;S.error='';render();let popupTimer;
+    try{await Promise.race([a.signInWithPopup(p),new Promise((_,reject)=>{popupTimer=setTimeout(()=>reject({code:'auth/popup-timeout'}),90000)})])}catch(e){
       if(['auth/popup-blocked','auth/cancelled-popup-request'].includes(e.code))try{await a.signInWithRedirect(p);return}catch(x){e=x}
       if(serial===S.serial&&e.code!=='auth/popup-closed-by-user')S.error=errorText({message:e.code||e.message});
-    }finally{if(serial===S.serial){S.busy=false;if(!D.getElementById('accountFlow')?.hidden)render()}}
+    }finally{clearTimeout(popupTimer);if(serial===S.serial){S.busy=false;if(!D.getElementById('accountFlow')?.hidden)render()}}
   }
   async function nextStep(){
     const d=S.draft;

@@ -16,6 +16,7 @@ The implementation offers Google, Apple and six-digit Email OTP. It replaces the
 | --- | --- | --- |
 | `FIREBASE_PROJECT_ID` | Existing variable | Existing Firebase project; do not change account identity/project. |
 | `ONBOARDING_PRIVACY_URL` | Variable | Owner-approved HTTPS policy URL; required before collecting new onboarding consent. |
+| `AUTH_APPLE_ENABLED` | Variable | Set to `1` only after Apple provider configuration is confirmed; `0` keeps the visible option unavailable. |
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | Secret | Project-matching Firebase service account with RSA key, kept on the server. |
 | `AUTH_OTP_PEPPER` | Secret | At least 32 random bytes of entropy, generated privately. |
 | `AUTH_EMAIL_FROM` | Variable | Actual verified sender email address. |

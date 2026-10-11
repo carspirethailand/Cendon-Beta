@@ -458,3 +458,16 @@ test('legacy decorated login art is absent from both the dedicated login and nat
   const html=readFileSync(new URL('../login.html',import.meta.url),'utf8');assert.doesNotMatch(html,/class="stage"|class="cmk"|id="bGoogle"/);
   const chat=readFileSync(new URL('../chat.html',import.meta.url),'utf8');const pane=chat.match(/<section[^>]*id="v-login"[\s\S]*?<\/section>/)[0];assert.doesNotMatch(pane,/logo-halo|big-logo|<svg|login\.google/);
 });
+
+test('account flow: unavailable Apple and Email are labelled while Google remains actionable',async()=>{
+  const f=fixture({pathname:'/login',transport:c=>c.path==='/api/auth/config'?response({emailOtpReady:false,appleAuthReady:false}):undefined});await settle();
+  assert.equal(f.root().querySelector('[data-provider="apple"]').disabled,true);assert.equal(f.root().querySelector('[data-provider="email"]').disabled,true);
+  assert.equal(f.root().querySelector('[data-provider="google"]').disabled,false);assert.match(f.root().innerHTML,/Apple ยังไม่เปิดใช้งาน/);
+});
+
+test('account flow: a stalled provider popup cannot keep every login button disabled forever',async()=>{
+  const pending=deferred(),f=fixture({pathname:'/login'});f.auth.signInWithPopup=()=>pending.promise;await settle();
+  f.click('data-provider=google');await settle();assert.equal(f.root().querySelector('[data-provider="google"]').disabled,true);
+  f.advance(90000);await settle();assert.equal(f.root().querySelector('[data-provider="google"]').disabled,false);assert.match(f.root().innerHTML,/หน้าต่างล็อกอินยังไม่ตอบ/);
+  pending.resolve();await settle();assert.equal(f.api.ready(),false);assert.equal(f.calls.some(c=>c.path==='/api/onboarding'&&c.method==='POST'),false);
+});

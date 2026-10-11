@@ -31,6 +31,10 @@ Existing Firebase email accounts retain their UID after verified OTP, preserving
 
 Completed-account navigation uses a quiet presentation restore only after Firebase returns the same UID and both account-scoped completion cache and the matching projection are present. It does not mark cached state as fresh server authority. The authenticated status check continues in the background, without an extra sequential login write in the shared module. A required setup, denied status, changed UID or server failure still restores the blocking gate; denied or invalidated completion caches are removed. The dedicated login/first-use screen keeps its normal verification flow.
 
+For ordinary same-tab navigation, a small synchronous `account-paint.js` runs before styles. The source page must already have an actual Firebase user and matching UID-scoped completed cache. It transfers only UID, identity generation, destination shell and timestamp through session storage; the target consumes it once within ten seconds. No credential, birthday, email or role is transferred. This allows the shell to paint before the destination SDK restores identity, and prevents the legacy level bootstrap from hiding it again. It does not enable API access or certify fresh server completion. Sign-out, another identity generation, required onboarding or a denied account status invalidates the presentation. Direct cold visits and missing/blocked storage retain the normal guarded startup.
+
+Consecutive navigation before SDK restoration may forward the already-consumed presentation, but cannot extend its original ten-second deadline. Native chat entry also restores the no-car chooser immediately for that matched context instead of showing a hidden login pane. Profile's own back button prepares its same-origin referrer before returning through history.
+
 At this release the owner confirmed there is no outbound email service yet. The login screen retains exactly Google, Apple and Email, but marks Email unavailable instead of claiming delivery. Apple uses the Firebase provider and still requires its own provider configuration. Do not claim either provider was verified using a real account merely because the mock tests passed. Birthday fields are also excluded from persistent draft storage; refresh requires re-entering the birthday, while completed accounts keep their authoritative server profile.
 
 New first-use setup is: agreement acknowledgement, nickname, Gregorian birthday, language, distance unit, currency, completion, then an optional spotlight tour. The current distance UI uses km / mi, preserving the app's metric / imperial behavior; the user's `m` wording still needs confirmation before changing distance semantics.
@@ -42,6 +46,8 @@ Birthday stays in the private canonical profile and is excluded from generic set
 ## Local UI verification
 
 `node test/account-preview.mjs` serves a clearly labelled local mock on `http://127.0.0.1:4176/login`. It does not send email, create Firebase accounts or accept real agreements. Account data exists only in in-memory SQLite. The mock uses actual onboarding validation and actual account/tutorial UI. It is a test harness, not a production fallback.
+
+Use `--completed --slow-identity --slow-check` to seed a RAM-only completed fixture and delay identity restoration and the account check by 1.2 seconds each. The mock logs visibility on the actual first animation frame, so a background-only flash cannot be masked by an immediately restored mock identity.
 
 ## Primary references
 

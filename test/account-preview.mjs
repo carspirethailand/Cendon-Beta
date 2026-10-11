@@ -28,6 +28,7 @@ await DB.batch(ONBOARDING_SQL.map(sql=>DB.prepare(sql)));
 sqlite.prepare('INSERT INTO users VALUES (?,?,?,?,?)').run(UID,'ผู้ทดสอบ','preview@example.test','user',Date.now()+1000);
 const env={DB,ONBOARDING_PRIVACY_URL:'https://preview.example.test/privacy'};
 const slowCheck=process.argv.includes('--slow-check')?1200:0;
+const slowIdentity=process.argv.includes('--slow-identity')?1200:0;
 if(process.argv.includes('--completed')){
   // Disposable RAM-only fixture, not a real agreement or Firebase account.
   await handleOnboarding(new Request(ORIGIN+'/api/onboarding',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({consent:true,termsVersion:ONBOARDING_VERSIONS.terms,privacyVersion:ONBOARDING_VERSIONS.privacy,name:'Cendon Test',birthDate:'2000-05-15',lang:'th',distance:'km',currency:'THB'})}),env,{payload:{sub:UID}});
@@ -41,20 +42,29 @@ const authFixture=`(function(W,D){
   const user={uid:${JSON.stringify(UID)},email:'preview@example.test',displayName:'ผู้ทดสอบ',photoURL:'',getIdToken:async()=>${JSON.stringify(TOKEN)}};
   const callbacks=new Set();
   const login=/^\\/login(?:\\.html)?\\/?$/.test(location.pathname);
-  const a={currentUser:login?null:user,
+  const identityDelay=login?0:${slowIdentity};let restored=!identityDelay,resolveIdentity;
+  const initialIdentity=new Promise(resolve=>{resolveIdentity=resolve});
+  const a={currentUser:login||identityDelay?null:user,
     setPersistence:async()=>{},
-    onAuthStateChanged(fn){callbacks.add(fn);queueMicrotask(()=>{if(callbacks.has(fn))fn(a.currentUser)});return()=>callbacks.delete(fn)},
+    onAuthStateChanged(fn){callbacks.add(fn);if(restored)queueMicrotask(()=>{if(callbacks.has(fn))fn(a.currentUser)});return()=>callbacks.delete(fn)},
     getRedirectResult:async()=>null,
     async signInWithPopup(){a.currentUser=user;callbacks.forEach(fn=>fn(user));return{user}},
     async signInWithRedirect(){return a.signInWithPopup()},
     async signInWithCustomToken(token){if(token!=='preview-only-custom-token')throw{code:'auth/invalid-custom-token'};return a.signInWithPopup()},
     async signOut(){a.currentUser=null;callbacks.forEach(fn=>fn(null))},
   };
+  if(identityDelay)setTimeout(()=>{restored=true;a.currentUser=user;resolveIdentity(user);callbacks.forEach(fn=>fn(user))},identityDelay);else resolveIdentity(a.currentUser);
   class Provider{constructor(id){this.providerId=id||'google.com'}setCustomParameters(){return this}addScope(){return this}}
   function auth(){return a}auth.Auth={Persistence:{LOCAL:'local'}};auth.GoogleAuthProvider=Provider;auth.OAuthProvider=Provider;
   W.firebase={apps:[{name:'[DEFAULT]'}],auth,initializeApp(){return W.firebase.apps[0]}};
-  W.auth=a;W.spireAuth=a;W.spireFbReady=Promise.resolve(true);W.spireInitialAuthReady=Promise.resolve(a.currentUser);W.spireRedirectResult=Promise.resolve(null);
-  W.spireAwaitUser=async()=>a.currentUser;
+  W.auth=a;W.spireAuth=a;W.spireFbReady=Promise.resolve(true);W.spireInitialAuthReady=initialIdentity;W.spireRedirectResult=Promise.resolve(null);
+  W.spireAwaitUser=async()=>{await initialIdentity;return a.currentUser};
+  // Observe the actual first rendered frame, not only an already-restored SDK.
+  // This contains no user data and is present only in the disposable mock.
+  D.addEventListener('DOMContentLoaded',()=>requestAnimationFrame(()=>{
+    const visible=s=>[...D.querySelectorAll(s)].some(el=>{const c=getComputedStyle(el);return c.visibility!=='hidden'&&c.display!=='none'&&c.opacity!=='0'&&el.getBoundingClientRect().height>0});
+    console.info('[preview first paint] '+JSON.stringify({path:location.pathname,ms:Math.round(performance.now()),gate:D.documentElement.dataset.gate,level:D.documentElement.dataset.level,phase:D.body.dataset.phase,main:visible('.main, .wrap'),nav:visible('.navwrap, .pill, #mnav'),identityRestored:restored,accountFlow:visible('#accountFlow:not([hidden])')}));
+  }),{once:true});
   const nativeFetch=W.fetch.bind(W);
   W.fetch=(input,init)=>{const raw=typeof input==='string'?input:input instanceof URL?input.href:input.url;const u=new URL(raw,location.href);
     if(u.origin!==location.origin&&(/^\\/api\\//.test(u.pathname)||/workers\\.dev$|firebase|identitytoolkit|securetoken/.test(u.hostname)))return Promise.reject(new Error('Preview blocks external account/API requests'));
@@ -133,7 +143,7 @@ const server=http.createServer(async(req,res)=>{
     if(!full.startsWith(ROOT+path.sep)||!TYPES[path.extname(full).toLowerCase()])return send(res,403,{error:'preview_private_path'});
     if(path.extname(full)==='.json'&&!['strings.json','handbookparts.json'].includes(relative))return send(res,403,{error:'preview_private_path'});
     const data=await readFile(full),ext=path.extname(full).toLowerCase();
-    const result=ext==='.html'?previewHtml(data.toString('utf8')):ext==='.js'?localize(data.toString('utf8')):data;
+    let result=ext==='.html'?previewHtml(data.toString('utf8')):ext==='.js'?localize(data.toString('utf8')):data;
     send(res,200,result,TYPES[ext]);
   }catch(e){send(res,e.code==='ENOENT'?404:400,{error:'preview_request_failed',testOnly:true})}
 });

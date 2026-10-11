@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
+<script src="/account-paint.js?v=2026-10-11-r1"></script>
 <link rel="stylesheet" href="/account.css">
 <script src="/cendon-tour.js" defer></script>
 <script src="/account-actions.js" defer></script>
-<script src="/account.js?v=2026-10-11-r3" defer></script>
+<script src="/account.js?v=2026-10-11-r4" defer></script>
 <meta charset="UTF-8"/>
 <!-- ที่อยู่แบบลึก (/tech/<ร้าน>/reviews) — ไฟล์ประกอบทุกตัวอ้างจากรากเว็บเสมอ -->
 <base href="/">
@@ -4555,7 +4556,7 @@ async function pullCars(){
   $("signinBtn").onclick=()=>{try{needLogin()}catch(e){location.href="/login?next=/"}};
   /* หน้าหลัก: ถ้ามีอะไรเปิดซ้อนอยู่ ถอยกลับหน้าแรก (ไม่ต้องโหลดใหม่) */
   document.querySelectorAll('.navwrap [data-view="home"]').forEach(x=>x.addEventListener("click",ev=>{ev.preventDefault();if(window.Nav&&Nav.started&&Nav.top())Nav.home();else location.href="/"}));
-  dd.querySelector('[data-view="profile"]').onclick=()=>location.href="/profile";
+  dd.querySelector('[data-view="profile"]').onclick=()=>{if(window.CendonPaint)CendonPaint.prepare('/profile');location.href="/profile"};
   $("ddJobs").onclick=()=>{dd.classList.remove("show");try{jobs()}catch(e){}};
   $("ddStudio").onclick=()=>{dd.classList.remove("show");openStudio()};
   $("logoutBtn").onclick=()=>{try{firebase.auth().signOut().then(()=>location.reload())}catch(e){location.reload()}};

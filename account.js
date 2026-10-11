@@ -233,6 +233,7 @@
       S.status=data;
       if(canonical(data,u.uid)){publish(data);enter();return}
       write(scoped('status'),null);
+      if(W.CendonPaint)W.CendonPaint.invalidate(u.uid);
       if(data.status!=='required'||data.policy?.enabled!==true)throw new Error('onboarding_policy_unavailable');
       const cached=read(scoped('draft'),{});
       S.draft={lang:'th',distance:'km',currency:'THB',name:u.displayName||'',...cached};
@@ -241,12 +242,14 @@
     }catch(e){if(serial!==S.serial||!uidIs(u.uid))return;
       const cache=read(scoped('status'),null);
       if(canonical(cache,u.uid)&&!e.status){publish(cache);enter();return}
-      S.status=null;if(e.status===401||e.status===403)write(scoped('status'),null);
+      S.status=null;if(e.status===401||e.status===403){write(scoped('status'),null);if(W.CendonPaint)W.CendonPaint.invalidate(u.uid)}
       S.phase='retry';S.error=errorText(e);render();
     }
   }
   function changed(u){if(!u){S.serial++;S.uid=null;S.status=null;S.draft={};S.busy=false;S.challenge=null;if(W.CendonTour)CendonTour.stop();
+      if(W.CendonPaint)W.CendonPaint.observed(null);
       if(LOGIN||PRIVATE.test(location.pathname)){S.phase='auth';if(LOGIN)restoreEmail();render()}else close();return}
+    if(W.CendonPaint)W.CendonPaint.observed(u.uid);
     emailSession(null);if(u.uid!==S.uid)load(u);
   }
   function openLogin(next){S.next=next?safeNext(next):null;

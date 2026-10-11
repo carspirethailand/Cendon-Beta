@@ -95,7 +95,7 @@ function tabHref(k){
   return FILES[k]||"/";
 }
 function go(k){
-  if(k==="chat"){ location.href="/chat"; return }
+  if(k==="chat"){ if(window.CendonPaint)CendonPaint.prepare('/chat');location.href="/chat"; return }
   if(k==="account"){
     /* ยังไม่ได้เข้าระบบ → กดปุ่มเดิมของหน้า ซึ่งผูกกับ Firebase ไว้แล้ว */
     if(!signedIn()){ const b=$("signinBtn"); if(b){b.click();return} }
@@ -110,7 +110,7 @@ function go(k){
   /* ผู้ใช้กดเองต้องไปทันที — switchView ของหน้าย่อยไม่รับคำสั่งย้ายหน้าจนโหลดเสร็จแล้ว 1.2 วิ
      (กันหน้าเด้งเองตอนบูต) ช่วงนั้นกดแท็บแล้วเงียบ ผู้ใช้เลยรู้สึกว่าแอปค้าง */
   const f=FILES[k];
-  if(f){ location.href=f; return }
+  if(f){ if(window.CendonPaint)CendonPaint.prepare(f);location.href=f; return }
   try{ if(typeof window.switchView==="function")window.switchView(k) }catch(e){}
 }
 

@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="th" data-ctheme="midnight">
 <head>
-<script>document.documentElement.dataset.gate="1";</script>
+<script src="/account-paint.js?v=2026-10-11-r1"></script>
 <link rel="stylesheet" href="/account.css">
 <script src="/cendon-tour.js" defer></script>
 <script src="/account-actions.js" defer></script>
-<script src="/account.js?v=2026-10-11-r3" defer></script>
+<script src="/account.js?v=2026-10-11-r4" defer></script>
 <meta charset="UTF-8"/>
 <!-- ที่อยู่แบบลึก (/chat/…) — ไฟล์ประกอบทุกตัวอ้างจากรากเว็บเสมอ -->
 <base href="/">
@@ -3372,7 +3372,7 @@ function has(feat){
 /* ─────────── บังคับใช้กับหน้าจอ ─────────── */
 /* ใส่ระดับไว้ที่ <html> ตั้งแต่ต้น CSS จะได้ซ่อนของที่ไม่ต้องใช้ได้ทันที
    โดยไม่ต้องรอสคริปต์ตัวอื่นวาดเสร็จก่อนแล้วค่อยกะพริบหาย */
-D.documentElement.dataset.level=done()?level():"pending";
+D.documentElement.dataset.level=done()?level():(window.CendonPaint&&window.CendonPaint.level())||"pending";
 
 /* ตัวเลือกระดับในหน้าโปรไฟล์ของเว็บหลัก — วางไว้บนสุดของกล่องตั้งค่า
    เพราะมันเปลี่ยนหน้าตาทั้งแอป ควรเจอก่อนเรื่องภาษาหรือธีม */
@@ -5484,7 +5484,7 @@ function markLang(){document.querySelectorAll(".lang-opt").forEach(b=>b.classLis
 
 /* ===== NAVIGATION ===== */
 function goHome(){try{sessionStorage.setItem("spire_stayHome","1")}catch(e){}location.href="/"}
-function goGarage(){try{sessionStorage.setItem("spire_stayHome","1")}catch(e){}location.href="/garage?add=1"}
+function goGarage(){try{sessionStorage.setItem("spire_stayHome","1")}catch(e){}if(window.CendonPaint)CendonPaint.prepare('/garage');location.href="/garage?add=1"}
 
 /* ===== TOAST ===== */
 let tt;function toast(m,ic){const el=$("toast");el.innerHTML=`<i class="ti ${ic||"ti-check"}"></i>${esc(m)}`;el.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("show"),3200)}
@@ -5962,8 +5962,8 @@ let pendingEntry=null,entered=false;
   if(useFb){setPhase("login")} // onAuthStateChanged will route us onward
   /* เคยล็อกอินบนเครื่องนี้แล้ว + มีรถในเครื่อง → เข้าหน้าแชทเลยทันที ไม่ต้องรอ Firebase/หลังบ้าน (จอดำตอนรีเฟรช)
      ถ้าตรวจแล้วจริงๆ หลุดล็อกอิน onAuthStateChanged จะพากลับหน้าเข้าสู่ระบบเอง */
-  if(useFb&&currentUser&&currentUser.uid&&garage().length){try{runEntry()}catch(e){}}
-  else{
+  if(useFb&&currentUser&&currentUser.uid&&(garage().length||document.documentElement.dataset.accountPaint==='handoff'&&window.CendonPaint&&CendonPaint.level())){try{runEntry()}catch(e){}}
+  else if(!useFb){
     // Firebase unavailable — cannot authenticate, show the gate with an error
     setPhase("login");
     $("loginStatus").innerHTML='<i class="ti ti-alert-triangle" style="font-size:18px"></i> ระบบล็อกอินไม่พร้อมใช้งาน';
@@ -6030,7 +6030,7 @@ function goNav(k){
   const F={home:"/",garage:"/garage",magazine:"/news",
            news:"/news",shop:"/spares",spares:"/spares",
            profile:"/profile"};
-  location.href=F[k]||"/";
+  if(window.CendonPaint)CendonPaint.prepare(F[k]||"/");location.href=F[k]||"/";
 }
 /* ตัวเชื่อมเครื่องมือครอบฟังก์ชันนี้เพื่อดัก "tools" ให้เปิดเมนูในห้องแชต
    จึงต้องยกขึ้น window และให้ทุกปุ่มเรียกผ่าน window.goNav ไม่ใช่ตัวในสโคป

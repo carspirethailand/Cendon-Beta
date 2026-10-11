@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<script>document.documentElement.dataset.gate="1";</script>
+<script src="/account-paint.js?v=2026-10-11-r1"></script>
 <link rel="stylesheet" href="/account.css">
 <script src="/cendon-tour.js" defer></script>
 <script src="/account-actions.js" defer></script>
-<script src="/account.js?v=2026-10-11-r3" defer></script>
+<script src="/account.js?v=2026-10-11-r4" defer></script>
 <meta charset="UTF-8"/>
 <!-- ที่อยู่แบบลึก (/news/…) — ไฟล์ประกอบทุกตัวอ้างจากรากเว็บเสมอ -->
 <base href="/">
@@ -5033,7 +5033,7 @@ function openChat(opts){opts=opts||{};
   const p=new URLSearchParams();
   if(opts.attach)p.set("attach",opts.attach);
   if(opts.starter)p.set("starter","1");
-  location.href="/chat"+(p.toString()?"?"+p.toString():"");
+  if(window.CendonPaint)CendonPaint.prepare('/chat');location.href="/chat"+(p.toString()?"?"+p.toString():"");
 }
 function updateFabBadge(){
   const badge=$("fabBadge");if(!badge)return;
@@ -5645,7 +5645,7 @@ function has(feat){
 /* ─────────── บังคับใช้กับหน้าจอ ─────────── */
 /* ใส่ระดับไว้ที่ <html> ตั้งแต่ต้น CSS จะได้ซ่อนของที่ไม่ต้องใช้ได้ทันที
    โดยไม่ต้องรอสคริปต์ตัวอื่นวาดเสร็จก่อนแล้วค่อยกะพริบหาย */
-D.documentElement.dataset.level=done()?level():"pending";
+D.documentElement.dataset.level=done()?level():(window.CendonPaint&&window.CendonPaint.level())||"pending";
 
 /* ตัวเลือกระดับในหน้าโปรไฟล์ของเว็บหลัก — วางไว้บนสุดของกล่องตั้งค่า
    เพราะมันเปลี่ยนหน้าตาทั้งแอป ควรเจอก่อนเรื่องภาษาหรือธีม */
@@ -13793,7 +13793,7 @@ var orig=window.switchView;
 window.switchView=function(v){
   if(v===window.__SPIRE_PAGE__) return orig?orig.apply(this,arguments):undefined;
   var f=window.__SPIRE_FILES__[v];
-  if(f){ if(ready)location.href=f; return }
+  if(f){ if(ready){if(window.CendonPaint)CendonPaint.prepare(f);location.href=f} return }
   return orig?orig.apply(this,arguments):undefined;
 };
 })();

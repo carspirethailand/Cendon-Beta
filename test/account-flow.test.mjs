@@ -18,7 +18,7 @@ const complete = (uid = 'user-A', overrides = {}) => ({ status: 'completed', com
  * the APIs this module uses and parses its real rendered inputs/buttons. Auth,
  * transport, storage and timers are test-only; no real account or email is used.
  */
-function fixture({ uid = null, pathname = '/garage', search = '', store = new Map(), sessionStore = new Map(), server = required(), transport, token, proxyAuth = false, restoreAfterMs = 0 } = {}) {
+function fixture({ uid = null, pathname = '/garage', search = '', store = new Map(), sessionStore = new Map(), server = required(), transport, token, proxyAuth = false, restoreAfterMs = 0, identityPending = false, paint = false } = {}) {
   let document, callback, clock = Date.UTC(2026, 9, 10, 12), timerId = 0;
   const events = new Map(), timers = new Map(), calls = [], oauth = [], customTokens = [], marks = [], navigations = [], tours = [], paints=[];
   const decode = text => String(text).replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
@@ -90,7 +90,7 @@ function fixture({ uid = null, pathname = '/garage', search = '', store = new Ma
   const storage = { getItem: key => store.get(key) ?? null, setItem: (key, value) => store.set(key, String(value)), removeItem: key => store.delete(key) };
   const sessionStorage = { getItem: key => sessionStore.get(key) ?? null, setItem: (key, value) => sessionStore.set(key, String(value)), removeItem: key => sessionStore.delete(key) };
   const user = id => id ? { uid: id, displayName: 'Fixture ' + id, photoURL: '', getIdToken: () => token?.[id]?.promise || Promise.resolve('token-' + id) } : null;
-  const auth = { currentUser: user(uid), onAuthStateChanged(fn) { callback = fn; if(restoreAfterMs)timers.set(++timerId,{fn:()=>fn(this.currentUser),at:clock+restoreAfterMs,ms:restoreAfterMs});else fn(this.currentUser); return () => {}; }, getRedirectResult: async () => null,
+  const auth = { currentUser: identityPending?null:user(uid), onAuthStateChanged(fn) { callback = fn; if(restoreAfterMs)timers.set(++timerId,{fn:()=>{if(identityPending)this.currentUser=user(uid);fn(this.currentUser)},at:clock+restoreAfterMs,ms:restoreAfterMs});else fn(this.currentUser); return () => {}; }, getRedirectResult: async () => null,
     async signOut() { this.currentUser = null; callback(null); },
   };
   if (!proxyAuth) Object.assign(auth, {
@@ -111,6 +111,7 @@ function fixture({ uid = null, pathname = '/garage', search = '', store = new Ma
   const tour = { async start(options) { tours.push(options); return true; }, stop() {} };
   const window = { auth, spireAuth: auth, firebase, BACKEND_URL: 'https://backend.unit.test', localStorage: storage, CendonTour: tour,
     cloudMark: key => marks.push(key), spireSetLang() {}, spireApplySetup() {},
+    addEventListener(name,fn){if(!events.has(name))events.set(name,[]);events.get(name).push(fn)},
   };
   class FixtureDate extends Date { constructor(...args) { super(...(args.length ? args : [clock])); } static now() { return clock; } }
   const sandbox = { window, document, location, localStorage: storage, sessionStorage, firebase, CendonTour: tour,
@@ -133,6 +134,7 @@ function fixture({ uid = null, pathname = '/garage', search = '', store = new Ma
       throw new Error('Unexpected fixture route ' + path);
     },
   };
+  if(paint)vm.runInNewContext(readFileSync(new URL('../account-paint.js',import.meta.url),'utf8'),sandbox);
   vm.runInNewContext(source, sandbox);
   const root = () => document.getElementById('accountFlow');
   const emit = (name, target, extra = {}) => { for (const fn of events.get(name) || []) fn({ target, preventDefault() {}, ...extra }); };
@@ -529,4 +531,24 @@ test('switching identity during quiet verification immediately blocks the old ac
   const pending=deferred(),f=fixture({uid:'user-A',store:completedStore(),transport:c=>c.path==='/api/onboarding'&&c.uid==='user-A'?pending.promise:undefined});await settle();assert.equal(f.root().hidden,true);
   f.switchAccount('user-B');await settle();assert.equal(f.root().hidden,false);assert.ok(f.root().querySelector('[name="terms"]'));
   pending.resolve(response(complete('user-A')));await settle();assert.equal(f.api.completed(),false);assert.equal(f.window.spireSetupRead().uid,undefined);assert.equal(f.document.documentElement.dataset.gate,'1');
+});
+
+function paintStores(){
+  const store=completedStore(),generation='fixture-generation';store.set('cendon_paint_identity',JSON.stringify({uid:'user-A',generation}));
+  return {store,sessionStore:new Map([['cendon_paint_handoff',JSON.stringify({uid:'user-A',generation,target:'/garage',at:Date.UTC(2026,9,10,12)})]])};
+}
+test('paint handoff and shared account module keep the shell visible while both identity and server check are delayed',async()=>{
+  const pending=deferred(),f=fixture({uid:'user-A',...paintStores(),paint:true,identityPending:true,restoreAfterMs:1200,transport:c=>c.path==='/api/onboarding'?pending.promise:undefined});
+  assert.equal(f.auth.currentUser,null);assert.equal(f.document.documentElement.dataset.gate,'0');assert.equal(f.document.documentElement.dataset.level,'enthusiast');
+  assert.equal(f.api.completed(),false);assert.equal(f.api.ready(),false);assert.equal(f.calls.length,0);assert.deepEqual(f.paints,[]);
+  f.advance(1200);await settle();assert.equal(f.document.documentElement.dataset.gate,'0');assert.deepEqual(f.paints,[]);assert.equal(f.api.completed(),false);
+  pending.resolve(response(complete()));await settle();assert.equal(f.api.completed(),true);assert.equal(f.root().hidden,true);assert.deepEqual(f.paints,[]);
+});
+test('required or denied server responses revoke consumed paint context and prevent a later handoff',async()=>{
+  for(const result of [response(required()),response({error:'unauthorized'},401),response({error:'suspended'},403)]){
+    const pending=deferred(),f=fixture({uid:'user-A',...paintStores(),paint:true,transport:c=>c.path==='/api/onboarding'?pending.promise:undefined});await settle();
+    assert.equal(f.document.documentElement.dataset.gate,'0');pending.resolve(result);await settle();
+    assert.equal(f.document.documentElement.dataset.gate,'1');assert.equal(f.api.completed(),false);assert.equal(f.window.CendonPaint.prepare('/chat'),false);
+    assert.equal(f.store.has('cendon_paint_identity'),false);assert.equal(f.sessionStore.has('cendon_paint_handoff'),false);
+  }
 });

@@ -71,7 +71,7 @@ async function ensure(c,opt){
     clog("หลังบ้านตอบ: "+r.status,{car,ok:r.status!=="failed"&&r.status!=="limited",ms:r._ms,auth:r._auth,err:r.error||"",trace:r.trace});
     /* อีกคนกำลังหาอยู่ — รอผลของเขา */
     let n=0;
-    for(;n<20&&r.status==="pending";n++){await new Promise(z=>setTimeout(z,2000));r=await call("GET","/api/car-spec?"+new URLSearchParams(Q));}
+  for(;n<20&&r.status==="pending";n++){await new Promise(z=>setTimeout(z,2000));r=await call("GET","/api/car-spec?"+new URLSearchParams(Q));}
     if(r.status==="pending")return {...r,status:"timeout",retryable:true};
     if(n)clog("รอผลค้น "+n+" รอบ → "+r.status,{car,ok:DONE.includes(r.status),ms:Date.now()-t0,err:r.error||(r.status==="pending"?"เกิน 2 นาทีแล้วยังค้นไม่เสร็จ":"")});
     if(r.key&&r.key!==k)return {status:'unconfirmed',code:'unconfirmed'};
@@ -109,12 +109,12 @@ function variantIdx(c,s){
 }
 const variantKey=v=>JSON.stringify([v.name,v.engine?.v,v.cc?.v,v.fuel,v.gearbox?.v,v.drive?.v]);
 function head(s){
-  const sc=(s.data&&s.data.score)||{},n=(s.sources||[]).length;
+  const sc=(s.data&&s.data.score)||{},n=(s.sources||[]).length,sites=s.data?.coverage?.siteCount||new Set((s.sources||[]).filter(x=>safeURL(x.url)).map(x=>new URL(x.url).hostname.replace(/^www\./,''))).size;
   return `<div class="cs-head">
     ${s.verified?`<span class="cs-badge ok"><i class="ti ti-rosette-discount-check"></i>${T("ทีมงานตรวจแล้ว","Verified by our team")}</span>`
-      :`<span class="cs-badge"><i class="ti ti-world-search"></i>${T(`AI · ${n} แหล่ง · ผลค้นตรงกัน ${sc.confirmed||0}/${sc.cells||0} ช่อง`,`AI · ${n} sources · ${sc.confirmed||0}/${sc.cells||0} fields agree`)}</span>`}
+      :`<span class="cs-badge"><i class="ti ti-world-search"></i>${T(`AI · ${sites} เว็บ · ${n} เอกสาร · ผลสกัดตรงกัน ${sc.confirmed||0}/${sc.cells||0} ช่อง`,`AI · ${sites} sites · ${n} documents · ${sc.confirmed||0}/${sc.cells||0} fields agree`)}</span>`}
     ${s.data&&s.data.generation?`<span class="cs-gen">${esc(s.data.generation)}${s.data.market?" · "+esc(s.data.market):""}</span>`:""}
-  </div>${!s.verified?`<p class="cs-hint">${T(n<5?"ยังได้แหล่งอ้างอิงไม่ครบ 5 แหล่ง — ตรวจคู่มือและรุ่นย่อยก่อนนำไปใช้":"ผลค้นของ AI ยังไม่ใช่การรับรองสเปก ตรวจคู่มือและรุ่นย่อยก่อนนำไปใช้",n<5?"Fewer than five sources found. Check the manual and variant before use.":"AI research is not a specification certification. Check the manual and variant before use.")}</p>`:""}`;
+  </div>${!s.verified?`<p class="cs-hint">${T(sites<5?"ยังได้เว็บอ้างอิงไม่ครบ 5 เว็บ — ผลสกัดสองรอบไม่ใช่สองแหล่งอิสระ ตรวจคู่มือและรุ่นย่อยก่อนนำไปใช้":"ผลค้นของ AI ยังไม่ใช่การรับรองสเปก ตรวจคู่มือและรุ่นย่อยก่อนนำไปใช้",sites<5?"Fewer than five sites found. Two extraction passes are not independent sources. Check the manual and variant before use.":"AI research is not a specification certification. Check the manual and variant before use.")}</p>`:""}`;
 }
 function specHTML(c,s){
   const d=s.data||{},f=d.facts||{},vs=d.variants||[],vi=variantIdx(c,s),v=vs[vi]||{};

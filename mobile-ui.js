@@ -47,6 +47,7 @@ function signedIn(){
   return !!(a&&getComputedStyle(a).display!=="none");
 }
 
+const unread=()=>{try{return +(localStorage.getItem("spire_msgUnread")||0)>0}catch(e){return false}};
 function navHTML(){
   const cur=page();
   return TABS.map(t=>{
@@ -58,7 +59,7 @@ function navHTML(){
     /* ลิงก์จริง (ไม่ใช่ปุ่ม) — เบราว์เซอร์เตรียมหน้าปลายทางตอนนิ้วแตะได้ (speculation rules) */
     return `<a class="mtab${on?" on":""}" href="${tabHref(t.k)}" data-mnav="${t.k}"
       aria-label="${T(t.th,t.en)}"${on?' aria-current="page"':""}>
-      <span class="mt-i" data-mslot="${t.k}"><i class="ti ${t.ic}"></i></span>
+      <span class="mt-i" data-mslot="${t.k}"${t.k==="chat"?' style="position:relative"':""}><i class="ti ${t.ic}"></i>${t.k==="chat"&&unread()?'<i class="mt-dot" style="position:absolute;top:-1px;right:-5px;width:9px;height:9px;border-radius:50%;background:#E9682A;box-shadow:0 0 0 2px var(--bg,#fff)"></i>':""}</span>
       <b>${T(t.th,t.en)}</b></a>`;
   }).join("");
 }
@@ -89,13 +90,14 @@ function mountNav(){
 }
 
 const FILES={home:"/",garage:"/garage",magazine:"/news",shop:"/spares",profile:"/profile"};
+/* แท็บ "แชต" = กล่องข้อความแบบแอปแชต (Cendon AI ปักหมุดบนสุด + ช่างที่เคยคุย) อยู่ที่ /messages */
 function tabHref(k){
-  if(k==="chat")return "/chat";
+  if(k==="chat")return "/messages";
   if(k==="account")return signedIn()?"/profile":"/login?next=%2Fprofile";
   return FILES[k]||"/";
 }
 function go(k){
-  if(k==="chat"){ if(window.CendonPaint)CendonPaint.prepare('/chat');location.href="/chat"; return }
+  if(k==="chat"){ if(typeof window.openInbox==="function"){window.openInbox();return} if(window.CendonPaint)CendonPaint.prepare('/messages');location.href="/messages"; return }
   if(k==="account"){
     /* ยังไม่ได้เข้าระบบ → กดปุ่มเดิมของหน้า ซึ่งผูกกับ Firebase ไว้แล้ว */
     if(!signedIn()){ const b=$("signinBtn"); if(b){b.click();return} }
@@ -341,6 +343,7 @@ function boot(){
   // Canvas/style animations are deliberately not observed across the entire body.
   MQ.addEventListener?MQ.addEventListener("change",apply):MQ.addListener(apply);
   addEventListener("spire:lang",kick);
+  addEventListener("spire:unread",kick);addEventListener("storage",e=>{if(e.key==="spire_msgUnread")kick()});
   try{window.spireOnLang&&window.spireOnLang(kick)}catch(e){}
 }
 if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",boot);

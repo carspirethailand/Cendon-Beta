@@ -863,6 +863,41 @@ body.onmap .modes{display:none}
 @media(prefers-reduced-motion:reduce){.cc-room,.cc-a{animation:none}}
 /* ไม่มีปุ่มสลับลูกค้า/ช่างแล้ว — Studio เข้าจากปุ่มโปรไฟล์ */
 .modes{display:none!important}
+/* ══ ข้อความ (แท็บแชต) — แบบแอปแชต: Cendon ปักหมุดบนสุด แล้วห้องคุยกับช่างเรียงล่าสุดก่อน ══ */
+.ib-list{display:grid}
+.ib-row{display:flex;align-items:center;gap:13px;width:100%;padding:11px 0;border:0;border-bottom:1px solid var(--line-2);background:none;color:var(--ink);text-align:left;font:inherit;text-decoration:none;cursor:pointer}
+.ib-list .ib-row:last-child{border-bottom:0}
+.ib-av{flex:none;display:grid;place-items:center;width:52px;height:52px;border-radius:50%;font:700 19px var(--kd);color:var(--ink);background:var(--surface-2) center/cover no-repeat;box-shadow:inset 0 0 0 1px var(--line)}
+.ib-av.cen{background:linear-gradient(160deg,#1C1C20,#09090B);box-shadow:inset 0 1px 0 rgba(255,255,255,.14)}
+.ib-av.cen .cmk{width:22px;height:26px;color:var(--co,#E9682A)}
+html[data-theme="dark"] .ib-av.cen{box-shadow:inset 0 0 0 1px rgba(255,255,255,.16)}
+.ib-b{flex:1;min-width:0}
+.ib-t{display:flex;align-items:baseline;gap:8px}
+.ib-t b{flex:1;min-width:0;font-size:15.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ib-t time{flex:none;font-size:12px;color:var(--faint)}
+.ib-s{display:flex;align-items:center;gap:8px;margin-top:2px}
+.ib-s small{flex:1;min-width:0;font-size:13.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ib-s em{flex:none;min-width:20px;height:20px;padding:0 6px;border-radius:10px;font:700 11.5px/20px var(--kb);font-style:normal;text-align:center;color:#fff;background:var(--co,#E9682A)}
+.ib-row.new .ib-t b{font-weight:700}.ib-row.new .ib-s small{color:var(--ink)}.ib-row.new .ib-t time{color:var(--ink);font-weight:600}
+.ib-sub{display:block;margin-top:3px;font-size:12px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ib-ai{display:inline-block;margin-left:4px;padding:1px 6px;border-radius:6px;font:700 10.5px/1.5 var(--kb);font-style:normal;letter-spacing:.04em;vertical-align:2px;color:var(--co,#E9682A);background:color-mix(in srgb,var(--co,#E9682A) 12%,transparent)}
+.ib-pin{flex:none;font-size:15px;color:var(--faint);transform:rotate(30deg)}
+.ib-row.ib-top{padding:14px 0;border-bottom:1px solid var(--line)}
+.ib-studio{display:flex;align-items:center;gap:10px;width:100%;margin:12px 0 2px;padding:11px 14px;border:0;border-radius:12px;background:var(--surface-2);color:var(--ink);font:500 13.5px var(--kb);text-align:left;cursor:pointer}
+.ib-studio .ti:first-child{font-size:18px;color:var(--muted)}.ib-studio .ti:last-child{margin-left:auto;color:var(--faint)}
+.ib-empty{display:grid;justify-items:center;gap:6px;padding:48px 12px 32px;text-align:center}
+.ib-empty>.ti{font-size:38px;color:var(--faint)}.ib-empty b{font:700 16.5px var(--kd)}
+.ib-empty p{margin:0;max-width:320px;font-size:14px;line-height:1.6;color:var(--muted)}.ib-empty .lx-cta{height:46px;margin-top:10px;padding:0 26px}
+/* มือถือ: แถบล่างยังอยู่เหนือหน้าข้อความ (เหมือนแท็บแชตของแอปแชต) และแท็บแชตสว่าง */
+@media(max-width:760px){
+  body:has(.bs.on.inbox) #mnav{z-index:1100}
+  .bs.inbox .bd{padding-bottom:calc(var(--m-nav,64px) + var(--m-nav-gap,12px) + 28px + env(safe-area-inset-bottom))}
+  body:has(.bs.on.inbox) #mnav .mtab{color:inherit}
+  body:has(.bs.on.inbox) #mnav .mtab.on:not([data-mnav="chat"]){color:inherit;font-weight:inherit}
+  body:has(.bs.on.inbox) #mnav .mtab.on:not([data-mnav="chat"]) .mt-i{background:none}
+  body:has(.bs.on.inbox) #mnav .mtab[data-mnav="chat"]{color:var(--accent,#D9733C)}
+  body:has(.bs.on.inbox) #mnav .mtab[data-mnav="chat"] .mt-i{background:color-mix(in srgb,var(--accent,#D9733C) 20%,transparent)}
+}
 /* ══ Cendon Studio ══
    กรอบคงที่ ไม่เล่นแอนิเมชันเข้าใหม่ทุกครั้งที่เปลี่ยนหน้า · เส้นคั่นแทนการ์ดซ้อน · ปุ่มหลักสีหมึก ส้มเป็นแค่ขีด/จุดบอกตำแหน่ง */
 body[data-mode="tech"] .navwrap,body[data-mode="tech"] #mnav,body[data-mode="tech"] header.top{display:none!important}
@@ -1874,7 +1909,7 @@ a.mtab{text-decoration:none}
   var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})};
   var ph=u&&(u.photoURL||u.photo),nm=u&&String(u.displayName||u.name||u.email||"?").trim();
   var av=!u?'<i class="ti ti-user"></i>':ph?'<img src="'+esc(ph)+'" referrerpolicy="no-referrer">':'<span class="fb">'+esc(nm.charAt(0).toUpperCase())+'</span>';
-  var T=[["home","ti-home","หน้าหลัก","Home","/"],["garage","ti-car","การาจ","Garage","/garage"],["chat","ti-message-2","แชต","Chat","/chat"],
+  var T=[["home","ti-home","หน้าหลัก","Home","/"],["garage","ti-car","การาจ","Garage","/garage"],["chat","ti-message-2","แชต","Chat","/messages"],
          ["magazine","ti-book-2","นิตยสาร","Magazine","/news"],["account","ti-user","บัญชี","Account",u?"/profile":"/login?next=%2Fprofile"]];
   var n=D.createElement("nav");n.className="mnav";n.id="mnav";n.setAttribute("role","navigation");
   n.innerHTML=T.map(function(t){var on=t[0]===cur,l=en?t[3]:t[2];
@@ -2555,7 +2590,7 @@ function paintSheet(o){
   $("bsB").innerHTML=(o.body||"")+'<p class="err" id="err" role="alert"></p>';
   $("bsF").innerHTML=o.foot||"";
   $("bsBack").hidden=!SH.stack.length;
-  bs.classList.toggle("full",!!o.full);bs.classList.toggle("store",!!o.store);bs.classList.remove("so-up");
+  bs.classList.toggle("full",!!o.full);bs.classList.toggle("store",!!o.store);bs.classList.toggle("inbox",!!o.inbox);bs.classList.remove("so-up");
   $("bsB").scrollTop=0;
   if(o.mount)o.mount($("bsB"),$("bsF"),o);
 }
@@ -3277,7 +3312,7 @@ Nav.route({path:"map",open:()=>new Promise(res=>{let mt=0;(function w(){if(windo
 Nav.route({path:"jobs",name:"jobs",open:async()=>{if(await needU())return jobs()}});
 Nav.route({path:"all",parent:"jobs",open:()=>jobs(true)});
 Nav.route({path:":id",name:"job",parent:"jobs",test:p=>/^[0-9a-f-]{36}$/i.test(p.id),open:p=>openJob(p.id,true)});
-Nav.route({path:"messages",name:"messages",open:async()=>{if(await needU())return inbox()}});
+Nav.route({path:"messages",name:"messages",open:()=>inbox()});
 Nav.route({path:":id",parent:"messages",test:p=>/^[0-9a-f-]{36}$/i.test(p.id),open:p=>openThread(p.id)});
 Nav.route({path:"chat",parent:"job",open:()=>{if(JOB&&SH.cur&&SH.cur.job)openChat(JOB)}});
 Nav.route({path:"studio",name:"studio",open:async()=>{if(await needU())openStudio()}});
@@ -3924,7 +3959,7 @@ async function refreshJobs(){
   renderActive();renderUsed();syncGarage();queueDot();
 }
 function queueDot(){
-  stuBadges();
+  stuBadges();markUnread();
   /* อยู่ใน Studio หน้างาน/ข้อความ — วาดรายการใหม่ด้วยข้อมูลล่าสุด */
   if(MODE==="tech"&&myShop()&&(DT==="queue"||DT==="messages"))drawTab();
 }
@@ -4235,24 +4270,94 @@ function thRow(h,i){
     <span class="jb"><b class="nt">${esc(who)}</b><small class="nt">${l?esc((l.role===h.role?T("คุณ: ","You: "):"")+l.text):""}</small>${h.gig&&h.gig.title?`<span class="pill nt">${esc(h.gig.title)}</span>`:""}</span>
     ${h.unread?`<span class="ub">${h.unread}</span>`:'<i class="ti ti-chevron-right" style="color:var(--faint)"></i>'}</button>`;
 }
-async function inbox(){
-  if(!U)return needLogin();
-  sheet({title:"ข้อความ",url:"/messages",body:'<div class="skel"></div><div class="skel" style="margin-top:10px"></div>'});
-  try{
-    const L=(await api("/api/tech/threads")).threads||[];
-    sheet({title:"ข้อความ",url:"/messages",body:L.length?L.map(thRow).join(""):`<div class="empty"><i class="ti ti-message-circle"></i><b>${T("ยังไม่มีข้อความ","No messages yet")}</b>${T("กด ทักช่าง ที่หน้าบริการหรือหน้าร้านเพื่อสอบถามได้เลย","Tap Message on a service or shop to ask a question")}</div>`,
-      mount(b){b.querySelectorAll("[data-th]").forEach(x=>x.onclick=()=>openThread(x.dataset.th))}});
-  }catch(e){$("bsB").innerHTML=`<div class="empty"><i class="ti ti-cloud-off"></i><b>${esc(e.message)}</b></div>`}
+/* ═══ ข้อความ (แท็บ "แชต" ในแถบล่าง) — หน้าตาแบบแอปแชตทั่วไป ═══
+   บนสุดปักหมุด Cendon ตลอด (ผู้ช่วย AI → หน้าแชต AI) · ถัดมาคือทุกห้องที่เคยคุยกับช่าง
+   (ทักถามก่อนจ้าง + แชตในใบงาน) เรียงล่าสุดก่อน ห้องคุยเก็บบนเซิร์ฟเวอร์ ไม่หายแม้เปลี่ยนเครื่อง
+   รายการล่าสุดจำไว้ในเครื่องด้วย เปิดแล้วเห็นทันที เน็ตช้า/หลุดก็ยังเห็นของเดิม แล้วค่อยอัปเดต */
+const CMARK=`<svg class="cmk" aria-hidden="true" viewBox="-6.0 -6.0 94.8 112.0" ><path fill="currentColor" d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg>`;
+const IBK=()=>"spire_inbox_"+(U?U.uid:"x");
+/* แชต AI ล่าสุดในเครื่อง (ทุกคัน) — โชว์ใต้ชื่อ Cendon เหมือนข้อความล่าสุดของห้องแชต */
+function lastAi(){
+  let best=null;
+  try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!/^spire_sess_/.test(k))continue;
+    const l=JSON.parse(localStorage.getItem(k)||"[]");if(Array.isArray(l))l.forEach(x=>{if(x&&x.msgs&&x.msgs.length&&(!best||x.t>best.t))best=x})}}catch(e){}
+  if(!best)return null;
+  const m=[...best.msgs].reverse().find(x=>x&&x.text);
+  return {at:best.t,text:m?(m.role==="user"?T("คุณ: ","You: "):"")+m.text:best.title||""};
 }
+/* เวลาแบบแอปแชต: วันนี้ = เวลา · เมื่อวาน · ในสัปดาห์ = ชื่อวัน · นานกว่านั้น = วันที่ */
+function ibTime(at){
+  if(!at)return "";const d=new Date(at),n=new Date(),day=86400000,s0=new Date(n.getFullYear(),n.getMonth(),n.getDate()).getTime();
+  if(at>=s0)return d.toLocaleTimeString(LOC,{hour:"2-digit",minute:"2-digit"});
+  if(at>=s0-day)return T("เมื่อวาน","Yesterday");
+  if(at>=s0-6*day)return d.toLocaleDateString(LOC,{weekday:"short"});
+  return d.toLocaleDateString(LOC,{day:"numeric",month:"short"});
+}
+/* ห้องคุยของฉันในฐานะลูกค้า: ห้องทักช่าง + แชตในใบงาน (ฝั่งร้านของตัวเองอยู่ใน Studio) */
+function convos(threads,jobs){
+  const th=(threads||[]).filter(h=>h.role==="customer").map(h=>({k:"th",id:h.id,techId:h.techId,name:h.techName,
+    text:h.last?(h.last.role===h.role?T("คุณ: ","You: "):"")+h.last.text:"",at:(h.last&&h.last.at)||h.updatedAt||h.createdAt,unread:h.unread||0,sub:h.gig&&h.gig.title||""}));
+  const jb=(jobs||[]).filter(j=>j.side!=="technician"&&j.status!=="cancelled").map(j=>({k:"job",id:j.id,techId:j.techId,name:j.techName,
+    text:j.symptom||"",at:j.updatedAt||j.createdAt,unread:j.unread||0,sub:T("ใบงาน · ","Job · ")+(STATUS[j.status]||j.status)}));
+  return [...th,...jb].sort((a,b)=>(b.at||0)-(a.at||0));
+}
+const msgUnread=()=>convos(THREADS,JOBS).reduce((a,c)=>a+c.unread,0);
+/* จุดบอกข้อความใหม่บนแท็บแชต — เก็บในเครื่องให้ทุกหน้าเห็นเหมือนกัน */
+function markUnread(){try{const n=U?msgUnread():0;if(String(n)!==localStorage.getItem("spire_msgUnread")){localStorage.setItem("spire_msgUnread",String(n));dispatchEvent(new Event("spire:unread"))}}catch(e){}}
+function ibRow(c){
+  const t=TECHS.find(x=>x.id===c.techId),av=t&&t.avatar;
+  return `<button class="ib-row${c.unread?" new":""}" type="button" data-k="${c.k}" data-id="${c.id}">
+    <span class="ib-av"${av?` style="background-image:url('${img(av)}')"`:""}>${av?"":esc(initial(c.name||"?"))}</span>
+    <span class="ib-b"><span class="ib-t"><b class="nt">${esc(c.name||"")}</b><time>${ibTime(c.at)}</time></span>
+      <span class="ib-s"><small class="nt">${esc(c.text||"")}</small>${c.unread?`<em>${c.unread>99?"99+":c.unread}</em>`:""}</span>
+      ${c.sub?`<span class="ib-sub nt">${esc(c.sub)}</span>`:""}</span></button>`;
+}
+function inboxBody(list,state){
+  const ai=lastAi(),studio=(THREADS||[]).filter(h=>h.role==="technician").reduce((a,h)=>a+(h.unread||0),0);
+  const pin=`<a class="ib-row ib-top" href="/chat" data-ai><span class="ib-av cen">${CMARK}</span>
+    <span class="ib-b"><span class="ib-t"><b>Cendon <i class="ib-ai">AI</i></b><time>${ai?ibTime(ai.at):""}</time></span>
+      <span class="ib-s"><small class="nt">${esc(ai?ai.text:T("ถามเรื่องรถได้ทุกเรื่อง — พิมพ์ ถ่ายรูป หรืออัดเสียงเครื่องยนต์","Ask anything about your car — type, snap a photo or record the engine"))}</small><i class="ti ti-pin ib-pin" aria-label="${T("ปักหมุด","Pinned")}"></i></span></span></a>`;
+  const err=state&&state.err?`<p class="stu-err" style="margin:10px 0 0"><i class="ti ti-cloud-off"></i><span>${T("อัปเดตไม่สำเร็จ แสดงรายการล่าสุดที่จำไว้","Couldn't refresh — showing saved list")}</span><button class="lx-gh" type="button" id="ibRetry">${T("ลองใหม่","Retry")}</button></p>`:"";
+  if(!U)return pin+`<div class="ib-empty"><i class="ti ti-lock"></i><b>${T("เข้าสู่ระบบเพื่อดูแชตกับช่าง","Sign in to see your chats with mechanics")}</b><p>${T("ห้องคุยกับช่างทุกร้านเก็บไว้ในบัญชีของคุณ เปิดเครื่องไหนก็เห็น","Chats with every shop are kept in your account, on any device")}</p><button class="lx-cta" type="button" id="ibLogin">${T("เข้าสู่ระบบ","Sign in")}</button></div>`;
+  return pin+err+(studio?`<button class="ib-studio" type="button" id="ibStudio"><i class="ti ti-building-store"></i>${T(`ลูกค้าทักร้านของคุณ ${studio} ข้อความ — เปิดใน Studio`,`${studio} customer message${studio>1?"s":""} for your shop — open Studio`)}<i class="ti ti-chevron-right"></i></button>`:"")
+    +(list===null?'<div class="skel" style="margin-top:12px"></div><div class="skel" style="margin-top:10px"></div>'
+    :list.length?`<div class="ib-list">${list.map(ibRow).join("")}</div>`
+    :`<div class="ib-empty"><i class="ti ti-message-circle"></i><b>${T("ยังไม่มีแชตกับช่าง","No chats with mechanics yet")}</b><p>${T("กด ทักช่าง ที่หน้าบริการหรือหน้าร้าน แล้วห้องคุยจะเก็บไว้ที่นี่","Tap Message on a service or shop — the chat will be kept here")}</p></div>`);
+}
+function wireInbox(b){
+  b.querySelector("[data-ai]").onclick=e=>{e.preventDefault();if(window.CendonPaint)CendonPaint.prepare("/chat");location.href="/chat"};
+  b.querySelectorAll(".ib-row[data-k]").forEach(x=>x.onclick=()=>x.dataset.k==="th"?openThread(x.dataset.id)
+    :busy(x,async()=>{const j=(await api("/api/tech/jobs/"+x.dataset.id)).job;openChat(j,{list:true})}));
+  if($("ibLogin"))$("ibLogin").onclick=()=>needLogin();
+  if($("ibStudio"))$("ibStudio").onclick=()=>{closeSheet();openStudio();setTimeout(()=>setTab2("messages"),0)};
+  if($("ibRetry"))$("ibRetry").onclick=()=>inbox();
+}
+async function inbox(){
+  await READY.auth;
+  let cached=null;try{cached=JSON.parse(localStorage.getItem(IBK())||"null")}catch(e){}
+  const paint=(list,state)=>sheet({title:T("ข้อความ","Messages"),url:"/messages",full:true,inbox:true,body:inboxBody(list,state),mount:wireInbox});
+  paint(U?(cached?convos(cached.threads,cached.jobs):null):[]);
+  if(!U)return;
+  try{
+    const [th,jb]=await Promise.all([api("/api/tech/threads"),api("/api/tech/jobs")]);
+    THREADS=th.threads||[];JOBS=jb.jobs||[];JOBS_OK=true;JOBS_ERR=null;
+    try{localStorage.setItem(IBK(),JSON.stringify({threads:THREADS,jobs:JOBS,at:Date.now()}))}catch(e){}
+    markUnread();
+    if(SH.cur&&SH.cur.inbox)paint(convos(THREADS,JOBS));
+  }catch(e){if(SH.cur&&SH.cur.inbox)paint(cached?convos(cached.threads,cached.jobs):[],{err:1})}
+}
+window.openInbox=()=>inbox();
 
 let CHL=null;
 function closeChat(fromNav){
   clearTimeout(CH.timer);CH.seq++;$("chat").classList.remove("on");$("chat").setAttribute("aria-hidden","true");
   recStop(true);clearAtt();
   const l=CHL;CHL=null;if(fromNav!==true&&l)Nav.drop(l);
-  if(CH.job&&CH.job.thread){CH.th=null;refreshThreads();return}
+  /* กลับมาหน้าข้อความ — วาดรายการใหม่ให้ตัวเลขยังไม่อ่านตรง */
+  const backToInbox=()=>{if(SH.cur&&SH.cur.inbox&&$("bs").classList.contains("on"))inbox()};
+  if(CH.job&&CH.job.thread){CH.th=null;refreshThreads().then(backToInbox);return}
   if(CH.job&&!CH.list)openJob(CH.job.id,false).then(()=>{});
-  if(CH.list&&MODE==="tech")refreshJobs();
+  if(CH.list){if(MODE==="tech")refreshJobs();backToInbox()}
 }
 $("chX").onclick=()=>closeChat();
 const chIn=$("chIn");

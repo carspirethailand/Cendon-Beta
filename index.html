@@ -3294,8 +3294,8 @@ setTimeout(ccDone,7000);
      /jobs · /jobs/<ใบงาน>[/chat] · /studio[/settings|/stats|/edit|/post] · /work[/<แท็บ>] · /staff · /join
      /quotes · /compare/<กลุ่ม> · /urgent · /diagnose · /post[/<ประกาศ>] · /trip/<ลิงก์แชร์>
    ข้อมูลที่ต้องรอ (รายชื่อช่าง / บริการ / ล็อกอิน) — แต่ละเส้นทางรอเฉพาะที่ตัวเองใช้ */
-const READY=(()=>{const mk=()=>{let d;const p=new Promise(r=>d=r);p.done=d;return p};return {techs:mk(),gigs:mk(),auth:mk()}})();
-setTimeout(()=>READY.auth.done(),9000);   /* ล็อกอินไม่ตอบ (เน็ตช้า/บล็อก) ก็ไม่ค้างตลอดไป */
+const READY=(()=>{const mk=()=>{let d;const p=new Promise(r=>d=r);p.done=d;return p};return {techs:mk(),gigs:mk(),auth:mk(),user:mk()}})();
+setTimeout(()=>{READY.auth.done();READY.user.done()},9000);   /* ล็อกอินไม่ตอบ (เน็ตช้า/บล็อก) ก็ไม่ค้างตลอดไป */
 const needU=async()=>{await READY.auth;if(!U){needLogin();return false}return true};
 Nav.route({path:"tech/:id",name:"tech",open:async p=>{await READY.techs;await READY.gigs.catch(()=>0);openTech(p.id)}});
 Nav.route({path:":tab",name:"techTab",parent:"tech",test:p=>!!URLTAB[p.tab],open:p=>{const o=SH.cur;if(o&&o.setTab){o.setTab(URLTAB[p.tab]);Nav.push({url:o.url+"/"+p.tab,tag:"tab",close:()=>{if(SH.cur===o)o.setTab(o.first||"svc")}})}}});
@@ -4268,7 +4268,9 @@ function thRow(h,i){
    (ทักถามก่อนจ้าง + แชตในใบงาน) เรียงล่าสุดก่อน ห้องคุยเก็บบนเซิร์ฟเวอร์ ไม่หายแม้เปลี่ยนเครื่อง
    รายการล่าสุดจำไว้ในเครื่องด้วย เปิดแล้วเห็นทันที เน็ตช้า/หลุดก็ยังเห็นของเดิม แล้วค่อยอัปเดต */
 const CMARK=`<svg class="cmk" aria-hidden="true" viewBox="-6.0 -6.0 94.8 112.0" ><path fill="currentColor" d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg>`;
-const IBK=()=>"spire_inbox_"+(U?U.uid:"x");
+const IBK=uid=>"spire_inbox_"+(uid||"x");
+/* เปิดแอปมาแล้วระบบล็อกอินยังกู้สถานะไม่เสร็จ — ใช้บัญชีล่าสุดที่จำไว้ในเครื่องวาดรายการเดิมก่อน */
+const lastUid=()=>{try{return (JSON.parse(localStorage.getItem("spire_cachedUser")||"null")||{}).uid||null}catch(e){return null}};
 /* แชต AI ล่าสุดในเครื่อง (ทุกคัน) — โชว์ใต้ชื่อ Cendon เหมือนข้อความล่าสุดของห้องแชต */
 function lastAi(){
   let best=null;
@@ -4311,7 +4313,9 @@ function inboxBody(list,state){
     <span class="ib-b"><span class="ib-t"><b>Cendon <i class="ib-ai">AI</i></b><time>${ai?ibTime(ai.at):""}</time></span>
       <span class="ib-s"><small class="nt">${esc(ai?ai.text:T("ถามเรื่องรถได้ทุกเรื่อง — พิมพ์ ถ่ายรูป หรืออัดเสียงเครื่องยนต์","Ask anything about your car — type, snap a photo or record the engine"))}</small><i class="ti ti-pin ib-pin" aria-label="${T("ปักหมุด","Pinned")}"></i></span></span></a>`;
   const err=state&&state.err?`<p class="stu-err" style="margin:10px 0 0"><i class="ti ti-cloud-off"></i><span>${T("อัปเดตไม่สำเร็จ แสดงรายการล่าสุดที่จำไว้","Couldn't refresh — showing saved list")}</span><button class="lx-gh" type="button" id="ibRetry">${T("ลองใหม่","Retry")}</button></p>`:"";
-  if(!U)return pin+`<div class="ib-empty"><i class="ti ti-lock"></i><b>${T("เข้าสู่ระบบเพื่อดูแชตกับช่าง","Sign in to see your chats with mechanics")}</b><p>${T("ห้องคุยกับช่างทุกร้านเก็บไว้ในบัญชีของคุณ เปิดเครื่องไหนก็เห็น","Chats with every shop are kept in your account, on any device")}</p><button class="lx-cta" type="button" id="ibLogin">${T("เข้าสู่ระบบ","Sign in")}</button></div>`;
+  if(state&&state.wait)return pin+'<div class="skel" style="margin-top:12px"></div><div class="skel" style="margin-top:10px"></div>';
+  /* pre = ยังไม่รู้สถานะล็อกอิน แต่มีรายการของบัญชีล่าสุดในเครื่อง — แสดงรายการไปก่อน */
+  if(!U&&!(state&&state.pre))return pin+`<div class="ib-empty"><i class="ti ti-lock"></i><b>${T("เข้าสู่ระบบเพื่อดูแชตกับช่าง","Sign in to see your chats with mechanics")}</b><p>${T("ห้องคุยกับช่างทุกร้านเก็บไว้ในบัญชีของคุณ เปิดเครื่องไหนก็เห็น","Chats with every shop are kept in your account, on any device")}</p><button class="lx-cta" type="button" id="ibLogin">${T("เข้าสู่ระบบ","Sign in")}</button></div>`;
   return pin+err+(studio?`<button class="ib-studio" type="button" id="ibStudio"><i class="ti ti-building-store"></i>${T(`ลูกค้าทักร้านของคุณ ${studio} ข้อความ — เปิดใน Studio`,`${studio} customer message${studio>1?"s":""} for your shop — open Studio`)}<i class="ti ti-chevron-right"></i></button>`:"")
     +(list===null?'<div class="skel" style="margin-top:12px"></div><div class="skel" style="margin-top:10px"></div>'
     :list.length?`<div class="ib-list">${list.map(ibRow).join("")}</div>`
@@ -4319,22 +4323,27 @@ function inboxBody(list,state){
 }
 function wireInbox(b){
   b.querySelector("[data-ai]").onclick=e=>{e.preventDefault();if(window.CendonPaint)CendonPaint.prepare("/chat");location.href="/chat"};
-  b.querySelectorAll(".ib-row[data-k]").forEach(x=>x.onclick=()=>x.dataset.k==="th"?openThread(x.dataset.id)
-    :busy(x,async()=>{const j=(await api("/api/tech/jobs/"+x.dataset.id)).job;openChat(j,{list:true})}));
+  b.querySelectorAll(".ib-row[data-k]").forEach(x=>x.onclick=()=>busy(x,async()=>{await READY.user;
+    if(x.dataset.k==="th")return openThread(x.dataset.id);
+    const j=(await api("/api/tech/jobs/"+x.dataset.id)).job;openChat(j,{list:true})}));
   if($("ibLogin"))$("ibLogin").onclick=()=>needLogin();
   if($("ibStudio"))$("ibStudio").onclick=()=>{closeSheet();openStudio();setTimeout(()=>setTab2("messages"),0)};
   if($("ibRetry"))$("ibRetry").onclick=()=>inbox();
 }
 async function inbox(){
-  await READY.auth;
-  let cached=null;try{cached=JSON.parse(localStorage.getItem(IBK())||"null")}catch(e){}
   const paint=(list,state)=>sheet({title:T("ข้อความ","Messages"),url:"/messages",full:true,inbox:true,body:inboxBody(list,state),mount:wireInbox});
-  paint(U?(cached?convos(cached.threads,cached.jobs):null):[]);
-  if(!U)return;
+  const read=uid=>{try{return JSON.parse(localStorage.getItem(IBK(uid))||"null")}catch(e){return null}};
+  /* วาดทันทีที่กด — เดิมรอหน้าแรกโหลดข้อมูลทั้งหมด (หลายวินาที) ผู้ใช้เลยเห็นแต่หน้าแรกเหมือนกดแล้วไม่ไปไหน */
+  const guess=U?U.uid:lastUid();let cached=guess&&read(guess);
+  if(U)paint(cached?convos(cached.threads,cached.jobs):null);
+  else paint(cached?convos(cached.threads,cached.jobs):null,cached?{pre:1}:{wait:1});
+  await READY.user;
+  if(!U){if(SH.cur&&SH.cur.inbox)paint([]);return}
+  if(U.uid!==guess){cached=read(U.uid);if(SH.cur&&SH.cur.inbox)paint(cached?convos(cached.threads,cached.jobs):null)}
   try{
     const [th,jb]=await Promise.all([api("/api/tech/threads"),api("/api/tech/jobs")]);
     THREADS=th.threads||[];JOBS=jb.jobs||[];JOBS_OK=true;JOBS_ERR=null;
-    try{localStorage.setItem(IBK(),JSON.stringify({threads:THREADS,jobs:JOBS,at:Date.now()}))}catch(e){}
+    try{localStorage.setItem(IBK(U.uid),JSON.stringify({threads:THREADS,jobs:JOBS,at:Date.now()}))}catch(e){}
     markUnread();
     if(SH.cur&&SH.cur.inbox)paint(convos(THREADS,JOBS));
   }catch(e){if(SH.cur&&SH.cur.inbox)paint(cached?convos(cached.threads,cached.jobs):[],{err:1})}
@@ -5295,7 +5304,7 @@ async function pullCars(){
     try{
       if(!firebase.apps||!firebase.apps.length)firebase.initializeApp(fbConfig);
       auth=firebase.auth();
-      auth.onAuthStateChanged(async u=>{U=u||null;try{navPaint(U)}catch(e){}greet();if(U)pullCars();await refreshMe();if(U)await load();else diag();READY.auth.done()});
+      auth.onAuthStateChanged(async u=>{U=u||null;READY.user.done();try{navPaint(U)}catch(e){}greet();if(U)pullCars();await refreshMe();if(U)await load();else diag();READY.auth.done()});
     }catch(e){}
   })();
   /* ลงทะเบียน service worker หลังหน้าขึ้นแล้ว — แอปที่ติดตั้งบนมือถือจะเปิดจากหน้าที่เก็บไว้ได้ทันทีตอนเน็ตช้า

@@ -500,10 +500,10 @@ textarea.inp{min-height:92px;resize:vertical}
 .chat .hd small i{width:7px;height:7px;border-radius:50%;background:var(--ok);animation:blink 2s infinite}
 .msgs{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:14px 12px;display:flex;flex-direction:column;gap:6px}
 .msg{max-width:78%;padding:10px 14px;border-radius:20px;background:var(--surface);font-size:15px;white-space:pre-wrap;overflow-wrap:anywhere;animation:bub .3s var(--spring) both;align-self:flex-start;border-bottom-left-radius:6px;box-shadow:0 1px 2px var(--edge-sh)}
-.msg.me{align-self:flex-end;background:var(--grad);color:var(--on-acc,#fff);border-bottom-left-radius:20px;border-bottom-right-radius:6px}
+.msg.me{align-self:flex-end;border-bottom-left-radius:20px;border-bottom-right-radius:6px}
 .msg small{display:block;font-size:10px;opacity:.65;margin-top:2px;text-align:right}
 .msg.pending{opacity:.6}
-.day{align-self:center;font-size:11px;color:var(--muted);background:var(--surface-2);padding:2px 10px;border-radius:8px;margin:6px 0}
+.day{align-self:center;font-size:11px;color:var(--muted);margin:6px 0}
 .sys{align-self:center;font-size:12px;color:var(--muted);text-align:center;max-width:90%;margin:4px 0}
 .cbar{padding:8px 10px calc(8px + env(safe-area-inset-bottom));display:flex;gap:8px;align-items:flex-end;box-shadow:0 -1px 0 var(--line-2)}
 .cbar textarea{flex:1;min-height:46px;max-height:130px;resize:none;border:0;outline:none;border-radius:23px;background:var(--surface);padding:12px 16px;font-size:16px;line-height:1.4}
@@ -512,12 +512,59 @@ textarea.inp{min-height:92px;resize:vertical}
 .as{display:flex;gap:6px;padding:8px 12px 0}
 .as[hidden]{display:none}
 .as button{font-size:12px;padding:5px 12px;border-radius:12px;background:var(--surface-2);color:var(--muted)}
-.as button.on{background:var(--c-acc-soft);color:var(--accent)}
-/* ห้องทักช่าง: ปุ่มขอราคาบนหัว (พร้อมจ้างเมื่อไหร่กดได้เลย) · คำถามสำเร็จรูปตอนยังไม่ได้คุย */
-.chat .chq{flex:none;height:34px;padding:0 14px;border-radius:999px;background:var(--ink);color:var(--bg);font:600 13px/1 var(--kb)}
+
+/* ══ ห้องคุยกับช่าง — "หมึก · กระดาษ · แสงเช้า" ══
+   ยังเป็น Cendon (ดำ ขาว ส้ม) แต่ส้มไม่เป็นพื้นใหญ่ — ส้มก้อนใหญ่ให้ความรู้สึกเตือนภัย ไม่เหมาะกับห้องคุยเรื่องเงินและนัดหมาย
+   · ข้อความเรา = หมึกดำเงาแบบเครื่องเขิน (โหมดมืด = กระดาษขาว) · ข้อความช่าง = กระดาษขาวขอบเส้นบาง
+   · ส้มเหลือแค่ "ตราประทับ": ไอคอนในปุ่มส่ง โล่บนการ์ดความปลอดภัย และแสงเช้าจาง ๆ มุมบนของห้อง (สีเดียวกับโลโก้ ดำ+ส้ม)
+   · ลายจุดอนุภาคของ Cendon จางลงจากหัวห้อง */
+.chat{--ci:#1C1C20;--ci-2:#09090B;--ci-fg:#FAFAF9;--ci-ink:var(--ink);--ci-soft:rgba(9,9,11,.045);--ci-line:rgba(9,9,11,.10);--ci-sh:rgba(9,9,11,.42);--ci-or:var(--co,#E9682A);
+  background:radial-gradient(70% 38% at 100% 0%,color-mix(in srgb,var(--ci-or) 9%,transparent),transparent 70%),radial-gradient(60% 30% at 0% 0%,color-mix(in srgb,var(--ci-or) 4%,transparent),transparent 70%),var(--bg)}
+html[data-theme="dark"] .chat{--ci:#FAFAF9;--ci-2:#E4E4E7;--ci-fg:#09090B;--ci-soft:rgba(255,255,255,.05);--ci-line:rgba(255,255,255,.10);--ci-sh:rgba(0,0,0,.75);
+  background:radial-gradient(70% 38% at 100% 0%,color-mix(in srgb,var(--ci-or) 13%,transparent),transparent 70%),radial-gradient(60% 30% at 0% 0%,color-mix(in srgb,var(--ci-or) 5%,transparent),transparent 70%),var(--bg)}
+/* ลายจุดอนุภาค — อยู่ใต้เนื้อหา ไม่บังข้อความ */
+.chat::before{content:"";position:absolute;inset:0 0 auto;height:320px;z-index:-1;pointer-events:none;opacity:.7;
+  background-image:radial-gradient(var(--ci-line) 1px,transparent 1.5px),radial-gradient(var(--ci-line) 1px,transparent 1.5px);background-size:22px 22px;background-position:0 0,11px 11px;
+  -webkit-mask-image:linear-gradient(180deg,#000,transparent);mask-image:linear-gradient(180deg,#000,transparent)}
+.chat .hd{background:color-mix(in srgb,var(--bg) 70%,transparent);-webkit-backdrop-filter:blur(16px) saturate(1.2);backdrop-filter:blur(16px) saturate(1.2);box-shadow:0 1px 0 var(--ci-line)}
+/* ปุ่ม/แถวที่ซ่อนไว้ต้องหายจริง (คลาสปุ่มตั้ง display ทับ hidden — ปุ่มโทรเคยโผล่ทั้งที่ไม่มีเบอร์) */
+.chat [hidden]{display:none!important}
+.chat .hd b{display:flex;align-items:center;gap:5px;white-space:nowrap;overflow:hidden}
+.chat #chT{overflow:hidden;text-overflow:ellipsis}
+.chat #chV{flex:none;font-size:16px;color:var(--ink)}
+.chat-av{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;font:600 16px/1 var(--kd);color:var(--ink);background:var(--surface) center/cover;
+  box-shadow:0 0 0 1px var(--ci-line),0 0 0 3px var(--bg),0 0 0 4px color-mix(in srgb,var(--ci-or) 45%,transparent)}
+.chat-av.img{color:transparent}
+.chat .chq{flex:none;height:34px;padding:0 15px;border-radius:999px;background:linear-gradient(160deg,var(--ci),var(--ci-2));color:var(--ci-fg);font:600 13px/1 var(--kb);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 8px 18px -10px var(--ci-sh)}
 .chat .chq:active{transform:scale(.97)}
-#chSug{flex-wrap:wrap}#chSug button{color:var(--ink)}
-.sys.ask{padding:6px 12px;border-radius:12px;background:var(--surface-2);color:var(--ink)}
+/* การ์ดความปลอดภัย: ตราประทับดำ + โล่ส้ม */
+.chat .sys.safe{display:flex;align-items:flex-start;gap:12px;max-width:360px;margin:6px auto 12px;padding:12px 15px 12px 12px;border-radius:18px;text-align:left;line-height:1.55;
+  color:var(--ink);background:color-mix(in srgb,var(--surface) 82%,transparent);box-shadow:inset 0 0 0 1px var(--ci-line),0 12px 26px -20px var(--ci-sh)}
+.chat .sys.safe>.ti{flex:none;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;font-size:18px;color:var(--ci-or);background:linear-gradient(160deg,#1C1C20,#09090B);box-shadow:inset 0 1px 0 rgba(255,255,255,.14)}
+.chat .sys.safe b{display:block;font-weight:600;font-size:13px}
+.chat .sys.safe span{display:block;color:var(--muted)}
+.chat .sys.safe>span>b{color:var(--ink)}
+.chat .sys.ask{padding:7px 13px;border-radius:999px;color:var(--muted);background:var(--surface);box-shadow:inset 0 0 0 1px var(--ci-line)}
+.chat .sys.ask b{color:var(--ink)}
+/* วันที่: เส้นบางสองข้างแบบหน้าหนังสือ */
+.chat .day{display:flex;align-items:center;gap:12px;width:min(260px,70%);letter-spacing:.06em}
+.chat .day::before,.chat .day::after{content:"";flex:1;height:1px;background:var(--ci-line)}
+/* ข้อความ */
+.chat .msg{background:var(--surface);box-shadow:inset 0 0 0 1px var(--ci-line),0 8px 18px -16px var(--ci-sh)}
+.chat .msg.me{background:linear-gradient(160deg,var(--ci),var(--ci-2));color:var(--ci-fg);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 10px 22px -14px var(--ci-sh)}
+.chat .msg.me small{opacity:.6}
+/* คำถามสำเร็จรูป / พิมพ์เป็น… */
+#chSug{flex-wrap:wrap}
+.chat .as button{padding:7px 14px;border-radius:999px;font-size:12.5px;color:var(--ink);background:color-mix(in srgb,var(--surface) 85%,transparent);box-shadow:inset 0 0 0 1px var(--ci-line);transition:background .2s,box-shadow .2s}
+.chat .as button:hover{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ci-or) 45%,var(--ci-line))}
+.chat .as button.on{background:linear-gradient(160deg,var(--ci),var(--ci-2));color:var(--ci-fg);box-shadow:none}
+/* ช่องพิมพ์ + ปุ่มส่ง (ปุ่มดำ ลูกศรส้ม = สีโลโก้) */
+.chat .cbar{background:color-mix(in srgb,var(--bg) 78%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);box-shadow:0 -1px 0 var(--ci-line)}
+.chat .cbar textarea{caret-color:var(--ci-or);box-shadow:inset 0 0 0 1px var(--ci-line)}
+.chat .cbar textarea:focus{border-color:transparent!important;box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--ink) 35%,transparent),0 0 0 4px var(--ci-soft)!important}
+.chat .cbar .send.sq{border-radius:50%;background:linear-gradient(160deg,#1C1C20,#09090B);color:var(--ci-or);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 10px 20px -10px var(--ci-sh)}
+html[data-theme="dark"] .chat .cbar .send.sq{box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),0 10px 20px -10px var(--ci-sh)}
+.chat .cbar .send.sq::after{display:none}
 
 /* ใบสมัครพาร์ทเนอร์ */
 .hero{position:relative;overflow:hidden;isolation:isolate;margin:-4px -16px 18px;padding:28px 20px 24px;background:linear-gradient(135deg,#1f2937,#0b1220);color:#fff}
@@ -1794,7 +1841,7 @@ a.mtab{text-decoration:none}
 </div>
 
 <div class="chat" id="chat" aria-hidden="true">
-  <div class="hd"><button class="ic" id="chX" aria-label="Back"><i class="ti ti-arrow-left"></i></button><div><b id="chT" class="nt"></b><small><i></i><span data-t="ข้อความขึ้นเองอัตโนมัติ|Live">ข้อความขึ้นเองอัตโนมัติ</span></small></div><a class="ic" id="chCall" aria-label="Call" hidden><i class="ti ti-phone"></i></a><button class="chq" id="chBook" type="button" hidden data-t="ขอราคา|Get a quote">ขอราคา</button></div>
+  <div class="hd"><button class="ic" id="chX" aria-label="Back"><i class="ti ti-arrow-left"></i></button><span class="chat-av" id="chAv" aria-hidden="true"></span><div><b><span id="chT" class="nt"></span><i class="ti ti-rosette-discount-check-filled" id="chV" hidden></i></b><small><i></i><span data-t="ข้อความขึ้นเองอัตโนมัติ|Live">ข้อความขึ้นเองอัตโนมัติ</span></small></div><a class="ic" id="chCall" aria-label="Call" hidden><i class="ti ti-phone"></i></a><button class="chq" id="chBook" type="button" hidden data-t="ขอราคา|Get a quote">ขอราคา</button></div>
   <div class="msgs" id="msgs"></div>
   <div class="as" id="chSug" hidden></div>
   <div class="as" id="chAs" hidden><button data-as="customer" class="on" data-t="พิมพ์เป็นลูกค้า|As customer">พิมพ์เป็นลูกค้า</button><button data-as="technician" data-t="พิมพ์เป็นช่าง|As mechanic">พิมพ์เป็นช่าง</button></div>
@@ -3827,10 +3874,19 @@ function poll(fetchNew){
     if(seq===CH.seq)tick()},document.hidden?12000:3000)};
   tick();
 }
+/* หัวห้อง: รูปโปรไฟล์ร้าน (ไม่มีใช้อักษรแรก) + ป้ายผ่านการตรวจ */
+function chHead(name,t){
+  $("chT").textContent=name;
+  const av=$("chAv"),ph=t&&t.avatar;
+  av.textContent=ph?"":initial(name);av.classList.toggle("img",!!ph);av.style.backgroundImage=ph?`url('${img(ph)}')`:"";
+  $("chV").hidden=!(t&&t.verified);
+}
+/* การ์ดบนสุดของห้อง: บอกเฉพาะสิ่งที่ระบบปกป้องให้จริง */
+const safeNote=(title,body)=>`<p class="sys safe"><i class="ti ti-shield-lock"></i><span><b>${title}</b><span>${body}</span></span></p>`;
 function openChat(j){
   CH.job=j;CH.th=null;CH.after=0;CH.last="";CH.all=[];CH.as="customer";
   const cust=j.role==="customer";
-  $("chT").textContent=cust?j.techName:j.role==="technician"?T("ลูกค้า","Customer")+" · "+j.car:j.techName;
+  chHead(cust?j.techName:j.role==="technician"?T("ลูกค้า","Customer")+" · "+j.car:j.techName,j.role==="technician"?null:TECHS.find(x=>x.id===j.techId));
   const phone=cust?j.technicianPhone:j.customerPhone;
   $("chCall").hidden=!(phone&&/^0\d{8,9}$/.test(phone));if(phone)$("chCall").href="tel:"+phone;
   $("chBook").hidden=true;$("chSug").hidden=true;
@@ -3838,7 +3894,8 @@ function openChat(j){
   $("chAs").querySelectorAll("button").forEach(b=>{b.classList.toggle("on",b.dataset.as==="customer");b.onclick=()=>{CH.as=b.dataset.as;$("chAs").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));const all=CH.all;$("msgs").innerHTML="";CH.after=0;CH.last="";CH.all=[];addMsgs(all)}});
   const closed=["completed","cancelled"].includes(j.status)||j.role==="admin";
   $("chF").hidden=closed;
-  $("msgs").innerHTML=`<p class="sys first">${j.acceptedAt?"คุยนัดหมายได้เลย":"เบอร์และไลน์จะถูกซ่อนจนกว่าลูกค้ายืนยันราคา"}</p>`;
+  $("msgs").innerHTML=j.acceptedAt?safeNote(T("นัดหมายแล้ว คุยรายละเอียดได้เลย","Booked — talk through the details"),T("ทุกข้อความเก็บไว้กับใบงานนี้ ใช้อ้างอิงได้ถ้ามีปัญหา","Every message stays with this job for reference"))
+    :safeNote(T("คุยอย่างปลอดภัยผ่าน Cendon","Chat safely on Cendon"),T("เบอร์และไลน์จะถูกซ่อนจนกว่าลูกค้ายืนยันราคา","Phone and LINE stay hidden until the customer accepts a quote"));
   addMsgs(j.messages||[]);
   if(!(j.messages||[]).length)$("msgs").insertAdjacentHTML("beforeend",'<p class="sys first">ส่งข้อความแรกได้เลย</p>');
   chatOn("/jobs/"+encodeURIComponent(j.id)+"/chat",!closed);
@@ -3872,11 +3929,11 @@ async function openThread(id,ask){
 function showThread(h,msgs,ask){
   CH.job={id:h.id,role:h.role,thread:true};CH.th={...h,ask:ask||null};CH.after=0;CH.last="";CH.all=[];CH.as=h.role;
   const cust=h.role==="customer";
-  $("chT").textContent=thWho(h);
+  chHead(thWho(h),cust?TECHS.find(x=>x.id===h.techId):null);
   $("chCall").hidden=true;$("chAs").hidden=true;$("chBook").hidden=!cust;$("chF").hidden=h.role==="admin";
-  $("msgs").innerHTML=`<p class="sys">${cust?T("ทักถามได้ตามสบาย ยังไม่ใช่การจ้างงาน · พร้อมเมื่อไหร่กด ขอราคา","Ask anything — this isn't a booking yet. Tap Get a quote when you're ready.")
-    :h.role==="technician"?T("ลูกค้าทักถาม ยังไม่ใช่ใบงาน · ตอบได้เลย","A customer is asking — not a job yet. Reply here.")
-    :T("ห้องทักช่าง (ดูอย่างเดียว)","Customer inquiry (read only)")}</p>`
+  $("msgs").innerHTML=(cust?safeNote(T("คุยอย่างปลอดภัยผ่าน Cendon","Chat safely on Cendon"),T("เบอร์และไลน์ในข้อความถูกซ่อนไว้ · ยังไม่ใช่การจ้างงาน พร้อมเมื่อไหร่กด ขอราคา","Phone numbers and LINE IDs are hidden · Not a booking yet — tap Get a quote when ready"))
+    :h.role==="technician"?safeNote(T("ลูกค้าทักถาม ยังไม่ใช่ใบงาน","A customer is asking — not a job yet"),T("เบอร์และไลน์ในข้อความถูกซ่อนไว้ทั้งสองฝ่าย · ตอบได้เลย","Phone numbers and LINE IDs are hidden for both sides · Reply here"))
+    :`<p class="sys">${T("ห้องทักช่าง (ดูอย่างเดียว)","Customer inquiry (read only)")}</p>`)
     +(ask?`<p class="sys ask"><i class="ti ti-tag"></i> ${T("สอบถามเรื่อง","About")}: <b class="nt">${esc(ask.title)}</b></p>`:"");
   addMsgs(msgs);
   const sug=$("chSug");sug.hidden=!(cust&&!msgs.length);

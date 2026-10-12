@@ -12,6 +12,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>Cendon</title>
 <script src="nav.js"></script>
+<script src="media-store.js"></script>
 <meta name="theme-color" content="#131316"/>
 <link rel="manifest" href="./manifest.webmanifest"/>
 <link rel="icon" href="./favicon.png"/>
@@ -565,6 +566,31 @@ html[data-theme="dark"] .chat{--ci:#FAFAF9;--ci-2:#E4E4E7;--ci-fg:#09090B;--ci-s
 .chat .cbar .send.sq{border-radius:50%;background:linear-gradient(160deg,#1C1C20,#09090B);color:var(--ci-or);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 10px 20px -10px var(--ci-sh)}
 html[data-theme="dark"] .chat .cbar .send.sq{box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),0 10px 20px -10px var(--ci-sh)}
 .chat .cbar .send.sq::after{display:none}
+/* ไฟล์แนบ: ในข้อความ · ถาดก่อนส่ง · ปุ่มแนบ/ไมค์ · แถบอัดเสียง */
+.chat .msg.has-m{padding:6px 6px 6px}
+.chat .msg.has-m>small{padding:0 8px 2px}
+.chat .msg .mm{display:grid;gap:4px;margin-bottom:4px}
+.chat .msg .mm.n2{grid-template-columns:1fr 1fr}
+.chat .msg .mm img,.chat .msg .mm video{display:block;width:min(240px,62vw);max-height:300px;object-fit:cover;border-radius:15px;background:var(--ci-soft)}
+.chat .msg .mm.n2 img,.chat .msg .mm.n2 video{width:min(118px,30vw);height:min(118px,30vw)}
+.chat .msg .mm img{cursor:zoom-in}
+.chat .msg .mm audio{grid-column:1/-1;width:min(240px,62vw);height:40px}
+.ch-tool{flex:none;width:38px;height:46px;display:grid;place-items:center;font-size:22px;color:var(--muted);border-radius:12px;transition:color .2s}
+.ch-tool:hover{color:var(--ink)}
+.ch-att{display:flex;gap:8px;padding:10px 12px 2px;overflow-x:auto;scrollbar-width:none}
+.ch-ai{position:relative;flex:none;display:grid;place-items:center;width:64px;height:64px;border-radius:14px;overflow:hidden;background:var(--surface);box-shadow:inset 0 0 0 1px var(--ci-line)}
+.ch-ai img,.ch-ai video{width:100%;height:100%;object-fit:cover}
+.ch-ai>i{position:absolute;font-size:20px;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.6);pointer-events:none}
+.ch-ai.audio{display:flex;align-items:center;gap:6px;width:auto;padding:0 34px 0 12px;font:600 13px var(--kb);color:var(--ink)}
+.ch-ai.audio>i{position:static;color:var(--ci-or);text-shadow:none;font-size:18px}
+.ch-ai button{position:absolute;top:4px;right:4px;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;font-size:13px;color:#fff;background:rgba(9,9,11,.72)}
+.ch-rec{display:flex;align-items:center;gap:10px;margin:8px 12px 0;padding:6px 6px 6px 16px;border-radius:999px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--ci-line),0 10px 24px -18px var(--ci-sh)}
+.ch-rec>i{width:9px;height:9px;border-radius:50%;background:var(--ci-or);animation:blink 1s infinite}
+.ch-rec span{flex:1;font:600 15px var(--kb);font-variant-numeric:tabular-nums}
+.ch-rec button{height:34px;padding:0 15px;border-radius:999px;font:600 13px/1 var(--kb);color:var(--muted)}
+.ch-rec #chRecOk{color:#fff;background:linear-gradient(160deg,#1C1C20,#09090B)}
+html[data-theme="dark"] .ch-rec #chRecOk{box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+.chat .cbar.rec .ch-tool,.chat .cbar.rec textarea{opacity:.4;pointer-events:none}
 
 /* ใบสมัครพาร์ทเนอร์ */
 .hero{position:relative;overflow:hidden;isolation:isolate;margin:-4px -16px 18px;padding:28px 20px 24px;background:linear-gradient(135deg,#1f2937,#0b1220);color:#fff}
@@ -1845,7 +1871,10 @@ a.mtab{text-decoration:none}
   <div class="msgs" id="msgs"></div>
   <div class="as" id="chSug" hidden></div>
   <div class="as" id="chAs" hidden><button data-as="customer" class="on" data-t="พิมพ์เป็นลูกค้า|As customer">พิมพ์เป็นลูกค้า</button><button data-as="technician" data-t="พิมพ์เป็นช่าง|As mechanic">พิมพ์เป็นช่าง</button></div>
-  <form class="cbar" id="chF"><textarea id="chIn" rows="1" maxlength="2000" data-t-ph="พิมพ์ข้อความ|Message"></textarea><button class="send sq" aria-label="Send"><i class="ti ti-send-2"></i></button></form>
+  <div class="ch-att" id="chAtt" hidden></div>
+  <div class="ch-rec" id="chRec" hidden><i></i><span id="chRecT">0:00</span><button type="button" id="chRecX" data-t="ยกเลิก|Cancel">ยกเลิก</button><button type="button" id="chRecOk" data-t="เสร็จ|Done">เสร็จ</button></div>
+  <form class="cbar" id="chF"><button type="button" class="ch-tool" id="chClip" aria-label="แนบรูปหรือวิดีโอ"><i class="ti ti-paperclip"></i></button><textarea id="chIn" rows="1" maxlength="2000" data-t-ph="พิมพ์ข้อความ|Message"></textarea><button type="button" class="ch-tool" id="chMic" aria-label="อัดข้อความเสียง"><i class="ti ti-microphone"></i></button><button class="send sq" aria-label="Send"><i class="ti ti-send-2"></i></button></form>
+  <input type="file" id="chFile" accept="image/*,video/*" multiple hidden data-nocrop>
 </div>
 
 <div class="toast" id="toast"><i class="ti ti-check"></i><span id="toastT"></span></div>
@@ -3845,6 +3874,15 @@ const CH={job:null,th:null,after:0,as:"customer",timer:0,last:"",seq:0};
 function mine(m){const r=CH.job.role;return r==="both"?m.role===CH.as:m.role===(r==="customer"?"customer":"technician")}
 function fmtT(at){return new Date(at).toLocaleTimeString(LOC,{hour:"2-digit",minute:"2-digit"})}
 function fmtD(at){return new Date(at).toLocaleDateString(LOC,{day:"numeric",month:"short"})}
+/* ไฟล์ในข้อความ — media-store.js เติม src จากเครื่อง (หรือดึงจากเซิร์ฟเวอร์) ให้เอง */
+function mediaHTML(l){
+  if(!l||!l.length)return "";
+  const pics=l.filter(a=>a.kind!=="audio").length;
+  return `<span class="mm${pics>1?" n2":""}">${l.map(a=>{const id=esc(a.id);
+    return a.kind==="image"?`<img data-mid="${id}" alt="" data-view>`
+      :a.kind==="video"?`<video data-mid="${id}" controls playsinline preload="metadata"></video>`
+      :`<audio data-mid="${id}" controls preload="metadata"></audio>`}).join("")}</span>`;
+}
 function addMsgs(list){
   const box=$("msgs");const fresh=list.filter(m=>m.id>CH.after);if(!fresh.length)return;
   const atEnd=box.scrollHeight-box.scrollTop-box.clientHeight<90;
@@ -3853,7 +3891,7 @@ function addMsgs(list){
   const ask=box.querySelector(".sys.ask"),put=h=>ask?ask.insertAdjacentHTML("beforebegin",h):box.insertAdjacentHTML("beforeend",h);
   fresh.forEach(m=>{
     const d=fmtD(m.at);if(d!==CH.last){CH.last=d;put(`<div class="day">${d}</div>`)}
-    put(`<div class="msg ${mine(m)?"me":""}" data-id="${m.id}">${esc(m.text)}<small>${CH.job.role==="both"||CH.job.role==="admin"?(m.role==="customer"?"ลูกค้า · ":"ช่าง · "):""}${fmtT(m.at)}</small></div>`);
+    put(`<div class="msg ${mine(m)?"me":""}${m.media&&m.media.length?" has-m":""}" data-id="${m.id}">${mediaHTML(m.media)}${esc(m.text||"")}<small>${CH.job.role==="both"||CH.job.role==="admin"?(m.role==="customer"?"ลูกค้า · ":"ช่าง · "):""}${fmtT(m.at)}</small></div>`);
   });
   CH.after=fresh[fresh.length-1].id;CH.all.push(...fresh);
   if(CH.all.length)$("chSug").hidden=true;
@@ -3884,6 +3922,7 @@ function chHead(name,t){
 /* การ์ดบนสุดของห้อง: บอกเฉพาะสิ่งที่ระบบปกป้องให้จริง */
 const safeNote=(title,body)=>`<p class="sys safe"><i class="ti ti-shield-lock"></i><span><b>${title}</b><span>${body}</span></span></p>`;
 function openChat(j){
+  recStop(true);clearAtt();
   CH.job=j;CH.th=null;CH.after=0;CH.last="";CH.all=[];CH.as="customer";
   const cust=j.role==="customer";
   chHead(cust?j.techName:j.role==="technician"?T("ลูกค้า","Customer")+" · "+j.car:j.techName,j.role==="technician"?null:TECHS.find(x=>x.id===j.techId));
@@ -3927,6 +3966,7 @@ async function openThread(id,ask){
   refreshThreads();
 }
 function showThread(h,msgs,ask){
+  recStop(true);clearAtt();
   CH.job={id:h.id,role:h.role,thread:true};CH.th={...h,ask:ask||null};CH.after=0;CH.last="";CH.all=[];CH.as=h.role;
   const cust=h.role==="customer";
   chHead(thWho(h),cust?TECHS.find(x=>x.id===h.techId):null);
@@ -3978,6 +4018,7 @@ async function inbox(){
 let CHL=null;
 function closeChat(fromNav){
   clearTimeout(CH.timer);CH.seq++;$("chat").classList.remove("on");$("chat").setAttribute("aria-hidden","true");
+  recStop(true);clearAtt();
   const l=CHL;CHL=null;if(fromNav!==true&&l)Nav.drop(l);
   if(CH.job&&CH.job.thread){CH.th=null;refreshThreads();return}
   if(CH.job)openJob(CH.job.id,false).then(()=>{});
@@ -3988,24 +4029,93 @@ chIn.addEventListener("input",()=>{chIn.style.height="auto";chIn.style.height=Ma
 /* Enter ส่ง แต่ไม่ส่งระหว่างเลือกคำในแป้นพิมพ์ภาษาไทย (isComposing) ไม่งั้นคำขาดกลาง */
 chIn.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing&&matchMedia("(pointer:fine)").matches){e.preventDefault();$("chF").requestSubmit()}});
 /* ส่งในห้องทักช่าง: ข้อความแรก (หรือถามเรื่องบริการใหม่) เปิด/ผูกห้องกับร้าน · ต่อจากนั้นตอบในห้องเดิม */
-async function sendThread(text){
+async function sendThread(text,media){
   const h=CH.th;
   if(!h.id||h.ask){
-    const r=await api("/api/tech/threads",{body:{techId:h.techId,gigId:h.ask?h.ask.id:undefined,text}});
+    const r=await api("/api/tech/threads",{body:{techId:h.techId,gigId:h.ask?h.ask.id:undefined,text,media}});
     h.ask=null;$("msgs").querySelector(".sys.ask")?.remove();
     if(!h.id){h.id=CH.job.id=r.thread.id;Nav.replace("/messages/"+encodeURIComponent(h.id));pollThread()}
     return r.message;
   }
-  return (await api("/api/tech/threads/"+encodeURIComponent(h.id),{body:{text}})).message;
+  return (await api("/api/tech/threads/"+encodeURIComponent(h.id),{body:{text,media}})).message;
 }
 $("chF").addEventListener("submit",async e=>{
-  e.preventDefault();const text=chIn.value.trim();if(!text||!CH.job)return;
-  chIn.value="";chIn.style.height="auto";
+  e.preventDefault();const text=chIn.value.trim(),att=CH.att.slice();if(!(text||att.length)||!CH.job||REC)return;
+  chIn.value="";chIn.style.height="auto";CH.att=[];drawAtt();
   /* ข้อความขึ้นทันทีแบบจาง ๆ ระหว่างส่ง แล้วค่อยแทนด้วยของจริงจากเซิร์ฟเวอร์ */
-  const tmp=document.createElement("div");tmp.className="msg me pending";tmp.textContent=text;$("msgs").appendChild(tmp);$("msgs").scrollTop=$("msgs").scrollHeight;
-  try{const m=CH.th?await sendThread(text):(await api("/api/tech/jobs/"+CH.job.id,{body:{action:"message",message:text,as:CH.as}})).message;tmp.remove();addMsgs([m])}
-  catch(err){tmp.remove();chIn.value=text;toast(err.message,"ti-alert-triangle")}
+  const tmp=document.createElement("div");tmp.className="msg me pending"+(att.length?" has-m":"");
+  tmp.innerHTML=(att.length?`<span class="mm${att.filter(a=>a.kind!=="audio").length>1?" n2":""}">${att.map(a=>a.kind==="image"?`<img src="${a.url}" alt="">`:a.kind==="video"?`<video src="${a.url}" muted playsinline></video>`:`<audio src="${a.url}" controls></audio>`).join("")}</span>`:"")
+    +esc(text)+(att.length?`<small>${T("กำลังส่งไฟล์…","Sending…")}</small>`:"");
+  $("msgs").appendChild(tmp);$("msgs").scrollTop=$("msgs").scrollHeight;
+  try{
+    /* ไฟล์ขึ้นเซิร์ฟเวอร์ก่อน (เป็นร่าง) แล้วค่อยส่งข้อความที่อ้างถึงไฟล์ — อีกฝ่ายเปิดไฟล์ได้ทันทีที่เห็นข้อความ */
+    for(const a of att)if(!(await CendonMedia.upload(a.id,"draft")))throw new Error(T("ส่งไฟล์ไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่","Couldn't upload the file — check your connection and try again"));
+    const media=att.length?att.map(a=>a.id):undefined;
+    const m=CH.th?await sendThread(text,media):(await api("/api/tech/jobs/"+CH.job.id,{body:{action:"message",message:text,as:CH.as,media}})).message;
+    tmp.remove();addMsgs([m]);att.forEach(a=>URL.revokeObjectURL(a.url));
+  }catch(err){tmp.remove();chIn.value=text;CH.att=att.concat(CH.att).slice(0,4);drawAtt();toast(err.message,"ti-alert-triangle")}
 });
+
+/* ── แนบรูป/วิดีโอ/เสียง ──
+   รูปย่อก่อนส่ง (ภาพจากมือถือหลาย MB เหลือไม่กี่ร้อย KB ยังชัด) · วิดีโอไม่เกิน 20MB · เสียงอัดในแอปไม่เกิน 3 นาที
+   ไฟล์เก็บในเครื่องทันที (media-store.js) แล้วขึ้นเซิร์ฟเวอร์ตอนกดส่ง */
+CH.att=[];
+const fmtDur=sec=>{sec=Math.max(0,Math.round(sec||0));return Math.floor(sec/60)+":"+String(sec%60).padStart(2,"0")};
+function drawAtt(){
+  const box=$("chAtt");box.hidden=!CH.att.length;
+  box.innerHTML=CH.att.map((a,i)=>`<span class="ch-ai ${a.kind}">${a.kind==="image"?`<img src="${a.url}" alt="">`
+    :a.kind==="video"?`<video src="${a.url}" muted playsinline preload="metadata"></video><i class="ti ti-player-play-filled"></i>`
+    :`<i class="ti ti-microphone"></i>${fmtDur(a.dur)}`}<button type="button" data-rm="${i}" aria-label="${T("เอาออก","Remove")}"><i class="ti ti-x"></i></button></span>`).join("");
+  box.querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{const [a]=CH.att.splice(+b.dataset.rm,1);if(a){URL.revokeObjectURL(a.url);CendonMedia.del(a.id,true)}drawAtt()});
+}
+function clearAtt(){CH.att.forEach(a=>{URL.revokeObjectURL(a.url);CendonMedia.del(a.id,true)});CH.att=[];drawAtt()}
+function pendFile(blob,o){
+  const id=CendonMedia.newId();
+  CendonMedia.put(blob,{id,kind:o.kind,mime:o.mime,name:o.name||"",scope:"draft",upload:false}).catch(()=>{});
+  CH.att.push({id,kind:o.kind,mime:o.mime,url:URL.createObjectURL(blob),dur:o.dur});drawAtt();
+}
+const attFull=()=>{if(CH.att.length<4)return false;toast(T("แนบได้ครั้งละไม่เกิน 4 ไฟล์","Up to 4 files per message"),"ti-alert-triangle");return true};
+$("chClip").onclick=()=>{if(!attFull()){$("chFile").value="";$("chFile").click()}};
+$("chFile").onchange=async e=>{
+  for(const f of [...e.target.files]){
+    if(attFull())break;
+    const kind=CendonMedia.kindOf(f.type||"");
+    if(kind==="image"){
+      let blob=f,mime=f.type;
+      try{const d=await shrink(f,1600);blob=CendonMedia.fromB64(d.split(",")[1],"image/jpeg");mime="image/jpeg"}
+      catch(x){if(f.size>10e6){toast(T("รูปใหญ่เกินไป (ไม่เกิน 10MB)","Photo too large (max 10MB)"),"ti-alert-triangle");continue}}
+      pendFile(blob,{kind,mime,name:f.name});
+    }else if(kind==="video"){
+      if(f.size>20*1024*1024){toast(T("วิดีโอใหญ่เกินไป (ไม่เกิน 20MB) ลองตัดให้สั้นลง","Video too large (max 20MB) — try a shorter clip"),"ti-alert-triangle");continue}
+      pendFile(f,{kind,mime:f.type,name:f.name});
+    }else toast(T("แนบได้เฉพาะรูปและวิดีโอ","Photos and videos only"),"ti-alert-triangle");
+  }
+  e.target.value="";
+};
+/* อัดเสียง: แตะไมค์เริ่ม · "เสร็จ" ได้ไฟล์เสียงในถาด (ฟังก่อนส่งได้) · "ยกเลิก" ทิ้ง */
+let REC=null;
+function recStop(cancel){if(!REC)return;REC.cancel=!!cancel;try{REC.mr.stop()}catch(e){}}
+$("chMic").onclick=async()=>{
+  if(REC||attFull())return;
+  if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia&&window.MediaRecorder))return toast(T("เครื่องนี้อัดเสียงในแอปไม่ได้","Voice recording isn't supported here"),"ti-microphone-off");
+  let st;try{st=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}})}
+  catch(e){return toast(T("ใช้ไมโครโฟนไม่ได้ — อนุญาตไมโครโฟนให้เบราว์เซอร์ก่อน","Microphone blocked — allow it in your browser"),"ti-microphone-off")}
+  const mr=new MediaRecorder(st),chunks=[],t0=Date.now();
+  REC={mr,cancel:false,timer:setInterval(()=>{const sec=(Date.now()-t0)/1000;$("chRecT").textContent=fmtDur(sec);if(sec>=180)recStop(false)},250)};
+  mr.ondataavailable=ev=>{if(ev.data&&ev.data.size)chunks.push(ev.data)};
+  mr.onstop=()=>{
+    const r=REC,dur=(Date.now()-t0)/1000;REC=null;clearInterval(r.timer);st.getTracks().forEach(t=>t.stop());
+    $("chRec").hidden=true;$("chF").classList.remove("rec");
+    if(r.cancel||!chunks.length||dur<0.8)return;
+    const mime=String(mr.mimeType||chunks[0].type||"audio/webm").split(";")[0];
+    pendFile(new Blob(chunks,{type:mime}),{kind:"audio",mime,name:"voice",dur});
+  };
+  mr.start(250);$("chRecT").textContent="0:00";$("chRec").hidden=false;$("chF").classList.add("rec");
+};
+$("chRecX").onclick=()=>recStop(true);
+$("chRecOk").onclick=()=>recStop(false);
+/* แตะรูปในแชตเพื่อดูเต็มจอ */
+$("msgs").addEventListener("click",e=>{const i=e.target.closest&&e.target.closest(".mm img[data-view]");if(i&&i.src)CendonMedia.view(i.src)});
 
 /* ═══ เลือกตำแหน่ง — หมุดกลางจอ ═══ */
 function picker(host,start,onMove){

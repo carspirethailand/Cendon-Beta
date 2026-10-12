@@ -11,6 +11,7 @@
 <base href="/">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <script src="nav.js"></script>
+<script src="media-store.js"></script>
 <meta name="theme-color" content="#05070F"/>
 <title>Cendon — AI Assistant</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
@@ -341,6 +342,8 @@ body[data-phase="login"] .w-aura,body[data-phase="login"] .w-sweep,body[data-pha
 .bubble li::before{content:"•";position:absolute;left:2px;color:var(--c-acc)}
 .bubble .matt{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px}
 .bubble .matt img,.bubble .matt video{width:110px;height:78px;object-fit:cover;border-radius:11px}
+.bubble .matt img{cursor:zoom-in}.bubble .matt video{width:180px;height:120px;background:#000}
+.bubble .matt audio{width:230px;max-width:100%;height:40px}
 .bubble .matt .au{display:flex;align-items:center;gap:6px;font-size:12px;background:rgba(0,0,0,.18);padding:6px 10px;border-radius:10px}
 .typing{display:flex;gap:5px;padding:4px 2px}
 .typing i{width:7px;height:7px;border-radius:50%;background:var(--c-mut);animation:td 1.1s infinite}
@@ -4505,6 +4508,8 @@ try{ Object.defineProperty(window,"sending",{configurable:true,get:()=>sending})
 /* ฟอร์มที่ AI ถามกลับอยู่คนละบล็อกสคริปต์ ต้องเรียกสามตัวนี้ผ่าน window */
 try{ Object.defineProperty(window,"messages",{configurable:true,get:()=>messages}) }catch(e){}
 window.pending=pending;
+/* รูปแบบวันที่ในรายการแชตตามภาษาที่ตั้งไว้ — ตัวนี้เคยหายไปตอนย้ายหน้าเข้าสู่ระบบ (0aa7052) ทำให้เปิดประวัติแชตแล้วพัง */
+window.sessLoc=window.sessLoc||(()=>{const c=(window.spireLang&&window.spireLang())||window.lang||"th";return c==="th"?"th-TH":c==="en"?"en-US":c});
 function sessKey(){const c=selCar();return c?"sess_"+c.id:null}
 function curKey(){const c=selCar();return c?"cursess_"+c.id:null}
 function getSessions(){const k=sessKey();return k?LS.get(k,[]):[]}
@@ -4524,8 +4529,11 @@ function stripForSave(msgs){return msgs.filter(m=>!m.typing).slice(-40).map(m=>{
   if(m.featureTool)o.featureTool=m.featureTool;
   if(m.data)o.data=m.data;
   if(m.svc)o.svc=m.svc;
-  if(m.atts&&m.atts.length)o.atts=m.atts.map(a=>({kind:a.kind}));
+  /* เก็บรหัสไฟล์ (ตัวไฟล์อยู่ใน media-store.js) — เดิมเก็บแค่ชนิด รูปจึงหายหลังปิดแอป */
+  if(m.atts&&m.atts.length)o.atts=m.atts.map(a=>a.id?{kind:a.kind,mime:a.mime,name:a.name||"",id:a.id}:{kind:a.kind});
   return o})}
+const mediaIdsOf=list=>{const out=new Set();(list||[]).forEach(s=>(s.msgs||[]).forEach(m=>(m.atts||[]).forEach(a=>{if(a.id)out.add(a.id)})));return out};
+function dropMedia(before,after){if(!window.CendonMedia)return;before.forEach(id=>{if(!after.has(id))CendonMedia.del(id)})}
 function currentSessionId(){const k=curKey();return k?LS.get(k,null):null}
 function loadSession(){
   migrateLegacy();
@@ -4546,8 +4554,9 @@ function saveSession(){
      ทันทีที่พิมพ์ข้อความถัดไป ซึ่งดูเหมือนระบบลืมของที่เพิ่งตั้ง */
   if(!s.lock) s.title=sessTitle(s.msgs)||s.title||tr("h.new");
   s.t=Date.now();
+  const had=mediaIdsOf(getSessions());
   list=list.filter(x=>x.msgs&&x.msgs.length||x.id===s.id).slice(0,10);
-  try{setSessions(list)}catch(e){console.warn("save quota",e)}
+  try{setSessions(list);dropMedia(had,mediaIdsOf(list))}catch(e){console.warn("save quota",e)}
 }
 function newSession(){
   window.CendonFeatureAI?.reset();
@@ -4570,15 +4579,16 @@ function switchSession(id){
 }
 function deleteSession(id,ev){
   if(ev)ev.stopPropagation();
+  const had=mediaIdsOf(getSessions());
   let list=getSessions().filter(x=>x.id!==id);
-  setSessions(list);
+  setSessions(list);dropMedia(had,mediaIdsOf(list));
   if(currentSessionId()===id){if(curKey())LS.del(curKey());messages=[];loadSession();renderMessages();updateHint();renderChips()}
   renderHist();
 }
 function clearCurrent(){
   messages=[];
   const id=currentSessionId();
-  if(id){let list=getSessions();const s=list.find(x=>x.id===id);if(s){s.msgs=[];s.title=tr("h.new")}setSessions(list)}
+  if(id){let list=getSessions();const had=mediaIdsOf(list);const s=list.find(x=>x.id===id);if(s){s.msgs=[];s.title=tr("h.new")}setSessions(list);dropMedia(had,mediaIdsOf(list))}
   renderMessages();updateHint();renderChips();closeSheets();
   toast(tr("s.clear"),"ti-trash");
 }
@@ -4834,12 +4844,19 @@ function md(t){let s=esc(t);const lines=s.split("\n");let out="",inList=false,tb
   if(inList)out+="</ul>";return out.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/(<br>)+$/,"")}
 /* แบ่งคำตอบเป็นย่อหน้าตามบรรทัดว่าง — ตอนไหลกับตอนจบใช้โครงเดียวกันเป๊ะ ภาพจึงไม่กระโดดตอนคำตอบจบ */
 function mdBlocks(t){if(window.CendonSearch)t=CendonSearch.strip(t);return String(t||"").split(/\n{2,}/).filter(b=>b.trim()).map(b=>`<div class="blk">${md(b)}</div>`).join("")}
+/* ไฟล์แนบในข้อความ: มีรหัสไฟล์ = ดึงจากที่เก็บ (media-store.js เติม src ให้เอง) · เพิ่งแนบ = ใช้ข้อมูลในหน่วยความจำ
+   รูปแตะดูเต็มจอ · วิดีโอ/เสียงกดเล่นได้ในแชต */
 function attHTML(atts){if(!atts||!atts.length)return"";
-  return`<div class="matt">`+atts.map(a=>a.kind==="image"&&a.b64?`<img src="data:${a.mime};base64,${a.b64}">`
-    :a.kind==="video"&&a.b64?`<video src="data:${a.mime};base64,${a.b64}" muted></video>`
-    :a.kind==="image"?`<span class="au"><i class="ti ti-photo"></i> รูปภาพ</span>`
-    :a.kind==="video"?`<span class="au"><i class="ti ti-video"></i> วิดีโอ</span>`
-    :`<span class="au"><i class="ti ti-microphone"></i> เสียง</span>`).join("")+`</div>`}
+  const CM=window.CendonMedia;
+  return`<div class="matt">`+atts.map(a=>{
+    const u=(a.id&&CM&&CM.cached(a.id))||(a.b64?`data:${a.mime};base64,${a.b64}`:"");
+    const src=u?`src="${u}"`:a.id?`data-mid="${esc(a.id)}"`:"";
+    if(!src)return a.kind==="image"?`<span class="au"><i class="ti ti-photo"></i> รูปภาพ</span>`
+      :a.kind==="video"?`<span class="au"><i class="ti ti-video"></i> วิดีโอ</span>`
+      :`<span class="au"><i class="ti ti-microphone"></i> เสียง</span>`;
+    return a.kind==="image"?`<img ${src} alt="" data-view>`
+      :a.kind==="video"?`<video ${src} controls playsinline preload="metadata"></video>`
+      :`<audio ${src} controls preload="metadata"></audio>`}).join("")+`</div>`}
 function userAv(){return currentUser&&currentUser.photo?`<img src="${currentUser.photo}" referrerpolicy="no-referrer">`:`<i class="ti ti-user"></i>`}
 function msgHTML(m){
   if(m.role==="user")return`<div class="msg me"><div class="av">${userAv()}</div><div class="bubble">${attHTML(m.atts)}${esc(m.text)||""}</div></div>`;
@@ -5124,11 +5141,14 @@ ${convo}`}]}],{temp:0.3});
 }
 
 /* ===== COMPOSER ===== */
-function addAtt(kind,mime,b64,name){pending.push({kind,mime,b64,name});renderAtts();updateSend();
+function addAtt(kind,mime,b64,name){const id=window.CendonMedia?CendonMedia.newId():null;
+  if(id)CendonMedia.put(CendonMedia.fromB64(b64,mime),{id,kind,mime,name,upload:false}).catch(()=>{});
+  pending.push({kind,mime,b64,name,id});renderAtts();updateSend();
   /* หน้าเริ่มต้นกับเมนูปุ่มบวกอยู่คนละสโคป ต้องมีทางอ่านรายการที่แนบไว้ */
   window.pending=pending;}
 function renderAtts(){$("atts").innerHTML=pending.map((a,i)=>`<div class="att-chip">${a.kind==="image"?`<img src="data:${a.mime};base64,${a.b64}">`:a.kind==="video"?`<video src="data:${a.mime};base64,${a.b64}"></video>`:`<i class="ti ti-microphone"></i>`}<span>${esc(a.name||a.kind)}</span><span class="x" data-rm="${i}"><i class="ti ti-x"></i></span></div>`).join("")}
-$("atts").addEventListener("click",e=>{const x=e.target.closest("[data-rm]");if(x){pending.splice(+x.dataset.rm,1);renderAtts();updateSend()}});
+document.addEventListener("click",e=>{const i=e.target.closest&&e.target.closest(".bubble .matt img[data-view]");if(i&&i.src&&window.CendonMedia)CendonMedia.view(i.src)});
+$("atts").addEventListener("click",e=>{const x=e.target.closest("[data-rm]");if(x){const [a]=pending.splice(+x.dataset.rm,1);if(a&&a.id&&window.CendonMedia)CendonMedia.del(a.id,true);renderAtts();updateSend()}});
 /* ปุ่มเดียวทำสองหน้าที่ เหมือน AI เจ้าอื่น
    ยังไม่พิมพ์อะไร = ปุ่มโทร  พิมพ์แล้วหรือแนบไฟล์แล้ว = ปุ่มส่ง
    ไม่ปิดการใช้งานปุ่มอีกต่อไป เพราะตอนว่างมันมีงานของตัวเองอยู่ */
@@ -5253,6 +5273,11 @@ async function sendMsg(){
   catch(e){toast(e.message,"ti-info-circle");return;}
   if(sending)return;
   const atts=featureJob?featureJob.attachments.map(a=>({...a,kind:a.kind||(a.mime.startsWith("audio/")?"audio":"image"),name:a.name||featureJob.key})):pending.slice();pending=[];window.pending=pending;renderAtts();
+  /* ไฟล์ที่ส่งแล้วเก็บถาวร: มีรหัสแล้ว = ส่งขึ้นเซิร์ฟเวอร์ · ไฟล์ที่เครื่องมือ AI สร้างใหม่ (ยังไม่มีรหัส) = เก็บก่อนแล้วส่งขึ้น */
+  if(window.CendonMedia)atts.forEach(a=>{try{
+    if(a.id)CendonMedia.uploadSoon(a.id,"ai");
+    else if(a.b64){a.id=CendonMedia.newId();CendonMedia.put(CendonMedia.fromB64(a.b64,a.mime),{id:a.id,kind:a.kind,mime:a.mime,name:a.name}).catch(()=>{})}
+  }catch(e){}});
   messages.push({role:"user",text,atts,featureTool:featureJob?.key||null});
   window.__stopped=false;
   $("inp").value="";autoSize();sending=true;updateSend();
@@ -5280,6 +5305,13 @@ async function sendMsg(){
         if(controller.signal.aborted&&!window.__stopped){const timeoutError=Error(lang==="en"?"Analysis timed out. Please try again.":"การวิเคราะห์ใช้เวลานานเกินไป กรุณาลองใหม่ครับ");timeoutError.featureError=true;throw timeoutError;}
         e.featureError=true;throw e;
       }finally{clearTimeout(timeout);if(window.__aiAbort===controller)window.__aiAbort=null;}
+    }
+    /* เปิดแอปใหม่แล้วคุยต่อ: รูป/เสียงของ 2 ข้อความล่าสุดยังไม่อยู่ในหน่วยความจำ — โหลดจากที่เก็บกลับมา
+       AI จะยังเห็นรูปที่คุยค้างไว้ ไม่ต้องแนบใหม่ */
+    if(window.CendonMedia){
+      const recent=messages.filter(m=>m.role==="user"&&m.atts&&m.atts.some(a=>a.id&&!a.b64)).slice(-2);
+      for(const m of recent)for(const a of m.atts){if(a.b64||!a.id)continue;
+        try{const b=await Promise.race([CendonMedia.get(a.id),new Promise(r=>setTimeout(()=>r(null),4000))]);if(b&&b.size<12e6)a.b64=await CendonMedia.toB64(b)}catch(e){}}
     }
     const hasMedia=messages.some(m=>m.atts&&m.atts.some(a=>a.b64));
     /* รูป/วิดีโอเก่าไม่ต้องอัปโหลดซ้ำทุกข้อความ (รูปละหลาย MB บนเน็ตมือถือคือหลายวินาที)

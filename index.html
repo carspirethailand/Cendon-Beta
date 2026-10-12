@@ -1462,6 +1462,10 @@ body{background:var(--bg);letter-spacing:-.005em}
 .lx-gcf .lx-gp{align-self:flex-end;font:700 16px var(--kd)}
 /* โพสต์เป็นรูปแนวนอน 16:9 (ขนาดเดียวกับ YouTube) */
 .lx-gcv{aspect-ratio:16/9!important}
+.lx-gcv.fit{overflow:hidden;background:var(--surface-2)}
+.lx-gcv.fit .lx-fb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(18px) saturate(1.15);transform:scale(1.25);opacity:.75}
+.lx-gcv.fit .lx-fi{position:relative;display:block;width:100%;height:100%;object-fit:contain}
+.lx-gcv.fit .lx-gn{z-index:1}
 #gPh .doc{aspect-ratio:16/9;height:auto}
 
 
@@ -1521,14 +1525,6 @@ html[data-theme="dark"] .so-vi{box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
 .so-about2{margin:0 0 12px;font-size:14.5px;line-height:1.75;white-space:pre-wrap}
 .so-sec{margin-top:26px;padding-top:22px;border-top:1px solid var(--line)}
 .so-sec h2{margin:0 0 12px;font:700 18px/1.3 var(--kd)}
-.so-svcs{display:grid}
-.so-svc{display:flex;align-items:center;gap:14px;width:100%;padding:11px 0;border:0;border-bottom:1px solid var(--line-2);background:none;color:var(--ink);text-align:left;font:inherit;cursor:pointer}
-.so-svc:last-child{border-bottom:0}
-.so-th{flex:none;display:grid;place-items:center;width:64px;height:64px;border-radius:14px;font-size:26px;color:var(--muted);background:var(--surface-2) center/cover no-repeat}
-.so-st{flex:1;min-width:0}.so-st b{display:block;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.so-st small{display:block;margin-top:3px;font-size:13px;color:var(--muted)}.so-st em{font-style:normal;font:700 15px var(--kd);color:var(--ink)}
-.so-svc>.ti{color:var(--faint)}
-.so-svc:hover .so-st b{text-decoration:underline;text-underline-offset:3px}
 .so-fine{margin:10px 0 0;font-size:12.5px;line-height:1.55;color:var(--faint)}
 .so-empty{margin:0;padding:6px 0;font-size:14px;line-height:1.6;color:var(--muted)}
 .so-err{display:flex;align-items:center;gap:10px;margin:0;font-size:14px;color:var(--muted)}.so-err .lx-gh{height:36px;margin-left:auto}
@@ -3031,11 +3027,13 @@ function rankGigs(list){
     return {...g,dist:d,sc}}).sort((a,b)=>b.sc-a.sc);
 }
 /* การ์ดบริการ: บน = รูปโปรไฟล์ + ชื่อร้าน · กลาง = แบนเนอร์ 16:9 · ล่าง = หัวข้อ → ดาว/คะแนน/จำนวนรีวิว (ซ้าย) → ราคา (ขวา) */
-function gigCard(g,i){
-  const t=g.tech||{},ph=(g.photos||[])[0],av=t.avatar,n=t.reviewCount||0;
+/* fit: หน้าร้าน/Studio แสดงรูปบริการเต็มทั้งรูป (โปสเตอร์ร้านมักมีตัวหนังสือ ตัดขอบแล้วอ่านไม่ออก)
+   รูปจริงอยู่กลางกรอบ 16:9 พื้นหลังเป็นรูปเดียวกันแบบเบลอ ไม่มีแถบดำ */
+function gigCard(g,i,o){
+  const t=g.tech||{},ph=(g.photos||[])[0],av=t.avatar,n=t.reviewCount||0,fit=o&&o.fit&&ph;
   return `<button class="lx-gc" data-g="${g.id}" style="animation-delay:${Math.min(i*50,500)}ms">
     <span class="lx-gch"><span class="lx-pav"${av?` style="background-image:url('${img(av)}')"`:""}>${av?"":initial(t.shop||t.name)}</span><b class="nt">${esc(t.shop||t.name||"")}</b>${isMine(t)?'<em class="mine-tag">ของคุณ</em>':""}</span>
-    <span class="lx-gcv"${ph?` style="background-image:url('${img(ph)}')"`:""}>${(g.photos||[]).length>1?`<em class="lx-gn"><i class="ti ti-photo"></i>${g.photos.length}</em>`:""}</span>
+    <span class="lx-gcv${fit?" fit":""}"${ph&&!fit?` style="background-image:url('${img(ph)}')"`:""}>${fit?`<img class="lx-fb" src="${img(ph)}" alt="" aria-hidden="true" loading="lazy"><img class="lx-fi" src="${img(ph)}" alt="" loading="lazy">`:""}${(g.photos||[]).length>1?`<em class="lx-gn"><i class="ti ti-photo"></i>${g.photos.length}</em>`:""}</span>
     <span class="lx-gcf">
       <b class="lx-gct nt">${esc(g.title)}</b>
       <span class="lx-gcr">${n?`<i class="ti ti-star-filled"></i><b>${Number(t.rating).toFixed(1)}</b><small>(${n} รีวิว)</small>`:`<i class="ti ti-star"></i><small>ยังไม่มีรีวิว</small>`}</span>
@@ -3172,14 +3170,11 @@ async function tabPosts(){
   GIGS=[...(GIGS||[]).filter(g=>!mine.some(m=>m.id===g.id)),...mine];
   const t=myShop();mine=mine.filter(g=>!g.tech||!t||g.tech.id===t.id);
   const add=mine.length<GIG_MAX?`<button class="lx-cta" type="button" id="pNew" style="height:46px;padding:0 20px"><i class="ti ti-plus"></i>${T(`เพิ่มบริการ (${mine.length}/${GIG_MAX})`,`Add a service (${mine.length}/${GIG_MAX})`)}</button>`:"";
-  B.innerHTML=mine.length?`<section class="stu-sec" style="margin-top:0">${mine.map(g=>{const ph=(g.photos||[])[0],c=RAIL.find(x=>x.id===gigCat(g));
-      return `<button class="stu-row" type="button" data-g="${g.id}"><span class="stu-ri so-th" style="width:64px;height:64px;border-radius:14px${ph?`;background-image:url('${img(ph)}')`:""}">${ph?"":`<i class="ti ${c&&c.ic||"ti-tool"}"></i>`}</span>
-        <span class="stu-rb"><b class="nt">${esc(g.title)}</b><small>${T("เริ่มต้น","From")} <b style="display:inline;font:700 15px var(--kd);color:var(--ink)">฿${money(g.price)}</b></small><span class="stu-rs">${c?esc(c.th):""}</span></span>
-        <span class="stu-rr"><i class="ti ti-chevron-right"></i></span></button>`}).join("")}</section>
+  B.innerHTML=mine.length?`<div class="lx-gigs ch-svc so-gigs">${mine.map((g,i)=>gigCard(g,i,{fit:true})).join("")}</div>
       <div style="margin-top:14px">${add}</div>
       ${mine.length>=GIG_MAX?`<p class="so-fine">${T(`ลงครบ ${GIG_MAX} บริการแล้ว — ลบหรือแก้ไขบริการเดิมเพื่อเปลี่ยน`,`You've listed ${GIG_MAX} services — edit or delete one to change`)}</p>`:""}`
     :`<div class="stu-empty"><i class="ti ti-tool"></i><b>${T("ยังไม่มีบริการ","No services yet")}</b><p>${T("ลงบริการพร้อมราคาเริ่มต้น แล้วจะขึ้นหน้าแรกและหน้าร้านให้ลูกค้าเห็น","List a service with a starting price — it shows on the home page and your storefront")}</p>${add}</div>`;
-  B.querySelectorAll("[data-g]").forEach(x=>x.onclick=()=>openGig(x.dataset.g));
+  B.querySelectorAll(".lx-gc[data-g]").forEach(x=>x.onclick=()=>openGig(x.dataset.g));
   if($("pNew"))$("pNew").onclick=()=>gigForm();
 }
 function drawHome(){
@@ -3461,9 +3456,7 @@ function storeHTML(t,mine){
     :!t.test?`<p class="so-vet static"><i class="ti ti-hourglass so-vi"></i><span><b>${T("ยังรอทีมงานตรวจ","Awaiting review")}</b><small>${T("ลูกค้าจะเห็นร้านเมื่อผ่านการตรวจแล้ว","Customers see the shop once approved")}</small></span></p>`:""}
     ${t.greet||t.about?`<p class="so-about nt">${esc(t.greet||t.about)}</p>`:""}
     <section class="so-sec" id="soSvc"><h2>${T("บริการ","Services")}</h2>
-      ${svc.length?`<div class="so-svcs">${svc.map(g=>{const ph=(g.photos||[])[0],c=RAIL.find(x=>x.id===gigCat(g));
-        return `<button class="so-svc" type="button" data-g="${g.id}"><span class="so-th"${ph?` style="background-image:url('${img(ph)}')"`:""}>${ph?"":`<i class="ti ${c&&c.ic||"ti-tool"}"></i>`}</span>
-          <span class="so-st"><b class="nt">${esc(g.title)}</b><small>${T("เริ่มต้น","From")} <em>฿${money(g.price)}</em></small></span><i class="ti ti-chevron-right"></i></button>`}).join("")}</div>
+      ${svc.length?`<div class="lx-gigs ch-svc so-gigs">${svc.map((g,i)=>gigCard(g,i,{fit:true})).join("")}</div>
         <p class="so-fine">${T("ราคาเริ่มต้น ช่างยืนยันราคาจริงในใบเสนอราคาก่อนเริ่มงาน","Starting prices — the mechanic confirms the real price in a quote before starting")}</p>`
       :`<p class="so-empty">${T("ร้านนี้ยังไม่ได้ลงบริการพร้อมราคา — กดขอราคาเพื่อให้ช่างประเมินให้","No priced services yet — ask for a quote and the mechanic will estimate")}</p>`}
     </section>
@@ -3517,7 +3510,7 @@ function openTech(id,opt){
       if(o.tab)o.setTab(o.tab);
       /* เลื่อนพ้นหัวร้าน → หัวแผ่นทึบขึ้นและบอกชื่อร้าน (ปุ่มย้อน/ปิดไม่ลอยทับข้อความ) */
       if(!b.__soScroll){b.__soScroll=1;b.addEventListener("scroll",()=>{const bs=$("bs");bs.classList.toggle("so-up",!!b.querySelector(".so")&&b.scrollTop>(b.querySelector(".so.has-cover")?220:60))},{passive:true})}
-      b.querySelectorAll(".so-svc").forEach(x=>x.onclick=()=>openGig(x.dataset.g));
+      b.querySelectorAll(".so-gigs .lx-gc").forEach(x=>x.onclick=()=>openGig(x.dataset.g));
       b.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z));
       const hours=b.querySelector("[data-hours]"),wk=b.querySelector(".so-week");
       if(hours&&wk){const tg=()=>{wk.hidden=!wk.hidden;hours.classList.toggle("open",!wk.hidden)};hours.onclick=tg;hours.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();tg()}}}

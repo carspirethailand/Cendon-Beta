@@ -25,13 +25,21 @@
       if(reveal){reveal=false;showTab(rail.querySelector('.cl-tab[aria-selected="true"]'))}
     }
     function schedule(selected=false){reveal=reveal||selected;if(!frame)frame=W.requestAnimationFrame(update)}
-    function step(dir){const e=edges(),a=tabs();const tab=dir>0?a.find(t=>t.getBoundingClientRect().right>e.right+1):a.reverse().find(t=>t.getBoundingClientRect().left<e.left-1);
-      if(tab)showTab(tab);else scrollTo(dir>0?max():0);schedule()}
+    function step(dir){const e=edges(),a=tabs(),page=Math.max(1,e.right-e.left),left=rail.scrollLeft;
+      // Move a viewport, keeping the partially hidden boundary tab in the
+      // next view. A normal desktop rail reaches the far end in one click.
+      const tab=dir>0?a.find(t=>t.getBoundingClientRect().right>e.right+1):a.reverse().find(t=>t.getBoundingClientRect().left<e.left-1);
+      if(!tab)scrollTo(dir>0?max():0);
+      else{const b=tab.getBoundingClientRect(),boundary=left+(dir>0?b.left-e.left:b.right-e.right);
+        scrollTo(dir>0?Math.min(left+page,Math.max(left+1,boundary)):Math.max(left-page,Math.min(left-1,boundary)))}
+      schedule()}
     prev.addEventListener('click',()=>step(-1));next.addEventListener('click',()=>step(1));
     rail.addEventListener('scroll',()=>schedule(),{passive:true});
     rail.addEventListener('focusin',e=>showTab(e.target.closest('.cl-tab')));
     const changes=new W.MutationObserver(()=>schedule(true));changes.observe(rail,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['aria-selected']});
-    if(W.ResizeObserver){const size=new W.ResizeObserver(()=>schedule(true));size.observe(shell);size.observe(rail)}else W.addEventListener('resize',()=>schedule(true),{passive:true});
+    let observedWidth=rail.clientWidth;
+    const resized=()=>{const width=rail.clientWidth,changed=width!==observedWidth;observedWidth=width;schedule(changed)};
+    if(W.ResizeObserver){const size=new W.ResizeObserver(resized);size.observe(shell);size.observe(rail)}else W.addEventListener('resize',resized,{passive:true});
     mouse.addEventListener?.('change',()=>schedule(true));
     D.fonts?.ready.then(()=>schedule(true));
     mounted.set(rail,{schedule});schedule(true);

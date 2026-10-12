@@ -510,8 +510,14 @@ textarea.inp{min-height:92px;resize:vertical}
 .cbar .send{width:46px;height:46px;border-radius:15px;flex-shrink:0;font-size:20px;transition:transform .2s var(--spring)}
 .cbar .send:active{transform:scale(.96)}
 .as{display:flex;gap:6px;padding:8px 12px 0}
+.as[hidden]{display:none}
 .as button{font-size:12px;padding:5px 12px;border-radius:12px;background:var(--surface-2);color:var(--muted)}
 .as button.on{background:var(--c-acc-soft);color:var(--accent)}
+/* ห้องทักช่าง: ปุ่มขอราคาบนหัว (พร้อมจ้างเมื่อไหร่กดได้เลย) · คำถามสำเร็จรูปตอนยังไม่ได้คุย */
+.chat .chq{flex:none;height:34px;padding:0 14px;border-radius:999px;background:var(--ink);color:var(--bg);font:600 13px/1 var(--kb)}
+.chat .chq:active{transform:scale(.97)}
+#chSug{flex-wrap:wrap}#chSug button{color:var(--ink)}
+.sys.ask{padding:6px 12px;border-radius:12px;background:var(--surface-2);color:var(--ink)}
 
 /* ใบสมัครพาร์ทเนอร์ */
 .hero{position:relative;overflow:hidden;isolation:isolate;margin:-4px -16px 18px;padding:28px 20px 24px;background:linear-gradient(135deg,#1f2937,#0b1220);color:#fff}
@@ -1381,7 +1387,9 @@ body{background:var(--bg);letter-spacing:-.005em}
 .gd-t{margin:0;font:700 clamp(21px,2.3vw,27px)/1.35 var(--kd);letter-spacing:-.01em;overflow-wrap:anywhere}
 .gd-rt{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:10px 0 0;font-size:14px;color:var(--muted)}
 .gd-rt .ti{font-size:16px;color:#f5b301}.gd-rt b{font-weight:600;color:var(--ink)}
-.gd-price{margin:16px 0 0;padding:14px 16px;border-radius:14px;background:var(--surface-2)}
+/* ล่างสุดของการ์ด: ราคา → จอง → ทัก/โทร (ข้อมูลร้านและความมั่นใจอยู่ด้านบน) */
+.gd-buy{margin-top:18px}
+.gd-price{margin:0;padding:14px 16px;border-radius:14px;background:var(--surface-2)}
 .gd-price b{display:block;font:700 30px/1.1 var(--kd);letter-spacing:-.02em}
 .gd-price small{display:block;margin-top:6px;font-size:12.5px;line-height:1.5;color:var(--muted)}
 .gd-act{display:none}
@@ -1408,9 +1416,9 @@ body{background:var(--bg);letter-spacing:-.005em}
 .gd-sec .rv-sum{padding-top:0}
 .gd-more{margin-top:12px}
 /* แถบล่าง (มือถือ): ราคาซ้าย · ปุ่มจองขวา */
-.gd-ft{display:flex;align-items:center;gap:10px;width:100%}
+.gd-ft{display:flex;align-items:center;gap:8px;width:100%}
 .gd-fp{flex:1;min-width:0}.gd-fp small{display:block;font-size:11.5px;color:var(--muted)}.gd-fp b{font:700 20px/1.2 var(--kd)}
-.gd-ft>.lx-cta:last-child{flex:0 0 auto;min-width:44%}
+.gd-ft>.lx-cta:last-child{flex:0 0 auto;min-width:40%}
 @media(min-width:900px){
   .gd{grid-template-columns:minmax(0,1fr) 360px;grid-template-areas:"gal side" "body side";align-items:start;padding:20px 0 56px}
   .gd-gal{margin:0}
@@ -1418,7 +1426,8 @@ body{background:var(--bg);letter-spacing:-.005em}
   .gd-th{padding:12px 0 0}
   .gd-side{position:sticky;top:20px}
   .gd-card{padding:22px;border:1px solid var(--line);border-radius:18px;background:var(--surface)}
-  .gd-act{display:grid;gap:8px;margin-top:14px}
+  .gd-buy{margin-top:20px;padding-top:20px;border-top:1px solid var(--line)}
+  .gd-act{display:grid;gap:8px;margin-top:12px}
   .gd-act .lx-cta,.gd-act .lx-gh{width:100%;height:48px}
   .gd-2{display:flex;gap:8px}.gd-2>*{flex:1}
   .bs.store .ft:has(.gd-ft){display:none}
@@ -1785,8 +1794,9 @@ a.mtab{text-decoration:none}
 </div>
 
 <div class="chat" id="chat" aria-hidden="true">
-  <div class="hd"><button class="ic" id="chX" aria-label="Back"><i class="ti ti-arrow-left"></i></button><div><b id="chT"></b><small><i></i><span data-t="ข้อความขึ้นเองอัตโนมัติ|Live">ข้อความขึ้นเองอัตโนมัติ</span></small></div><a class="ic" id="chCall" aria-label="Call" hidden><i class="ti ti-phone"></i></a></div>
+  <div class="hd"><button class="ic" id="chX" aria-label="Back"><i class="ti ti-arrow-left"></i></button><div><b id="chT" class="nt"></b><small><i></i><span data-t="ข้อความขึ้นเองอัตโนมัติ|Live">ข้อความขึ้นเองอัตโนมัติ</span></small></div><a class="ic" id="chCall" aria-label="Call" hidden><i class="ti ti-phone"></i></a><button class="chq" id="chBook" type="button" hidden data-t="ขอราคา|Get a quote">ขอราคา</button></div>
   <div class="msgs" id="msgs"></div>
+  <div class="as" id="chSug" hidden></div>
   <div class="as" id="chAs" hidden><button data-as="customer" class="on" data-t="พิมพ์เป็นลูกค้า|As customer">พิมพ์เป็นลูกค้า</button><button data-as="technician" data-t="พิมพ์เป็นช่าง|As mechanic">พิมพ์เป็นช่าง</button></div>
   <form class="cbar" id="chF"><textarea id="chIn" rows="1" maxlength="2000" data-t-ph="พิมพ์ข้อความ|Message"></textarea><button class="send sq" aria-label="Send"><i class="ti ti-send-2"></i></button></form>
 </div>
@@ -2750,8 +2760,9 @@ function gigCard(g,i){
     </span></button>`;
 }
 /* ═══ หน้ารายละเอียดบริการ ═══
-   คอม: ซ้าย = รูป + รายละเอียด · ขวา = การ์ดราคา/ปุ่มจอง/ร้าน ติดอยู่กับที่ตอนเลื่อน
-   มือถือ: รูป → หัวข้อ/ราคา/ร้าน → รายละเอียด → ข้อมูลบริการ → รีวิว · ปุ่มจองอยู่แถบล่าง */
+   คอม: ซ้าย = รูป + รายละเอียด · ขวา = การ์ด (บน: หัวข้อ/ร้าน/ความมั่นใจ · ล่าง: ราคา/จอง/ทัก) ติดอยู่กับที่ตอนเลื่อน
+   มือถือ: รูป → หัวข้อ/ร้าน/ราคา → รายละเอียด → ข้อมูลบริการ → รีวิว · ปุ่มจองและทักอยู่แถบล่าง
+   "ทักช่าง" = คุยถามเฉย ๆ ยังไม่ใช่การจ้าง · "จองบริการนี้" = ขอราคา/จ้างจริง */
 function openGig(id){
   const g=(GIGS||[]).find(x=>x.id==id);if(!g)return;if(g.tech)track(g.tech.id,"gig");
   const t0=g.tech||{},t={...t0,...(TECHS.find(x=>x.id===t0.id)||{})},mine=isMine(t),P=g.photos||[];
@@ -2775,11 +2786,13 @@ function openGig(id){
       ${path.length?`<p class="gd-path">${path.map(x=>`<button type="button" data-cat="${x.id}">${esc(x.th)}</button>`).join('<i class="ti ti-chevron-right"></i>')}</p>`:""}
       <h1 class="gd-t nt">${esc(g.title)}</h1>
       <p class="gd-rt">${rating}${t.jobs?`<span class="gd-dot">·</span><span>${t.jobs} งานสำเร็จ</span>`:""}</p>
-      <div class="gd-price"><b>฿${money(g.price)}</b><small>ราคาเริ่มต้น · ช่างยืนยันราคาจริงก่อนเริ่มงาน</small></div>
-      <div class="gd-act">${mine?`<button class="lx-cta" data-a="edit" type="button"><i class="ti ti-pencil"></i>แก้ไขบริการ</button><button class="lx-gh" data-a="del" type="button"><i class="ti ti-trash"></i>ลบบริการนี้</button>`
-        :`<button class="lx-cta" data-a="book" type="button">จองบริการนี้</button><div class="gd-2"><button class="lx-gh" data-a="msg" type="button"><i class="ti ti-message-circle"></i>ทักช่าง</button>${t.phone?`<a class="lx-gh" href="tel:${esc(t.phone)}"><i class="ti ti-phone"></i>โทร</a>`:""}</div>`}</div>
       <button class="gd-shop" data-a="shop" type="button">${pav}<span><b class="nt">${esc(t.shop||t.name||"")}${t.verified?' <i class="ti ti-rosette-discount-check-filled"></i>':""}</b><small>${[t.area,d!=null?distTxt(d):"","ดูหน้าร้าน"].filter(Boolean).join(" · ")}</small></span><i class="ti ti-chevron-right"></i></button>
       <ul class="gd-trust"><li><i class="ti ti-cash"></i>จ่ายเงินกับช่างโดยตรงเมื่องานเสร็จ</li>${t.warranty?`<li><i class="ti ti-shield-check"></i>รับประกันงาน ${t.warranty} วัน</li>`:""}${t.verified?`<li><i class="ti ti-id-badge-2"></i>ช่างผ่านการตรวจสอบตัวตนแล้ว</li>`:""}</ul>
+      <div class="gd-buy">
+        <div class="gd-price"><b>฿${money(g.price)}</b><small>ราคาเริ่มต้น · ช่างยืนยันราคาจริงก่อนเริ่มงาน</small></div>
+        <div class="gd-act">${mine?`<button class="lx-cta" data-a="edit" type="button"><i class="ti ti-pencil"></i>แก้ไขบริการ</button><button class="lx-gh" data-a="del" type="button"><i class="ti ti-trash"></i>ลบบริการนี้</button>`
+          :`<button class="lx-cta" data-a="book" type="button">จองบริการนี้</button><div class="gd-2"><button class="lx-gh" data-a="msg" type="button"><i class="ti ti-message-circle"></i>ทักช่าง</button>${t.phone?`<a class="lx-gh" href="tel:${esc(t.phone)}"><i class="ti ti-phone"></i>โทร</a>`:""}</div>`}</div>
+      </div>
     </div></aside>
     <div class="gd-body">
       <section class="gd-sec"><h2>รายละเอียดบริการ</h2>${g.body?`<p class="gd-desc nt">${esc(g.body)}</p>`:`<p class="gd-muted">ช่างยังไม่ได้ใส่รายละเอียด — กดทักช่างเพื่อสอบถามได้เลย</p>`}</section>
@@ -2787,10 +2800,10 @@ function openGig(id){
       <section class="gd-sec" id="gdRev"><h2>รีวิวจากลูกค้า</h2>${reviewsHTML(t,null)}</section>
     </div></div>`,
     foot:mine?`<div class="gd-ft"><button class="lx-gh" data-a="del" type="button"><i class="ti ti-trash"></i>ลบ</button><button class="lx-cta" data-a="edit" type="button" style="flex:1"><i class="ti ti-pencil"></i>แก้ไขบริการ</button></div>`
-      :`<div class="gd-ft"><span class="gd-fp"><small>ราคาเริ่มต้น</small><b>฿${money(g.price)}</b></span>${t.phone?`<a class="lx-gh lx-ic" href="tel:${esc(t.phone)}" aria-label="โทร"><i class="ti ti-phone"></i></a>`:""}<button class="lx-cta" data-a="book" type="button">จองบริการนี้</button></div>`,
+      :`<div class="gd-ft"><span class="gd-fp"><small>ราคาเริ่มต้น</small><b>฿${money(g.price)}</b></span><button class="lx-gh lx-ic" data-a="msg" type="button" aria-label="ทักช่าง"><i class="ti ti-message-circle"></i></button>${t.phone?`<a class="lx-gh lx-ic" href="tel:${esc(t.phone)}" aria-label="โทร"><i class="ti ti-phone"></i></a>`:""}<button class="lx-cta" data-a="book" type="button">จองบริการนี้</button></div>`,
     mount(b,f){
       const tech=()=>TECHS.find(x=>x.id===t.id)||t;
-      const A={book:()=>book(tech(),"สนใจบริการ: "+g.title),msg:()=>book(tech()),shop:()=>openTech(t.id),edit:()=>gigForm(g),
+      const A={book:()=>book(tech(),"สนใจบริการ: "+g.title),msg:()=>messageTech(tech(),g),shop:()=>openTech(t.id),edit:()=>gigForm(g),
         del:e=>busy(e.currentTarget,async()=>{if(!confirm("ลบบริการนี้?"))return;await api("/api/tech/gig/delete",{body:{id:g.id}});toast("ลบแล้ว");await afterGig()})};
       [b,f].forEach(r=>r.querySelectorAll("[data-a]").forEach(x=>x.onclick=e=>A[x.dataset.a](e)));
       b.querySelectorAll(".gd-path [data-cat]").forEach(x=>x.onclick=()=>{closeSheet();openCat(x.dataset.cat)});
@@ -3006,6 +3019,8 @@ Nav.route({path:"map",open:()=>new Promise(res=>{let mt=0;(function w(){if(windo
 Nav.route({path:"jobs",name:"jobs",open:async()=>{if(await needU())return jobs()}});
 Nav.route({path:"all",parent:"jobs",open:()=>jobs(true)});
 Nav.route({path:":id",name:"job",parent:"jobs",test:p=>/^[0-9a-f-]{36}$/i.test(p.id),open:p=>openJob(p.id,true)});
+Nav.route({path:"messages",name:"messages",open:async()=>{if(await needU())return inbox()}});
+Nav.route({path:":id",parent:"messages",test:p=>/^[0-9a-f-]{36}$/i.test(p.id),open:p=>openThread(p.id)});
 Nav.route({path:"chat",parent:"job",open:()=>{if(JOB&&SH.cur&&SH.cur.job)openChat(JOB)}});
 Nav.route({path:"studio",name:"studio",open:async()=>{if(await needU())openStudio()}});
 Nav.route({path:":k",parent:"studio",test:p=>["settings","stats","edit","post"].includes(p.k),open:p=>{if(!(ME&&ME.technician&&SH.cur&&SH.cur.shop===ME.technician.id))return;({settings:studioSettings,stats:studioStats,edit:openShopEdit,post:()=>gigForm()})[p.k]()}});
@@ -3179,7 +3194,7 @@ function openTech(id,opt){
       }
       if($("bTel"))$("bTel").addEventListener("click",()=>track(id,"call"));
       $("bBook").onclick=()=>book(t);
-      $("bMsg").onclick=()=>book(t);
+      $("bMsg").onclick=()=>messageTech(t);
       if($("bSus"))$("bSus").onclick=e=>busy(e.currentTarget,async()=>{if(!confirm("ซ่อนช่างคนนี้จากรายชื่อ?"))return;await api("/api/tech/moderate",{body:{id:t.id,suspend:true}});closeSheet();toast("ซ่อนแล้ว");load()});
     }});
 }
@@ -3554,7 +3569,8 @@ function renderActive(){
   const pids=new Set(POSTS.map(p=>p.id));
   const openPosts=POSTS.filter(p=>p.status==="open");
   const live=JOBS.filter(j=>!["completed","cancelled"].includes(j.status)&&!(j.group&&pids.has(j.group)&&["requested","quoted"].includes(j.status)&&j.side!=="technician"));
-  if(!live.length&&!openPosts.length){box.innerHTML="";try{drawJobsBtn()}catch(e){}return}
+  const news=(THREADS||[]).filter(h=>h.unread&&h.role!=="admin");
+  if(!live.length&&!openPosts.length&&!news.length){box.innerHTML="";try{drawJobsBtn()}catch(e){}return}
   /* คำขอหลายร้านที่ยังไม่ได้เลือก รวมเป็นการ์ดเดียว */
   const groups={},items=[];
   live.forEach(j=>{if(j.group&&["requested","quoted"].includes(j.status)&&j.side!=="technician"){(groups[j.group]=groups[j.group]||[]).push(j)}else items.push(j)});
@@ -3568,6 +3584,11 @@ function renderActive(){
     box.querySelector(".hs").insertAdjacentHTML("afterbegin",openPosts.map((p,i)=>`<button class="act" data-post="${p.id}" style="animation-delay:${i*40}ms"><span class="av sq" style="--c1:#0d9488"><i class="ti ti-speakerphone"></i></span><div><b>${T("ประกาศหาช่าง","Job post")} · ${p.offers} ${T("ข้อเสนอ","offers")}</b><small class="nt">${esc(p.symptom)}</small></div>${p.lowest?`<b style="font-family:var(--kd)">฿${money(p.lowest)}</b>`:""}</button>`).join(""));
     box.querySelector(".sec span").textContent=items.length+openPosts.length;
     box.querySelectorAll("[data-post]").forEach(b=>b.onclick=()=>openPostView(b.dataset.post));
+  }
+  if(news.length){
+    box.querySelector(".hs").insertAdjacentHTML("afterbegin",news.map((h,i)=>`<button class="act" data-th="${h.id}" style="animation-delay:${i*40}ms"><span class="av sq" style="--c1:var(--ink)"><i class="ti ti-message-circle"></i></span><div><b class="nt">${esc(thWho(h))}</b><small class="nt">${esc(h.last?h.last.text:"")}</small></div><span class="ub">${h.unread}</span></button>`).join(""));
+    box.querySelector(".sec span").textContent=items.length+openPosts.length+news.length;
+    box.querySelectorAll("[data-th]").forEach(b=>b.onclick=()=>openThread(b.dataset.th));
   }
 }
 function renderUsed(){
@@ -3594,11 +3615,14 @@ function syncGarage(){
   if(changed)try{localStorage.setItem("spire_garage",JSON.stringify(g))}catch(e){}
 }
 async function refreshJobs(){
-  if(!U){JOBS=[];renderActive();renderUsed();return}
+  if(!U){JOBS=[];THREADS=[];renderActive();renderUsed();return}
   try{JOBS=(await api("/api/tech/jobs")).jobs||[]}catch(e){JOBS=[]}
   try{POSTS=(await api("/api/tech/posts")).posts||[]}catch(e){POSTS=[]}
-  renderActive();renderUsed();syncGarage();
-  const qd=$("queueDot");if(qd)qd.hidden=!JOBS.some(j=>(j.side==="technician"||j.side==="both")&&(j.needsMe||j.unread));
+  try{THREADS=(await api("/api/tech/threads")).threads||[]}catch(e){THREADS=[]}
+  renderActive();renderUsed();syncGarage();queueDot();
+}
+function queueDot(){
+  const qd=$("queueDot");if(qd)qd.hidden=!(JOBS.some(j=>(j.side==="technician"||j.side==="both")&&(j.needsMe||j.unread))||THREADS.some(h=>h.role==="technician"&&h.unread));
 }
 
 /* ═══ งานของฉัน ═══ */
@@ -3607,16 +3631,21 @@ async function jobs(all){
   const url=all?"/jobs/all":"/jobs";
   sheet({title:all?"งานทั้งหมด":"งานของฉัน",url,body:'<div class="skel"></div><div class="skel" style="margin-top:10px"></div>'});
   try{
-    const d=await api("/api/tech/jobs"+(all?"?all=1":""));
-    const L=d.jobs||[];
-    sheet({title:all?"งานทั้งหมด":"งานของฉัน",url,body:(L.length?L.map((j,i)=>{
+    /* ห้องทักช่าง (คุยถามก่อนจ้าง) อยู่บนสุด — ล่าสุด 3 ห้อง ที่เหลือกด "ดูข้อความทั้งหมด" */
+    const [d,tl]=await Promise.all([api("/api/tech/jobs"+(all?"?all=1":"")),all?null:api("/api/tech/threads").catch(()=>null)]);
+    const L=d.jobs||[],TL=(tl&&tl.threads)||[];
+    if(tl){THREADS=TL;queueDot()}
+    const msgs=TL.length?`<p class="h4" style="margin-top:0">ข้อความ</p>${TL.slice(0,3).map(thRow).join("")}${TL.length>3?`<button class="lx-gh w" data-inbox style="margin-bottom:14px">${T("ดูข้อความทั้งหมด","See all messages")} (${TL.length})</button>`:""}<p class="h4">งาน</p>`:"";
+    sheet({title:all?"งานทั้งหมด":"งานของฉัน",url,body:msgs+(L.length?L.map((j,i)=>{
       const cls=["completed"].includes(j.status)?"ok":["cancelled","disputed"].includes(j.status)?"bad":j.needsMe?"act":"";
       const role=j.side==="technician"?'<span class="pill">ลูกค้าส่งมา</span> ':"";
       return `<button class="jl" data-j="${j.id}" style="animation-delay:${i*35}ms"><span class="av sq" style="--c1:${PALETTE[i%PALETTE.length]}">${initial(j.techName)}</span>
         <span class="jb"><b>${esc(j.side==="technician"?j.car:j.techName)}</b><small>${role}${esc(j.symptom)}</small><span class="pill ${cls}">${j.test?"ทดสอบ · ":""}${STATUS[j.status]||j.status}${j.needsMe?" · รอคุณ":""}</span></span>
         ${j.unread?`<span class="ub">${j.unread}</span>`:'<i class="ti ti-chevron-right" style="color:var(--faint)"></i>'}</button>`}).join("")
       :'<div class="empty"><i class="ti ti-clipboard"></i><b>ยังไม่มีงาน</b>เลือกช่างแล้วกดขอราคา</div>'),
-      mount(b){b.querySelectorAll("[data-j]").forEach(x=>x.onclick=()=>openJob(x.dataset.j,true))}});
+      mount(b){b.querySelectorAll("[data-j]").forEach(x=>x.onclick=()=>openJob(x.dataset.j,true));
+        b.querySelectorAll("[data-th]").forEach(x=>x.onclick=()=>openThread(x.dataset.th));
+        b.querySelector("[data-inbox]")?.addEventListener("click",()=>inbox())}});
   }catch(e){$("bsB").innerHTML=`<div class="empty"><i class="ti ti-cloud-off"></i><b>${esc(e.message)}</b></div>`}
 }
 $("bJobs").onclick=()=>jobs();
@@ -3765,7 +3794,7 @@ function act(j,a,btn){
 }
 
 /* ═══ แชต — เต็มจอ ข้อความใหม่ขึ้นเองทุก 3 วินาที ═══ */
-const CH={job:null,after:0,as:"customer",timer:0,last:""};
+const CH={job:null,th:null,after:0,as:"customer",timer:0,last:"",seq:0};
 function mine(m){const r=CH.job.role;return r==="both"?m.role===CH.as:m.role===(r==="customer"?"customer":"technician")}
 function fmtT(at){return new Date(at).toLocaleTimeString(LOC,{hour:"2-digit",minute:"2-digit"})}
 function fmtD(at){return new Date(at).toLocaleDateString(LOC,{day:"numeric",month:"short"})}
@@ -3773,19 +3802,38 @@ function addMsgs(list){
   const box=$("msgs");const fresh=list.filter(m=>m.id>CH.after);if(!fresh.length)return;
   const atEnd=box.scrollHeight-box.scrollTop-box.clientHeight<90;
   box.querySelector(".first")?.remove();
+  /* ป้าย "สอบถามเรื่อง…" อยู่ล่างสุดจนกว่าจะส่งข้อความแรก */
+  const ask=box.querySelector(".sys.ask"),put=h=>ask?ask.insertAdjacentHTML("beforebegin",h):box.insertAdjacentHTML("beforeend",h);
   fresh.forEach(m=>{
-    const d=fmtD(m.at);if(d!==CH.last){CH.last=d;box.insertAdjacentHTML("beforeend",`<div class="day">${d}</div>`)}
-    box.insertAdjacentHTML("beforeend",`<div class="msg ${mine(m)?"me":""}" data-id="${m.id}">${esc(m.text)}<small>${CH.job.role==="both"||CH.job.role==="admin"?(m.role==="customer"?"ลูกค้า · ":"ช่าง · "):""}${fmtT(m.at)}</small></div>`);
+    const d=fmtD(m.at);if(d!==CH.last){CH.last=d;put(`<div class="day">${d}</div>`)}
+    put(`<div class="msg ${mine(m)?"me":""}" data-id="${m.id}">${esc(m.text)}<small>${CH.job.role==="both"||CH.job.role==="admin"?(m.role==="customer"?"ลูกค้า · ":"ช่าง · "):""}${fmtT(m.at)}</small></div>`);
   });
   CH.after=fresh[fresh.length-1].id;CH.all.push(...fresh);
+  if(CH.all.length)$("chSug").hidden=true;
   if(atEnd||fresh.some(mine))box.scrollTop=box.scrollHeight;
 }
+/* หัวห้องแชตแบบเดียวกันทั้งใบงานและห้องทักช่าง */
+function chatOn(url,focus){
+  $("chat").classList.add("on");$("chat").setAttribute("aria-hidden","false");
+  if(!CHL)CHL=Nav.push(url?{url,tag:"chat",close:()=>closeChat(true)}:{slug:"message",tag:"chat",close:()=>closeChat(true)});
+  setTimeout(()=>{$("msgs").scrollTop=$("msgs").scrollHeight;if(focus&&matchMedia("(pointer:fine)").matches)$("chIn").focus()},380);
+}
+/* ข้อความใหม่ขึ้นเองทุก 3 วินาที (พับจอ 12 วินาที) — seq กันรอบเก่าที่ยังรอคำตอบอยู่ไปเติมข้อความลงห้องใหม่ */
+function poll(fetchNew){
+  const seq=++CH.seq;
+  const tick=()=>{CH.timer=setTimeout(async()=>{
+    if(seq!==CH.seq||!$("chat").classList.contains("on"))return;
+    try{const l=await fetchNew();if(seq===CH.seq)addMsgs(l||[])}catch(e){}
+    if(seq===CH.seq)tick()},document.hidden?12000:3000)};
+  tick();
+}
 function openChat(j){
-  CH.job=j;CH.after=0;CH.last="";CH.all=[];CH.as="customer";
+  CH.job=j;CH.th=null;CH.after=0;CH.last="";CH.all=[];CH.as="customer";
   const cust=j.role==="customer";
-  $("chT").textContent=cust?j.techName:j.role==="technician"?"ลูกค้า · "+j.car:j.techName;
+  $("chT").textContent=cust?j.techName:j.role==="technician"?T("ลูกค้า","Customer")+" · "+j.car:j.techName;
   const phone=cust?j.technicianPhone:j.customerPhone;
   $("chCall").hidden=!(phone&&/^0\d{8,9}$/.test(phone));if(phone)$("chCall").href="tel:"+phone;
+  $("chBook").hidden=true;$("chSug").hidden=true;
   $("chAs").hidden=j.role!=="both";
   $("chAs").querySelectorAll("button").forEach(b=>{b.classList.toggle("on",b.dataset.as==="customer");b.onclick=()=>{CH.as=b.dataset.as;$("chAs").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));const all=CH.all;$("msgs").innerHTML="";CH.after=0;CH.last="";CH.all=[];addMsgs(all)}});
   const closed=["completed","cancelled"].includes(j.status)||j.role==="admin";
@@ -3793,19 +3841,88 @@ function openChat(j){
   $("msgs").innerHTML=`<p class="sys first">${j.acceptedAt?"คุยนัดหมายได้เลย":"เบอร์และไลน์จะถูกซ่อนจนกว่าลูกค้ายืนยันราคา"}</p>`;
   addMsgs(j.messages||[]);
   if(!(j.messages||[]).length)$("msgs").insertAdjacentHTML("beforeend",'<p class="sys first">ส่งข้อความแรกได้เลย</p>');
-  $("chat").classList.add("on");$("chat").setAttribute("aria-hidden","false");
-  if(!CHL)CHL=Nav.push({url:"/jobs/"+encodeURIComponent(j.id)+"/chat",tag:"chat",close:()=>closeChat(true)});
-  setTimeout(()=>{$("msgs").scrollTop=$("msgs").scrollHeight;if(!closed&&matchMedia("(pointer:fine)").matches)$("chIn").focus()},380);
-  const tick=()=>{CH.timer=setTimeout(async()=>{
-    if(!$("chat").classList.contains("on"))return;
-    try{const d=await api(`/api/tech/jobs/${j.id}/messages?after=${CH.after}`);addMsgs(d.messages||[])}catch(e){}
-    tick()},document.hidden?12000:3000)};
-  tick();
+  chatOn("/jobs/"+encodeURIComponent(j.id)+"/chat",!closed);
+  poll(async()=>(await api(`/api/tech/jobs/${j.id}/messages?after=${CH.after}`)).messages);
 }
+
+/* ═══ ทักช่าง — คุยถามก่อน ยังไม่ใช่การจ้าง ═══
+   ห้องคุยลูกค้า × ร้าน ร้านละหนึ่งห้อง (ทักจากบริการไหนก็คุยต่อห้องเดิม) ไม่มีราคา/นัดหมาย/สถานะงาน
+   เบอร์และไลน์ในข้อความถูกซ่อนเหมือนใบงาน · พร้อมจ้างเมื่อไหร่กด "ขอราคา" บนหัวห้อง → ใบงานจริง */
+let THREADS=[];
+const SUGG=[["ว่างวันไหนบ้าง","When are you free?"],["ราคานี้รวมอะไหล่หรือยัง","Does the price include parts?"],["รับทำรถรุ่นของฉันไหม","Do you work on my car model?"]];
+const thWho=h=>h.role==="customer"?h.techName:h.role==="technician"?(h.customerName||T("ลูกค้า","Customer")):h.techName+(h.customerName?" · "+h.customerName:"");
+async function messageTech(t,gig){
+  if(!U)return needLogin();
+  if(isMine(t))return toast(T("นี่คือร้านของคุณ","This is your shop"));
+  let h;
+  try{h=((await api("/api/tech/threads?tech="+encodeURIComponent(t.id))).threads||[])[0]}
+  catch(e){return toast(e.message,"ti-alert-triangle")}
+  /* ถามเรื่องบริการอื่นในห้องเดิม — บอกช่างว่าคราวนี้ถามเรื่องอะไร */
+  const ask=gig&&!(h&&h.gig&&h.gig.id==gig.id)?{id:gig.id,title:gig.title}:null;
+  if(h)return openThread(h.id,ask);
+  showThread({id:null,techId:t.id,techName:t.shop||t.name||"",role:"customer",gig:null},[],ask);
+}
+async function openThread(id,ask){
+  if(!U)return needLogin();
+  let d;
+  try{d=await api("/api/tech/threads/"+encodeURIComponent(id))}catch(e){return toast(e.message,"ti-alert-triangle")}
+  showThread(d.thread,d.messages||[],ask);
+  refreshThreads();
+}
+function showThread(h,msgs,ask){
+  CH.job={id:h.id,role:h.role,thread:true};CH.th={...h,ask:ask||null};CH.after=0;CH.last="";CH.all=[];CH.as=h.role;
+  const cust=h.role==="customer";
+  $("chT").textContent=thWho(h);
+  $("chCall").hidden=true;$("chAs").hidden=true;$("chBook").hidden=!cust;$("chF").hidden=h.role==="admin";
+  $("msgs").innerHTML=`<p class="sys">${cust?T("ทักถามได้ตามสบาย ยังไม่ใช่การจ้างงาน · พร้อมเมื่อไหร่กด ขอราคา","Ask anything — this isn't a booking yet. Tap Get a quote when you're ready.")
+    :h.role==="technician"?T("ลูกค้าทักถาม ยังไม่ใช่ใบงาน · ตอบได้เลย","A customer is asking — not a job yet. Reply here.")
+    :T("ห้องทักช่าง (ดูอย่างเดียว)","Customer inquiry (read only)")}</p>`
+    +(ask?`<p class="sys ask"><i class="ti ti-tag"></i> ${T("สอบถามเรื่อง","About")}: <b class="nt">${esc(ask.title)}</b></p>`:"");
+  addMsgs(msgs);
+  const sug=$("chSug");sug.hidden=!(cust&&!msgs.length);
+  sug.innerHTML=SUGG.map(([th,en])=>`<button type="button">${T(th,en)}</button>`).join("");
+  sug.querySelectorAll("button").forEach(b=>b.onclick=()=>{chIn.value=b.textContent;chIn.dispatchEvent(new Event("input"));chIn.focus()});
+  chatOn(h.id?"/messages/"+encodeURIComponent(h.id):null,h.role!=="admin");
+  pollThread();
+}
+function pollThread(){
+  const id=CH.th&&CH.th.id;if(!id){CH.seq++;return}
+  poll(async()=>(await api(`/api/tech/threads/${encodeURIComponent(id)}?after=${CH.after}`)).messages);
+}
+async function refreshThreads(){
+  if(!U){THREADS=[];return}
+  try{THREADS=(await api("/api/tech/threads")).threads||[]}catch(e){THREADS=[]}
+  renderActive();queueDot();if(DT==="queue"&&MODE==="tech")tabQueue();
+}
+/* ขอราคาจากในห้อง: ปิดห้องแล้วเปิดฟอร์มขอราคาของร้านนี้ (ใส่บริการที่คุยถึงไว้ให้) */
+$("chBook").onclick=()=>{
+  const h=CH.th;if(!h)return;
+  const t=TECHS.find(x=>x.id===h.techId)||{id:h.techId,shop:h.techName};
+  const g=h.ask||h.gig;
+  closeChat();book(t,g&&g.title?"สนใจบริการ: "+g.title:undefined);
+};
+/* รายการห้องทักช่าง (แผ่น "งานของฉัน" และ /messages) */
+function thRow(h,i){
+  const who=thWho(h),l=h.last;
+  return `<button class="jl" data-th="${h.id}" style="animation-delay:${i*35}ms"><span class="av sq" style="--c1:${PALETTE[i%PALETTE.length]}">${initial(who)}</span>
+    <span class="jb"><b class="nt">${esc(who)}</b><small class="nt">${l?esc((l.role===h.role?T("คุณ: ","You: "):"")+l.text):""}</small>${h.gig&&h.gig.title?`<span class="pill nt">${esc(h.gig.title)}</span>`:""}</span>
+    ${h.unread?`<span class="ub">${h.unread}</span>`:'<i class="ti ti-chevron-right" style="color:var(--faint)"></i>'}</button>`;
+}
+async function inbox(){
+  if(!U)return needLogin();
+  sheet({title:"ข้อความ",url:"/messages",body:'<div class="skel"></div><div class="skel" style="margin-top:10px"></div>'});
+  try{
+    const L=(await api("/api/tech/threads")).threads||[];
+    sheet({title:"ข้อความ",url:"/messages",body:L.length?L.map(thRow).join(""):`<div class="empty"><i class="ti ti-message-circle"></i><b>${T("ยังไม่มีข้อความ","No messages yet")}</b>${T("กด ทักช่าง ที่หน้าบริการหรือหน้าร้านเพื่อสอบถามได้เลย","Tap Message on a service or shop to ask a question")}</div>`,
+      mount(b){b.querySelectorAll("[data-th]").forEach(x=>x.onclick=()=>openThread(x.dataset.th))}});
+  }catch(e){$("bsB").innerHTML=`<div class="empty"><i class="ti ti-cloud-off"></i><b>${esc(e.message)}</b></div>`}
+}
+
 let CHL=null;
 function closeChat(fromNav){
-  clearTimeout(CH.timer);$("chat").classList.remove("on");$("chat").setAttribute("aria-hidden","true");
+  clearTimeout(CH.timer);CH.seq++;$("chat").classList.remove("on");$("chat").setAttribute("aria-hidden","true");
   const l=CHL;CHL=null;if(fromNav!==true&&l)Nav.drop(l);
+  if(CH.job&&CH.job.thread){CH.th=null;refreshThreads();return}
   if(CH.job)openJob(CH.job.id,false).then(()=>{});
 }
 $("chX").onclick=()=>closeChat();
@@ -3813,12 +3930,23 @@ const chIn=$("chIn");
 chIn.addEventListener("input",()=>{chIn.style.height="auto";chIn.style.height=Math.min(chIn.scrollHeight,130)+"px"});
 /* Enter ส่ง แต่ไม่ส่งระหว่างเลือกคำในแป้นพิมพ์ภาษาไทย (isComposing) ไม่งั้นคำขาดกลาง */
 chIn.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing&&matchMedia("(pointer:fine)").matches){e.preventDefault();$("chF").requestSubmit()}});
+/* ส่งในห้องทักช่าง: ข้อความแรก (หรือถามเรื่องบริการใหม่) เปิด/ผูกห้องกับร้าน · ต่อจากนั้นตอบในห้องเดิม */
+async function sendThread(text){
+  const h=CH.th;
+  if(!h.id||h.ask){
+    const r=await api("/api/tech/threads",{body:{techId:h.techId,gigId:h.ask?h.ask.id:undefined,text}});
+    h.ask=null;$("msgs").querySelector(".sys.ask")?.remove();
+    if(!h.id){h.id=CH.job.id=r.thread.id;Nav.replace("/messages/"+encodeURIComponent(h.id));pollThread()}
+    return r.message;
+  }
+  return (await api("/api/tech/threads/"+encodeURIComponent(h.id),{body:{text}})).message;
+}
 $("chF").addEventListener("submit",async e=>{
   e.preventDefault();const text=chIn.value.trim();if(!text||!CH.job)return;
   chIn.value="";chIn.style.height="auto";
   /* ข้อความขึ้นทันทีแบบจาง ๆ ระหว่างส่ง แล้วค่อยแทนด้วยของจริงจากเซิร์ฟเวอร์ */
   const tmp=document.createElement("div");tmp.className="msg me pending";tmp.textContent=text;$("msgs").appendChild(tmp);$("msgs").scrollTop=$("msgs").scrollHeight;
-  try{const r=await api("/api/tech/jobs/"+CH.job.id,{body:{action:"message",message:text,as:CH.as}});tmp.remove();addMsgs([r.message])}
+  try{const m=CH.th?await sendThread(text):(await api("/api/tech/jobs/"+CH.job.id,{body:{action:"message",message:text,as:CH.as}})).message;tmp.remove();addMsgs([m])}
   catch(err){tmp.remove();chIn.value=text;toast(err.message,"ti-alert-triangle")}
 });
 
@@ -4307,11 +4435,15 @@ function openPost(p){
 function tabQueue(){
   $("queueDot").hidden=true;
   const mine=JOBS.filter(j=>j.side==="technician"||j.side==="both");
+  /* ลูกค้าทักถาม (ยังไม่ใช่ใบงาน) — มีข้อความใหม่ขึ้นก่อน */
+  const ths=THREADS.filter(h=>h.role==="technician").sort((a,b)=>(b.unread>0)-(a.unread>0)).slice(0,8);
+  const thG=ths.length?`<div class="qg"><h4><i class="ti ti-message-circle" style="color:var(--ink)"></i>${T("ลูกค้าทักถาม","Customer messages")}<span>${ths.length}</span></h4>${ths.map(thRow).join("")}</div>`:"";
   const G=[["requested",T("ต้องเสนอราคา","Needs a quote"),"#f97316"],["quoted",T("รอลูกค้าตอบ","Awaiting customer"),"#64748b"],["accepted,enroute",T("นัดแล้ว","Booked"),"#0284c7"],["working",T("กำลังซ่อม","In repair"),"#7c3aed"],["done",T("รอลูกค้าตรวจ","Awaiting check"),"#0d9488"],["completed,cancelled,disputed",T("ล่าสุด","Recent"),"#6b7280"]];
-  $("dBody").innerHTML=mine.length?G.map(([st,lab,c])=>{const l=mine.filter(j=>st.split(",").includes(j.status)).slice(0,st.startsWith("completed")?6:50);
+  $("dBody").innerHTML=mine.length||ths.length?thG+G.map(([st,lab,c])=>{const l=mine.filter(j=>st.split(",").includes(j.status)).slice(0,st.startsWith("completed")?6:50);
     return l.length?`<div class="qg"><h4><i class="ti ti-point-filled" style="color:${c}"></i>${lab}<span>${l.length}</span></h4>${l.map((j,i)=>`<button class="jl e3" data-j="${j.id}" style="animation-delay:${i*35}ms"><span class="av sq" style="--c1:${c}">${initial(j.car)}</span><span class="jb"><b class="nt">${esc(j.car)}</b><small class="nt">${esc(j.symptom)}</small></span>${j.total?`<b style="font-family:var(--kd)">฿${money(j.total)}</b>`:""}${j.unread?`<span class="ub">${j.unread}</span>`:""}</button>`).join("")}</div>`:""}).join("")
     :`<div class="empty"><i class="ti ti-list-check"></i><b>${T("ยังไม่มีงาน","No jobs yet")}</b>${T("ไปที่ หางาน แล้วเสนอราคาได้เลย","Go to Find work and send a quote")}</div>`;
   $("dBody").querySelectorAll("[data-j]").forEach(b=>b.onclick=()=>openJob(b.dataset.j));
+  $("dBody").querySelectorAll("[data-th]").forEach(b=>b.onclick=()=>openThread(b.dataset.th));
 }
 
 /* ── ร้านของฉัน ── */

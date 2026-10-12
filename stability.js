@@ -4,7 +4,7 @@
   var D=document,seen=new Set(),pending=0;
   var paths=new Set(['/','/index','/garage','/news','/spares','/profile','/chat','/dashboard','/plan','/handbook']);
   /* ที่อยู่แบบลึก (/garage/<รถ>/spec, /tech/<ร้าน>) นับเป็นหน้าแม่ของมัน */
-  var deep=new Set(['tech','service','category','search','map','jobs','studio','work','staff','join','trip','quotes','compare','urgent','diagnose','post']);
+  var deep=new Set(['tech','service','category','search','map','jobs','messages','studio','work','staff','join','trip','quotes','compare','urgent','diagnose','post']);
   function path(p){p=p.replace(/\.html$/,'').replace(/\/index$/,'/');var s=p.split('/')[1]||'';
     return paths.has(p)?p:paths.has('/'+s)?'/'+s:deep.has(s)?'/':p}
   /* ลิงก์ที่หน้านี้เปิดเองได้ (nav.js) ไม่ต้องโหลดหน้าใหม่ */

@@ -24,7 +24,9 @@ const safeURL=raw=>{try{const u=new URL(raw);return ['https:','http:'].includes(
 function q(c){
   let make=String(c.make||"").trim(),model=String(c.model||"").trim();
   if(!make&&c.name){make=String(c.name).split(" ")[0];model=String(c.name).slice(make.length).trim()}
-  return {make,model:model||make,year:String(c.info?.model_year||c.year||"").trim(),...(c.info?.market&&c.info.market!=="TH"?{market:c.info.market}:{})};
+  const y=String(c.info?.model_year||'').trim(),validYear=/^\d{4}$/.test(y)&&Number(y)>=1950&&Number(y)<=new Date().getFullYear()+1;
+  const market=['TH','JP','US','UK','DE','AU','EU','GLOBAL'].includes(c.info?.market)?c.info.market:'GLOBAL';
+  return {make,model:model||make,year:validYear?y:String(c.year||'').trim(),market};
 }
 /* ล็อกอินอยู่ต้องส่งตัวตนไปด้วย — ไม่งั้นหลังบ้านนับเป็นผู้ไม่ล็อกอิน (โควตาตาม IP วันละ 3 รุ่น) */
 const currentAuth=()=>window.spireAuth||window.auth||(window.firebase&&firebase.apps&&firebase.apps.length&&firebase.auth?firebase.auth():null);
@@ -72,6 +74,14 @@ async function call(method,path,body){
 /* ขอข้อมูลรุ่นนี้ — ในเครื่องมีแล้วใช้เลย · ยังไม่มีให้หลังบ้านหา (ครั้งแรกของรุ่นนี้ทั้งระบบเท่านั้นที่เรียก AI) */
 const inflight={},recentFailures=new Map();
 async function ensure(c,opt){
+  const s=await ensureScoped(c,opt),Q=q(c);
+  if(Q.market!=='GLOBAL'&&!['ready','verified','pending','auth'].includes(s.status)){
+    const general=await ensureScoped({...c,info:{...c.info,market:'GLOBAL'}},opt);
+    if(['ready','verified'].includes(general.status))return {...general,refinement:{requestedMarket:Q.market,status:s.status}};
+  }
+  return s;
+}
+async function ensureScoped(c,opt){
   const Q=q(c),k=keyOf(Q),retry=!!(opt&&opt.retry),car=[Q.make,Q.model,Q.year].join(" ");
   if(!/^\d{4}$/.test(Q.year)||!Q.make){clog("ไม่ค้น: ข้อมูลรถไม่ครบ ("+(Q.make?"ไม่มีปี":"ไม่มียี่ห้อ")+")",{car});return {status:"invalid"}}
   const have=LS.get("spec_"+k);
@@ -133,8 +143,12 @@ function head(s){
     ${s.verified?`<span class="cs-badge ok"><i class="ti ti-rosette-discount-check"></i>${T("ทีมงานตรวจแล้ว","Verified by our team")}</span>`
       :`<span class="cs-badge"><i class="ti ti-world-search"></i>${T(`AI · ${sites} เว็บ · ${n} เอกสาร · ผลสกัดตรงกัน ${sc.confirmed||0}/${sc.cells||0} ช่อง`,`AI · ${sites} sites · ${n} documents · ${sc.confirmed||0}/${sc.cells||0} fields agree`)}</span>`}
     ${s.data&&s.data.generation?`<span class="cs-gen">${esc(s.data.generation)}${s.data.market?" · "+esc(s.data.market):""}</span>`:""}
-  </div>${!s.verified?`<p class="cs-hint">${T(sites<5?"ยังได้เว็บอ้างอิงไม่ครบ 5 เว็บ — ผลสกัดสองรอบไม่ใช่สองแหล่งอิสระ ตรวจคู่มือและรุ่นย่อยก่อนนำไปใช้":"ผลค้นของ AI ยังไม่ใช่การรับรองสเปก ตรวจคู่มือและรุ่นย่อยก่อนนำไปใช้",sites<5?"Fewer than five sites found. Two extraction passes are not independent sources. Check the manual and variant before use.":"AI research is not a specification certification. Check the manual and variant before use.")}</p>`:""}`;
+  </div>${s.data?.query?.market==='GLOBAL'?`<p class="cs-hint">${T('ข้อมูลอ้างอิงพื้นฐานของรุ่นรถจากแหล่งที่ระบุ ไม่ได้ยืนยันว่าเป็นรุ่นย่อยหรือสเปกตลาดเดียวกับรถของคุณ ข้อมูลเพิ่มเติมไม่จำเป็นต่อการค้น','Model reference specifications from the cited sources, not confirmation of your car’s exact variant or local-market equipment. Additional car details are optional.')}</p>`:''}${s.refinement?`<p class="cs-hint">${T('รายละเอียดตลาดที่เลือกยังไม่พร้อม แสดงข้อมูลพื้นฐานของรุ่นรถก่อน','The selected market refinement is not available yet. Model reference specifications are shown first.')}</p>`:''}${!s.verified?`<p class="cs-hint">${T(sites<5?"ยังได้เว็บอ้างอิงไม่ครบ 5 เว็บ — ผลสกัดสองรอบไม่ใช่สองแหล่งอิสระ ตรวจคู่มือและรุ่นย่อยก่อนนำไปใช้":"ผลค้นของ AI ยังไม่ใช่การรับรองสเปก ตรวจคู่มือและรุ่นย่อยก่อนนำไปใช้",sites<5?"Fewer than five sites found. Two extraction passes are not independent sources. Check the manual and variant before use.":"AI research is not a specification certification. Check the manual and variant before use.")}</p>`:""}`;
 }
+function powerRows(v,s){const show=(f,unit)=>val(f,unit,undefined,s.sources),ev=v.fuel==='ev';return row(T('เครื่องยนต์','Engine'),show(v.engine))+row(T('เชื้อเพลิง','Fuel'),v.fuel?esc(lab(FUEL,v.fuel))+refs(v.fuelSourceIds,s.sources):null)+
+  (ev?'':row(T('ความจุกระบอกสูบ','Displacement'),show(v.cc,'cc')))+row(T('กำลังสูงสุด','Power'),show(v.hp,T('แรงม้า','hp')))+row(T('แรงบิดสูงสุด','Torque'),show(v.torque_nm,'Nm'))+
+  row(T('ระบบเกียร์','Gearbox'),show(v.gearbox))+row(T('ระบบขับเคลื่อน','Drive'),v.drive?.v?show({...v.drive,v:lab(DRIVE,v.drive.v),alt:v.drive.alt&&lab(DRIVE,v.drive.alt)}):null)+
+  (ev?row(T('แบตเตอรี่','Battery'),show(v.battery_kwh,'kWh'))+row(T('ระยะทางต่อการชาร์จ','Range'),show(v.range_km,T('กม.','km'))):row(T('อัตราสิ้นเปลือง','Fuel economy'),show(v.l_per_100km,T('ลิตร/100 กม.','L/100km'))))}
 function specHTML(c,s){
   const d=s.data||{},f=d.facts||{},vs=d.variants||[],vi=variantIdx(c,s),v=vs[vi]||{};
   const show=(f,unit,fmt)=>val(f,unit,fmt,s.sources);
@@ -143,7 +157,8 @@ function specHTML(c,s){
   return head(s)+
   (vs.length&&(!s.verified||vs.length>1)?`<div class="cs-vars" role="radiogroup" aria-label="${T("รุ่นย่อย","Variant")}">${vs.map((x,i)=>
     `<button type="button" class="cs-var${i===vi?" on":""}" data-cs-var="${i}" role="radio" aria-checked="${i===vi}">${esc(x.name||(x.engine&&x.engine.v)||T("รุ่นย่อย ","Variant ")+(i+1))}</button>`).join("")}</div>
-    <p class="cs-hint">${T(vi<0?"เลือกรุ่นย่อยหรือเครื่องยนต์ที่ตรงกับรถก่อน — อาจยังมีรุ่นย่อยอื่นที่ค้นไม่พบ":"รุ่นย่อยที่คุณเลือก สเปกต่างกันตามเครื่องยนต์และระบบขับเคลื่อน",vi<0?"Choose your variant first. Other variants may not have been found yet.":"Your selected variant — specs differ by engine and drivetrain")}</p>`:"")+
+    <p class="cs-hint">${T(vi<0?"ดูสเปกรุ่นย่อยที่พบได้ด้านล่าง โดยไม่ต้องเลือกหรือกรอกเพิ่ม หากต้องการผูกกับรถของคุณ ค่อยเลือกรุ่นย่อยที่ตรงกัน":"รุ่นย่อยที่คุณเลือก สเปกต่างกันตามเครื่องยนต์และระบบขับเคลื่อน",vi<0?"Available variants are shown below without requiring a selection or extra details. Selecting a matching variant is optional and links it to your car.":"Your selected variant — specs differ by engine and drivetrain")}</p>`:"")+
+  (vi<0?vs.map((x,i)=>`<div class="cl-grp"><h4>${esc(x.name||x.engine?.v||T('รุ่นย่อย ','Variant ')+(i+1))}</h4>${powerRows(x,s)}</div>`).join(''):
   `<div class="cl-grp"><h4>${T("เครื่องยนต์และการขับเคลื่อน","Powertrain")}</h4>
     ${row(T("เครื่องยนต์","Engine"),show(v.engine))}
     ${row(T("เชื้อเพลิง","Fuel"),v.fuel?esc(lab(FUEL,v.fuel))+refs(v.fuelSourceIds,s.sources):null)}
@@ -155,8 +170,8 @@ function specHTML(c,s){
     ${ev?row(T("แบตเตอรี่","Battery"),show(v.battery_kwh,"kWh"))+row(T("ระยะทางต่อการชาร์จ","Range"),show(v.range_km,T("กม.","km"))):""}
     ${ev?"":row(T("อัตราสิ้นเปลือง","Fuel economy"),show(v.l_per_100km,T("ลิตร/100 กม.","L/100km")))}
     ${!ev&&l100?row(T("เทียบเป็น","Equivalent"),num(100/l100)+" "+T("กม./ลิตร","km/L")):""}
-  </div>
-  <div class="cl-grp"><h4>${T("ตัวถังและขนาด","Body & dimensions")}</h4>
+  </div>`)+
+  `<div class="cl-grp"><h4>${T("ตัวถังและขนาด","Body & dimensions")}</h4>
     ${row(T("ประเภทตัวถัง","Body type"),d.body?esc(lab(BODY,d.body))+(d.body_ok?mark({ok:true}):mark({ok:null}))+refs(d.bodySourceIds,s.sources):null)}
     ${row(T("จำนวนที่นั่ง","Seats"),show(f.seats,T("ที่นั่ง","seats")))}
     ${row(T("จำนวนประตู","Doors"),show(f.doors,T("ประตู","doors")))}
@@ -217,7 +232,7 @@ async function fill(id,c,kind,extra,opt){
   const el2=document.getElementById(id);if(!el2)return;
   const retry=`<button type="button" class="btn" data-cs-retry>${T("ลองใหม่","Try again")}</button>`;
   const code=s.code||(/source_unavailable|discovery_http/i.test(s.error||'')?'source_unavailable':/429|RESOURCE_EXHAUSTED|quota/i.test(s.error||'')?'provider_quota':/401|403|API.key|permission|คีย์/i.test(s.error||'')?'provider_auth':/404|NOT_FOUND/.test(s.error||'')?'provider_model':/แหล่ง|ground|ยืนยัน|ข้อมูลที่ใช้ได้/i.test(s.error||'')?'unconfirmed':/เกิน|timeout|AbortError/i.test(s.error||'')?'timeout':'');
-  const Q=q(c),details=`<button type="button" class="btn" data-cs-details>${T('ตรวจปีรุ่นและตลาดรถ','Check model year & market')}</button>`;
+  const Q=q(c);
   const guestLimit=code==='guest_limit'||!code&&s.scope==='guest';
   const login=`<a class="btn" href="/login?next=${encodeURIComponent(location.pathname+(location.search||''))}">${T('เข้าสู่ระบบ','Sign in')}</a>`;
   const limitTH=guestLimit?'คำขอนี้มาแบบไม่ได้ล็อกอิน และใช้สิทธิ์ค้นของผู้เยี่ยมชมวันนี้ครบแล้ว เข้าสู่ระบบเพื่อใช้สิทธิ์ของบัญชี — ไม่ใช่โควตา Gemini':code==='system_limit'?'สิทธิ์ค้นสเปกรวมของ Cendon วันนี้เต็มแล้ว ยังไม่ได้หักสิทธิ์ของบัญชีคุณ':code==='attempt_limit'?'วันนี้ลองค้นถึงขีดจำกัดความปลอดภัยแล้ว ยังเปิดสเปกที่มีในคลังได้':'สิทธิ์ค้นสเปกของบัญชี Cendon วันนี้เต็มแล้ว ไม่ใช่โควตา Gemini';
@@ -230,7 +245,7 @@ async function fill(id,c,kind,extra,opt){
    :code==="provider_quota"?state("ti-clock-pause",T("ยังสรุปสเปกไม่ได้: Gemini ปฏิเสธคำขอด้วยข้อจำกัดโควตา ผู้ดูแลต้องตรวจโปรเจกต์และโมเดล — รีเฟรชหน้าไม่ช่วย และเราไม่ใส่ตัวเลขเดาแทน","Specs unavailable: Gemini project quota was rejected. The owner must check the project/model. Refreshing cannot fix this; no guessed specs are shown."))+extra
    :code==="source_unavailable"?state("ti-file-search",T("เปิดแหล่งเอกสารไม่ได้ในขณะนี้ — ข้อมูลรถยังอยู่ ลองใหม่ภายหลังโดยไม่ต้องรีเฟรชแอป","Public documents are unavailable right now. Your car data is unchanged. Try again later without refreshing the app."),retry)+extra
    :code==="provider_auth"||code==="provider_model"?state("ti-plug-off",T("ระบบค้นสเปกยังไม่พร้อม: ผู้ดูแลต้องตรวจคีย์หรือโมเดล AI ข้อมูลรถของคุณยังอยู่","Spec search is not configured correctly. The owner must check the AI key/model. Your car data is unchanged."))+extra
-   :code==="unconfirmed"||s.status==="unconfirmed"?state("ti-file-search",`<b>${esc(Q.make+' '+Q.model+' '+Q.year)}</b><br>`+T("ยังไม่มีสเปกที่มีแหล่งอ้างอิงเพียงพอและตรงกับปี/ตลาดรถ — ตรวจปีรุ่น (ไม่ใช่ปีจดทะเบียน) และตลาดในข้อมูลรถ ไม่ต้องรีเฟรชแอป เราจะไม่แสดงตัวเลขเดาเป็นสเปกจริง","No sufficiently sourced specification matches the model year and vehicle market. Check the model year (not registration year) and market in your car details; refreshing the app is not needed. Estimates will not be shown as real specs."),details+retry)+extra
+   :code==="unconfirmed"||s.status==="unconfirmed"?state("ti-file-search",`<b>${esc(Q.make+' '+Q.model+' '+Q.year)}</b><br>`+T("ระบบยังอ่านสเปกอ้างอิงของรุ่นนี้ไม่สำเร็จ ไม่จำเป็นต้องกรอกข้อมูลเพิ่มเติมเพื่อค้น เราจะไม่ใส่ตัวเลขเดาแทนข้อมูลจริง","The reference lookup has not returned usable specifications yet. No additional car details are required to search. Guessed numbers will not replace real specifications."),retry)+extra
    :code==="timeout"||s.status==="timeout"?state("ti-hourglass",T("การค้นครั้งนี้ใช้เวลานานเกินกำหนด ยังไม่ได้ผลสเปก — ไม่จำเป็นต้องรีเฟรชทั้งแอป","This lookup timed out without a specification. You do not need to refresh the app."),retry)+extra
    :s.status==="invalid"?state("ti-calendar-question",T("ตรวจยี่ห้อ ชื่อรุ่น และปีรุ่นก่อนค้นสเปก","Check the make, model and model year before searching"))+extra
    :s.status==="notfound"?state("ti-search-off",T("ไม่พบข้อมูลของรุ่นนี้ในปีนี้ — ตรวจชื่อรุ่นและปีอีกครั้ง","No data for this model in this year — check the model and year"))+extra
@@ -252,7 +267,6 @@ document.addEventListener("click",async e=>{
   const car=()=>{try{return (window.garage?window.garage():[]).find(x=>x.id===w.dataset.car)}catch(err){return null}};
   const vb=e.target.closest("[data-cs-var]");
   const P=PANES[w.id]||{kind:"spec",extra:""};
-  if(e.target.closest('[data-cs-details]')){const c=car();if(c){if(typeof window.openInfo==='function')window.openInfo(c.id);else location.assign('/garage/'+encodeURIComponent(c.id)+'/info')}return}
   if(vb){const v=P.spec?.data?.variants?.[Number(vb.dataset.csVar)];if(!v)return;LS.set("specv_"+w.dataset.car,{key:P.spec.key,variant:variantKey(v)});const c=car();if(c)fill(w.id,c,P.kind,P.extra);return}
   if(e.target.closest("[data-cs-retry]")){const c=car();if(c){w.innerHTML=loadingHTML(c);fill(w.id,c,P.kind,P.extra,{retry:true})}return}
   const rp=e.target.closest(".cs-report");if(!rp)return;

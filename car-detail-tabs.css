@@ -1,0 +1,22 @@
+/* Mouse controls for the existing car-detail tab rail. Touch remains native. */
+.cd-tabs-shell{position:relative;min-width:0;flex:0 0 auto}
+.cd-tabs-shell>#clTabs{min-width:0;scrollbar-width:none;overscroll-behavior-x:contain}
+.cd-tabs-shell>#clTabs>.cl-tab{flex:0 0 auto}
+.cd-tabs-shell--carx{border-bottom:1px solid var(--line-2)}
+.cd-tabs-shell--carx>#clTabs{border-bottom:0}
+.cd-tab-scroll{display:none}
+@media (hover:hover) and (pointer:fine){
+  .cd-tabs-shell.has-overflow{display:grid;grid-template-columns:32px minmax(0,1fr) 32px;gap:4px;padding-inline:6px}
+  .cd-tabs-shell.has-overflow>.cd-tab-scroll{
+    display:grid;place-items:center;align-self:center;width:32px;height:32px;
+    padding:0;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);color:var(--muted);font:inherit;font-size:17px;
+    cursor:pointer;transition:background .16s,color .16s,border-color .16s,transform .16s}
+  .cd-tabs-shell--legacy>.cd-tab-scroll{margin-top:14px}
+  .cd-tab-scroll:hover:not(:disabled){background:var(--surface-2);color:var(--accent);border-color:var(--accent)}
+  .cd-tab-scroll:active:not(:disabled){transform:scale(.94)}
+  .cd-tab-scroll:disabled{opacity:.28;cursor:default}
+  .cd-tab-scroll:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+}
+.cd-tabs-shell .cl-tab:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+@media (prefers-reduced-motion:reduce){.cd-tab-scroll{transition:none!important}}

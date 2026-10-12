@@ -60,7 +60,7 @@ function clog(msg,o){
 }
 async function call(method,path,body){
   const t0=Date.now(),ac=new AbortController();let timer,credential='';
-  const expiry=new Promise((_,reject)=>{timer=setTimeout(()=>{ac.abort();reject(Object.assign(new Error('Spec request timed out'),{name:'AbortError'}))},method==="POST"&&path==="/api/car-spec"?65000:12000)});
+  const expiry=new Promise((_,reject)=>{timer=setTimeout(()=>{ac.abort();reject(Object.assign(new Error('Spec request timed out'),{name:'AbortError'}))},method==="POST"&&['/api/car-spec','/api/car-spec/equipment'].includes(path)?65000:12000)});
   try{return await Promise.race([expiry,(async()=>{
     const session=await tok(ac.signal);credential=session.token;if(ac.signal.aborted)throw Object.assign(new Error('timed out'),{name:'AbortError'});
     if((currentAuth()?.currentUser?.uid||null)!==session.uid)throw authError('auth_changed');
@@ -82,7 +82,7 @@ async function ensure(c,opt){
   return s;
 }
 async function ensureScoped(c,opt){
-  const Q=q(c),k=keyOf(Q),retry=!!(opt&&opt.retry),car=[Q.make,Q.model,Q.year].join(" ");
+  const equipment=opt?.kind==='equip',endpoint='/api/car-spec'+(equipment?'/equipment':''),Q=q(c),k=keyOf(Q)+(equipment?'|equipment':''),retry=!!(opt&&opt.retry),car=[Q.make,Q.model,Q.year].join(" ");
   if(!/^\d{4}$/.test(Q.year)||!Q.make){clog("ไม่ค้น: ข้อมูลรถไม่ครบ ("+(Q.make?"ไม่มีปี":"ไม่มียี่ห้อ")+")",{car});return {status:"invalid"}}
   const have=LS.get("spec_"+k);
   if(!retry&&have&&DONE.includes(have.status)&&(have.status==="notfound"||have.status==="verified"||have.data?.schema===2&&have.sources?.length)&&Date.now()-(have._at||0)<(have.status==="notfound"?86400000:7*86400000)){
@@ -95,11 +95,11 @@ async function ensureScoped(c,opt){
        "ลองใหม่" = ขอให้ค้นใหม่จริง ไม่ใช่ดึงผลที่ไม่สำเร็จเดิม */
     const t0=Date.now();
     clog((retry?"กดลองใหม่ — ":"")+"ขอสเปกจากหลังบ้าน",{car});
-    let r=await call("POST","/api/car-spec",retry?{...Q,retry:true}:Q);
+    let r=await call("POST",endpoint,retry?{...Q,retry:true}:Q);
     clog("หลังบ้านตอบ: "+r.status,{car,ok:r.status!=="failed"&&r.status!=="limited",ms:r._ms,auth:r._auth,err:r.error||"",trace:r.trace});
     /* อีกคนกำลังหาอยู่ — รอผลของเขา */
     let n=0;
-  for(;n<20&&r.status==="pending";n++){await new Promise(z=>setTimeout(z,2000));r=await call("GET","/api/car-spec?"+new URLSearchParams(Q));}
+  for(;n<20&&r.status==="pending";n++){await new Promise(z=>setTimeout(z,2000));r=await call("GET",endpoint+'?'+new URLSearchParams(Q));}
     if(r.status==="pending")return {...r,status:"timeout",retryable:true};
     if(n)clog("รอผลค้น "+n+" รอบ → "+r.status,{car,ok:DONE.includes(r.status),ms:Date.now()-t0,err:r.error||(r.status==="pending"?"เกิน 2 นาทีแล้วยังค้นไม่เสร็จ":"")});
     if(r.key&&r.key!==k)return {status:'unconfirmed',code:'unconfirmed'};
@@ -197,12 +197,11 @@ function foot(s){
   </div>`;
 }
 function equipHTML(c,s){
-  const d=s.data||{},chips=a=>`<div class="cl-chips">${a.map(x=>`<span class="cl-chip yes"><i class="ti ti-check"></i>${esc(x)}</span>`).join("")}</div>`;
-  if(!(d.safety||[]).length&&!(d.comfort||[]).length)return state("ti-info-circle",T("ยังไม่พบรายการอุปกรณ์ของรุ่นนี้จากแหล่งข้อมูล","No equipment list found for this model yet"));
-  return head(s)+
-    ((d.safety||[]).length?`<div class="cl-grp"><h4>${T("ความปลอดภัย","Safety")}</h4>${chips(d.safety)}</div>`:"")+
-    ((d.comfort||[]).length?`<div class="cl-grp"><h4>${T("ความสะดวกสบาย","Comfort & tech")}</h4>${chips(d.comfort)}</div>`:"")+
-    `<p class="cs-hint">${T("รวมจากทุกรุ่นย่อยของปีนั้น บางรายการมีเฉพาะรุ่นย่อยที่สูงกว่า","Across all variants of that year — some items are higher trims only")}</p>`+foot(s);
+  const d=s.data||{},items=d.equipment||[],label=x=>x.availability==='standard'?T('มาตรฐานตามเอกสาร','Standard in the source'):x.availability==='optional'?T('อุปกรณ์เสริมตามเอกสาร','Optional in the source'):T('พบในเอกสาร · ไม่ยืนยันมาตรฐาน','Listed · standard status unconfirmed');
+  const group=(key,title)=>{const a=items.filter(x=>x.category===key);return a.length?`<div class="cl-grp"><h4>${title}</h4>${a.map(x=>`<div class="cl-spec"><span class="k">${esc(x.name)}${refs(x.sourceIds,s.sources)}${x.variant?`<small class="cs-eq-variant">${esc(x.variant)}</small>`:''}</span><span class="v cs-eq-state">${label(x)}</span></div>`).join('')}</div>`:''};
+  if(!items.length)return state('ti-file-search',T('ยังอ่านรายการอุปกรณ์จากเอกสารไม่สำเร็จ ไม่ใช่การยืนยันว่ารถรุ่นนี้ไม่มีอุปกรณ์','Equipment could not yet be extracted from the documents. This does not mean the model has no equipment.'),`<button type="button" class="btn" data-cs-retry>${T('ค้นอุปกรณ์ใหม่','Look up equipment')}</button>`);
+  return head(s)+group('safety',T('ความปลอดภัยและระบบช่วยขับ','Safety & driver assistance'))+group('comfort',T('ความสะดวกสบายและเทคโนโลยี','Comfort & technology'))+
+    `<p class="cs-hint">${T('เป็นรายการอ้างอิงจากเอกสาร รุ่นย่อย ตลาด และออปชันอาจต่างกัน ไม่ได้ยืนยันว่ารถคันคุณมีครบทุกระบบ','Reference equipment from the documents. Trim, market and options can differ; this does not confirm that your car has every listed system.')}</p>`+foot(s);
 }
 function partsHTML(c,s){
   const vi=variantIdx(c,s),v=s.data?.variants?.[vi]||{},f=s.data?.facts||{};
@@ -210,10 +209,10 @@ function partsHTML(c,s){
     <p class="cs-hint">${T("ยังไม่มีรหัสแบตเตอรี่ ขนาดใบปัดน้ำฝน หรือปริมาณน้ำมันเครื่องที่ยืนยันได้ของคันนี้ — ตรวจคู่มือหรือให้ศูนย์เช็ก VIN ก่อนซื้อ","No verified battery, wiper or engine-oil specification is available here. Check the manual or ask your dealer to verify your VIN before buying.")}</p></div>`+foot(s);
 }
 const state=(ic,msg,btn)=>`<div class="cs-state"><i class="ti ${ic}"></i><p>${msg}</p>${btn||""}</div>`;
-function loadingHTML(c){
+function loadingHTML(c,kind){
   const Q=q(c);
   return `<div class="cs-state cs-loading"><span class="cs-spin"></span>
-    <p><b>${T("กำลังค้นสเปกจริงของ","Looking up real specs for")} ${esc(Q.make+" "+Q.model+" "+Q.year)}</b><br>
+    <p><b>${kind==='equip'?T('กำลังอ่านรายการอุปกรณ์ของ','Looking up equipment for'):T("กำลังค้นสเปกจริงของ","Looking up real specs for")} ${esc(Q.make+" "+Q.model+" "+Q.year)}</b><br>
     ${T("หาจากหลายแหล่งแล้วเทียบกัน — รุ่นนี้ค้นครั้งแรก อาจใช้เวลาถึง 1 นาที คนต่อไปจะเห็นทันที","Checking several sources — the first lookup for this model can take up to a minute, then it’s instant for everyone")}</p></div>`;
 }
 
@@ -223,12 +222,12 @@ function pane(c,kind,extra){
   const id="cs"+(++seq);
   PANES[id]={kind,extra:extra||""};
   setTimeout(()=>fill(id,c,kind,extra||""),0);
-  return `<div class="cs-wrap" id="${id}">${loadingHTML(c)}</div>`;
+  return `<div class="cs-wrap" id="${id}">${loadingHTML(c,kind)}</div>`;
 }
 async function fill(id,c,kind,extra,opt){
   const el=document.getElementById(id);if(!el)return;
   let s;
-  try{s=await ensure(c,opt)}catch(e){s={status:/^auth_/.test(e.code||'')||e.status===401?"auth":e.name==="AbortError"?"timeout":e.status===400?"invalid":e.status===404||e.status===405?"unavailable":e.status?"error":"offline",error:e.message,code:e.code}}
+  try{s=await ensure(c,{...opt,kind})}catch(e){s={status:/^auth_/.test(e.code||'')||e.status===401?"auth":e.name==="AbortError"?"timeout":e.status===400?"invalid":e.status===404||e.status===405?"unavailable":e.status?"error":"offline",error:e.message,code:e.code}}
   const el2=document.getElementById(id);if(!el2)return;
   const retry=`<button type="button" class="btn" data-cs-retry>${T("ลองใหม่","Try again")}</button>`;
   const code=s.code||(/source_unavailable|discovery_http/i.test(s.error||'')?'source_unavailable':/429|RESOURCE_EXHAUSTED|quota/i.test(s.error||'')?'provider_quota':/401|403|API.key|permission|คีย์/i.test(s.error||'')?'provider_auth':/404|NOT_FOUND/.test(s.error||'')?'provider_model':/แหล่ง|ground|ยืนยัน|ข้อมูลที่ใช้ได้/i.test(s.error||'')?'unconfirmed':/เกิน|timeout|AbortError/i.test(s.error||'')?'timeout':'');
@@ -245,7 +244,7 @@ async function fill(id,c,kind,extra,opt){
    :code==="provider_quota"?state("ti-clock-pause",T("ยังสรุปสเปกไม่ได้: Gemini ปฏิเสธคำขอด้วยข้อจำกัดโควตา ผู้ดูแลต้องตรวจโปรเจกต์และโมเดล — รีเฟรชหน้าไม่ช่วย และเราไม่ใส่ตัวเลขเดาแทน","Specs unavailable: Gemini project quota was rejected. The owner must check the project/model. Refreshing cannot fix this; no guessed specs are shown."))+extra
    :code==="source_unavailable"?state("ti-file-search",T("เปิดแหล่งเอกสารไม่ได้ในขณะนี้ — ข้อมูลรถยังอยู่ ลองใหม่ภายหลังโดยไม่ต้องรีเฟรชแอป","Public documents are unavailable right now. Your car data is unchanged. Try again later without refreshing the app."),retry)+extra
    :code==="provider_auth"||code==="provider_model"?state("ti-plug-off",T("ระบบค้นสเปกยังไม่พร้อม: ผู้ดูแลต้องตรวจคีย์หรือโมเดล AI ข้อมูลรถของคุณยังอยู่","Spec search is not configured correctly. The owner must check the AI key/model. Your car data is unchanged."))+extra
-   :code==="unconfirmed"||s.status==="unconfirmed"?state("ti-file-search",`<b>${esc(Q.make+' '+Q.model+' '+Q.year)}</b><br>`+T("ระบบยังอ่านสเปกอ้างอิงของรุ่นนี้ไม่สำเร็จ ไม่จำเป็นต้องกรอกข้อมูลเพิ่มเติมเพื่อค้น เราจะไม่ใส่ตัวเลขเดาแทนข้อมูลจริง","The reference lookup has not returned usable specifications yet. No additional car details are required to search. Guessed numbers will not replace real specifications."),retry)+extra
+   :code==="unconfirmed"||s.status==="unconfirmed"?state("ti-file-search",`<b>${esc(Q.make+' '+Q.model+' '+Q.year)}</b><br>`+(kind==='equip'?T('ยังอ่านรายการอุปกรณ์ที่มีหลักฐานของรุ่นนี้ไม่สำเร็จ ไม่ใช่การยืนยันว่ารถไม่มีอุปกรณ์ ข้อมูลเพิ่มเติมยังเป็นตัวเลือก ไม่จำเป็นต่อการค้น','A sourced equipment list could not yet be extracted for this model. This does not mean it has no equipment. Additional car details remain optional.'):T("ระบบยังอ่านสเปกอ้างอิงของรุ่นนี้ไม่สำเร็จ ไม่จำเป็นต้องกรอกข้อมูลเพิ่มเติมเพื่อค้น เราจะไม่ใส่ตัวเลขเดาแทนข้อมูลจริง","The reference lookup has not returned usable specifications yet. No additional car details are required to search. Guessed numbers will not replace real specifications.")),retry)+extra
    :code==="timeout"||s.status==="timeout"?state("ti-hourglass",T("การค้นครั้งนี้ใช้เวลานานเกินกำหนด ยังไม่ได้ผลสเปก — ไม่จำเป็นต้องรีเฟรชทั้งแอป","This lookup timed out without a specification. You do not need to refresh the app."),retry)+extra
    :s.status==="invalid"?state("ti-calendar-question",T("ตรวจยี่ห้อ ชื่อรุ่น และปีรุ่นก่อนค้นสเปก","Check the make, model and model year before searching"))+extra
    :s.status==="notfound"?state("ti-search-off",T("ไม่พบข้อมูลของรุ่นนี้ในปีนี้ — ตรวจชื่อรุ่นและปีอีกครั้ง","No data for this model in this year — check the model and year"))+extra
@@ -268,7 +267,7 @@ document.addEventListener("click",async e=>{
   const vb=e.target.closest("[data-cs-var]");
   const P=PANES[w.id]||{kind:"spec",extra:""};
   if(vb){const v=P.spec?.data?.variants?.[Number(vb.dataset.csVar)];if(!v)return;LS.set("specv_"+w.dataset.car,{key:P.spec.key,variant:variantKey(v)});const c=car();if(c)fill(w.id,c,P.kind,P.extra);return}
-  if(e.target.closest("[data-cs-retry]")){const c=car();if(c){w.innerHTML=loadingHTML(c);fill(w.id,c,P.kind,P.extra,{retry:true})}return}
+  if(e.target.closest("[data-cs-retry]")){const c=car();if(c){w.innerHTML=loadingHTML(c,P.kind);fill(w.id,c,P.kind,P.extra,{retry:true})}return}
   const rp=e.target.closest(".cs-report");if(!rp)return;
   const form=rp.querySelector(".cs-form");
   if(e.target.closest("[data-cs-report]")){form.hidden=false;form.querySelector("textarea").focus();return}
@@ -307,6 +306,8 @@ const st=document.createElement("style");st.textContent=`
 .cs-src a:hover{border-color:var(--co,var(--accent));color:var(--co,var(--accent))}
 .cs-src i{font-size:12px}
 .cs-ref{font-size:10px;vertical-align:super;margin-left:4px;color:var(--co,var(--accent));text-decoration:none}
+.cs-eq-variant{display:block;margin-top:3px;font-size:11px;color:var(--faint)}
+.cs-eq-state{font-size:11.5px;font-weight:500;max-width:46%;text-align:right;color:var(--muted)}
 .cs-legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:6px 0 14px;font-size:11.5px;color:var(--faint)}
 .cs-legend i{margin:0 3px 0 0!important}
 .cs-report{margin:4px 0 6px}

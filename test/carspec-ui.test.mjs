@@ -149,3 +149,23 @@ test('car details: additional context is optional and VIN lookup is explicit, no
   for(const k of ['vin','trim','engine_code','model_year','market','drive'])assert.match(html,new RegExp('k:"'+k+'"'));
   assert.match(html,/if\(!lookup\).*Press Check/);assert.match(html,/not Gemini or the shared spec library/);assert.match(html,/vinCheck\(inp,true\)/);
 });
+function equipmentReply(){return {status:'ready',key:complete().key+'|equipment',sources:[{docId:1,url:'https://maker.example.test/equipment',title:'Equipment reference'}],data:{schema:2,kind:'equipment',equipmentSchema:1,query:{market:'GLOBAL'},score:{cells:3,confirmed:2},equipment:[
+  {name:'Adaptive Cruise Control',category:'safety',availability:'standard',variant:'Fixture Alpha',sourceIds:[1]},
+  {name:'Heated seats',category:'comfort',availability:'optional',variant:'Fixture Alpha',sourceIds:[1]},
+  {name:'PASM',category:'comfort',availability:'listed',variant:null,sourceIds:[1]}]}};}
+test('equipment UI: opening the equipment tab triggers its own lookup instead of reusing a basic empty equipment list',async()=>{
+  const f=fixture({transport:async(url)=>({body:url.includes('/equipment')?equipmentReply():complete()})});await f.api.ensure(car);const el=await f.pane(car,'equip');
+  assert.equal(f.calls.length,2);assert.ok(f.calls[1].url.endsWith('/api/car-spec/equipment'));assert.match(el.innerHTML,/Adaptive Cruise Control|Heated seats|PASM/);assert.doesNotMatch(el.innerHTML,/No equipment list found/);
+  assert.match(el.innerHTML,/Standard in the source/);assert.match(el.innerHTML,/Optional in the source/);assert.match(el.innerHTML,/standard status unconfirmed/);assert.match(el.innerHTML,/does not confirm that your car has every/);assert.match(el.innerHTML,/https:\/\/maker.example.test\/equipment/);
+  assert.ok(f.store.has('spire_spec_'+equipmentReply().key));assert.ok(f.store.has('spire_spec_'+complete().key));
+});
+test('equipment UI: repeated views share one equipment request and never include VIN or other private vehicle data',async()=>{
+  const f=fixture({reply:equipmentReply()});await Promise.all([f.api.ensure({...car,info:{vin:'PRIVATE',plate:'PRIVATE'}},{kind:'equip'}),f.api.ensure(car,{kind:'equip'})]);assert.equal(f.calls.length,1);assert.doesNotMatch(f.calls[0].opt.body,/PRIVATE|vin|plate|trim/);
+});
+test('equipment UI: pending work polls only the equipment endpoint and renders the sourced result',async()=>{
+  const f=fixture({transport:async(url,opt)=>({body:opt.method==='POST'?{status:'pending',key:equipmentReply().key}:equipmentReply()})}),el=await f.pane(car,'equip');
+  await f.advance(2000);assert.equal(f.calls.length,2);assert.ok(f.calls[1].url.includes('/api/car-spec/equipment?'));assert.equal(f.calls[1].opt.method,'GET');assert.match(el.innerHTML,/Adaptive Cruise Control/);
+});
+test('equipment UI: unconfirmed documents never imply the model has no equipment or require extra details',async()=>{
+  const f=fixture({reply:{status:'failed',code:'unconfirmed'}}),el=await f.pane(car,'equip');assert.match(el.innerHTML,/does not mean it has no equipment/);assert.match(el.innerHTML,/Additional car details remain optional/);assert.doesNotMatch(el.innerHTML,/Check model year|No equipment list found/);
+});

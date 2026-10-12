@@ -863,12 +863,136 @@ body.onmap .modes{display:none}
 @media(prefers-reduced-motion:reduce){.cc-room,.cc-a{animation:none}}
 /* ไม่มีปุ่มสลับลูกค้า/ช่างแล้ว — Studio เข้าจากปุ่มโปรไฟล์ */
 .modes{display:none!important}
-.studio-bar{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.studio-bar b{font-family:var(--kd);font-size:18px;flex:1}
-.studio-bar .btn{flex:0 0 auto}
+/* ══ Cendon Studio ══
+   กรอบคงที่ ไม่เล่นแอนิเมชันเข้าใหม่ทุกครั้งที่เปลี่ยนหน้า · เส้นคั่นแทนการ์ดซ้อน · ปุ่มหลักสีหมึก ส้มเป็นแค่ขีด/จุดบอกตำแหน่ง */
+body[data-mode="tech"] .navwrap,body[data-mode="tech"] #mnav,body[data-mode="tech"] header.top{display:none!important}
+body[data-mode="tech"]{padding-top:0!important;padding-bottom:0!important}
+.stu{--sw:216px;animation:none;min-height:100vh;min-height:100dvh}
+.stu [hidden]{display:none!important}
+.stu-side{display:flex;flex-direction:column;background:var(--bg)}
+.stu-brand{display:flex;align-items:center;gap:9px;color:var(--ink);text-decoration:none;font:700 19px/1 var(--kd);letter-spacing:-.01em}
+.stu-brand small{display:block;margin-top:3px;font:600 11.5px/1 var(--kb);letter-spacing:.04em;color:var(--muted)}
+.stu-brand span{display:block}
+.stu-mk{width:22px;height:26px;color:var(--co,#E9682A)}
+.stu-nav button{position:relative;display:flex;align-items:center;gap:12px;border:0;background:none;color:var(--muted);font:500 15px var(--kb);cursor:pointer;transition:color .15s,background .15s}
+.stu-nav button .ti{font-size:22px}
+.stu-nav button:hover{color:var(--ink)}
+.stu-nav button.on{color:var(--ink);font-weight:600}
+.stu-bd{min-width:18px;height:18px;padding:0 5px;border-radius:9px;font:700 11px/18px var(--kb);font-style:normal;text-align:center;color:#fff;background:var(--co,#E9682A)}
+.stu-sfoot button{display:flex;align-items:center;gap:12px;width:100%;height:44px;padding:0 14px;border:0;border-radius:12px;background:none;color:var(--muted);font:500 14px var(--kb);cursor:pointer}
+.stu-sfoot button:hover{color:var(--ink);background:var(--surface-2)}.stu-sfoot .ti{font-size:20px}
+.stu-main{min-width:0}
+.stu-top{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:8px;height:calc(58px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 16px 0;background:color-mix(in srgb,var(--bg) 88%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 1px 0 var(--line-2)}
+.stu-top .stu-brand{flex:1;font-size:18px}
+.stu-crumb{display:none;flex:1;align-items:center;gap:6px;margin:0;font-size:14px;color:var(--muted)}.stu-crumb .ti{font-size:14px;opacity:.6}.stu-crumb b{color:var(--ink);font-weight:600}
+@media(max-width:899px){body[data-mode="tech"] .toast{bottom:calc(78px + env(safe-area-inset-bottom))}}
+.stu-ib{display:grid;place-items:center;width:42px;height:42px;border:0;border-radius:12px;background:none;color:var(--ink);font-size:22px;cursor:pointer;text-decoration:none}
+.stu-ib:hover{background:var(--surface-2)}
+.stu-me{display:grid;place-items:center;width:38px;height:38px;margin-left:2px;border:0;border-radius:50%;font:700 15px var(--kd);color:var(--ink);background:var(--surface-2) center/cover no-repeat;box-shadow:inset 0 0 0 1px var(--line);cursor:pointer}
+.stu-body{max-width:860px;margin:0 auto;padding:18px 16px calc(96px + env(safe-area-inset-bottom))}
+/* หัวหน้า: ชื่อหน้า + ปุ่มรอง */
+.stu-h{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 16px;padding:6px 0 18px}
+.stu-h h1{flex:1 1 auto;margin:0;font:700 clamp(26px,4.4vw,34px)/1.15 var(--kd);letter-spacing:-.02em}
+.stu-h p{flex-basis:100%;order:3;margin:-6px 0 0;font-size:14px;color:var(--muted)}
+.stu-hr{display:flex;align-items:center;gap:8px}
+.stu-back{display:inline-flex;align-items:center;gap:6px;margin:0 0 6px;padding:0;border:0;background:none;color:var(--muted);font:500 14px var(--kb);cursor:pointer}
+.stu-back:hover{color:var(--ink)}
+.stu-link{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 14px;border:0;border-radius:12px;background:var(--surface);color:var(--ink);font:600 13.5px var(--kb);box-shadow:inset 0 0 0 1px var(--line);cursor:pointer;text-decoration:none}
+.stu-link:hover{background:var(--surface-2)}.stu-link .ti{font-size:17px}
+/* ปุ่มสถานะร้าน 3 สถานะ */
+.stu-stat{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 12px 0 14px;border:0;border-radius:12px;background:var(--surface);color:var(--ink);font:600 13.5px var(--kb);box-shadow:inset 0 0 0 1px var(--line);cursor:pointer}
+.stu-stat .ti{font-size:16px;color:var(--muted)}
+.stu-dot{width:9px;height:9px;border-radius:50%;background:var(--faint);flex:none}
+.stu-dot.on{background:#22a06b;box-shadow:0 0 0 3px color-mix(in srgb,#22a06b 22%,transparent)}
+.stu-dot.quiet{background:transparent;box-shadow:inset 0 0 0 2px #22a06b}
+.stu-dot.pause{background:var(--faint)}
+.stu-menu{position:fixed;z-index:1300;width:min(320px,calc(100vw - 32px));padding:6px;border-radius:16px;background:var(--surface);box-shadow:0 0 0 1px var(--line),0 24px 48px -20px rgba(0,0,0,.45)}
+.stu-menu button{display:flex;align-items:flex-start;gap:12px;width:100%;padding:11px 12px;border:0;border-radius:12px;background:none;color:var(--ink);text-align:left;font:inherit;cursor:pointer}
+.stu-menu button:hover,.stu-menu button:focus-visible{background:var(--surface-2)}
+.stu-menu .stu-dot{margin-top:6px}
+.stu-menu b{display:block;font-size:14.5px;font-weight:600}.stu-menu small{display:block;margin-top:2px;font-size:12.5px;line-height:1.45;color:var(--muted)}
+.stu-menu .ti-check{margin-left:auto;font-size:18px;color:var(--ink)}
+/* สลับ ต้องทำต่อ | หางานใกล้ฉัน */
+.stu-seg{display:flex;gap:4px;margin:0 0 6px;padding:4px;border-radius:14px;background:var(--surface-2)}
+.stu-seg button{position:relative;flex:1;display:flex;align-items:center;justify-content:center;gap:6px;height:42px;border:0;border-radius:10px;background:none;color:var(--muted);font:600 14px var(--kb);cursor:pointer;transition:background .15s,color .15s}
+.stu-seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.stu-seg em{font-style:normal;font-weight:500;color:var(--faint)}
+.stu-seg i.new{width:7px;height:7px;border-radius:50%;background:var(--co,#E9682A)}
+/* รายการ (งาน / ข้อความ / เมนูร้าน) — แถวคั่นเส้น ไม่ใช่การ์ด */
+.stu-sec{margin-top:22px}
+.stu-sec>h2{display:flex;align-items:center;gap:8px;margin:0 0 4px;font:700 16px/1.3 var(--kd)}
+.stu-sec>h2 small{font:500 13px var(--kb);color:var(--muted)}
+.stu-sec>h2 .stu-more{margin-left:auto}
+.stu-more{border:0;background:none;color:var(--ink);font:600 13.5px var(--kb);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.stu-row{display:flex;align-items:center;gap:14px;width:100%;min-height:72px;padding:12px 0;border:0;border-bottom:1px solid var(--line-2);background:none;color:var(--ink);text-align:left;font:inherit;cursor:pointer}
+.stu-row:last-child{border-bottom:0}
+.stu-row:hover .stu-rb b{text-decoration:underline;text-underline-offset:3px}
+.stu-ri{flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:13px;font-size:21px;color:var(--ink);background:var(--surface-2) center/cover no-repeat}
+.stu-ri.me{color:var(--co,#E9682A);background:color-mix(in srgb,var(--co,#E9682A) 10%,var(--surface))}
+.stu-rb{flex:1;min-width:0}
+.stu-rb b{display:block;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stu-rb small{display:block;margin-top:2px;font-size:13.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stu-rs{display:inline-flex;align-items:center;gap:6px;margin-top:5px;font-size:12.5px;color:var(--muted)}
+.stu-rs.me{color:var(--ink);font-weight:600}
+.stu-rs.me::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--co,#E9682A)}
+.stu-rr{flex:none;display:flex;align-items:center;gap:8px;color:var(--faint)}
+.stu-rr b{font:700 15px var(--kd);color:var(--ink)}
+.stu-rr em{min-width:20px;height:20px;padding:0 6px;border-radius:10px;font:700 11.5px/20px var(--kb);font-style:normal;text-align:center;color:#fff;background:var(--co,#E9682A)}
+.stu-empty{display:grid;justify-items:center;gap:6px;padding:44px 16px 36px;text-align:center}
+.stu-empty>.ti{font-size:40px;color:var(--faint)}
+.stu-empty b{font:700 17px var(--kd)}.stu-empty p{margin:0;max-width:340px;font-size:14px;line-height:1.6;color:var(--muted)}
+.stu-empty .lx-cta{height:46px;margin-top:12px;padding:0 26px}
+.stu-err{display:flex;align-items:center;gap:10px;margin:0 0 6px;padding:11px 12px 11px 14px;border-radius:12px;font-size:13.5px;color:var(--ink);background:var(--surface-2)}
+.stu-err .ti{font-size:18px;color:var(--muted)}.stu-err span{flex:1}.stu-err .lx-gh{height:34px;padding:0 12px}
+.stu-past{margin-top:22px;border-top:1px solid var(--line)}
+.stu-past summary{display:flex;align-items:center;gap:8px;padding:14px 0;cursor:pointer;font:600 14px var(--kb);color:var(--muted);list-style:none}
+.stu-past summary::-webkit-details-marker{display:none}
+.stu-past summary .ti{margin-left:auto;transition:transform .2s}
+.stu-past[open] summary .ti{transform:rotate(180deg)}
+/* ร้านของฉัน */
+.stu-shop{display:flex;align-items:center;gap:16px;padding:4px 0 18px}
+.stu-shop .stu-av{flex:none;display:grid;place-items:center;width:72px;height:72px;border-radius:20px;font:700 26px var(--kd);background:var(--surface-2) center/cover no-repeat;box-shadow:inset 0 0 0 1px var(--line)}
+.stu-shop>div{flex:1;min-width:0}.stu-shop b{display:block;font:700 19px/1.3 var(--kd)}
+.stu-shop small{display:block;margin-top:3px;font-size:13.5px;color:var(--muted)}
+.stu-acts{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 6px}
+.stu-vet{display:flex;gap:14px;align-items:flex-start;padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.stu-vet b{display:block;font-size:14.5px;font-weight:600}.stu-vet small{display:block;margin-top:3px;font-size:13px;line-height:1.55;color:var(--muted)}
+.stu-list .stu-row{min-height:64px}
+.stu-list .stu-ri{background:none;box-shadow:inset 0 0 0 1px var(--line)}
+/* Studio บนคอม: แถบซ้ายคงที่ นอกพื้นที่เลื่อน */
+@media(min-width:900px){
+  .stu{display:grid;grid-template-columns:var(--sw) minmax(0,1fr)}
+  .stu-side{position:sticky;top:0;height:100vh;height:100dvh;padding:22px 12px 16px;border-right:1px solid var(--line)}
+  .stu-side .stu-brand{padding:4px 12px 22px}
+  .stu-nav{display:grid;gap:2px}
+  .stu-nav button{height:46px;padding:0 14px;border-radius:12px}
+  .stu-nav button.on{background:var(--surface)}
+  .stu-nav button.on::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:2px;background:var(--co,#E9682A)}
+  .stu-nav .stu-bd{margin-left:auto}
+  .stu-sfoot{margin-top:auto;padding-top:12px;border-top:1px solid var(--line)}
+  .stu-m{display:none}
+  .stu-crumb{display:flex}
+  .stu-top{padding:0 28px}
+  .stu-body{padding:26px 32px 64px}
+  /* หน้าย่อยของ Studio (ตั้งค่า สถิติ แก้ไขร้าน ดูหน้าร้าน) เปิดในกรอบเดิม แถบซ้ายยังอยู่ */
+  body[data-mode="tech"] .bs.full .pn,body[data-mode="tech"] .bs.store .pn{left:var(--stu-w,216px);width:auto}
+  body[data-mode="tech"] .bs .bg{left:var(--stu-w,216px)}
+}
+/* Studio บนมือถือ: แถบล่าง 4 ช่องเท่ากัน เต็มความกว้าง (ไม่ใช่แคปซูลลอย) */
+@media(max-width:899px){
+  .stu-side{position:fixed;left:0;right:0;bottom:0;z-index:50;padding-bottom:env(safe-area-inset-bottom);background:color-mix(in srgb,var(--bg) 92%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);box-shadow:0 -1px 0 var(--line)}
+  .stu-side>.stu-brand,.stu-sfoot{display:none}
+  .stu-nav{display:grid;grid-template-columns:repeat(4,1fr);height:62px}
+  .stu-nav button{flex-direction:column;justify-content:center;gap:3px;padding:0;font:500 11.5px var(--kb)}
+  .stu-nav button.on{font-weight:600}
+  .stu-nav button.on .ti{color:var(--ink)}
+  .stu-nav button.on::after{content:"";position:absolute;top:0;left:30%;right:30%;height:2px;border-radius:0 0 2px 2px;background:var(--co,#E9682A)}
+  .stu-nav .stu-bd{position:absolute;top:7px;left:calc(50% + 6px);min-width:16px;height:16px;padding:0 4px;font-size:10px;line-height:16px}
+}
+@media(prefers-reduced-motion:reduce){.stu *{transition:none!important}}
 /* ═══ หน้าร้าน (storefront) ═══ */
 .bs.store .hd{position:absolute;top:0;left:0;right:0;z-index:3;background:none;border:0}
-.bs.store .hd .ib,.bs.store .hd button{background:rgba(0,0,0,.38);color:#fff;backdrop-filter:blur(10px)}
+.bs.store .hd .ib,.bs.store .hd button{color:var(--ink);background:color-mix(in srgb,var(--bg) 74%,transparent);-webkit-backdrop-filter:blur(12px) saturate(1.3);backdrop-filter:blur(12px) saturate(1.3);box-shadow:inset 0 0 0 1px var(--line),0 6px 16px -10px rgba(0,0,0,.35)}
 .bs.store .bd{padding-top:0}
 .sf{margin:0 -16px}
 .sf-cover{position:relative;height:clamp(170px,30vh,260px);background:linear-gradient(135deg,var(--c1),color-mix(in srgb,var(--c1) 55%,#000));background-size:cover;background-position:center;cursor:zoom-in}
@@ -894,34 +1018,16 @@ body.onmap .modes{display:none}
 .sf-h{margin:20px 16px 8px;font-weight:700;font-size:14px}
 .sf-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:0 16px 8px}
 .sf-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;cursor:zoom-in}
-.sf-prev{border-radius:20px;overflow:hidden;background:var(--surface);padding:0 16px 14px}
-.sf-prev .sf-cover{cursor:default}
 .sf-ed{height:150px;border-radius:16px;display:grid;place-items:center;margin-bottom:6px;cursor:default}
 .sf-ed .btn{position:relative;z-index:1;background:rgba(0,0,0,.5);color:#fff;border:0}
 .doc .cv{position:absolute;left:4px;bottom:4px;width:26px;height:26px;border-radius:50%;border:0;display:grid;place-items:center;background:rgba(0,0,0,.5);color:#fff;font-size:14px}
 .doc .cv.on{background:#f5a623}
 .mine-tag{margin-left:6px;padding:2px 8px;border-radius:999px;font-style:normal;font-size:11px;font-weight:600;color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent)}
-.dhead #dStore{width:38px;height:38px;border-radius:12px;border:0;flex:none;display:grid;place-items:center;font-size:19px;color:var(--ink);background:var(--surface-2);cursor:pointer}
-.dhead{position:relative;overflow:hidden;isolation:isolate;display:flex;align-items:center;gap:12px;padding:14px;border-radius:20px;background:var(--surface)}
-.dhead .wf{z-index:-1}
-.dhead .sq{width:48px;height:48px;font-size:20px;font-weight:700;flex-shrink:0;background-size:cover!important;background-position:center!important}
-.dhead .who2{flex:1;min-width:0}.dhead b{display:block;font-family:var(--kd);font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dhead small{font-size:12px;color:var(--muted)}
 .sw{position:relative;display:flex;align-items:center;gap:8px;height:40px;padding:0 6px 0 12px;border-radius:20px;background:var(--surface-2);font-size:12.5px;font-weight:600;color:var(--muted);transition:background .3s,color .3s;flex-shrink:0}
 .sw i.k{width:30px;height:30px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.3);transition:transform .35s var(--spring)}
 .sw.on{background:linear-gradient(135deg,#22c55e,#15803d);color:#fff}
 .sw.on i.k{animation:ping2 2s infinite}
 .sw:active{transform:scale(.95)}
-.dstats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
-.dstats .st{background:var(--surface);border-radius:16px;padding:10px 8px;text-align:center}
-.dstats .st b{display:block;font-family:var(--kd);font-size:16px;font-weight:700;white-space:nowrap}
-.dstats .st small{font-size:10.5px;color:var(--muted)}
-.spark{grid-column:1/-1;display:flex;align-items:flex-end;gap:3px;height:54px;padding:8px 10px;border-radius:16px;background:var(--surface)}
-.spark i{flex:1;border-radius:3px 3px 1px 1px;background:var(--grad);min-height:3px;transform-origin:bottom;animation:growy .7s var(--ease) both;opacity:.9}
-.spark i.z{background:var(--surface-2)}
-.dtabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:14px 0 12px;padding:4px;border-radius:15px;background:var(--surface)}
-.dtabs button{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 2px;border-radius:11px;font-size:11.5px;font-weight:600;color:var(--muted);transition:background .25s,color .25s}
-.dtabs button .ti{font-size:19px}
-.dtabs button.on{background:var(--c-acc-soft);color:var(--accent)}
 .bdg{position:absolute;top:4px;right:calc(50% - 20px);width:9px;height:9px;border-radius:50%;background:var(--danger);box-shadow:0 0 0 2px var(--surface)}
 .bdg[hidden]{display:none}
 .fmap{height:250px;border-radius:20px;overflow:hidden;background:var(--surface-2);margin-bottom:12px;position:relative;isolation:isolate}
@@ -955,7 +1061,7 @@ html[data-theme="dark"] .fmap .leaflet-tile-pane{filter:invert(1) hue-rotate(180
 @keyframes pulseR{0%{box-shadow:0 0 0 0 rgba(220,38,38,.6)}70%{box-shadow:0 0 0 14px rgba(220,38,38,0)}100%{box-shadow:0 0 0 0 rgba(220,38,38,0)}}
 @keyframes growy{from{transform:scaleY(0)}}
 @media(min-width:1024px){.dash{display:grid;grid-template-columns:420px minmax(0,1fr);gap:0 28px;align-items:start;padding:12px 32px 60px}
-  .dhead,.dstats{grid-column:1}.dtabs,#dBody{grid-column:2}.dtabs{grid-row:1;margin-top:0}#dBody{grid-row:2/span 3}.fmap{height:380px}}
+  .fmap{height:380px}}
 /* ── ฟอร์มคำขอ: รถจากโรงรถ + หมุดล็อก ── */
 .carc{display:flex;align-items:center;gap:12px;padding:12px;border-radius:16px;background:var(--surface);box-shadow:0 0 0 1px var(--line-2)}
 .carc[hidden]{display:none}
@@ -1040,8 +1146,8 @@ body{background:var(--bg);letter-spacing:-.005em}
 .feat .fi{background:var(--surface-2)!important;color:var(--ink)!important;box-shadow:none!important}
 .feat:hover{border-color:color-mix(in srgb,var(--co) 60%,var(--line))!important}
 .feat .pulse{width:7px!important;height:7px!important;background:var(--co)!important;box-shadow:0 0 0 4px var(--co-soft)!important;animation:none!important}
-.mapw,.card,.join,.cta,.dhead,.st,.spark{background:var(--surface)!important;border:1px solid var(--line)!important;box-shadow:none!important;color:var(--ink)}
-.mapw .sq,.join .sq,.dhead .sq{background:var(--surface-2)!important;color:var(--ink)!important;box-shadow:none!important}
+.mapw,.card,.join,.cta,.st{background:var(--surface)!important;border:1px solid var(--line)!important;box-shadow:none!important;color:var(--ink)}
+.mapw .sq,.join .sq{background:var(--surface-2)!important;color:var(--ink)!important;box-shadow:none!important}
 .card:hover{border-color:color-mix(in srgb,var(--co) 55%,var(--line))!important}
 .card .price b,.card .st i{color:var(--ink)}
 .mine-tag{color:var(--co)!important;background:var(--co-soft)!important}
@@ -1087,8 +1193,6 @@ body{background:var(--bg);letter-spacing:-.005em}
 .ch-info div+div{border-top:1px solid var(--line)}
 .ch-info .ti{font-size:18px;color:var(--muted)}
 .ch-fine{margin:14px 0 0;font-size:12.5px;color:var(--faint)}
-.ch-prev{padding:0 16px 8px;border:1px solid var(--line);border-radius:20px;background:var(--bg)!important;overflow:hidden}
-.ch-prev .ch-cover{margin:0 -0px;border-radius:0}
 /* ฟอร์มแก้ไข: รูปโปรไฟล์ + สวิตช์โทร */
 .ed-av{display:flex;gap:16px;align-items:center;margin-bottom:8px}.ed-av .ch-av{width:76px;font-size:28px}
 .ed-av small{display:block;margin-top:8px;font-size:12px;color:var(--muted)}
@@ -1327,41 +1431,93 @@ body{background:var(--bg);letter-spacing:-.005em}
 
 
 /* ═══ หน้าร้าน Cendon: การ์ดใบรับรองช่าง ═══ */
-.cs{--th:#E8590C;padding:calc(64px + env(safe-area-inset-top)) 0 32px;max-width:920px;margin:0 auto}
-.cs-pv{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 0 12px;font-size:12.5px;color:var(--muted)}
-.cs-vac{display:flex;gap:10px;align-items:flex-start;margin:0 0 12px;padding:12px 14px;border-radius:14px;background:var(--surface-2);font-size:13.5px;color:var(--muted)}
-.cs-vac .ti{font-size:20px;color:var(--ink)}.cs-vac b{display:block;color:var(--ink)}
-.cs-card{position:relative;padding:22px 20px 14px;border-radius:22px;border:1px solid var(--line);background:var(--surface);overflow:hidden;
-  box-shadow:0 1px 0 rgba(255,255,255,.6) inset,0 18px 40px -28px rgba(0,0,0,.35)}
-.cs-card::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--th)}
-.cs-top{display:flex;gap:16px;align-items:center}
-.cs-av{position:relative;flex:none;width:clamp(76px,16vw,104px);aspect-ratio:1;border-radius:20px;display:grid;place-items:center;font:700 32px var(--kd);color:var(--ink);background:var(--surface-2) center/cover;border:1px solid var(--line);cursor:zoom-in}
-.cs-on{position:absolute;right:-4px;bottom:-4px;width:16px;height:16px;border-radius:50%;background:#16a34a;border:3px solid var(--surface)}
-.cs-nm{min-width:0}
-.cs-ey{display:flex;align-items:center;gap:5px;margin:0 0 4px;font:600 12px var(--kb);letter-spacing:.02em;color:var(--muted)}.cs-ey .ti{font-size:16px;color:var(--th)}
-.cs-nm h2{margin:0;font:700 clamp(22px,3.4vw,32px)/1.2 var(--kd);letter-spacing:-.02em;overflow-wrap:anywhere}
-.cs-cats{margin:6px 0 0;font-size:13.5px;color:var(--muted)}
-.cs-st{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:20px 0 0;border:1px solid var(--line);border-radius:16px;overflow:hidden}
-.cs-st div{padding:12px 10px;text-align:center;min-width:0}.cs-st div+div{border-left:1px solid var(--line)}
-.cs-st dt{display:flex;align-items:center;justify-content:center;gap:4px;font-size:11.5px;color:var(--muted);white-space:nowrap}.cs-st dt .ti{font-size:14px;color:var(--th)}
-.cs-st dd{margin:4px 0 0;font:700 19px/1.2 var(--kd);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cs-greet{margin:16px 0 0;padding-left:12px;border-left:2px solid var(--th);font-size:14.5px;line-height:1.7;color:var(--ink)}
-.cs-act{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}.cs-act .lx-cta{flex:1 1 220px}
-.cs-act [disabled]{opacity:.5;cursor:not-allowed}
-.cs-ser{display:flex;justify-content:space-between;margin:18px 0 0;padding-top:10px;border-top:1px dashed var(--line);font:600 10.5px ui-monospace,Menlo,monospace;letter-spacing:.14em;color:var(--faint)}
-@media(max-width:480px){.cs-st{grid-template-columns:repeat(2,1fr)}.cs-st div:nth-child(3){border-left:0}.cs-st div:nth-child(n+3){border-top:1px solid var(--line)}}
-.cs-tabs{display:flex;gap:4px;margin:22px 0 4px;padding:4px;border-radius:14px;background:var(--surface-2)}
-.cs-tabs button{flex:1;height:40px;border:0;border-radius:10px;background:none;color:var(--muted);font:600 14px var(--kb);cursor:pointer;transition:background .2s,color .2s}
-.cs-tabs button em{font-style:normal;margin-left:6px;font-weight:500;opacity:.7}
-.cs-tabs button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08),inset 0 -2px 0 var(--th)}
-.cs .ch-pane{padding:18px 0 24px}
-.cs-dock{position:sticky;bottom:calc(14px + env(safe-area-inset-bottom));z-index:5;display:flex;align-items:center;gap:2px;width:max-content;max-width:100%;margin:12px auto 0;padding:6px;border-radius:999px;
-  background:rgba(9,9,11,.88);color:#fff;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 14px 34px -12px rgba(0,0,0,.55)}
-.cs-dk-t{padding:0 10px 0 12px;font:700 13px var(--kd);letter-spacing:.02em;color:rgba(255,255,255,.6)}
-.cs-dock button{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:58px;height:50px;justify-content:center;border:0;border-radius:999px;background:none;color:#fff;font:600 11px var(--kb);cursor:pointer;transition:background .2s}
-.cs-dock button .ti{font-size:20px}.cs-dock button:hover{background:rgba(255,255,255,.1)}
-.cs-dock button[data-st="post"] .ti{color:var(--th)}
-@media(max-width:420px){.cs-dk-t{display:none}.cs-dock button{min-width:54px}}
+/* ══ หน้าร้าน (ลูกค้า) ══ คอลัมน์เดียว กว้างไม่เกิน 720 · เส้นคั่นแทนการ์ดซ้อนการ์ด · ส้มเป็นแค่ตราประทับ */
+.so [hidden]{display:none!important}
+.so{position:relative;max-width:720px;margin:0 auto;padding:calc(64px + env(safe-area-inset-top)) 0 28px}
+.so.has-cover{padding-top:0}
+.so-pv{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 0 14px;font-size:12.5px;color:var(--muted)}
+.so.has-cover .so-pv{position:absolute;z-index:2;top:calc(20px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);margin:0;padding:6px 12px;border-radius:999px;white-space:nowrap;color:#fff;background:rgba(9,9,11,.6);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.so-cover{height:clamp(210px,46vw,340px);margin:0 -16px;background:var(--surface-2) center/cover no-repeat;cursor:zoom-in}
+.so-id{display:flex;align-items:flex-end;gap:14px;margin-top:2px}
+.so-av{position:relative;flex:none;display:grid;place-items:center;width:84px;height:84px;border-radius:24px;font:700 32px/1 var(--kd);color:var(--ink);background:var(--surface) center/cover no-repeat;box-shadow:inset 0 0 0 1px var(--line)}
+.so-av.img{cursor:zoom-in;box-shadow:none}
+.has-cover .so-id{align-items:flex-start}.has-cover .so-nm{padding-top:12px}.has-cover .so-share{align-self:flex-start;margin-top:10px}
+.has-cover .so-av{margin-top:-42px;box-shadow:0 0 0 4px var(--bg),0 12px 26px -16px rgba(0,0,0,.5)}
+.has-cover .so-av:not(.img){box-shadow:inset 0 0 0 1px var(--line),0 0 0 4px var(--bg)}
+.so-nm{flex:1;min-width:0;padding-bottom:2px}
+.so-nm h1{margin:0;font:700 clamp(23px,4vw,30px)/1.22 var(--kd);letter-spacing:-.015em;overflow-wrap:anywhere}
+.so-sub{display:flex;flex-wrap:wrap;gap:2px 8px;margin:6px 0 0;font-size:13.5px;color:var(--muted)}
+.so-sub>span+span::before{content:"·";margin-right:8px;color:var(--faint)}
+.so-cats{margin:3px 0 0;font-size:13px;color:var(--muted)}
+.so-rt{display:inline-flex;align-items:center;gap:4px}.so-rt .ti{font-size:15px;color:#f5b301}.so-rt b{color:var(--ink);font-weight:600}
+.so-share{flex:none;align-self:center;display:grid;place-items:center;width:44px;height:44px;border-radius:14px;font-size:20px;color:var(--ink);background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);transition:background .15s}
+.so-share:hover{background:var(--surface-2)}
+.so-note{display:flex;gap:12px;align-items:flex-start;margin:16px 0 0;padding:12px 14px;border-radius:14px;font-size:13.5px;line-height:1.55;color:var(--muted);background:var(--surface-2)}
+.so-note>.ti{flex:none;font-size:20px;color:var(--ink)}.so-note b{display:block;color:var(--ink);font-weight:600}
+.so-note.test{background:color-mix(in srgb,var(--co,#E9682A) 9%,var(--surface))}
+.so-facts{display:grid;grid-template-columns:1fr 1fr;margin:18px 0 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.so-facts>div{min-width:0;padding:13px 0}
+.so-facts>div+div{padding-left:16px;border-left:1px solid var(--line)}
+.so-facts dt{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)}.so-facts dt .ti{font-size:16px}
+.so-facts dd{display:flex;align-items:center;gap:4px;margin:4px 0 0;font-size:14.5px;font-weight:500;color:var(--ink)}
+.so-hours[data-hours]{cursor:pointer}
+.so-chev{margin-left:auto;font-size:16px;color:var(--faint);transition:transform .2s}
+.open>.so-chev,.open dd .so-chev,.so-hours.open .so-chev{transform:rotate(180deg)}
+.so-open::before{content:"";display:inline-block;width:7px;height:7px;margin-right:7px;border-radius:50%;vertical-align:1px;background:var(--faint)}
+.so-open.on::before{background:#22a06b}
+.so-week{display:grid;gap:2px;margin:0;padding:10px 0 12px;border-bottom:1px solid var(--line);font-size:13.5px}
+.so-week div{display:flex;justify-content:space-between;max-width:280px;color:var(--muted)}.so-week dd{margin:0}
+.so-week .now{color:var(--ink);font-weight:600}
+/* ทีมงานตรวจแล้ว: ตราประทับดำ + โล่ส้ม (ชุดเดียวกับการ์ดความปลอดภัยในห้องแชต) */
+.so-vet{display:flex;align-items:center;gap:14px;width:100%;margin:0;padding:15px 0;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);text-align:left;font:inherit;cursor:pointer}
+.so-vet.static{cursor:default}
+.so-vi{flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:50%;font-size:21px;color:var(--co,#E9682A);background:linear-gradient(160deg,#1C1C20,#09090B);box-shadow:inset 0 1px 0 rgba(255,255,255,.14)}
+html[data-theme="dark"] .so-vi{box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+.so-vet>span{flex:1;min-width:0}.so-vet b{display:block;font-size:14.5px;font-weight:600}
+.so-vet small{display:block;margin-top:2px;font-size:13px;color:var(--muted);line-height:1.5}
+.so-vet small.so-vd{font-size:12px;color:var(--faint)}
+.so-vet.open .so-chev{transform:rotate(180deg)}
+.so-vetd{padding:4px 0 14px 58px;border-bottom:1px solid var(--line)}
+.so-vetd ul{display:grid;gap:12px;margin:0;padding:0;list-style:none}
+.so-vetd li{display:flex;gap:10px;font-size:13.5px;line-height:1.55;color:var(--muted)}.so-vetd li .ti{flex:none;font-size:18px;color:var(--ink);margin-top:1px}
+.so-vetd li b{display:block;color:var(--ink);font-weight:600}
+.so-vetd p{margin:12px 0 0;font-size:12.5px;line-height:1.6;color:var(--faint)}
+.so-about{margin:16px 0 0;font-size:15px;line-height:1.75;white-space:pre-wrap;color:var(--ink)}
+.so-about2{margin:0 0 12px;font-size:14.5px;line-height:1.75;white-space:pre-wrap}
+.so-sec{margin-top:26px;padding-top:22px;border-top:1px solid var(--line)}
+.so-sec h2{margin:0 0 12px;font:700 18px/1.3 var(--kd)}
+.so-svcs{display:grid}
+.so-svc{display:flex;align-items:center;gap:14px;width:100%;padding:11px 0;border:0;border-bottom:1px solid var(--line-2);background:none;color:var(--ink);text-align:left;font:inherit;cursor:pointer}
+.so-svc:last-child{border-bottom:0}
+.so-th{flex:none;display:grid;place-items:center;width:64px;height:64px;border-radius:14px;font-size:26px;color:var(--muted);background:var(--surface-2) center/cover no-repeat}
+.so-st{flex:1;min-width:0}.so-st b{display:block;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.so-st small{display:block;margin-top:3px;font-size:13px;color:var(--muted)}.so-st em{font-style:normal;font:700 15px var(--kd);color:var(--ink)}
+.so-svc>.ti{color:var(--faint)}
+.so-svc:hover .so-st b{text-decoration:underline;text-underline-offset:3px}
+.so-fine{margin:10px 0 0;font-size:12.5px;line-height:1.55;color:var(--faint)}
+.so-empty{margin:0;padding:6px 0;font-size:14px;line-height:1.6;color:var(--muted)}
+.so-err{display:flex;align-items:center;gap:10px;margin:0;font-size:14px;color:var(--muted)}.so-err .lx-gh{height:36px;margin-left:auto}
+.so-dl{display:grid;margin:0}
+.so-dl div{display:grid;grid-template-columns:minmax(120px,36%) 1fr;gap:12px;padding:11px 0;border-bottom:1px solid var(--line-2);font-size:14px;line-height:1.55}
+.so-dl div:last-child{border-bottom:0}
+.so-dl dt{display:flex;align-items:center;gap:8px;color:var(--muted)}.so-dl dt .ti{font-size:17px}.so-dl dd{margin:0}
+.so-pics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.so-pics img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;background:var(--surface-2);cursor:zoom-in}
+.so-care ul{display:grid;gap:4px;margin:0;padding:0;list-style:none}
+.so-care li{display:flex;gap:12px;padding:7px 0;font-size:14px;line-height:1.6;color:var(--ink)}.so-care li .ti{flex:none;font-size:19px;color:var(--muted);margin-top:1px}
+.so-ser{display:flex;justify-content:space-between;margin:26px 0 0;padding-top:10px;border-top:1px dashed var(--line);font:600 10.5px ui-monospace,Menlo,monospace;letter-spacing:.14em;color:var(--faint)}
+/* แถบล่าง: ทักช่าง · โทร · ขอราคา */
+.so-ft{display:flex;align-items:center;gap:8px;width:100%;max-width:720px;margin:0 auto}
+.so-ft .lx-gh{height:50px;flex:0 0 auto;padding:0 16px}
+.so-ft .lx-gh.lx-ic{width:50px;padding:0;justify-content:center}
+.so-ft .lx-cta{flex:1;height:50px}
+.so-ft .lx-cta:disabled{opacity:.5}
+.so-ft.pv{justify-content:center;gap:8px;min-height:50px;font-size:13px;color:var(--muted)}
+.bs.store .hd h3{opacity:0;transition:opacity .2s}
+.bs.store.so-up .hd{background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:blur(16px) saturate(1.2);backdrop-filter:blur(16px) saturate(1.2);box-shadow:0 1px 0 var(--line)}
+.bs.store.so-up .hd h3{opacity:1}
+
+@media(min-width:760px){.so-cover{margin:0;border-radius:0 0 22px 22px}.so-av{width:96px;height:96px}.has-cover .so-av{margin-top:-48px}}
 /* Studio → ตั้งค่า */
 .ss{max-width:640px;margin:0 auto;padding-top:calc(64px + env(safe-area-inset-top))}
 .ss-g{padding:18px 0;border-bottom:1px solid var(--line)}.ss-g:last-of-type{border-bottom:0}
@@ -1514,7 +1670,6 @@ body{background:var(--bg);letter-spacing:-.005em}
 @media(max-width:560px){.ch-svc{grid-template-columns:1fr!important}}
 .ch-add{display:flex;align-items:center;justify-content:center;gap:8px;min-height:120px;border-radius:16px;border:1.5px dashed var(--line);background:none;color:var(--muted);font:600 14px var(--kb);cursor:pointer;transition:border-color .2s,color .2s}
 .ch-add:hover{border-color:var(--co);color:var(--ink)}.ch-add .ti{font-size:20px;color:var(--co)}
-.ch-cap{margin:14px 0 0;font-size:12.5px;color:var(--muted)}
 .rv-sum{display:flex;align-items:center;gap:18px;padding:4px 0 18px;max-width:760px}
 .rv-big{font:700 40px/1 var(--kd)}.rv-sum small{display:block;color:var(--muted);font-size:13px;margin-top:4px}
 .rv-st{color:#f5b301;letter-spacing:1px;font-size:14px}
@@ -1835,18 +1990,35 @@ a.mtab{text-decoration:none}
   <div class="lx-cards" id="catList"></div>
 </section>
 
-<section class="view dash" id="vTech" hidden>
-  <div class="studio-bar"><button class="btn s" onclick="setMode('customer')"><i class="ti ti-arrow-left"></i></button><b>Studio · งาน</b></div>
-  <div class="dhead e3" id="dHead"></div>
-  <div class="dstats" id="dStats"></div>
-  <div class="dtabs" id="dTabs" role="tablist">
-    <button data-t2="find" class="on"><i class="ti ti-radar-2"></i><span data-t="หางาน|Find work">หางาน</span><i class="bdg" id="findDot" hidden></i></button>
-    <button data-t2="queue"><i class="ti ti-list-check"></i><span data-t="คิวงาน|Queue">คิวงาน</span><i class="bdg" id="queueDot" hidden></i></button>
-    <button data-t2="shop"><i class="ti ti-building-store"></i><span data-t="ร้านของฉัน|My shop">ร้านของฉัน</span></button>
-    <button data-t2="posts"><i class="ti ti-tag"></i><span>บริการของฉัน</span></button>
-    <button data-t2="ai"><i class="ti ti-sparkles"></i><span data-t="AI แนะนำ|AI coach">AI แนะนำ</span></button>
+<!-- ═══ Cendon Studio (มุมช่าง) — กรอบคงที่: คอม = แถบซ้าย 4 เมนู · มือถือ = แถบล่าง 4 ช่อง
+     เปลี่ยนหน้าแล้วกรอบไม่ขยับ โหลดเฉพาะเนื้อหา · เมนูอยู่ที่เดิมเสมอ ═══ -->
+<section class="view stu" id="vTech" hidden>
+  <aside class="stu-side">
+    <a class="stu-brand" href="/work" data-sp="jobs"><svg class="cmk stu-mk" aria-hidden="true" viewBox="-6.0 -6.0 94.8 112.0" ><path fill="currentColor" d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg><span>Cendon<small>Studio</small></span></a>
+    <nav class="stu-nav" id="stuNav" aria-label="Studio">
+      <button type="button" data-sp="jobs"><i class="ti ti-clipboard-list"></i><span data-t="งาน|Jobs">งาน</span><em class="stu-bd" id="bdJobs" hidden></em></button>
+      <button type="button" data-sp="msgs"><i class="ti ti-message-circle"></i><span data-t="ข้อความ|Messages">ข้อความ</span><em class="stu-bd" id="bdMsgs" hidden></em></button>
+      <button type="button" data-sp="svc"><i class="ti ti-tool"></i><span data-t="บริการ|Services">บริการ</span></button>
+      <button type="button" data-sp="shop"><i class="ti ti-building-store"></i><span data-t="ร้านของฉัน|My shop">ร้านของฉัน</span></button>
+    </nav>
+    <div class="stu-sfoot">
+      <button type="button" id="stuSet"><i class="ti ti-settings"></i><span data-t="ตั้งค่า|Settings">ตั้งค่า</span></button>
+      <button type="button" id="stuExit"><i class="ti ti-arrow-left"></i><span data-t="กลับสู่ Cendon|Back to Cendon">กลับสู่ Cendon</span></button>
+    </div>
+  </aside>
+  <div class="stu-main">
+    <header class="stu-top">
+      <button type="button" class="stu-ib stu-m" id="stuExitM" aria-label="กลับสู่ Cendon"><i class="ti ti-arrow-left"></i></button>
+      <span class="stu-brand stu-m">Cendon<small>Studio</small></span>
+      <p class="stu-crumb"><span>Studio</span><i class="ti ti-chevron-right"></i><b id="stuCrumb">งานของฉัน</b></p>
+      <a class="stu-ib" href="/handbook" aria-label="คู่มือช่าง" title="คู่มือช่าง"><i class="ti ti-help-circle"></i></a>
+      <button type="button" class="stu-me" id="stuMe" aria-label="ร้านของฉัน"></button>
+    </header>
+    <div class="stu-body">
+      <div id="dHead"></div>
+      <div id="dBody"></div>
+    </div>
   </div>
-  <div id="dBody"></div>
 </section>
 
 <section class="view mapv" id="vMap" hidden>
@@ -2383,7 +2555,7 @@ function paintSheet(o){
   $("bsB").innerHTML=(o.body||"")+'<p class="err" id="err" role="alert"></p>';
   $("bsF").innerHTML=o.foot||"";
   $("bsBack").hidden=!SH.stack.length;
-  bs.classList.toggle("full",!!o.full);bs.classList.toggle("store",!!o.store);
+  bs.classList.toggle("full",!!o.full);bs.classList.toggle("store",!!o.store);bs.classList.remove("so-up");
   $("bsB").scrollTop=0;
   if(o.mount)o.mount($("bsB"),$("bsF"),o);
 }
@@ -2901,7 +3073,7 @@ function openGig(id){
         const h=b.querySelector("#gdRev");if(!h)return;
         h.innerHTML=`<h2>รีวิวจากลูกค้า</h2>${reviewsHTML(t,list,3)}${list.length>3?`<button class="lx-gh gd-more" type="button">${T(`ดูรีวิวทั้งหมด ${list.length} รีวิว`,`See all ${list.length} reviews`)}</button>`:""}`;
         h.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z));
-        const m=h.querySelector(".gd-more");if(m)m.onclick=()=>{openTech(t.id);const r=document.querySelector('.cs-tabs [data-ct="rev"]');if(r)r.click()};
+        const m=h.querySelector(".gd-more");if(m)m.onclick=()=>{openTech(t.id);const o=SH.cur;if(o&&o.setTab)o.setTab("rev")};
       });
     }});
 }
@@ -2923,7 +3095,7 @@ function gigForm(g){
   if(!(g&&g.id)&&myGigs().length>=GIG_MAX)return toast(T(`โพสต์บริการได้ร้านละ ${GIG_MAX} รายการ — แก้หรือลบรายการเดิมแทน`,`Up to ${GIG_MAX} services per shop — edit or delete one instead`),"ti-info-circle");
   g=g||{photos:[],cats:[],brands:[]};
   const F2={keep:[...(g.photos||[])],add:[],cats:[...(g.cats||[])]};
-  sheet({push:true,slug:g.id?"edit":"post",full:true,title:g.id?"แก้ไขโพสต์":"โพสต์ใหม่",body:`
+  sheet({push:true,url:g.id?undefined:stuUrl("post"),slug:g.id?"edit":"post",full:true,title:g.id?"แก้ไขโพสต์":"โพสต์ใหม่",body:`
     <p class="h4">รูป <small style="font-weight:400;color:var(--muted)">· แนวนอน 16:9 ครอปในแอปได้ · ใส่ได้ไม่จำกัด รูปแรกเป็นปก</small></p><div class="phg" id="gPh"></div><input type="file" id="gFile" accept="image/*" multiple hidden data-crop="16:9" data-crop-w="1920" data-crop-exact data-crop-title="ครอปรูป 16:9"/>
     <label class="fld"><span>หัวข้อ</span><input class="inp" id="gT" maxlength="100" value="${esc(g.title||"")}" placeholder="เช่น ล้างแอร์ครบชุด ถอดตู้ล้าง พร้อมเติมน้ำยา"/></label>
     <label class="fld"><span>ราคา (บาท)</span><input class="inp" id="gP" type="number" inputmode="numeric" value="${g.price||""}" placeholder="1200"/></label>
@@ -2956,14 +3128,24 @@ function gigForm(g){
       });
     }});
 }
+/* ── บริการ: รายการบริการพร้อมราคาของร้าน (แถวเดียวกับที่ลูกค้าเห็นบนหน้าร้าน) ── แตะเพื่อดู/แก้ไข/ลบ */
 async function tabPosts(){
-  const B=$("dBody");B.innerHTML=`<div id="pTop"></div><div class="lx-gigs ch-svc" id="pList"><div class="skel"></div></div><p class="ch-cap">${T(`โพสต์บริการพร้อมราคาได้ร้านละ ${GIG_MAX} รายการ · ลูกค้าดูความน่าเชื่อถือจากรีวิวที่ลูกค้าจริงเขียน (แนบรูปได้)`,`Each shop can post up to ${GIG_MAX} fixed-price services · customers judge trust from reviews by real customers (with photos)`)}</p>`;
-  let mine=[];try{mine=(await api("/api/tech/gigs?mine=1")).gigs||[]}catch(e){}
+  const B=$("dBody");B.innerHTML='<div class="skel"></div><div class="skel" style="margin-top:10px"></div>';
+  let mine;try{mine=(await api("/api/tech/gigs?mine=1")).gigs||[]}
+  catch(e){if(DT!=="posts")return;B.innerHTML=errBar(e.message,"pRetry");$("pRetry").onclick=()=>tabPosts();return}
+  if(DT!=="posts"||MODE!=="tech")return;
   GIGS=[...(GIGS||[]).filter(g=>!mine.some(m=>m.id===g.id)),...mine];
-  $("pTop").innerHTML=mine.length<GIG_MAX?`<button class="lx-cta w" id="pNew" style="width:100%;margin-bottom:14px"><i class="ti ti-plus"></i>เพิ่มบริการ (${mine.length}/${GIG_MAX})</button>`:"";
+  const t=myShop();mine=mine.filter(g=>!g.tech||!t||g.tech.id===t.id);
+  const add=mine.length<GIG_MAX?`<button class="lx-cta" type="button" id="pNew" style="height:46px;padding:0 20px"><i class="ti ti-plus"></i>${T(`เพิ่มบริการ (${mine.length}/${GIG_MAX})`,`Add a service (${mine.length}/${GIG_MAX})`)}</button>`:"";
+  B.innerHTML=mine.length?`<section class="stu-sec" style="margin-top:0">${mine.map(g=>{const ph=(g.photos||[])[0],c=RAIL.find(x=>x.id===gigCat(g));
+      return `<button class="stu-row" type="button" data-g="${g.id}"><span class="stu-ri so-th" style="width:64px;height:64px;border-radius:14px${ph?`;background-image:url('${img(ph)}')`:""}">${ph?"":`<i class="ti ${c&&c.ic||"ti-tool"}"></i>`}</span>
+        <span class="stu-rb"><b class="nt">${esc(g.title)}</b><small>${T("เริ่มต้น","From")} <b style="display:inline;font:700 15px var(--kd);color:var(--ink)">฿${money(g.price)}</b></small><span class="stu-rs">${c?esc(c.th):""}</span></span>
+        <span class="stu-rr"><i class="ti ti-chevron-right"></i></span></button>`}).join("")}</section>
+      <div style="margin-top:14px">${add}</div>
+      ${mine.length>=GIG_MAX?`<p class="so-fine">${T(`ลงครบ ${GIG_MAX} บริการแล้ว — ลบหรือแก้ไขบริการเดิมเพื่อเปลี่ยน`,`You've listed ${GIG_MAX} services — edit or delete one to change`)}</p>`:""}`
+    :`<div class="stu-empty"><i class="ti ti-tool"></i><b>${T("ยังไม่มีบริการ","No services yet")}</b><p>${T("ลงบริการพร้อมราคาเริ่มต้น แล้วจะขึ้นหน้าแรกและหน้าร้านให้ลูกค้าเห็น","List a service with a starting price — it shows on the home page and your storefront")}</p>${add}</div>`;
+  B.querySelectorAll("[data-g]").forEach(x=>x.onclick=()=>openGig(x.dataset.g));
   if($("pNew"))$("pNew").onclick=()=>gigForm();
-  $("pList").innerHTML=mine.length?mine.map(gigCard).join(""):`<div class="empty"><b>ยังไม่มีบริการ</b>โพสต์บริการพร้อมราคา แล้วจะขึ้นหน้าแรกให้ลูกค้าเห็น</div>`;
-  $("pList").querySelectorAll(".lx-gc").forEach(b=>b.onclick=()=>openGig(b.dataset.g));
 }
 function drawHome(){
   drawMyCar();if(!$("hQuick").childNodes.length)drawQuick();
@@ -3099,9 +3281,10 @@ Nav.route({path:"messages",name:"messages",open:async()=>{if(await needU())retur
 Nav.route({path:":id",parent:"messages",test:p=>/^[0-9a-f-]{36}$/i.test(p.id),open:p=>openThread(p.id)});
 Nav.route({path:"chat",parent:"job",open:()=>{if(JOB&&SH.cur&&SH.cur.job)openChat(JOB)}});
 Nav.route({path:"studio",name:"studio",open:async()=>{if(await needU())openStudio()}});
-Nav.route({path:":k",parent:"studio",test:p=>["settings","stats","edit","post"].includes(p.k),open:p=>{if(!(ME&&ME.technician&&SH.cur&&SH.cur.shop===ME.technician.id))return;({settings:studioSettings,stats:studioStats,edit:openShopEdit,post:()=>gigForm()})[p.k]()}});
+/* /studio/<หน้า> — เปิด Studio แล้วเปิดหน้าย่อยนั้น (ลิงก์เดิมยังใช้ได้) */
+Nav.route({path:":k",parent:"studio",test:p=>["settings","stats","edit","post","qr"].includes(p.k),open:p=>{if(!myShop()||MODE!=="tech")return;({settings:studioSettings,stats:studioStats,edit:openShopEdit,post:()=>gigForm(),qr:shopQr})[p.k]()}});
 Nav.route({path:"work",name:"work",open:async()=>{if(await needU()&&modesAvail().includes("tech"))setMode("tech")}});
-Nav.route({path:":t",parent:"work",test:p=>["find","queue","shop","ai","posts"].includes(p.t),open:p=>{if(MODE==="tech")setTab2(p.t)}});
+Nav.route({path:":t",parent:"work",test:p=>["find","queue","messages","shop","ai","posts"].includes(p.t),open:p=>{if(MODE==="tech")setTab2(p.t)}});
 Nav.route({path:"staff",open:async()=>{if(await needU()&&modesAvail().includes("staff"))setMode("staff")}});
 Nav.route({path:"join",open:async()=>{if(await needU())return openJoin()}});
 Nav.route({path:"quotes",open:async()=>{await READY.techs;if(await needU())openMulti("","")}});
@@ -3168,72 +3351,123 @@ function reviewsHTML(t,list,lim){
    ลูกค้า → ขอราคา/ทัก/โทร ในการ์ด · เจ้าของ → แถบ Studio ลอยด้านล่าง (โพสต์ แก้ไข ตั้งค่า สถิติ งาน) */
 const THEME={orange:"#E8590C",blue:"#2563eb",green:"#16a34a",violet:"#7c3aed",rose:"#e11d48",slate:"#475569",amber:"#d97706",teal:"#0d9488"};
 const thColor=t=>THEME[t&&t.theme]||THEME.orange;
-/* ป้ายตรวจแยกเรื่อง พร้อมวันที่ — บอกตรง ๆ ว่าทีมงานตรวจอะไรไปแล้ว (ยืนยันตัวตน ≠ รับรองฝีมือ ≠ รับประกันความปลอดภัย) */
-function vetBadges(t){
-  const v=t.vetting;
-  if(!t.verified)return t.test?['<span><i class="ti ti-flask"></i>ร้านทดสอบของทีมงาน</span>']:[];
-  if(!v)return['<span><i class="ti ti-rosette-discount-check"></i>ผ่านการตรวจโดยทีมงาน</span>'];
-  const SH={site_visit:"ตรวจสถานที่จริงแล้ว",video_call:"ตรวจอู่ผ่านวิดีโอคอลแล้ว",document_review:"ตรวจหลักฐานสถานที่แล้ว"},SK={interview:"สัมภาษณ์",certificate_review:"ใบรับรอง"};
-  const cats=(v.cats||[]).map(c=>CAT[c]&&CAT[c].th).filter(Boolean);
-  return [v.identity&&'<span><i class="ti ti-id-badge-2"></i>ยืนยันตัวตนแล้ว</span>',v.phone&&'<span><i class="ti ti-phone-check"></i>โทรยืนยันแล้ว</span>',
-    v.shop&&`<span><i class="ti ti-building-store"></i>${SH[v.shop]||"ตรวจสถานที่แล้ว"}</span>`,
-    cats.length&&`<span><i class="ti ti-tool"></i>ตรวจทักษะ: ${esc(cats.join(" · "))}${SK[v.skills]?` (${SK[v.skills]})`:""}</span>`,
-    v.at&&`<span class="cs-vd">ตรวจเมื่อ ${new Date(v.at).toLocaleDateString(LOC,{day:"numeric",month:"short",year:"numeric"})}</span>`].filter(Boolean);
+/* ═══ หน้าร้าน (ลูกค้า) — หน้าเดียวเลื่อนลง ไม่มีแท็บซ่อนข้อมูล ═══
+   ลำดับตามสิ่งที่คนใช้ตัดสินใจไว้ใจร้าน: รูปร้านจริง → ใครคือร้านนี้ (ชื่อ ที่ตั้ง เวลา) → ทีมงานตรวจอะไรแล้ว (ข้อเท็จจริง ไม่ใช่ตราลอย ๆ)
+   → บริการและราคาเริ่มต้น → รีวิวจากงานจริง → ข้อมูลร้าน → สิ่งที่ระบบดูแลให้ (เฉพาะที่ทำจริง) · ปุ่ม ทักช่าง/ขอราคา อยู่ขอบล่าง
+   เจ้าของร้านเปิดจาก Studio = โหมดตัวอย่าง (ไม่มีปุ่มแก้ไขปน หน้าเหมือนที่ลูกค้าเห็นทุกอย่าง) */
+const DN_TH=["จ.","อ.","พ.","พฤ.","ศ.","ส.","อา."],DN_EN=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const dnOf=i=>(TH?DN_TH:DN_EN)[i];
+const hm=x=>{const [h,m]=String(x||"0:0").split(":").map(Number);return (h||0)*60+(m||0)};
+/* เปิดอยู่ไหมตอนนี้ — คิดจากตารางเวลาที่ร้านตั้งเอง (week[0]=จันทร์) ไม่มีตารางก็ไม่เดา */
+function openNow(t){
+  const W=t.week;if(!(W&&W.some(w=>w&&w.on)))return null;
+  const d=new Date(),i=(d.getDay()+6)%7,w=W[i],n=d.getHours()*60+d.getMinutes();
+  if(w&&w.on&&n>=hm(w.open)&&n<hm(w.close))return {on:true,txt:T(`เปิดอยู่ · ถึง ${w.close}`,`Open · until ${w.close}`)};
+  if(w&&w.on&&n<hm(w.open))return {on:false,txt:T(`ปิด · เปิด ${w.open}`,`Closed · opens ${w.open}`)};
+  for(let k=1;k<=7;k++){const j=(i+k)%7,x=W[j];if(x&&x.on)return {on:false,txt:k===1?T(`ปิด · พรุ่งนี้ ${x.open}`,`Closed · tomorrow ${x.open}`):T(`ปิด · เปิด${dnOf(j)} ${x.open}`,`Closed · ${dnOf(j)} ${x.open}`)}}
+  return null;
 }
+/* ทีมงานตรวจอะไรแล้ว — แสดงเฉพาะจากข้อมูล vetting จริง (ยืนยันตัวตน ≠ รับรองฝีมือ ≠ รับประกันผลงาน) */
+function vetFacts(t){
+  const v=t.vetting;if(!t.verified||!v)return [];
+  const SH={site_visit:T("ทีมงานไปดูอู่จริง","Staff visited the shop in person"),video_call:T("ทีมงานดูอู่ผ่านวิดีโอคอล","Staff inspected the shop on a video call"),document_review:T("ทีมงานตรวจเอกสารที่ตั้งร้าน","Staff reviewed the shop's address documents")};
+  const SK={interview:T("สัมภาษณ์งานช่าง","a technical interview"),certificate_review:T("ตรวจใบรับรอง","certificate review")};
+  const cats=(v.cats||[]).map(c=>CAT[c]&&CAT[c].th).filter(Boolean);
+  return [
+    v.identity&&["ti-id-badge-2",T("ตัวตน","Identity"),T("ทีมงานตรวจบัตรประชาชนของช่างแล้ว (ลูกค้าไม่เห็นเลขบัตร)","Staff checked the mechanic's national ID (never shown to customers)")],
+    v.phone&&["ti-phone-check",T("เบอร์โทร","Phone"),T("ทีมงานโทรคุยกับช่างที่เบอร์นี้จริง","Staff called and spoke with the mechanic on this number")],
+    v.shop&&["ti-building-store",T("สถานที่","Shop"),SH[v.shop]||T("ทีมงานตรวจสถานที่แล้ว","Staff checked the shop location")],
+    cats.length&&["ti-tool",T("ฝีมือ","Skills")+" "+cats.join(" · "),T(`ตรวจทักษะงาน${cats.join(" · ")}${SK[v.skills]?" ด้วย"+SK[v.skills]:""}`,`Skills in ${cats.join(", ")} checked${SK[v.skills]?" by "+SK[v.skills]:""}`)]
+  ].filter(Boolean);
+}
+const fmtDay=at=>new Date(at).toLocaleDateString(LOC,{day:"numeric",month:"short",year:"numeric"});
 function storeHTML(t,mine){
-  const d=mine?null:km(HERE,t),av=t.avatar||t.cover;
-  const pics=(t.photos||[]).filter(p=>p!==t.avatar);
-  const DN=TH?["จ","อ","พ","พฤ","ศ","ส","อา"]:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],wk=t.week&&t.week.some(w=>w.on)?t.week.map((w,i)=>w.on?`${DN[i]} ${w.open}–${w.close}`:"").filter(Boolean).join(" · "):"";
-  const info=[wk?["ti-clock","เวลาทำการ",wk]:t.hours&&["ti-clock","เวลาทำการ",esc(t.hours)],t.address&&["ti-building-store","ที่อยู่ร้าน",esc(t.address)],t.area&&["ti-map-pin","พื้นที่",esc(t.area)],
-    t.radius&&["ti-radar-2","รัศมีรับงาน",`${t.radius} ${T("กม.","km")}`],(t.brands2||[]).length&&["ti-car","ยี่ห้อที่ถนัด",esc(t.brands2.join(", "))],t.from&&["ti-cash","ราคาเริ่มต้น","฿"+money(t.from)],
-    t.line&&["ti-brand-line","LINE",esc(t.line)],t.facebook&&["ti-brand-facebook","Facebook",`<a href="${esc(/^https?:/.test(t.facebook)?t.facebook:"https://facebook.com/"+t.facebook)}" target="_blank" rel="noopener">${T("เปิดเพจ","Open page")}</a>`]].filter(Boolean);
+  const d=mine?null:km(HERE,t),av=t.avatar,cover=t.cover||(t.photos||[]).find(p=>p!==t.avatar)||null;
+  const pics=(t.photos||[]).filter(p=>p!==t.avatar&&p!==cover);
+  const v=t.vacation,on=openNow(t),facts=vetFacts(t);
   const cats=(t.cats||[]).map(c=>CAT[c]&&CAT[c].th).filter(Boolean);
-  const stat=[[t.reviewCount?Number(t.rating).toFixed(1):"ใหม่",t.reviewCount?`${t.reviewCount} รีวิว`:"ยังไม่มีรีวิว","ti-star-filled"],[t.jobs||0,"งานสำเร็จ","ti-circle-check"],
-    [t.warranty?t.warranty+" วัน":"–","รับประกันงาน","ti-shield-check"],d!=null?[distTxt(d),"จากคุณ","ti-map-pin"]:[t.mobile?"ได้":"ไม่","ไปหาถึงที่","ti-truck"]];
   const svc=(GIGS||[]).filter(g=>g.tech&&g.tech.id===t.id).sort((a,b)=>b.createdAt-a.createdAt).slice(0,GIG_MAX);
-  const first=svc.length||mine?"svc":"rev",v=t.vacation;
-  return `<div class="cs" style="--th:${thColor(t)}">
-    ${mine?`<p class="cs-pv"><i class="ti ti-eye"></i>${T("ตัวอย่าง — ลูกค้าเห็นหน้านี้แบบนี้","Preview — this is what customers see")}</p>`:""}
-    ${v?`<p class="cs-vac"><i class="ti ti-beach"></i><span><b>ร้านปิดชั่วคราว${v.until?" ถึง "+new Date(v.until).toLocaleDateString(LOC,{day:"numeric",month:"short"}):""}</b>${v.note?esc(v.note):""}</span></p>`:""}
-    <section class="cs-card">
-      <div class="cs-top">
-        <span class="cs-av"${av?` style="background-image:url('${img(av)}')" data-z="${img(av)}"`:""}>${av?"":initial(t.shop||t.name)}${t.online&&!v?'<i class="cs-on" title="เปิดรับงาน"></i>':""}</span>
-        <div class="cs-nm">
-          <p class="cs-ey">${t.verified?`<i class="ti ti-rosette-discount-check-filled"></i>ช่างที่ผ่านการคัดเลือก`:"ร้านช่าง"}${t.test?" · ทีมงาน":""}</p>
-          <h2 class="nt">${esc(t.shop||t.name)}</h2>
-          ${cats.length?`<p class="cs-cats">${cats.map(esc).join(" · ")}</p>`:""}
-        </div>
+  const avHTML=`<span class="so-av${av?" img":""}"${av?` style="background-image:url('${img(av)}')" data-z="${img(av)}"`:""}>${av?"":esc(initial(t.shop||t.name))}</span>`;
+  const rate=t.reviewCount?`<span class="so-rt"><i class="ti ti-star-filled"></i><b>${Number(t.rating).toFixed(1)}</b> · ${T(t.reviewCount+" รีวิว",t.reviewCount+" reviews")}</span>`:`<span class="so-rt">${T("ร้านใหม่ · ยังไม่มีรีวิว","New shop · no reviews yet")}</span>`;
+  const where=[t.area,d!=null?T(`ห่างจากคุณ ${distTxt(d)}`,`${distTxt(d)} away`):""].filter(Boolean);
+  const weekRows=(t.week||[]).map((w,i)=>`<div class="${(new Date().getDay()+6)%7===i?"now":""}"><dt>${dnOf(i)}</dt><dd>${w&&w.on?`${w.open}–${w.close}`:T("ปิด","Closed")}</dd></div>`).join("");
+  const info=[t.address&&["ti-map-pin",T("ที่อยู่ร้าน","Address"),esc(t.address)],t.radius&&["ti-radar-2",T("รัศมีรับงาน","Service radius"),`${t.radius} ${T("กม.","km")}`],
+    ["ti-truck",T("ไปหาถึงที่","Comes to you"),t.mobile?T("ได้ หรือนำรถเข้าร้าน","Yes, or bring the car in"):T("นำรถเข้าร้าน","Bring the car to the shop")],
+    t.warranty&&["ti-shield",T("รับประกันงาน","Work warranty"),T(`${t.warranty} วัน`,`${t.warranty} days`)],(t.brands2||[]).length&&["ti-car",T("ยี่ห้อที่ถนัด","Brands"),esc(t.brands2.join(", "))],
+    t.years&&["ti-award",T("ประสบการณ์","Experience"),T(`${t.years} ปี`,`${t.years} years`)],t.line&&["ti-brand-line","LINE",esc(t.line)],
+    t.facebook&&["ti-brand-facebook","Facebook",`<a href="${esc(/^https?:/.test(t.facebook)?t.facebook:"https://facebook.com/"+t.facebook)}" target="_blank" rel="noopener">${T("เปิดเพจ","Open page")}</a>`]].filter(Boolean);
+  return `<article class="so${cover?" has-cover":""}" style="--th:${thColor(t)}">
+    ${mine?`<p class="so-pv"><i class="ti ti-eye"></i>${T("ตัวอย่าง — ลูกค้าเห็นหน้าร้านของคุณแบบนี้","Preview — this is what customers see")}</p>`:""}
+    ${cover?`<div class="so-cover" style="background-image:url('${img(cover)}')" data-z="${img(cover)}" role="img" aria-label="${T("รูปหน้าร้าน","Shop photo")}"></div>`:""}
+    <header class="so-id">
+      ${avHTML}
+      <div class="so-nm">
+        <h1 class="nt">${esc(t.shop||t.name)}</h1>
+        <p class="so-sub">${rate}${t.jobs?`<span>${T(t.jobs+" งานสำเร็จ",t.jobs+" jobs done")}</span>`:""}</p>
+        ${cats.length?`<p class="so-cats">${esc(cats.join(" · "))}</p>`:""}
       </div>
-      ${vetBadges(t).length?`<div class="cs-vet">${vetBadges(t).join("")}</div>`:""}
-      <dl class="cs-st">${stat.map(([v,k,i])=>`<div><dt><i class="ti ${i}"></i>${k}</dt><dd>${v}</dd></div>`).join("")}</dl>
-      ${t.greet||t.about?`<p class="cs-greet nt">${esc(t.greet||t.about)}</p>`:""}
-      ${mine?"":`<div class="cs-act"><button class="lx-cta" id="bBook"${v?" disabled":""}>${v?"ปิดรับงานชั่วคราว":T("ขอราคา","Get a quote")+(t.from?` · ${T("เริ่ม","from")} ฿${money(t.from)}`:"")}</button>
-        <button class="lx-gh" id="bMsg"${v?" disabled":""}><i class="ti ti-message-circle"></i>${T("ทักช่าง","Message")}</button>
-        ${t.phone?`<a class="lx-gh" id="bTel" href="tel:${esc(t.phone)}"><i class="ti ti-phone"></i>${T("โทร","Call")}</a>`:""}
-        ${ME&&ME.staff&&!t.test?'<button class="lx-gh lx-ic" id="bSus" title="ซ่อนร้าน"><i class="ti ti-eye-off"></i></button>':""}</div>`}
-      <p class="cs-ser"><span>CENDON</span><span>${T("ร้าน","Shop")} #${esc(String(t.id).slice(0,8).toUpperCase())}</span></p>
+      <button class="so-share" type="button" data-share aria-label="${T("แชร์ร้านนี้","Share this shop")}"><i class="ti ti-share-2"></i></button>
+    </header>
+    ${t.test?`<p class="so-note test"><i class="ti ti-flask"></i><span><b>${T("ร้านทดสอบของทีมงาน","Staff test shop")}</b>${T("ไม่ใช่ร้านจริง ใช้ทดลองระบบเท่านั้น","Not a real shop — for testing only")}</span></p>`:""}
+    ${v?`<p class="so-note"><i class="ti ti-beach"></i><span><b>${T("ร้านพักรับงานชั่วคราว","Shop is taking a break")}${v.until?T(" ถึง "," until ")+new Date(v.until).toLocaleDateString(LOC,{day:"numeric",month:"short"}):""}</b>${v.note?`<span class="nt">${esc(v.note)}</span>`:T("ตอนนี้ยังขอราคาไม่ได้ ทักถามช่างได้","Quotes are paused — you can still message")}</span></p>`:""}
+    <dl class="so-facts">
+      <div><dt><i class="ti ti-map-pin"></i>${T("ที่ตั้ง","Location")}</dt><dd class="nt">${where.length?esc(where.join(" · ")):T("ไม่ได้ระบุ","Not specified")}</dd></div>
+      <div class="so-hours"${weekRows?' role="button" tabindex="0" data-hours':""}><dt><i class="ti ti-clock"></i>${T("เวลาทำการ","Hours")}</dt>
+        <dd>${on?`<span class="so-open ${on.on?"on":""}">${on.txt}</span>`:t.hours?`<span class="nt">${esc(t.hours)}</span>`:T("ไม่ได้ระบุ","Not specified")}${weekRows?'<i class="ti ti-chevron-down so-chev"></i>':""}</dd></div>
+    </dl>
+    ${weekRows?`<dl class="so-week" hidden>${weekRows}</dl>`:""}
+    ${facts.length?`<button class="so-vet" type="button" data-vet aria-expanded="false">
+        <i class="ti ti-shield so-vi"></i>
+        <span><b>${T("ทีมงาน Cendon ตรวจแล้ว","Checked by the Cendon team")}</b><small>${facts.map(f=>f[1]).join(" · ")}</small>${t.vetting.at?`<small class="so-vd">${T("ตรวจเมื่อ ","Checked ")}${fmtDay(t.vetting.at)}</small>`:""}</span>
+        <i class="ti ti-chevron-down so-chev"></i></button>
+      <div class="so-vetd" hidden><ul>${facts.map(f=>`<li><i class="ti ${f[0]}"></i><span><b>${f[1]}</b>${f[2]}</span></li>`).join("")}</ul>
+        <p>${T("การตรวจนี้บอกว่าร้านมีตัวตนจริงและทีมงานดูอะไรไปแล้ว ไม่ได้รับประกันผลงานทุกครั้ง ถ้ามีปัญหา กด \"แจ้งปัญหา\" ในใบงานได้ตลอด ทีมงานจะช่วยดู","This shows the shop is real and what staff checked — it doesn't guarantee every job. If something goes wrong, tap \"Report a problem\" in the job anytime.")}</p></div>`
+    :t.verified?`<p class="so-vet static"><i class="ti ti-shield so-vi"></i><span><b>${T("ผ่านการตรวจโดยทีมงาน Cendon","Approved by the Cendon team")}</b></span></p>`
+    :!t.test?`<p class="so-vet static"><i class="ti ti-hourglass so-vi"></i><span><b>${T("ยังรอทีมงานตรวจ","Awaiting review")}</b><small>${T("ลูกค้าจะเห็นร้านเมื่อผ่านการตรวจแล้ว","Customers see the shop once approved")}</small></span></p>`:""}
+    ${t.greet||t.about?`<p class="so-about nt">${esc(t.greet||t.about)}</p>`:""}
+    <section class="so-sec" id="soSvc"><h2>${T("บริการ","Services")}</h2>
+      ${svc.length?`<div class="so-svcs">${svc.map(g=>{const ph=(g.photos||[])[0],c=RAIL.find(x=>x.id===gigCat(g));
+        return `<button class="so-svc" type="button" data-g="${g.id}"><span class="so-th"${ph?` style="background-image:url('${img(ph)}')"`:""}>${ph?"":`<i class="ti ${c&&c.ic||"ti-tool"}"></i>`}</span>
+          <span class="so-st"><b class="nt">${esc(g.title)}</b><small>${T("เริ่มต้น","From")} <em>฿${money(g.price)}</em></small></span><i class="ti ti-chevron-right"></i></button>`}).join("")}</div>
+        <p class="so-fine">${T("ราคาเริ่มต้น ช่างยืนยันราคาจริงในใบเสนอราคาก่อนเริ่มงาน","Starting prices — the mechanic confirms the real price in a quote before starting")}</p>`
+      :`<p class="so-empty">${T("ร้านนี้ยังไม่ได้ลงบริการพร้อมราคา — กดขอราคาเพื่อให้ช่างประเมินให้","No priced services yet — ask for a quote and the mechanic will estimate")}</p>`}
     </section>
-    <nav class="cs-tabs" role="tablist"><button class="${first==="svc"?"on":""}" data-ct="svc">${T("บริการ","Services")}${svc.length?`<em>${svc.length}</em>`:""}</button><button class="${first==="rev"?"on":""}" data-ct="rev">${T("รีวิว","Reviews")}${t.reviewCount?`<em>${t.reviewCount}</em>`:""}</button><button data-ct="about">${T("ข้อมูลร้าน","About")}</button></nav>
-    <section class="ch-pane${first==="svc"?" on":""}" data-cp="svc"><div class="lx-gigs ch-svc">${svc.map(gigCard).join("")}${mine&&svc.length<GIG_MAX?`<button class="ch-add" data-new="1"><i class="ti ti-plus"></i>${T(`เพิ่มบริการ (${svc.length}/${GIG_MAX})`,`Add a service (${svc.length}/${GIG_MAX})`)}</button>`:""}</div>
-      ${!svc.length&&!mine?`<p class="ch-empty">${T("ร้านนี้ยังไม่ได้ลงบริการพร้อมราคา — กดขอราคาได้เลย","No listed services yet")}</p>`:""}</section>
-    <section class="ch-pane${first==="rev"?" on":""}" data-cp="rev" id="chRev">${reviewsHTML(t,null)}</section>
-    <section class="ch-pane" data-cp="about">
-      ${t.about?`<p class="ch-about nt">${esc(t.about)}</p>`:""}
-      ${info.length?`<dl class="gd-dl">${info.map(([i,k,x])=>`<div><dt><i class="ti ${i}"></i>${k}</dt><dd class="nt">${x}</dd></div>`).join("")}</dl>`:""}
-      ${t.years?`<p class="ch-fine">ประสบการณ์ ${t.years} ปี</p>`:""}
-      ${t.verified?`<p class="ch-fine">ป้ายบนการ์ดร้านบอกว่าทีมงานตรวจอะไรไปแล้ว ไม่ได้รับประกันผลงานหรือความปลอดภัยทุกครั้ง ถ้ามีปัญหา กด "แจ้งปัญหา" ในใบงานได้ตลอด</p>`:""}
-      ${pics.length?`<p class="ch-h">${T("รูปร้าน","Shop photos")}</p><div class="ch-grid">${pics.slice(0,12).map(p=>`<img src="${img(p)}" alt="" loading="lazy" data-z="${img(p)}"/>`).join("")}</div>`:""}
+    <section class="so-sec" id="soRev"><h2>${T("รีวิวจากงานจริง","Reviews from real jobs")}</h2><div id="chRev">${reviewsHTML(t,null)}</div></section>
+    <section class="so-sec" id="soAbout"><h2>${T("ข้อมูลร้าน","About the shop")}</h2>
+      ${t.about&&t.greet?`<p class="so-about2 nt">${esc(t.about)}</p>`:""}
+      <dl class="so-dl">${info.map(([i,k,x])=>`<div><dt><i class="ti ${i}"></i>${k}</dt><dd class="nt">${x}</dd></div>`).join("")}</dl>
+      ${pics.length?`<div class="so-pics">${pics.slice(0,12).map(p=>`<img src="${img(p)}" alt="" loading="lazy" data-z="${img(p)}"/>`).join("")}</div>`:""}
     </section>
-    ${mine?`<nav class="cs-dock" aria-label="Studio"><b class="cs-dk-t">Studio</b>
-      <button data-st="post"><i class="ti ti-square-plus"></i><span>โพสต์</span></button><button data-st="edit"><i class="ti ti-pencil"></i><span>แก้ไข</span></button>
-      <button data-st="settings"><i class="ti ti-adjustments-horizontal"></i><span>ตั้งค่า</span></button><button data-st="stats"><i class="ti ti-chart-bar"></i><span>สถิติ</span></button>
-      <button data-st="jobs"><i class="ti ti-clipboard-list"></i><span>งาน</span></button></nav>`:""}
-  </div>`;
+    <section class="so-sec so-care"><h2>${T("ก่อนจ้าง ควรรู้","Before you hire")}</h2><ul>
+      <li><i class="ti ti-receipt"></i>${T("ขอราคาฟรี ช่างส่งใบเสนอราคาให้ดูก่อน เป็นงานเมื่อคุณกดยืนยันเอง","Quotes are free — it only becomes a job when you accept")}</li>
+      <li><i class="ti ti-lock"></i>${T("เบอร์และที่อยู่ของคุณถูกซ่อนไว้จนกว่าคุณยืนยันราคา","Your phone and address stay hidden until you accept a quote")}</li>
+      <li><i class="ti ti-cash"></i>${T("จ่ายเงินกับช่างโดยตรงเมื่องานเสร็จ ตามราคาในใบงาน งานเพิ่มต้องให้คุณกดยอมรับก่อน","Pay the mechanic directly when done, at the agreed price — extra work needs your approval first")}</li>
+      <li><i class="ti ti-flag"></i>${T("มีปัญหา กด \"แจ้งปัญหา\" ในใบงานได้ตลอด ทีมงานช่วยดู","Something wrong? Tap \"Report a problem\" in the job anytime")}</li></ul></section>
+    <p class="so-ser"><span>CENDON</span><span>${T("ร้าน","Shop")} #${esc(String(t.id).slice(0,8).toUpperCase())}</span></p>
+  </article>`;
+}
+/* แถบล่างของหน้าร้าน: ทักช่าง (รอง) · โทร (เมื่อร้านเปิดให้โทร) · ขอราคา (หลัก สีหมึก) */
+function storeFoot(t,mine){
+  if(mine)return `<div class="so-ft pv"><i class="ti ti-eye"></i>${T("ลูกค้าจะเห็นปุ่ม ทักช่าง และ ขอราคา ตรงนี้","Customers see Message and Get a quote here")}</div>`;
+  const v=t.vacation;
+  return `<div class="so-ft"><button class="lx-gh" id="bMsg" type="button"><i class="ti ti-message-circle"></i>${T("ทักช่าง","Message")}</button>
+    ${t.phone?`<a class="lx-gh lx-ic" id="bTel" href="tel:${esc(t.phone)}" aria-label="${T("โทร","Call")}"><i class="ti ti-phone"></i></a>`:""}
+    ${ME&&ME.staff&&!t.test?`<button class="lx-gh lx-ic" id="bSus" type="button" title="${T("ซ่อนร้าน","Hide shop")}" aria-label="${T("ซ่อนร้าน","Hide shop")}"><i class="ti ti-eye-off"></i></button>`:""}
+    <button class="lx-cta" id="bBook" type="button"${v?" disabled":""}>${v?T("ปิดรับงานชั่วคราว","Not taking jobs"):T("ขอราคา","Get a quote")}</button></div>`;
 }
 /* นับยอดเข้าชม (ไม่นับร้านตัวเอง) — ไม่รอผล ไม่แจ้ง error */
 function track(id,kind){try{if(ME&&ME.technician&&ME.technician.id===id)return;fetch(API+"/api/tech/view",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id,kind}),keepalive:true}).catch(()=>{})}catch(e){}}
-/* แท็บหน้าร้าน ↔ ที่อยู่: /tech/<ร้าน>/services · /reviews · /about */
+/* ที่อยู่ลึกของหน้าร้าน: /tech/<ร้าน>/services · /reviews · /about — หน้าเดียวไม่มีแท็บแล้ว จึงเลื่อนไปที่ส่วนนั้นแทน */
 const TABURL={svc:"services",rev:"reviews",about:"about"},URLTAB={services:"svc",reviews:"rev",about:"about"};
+const SO_SEC={svc:"soSvc",rev:"soRev",about:"soAbout"};
+function loadReviews(b,t){
+  const h=b.querySelector("#chRev");if(!h)return;
+  h.innerHTML=reviewsHTML(t,null);
+  /* โหลดไม่สำเร็จ ≠ ไม่มีรีวิว — บอกตามจริงและให้ลองใหม่ */
+  api("/api/tech/reviews?id="+encodeURIComponent(t.id)).then(r=>{h.innerHTML=reviewsHTML(t,r.reviews||[]);h.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z))})
+    .catch(()=>{h.innerHTML=`<p class="so-err"><i class="ti ti-cloud-off"></i>${T("โหลดรีวิวไม่สำเร็จ","Couldn't load reviews")}<button class="lx-gh" type="button">${T("ลองใหม่","Retry")}</button></p>`;
+      h.querySelector("button").onclick=()=>loadReviews(b,t)});
+}
 function openTech(id,opt){
   let t=TECHS.find(x=>x.id===id);
   const mine=ME&&ME.technician&&ME.technician.id===id;
@@ -3241,33 +3475,23 @@ function openTech(id,opt){
   if(!t)return;
   if(!mine)track(id,"shop");
   const url=(opt&&opt.url)||"/tech/"+encodeURIComponent(id);
-  sheet({title:"",full:true,store:true,shop:id,url,body:storeHTML(t,mine),
-    foot:"",
+  sheet({title:t.shop||t.name||"",full:true,store:true,shop:id,url,body:storeHTML(t,mine),foot:storeFoot(t,mine),
     mount(b,f,o){
-      /* เปลี่ยนแท็บ = หนึ่งขั้นในประวัติ (แบบแท็บช่อง YouTube) · กลับมาหน้านี้อีกครั้งแท็บเดิมยังอยู่ */
-      const tabs=[...b.querySelectorAll(".cs-tabs button")];
-      o.first=o.first||(tabs.find(y=>y.classList.contains("on"))||{dataset:{}}).dataset.ct;
-      const setTab=k=>{if(!tabs.some(y=>y.dataset.ct===k))return;o.tab=k;
-        tabs.forEach(y=>y.classList.toggle("on",y.dataset.ct===k));
-        b.querySelectorAll(".ch-pane").forEach(p=>p.classList.toggle("on",p.dataset.cp===k))};
-      if(o.tab)setTab(o.tab);
-      o.setTab=setTab;
-      tabs.forEach(x=>x.onclick=()=>{
-        const was=(tabs.find(y=>y.classList.contains("on"))||{}).dataset.ct,k=x.dataset.ct;
-        if(was===k)return;setTab(k);
-        Nav.push({url:o.url+"/"+TABURL[k],tag:"tab",close:()=>{if(SH.cur===o)setTab(was);else o.tab=was}});
-      });
-      b.querySelectorAll(".lx-gc").forEach(x=>x.onclick=()=>openGig(x.dataset.g));
-      b.querySelectorAll("[data-new]").forEach(x=>x.onclick=()=>gigForm());
+      /* /tech/<ร้าน>/reviews ฯลฯ — เลื่อนไปส่วนนั้น */
+      o.setTab=k=>{o.tab=k;const s=b.querySelector("#"+SO_SEC[k]);if(s)setTimeout(()=>s.scrollIntoView({behavior:"smooth",block:"start"}),60)};
+      if(o.tab)o.setTab(o.tab);
+      /* เลื่อนพ้นหัวร้าน → หัวแผ่นทึบขึ้นและบอกชื่อร้าน (ปุ่มย้อน/ปิดไม่ลอยทับข้อความ) */
+      if(!b.__soScroll){b.__soScroll=1;b.addEventListener("scroll",()=>{const bs=$("bs");bs.classList.toggle("so-up",!!b.querySelector(".so")&&b.scrollTop>(b.querySelector(".so.has-cover")?220:60))},{passive:true})}
+      b.querySelectorAll(".so-svc").forEach(x=>x.onclick=()=>openGig(x.dataset.g));
       b.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z));
-      api("/api/tech/reviews?id="+encodeURIComponent(t.id)).then(r=>r.reviews||[]).catch(()=>[]).then(list=>{
-        const h=b.querySelector("#chRev");if(!h)return;h.innerHTML=reviewsHTML(t,list);
-        h.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z))});
-      if(mine){
-        const S={post:()=>gigForm(),edit:()=>openShopEdit(),settings:()=>studioSettings(),stats:()=>studioStats(),jobs:()=>{closeSheet();setMode("tech");setTab2("queue")}};
-        b.querySelectorAll("[data-st]").forEach(x=>x.onclick=()=>S[x.dataset.st]());
-        return;
-      }
+      const hours=b.querySelector("[data-hours]"),wk=b.querySelector(".so-week");
+      if(hours&&wk){const tg=()=>{wk.hidden=!wk.hidden;hours.classList.toggle("open",!wk.hidden)};hours.onclick=tg;hours.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();tg()}}}
+      const vb=b.querySelector("[data-vet]"),vd=b.querySelector(".so-vetd");
+      if(vb&&vd)vb.onclick=()=>{vd.hidden=!vd.hidden;vb.setAttribute("aria-expanded",String(!vd.hidden));vb.classList.toggle("open",!vd.hidden)};
+      const sh=b.querySelector("[data-share]");
+      if(sh)sh.onclick=()=>{const u=location.origin+"/tech/"+encodeURIComponent(t.id);try{navigator.share?navigator.share({title:t.shop||t.name,url:u}).catch(()=>{}):navigator.clipboard.writeText(u).then(()=>toast(T("คัดลอกลิงก์ร้านแล้ว","Shop link copied")))}catch(e){}};
+      loadReviews(b,t);
+      if(mine)return;
       if($("bTel"))$("bTel").addEventListener("click",()=>track(id,"call"));
       $("bBook").onclick=()=>book(t);
       $("bMsg").onclick=()=>messageTech(t);
@@ -3275,11 +3499,13 @@ function openTech(id,opt){
     }});
 }
 /* ═══ Studio: กดเข้ามาแล้วไปหน้าร้านตัวเองเลย ═══ */
+/* ═══ เข้า Studio: เปิดกรอบ Studio (ไม่ใช่หน้าร้านในแผ่นซ้อนแบบเดิม) ═══ */
 function openStudio(){
   if(!U)return needLogin();
   const t=ME&&ME.technician;
   if(!t||(t.test&&!(ME&&ME.staff)))return openJoin();
-  openTech(t.id,{url:"/studio"});
+  if($("bs").classList.contains("on"))closeSheet();
+  if(MODE!=="tech")setMode("tech");else if(DT!=="queue")setTab2("queue");
 }
 /* แถวสวิตช์ในหน้าตั้งค่า */
 const swRow=(id,title,sub,on)=>`<label class="ss-row"><span><b>${title}</b>${sub?`<small>${sub}</small>`:""}</span><span class="lx-sw"><input type="checkbox" id="${id}" ${on?"checked":""}/><i></i></span></label>`;
@@ -3287,7 +3513,7 @@ function studioSettings(){
   const t=ME.technician,v=(t.vacationRaw||t.vacation)||{},ar=t.autoReply||{},sound=ls.get("spire_tech_sound",true);
   const until=v.until?new Date(v.until).toISOString().slice(0,10):"";
   const link=location.origin+"/tech/"+encodeURIComponent(t.id);
-  sheet({push:true,slug:"settings",full:true,store:true,title:"ตั้งค่า Studio",body:`<div class="ss">
+  sheet({push:true,url:stuUrl("settings"),slug:"settings",full:true,store:true,title:"ตั้งค่า Studio",body:`<div class="ss">
     <section class="ss-g"><h3><i class="ti ti-power"></i>สถานะร้าน</h3>
       ${swRow("ssOn","เปิดรับงาน","รับแจ้งเตือนเมื่อมีคนแถวนี้ประกาศหาช่าง",DSTATS?DSTATS.online:t.online)}
       ${swRow("ssVac","โหมดพักร้อน","ปิดรับคำขอใหม่ชั่วคราว หน้าร้านจะบอกลูกค้าให้",!!t.vacation)}
@@ -3331,13 +3557,13 @@ function studioSettings(){
           Object.assign(ME.technician,{online:want,autoReply:body.autoReply,greet:body.greet,minPrice:body.minPrice,theme,radius:body.radius??t.radius,
             vacationRaw:body.vacation,vacation:body.vacation.on&&(!u||u>Date.now())?{until:u,note:body.vacation.note}:null});
         }catch(err){$("ssErr").textContent=err.message;throw err}
-        toast("บันทึกการตั้งค่าแล้ว");back();openTech(t.id);
+        toast("บันทึกการตั้งค่าแล้ว");back();if(MODE==="tech")drawTab();else openTech(t.id);
       });
     }});
 }
 /* ═══ Studio → สถิติ ═══ */
 function studioStats(){
-  sheet({push:true,slug:"stats",full:true,store:true,title:"สถิติร้าน",body:`<div class="sa" id="sa"><div class="skel"></div><div class="skel"></div></div>`,mount(){drawStats2()}});
+  sheet({push:true,url:stuUrl("stats"),slug:"stats",full:true,store:true,title:"สถิติร้าน",body:`<div class="sa" id="sa"><div class="skel"></div><div class="skel"></div></div>`,mount(){drawStats2()}});
 }
 const pct=(a,b)=>b?Math.round((a-b)/b*100):null;
 const delta=(a,b)=>{const p=pct(a,b);return p==null?`<small class="sa-d">ไม่มีข้อมูลเดือนก่อน</small>`:`<small class="sa-d ${p>=0?"up":"dn"}"><i class="ti ti-arrow-${p>=0?"up":"down"}-right"></i>${T(Math.abs(p)+"% จากเดือนก่อน",Math.abs(p)+"% vs last month")}</small>`};
@@ -3638,7 +3864,7 @@ $("fMulti").onclick=()=>openMulti($("q").value.trim(),F.cat!=="all"&&CAT[F.cat].
 $("fAi").onclick=()=>aiDiag($("q").value.trim());
 
 /* ═══ งานที่กำลังดำเนินอยู่ + ช่างที่เคยใช้ ═══ */
-let JOBS=[];
+let JOBS=[],JOBS_OK=false,JOBS_ERR=null;
 function renderActive(){
   const box=$("active");
   /* ใบงานที่เกิดจากประกาศหาช่าง แสดงรวมอยู่ในการ์ดประกาศ ไม่แยกเป็นหลายใบ */
@@ -3691,14 +3917,16 @@ function syncGarage(){
   if(changed)try{localStorage.setItem("spire_garage",JSON.stringify(g))}catch(e){}
 }
 async function refreshJobs(){
-  if(!U){JOBS=[];THREADS=[];renderActive();renderUsed();return}
-  try{JOBS=(await api("/api/tech/jobs")).jobs||[]}catch(e){JOBS=[]}
+  if(!U){JOBS=[];THREADS=[];JOBS_OK=false;JOBS_ERR=null;renderActive();renderUsed();return}
+  try{JOBS=(await api("/api/tech/jobs")).jobs||[];JOBS_OK=true;JOBS_ERR=null}catch(e){JOBS_ERR=e.message}
   try{POSTS=(await api("/api/tech/posts")).posts||[]}catch(e){POSTS=[]}
   try{THREADS=(await api("/api/tech/threads")).threads||[]}catch(e){THREADS=[]}
   renderActive();renderUsed();syncGarage();queueDot();
 }
 function queueDot(){
-  const qd=$("queueDot");if(qd)qd.hidden=!(JOBS.some(j=>(j.side==="technician"||j.side==="both")&&(j.needsMe||j.unread))||THREADS.some(h=>h.role==="technician"&&h.unread));
+  stuBadges();
+  /* อยู่ใน Studio หน้างาน/ข้อความ — วาดรายการใหม่ด้วยข้อมูลล่าสุด */
+  if(MODE==="tech"&&myShop()&&(DT==="queue"||DT==="messages"))drawTab();
 }
 
 /* ═══ งานของฉัน ═══ */
@@ -3921,8 +4149,9 @@ function chHead(name,t){
 }
 /* การ์ดบนสุดของห้อง: บอกเฉพาะสิ่งที่ระบบปกป้องให้จริง */
 const safeNote=(title,body)=>`<p class="sys safe"><i class="ti ti-shield-lock"></i><span><b>${title}</b><span>${body}</span></span></p>`;
-function openChat(j){
+function openChat(j,opt){
   recStop(true);clearAtt();
+  CH.list=!!(opt&&opt.list);
   CH.job=j;CH.th=null;CH.after=0;CH.last="";CH.all=[];CH.as="customer";
   const cust=j.role==="customer";
   chHead(cust?j.techName:j.role==="technician"?T("ลูกค้า","Customer")+" · "+j.car:j.techName,j.role==="technician"?null:TECHS.find(x=>x.id===j.techId));
@@ -3962,6 +4191,7 @@ async function openThread(id,ask){
   if(!U)return needLogin();
   let d;
   try{d=await api("/api/tech/threads/"+encodeURIComponent(id))}catch(e){return toast(e.message,"ti-alert-triangle")}
+  if(!d||!d.thread)return toast(T("เปิดห้องคุยนี้ไม่ได้ ลองใหม่อีกครั้ง","Couldn't open this conversation — try again"),"ti-alert-triangle");
   showThread(d.thread,d.messages||[],ask);
   refreshThreads();
 }
@@ -3989,7 +4219,7 @@ function pollThread(){
 async function refreshThreads(){
   if(!U){THREADS=[];return}
   try{THREADS=(await api("/api/tech/threads")).threads||[]}catch(e){THREADS=[]}
-  renderActive();queueDot();if(DT==="queue"&&MODE==="tech")tabQueue();
+  renderActive();queueDot();
 }
 /* ขอราคาจากในห้อง: ปิดห้องแล้วเปิดฟอร์มขอราคาของร้านนี้ (ใส่บริการที่คุยถึงไว้ให้) */
 $("chBook").onclick=()=>{
@@ -4021,7 +4251,8 @@ function closeChat(fromNav){
   recStop(true);clearAtt();
   const l=CHL;CHL=null;if(fromNav!==true&&l)Nav.drop(l);
   if(CH.job&&CH.job.thread){CH.th=null;refreshThreads();return}
-  if(CH.job)openJob(CH.job.id,false).then(()=>{});
+  if(CH.job&&!CH.list)openJob(CH.job.id,false).then(()=>{});
+  if(CH.list&&MODE==="tech")refreshJobs();
 }
 $("chX").onclick=()=>closeChat();
 const chIn=$("chIn");
@@ -4497,61 +4728,138 @@ function applyMode(){
 }
 
 /* ═══ dashboard ช่าง ═══ */
-let DT="find",DSTATS=null,NEAR=null,FMAP=null,FL=null,alertT=0,firstNear=true;
+let DT="queue",FIND_NEW=false,DSTATS=null,NEAR=null,FMAP=null,FL=null,alertT=0,firstNear=true;
 const SEEN=new Set(ls.get("spire_seen_posts",[]));
 const ago=at=>{const m=Math.round((Date.now()-at)/60000);return m<1?T("เมื่อกี้","just now"):m<60?T(`${m} นาทีที่แล้ว`,`${m} min ago`):m<1440?T(`${Math.round(m/60)} ชม.ที่แล้ว`,`${Math.round(m/60)} h ago`):T(`${Math.round(m/1440)} วันที่แล้ว`,`${Math.round(m/1440)} d ago`)};
 const kfmt=n=>n>=10000?(Math.round(n/100)/10)+"k":money(n);
+/* ═══ Studio: กรอบ + หัวหน้า + ป้ายนับ ═══
+   หน้า (DT) → เมนู: queue/find = งาน · messages = ข้อความ · posts = บริการ · shop/ai = ร้านของฉัน
+   ที่อยู่: /work · /work/find · /work/messages · /work/posts · /work/shop · /work/ai (ลิงก์ /studio/* เดิมยังเปิดได้) */
+const SPAGE={queue:"jobs",find:"jobs",messages:"msgs",posts:"svc",shop:"shop",ai:"shop"};
+const SFIRST={jobs:"queue",msgs:"messages",svc:"posts",shop:"shop"};
+const myShop=()=>ME&&ME.technician;
+const techJobs=()=>JOBS.filter(j=>j.side==="technician"||j.side==="both");
+const liveJob=j=>!["completed","cancelled"].includes(j.status);
 async function dash(){
   if(MODE!=="tech")return;
-  const t=ME&&ME.technician;
+  const t=myShop();
+  stuChrome();
   if(!t){
-    $("dHead").innerHTML="";$("dStats").innerHTML="";$("dTabs").hidden=true;
-    $("dBody").innerHTML=`<div class="cta e3"><span class="sq" style="--c1:var(--accent)"><i class="ti ti-tool"></i></span><b>${T("ยังไม่มีร้าน","No shop yet")}</b><p>${ME&&ME.staff?T("ทีมงานเปิดร้านทีมงานได้ทันที ใช้แค่ตำแหน่งอู่ ลูกค้าจริงไม่เห็น","Staff can open a staff shop instantly — location only, hidden from customers"):T("สมัครเป็นพาร์ทเนอร์เพื่อเริ่มรับงาน","Apply as a partner to start taking jobs")}</p><button class="btn p" id="dGo">${ME&&ME.staff?T("เปิดร้านทีมงาน","Open staff shop"):T("สมัครเป็นช่าง","Apply")}</button></div>`;
+    $("dHead").innerHTML=`<div class="stu-h"><h1>Studio</h1></div>`;
+    $("dBody").innerHTML=`<div class="stu-empty"><i class="ti ti-building-store"></i><b>${T("ยังไม่มีร้าน","No shop yet")}</b><p>${ME&&ME.staff?T("ทีมงานเปิดร้านทีมงานได้ทันที ใช้แค่ตำแหน่ง ไม่ต้องรอตรวจ","Staff can open a staff shop instantly — only a location needed"):T("สมัครเป็นพาร์ทเนอร์ช่างของ Cendon เพื่อรับงานจากลูกค้าแถวบ้าน","Apply as a Cendon partner mechanic to get local jobs")}</p><button class="lx-cta" id="dGo" type="button">${ME&&ME.staff?T("เปิดร้านทีมงาน","Open a staff shop"):T("สมัครเป็นช่าง","Apply")}</button></div>`;
     $("dGo").onclick=e=>PREV()?busy(e.currentTarget,quickTech):openJoin();return;
   }
-  $("dTabs").hidden=false;
-  drawHead(t);
-  try{DSTATS=(await api("/api/tech/stats"))}catch(e){DSTATS=null}
-  drawHead(t);drawStats();drawTab();
-  if(DSTATS&&DSTATS.online)startAlerts();
+  drawTab();
+  /* ตัวเลขสถิติใช้แค่สถานะเปิดรับงานบนหัว — ไม่ขวางการวาดหน้า */
+  api("/api/tech/stats").then(d=>{DSTATS=d;if(MODE==="tech"&&SPAGE[DT]==="jobs")stuHead();if(d.online)startAlerts()}).catch(()=>{});
+  refreshJobs();
 }
-function drawHead(t){
-  const on=DSTATS?DSTATS.online:!!t.online,ph=t.avatar;
-  $("dHead").innerHTML=`${WF}<span class="sq" style="--c1:${colorOf(t)};${ph?`background-image:url('${API}/api/tech/img/${ph}')`:""}">${ph?"":initial(t.shop||t.name)}</span>
-    <div class="who2"><b>${esc(t.shop||t.name)}</b><small>${t.reviewCount?"★ "+Number(t.rating).toFixed(1)+" ("+t.reviewCount+") · ":""}${t.test?T("ร้านทีมงาน · เห็นเฉพาะทีมงาน","Staff shop · staff only"):T("พาร์ทเนอร์ Cendon","Cendon partner")}</small></div>
-    <button class="ib" id="dStore" title="${T("ดูหน้าร้าน","View storefront")}" aria-label="${T("ดูหน้าร้าน","View storefront")}"><i class="ti ti-building-store"></i></button>
-    <button class="sw ${on?"on":""}" id="dOn" aria-pressed="${on}" hidden>${on?T("รับงาน","Online"):T("ปิดรับ","Offline")}<i class="k"></i></button>`;
-  $("dStore").onclick=()=>openTech(t.id);
-  $("dOn").onclick=e=>busy(e.currentTarget,async()=>{
-    const want=!(DSTATS&&DSTATS.online);unlockAudio();
-    await api("/api/tech/online",{body:{online:want}});
-    if(DSTATS)DSTATS.online=want;drawHead(t);
-    toast(want?T("เปิดรับงานแล้ว — งานใหม่จะแจ้งเตือนทันที","You're online — new jobs will alert you"):T("ปิดรับงานแล้ว","You're offline"),want?"ti-bell-ringing":"ti-bell-off");
-    want?startAlerts():stopAlerts();
-  });
+/* ส่วนที่เหมือนกันทุกหน้า: เมนูที่เลือก · ชื่อหน้าบนหัว (คอม) · รูปร้านมุมขวา · ป้ายนับ */
+function stuChrome(){
+  const pg=SPAGE[DT]||"jobs",t=myShop();
+  $("stuNav").querySelectorAll("[data-sp]").forEach(b=>{const on=b.dataset.sp===pg;b.classList.toggle("on",on);if(on)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
+  $("stuCrumb").textContent={jobs:T("งานของฉัน","My jobs"),msgs:T("ข้อความ","Messages"),svc:T("บริการ","Services"),shop:T("ร้านของฉัน","My shop")}[pg];
+  const me=$("stuMe");
+  if(t){me.style.backgroundImage=t.avatar?`url('${img(t.avatar)}')`:"";me.textContent=t.avatar?"":initial(t.shop||t.name);me.title=t.shop||t.name||""}
+  stuBadges();
 }
-function drawStats(){
-  const s=DSTATS;if(!s){$("dStats").innerHTML="";return}
-  const mx=Math.max(1,...s.daily.map(x=>x.v));
-  $("dStats").innerHTML=`<div class="st e3"><b>฿${kfmt(s.earnToday)}</b><small>${T("วันนี้","Today")}</small></div><div class="st e3"><b>฿${kfmt(s.earnMonth)}</b><small>${T("เดือนนี้","This month")}</small></div>
-    <div class="st e3"><b>${s.winRate}%</b><small>${T("ได้งาน","Win rate")}</small></div><div class="st e3"><b>${s.replyMin==null?"–":s.replyMin+T(" น."," m")}</b><small>${T("ตอบเฉลี่ย","Avg reply")}</small></div>
-    <div class="spark e3" title="${T("รายได้ 14 วัน","14-day earnings")}">${s.daily.map((x,i)=>`<i class="${x.v?"":"z"}" style="height:${Math.max(6,x.v/mx*100)}%;animation-delay:${i*30}ms" title="฿${money(x.v)}"></i>`).join("")}</div>`;
+/* ป้ายนับแยกตามเมนู ไม่นับซ้ำ: งาน = ใบงานที่รอคุณ · ข้อความ = ข้อความที่ยังไม่อ่าน (ทักถาม + ในใบงาน) */
+function stuBadges(){
+  const jobsN=techJobs().filter(j=>j.needsMe&&liveJob(j)).length;
+  const msgN=THREADS.filter(h=>h.role==="technician").reduce((a,h)=>a+(h.unread||0),0)+techJobs().reduce((a,j)=>a+(j.unread||0),0);
+  const set=(id,n)=>{const e=$(id);if(!e)return;e.hidden=!n;e.textContent=n>99?"99+":n};
+  set("bdJobs",jobsN);set("bdMsgs",msgN);
+  const fd=document.querySelector(".stu-seg i.new");if(fd)fd.hidden=!FIND_NEW;
 }
-$("dTabs").querySelectorAll("button").forEach(b=>b.onclick=()=>setTab2(b.dataset.t2));
+/* สถานะร้าน: เปิดรับงาน (แจ้งเตือน) · รับงานไม่แจ้งเตือน · พักร้าน (ลูกค้าขอราคาไม่ได้) — มาจากค่าจริงสองค่า online + vacation */
+function shopState(){const t=myShop()||{};return t.vacation?"pause":(DSTATS?DSTATS.online:t.online)?"on":"quiet"}
+const STATE={on:[T("เปิดรับงาน","Taking jobs"),T("แจ้งเตือนทันทีเมื่อมีรถเสียใกล้คุณ","Alerts you right away when a car breaks down nearby")],
+  quiet:[T("รับงาน ไม่แจ้งเตือน","Taking jobs, no alerts"),T("ลูกค้ายังขอราคาได้ แต่ไม่มีเสียงเตือนงานใหม่","Customers can still request quotes; no new-job alerts")],
+  pause:[T("พักร้านชั่วคราว","Paused"),T("ปิดรับคำขอใหม่ทั้งหมด หน้าร้านบอกลูกค้าให้","No new requests — your storefront tells customers")]};
+function statusMenu(btn){
+  document.querySelector(".stu-menu")?.remove();
+  const cur=shopState(),m=document.createElement("div");m.className="stu-menu";m.setAttribute("role","menu");
+  m.innerHTML=Object.entries(STATE).map(([k,[a,b]])=>`<button type="button" role="menuitemradio" aria-checked="${k===cur}" data-k="${k}"><span class="stu-dot ${k}"></span><span><b>${a}</b><small>${b}</small></span>${k===cur?'<i class="ti ti-check"></i>':""}</button>`).join("");
+  document.body.appendChild(m);
+  const r=btn.getBoundingClientRect(),w=m.offsetWidth;
+  m.style.top=Math.min(r.bottom+6,innerHeight-m.offsetHeight-12)+"px";m.style.left=Math.max(16,Math.min(r.right-w,innerWidth-w-16))+"px";
+  const off=e=>{if(!m.contains(e.target)&&e.target!==btn){m.remove();removeEventListener("pointerdown",off,true);removeEventListener("keydown",esc)}};
+  const esc=e=>{if(e.key==="Escape"){m.remove();removeEventListener("pointerdown",off,true);removeEventListener("keydown",esc);btn.focus()}};
+  setTimeout(()=>{addEventListener("pointerdown",off,true);addEventListener("keydown",esc)},0);
+  m.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{m.remove();removeEventListener("pointerdown",off,true);removeEventListener("keydown",esc);if(b.dataset.k!==cur)applyStatus(b.dataset.k,btn)});
+  m.querySelector('[aria-checked="true"]')?.focus();
+}
+async function applyStatus(k,btn){
+  const t=myShop();if(!t)return;
+  const wasPause=!!t.vacation,wasOn=!!(DSTATS?DSTATS.online:t.online),wantOn=k==="on",wantPause=k==="pause";
+  const run=async()=>{
+    if(wantPause!==wasPause){
+      const raw=t.vacationRaw||t.vacation||{},until=wantPause&&raw.until&&raw.until>Date.now()?raw.until:null;
+      const vacation={on:wantPause,until,note:raw.note||""};
+      await api("/api/tech/shop",{body:{vacation}});
+      t.vacationRaw=vacation;t.vacation=wantPause?{until,note:vacation.note}:null;
+    }
+    if(wantOn!==wasOn){
+      if(wantOn)unlockAudio();
+      await api("/api/tech/online",{body:{online:wantOn}});
+      t.online=wantOn;if(DSTATS)DSTATS.online=wantOn;wantOn?startAlerts():stopAlerts();
+    }
+    toast(k==="on"?T("เปิดรับงานแล้ว — มีรถเสียใกล้ ๆ จะแจ้งเตือนทันที","You're taking jobs — nearby breakdowns will alert you"):k==="pause"?T("พักร้านแล้ว — ลูกค้าจะเห็นว่าร้านปิดรับงานชั่วคราว","Shop paused — customers will see you're not taking jobs"):T("รับงานต่อ แต่ปิดเสียงเตือนงานใหม่","Still taking jobs, alerts off"),k==="pause"?"ti-beach":k==="on"?"ti-bell-ringing":"ti-bell-off");
+  };
+  /* บันทึกสำเร็จจริงก่อนค่อยเปลี่ยนปุ่ม — ระหว่างรอ ปุ่มหมุน */
+  await busy(btn,run).catch(()=>{});
+  if(MODE==="tech")stuHead();
+}
+function stuHead(){
+  const t=myShop(),pg=SPAGE[DT],H=$("dHead");if(!t)return;
+  if(pg==="jobs"){
+    const st=shopState(),n=techJobs().filter(liveJob).length;
+    H.innerHTML=`<div class="stu-h"><h1>${T("งานของฉัน","My jobs")}</h1>
+      <div class="stu-hr"><button class="stu-link" type="button" id="stuStore"><i class="ti ti-external-link"></i>${T("ดูหน้าร้าน","View storefront")}</button>
+      <button class="stu-stat" type="button" id="stuStat" aria-haspopup="menu"><span class="stu-dot ${st}"></span>${STATE[st][0]}<i class="ti ti-chevron-down"></i></button></div></div>
+      <div class="stu-seg" role="tablist"><button type="button" role="tab" data-t2="queue" class="${DT==="queue"?"on":""}" aria-selected="${DT==="queue"}">${T("ต้องทำต่อ","To do")}${n?`<em>${n}</em>`:""}</button>
+      <button type="button" role="tab" data-t2="find" class="${DT==="find"?"on":""}" aria-selected="${DT==="find"}">${T("หางานใกล้ฉัน","Find work nearby")}<i class="new"${FIND_NEW?"":" hidden"}></i></button></div>`;
+    $("stuStore").onclick=()=>openTech(t.id);
+    $("stuStat").onclick=e=>statusMenu(e.currentTarget);
+    H.querySelectorAll("[data-t2]").forEach(b=>b.onclick=()=>setTab2(b.dataset.t2));
+  }else if(pg==="msgs"){
+    H.innerHTML=`<div class="stu-h"><h1>${T("ข้อความ","Messages")}</h1><p>${T("ลูกค้าที่ทักถามก่อนจ้าง และแชตในใบงาน","Customer questions before hiring, and chats in your jobs")}</p></div>`;
+  }else if(pg==="svc"){
+    H.innerHTML=`<div class="stu-h"><h1>${T("บริการ","Services")}</h1><p>${T(`บริการพร้อมราคาที่ลูกค้าเห็นบนหน้าแรกและหน้าร้าน ลงได้ร้านละ ${GIG_MAX} บริการ`,`Priced services customers see on the home page and your storefront — up to ${GIG_MAX}`)}</p></div>`;
+  }else if(DT==="ai"){
+    H.innerHTML=`<button class="stu-back" type="button" id="stuBack"><i class="ti ti-arrow-left"></i>${T("ร้านของฉัน","My shop")}</button><div class="stu-h"><h1>${T("คำแนะนำปรับร้าน","Shop tips")}</h1><p>${T("ดูจากข้อมูลร้านและงานจริงของคุณ","Based on your shop and real jobs")}</p></div>`;
+    $("stuBack").onclick=()=>Nav.top()&&Nav.top().tag==="wtab"?Nav.back(Nav.top()):setTab2("shop");
+  }else{
+    H.innerHTML=`<div class="stu-h"><h1>${T("ร้านของฉัน","My shop")}</h1></div>`;
+  }
+}
+$("stuNav").querySelectorAll("[data-sp]").forEach(b=>b.onclick=()=>{
+  const want=SFIRST[b.dataset.sp];
+  if(SPAGE[DT]===b.dataset.sp&&DT===want){window.scrollTo({top:0,behavior:"smooth"});return}
+  if($("bs").classList.contains("on"))closeSheet();
+  setTab2(want);window.scrollTo(0,0);
+});
+document.querySelector(".stu-side .stu-brand").onclick=e=>{e.preventDefault();$("stuNav").querySelector('[data-sp="jobs"]').click()};
+$("stuExit").onclick=$("stuExitM").onclick=()=>setMode("customer");
+$("stuSet").onclick=()=>{if(myShop())studioSettings()};
+$("stuMe").onclick=()=>{if(myShop())setTab2("shop")};
 function drawTab(){
-  $("dTabs").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x.dataset.t2===DT));
-  ({find:tabFind,queue:tabQueue,shop:tabShop,ai:tabAi,posts:tabPosts})[DT]();
+  if(!myShop())return dash();
+  stuChrome();stuHead();
+  ({find:tabFind,queue:tabQueue,messages:tabMsgs,shop:tabShop,ai:tabAi,posts:tabPosts})[DT]();
 }
+/* หน้าย่อยของ Studio (ตั้งค่า สถิติ แก้ไขร้าน โพสต์) มีที่อยู่ /studio/<หน้า> ของตัวเอง — รีเฟรช/แชร์ลิงก์แล้วเปิดตรงหน้านั้น */
+const stuUrl=k=>MODE==="tech"&&!$("bs").classList.contains("on")?"/studio/"+k:undefined;
 
 /* ── หางาน: รถเสียรอบตัว บนแผนที่ + รายการ ── */
 async function tabFind(){
   const B=$("dBody");
   B.innerHTML=`<div class="fmap e3" id="fMap"></div><div id="fList"><div class="skel"></div></div>`;
-  $("findDot").hidden=true;
+  FIND_NEW=false;stuBadges();
   try{NEAR=await api("/api/tech/posts/near")}catch(e){$("fList").innerHTML=`<div class="empty"><i class="ti ti-map-pin-off"></i><b>${esc(e.message)}</b></div>`;return}
   NEAR.posts.forEach(p=>SEEN.add(p.id));ls.set("spire_seen_posts",[...SEEN].slice(-300));
   const LP=NEAR.posts;
-  $("fList").innerHTML=LP.length?`<div class="sec" style="margin-top:4px"><h2><i class="ti ti-radar-2" style="color:var(--accent)"></i>${T("รถเสียรอบตัวคุณ","Breakdowns near you")}</h2><span>${LP.length} · ${NEAR.radius} ${T("กม.","km")}</span></div>`+LP.map((p,i)=>`<button class="pc e3" data-p="${p.id}" style="animation-delay:${i*40}ms">
+  $("fList").innerHTML=LP.length?`<div class="sec" style="margin-top:4px"><h2><i class="ti ti-radar-2" style="color:var(--accent)"></i>${T("รถเสียรอบตัวคุณ","Breakdowns near you")}</h2><span>${LP.length}${NEAR.radius||(myShop()||{}).radius?` · ${NEAR.radius||myShop().radius} ${T("กม.","km")}`:""}</span></div>`+LP.map((p,i)=>`<button class="pc e3" data-p="${p.id}" style="animation-delay:${i*40}ms">
       <span class="sq" style="--c1:${p.urgent?"#dc2626":p.cat&&CAT[p.cat]?CAT[p.cat].c:"#f97316"}"><i class="ti ${p.urgent?"ti-urgent":p.cat&&CAT[p.cat]?CAT[p.cat].ic:"ti-car-crash"}"></i></span>
       <div><b class="nt">${esc(p.symptom)}</b><small><span class="nt">${esc(p.car)}</span> · ${ago(p.createdAt)}${p.urgent?' · <span class="pill bad">'+T("ด่วน","Urgent")+'</span>':""}</small>${p.mine?`<small><span class="pill ${p.mine.status==="quoted"?"act":"bad"}">${p.mine.status==="quoted"?T("เสนอแล้ว ฿","Quoted ฿")+money(p.mine.total):STATUS[p.mine.status]}</span></small>`:""}</div>
       <span class="r"><b>${p.dist}</b><br>${T("กม.","km")}</span></button>`).join("")
@@ -4598,40 +4906,100 @@ function openPost(p){
       })}});
 }
 
-/* ── คิวงาน ── */
+/* ── งาน → ต้องทำต่อ ──
+   ใบงานจริงที่ยังไม่จบ: ที่รอคุณขึ้นก่อน แต่ละแถวบอกรถ อาการ และขั้นถัดไป · งานที่ผ่านมาพับไว้ล่างสุด
+   โหลดไม่สำเร็จ ≠ ไม่มีงาน — บอกตามจริงและให้ลองใหม่ โดยยังแสดงรายการเดิมไว้ */
+const NEXT={requested:[T("ต้องเสนอราคา","Send a quote"),"ti-file-dollar"],quoted:[T("รอลูกค้าตอบราคา","Waiting for the customer"),"ti-hourglass"],accepted:[T("นัดแล้ว","Booked"),"ti-calendar-check"],
+  enroute:[T("กำลังเดินทาง","On the way"),"ti-truck"],working:[T("กำลังซ่อม","In repair"),"ti-tool"],done:[T("รอลูกค้าตรวจรับงาน","Waiting for sign-off"),"ti-checklist"],
+  disputed:[T("มีการแจ้งปัญหา","Problem reported"),"ti-flag"],completed:[T("เสร็จแล้ว","Completed"),"ti-circle-check"],cancelled:[T("ยกเลิกแล้ว","Cancelled"),"ti-circle-x"]};
+function jobRow(j){
+  const [lab,ic]=NEXT[j.status]||[STATUS[j.status]||j.status,"ti-car"],me=j.needsMe&&liveJob(j);
+  return `<button class="stu-row" type="button" data-j="${j.id}"><span class="stu-ri${me?" me":""}"><i class="ti ${ic}"></i></span>
+    <span class="stu-rb"><b class="nt">${esc(j.car||T("รถของลูกค้า","Customer's car"))}</b><small class="nt">${esc(j.symptom||"")}</small><span class="stu-rs${me?" me":""}">${me?T("รอคุณ · ","Your turn · "):""}${lab} · ${ago(j.updatedAt||j.createdAt)}</span></span>
+    <span class="stu-rr">${j.total?`<b>฿${money(j.total)}</b>`:""}${j.unread?`<em>${j.unread}</em>`:""}<i class="ti ti-chevron-right"></i></span></button>`;
+}
+const errBar=(msg,id)=>`<p class="stu-err"><i class="ti ti-cloud-off"></i><span>${T("โหลดข้อมูลล่าสุดไม่สำเร็จ","Couldn't load the latest data")}${msg?` — ${esc(msg)}`:""}</span><button class="lx-gh" type="button" id="${id}">${T("ลองใหม่","Retry")}</button></p>`;
 function tabQueue(){
-  $("queueDot").hidden=true;
-  const mine=JOBS.filter(j=>j.side==="technician"||j.side==="both");
-  /* ลูกค้าทักถาม (ยังไม่ใช่ใบงาน) — มีข้อความใหม่ขึ้นก่อน */
-  const ths=THREADS.filter(h=>h.role==="technician").sort((a,b)=>(b.unread>0)-(a.unread>0)).slice(0,8);
-  const thG=ths.length?`<div class="qg"><h4><i class="ti ti-message-circle" style="color:var(--ink)"></i>${T("ลูกค้าทักถาม","Customer messages")}<span>${ths.length}</span></h4>${ths.map(thRow).join("")}</div>`:"";
-  const G=[["requested",T("ต้องเสนอราคา","Needs a quote"),"#f97316"],["quoted",T("รอลูกค้าตอบ","Awaiting customer"),"#64748b"],["accepted,enroute",T("นัดแล้ว","Booked"),"#0284c7"],["working",T("กำลังซ่อม","In repair"),"#7c3aed"],["done",T("รอลูกค้าตรวจ","Awaiting check"),"#0d9488"],["completed,cancelled,disputed",T("ล่าสุด","Recent"),"#6b7280"]];
-  $("dBody").innerHTML=mine.length||ths.length?thG+G.map(([st,lab,c])=>{const l=mine.filter(j=>st.split(",").includes(j.status)).slice(0,st.startsWith("completed")?6:50);
-    return l.length?`<div class="qg"><h4><i class="ti ti-point-filled" style="color:${c}"></i>${lab}<span>${l.length}</span></h4>${l.map((j,i)=>`<button class="jl e3" data-j="${j.id}" style="animation-delay:${i*35}ms"><span class="av sq" style="--c1:${c}">${initial(j.car)}</span><span class="jb"><b class="nt">${esc(j.car)}</b><small class="nt">${esc(j.symptom)}</small></span>${j.total?`<b style="font-family:var(--kd)">฿${money(j.total)}</b>`:""}${j.unread?`<span class="ub">${j.unread}</span>`:""}</button>`).join("")}</div>`:""}).join("")
-    :`<div class="empty"><i class="ti ti-list-check"></i><b>${T("ยังไม่มีงาน","No jobs yet")}</b>${T("ไปที่ หางาน แล้วเสนอราคาได้เลย","Go to Find work and send a quote")}</div>`;
-  $("dBody").querySelectorAll("[data-j]").forEach(b=>b.onclick=()=>openJob(b.dataset.j));
-  $("dBody").querySelectorAll("[data-th]").forEach(b=>b.onclick=()=>openThread(b.dataset.th));
+  const B=$("dBody"),all=techJobs();
+  const live=all.filter(liveJob).sort((a,b)=>(b.needsMe-a.needsMe)||((b.updatedAt||b.createdAt)-(a.updatedAt||a.createdAt)));
+  const past=all.filter(j=>!liveJob(j)).sort((a,b)=>(b.updatedAt||b.createdAt)-(a.updatedAt||a.createdAt)).slice(0,20);
+  const err=JOBS_ERR?errBar(JOBS_ERR,"stuRetry"):"";
+  if(!JOBS_OK&&!JOBS_ERR){B.innerHTML='<div class="skel"></div><div class="skel" style="margin-top:10px"></div>';return}
+  B.innerHTML=err+(live.length?`<section class="stu-sec" style="margin-top:8px">${live.map(jobRow).join("")}</section>`
+    :JOBS_ERR&&!JOBS_OK?"":`<div class="stu-empty"><i class="ti ti-clipboard-check"></i><b>${T("ยังไม่มีงานที่ต้องดำเนินการ","Nothing to do right now")}</b><p>${T("เมื่อมีคำขอใหม่ รายการจะแสดงที่นี่","New requests will show up here")}</p><button class="lx-cta" type="button" id="stuFind">${T("หางานใกล้ฉัน","Find work nearby")}</button></div>`)
+    +(past.length?`<details class="stu-past"><summary>${T(`งานที่ผ่านมา (${past.length})`,`Past jobs (${past.length})`)}<i class="ti ti-chevron-down"></i></summary>${past.map(jobRow).join("")}</details>`:"");
+  B.querySelectorAll("[data-j]").forEach(x=>x.onclick=()=>openJob(x.dataset.j,true));
+  if($("stuFind"))$("stuFind").onclick=()=>setTab2("find");
+  if($("stuRetry"))$("stuRetry").onclick=e=>busy(e.currentTarget,refreshJobs);
+}
+/* ── ข้อความ: ลูกค้าทักถาม (ยังไม่ใช่ใบงาน) + แชตในใบงาน ── */
+function stuThRow(h){
+  const l=h.last;
+  return `<button class="stu-row" type="button" data-th="${h.id}"><span class="stu-ri"><i class="ti ti-message-circle"></i></span>
+    <span class="stu-rb"><b class="nt">${esc(h.customerName||T("ลูกค้า","Customer"))}</b><small class="nt">${l?esc((l.role===h.role?T("คุณ: ","You: "):"")+l.text):""}</small>${h.gig&&h.gig.title?`<span class="stu-rs nt">${esc(h.gig.title)}</span>`:""}</span>
+    <span class="stu-rr">${l?`<small>${ago(l.at)}</small>`:""}${h.unread?`<em>${h.unread}</em>`:""}<i class="ti ti-chevron-right"></i></span></button>`;
+}
+function tabMsgs(){
+  const B=$("dBody");
+  const ths=THREADS.filter(h=>h.role==="technician").sort((a,b)=>(b.unread>0)-(a.unread>0)||((b.last&&b.last.at)||0)-((a.last&&a.last.at)||0));
+  const jc=techJobs().filter(liveJob).sort((a,b)=>(b.unread||0)-(a.unread||0)||((b.updatedAt||0)-(a.updatedAt||0)));
+  const err=JOBS_ERR?errBar(JOBS_ERR,"stuRetry"):"";
+  B.innerHTML=err+(!ths.length&&!jc.length?(JOBS_OK||!JOBS_ERR?`<div class="stu-empty"><i class="ti ti-messages"></i><b>${T("ยังไม่มีข้อความ","No messages yet")}</b><p>${T("เมื่อลูกค้าทักถามหรือคุยในใบงาน ข้อความจะอยู่ที่นี่","Customer questions and job chats will appear here")}</p></div>`:"")
+    :(ths.length?`<section class="stu-sec" style="margin-top:4px"><h2>${T("ลูกค้าทักถาม","Customer questions")}<small>${T("ยังไม่ใช่ใบงาน","not a job yet")}</small></h2>${ths.map(stuThRow).join("")}</section>`:"")
+    +(jc.length?`<section class="stu-sec"><h2>${T("แชตในใบงาน","Job chats")}</h2>${jc.map(j=>`<button class="stu-row" type="button" data-jc="${j.id}"><span class="stu-ri"><i class="ti ti-car"></i></span>
+        <span class="stu-rb"><b class="nt">${esc(j.car||"")}</b><small class="nt">${esc(j.symptom||"")}</small><span class="stu-rs">${(NEXT[j.status]||[STATUS[j.status]||j.status])[0]}</span></span>
+        <span class="stu-rr">${j.unread?`<em>${j.unread}</em>`:""}<i class="ti ti-chevron-right"></i></span></button>`).join("")}</section>`:""));
+  B.querySelectorAll("[data-th]").forEach(x=>x.onclick=()=>openThread(x.dataset.th));
+  B.querySelectorAll("[data-jc]").forEach(x=>x.onclick=()=>busy(x,async()=>{const j=(await api("/api/tech/jobs/"+x.dataset.jc)).job;openChat(j,{list:true})}));
+  if($("stuRetry"))$("stuRetry").onclick=e=>busy(e.currentTarget,refreshJobs);
 }
 
 /* ── ร้านของฉัน ── */
 let SHOPED=null;
 /* แท็บร้านของฉัน: ตัวอย่างหน้าร้านแบบที่ลูกค้าเห็น + ปุ่มแก้ไข (ฟอร์มย้ายไปอยู่ในแผ่นแยก ไม่ปนกับหน้าร้าน) */
 function tabShop(){
-  const t=ME.technician;
-  $("dBody").innerHTML=`<div class="sf-prev ch-prev e3">${storeHTML(t,true)}</div>
-    <button class="lx-gh w" id="sView" style="margin-top:12px"><i class="ti ti-arrows-maximize"></i> ${T("เปิดหน้าช่องเต็มจอ","Open full channel")}</button>`;
-  const pv=$("dBody");pv.querySelectorAll(".ch-tabs button").forEach(x=>x.onclick=()=>{pv.querySelectorAll(".ch-tabs button").forEach(y=>y.classList.toggle("on",y===x));pv.querySelectorAll(".ch-pane").forEach(q=>q.classList.toggle("on",q.dataset.cp===x.dataset.ct))});
-  $("bEdit").onclick=()=>openShopEdit();
-  $("bShare").onclick=()=>{const u=location.origin+"/tech/"+encodeURIComponent(t.id);try{navigator.share?navigator.share({title:t.shop||t.name,url:u}):navigator.clipboard.writeText(u).then(()=>toast(T("คัดลอกลิงก์ร้านแล้ว","Shop link copied")))}catch(e){}};
-  $("dBody").querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z));
+  const t=myShop(),B=$("dBody"),facts=vetFacts(t),link=location.origin+"/tech/"+encodeURIComponent(t.id);
+  const vet=t.test?[`<i class="ti ti-flask stu-ri" style="color:var(--ink)"></i>`,T("ร้านทดสอบของทีมงาน","Staff test shop"),T("ลูกค้าทั่วไปไม่เห็นร้านนี้ ใช้ทดลองระบบเท่านั้น","Ordinary customers can't see this shop — for testing only")]
+    :!t.verified?[`<i class="ti ti-hourglass stu-ri"></i>`,T("รอทีมงานตรวจข้อมูล","Waiting for review"),T("ลูกค้าจะเห็นร้านเมื่อผ่านการตรวจแล้ว","Customers see your shop once it's approved")]
+    :[`<i class="ti ti-shield so-vi"></i>`,T("ผ่านการตรวจโดยทีมงาน","Approved by the team"),facts.length?facts.map(f=>f[1]).join(" · ")+(t.vetting&&t.vetting.at?T(" · ตรวจเมื่อ "," · checked ")+fmtDay(t.vetting.at):""):T("ลูกค้าเห็นป้ายผ่านการตรวจบนหน้าร้าน","Customers see the approval on your storefront")];
+  const row=(id,ic,a,b2)=>`<button class="stu-row" type="button" id="${id}"><span class="stu-ri"><i class="ti ${ic}"></i></span><span class="stu-rb"><b>${a}</b><small>${b2}</small></span><span class="stu-rr"><i class="ti ti-chevron-right"></i></span></button>`;
+  B.innerHTML=`<div class="stu-shop"><span class="stu-av"${t.avatar?` style="background-image:url('${img(t.avatar)}')"`:""}>${t.avatar?"":esc(initial(t.shop||t.name))}</span>
+      <div><b class="nt">${esc(t.shop||t.name)}</b><small>${[t.area,t.reviewCount?`★ ${Number(t.rating).toFixed(1)} (${t.reviewCount})`:T("ยังไม่มีรีวิว","No reviews yet"),t.jobs?T(t.jobs+" งานสำเร็จ",t.jobs+" jobs done"):""].filter(Boolean).map(esc).join(" · ")}</small></div></div>
+    <div class="stu-acts"><button class="lx-cta" type="button" id="sView" style="height:44px;padding:0 18px"><i class="ti ti-eye"></i>${T("ดูหน้าร้าน","View storefront")}</button>
+      <button class="lx-gh" type="button" id="sShare" style="height:44px"><i class="ti ti-share-2"></i>${T("แชร์ลิงก์ร้าน","Share link")}</button></div>
+    <div class="stu-vet" style="margin-top:14px">${vet[0]}<span><b>${vet[1]}</b><small>${vet[2]}</small></span></div>
+    <section class="stu-sec stu-list" style="margin-top:6px">
+      ${row("sEdit","ti-pencil",T("แก้ไขข้อมูลร้าน","Edit shop details"),T("รูป ชื่อ เวลาทำการ พื้นที่ เบอร์โทร","Photos, name, hours, area, phone"))}
+      ${row("sStats","ti-chart-bar",T("สถิติร้าน","Shop stats"),T("รายได้ คนเข้าดู และเส้นทางงาน","Earnings, views and job funnel"))}
+      ${row("sAi","ti-bulb",T("คำแนะนำปรับร้าน","Shop tips"),T("สิ่งที่ช่วยให้ลูกค้าเลือกร้านคุณมากขึ้น","What helps customers pick your shop"))}
+      ${row("sQr","ti-qrcode",T("ลิงก์และ QR หน้าร้าน","Shop link & QR"),T("พิมพ์ติดหน้าอู่ ลูกค้าสแกนแล้วเข้าหน้าร้าน","Print it — customers scan to open your shop"))}
+      ${row("sSet","ti-settings",T("ตั้งค่า","Settings"),T("รับงาน พักร้าน ตอบอัตโนมัติ แจ้งเตือน สีร้าน","Availability, pause, auto-reply, alerts, colour"))}
+      ${row("sHelp","ti-book",T("คู่มือช่าง","Mechanic handbook"),T("กติกาใบงาน การเสนอราคา และการรับเงิน","Job rules, quoting and getting paid"))}
+    </section>`;
   $("sView").onclick=()=>openTech(t.id);
+  $("sShare").onclick=()=>{try{navigator.share?navigator.share({title:t.shop||t.name,url:link}).catch(()=>{}):navigator.clipboard.writeText(link).then(()=>toast(T("คัดลอกลิงก์ร้านแล้ว","Shop link copied")))}catch(e){}};
+  $("sEdit").onclick=()=>openShopEdit();$("sStats").onclick=()=>studioStats();$("sAi").onclick=()=>setTab2("ai");
+  $("sQr").onclick=()=>shopQr();$("sSet").onclick=()=>studioSettings();$("sHelp").onclick=()=>{location.href="/handbook"};
+}
+/* ลิงก์และ QR ของร้าน (QR สร้างในเครื่อง โหลดไลบรารีตอนเปิดครั้งแรก) */
+function shopQr(){
+  const t=myShop(),link=location.origin+"/tech/"+encodeURIComponent(t.id);
+  sheet({push:true,url:stuUrl("qr"),slug:"qr",title:T("ลิงก์และ QR หน้าร้าน","Shop link & QR"),body:`<div class="ss-qr" style="margin-top:6px"><div id="qrB" class="ss-qrb"></div><div class="ss-qra"><code class="nt">${esc(link)}</code>
+      <button class="lx-gh" id="qrCopy" type="button"><i class="ti ti-copy"></i>${T("คัดลอกลิงก์","Copy link")}</button><button class="lx-gh" id="qrDl" type="button"><i class="ti ti-download"></i>${T("บันทึกรูป QR","Save QR image")}</button></div></div>
+    <p class="so-fine" style="margin-top:14px">${T("พิมพ์ไปติดหน้าอู่หรือบนรถ ลูกค้าสแกนแล้วเข้าหน้าร้านของคุณบน Cendon ได้ทันที","Print it for your shop or van — customers scan to open your Cendon storefront")}</p>`,
+    mount(){
+      $("qrCopy").onclick=async()=>{try{await navigator.clipboard.writeText(link);toast(T("คัดลอกลิงก์ร้านแล้ว","Shop link copied"))}catch(e){}};
+      const draw=()=>{try{$("qrB").innerHTML="";new QRCode($("qrB"),{text:link,width:180,height:180,colorDark:"#09090B",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M})}catch(e){}};
+      if(window.QRCode)draw();else{const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";sc.onload=draw;document.head.appendChild(sc)}
+      $("qrDl").onclick=()=>{const c=$("qrB").querySelector("canvas"),im=$("qrB").querySelector("img");const u=c?c.toDataURL("image/png"):im&&im.src;if(!u)return;const a=document.createElement("a");a.href=u;a.download=(t.shop||"cendon")+"-qr.png";a.click()};
+    }});
 }
 function openShopEdit(){
   const t=ME.technician;
   /* ร้านที่ผ่านการตรวจแล้ว: ความถนัด งานที่รับ ตำแหน่ง และรูปร้าน/ผลงาน คือหลักฐานที่ตรวจแล้ว — เปลี่ยนต้องให้ทีมงานตรวจใหม่ (backend บังคับเหมือนกัน) */
   const locked=!t.test;
   SHOPED={add:[],remove:[],lat:t.lat,lng:t.lng,cover:t.cover||null,newCover:null};
-  sheet({title:T("แก้ไขร้าน","Edit shop"),slug:"edit",full:true,push:true,body:`
+  sheet({title:T("แก้ไขร้าน","Edit shop"),url:stuUrl("edit"),slug:"edit",full:true,push:true,body:`
     <p class="h4" style="margin-top:0">${T("รูปโปรไฟล์ร้าน","Shop profile photo")}</p>
     <div class="ed-av"><span class="ch-av" id="sAv">${initial(t.shop||t.name)}</span><div><button class="lx-gh" id="sAvB" type="button"><i class="ti ti-camera"></i> ${T("เปลี่ยนรูปโปรไฟล์","Change photo")}</button><small>${T("แนะนำโลโก้ร้านหรือรูปหน้าร้าน","Your logo or storefront")}</small></div></div><input type="file" id="sAvF" accept="image/*" hidden data-crop="1:1" data-crop-round data-crop-w="640" data-crop-title="${T("รูปโปรไฟล์ร้าน","Shop photo")}"/>
     <p class="h4" hidden>${T("รูปปก (แบนเนอร์)","Cover banner")}</p>
@@ -4688,7 +5056,7 @@ function openShopEdit(){
       line:$("sLine").value,facebook:$("sFb").value,address:$("sAddr").value,...(SHOPED.newAvatar?{addAvatar:SHOPED.newAvatar}:{}),
       ...(SHOPED.newCover?{addCover:SHOPED.newCover}:{cover:SHOPED.remove.includes(SHOPED.cover)?0:(SHOPED.cover||0)})}})}
     catch(err){$("sErr").textContent=tr(err.message);throw err}
-    toast(T("บันทึกร้านแล้ว","Shop saved"));await refreshMe();await load();closeSheet();if(DT==="shop")tabShop();drawHead(ME.technician);
+    toast(T("บันทึกร้านแล้ว","Shop saved"));await refreshMe();await load();closeSheet();if(MODE==="tech")drawTab();
   });
   }});
 }
@@ -4704,7 +5072,7 @@ function tabAi(){
     $("dBody").innerHTML=(d.summary?`<div class="aisum"><b><i class="ti ti-sparkles"></i>${T("สรุปจาก AI","AI summary")}</b><p class="nt">${esc(d.summary)}</p></div>`:"")+
       d.tips.map((x,i)=>`<div class="tip e3" style="animation-delay:${i*60}ms"><span class="sq" style="--c1:${lv[x.level][0]}"><i class="ti ${lv[x.level][1]}"></i></span><div><b>${esc(x.title)}</b><p>${esc(x.text)}</p>${x.action&&act[x.action]?`<button class="go" data-a="${x.action}">${act[x.action][1]} →</button>`:""}</div></div>`).join("")+
       (DSTATS&&DSTATS.reviews.length?`<p class="h4">${T("รีวิวล่าสุด","Latest reviews")}</p>`+DSTATS.reviews.map(r=>`<div class="kv"><p><span>${"★".repeat(r.rating)}</span><b class="nt">${esc(r.text)}</b></p></div>`).join(""):"");
-    $("dBody").querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{const a=act[b.dataset.a][0];if(a==="online")return $("dOn").click();if(a==="reviews")return;DT=a;drawTab()});
+    $("dBody").querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{const a=act[b.dataset.a][0];if(a==="online")return applyStatus("on",b);if(a==="reviews")return;if(a==="shop")return openShopEdit();setTab2(a)});
   });
 }
 
@@ -4723,7 +5091,7 @@ function startAlerts(){
       if(fresh.length){fresh.forEach(p=>SEEN.add(p.id));ls.set("spire_seen_posts",[...SEEN].slice(-300));
         if(!firstNear){ding();try{navigator.vibrate&&navigator.vibrate([180,80,180])}catch(e){}
           toast(fresh.some(p=>p.urgent)?T("มีงานด่วนใกล้คุณ!","Urgent job nearby!"):T(`งานใหม่ใกล้คุณ ${fresh.length} งาน`,`${fresh.length} new job${fresh.length>1?"s":""} nearby`),"ti-bell-ringing");
-          if(DT==="find")tabFind();else $("findDot").hidden=false}}
+          if(MODE==="tech"&&DT==="find")tabFind();else{FIND_NEW=true;stuBadges()}}}
       firstNear=false}catch(e){}
     alertT=setTimeout(tick,document.hidden?60000:20000)};
   tick();

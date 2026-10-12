@@ -169,3 +169,7 @@ test('equipment UI: pending work polls only the equipment endpoint and renders t
 test('equipment UI: unconfirmed documents never imply the model has no equipment or require extra details',async()=>{
   const f=fixture({reply:{status:'failed',code:'unconfirmed'}}),el=await f.pane(car,'equip');assert.match(el.innerHTML,/does not mean it has no equipment/);assert.match(el.innerHTML,/Additional car details remain optional/);assert.doesNotMatch(el.innerHTML,/Check model year|No equipment list found/);
 });
+test('equipment UI: a one-pass sourced result is explicit and never claims repeat confirmation',async()=>{
+  const reply=equipmentReply();reply.data.coverage={passes:1,siteCount:1};reply.data.score.confirmed=0;
+  const f=fixture({reply}),el=await f.pane(car,'equip');assert.match(el.innerHTML,/Only one extraction pass completed/);assert.match(el.innerHTML,/no repeat agreement is claimed/);assert.doesNotMatch(el.innerHTML,/Two extraction passes are not independent/);
+});

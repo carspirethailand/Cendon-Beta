@@ -5499,6 +5499,20 @@ function row(ic,title,sub,right){
     ${right||""}</div>`;
 }
 
+/* สมัครช่าง / Studio — บนคอมอยู่ในเมนูรูปโปรไฟล์ แต่มือถือไม่มีเมนูนั้น จึงต้องอยู่ในแท็บบัญชี
+   ป้ายอ่านจากสถานะที่หน้าหลักจำไว้ (spire_partner) · ยังไม่รู้ = "สมัครเป็นช่าง" ส่วน /studio พาไปหน้าที่ถูกเองเสมอ */
+function partnerLink(u){
+  let s="none";
+  try{const p=JSON.parse(localStorage.getItem("spire_partner")||"null");if(p&&u.uid&&p.uid===u.uid)s=p.s}catch(e){}
+  const [ic,title,sub]=s==="shop"?["ti-building-store",t("Studio · ร้านของฉัน","Studio · My shop"),t("งาน ข้อความ บริการ และหน้าร้าน","Jobs, messages, services and your shop page")]
+    :s==="pending"?["ti-file-certificate",t("ใบสมัครพาร์ทเนอร์","Partner application"),t("กำลังพิจารณา · ดูสถานะ","Under review · see status")]
+    :s==="rejected"?["ti-file-certificate",t("ใบสมัครพาร์ทเนอร์","Partner application"),t("ต้องแก้ไข · ดูเหตุผล","Needs changes · see why")]
+    :["ti-tool",t("สมัครเป็นช่าง","Become a mechanic"),t("รับงานซ่อมจากลูกค้าใกล้คุณ","Get repair jobs from customers near you")];
+  const href=u.uid||u.email?"/studio":"/login?next=%2Fjoin";
+  return `<a class="set-ext" href="${href}" data-partner style="margin-top:14px"><i class="ti ${ic}"></i>
+    <span><b>${title}</b><small>${sub}</small></span><i class="ti ti-chevron-right"></i></a>`;
+}
+
 function body(){
   const u=user()||{};
   if(tab==="general"){
@@ -5539,6 +5553,7 @@ function body(){
         t("รหัสผ่านอยู่กับผู้ให้บริการ เราไม่เคยเห็น","Your password stays with the provider — we never see it"))}
       ${row("ti-car",t("รถในการาจ","Cars in your garage"),"",
         `<b class="set-num">${cars().length}</b>`)}
+      ${partnerLink(u)}
       ${u.uid||u.email?"":row("ti-login",t("ยังไม่ได้เข้าสู่ระบบ","Not signed in"),
         t("เข้าสู่ระบบเพื่อเก็บรถ ใบงาน และรับแจ้งเตือน","Sign in to keep your cars, jobs and alerts"),
         `<a class="set-btn primary" style="margin-top:0" href="./login?next=${encodeURIComponent(location.pathname+location.search)}">${t("เข้าสู่ระบบ","Sign in")}</a>`)}

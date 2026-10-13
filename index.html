@@ -4619,9 +4619,9 @@ function step(n){
     <label class="chk"><input type="checkbox" class="dec"/><span>ข้าพเจ้าได้อ่านและยอมรับ <button type="button" class="lnk" id="dTerms">ข้อตกลงพาร์ทเนอร์</button></span></label>
     <label class="chk"><input type="checkbox" class="dec"/> ยินยอมให้ Cendon เก็บและใช้ข้อมูลเพื่อพิจารณาใบสมัคร และโทรติดต่อยืนยันตัวตน</label>
     <label class="chk"><input type="checkbox" class="dec"/> ยินยอมให้ส่งรูปอู่ รูปผลงาน และคำอธิบายงาน ให้ Google Gemini ช่วยตรวจหลักฐาน</label>
-    <label class="chk"><input type="checkbox" class="dec"/> ยินยอมให้ส่ง<b>รูปบัตรประชาชน</b>ให้ Google Gemini อ่านเลขบัตรและวันหมดอายุ เพื่อเทียบกับข้อมูลที่กรอก (เลขไม่ตรงหรืออ่านไม่ได้ ใบสมัครจะไม่ผ่าน)</label>
+    <label class="chk"><input type="checkbox" class="dec"/> <span>ยินยอมให้ส่ง<b>รูปบัตรประชาชน</b>ให้ Google Gemini อ่านเลขบัตรและวันหมดอายุ เพื่อเทียบกับข้อมูลที่กรอก (เลขไม่ตรงหรืออ่านไม่ได้ ใบสมัครจะไม่ผ่าน)</span></label>
     <p class="h4">ไม่บังคับ</p>
-    <label class="chk"><input type="checkbox" id="dFace"/> ยินยอมให้ส่ง<b>รูปคู่บัตร (เซลฟี่)</b>พร้อมรูปบัตรให้ Google Gemini เทียบใบหน้า — ข้อมูลใบหน้าเป็นข้อมูลอ่อนไหว ถ้าไม่ยินยอม ทีมงานจะเทียบให้เอง และอาจขอวิดีโอคอลยืนยันตัวตน</label>
+    <label class="chk"><input type="checkbox" id="dFace"/> <span>ยินยอมให้ส่ง<b>รูปคู่บัตร (เซลฟี่)</b>พร้อมรูปบัตรให้ Google Gemini เทียบใบหน้า — ข้อมูลใบหน้าเป็นข้อมูลอ่อนไหว ถ้าไม่ยินยอม ทีมงานจะเทียบให้เอง และอาจขอวิดีโอคอลยืนยันตัวตน</span></label>
     <p class="note">AI ไม่ได้อนุมัติแทนคน ทีมงานยังต้องตรวจตัวตน โทรยืนยัน และตรวจทักษะก่อนอนุมัติ · รูปบัตรและเซลฟี่ถูกลบหลังพิจารณา · หากไม่ยินยอมให้ AI ตรวจ ติดต่อทีมงานเพื่อสอบถามทางเลือก</p>`,
     foot:'<button class="btn s" id="aBk">ย้อนกลับ</button><button class="btn p" id="aGo" disabled>ยื่นใบสมัครจริง</button>',
     mount(b){
@@ -5252,6 +5252,8 @@ async function refreshMe(){
   try{ME=await api("/api/tech/me")}catch(e){ME=null}
   const n=ME&&ME.attention||0;$("jobDot").hidden=!n;$("jobDot").textContent=n;
   const t=ME&&ME.technician,a=ME&&ME.application;
+  /* หน้าบัญชี (มือถือ) อ่านค่านี้เพื่อเขียนปุ่มว่า "สมัครเป็นช่าง" หรือ "Studio" — เก็บแค่สถานะ ไม่มีข้อมูลส่วนตัว */
+  if(ME)try{localStorage.setItem("spire_partner",JSON.stringify({uid:U.uid,s:t&&(!t.test||ME.staff)?"shop":a&&!a.test?a.status:"none"}))}catch(e){}
   $("joinT").textContent=t&&!t.test?"พื้นที่พาร์ทเนอร์":a&&!a.test&&a.status==="pending"?"ใบสมัครกำลังพิจารณา":"ร่วมเป็นพาร์ทเนอร์ช่าง";
   $("joinS").textContent=t&&!t.test?"ดูงานที่ลูกค้าส่งมา":a&&!a.test?"เลขที่ "+(a.appNo||"")+(a.status==="rejected"?" · ต้องแก้ไข":""):ME&&ME.staff?"ทีมงานเป็นช่างได้ทันที":"รับงานจากลูกค้าในพื้นที่";
   staffBar();drawModes();refreshJobs().then(()=>{greet();if(MODE==="tech")dash()});

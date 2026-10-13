@@ -477,7 +477,7 @@ body[data-phase="thread"] .composer{display:block;animation:compIn .5s cubic-bez
 .sheet-head b{font-family:var(--kd);font-size:18px;flex:1}
 .sheet-head .p-btn{width:32px;height:32px}
 .sheet-body{padding:4px 20px 22px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:12px}
-.theme-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.theme-row{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .th-opt{display:flex;flex-direction:column;align-items:center;gap:7px;padding:10px 4px;border-radius:15px;
   border:1.5px solid var(--c-line);transition:.18s;font-size:11px;font-weight:600;color:var(--c-mut)}
 .th-opt:hover{border-color:var(--c-acc)}
@@ -3615,12 +3615,11 @@ window.spireApplySetup=()=>{ const k=level();
       <button class="lang-opt" data-l="de" onclick="setLang('de')">Deutsch</button>
       <button class="lang-opt" data-l="es" onclick="setLang('es')">Español</button>
     </div>
-    <div class="sheet-label" data-t="s.theme">ธีมห้องแชต</div>
+    <div class="sheet-label" data-t="s.theme">ธีม</div>
     <div class="theme-row">
-      <button class="th-opt" data-th="midnight" onclick="setChatTheme('midnight')"><span class="th-dot midnight"></span>Midnight</button>
-      <button class="th-opt" data-th="aurora" onclick="setChatTheme('aurora')"><span class="th-dot aurora"></span>Aurora</button>
-      <button class="th-opt" data-th="sunset" onclick="setChatTheme('sunset')"><span class="th-dot sunset"></span>Sunset</button>
-      <button class="th-opt" data-th="pearl" onclick="setChatTheme('pearl')"><span class="th-dot pearl"></span>Pearl</button>
+      <!-- เหลือแค่สว่างกับมืด เหมือนหน้าตั้งค่าทุกหน้า · ใช้ตัวตั้งธีมกลาง ไม่ใช่ธีมห้องแชตแยก -->
+      <button class="th-opt" data-th="light" onclick="setChatTheme('light')"><span class="th-dot pearl"></span><span data-t="s.light">สว่าง</span></button>
+      <button class="th-opt" data-th="dark" onclick="setChatTheme('dark')"><span class="th-dot midnight"></span><span data-t="s.dark">มืด</span></button>
     </div>
     <div class="sheet-label" data-t="s.chat">บทสนทนา</div>
     <button class="sheet-btn" onclick="newSession();closeSheets()"><i class="ti ti-plus"></i> <span data-t="h.new">เริ่มแชตใหม่</span></button>
@@ -3886,7 +3885,9 @@ const T={
  "comp.ph":["พิมพ์อาการรถ หรือถามอะไรก็ได้...","Describe a car issue or ask anything...","車の症状を入力、または質問...","描述车辆症状或提问...","Autoproblem beschreiben oder fragen...","Describa un problema o pregunte..."],
  "s.title":["ตั้งค่า","Settings","設定","设置","Einstellungen","Ajustes"],
  "s.lang":["ภาษา / Language","Language","言語","语言","Sprache","Idioma"],
- "s.theme":["ธีมห้องแชต","Chat theme","チャットテーマ","聊天主题","Chat-Design","Tema del chat"],
+ "s.theme":["ธีม","Theme","テーマ","主题","Design","Tema"],
+ "s.light":["สว่าง","Light","ライト","浅色","Hell","Claro"],
+ "s.dark":["มืด","Dark","ダーク","深色","Dunkel","Oscuro"],
  "s.chat":["บทสนทนา","Conversation","会話","对话","Unterhaltung","Conversación"],
  "s.clear":["ล้างบทสนทนานี้","Clear this chat","このチャットを消去","清除此对话","Diesen Chat löschen","Borrar este chat"],
  "h.title":["ประวัติบทสนทนา","Chat history","チャット履歴","聊天记录","Chatverlauf","Historial"],
@@ -5493,8 +5494,7 @@ function setChatTheme(t){
   root.classList.add("theme-fade");
   clearTimeout(setChatTheme._t);
   setChatTheme._t=setTimeout(()=>root.classList.remove("theme-fade"),560);
-  LS.set("chatTheme",t);
-  root.setAttribute("data-ctheme",t);
+  if(window.spireSetTheme)window.spireSetTheme(t);else{LS.set("chatTheme",t);root.setAttribute("data-ctheme",t)}
   document.querySelector('meta[name="theme-color"]').content=getComputedStyle(document.documentElement).getPropertyValue("--c-bg0").trim()||"#05070F";
   markTheme();
 }

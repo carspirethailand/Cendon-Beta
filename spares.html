@@ -4910,14 +4910,16 @@ function openChat(opts){opts=opts||{};
   if(opts.starter)p.set("starter","1");
   if(window.CendonPaint)CendonPaint.prepare('/chat');location.href="/chat"+(p.toString()?"?"+p.toString():"");
 }
+/* ปุ่มแชตลอย = กล่องข้อความ (Cendon AI ปักหมุด + ช่างทุกร้าน) แบบเดียวกับแท็บแชตในมือถือ
+   จุดแดง = มีข้อความจากช่างที่ยังไม่อ่าน (หน้าหลักนับไว้ใน spire_msgUnread) */
 function updateFabBadge(){
   const badge=$("fabBadge");if(!badge)return;
-  const c=selCar();let has=false;
-  if(c){const sess=LS.get("sess_"+c.id,[]);has=Array.isArray(sess)&&sess.some(s=>s.msgs&&s.msgs.length);
-    if(!has){const legacy=LS.get("chatMsgs_"+c.id,[]);has=!!(legacy&&legacy.length)}}
-  badge.classList.toggle("show",has);
+  let n=0;try{n=+(localStorage.getItem("spire_msgUnread")||0)}catch(e){}
+  badge.classList.toggle("show",n>0);
 }
-($("fab")||{}).onclick=()=>openChat({});
+addEventListener("storage",e=>{if(e.key==="spire_msgUnread")updateFabBadge()});
+($("fab")||{}).onclick=()=>{if(window.CendonPaint)CendonPaint.prepare('/messages');location.href="/messages"};
+if($("fab"))$("fab").setAttribute("aria-label",(window.lang||"th")==="th"?"ข้อความ":"Messages");
 
 /* ===== GARAGE CONTROL ===== */
 function garage(){return window.CendonCars?CendonCars.filter(LS.get("garage",[])):LS.get("garage",[])}
@@ -5238,11 +5240,8 @@ const T=(th,en)=>(window.spireT?window.spireT(th,en):((window.lang||"th")==="en"
 const KEY="spire_theme";
 
 const THEMES=[
-  {k:"light", th:"สว่าง",   en:"Light"},
-  {k:"dark",  th:"มืด",     en:"Dark"},
-  {k:"ocean", th:"มหาสมุทร",en:"Ocean"},
-  {k:"plant", th:"ต้นไม้",  en:"Plant"},
-  {k:"magma", th:"ลาวา",    en:"Magma"}
+  {k:"light", th:"สว่าง", en:"Light"},
+  {k:"dark",  th:"มืด",   en:"Dark"}
 ];
 const KEYS=THEMES.map(x=>x.k);
 
@@ -5250,9 +5249,11 @@ const KEYS=THEMES.map(x=>x.k);
    ไม่งั้นคนที่เคยตั้งไว้จะเปิดมาเจอธีมผิดโดยไม่รู้ว่าทำไม */
 const OLD={warm:"light",pearl:"light",
            carbon:"dark",night:"dark",midnight:"dark",cyber:"dark",
-           aurora:"ocean",
-           emerald:"plant",moss:"plant",
-           sunset:"magma"};
+           /* สามธีมสีที่เลิกใช้ ให้ตกลงมาที่โครงสีที่ใกล้ที่สุด
+              สีเด่นของมันย้ายไปอยู่ในตัวเลือกสีหลักแทน */
+           aurora:"dark",ocean:"dark",
+           emerald:"light",plant:"light",moss:"light",
+           sunset:"dark",magma:"dark"};
 
 function read(){
   let v=null;

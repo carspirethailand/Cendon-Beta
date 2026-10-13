@@ -898,6 +898,18 @@ html[data-theme="dark"] .ib-av.cen{box-shadow:inset 0 0 0 1px rgba(255,255,255,.
   body:has(.bs.on.inbox) #mnav .mtab[data-mnav="chat"]{color:var(--accent,#D9733C)}
   body:has(.bs.on.inbox) #mnav .mtab[data-mnav="chat"] .mt-i{background:color-mix(in srgb,var(--accent,#D9733C) 20%,transparent)}
 }
+/* ปุ่มแชตลอยมุมขวาล่าง (คอม) — ขนาด สี ตำแหน่งเดียวกับหน้าอื่น กดแล้วเปิดกล่องข้อความ (Cendon AI + ช่างทุกร้าน)
+   มือถือไม่มี เพราะแชตเป็นแท็บอยู่ในแถบล่างแล้ว · ซ่อนตอนเปิดแผนที่ / Studio / หน้าคุยกับช่าง */
+.ib-fab{--fab:#E9682A;position:fixed;right:22px;bottom:22px;z-index:90;width:60px;height:60px;border-radius:50%;display:grid;place-items:center;padding:0;cursor:pointer;
+  background:var(--fab);color:#fff;font-size:27px;border:1px solid rgba(0,0,0,.16);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 12px 26px -12px var(--fab);transition:transform .22s}
+[data-theme="dark"] .ib-fab{--fab:#F07A36}
+.ib-fab:hover{transform:scale(1.07)}.ib-fab:active{transform:scale(.96)}
+.ib-fab .ti{font-size:27px}
+.ib-fab i.ib-fab-dot{position:absolute;top:2px;right:2px;width:12px;height:12px;border-radius:50%;background:#E53E3E;border:2px solid var(--bg)}
+.ib-fab [hidden]{display:none!important}
+body.onmap .ib-fab,body[data-mode="tech"] .ib-fab,body:has(.chat.on) .ib-fab,body:has(.bs.on.inbox) .ib-fab{display:none}
+@media(max-width:760px){.ib-fab{display:none!important}}
 /* ══ Cendon Studio ══
    กรอบคงที่ ไม่เล่นแอนิเมชันเข้าใหม่ทุกครั้งที่เปลี่ยนหน้า · เส้นคั่นแทนการ์ดซ้อน · ปุ่มหลักสีหมึก ส้มเป็นแค่ขีด/จุดบอกตำแหน่ง */
 body[data-mode="tech"] .navwrap,body[data-mode="tech"] #mnav,body[data-mode="tech"] header.top{display:none!important}
@@ -2080,6 +2092,7 @@ a.mtab{text-decoration:none}
   <input type="file" id="chFile" accept="image/*,video/*" multiple hidden data-nocrop>
 </div>
 
+<button class="ib-fab" id="ibFab" type="button" aria-label="ข้อความ"><i class="ti ti-message-chatbot"></i><i class="ib-fab-dot" id="ibFabDot" hidden></i></button>
 <div class="toast" id="toast"><i class="ti ti-check"></i><span id="toastT"></span></div>
 
 <script>
@@ -4349,6 +4362,10 @@ async function inbox(){
   }catch(e){if(SH.cur&&SH.cur.inbox)paint(cached?convos(cached.threads,cached.jobs):[],{err:1})}
 }
 window.openInbox=()=>inbox();
+/* ปุ่มแชตลอย (คอม): เปิดกล่องข้อความแบบเดียวกับแท็บแชตในมือถือ · จุดแดง = มีข้อความช่างที่ยังไม่อ่าน */
+$("ibFab").onclick=()=>inbox();$("ibFab").setAttribute("aria-label",T("ข้อความ","Messages"));
+const fabDot=()=>{let n=0;try{n=+(localStorage.getItem("spire_msgUnread")||0)}catch(e){}$("ibFabDot").hidden=!(n>0)};
+addEventListener("spire:unread",fabDot);addEventListener("storage",e=>{if(e.key==="spire_msgUnread")fabDot()});fabDot();
 
 let CHL=null;
 function closeChat(fromNav){

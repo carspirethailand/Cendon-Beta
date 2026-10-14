@@ -1465,6 +1465,38 @@ body{background:var(--bg);letter-spacing:-.005em}
 .lx-gch .lx-pav{width:28px;height:28px;margin:0;border-width:0;font-size:12px;flex:none}
 .lx-gch b{font:600 13.5px/1.3 var(--kb);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lx-gch .mine-tag{flex:none;font-size:11px}
+/* สปอนเซอร์: ป้ายบอกลูกค้าเสมอ สีกลาง ๆ ไม่แย่งสายตาจากราคา · ปุ่มของเจ้าของอยู่ใต้การ์ด */
+.lx-gch .ad-tag{flex:none;margin-left:auto;padding:2px 8px;border-radius:999px;font:600 10.5px/1.4 var(--kb);font-style:normal;letter-spacing:.02em;color:var(--muted);background:var(--surface-2);border:1px solid var(--line)}
+.lx-gch .mine-tag+.ad-tag{margin-left:4px}
+.sp-it{display:flex;flex-direction:column;gap:8px;min-width:0}
+.sp-it>.lx-gc{flex:1}
+.sp-btn{display:flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:6px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:600 13.5px/1.3 var(--kb);cursor:pointer;text-align:center}
+.sp-btn .ti{font-size:17px;color:var(--accent)}
+.sp-btn small{font:500 12px var(--kb);color:var(--muted)}
+.sp-btn.on{background:color-mix(in srgb,var(--accent) 9%,var(--surface));border-color:color-mix(in srgb,var(--accent) 38%,var(--line))}
+.gd-sp{display:flex;align-items:center;gap:10px;width:100%;margin-top:10px;padding:11px 14px;border-radius:14px;border:1px dashed color-mix(in srgb,var(--accent) 45%,var(--line));background:none;color:var(--ink);font:600 14px/1.35 var(--kb);text-align:left;cursor:pointer}
+.gd-sp .ti:first-child{font-size:19px;color:var(--accent)}.gd-sp .ti:last-child{margin-left:auto;color:var(--faint)}
+.gd-sp small{display:block;font:500 12px var(--kb);color:var(--muted)}
+.gd-sp.on{border-style:solid;background:color-mix(in srgb,var(--accent) 8%,var(--surface))}
+.sps{display:grid;gap:18px}
+.sps-prev{width:min(300px,100%);pointer-events:none}
+.sps-now{display:flex;gap:11px;align-items:center;padding:12px 14px;border-radius:14px;background:color-mix(in srgb,var(--accent) 9%,var(--surface));border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line));font-size:14px;line-height:1.45}
+.sps-now .ti{font-size:20px;color:var(--accent);flex:none}
+.sps h3{margin:0 0 10px;font:700 15px var(--kd)}
+.sps-li{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.sps-li li{display:flex;gap:10px;font-size:14px;line-height:1.5;color:var(--ink)}
+.sps-li .ti{color:var(--accent);font-size:18px;flex:none;margin-top:1px}
+.sps-days{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.sps-days button{min-height:58px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:700 16px var(--kd);display:grid;place-content:center;gap:2px;cursor:pointer}
+.sps-days button small{font:500 11.5px var(--kb);color:var(--muted)}
+.sps-days button.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.sps-days button:disabled{opacity:.4;cursor:not-allowed}
+.sps-price{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding-top:14px;border-top:1px solid var(--line-2);font-size:14px;color:var(--muted)}
+.sps-price b{font:700 19px var(--kd);color:var(--ink)}
+.sps-fine{margin:0;font-size:12.5px;line-height:1.55;color:var(--muted)}
+.sps-err{margin:0;color:#d4483a;font-size:13px}
+.sps-err:empty{display:none}
+.sps-ft{display:flex;gap:8px;width:100%}.sps-ft .lx-cta{flex:1}
 .lx-gcf{display:flex;flex:1;flex-direction:column;gap:2px;padding:10px 12px 12px}
 .lx-gct{margin-bottom:4px;font:600 14px/1.4 var(--kb);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .lx-gcr{margin-top:auto}
@@ -3045,13 +3077,52 @@ function rankGigs(list){
 function gigCard(g,i,o){
   const t=g.tech||{},ph=(g.photos||[])[0],av=t.avatar,n=t.reviewCount||0,fit=o&&o.fit&&ph;
   return `<button class="lx-gc" data-g="${g.id}" style="animation-delay:${Math.min(i*50,500)}ms">
-    <span class="lx-gch"><span class="lx-pav"${av?` style="background-image:url('${img(av)}')"`:""}>${av?"":initial(t.shop||t.name)}</span><b class="nt">${esc(t.shop||t.name||"")}</b>${isMine(t)?'<em class="mine-tag">ของคุณ</em>':""}</span>
+    <span class="lx-gch"><span class="lx-pav"${av?` style="background-image:url('${img(av)}')"`:""}>${av?"":initial(t.shop||t.name)}</span><b class="nt">${esc(t.shop||t.name||"")}</b>${isMine(t)?'<em class="mine-tag">ของคุณ</em>':""}${g.ad?`<em class="ad-tag">${T("สปอนเซอร์","Sponsored")}</em>`:""}</span>
     <span class="lx-gcv${fit?" fit":""}"${ph&&!fit?` style="background-image:url('${img(ph)}')"`:""}>${fit?`<img class="lx-fb" src="${img(ph)}" alt="" aria-hidden="true" loading="lazy"><img class="lx-fi" src="${img(ph)}" alt="" loading="lazy">`:""}${(g.photos||[]).length>1?`<em class="lx-gn"><i class="ti ti-photo"></i>${g.photos.length}</em>`:""}</span>
     <span class="lx-gcf">
       <b class="lx-gct nt">${esc(g.title)}</b>
       <span class="lx-gcr">${n?`<i class="ti ti-star-filled"></i><b>${Number(t.rating).toFixed(1)}</b><small>(${n} รีวิว)</small>`:`<i class="ti ti-star"></i><small>ยังไม่มีรีวิว</small>`}</span>
       <span class="lx-gp">฿${money(g.price)}</span>
     </span></button>`;
+}
+/* ═══ สปอนเซอร์บริการ (ช่วงทดลองฟรี — มีระบบจ่ายเงินแล้วค่อยใส่ราคาตรงนี้) ═══ */
+const spOn=g=>!!(g&&g.sponsor&&g.sponsor.until>Date.now());
+const spDate=(d,y)=>new Date(d).toLocaleDateString(LOC,{day:"numeric",month:"short",...(y?{year:"numeric"}:{})});
+/* การ์ดบริการของตัวเอง (หน้าร้านตัวเอง · Studio): ใต้การ์ดมีปุ่มสปอนเซอร์ */
+function ownCard(g,i){
+  return `<div class="sp-it">${gigCard(g,i,{fit:true})}<button class="sp-btn${spOn(g)?" on":""}" type="button" data-spon="${g.id}"><i class="ti ti-rocket"></i>${spOn(g)
+    ?`<span>${T("สปอนเซอร์อยู่","Sponsored")} <small>· ${T("ถึง","until")} ${spDate(g.sponsor.until)}</small></span>`:T("สปอนเซอร์บริการนี้","Sponsor this service")}</button></div>`;
+}
+function wireSp(host){host.querySelectorAll("[data-spon]").forEach(b=>b.onclick=e=>{e.stopPropagation();const g=(GIGS||[]).find(x=>x.id==b.dataset.spon);if(g)sponsorSheet(g)})}
+function sponsorSheet(g){
+  const t={...(g.tech||{}),...(TECHS.find(x=>x.id===(g.tech||{}).id)||{}),...(myShop()||{})},on=spOn(g),can=!!(t.verified||t.test);
+  const c=RAIL.find(x=>x.id===gigCat(g)),top=c&&c.base?RAIL.find(x=>x.id===c.base):c,cat=esc(tr((top||OTHER_CAT).th)),R=Math.max(+t.radius||0,30);
+  const left=on?Math.ceil((g.sponsor.until-Date.now())/864e5):0,room=d=>!on||left+d<=30;
+  const DAYS=[[3,"ลองดู","Try it"],[7,"แนะนำ","Popular"],[14,"ยาวสุด","Longest"]];
+  let days=[7,3,14].find(room)||7;
+  sheet({title:T("สปอนเซอร์บริการ","Sponsor this service"),push:$("bs").classList.contains("on"),body:`<div class="sps">
+    ${on?`<div class="sps-now"><i class="ti ti-rocket"></i><span>${T(`กำลังสปอนเซอร์ถึง <b>${spDate(g.sponsor.until,1)}</b> · เหลือ ${left} วัน`,`Sponsored until <b>${spDate(g.sponsor.until,1)}</b> · ${left} day${left===1?"":"s"} left`)}</span></div>`:""}
+    <div><h3>${T("ลูกค้าจะเห็นแบบนี้","What customers see")}</h3><div class="sps-prev">${gigCard({...g,ad:true},0)}</div></div>
+    <div><h3>${T("สิ่งที่ได้","What you get")}</h3><ul class="sps-li">
+      <li><i class="ti ti-arrow-big-up-lines"></i><span>${T(`ขึ้นก่อนบริการอื่นในหน้าแรก และหน้าหมวด "${cat}"`,`Shown first on the home page and in "${cat}"`)}</span></li>
+      <li><i class="ti ti-map-pin"></i><span>${T(`เฉพาะลูกค้าที่อยู่ในรัศมีรับงานของคุณ (${R} กม.) ไม่เสียไปกับคนที่อยู่ไกล`,`Only to customers within your service area (${R} km)`)}</span></li>
+      <li><i class="ti ti-tag"></i><span>${T("มีป้าย “สปอนเซอร์” บอกลูกค้าตรง ๆ · แต่ละแถวมีสปอนเซอร์ขึ้นก่อนได้ไม่เกิน 2 บริการ","Marked “Sponsored” for customers · at most 2 sponsored services lead each row")}</span></li></ul></div>
+    <div><h3>${on?T("ต่อเวลา","Extend"):T("ระยะเวลา","How long")}</h3><div class="sps-days" id="spD">${DAYS.map(([d,th,en])=>`<button type="button" data-d="${d}" class="${d===days?"on":""}"${room(d)?"":" disabled"}>${T(d+" วัน",d+" days")}<small>${T(th,en)}</small></button>`).join("")}</div>
+      ${on&&!room(3)?`<p class="sps-fine" style="margin-top:8px">${T("ต่อเวลาได้รวมไม่เกิน 30 วันข้างหน้า","You can extend up to 30 days ahead")}</p>`:""}</div>
+    <div class="sps-price"><span>${T("ราคา","Price")}</span><b>${T("ฟรี · ช่วงทดลอง","Free · trial")}</b></div>
+    <p class="sps-fine">${can?T("ช่วงทดลองยังไม่เก็บเงิน เมื่อเริ่มคิดค่าบริการ เราจะแจ้งราคาก่อนเสมอ และไม่ต่ออายุให้อัตโนมัติ","Free while we test. We'll always show the price before anything is charged, and nothing renews automatically.")
+      :T("ร้านต้องผ่านการตรวจจากทีมงานก่อน จึงจะสปอนเซอร์ได้ (ตอนนี้ลูกค้ายังมองไม่เห็นร้านของคุณ)","Your shop needs to pass the team's review before you can sponsor — customers can't see it yet.")}</p>
+    <p class="sps-err" id="spErr"></p></div>`,
+    foot:`<div class="sps-ft">${on?`<button class="lx-gh" type="button" id="spStop">${T("หยุดสปอนเซอร์","Stop")}</button>`:""}<button class="lx-cta" type="button" id="spGo"${can&&room(days)?"":" disabled"}><i class="ti ti-rocket"></i><span id="spGoT"></span></button></div>`,
+    mount(b){
+      const label=()=>{$("spGoT").textContent=on?T(`ต่อเวลา ${days} วัน · ฟรี`,`Extend ${days} days · free`):T(`เริ่มสปอนเซอร์ ${days} วัน · ฟรี`,`Sponsor ${days} days · free`)};label();
+      b.querySelectorAll("#spD button").forEach(x=>x.onclick=()=>{days=+x.dataset.d;b.querySelectorAll("#spD button").forEach(y=>y.classList.toggle("on",y===x));label()});
+      $("spGo").onclick=e=>busy(e.currentTarget,async()=>{$("spErr").textContent="";
+        try{const r=await api("/api/tech/gig/sponsor",{body:{id:g.id,days}});toast(T(`สปอนเซอร์แล้ว ถึง ${spDate(r.sponsor.until)}`,`Sponsored until ${spDate(r.sponsor.until)}`));await afterGig()}
+        catch(err){$("spErr").textContent=err.message}});
+      if($("spStop"))$("spStop").onclick=e=>busy(e.currentTarget,async()=>{if(!confirm(T("หยุดสปอนเซอร์บริการนี้ตอนนี้เลย?","Stop sponsoring this service now?")))return;$("spErr").textContent="";
+        try{await api("/api/tech/gig/unsponsor",{body:{id:g.id}});toast(T("หยุดสปอนเซอร์แล้ว","Sponsorship stopped"));await afterGig()}catch(err){$("spErr").textContent=err.message}});
+    }});
 }
 /* ═══ หน้ารายละเอียดบริการ ═══
    คอม: ซ้าย = รูป + รายละเอียด · ขวา = การ์ด (บน: หัวข้อ/ร้าน/ความมั่นใจ · ล่าง: ราคา/จอง/ทัก) ติดอยู่กับที่ตอนเลื่อน
@@ -3071,7 +3142,7 @@ function openGig(id){
     ["ti-calendar","ลงประกาศ",new Date(g.createdAt).toLocaleDateString(LOC,{day:"numeric",month:"short",year:"numeric"})]].filter(Boolean);
   const rating=t.reviewCount?`<i class="ti ti-star-filled"></i><b>${Number(t.rating).toFixed(1)}</b><span>(${t.reviewCount} รีวิว)</span>`:`<span>ยังไม่มีรีวิว</span>`;
   const pav=`<span class="lx-pav"${av?` style="background-image:url('${img(av)}')"`:""}>${av?"":initial(t.shop||t.name)}</span>`;
-  sheet({title:"",full:true,store:true,gig:g.id,url:"/service/"+encodeURIComponent(g.id),body:`<div class="gd">
+  sheet({title:"",full:true,store:true,gig:g.id,owner:!!mine,url:"/service/"+encodeURIComponent(g.id),body:`<div class="gd">
     <div class="gd-gal">${P.length?`<div class="gd-hero" id="gdHero" style="background-image:url('${img(P[0])}')" role="img" aria-label="${esc(g.title)}">
         ${P.length>1?`<button class="gd-nav l" data-d="-1" type="button" aria-label="รูปก่อนหน้า"><i class="ti ti-chevron-left"></i></button><button class="gd-nav r" data-d="1" type="button" aria-label="รูปถัดไป"><i class="ti ti-chevron-right"></i></button><span class="gd-cnt" id="gdCnt">1 / ${P.length}</span>`:""}</div>
       ${P.length>1?`<div class="gd-th">${P.map((p,i)=>`<button type="button" class="${i?"":"on"}" data-i="${i}" style="background-image:url('${img(p)}')" aria-label="รูปที่ ${i+1}"></button>`).join("")}</div>`:""}`
@@ -3084,7 +3155,7 @@ function openGig(id){
       <ul class="gd-trust"><li><i class="ti ti-cash"></i>จ่ายเงินกับช่างโดยตรงเมื่องานเสร็จ</li>${t.warranty?`<li><i class="ti ti-shield-check"></i>รับประกันงาน ${t.warranty} วัน</li>`:""}${t.verified?`<li><i class="ti ti-id-badge-2"></i>ช่างผ่านการตรวจสอบตัวตนแล้ว</li>`:""}</ul>
       <div class="gd-buy">
         <div class="gd-price"><b>฿${money(g.price)}</b><small>ราคาเริ่มต้น · ช่างยืนยันราคาจริงก่อนเริ่มงาน</small></div>
-        <div class="gd-act">${mine?`<button class="lx-cta" data-a="edit" type="button"><i class="ti ti-pencil"></i>แก้ไขบริการ</button><button class="lx-gh" data-a="del" type="button"><i class="ti ti-trash"></i>ลบบริการนี้</button>`
+        <div class="gd-act">${mine?`<button class="lx-cta" data-a="edit" type="button"><i class="ti ti-pencil"></i>แก้ไขบริการ</button><button class="lx-gh" data-a="del" type="button"><i class="ti ti-trash"></i>ลบบริการนี้</button><button class="gd-sp${spOn(g)?" on":""}" data-a="sponsor" type="button"><i class="ti ti-rocket"></i><span>${spOn(g)?T("กำลังสปอนเซอร์","Sponsored"):T("สปอนเซอร์บริการนี้","Sponsor this service")}<small>${spOn(g)?T(`ถึง ${spDate(g.sponsor.until,1)} · ต่อเวลาหรือหยุดได้`,`Until ${spDate(g.sponsor.until,1)} · extend or stop`):T("ขึ้นก่อนในหน้าแรกและหน้าหมวด · ฟรีช่วงทดลอง","Shown first on home and category pages · free trial")}</small></span><i class="ti ti-chevron-right"></i></button>`
           :`<button class="lx-cta" data-a="book" type="button">จองบริการนี้</button><div class="gd-2"><button class="lx-gh" data-a="msg" type="button"><i class="ti ti-message-circle"></i>ทักช่าง</button>${t.phone?`<a class="lx-gh" href="tel:${esc(t.phone)}"><i class="ti ti-phone"></i>โทร</a>`:""}</div>`}</div>
       </div>
     </div></aside>
@@ -3093,11 +3164,11 @@ function openGig(id){
       <section class="gd-sec"><h2>ข้อมูลบริการ</h2><dl class="gd-dl">${facts.map(([i,k,v])=>`<div><dt><i class="ti ${i}"></i>${k}</dt><dd class="nt">${esc(v)}</dd></div>`).join("")}</dl></section>
       <section class="gd-sec" id="gdRev"><h2>รีวิวจากลูกค้า</h2>${reviewsHTML(t,null)}</section>
     </div></div>`,
-    foot:mine?`<div class="gd-ft"><button class="lx-gh" data-a="del" type="button"><i class="ti ti-trash"></i>ลบ</button><button class="lx-cta" data-a="edit" type="button" style="flex:1"><i class="ti ti-pencil"></i>แก้ไขบริการ</button></div>`
+    foot:mine?`<div class="gd-ft"><button class="lx-gh lx-ic" data-a="del" type="button" aria-label="ลบ"><i class="ti ti-trash"></i></button><button class="lx-gh" data-a="sponsor" type="button"><i class="ti ti-rocket"></i>${spOn(g)?T("สปอนเซอร์อยู่","Sponsored"):T("สปอนเซอร์","Sponsor")}</button><button class="lx-cta" data-a="edit" type="button" style="flex:1"><i class="ti ti-pencil"></i>แก้ไข</button></div>`
       :`<div class="gd-ft"><span class="gd-fp"><small>ราคาเริ่มต้น</small><b>฿${money(g.price)}</b></span><button class="lx-gh lx-ic" data-a="msg" type="button" aria-label="ทักช่าง"><i class="ti ti-message-circle"></i></button>${t.phone?`<a class="lx-gh lx-ic" href="tel:${esc(t.phone)}" aria-label="โทร"><i class="ti ti-phone"></i></a>`:""}<button class="lx-cta" data-a="book" type="button">จองบริการนี้</button></div>`,
     mount(b,f){
       const tech=()=>TECHS.find(x=>x.id===t.id)||t;
-      const A={book:()=>book(tech(),"สนใจบริการ: "+g.title),msg:()=>messageTech(tech(),g),shop:()=>openTech(t.id),edit:()=>gigForm(g),
+      const A={book:()=>book(tech(),"สนใจบริการ: "+g.title),msg:()=>messageTech(tech(),g),shop:()=>openTech(t.id),edit:()=>gigForm(g),sponsor:()=>sponsorSheet(g),
         del:e=>busy(e.currentTarget,async()=>{if(!confirm("ลบบริการนี้?"))return;await api("/api/tech/gig/delete",{body:{id:g.id}});toast("ลบแล้ว");await afterGig()})};
       [b,f].forEach(r=>r.querySelectorAll("[data-a]").forEach(x=>x.onclick=e=>A[x.dataset.a](e)));
       b.querySelectorAll(".gd-path [data-cat]").forEach(x=>x.onclick=()=>{closeSheet();openCat(x.dataset.cat)});
@@ -3183,11 +3254,11 @@ async function tabPosts(){
   GIGS=[...(GIGS||[]).filter(g=>!mine.some(m=>m.id===g.id)),...mine];
   const t=myShop();mine=mine.filter(g=>!g.tech||!t||g.tech.id===t.id);
   const add=mine.length<GIG_MAX?`<button class="lx-cta" type="button" id="pNew" style="height:46px;padding:0 20px"><i class="ti ti-plus"></i>${T(`เพิ่มบริการ (${mine.length}/${GIG_MAX})`,`Add a service (${mine.length}/${GIG_MAX})`)}</button>`:"";
-  B.innerHTML=mine.length?`<div class="lx-gigs ch-svc so-gigs">${mine.map((g,i)=>gigCard(g,i,{fit:true})).join("")}</div>
+  B.innerHTML=mine.length?`<div class="lx-gigs ch-svc so-gigs">${mine.map((g,i)=>ownCard(g,i)).join("")}</div>
       <div style="margin-top:14px">${add}</div>
       ${mine.length>=GIG_MAX?`<p class="so-fine">${T(`ลงครบ ${GIG_MAX} บริการแล้ว — ลบหรือแก้ไขบริการเดิมเพื่อเปลี่ยน`,`You've listed ${GIG_MAX} services — edit or delete one to change`)}</p>`:""}`
     :`<div class="stu-empty"><i class="ti ti-tool"></i><b>${T("ยังไม่มีบริการ","No services yet")}</b><p>${T("ลงบริการพร้อมราคาเริ่มต้น แล้วจะขึ้นหน้าแรกและหน้าร้านให้ลูกค้าเห็น","List a service with a starting price — it shows on the home page and your storefront")}</p>${add}</div>`;
-  B.querySelectorAll(".lx-gc[data-g]").forEach(x=>x.onclick=()=>openGig(x.dataset.g));
+  B.querySelectorAll(".lx-gc[data-g]").forEach(x=>x.onclick=()=>openGig(x.dataset.g));wireSp(B);
   if($("pNew"))$("pNew").onclick=()=>gigForm();
 }
 function drawHome(){
@@ -3212,7 +3283,16 @@ function drawHome(){
 }
 /* หนึ่งแถวหมวด: หัว (ไอคอน ชื่อ จำนวน · ดูทั้งหมด) + การ์ด — มือถือเลื่อนข้าง คอมเป็นตาราง */
 /* all = หน้าหมวด: แสดงครบทุกใบเป็นตาราง (หน้าแรกแสดงแถวเดียว แล้วกดดูทั้งหมด) */
+/* สปอนเซอร์: ขึ้นต้นแถวได้ไม่เกิน 2 ใบ เฉพาะร้านที่รับงานถึงคุณ (อยู่ในรัศมีรับงาน) และติดป้ายทุกใบ
+   ที่เหลือเรียงตามรถของคุณ/ระยะทางเหมือนเดิม — โฆษณาไม่ปนกับลำดับปกติแบบเนียน ๆ */
+const AD_MAX=2;
+function adsFirst(list){
+  const near=g=>g.dist==null||g.dist<=Math.max(+((g.tech||{}).radius)||0,30);
+  const ads=list.filter(g=>g.sponsored&&near(g)).slice(0,AD_MAX).map(g=>({...g,ad:true}));
+  return ads.length?[...ads,...list.filter(g=>!ads.some(a=>a.id===g.id))]:list;
+}
 function gigRow(c,list,more,all){
+  list=adsFirst(list);
   return `<section class="lx-gsec"><header class="lx-gsh"><span class="lx-gst">${railIc(c)}<b>${esc(c.th)}</b><small>${T(list.length+" บริการ",list.length+(list.length===1?" service":" services"))}</small></span>${more?`<button class="lx-link" type="button" data-cat="${c.id}">ดูทั้งหมด <i class="ti ti-arrow-right"></i></button>`:""}</header>
     <div class="${all?"lx-gigs":"lx-grow"}">${(all?list:list.slice(0,8)).map(gigCard).join("")}</div></section>`;
 }
@@ -3469,7 +3549,7 @@ function storeHTML(t,mine){
     :!t.test?`<p class="so-vet static"><i class="ti ti-hourglass so-vi"></i><span><b>${T("ยังรอทีมงานตรวจ","Awaiting review")}</b><small>${T("ลูกค้าจะเห็นร้านเมื่อผ่านการตรวจแล้ว","Customers see the shop once approved")}</small></span></p>`:""}
     ${t.greet||t.about?`<p class="so-about nt">${esc(t.greet||t.about)}</p>`:""}
     <section class="so-sec" id="soSvc"><h2>${T("บริการ","Services")}</h2>
-      ${svc.length?`<div class="lx-gigs ch-svc so-gigs">${svc.map((g,i)=>gigCard(g,i,{fit:true})).join("")}</div>
+      ${svc.length?`<div class="lx-gigs ch-svc so-gigs">${svc.map((g,i)=>mine?ownCard(g,i):gigCard(g,i,{fit:true})).join("")}</div>
         <p class="so-fine">${T("ราคาเริ่มต้น ช่างยืนยันราคาจริงในใบเสนอราคาก่อนเริ่มงาน","Starting prices — the mechanic confirms the real price in a quote before starting")}</p>`
       :`<p class="so-empty">${T("ร้านนี้ยังไม่ได้ลงบริการพร้อมราคา — กดขอราคาเพื่อให้ช่างประเมินให้","No priced services yet — ask for a quote and the mechanic will estimate")}</p>`}
     </section>
@@ -3516,14 +3596,14 @@ function openTech(id,opt){
   if(!t)return;
   if(!mine)track(id,"shop");
   const url=(opt&&opt.url)||"/tech/"+encodeURIComponent(id);
-  sheet({title:t.shop||t.name||"",full:true,store:true,shop:id,url,body:storeHTML(t,mine),foot:storeFoot(t,mine),
+  sheet({title:t.shop||t.name||"",full:true,store:true,shop:id,owner:!!mine,url,body:storeHTML(t,mine),foot:storeFoot(t,mine),
     mount(b,f,o){
       /* /tech/<ร้าน>/reviews ฯลฯ — เลื่อนไปส่วนนั้น */
       o.setTab=k=>{o.tab=k;const s=b.querySelector("#"+SO_SEC[k]);if(s)setTimeout(()=>s.scrollIntoView({behavior:"smooth",block:"start"}),60)};
       if(o.tab)o.setTab(o.tab);
       /* เลื่อนพ้นหัวร้าน → หัวแผ่นทึบขึ้นและบอกชื่อร้าน (ปุ่มย้อน/ปิดไม่ลอยทับข้อความ) */
       if(!b.__soScroll){b.__soScroll=1;b.addEventListener("scroll",()=>{const bs=$("bs");bs.classList.toggle("so-up",!!b.querySelector(".so")&&b.scrollTop>(b.querySelector(".so.has-cover")?220:60))},{passive:true})}
-      b.querySelectorAll(".so-gigs .lx-gc").forEach(x=>x.onclick=()=>openGig(x.dataset.g));
+      b.querySelectorAll(".so-gigs .lx-gc").forEach(x=>x.onclick=()=>openGig(x.dataset.g));wireSp(b);
       b.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z));
       const hours=b.querySelector("[data-hours]"),wk=b.querySelector(".so-week");
       if(hours&&wk){const tg=()=>{wk.hidden=!wk.hidden;hours.classList.toggle("open",!wk.hidden)};hours.onclick=tg;hours.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();tg()}}}
@@ -5269,6 +5349,9 @@ async function refreshMe(){
   try{ME=await api("/api/tech/me")}catch(e){ME=null}
   const n=ME&&ME.attention||0;$("jobDot").hidden=!n;$("jobDot").textContent=n;
   const t=ME&&ME.technician,a=ME&&ME.application;
+  /* เปิดลิงก์หน้าร้าน/บริการของตัวเองตรง ๆ: หน้านั้นวาดก่อนรู้ว่าเป็นเจ้าของ — วาดใหม่ให้มีปุ่มของเจ้าของ (แก้ไข · สปอนเซอร์) */
+  {const oc=$("bs").classList.contains("on")&&SH.cur;
+   if(oc&&!oc.owner&&t){if(oc.shop===t.id)openTech(oc.shop);else if(oc.gig){const g=(GIGS||[]).find(x=>x.id==oc.gig);if(g&&g.tech&&g.tech.id===t.id)openGig(oc.gig)}}}
   /* หน้าบัญชี (มือถือ) อ่านค่านี้เพื่อเขียนปุ่มว่า "สมัครเป็นช่าง" หรือ "Studio" — เก็บแค่สถานะ ไม่มีข้อมูลส่วนตัว */
   if(ME)try{localStorage.setItem("spire_partner",JSON.stringify({uid:U.uid,s:t&&(!t.test||ME.staff)?"shop":a&&!a.test?a.status:"none"}))}catch(e){}
   $("joinT").textContent=t&&!t.test?"พื้นที่พาร์ทเนอร์":a&&!a.test&&a.status==="pending"?"ใบสมัครกำลังพิจารณา":"ร่วมเป็นพาร์ทเนอร์ช่าง";

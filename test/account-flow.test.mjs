@@ -436,11 +436,10 @@ test('account assets resolve from the root before a deep-link base element and o
   for(const name of ['account.css','account.js','account-actions.js','auth-bootstrap.js','cendon-tour.js'])assert.match(sw,new RegExp("'\\./"+name.replace('.','\\.')+"(?:\\?[^']*)?'"),name+' precached');
 });
 
-test('account flow: unconfigured email is visibly unavailable and cannot claim delivery',async()=>{
+test('account flow: unconfigured email is hidden and cannot claim delivery',async()=>{
   const f=fixture({pathname:'/login',transport:c=>c.path==='/api/auth/config'?response({emailOtpReady:false}):undefined});await settle();
-  assert.equal(f.root().querySelector('[data-provider="email"]').disabled,true);
-  assert.match(f.root().innerHTML,/รหัสทางอีเมลยังไม่เปิดใช้งาน/);
-  f.click('data-provider=email');assert.equal(f.root().querySelector('[name="email"]'),null);
+  assert.equal(f.root().querySelector('[data-provider="email"]'),null,'a button that cannot work is not shown');
+  assert.equal(f.root().querySelector('[name="email"]'),null);
   assert.equal(f.calls.some(c=>c.path==='/api/auth/email/request'),false);
 });
 
@@ -462,10 +461,10 @@ test('legacy decorated login art is absent from both the dedicated login and nat
   const chat=readFileSync(new URL('../chat.html',import.meta.url),'utf8');const pane=chat.match(/<section[^>]*id="v-login"[\s\S]*?<\/section>/)[0];assert.doesNotMatch(pane,/logo-halo|big-logo|<svg|login\.google/);
 });
 
-test('account flow: unavailable Apple and Email are labelled while Google remains actionable',async()=>{
+test('account flow: unavailable Apple and Email are hidden while Google remains actionable',async()=>{
   const f=fixture({pathname:'/login',transport:c=>c.path==='/api/auth/config'?response({emailOtpReady:false,appleAuthReady:false}):undefined});await settle();
-  assert.equal(f.root().querySelector('[data-provider="apple"]').disabled,true);assert.equal(f.root().querySelector('[data-provider="email"]').disabled,true);
-  assert.equal(f.root().querySelector('[data-provider="google"]').disabled,false);assert.match(f.root().innerHTML,/Apple ยังไม่เปิดใช้งาน/);
+  assert.equal(f.root().querySelector('[data-provider="apple"]'),null);assert.equal(f.root().querySelector('[data-provider="email"]'),null);
+  assert.equal(f.root().querySelector('[data-provider="google"]').disabled,false);
 });
 
 test('account flow: a stalled provider popup cannot keep every login button disabled forever',async()=>{

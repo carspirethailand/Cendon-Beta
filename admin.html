@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="/account.css">
 <script src="/cendon-tour.js" defer></script>
 <script src="/account-actions.js" defer></script>
-<script src="/account.js?v=2026-10-11-r4" defer></script>
+<script src="/account.js?v=2026-10-14-r5" defer></script>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <link rel="icon" type="image/png" href="./favicon.png">
@@ -3149,6 +3149,12 @@ const ENV_FIELDS=[
   warn:"ถ้าเป็น * แปลว่าเว็บไหนก็เรียก API ของเราได้ ควรตั้งเป็นโดเมนจริง"},
  {k:"GEMINI_KEY",     th:"คีย์ Google Gemini",   kind:"secret"},
  {k:"OPENROUTER_API_KEY",th:"คีย์ OpenRouter",   kind:"secret"},
+ {k:"APP_URL",        th:"ที่อยู่เว็บจริง (Didit พากลับมาที่นี่)",kind:"var"},
+ {k:"ONBOARDING_PRIVACY_URL",th:"ลิงก์นโยบายความเป็นส่วนตัว",kind:"var"},
+ {k:"DIDIT_WORKFLOW_ID",th:"Didit: รหัส workflow",  kind:"secret"},
+ {k:"DIDIT_API_KEY",  th:"Didit: คีย์ API (เปิดยืนยันตัวตนช่าง)",kind:"secret"},
+ {k:"DIDIT_WEBHOOK_SECRET",th:"Didit: รหัสลับ webhook",kind:"secret"},
+ {k:"ID_HASH_KEY",    th:"กุญแจเข้ารหัสเลขบัตร (ตั้งครั้งเดียว ห้ามเปลี่ยน)",kind:"secret"},
 ];
 let ENV_NOW={};
 function drawEnv(){
@@ -5525,7 +5531,8 @@ async function loadHealth(){
     ENV_NOW={GEMINI_MODEL:en.model,GEMINI_SEARCH_MODEL:en.searchModel,GEMINI_LIVE_MODEL:en.liveModel,
       AI_DAILY_LIMIT:en.aiDailyLimit,AI_ANON_DAILY_LIMIT:en.anonDailyLimit,
       ALLOWED_ORIGINS:en.allowedOrigins,GEMINI_KEY:en.aiConfigured,
-      OPENROUTER_API_KEY:en.openrouterConfigured};
+      OPENROUTER_API_KEY:en.openrouterConfigured,APP_URL:en.appUrl,ONBOARDING_PRIVACY_URL:en.privacyUrl,
+      DIDIT_WORKFLOW_ID:en.diditWorkflow,DIDIT_API_KEY:en.diditKey,DIDIT_WEBHOOK_SECRET:en.diditWebhook,ID_HASH_KEY:en.idHashKey};
     drawEnv(); sysVecStatus();
     const tick=(ok,y,n)=>`<span class="tick ${ok?"ok":"bad"}"><i class="ti ${ok?"ti-circle-check":"ti-alert-triangle"}"></i>${ok?y:n}</span>`;
     const tables=Object.entries(sc.tables||{}).map(([t,v])=>`<div class="schema-row">

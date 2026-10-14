@@ -16,7 +16,9 @@ test('admin uses the real backend Gemini and quota variable names',()=>{
   const f=fixture();
   assert.deepEqual(Array.from(f.fields,x=>x.k),[
     'GEMINI_MODEL','GEMINI_SEARCH_MODEL','GEMINI_LIVE_MODEL','AI_DAILY_LIMIT',
-    'AI_ANON_DAILY_LIMIT','ALLOWED_ORIGINS','GEMINI_KEY','OPENROUTER_API_KEY'
+    'AI_ANON_DAILY_LIMIT','ALLOWED_ORIGINS','GEMINI_KEY','OPENROUTER_API_KEY',
+    /* สมัครช่าง: Didit + กุญแจแฮชเลขบัตร — ชื่อต้องตรงกับที่หลังบ้านอ่าน (techs.js / tech-identity.js) */
+    'APP_URL','ONBOARDING_PRIVACY_URL','DIDIT_WORKFLOW_ID','DIDIT_API_KEY','DIDIT_WEBHOOK_SECRET','ID_HASH_KEY'
   ]);
 });
 

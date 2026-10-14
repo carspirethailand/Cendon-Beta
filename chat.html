@@ -4641,30 +4641,36 @@ function renderGate(){
 function pickCar(id){window.CendonFeatureAI?.reset();LS.set("selCar",id);loadSession();renderCarUI();
   if(messages.length){renderMessages();setPhase("thread")}else setPhase("welcome");
   /* มาจากหน้าตรวจใบเสนอราคาแต่ยังไม่มีรถ — เลือกรถแล้วตรวจต่อให้ทันที */
-  setTimeout(()=>{try{runQuoteJob()}catch(e){}},0)}
+  setTimeout(()=>{try{runFeatureJob()}catch(e){}},0)}
 
-/* ===== ใบเสนอราคาจากหน้าแรก =====
-   หน้าตรวจใบเสนอราคาเก็บรูปไว้ในเครื่อง (CendonMedia) แล้วฝากรหัสไว้ใน sessionStorage
-   ที่นี่หยิบรูปมาแนบ เปิดแชตใหม่ เลือกเครื่องมือใบเสนอราคา แล้วส่งให้ AI เลย ผู้ใช้ไม่ต้องแนบเองหรือพิมพ์ซ้ำ */
-async function runQuoteJob(){
-  let job=null;try{job=JSON.parse(sessionStorage.getItem("spire_quoteJob")||"null")}catch(e){}
-  if(!job)return false;
-  if(!Array.isArray(job.ids)||!job.ids.length||Date.now()-(job.at||0)>3600000){sessionStorage.removeItem("spire_quoteJob");return false}
+/* ===== งานจากหน้าแรก (ใบเสนอราคา · ฟังเสียง · ส่งรูป) =====
+   หน้าเหล่านั้นเก็บไฟล์ไว้ในเครื่อง (CendonMedia) แล้วฝากรหัส เครื่องมือ และคำถามไว้ใน sessionStorage
+   ที่นี่หยิบไฟล์มาแนบ เปิดแชตใหม่ เลือกเครื่องมือ แล้วส่งให้ AI เลย — ผู้ใช้ไม่ต้องแนบเองหรือพิมพ์ซ้ำ */
+function featureJob(){
+  let job=null;
+  try{job=JSON.parse(sessionStorage.getItem("spire_featureJob")||"null")}catch(e){}
+  if(!job){try{const q=JSON.parse(sessionStorage.getItem("spire_quoteJob")||"null");if(q)job={...q,tool:"quote"}}catch(e){}}
+  return job;
+}
+function dropFeatureJob(){try{sessionStorage.removeItem("spire_featureJob");sessionStorage.removeItem("spire_quoteJob")}catch(e){}}
+async function runFeatureJob(){
+  const job=featureJob();if(!job)return false;
+  if(!Array.isArray(job.ids)||!job.ids.length||Date.now()-(job.at||0)>3600000){dropFeatureJob();return false}
   if(!selCar()||!window.CendonMedia||sending)return false;
-  sessionStorage.removeItem("spire_quoteJob");
+  dropFeatureJob();
   if(messages.filter(m=>!m.typing).length)newSession();
   enterThread({});
   pending=[];
-  for(const id of job.ids){try{const blob=await CendonMedia.get(id);if(!blob)continue;
-    pending.push({kind:"image",mime:blob.type||"image/jpeg",b64:await CendonMedia.toB64(blob),name:lang==="en"?"Quote":"ใบเสนอราคา",id})}catch(e){}}
+  for(const id of job.ids){try{const blob=await CendonMedia.get(id);if(!blob)continue;const mime=(blob.type||"image/jpeg").split(";")[0];
+    pending.push({kind:CendonMedia.kindOf(mime),mime,b64:await CendonMedia.toB64(blob),name:"",id})}catch(e){}}
   window.pending=pending;renderAtts();
-  if(!pending.length){toast(lang==="en"?"Couldn't find the quote photos — please attach them again":"หารูปใบเสนอราคาไม่เจอ ลองแนบใหม่อีกครั้ง","ti-alert-triangle");return false}
-  window.CendonFeatureAI&&CendonFeatureAI.select("quote",{force:true});
-  $("inp").value=lang==="en"?"Please check this repair quote for my car":"ช่วยตรวจใบเสนอราคาค่าซ่อมนี้ให้หน่อย";autoSize();updateSend();
+  if(!pending.length){toast(lang==="en"?"Couldn't find the files — please attach them again":"หาไฟล์ไม่เจอ ลองแนบใหม่อีกครั้ง","ti-alert-triangle");return false}
+  if(job.tool&&window.CendonFeatureAI)CendonFeatureAI.select(job.tool,{force:true});
+  $("inp").value=job.text||(lang==="en"?"Please take a look at this":"ช่วยดูให้หน่อย");autoSize();updateSend();
   await sendMsg();
   return true;
 }
-window.runQuoteJob=runQuoteJob;
+window.runFeatureJob=runFeatureJob;
 
 /* ===== PILL / CAR UI ===== */
 function renderCarUI(){
@@ -6107,8 +6113,8 @@ function runEntry(){
   if(p.session&&getSessions().some(s=>s.id===p.session)){switchSession(p.session);return}
   if(p.pane==="desk"||p.pane==="flow"){setTimeout(()=>{try{goNav("flow")}catch(e){}},60);return}
   if(!selCar())return;
-  /* มาจากหน้าตรวจใบเสนอราคา: แนบรูปแล้วส่งให้ AI ทันที */
-  if(sessionStorage.getItem("spire_quoteJob")){setTimeout(()=>{try{runQuoteJob()}catch(e){}},120);return}
+  /* มาจากหน้าใบเสนอราคา / ฟังเสียง / ส่งรูป: แนบไฟล์แล้วส่งให้ AI ทันที */
+  if(featureJob()){setTimeout(()=>{try{runFeatureJob()}catch(e){}},120);return}
   if(p.attach==="text"){enterThread({focus:true})}
   else if(p.attach){
     enterThread({});

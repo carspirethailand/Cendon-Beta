@@ -79,9 +79,10 @@
     paintSelection();
   }
 
-  function select(key){
+  /* force: ปุ่ม "เช็กใบเสนอราคา" บนหน้าแรกเปิดให้ทุกระดับ — มาจากทางนั้นไม่ต้องเช็กระดับการใช้งาน */
+  function select(key,opt){
     if(!labels[key])return;
-    if(window.spireHasFeature && !window.spireHasFeature(key)) {window.toast?.(t(['แผนของคุณยังไม่เปิดเครื่องมือนี้','This tool is not included in your plan.']),'ti-lock');return;}
+    if(!(opt&&opt.force) && window.spireHasFeature && !window.spireHasFeature(key)) {window.toast?.(t(['แผนของคุณยังไม่เปิดเครื่องมือนี้','This tool is not included in your plan.']),'ti-lock');return;}
     bridge?.stop();selected=key;paintSelection();
     if(D.body.dataset.phase==='welcome')window.setPhase?.('thread');
     if(D.getElementById('faInline')&&!D.getElementById('faInline').hidden)bridge?.open(key,true);

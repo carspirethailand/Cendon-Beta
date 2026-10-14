@@ -331,6 +331,21 @@ body[data-phase="login"] .w-aura,body[data-phase="login"] .w-sweep,body[data-pha
 .msg.ai .av{background:var(--c-grad);box-shadow:0 8px 18px -8px var(--c-acc)}
 .msg.ai .av svg{width:52%;height:52%}.msg.ai .av path{fill:currentColor}
 .msg.me{flex-direction:row-reverse}
+/* คัดลอก/แก้ไข/ลบ: แถวปุ่มเล็กใต้ข้อความ ขึ้นตอนชี้ (คอม) · ข้อความ AI บนมือถือมีเสมอ ข้อความของเราแตะเพื่อเปิด */
+.msg{flex-wrap:wrap}
+.msg .m-acts{flex-basis:100%;display:flex;gap:2px;margin-top:-7px;opacity:0;transition:opacity .15s}
+.msg.me .m-acts{justify-content:flex-end;padding-right:45px}
+.msg:hover .m-acts,.msg.acts .m-acts,.msg .m-acts:focus-within{opacity:1}
+@media(hover:none){.msg.ai .m-acts{opacity:.8}}
+.msg.editing .m-acts{display:none}
+.m-acts button{width:32px;height:32px;padding:0;border:0;border-radius:10px;background:none;color:var(--c-mut);display:grid;place-items:center;font-size:16px;cursor:pointer}
+.m-acts button:hover,.m-acts button:focus-visible{background:var(--c-glass2);color:var(--c-ink);outline:none}
+.msg.me.editing .bubble{width:min(520px,78vw)}
+.m-edit{display:block;width:100%;margin:0;padding:9px 11px;border-radius:12px;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.14);color:inherit;font:inherit;line-height:1.5;resize:none;outline:none}
+.m-edit-n{display:block;margin-top:6px;font-size:12px;opacity:.85}
+.m-edit-b{display:flex;justify-content:flex-end;gap:6px;margin-top:8px}
+.m-edit-b button{height:34px;padding:0 14px;border-radius:999px;border:1px solid rgba(255,255,255,.45);background:none;color:inherit;font:600 13px inherit;cursor:pointer}
+.m-edit-b .m-save{background:#fff;color:#111;border-color:#fff}
 .msg.me .av{background:var(--c-glass2);border:1px solid var(--c-line);color:var(--c-mut)}
 .msg.me .av img{width:100%;height:100%;object-fit:cover}
 .bubble{padding:12px 16px;border-radius:18px;font-size:15px;max-width:76%;word-wrap:break-word;overflow-wrap:anywhere;line-height:1.65}
@@ -4624,7 +4639,32 @@ function renderGate(){
        <button class="act-btn primary" style="justify-content:center" onclick="goGarage()"><i class="ti ti-plus"></i> ${tr("gate.go")}</button>`;
 }
 function pickCar(id){window.CendonFeatureAI?.reset();LS.set("selCar",id);loadSession();renderCarUI();
-  if(messages.length){renderMessages();setPhase("thread")}else setPhase("welcome")}
+  if(messages.length){renderMessages();setPhase("thread")}else setPhase("welcome");
+  /* มาจากหน้าตรวจใบเสนอราคาแต่ยังไม่มีรถ — เลือกรถแล้วตรวจต่อให้ทันที */
+  setTimeout(()=>{try{runQuoteJob()}catch(e){}},0)}
+
+/* ===== ใบเสนอราคาจากหน้าแรก =====
+   หน้าตรวจใบเสนอราคาเก็บรูปไว้ในเครื่อง (CendonMedia) แล้วฝากรหัสไว้ใน sessionStorage
+   ที่นี่หยิบรูปมาแนบ เปิดแชตใหม่ เลือกเครื่องมือใบเสนอราคา แล้วส่งให้ AI เลย ผู้ใช้ไม่ต้องแนบเองหรือพิมพ์ซ้ำ */
+async function runQuoteJob(){
+  let job=null;try{job=JSON.parse(sessionStorage.getItem("spire_quoteJob")||"null")}catch(e){}
+  if(!job)return false;
+  if(!Array.isArray(job.ids)||!job.ids.length||Date.now()-(job.at||0)>3600000){sessionStorage.removeItem("spire_quoteJob");return false}
+  if(!selCar()||!window.CendonMedia||sending)return false;
+  sessionStorage.removeItem("spire_quoteJob");
+  if(messages.filter(m=>!m.typing).length)newSession();
+  enterThread({});
+  pending=[];
+  for(const id of job.ids){try{const blob=await CendonMedia.get(id);if(!blob)continue;
+    pending.push({kind:"image",mime:blob.type||"image/jpeg",b64:await CendonMedia.toB64(blob),name:lang==="en"?"Quote":"ใบเสนอราคา",id})}catch(e){}}
+  window.pending=pending;renderAtts();
+  if(!pending.length){toast(lang==="en"?"Couldn't find the quote photos — please attach them again":"หารูปใบเสนอราคาไม่เจอ ลองแนบใหม่อีกครั้ง","ti-alert-triangle");return false}
+  window.CendonFeatureAI&&CendonFeatureAI.select("quote",{force:true});
+  $("inp").value=lang==="en"?"Please check this repair quote for my car":"ช่วยตรวจใบเสนอราคาค่าซ่อมนี้ให้หน่อย";autoSize();updateSend();
+  await sendMsg();
+  return true;
+}
+window.runQuoteJob=runQuoteJob;
 
 /* ===== PILL / CAR UI ===== */
 function renderCarUI(){
@@ -4859,12 +4899,69 @@ function attHTML(atts){if(!atts||!atts.length)return"";
       :a.kind==="video"?`<video ${src} controls playsinline preload="metadata"></video>`
       :`<audio ${src} controls preload="metadata"></audio>`}).join("")+`</div>`}
 function userAv(){return currentUser&&currentUser.photo?`<img src="${currentUser.photo}" referrerpolicy="no-referrer">`:`<i class="ti ti-user"></i>`}
+/* ── คัดลอก / แก้ไข / ลบ ข้อความในห้องคุยกับ AI ──
+   คอม: ปุ่มขึ้นตอนชี้ · มือถือ: ข้อความ AI มีปุ่มเสมอ ข้อความของเราแตะเพื่อเปิด
+   แก้ข้อความของเรา = ตัดบทสนทนาตั้งแต่ตรงนั้น แล้วส่งใหม่ให้ AI ตอบใหม่ (แบบ AI เจ้าอื่น) · ลบ = ลบเฉพาะก้อนนั้น */
+function actsHTML(m){
+  const i=messages.indexOf(m);if(i<0||m.streaming||m.typing)return "";
+  const en=lang==="en",b=(k,ic,l)=>`<button type="button" data-ma="${k}" data-mi="${i}" aria-label="${l}" title="${l}"><i class="ti ${ic}"></i></button>`;
+  return `<div class="m-acts">${m.text?b("copy","ti-copy",en?"Copy":"คัดลอก"):""}${m.role==="user"?b("edit","ti-pencil",en?"Edit":"แก้ไข"):""}${b("del","ti-trash",en?"Delete":"ลบ")}</div>`;
+}
+$("thread").addEventListener("click",e=>{
+  const b=e.target.closest("[data-ma]");
+  if(b){e.stopPropagation();msgAct(b.dataset.ma,+b.dataset.mi,b);return}
+  if(e.target.closest("img,video,audio,a,button,textarea"))return;
+  const u=e.target.closest(".msg.me");
+  if(u){$("thread").querySelectorAll(".msg.acts").forEach(x=>x!==u&&x.classList.remove("acts"));u.classList.toggle("acts")}
+});
+async function msgAct(k,i,btn){
+  const m=messages[i],en=lang==="en";if(!m)return;
+  if(k==="copy"){
+    const t=m.role==="user"?m.text:((btn.closest(".msg").querySelector(".bubble")||{}).innerText||m.text);
+    try{await navigator.clipboard.writeText(String(t||"").trim());toast(en?"Copied":"คัดลอกแล้ว","ti-copy")}catch(e){toast(en?"Couldn't copy on this device":"คัดลอกไม่ได้บนเครื่องนี้","ti-alert-triangle")}
+    return}
+  if(sending){toast(en?"Wait for the answer to finish first":"รอให้ AI ตอบจบก่อน","ti-clock");return}
+  if(k==="del"){
+    if(!confirm(en?"Delete this message?":"ลบข้อความนี้?"))return;
+    const before=mediaIdsOf([{msgs:[m]}]);messages.splice(i,1);
+    try{dropMedia(before,mediaIdsOf([{msgs:messages}]))}catch(e){}
+    saveSession();renderMessages();try{renderChips()}catch(e){}
+    toast(en?"Deleted":"ลบแล้ว","ti-trash");return}
+  if(k==="edit")editMsg(i,btn.closest(".msg"));
+}
+function editMsg(i,el){
+  const m=messages[i],en=lang==="en";if(!m||!el)return;
+  const bub=el.querySelector(".bubble"),later=messages.slice(i+1).some(x=>!x.typing);
+  el.classList.add("editing");el.classList.remove("acts");
+  bub.innerHTML=`${attHTML(m.atts)}<textarea class="m-edit" rows="2" aria-label="${en?"Edit message":"แก้ไขข้อความ"}">${esc(m.text||"")}</textarea>
+    ${later?`<small class="m-edit-n">${en?"Everything after this message will be replaced by a new answer":"ข้อความหลังจากนี้จะถูกแทนด้วยคำตอบใหม่"}</small>`:""}
+    <div class="m-edit-b"><button type="button" class="m-cancel">${en?"Cancel":"ยกเลิก"}</button><button type="button" class="m-save">${en?"Send":"ส่ง"}</button></div>`;
+  const ta=bub.querySelector("textarea"),fit=()=>{ta.style.height="auto";ta.style.height=Math.min(ta.scrollHeight,220)+"px"};
+  fit();ta.addEventListener("input",fit);ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);
+  ta.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&matchMedia("(pointer:fine)").matches){e.preventDefault();bub.querySelector(".m-save").click()}if(e.key==="Escape")renderMessages()});
+  bub.querySelector(".m-cancel").onclick=()=>renderMessages();
+  bub.querySelector(".m-save").onclick=async()=>{
+    const text=ta.value.trim(),atts=(m.atts||[]).map(a=>({...a}));
+    if(!text&&!atts.length)return;
+    if(sending){toast(en?"Wait for the answer to finish first":"รอให้ AI ตอบจบก่อน","ti-clock");return}
+    /* ตัดตั้งแต่ข้อความนี้ลงไป แล้วส่งใหม่ — ไฟล์เดิมยังอยู่ ไม่ต้องแนบใหม่ */
+    const before=mediaIdsOf([{msgs:messages.slice(i)}]),keep=new Set(atts.map(a=>a.id).filter(Boolean));
+    messages.splice(i);
+    try{dropMedia(before,new Set([...mediaIdsOf([{msgs:messages}]),...keep]))}catch(e){}
+    saveSession();renderMessages();
+    for(const a of atts)if(!a.b64&&a.id&&window.CendonMedia){try{const bl=await CendonMedia.get(a.id);if(bl)a.b64=await CendonMedia.toB64(bl)}catch(e){}}
+    pending=atts.filter(a=>a.b64);window.pending=pending;renderAtts();
+    if(m.featureTool&&window.CendonFeatureAI)CendonFeatureAI.select(m.featureTool,{force:true});
+    $("inp").value=text;autoSize();updateSend();
+    await sendMsg();
+  };
+}
 function msgHTML(m){
-  if(m.role==="user")return`<div class="msg me"><div class="av">${userAv()}</div><div class="bubble">${attHTML(m.atts)}${esc(m.text)||""}</div></div>`;
+  if(m.role==="user")return`<div class="msg me"><div class="av">${userAv()}</div><div class="bubble">${attHTML(m.atts)}${esc(m.text)||""}</div>${actsHTML(m)}</div>`;
   if(m.role==="sum")return sumHTML(m.data);
   if(m.typing)return""; /* thinking renders as the spinning mark below (Claude-style) */
   return`<div class="msg ai"><div class="bubble">${m.research&&m.research.length?researchHTML(m):""}${
-    mdBlocks(m.text)}${m.svc&&window.CendonSearch?CendonSearch.chipHTML(m.svc):""}${m.cached?cachedHTML(m):""}${m.ask?askHTML(m):""}${m.next&&!m.ask?nextHTML(m):""}</div></div>`;
+    mdBlocks(m.text)}${m.svc&&window.CendonSearch?CendonSearch.chipHTML(m.svc):""}${m.cached?cachedHTML(m):""}${m.ask?askHTML(m):""}${m.next&&!m.ask?nextHTML(m):""}</div>${actsHTML(m)}</div>`;
 }
 
 /* ── กระบวนการคิดของ AI ──
@@ -6010,6 +6107,8 @@ function runEntry(){
   if(p.session&&getSessions().some(s=>s.id===p.session)){switchSession(p.session);return}
   if(p.pane==="desk"||p.pane==="flow"){setTimeout(()=>{try{goNav("flow")}catch(e){}},60);return}
   if(!selCar())return;
+  /* มาจากหน้าตรวจใบเสนอราคา: แนบรูปแล้วส่งให้ AI ทันที */
+  if(sessionStorage.getItem("spire_quoteJob")){setTimeout(()=>{try{runQuoteJob()}catch(e){}},120);return}
   if(p.attach==="text"){enterThread({focus:true})}
   else if(p.attach){
     enterThread({});
@@ -12961,7 +13060,7 @@ setTimeout(mount,800); setTimeout(mount,2500);
 <!-- แผงผู้ดูแลแบบลอย: โหลดทุกหน้า แต่แสดงเฉพาะผู้ดูแลที่เปิดไว้ในตั้งค่า -->
 <script src="cendon-admin.js" defer></script>
 <link rel="stylesheet" href="feature-ai.css?v=1">
-<script src="feature-ai.js?v=1"></script>
+<script src="feature-ai.js?v=2"></script>
 <script src="fluid.js" defer></script>
 <script src="crop.js" defer></script>
 <script src="cendon-line.js" defer></script>

@@ -4,7 +4,7 @@
    หน้าเว็บเป็นไฟล์เดียวที่เปลี่ยนบ่อย จึงถามเน็ตก่อนเสมอ (ไม่งั้นผู้ใช้จะติดอยู่กับเวอร์ชันเก่า)
    แต่รอแค่ครู่เดียว — เน็ตมือถือช้า/ค้าง ต้องไม่ทำให้แอปค้างหน้าจอโหลด
    ══════════════════════════════════════════════════════════════════ */
-const CACHE = 'cendon-v256-sponsor';
+const CACHE = 'cendon-v257-quote-msgedit';
 /* หน้าเว็บที่โหลดสำเร็จล่าสุด แยกตู้ไว้และ "ไม่ลบตอนอัปเดตเวอร์ชัน"
    เดิมทุกครั้งที่ deploy ตู้เก่าถูกล้างหมด เปิดแอปครั้งแรกหลังอัปเดตจึงไม่มีของสำรอง
    ต้องรอเน็ตอย่างเดียว — เน็ตมือถือช้าเมื่อไรก็ค้างหน้าจอโหลดของมือถือ */
@@ -20,7 +20,7 @@ const SHELL_ROUTES = new Set(['/', '/index', '/garage', '/news', '/spares', '/pr
 /* ที่อยู่แบบลึก (แบบ YouTube) ใช้ไฟล์หน้าเดียวกับหน้าแม่ — ตรงกับ _redirects
    /garage/<รถ>/spec → หน้า /garage · /tech/<ร้าน> /jobs/<งาน> ฯลฯ → หน้าแรก / */
 const DEEP_PAGES = new Set(['garage', 'news', 'spares', 'profile', 'chat']);
-const DEEP_HOME = new Set(['tech', 'service', 'category', 'search', 'map', 'jobs', 'messages', 'studio', 'work', 'staff', 'join', 'trip', 'quotes', 'compare', 'urgent', 'diagnose', 'post']);
+const DEEP_HOME = new Set(['tech', 'service', 'category', 'search', 'map', 'jobs', 'messages', 'quote', 'studio', 'work', 'staff', 'join', 'trip', 'quotes', 'compare', 'urgent', 'diagnose', 'post']);
 function shellOf(pathname) {
   const p = pathname.replace(/\.html$/, '').replace(/\/index$/, '/');
   if (SHELL_ROUTES.has(p)) return p;

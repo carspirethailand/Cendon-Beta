@@ -530,6 +530,24 @@ html[data-theme="dark"] .chat{--ci:#FAFAF9;--ci-2:#E4E4E7;--ci-fg:#09090B;--ci-s
 .chat .hd{background:color-mix(in srgb,var(--bg) 70%,transparent);-webkit-backdrop-filter:blur(16px) saturate(1.2);backdrop-filter:blur(16px) saturate(1.2);box-shadow:0 1px 0 var(--ci-line)}
 /* ปุ่ม/แถวที่ซ่อนไว้ต้องหายจริง (คลาสปุ่มตั้ง display ทับ hidden — ปุ่มโทรเคยโผล่ทั้งที่ไม่มีเบอร์) */
 .chat [hidden]{display:none!important}
+/* แก้/ยกเลิกข้อความ: เมนูลอยข้างข้อความ · แถบ "กำลังแก้" เหนือช่องพิมพ์ · ข้อความที่ยกเลิกเป็นก้อนเส้นประ */
+.chat .msg[data-id]{cursor:pointer;-webkit-touch-callout:none}
+.chat .msg.sel{outline:2px solid color-mix(in srgb,var(--ci,#111) 35%,transparent);outline-offset:2px}
+.chat .msg.gone{display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:none!important;box-shadow:inset 0 0 0 1px var(--ci-line,var(--line))!important;border:0;color:var(--muted)!important;font-style:italic;cursor:default}
+.chat .msg.gone .ti{font-size:15px;font-style:normal}
+.chat .msg.gone small{flex-basis:100%}
+.ch-menu{position:fixed;z-index:1300;min-width:178px;padding:6px;border-radius:16px;background:var(--surface);border:1px solid var(--line);box-shadow:0 18px 40px -18px rgba(0,0,0,.45);display:grid;gap:2px}
+.ch-menu[hidden]{display:none!important}
+.ch-menu button{display:flex;align-items:center;gap:10px;width:100%;padding:11px 12px;border:0;border-radius:11px;background:none;color:var(--ink);font:500 14.5px var(--kb);text-align:left;cursor:pointer}
+.ch-menu button:hover,.ch-menu button:focus-visible{background:var(--surface-2);outline:none}
+.ch-menu button .ti{font-size:18px;color:var(--muted)}
+.ch-menu button.bad,.ch-menu button.bad .ti{color:#d4483a}
+.ch-edit{display:flex;align-items:center;gap:10px;margin:0 12px 6px;padding:8px 10px 8px 12px;border-radius:14px;background:var(--surface-2);border-left:3px solid var(--ci,var(--accent))}
+.ch-edit>.ti{font-size:18px;color:var(--muted);flex:none}
+.ch-edit span{display:grid;min-width:0;flex:1}.ch-edit b{font:600 13px var(--kb)}
+.ch-edit small{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch-edit button{width:32px;height:32px;border-radius:50%;border:0;background:none;color:var(--muted);display:grid;place-items:center;cursor:pointer;flex:none}
+.chat .sys.ld{color:var(--muted)}
 .chat .hd b{display:flex;align-items:center;gap:5px;white-space:nowrap;overflow:hidden}
 .chat #chT{overflow:hidden;text-overflow:ellipsis}
 .chat #chV{flex:none;font-size:16px;color:var(--ink)}
@@ -1497,6 +1515,32 @@ body{background:var(--bg);letter-spacing:-.005em}
 .sps-err{margin:0;color:#d4483a;font-size:13px}
 .sps-err:empty{display:none}
 .sps-ft{display:flex;gap:8px;width:100%}.sps-ft .lx-cta{flex:1}
+/* ตรวจใบเสนอราคา: หน้าเดียว ใส่รูปอย่างเดียว แล้วส่งให้ AI ในห้องแชต */
+.qp{display:grid;gap:18px;max-width:560px;margin:0 auto}
+.qp [hidden]{display:none!important}
+.qp-hd{display:grid;gap:6px}
+.qp-hd h2{margin:0;font:700 22px/1.3 var(--kd);color:var(--ink)}
+.qp-hd p{margin:0;color:var(--muted);font-size:14.5px;line-height:1.6}
+.qp-drop{display:grid;place-items:center;align-content:center;gap:8px;width:100%;min-height:220px;padding:22px;border-radius:20px;border:2px dashed color-mix(in srgb,var(--accent) 45%,var(--line));background:color-mix(in srgb,var(--accent) 5%,var(--surface));color:var(--ink);font:inherit;text-align:center;cursor:pointer}
+.qp-drop .ti{font-size:44px;color:var(--accent)}
+.qp-drop b{font:700 17px/1.4 var(--kd)}.qp-drop small{color:var(--muted);font-size:13px}
+.qp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.qp-ph{position:relative;aspect-ratio:3/4;border-radius:14px;overflow:hidden;background:var(--surface-2);border:1px solid var(--line)}
+.qp-ph img{width:100%;height:100%;object-fit:cover;display:block}
+.qp-ph em{position:absolute;left:8px;bottom:8px;padding:2px 8px;border-radius:999px;background:rgba(0,0,0,.62);color:#fff;font:600 11px var(--kb);font-style:normal}
+.qp-ph button{position:absolute;top:6px;right:6px;width:30px;height:30px;padding:0;border-radius:50%;border:0;background:rgba(0,0,0,.62);color:#fff;display:grid;place-items:center;cursor:pointer}
+.qp-add{aspect-ratio:3/4;border-radius:14px;border:2px dashed var(--line);background:none;color:var(--muted);display:grid;place-content:center;justify-items:center;gap:4px;font:600 13px var(--kb);cursor:pointer}
+.qp-add .ti{font-size:26px;color:var(--accent)}
+.qp-tips{list-style:none;margin:0;padding:14px 16px;border-radius:16px;background:var(--surface);border:1px solid var(--line);display:grid;gap:8px}
+.qp-tips li{display:flex;gap:10px;font-size:13.5px;line-height:1.5;color:var(--ink)}
+.qp-tips .ti{color:#2f9e6a;font-size:17px;flex:none;margin-top:1px}
+.qp-what{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.qp-what span{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;background:var(--surface-2);font:500 13px/1.35 var(--kb);color:var(--ink)}
+.qp-what .ti{font-size:18px;color:var(--accent);flex:none}
+.qp-car{display:flex;align-items:center;gap:10px;margin:0;padding:12px 14px;border-radius:14px;border:1px solid var(--line);font-size:14px;line-height:1.45;color:var(--ink)}
+.qp-car>.ti{font-size:19px;color:var(--muted);flex:none}
+.qp-car select{margin-left:auto;max-width:60%;padding:6px 10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:500 14px var(--kb)}
+.qp-err{margin:0;color:#d4483a;font-size:13px}.qp-err:empty{display:none}
 .lx-gcf{display:flex;flex:1;flex-direction:column;gap:2px;padding:10px 12px 12px}
 .lx-gct{margin-bottom:4px;font:600 14px/1.4 var(--kb);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .lx-gcr{margin-top:auto}
@@ -2118,10 +2162,12 @@ a.mtab{text-decoration:none}
   <div class="msgs" id="msgs"></div>
   <div class="as" id="chSug" hidden></div>
   <div class="as" id="chAs" hidden><button data-as="customer" class="on" data-t="พิมพ์เป็นลูกค้า|As customer">พิมพ์เป็นลูกค้า</button><button data-as="technician" data-t="พิมพ์เป็นช่าง|As mechanic">พิมพ์เป็นช่าง</button></div>
+  <div class="ch-edit" id="chEdit" hidden><i class="ti ti-pencil"></i><span><b data-t="แก้ไขข้อความ|Editing message">แก้ไขข้อความ</b><small id="chEditT" class="nt"></small></span><button type="button" id="chEditX" aria-label="ยกเลิกการแก้ไข"><i class="ti ti-x"></i></button></div>
   <div class="ch-att" id="chAtt" hidden></div>
   <div class="ch-rec" id="chRec" hidden><i></i><span id="chRecT">0:00</span><button type="button" id="chRecX" data-t="ยกเลิก|Cancel">ยกเลิก</button><button type="button" id="chRecOk" data-t="เสร็จ|Done">เสร็จ</button></div>
   <form class="cbar" id="chF"><button type="button" class="ch-tool" id="chClip" aria-label="แนบรูปหรือวิดีโอ"><i class="ti ti-paperclip"></i></button><textarea id="chIn" rows="1" maxlength="2000" data-t-ph="พิมพ์ข้อความ|Message"></textarea><button type="button" class="ch-tool" id="chMic" aria-label="อัดข้อความเสียง"><i class="ti ti-microphone"></i></button><button class="send sq" aria-label="Send"><i class="ti ti-send-2"></i></button></form>
   <input type="file" id="chFile" accept="image/*,video/*" multiple hidden data-nocrop>
+  <div class="ch-menu" id="chMenu" role="menu" hidden></div>
 </div>
 
 <button class="ib-fab" id="ibFab" type="button" aria-label="ข้อความ"><i class="ti ti-message-chatbot"></i><i class="ib-fab-dot" id="ibFabDot" hidden></i></button>
@@ -2975,13 +3021,66 @@ function drawMyCar(){
   el.hidden=false;
   el.innerHTML=`<a href="/garage" class="lx-car"><span class="lx-cari"><i class="ti ti-car"></i></span><span class="lx-cart"><small>รถของฉัน</small><b class="nt">${esc([c.name,c.year].filter(Boolean).join(" "))}</b></span><span class="lx-carm">${c.mileage?money(c.mileage)+" "+T("กม.","km"):T("ดูสมุดรถ","Car log")} <i class="ti ti-chevron-right"></i></span></a>`;
 }
+/* ═══ ตรวจใบเสนอราคา ═══
+   ปุ่มบนหน้าแรกพามาหน้านี้ก่อน: ขอรูปอย่างเดียว (เดิมพาไปห้องแชตตรง ๆ คนมักลืมแนบรูป AI เลยตอบลอย ๆ)
+   ได้รูปแล้วเก็บไว้ในเครื่อง (CendonMedia) → ห้องแชตหยิบไปแนบ เลือกเครื่องมือใบเสนอราคา แล้วส่งให้ AI ทันที */
+const QP_MAX=3;
+function quotePage(){
+  const P=[];
+  const cars=(ls.get("spire_garage",[])||[]).filter(c=>c&&c.id&&c.name);
+  let car=(cars.find(c=>c.id===ls.get("spire_selCar",""))||cars[0]||{}).id||"";
+  const carName=c=>[c.name,c.year].filter(Boolean).join(" ");
+  const what=[["ti-list-details","อ่านทุกรายการ","Reads every line"],["ti-calculator","ตรวจยอดรวมและ VAT","Checks the totals"],["ti-urgent","อะไรด่วน อะไรรอได้","What's urgent, what can wait"],["ti-message-question","ควรถามอู่อะไร","What to ask the garage"]];
+  sheet({title:T("ตรวจใบเสนอราคา","Check a quote"),url:"/quote",full:true,body:`<div class="qp">
+    <div class="qp-hd"><h2>${T("ถ่ายรูปใบเสนอราคา","Photograph the quote")}</h2><p>${T("ส่งรูปใบที่อู่ให้มา แล้ว AI จะอ่านให้ทีละรายการ ก่อนคุณตัดสินใจซ่อม","Send the quote your garage gave you and the AI goes through it line by line before you decide.")}</p></div>
+    <div id="qpPics"></div>
+    <input type="file" id="qpFile" accept="image/*" multiple hidden data-nocrop>
+    <p class="qp-err" id="qpErr"></p>
+    <ul class="qp-tips"><li><i class="ti ti-circle-check"></i>${T("ถ่ายให้เห็นทั้งใบ ตัวเลขชัดทุกบรรทัด","Fit the whole page in, every number readable")}</li>
+      <li><i class="ti ti-circle-check"></i>${T("วางบนพื้นเรียบ ไม่ให้มีแสงสะท้อน","Lay it flat, avoid glare")}</li>
+      <li><i class="ti ti-circle-check"></i>${T(`มีหลายหน้า ใส่ได้ถึง ${QP_MAX} รูป`,`Several pages? Add up to ${QP_MAX} photos`)}</li></ul>
+    <div class="qp-what">${what.map(([i,th,en])=>`<span><i class="ti ${i}"></i>${T(th,en)}</span>`).join("")}</div>
+    ${cars.length>1?`<label class="qp-car"><i class="ti ti-car"></i><span>${T("ตรวจสำหรับรถ","For")}</span><select id="qpCar">${cars.map(c=>`<option value="${esc(c.id)}"${c.id===car?" selected":""}>${esc(carName(c))}</option>`).join("")}</select></label>`
+      :cars.length?`<p class="qp-car"><i class="ti ti-car"></i><span>${T("ตรวจสำหรับรถ","For")} <b class="nt">${esc(carName(cars[0]))}</b></span></p>`
+      :`<p class="qp-car"><i class="ti ti-car"></i><span>${T("ยังไม่มีรถในการาจ — ห้องแชตจะให้เลือกรถก่อน แล้ว AI ตรวจต่อให้เอง","No car in your garage yet — the chat asks you to pick one first, then the AI carries on")}</span></p>`}
+  </div>`,
+    foot:`<button class="lx-cta" type="button" id="qpGo" style="width:100%" disabled><i class="ti ti-sparkles"></i>${T("ให้ AI ตรวจใบนี้","Check it with AI")}</button>`,
+    mount(b){
+      const pick=()=>{const f=$("qpFile");f.value="";f.click()};
+      const draw=()=>{
+        $("qpPics").innerHTML=P.length?`<div class="qp-grid">${P.map((d,i)=>`<div class="qp-ph"><img src="${d}" alt=""><em>${T("หน้า","Page")} ${i+1}</em><button type="button" data-rm="${i}" aria-label="${T("ลบรูปนี้","Remove")}"><i class="ti ti-x"></i></button></div>`).join("")}${P.length<QP_MAX?`<button type="button" class="qp-add" id="qpAdd"><i class="ti ti-plus"></i>${T("เพิ่มหน้า","Add a page")}</button>`:""}</div>`
+          :`<button type="button" class="qp-drop" id="qpAdd"><i class="ti ti-camera-plus"></i><b>${T("ถ่ายรูป หรือเลือกรูปใบเสนอราคา","Take or choose a photo of the quote")}</b><small>${T(`ใส่ได้ถึง ${QP_MAX} รูป`,`Up to ${QP_MAX} photos`)}</small></button>`;
+        $("qpAdd")&&($("qpAdd").onclick=pick);
+        $("qpPics").querySelectorAll("[data-rm]").forEach(x=>x.onclick=()=>{P.splice(+x.dataset.rm,1);draw()});
+        $("qpGo").disabled=!P.length;
+      };
+      draw();
+      if($("qpCar"))$("qpCar").onchange=e=>car=e.target.value;
+      $("qpFile").onchange=async()=>{$("qpErr").textContent="";
+        for(const f of [...$("qpFile").files].slice(0,QP_MAX-P.length)){try{P.push(await shrink(f,2000))}catch(e){$("qpErr").textContent=e.message}}
+        if($("qpFile").files.length>QP_MAX-P.length+P.length)$("qpErr").textContent=T(`ใส่ได้สูงสุด ${QP_MAX} รูป`,`Up to ${QP_MAX} photos`);
+        draw()};
+      $("qpGo").onclick=e=>busy(e.currentTarget,async()=>{
+        if(!P.length)return;
+        await READY.user;if(!U)return needLogin();
+        if(!window.CendonMedia){$("qpErr").textContent=T("เครื่องนี้เก็บรูปชั่วคราวไม่ได้ ลองเปิดใหม่อีกครั้ง","This device couldn't hold the photos — please reopen and try again");return}
+        const ids=[];
+        for(const d of P){const m=/^data:([^;]+);base64,(.*)$/.exec(d);if(!m)continue;
+          ids.push(await CendonMedia.put(CendonMedia.fromB64(m[2],m[1]),{kind:"image",mime:m[1],name:T("ใบเสนอราคา","Quote"),upload:false}))}
+        try{sessionStorage.setItem("spire_quoteJob",JSON.stringify({ids,at:Date.now()}))}catch(err){}
+        if(car)ls.set("spire_selCar",car);
+        if(window.CendonPaint)CendonPaint.prepare("/chat");
+        location.href="/chat"+(car?"?car="+encodeURIComponent(car):"");
+      });
+    }});
+}
 function drawQuick(){
   const Q=[["urgent","ti-urgent",T("เรียกช่างด่วน","Urgent help"),T("3 ร้านใกล้สุดพร้อมกัน","3 nearest shops at once")],["quote","ti-file-invoice",T("เช็กใบเสนอราคา","Check a quote"),T("แพงไปไหม AI บอก","AI tells you if it's too pricey")],
     ["listen","ti-wave-sine",T("ฟังเสียงเครื่อง","Engine sound check"),T("อัดเสียงให้ AI ฟัง","Record it for the AI")],["multi","ti-arrows-exchange",T("ขอราคา 3 ร้าน","Quotes from 3 shops"),T("เทียบแล้วค่อยเลือก","Compare, then choose")]];
   $("hQuick").innerHTML=Q.map(([k,i,t,d])=>`<button type="button" data-q="${k}"><i class="ti ${i}"></i><b>${t}</b><small>${d}</small></button>`).join("");
   $("hQuick").querySelectorAll("button").forEach(b=>b.onclick=()=>{const k=b.dataset.q;
     if(k==="urgent")return urgentCall();if(k==="multi")return openMulti("","");
-    if(k==="quote")location.href="/chat?q="+encodeURIComponent("ช่วยตรวจใบเสนอราคาค่าซ่อมให้หน่อย");
+    if(k==="quote")return quotePage();
     if(k==="listen")location.href="/chat?attach=mic"});
 }
 /* ข้อความตัวอย่างในช่องถาม: พิมพ์ให้ดูเองครั้งแรกที่เข้า แล้ววนอาการเป็น placeholder */
@@ -3410,6 +3509,7 @@ Nav.route({path:"work",name:"work",open:async()=>{if(await needU()&&modesAvail()
 Nav.route({path:":t",parent:"work",test:p=>["find","queue","messages","shop","ai","posts"].includes(p.t),open:p=>{if(MODE==="tech")setTab2(p.t)}});
 Nav.route({path:"staff",open:async()=>{if(await needU()&&modesAvail().includes("staff"))setMode("staff")}});
 Nav.route({path:"join",open:async()=>{if(await needU())return openJoin()}});
+Nav.route({path:"quote",name:"qcheck",open:()=>quotePage()});
 Nav.route({path:"quotes",open:async()=>{await READY.techs;if(await needU())openMulti("","")}});
 Nav.route({path:"compare/:g",open:async p=>{if(await needU())return openGroup(p.g)}});
 Nav.route({path:"urgent",open:async()=>{await READY.techs;if(await needU())return urgentCall()}});
@@ -4219,7 +4319,7 @@ function act(j,a,btn){
 }
 
 /* ═══ แชต — เต็มจอ ข้อความใหม่ขึ้นเองทุก 3 วินาที ═══ */
-const CH={job:null,th:null,after:0,as:"customer",timer:0,last:"",seq:0};
+const CH={job:null,th:null,after:0,since:0,as:"customer",timer:0,last:"",seq:0,edit:null};
 function mine(m){const r=CH.job.role;return r==="both"?m.role===CH.as:m.role===(r==="customer"?"customer":"technician")}
 function fmtT(at){return new Date(at).toLocaleTimeString(LOC,{hour:"2-digit",minute:"2-digit"})}
 function fmtD(at){return new Date(at).toLocaleDateString(LOC,{day:"numeric",month:"short"})}
@@ -4233,18 +4333,120 @@ function mediaHTML(l){
       :`<audio data-mid="${id}" controls preload="metadata"></audio>`}).join("")}</span>`;
 }
 function addMsgs(list){
-  const box=$("msgs");const fresh=list.filter(m=>m.id>CH.after);if(!fresh.length)return;
+  const box=$("msgs");
+  /* อีกฝ่ายแก้/ยกเลิกข้อความเก่า (id ที่เห็นไปแล้ว) — เปลี่ยนในที่เดิม */
+  list.filter(m=>m.id<=CH.after).forEach(applyMsg);
+  list.forEach(m=>{const t=Math.max(m.at||0,m.editedAt||0);if(t>=CH.since)CH.since=t+1});
+  const fresh=list.filter(m=>m.id>CH.after);if(!fresh.length)return;
+  box.querySelector(".ld")?.remove();
   const atEnd=box.scrollHeight-box.scrollTop-box.clientHeight<90;
   box.querySelector(".first")?.remove();
   /* ป้าย "สอบถามเรื่อง…" อยู่ล่างสุดจนกว่าจะส่งข้อความแรก */
   const ask=box.querySelector(".sys.ask"),put=h=>ask?ask.insertAdjacentHTML("beforebegin",h):box.insertAdjacentHTML("beforeend",h);
   fresh.forEach(m=>{
     const d=fmtD(m.at);if(d!==CH.last){CH.last=d;put(`<div class="day">${d}</div>`)}
-    put(`<div class="msg ${mine(m)?"me":""}${m.media&&m.media.length?" has-m":""}" data-id="${m.id}">${mediaHTML(m.media)}${esc(m.text||"")}<small>${CH.job.role==="both"||CH.job.role==="admin"?(m.role==="customer"?"ลูกค้า · ":"ช่าง · "):""}${fmtT(m.at)}</small></div>`);
+    put(chMsgHTML(m));
   });
-  CH.after=fresh[fresh.length-1].id;CH.all.push(...fresh);
+  CH.after=fresh[fresh.length-1].id;CH.all.push(...fresh);chCacheSave();
   if(CH.all.length)$("chSug").hidden=true;
   if(atEnd||fresh.some(mine))box.scrollTop=box.scrollHeight;
+}
+/* ── ข้อความหนึ่งก้อน — ใช้ทั้งตอนเพิ่มใหม่ และตอนแก้/ยกเลิก (ของเราเองหรืออีกฝ่าย) ── */
+function chMsgHTML(m){
+  const tag=CH.job.role==="both"||CH.job.role==="admin"?(m.role==="customer"?"ลูกค้า · ":"ช่าง · "):"";
+  if(m.deleted)return `<div class="msg gone${mine(m)?" me":""}" data-id="${m.id}"><i class="ti ti-message-off"></i>${mine(m)?T("คุณยกเลิกข้อความแล้ว","You unsent a message"):T("ยกเลิกข้อความแล้ว","Message unsent")}<small>${tag}${fmtT(m.at)}</small></div>`;
+  return `<div class="msg ${mine(m)?"me":""}${m.media&&m.media.length?" has-m":""}" data-id="${m.id}">${mediaHTML(m.media)}${esc(m.text||"")}<small>${tag}${fmtT(m.at)}${m.editedAt?` · ${T("แก้ไขแล้ว","edited")}`:""}</small></div>`;
+}
+/* ข้อความที่ถูกแก้/ยกเลิก (id เดิม) — เปลี่ยนก้อนเดิมในที่เดิม ไม่ต่อท้าย */
+function applyMsg(m){
+  const i=CH.all.findIndex(x=>x.id===m.id);if(i<0)return;CH.all[i]=m;
+  const el=$("msgs").querySelector(`.msg[data-id="${m.id}"]`);if(el)el.outerHTML=chMsgHTML(m);
+  const t=Math.max(m.at||0,m.editedAt||0);if(t>=CH.since)CH.since=t+1;
+  chCacheSave();
+}
+
+/* ── แตะข้อความ = เมนู คัดลอก / แก้ไข / ยกเลิกข้อความ ──
+   ของตัวเอง: แก้ได้ 15 นาที ยกเลิกได้ 24 ชม. (กติกาเดียวกับหลังบ้าน) · ของอีกฝ่าย: คัดลอกได้อย่างเดียว */
+const EDIT_MS=15*6e4,UNSEND_MS=864e5;
+function closeChMenu(){const mn=$("chMenu");if(mn.hidden)return;mn.hidden=true;$("msgs").querySelectorAll(".msg.sel").forEach(x=>x.classList.remove("sel"))}
+function chMenu(el){
+  const m=CH.all.find(x=>String(x.id)===el.dataset.id);if(!m||m.deleted)return;
+  const open=!$("chF").hidden,own=open&&mine(m)&&CH.job.role!=="admin",age=Date.now()-m.at;
+  const items=[m.text&&["copy","ti-copy",T("คัดลอก","Copy")],
+    own&&age<EDIT_MS&&["edit","ti-pencil",T("แก้ไข","Edit")],
+    own&&age<UNSEND_MS&&["unsend","ti-arrow-back-up",T("ยกเลิกข้อความ","Unsend")]].filter(Boolean);
+  if(!items.length)return;
+  closeChMenu();
+  const mn=$("chMenu");mn.innerHTML=items.map(([k,i,l])=>`<button type="button" role="menuitem" data-k="${k}"${k==="unsend"?' class="bad"':""}><i class="ti ${i}"></i>${l}</button>`).join("");
+  mn.hidden=false;el.classList.add("sel");
+  const r=el.getBoundingClientRect(),h=mn.offsetHeight,w=mn.offsetWidth;
+  mn.style.top=Math.max(8,r.bottom+h+8>innerHeight-90?r.top-h-6:r.bottom+6)+"px";
+  mn.style.left=Math.min(innerWidth-w-8,Math.max(8,el.classList.contains("me")?r.right-w:r.left))+"px";
+  mn.querySelector("button").focus({preventScroll:true});
+  mn.querySelectorAll("button").forEach(b=>b.onclick=async()=>{closeChMenu();const k=b.dataset.k;
+    if(k==="copy"){try{await navigator.clipboard.writeText(m.text);toast(T("คัดลอกแล้ว","Copied"),"ti-copy")}catch(e){toast(T("คัดลอกไม่ได้บนเครื่องนี้","Couldn't copy on this device"),"ti-alert-triangle")}}
+    else if(k==="edit")startEdit(m);
+    else if(k==="unsend"){
+      if(!confirm(T("ยกเลิกข้อความนี้? อีกฝ่ายจะเห็นว่าคุณยกเลิกข้อความ","Unsend this message? The other side will see that a message was unsent.")))return;
+      try{applyMsg((await api(`/api/tech/messages/${m.id}/delete`,{body:{}})).message);toast(T("ยกเลิกข้อความแล้ว","Message unsent"))}catch(e){toast(e.message,"ti-alert-triangle")}}
+  });
+}
+$("msgs").addEventListener("click",e=>{if(e.target.closest("img,video,audio,a,button"))return;const el=e.target.closest(".msg[data-id]");if(el&&!el.classList.contains("pending")){e.stopPropagation();chMenu(el)}});
+$("msgs").addEventListener("contextmenu",e=>{const el=e.target.closest(".msg[data-id]");if(el&&!e.target.closest("img,video,audio")){e.preventDefault();chMenu(el)}});
+document.addEventListener("click",e=>{if(!e.target.closest("#chMenu"))closeChMenu()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeChMenu()});
+$("msgs").addEventListener("scroll",closeChMenu,{passive:true});
+/* แก้ข้อความใช้ช่องพิมพ์เดิม (แบบแอปแชตทั่วไป) — มีแถบบอกว่ากำลังแก้ กด × เพื่อยกเลิก */
+function startEdit(m){
+  CH.edit=m;$("chEdit").hidden=false;$("chEditT").textContent=(m.text||"").replace(/\s+/g," ").slice(0,90);
+  chIn.value=m.text||"";chIn.dispatchEvent(new Event("input"));chIn.focus();$("chClip").disabled=true;
+}
+function endEdit(){if(!CH.edit)return;CH.edit=null;$("chEdit").hidden=true;$("chClip").disabled=false}
+$("chEditX").onclick=()=>{endEdit();chIn.value="";chIn.dispatchEvent(new Event("input"))};
+
+/* ── ห้องที่เคยเปิด: เก็บหัวห้อง + ข้อความล่าสุดไว้ในเครื่อง (ของบัญชีนี้เท่านั้น ออกจากระบบแล้วลบทิ้ง)
+   เปิดจากกล่องข้อความครั้งต่อไปขึ้นทันที แล้วค่อยเติมของใหม่จากเซิร์ฟเวอร์ ── */
+const CHC=uid=>"spire_chatc_"+(uid||"x");
+function chCacheAll(){try{return JSON.parse(localStorage.getItem(CHC(U?U.uid:lastUid()))||"{}")||{}}catch(e){return {}}}
+function chCacheGet(k,id){return chCacheAll()[k+":"+id]||null}
+let chCacheT=0;
+function chCacheSave(){
+  clearTimeout(chCacheT);chCacheT=setTimeout(()=>{
+    if(!U||!CH.job||!CH.job.id)return;
+    const all=chCacheAll(),key=(CH.th?"th":"job")+":"+CH.job.id;
+    all[key]={...(CH.th?{h:{...CH.th,ask:null}}:{j:{...CH.job,messages:[]}}),msgs:CH.all.filter(m=>!m.pending).slice(-40),t:Date.now()};
+    const keys=Object.keys(all).sort((a,b)=>(all[b].t||0)-(all[a].t||0));keys.slice(20).forEach(x=>delete all[x]);
+    try{localStorage.setItem(CHC(U.uid),JSON.stringify(all))}catch(e){}
+  },300);
+}
+/* ออกจากระบบ: ลบแชตและกล่องข้อความที่เก็บไว้ในเครื่องทั้งหมด */
+function purgeChatCache(){try{Object.keys(localStorage).filter(k=>k.startsWith("spire_chatc_")||k.startsWith("spire_inbox_")).forEach(k=>localStorage.removeItem(k))}catch(e){}}
+/* เปิดห้องจากกล่องข้อความ: ขึ้นทันทีจากข้อมูลในเครื่อง (เดิมรอเซิร์ฟเวอร์ตอบก่อน ช้าหลายวินาทีบนเน็ตมือถือ) */
+async function openConvo(k,id){
+  const c=chCacheGet(k,id);
+  if(k==="th"){
+    const h=(c&&c.h)||THREADS.find(x=>x.id===id)||((()=>{try{return JSON.parse(localStorage.getItem(IBK(U?U.uid:lastUid()))||"{}").threads||[]}catch(e){return []}})()).find(x=>x.id===id);
+    if(h){showThread(h,(c&&c.msgs)||[]);if(!(c&&c.msgs&&c.msgs.length))$("msgs").insertAdjacentHTML("beforeend",`<p class="sys first ld">${T("กำลังโหลดข้อความ…","Loading messages…")}</p>`)}
+    await READY.user;if(!U)return needLogin();
+    return openThread(id,null,!!h);
+  }
+  const row=JOBS.find(x=>x.id===id);
+  if(c&&c.j)openChat({...c.j,messages:c.msgs||[]},{list:true});
+  else chatLoading(row?row.techName||row.car||"":"","/jobs/"+encodeURIComponent(id)+"/chat");
+  await READY.user;if(!U){closeChat();return needLogin()}
+  try{const j=(await api("/api/tech/jobs/"+id)).job;
+    if(!$("chat").classList.contains("on")||(CH.job&&CH.job.id&&CH.job.id!==id))return;
+    openChat(j,{list:true})}
+  catch(e){toast(e.message,"ti-alert-triangle");if(!(c&&c.j))closeChat()}
+}
+/* ห้องที่ยังไม่เคยเปิดบนเครื่องนี้: ขึ้นหัวห้องกับคำว่ากำลังโหลดทันที ไม่ปล่อยจอนิ่ง */
+function chatLoading(name,url){
+  recStop(true);clearAtt();endEdit();CH.seq++;
+  CH.job={id:null,role:"customer"};CH.th=null;CH.after=0;CH.since=0;CH.last="";CH.all=[];
+  chHead(name||T("ข้อความ","Messages"),null);
+  ["chCall","chBook","chSug","chAs"].forEach(x=>$(x).hidden=true);$("chF").hidden=true;
+  $("msgs").innerHTML=`<p class="sys first ld">${T("กำลังโหลดข้อความ…","Loading messages…")}</p>`;
+  chatOn(url,false);
 }
 /* หัวห้องแชตแบบเดียวกันทั้งใบงานและห้องทักช่าง */
 function chatOn(url,focus){
@@ -4273,7 +4475,7 @@ const safeNote=(title,body)=>`<p class="sys safe"><i class="ti ti-shield-lock"><
 function openChat(j,opt){
   recStop(true);clearAtt();
   CH.list=!!(opt&&opt.list);
-  CH.job=j;CH.th=null;CH.after=0;CH.last="";CH.all=[];CH.as="customer";
+  endEdit();CH.job=j;CH.th=null;CH.after=0;CH.since=0;CH.last="";CH.all=[];CH.as="customer";
   const cust=j.role==="customer";
   chHead(cust?j.techName:j.role==="technician"?T("ลูกค้า","Customer")+" · "+j.car:j.techName,j.role==="technician"?null:TECHS.find(x=>x.id===j.techId));
   const phone=cust?j.technicianPhone:j.customerPhone;
@@ -4288,7 +4490,7 @@ function openChat(j,opt){
   addMsgs(j.messages||[]);
   if(!(j.messages||[]).length)$("msgs").insertAdjacentHTML("beforeend",'<p class="sys first">ส่งข้อความแรกได้เลย</p>');
   chatOn("/jobs/"+encodeURIComponent(j.id)+"/chat",!closed);
-  poll(async()=>(await api(`/api/tech/jobs/${j.id}/messages?after=${CH.after}`)).messages);
+  poll(async()=>(await api(`/api/tech/jobs/${j.id}/messages?after=${CH.after}&since=${CH.since}`)).messages);
 }
 
 /* ═══ ทักช่าง — คุยถามก่อน ยังไม่ใช่การจ้าง ═══
@@ -4308,17 +4510,19 @@ async function messageTech(t,gig){
   if(h)return openThread(h.id,ask);
   showThread({id:null,techId:t.id,techName:t.shop||t.name||"",role:"customer",gig:null},[],ask);
 }
-async function openThread(id,ask){
+async function openThread(id,ask,shown){
   if(!U)return needLogin();
   let d;
   try{d=await api("/api/tech/threads/"+encodeURIComponent(id))}catch(e){return toast(e.message,"ti-alert-triangle")}
   if(!d||!d.thread)return toast(T("เปิดห้องคุยนี้ไม่ได้ ลองใหม่อีกครั้ง","Couldn't open this conversation — try again"),"ti-alert-triangle");
+  /* วาดจากเครื่องไปแล้ว: ถ้าผู้ใช้ปิดหรือเปลี่ยนห้องไประหว่างรอ ไม่เปิดกลับมาเอง */
+  if(shown&&(!$("chat").classList.contains("on")||!CH.th||CH.th.id!==id))return;
   showThread(d.thread,d.messages||[],ask);
   refreshThreads();
 }
 function showThread(h,msgs,ask){
   recStop(true);clearAtt();
-  CH.job={id:h.id,role:h.role,thread:true};CH.th={...h,ask:ask||null};CH.after=0;CH.last="";CH.all=[];CH.as=h.role;
+  endEdit();CH.job={id:h.id,role:h.role,thread:true};CH.th={...h,ask:ask||null};CH.after=0;CH.since=0;CH.last="";CH.all=[];CH.as=h.role;
   const cust=h.role==="customer";
   chHead(thWho(h),cust?TECHS.find(x=>x.id===h.techId):null);
   $("chCall").hidden=true;$("chAs").hidden=true;$("chBook").hidden=!cust;$("chF").hidden=h.role==="admin";
@@ -4335,7 +4539,7 @@ function showThread(h,msgs,ask){
 }
 function pollThread(){
   const id=CH.th&&CH.th.id;if(!id){CH.seq++;return}
-  poll(async()=>(await api(`/api/tech/threads/${encodeURIComponent(id)}?after=${CH.after}`)).messages);
+  poll(async()=>(await api(`/api/tech/threads/${encodeURIComponent(id)}?after=${CH.after}&since=${CH.since}`)).messages);
 }
 async function refreshThreads(){
   if(!U){THREADS=[];return}
@@ -4416,9 +4620,7 @@ function inboxBody(list,state){
 }
 function wireInbox(b){
   b.querySelector("[data-ai]").onclick=e=>{e.preventDefault();if(window.CendonPaint)CendonPaint.prepare("/chat");location.href="/chat"};
-  b.querySelectorAll(".ib-row[data-k]").forEach(x=>x.onclick=()=>busy(x,async()=>{await READY.user;
-    if(x.dataset.k==="th")return openThread(x.dataset.id);
-    const j=(await api("/api/tech/jobs/"+x.dataset.id)).job;openChat(j,{list:true})}));
+  b.querySelectorAll(".ib-row[data-k]").forEach(x=>x.onclick=()=>openConvo(x.dataset.k,x.dataset.id));
   if($("ibLogin"))$("ibLogin").onclick=()=>needLogin();
   if($("ibStudio"))$("ibStudio").onclick=()=>{closeSheet();openStudio();setTimeout(()=>setTab2("messages"),0)};
   if($("ibRetry"))$("ibRetry").onclick=()=>inbox();
@@ -4449,6 +4651,7 @@ addEventListener("spire:unread",fabDot);addEventListener("storage",e=>{if(e.key=
 
 let CHL=null;
 function closeChat(fromNav){
+  closeChMenu();endEdit();chCacheSave();
   clearTimeout(CH.timer);CH.seq++;$("chat").classList.remove("on");$("chat").setAttribute("aria-hidden","true");
   recStop(true);clearAtt();
   const l=CHL;CHL=null;if(fromNav!==true&&l)Nav.drop(l);
@@ -4475,7 +4678,13 @@ async function sendThread(text,media){
   return (await api("/api/tech/threads/"+encodeURIComponent(h.id),{body:{text,media}})).message;
 }
 $("chF").addEventListener("submit",async e=>{
-  e.preventDefault();const text=chIn.value.trim(),att=CH.att.slice();if(!(text||att.length)||!CH.job||REC)return;
+  e.preventDefault();
+  if(CH.edit){const m=CH.edit,text=chIn.value.trim();if(!text&&!(m.media&&m.media.length))return;
+    if(text===(m.text||"")){endEdit();chIn.value="";chIn.dispatchEvent(new Event("input"));return}
+    endEdit();chIn.value="";chIn.style.height="auto";chIn.dispatchEvent(new Event("input"));
+    try{applyMsg((await api(`/api/tech/messages/${m.id}/edit`,{body:{text}})).message)}catch(err){toast(err.message,"ti-alert-triangle");startEdit({...m,text})}
+    return}
+  const text=chIn.value.trim(),att=CH.att.slice();if(!(text||att.length)||!CH.job||REC)return;
   chIn.value="";chIn.style.height="auto";CH.att=[];drawAtt();
   /* ข้อความขึ้นทันทีแบบจาง ๆ ระหว่างส่ง แล้วค่อยแทนด้วยของจริงจากเซิร์ฟเวอร์ */
   const tmp=document.createElement("div");tmp.className="msg me pending"+(att.length?" has-m":"");
@@ -5406,7 +5615,7 @@ async function pullCars(){
     try{
       if(!firebase.apps||!firebase.apps.length)firebase.initializeApp(fbConfig);
       auth=firebase.auth();
-      auth.onAuthStateChanged(async u=>{U=u||null;READY.user.done();try{navPaint(U)}catch(e){}greet();if(U)pullCars();await refreshMe();if(U)await load();else diag();READY.auth.done()});
+      auth.onAuthStateChanged(async u=>{U=u||null;if(!U)purgeChatCache();READY.user.done();try{navPaint(U)}catch(e){}greet();if(U)pullCars();await refreshMe();if(U)await load();else diag();READY.auth.done()});
     }catch(e){}
   })();
   /* ลงทะเบียน service worker หลังหน้าขึ้นแล้ว — แอปที่ติดตั้งบนมือถือจะเปิดจากหน้าที่เก็บไว้ได้ทันทีตอนเน็ตช้า

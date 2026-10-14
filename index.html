@@ -5055,7 +5055,10 @@ async function openJoin(){
   if(!U)return needLogin();
   /* กลับมาจาก Didit (/join?verificationSessionId=…) — ดึงผลทันที ไม่ต้องรอ webhook */
   const kyc=new URLSearchParams(location.search).get("verificationSessionId");
-  if(kyc){try{await api("/api/tech/apply/identity/refresh",{body:{}})}catch(e){}}
+  if(kyc){try{await api("/api/tech/apply/identity/refresh",{body:{}})}catch(e){}
+    /* The session is selected server-side from the signed-in account. Do not
+       keep a provider identifier in the address bar or refresh it on reload. */
+    const u=new URL(location.href);u.searchParams.delete("verificationSessionId");history.replaceState(history.state,"",u.pathname+(u.search||"")+(u.hash||""));}
   await Promise.all([refreshMe(),techPolicy()]);
   const a=ME&&ME.application,t=ME&&ME.technician;
   /* ทีมงานเลือกได้ว่าจะเป็นช่างทีมงาน (ไม่ต้องใช้อะไร เห็นเฉพาะทีมงาน) หรือลองยื่นแบบพาร์ทเนอร์จริง */
@@ -5180,7 +5183,7 @@ function step(n){
     <label class="chk"><input type="checkbox" class="dec"/> ข้าพเจ้าขอรับรองว่าข้อมูลและเอกสารทั้งหมดเป็นความจริง</label>
     <label class="chk"><input type="checkbox" class="dec"/><span>ข้าพเจ้าได้อ่านและยอมรับ <button type="button" class="lnk" id="dTerms">ข้อตกลงพาร์ทเนอร์</button></span></label>
     <label class="chk"><input type="checkbox" class="dec"/> <span>ยินยอมให้ Cendon เก็บและใช้ข้อมูลเพื่อพิจารณาใบสมัคร และโทรติดต่อยืนยันตัวตน ตาม<a class="lnk" href="/privacy" target="_blank" rel="noopener">นโยบายความเป็นส่วนตัว</a></span></label>
-    ${DIDIT()?`<label class="chk"><input type="checkbox" class="dec"/> <span>ยินยอมให้ <b>Didit</b> (ผู้ให้บริการยืนยันตัวตน) ตรวจบัตรประชาชนและใบหน้าของข้าพเจ้า ซึ่งอาจประมวลผลนอกประเทศไทย — Cendon ได้รับเฉพาะผลตรวจ ชื่อ และวันเกิดตามบัตร (เลขบัตรเก็บแค่ 3 หลักท้าย) ไม่ได้รับรูปบัตรหรือรูปหน้า</span></label>`
+    ${DIDIT()?`<label class="chk"><input type="checkbox" class="dec"/> <span>ยินยอมให้ <b>Didit</b> (ผู้ให้บริการยืนยันตัวตน) ตรวจบัตรประชาชนจริง, selfie/liveness และเทียบใบหน้ากับภาพบนบัตร ซึ่งอาจประมวลผลนอกประเทศไทย — Cendon ได้รับเฉพาะผลตรวจและข้อมูลขั้นต่ำสำหรับพิจารณา ไม่ได้รับรูปบัตรหรือรูปใบหน้า การยินยอมนี้จำเป็นต่อการสมัคร</span></label>`
       :`<label class="chk"><input type="checkbox" class="dec"/> <span>ยินยอมให้<b>ทีมงาน Cendon</b> ดูรูปบัตรประชาชนและรูปคู่บัตรเพื่อยืนยันตัวตน — ไม่ส่งให้ AI และลบทันทีหลังพิจารณาเสร็จ</span></label>`}
     ${TP&&TP.ai?`<p class="h4">ไม่บังคับ</p>
     <label class="chk"><input type="checkbox" id="dAI"/> <span>ให้ AI (Cloudflare Workers AI) ช่วยดูรูปอู่ รูปผลงาน และคำอธิบายงาน เพื่อให้ตรวจได้เร็วขึ้น — ไม่รวมรูปบัตรหรือรูปหน้า · ไม่ติ๊กก็สมัครได้ ทีมงานจะดูรูปเองทั้งหมด</span></label>`:""}
@@ -5210,7 +5213,8 @@ function statusPage(a,fresh,pv){
   const n=st==="approved"?5:st==="rejected"?2:kycAt;
   sheet({push:pv&&pv.push,url:"/join",full:true,title:"ใบสมัครพาร์ทเนอร์",body:(pv?`<div class="seg pvs" id="pvS">${[["pending","รอตรวจ"],["rejected","ต้องแก้ไข"],["approved","อนุมัติ"]].map(([k,l])=>`<button type="button" data-v="${k}" class="${k===pv.st?"on":""}">${l}</button>`).join("")}</div>`:"")+`
     ${pv?'<p class="note"><b>โหมดตัวอย่าง UI เท่านั้น</b> · ไม่ส่งใบสมัคร ไม่ตรวจ AI และไม่อนุมัติร้านจริง</p>':st==='pending'&&!kycTodo&&!fresh?`<p class="note">ใบสมัครอยู่ในคิว ทีมงานจะตรวจตัวตน เบอร์โทร ผลงาน และทักษะ</p>`:''}
-    ${fresh&&st==='pending'?`<div class="state"><div class="big" style="background:rgba(62,158,110,.14);color:var(--ok)"><i class="ti ti-send"></i></div><h2>ยื่นใบสมัครเรียบร้อย</h2><p>${kycTodo?"เหลืออีกขั้นเดียว: ยืนยันตัวตนกับ Didit":"ทีมงานจะติดต่อกลับภายใน 3 วันทำการ"}</p></div>`:""}
+    ${fresh&&st==='pending'?`<div class="state"><div class="big" style="background:rgba(62,158,110,.14);color:var(--ok)"><i class="ti ti-send"></i></div><h2>ยื่นใบสมัครเรียบร้อย</h2><p>${kycTodo?"เหลืออีก 1 ขั้น: ยืนยันตัวตนกับ Didit":"ทีมงานจะติดต่อกลับภายใน 3 วันทำการ"}</p></div>`:""}
+    ${fresh&&kycTodo?`<div class="note"><b><i class="ti ti-id-badge-2"></i> ก่อนเริ่ม</b><br>เตรียมบัตรประชาชนตัวจริง อยู่ในที่แสงเพียงพอ และอนุญาตให้ใช้กล้องหน้าได้ ใช้เวลาประมาณ 2 นาที ปิดหน้านี้ได้ แต่ต้องกลับมายืนยันให้เสร็จก่อนทีมงานจะเริ่มพิจารณา</div>`:""}
     ${st==='pending'&&kyc?kycCard(kyc):""}
     ${st==='rejected'&&a.review&&a.review.auto?`<div class="fixl"><b><i class="ti ti-alert-triangle"></i> ใบสมัครยังไม่ผ่าน — แก้ข้อต่อไปนี้แล้วยื่นใหม่ได้ทันที</b><ul>${(a.review.reasons||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:""}
     <div class="appno"><div><small>เลขที่ใบสมัคร</small><b>${esc(a.appNo||"—")}</b></div><div style="text-align:right"><small>วันที่ยื่น</small><b style="font-size:14px">${d?new Date(d).toLocaleDateString(LOC,{day:"numeric",month:"short",year:"numeric"}):"—"}</b></div></div>
@@ -5223,16 +5227,20 @@ function statusPage(a,fresh,pv){
       if($("sFix"))$("sFix").onclick=()=>landing(true);if($("sJobs"))$("sJobs").onclick=()=>jobs();if($("sOk"))$("sOk").onclick=()=>closeSheet();
       /* ยืนยันตัวตน: ขอลิงก์ Didit แล้วเปิดในแท็บเดิม (Didit พากลับมาที่ /join เอง) · ตรวจผล = ดึงผลล่าสุดจาก Didit */
       if($("kGo"))$("kGo").onclick=e=>busy(e.currentTarget,async()=>{const r=await api("/api/tech/apply/identity",{body:{}});if(r.url){location.href=r.url;return}await refreshMe();statusPage(ME.application)});
-      if($("kChk"))$("kChk").onclick=e=>busy(e.currentTarget,async()=>{await api("/api/tech/apply/identity/refresh",{body:{}});await refreshMe();statusPage(ME.application)})}});
+      if($("kChk"))$("kChk").onclick=e=>busy(e.currentTarget,async()=>{const r=await api("/api/tech/apply/identity/refresh",{body:{}});await refreshMe();
+        /* Didit ตอบไม่ได้ตอนนี้ = ไม่เปลี่ยนสถานะที่เก็บไว้ แค่แจ้งผู้สมัครแล้วให้กดตรวจผลใหม่ */
+        const a=ME.application;statusPage(r&&r.identity&&r.identity.status==="service_unavailable"?{...a,identity:{...a.identity,status:"service_unavailable"}}:a)})}});
 }
-const KYC={none:["next","ti-id","ขั้นต่อไป: ยืนยันตัวตนกับ Didit","ถ่ายบัตรประชาชนตัวจริงและใบหน้า ใช้เวลาประมาณ 2 นาที — Cendon ไม่เก็บรูปบัตรหรือรูปหน้า","เริ่มยืนยันตัวตน"],
+const KYC={not_started:["next","ti-id","ขั้นต่อไป: ยืนยันตัวตนกับ Didit","ถ่ายบัตรประชาชนตัวจริงและใบหน้า ใช้เวลาประมาณ 2 นาที — Cendon ไม่เก็บรูปบัตรหรือรูปหน้า","เริ่มยืนยันตัวตน"],
+  none:["next","ti-id","ขั้นต่อไป: ยืนยันตัวตนกับ Didit","ถ่ายบัตรประชาชนตัวจริงและใบหน้า ใช้เวลาประมาณ 2 นาที — Cendon ไม่เก็บรูปบัตรหรือรูปหน้า","เริ่มยืนยันตัวตน"],
   pending:["warn","ti-clock","ยังยืนยันตัวตนไม่เสร็จ","ทำต่อจากที่ค้างไว้ หรือถ้าทำเสร็จแล้วกดตรวจผล","ทำต่อ"],
-  review:["wait","ti-hourglass","Didit กำลังตรวจ","ไม่ต้องทำอะไรเพิ่ม ผลจะอัปเดตเอง",""],
+  review:["wait","ti-hourglass","Didit กำลังประมวลผล","ไม่ต้องทำอะไรเพิ่ม หากผลยังไม่เปลี่ยน ให้กดตรวจผลอีกครั้ง",""],
   declined:["bad","ti-circle-x","ยืนยันตัวตนไม่ผ่าน","ลองใหม่ด้วยบัตรประชาชนตัวจริง ถ่ายในที่สว่าง ไม่มีแสงสะท้อน และให้เห็นหน้าชัด","ลองอีกครั้ง"],
   expired:["warn","ti-clock-x","ลิงก์ยืนยันตัวตนหมดอายุ","เริ่มใหม่ได้เลย ข้อมูลใบสมัครยังอยู่ครบ","เริ่มใหม่"],
+  service_unavailable:["bad","ti-cloud-off","ระบบยืนยันตัวตนขัดข้องชั่วคราว","ยังไม่สามารถตรวจผลกับ Didit ได้ ข้อมูลที่ยืนยันไปแล้วไม่หาย กรุณากดตรวจผลอีกครั้งในอีกสักครู่",""],
   approved:["ok","ti-circle-check","ยืนยันตัวตนแล้ว","Didit ตรวจบัตรและใบหน้าผ่านแล้ว ทีมงานจะตรวจส่วนที่เหลือต่อ",""]};
 function kycCard(k){const [c,ic,t,s,go]=KYC[k.status]||KYC.none;
-  return`<div class="kyc ${c}"><b><i class="ti ${ic}"></i>${t}</b><small>${s}</small>${go||k.status==="pending"||k.status==="review"?`<div class="row">${go?`<button class="btn p" id="kGo">${go}</button>`:""}${k.status==="pending"||k.status==="review"?'<button class="btn s" id="kChk">ตรวจผล</button>':""}</div>`:""}</div>`}
+  return`<div class="kyc ${c}"><b><i class="ti ${ic}"></i>${t}</b><small>${s}</small>${go||["pending","review","service_unavailable"].includes(k.status)?`<div class="row">${go?`<button class="btn p" id="kGo">${go}</button>`:""}${["pending","review","service_unavailable"].includes(k.status)?'<button class="btn s" id="kChk">ตรวจผล</button>':""}</div>`:""}</div>`}
 $("bJoin").onclick=()=>openJoin();
 
 /* ═══ ทีมงาน ═══ */
@@ -5304,7 +5312,7 @@ function aiCard(ai){
     <small>${esc(ai.vision||"")}${ai.error?" · "+esc(ai.error):""} · ${new Date(ai.at).toLocaleString("th-TH")}</small>
     <small>AI ไม่พิสูจน์ตัวตนหรือเจ้าของรูป ต้องมีหลักฐานตรวจโดยคนครบทุกข้อ</small></div>`}
 /* ตัวตน: โหมดทีมงาน = เลขที่กรอก (ตัวใหญ่ แยกกลุ่ม) ให้เทียบกับรูปบัตรเอง · โหมด Didit = ผลจาก Didit + ชื่อ/วันเกิดตามบัตร + ข้อสงสัย */
-const IDS={approved:["ok","ti-circle-check","Didit: ยืนยันตัวตนผ่าน"],review:["warn","ti-hourglass","Didit: กำลังตรวจ — รอผลก่อนอนุมัติ"],declined:["bad","ti-circle-x","Didit: ไม่ผ่าน — ผู้สมัครต้องลองใหม่"],expired:["warn","ti-clock-x","Didit: ลิงก์หมดอายุ ผู้สมัครยังไม่ได้ยืนยัน"],pending:["warn","ti-clock","Didit: ผู้สมัครยังทำไม่เสร็จ"],none:["warn","ti-clock","ผู้สมัครยังไม่ได้เริ่มยืนยันตัวตนกับ Didit"]};
+const IDS={approved:["ok","ti-circle-check","Didit: ยืนยันตัวตนผ่าน"],review:["warn","ti-hourglass","Didit: กำลังตรวจ — รอผลก่อนอนุมัติ"],declined:["bad","ti-circle-x","Didit: ไม่ผ่าน — ผู้สมัครต้องลองใหม่"],expired:["warn","ti-clock-x","Didit: ลิงก์หมดอายุ ผู้สมัครยังไม่ได้ยืนยัน"],pending:["warn","ti-clock","Didit: ผู้สมัครยังทำไม่เสร็จ"],not_started:["warn","ti-clock","ผู้สมัครยังไม่ได้เริ่มยืนยันตัวตนกับ Didit"],none:["warn","ti-clock","ผู้สมัครยังไม่ได้เริ่มยืนยันตัวตนกับ Didit"]};
 const isDidit=a=>!!(a&&a.identity&&a.identity.mode==="didit");
 function idPanel(a){
   if(!isDidit(a))return`<div class="idp"><small>เลขประจำตัวประชาชนที่กรอก</small><b class="nt">${esc(fmtId(a.idNo))}</b><p class="idp-r warn"><i class="ti ti-eye"></i>ทีมงานตรวจบัตรเอง: เทียบเลขในรูปบัตรทีละหลัก ดูวันหมดอายุ และเทียบหน้าในรูปคู่บัตร</p></div>`;
@@ -5460,13 +5468,14 @@ function stuBadges(){
   const fd=document.querySelector(".stu-seg i.new");if(fd)fd.hidden=!FIND_NEW;
 }
 /* สถานะร้าน: เปิดรับงาน (แจ้งเตือน) · รับงานไม่แจ้งเตือน · พักร้าน (ลูกค้าขอราคาไม่ได้) — มาจากค่าจริงสองค่า online + vacation */
-function shopState(){const t=myShop()||{};return t.vacation?"pause":(DSTATS?DSTATS.online:t.online)?"on":"quiet"}
+function shopState(){const t=myShop()||{};return t.identityHold?"identity":t.vacation?"pause":(DSTATS?DSTATS.online:t.online)?"on":"quiet"}
 const STATE={on:[T("เปิดรับงาน","Taking jobs"),T("แจ้งเตือนทันทีเมื่อมีรถเสียใกล้คุณ","Alerts you right away when a car breaks down nearby")],
   quiet:[T("รับงาน ไม่แจ้งเตือน","Taking jobs, no alerts"),T("ลูกค้ายังขอราคาได้ แต่ไม่มีเสียงเตือนงานใหม่","Customers can still request quotes; no new-job alerts")],
-  pause:[T("พักร้านชั่วคราว","Paused"),T("ปิดรับคำขอใหม่ทั้งหมด หน้าร้านบอกลูกค้าให้","No new requests — your storefront tells customers")]};
+  pause:[T("พักร้านชั่วคราว","Paused"),T("ปิดรับคำขอใหม่ทั้งหมด หน้าร้านบอกลูกค้าให้","No new requests — your storefront tells customers")],
+  identity:[T("กำลังตรวจสอบตัวตน","Identity review"),T("พักรับงานชั่วคราวจนกว่าการตรวจสอบจะเสร็จ","New work is paused until identity review is complete")]};
 function statusMenu(btn){
   document.querySelector(".stu-menu")?.remove();
-  const cur=shopState(),m=document.createElement("div");m.className="stu-menu";m.setAttribute("role","menu");
+  const cur=shopState();if(cur==="identity"){toast(T("บัญชีอยู่ระหว่างตรวจสอบตัวตน จึงเปิดรับงานไม่ได้ชั่วคราว","Identity review is in progress, so new work is paused"));return;}const m=document.createElement("div");m.className="stu-menu";m.setAttribute("role","menu");
   m.innerHTML=Object.entries(STATE).map(([k,[a,b]])=>`<button type="button" role="menuitemradio" aria-checked="${k===cur}" data-k="${k}"><span class="stu-dot ${k}"></span><span><b>${a}</b><small>${b}</small></span>${k===cur?'<i class="ti ti-check"></i>':""}</button>`).join("");
   document.body.appendChild(m);
   const r=btn.getBoundingClientRect(),w=m.offsetWidth;
@@ -5505,6 +5514,7 @@ function stuHead(){
     H.innerHTML=`<div class="stu-h"><h1>${T("งานของฉัน","My jobs")}</h1>
       <div class="stu-hr"><button class="stu-link" type="button" id="stuStore"><i class="ti ti-external-link"></i>${T("ดูหน้าร้าน","View storefront")}</button>
       <button class="stu-stat" type="button" id="stuStat" aria-haspopup="menu"><span class="stu-dot ${st}"></span>${STATE[st][0]}<i class="ti ti-chevron-down"></i></button></div></div>
+      ${t.identityHold?`<div class="note" style="margin:0 0 12px"><b><i class="ti ti-shield-exclamation"></i> ${T("บัญชีอยู่ระหว่างตรวจสอบตัวตน","Your identity is under review")}</b><br>${T("ร้านถูกซ่อนและหยุดรับงานใหม่ชั่วคราว คุณยังดูงานเก่าและข้อความได้","Your storefront is hidden and new work is paused. You can still view existing jobs and messages.")}</div>`:""}
       <div class="stu-seg" role="tablist"><button type="button" role="tab" data-t2="queue" class="${DT==="queue"?"on":""}" aria-selected="${DT==="queue"}">${T("ต้องทำต่อ","To do")}${n?`<em>${n}</em>`:""}</button>
       <button type="button" role="tab" data-t2="find" class="${DT==="find"?"on":""}" aria-selected="${DT==="find"}">${T("หางานใกล้ฉัน","Find work nearby")}<i class="new"${FIND_NEW?"":" hidden"}></i></button></div>`;
     $("stuStore").onclick=()=>openTech(t.id);

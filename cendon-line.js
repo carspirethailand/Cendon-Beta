@@ -69,6 +69,20 @@ function draw(el){
       <button type="button" class="cl-lnk" data-cl="off">${T("ยกเลิกการเชื่อม","Disconnect")}</button></div>`;
     return;
   }
+  /* เชื่อมแล้วแต่ยังไม่ได้เพิ่มเพื่อน (หรือบล็อก) Cendon ใน LINE — LINE ส่งแจ้งเตือนให้ไม่ได้จนกว่าจะเพิ่มเพื่อน
+     เพิ่มแล้วหลังบ้านเปิดให้เอง หน้านี้ถามสถานะใหม่ตอนผู้ใช้สลับกลับมา */
+  if(st.paused){
+    const oa=st.oa||(code&&code.oa)||"";
+    el.innerHTML=nudge
+      ?`<div class="cl nudge">${ICON}<div class="cl-tx"><b>${T("เพิ่มเพื่อน Cendon เพื่อรับแจ้งเตือน","Add Cendon on LINE to get updates")}</b></div>
+        ${oa?`<a class="cl-btn sm" href="${esc(addUrl(oa))}" target="_blank" rel="noopener">${T("เพิ่มเพื่อน","Add")}</a>`:""}</div>`
+      :`<div class="cl wait">${ICON}<div class="cl-tx"><b>${T("อีกขั้นเดียว: เพิ่ม Cendon เป็นเพื่อน","One more step: add Cendon as a friend")}</b>
+        <small>${T("เชื่อมบัญชีแล้ว แต่ LINE ส่งแจ้งเตือนได้เฉพาะคนที่เพิ่มเพื่อน (หรือไม่ได้บล็อก) Cendon","Your account is linked, but LINE only delivers to people who have added (and not blocked) Cendon")}</small>
+        ${oa?`<a class="cl-btn" href="${esc(addUrl(oa))}" target="_blank" rel="noopener">${T("เพิ่มเพื่อน","Add friend")} ${esc(oa)}</a>`:""}
+        <small class="cl-wt"><span class="cl-dot"></span>${T("เพิ่มแล้วการแจ้งเตือนจะเปิดเองทันที","Notifications turn on as soon as you add it")}</small>
+        <button type="button" class="cl-lnk" data-cl="off" style="align-self:flex-start;margin:2px 0 0;padding:0">${T("ยกเลิกการเชื่อม","Disconnect")}</button></div></div>`;
+    return;
+  }
   if(code){
     const oa=code.oa||st.oa||"",msg="รหัสเชื่อมบัญชี "+code.code;
     el.innerHTML=`<div class="cl wait">${ICON}<div class="cl-tx">
@@ -100,12 +114,14 @@ function watch(){
   const tick=async()=>{
     if(!code)return;
     if(Date.now()>(code.expiresAt||0)){code=null;paintAll();return}
-    try{await status(true);if(st.linked){code=null;paintAll();return}}catch(e){}
+    /* ส่งรหัสแล้วแต่ยังไม่เป็นเพื่อน → เปลี่ยนการ์ดเป็นขั้น "เพิ่มเพื่อน" แล้วรอต่อจนเชื่อมครบ */
+    try{const was=st&&st.paused;await status(true);if(st.linked){code=null;paintAll();return}if(st.paused!==was)paintAll()}catch(e){}
     poll=setTimeout(tick,document.hidden?6000:3000);
   };
   poll=setTimeout(tick,3000);
 }
-document.addEventListener("visibilitychange",()=>{if(!document.hidden&&code)watch()});
+/* กลับมาจาก LINE: ถามสถานะใหม่ทันที (เพิ่งกดส่งรหัส หรือเพิ่งเพิ่มเพื่อน) */
+document.addEventListener("visibilitychange",()=>{if(document.hidden)return;if(code)watch();else if(st&&st.paused)status(true).then(paintAll).catch(()=>{})});
 document.addEventListener("click",async e=>{
   const b=e.target.closest&&e.target.closest("[data-cl]");if(!b)return;
   const el=b.closest("[data-line-connect]");if(!el)return;

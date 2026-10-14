@@ -5,10 +5,10 @@
                    <div data-line-connect="nudge"></div>  → แถบเล็ก โผล่เฉพาะคนที่ยังไม่เชื่อม (ในใบงาน)
    ตัวนี้หาเองทุกครั้งที่มีกล่องแบบนี้โผล่ในหน้า ไม่ต้องเรียกอะไร
 
-   ขั้นตอน: ขอรหัส 6 ตัว → เปิดห้องแชต LINE ของ Cendon พร้อมพิมพ์รหัสไว้ให้ → ผู้ใช้กดส่ง
-   → บอทผูกบัญชี → หน้านี้ถามสถานะทุก 3 วินาทีจนเห็นว่าเชื่อมแล้ว
-   ข้อความที่เตรียมให้ส่งมีแค่ภาษาไทยกับรหัส — บอทหารหัสจาก "คำอังกฤษ 6 ตัว"
-   ถ้ามีคำอย่าง CENDON ปนมา บอทจะหยิบผิดตัว
+   ขั้นตอน (เริ่มจากในแชต LINE): ปุ่มเปิดห้องแชต LINE ของ Cendon พร้อมพิมพ์ "เชื่อมต่อบัญชี" ไว้ให้ → ผู้ใช้กดส่ง
+   → บอทส่งลิงก์หน้าเชื่อมต่อ (/line?t=…) → ผู้ใช้เปิด ล็อกอิน แล้วกด "เชื่อมต่อ" (หน้านั้นอยู่ใน index.html)
+   → หลังบ้านผูกบัญชีแล้ว push แจ้งใน LINE · หน้านี้ถามสถานะทุก 3 วินาทีจนเห็นว่าเชื่อมแล้ว
+   (ใน LINE จะกดเมนู "เชื่อมบัญชี" เองก็ได้ ผลเหมือนกัน)
    ══════════════════════════════════════════════════════════════════ */
 (function(){
 "use strict";
@@ -30,7 +30,9 @@ async function call(method,path){
 }
 
 /* สถานะร่วมของทั้งหน้า: ถามเซิร์ฟเวอร์ครั้งเดียว ทุกกล่องใช้ร่วมกัน */
-let st=null,stAt=0,code=null,poll=0;
+/* pending = เวลาที่เลิกรอ หลังผู้ใช้กดเปิด LINE (รอทำต่อใน LINE ไม่เกิน 20 นาที) */
+let st=null,stAt=0,pending=0,poll=0;
+const CONNECT="เชื่อมต่อบัญชี";
 const boxes=new Set();
 async function status(force){
   if(!force&&st&&Date.now()-stAt<60000)return st;
@@ -69,48 +71,58 @@ function draw(el){
       <button type="button" class="cl-lnk" data-cl="off">${T("ยกเลิกการเชื่อม","Disconnect")}</button></div>`;
     return;
   }
-  if(code){
-    const oa=code.oa||st.oa||"",msg="รหัสเชื่อมบัญชี "+code.code;
+  /* เชื่อมแล้วแต่ยังไม่ได้เพิ่มเพื่อน (หรือบล็อก) Cendon ใน LINE — LINE ส่งแจ้งเตือนให้ไม่ได้จนกว่าจะเพิ่มเพื่อน
+     เพิ่มแล้วหลังบ้านเปิดให้เอง หน้านี้ถามสถานะใหม่ตอนผู้ใช้สลับกลับมา */
+  if(st.paused){
+    const oa=st.oa||"";
+    el.innerHTML=nudge
+      ?`<div class="cl nudge">${ICON}<div class="cl-tx"><b>${T("เพิ่มเพื่อน Cendon เพื่อรับแจ้งเตือน","Add Cendon on LINE to get updates")}</b></div>
+        ${oa?`<a class="cl-btn sm" href="${esc(addUrl(oa))}" target="_blank" rel="noopener">${T("เพิ่มเพื่อน","Add")}</a>`:""}</div>`
+      :`<div class="cl wait">${ICON}<div class="cl-tx"><b>${T("อีกขั้นเดียว: เพิ่ม Cendon เป็นเพื่อน","One more step: add Cendon as a friend")}</b>
+        <small>${T("เชื่อมบัญชีแล้ว แต่ LINE ส่งแจ้งเตือนได้เฉพาะคนที่เพิ่มเพื่อน (หรือไม่ได้บล็อก) Cendon","Your account is linked, but LINE only delivers to people who have added (and not blocked) Cendon")}</small>
+        ${oa?`<a class="cl-btn" href="${esc(addUrl(oa))}" target="_blank" rel="noopener">${T("เพิ่มเพื่อน","Add friend")} ${esc(oa)}</a>`:""}
+        <small class="cl-wt"><span class="cl-dot"></span>${T("เพิ่มแล้วการแจ้งเตือนจะเปิดเองทันที","Notifications turn on as soon as you add it")}</small>
+        <button type="button" class="cl-lnk" data-cl="off" style="align-self:flex-start;margin:2px 0 0;padding:0">${T("ยกเลิกการเชื่อม","Disconnect")}</button></div></div>`;
+    return;
+  }
+  const oa=st.oa,go=(cls,label)=>`<a class="${cls}" data-cl="go" href="${esc(oaUrl(oa,CONNECT))}" target="_blank" rel="noopener">${label}</a>`;
+  if(pending>Date.now()&&!nudge){
     el.innerHTML=`<div class="cl wait">${ICON}<div class="cl-tx">
-      <b>${T("ส่งรหัสนี้ใน LINE ของ Cendon","Send this code to Cendon on LINE")}</b>
-      <div class="cl-code">${esc(code.code)}</div>
-      ${oa?`<a class="cl-btn" href="${esc(oaUrl(oa,msg))}" target="_blank" rel="noopener">${T("เปิด LINE แล้วกดส่ง","Open LINE and tap send")}</a>
-      <small>${T("ยังไม่ได้เพิ่มเพื่อน?","Not friends yet?")} <a href="${esc(addUrl(oa))}" target="_blank" rel="noopener">${T("เพิ่มเพื่อน","Add")} ${esc(oa)}</a> ${T("ก่อน แล้วพิมพ์รหัสนี้","first, then type this code")}</small>`
-        :`<small>${T("เพิ่มเพื่อน LINE ของ Cendon แล้วพิมพ์รหัสนี้","Add Cendon on LINE and type this code")}</small>`}
-      <small class="cl-wt"><span class="cl-dot"></span>${T("รอการยืนยัน · รหัสใช้ได้ 20 นาที","Waiting for LINE · code valid for 20 minutes")}</small></div></div>`;
+      <b>${T("ทำต่อใน LINE","Continue in LINE")}</b>
+      <ol class="cl-steps"><li>${T(`กดส่งข้อความ "${CONNECT}"`,`Send "${CONNECT}"`)}</li><li>${T('กดปุ่ม "เชื่อมต่อบัญชี" ที่บอทตอบกลับ','Tap the "เชื่อมต่อบัญชี" button the bot replies with')}</li><li>${T('ล็อกอิน (ถ้าถาม) แล้วกด "เชื่อมต่อ"','Sign in if asked, then tap "เชื่อมต่อ"')}</li></ol>
+      ${go("cl-btn",T("เปิด LINE อีกครั้ง","Open LINE again"))}
+      <small>${T("ยังไม่ได้เพิ่มเพื่อน?","Not friends yet?")} <a href="${esc(addUrl(oa))}" target="_blank" rel="noopener">${T("เพิ่มเพื่อน","Add")} ${esc(oa)}</a></small>
+      <small class="cl-wt"><span class="cl-dot"></span>${T("รอการเชื่อมต่อ…","Waiting for LINE…")}</small></div></div>`;
     return;
   }
   el.innerHTML=nudge
     ?`<div class="cl nudge">${ICON}<div class="cl-tx"><b>${T("รับแจ้งเตือนงานนี้ทาง LINE","Get updates on LINE")}</b></div>
-      <button type="button" class="cl-btn sm" data-cl="go">${T("เชื่อม","Connect")}</button></div>`
+      ${go("cl-btn sm",T("เชื่อม","Connect"))}</div>`
     :`<div class="cl">${ICON}<div class="cl-tx"><b>${T("รับแจ้งเตือนทาง LINE","Get notified on LINE")}</b>
       <small>${T("งานใหม่ ราคา ข้อความ และเตือนดูแลรถ ส่งเข้า LINE ทันที ไม่ต้องเปิดแอปค้างไว้","New jobs, quotes, messages and car reminders, straight to LINE")}</small>
-      <button type="button" class="cl-btn" data-cl="go">${T("เชื่อม LINE","Connect LINE")}</button></div></div>`;
+      ${go("cl-btn",T("เชื่อม LINE","Connect LINE"))}</div></div>`;
 }
 
-async function start(el){
-  const b=el.querySelector('[data-cl="go"]');if(b){b.disabled=true;b.textContent="…"}
-  try{code=await call("POST","/api/line/code");if(code.oa!==undefined&&st)st.oa=st.oa||code.oa}
-  catch(e){alert(e.message);paintAll();return}
-  paintAll();watch();
-}
-/* ระหว่างรอผู้ใช้กดส่งใน LINE ถามสถานะเป็นระยะ (หยุดเองเมื่อเชื่อมแล้ว หรือรหัสหมดอายุ) */
+/* กดเชื่อม = ลิงก์เปิดห้องแชต LINE (ปล่อยให้เปิดเอง) แล้วการ์ดเปลี่ยนเป็น "ทำต่อใน LINE" และรอผล */
+function start(){pending=Date.now()+20*60000;setTimeout(()=>{paintAll();watch()},60)}
+/* ระหว่างรอผู้ใช้ทำต่อใน LINE ถามสถานะเป็นระยะ (หยุดเองเมื่อเชื่อมแล้ว หรือเกิน 20 นาที) */
 function watch(){
   clearTimeout(poll);
   const tick=async()=>{
-    if(!code)return;
-    if(Date.now()>(code.expiresAt||0)){code=null;paintAll();return}
-    try{await status(true);if(st.linked){code=null;paintAll();return}}catch(e){}
+    if(!pending)return;
+    if(Date.now()>pending){pending=0;paintAll();return}
+    try{const was=st&&st.paused;await status(true);if(st.linked){pending=0;paintAll();return}if(st.paused!==was)paintAll()}catch(e){}
     poll=setTimeout(tick,document.hidden?6000:3000);
   };
   poll=setTimeout(tick,3000);
 }
-document.addEventListener("visibilitychange",()=>{if(!document.hidden&&code)watch()});
+/* กลับมาจาก LINE: ถามสถานะใหม่ทันที */
+document.addEventListener("visibilitychange",()=>{if(document.hidden)return;if(pending)watch();else if(st&&st.paused)status(true).then(paintAll).catch(()=>{})});
 document.addEventListener("click",async e=>{
   const b=e.target.closest&&e.target.closest("[data-cl]");if(!b)return;
   const el=b.closest("[data-line-connect]");if(!el)return;
+  if(b.dataset.cl==="go")return start();
   e.preventDefault();
-  if(b.dataset.cl==="go")return start(el);
   if(b.dataset.cl==="off"){
     if(!confirm(T("เลิกรับแจ้งเตือนทาง LINE?","Stop LINE notifications?")))return;
     try{await call("DELETE","/api/line/link");await status(true)}catch(err){alert(err.message)}
@@ -183,6 +195,8 @@ const css=document.createElement("style");css.textContent=`
 .cl-btn.sm{height:34px;padding:0 16px;margin:0;font-size:13px;flex:none}
 .cl-btn:disabled{opacity:.7}
 .cl-lnk{flex:none;border:0;background:none;color:#fff;opacity:.72;font-weight:500;font-size:12px;font-family:inherit;text-decoration:underline;text-underline-offset:2px;cursor:pointer;align-self:center}
+.cl-steps{margin:2px 0 4px;padding-left:20px;display:grid;gap:4px;font-size:13.5px;line-height:1.5;color:rgba(255,255,255,.95)}
+.cl-steps li::marker{font-weight:700}
 .cl-code{align-self:flex-start;font:700 26px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.18em;margin:4px 0 2px;
   padding:6px 8px 6px 14px;border-radius:12px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);
   text-shadow:0 2px 10px rgba(0,60,25,.35)}

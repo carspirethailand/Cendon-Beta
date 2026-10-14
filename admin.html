@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="/account.css">
 <script src="/cendon-tour.js" defer></script>
 <script src="/account-actions.js" defer></script>
-<script src="/account.js?v=2026-10-14-r5" defer></script>
+<script src="/account.js?v=2026-10-15-r6" defer></script>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <link rel="icon" type="image/png" href="./favicon.png">
@@ -5321,6 +5321,9 @@ async function loadLineStatus(){
       ${lineRow(wantOk,"Webhook URL",w.endpoint?esc(w.endpoint):"ยังไม่ได้ตั้ง")}
       ${lineRow(!!w.active,"Use webhook",w.active?"เปิดอยู่":"ปิดอยู่")}
       ${lineRow(!!n.event,"ข้อความล่าสุดจาก LINE",n.event?lnTime(n.event.at):"ยังไม่เคยได้รับ")}
+      ${lineRow(!!(n.linked&&n.linked.on),"คนที่เชื่อมแล้ว",n.linked?`รับแจ้งเตือนได้ <b>${n.linked.on}</b> คน${n.linked.paused?` · เชื่อมแต่ยังไม่เพิ่มเพื่อน/บล็อก ${n.linked.paused} คน`:""}`:"—")}
+      ${lineRow(!(s.quota&&s.quota.limit!=null&&s.quota.used>=s.quota.limit),"โควตาข้อความเดือนนี้",s.quota?(s.quota.limit==null?`ใช้ไป ${s.quota.used} · ไม่จำกัด`:`ใช้ไป ${s.quota.used} / ${s.quota.limit}`):"—")}
+      ${lineRow(!(n.pushErr&&(!n.pushOk||n.pushErr.at>n.pushOk.at)),"แจ้งเตือนล่าสุด",n.pushErr&&(!n.pushOk||n.pushErr.at>n.pushOk.at)?`ส่งไม่สำเร็จ ${lnTime(n.pushErr.at)} (LINE ตอบ ${esc(n.pushErr.status)})`:n.pushOk?`ส่งสำเร็จ ${lnTime(n.pushOk.at)}`:"ยังไม่เคยส่ง")}
     </div>
     ${s.problems.length?`<div style="margin-top:12px;padding:12px 14px;border-radius:12px;background:rgba(229,72,77,.08);border:1px solid rgba(229,72,77,.3);font-size:13px;line-height:1.6">
         <b style="color:#E5484D">ยังไม่พร้อม — แก้ตามนี้ทีละข้อ</b><ol style="margin:6px 0 0 18px;padding:0">${s.problems.map(p=>`<li>${esc(p)}</li>`).join("")}</ol></div>`

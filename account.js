@@ -26,7 +26,7 @@
   function safeNext(raw){
     try{if(/[\\\p{Cc}]/u.test(decodeURIComponent(raw||'')))return '/';
       const u=new URL(raw||'/',location.origin),p=u.pathname.replace(/\.html$/,'').replace(/\/$/,'')||'/';
-      const simple=['/','/index','/garage','/chat','/news','/spares','/profile','/tech','/techs','/admin','/handbook','/plan','/terms','/search','/map','/urgent','/diagnose','/jobs','/studio','/work','/staff','/join','/quotes','/post'];
+      const simple=['/','/index','/garage','/chat','/news','/spares','/profile','/tech','/techs','/admin','/handbook','/plan','/terms','/search','/map','/urgent','/diagnose','/jobs','/studio','/work','/staff','/join','/quotes','/post','/line'];
       const deep=/^\/(garage|chat|news|spares|profile|tech|service|category|jobs|studio|work|staff|join|trip|quotes|compare|post)\/[^\s]+$/.test(p);
       return u.origin===location.origin&&(simple.includes(p)||deep)&&u.href.length<4096?(p==='/index'?'/':p)+u.search+u.hash:'/';
     }catch(e){return '/'}

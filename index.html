@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="/account.css">
 <script src="/cendon-tour.js" defer></script>
 <script src="/account-actions.js" defer></script>
-<script src="/account.js?v=2026-10-14-r5" defer></script>
+<script src="/account.js?v=2026-10-15-r6" defer></script>
 <meta charset="UTF-8"/>
 <!-- ที่อยู่แบบลึก (/tech/<ร้าน>/reviews) — ไฟล์ประกอบทุกตัวอ้างจากรากเว็บเสมอ -->
 <base href="/">
@@ -1754,6 +1754,17 @@ html[data-theme="dark"] .so-vi{box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
 .fixl b{display:flex;gap:6px;align-items:center;font-size:14.5px}.fixl b .ti{color:#b91c1c}
 .fixl ul{margin:8px 0 0;padding-left:20px;display:grid;gap:6px;font-size:14px;line-height:1.6}
 .idp{margin:0 0 12px;padding:14px 16px;border-radius:16px;border:1px solid var(--line);background:var(--surface)}
+.lc-pair{display:flex;align-items:center;justify-content:center;gap:14px;margin:8px 0 18px}
+.lc-side{flex:1 1 0;min-width:0;display:grid;justify-items:center;gap:3px;text-align:center}
+.lc-side small{font-size:12px;color:var(--muted)}.lc-side b{font-size:15px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lc-side em{font-style:normal;font-size:12px;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lc-av{width:68px;height:68px;border-radius:50%;object-fit:cover;display:grid;place-items:center;font-size:26px;font-weight:600;margin-bottom:6px;border:1px solid var(--line)}
+.lc-ln{border:0;border-radius:18px;object-fit:contain}.lc-cd{background:var(--ink);color:var(--bg)}
+.lc-link{flex:none;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--surface-2);color:var(--muted);font-size:18px}
+.lc-h{font-family:var(--kd);font-size:20px;font-weight:600;text-align:center;margin:0 0 12px}
+.lc-ul{list-style:none;margin:0 0 14px;padding:0;display:grid;gap:10px}
+.lc-ul li{display:flex;gap:10px;align-items:flex-start;font-size:14.5px;line-height:1.55}.lc-ul .ti{color:var(--accent);font-size:18px;flex:none;margin-top:1px}
+.lc-warn{color:var(--muted)}.lc-tip{text-align:center;color:var(--muted);font-size:14px;line-height:1.6;margin:4px 0 14px}
 .kyc{margin:0 0 16px;padding:14px 16px;border-radius:16px;border:1px solid var(--line);background:var(--surface);display:grid;gap:8px}
 .kyc b{display:flex;gap:8px;align-items:center;font-size:15px}.kyc small{color:var(--muted);font-size:13.5px;line-height:1.6}
 .kyc.next{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}.kyc.next b .ti{color:var(--accent)}
@@ -3184,6 +3195,46 @@ const LP_AREA=[["engine","ti-engine","ห้องเครื่อง","Engine
   ["exhaust","ti-wind","ท่อไอเสีย","Exhaust"],["cabin","ti-armchair","ในห้องโดยสาร / หน้าปัด","Cabin / dashboard"],["ac","ti-air-conditioning","แอร์ / พัดลม","AC / fan"],["unsure","ti-help","ไม่แน่ใจ","Not sure"]];
 const LP_WHEN=[["cold","ตอนสตาร์ท / เครื่องเย็น","Cold start"],["idle","เดินเบา (จอดติดเครื่อง)","Idling"],["rev","ตอนเร่งเครื่อง","Revving"],["speed","ตอนวิ่ง ดังขึ้นตามความเร็ว","Rises with road speed"],
   ["brake","ตอนเบรก","Braking"],["turn","ตอนเลี้ยว / หมุนพวงมาลัย","Turning"],["bump","ตอนผ่านหลุม / ลูกระนาด","Over bumps"],["acon","ตอนเปิดแอร์","With AC on"],["always","ตลอดเวลา","All the time"]];
+/* ═══ เชื่อม LINE (เริ่มจากในแชต LINE) ═══
+   บอทส่งลิงก์ /line?t=<token> → หน้านี้โชว์ว่ากำลังเชื่อม "LINE ชื่ออะไร" กับ "บัญชี Cendon ไหน" → กดเชื่อมต่อ
+   → หลังบ้านเทียบ token กับ LINE user id ที่บอทจดไว้ แล้วผูกบัญชี + ส่งข้อความยืนยันเข้า LINE
+   โชว์ชื่อ/รูป LINE ก่อนกด กันคนส่งลิงก์ของตัวเองมาหลอกให้เราเชื่อมบัญชีเรากับ LINE ของเขา */
+const lineAdd=oa=>"https://line.me/R/ti/p/"+encodeURIComponent(oa),lineChat=oa=>"https://line.me/R/oaMessage/"+encodeURIComponent(oa)+"/";
+const LNI='<img src="./img/line-logo.svg" width="20" height="20" alt="" style="vertical-align:-4px;margin-right:6px">';
+function lineConnect(t){
+  const url="/line?t="+encodeURIComponent(t);
+  sheet({title:"เชื่อม LINE",url,body:'<div class="skel"></div><div class="skel"></div>'});
+  const again=oa=>`<p class="lc-tip">กลับไปที่แชต LINE ของ Cendon แล้วกดเมนู <b>เชื่อมบัญชี</b> (หรือพิมพ์ "เชื่อมต่อบัญชี") เพื่อรับลิงก์ใหม่</p>
+    ${oa?`<a class="btn s w" href="${esc(lineChat(oa))}" target="_blank" rel="noopener">${LNI}เปิด LINE ของ Cendon</a>`:""}`;
+  const fail=(icon,h,p,oa)=>sheet({title:"เชื่อม LINE",url,body:`<div class="state"><div class="big" style="background:var(--surface-2);color:var(--muted)"><i class="ti ${icon}"></i></div><h2>${h}</h2><p>${p}</p></div>${again(oa)}`,
+    foot:'<button class="btn s w" id="lcHome">ไปหน้าแรก</button>',mount(){$("lcHome").onclick=()=>closeSheet()}});
+  const done=r=>sheet({title:"เชื่อม LINE",url:"/line",body:r.paused
+      ?`<div class="state"><div class="big" style="background:rgba(6,199,85,.12);color:#06C755"><i class="ti ti-user-plus"></i></div><h2>อีกขั้นเดียว</h2><p>เชื่อมบัญชีแล้ว แต่ LINE ส่งแจ้งเตือนได้เฉพาะคนที่เพิ่ม Cendon เป็นเพื่อน — เพิ่มแล้วการแจ้งเตือนจะเปิดเองทันที</p></div>
+        ${r.oa?`<a class="btn p w" href="${esc(lineAdd(r.oa))}" target="_blank" rel="noopener">${LNI}เพิ่มเพื่อน ${esc(r.oa)}</a>`:""}`
+      :`<div class="state"><div class="big" style="background:rgba(6,199,85,.12);color:#06C755"><i class="ti ti-circle-check"></i></div><h2>เชื่อม LINE สำเร็จ</h2><p>เราส่งข้อความยืนยันไปที่ LINE${r.name?" "+esc(r.name):""} แล้ว · จากนี้งานช่าง ราคา ข้อความ และเตือนดูแลรถจะแจ้งใน LINE</p></div>
+        ${r.oa?`<a class="btn p w" href="${esc(lineChat(r.oa))}" target="_blank" rel="noopener">${LNI}กลับไปที่ LINE</a>`:""}`,
+    foot:'<button class="btn s w" id="lcHome">ไปหน้าแรก</button>',mount(){$("lcHome").onclick=()=>closeSheet()}});
+  if(!/^[A-Za-z0-9_-]{30,64}$/.test(t))return fail("ti-link-off","ลิงก์ไม่ครบ","ลิงก์เชื่อมบัญชีต้องเปิดจากปุ่มที่บอท Cendon ส่งให้ใน LINE");
+  api("/api/line/connect?t="+encodeURIComponent(t)).then(d=>{
+    if(d.state==="expired")return fail("ti-clock-x","ลิงก์หมดอายุแล้ว","ลิงก์เชื่อมบัญชีใช้ได้ 15 นาที",d.oa);
+    if(d.state==="used")return fail("ti-link-off","ลิงก์นี้ถูกใช้ไปแล้ว","ลิงก์เชื่อมบัญชีใช้ได้ครั้งเดียว",d.oa);
+    if(d.state!=="ok")return fail("ti-link-off","ไม่พบลิงก์นี้","อาจมีการขอลิงก์ใหม่ในแชตแล้ว — ใช้ลิงก์ล่าสุดที่บอทส่งให้",d.oa);
+    const me=(ME&&ME.name)||(U&&(U.displayName||U.email))||"บัญชีของคุณ";
+    sheet({title:"เชื่อม LINE",url,body:`
+      <div class="lc-pair">
+        <div class="lc-side">${d.picture?`<img class="lc-av" src="${esc(d.picture)}" alt="" referrerpolicy="no-referrer"/>`:`<img class="lc-av lc-ln" src="./img/line-logo.svg" alt=""/>`}<small>LINE</small><b>${esc(d.name||"บัญชี LINE ของคุณ")}</b></div>
+        <span class="lc-link" aria-hidden="true"><i class="ti ti-arrows-exchange"></i></span>
+        <div class="lc-side"><span class="lc-av lc-cd">${initial(me)}</span><small>Cendon</small><b>${esc(me)}</b>${U&&U.email&&U.email!==me?`<em>${esc(U.email)}</em>`:""}</div>
+      </div>
+      <h2 class="lc-h">เชื่อมสองบัญชีนี้เข้าด้วยกัน?</h2>
+      <ul class="lc-ul"><li><i class="ti ti-bell-ringing"></i>งานช่าง ราคา และข้อความในใบงาน แจ้งเข้า LINE ทันที</li><li><i class="ti ti-car"></i>เตือนดูแลรถตามระยะที่ขับจริง</li><li><i class="ti ti-message-chatbot"></i>คุยกับ AI ใน LINE ได้ โดยรู้จักรถในการาจของคุณ</li></ul>
+      ${d.same?'<p class="note"><i class="ti ti-circle-check"></i>บัญชีนี้เชื่อมกับ LINE นี้อยู่แล้ว กดเชื่อมต่อซ้ำได้ ไม่มีอะไรเปลี่ยน</p>':d.linked?'<p class="note"><i class="ti ti-info-circle"></i>บัญชีนี้รับแจ้งเตือนที่ LINE อื่นอยู่ — เชื่อมแล้วจะย้ายมาที่ LINE นี้แทน</p>':""}
+      <p class="note lc-warn"><i class="ti ti-shield-lock"></i>ถ้า LINE ด้านบนไม่ใช่ของคุณ อย่ากดเชื่อมต่อ — ปิดหน้านี้ได้เลย</p>`,
+      foot:'<button class="btn s" id="lcNo">ยกเลิก</button><button class="btn p" id="lcGo">เชื่อมต่อ</button>',
+      mount(){$("lcNo").onclick=()=>closeSheet();
+        $("lcGo").onclick=e=>busy(e.currentTarget,async()=>{const r=await api("/api/line/connect",{body:{t}});done(r)})}});
+  }).catch(e=>fail("ti-cloud-off","เปิดลิงก์ไม่สำเร็จ",esc(e.message)));
+}
 function listenPage(){
   let [cars,car]=myCars(),area="",when=[],clip=null,rec=null,busyClip=false;
   const fmt=s=>{s=Math.round(s);return Math.floor(s/60)+":"+String(s%60).padStart(2,"0")};
@@ -3750,6 +3801,8 @@ Nav.route({path:"join",open:async()=>{if(await needU())return openJoin()}});
 Nav.route({path:"quote",name:"qcheck",open:()=>quotePage()});
 Nav.route({path:"listen",name:"listen",open:()=>listenPage()});
 Nav.route({path:"photo",name:"photo",open:()=>photoPage()});
+/* หน้าเชื่อมต่อ LINE — มาจากลิงก์ที่บอท Cendon ส่งให้ (/line?t=…) · ยังไม่ล็อกอิน → ไปล็อกอินแล้วกลับมาที่นี่ */
+Nav.route({path:"line",name:"lineConnect",open:async(p,q)=>{if(await needU())lineConnect(q.get("t")||"")}});
 Nav.route({path:"quotes",open:async()=>{await READY.techs;if(await needU())openMulti("","")}});
 Nav.route({path:"compare/:g",open:async p=>{if(await needU())return openGroup(p.g)}});
 Nav.route({path:"urgent",open:async()=>{await READY.techs;if(await needU())return urgentCall()}});

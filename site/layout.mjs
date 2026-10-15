@@ -76,38 +76,26 @@ export const I={
 export const MARK=`<svg class="mark" viewBox="-6 -6 94.8 112" aria-hidden="true"><path fill="currentColor" d="${LOGO}"/></svg>`;
 const WM=`<svg class="wm" viewBox="-44 -744 4817 788" aria-hidden="true">${WORDMARK}</svg>`;
 
-const PAGES=[
-  {key:'about',href:'/about',icon:'sparkle',th:'เกี่ยวกับ',en:'About'},
-  {key:'help',href:'/help',icon:'help',th:'ช่วยเหลือ',en:'Help'},
-  {key:'terms',href:'/terms',icon:'terms',th:'ข้อกำหนด',en:'Terms'},
-  {key:'privacy',href:'/privacy',icon:'shield',th:'ความเป็นส่วนตัว',en:'Privacy'},
-];
-
 /* ภาษาเริ่มต้น: ที่เลือกไว้ในแอป/เว็บ (spire_lang) → ภาษาเบราว์เซอร์ → อังกฤษ
    ต้องรันก่อนวาดหน้า ไม่งั้นจะเห็นภาษาผิดแวบหนึ่ง */
 const LANG_JS=`(function(){var l=null;try{l=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}if(l!=="th"&&l!=="en"){if(l)l="en";else{l="en";try{var a=navigator.languages||[navigator.language];for(var i=0;i<a.length;i++){if(/^th\\b/i.test(a[i])){l="th";break}if(/^en\\b/i.test(a[i]))break}}catch(e){}}}var h=document.documentElement;h.setAttribute("data-lang",l);h.lang=l})();`;
 
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 
-function nav(active){
-  return `<div class="navwrap"><nav class="nav" aria-label="Cendon">
-<a class="brand" href="/about" aria-label="Cendon">${MARK}${WM}</a>
-<div class="nav-links"><span class="nav-ind" aria-hidden="true"></span>${
-  PAGES.map(p=>`<a href="${p.href}" aria-label="${p.th} · ${p.en}"${p.key===active?' aria-current="page"':''}>${I[p.icon]}<span>${L(p.th,p.en)}</span></a>`).join('')
-}</div>
-<div class="nav-right"><div class="lang" role="group" aria-label="ภาษา · Language"><button type="button" data-set="th" aria-pressed="false">TH</button><button type="button" data-set="en" aria-pressed="false">EN</button></div>
-<a class="btn ink sm" href="/">${I.open}<span class="txt">${L('เปิดแอป','Open app')}</span></a></div>
-</nav></div>`;
-}
+/* ไม่มีแถบเมนูบน (หน้าโล่ง สบายตา) — มีแค่โลโก้นิ่งบนหัวหน้า
+   ทางไปหน้าอื่นอยู่ส่วนท้าย และในแอป: ตั้งค่า → "อ่านเพิ่มเติม" */
+const top=()=>`<header class="top"><div class="wrap"><a class="brand" href="/about" aria-label="Cendon">${MARK}${WM}</a></div></header>`;
+const LANG=`<div class="lang" role="group" aria-label="ภาษา · Language"><button type="button" data-set="th" aria-pressed="false">ไทย</button><button type="button" data-set="en" aria-pressed="false">English</button></div>`;
 
-function foot(){
+function foot(active){
+  const a=(href,key,th,en)=>`<a href="${href}"${key===active?' aria-current="page"':''}>${L(th,en)}</a>`;
   return `<footer class="foot"><div class="wrap">
 <div class="brandcol"><a class="brand" href="/about" aria-label="Cendon">${MARK}${WM}</a>
 <p class="about">${L('ผู้ช่วยดูแลรถที่คุยรู้เรื่อง และช่างที่ผ่านการตรวจ ใกล้คุณ','A car companion that explains things plainly, and checked mechanics near you.')}</p></div>
-<div><h4>Cendon</h4><ul><li><a href="/">${L('เปิดแอป','Open the app')}</a></li><li><a href="/about">${L('เกี่ยวกับ','About')}</a></li><li><a href="/help">${L('ศูนย์ช่วยเหลือ','Help centre')}</a></li></ul></div>
-<div><h4>${L('ข้อตกลง','Legal')}</h4><ul><li><a href="/terms">${L('ข้อกำหนดการใช้งาน','Terms of service')}</a></li><li><a href="/privacy">${L('นโยบายความเป็นส่วนตัว','Privacy policy')}</a></li></ul></div>
+<nav aria-label="Cendon"><h4>Cendon</h4><ul><li><a href="/">${L('เปิดแอป','Open the app')}</a></li><li>${a('/about','about','เกี่ยวกับ','About')}</li><li>${a('/help','help','ศูนย์ช่วยเหลือ','Help centre')}</li></ul></nav>
+<nav aria-label="ข้อตกลง · Legal"><h4>${L('ข้อตกลง','Legal')}</h4><ul><li>${a('/terms','terms','ข้อกำหนดการใช้งาน','Terms of service')}</li><li>${a('/privacy','privacy','นโยบายความเป็นส่วนตัว','Privacy policy')}</li></ul></nav>
 <div><h4>${L('ติดต่อ','Contact')}</h4><ul><li><a href="mailto:${EMAIL}">${EMAIL}</a></li><li><a href="${LINE_ADD}" rel="noopener">LINE ${LINE_OA}</a></li></ul></div>
-<div class="legal"><span>© 2026 Car Spire Thailand · Cendon</span><span>${L('ไม่มีโฆษณา ไม่มีตัวติดตาม','No ads. No trackers.')}</span></div>
+<div class="legal"><span>© 2026 Car Spire Thailand · Cendon</span><span>${L('ไม่มีโฆษณา ไม่มีตัวติดตาม','No ads. No trackers.')}</span>${LANG}</div>
 </div></footer>`;
 }
 
@@ -148,13 +136,12 @@ export function page({key,path,title,desc,body,doc=false}){
 <link rel="stylesheet" href="/site/static/site.css?v=${V.css}">
 </head>
 <body class="pg-${key}">
-<a class="skip" href="#main">${L('ข้ามไปที่เนื้อหา','Skip to content')}</a>
 ${doc?'<div class="readbar" aria-hidden="true"></div>':''}
-${nav(key)}
+${top()}
 <main id="main">
 ${body}
 </main>
-${foot()}
+${foot(key)}
 <script src="/site/static/site.js?v=${V.js}" defer></script>
 </body>
 </html>

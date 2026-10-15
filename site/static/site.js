@@ -1,4 +1,4 @@
-/* เว็บ Cendon: สลับภาษา · แถบเลื่อนใต้เมนู · สำรองภาพเคลื่อนไหวสำหรับเบราว์เซอร์ที่ยังไม่รองรับ scroll-driven · สารบัญตามตำแหน่งอ่าน
+/* เว็บ Cendon: สลับภาษา (ปุ่มอยู่ส่วนท้าย) · สำรองภาพเคลื่อนไหวสำหรับเบราว์เซอร์ที่ยังไม่รองรับ scroll-driven · สารบัญตามตำแหน่งอ่าน
    ไม่มีตัวติดตาม ไม่มีคุกกี้ เก็บแค่ภาษาที่เลือกในเครื่อง (spire_lang ชื่อเดียวกับในแอป) */
 (function(){
   'use strict';
@@ -12,22 +12,9 @@
     if(save)try{localStorage.setItem('spire_lang',JSON.stringify(l))}catch(e){}
     D.querySelectorAll('.lang button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.set===l))});
     var t=D.querySelector('meta[name="x-title-'+l+'"]');if(t)D.title=t.content;
-    placeInd();
   }
   D.querySelectorAll('.lang button').forEach(function(b){b.addEventListener('click',function(){setLang(b.dataset.set,true)})});
   setLang(H.getAttribute('data-lang')||'th');
-
-  /* ── แถบไล่สีใต้เมนูที่เปิดอยู่ (แบบเดียวกับแอปบนคอม) ── */
-  function placeInd(){
-    var ind=D.querySelector('.nav-ind'),cur=D.querySelector('.nav-links a[aria-current="page"]');
-    if(!ind)return;
-    if(!cur){ind.classList.remove('on');return}
-    var box=ind.parentNode.getBoundingClientRect(),r=cur.getBoundingClientRect();
-    ind.style.width=r.width+'px';ind.style.transform='translate('+(r.left-box.left)+'px,-50%)';ind.classList.add('on');
-  }
-  addEventListener('resize',placeInd);
-  if(D.fonts&&D.fonts.ready)D.fonts.ready.then(placeInd);
-  addEventListener('load',placeInd);
 
   /* ── สารบัญหน้าเอกสาร: ไฮไลต์หัวข้อที่กำลังอ่าน (หัวข้อสุดท้ายที่หัวเลื่อนผ่านเส้นอ่าน ~30% ของจอ) ── */
   var toc=D.querySelectorAll('.toc a[href^="#"]'),secs=D.querySelectorAll('.sec[id]');

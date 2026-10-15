@@ -49,6 +49,9 @@ test('site: ทุกข้อความมีทั้งไทยและ�
     assert.doesNotMatch(html,/phasmion|github\.io|cendon[- ]?one/i,file);
     assert.match(html,/<html lang="th" data-lang="th">/);
     assert.match(html,/aria-current="page"/,file);
+    /* ไม่มีแถบเมนูบน (เจ้าของขอให้หน้าโล่ง) — ทางไปหน้าอื่นอยู่ส่วนท้าย และทางลัดในแอป */
+    assert.doesNotMatch(html,/class="(navwrap|nav|nav-links)"/,file);
+    assert.match(html,/<footer class="foot">[\s\S]*class="lang"/,file+': ปุ่มภาษาต้องอยู่ส่วนท้าย');
   }
   assert.doesNotMatch(read('_redirects'),/github\.io|phasmion/i);
   assert.doesNotMatch(read('_redirects'),/^\/(privacy|help|about|terms)\b/m,'/privacy /help /about /terms เป็นไฟล์จริง ห้าม redirect');
@@ -75,6 +78,8 @@ test('site: นโยบายตรงกับระบบ — AI ไม่ไ
   assert.match(t,/191/);assert.match(t,/1669/);
   /* ปุ่มในหน้าบัญชีต้องชี้มาที่นโยบายใหม่ในเว็บเดียวกัน */
   assert.match(read('account-actions.js'),/href="\/privacy"/);
+  /* ทางลัดในแอป (ตั้งค่า → อ่านเพิ่มเติม) ไปครบทั้ง 4 หน้า */
+  for(const f of ['garage.html','news.html','profile.html','spares.html'])for(const pg of ['/about','/help','/terms','/privacy'])assert.ok(read(f).includes(`extLink("${pg}"`),`${f} ${pg}`);
 });
 
 test('site: service worker รู้จักหน้าเว็บ ให้เปิดได้ตอนออฟไลน์',()=>{

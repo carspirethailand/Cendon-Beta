@@ -92,8 +92,9 @@ test('site: service worker รู้จักหน้าเว็บ ให้�
 test('site: เปลี่ยนภาษาแบบเมฆลอยผ่าน — สลับข้อความตอนหมอกบังเต็มจอ และรักษาตำแหน่งที่อ่าน',()=>{
   const js=read('site/static/site.js'),css=read('site/static/site.css');
   assert.match(js,/function cloudSwap\(l\)/);
-  assert.match(js,/setTimeout\(function\(\)\{swap\(l\);restore\(a\)\},T\*0\.49\)/,'สลับภาษากลางจังหวะ (หมอกทึบเต็มที่ 42–57%)');
-  assert.match(js,/\{opacity:1,offset:\.42\},\{opacity:1,offset:\.57\}/);
+  /* สลับภาษาหลังหมอกฟุ้งจนทึบเสร็จ และหมอกเริ่มจางหลังสลับเสร็จเท่านั้น (เครื่องหน่วงก็ไม่เห็นตัวหนังสือกระโดด) */
+  assert.match(js,/vin\.onfinish=function\(\)\{\s*doSwap\(\);\s*var vout=veil\.animate\(/);
+  assert.match(js,/function doSwap\(\)\{if\(swapped\)return;swapped=true;swap\(l\);restore\(a\)\}/);
   assert.match(css,/\.cloudswipe\{position:fixed;inset:0;z-index:200;pointer-events:none/);
 });
 

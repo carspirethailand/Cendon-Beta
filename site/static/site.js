@@ -6,7 +6,7 @@
   var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ── ภาษา: ปุ่มไทย/English (บนแถบและส่วนท้าย ทำงานพร้อมกัน) บันทึกค่าเดียวกับแอป เปิดแอปต่อแล้วภาษาตรงกัน ── */
-  var langBox=D.querySelectorAll('.lang'),busy=false;
+  var langBox=D.querySelectorAll('.lang'),busy=false,queued=null;
   /* แคปซูลสีหมึกที่เลื่อนไปใต้ภาษาที่เลือก */
   langBox.forEach(function(g){var t=D.createElement('span');t.className='thumb';t.setAttribute('aria-hidden','true');g.insertBefore(t,g.firstChild);g.classList.add('has-thumb')});
   function placeThumbs(){
@@ -40,21 +40,33 @@
     ov.className='cloudswipe';ov.setAttribute('aria-hidden','true');
     ov.innerHTML='<div class="veil"></div>'+(reduce?'':'<div class="puffs back"></div><div class="puffs mid"></div><div class="puffs front"></div>');
     D.body.appendChild(ov);
-    var T=reduce?420:1350,dir=l==='en'?1:-1,done=0,total=0;
-    function end(){if(++done>=total){ov.remove();busy=false}}
-    /* หมอกตามหลังขอบเมฆ: เห็นก้อนเมฆลอยเข้ามาบนหน้าใส ๆ ก่อน แล้วค่อยฟุ้งบังเต็มจอ */
-    var v=ov.querySelector('.veil').animate(reduce?[{opacity:0},{opacity:1,offset:.45},{opacity:1,offset:.55},{opacity:0}]:[{opacity:0},{opacity:0,offset:.14},{opacity:1,offset:.42},{opacity:1,offset:.57},{opacity:0,offset:.84},{opacity:0}],{duration:T,easing:'linear',fill:'forwards'});
-    total++;v.onfinish=end;
+    var T=reduce?420:1350,dir=l==='en'?1:-1,pf=ov.querySelectorAll('.puffs'),left=pf.length+1,done=false,swapped=false;
+    function finish(){if(done)return;done=true;ov.remove();busy=false;
+      /* กดภาษาอื่นไว้ระหว่างเมฆลอย → ทำต่อให้หลังเมฆผ่าน */
+      var q=queued;queued=null;if(q&&q!==H.getAttribute('data-lang'))setTimeout(function(){choose(q)},60);else press(H.getAttribute('data-lang'))}
+    function end(){if(--left<=0)finish()}
+    function doSwap(){if(swapped)return;swapped=true;swap(l);restore(a)}
+    /* หมอกสองช่วง: ฟุ้งขึ้นจนทึบ (ตามหลังขอบเมฆ) → ค้างทึบไว้ สลับภาษาจริง → ค่อยจาง
+       ช่วงจางเริ่มหลังสลับเสร็จเท่านั้น เครื่องช้าแค่ไหนก็ไม่เห็นตัวหนังสือกระโดด */
+    var veil=ov.querySelector('.veil');
+    var vin=veil.animate(reduce?[{opacity:0},{opacity:1}]:[{opacity:0},{opacity:0,offset:.33},{opacity:1}],{duration:T*(reduce?.45:.42),easing:'linear',fill:'forwards'});
+    vin.onfinish=function(){
+      doSwap();
+      var vout=veil.animate(reduce?[{opacity:1},{opacity:1,offset:.18},{opacity:0}]:[{opacity:1},{opacity:1,offset:.26},{opacity:0,offset:.72},{opacity:0}],{duration:T*(reduce?.55:.58),easing:'linear',fill:'forwards'});
+      vout.onfinish=end;vout.oncancel=end;
+    };
     /* แต่ละชั้นเมฆยาว 200vw: ชั้นหลังช้า ชั้นหน้าเร็ว ให้ดูมีความลึก ทุกชั้นบังจอเต็มที่ราวกลางจังหวะ */
-    ov.querySelectorAll('.puffs').forEach(function(p,i){
+    pf.forEach(function(p,i){
       var k=[1.12,1,0.9][i],from=dir>0?-200:100,to=dir>0?100:-200;
       var an=p.animate([{transform:'translate3d('+from+'vw,0,0)'},{transform:'translate3d('+to+'vw,0,0)'}],{duration:T*k,delay:(1-k)*T/2,easing:'cubic-bezier(.42,.02,.28,1)',fill:'both'});
-      total++;an.onfinish=end;
+      an.onfinish=end;an.oncancel=end;
     });
-    setTimeout(function(){swap(l);restore(a)},T*0.49);
+    /* กันค้าง: ภาพเคลื่อนไหวไม่จบด้วยเหตุใดก็ตาม — ยังสลับภาษาให้ แล้วปลดหมอกเอง */
+    setTimeout(function(){doSwap();finish()},T+1500);
   }
   function choose(l){
-    if(busy||l===H.getAttribute('data-lang'))return;
+    if(busy){queued=l;press(l);return}
+    if(l===H.getAttribute('data-lang')){press(l);return}
     /* บันทึกเฉพาะตอนกดปุ่มเอง — คนที่ตั้งแอปเป็นภาษาอื่น (ญี่ปุ่น ฯลฯ) เปิดเว็บเฉย ๆ ภาษาในแอปต้องไม่เปลี่ยน */
     try{localStorage.setItem('spire_lang',JSON.stringify(l))}catch(e){}
     press(l);

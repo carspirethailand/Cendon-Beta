@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="/account.css">
 <script src="/cendon-tour.js" defer></script>
 <script src="/account-actions.js" defer></script>
-<script src="/account.js?v=2026-10-15-r6" defer></script>
+<script src="/account.js?v=2026-10-15-r7" defer></script>
 <meta charset="UTF-8"/>
 <!-- ที่อยู่แบบลึก (/chat/…) — ไฟล์ประกอบทุกตัวอ้างจากรากเว็บเสมอ -->
 <base href="/">
@@ -4032,7 +4032,7 @@ async function streamAnswer(contents,opts){
       skillIds:opts.skillIds||[],
       depth:(()=>{ try{ const r=localStorage.getItem("spire_depth"); const v=r==null?1:+JSON.parse(r); return v===0||v===2?v:1 }catch(e){ return 1 } })(),
       userName:(()=>{ try{ const su=JSON.parse(localStorage.getItem("spire_setup")||"null");
-        return (su&&su.name)||(currentUser&&currentUser.name)||"" }catch(e){ return "" } })()})});
+        return (su&&su.name)||"" }catch(e){ return "" } })()})});
 
   if(r.status===404)return null;                 /* เซิร์ฟเวอร์ยังเป็นรุ่นเก่า */
   if(!r.ok){
@@ -4359,7 +4359,8 @@ async function gemini(contents,opts){opts=opts||{};
       depth:(()=>{ try{ const r=localStorage.getItem("spire_depth"); const v=r==null?1:+JSON.parse(r); return v===0||v===2?v:1 }catch(e){ return 1 } })(),
       userName:(()=>{ try{
         const su=JSON.parse(localStorage.getItem("spire_setup")||"null");
-        return (su&&su.name)||(currentUser&&currentUser.name)||"";
+        /* ชื่อที่ผู้ใช้ตั้งเองเท่านั้น — ไม่เดาจากอีเมล (ส่วนหน้า @ ของอีเมลระบุตัวคนได้) */
+        return (su&&su.name)||"";
       }catch(e){ return "" } })(),
       /* fresh = ห้ามหยิบคำตอบเก่ามาใช้ ต้องถาม AI ใหม่จริง ๆ */
       fresh:!!opts.fresh})});

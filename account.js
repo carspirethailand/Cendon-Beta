@@ -3,7 +3,7 @@
   'use strict';
   const LANGS={th:'ไทย',en:'English',ja:'日本語',zh:'中文',ko:'한국어',de:'Deutsch',fr:'Français',es:'Español',id:'Bahasa Indonesia',vi:'Tiếng Việt',ms:'Bahasa Melayu',pt:'Português',ar:'العربية'};
   const MONEY=['THB','USD','EUR','GBP','JPY','CNY','SGD','AUD','CAD','CHF','NZD','HKD','MYR','IDR','KRW','VND','INR','TWD','AED'];
-  const privacyUrl=()=>S.status?.policy?.privacyUrl||S.config?.privacyUrl||'https://carspirethailand.github.io/Phasmion.ai/privacy.html';
+  const privacyUrl=()=>S.status?.policy?.privacyUrl||S.config?.privacyUrl||'/privacy';
   const PRIVATE=/^\/(garage|chat|news|spares|profile)(?:\.html)?(?:\/|$)/;
   const LOGIN=/^\/login(?:\.html)?\/?$/.test(location.pathname);
   const S={uid:null,serial:0,status:null,phase:'loading',step:0,draft:{},error:'',busy:false,email:'',challenge:null,resendAt:0,next:null,config:null};

@@ -82,10 +82,10 @@ const LANG_JS=`(function(){var l=null;try{l=JSON.parse(localStorage.getItem("spi
 
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 
-/* ไม่มีแถบเมนูบน (หน้าโล่ง สบายตา) — มีแค่โลโก้นิ่งบนหัวหน้า
-   ทางไปหน้าอื่นอยู่ส่วนท้าย และในแอป: ตั้งค่า → "อ่านเพิ่มเติม" */
-const top=()=>`<header class="top"><div class="wrap"><a class="brand" href="/about" aria-label="Cendon">${MARK}${WM}</a></div></header>`;
+/* แถบบนแบบเมฆจาง: แค่โลโก้ + ปุ่มภาษา (เจ้าของขอให้หน้าโล่ง ไม่มีเมนูลิงก์)
+   ทางไปหน้าอื่นอยู่ส่วนท้าย และในแอป: ตั้งค่า → "อ่านเพิ่มเติม" · ปุ่มภาษามีทั้งบนและส่วนท้าย ทำงานพร้อมกัน */
 const LANG=`<div class="lang" role="group" aria-label="ภาษา · Language"><button type="button" data-set="th" aria-pressed="false">ไทย</button><button type="button" data-set="en" aria-pressed="false">English</button></div>`;
+const top=()=>`<header class="sitebar"><div class="cloud" aria-hidden="true"></div><div class="wrap bar"><a class="brand" href="/about" aria-label="Cendon">${MARK}${WM}</a>${LANG}</div></header>`;
 
 function foot(active){
   const a=(href,key,th,en)=>`<a href="${href}"${key===active?' aria-current="page"':''}>${L(th,en)}</a>`;

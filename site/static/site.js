@@ -16,6 +16,12 @@
   D.querySelectorAll('.lang button').forEach(function(b){b.addEventListener('click',function(){setLang(b.dataset.set,true)})});
   setLang(H.getAttribute('data-lang')||'th');
 
+  /* ── แถบบนแบบเมฆจาง: เบราว์เซอร์ที่รองรับใช้ CSS ผูกกับการเลื่อนอยู่แล้ว ตรงนี้เป็นตัวสำรอง (และโหมดลดการเคลื่อนไหว) ── */
+  var bar=D.querySelector('.sitebar'),bt=false;
+  function cloud(){bt=false;if(bar)bar.classList.toggle('on',scrollY>8)}
+  addEventListener('scroll',function(){if(!bt){bt=true;requestAnimationFrame(cloud)}},{passive:true});
+  cloud();
+
   /* ── สารบัญหน้าเอกสาร: ไฮไลต์หัวข้อที่กำลังอ่าน (หัวข้อสุดท้ายที่หัวเลื่อนผ่านเส้นอ่าน ~30% ของจอ) ── */
   var toc=D.querySelectorAll('.toc a[href^="#"]'),secs=D.querySelectorAll('.sec[id]');
   if(toc.length&&secs.length){
@@ -26,8 +32,8 @@
       if(id===cur)return;cur=id;
       toc.forEach(function(a){a.classList.toggle('on',a===map[id])});
       /* มือถือ: สารบัญเป็นแถบเลื่อนแนวนอน เลื่อนให้หัวข้อที่อ่านอยู่มองเห็น */
-      var on=map[id],bar=on&&on.parentNode;
-      if(bar&&bar.scrollWidth>bar.clientWidth)bar.scrollTo({left:on.offsetLeft-16,behavior:reduce?'auto':'smooth'});
+      var on=map[id],tb=on&&on.parentNode;
+      if(tb&&tb.scrollWidth>tb.clientWidth)tb.scrollTo({left:on.offsetLeft-16,behavior:reduce?'auto':'smooth'});
     }
     addEventListener('scroll',function(){if(!tt){tt=true;requestAnimationFrame(mark)}},{passive:true});
     mark();
@@ -54,11 +60,11 @@
   D.querySelectorAll('.rv,.tstep,.linecard').forEach(function(el){show.observe(el)});
 
   /* แถบอ่าน + เส้นเวลาความไว้ใจ: คำนวณจากตำแหน่งเลื่อน */
-  var bar=D.querySelector('.readbar'),line=D.querySelector('.trust .line'),tick=false;
+  var rb=D.querySelector('.readbar'),line=D.querySelector('.trust .line'),tick=false;
   function onScroll(){
     tick=false;
     var max=H.scrollHeight-innerHeight;
-    if(bar)bar.style.setProperty('--p',max>0?Math.min(1,scrollY/max):0);
+    if(rb)rb.style.setProperty('--p',max>0?Math.min(1,scrollY/max):0);
     if(line){
       var r=line.parentNode.getBoundingClientRect(),p=(innerHeight*.85-r.top)/(r.height+innerHeight*.35);
       line.style.setProperty('--p',Math.max(0,Math.min(1,p)));

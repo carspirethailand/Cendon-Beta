@@ -3,7 +3,7 @@
    เทสต์ test/site.test.mjs ตรวจว่ามีชื่อผู้ให้บริการครบทุกตัว */
 import {L,P,UL,TABLE,NOTE,I,docBody,EMAIL} from '../layout.mjs';
 
-export const VERSION='1.1';
+export const VERSION='1.2';
 export const EFFECTIVE=['15 ตุลาคม 2569','15 October 2026'];
 
 /* ผู้ให้บริการภายนอกทุกตัวที่ได้รับข้อมูล — ชื่อในคอลัมน์แรกต้องตรงกับรายการใน test/site.test.mjs */
@@ -150,7 +150,7 @@ const sections=[
       [['รหัสยืนยันทางอีเมล','Email sign-in codes'],['10 นาที เก็บแบบแฮช','10 minutes, stored hashed']],
       [['ใบงาน ข้อความกับช่าง รีวิว','Jobs, mechanic messages, reviews'],['เก็บเป็นหลักฐานของทั้งสองฝ่าย ข้อความที่แก้ไขเก็บต้นฉบับไว้ใช้ตัดสินข้อพิพาท · เมื่อลบบัญชี: บทสนทนาถูกลบ ใบงานที่จบแล้วตัดชื่อ เบอร์ ที่อยู่ และหมายเหตุออก รีวิวเหลือเฉพาะคะแนน','Kept as a record for both sides; edited messages keep the original for disputes · on account deletion: conversations are erased, finished jobs lose name, phone, address and notes, reviews keep only the star rating']],
       [['ลิงก์ติดตามงาน','Job share links'],['24 ชั่วโมง ยกเลิกได้ทุกเมื่อ','24 hours; revocable anytime']],
-      [['ใบสมัครช่างและการยืนยันตัวตน','Mechanic applications and identity'],['รูปบัตรและเซลฟี่ลบหลังตรวจเสร็จ · ชื่อและวันเกิดจาก Didit ลบเมื่ออนุมัติ · เลขบัตรเก็บเป็นแฮชแบบมีกุญแจกับ 3 หลักท้าย (กันสมัครซ้ำ) ลบเมื่อลบบัญชี ยกเว้นร้านที่ทีมงานระงับ จะเก็บแฮชไว้กันสมัครใหม่โดยไม่ผูกกับบัญชี','ID and selfie images are deleted after review · name and birth date from Didit are removed on approval · the ID number is kept as a keyed hash plus the last 3 digits (to stop duplicate sign-ups) and erased with the account — except for staff-suspended shops, where the hash is kept, unlinked from any account, to block re-registration']],
+      [['ใบสมัครช่างและการยืนยันตัวตน','Mechanic applications and identity'],['ทั้งหมดเก็บแบบเข้ารหัส · รูปบัตรและเซลฟี่ลบหลังตรวจเสร็จ · ใบที่ค้างรอตรวจเกิน 30 วันหมดอายุ ลบรูปบัตรและเซลฟี่ทิ้งเอง แล้วแจ้งให้ส่งใหม่ · ชื่อและวันเกิดจาก Didit ลบเมื่ออนุมัติ · เลขบัตรเต็มไม่เก็บเลย เหลือแฮชแบบมีกุญแจกับ 3 หลักท้าย (กันสมัครซ้ำ) ลบเมื่อลบบัญชี ยกเว้นร้านที่ทีมงานระงับ จะเก็บแฮชไว้กันสมัครใหม่โดยไม่ผูกกับบัญชี','All of it is stored encrypted · ID and selfie images are deleted after review · applications left waiting more than 30 days expire, their ID and selfie images are deleted automatically, and you’re asked to apply again · name and birth date from Didit are removed on approval · the full ID number is never stored — only a keyed hash plus the last 3 digits (to stop duplicate sign-ups), erased with the account — except for staff-suspended shops, where the hash is kept, unlinked from any account, to block re-registration']],
       [['ความคิดเห็นที่ส่งมา','Feedback'],['จนกว่าคุณจะลบบัญชี','Until you delete your account']],
       [['บันทึกการทำงานของทีมงาน','Staff audit log'],['เก็บไว้ตรวจสอบย้อนหลัง เมื่อลบบัญชี อีเมลของคุณในบันทึกถูกแทนด้วยคำว่า deleted','Kept for accountability; on deletion your email in it is replaced with “deleted”']],
       [['สำเนาสำรองของฐานข้อมูล','Database backups'],['Cloudflare เก็บจุดย้อนคืนอัตโนมัติประมาณ 30 วัน แล้วหมดไปเอง','Cloudflare keeps automatic restore points for about 30 days, then they expire']],
@@ -175,7 +175,9 @@ const sections=[
       ['ทุกคำขอที่ต้องล็อกอิน ตรวจยืนยันตัวตนที่เซิร์ฟเวอร์ สิทธิ์ทีมงานตรวจที่เซิร์ฟเวอร์ ไม่ใช่แค่ซ่อนปุ่ม','Every signed-in request is verified on the server; staff permissions are checked there too, not just hidden buttons'],
       ['เชื่อมต่อแบบเข้ารหัส (HTTPS) ตลอด','Encrypted connections (HTTPS) throughout'],
       ['ลบข้อมูลตำแหน่ง (EXIF) ออกจากรูปที่คุณส่งให้ช่าง','Location data (EXIF) is stripped from photos you send mechanics'],
-      ['เลขบัตรประชาชนเก็บเป็นแฮชแบบมีกุญแจ ฐานข้อมูลหลุดก็ย้อนกลับเป็นเลขบัตรไม่ได้','ID numbers are stored as keyed hashes that can’t be reversed even if the database leaked'],
+      ['ใบสมัครช่าง ผลยืนยันตัวตน และรูปบัตร เซลฟี่ ใบรับรอง เข้ารหัส (AES-256) ก่อนบันทึกทุกครั้ง กุญแจเก็บแยกจากฐานข้อมูล — ถ้าฐานข้อมูลหรือสำเนาสำรองหลุด ก็เปิดอ่านไม่ได้ และถ้ามีคนแอบแก้หรือสลับข้อมูล ระบบจะรู้และไม่ยอมใช้','Mechanic applications, identity results, and ID, selfie and certificate images are encrypted (AES-256) before they’re saved, with the key kept apart from the database — a leaked database or backup can’t be read, and if anyone tampers with or swaps the data, the system detects it and refuses to use it'],
+      ['เลขบัตรประชาชนเต็มไม่ถูกเก็บที่ไหนเลย เหลือแฮชแบบมีกุญแจ (ย้อนกลับเป็นเลขบัตรไม่ได้) กับ 3 หลักท้าย · ทีมงานตรวจบัตรโดยพิมพ์เลขที่เห็นบนรูปบัตรให้ระบบเทียบ ระบบตอบแค่ตรงหรือไม่ตรง','Full ID numbers are never stored anywhere — only a keyed hash (which can’t be turned back into the number) and the last 3 digits · staff check an ID by typing the number they see on the card photo; the system only answers match or no match'],
+      ['ทีมงานทุกคนเปิดดูหรือตัดสินใบสมัครได้ตามสิทธิ์เท่านั้น และทุกครั้งมีบันทึกว่าใครทำอะไรเมื่อไร','Staff can view or decide on applications only within their role, and every action is logged with who did what and when'],
       ['จำกัดจำนวนครั้งการล็อกอิน การส่งข้อความ และการใช้ AI เพื่อกันการโจมตีและสแปม','Rate limits on sign-in, messaging and AI use to stop attacks and spam'],
     ])+
     P(`ไม่มีระบบใดปลอดภัย 100% หากเกิดเหตุละเมิดข้อมูลที่มีความเสี่ยงต่อคุณ เราจะแจ้งสำนักงานคณะกรรมการฯ ภายใน 72 ชั่วโมง และแจ้งคุณโดยเร็วตามที่กฎหมายกำหนด · พบช่องโหว่ แจ้งได้ที่ <a href="mailto:${EMAIL}">${EMAIL}</a>`,
@@ -195,6 +197,7 @@ const sections=[
     P('เมื่อระบบเปลี่ยนวิธีเก็บหรือใช้ข้อมูล เราจะแก้หน้านี้ให้ตรงทันที เปลี่ยนเลขเวอร์ชันและวันที่ด้านบน และถ้าเป็นการเปลี่ยนสาระสำคัญ จะแจ้งในแอปก่อนมีผล การเปลี่ยนที่ต้องได้รับความยินยอมใหม่ เราจะขอความยินยอมใหม่ก่อน',
       'Whenever the way we collect or use data changes, we update this page straight away, with a new version number and date at the top. Material changes are announced in the app before they take effect, and anything that needs fresh consent will ask for it first.')+
     UL([
+      ['<b>1.2 · 15 ต.ค. 2569</b> — ใบสมัครช่างและรูปบัตรเข้ารหัสก่อนเก็บ · เลิกเก็บเลขบัตรเต็ม · ใบสมัครค้างรอตรวจเกิน 30 วันลบรูปบัตรทิ้งเอง (เป็นการเพิ่มการป้องกัน ไม่ต้องยอมรับใหม่)','<b>1.2 · 15 Oct 2026</b> — mechanic applications and ID images are encrypted before storage · full ID numbers are no longer stored · ID images of applications waiting over 30 days are deleted automatically (added protection; no new consent needed)'],
       ['<b>1.1 · 15 ต.ค. 2569</b> — เขียนใหม่ทั้งฉบับให้ตรงกับระบบปัจจุบัน: ตลาดช่าง การยืนยันตัวตนช่าง LINE ดาวน์โหลด/ลบบัญชีเองในแอป รายชื่อผู้ให้บริการครบ เลิกเก็บข้อความแชตในบันทึกการใช้ และไม่ส่งอีเมลให้ AI','<b>1.1 · 15 Oct 2026</b> — rewritten to match the current system: mechanic marketplace, mechanic identity checks, LINE, self-service download/delete, full provider list, chat text no longer kept in usage logs, and email no longer sent to the AI'],
       ['<b>1.0 · 1 ส.ค. 2569</b> — ฉบับแรก','<b>1.0 · 1 Aug 2026</b> — first version'],
     ])},

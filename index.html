@@ -1779,6 +1779,7 @@ html[data-theme="dark"] .so-vi{box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
 .idp>b{display:block;margin:4px 0 8px;font:700 22px/1.2 ui-monospace,Menlo,monospace;letter-spacing:.06em}
 .idp-r,.idp-f{display:flex;gap:6px;align-items:center;margin:4px 0 0;font-size:13.5px}
 .idp-r.ok{color:#15803d}.idp-r.bad{color:#b91c1c;font-weight:600}.idp-r.warn{color:#b7791f}.idp-f{color:var(--muted)}
+.idc{display:flex;gap:8px;margin:10px 0 0}.idc .inp{flex:1 1 auto;min-width:0;font:600 17px/1.2 ui-monospace,Menlo,monospace;letter-spacing:.05em}.idc .btn{flex:none}
 .ed-lock{margin:0 0 12px}
 /* ═══ หน้ารายละเอียดบริการ ═══ */
 .gd{display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:"gal" "side" "body";gap:0 36px;padding-bottom:28px}
@@ -5404,7 +5405,14 @@ function aiCard(ai){
 const IDS={approved:["ok","ti-circle-check","Didit: ยืนยันตัวตนผ่าน"],review:["warn","ti-hourglass","Didit: กำลังตรวจ — รอผลก่อนอนุมัติ"],declined:["bad","ti-circle-x","Didit: ไม่ผ่าน — ผู้สมัครต้องลองใหม่"],expired:["warn","ti-clock-x","Didit: ลิงก์หมดอายุ ผู้สมัครยังไม่ได้ยืนยัน"],pending:["warn","ti-clock","Didit: ผู้สมัครยังทำไม่เสร็จ"],not_started:["warn","ti-clock","ผู้สมัครยังไม่ได้เริ่มยืนยันตัวตนกับ Didit"],none:["warn","ti-clock","ผู้สมัครยังไม่ได้เริ่มยืนยันตัวตนกับ Didit"]};
 const isDidit=a=>!!(a&&a.identity&&a.identity.mode==="didit");
 function idPanel(a){
-  if(!isDidit(a))return`<div class="idp"><small>เลขประจำตัวประชาชนที่กรอก</small><b class="nt">${esc(fmtId(a.idNo))}</b><p class="idp-r warn"><i class="ti ti-eye"></i>ทีมงานตรวจบัตรเอง: เทียบเลขในรูปบัตรทีละหลัก ดูวันหมดอายุ และเทียบหน้าในรูปคู่บัตร</p></div>`;
+  if(!isDidit(a)){
+    /* ระบบไม่เก็บเลขบัตรเต็ม (เข้ารหัส + เหลือ 3 หลักท้าย) — ทีมงานพิมพ์เลขที่เห็นบนรูปบัตร แล้วระบบเทียบแฮชกับที่ผู้สมัครกรอกให้ */
+    const l=String(a.idLast3||String(a.idNo||"").replace(/\D/g,"").slice(-3)||"").padStart(3,"x");
+    return`<div class="idp"><small>เลขประจำตัวประชาชนที่ผู้สมัครกรอก (ระบบเก็บแค่ 3 หลักท้าย)</small><b class="nt">x-xxxx-xxxxx-${esc(l[0]+l[1])}-${esc(l[2])}</b>
+      <p class="idp-r warn"><i class="ti ti-eye"></i>พิมพ์เลขที่เห็นบนรูปบัตรด้านบน ให้ระบบเทียบกับที่ผู้สมัครกรอก · ดูวันหมดอายุ และเทียบหน้าในรูปคู่บัตรด้วย</p>
+      <div class="idc"><input class="inp" id="idcIn" inputmode="numeric" autocomplete="off" spellcheck="false" placeholder="เลขบนรูปบัตร 13 หลัก" aria-label="เลขบนรูปบัตร 13 หลัก"/><button class="btn s" id="idcGo" type="button"><i class="ti ti-scan"></i> เทียบ</button></div>
+      <p class="idp-r ${a.__idok?"ok":""}" id="idcRes" role="status">${a.__idok?'<i class="ti ti-circle-check"></i>ตรงกับที่ผู้สมัครกรอก':""}</p></div>`;
+  }
   const i=a.identity,r=IDS[i.status]||IDS.none;
   return`<div class="idp"><small>ยืนยันตัวตนผ่าน Didit</small><p class="idp-r ${r[0]}"><i class="ti ${r[1]}"></i>${r[2]}</p>
     ${i.name?`<p class="idp-f"><i class="ti ti-id"></i>ชื่อตามบัตร: <b>${esc(i.name)}</b></p>`:""}${i.birth?`<p class="idp-f"><i class="ti ti-cake"></i>วันเกิดตามบัตร ${esc(i.birth)} · อายุ ${ageOf(i.birth)} ปี</p>`:""}${i.last3?`<p class="idp-f"><i class="ti ti-hash"></i>เลขบัตรลงท้าย …${esc(i.last3)}</p>`:""}
@@ -5417,6 +5425,8 @@ const REVIEW_METHODS={identity:[["document_review","ตรวจเอกสา�
 function reviewFindings(ai,a){return [...(ai&&ai.flags||[]),...(isDidit(a)?a.identity.flags||[]:[])].filter(f=>f.source!=='rules'&&f.level!=='low'&&!f.block).map(f=>`<label class="fld"><span>${esc(f.msg)}</span><textarea class="inp" data-resolution="${esc(f.code)}" minlength="30" maxlength="1000" placeholder="ตรวจแล้วพบว่าไม่มีปัญหา ให้บันทึกหลักฐานอย่างน้อย 30 ตัวอักษร หากปัญหาจริงให้ส่งกลับแก้ไข"></textarea></label>`).join('')}
 const aiReady=(ai,a)=>!!(ai&&(ai.status==='complete'||ai.status==='skipped')&&ai.policyVersion===VETTING_VERSION&&ai.revision===a.revision&&Array.isArray(ai.flags)&&!ai.flags.some(f=>f.block||(f.source==='rules'&&f.level==='high')));
 async function reviewOne(a){
+  /* เทียบเลขบัตรของฉบับนี้ผ่านไปแล้ว (ระบบจำไว้ต่อฉบับแก้ไข) ไม่ต้องพิมพ์ซ้ำ */
+  if(a.idChecked)a.__idok=true;
   sheet({push:true,title:a.name,body:'<div class="skel"></div>'});
   let docs=[];try{docs=(await api("/api/tech/docs?uid="+encodeURIComponent(a.uid))).docs||[]}catch(e){}
   const lab=Object.fromEntries(DK.map(d=>[d[0],d[1]]));
@@ -5436,15 +5446,27 @@ async function reviewOne(a){
       /* ปุ่มอนุมัติเปิดได้เมื่อครบทุกอย่างแบบเดียวกับที่ backend ตรวจ — บอกด้วยว่ายังขาดอะไร */
       const ready=()=>{
         const why=!(ME&&ME.admin)?"เฉพาะ admin ที่อนุมัติได้":ME.uid===a.uid?"อนุมัติใบสมัครของตัวเองไม่ได้":!aiReady(a.ai,a)?(a.ai&&(a.ai.flags||[]).some(f=>f.block)?"มีข้อที่ไม่ผ่านแน่นอน — กด \"ให้แก้ไข\" ส่งกลับผู้สมัคร":"AI ต้องตรวจสำเร็จด้วยข้อมูลชุดล่าสุดก่อน (กดตรวจอีกครั้ง)")
-          :isDidit(a)&&a.identity.status!=="approved"?"รอผู้สมัครยืนยันตัวตนกับ Didit ให้ผ่านก่อน":isDidit(a)&&(a.identity.flags||[]).some(f=>f.block)?"ตัวตนไม่ผ่าน (ดูกล่อง Didit) — กด \"ให้แก้ไข\" ส่งกลับผู้สมัคร"
+          :!isDidit(a)&&!a.__idok?"พิมพ์เลขบนรูปบัตรให้ระบบเทียบกับที่ผู้สมัครกรอกก่อน (ด่านตัวตน)":isDidit(a)&&a.identity.status!=="approved"?"รอผู้สมัครยืนยันตัวตนกับ Didit ให้ผ่านก่อน":isDidit(a)&&(a.identity.flags||[]).some(f=>f.block)?"ตัวตนไม่ผ่าน (ดูกล่อง Didit) — กด \"ให้แก้ไข\" ส่งกลับผู้สมัคร"
           :!(boxes.length===CHECKS.length&&boxes.every(x=>x.checked))?"ติ๊กให้ครบทุกข้อ":!CHECKS.every(([k])=>b.querySelector(`[data-method="${k}"]`).value&&b.querySelector(`[data-evidence="${k}"]`).value.trim().length>=20)?"เลือกวิธีตรวจและบันทึกหลักฐานทุกข้อ (อย่างน้อย 20 ตัวอักษร)"
           :![...b.querySelectorAll('[data-resolution]')].every(x=>x.value.trim().length>=30)?"บันทึกผลตรวจจุดสงสัยทุกข้อ (อย่างน้อย 30 ตัวอักษร)":$("rvN").value.trim().length<10?"เขียนบันทึกการตรวจ":"";
         $("rvOk").disabled=!!why;$("rvWhy").textContent=why?"ยังอนุมัติไม่ได้: "+why:"";
       };
+      /* เทียบเลขบัตร: ส่งเลขไปให้ระบบเทียบแฮช แล้วล้างช่องทิ้งทันที ไม่ค้างเลขบัตรไว้บนจอ */
+      const bindId=()=>{const go=$("idcGo"),inp=$("idcIn");if(!go||!inp)return;
+        inp.addEventListener("input",()=>{inp.value=fmtId(inp.value)});
+        inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();go.click()}});
+        go.onclick=()=>busy(go,async()=>{const res=$("idcRes");
+          try{const r=await api("/api/tech/review/idcheck",{body:{uid:a.uid,idNo:inp.value.replace(/\D/g,"")}});
+            a.__idok=!!r.match;res.className="idp-r "+(r.match?"ok":"bad");
+            res.innerHTML=r.match?'<i class="ti ti-circle-check"></i>ตรงกับที่ผู้สมัครกรอก':'<i class="ti ti-circle-x"></i>ไม่ตรงกับที่ผู้สมัครกรอก — ดูรูปบัตรอีกครั้ง หรือส่งกลับให้ผู้สมัครแก้';
+          }catch(e){res.className="idp-r bad";res.innerHTML='<i class="ti ti-alert-triangle"></i>'+esc(e.message)}
+          finally{inp.value="";ready()}});
+      };
+      bindId();
       b.addEventListener('input',ready);b.addEventListener('change',ready);ready();
       $("rvNo").disabled=!(ME&&ME.admin)||ME.uid===a.uid;
       const bindAI=()=>{const btn=$("aiRe");if(!btn)return;btn.onclick=()=>busy(btn,async()=>{const r=await api('/api/tech/rescreen',{body:{uid:a.uid}});a.ai=r.ai;if(r.identity)a.identity=r.identity;
-        $("aiBox").innerHTML=aiCard(r.ai);$("aiFindings").innerHTML=reviewFindings(r.ai,a);$("idBox").innerHTML=idPanel(a);bindAI();ready();
+        $("aiBox").innerHTML=aiCard(r.ai);$("aiFindings").innerHTML=reviewFindings(r.ai,a);$("idBox").innerHTML=idPanel(a);bindAI();bindId();ready();
         toast(r.ai&&r.ai.status==='complete'?'AI ตรวจครบแล้ว กรุณาตรวจหลักฐานต่อ':r.ai&&r.ai.status==='skipped'?'ผลล่าสุดแล้ว — AI ไม่ได้ดูรูป ทีมงานตรวจเอง':'AI ยังไม่สำเร็จ ยังอนุมัติไม่ได้')})};bindAI();
       const go=(decision,btn)=>busy(btn,async()=>{
         const evidence=Object.fromEntries(CHECKS.map(([k])=>[k,{method:b.querySelector(`[data-method="${k}"]`).value,note:b.querySelector(`[data-evidence="${k}"]`).value.trim()}]));

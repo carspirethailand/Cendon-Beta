@@ -4,11 +4,11 @@ The implementation offers Google, Apple and six-digit Email OTP. It replaces the
 
 ## Before production
 
-1. The owner supplied `https://carspirethailand.github.io/Phasmion.ai/privacy.html` on 11 October 2026. It is reachable and remains an unmodified external document under the Phasmion name. Configure `ONBOARDING_PRIVACY_URL` to that approved URL; missing policy configuration blocks new consent collection. Terms and privacy version 1.0 are effective 1 August 2026. New onboarding enforces the policy's 18+ age rule; existing accounts are not automatically suspended or deleted.
+1. The privacy policy and terms now live on Cendon's own site: `https://cendon-beta.pages.dev/privacy` and `/terms` (generated from `site/content/`). `ONBOARDING_PRIVACY_URL` points there (backend `wrangler.jsonc`). Policy version 1.1 is effective 15 October 2026 (`ONBOARDING_VERSIONS` in backend `src/onboarding.js` must match the page header); existing users keep the version they accepted and are not forced through onboarding again. New onboarding enforces the policy's 18+ age rule.
 2. Configure Email sending and Firebase custom authentication on the Worker. Never paste private keys or API tokens in chat or commit them.
 3. Confirm Apple is enabled for the existing Firebase project and that its Apple Developer service configuration and return URL are valid.
 4. Verify Google sign-in, Apple sign-in, and actual email delivery on the production domain with an explicitly chosen test recipient.
-5. Deploy the backend before the frontend, preserving existing Cloudflare variables and secrets. The backend creates schema 21 through its existing automatic schema mechanism; the onboarding rollout snapshot executes transactionally before account state writes.
+5. Deploy the backend before the frontend, preserving existing Cloudflare variables and secrets. The backend creates schema 23 (current) through its existing automatic schema mechanism; the onboarding rollout snapshot executes transactionally before account state writes.
 
 ## Worker configuration
 

@@ -4681,12 +4681,14 @@ window.runFeatureJob=runFeatureJob;
 /* ===== PILL / CAR UI ===== */
 function renderCarUI(){
   const c=selCar();
-  $("pCarName").textContent=c?c.name:(lang==="en"?"Select car":"เลือกรถ");
+  $("pCarName").textContent=c?c.name:(window.spireT?window.spireT("เลือกรถ","Select car"):(lang==="en"?"Select car":"เลือกรถ"));
   const tag=$("wCarTag");
   if(c){tag.style.display="inline-flex";tag.querySelector("span").textContent=`${c.name} · ${c.year||"-"}`}
   else tag.style.display="none";
   updateGreeting();
 }
+/* ป้าย "เลือกรถ" ในมาร์กอัปเป็นภาษาไทย — แปลทันทีตอนโหลด (renderCarUI จะเขียนทับเป็นชื่อรถเมื่อมีรถแล้ว) */
+(function(){const e=document.getElementById("pCarName");if(e&&e.textContent==="เลือกรถ"&&window.spireT)e.textContent=window.spireT("เลือกรถ","Select car")})();
 function toggleCarDrop(e){if(e)e.stopPropagation();
   const d=$("carDrop");const open=d.classList.toggle("open");
   if(open){const g=garage(),cur=LS.get("selCar","");

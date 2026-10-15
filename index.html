@@ -10,6 +10,11 @@
 <!-- ที่อยู่แบบลึก (/tech/<ร้าน>/reviews) — ไฟล์ประกอบทุกตัวอ้างจากรากเว็บเสมอ -->
 <base href="/">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<!-- ภาษาอื่นนอกจากไทย/อังกฤษ: โหลดพจนานุกรมของหน้านี้ให้เสร็จก่อนสคริปต์หลัก (เลือกภาษาแบบเดียวกับ LANG ในสคริปต์หลัก)
+     ไทย/อังกฤษไม่โหลดอะไรเพิ่ม · document.write ใช้เฉพาะไฟล์ในเว็บเดียวกัน เบราว์เซอร์จึงไม่บล็อก -->
+<script>(function(){try{var A=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt","ar"],l=null;try{l=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
+if(A.indexOf(l)<0){l="en";var n=navigator.languages||[navigator.language||"en"];for(var i=0;i<n.length;i++){var b=String(n[i]).toLowerCase().split("-")[0];if(A.indexOf(b)>=0){l=b;break}}}
+if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=1"><\/script>')}catch(e){}})();</script>
 <title>Cendon</title>
 <meta name="description" content="ถามอาการรถ ส่งรูปหรือเสียงให้ AI ช่วยดู เช็กใบเสนอราคา และหาช่างที่ผ่านการตรวจใกล้คุณ">
 <!-- การ์ดตอนแชร์ลิงก์ (LINE / Facebook / X) — รูปต้องเป็นที่อยู่เต็ม -->
@@ -2247,6 +2252,7 @@ a.mtab{text-decoration:none}
    กุญแจคือ "ท่อนภาษาไทย" (คำไทยที่ติดกัน คั่นด้วยเว้นวรรคได้) ตามที่ tr() ตัด
    ถ้าเพิ่มข้อความไทยใหม่ในหน้านี้ ต้องเพิ่มคำแปลที่นี่ด้วย ไม่งั้นผู้ใช้ต่างชาติจะเห็นภาษาไทย */
 const EN={
+"นโยบายความเป็นส่วนตัว":"Privacy policy","ข้อกำหนดการใช้งาน":"Terms of use",
 "ทั้งหมด":"All","แอร์":"Air-con","เครื่องยนต์":"Engine","ยาง":"Tyres","ช่วงล่าง":"Suspension","ไฟฟ้า":"Electrical","ตัวถัง":"Body","สี":"Paint",
 "มาถึงที่":"Comes to you","รับงานด่วน":"Urgent jobs","แอร์รถยนต์":"Car air-con",
 "รอราคา":"Awaiting quote","ได้ราคาแล้ว":"Quoted","นัดแล้ว":"Booked","ช่างกำลังมา":"On the way","กำลังซ่อม":"Repairing","รอตรวจงาน":"Awaiting check",
@@ -2629,19 +2635,47 @@ document.documentElement.lang=LANG;
 /* เปลี่ยนภาษาจากหน้าอื่น (อีกแท็บ) — โหลดหน้าใหม่ให้ทุกข้อความเปลี่ยนพร้อมกัน */
 addEventListener("storage",e=>{if(e.key==="spire_lang")location.reload()});
 const THRUN=/[\u0E00-\u0E7F]+(?:[ \u00A0]+[\u0E00-\u0E7F]+)*/g;
+/* ภาษาอื่นนอกจากไทย/อังกฤษ: พจนานุกรม อังกฤษ → ภาษานั้น (/i18n/home-<lang>.js โหลดก่อนสคริปต์นี้ ดูหัวไฟล์)
+   ไม่มีไฟล์/โหลดไม่ทัน = เห็นภาษาอังกฤษ ซึ่งยังดีกว่าภาษาไทยที่อ่านไม่ออก */
+const L10N=(!TH&&LANG!=="en"&&window.CENDON_L10N&&window.CENDON_L10N.lang===LANG)?window.CENDON_L10N.t:null;
+/* ข้อความที่มีค่าแทน ({0} {1}) จับคู่แบบรูปแบบ — เฉพาะที่มีตัวอักษรจริงพอ กันรูปแบบกว้างเกินไปจับข้อความอื่น */
+const L10P=L10N?Object.keys(L10N).filter(k=>/\{\d\}/.test(k)&&k.replace(/\{\d\}/g,"").replace(/[^A-Za-z]/g,"").length>=3).map(k=>{
+  const order=[];const src=k.split(/(\{\d\})/).map(p=>{const m=/^\{(\d)\}$/.exec(p);if(m){order.push(+m[1]);return "(.*?)"}return p.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")}).join("");
+  return [new RegExp("^"+src+"$"),order,L10N[k]]}):[];
+/* อังกฤษ → ภาษาที่เลือก · ไม่เจอ = คืนอังกฤษเดิม
+   ลำดับ: ตรงทั้งข้อความ → แยกตัวเลขออกแล้วแปลส่วนที่เหลือ ("31 jobs done") → รูปแบบ {0} (เฉพาะข้อความจาก T() ที่เป็นเทมเพลต) */
+const PUNCT=/^[\s\p{P}\p{S}\d]*$/u;
+function xl(en,pattern){
+  if(!L10N||!en||!/[A-Za-z]/.test(en))return en;
+  const s=String(en),core=s.trim();if(!core)return en;
+  let hit=L10N[core];
+  if(hit==null&&/\d/.test(core)){
+    let ok=true;const parts=core.split(/(\s*[\d][\d.,:/–-]*\s*)/).map(p=>{if(!p||PUNCT.test(p))return p;const k=p.trim(),v=L10N[k];if(v==null){ok=false;return p}return p.replace(k,v)});
+    if(ok)hit=parts.join("");
+  }
+  if(hit==null&&pattern&&core.length<=200)for(const [re,order,out] of L10P){const m=re.exec(core);if(m){hit=out.replace(/\{(\d)\}/g,(_,i)=>{const j=order.indexOf(+i);return j<0?"":m[j+1]});break}}
+  if(hit==null)return en;
+  return s.slice(0,s.length-s.trimStart().length)+hit+s.slice(s.trimEnd().length);
+}
 function tr(str){
   if(TH||!str||!/[\u0E00-\u0E7F]/.test(str))return str;
-  return str.replace(THRUN,m=>EN[m]!=null?EN[m]:m);
+  const en=str.replace(THRUN,m=>EN[m]!=null?EN[m]:m);
+  if(!L10N)return en;
+  /* แปลทั้งข้อความก่อน ไม่ได้ค่อยแปลทีละท่อน */
+  const whole=xl(en);if(whole!==en)return whole;
+  return str.replace(THRUN,m=>EN[m]!=null?xl(EN[m]):m);
 }
+/* ข้อความบนจอ: มีไทย = แปลจากไทย · ภาษาอื่น (ไม่ใช่อังกฤษ) = แปลข้อความอังกฤษจาก T()/มาร์กอัปต่ออีกชั้น */
+const trText=v=>/[\u0E00-\u0E7F]/.test(v)?tr(v):L10N?xl(v):v;
 /* สิ่งที่ผู้ใช้พิมพ์เอง (แชต ชื่อร้าน คำบรรยาย) ห้ามแปล — แปลผิดความหมายอันตรายกว่าไม่แปล */
 const NT=".msg,.about,.nm,.nt";
 function trNode(root){
   if(TH||!root)return;
-  if(root.nodeType===3){if(root.parentElement&&root.parentElement.closest(NT))return;const v=tr(root.nodeValue);if(v!==root.nodeValue)root.nodeValue=v;return}
+  if(root.nodeType===3){if(root.parentElement&&root.parentElement.closest(NT))return;const v=trText(root.nodeValue);if(v!==root.nodeValue)root.nodeValue=v;return}
   if(root.nodeType!==1)return;
   const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;
-  while((n=w.nextNode())){if(n.parentElement&&n.parentElement.closest(NT))continue;const v=tr(n.nodeValue);if(v!==n.nodeValue)n.nodeValue=v}
-  [root,...root.querySelectorAll("[placeholder],[title],[aria-label],[alt]")].forEach(e=>["placeholder","title","aria-label","alt"].forEach(a=>{const v=e.getAttribute&&e.getAttribute(a);if(v&&/[\u0E00-\u0E7F]/.test(v))e.setAttribute(a,tr(v))}));
+  while((n=w.nextNode())){if(n.parentElement&&n.parentElement.closest(NT+",script,style"))continue;const v=trText(n.nodeValue);if(v!==n.nodeValue)n.nodeValue=v}
+  [root,...root.querySelectorAll("[placeholder],[title],[aria-label],[alt]")].forEach(e=>["placeholder","title","aria-label","alt"].forEach(a=>{const v=e.getAttribute&&e.getAttribute(a);if(v){const x=trText(v);if(x!==v)e.setAttribute(a,x)}}));
 }
 /* ข้อความที่เขียนไว้ในมาร์กอัป data-t="ไทย|English" */
 function paintStatic(){
@@ -2650,7 +2684,7 @@ function paintStatic(){
 }
 if(!TH)new MutationObserver(ms=>ms.forEach(m=>{if(m.type==="characterData")trNode(m.target);else m.addedNodes.forEach(trNode)}))
   .observe(document.documentElement,{childList:true,subtree:true,characterData:true});
-const T=(th,en)=>TH?th:(en??tr(th));
+const T=(th,en)=>TH?th:(en!=null?xl(en,true):tr(th));
 /* สคริปต์ร่วม (แถบล่างมือถือ เชื่อม LINE ครอปรูป ฯลฯ) ถามภาษาจากตรงนี้ — ให้ตรงกับหน้านี้เสมอ */
 window.spireLang=()=>LANG;window.spireT=T;
 
@@ -3078,7 +3112,7 @@ function drawMyCar(){
   const cars=ls.get("spire_garage",[]),c=cars.find(x=>x.id===ls.get("spire_selCar",""))||cars[0];
   const el=$("myCar");
   /* ยังไม่มีรถ: ชวนเพิ่มรถทุกครั้ง พร้อมบอกว่าได้อะไร — ข้อมูลรถคือหัวใจที่ทำให้ AI และช่างแม่นขึ้น */
-  if(!c){el.hidden=false;el.innerHTML=`<a href="/garage?add=1" class="lx-car lx-addcar"><span class="lx-cari"><i class="ti ti-car-garage"></i></span><span class="lx-cart"><b>เพิ่มรถของคุณ</b><small>AI วิเคราะห์แม่นขึ้นตามรุ่นรถ · ช่างรู้รุ่นก่อนเสนอราคา · เตือนเช็กระยะให้</small></span><span class="lx-plus"><i class="ti ti-plus"></i></span></a>`;return}
+  if(!c){el.hidden=false;el.innerHTML=`<a href="/garage?add=1" class="lx-car lx-addcar"><span class="lx-cari"><i class="ti ti-car-garage"></i></span><span class="lx-cart"><b>${T("เพิ่มรถของคุณ","Add your car")}</b><small>${T("AI วิเคราะห์แม่นขึ้นตามรุ่นรถ · ช่างรู้รุ่นก่อนเสนอราคา · เตือนเช็กระยะให้","Sharper AI answers for your model · mechanics know your car before quoting · service reminders")}</small></span><span class="lx-plus"><i class="ti ti-plus"></i></span></a>`;return}
   el.hidden=false;
   el.innerHTML=`<a href="/garage" class="lx-car"><span class="lx-cari"><i class="ti ti-car"></i></span><span class="lx-cart"><small>รถของฉัน</small><b class="nt">${esc([c.name,c.year].filter(Boolean).join(" "))}</b></span><span class="lx-carm">${c.mileage?money(c.mileage)+" "+T("กม.","km"):T("ดูสมุดรถ","Car log")} <i class="ti ti-chevron-right"></i></span></a>`;
 }
@@ -3797,6 +3831,8 @@ Nav.route({path:":k",parent:"studio",test:p=>["settings","stats","edit","post","
 Nav.route({path:"work",name:"work",open:async()=>{if(await needU()&&modesAvail().includes("tech"))setMode("tech")}});
 Nav.route({path:":t",parent:"work",test:p=>["find","queue","messages","shop","ai","posts"].includes(p.t),open:p=>{if(MODE==="tech")setTab2(p.t)}});
 Nav.route({path:"staff",open:async()=>{if(await needU()&&modesAvail().includes("staff"))setMode("staff")}});
+/* ลิงก์จากการ์ด LINE ของทีมงาน "มีใบสมัครช่างใหม่" — เปิดหน้าตรวจใบสมัครทันที */
+Nav.route({path:"staff/review",open:async()=>{if(await needU()&&modesAvail().includes("staff")){setMode("staff");reviewList()}}});
 Nav.route({path:"join",open:async()=>{if(await needU())return openJoin()}});
 Nav.route({path:"quote",name:"qcheck",open:()=>quotePage()});
 Nav.route({path:"listen",name:"listen",open:()=>listenPage()});
@@ -4883,7 +4919,7 @@ function convos(threads,jobs){
   const th=(threads||[]).filter(h=>h.role==="customer").map(h=>({k:"th",id:h.id,techId:h.techId,name:h.techName,
     text:h.last?(h.last.role===h.role?T("คุณ: ","You: "):"")+h.last.text:"",at:(h.last&&h.last.at)||h.updatedAt||h.createdAt,unread:h.unread||0,sub:h.gig&&h.gig.title||""}));
   const jb=(jobs||[]).filter(j=>j.side!=="technician"&&j.status!=="cancelled").map(j=>({k:"job",id:j.id,techId:j.techId,name:j.techName,
-    text:j.symptom||"",at:j.updatedAt||j.createdAt,unread:j.unread||0,sub:T("ใบงาน · ","Job · ")+(STATUS[j.status]||j.status)}));
+    text:j.symptom||"",at:j.updatedAt||j.createdAt,unread:j.unread||0,sub:T("ใบงาน · ","Job · ")+tr(STATUS[j.status]||j.status)}));
   return [...th,...jb].sort((a,b)=>(b.at||0)-(a.at||0));
 }
 const msgUnread=()=>convos(THREADS,JOBS).reduce((a,c)=>a+c.unread,0);
@@ -5138,7 +5174,7 @@ function landing(push){
     <div class="rules">${DIDIT()?`<div class="rule"><span class="sq"><i class="ti ti-id"></i></span><div><b>บัตรประชาชนตัวจริง</b><small>ใช้ยืนยันตัวตนกับ Didit หลังยื่นใบสมัคร — ไม่ต้องอัปโหลดในฟอร์ม</small></div></div>`:""}${dk().map(([k,l,min,max,ic])=>`<div class="rule"><span class="sq"><i class="ti ${ic}"></i></span><div><b>${l}</b><small>${min?(min===max?min+" รูป":min+"–"+max+" รูป"):"ถ้ามี — ถ้าไม่มี ทีมงานสัมภาษณ์ทักษะแทน"}</small></div>${min?"":'<span class="opt">ไม่บังคับ</span>'}</div>`).join("")}</div>
     <p class="h4">ขั้นตอนการพิจารณา</p>
     <div class="tl">${(DIDIT()?[["ยื่นใบสมัครออนไลน์","กรอกข้อมูลและแนบรูปผลงาน"],["ยืนยันตัวตนกับ Didit","ถ่ายบัตรประชาชนและใบหน้า ประมาณ 2 นาที"],["ทีมงานตรวจและโทรยืนยัน","1–3 วันทำการ"],["อนุมัติ เริ่มรับงาน","ร้านของคุณแสดงในแอปทันที"]]:[["ยื่นใบสมัครออนไลน์","กรอกข้อมูลและแนบเอกสาร"],["ตรวจสอบเอกสาร","1–3 วันทำการ"],["โทรยืนยันตัวตนและทักษะ","ทีมงานติดต่อตามเบอร์ที่ให้ไว้"],["อนุมัติ เริ่มรับงาน","ร้านของคุณแสดงในแอปทันที"]]).map(([b,t],i)=>`<div data-n="${i+1}"><b>${b}</b><small>${t}</small></div>`).join("")}</div>
-    <p class="note"><i class="ti ti-shield-lock"></i>${DIDIT()?"บัตรประชาชนและใบหน้าตรวจที่ Didit โดยตรง Cendon ไม่เก็บรูปบัตรหรือรูปหน้า":"รูปบัตรประชาชนและรูปถ่ายคู่บัตร ทีมงานดูเพื่อยืนยันตัวตนเท่านั้น และถูกลบทันทีหลังพิจารณาเสร็จ"} · <button class="lnk" id="lTerms">ข้อตกลงพาร์ทเนอร์</button> · <a class="lnk" href="/privacy" target="_blank" rel="noopener">นโยบายความเป็นส่วนตัว</a></p>`,
+    <p class="note"><i class="ti ti-shield-lock"></i>${DIDIT()?T("บัตรประชาชนและใบหน้าตรวจที่ Didit โดยตรง Cendon ไม่เก็บรูปบัตรหรือรูปหน้า","Your ID card and face are checked directly by Didit — Cendon never stores ID or face photos"):T("รูปบัตรประชาชนและรูปถ่ายคู่บัตร ทีมงานดูเพื่อยืนยันตัวตนเท่านั้น และถูกลบทันทีหลังพิจารณาเสร็จ","Your ID card photo and selfie with the card are seen by our team only to verify you, and are deleted as soon as the review is done")} · <button class="lnk" id="lTerms">ข้อตกลงพาร์ทเนอร์</button> · <a class="lnk" href="/privacy" target="_blank" rel="noopener">นโยบายความเป็นส่วนตัว</a></p>`,
     foot:'<button class="btn p w" id="lGo">เริ่มกรอกใบสมัคร</button>',
     mount(){$("lTerms").onclick=terms;$("lGo").onclick=e=>busy(e.currentTarget,async()=>{const a=ME&&ME.application;const rej=a&&!a.test&&a.status==="rejected";
       /* เซิร์ฟเวอร์ยังไม่รองรับข้อความยินยอมรุ่นนี้ = บอกตั้งแต่ต้น ไม่ให้กรอกจนจบแล้วส่งไม่ได้ */

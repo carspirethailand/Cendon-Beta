@@ -1,53 +1,71 @@
-# SpireONE — Deployment & Security Setup
+# Cendon — การ deploy และค่าที่ต้องตั้ง
 
-## 1. Backend (Cloudflare Worker) — do this FIRST
+อัปเดต 15 ต.ค. 2026 · ไม่มีค่าลับใด ๆ ในไฟล์นี้ — ค่าลับตั้งด้วย `wrangler secret put` เท่านั้น ห้ามใส่ในโค้ดหรือแชต
+
+## 1. หน้าเว็บ (repo `Cendon-Beta`) — Cloudflare Pages
+
+- push ขึ้น `main` แล้ว Cloudflare Pages deploy ให้เองอัตโนมัติ
+- **ทุกครั้งที่แก้ไฟล์หน้าเว็บ ให้เปลี่ยน `const CACHE` ใน `sw.js`** ไม่งั้นเครื่องผู้ใช้จะค้างไฟล์เก่า
+- หน้า `/about` `/privacy` `/terms` `/help` สร้างจาก `site/` ด้วย `node site/build.mjs` (ผลลัพธ์อยู่ในรากเว็บ commit ไปพร้อมกัน)
+  - แก้เนื้อหาที่ `site/content/*.mjs` แล้วรัน build — อย่าแก้ไฟล์ html ที่สร้างออกมาโดยตรง
+  - เปลี่ยนวิธีเก็บ/ใช้ข้อมูลผู้ใช้ หรือเพิ่มผู้ให้บริการภายนอก → แก้ `/privacy` ทุกครั้ง (มีเทสต์ตรวจรายชื่อผู้ให้บริการ)
+- คำแปลหน้าแรก/หน้าช่าง 11 ภาษาอยู่ที่ `i18n/home-<lang>.js` · เพิ่มข้อความใหม่ในหน้า → เพิ่มคำแปลทุกภาษา (เทสต์ `i18n-home` บอกว่าขาดตรงไหน)
+- เทสต์: `node --test test/*.test.mjs`
+
+## 2. หลังบ้าน (repo `SpireONE-backend`) — Cloudflare Worker + D1
 
 ```bash
-cd SpireONE-backend
-
-# a) Apply the new admin-system database tables
-wrangler d1 migrations apply spireone --remote
-
-# b) Store the API key as a SECRET (never in code — this repo is PUBLIC)
-wrangler secret put GEMINI_KEY
-#   → paste your Gemini key when prompted (the only AI key the system needs now)
-
-# c) Deploy
-wrangler deploy
+git pull
+npm ci
+node --test test/*.test.mjs     # ต้องผ่านทั้งหมดก่อน deploy
+npx wrangler deploy
 ```
 
-### Environment variables (in `wrangler.jsonc` → `vars`)
-| Key | Meaning | Default |
-|-----|---------|---------|
-| `OWNERS` | Comma-separated owner emails (highest role, cannot be demoted) | the 2 accounts |
-| `AI_DAILY_LIMIT` | AI messages/user/day (admins & owners exempt) | `60` |
-| `ALLOWED_ORIGINS` | CORS allow-list. **Set to your real domain** once live, e.g. `https://spireone.pages.dev` | `*` |
-| `GEMINI_MODEL` | Chat/diagnose model | `gemini-3.5-flash` |
-| `GEMINI_FALLBACK_MODEL` | Auto-fallback when the primary model returns 429/503 (high demand) | `gemini-2.5-flash` |
-| `GEMINI_LIVE_MODEL` | Realtime voice/video call model (`/api/ai/live-token`) — verified against this key's model list | `gemini-2.5-flash-native-audio-latest` |
-| `AI_ANON_DAILY_LIMIT` | /api/diagnose quota per IP for anonymous callers | `15` |
+- ตารางในฐานข้อมูลสร้าง/ย้ายเองอัตโนมัติตอนมีคำขอแรก (`SCHEMA_VERSION` ใน `worker.js`) ไม่ต้องรัน migration ด้วยมือ
+- รุ่นปัจจุบัน schema 23: เพิ่ม `ws_store` (ที่ทำงานทีมงาน) และย้ายแชต/ตำแหน่ง/NDA/คู่มือออกจากคลังความรู้ AI ให้เองครั้งเดียว
+- หลัง deploy ครั้งที่เปลี่ยนเมนู LINE: เข้าแผงแอดมิน → ตั้งค่า → กด **ตั้งเมนู LINE**
 
-> `GEMINI_KEY` is a **secret**, not a var — set it with `wrangler secret put`, never commit it.
+### ค่าลับ (secret) — `npx wrangler secret put <ชื่อ>`
 
-## 2. Frontend — push all three together
-`index.html`, `chat.html`, `admin.html` → the frontend repo. They link by relative URL and share auth/session.
+| ชื่อ | ใช้ทำอะไร | ไม่ตั้งแล้วเป็นอย่างไร |
+|------|-----------|------------------------|
+| `GEMINI_KEY` | AI หลัก (แชต วิเคราะห์อาการ ใบเสนอราคา เสียง รูป) | AI หลักใช้ไม่ได้ (มีสำรองบางส่วน) |
+| `GEMINI_NEWS_KEY` · `GEMINI_SPEC_KEY` | แยกโควตาข่าว/ค้นสเปกรถ | ใช้ `GEMINI_KEY` แทน |
+| `GROQ_API_KEY` · `CEREBRAS_API_KEY` · `OPENROUTER_API_KEY` | AI สำรองเมื่อ Gemini ล่ม/เต็ม | ข้ามไปตัวถัดไป |
+| `TAVILY_API_KEY` · `BRAVE_API_KEY` | ค้นเว็บประกอบคำตอบ (ส่งเฉพาะคำค้น) | ไม่ค้นเว็บ |
+| `LINE_CHANNEL_TOKEN` · `LINE_CHANNEL_SECRET` | บอท LINE แจ้งเตือน เชื่อมบัญชี แชต AI | ไม่มีการแจ้งเตือน LINE |
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | ล็อกอินอีเมล/LINE (custom token) และ **ลบบัญชี Firebase ตอนผู้ใช้ลบบัญชีถาวร** | ปุ่มลบบัญชีให้ผู้ใช้ยืนยันตัวตนใหม่แล้วลบจากเครื่องเอง |
+| `AUTH_OTP_PEPPER` · `RESEND_API_KEY` | รหัส OTP ทางอีเมล | ปิดล็อกอินอีเมล |
+| `DIDIT_API_KEY` · `DIDIT_WORKFLOW_ID` · `DIDIT_WEBHOOK_SECRET` | ยืนยันตัวตนช่าง | ทีมงานตรวจบัตรเอง (แล้วลบรูปทันที) |
+| `ID_HASH_KEY` | แฮชเลขบัตรแบบมีกุญแจ (ฐานข้อมูลหลุดก็ย้อนเลขบัตรไม่ได้) — **ตั้งแล้วห้ามเปลี่ยน** | ใช้แฮชแบบไม่มีกุญแจ |
+| `VAPID_PUBLIC` · `VAPID_PRIVATE` | แจ้งเตือนในเบราว์เซอร์ (Web Push) | ไม่มี push ในเบราว์เซอร์ |
 
-## 3. Roles
+### ค่าทั่วไป (`wrangler.jsonc` → `vars`)
+
+| ชื่อ | ค่าที่ควรเป็น |
+|------|---------------|
+| `ONBOARDING_PRIVACY_URL` | `https://cendon-beta.pages.dev/privacy` (หน้าใหม่ของ Cendon) — ต้องเป็น https ไม่งั้นระบบไม่เก็บความยินยอมใหม่ |
+| `APP_URL` | โดเมนจริงของแอป (ใช้ในลิงก์การ์ด LINE) ค่าเริ่ม `https://cendon-beta.pages.dev` |
+| `ALLOWED_ORIGINS` | **ตั้งเป็นโดเมนจริงเมื่อเปิดตัว** เช่น `https://cendon-beta.pages.dev` (ตอนนี้ `*`) |
+| `OWNERS` | อีเมลเจ้าของระบบ (ยศสูงสุด ลดยศ/ลบบัญชีตัวเองไม่ได้) |
+| `LINE_OA_ID` | ไอดี LINE OA เช่น `@988omovg` — ต้องตรงกับบัญชีของ token |
+| `AI_DAILY_LIMIT` · `AI_ANON_DAILY_LIMIT` | โควตา AI ต่อวัน (สมาชิก / ไม่ล็อกอิน) |
+| `GEMINI_MODEL` · `GEMINI_SEARCH_MODEL` · `GEMINI_LIVE_MODEL` | รุ่นโมเดล |
+| `TECH_VISION_MODEL` · `TECH_VISION_OFF` | รุ่น Workers AI ที่ดูรูปอู่/ผลงาน · `"1"` = ปิด |
+| `AUTH_APPLE_ENABLED` | `"0"` จนกว่าจะตั้ง Sign in with Apple ครบ |
+
+## 3. ยศ
+
 `owner > admin > moderator > user`
-- **Owner** (the 2 emails in `OWNERS`): full control, only owner can grant/revoke **admin**.
-- **Admin**: manages moderators/users, magazine, site config, audit log.
-- **Moderator**: overview stats + magazine management.
-- **User**: normal app access.
+- **owner** (อีเมลใน `OWNERS`) — ทุกอย่าง
+- **admin** — จัดการผู้ใช้ ตั้งค่า เนื้อหา คลังความรู้ AI ตั้งตำแหน่ง/แผนกทีมงาน นำเข้าคู่มือ
+- **moderator** — ทีมงาน: ตรวจใบสมัครช่าง ดูข้อพิพาท ใช้ห้องทำงาน (`/api/ws`) · อ่านคลังความรู้ได้ แต่เขียนได้เฉพาะคนที่แอดมินตั้งตำแหน่งเป็น "หัวหน้าฝ่าย AI"
+- **user** — ผู้ใช้ทั่วไป
 
-Give a role: sign in to **admin.html** → *ผู้ใช้ & ยศ* → pick from the dropdown on their row.
-
-## Security summary (what protects your data)
-1. **No secrets in the browser** — Gemini key lives only in the Worker. Inspecting the page reveals nothing sensitive.
-2. **Every privileged API verifies the Firebase ID token server-side** — you can't call another user's data by editing JS.
-3. **Role checks run on the backend**, not just the UI — forging a request still gets rejected.
-4. **AI is login-gated + quota-limited** — no anonymous abuse of your Gemini bill.
-5. **Banned users are rejected everywhere**; maintenance mode locks out non-staff.
-6. **Audit log** records every admin action (who / what / when).
-
-## Note on "hiding" HTML
-Static HTML/JS is always visible via inspect — this is true of every website. Security here comes from the backend enforcing auth + roles, **not** from hiding code. That is the correct, industry-standard model.
+## 4. ความปลอดภัยที่ระบบทำอยู่แล้ว
+1. ไม่มีคีย์ใดในเบราว์เซอร์ — ทุกคีย์อยู่ใน Worker
+2. ทุก API ที่ต้องล็อกอินตรวจ Firebase ID token ที่ฝั่งเซิร์ฟเวอร์ · ยศตรวจที่เซิร์ฟเวอร์ ไม่ใช่แค่ซ่อนปุ่ม
+3. ข้อมูลส่วนตัวในใบงาน (เบอร์ ที่อยู่ พิกัดจริง) เปิดเฉพาะหลังลูกค้ายืนยันราคา
+4. รูปบัตร/เซลฟี่ลบหลังตรวจเสร็จ · เลขบัตรเก็บเป็นแฮช + 3 หลักท้าย
+5. ผู้ใช้ดาวน์โหลดข้อมูลของตัวเอง และลบบัญชีถาวรได้เองในหน้าตั้งค่า
+6. บันทึกการกระทำของทีมงาน (audit) ทุกครั้ง

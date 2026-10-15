@@ -22,7 +22,7 @@
   ถ้าเก็บเนื้อหาไว้ในไฟล์นี้ ใครก็ตามที่รู้ที่อยู่หน้าก็อ่านได้หมด
   การเช็กยศด้วย JavaScript ในหน้าเว็บเป็นแค่การซ่อนปุ่ม ไม่ใช่การปกป้อง
 
-  เนื้อหาจริงอยู่ในฐานข้อมูล และดึงผ่าน GET /api/kb ซึ่งฝั่งเซิร์ฟเวอร์
+  เนื้อหาจริงอยู่ในฐานข้อมูล และดึงผ่าน GET /api/ws (ที่ทำงานของทีมงาน) ซึ่งฝั่งเซิร์ฟเวอร์
   บังคับยศผู้ควบคุมขึ้นไป (guarded('moderator')) คนที่ยศไม่ถึงจะได้ 403
   ต่อให้แก้ JavaScript ในหน้านี้ยังไงก็ไม่ได้เนื้อหา เพราะการตรวจไม่ได้อยู่ที่นี่
   ══════════════════════════════════════════════════════════════════════
@@ -536,7 +536,7 @@ const NDA_VERSION=1;          /* แก้ข้อกำหนดเมื่�
 
 async function afterAuth(){
   gate('<i class="ti ti-loader-2"></i> กำลังตรวจสถานะการลงนาม…');
-  const d=await api("/api/kb");
+  const d=await api("/api/ws");
   LAST=d.kb||[];
   const mine=LAST.find(r=>r.id==="nda_"+me.uid);
   let signed=null;
@@ -660,7 +660,7 @@ function openNda(){
          ตัวภาพไปอยู่ใน body ซึ่งเก็บได้ถึง 8,000 ตัว */
       const meta=JSON.stringify({v:NDA_VERSION,at,email:me.email,name:me.name,
         role:me.role,ua:navigator.userAgent.slice(0,110)}).slice(0,395);
-      await api("/api/kb",{method:"POST",body:JSON.stringify({
+      await api("/api/ws",{method:"POST",body:JSON.stringify({
         id:"nda_"+me.uid,
         title:"ลงนาม NDA — "+(me.name||"")+" "+(me.email||""),
         body:png, keywords:meta, make:"__nda__", model:"",
@@ -724,7 +724,7 @@ function openNda(){
 let PARTS=[], LAST=[];
 async function load(){
   gate('<i class="ti ti-loader-2"></i> กำลังโหลดเนื้อหา…');
-  const d=await api("/api/kb");
+  const d=await api("/api/ws");
   show(d.kb||[]);
 }
 function show(rows){
@@ -740,6 +740,8 @@ function show(rows){
       '<b>พบคู่มือที่นำเข้าผิดวิธี '+stray.length+' รายการ</b><br>'+
       '<small>ใช้รหัสผิดและเปิดใช้งานอยู่ แปลว่า AI อาจเอาไปตอบผู้ใช้ทั่วไป '+
       'กดนำเข้าใหม่แล้วระบบจะเก็บกวาดให้</small></div>':"";
+    /* นำเข้าได้เฉพาะแอดมินขึ้นไป (เซิร์ฟเวอร์ตรวจอีกชั้น) — คนอื่นเห็นแค่ข้อความรอ */
+    if(rank(me.role)<rank("admin")){gate(warn+"ยังไม่มีเนื้อหาคู่มือในระบบ<br><small>ให้แอดมินนำเข้าไฟล์ HANDBOOK.md ก่อน</small>",'<a class="btn" href="/admin">กลับแผงควบคุม</a>');return}
     gate(warn+"ยังไม่มีเนื้อหาคู่มือในระบบ<br><small>เลือกไฟล์ HANDBOOK.md เพื่อนำเข้า</small>",
       '<label class="btn primary" style="cursor:pointer">'+
       '<i class="ti ti-upload"></i> เลือกไฟล์ HANDBOOK.md'+
@@ -767,10 +769,9 @@ function show(rows){
 $("reload").onclick=()=>load().catch(e=>alert(e.message));
 
 /* ══ นำเข้าเนื้อหา ══════════════════════════════════════════════════════
-   แบ่งไฟล์ตามหัวข้อระดับภาค แล้วส่งทีละตอนด้วย POST /api/kb
-
-   ไม่ใช้ /api/kb/bulk เพราะมันสร้างรหัสใหม่เองและฮาร์ดโค้ด enabled = 1
-   ซึ่งจะทำให้คู่มือหลุดไปอยู่ในคำตอบที่ AI ให้ผู้ใช้ทั่วไป */
+   แบ่งไฟล์ตามหัวข้อระดับภาค แล้วส่งทีละตอนด้วย POST /api/ws (รหัส hb_00, hb_01, …)
+   คู่มืออยู่ในที่ทำงานของทีมงาน ไม่ใช่คลังความรู้ AI จึงไม่มีทางหลุดไปอยู่ในคำตอบที่ AI ให้ผู้ใช้ทั่วไป
+   แอดมินขึ้นไปเท่านั้นที่นำเข้าได้ (เซิร์ฟเวอร์ตรวจเอง) */
 async function importMd(md, stray){
   const lines=md.split("\n");
   const marks=[]; let inCode=false, pos=0;
@@ -818,19 +819,19 @@ async function importMd(md, stray){
   step();
 
   for(const p of out){
-    await api("/api/kb",{method:"POST",body:JSON.stringify(p)});
+    await api("/api/ws",{method:"POST",body:JSON.stringify(p)});
     done++; step();
   }
   /* เก็บกวาดของที่เคยนำเข้าผิดวิธี ต้องทำหลังนำเข้าใหม่สำเร็จ
      ถ้าลบก่อนแล้วนำเข้าล้ม จะเหลือศูนย์ทั้งที่เดิมยังพออ่านได้ */
   for(const r of (stray||[])){
-    try{ await api("/api/kb/"+encodeURIComponent(r.id),{method:"DELETE"}) }catch(e){}
+    try{ await api("/api/ws/"+encodeURIComponent(r.id),{method:"DELETE"}) }catch(e){}
     done++; step();
   }
   /* ตอนเก่าที่เกินจำนวนตอนใหม่ต้องลบด้วย ไม่งั้นเนื้อหาเวอร์ชันก่อนจะค้างต่อท้าย */
   for(const r of LAST.filter(x=>/^hb_/.test(x.id))){
     if(!out.some(p=>p.id===r.id))
-      try{ await api("/api/kb/"+encodeURIComponent(r.id),{method:"DELETE"}) }catch(e){}
+      try{ await api("/api/ws/"+encodeURIComponent(r.id),{method:"DELETE"}) }catch(e){}
   }
   await load();
 }

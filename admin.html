@@ -1784,7 +1784,7 @@ td .empty::before,td.empty::before{display:none}
            กดย้อนกลับของเบราว์เซอร์แล้วจึงไม่วนกลับเข้ามาอีก -->
       <!-- ลายมือชื่อคือของส่วนตัวของคนที่เซ็น การเอาไปวางไว้ในเมนูให้ผู้ดูแลทุกคนกดดู
            เท่ากับเปิดให้คนที่ไม่มีเหตุต้องดู ได้ดู ปุ่มนี้จึงโผล่เฉพาะ CEO
-           และถึงจะเดา URL ก็ยังไม่ผ่าน เพราะเนื้อหาอยู่หลัง /api/kb ที่กันยศไว้อีกชั้น -->
+           และถึงจะเดา URL ก็ยังไม่ผ่าน เพราะเนื้อหาอยู่หลัง /api/ws ที่กันยศไว้อีกชั้น -->
       <!-- สี่ปุ่มนี้กดกันปีละครั้ง แต่เดิมกินพื้นที่เท่าเมนูที่กดทุกวัน
            ยุบเป็นแถวไอคอนแล้วบอกหน้าที่ด้วย title — คืนที่ให้ชื่อกับตำแหน่ง
            ซึ่งเป็นสิ่งที่คนเหลือบมองบ่อยกว่ามาก -->
@@ -2111,8 +2111,7 @@ td .empty::before,td.empty::before{display:none}
             <div><b>ทำไมกดเปลี่ยนจากตรงนี้ไม่ได้</b>
             <p>ค่าเหล่านี้อยู่ในตัวแปรของ Worker ซึ่งอ่านตอนเริ่มทำงาน ไม่ได้อยู่ในฐานข้อมูล
             การเปลี่ยนจึงต้องผ่านการ deploy ใหม่<br>
-            ถ้าอยากแก้จากหน้านี้ได้จริง ต้องเพิ่มเส้นทางที่หลังบ้านก่อน — รายละเอียดอยู่ใน
-            <b>BACKEND-TODO-workspace.md</b></p></div>
+            ค่าลับ (กุญแจ/โทเคน) ตั้งด้วย <b>wrangler secret put</b> เท่านั้น ไม่ผ่านหน้าเว็บนี้เพื่อความปลอดภัย</p></div>
           </div>
           <div id="sysEnv"></div>
         </div>
@@ -2681,12 +2680,11 @@ const POSITIONS={
        note:"ตอบความเห็น · ดูข้อมูลรถ"},
   /* ── พนักงาน ──
      ยศพื้นฐานเป็นผู้ควบคุม ไม่ใช่ผู้ใช้ทั่วไป เพราะทุกอย่างในที่ทำงาน
-     (ห้องคุย ประชุม สัญญาณโทร) ฝากผ่าน /api/kb ซึ่งกันไว้ที่ยศผู้ควบคุม
+     (ห้องคุย ประชุม สัญญาณโทร) เก็บผ่าน /api/ws ซึ่งกันไว้ที่ยศผู้ควบคุม
      ตั้งเป็นผู้ใช้ทั่วไปแล้วพนักงานจะเข้าที่ทำงานไม่ได้เลยแม้แต่หน้าเดียว
 
-     ผลข้างเคียงที่ต้องรู้: ยศผู้ควบคุมเปิดให้เขียนคลังความรู้ AI ได้ด้วย
-     เมนูฝั่งหน้าเว็บซ่อนไว้แล้ว แต่คนที่รู้วิธียิง API ตรงยังทำได้
-     ทางแก้ที่ถูกต้องคือเส้นทาง /api/ws แยกต่างหาก ดู BACKEND-TODO-workspace.md */
+     คลังความรู้ AI (/api/kb) แยกออกไปแล้ว: ผู้ควบคุมอ่านได้ แต่เขียนได้เฉพาะแอดมิน
+     กับผู้ควบคุมที่ตั้งตำแหน่งเป็น "หัวหน้าฝ่าย AI" (เซิร์ฟเวอร์ตรวจจากระเบียน pos_ เอง) */
   staff:{th:"พนักงาน",ab:"Staff",base:"moderator",ic:"ti-user",
        can:["chat","meet","overview"],note:"ห้องคุยของแผนกตัวเอง ประชุม และภาพรวม"},
 };
@@ -2731,13 +2729,12 @@ function deptInfo(u){ return DEPTS[deptOf(u)] }
    ห้ามเดาเด็ดขาด — การเดาคือสาเหตุที่ลูกค้าหลายพันคนกลายเป็นพนักงานในชั่วข้ามคืน */
 const POS_BY_BASE={owner:"ceo",admin:"coo",moderator:"support"};
 /* ── ที่เก็บตำแหน่ง ──
-   ตารางผู้ใช้ฝั่งเซิร์ฟเวอร์ไม่มีช่องตำแหน่ง และการเพิ่มช่องเป็นงานฝั่งหลังบ้าน
-   ซึ่งไม่ใช่เขตของไฟล์นี้ จึงเก็บในตารางความรู้ด้วยคำนำหน้า pos_ เหมือนที่ทำกับใบลงนาม
-   ปิดใช้งานไว้ AI จึงหยิบไปตอบผู้ใช้ไม่ได้ */
+   เก็บในที่ทำงานของทีมงาน (/api/ws) ด้วยคำนำหน้า pos_ — แอดมินขึ้นไปเท่านั้นที่เขียนได้
+   (เซิร์ฟเวอร์ใช้ระเบียนนี้ตัดสินว่าใครเป็นหัวหน้าฝ่าย AI) และ AI ไม่เคยอ่านตารางนี้ */
 let POSMAP={}, DEPTMAP={};
 async function loadPos(){
   try{
-    const res=await api("/api/kb");
+    const res=await api("/api/ws");
     POSMAP={}; DEPTMAP={};
     (res.kb||[]).filter(k=>/^pos_/.test(k.id)).forEach(k=>{
       let m={}; try{ m=JSON.parse(k.keywords||"{}") }catch(e){}
@@ -2751,7 +2748,7 @@ async function savePos(uid,pos,base,dept){
   /* แผนกกับตำแหน่งอยู่ในระเบียนเดียวกัน เพราะเปลี่ยนพร้อมกันเสมอ
      แยกสองระเบียนแปลว่ามีโอกาสที่อันหนึ่งบันทึกสำเร็จอีกอันไม่สำเร็จ */
   dept=dept||DEPTMAP[uid]||DEPT_BY_POS[pos]||"ops";
-  await api("/api/kb",{method:"POST",body:{id:"pos_"+uid,title:"ตำแหน่ง "+uid,
+  await api("/api/ws",{method:"POST",body:{id:"pos_"+uid,title:"ตำแหน่ง "+uid,
     body:"บันทึกตำแหน่งและแผนกของผู้ใช้รายนี้ — "+(POSITIONS[pos]||{}).th+" · "+(DEPTS[dept]||{}).th,
     keywords:JSON.stringify({p:pos,d:dept}),make:"__pos__",model:"",enabled:false}});
   POSMAP[uid]=pos; DEPTMAP[uid]=dept;
@@ -2923,13 +2920,13 @@ async function enterAdmin(){
 }
 
 /* ── ผู้ลงนาม NDA ──
-   เก็บอยู่ในตารางความรู้เหมือนคู่มือ แต่คนละคำนำหน้า (nda_ กับ hb_)
-   และปิดใช้งานไว้ทั้งคู่ AI จึงไม่มีทางเอาไปตอบผู้ใช้ */
+   เก็บในที่ทำงานของทีมงาน (/api/ws) เหมือนคู่มือ แต่คนละคำนำหน้า (nda_ กับ hb_)
+   แยกจากคลังความรู้ AI แล้ว AI จึงไม่มีทางเอาไปตอบผู้ใช้ */
 async function loadNda(){
   const box=$("ndaList");
   box.innerHTML='<div class="empty">กำลังโหลด...</div>';
   try{
-    const res=await api("/api/kb");
+    const res=await api("/api/ws");
     const rows=(res.kb||[]).filter(k=>/^nda_/.test(k.id))
       .map(k=>{ let m={}; try{ m=JSON.parse(k.keywords||"{}") }catch(e){}
         return {k,m} })
@@ -3078,7 +3075,7 @@ async function ndaAccept(){
   const b=$("ndaGo"); b.disabled=true; b.textContent="กำลังบันทึก...";
   try{
     const img=$("ndaSig").toDataURL("image/png");
-    await api("/api/kb",{method:"POST",body:{
+    await api("/api/ws",{method:"POST",body:{
       id:"nda_"+me.uid, title:"รับรองการรักษาความลับ "+(me.name||me.uid),
       body:img.length<=7600?img:"บันทึกการรับรอง (ลายเซ็นใหญ่เกินกว่าที่เก็บได้)",
       keywords:JSON.stringify({v:NDA_VER,at:Date.now(),n:(me.name||"").slice(0,40),
@@ -3348,7 +3345,7 @@ async function lgSubmit(){
   const btn=$("lgSubmit"); btn.disabled=true; btn.textContent="กำลังบันทึก...";
   try{
     const img=$("lgSig").toDataURL("image/png");
-    await api("/api/kb",{method:"POST",body:{
+    await api("/api/ws",{method:"POST",body:{
       id:"lgl_"+me.uid, title:"ยอมรับกฎการใช้งาน "+(me.name||me.uid),
       body:img.length<=7600?img:"บันทึกการยอมรับกฎ (ลายเซ็นใหญ่เกินกว่าที่เก็บได้)",
       keywords:JSON.stringify({v:LEGAL_VERSION,at:Date.now(),
@@ -3367,7 +3364,7 @@ window.lgSubmit=lgSubmit;
 let LEGAL_OK=false;
 async function checkLegal(){
   try{
-    const res=await api("/api/kb");
+    const res=await api("/api/ws");
     const row=(res.kb||[]).find(k=>k.id==="lgl_"+me.uid);
     let m={}; if(row)try{ m=JSON.parse(row.keywords||"{}") }catch(e){}
     LEGAL_OK=!!(row&&m.v===LEGAL_VERSION);
@@ -3607,7 +3604,7 @@ function vcId(room,uid){ return "vc_"+room.replace(/[^a-zA-Z0-9ก-๙:_-]/g,"")
 async function vcBeatNow(){
   if(!vcRoom)return;
   try{
-    await api("/api/kb",{method:"POST",body:{
+    await api("/api/ws",{method:"POST",body:{
       id:vcId(vcRoom,me.uid), title:"อยู่ในห้องเสียง",
       body:"บันทึกว่าผู้ใช้รายนี้อยู่ในห้องเสียงขณะนี้ ระเบียนนี้หมดอายุเองใน 15 วินาที",
       keywords:JSON.stringify({r:vcRoom,u:me.uid,n:(me.name||"").slice(0,30),
@@ -3660,7 +3657,7 @@ async function vcLeave(quiet){
   camOn=false;
   clearTiles();
   $("stage").hidden=true; $("stTime").textContent="";
-  if(room)try{ await api("/api/kb/"+encodeURIComponent(vcId(room,me.uid)),{method:"DELETE"}) }catch(e){}
+  if(room)try{ await api("/api/ws/"+encodeURIComponent(vcId(room,me.uid)),{method:"DELETE"}) }catch(e){}
   drawRooms&&drawRooms();
 }
 window.vcJoin=vcJoin; window.vcLeave=vcLeave;
@@ -3766,7 +3763,7 @@ async function connectPeer(uid,name){
 
 /* ── สัญญาณจับคู่ ── */
 function sigSend(to,kind,payload,extra){
-  return api("/api/kb",{method:"POST",body:{
+  return api("/api/ws",{method:"POST",body:{
     id:"sig_"+to+"_"+me.uid+"_"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),
     title:"สัญญาณห้องเสียง "+kind,
     body:JSON.stringify(payload||{}),
@@ -3788,10 +3785,10 @@ function sigRate(){
   sigTimer=setInterval(sigPoll,want);
 }
 function sigStart(){ sigFast=0; sigRate(); sigPoll() }
-function sigDel(id){ api("/api/kb/"+encodeURIComponent(id),{method:"DELETE"}).catch(()=>{}) }
+function sigDel(id){ api("/api/ws/"+encodeURIComponent(id),{method:"DELETE"}).catch(()=>{}) }
 async function sigPoll(){
   try{
-    const res=await api("/api/kb"); const kb=res.kb||[];
+    const res=await api("/api/ws"); const kb=res.kb||[];
     VOICE=vcParse(kb);
     sigRate();
     if(vcRoom)vcSync();
@@ -4082,7 +4079,7 @@ async function loadMeet(){
   const box=$("mtList");
   if(!MEETS.length)box.innerHTML='<div class="empty">กำลังโหลด...</div>';
   try{
-    const res=await api("/api/kb"); const kb=res.kb||[];
+    const res=await api("/api/ws"); const kb=res.kb||[];
     CHROOMS=kb.filter(k=>/^ch_/.test(k.id)).map(k=>{
       let m={}; try{ m=JSON.parse(k.keywords||"{}") }catch(e){}
       return {k:k.id.slice(3),n:m.n||k.title,d:m.d||"",m:m.m||null};
@@ -4197,7 +4194,7 @@ async function mtSave(){
   const ag=$("mtAgenda").value.trim();
   const body=(ag||"ไม่ได้ระบุวาระการประชุมไว้")+(ex&&ex.no?MT_SEP+ex.no:"");
   try{
-    await api("/api/kb",{method:"POST",body:{
+    await api("/api/ws",{method:"POST",body:{
       id:old||("mt_"+Date.now()), title:t.slice(0,120), body,
       keywords:JSON.stringify({t:when.getTime(),len:+$("mtLen").value||30,r:$("mtRoom").value,
         by:me.uid,byn:(me.name||"").slice(0,40),lk:$("mtLink").value.trim().slice(0,200),
@@ -4211,10 +4208,10 @@ async function mtSave(){
 }
 window.mtNew=mtNew; window.mtClose=mtClose; window.mtSave=mtSave;
 
-/* ตอบรับ/ถอนตัว — เขียนทับทั้งระเบียน เพราะ POST /api/kb เป็นการเขียนทับอยู่แล้ว
+/* ตอบรับ/ถอนตัว — เขียนทับทั้งระเบียน เพราะ POST /api/ws เป็นการเขียนทับอยู่แล้ว
    ต้องส่งเนื้อหาเดิมกลับไปด้วย ไม่งั้นวาระกับบันทึกจะหายทั้งคู่ */
 async function mtWrite(m,patch){
-  await api("/api/kb",{method:"POST",body:{
+  await api("/api/ws",{method:"POST",body:{
     id:m.id, title:m.title, body:(patch.ag!==undefined?patch.ag:m.ag)+
       ((patch.no!==undefined?patch.no:m.no)?MT_SEP+(patch.no!==undefined?patch.no:m.no):""),
     keywords:JSON.stringify({t:m.t,len:m.len,r:m.r,by:m.by,byn:m.byn,lk:m.lk,
@@ -4473,12 +4470,9 @@ function dmId(a,b){ return "dm:"+[a,b].sort().join("|") }
 function roomOf(id){ return ROOMS.find(r=>r.id===id)||null }
 
 /* ══ ห้องทำงานร่วม ══
-   ข้อความเก็บในตารางความรู้เหมือนคู่มือและใบลงนาม แต่คนละคำนำหน้า (msg_)
-   และปิดใช้งานไว้ AI จึงหยิบไปตอบผู้ใช้ไม่ได้ เพราะฝั่งค้นหากรอง enabled=1
-
-   เลือกวิธีนี้เพราะยังไม่มีปลายทางสำหรับข้อความในหลังบ้าน และหลังบ้านเป็นเขตของอีกคน
-   ข้อจำกัดที่ตามมา: ต้องยศผู้ควบคุมขึ้นไปถึงเรียก /api/kb ได้ ตำแหน่งพนักงานจึงยังเข้าไม่ได้
-   และเป็นการถามซ้ำทุกไม่กี่วินาที ไม่ใช่ข้อความสด */
+   ข้อความเก็บในที่ทำงานของทีมงาน (/api/ws) เหมือนคู่มือและใบลงนาม แต่คนละคำนำหน้า (msg_)
+   แยกจากคลังความรู้ AI แล้ว AI จึงหยิบไปตอบผู้ใช้ไม่ได้
+   ข้อจำกัด: ต้องยศผู้ควบคุมขึ้นไป และเป็นการถามซ้ำทุกไม่กี่วินาที ไม่ใช่ข้อความสด */
 let CHAT=[], chatTimer=null, chatBusy=false, DMS=[], SEEN={}, UNREAD={};
 try{ SEEN=JSON.parse(localStorage.getItem("cx_seen")||"{}") }catch(e){ SEEN={} }
 try{ DMS=JSON.parse(localStorage.getItem("cx_dms")||"[]") }catch(e){ DMS=[] }
@@ -4577,7 +4571,7 @@ window.toggleRooms=toggleRooms;
 async function pollChat(force){
   if(chatBusy)return; chatBusy=true;
   try{
-    const res=await api("/api/kb"); const kb=res.kb||[];
+    const res=await api("/api/ws"); const kb=res.kb||[];
     /* ห้องที่เซิร์ฟเวอร์ส่งมารอบนี้ รวมกับห้องที่เคยเห็นและจำไว้ในเครื่อง
        เพราะเซิร์ฟเวอร์คืนแค่สี่ร้อยแถวล่าสุด ห้องเก่าจึงหลุดออกไปได้เมื่อข้อความเยอะ */
     const fresh=kb.filter(k=>/^ch_/.test(k.id)).map(k=>{
@@ -4661,7 +4655,7 @@ async function sendChat(){
      ถ้ายัดรวมกัน ข้อความยาว ๆ กับรูปจะแย่งที่กันแล้วตัดกันเอง */
   const att=PENDING; PENDING=null; drawPending();
   try{
-    await api("/api/kb",{method:"POST",body:{
+    await api("/api/ws",{method:"POST",body:{
       id:"msg_"+Date.now()+"_"+Math.random().toString(36).slice(2,8),
       title:(me.name||"ทีมงาน").slice(0,80),
       body:padBody(att?att.data:tx),
@@ -4701,7 +4695,7 @@ async function nrSave(){
   const btn=$("nrSave"); btn.disabled=true;
   const room={k:slug,n:n,d:$("nrDept").value,m:null,by:me.uid,at:Date.now()};
   try{
-    await api("/api/kb",{method:"POST",body:{id:"ch_"+slug,title:"ห้องงาน "+n,
+    await api("/api/ws",{method:"POST",body:{id:"ch_"+slug,title:"ห้องงาน "+n,
       body:($("nrDesc").value.trim()||"ห้องคุยของงานนี้")+" — สร้างโดย "+(me.name||""),
       keywords:JSON.stringify(room).slice(0,395),
       make:"__room__",model:"",enabled:false}});
@@ -4721,7 +4715,7 @@ async function delRoom(){
   if(r.ch.by!==me.uid&&!can("*")){ alert("ลบได้เฉพาะคนที่สร้างห้องนี้"); return }
   if(!confirm(`ลบห้อง "${r.n}" ?\n\nข้อความในห้องจะยังอยู่ในฐานข้อมูล แต่จะไม่มีใครเข้าห้องนี้ได้อีก`))return;
   try{
-    await api("/api/kb/"+encodeURIComponent("ch_"+r.ch.k),{method:"DELETE"});
+    await api("/api/ws/"+encodeURIComponent("ch_"+r.ch.k),{method:"DELETE"});
     CHROOMS=CHROOMS.filter(c=>c.k!==r.ch.k);
     try{ localStorage.setItem("cx_rooms",JSON.stringify(CHROOMS)) }catch(e){}
     ROOMS=myRooms(); goRoom("team"); toast("ลบห้องแล้ว","ti-trash");
@@ -5182,7 +5176,7 @@ async function tmRemove(){
   if(!confirm("เอาคนนี้ออกจากทีม?\n\nบัญชีจะยังใช้แอปได้ในฐานะลูกค้า แต่จะหมดสิทธิ์ทุกอย่างในที่ทำงาน"))return;
   const btn=$("tmRemove"); btn.disabled=true;
   try{
-    await api("/api/kb/"+encodeURIComponent("pos_"+uid),{method:"DELETE"});
+    await api("/api/ws/"+encodeURIComponent("pos_"+uid),{method:"DELETE"});
     delete POSMAP[uid]; delete DEPTMAP[uid];
     try{ await api("/api/admin/users/role",{method:"POST",body:{uid,role:"user"}}) }catch(e){}
     tmClose(); toast("เอาออกจากทีมแล้ว","ti-user-minus"); loadUsers();

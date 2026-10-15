@@ -20,7 +20,7 @@ function fixture({pathname='/',uid=null,local=own(),session=new Map(),now=100000
 function handoff(){const f=fixture({uid:'A'});f.api.observed('A');assert.equal(f.api.prepare('/garage'),true);return f}
 test('same-tab completed navigation restores content at parser time, before destination Firebase exists',()=>{
   const a=handoff(),b=fixture({pathname:'/garage',local:a.local,session:a.session});
-  assert.equal(b.root.dataset.gate,'0');assert.equal(b.root.dataset.level,'advance');assert.equal(b.api.level(),'advance');assert.equal(b.session.has(H),false);
+  assert.equal(b.root.dataset.gate,'0');/* เลิกแบ่งระดับการใช้งานแล้ว: หน้าเปิดแบบเต็มเสมอ (ค่าเดิมที่เก็บไว้ยังอ่านได้ แต่ไม่ใช้ซ่อนเครื่องมือ) */assert.equal(b.root.dataset.level,'enthusiast');assert.equal(b.api.level(),'advance');assert.equal(b.session.has(H),false);
   assert.equal(Object.hasOwn(b.api,'completed'),false,'paint metadata is not server completion authority');
 });
 test('handoff stores only identity generation, target shell and timestamp, never a credential or PII',()=>{
@@ -105,6 +105,6 @@ test('every private page consumes paint context before styles and does not reset
   for(const page of ['garage','news','spares','profile','chat']){
     const html=readFileSync(new URL('../'+page+'.html',import.meta.url),'utf8');const script=html.match(/<script src="\/account-paint[^>]+>/)[0];
     assert.doesNotMatch(script,/defer|async/);assert.ok(html.indexOf(script)<html.indexOf('<style>'));assert.doesNotMatch(html,/document\.documentElement\.dataset\.gate="1"/);
-    assert.ok(html.includes('done()?level():(window.CendonPaint&&window.CendonPaint.level())||"pending"'));
+    assert.ok(html.includes('done()||(window.CendonPaint&&window.CendonPaint.level())?"enthusiast":"pending"'));
   }
 });

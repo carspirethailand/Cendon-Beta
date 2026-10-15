@@ -21,8 +21,8 @@ const sections=[
       UL([['<b>iPhone (Safari):</b> กดปุ่มแชร์ → “เพิ่มไปยังหน้าจอโฮม”','<b>iPhone (Safari):</b> tap Share → “Add to Home Screen”'],
           ['<b>Android (Chrome):</b> เมนู ⋮ → “ติดตั้งแอป” หรือ “เพิ่มไปยังหน้าจอหลัก”','<b>Android (Chrome):</b> menu ⋮ → “Install app” or “Add to Home screen”']]))+
     Q('เปลี่ยนภาษาได้ไหม','Can I change the language?',
-      P('ได้ 13 ภาษา: ไทย อังกฤษ จีน ญี่ปุ่น เกาหลี อินโดนีเซีย เวียดนาม มลายู เยอรมัน ฝรั่งเศส สเปน โปรตุเกส และอาหรับ เปลี่ยนได้ที่การตั้งค่าในแอป หัวข้อ <b>ภาษา</b> · เว็บไซต์นี้มีไทยและอังกฤษ (ปุ่ม TH/EN ด้านบน)',
-        '13 languages: Thai, English, Chinese, Japanese, Korean, Indonesian, Vietnamese, Malay, German, French, Spanish, Portuguese and Arabic. Change it under <b>Language</b> in the app’s settings. · This website comes in Thai and English (the TH/EN switch at the top).'))},
+      P('ได้ 12 ภาษา: ไทย อังกฤษ จีน ญี่ปุ่น เกาหลี อินโดนีเซีย เวียดนาม มลายู เยอรมัน ฝรั่งเศส สเปน และโปรตุเกส (ส่วนที่ยังแปลไม่ครบจะแสดงเป็นภาษาอังกฤษ) เปลี่ยนได้ที่การตั้งค่าในแอป หัวข้อ <b>ภาษา</b> · เว็บไซต์นี้มีไทยและอังกฤษ (ปุ่ม TH/EN ด้านบน)',
+        '12 languages: Thai, English, Chinese, Japanese, Korean, Indonesian, Vietnamese, Malay, German, French, Spanish and Portuguese (anything not yet translated shows in English). Change it under <b>Language</b> in the app’s settings. · This website comes in Thai and English (the TH/EN switch at the top).'))},
 
   {id:'cars',title:['รถและการดูแลรถ','Cars and upkeep'],body:
     Q('เพิ่มรถอย่างไร','How do I add a car?',
@@ -59,7 +59,7 @@ const sections=[
     Q('ขอราคาแบบไหนได้บ้าง','What ways can I get a price?',
       UL([['<b>ร้านเดียว</b> — จากหน้าร้านที่คุณเลือก','<b>One shop</b> — from the shop page you pick'],
           ['<b>หลายร้านแล้วเทียบราคา</b> — ส่งคำขอทีเดียวถึงหลายร้าน แล้วเทียบในหน้าเดียว','<b>Several shops</b> — one request to many, then compare side by side'],
-          ['<b>เรียกช่างด่วน</b> — รถเสียกลางทาง ช่างที่รับงานด่วนแถวนั้นเห็นทันที','<b>Urgent call-out</b> — broken down? Nearby mechanics who take urgent jobs see it right away'],
+          ['<b>เรียกช่างด่วน</b> — รถเสียกลางทาง ส่งถึงร้านที่ออกนอกสถานที่ใกล้สุดพร้อมกัน (ถ้าแถวนั้นยังไม่มี ระบบประกาศงานด่วนให้ช่างรอบตัวเห็นแทน) ช่างเห็นเป็นงานสีแดงบนสุด','<b>Urgent call-out</b> — broken down? It goes to the nearest mobile shops at once (if none are nearby, it’s posted as an urgent job for every mechanic around you), and mechanics see it in red at the top'],
           ['<b>ประกาศหาช่าง</b> — โพสต์งาน ให้ช่างแถวนั้นเสนอราคาเข้ามา','<b>Post a job</b> — publish it and let nearby mechanics send quotes'],
           ['<b>ทักช่าง</b> — ถามก่อนได้โดยยังไม่ต้องจอง','<b>Message a mechanic</b> — ask questions before booking anything']]))+
     Q('ช่างเห็นเบอร์และที่อยู่ของฉันตอนไหน','When does a mechanic see my phone and address?',
@@ -93,6 +93,9 @@ const sections=[
     Q('Studio คืออะไร','What is Studio?',
       P('พื้นที่ทำงานของช่าง (<a href="/studio">/studio</a>): <b>งาน</b> (งานที่ต้องทำ และหางานจากประกาศใกล้คุณ) <b>ข้อความ</b> <b>บริการ</b> (ตั้งราคาและรายละเอียด) และ <b>ร้านของฉัน</b> (หน้าร้านที่ลูกค้าเห็น)',
         'The mechanic workspace (<a href="/studio">/studio</a>): <b>Jobs</b> (your to-do and nearby job posts), <b>Messages</b>, <b>Services</b> (prices and details) and <b>My shop</b> (the page customers see).'))+
+    Q('งานด่วนใน Studio','Urgent jobs in Studio',
+      P('ลูกค้าที่รถเสียตอนนี้และกด <b>เรียกช่างด่วน</b> จะขึ้นเป็นงานสีแดงบนสุดใน <b>งาน → ต้องทำต่อ</b> ถ้าตั้งสถานะร้านเป็น <b>เปิดรับงาน</b> จะมีเสียงเตือนทันที (ตั้ง “รับงาน ไม่แจ้งเตือน” = เห็นงาน แต่ไม่มีเสียง) · ประกาศงานด่วนในรัศมีของคุณจะขึ้นใน <b>หางานใกล้ฉัน</b> ทุกหมวด ถ้าร้านคุณออกนอกสถานที่ได้',
+        'When a broken-down customer taps <b>Urgent call-out</b>, the job shows in red at the top of <b>Jobs → To do</b>. With your status set to <b>Taking jobs</b> you get an alert sound right away (“Taking jobs, no alerts” shows it without sound). · Urgent posts in your radius appear under <b>Find work nearby</b> in every category if your shop does call-outs.'))+
     Q('สปอนเซอร์บริการคืออะไร เสียเงินไหม','What is sponsoring a service? Does it cost anything?',
       P('ทำให้บริการขึ้นต้นรายการ มีป้าย “สปอนเซอร์” บอกลูกค้าเสมอ (ไม่เกิน 2 บริการต่อแถว) ตอนนี้อยู่ในช่วง<b>ทดลองฟรี</b> เลือก 3, 7 หรือ 14 วัน หยุดได้ทุกเมื่อ ถ้าอนาคตมีค่าใช้จ่าย จะแสดงราคาก่อนเสมอและไม่ต่ออายุอัตโนมัติ',
         'It puts your service near the top of a list, always with a “Sponsored” label (max 2 per row). It’s in a <b>free trial</b> right now: 3, 7 or 14 days, stop anytime. If it ever costs money, you’ll see the price first and it won’t auto-renew.'))+

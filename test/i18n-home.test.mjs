@@ -4,16 +4,16 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import {load} from '../i18n/extract.mjs';
 
-/* หน้าแรก/หน้าช่างรองรับ 13 ภาษา: ไทย อังกฤษ (ในหน้า) + 11 ภาษาจากไฟล์ i18n/home-<lang>.js
+/* หน้าแรก/หน้าช่างรองรับ 12 ภาษา: ไทย อังกฤษ (ในหน้า) + 10 ภาษาจากไฟล์ i18n/home-<lang>.js (เลิกมีอาหรับแล้ว)
    เพิ่มข้อความใหม่ในหน้าแล้วต้องเพิ่มคำแปลทุกภาษา — เทสต์นี้จะบอกว่าขาดข้อความไหน */
-const LANGS=['zh','ja','ko','id','vi','ms','de','fr','es','pt','ar'];
+const LANGS=['zh','ja','ko','id','vi','ms','de','fr','es','pt'];
 const {strings}=load();
 function dict(lang){
   const sandbox={window:{}};vm.runInNewContext(fs.readFileSync(new URL(`../i18n/home-${lang}.js`,import.meta.url),'utf8'),sandbox);
   return sandbox.window.CENDON_L10N;
 }
 
-test('i18n: ไฟล์คำแปลครบ 11 ภาษา โหลดได้ และระบุภาษาตรงกับชื่อไฟล์',()=>{
+test('i18n: ไฟล์คำแปลครบ 10 ภาษา โหลดได้ และระบุภาษาตรงกับชื่อไฟล์',()=>{
   for(const lang of LANGS){const d=dict(lang);assert.equal(d.lang,lang);assert.ok(Object.keys(d.t).length>1000,lang);}
 });
 

@@ -3,7 +3,7 @@
    ทุกคำสัญญาในหน้านี้ต้องเป็นสิ่งที่ระบบทำจริง — ดูหน้า /privacy และ /terms ประกอบ */
 import {L,P,I,MARK} from '../layout.mjs';
 
-const LANGS=['ไทย','English','中文','日本語','한국어','Bahasa Indonesia','Tiếng Việt','Bahasa Melayu','Deutsch','Français','Español','Português','العربية'];
+const LANGS=['ไทย','English','中文','日本語','한국어','Bahasa Indonesia','Tiếng Việt','Bahasa Melayu','Deutsch','Français','Español','Português'];
 const top=(th,en)=>`<div class="top">${MARK.replace('class="mark"','class="mk"')}${L(th,en)}</div>`;
 const wave=n=>`<div class="wave">${Array.from({length:n},(_,i)=>`<i style="animation-delay:-${(i*0.13%1.6).toFixed(2)}s"></i>`).join('')}</div>`;
 
@@ -126,7 +126,7 @@ const body=`
 </div></section>
 
 <section class="band" aria-labelledby="h-langs" style="padding-top:40px"><div class="wrap">
-  <div class="band-h c rv"><h2 id="h-langs">${L('คุยได้ 13 ภาษา','Speaks 13 languages')}</h2>${P('ใช้แอปในภาษาที่คุณถนัด และถาม AI เป็นภาษาไหนก็ได้','Use the app in your language, and ask the AI in whichever you like.')}</div>
+  <div class="band-h c rv"><h2 id="h-langs">${L('ใช้ได้ 12 ภาษา','Speaks 12 languages')}</h2>${P('ใช้แอปในภาษาที่คุณถนัด และถาม AI เป็นภาษาไหนก็ได้','Use the app in your language, and ask the AI in whichever you like.')}</div>
 </div>
   <div class="langs" aria-hidden="true">
     <div class="row">${[...LANGS,...LANGS].map(l=>`<span>${l}</span>`).join('')}</div>

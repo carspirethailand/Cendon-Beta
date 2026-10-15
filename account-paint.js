@@ -43,7 +43,7 @@
     const id=read(localStorage,IDENTITY),elapsed=h?Date.now()-h.at:-1;
     if(!privatePage||!h||h.target!==page||elapsed<0||elapsed>TTL||id?.uid!==h.uid||id.generation!==h.generation)return;
     const p=projection(h.uid);if(!p)return;
-    paintedUid=h.uid;paintedGeneration=h.generation;paintedAt=h.at;root.dataset.gate='0';root.dataset.level=p.level;root.dataset.accountPaint='handoff';
+    paintedUid=h.uid;paintedGeneration=h.generation;paintedAt=h.at;root.dataset.gate='0';root.dataset.level='enthusiast';/* เลิกแบ่งระดับการใช้งานแล้ว ทุกคนเห็นเครื่องมือครบ */root.dataset.accountPaint='handoff';
   }
   function level(){
     const u=user();if(u){if(paintedUid&&paintedUid!==u.uid)block();return projection(u.uid)?.level||''}

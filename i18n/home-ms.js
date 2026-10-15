@@ -2,6 +2,9 @@
    กุญแจคือข้อความอังกฤษใน T("ไทย","English") และพจนานุกรม EN ของหน้า · {0} {1} = ค่าที่แทนตอนแสดงผล
    เพิ่มข้อความใหม่ในหน้า → เพิ่มคำแปลที่นี่ทุกภาษา (เทสต์ i18n-home ตรวจความครบ) */
 window.CENDON_L10N={lang:"ms",t:{
+"Urgent · broken down now":"Kecemasan · rosak sekarang",
+"Help for mechanics":"Bantuan untuk mekanik",
+"Urgent! A customer is broken down now — see My jobs":"Kecemasan! Kereta pelanggan rosak sekarang — lihat Kerja saya",
 "Privacy policy":"Dasar privasi",
 "Terms of use":"Terma penggunaan",
 "All":"Semua",

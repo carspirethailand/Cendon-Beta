@@ -16,7 +16,7 @@
   var THEME_SEL='button[data-sitetheme],#v-settings button[data-theme],.th-opt[data-th]';
   var PRI_SEL='button[data-pri]';
   var SEL=LANG_SEL+','+THEME_SEL+','+PRI_SEL;
-  var ORDER=['th','en','zh','ja','ko','id','vi','ms','de','fr','es','pt','ar'];
+  var ORDER=['th','en','zh','ja','ko','id','vi','ms','de','fr','es','pt'];
   var busy=false,pending=null;
 
   var H=D.documentElement;

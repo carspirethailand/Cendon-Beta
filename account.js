@@ -1,7 +1,7 @@
 /* One account flow: verified Firebase identity + server-owned first-use status. */
 (function(W,D){
   'use strict';
-  const LANGS={th:'ไทย',en:'English',ja:'日本語',zh:'中文',ko:'한국어',de:'Deutsch',fr:'Français',es:'Español',id:'Bahasa Indonesia',vi:'Tiếng Việt',ms:'Bahasa Melayu',pt:'Português',ar:'العربية'};
+  const LANGS={th:'ไทย',en:'English',ja:'日本語',zh:'中文',ko:'한국어',de:'Deutsch',fr:'Français',es:'Español',id:'Bahasa Indonesia',vi:'Tiếng Việt',ms:'Bahasa Melayu',pt:'Português'};
   const MONEY=['THB','USD','EUR','GBP','JPY','CNY','SGD','AUD','CAD','CHF','NZD','HKD','MYR','IDR','KRW','VND','INR','TWD','AED'];
   const privacyUrl=()=>S.status?.policy?.privacyUrl||S.config?.privacyUrl||'/privacy';
   const PRIVATE=/^\/(garage|chat|news|spares|profile)(?:\.html)?(?:\/|$)/;
@@ -77,7 +77,7 @@
     for(const [node,inert] of locked)node.inert=inert;locked.clear();modalOpen=false;
     if(previousFocus&&previousFocus.isConnected&&typeof previousFocus.focus==='function')previousFocus.focus({preventScroll:true});previousFocus=null;
     D.documentElement.dataset.gate='0';
-    if(canonical(S.status,S.uid))D.documentElement.dataset.level=S.status.profile&&S.status.profile.level||'enthusiast';
+    if(canonical(S.status,S.uid))D.documentElement.dataset.level='enthusiast';
   }
   function publish(data){
     if(!canonical(data,S.uid)||!uidIs(S.uid))return;
@@ -89,7 +89,7 @@
     const cached=read('spire_cachedUser',null);if(cached&&cached.uid===S.uid){cached.name=p.name||cached.name;write('spire_cachedUser',cached)}
     try{if(W.currentUser&&W.currentUser.uid===S.uid)W.currentUser.name=p.name||W.currentUser.name}catch(e){}
     try{if(W.spireSetLang&&p.lang)W.spireSetLang(p.lang);if(W.spireApplySetup)W.spireApplySetup()}catch(e){}
-    D.documentElement.dataset.level=projection.level;
+    D.documentElement.dataset.level='enthusiast';
     for(const name of ['renderAuthUI','renderProfile','updateGreeting'])try{if(W[name])W[name]()}catch(e){}
   }
   function option(value,label,selected){return `<option value="${esc(value)}"${value===String(selected)?' selected':''}>${esc(label)}</option>`}
@@ -223,7 +223,7 @@
     const serial=++S.serial;S.uid=u.uid;S.status=confirmed;S.phase='loading';S.error='';S.busy=false;
     if(!old||old.uid!==u.uid)try{localStorage.removeItem('spire_setup')}catch(e){}
     S.draft={};
-    if(quiet){close();D.documentElement.dataset.level=['basic','advance','enthusiast'].includes(old?.level)?old.level:'enthusiast'}else render();
+    if(quiet){close();D.documentElement.dataset.level='enthusiast'}else render();
     try{
       // Ordinary application pages already run their own authenticated login
       // hook. A known completed account needs only the current status check.

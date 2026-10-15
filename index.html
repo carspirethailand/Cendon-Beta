@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<script src="/account-paint.js?v=2026-10-11-r1"></script>
+<script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css">
 <script src="/cendon-tour.js" defer></script>
 <script src="/account-actions.js" defer></script>
-<script src="/account.js?v=2026-10-15-r7" defer></script>
+<script src="/account.js?v=2026-10-16-r8" defer></script>
+<script src="/input-guard.js?v=1" defer></script>
 <meta charset="UTF-8"/>
 <!-- ที่อยู่แบบลึก (/tech/<ร้าน>/reviews) — ไฟล์ประกอบทุกตัวอ้างจากรากเว็บเสมอ -->
 <base href="/">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <!-- ภาษาอื่นนอกจากไทย/อังกฤษ: โหลดพจนานุกรมของหน้านี้ให้เสร็จก่อนสคริปต์หลัก (เลือกภาษาแบบเดียวกับ LANG ในสคริปต์หลัก)
      ไทย/อังกฤษไม่โหลดอะไรเพิ่ม · document.write ใช้เฉพาะไฟล์ในเว็บเดียวกัน เบราว์เซอร์จึงไม่บล็อก -->
-<script>(function(){try{var A=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt","ar"],l=null;try{l=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
+<script>(function(){try{var A=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt"],l=null;try{l=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
 if(A.indexOf(l)<0){l="en";var n=navigator.languages||[navigator.language||"en"];for(var i=0;i<n.length;i++){var b=String(n[i]).toLowerCase().split("-")[0];if(A.indexOf(b)>=0){l=b;break}}}
 if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=1"><\/script>')}catch(e){}})();</script>
 <title>Cendon</title>
@@ -1005,6 +1006,14 @@ body[data-mode="tech"]{padding-top:0!important;padding-bottom:0!important}
 .stu-row:hover .stu-rb b{text-decoration:underline;text-underline-offset:3px}
 .stu-ri{flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:13px;font-size:21px;color:var(--ink);background:var(--surface-2) center/cover no-repeat}
 .stu-ri.me{color:var(--co,#E9682A);background:color-mix(in srgb,var(--co,#E9682A) 10%,var(--surface))}
+/* งานด่วน (รถเสียตอนนี้): ทั้งแถวแดง ขึ้นบนสุด */
+.stu-row.urg{margin:6px 0;padding:12px 14px;border:1px solid color-mix(in srgb,#dc2626 45%,transparent);border-radius:14px;background:color-mix(in srgb,#dc2626 9%,var(--surface))}
+.stu-row.urg .stu-ri{color:#fff;background:#dc2626;animation:urgPulse 1.6s ease-in-out infinite}
+.urg-tag{display:inline-flex;align-items:center;gap:4px;margin:0 0 3px;color:#dc2626;font-size:12px;font-weight:700;letter-spacing:.01em}
+html[data-theme="dark"] .urg-tag{color:#f87171}
+.pc.urg{border-color:color-mix(in srgb,#dc2626 55%,transparent)!important;background:color-mix(in srgb,#dc2626 9%,var(--surface))!important}
+@keyframes urgPulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.45)}50%{box-shadow:0 0 0 7px rgba(220,38,38,0)}}
+@media (prefers-reduced-motion:reduce){.stu-row.urg .stu-ri{animation:none}}
 .stu-rb{flex:1;min-width:0}
 .stu-rb b{display:block;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .stu-rb small{display:block;margin-top:2px;font-size:13.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -2197,7 +2206,7 @@ a.mtab{text-decoration:none}
       <button type="button" class="stu-ib stu-m" id="stuExitM" aria-label="กลับสู่ Cendon"><i class="ti ti-arrow-left"></i></button>
       <span class="stu-brand stu-m">Cendon<small>Studio</small></span>
       <p class="stu-crumb"><span>Studio</span><i class="ti ti-chevron-right"></i><b id="stuCrumb">งานของฉัน</b></p>
-      <a class="stu-ib" href="/handbook" aria-label="คู่มือช่าง" title="คู่มือช่าง"><i class="ti ti-help-circle"></i></a>
+      <a class="stu-ib" href="/help#mechanics" target="_blank" rel="noopener" aria-label="วิธีใช้สำหรับช่าง" title="วิธีใช้สำหรับช่าง"><i class="ti ti-help-circle"></i></a>
       <button type="button" class="stu-me" id="stuMe" aria-label="ร้านของฉัน"></button>
     </header>
     <div class="stu-body">
@@ -2625,7 +2634,7 @@ const OWNERS=["anapatmaliwong@gmail.com","carspirethailand@gmail.com"];
    หน้านี้สร้าง HTML จากเทมเพลตหลายร้อยจุด ถ้าต้องจำห่อทุกจุด วันหนึ่งจะมีจุดที่ลืม
    แล้วผู้ใช้ต่างชาติเห็นภาษาไทยโผล่กลางจอ — แปลตอนข้อความลง DOM จึงไม่มีจุดตกหล่น
    ข้อความไทยทุกท่อนถูกค้นในพจนานุกรม EN ท้ายไฟล์ ท่อนไหนไม่มีก็คงไว้ตามเดิม */
-const LANGS=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt","ar"];
+const LANGS=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt"];
 const LANG=(()=>{let v=null;try{v=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
   if(typeof v==="string"&&LANGS.includes(v))return v;
   try{for(const l of (navigator.languages||[navigator.language||"en"])){const b=String(l).toLowerCase().split("-")[0];if(LANGS.includes(b))return b}}catch(e){}
@@ -3810,9 +3819,11 @@ setTimeout(ccDone,7000);
      /jobs · /jobs/<ใบงาน>[/chat] · /studio[/settings|/stats|/edit|/post] · /work[/<แท็บ>] · /staff · /join
      /quotes · /compare/<กลุ่ม> · /urgent · /diagnose · /post[/<ประกาศ>] · /trip/<ลิงก์แชร์>
    ข้อมูลที่ต้องรอ (รายชื่อช่าง / บริการ / ล็อกอิน) — แต่ละเส้นทางรอเฉพาะที่ตัวเองใช้ */
-const READY=(()=>{const mk=()=>{let d;const p=new Promise(r=>d=r);p.done=d;return p};return {techs:mk(),gigs:mk(),auth:mk(),user:mk()}})();
-setTimeout(()=>{READY.auth.done();READY.user.done()},9000);   /* ล็อกอินไม่ตอบ (เน็ตช้า/บล็อก) ก็ไม่ค้างตลอดไป */
+const READY=(()=>{const mk=()=>{let d;const p=new Promise(r=>d=r);p.done=d;return p};return {techs:mk(),gigs:mk(),auth:mk(),user:mk(),me:mk()}})();
+setTimeout(()=>{READY.auth.done();READY.user.done();READY.me.done()},9000);   /* ล็อกอินไม่ตอบ (เน็ตช้า/บล็อก) ก็ไม่ค้างตลอดไป */
 const needU=async()=>{await READY.auth;if(!U){needLogin();return false}return true};
+/* Studio รอแค่รู้ว่าเป็นใคร (ME) ไม่ต้องรอรายชื่อร้านทั้งตลาดโหลดเสร็จ — รีเฟรชในหน้า Studio แล้วขึ้น Studio ทันที */
+const needMe=async()=>{await READY.me;BOOT_TECH=false;if(!U){applyMode();needLogin();return false}return true};
 Nav.route({path:"tech/:id",name:"tech",open:async p=>{await READY.techs;await READY.gigs.catch(()=>0);openTech(p.id)}});
 Nav.route({path:":tab",name:"techTab",parent:"tech",test:p=>!!URLTAB[p.tab],open:p=>{const o=SH.cur;if(o&&o.setTab){o.setTab(URLTAB[p.tab]);Nav.push({url:o.url+"/"+p.tab,tag:"tab",close:()=>{if(SH.cur===o)o.setTab(o.first||"svc")}})}}});
 Nav.route({path:"quote",parent:["tech","techTab"],open:async()=>{if(!await needU())return;const t=SH.cur&&TECHS.find(x=>x.id===SH.cur.shop);if(t)book(t)}});
@@ -3826,10 +3837,10 @@ Nav.route({path:":id",name:"job",parent:"jobs",test:p=>/^[0-9a-f-]{36}$/i.test(p
 Nav.route({path:"messages",name:"messages",open:()=>inbox()});
 Nav.route({path:":id",parent:"messages",test:p=>/^[0-9a-f-]{36}$/i.test(p.id),open:p=>openThread(p.id)});
 Nav.route({path:"chat",parent:"job",open:()=>{if(JOB&&SH.cur&&SH.cur.job)openChat(JOB)}});
-Nav.route({path:"studio",name:"studio",open:async()=>{if(await needU())openStudio()}});
+Nav.route({path:"studio",name:"studio",open:async()=>{if(await needMe())openStudio();else applyMode()}});
 /* /studio/<หน้า> — เปิด Studio แล้วเปิดหน้าย่อยนั้น (ลิงก์เดิมยังใช้ได้) */
 Nav.route({path:":k",parent:"studio",test:p=>["settings","stats","edit","post","qr"].includes(p.k),open:p=>{if(!myShop()||MODE!=="tech")return;({settings:studioSettings,stats:studioStats,edit:openShopEdit,post:()=>gigForm(),qr:shopQr})[p.k]()}});
-Nav.route({path:"work",name:"work",open:async()=>{if(await needU()&&modesAvail().includes("tech"))setMode("tech")}});
+Nav.route({path:"work",name:"work",open:async()=>{if(await needMe()&&modesAvail().includes("tech"))setMode("tech");else applyMode()}});
 Nav.route({path:":t",parent:"work",test:p=>["find","queue","messages","shop","ai","posts"].includes(p.t),open:p=>{if(MODE==="tech")setTab2(p.t)}});
 Nav.route({path:"staff",open:async()=>{if(await needU()&&modesAvail().includes("staff"))setMode("staff")}});
 /* ลิงก์จากการ์ด LINE ของทีมงาน "มีใบสมัครช่างใหม่" — เปิดหน้าตรวจใบสมัครทันที */
@@ -4312,10 +4323,15 @@ function openMulti(sym,cat){
         if(ids.length>5){$("err").textContent="เลือกได้ไม่เกิน 5 ร้าน";return}
         const list=ids.map(id=>TECHS.find(t=>t.id===id)).filter(Boolean);
         const s=$("mSym").value.trim();
-        const cf=contactForm({sym:s,noSym:true,mobile:list.some(t=>t.mobile)});
+        /* ข้ามอาการในขั้นแรกได้ — แต่ร้านต้องรู้ว่าจะซ่อมอะไร จึงถามต่อในหน้านี้เลย ไม่ต้องย้อนกลับไปขั้นก่อน */
+        const ask=s.length<10;
+        const cf=contactForm({sym:s,noSym:!ask,mobile:list.some(t=>t.mobile)});
         sheet({push:true,slug:"send",title:`ขอราคา ${list.length} ร้าน`,body:`<p class="note"><i class="ti ti-info-circle"></i>ส่งถึง ${list.map(t=>esc(t.shop||t.name)).join(", ")}</p>`+cf.html,
           foot:'<button class="btn p w" id="mGo">ส่งขอราคาทุกร้าน</button>',
-          mount(){cf.mount();$("mGo").onclick=e=>busy(e.currentTarget,()=>sendGroup(list,{...cf.read(),symptom:s}))}});
+          mount(){cf.mount();
+            $("mGo").onclick=e=>busy(e.currentTarget,()=>{const v=cf.read(),sym=ask?v.symptom:s;
+              if(sym.length<10){$("bSym").focus();throw new Error("เล่าอาการสั้น ๆ อย่างน้อย 10 ตัวอักษร ร้านจะได้ประเมินราคาได้ตรง")}
+              return sendGroup(list,{...v,symptom:sym})})}});
       };
     }});
 }
@@ -4359,14 +4375,19 @@ async function urgentCall(){
     async mount(){
       cf.mount();
       $("uQk").querySelectorAll("button").forEach(b=>b.onclick=()=>{b.classList.toggle("on");$("uSym").value=[...$("uQk").querySelectorAll(".on")].map(x=>x.textContent).join(" ")+($("uSym").value.includes(" · ")?"":"")});
-      const showTo=()=>{const l=pickList();$("uTo").innerHTML=l.length?`<div class="kv"><p><span>จะส่งถึง</span><b>${l.map(t=>esc(t.shop||t.name)+(t.dist!=null?` (${distTxt(t.dist)})`:"")).join("<br>")}</b></p></div>`:'<div class="err" style="animation:none">ตอนนี้ยังไม่มีช่างที่ออกนอกสถานที่ใกล้คุณ</div>'};
+      const showTo=()=>{const l=pickList();$("uTo").innerHTML=l.length?`<div class="kv"><p><span>จะส่งถึง</span><b>${l.map(t=>esc(t.shop||t.name)+(t.dist!=null?` (${distTxt(t.dist)})`:"")).join("<br>")}</b></p></div>`:'<div class="note"><i class="ti ti-speakerphone"></i>ยังไม่มีร้านที่ออกนอกสถานที่ในรัศมี — กดเรียกแล้วระบบจะประกาศงานด่วนให้ช่างรอบตัวเห็นเป็นสีแดงทันที</div>'};
       showTo();
       /* หมุดขยับ → รายชื่อร้านที่จะส่งถึงคิดใหม่ตามตำแหน่งจริง */
       new MutationObserver(showTo).observe($("bLocS"),{childList:true,characterData:true,subtree:true});
       $("uGo").onclick=e=>busy(e.currentTarget,async()=>{
-        const l=pickList();if(!l.length)throw new Error("ตอนนี้ยังไม่มีช่างที่ออกนอกสถานที่ใกล้คุณ");
-        const v=cf.read();v.symptom=$("uSym").value.trim();
-        await sendGroup(l,v);
+        const v=cf.read();v.symptom=$("uSym").value.trim();v.urgent=true;
+        if(v.symptom.length<3)throw new Error("บอกสั้น ๆ ว่าเกิดอะไรขึ้น หรือกดเลือกอาการด้านบน");
+        const l=pickList();
+        if(l.length)return sendGroup(l,v);
+        /* ไม่มีร้านที่ออกนอกสถานที่ในรัศมี: ประกาศงานด่วน ช่างทุกร้านรอบตัวเห็นเป็นสีแดงใน Studio แล้วเสนอราคาเข้ามา */
+        const id=crypto.randomUUID(),cat=catsOf(v.symptom)[0]||"";
+        await api("/api/tech/posts",{body:{...v,id,cat,mode:"mobile",symptom:v.symptom.length<10?"งานด่วน: "+v.symptom:v.symptom}});
+        toast("ประกาศงานด่วนแล้ว — ช่างรอบตัวคุณจะเห็นทันที");await refreshJobs();openPostView(id);
       });
     }});
 }
@@ -5158,6 +5179,8 @@ async function openJoin(){
     <button class="jl" id="jSkip"><span class="av sq" style="--c1:#0ea5e9"><i class="ti ti-player-skip-forward"></i></span><span class="jb"><b>ข้ามไปแดชบอร์ดช่าง</b><small>ไม่ต้องกรอกอะไร · เข้าไปดูความเรียบร้อยได้เลย</small></span><i class="ti ti-chevron-right"></i></button>
     <button class="jl" id="jStat"><span class="av sq" style="--c1:#8b5cf6"><i class="ti ti-timeline"></i></span><span class="jb"><b>ดูหน้าสถานะใบสมัคร</b><small>ตัวอย่างทุกสถานะ: รอตรวจ · ต้องแก้ไข · อนุมัติ</small></span><i class="ti ti-chevron-right"></i></button>`,
     mount(){$("jStaff").onclick=testTech;$("jReal").onclick=()=>landing(true);$("jSkip").onclick=e=>busy(e.currentTarget,quickTech);$("jStat").onclick=()=>previewStatus("pending",true)}});
+  /* ผ่านการอนุมัติแล้ว มีร้านจริง = เข้า Studio ตรง ๆ (หน้าสถานะใบสมัครมีไว้ตอนยังรอตรวจ/ต้องแก้ไขเท่านั้น) */
+  if(t&&!t.test)return openStudio();
   if(a&&!a.test)return statusPage(a);
   landing();
 }
@@ -5314,7 +5337,7 @@ function statusPage(a,fresh,pv){
     ${st==="rejected"&&!(a.review&&a.review.auto)?`<div class="err" style="animation:none"><b>หมายเหตุจากทีมงาน:</b> ${esc(a.review&&a.review.note||"")}</div>`:""}`,
     foot:st==="rejected"?'<button class="btn p w" id="sFix">แก้ไขและยื่นใหม่</button>':st==="approved"?'<button class="btn p w" id="sJobs">เปิดงานของฉัน</button>':'<button class="btn s w" id="sOk">ปิด</button>',
     mount(){if(pv){$("pvS").querySelectorAll("button").forEach(b=>b.onclick=()=>previewStatus(b.dataset.v,false));if($("sFix"))$("sFix").onclick=()=>landing(true);if($("sJobs"))$("sJobs").onclick=()=>{closeSheet();setMode("tech")};if($("sOk"))$("sOk").onclick=()=>closeSheet();return}
-      if($("sFix"))$("sFix").onclick=()=>landing(true);if($("sJobs"))$("sJobs").onclick=()=>jobs();if($("sOk"))$("sOk").onclick=()=>closeSheet();
+      if($("sFix"))$("sFix").onclick=()=>landing(true);if($("sJobs"))$("sJobs").onclick=()=>{closeSheet();openStudio()};if($("sOk"))$("sOk").onclick=()=>closeSheet();
       /* ยืนยันตัวตน: ขอลิงก์ Didit แล้วเปิดในแท็บเดิม (Didit พากลับมาที่ /join เอง) · ตรวจผล = ดึงผลล่าสุดจาก Didit */
       if($("kGo"))$("kGo").onclick=e=>busy(e.currentTarget,async()=>{const r=await api("/api/tech/apply/identity",{body:{}});if(r.url){location.href=r.url;return}await refreshMe();statusPage(ME.application)});
       if($("kChk"))$("kChk").onclick=e=>busy(e.currentTarget,async()=>{const r=await api("/api/tech/apply/identity/refresh",{body:{}});await refreshMe();
@@ -5497,6 +5520,9 @@ $("bMe").onclick=()=>{
    ทีมงาน Cendon Experience สลับดูได้ทุกมุมโดยไม่ต้องสมัครอะไร — ใช้ทดสอบระบบทั้งสองฝั่งด้วยบัญชีเดียว
    ช่างที่ผ่านการอนุมัติสลับได้ระหว่างลูกค้ากับช่าง คนทั่วไปเห็นมุมลูกค้าอย่างเดียว (ไม่มีปุ่มสลับ) */
 let MODE="customer";
+/* เปิดตรงที่ /work หรือ /studio (เช่น กดรีเฟรชใน Studio): ขึ้นกรอบ Studio + โครงกำลังโหลดทันที
+   ไม่โชว์หน้าแรกของลูกค้าระหว่างรอรู้ว่าเป็นใคร (เดิมเห็นหน้าแรกหลายวินาทีจนนึกว่าเด้งกลับหน้าหลัก) */
+let BOOT_TECH=/^\/(work|studio)(\/|$)/.test(location.pathname);
 function modesAvail(){
   const m=["customer"];
   if(ME&&(ME.staff||(ME.technician&&!ME.technician.test)))m.push("tech");
@@ -5530,7 +5556,8 @@ function setTab2(t,fromNav){
   if(!fromNav)Nav.push({url:"/work/"+t,tag:"wtab",close:()=>setTab2(was,true)});
 }
 function applyMode(){
-  const tech=MODE==="tech";
+  const tech=MODE==="tech"||BOOT_TECH;
+  if(BOOT_TECH&&MODE!=="tech"&&!$("dBody").dataset.boot){$("dBody").dataset.boot=1;$("dHead").innerHTML=`<div class="stu-h"><h1>Studio</h1></div>`;$("dBody").innerHTML='<div class="skel"></div><div class="skel" style="margin-top:10px"></div><div class="skel" style="margin-top:10px"></div>'}
   if(tech&&VIEW==="map"){VIEW="menu";document.body.classList.remove("onmap");$("vMap").hidden=true}
   $("vMenu").hidden=tech||VIEW==="map";$("vTech").hidden=!tech;
   const sb=$("staff");if(sb&&ME&&ME.staff)sb.hidden=MODE!=="staff";
@@ -5540,7 +5567,7 @@ function applyMode(){
 
 /* ═══ dashboard ช่าง ═══ */
 let DT="queue",FIND_NEW=false,DSTATS=null,NEAR=null,FMAP=null,FL=null,alertT=0,firstNear=true;
-const SEEN=new Set(ls.get("spire_seen_posts",[]));
+const SEEN=new Set(ls.get("spire_seen_posts",[])),SEEN_URG=new Set(ls.get("spire_seen_urgent",[]));let firstUrg=true;
 const ago=at=>{const m=Math.round((Date.now()-at)/60000);return m<1?T("เมื่อกี้","just now"):m<60?T(`${m} นาทีที่แล้ว`,`${m} min ago`):m<1440?T(`${Math.round(m/60)} ชม.ที่แล้ว`,`${Math.round(m/60)} h ago`):T(`${Math.round(m/1440)} วันที่แล้ว`,`${Math.round(m/1440)} d ago`)};
 const kfmt=n=>n>=10000?(Math.round(n/100)/10)+"k":money(n);
 /* ═══ Studio: กรอบ + หัวหน้า + ป้ายนับ ═══
@@ -5583,14 +5610,13 @@ function stuBadges(){
   const fd=document.querySelector(".stu-seg i.new");if(fd)fd.hidden=!FIND_NEW;
 }
 /* สถานะร้าน: เปิดรับงาน (แจ้งเตือน) · รับงานไม่แจ้งเตือน · พักร้าน (ลูกค้าขอราคาไม่ได้) — มาจากค่าจริงสองค่า online + vacation */
-function shopState(){const t=myShop()||{};return t.identityHold?"identity":t.vacation?"pause":(DSTATS?DSTATS.online:t.online)?"on":"quiet"}
+function shopState(){const t=myShop()||{};return t.vacation?"pause":(DSTATS?DSTATS.online:t.online)?"on":"quiet"}
 const STATE={on:[T("เปิดรับงาน","Taking jobs"),T("แจ้งเตือนทันทีเมื่อมีรถเสียใกล้คุณ","Alerts you right away when a car breaks down nearby")],
   quiet:[T("รับงาน ไม่แจ้งเตือน","Taking jobs, no alerts"),T("ลูกค้ายังขอราคาได้ แต่ไม่มีเสียงเตือนงานใหม่","Customers can still request quotes; no new-job alerts")],
-  pause:[T("พักร้านชั่วคราว","Paused"),T("ปิดรับคำขอใหม่ทั้งหมด หน้าร้านบอกลูกค้าให้","No new requests — your storefront tells customers")],
-  identity:[T("กำลังตรวจสอบตัวตน","Identity review"),T("พักรับงานชั่วคราวจนกว่าการตรวจสอบจะเสร็จ","New work is paused until identity review is complete")]};
+  pause:[T("พักร้านชั่วคราว","Paused"),T("ปิดรับคำขอใหม่ทั้งหมด หน้าร้านบอกลูกค้าให้","No new requests — your storefront tells customers")]};
 function statusMenu(btn){
   document.querySelector(".stu-menu")?.remove();
-  const cur=shopState();if(cur==="identity"){toast(T("บัญชีอยู่ระหว่างตรวจสอบตัวตน จึงเปิดรับงานไม่ได้ชั่วคราว","Identity review is in progress, so new work is paused"));return;}const m=document.createElement("div");m.className="stu-menu";m.setAttribute("role","menu");
+  const cur=shopState();const m=document.createElement("div");m.className="stu-menu";m.setAttribute("role","menu");
   m.innerHTML=Object.entries(STATE).map(([k,[a,b]])=>`<button type="button" role="menuitemradio" aria-checked="${k===cur}" data-k="${k}"><span class="stu-dot ${k}"></span><span><b>${a}</b><small>${b}</small></span>${k===cur?'<i class="ti ti-check"></i>':""}</button>`).join("");
   document.body.appendChild(m);
   const r=btn.getBoundingClientRect(),w=m.offsetWidth;
@@ -5672,7 +5698,7 @@ async function tabFind(){
   try{NEAR=await api("/api/tech/posts/near")}catch(e){$("fList").innerHTML=`<div class="empty"><i class="ti ti-map-pin-off"></i><b>${esc(e.message)}</b></div>`;return}
   NEAR.posts.forEach(p=>SEEN.add(p.id));ls.set("spire_seen_posts",[...SEEN].slice(-300));
   const LP=NEAR.posts;
-  $("fList").innerHTML=LP.length?`<div class="sec" style="margin-top:4px"><h2><i class="ti ti-radar-2" style="color:var(--accent)"></i>${T("รถเสียรอบตัวคุณ","Breakdowns near you")}</h2><span>${LP.length}${NEAR.radius||(myShop()||{}).radius?` · ${NEAR.radius||myShop().radius} ${T("กม.","km")}`:""}</span></div>`+LP.map((p,i)=>`<button class="pc e3" data-p="${p.id}" style="animation-delay:${i*40}ms">
+  $("fList").innerHTML=LP.length?`<div class="sec" style="margin-top:4px"><h2><i class="ti ti-radar-2" style="color:var(--accent)"></i>${T("รถเสียรอบตัวคุณ","Breakdowns near you")}</h2><span>${LP.length}${NEAR.radius||(myShop()||{}).radius?` · ${NEAR.radius||myShop().radius} ${T("กม.","km")}`:""}</span></div>`+LP.map((p,i)=>`<button class="pc e3${p.urgent?" urg":""}" data-p="${p.id}" style="animation-delay:${i*40}ms">
       <span class="sq" style="--c1:${p.urgent?"#dc2626":p.cat&&CAT[p.cat]?CAT[p.cat].c:"#f97316"}"><i class="ti ${p.urgent?"ti-urgent":p.cat&&CAT[p.cat]?CAT[p.cat].ic:"ti-car-crash"}"></i></span>
       <div><b class="nt">${esc(p.symptom)}</b><small><span class="nt">${esc(p.car)}</span> · ${ago(p.createdAt)}${p.urgent?' · <span class="pill bad">'+T("ด่วน","Urgent")+'</span>':""}</small>${p.mine?`<small><span class="pill ${p.mine.status==="quoted"?"act":"bad"}">${p.mine.status==="quoted"?T("เสนอแล้ว ฿","Quoted ฿")+money(p.mine.total):STATUS[p.mine.status]}</span></small>`:""}</div>
       <span class="r"><b>${p.dist}</b><br>${T("กม.","km")}</span></button>`).join("")
@@ -5726,15 +5752,17 @@ const NEXT={requested:[T("ต้องเสนอราคา","Send a quote"),
   enroute:[T("กำลังเดินทาง","On the way"),"ti-truck"],working:[T("กำลังซ่อม","In repair"),"ti-tool"],done:[T("รอลูกค้าตรวจรับงาน","Waiting for sign-off"),"ti-checklist"],
   disputed:[T("มีการแจ้งปัญหา","Problem reported"),"ti-flag"],completed:[T("เสร็จแล้ว","Completed"),"ti-circle-check"],cancelled:[T("ยกเลิกแล้ว","Cancelled"),"ti-circle-x"]};
 function jobRow(j){
-  const [lab,ic]=NEXT[j.status]||[STATUS[j.status]||j.status,"ti-car"],me=j.needsMe&&liveJob(j);
-  return `<button class="stu-row" type="button" data-j="${j.id}"><span class="stu-ri${me?" me":""}"><i class="ti ${ic}"></i></span>
-    <span class="stu-rb"><b class="nt">${esc(j.car||T("รถของลูกค้า","Customer's car"))}</b><small class="nt">${esc(j.symptom||"")}</small><span class="stu-rs${me?" me":""}">${me?T("รอคุณ · ","Your turn · "):""}${lab} · ${ago(j.updatedAt||j.createdAt)}</span></span>
+  const [lab,ic]=NEXT[j.status]||[STATUS[j.status]||j.status,"ti-car"],me=j.needsMe&&liveJob(j),u=!!(j.urgent&&liveJob(j));
+  return `<button class="stu-row${u?" urg":""}" type="button" data-j="${j.id}"><span class="stu-ri${me?" me":""}"><i class="ti ${u?"ti-urgent":ic}"></i></span>
+    <span class="stu-rb">${u?`<span class="urg-tag"><i class="ti ti-urgent"></i>${T("งานด่วน · รถเสียตอนนี้","Urgent · broken down now")}</span>`:""}<b class="nt">${esc(j.car||T("รถของลูกค้า","Customer's car"))}</b><small class="nt">${esc(j.symptom||"")}</small><span class="stu-rs${me?" me":""}">${me?T("รอคุณ · ","Your turn · "):""}${lab} · ${ago(j.updatedAt||j.createdAt)}</span></span>
     <span class="stu-rr">${j.total?`<b>฿${money(j.total)}</b>`:""}${j.unread?`<em>${j.unread}</em>`:""}<i class="ti ti-chevron-right"></i></span></button>`;
 }
 const errBar=(msg,id)=>`<p class="stu-err"><i class="ti ti-cloud-off"></i><span>${T("โหลดข้อมูลล่าสุดไม่สำเร็จ","Couldn't load the latest data")}${msg?` — ${esc(msg)}`:""}</span><button class="lx-gh" type="button" id="${id}">${T("ลองใหม่","Retry")}</button></p>`;
 function tabQueue(){
   const B=$("dBody"),all=techJobs();
-  const live=all.filter(liveJob).sort((a,b)=>(b.needsMe-a.needsMe)||((b.updatedAt||b.createdAt)-(a.updatedAt||a.createdAt)));
+  /* งานด่วนที่ยังรอคุณขึ้นบนสุดเสมอ แล้วค่อยงานที่รอคุณ */
+  const hot=j=>!!(j.urgent&&j.needsMe);
+  const live=all.filter(liveJob).sort((a,b)=>(hot(b)-hot(a))||(b.needsMe-a.needsMe)||((b.updatedAt||b.createdAt)-(a.updatedAt||a.createdAt)));
   const past=all.filter(j=>!liveJob(j)).sort((a,b)=>(b.updatedAt||b.createdAt)-(a.updatedAt||a.createdAt)).slice(0,20);
   const err=JOBS_ERR?errBar(JOBS_ERR,"stuRetry"):"";
   if(!JOBS_OK&&!JOBS_ERR){B.innerHTML='<div class="skel"></div><div class="skel" style="margin-top:10px"></div>';return}
@@ -5787,12 +5815,12 @@ function tabShop(){
       ${row("sAi","ti-bulb",T("คำแนะนำปรับร้าน","Shop tips"),T("สิ่งที่ช่วยให้ลูกค้าเลือกร้านคุณมากขึ้น","What helps customers pick your shop"))}
       ${row("sQr","ti-qrcode",T("ลิงก์และ QR หน้าร้าน","Shop link & QR"),T("พิมพ์ติดหน้าอู่ ลูกค้าสแกนแล้วเข้าหน้าร้าน","Print it — customers scan to open your shop"))}
       ${row("sSet","ti-settings",T("ตั้งค่า","Settings"),T("รับงาน พักร้าน ตอบอัตโนมัติ แจ้งเตือน สีร้าน","Availability, pause, auto-reply, alerts, colour"))}
-      ${row("sHelp","ti-book",T("คู่มือช่าง","Mechanic handbook"),T("กติกาใบงาน การเสนอราคา และการรับเงิน","Job rules, quoting and getting paid"))}
+      ${row("sHelp","ti-help-circle",T("วิธีใช้สำหรับช่าง","Help for mechanics"),T("กติกาใบงาน การเสนอราคา และการรับเงิน","Job rules, quoting and getting paid"))}
     </section>`;
   $("sView").onclick=()=>openTech(t.id);
   $("sShare").onclick=()=>{try{navigator.share?navigator.share({title:t.shop||t.name,url:link}).catch(()=>{}):navigator.clipboard.writeText(link).then(()=>toast(T("คัดลอกลิงก์ร้านแล้ว","Shop link copied")))}catch(e){}};
   $("sEdit").onclick=()=>openShopEdit();$("sStats").onclick=()=>studioStats();$("sAi").onclick=()=>setTab2("ai");
-  $("sQr").onclick=()=>shopQr();$("sSet").onclick=()=>studioSettings();$("sHelp").onclick=()=>{location.href="/handbook"};
+  $("sQr").onclick=()=>shopQr();$("sSet").onclick=()=>studioSettings();$("sHelp").onclick=()=>window.open("/help#mechanics","_blank","noopener");
 }
 /* ลิงก์และ QR ของร้าน (QR สร้างในเครื่อง โหลดไลบรารีตอนเปิดครั้งแรก) */
 function shopQr(){
@@ -5906,6 +5934,13 @@ function startAlerts(){
           toast(fresh.some(p=>p.urgent)?T("มีงานด่วนใกล้คุณ!","Urgent job nearby!"):T(`งานใหม่ใกล้คุณ ${fresh.length} งาน`,`${fresh.length} new job${fresh.length>1?"s":""} nearby`),"ti-bell-ringing");
           if(MODE==="tech"&&DT==="find")tabFind();else{FIND_NEW=true;stuBadges()}}}
       firstNear=false}catch(e){}
+    /* งานด่วนที่ลูกค้าส่งตรงถึงร้าน (เรียกช่างด่วน): ดึงใบงานใหม่ทุกรอบ เจอใบด่วนที่ยังไม่เคยเห็น = ดังเตือน + ขึ้นแดงบนสุด */
+    try{await refreshJobs();const hot=techJobs().filter(j=>j.urgent&&j.status==="requested"&&!SEEN_URG.has(j.id));
+      if(hot.length){hot.forEach(j=>SEEN_URG.add(j.id));ls.set("spire_seen_urgent",[...SEEN_URG].slice(-200));
+        if(!firstUrg){ding();try{navigator.vibrate&&navigator.vibrate([250,90,250,90,250])}catch(e){}
+          toast(T("งานด่วน! ลูกค้ารถเสียตอนนี้ — เปิดดูในงานของฉัน","Urgent! A customer is broken down now — see My jobs"),"ti-urgent");
+          if(MODE==="tech"&&DT==="queue")drawTab()}}
+      firstUrg=false}catch(e){}
     alertT=setTimeout(tick,document.hidden?60000:20000)};
   tick();
 }
@@ -6015,7 +6050,7 @@ async function pullCars(){
     try{
       if(!firebase.apps||!firebase.apps.length)firebase.initializeApp(fbConfig);
       auth=firebase.auth();
-      auth.onAuthStateChanged(async u=>{U=u||null;if(!U)purgeChatCache();READY.user.done();try{navPaint(U)}catch(e){}greet();if(U)pullCars();await refreshMe();if(U)await load();else diag();READY.auth.done()});
+      auth.onAuthStateChanged(async u=>{U=u||null;if(!U)purgeChatCache();READY.user.done();try{navPaint(U)}catch(e){}greet();if(U)pullCars();await refreshMe();READY.me.done();if(U)await load();else diag();READY.auth.done()});
     }catch(e){}
   })();
   /* ลงทะเบียน service worker หลังหน้าขึ้นแล้ว — แอปที่ติดตั้งบนมือถือจะเปิดจากหน้าที่เก็บไว้ได้ทันทีตอนเน็ตช้า

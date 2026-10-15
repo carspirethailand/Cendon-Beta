@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<script src="/account-paint.js?v=2026-10-11-r1"></script>
+<script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css">
 <script src="/cendon-tour.js" defer></script>
 <script src="/account-actions.js" defer></script>
-<script src="/account.js?v=2026-10-15-r7" defer></script>
+<script src="/account.js?v=2026-10-16-r8" defer></script>
+<script src="/input-guard.js?v=1" defer></script>
 <script src="/cloud-swap.js?v=3" defer></script>
 <meta charset="UTF-8"/>
 <!-- ที่อยู่แบบลึก (/spares/…) — ไฟล์ประกอบทุกตัวอ้างจากรากเว็บเสมอ -->
@@ -1957,6 +1958,15 @@ body[data-deck="1"] .nav::before{opacity:.2;mix-blend-mode:screen}
 .sp-car .tx{flex:1;min-width:0}
 .sp-car .tx b{display:block;font-size:15px;font-weight:700}
 .sp-car .tx small{font-size:12px;color:var(--muted)}
+/* เลือกรถในหน้าร้านค้า: ทุกคันในการาจเป็นปุ่ม กดเปลี่ยนได้ทันที */
+.sp-cars{display:grid;gap:8px}
+.sp-carbtn{width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer;transition:border-color .15s,background .15s}
+.sp-carbtn:not(.on){background:var(--surface)}
+.sp-carbtn:not(.on) .ic{background:var(--surface-2);color:var(--muted)}
+.sp-carbtn:not(.on):hover{border-color:var(--ink)}
+.sp-carsw{cursor:pointer;font:inherit;font-size:11.5px;font-weight:700;color:var(--ink)}
+.sp-carsw:hover{border-color:var(--ink)}
+.sp-carpick{display:grid;gap:8px;margin:-4px 0 14px}
 
 .sp-acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;align-items:center}
 .sp-note{font-size:11.5px;color:var(--muted);line-height:1.8;margin-top:14px}
@@ -4028,9 +4038,9 @@ const LOCALES=[
   {c:"de", name:"Deutsch",      flag:"🇩🇪"},
   {c:"fr", name:"Français",     flag:"🇫🇷"},
   {c:"es", name:"Español",      flag:"🇪🇸"},
-  {c:"pt", name:"Português",    flag:"🇵🇹"},
-  {c:"ar", name:"العربية",       flag:"🇸🇦", rtl:true}
+  {c:"pt", name:"Português",    flag:"🇵🇹"}
 ];
+/* เลิกมีภาษาอาหรับ (อ่านขวาไปซ้าย ทำให้หน้าเพี้ยนหลายจุด) — คนที่เคยเลือกไว้จะกลับไปใช้ภาษาตามเครื่อง */
 const CODES=LOCALES.map(x=>x.c);
 const RTL=LOCALES.filter(x=>x.rtl).map(x=>x.c);
 
@@ -5383,14 +5393,15 @@ function done(){
   if(typeof window.spireSetupDone==="function")return window.spireSetupDone();
   const v=read();return !!(v&&v.v===SETUP_VERSION&&v.level);
 }
-function level(){ const v=read(); return (v&&v.level)||"enthusiast" }
+/* เลิกแบ่งระดับการใช้งาน (พื้นฐาน/ขั้นสูง/ตัวจริง) แล้ว — ทุกคนเห็นเครื่องมือครบ ค่าเก่าที่เคยเลือกไว้ไม่มีผล */
+function level(){ return "enthusiast" }
 function setLevel(k,opts){
   if(!RANK.hasOwnProperty(k))return;
   /* รวมกับของเดิม ไม่ใช่เขียนทับทั้งก้อน — ไม่งั้นแพ็กเกจ ภาษา ธีม
      หน่วยวัด และชื่อที่ตั้งไว้ตอน setup หายไปทั้งหมดเพราะแค่เปลี่ยนระดับ */
   try{ localStorage.setItem(KEY,JSON.stringify(
     Object.assign({},read()||{},{v:SETUP_VERSION,level:k,at:Date.now()}))) }catch(e){}
-  D.documentElement.dataset.level=k;
+  D.documentElement.dataset.level="enthusiast";
   /* เปลี่ยนระดับแล้วปรับหน้าเดิมตรง ๆ ไม่โหลดหน้าใหม่
      เพราะการนำทางไป URL เดิม (ทั้ง reload และ replace) ชนกับ
      View Transition ข้ามเอกสาร แล้วหน้าค้างที่สถานะกำลังโหลดถาวร
@@ -5414,11 +5425,12 @@ function has(feat){
 /* ─────────── บังคับใช้กับหน้าจอ ─────────── */
 /* ใส่ระดับไว้ที่ <html> ตั้งแต่ต้น CSS จะได้ซ่อนของที่ไม่ต้องใช้ได้ทันที
    โดยไม่ต้องรอสคริปต์ตัวอื่นวาดเสร็จก่อนแล้วค่อยกะพริบหาย */
-D.documentElement.dataset.level=done()?level():(window.CendonPaint&&window.CendonPaint.level())||"pending";
+D.documentElement.dataset.level=done()||(window.CendonPaint&&window.CendonPaint.level())?"enthusiast":"pending";
 
 /* ตัวเลือกระดับในหน้าโปรไฟล์ของเว็บหลัก — วางไว้บนสุดของกล่องตั้งค่า
    เพราะมันเปลี่ยนหน้าตาทั้งแอป ควรเจอก่อนเรื่องภาษาหรือธีม */
 function mountProfilePicker(){
+  return; /* เลิกใช้ระดับการใช้งานแล้ว */
   const host=D.querySelector("#v-profile .set-card"); if(!host)return;
   if($("lvPick"))return;
   const box=D.createElement("div");
@@ -5464,7 +5476,7 @@ window.spireSetLevel=setLevel;
 window.spireHasFeature=has;
 window.spireLevels=()=>LEVELS.slice();
 window.spireApplySetup=()=>{ const k=level();
-  D.documentElement.dataset.level=k;
+  D.documentElement.dataset.level="enthusiast";
   listeners.forEach(fn=>{ try{ fn(k) }catch(e){} });
   try{ mountProfilePicker() }catch(e){} };
 })();
@@ -5510,15 +5522,7 @@ function body(){
   if(tab==="general"){
     const lv=(window.spireLevel&&window.spireLevel())||"enthusiast";
     const lvs=(window.spireLevels&&window.spireLevels())||[];
-    return `<h2>${t("ระดับการใช้งาน","Experience level")}</h2>
-      <div class="set-grid">${lvs.map(x=>
-        `<button class="set-opt${lv===x.k?" on":""}" data-level="${x.k}"
-          title="${esc(t(x.thd,x.end))}">${t(x.th,x.en)}</button>`).join("")}</div>
-      <p class="set-note">${t(
-        "ยิ่งระดับสูง ยิ่งมีเครื่องมือให้ใช้มากขึ้น เปลี่ยนเมื่อไรก็ได้",
-        "Higher levels unlock more tools. Change it whenever you like.")}</p>
-
-      <h2>${t("ภาษา","Language")}</h2>
+    return `<h2>${t("ภาษา","Language")}</h2>
       <div class="set-grid">${((window.spireLocales&&window.spireLocales())||[]).map(x=>
         `<button class="set-opt${((window.spireLang&&window.spireLang())===x.c)?" on":""}"
           data-lang="${x.c}"><span style="margin-right:6px">${x.flag}</span>${x.name}</button>`
@@ -9808,6 +9812,24 @@ let items=null,loading=false,lastErr="",cachedAt=0,forCar="",stale=false,offline
 
 function car(){ try{const c=window.selCar&&window.selCar(); return c||(window.garage()||[])[0]||null}
   catch(e){ return null } }
+/* เปลี่ยนรถจากหน้าร้านค้าได้เลย ไม่ต้องย้อนไปการาจ — เปลี่ยนคันที่เลือกทั้งแอป (การาจ แชต ใช้คันเดียวกัน) */
+const cars=()=>{try{return window.garage()||[]}catch(e){return []}};
+let carOpen=false;
+function setCar(id){
+  LSs("selCar",id);
+  items=null;lastErr="";cachedAt=0;stale=false;offline=false;carOpen=false;
+  try{D.dispatchEvent(new CustomEvent("spire:car",{detail:{id}}))}catch(e){}
+  render();
+}
+const carSub=c=>{const cp=carParts(c);return [cp.year,cp.mileage?num(cp.mileage)+" "+T("กม.","km"):""].filter(Boolean).join(" · ")||"—"};
+function carRows(c){
+  return cars().map(x=>{const on=!!c&&x.id===c.id;return `<button type="button" class="sp-car sp-carbtn${on?" on":""}" data-car="${esc(x.id)}" aria-pressed="${on}">
+      <span class="ic"><i class="ti ti-car"></i></span>
+      <span class="tx"><b>${esc(x.name)}</b><small>${esc(carSub(x))}</small></span>
+      ${on?`<span class="sp-chip on"><i class="ti ti-check"></i>${T("ใช้คันนี้","Using this")}</span>`:`<span class="sp-chip">${T("เลือก","Choose")}</span>`}
+    </button>`}).join("");
+}
+function wireCars(){D.querySelectorAll("#spMain [data-car]").forEach(b=>b.onclick=()=>{if(b.getAttribute("aria-pressed")!=="true")setCar(b.dataset.car);else{carOpen=false;render()}})}
 function carParts(c){
   if(!c)return {make:"",model:"",year:"",mileage:""};
   const p=String(c.name||"").trim().split(/\s+/);
@@ -9867,12 +9889,7 @@ function cfgView(c,cp){
           "Pick as many as you like — Cendon finds parts that fit your car and sends you to each store's search")}</p>
 
     <div class="sp-lbl">${T("รถที่จะหาอะไหล่ให้","Which car")}</div>
-    ${c?`<div class="sp-car">
-        <span class="ic"><i class="ti ti-car"></i></span>
-        <span class="tx"><b>${esc(c.name)}</b>
-          <small>${[cp.year,cp.mileage?num(cp.mileage)+" "+T("กม.","km"):""].filter(Boolean).join(" · ")||"—"}</small></span>
-        <span class="sp-chip on"><i class="ti ti-check"></i>${T("ใช้คันนี้","Using this")}</span>
-      </div>`
+    ${c?`<div class="sp-cars">${carRows(c)}</div>`
      :`<div class="sp-car"><span class="ic"><i class="ti ti-plus"></i></span>
         <span class="tx"><b>${T("ยังไม่มีรถในการาจ","No car in your garage")}</b>
           <small>${T("เพิ่มรถก่อน แล้วเราจะหาอะไหล่ให้ตรงรุ่น","Add a car and we can match parts to it")}</small></span>
@@ -9899,6 +9916,7 @@ function cfgView(c,cp){
   </div>`;
 }
 function wireCfg(){
+  wireCars();
   const box=$("spApps"); if(!box)return;
   const sel=new Set(picked||[]);
   const count=()=>{ const el=$("spCount");
@@ -9926,14 +9944,15 @@ function resultView(c,cp){
   const chips=(picked||[]).map(k=>{const a=appOf(k); return a?
     `<span class="sp-chip on"><span class="dot" style="width:8px;height:8px;border-radius:2px;background:${a.c}"></span>${esc(a.n)}</span>`:""}).join("");
   const bar=`<div class="sp-bar">
-    <span class="sp-chip"><i class="ti ti-car"></i>${esc(c?c.name:"—")}</span>
+    ${cars().length>1?`<button type="button" class="sp-chip sp-carsw" id="spCarSw" aria-expanded="${carOpen}"><i class="ti ti-car"></i>${esc(c?c.name:"—")}<i class="ti ti-chevron-${carOpen?"up":"down"}"></i></button>`
+      :`<span class="sp-chip"><i class="ti ti-car"></i>${esc(c?c.name:"—")}</span>`}
     ${chips}<span class="grow"></span>
     ${cachedAt?`<span class="sp-chip${stale?" warn":""}">${
       stale?`<i class="ti ti-clock-exclamation"></i>${T("ข้อมูลเก่า","Cached")} `:T("อัปเดต","Updated")+" "}${
       new Date(cachedAt).toLocaleString(EN()?"en-GB":"th-TH",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</span>`:""}
     <button class="btn" id="spRefresh" style="padding:8px 14px"><i class="ti ti-refresh"></i>
       ${T("หาใหม่","Refresh")}</button>
-  </div>`;
+  </div>`+(carOpen?`<div class="sp-carpick">${carRows(c)}</div>`:"");
 
   /* แถบบอกว่าตอนนี้เป็นรายการที่ระบบจัดเอง ไม่ได้ผ่าน AI — พูดตรง ๆ
      ดีกว่าปล่อยให้เข้าใจว่าราคาที่เห็นคือราคาที่ AI ไปสำรวจมาจริง */
@@ -9990,6 +10009,9 @@ function resultView(c,cp){
     "Prices are market estimates, not live listings. Tap a store to see the real price and stock, and always confirm fitment before buying.")}</p>`;
 }
 function wireResults(){
+  const sw=$("spCarSw");
+  if(sw)sw.onclick=()=>{carOpen=!carOpen;render()};
+  wireCars();
   const r=$("spRefresh");
   if(r)r.onclick=()=>fetchItems(true);
 }

@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<script src="/account-paint.js?v=2026-10-11-r1"></script>
+<script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css">
 <script src="/cendon-tour.js" defer></script>
 <script src="/account-actions.js" defer></script>
-<script src="/account.js?v=2026-10-15-r7" defer></script>
+<script src="/account.js?v=2026-10-16-r8" defer></script>
+<script src="/input-guard.js?v=1" defer></script>
 <script src="/cloud-swap.js?v=3" defer></script>
 <meta charset="UTF-8"/>
 <!-- ที่อยู่แบบลึก (/profile/…) — ไฟล์ประกอบทุกตัวอ้างจากรากเว็บเสมอ -->
@@ -4052,9 +4053,9 @@ const LOCALES=[
   {c:"de", name:"Deutsch",      flag:"🇩🇪"},
   {c:"fr", name:"Français",     flag:"🇫🇷"},
   {c:"es", name:"Español",      flag:"🇪🇸"},
-  {c:"pt", name:"Português",    flag:"🇵🇹"},
-  {c:"ar", name:"العربية",       flag:"🇸🇦", rtl:true}
+  {c:"pt", name:"Português",    flag:"🇵🇹"}
 ];
+/* เลิกมีภาษาอาหรับ (อ่านขวาไปซ้าย ทำให้หน้าเพี้ยนหลายจุด) — คนที่เคยเลือกไว้จะกลับไปใช้ภาษาตามเครื่อง */
 const CODES=LOCALES.map(x=>x.c);
 const RTL=LOCALES.filter(x=>x.rtl).map(x=>x.c);
 
@@ -5385,14 +5386,15 @@ function done(){
   if(typeof window.spireSetupDone==="function")return window.spireSetupDone();
   const v=read();return !!(v&&v.v===SETUP_VERSION&&v.level);
 }
-function level(){ const v=read(); return (v&&v.level)||"enthusiast" }
+/* เลิกแบ่งระดับการใช้งาน (พื้นฐาน/ขั้นสูง/ตัวจริง) แล้ว — ทุกคนเห็นเครื่องมือครบ ค่าเก่าที่เคยเลือกไว้ไม่มีผล */
+function level(){ return "enthusiast" }
 function setLevel(k,opts){
   if(!RANK.hasOwnProperty(k))return;
   /* รวมกับของเดิม ไม่ใช่เขียนทับทั้งก้อน — ไม่งั้นแพ็กเกจ ภาษา ธีม
      หน่วยวัด และชื่อที่ตั้งไว้ตอน setup หายไปทั้งหมดเพราะแค่เปลี่ยนระดับ */
   try{ localStorage.setItem(KEY,JSON.stringify(
     Object.assign({},read()||{},{v:SETUP_VERSION,level:k,at:Date.now()}))) }catch(e){}
-  D.documentElement.dataset.level=k;
+  D.documentElement.dataset.level="enthusiast";
   /* เปลี่ยนระดับแล้วปรับหน้าเดิมตรง ๆ ไม่โหลดหน้าใหม่
      เพราะการนำทางไป URL เดิม (ทั้ง reload และ replace) ชนกับ
      View Transition ข้ามเอกสาร แล้วหน้าค้างที่สถานะกำลังโหลดถาวร
@@ -5416,11 +5418,12 @@ function has(feat){
 /* ─────────── บังคับใช้กับหน้าจอ ─────────── */
 /* ใส่ระดับไว้ที่ <html> ตั้งแต่ต้น CSS จะได้ซ่อนของที่ไม่ต้องใช้ได้ทันที
    โดยไม่ต้องรอสคริปต์ตัวอื่นวาดเสร็จก่อนแล้วค่อยกะพริบหาย */
-D.documentElement.dataset.level=done()?level():(window.CendonPaint&&window.CendonPaint.level())||"pending";
+D.documentElement.dataset.level=done()||(window.CendonPaint&&window.CendonPaint.level())?"enthusiast":"pending";
 
 /* ตัวเลือกระดับในหน้าโปรไฟล์ของเว็บหลัก — วางไว้บนสุดของกล่องตั้งค่า
    เพราะมันเปลี่ยนหน้าตาทั้งแอป ควรเจอก่อนเรื่องภาษาหรือธีม */
 function mountProfilePicker(){
+  return; /* เลิกใช้ระดับการใช้งานแล้ว */
   const host=D.querySelector("#v-profile .set-card"); if(!host)return;
   if($("lvPick"))return;
   const box=D.createElement("div");
@@ -5466,7 +5469,7 @@ window.spireSetLevel=setLevel;
 window.spireHasFeature=has;
 window.spireLevels=()=>LEVELS.slice();
 window.spireApplySetup=()=>{ const k=level();
-  D.documentElement.dataset.level=k;
+  D.documentElement.dataset.level="enthusiast";
   listeners.forEach(fn=>{ try{ fn(k) }catch(e){} });
   try{ mountProfilePicker() }catch(e){} };
 })();
@@ -5526,15 +5529,7 @@ function body(){
   if(tab==="general"){
     const lv=(window.spireLevel&&window.spireLevel())||"enthusiast";
     const lvs=(window.spireLevels&&window.spireLevels())||[];
-    return `<h2>${t("ระดับการใช้งาน","Experience level")}</h2>
-      <div class="set-grid">${lvs.map(x=>
-        `<button class="set-opt${lv===x.k?" on":""}" data-level="${x.k}"
-          title="${esc(t(x.thd,x.end))}">${t(x.th,x.en)}</button>`).join("")}</div>
-      <p class="set-note">${t(
-        "ยิ่งระดับสูง ยิ่งมีเครื่องมือให้ใช้มากขึ้น เปลี่ยนเมื่อไรก็ได้",
-        "Higher levels unlock more tools. Change it whenever you like.")}</p>
-
-      <h2>${t("ภาษา","Language")}</h2>
+    return `<h2>${t("ภาษา","Language")}</h2>
       <div class="set-grid">${((window.spireLocales&&window.spireLocales())||[]).map(x=>
         `<button class="set-opt${((window.spireLang&&window.spireLang())===x.c)?" on":""}"
           data-lang="${x.c}"><span style="margin-right:6px">${x.flag}</span>${x.name}</button>`

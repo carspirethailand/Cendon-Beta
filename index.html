@@ -2747,7 +2747,7 @@ async function api(path,o){
   catch(e){throw new Error(ac&&ac.signal.aborted?"เซิร์ฟเวอร์ตอบช้า ลองใหม่อีกครั้ง":"เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง")}
   finally{clearTimeout(tm)}
   let d=null;try{d=await r.json()}catch(e){}
-  if(!r.ok)throw new Error((d&&d.error)||("ระบบยังไม่พร้อม ("+r.status+")"));
+  if(!r.ok)throw Object.assign(new Error((d&&d.error)||("ระบบยังไม่พร้อม ("+r.status+")")),{status:r.status});
   return d;
 }
 function needLogin(){location.href="/login?next="+encodeURIComponent(location.pathname+location.search+location.hash)}
@@ -5456,7 +5456,11 @@ async function reviewOne(a){
         inp.addEventListener("input",()=>{inp.value=fmtId(inp.value)});
         inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();go.click()}});
         go.onclick=()=>busy(go,async()=>{const res=$("idcRes");
-          try{const r=await api("/api/tech/review/idcheck",{body:{uid:a.uid,idNo:inp.value.replace(/\D/g,"")}});
+          const typed=inp.value.replace(/\D/g,"");
+          /* ช่วงรอหลังบ้านรุ่นใหม่ deploy: หลังบ้านเก่ายังไม่มีช่องเทียบ (404) แต่ยังส่งเลขเต็มมา — เทียบบนจอทีมงานไปก่อน
+             หลังบ้านรุ่นใหม่ไม่ส่งเลขเต็มออกมาอีก ทางนี้จึงไม่ถูกใช้ */
+          const idcheck=()=>api("/api/tech/review/idcheck",{body:{uid:a.uid,idNo:typed}}).catch(e=>{if(e.status===404&&a.idNo)return {match:typed===String(a.idNo).replace(/\D/g,"")};throw e});
+          try{const r=await idcheck();
             a.__idok=!!r.match;res.className="idp-r "+(r.match?"ok":"bad");
             res.innerHTML=r.match?'<i class="ti ti-circle-check"></i>ตรงกับที่ผู้สมัครกรอก':'<i class="ti ti-circle-x"></i>ไม่ตรงกับที่ผู้สมัครกรอก — ดูรูปบัตรอีกครั้ง หรือส่งกลับให้ผู้สมัครแก้';
           }catch(e){res.className="idp-r bad";res.innerHTML='<i class="ti ti-alert-triangle"></i>'+esc(e.message)}

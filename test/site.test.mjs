@@ -96,3 +96,24 @@ test('site: เปลี่ยนภาษาแบบเมฆลอยผ่�
   assert.match(js,/\{opacity:1,offset:\.42\},\{opacity:1,offset:\.57\}/);
   assert.match(css,/\.cloudswipe\{position:fixed;inset:0;z-index:200;pointer-events:none/);
 });
+
+/* กันเศษโค้ดหลุดใน CSS: เศษที่ค้างจะไปกลืนกฎถัดไปทั้งกฎ (เคยทำให้ปุ่ม .btn เสียรูปทั้งเว็บ)
+   ตรวจทุกตัวเลือก (selector) ว่าเป็นตัวเลือกจริง ไม่มีค่า CSS ปนมา และปีกกาเปิด-ปิดครบ */
+test('site: site.css โครงสร้างถูกต้อง — ไม่มีเศษโค้ดค้างกลืนกฎอื่น',()=>{
+  const css=read('site/static/site.css').replace(/\/\*[\s\S]*?\*\//g,'');
+  let depth=0,prelude='',bad=[];
+  for(const ch of css){
+    if(ch==='{'){const sel=prelude.trim();
+      /* ตัวเลือกจริงไม่มีฟังก์ชันค่าสี/รูปทรง และไม่ขึ้นต้นด้วยตัวเลข (ยกเว้นจังหวะใน @keyframes เช่น 0%,18% · from · to) */
+      const keyframe=/^(\d+(\.\d+)?%\s*,?\s*)+$|^(from|to)$/.test(sel);
+      if(!sel||(!keyframe&&!/^@/.test(sel)&&/gradient\(|rgba?\(|;|^\d|^\.\d/.test(sel)))bad.push(sel.slice(0,80));
+      depth++;prelude='';}
+    else if(ch==='}'){depth--;assert.ok(depth>=0,'ปีกกาปิดเกิน');prelude='';}
+    else if(ch===';'&&depth>0)prelude='';
+    else prelude+=ch;
+  }
+  assert.equal(depth,0,'ปีกกาเปิด-ปิดไม่ครบ');
+  assert.deepEqual(bad,[],'ตัวเลือกแปลก ๆ (มีเศษโค้ดปน)');
+  for(const sel of ['.btn','.btn.ink','.btn.soft','.lang','.sitebar','.foot','.toc','.hero','.card','.faq'])
+    assert.match(css,new RegExp('(^|\\})\\s*'+sel.replace(/\./g,'\\.')+'\\{','m'),`ต้องมีกฎ ${sel} ที่ไม่ถูกกลืน`);
+});

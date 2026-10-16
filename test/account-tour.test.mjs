@@ -108,12 +108,13 @@ test('absent targets exit after a bounded wait and cancellation clears pending d
   assert.equal(absent,false);assert.equal(f.get('ct-root'),undefined);
   const pending=f.api.start({targets:['#absent']});f.api.stop();assert.equal(await pending,false);
 });
-test('paper styles preserve compact mobile flow, keyboard focus, and reduced motion',()=>{
+test('account styles preserve compact mobile flow, keyboard focus, and reduced motion',()=>{
   assert.match(css,/\.ac-screen\{[^}]*overflow:auto/);assert.match(css,/100dvh/);assert.match(css,/safe-area-inset-bottom/);
   assert.match(css,/\.ac-dob\{display:grid;grid-template-columns:minmax\(0,1fr\)/);
   assert.match(css,/button:focus-visible/);assert.match(css,/prefers-reduced-motion:reduce/);
-  assert.match(css,/\.ac-primary\{flex:none/);assert.match(css,/\.ac-actions>\.ac-primary\{flex:1\}/);
-  assert.match(css,/\.ac-error\[hidden\]\{display:block!important;visibility:hidden\}/);
+  assert.match(css,/\.ac-primary\{flex:none/);assert.match(css,/\.ac-actions>\.ac-primary,#accountFlow \.ac-wide\{flex:1;width:100%\}/);
+  assert.match(css,/\.ac-error\[hidden\]\{display:none!important\}/,'an empty error line takes no space in the tighter sign-in form');
+  assert.match(css,/@media\(min-width:900px\)/,'computers get the two-column sign-in');
   assert.match(css,/\.ct-scrim\{[^}]*rgba\(0,0,0,\.88\)/);assert.match(css,/\.ct-hole\{[^}]*background:transparent/);
   assert.doesNotMatch(css,/backdrop-filter|url\(/);
 });

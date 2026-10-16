@@ -3,7 +3,7 @@
    เทสต์ test/site.test.mjs ตรวจว่ามีชื่อผู้ให้บริการครบทุกตัว */
 import {L,P,UL,TABLE,NOTE,I,docBody,EMAIL} from '../layout.mjs';
 
-export const VERSION='1.8';
+export const VERSION='1.9';
 export const EFFECTIVE=['16 ตุลาคม 2569','16 October 2026'];
 
 /* ผู้ให้บริการภายนอกทุกตัวที่ได้รับข้อมูล — ชื่อในคอลัมน์แรกต้องตรงกับรายการใน test/site.test.mjs */
@@ -12,8 +12,11 @@ const PROCESSORS=[
     ['เว็บและหลังบ้านของแอป ฐานข้อมูล ไฟล์ที่คุณแนบ AI สำรอง (Workers AI) และการช่วยดูรูปอู่ของผู้สมัครช่างเมื่อยินยอม','Hosting the app and its back end, the database, files you attach, backup AI (Workers AI), and helping review applicant workshop photos when they consent'],
     ['ข้อมูลทุกอย่างในบัญชีที่เก็บบนเซิร์ฟเวอร์ ที่อยู่ IP','All account data stored on our servers; IP address']],
   ['Google Firebase Authentication',
-    ['ล็อกอินและยืนยันว่าเป็นคุณจริงทุกครั้งที่เรียกใช้ระบบ','Signing in and proving it is you on every request'],
-    ['ชื่อ อีเมล รูปโปรไฟล์ รหัสบัญชี','Name, email, profile photo, account ID']],
+    ['ล็อกอินและยืนยันว่าเป็นคุณจริงทุกครั้งที่เรียกใช้ระบบ · เก็บรหัสผ่าน (ถ้าสมัครด้วยอีเมล) แบบเข้ารหัสทางเดียว — Cendon ไม่เห็นรหัสผ่านของคุณ · ส่งอีเมลยืนยันและลิงก์ตั้งรหัสผ่านใหม่','Signing in and proving it is you on every request · storing your password (if you sign up with email) as a one-way hash — Cendon never sees it · sending verification and password-reset emails'],
+    ['ชื่อ อีเมล รูปโปรไฟล์ รหัสบัญชี รหัสผ่านแบบแฮช (เฉพาะบัญชีอีเมล)','Name, email, profile photo, account ID, hashed password (email accounts only)']],
+  ['Apple (Sign in with Apple)',
+    ['ล็อกอินด้วยบัญชี Apple เมื่อคุณเลือกช่องทางนี้','Signing in with your Apple account when you choose it'],
+    ['ชื่อ และอีเมล (หรืออีเมลส่งต่อที่ Apple ซ่อนอีเมลจริงให้)','Name and email (or the private relay address Apple creates)']],
   ['Google Gemini',
     ['AI หลัก: ตอบคำถาม ดูรูป ฟังเสียง คุยด้วยเสียงสด สรุปข่าว ค้นสเปกรถ','Main AI: answers, photo and sound analysis, live voice conversation, news summaries, car spec research'],
     ['คำถาม ไฟล์แนบ ข้อมูลรถ และบริบทตามหัวข้อ 4 · เสียงสดส่งจากเครื่องคุณถึง Google โดยตรง','Your question, attachments, car details and the context in section 4 · live voice goes from your device straight to Google']],
@@ -29,9 +32,6 @@ const PROCESSORS=[
   ['Didit',
     ['ยืนยันตัวตนผู้สมัครเป็นช่าง','Identity verification for mechanic applicants'],
     ['รูปบัตรประชาชน ภาพใบหน้า/การตรวจว่าเป็นคนจริง ผลการตรวจ','ID document images, face/liveness check, verification result']],
-  ['Resend',
-    ['ส่งรหัสยืนยันทางอีเมล (เมื่อเปิดใช้การล็อกอินด้วยอีเมล)','Sending one-time sign-in codes by email (when email sign-in is enabled)'],
-    ['อีเมลของคุณ รหัสยืนยัน','Your email address and the code']],
   ['Web Push',
     ['ส่งการแจ้งเตือนถึงเบราว์เซอร์ของคุณ ผ่านบริการของผู้ผลิตเบราว์เซอร์ (เช่น Google Apple Mozilla Microsoft)','Delivering notifications to your browser through its maker’s push service (e.g. Google, Apple, Mozilla, Microsoft)'],
     ['ที่อยู่รับแจ้งเตือนของเบราว์เซอร์ · เนื้อหาถูกเข้ารหัส ผู้ส่งต่ออ่านไม่ได้','Your browser’s push address · contents are encrypted and unreadable in transit']],
@@ -64,7 +64,7 @@ const sections=[
     P('เราเก็บเท่าที่ต้องใช้ทำงานให้คุณ ส่วนใหญ่คุณเป็นคนใส่เอง และหลายอย่างเลือกได้ว่าจะให้หรือไม่',
       'We keep what we need to do the job for you. Most of it you enter yourself, and much of it is optional.')+
     TABLE([['ประเภท','Type'],['ตัวอย่าง','Examples'],['มาจากไหน','Where it comes from']],[
-      [['บัญชี','Account'],['ชื่อ อีเมล รูปโปรไฟล์ รหัสบัญชี','Name, email, profile photo, account ID'],['Google หรือ LINE ตอนล็อกอิน','Google or LINE when you sign in']],
+      [['บัญชี','Account'],['ชื่อ อีเมล รูปโปรไฟล์ รหัสบัญชี','Name, email, profile photo, account ID'],['Google, Apple หรืออีเมลที่คุณสมัคร ตอนล็อกอิน','Google, Apple or the email you sign up with, when you sign in']],
       [['โปรไฟล์ตอนเริ่มใช้','Setup profile'],['ชื่อที่ให้เรียก วันเกิด (เพื่อยืนยันอายุ 18 ปีขึ้นไป) ภาษา หน่วยระยะทาง สกุลเงิน ระดับความรู้เรื่องรถ เวลาและเวอร์ชันข้อกำหนด/นโยบายที่คุณยอมรับ','Preferred name, date of birth (to confirm you are 18+), language, distance unit, currency, car-knowledge level, when and which terms/policy versions you accepted'],['คุณ','You']],
       [['รถและการดูแล','Cars and upkeep'],['ยี่ห้อ รุ่น ปี เลขไมล์ เลขตัวถัง (ถ้าใส่) สมุดรถ (ซ่อม น้ำมัน ทริป — ซิงก์ตามบัญชีให้เห็นทุกเครื่อง) การแจ้งเตือนและปฏิทินค่าใช้จ่าย อุปกรณ์ OBD (ถ้าเชื่อม) · Car Passport ที่คุณเลือกเปิด','Make, model, year, mileage, VIN (if added), logbook (service, fuel, trips — synced to your account so every device sees it), reminders and the cost calendar, OBD device (if paired) · any Car Passport you choose to publish'],['คุณ','You']],
       [['การคุยกับ AI','AI conversations'],['คำถาม รูป เสียง วิดีโอ ที่คุณส่ง · บันทึกความจำสั้น ๆ เรื่องรถของคุณที่ AI จดไว้ใช้ครั้งหน้า','Questions, photos, audio and video you send · short memory notes about your car the AI keeps for next time'],['คุณ','You']],
@@ -154,7 +154,6 @@ const sections=[
       [['บันทึกการใช้ AI','AI usage logs'],['เก็บเฉพาะจำนวนการใช้ (ไม่มีข้อความแชต) · บันทึกข้อผิดพลาดเก็บแค่ราว 300 รายการล่าสุดของทั้งระบบ คำถามตัดเหลือ 80 ตัวอักษร','Usage counts only (no chat text) · error logs keep only the latest ~300 entries system-wide, questions cut to 80 characters']],
       [['แชตกับบอท LINE','LINE bot chat'],['8 ข้อความล่าสุด เริ่มบทสนทนาใหม่เมื่อเงียบเกิน 2 ชั่วโมง ลบเมื่อรีเซ็ตหรือลบบัญชี','Last 8 messages; a new conversation starts after 2 hours of quiet; erased on reset or account deletion']],
       [['ลิงก์เชื่อม LINE','LINE link tokens'],['15 นาที ใช้ได้ครั้งเดียว','15 minutes, single use']],
-      [['รหัสยืนยันทางอีเมล','Email sign-in codes'],['10 นาที เก็บแบบแฮช','10 minutes, stored hashed']],
       [['ใบงาน ข้อความกับช่าง รีวิว','Jobs, mechanic messages, reviews'],['เก็บเป็นหลักฐานของทั้งสองฝ่าย ข้อความที่แก้ไขเก็บต้นฉบับไว้ใช้ตัดสินข้อพิพาท · เมื่อลบบัญชี: บทสนทนาถูกลบ ใบงานที่จบแล้วตัดชื่อ เบอร์ ที่อยู่ และหมายเหตุออก รีวิวเหลือเฉพาะคะแนน','Kept as a record for both sides; edited messages keep the original for disputes · on account deletion: conversations are erased, finished jobs lose name, phone, address and notes, reviews keep only the star rating']],
       [['ลิงก์ติดตามงาน','Job share links'],['24 ชั่วโมง ยกเลิกได้ทุกเมื่อ','24 hours; revocable anytime']],
       [['ตำแหน่งช่างระหว่างเดินทาง','Mechanic position while on the way'],['เก็บแค่จุดล่าสุดจุดเดียว (ไม่เก็บเส้นทาง) ลบทันทีเมื่อเริ่มซ่อม ยกเลิก หรือเปลี่ยนสถานะ · ลูกค้าเห็นเฉพาะจุดที่ส่งมาภายใน 3 นาทีล่าสุด','Only the single latest point (no route history), deleted as soon as the repair starts, the job is cancelled or its status changes · customers only see a point sent within the last 3 minutes']],
@@ -207,6 +206,7 @@ const sections=[
     P('เมื่อระบบเปลี่ยนวิธีเก็บหรือใช้ข้อมูล เราจะแก้หน้านี้ให้ตรงทันที เปลี่ยนเลขเวอร์ชันและวันที่ด้านบน และถ้าเป็นการเปลี่ยนสาระสำคัญ จะแจ้งในแอปก่อนมีผล การเปลี่ยนที่ต้องได้รับความยินยอมใหม่ เราจะขอความยินยอมใหม่ก่อน',
       'Whenever the way we collect or use data changes, we update this page straight away, with a new version number and date at the top. Material changes are announced in the app before they take effect, and anything that needs fresh consent will ask for it first.')+
     UL([
+      ['<b>1.9 · 16 ต.ค. 2569</b> — เข้าสู่ระบบด้วย Google, Apple หรืออีเมล + รหัสผ่าน (เลิกใช้รหัสยืนยันทางอีเมล จึงไม่มีผู้ส่งอีเมล Resend แล้ว) · รหัสผ่านเก็บแบบแฮชที่ Google Firebase Cendon ไม่เห็น · ระบบล็อกอินย้ายไปบัญชี Firebase ใหม่ของ Cendon (ผู้ให้บริการเดิม) อาจต้องเข้าสู่ระบบใหม่หนึ่งครั้ง · คลิปตอนเปิดหน้าเข้าสู่ระบบไม่เก็บหรือส่งข้อมูลใด ๆ','<b>1.9 · 16 Oct 2026</b> — Sign in with Google, Apple or email + password (one-time email codes are retired, so Resend is no longer used) · passwords are stored hashed by Google Firebase and Cendon never sees them · sign-in moved to Cendon’s new Firebase project (same provider); you may need to sign in once more · the opening clip on the sign-in page collects and sends nothing'],
       ['<b>1.8 · 16 ต.ค. 2569</b> — กระดิ่งแจ้งเตือน: แจ้งในเครื่องเมื่อช่างเสนอราคา รับงาน กำลังมา ซ่อมเสร็จ หรือส่งข้อความ (ผ่าน Web Push เมื่อคุณกดเปิด) และเมื่อ AI ตอบเสร็จตอนคุณสลับไปแอปอื่น · ข้อความแจ้งเตือนมีแค่ชื่อร้าน รุ่นรถ และสถานะ ไม่มีชื่อ เบอร์ หรือที่อยู่ลูกค้า · กล่องแจ้งเตือนเก็บในเครื่องนี้เท่านั้น','<b>1.8 · 16 Oct 2026</b> — Notification bell: device alerts when a mechanic quotes, takes the job, is on the way, finishes or messages you (via Web Push once you turn it on), and when the AI finishes replying while you’re in another app · alerts carry only the shop name, car model and status — never a customer’s name, phone or address · the inbox is kept on this device only'],
       ['<b>1.7 · 16 ต.ค. 2569</b> — Cendon Valet: เมื่อคุณอนุญาต AI จะได้รายชื่อรถในการาจและรู้ว่าบัญชีมีร้านหรือไม่ เพื่อเสนอการ์ดคำสั่ง (ทำจริงเมื่อคุณกดยืนยันเท่านั้น)','<b>1.7 · 16 Oct 2026</b> — Cendon Valet: once you allow it, the AI receives your garage car list and whether the account has a shop, so it can propose action cards (carried out only when you confirm)'],
       ['<b>1.6 · 16 ต.ค. 2569</b> — ข้อกำหนด: คำขอ/ประกาศ/ใบเสนอราคาที่ยังไม่ตกลงกันมีอายุ (ด่วน 3 ชม. · 48 ชม. · 7 วัน) หมดแล้วระบบยกเลิกให้ ใบงานที่ยกเลิกยังอยู่ในประวัติของคุณตามเดิม ไม่มีการเก็บข้อมูลเพิ่ม','<b>1.6 · 16 Oct 2026</b> — terms: requests, posts and quotes that aren’t agreed expire (urgent 3 h · 48 h · 7 days) and the system cancels them; cancelled jobs stay in your history as before, no extra data collected'],

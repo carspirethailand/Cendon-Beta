@@ -20,7 +20,7 @@ const complete = (uid = 'user-A', overrides = {}) => ({ status: 'completed', com
  */
 function fixture({ uid = null, pathname = '/garage', search = '', store = new Map(), sessionStore = new Map(), server = required(), transport, token, proxyAuth = false, restoreAfterMs = 0, identityPending = false, paint = false } = {}) {
   let document, callback, clock = Date.UTC(2026, 9, 10, 12), timerId = 0;
-  const events = new Map(), timers = new Map(), calls = [], oauth = [], customTokens = [], marks = [], navigations = [], tours = [], paints=[];
+  const events = new Map(), timers = new Map(), calls = [], oauth = [], customTokens = [], marks = [], navigations = [], tours = [], paints=[], emails = [];
   const decode = text => String(text).replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
   const attributes = text => {
     const out = {};
@@ -97,8 +97,14 @@ function fixture({ uid = null, pathname = '/garage', search = '', store = new Ma
     async signInWithPopup(provider) { oauth.push({ kind: provider.kind, scopes: provider.scopes, params: provider.params }); },
     async signInWithRedirect(provider) { oauth.push({ kind: provider.kind, redirect: true }); },
     async signInWithCustomToken(value) { customTokens.push(value); },
-    signInWithEmailAndPassword() { throw new Error('Password authentication must not be used'); },
-    createUserWithEmailAndPassword() { throw new Error('Password registration must not be used'); },
+    async signInWithEmailAndPassword(email, password) { emails.push({ kind: 'in', email, password, lang: this.languageCode });
+      if (password !== 'correct horse') { const e = new Error('Firebase: Error (auth/invalid-credential).'); e.code = 'auth/invalid-credential'; throw e; }
+      this.currentUser = user('mail-user'); callback(this.currentUser); return { user: this.currentUser }; },
+    async createUserWithEmailAndPassword(email, password) { emails.push({ kind: 'up', email, password });
+      const u = { ...user('new-user'), sendEmailVerification: async options => emails.push({ kind: 'verify', url: options && options.url }) };
+      this.currentUser = u; callback(u); return { user: u }; },
+    async sendPasswordResetEmail(email, options) { emails.push({ kind: 'reset', email, url: options && options.url, lang: this.languageCode });
+      if (email === 'nobody@unit.test') { const e = new Error('Firebase: Error (auth/user-not-found).'); e.code = 'auth/user-not-found'; throw e; } },
   });
   class GoogleProvider { constructor() { this.kind = 'google'; this.scopes = []; } setCustomParameters(params) { this.params = params; } }
   class AppleProvider { constructor(kind) { this.kind = kind; this.scopes = []; } addScope(scope) { this.scopes.push(scope); } }
@@ -138,13 +144,14 @@ function fixture({ uid = null, pathname = '/garage', search = '', store = new Ma
   vm.runInNewContext(source, sandbox);
   const root = () => document.getElementById('accountFlow');
   const emit = (name, target, extra = {}) => { for (const fn of events.get(name) || []) fn({ target, preventDefault() {}, ...extra }); };
-  const button = selector => root()?.querySelectorAll('button').find(el => selector.startsWith('data-provider=') ? el.dataset.provider === selector.slice(14) : el.hasAttribute(selector));
+  /* 'data-x' = มีแอตทริบิวต์นี้ · 'data-x=y' = แอตทริบิวต์นี้มีค่า y */
+  const button = selector => root()?.querySelectorAll('button').find(el => { const i = selector.indexOf('='); return i > 0 ? el.getAttribute(selector.slice(0, i)) === selector.slice(i + 1) : el.hasAttribute(selector); });
   const click = selector => { const el = button(selector); assert.ok(el, 'Rendered button exists: ' + selector); emit('click', el); };
   const fill = (values, name = 'input') => {
     for (const [key, value] of Object.entries(values)) { const el = root()?.querySelector(`[name="${key}"]`); assert.ok(el, 'Rendered field exists: ' + key); if (el.type === 'checkbox') el.checked = !!value; else el.value = String(value); emit(name, el); }
   };
   const submit = () => { assert.ok(root()?.querySelector('form')); emit('submit', root().querySelector('form')); };
-  return { window, api: window.CendonAccount, auth, sandbox, document, store, sessionStore, calls, marks, navigations, tours, oauth, customTokens, paints, root, click, fill, submit,
+  return { window, api: window.CendonAccount, auth, sandbox, document, store, sessionStore, calls, marks, navigations, tours, oauth, customTokens, paints, emails, root, click, fill, submit,
     value: key => JSON.parse(store.get(key) || 'null'),
     switchAccount(id) { auth.currentUser = user(id); callback(auth.currentUser); },
     advance(ms) { clock += ms; for (const [id, timer] of [...timers]) if (timer.at <= clock) { timers.delete(id); timer.fn(); } },
@@ -160,17 +167,22 @@ async function wizardToCurrency(f) {
   assert.ok(f.root().querySelector('[name="currency"]'));
 }
 
-test('account flow: auth offers exactly Google, Apple, Email and never invokes a password API', async () => {
-  const f = fixture({ pathname: '/login' });
-  assert.deepEqual(f.root().querySelectorAll('button').filter(el => el.dataset.provider).map(el => el.dataset.provider), ['google', 'apple', 'email']);
-  assert.equal(f.root().querySelector('input[type="password"]'), null);
-  assert.doesNotMatch(source, /signInWithEmailAndPassword|createUserWithEmailAndPassword|sendPasswordResetEmail/);
+test('account flow: sign-in offers Google, Apple and email + password; the password never reaches the page markup', async () => {
+  const f = fixture({ pathname: '/login' }); await settle();
+  assert.deepEqual(f.root().querySelectorAll('button').filter(el => el.dataset.provider).map(el => el.dataset.provider), ['google', 'apple']);
+  assert.equal(f.root().querySelector('input[name="email"]').getAttribute('type'), 'email');
+  assert.equal(f.root().querySelector('input[name="password"]').getAttribute('type'), 'password');
+  assert.equal(f.root().querySelector('input[name="password"]').getAttribute('autocomplete'), 'current-password');
   f.click('data-provider=google'); await settle();
   f.click('data-provider=apple'); await settle();
   assert.deepEqual(f.oauth.map(item => item.kind), ['google', 'apple.com']);
   assert.deepEqual(clone(f.oauth[1].scopes), ['email', 'name']);
+  f.fill({ email: '  person@unit.test ', password: 'correct horse' }); f.submit(); await settle();
+  assert.deepEqual(clone(f.emails[0]), { kind: 'in', email: 'person@unit.test', password: 'correct horse', lang: 'th' });
+  assert.ok(f.paints.every(html => !html.includes('correct horse')), 'the typed password is never written into HTML');
+  assert.equal([...f.store.values(), ...f.sessionStore.values()].some(v => v.includes('correct horse')), false, 'nor into storage');
+  assert.equal(f.calls.some(c => c.path.startsWith('/api/auth/email/')), false, 'the old email-code endpoints are unused');
 });
-
 test('account flow: old global setup or another UID cannot complete a new account', async () => {
   for (const old of [{ v: 2, name: 'Legacy', accountComplete: true }, { v: 3, uid: 'user-A', name: 'Foreign', accountComplete: true, birthDate: '1990-01-01' }]) {
     const store = new Map([['spire_setup', JSON.stringify(old)]]), f = fixture({ uid: 'user-B', store }); await settle();
@@ -287,26 +299,39 @@ test('account flow: pending tutorial starts on home only and skip persists once 
   assert.equal(privatePage.tours.length, 0);
 });
 
-test('account flow: unavailable OTP stays in the email form and never claims a code was sent', async () => {
-  const f = fixture({ pathname: '/login', transport: call => call.path === '/api/auth/config' ? response({ emailOtpReady: false, otpLength: 6 }) : call.path === '/api/auth/email/request' ? response({ code: 'auth/unavailable' }, 503) : undefined });
-  f.click('data-provider=email'); f.fill({ email: 'person@unit.test' }); f.submit(); await settle();
-  assert.ok(f.root().querySelector('[name="email"]')); assert.equal(f.root().querySelector('[name="code"]'), null);
-  assert.doesNotMatch(f.root().innerHTML, /Code sent to|ส่งรหัสไปที่/); assert.equal(f.customTokens.length, 0);
+test('account flow: a wrong password shows one neutral message and keeps the typed email', async () => {
+  const f = fixture({ pathname: '/login' }); await settle();
+  f.fill({ email: 'person@unit.test', password: 'wrong' }); f.submit(); await settle();
+  assert.match(f.root().innerHTML, /อีเมลหรือรหัสผ่านไม่ถูกต้อง/); assert.equal(f.auth.currentUser, null);
+  assert.equal(f.root().querySelector('[name="email"]').getAttribute('value'), 'person@unit.test');
+  f.fill({ email: 'not-an-email', password: 'x' }); f.submit(); await settle();
+  assert.equal(f.emails.length, 1, 'an invalid email never reaches Firebase'); assert.match(f.root().innerHTML, /กรุณาใส่อีเมลให้ถูกต้อง/);
+});
+test('account flow: create account needs 8+ characters, sends a verification link back to /login, then opens first-use setup', async () => {
+  const f = fixture({ pathname: '/login' }); await settle();
+  f.click('data-mode=up'); await settle();
+  assert.match(f.root().innerHTML, /สร้างบัญชี Cendon/);
+  assert.equal(f.root().querySelector('[name="password"]').getAttribute('autocomplete'), 'new-password');
+  f.fill({ email: 'new@unit.test', password: 'short' }); f.submit(); await settle();
+  assert.equal(f.emails.length, 0); assert.match(f.root().innerHTML, /อย่างน้อย 8 ตัวอักษร/);
+  f.fill({ email: 'new@unit.test', password: 'long enough' }); f.submit(); await settle();
+  assert.deepEqual(f.emails.map(e => e.kind), ['up', 'verify']);
+  assert.equal(f.emails[1].url, 'https://cendon.unit.test/login');
+  assert.ok(f.root().querySelector('[name="terms"]'), 'a brand-new account goes straight into first-use setup');
 });
 
-test('account flow: email code state appears after acknowledgement and only six digits can be verified', async () => {
-  const pending = deferred(), f = fixture({ pathname: '/login', transport: call => call.path === '/api/auth/email/request' ? pending.promise : undefined });
-  f.click('data-provider=email'); f.fill({ email: 'person@unit.test' }); f.submit(); await settle();
-  assert.equal(f.root().querySelector('[name="code"]'), null); assert.doesNotMatch(f.root().innerHTML, /Code sent to|ส่งรหัสไปที่/);
-  pending.resolve(response({ challengeId: 'unit-only-challenge', expiresIn: 600, resendAfter: 60 })); await settle();
-  const field = f.root().querySelector('[name="code"]'); assert.ok(field);
-  assert.equal(field.getAttribute('autocomplete'), 'one-time-code'); assert.equal(field.getAttribute('pattern'), '[0-9]{6}');
-  f.fill({ code: '12345' }); f.submit(); await settle(); assert.equal(f.calls.some(call => call.path === '/api/auth/email/verify'), false);
-  f.fill({ code: '012345' }); f.submit(); await settle();
-  assert.equal(f.calls.find(call => call.path === '/api/auth/email/verify').body.code, '012345');
-  assert.deepEqual(f.customTokens, ['unit-only-custom-token']);
+test('account flow: forgot password always answers the same way, whether or not the email has an account', async () => {
+  for (const email of ['person@unit.test', 'nobody@unit.test']) {
+    const f = fixture({ pathname: '/login' }); await settle();
+    f.fill({ email }); f.click('data-mode=reset'); await settle();
+    assert.match(f.root().innerHTML, /ตั้งรหัสผ่านใหม่/); assert.equal(f.root().querySelector('[name="password"]'), null);
+    assert.equal(f.root().querySelector('[name="email"]').getAttribute('value'), email, 'the email typed before switching is kept');
+    f.submit(); await settle();
+    assert.deepEqual(clone(f.emails), [{ kind: 'reset', email, url: 'https://cendon.unit.test/login', lang: 'th' }]);
+    assert.match(f.root().innerHTML, /ถ้ามีบัญชีที่ใช้อีเมลนี้/); assert.doesNotMatch(f.root().innerHTML, /ไม่พบ|not found/i);
+    f.click('data-mode=in'); await settle(); assert.ok(f.root().querySelector('[name="password"]'));
+  }
 });
-
 test('account flow: safe destinations reject external URLs and backslashes while retaining LINE job queries', () => {
   const { api } = fixture();
   for (const next of ['https://evil.unit.test/garage', '//evil.unit.test/chat', 'javascript:alert(1)', 'data:text/html,hi', '/not-a-page', '/garage\\?job=1', '\\garage', '/\\evil.unit.test/garage']) assert.equal(api.safeNext(next), '/', next);
@@ -395,23 +420,15 @@ test('account flow: duplicate SDK-ready event cannot reopen a completed account 
   await settle();assert.equal(f.api.ready(),true);assert.equal(f.root().hidden,true);assert.equal(f.calls.length,before);
 });
 
-test('account flow: email challenge survives refresh without storing the verification code',async()=>{
-  const sessionStore=new Map();let f=fixture({pathname:'/login',sessionStore});await settle();
-  f.click('data-provider=email');f.fill({email:'preview@example.test'});f.submit();await settle();
-  f.fill({code:'123456'});
-  const checkpoint=JSON.parse(sessionStore.get('cendon_email_challenge'));
-  assert.equal(checkpoint.email,'preview@example.test');assert.ok(checkpoint.id);
-  assert.equal(Object.hasOwn(checkpoint,'code'),false);assert.equal(JSON.stringify(checkpoint).includes('123456'),false);
-  for(let i=0;i<6;i++){f=fixture({pathname:'/login',sessionStore});await settle();assert.ok(f.root().querySelector('[name="code"]'));assert.equal(f.root().querySelector('[name="code"]').value,'');}
-  f.click('data-change-email');assert.equal(sessionStore.has('cendon_email_challenge'),false);assert.ok(f.root().querySelector('[name="email"]'));
+test('account flow: show/hide password keeps what was typed and never stores it',async()=>{
+  const sessionStore=new Map(),f=fixture({pathname:'/login',sessionStore});await settle();
+  f.fill({email:'preview@example.test',password:'my secret 123'});
+  f.click('data-eye');assert.equal(f.root().querySelector('[name="password"]').getAttribute('type'),'text');
+  assert.equal(f.root().querySelector('[name="password"]').value,'my secret 123');assert.equal(f.root().querySelector('[data-eye]').getAttribute('aria-pressed'),'true');
+  f.click('data-eye');assert.equal(f.root().querySelector('[name="password"]').getAttribute('type'),'password');
+  assert.equal([...sessionStore.values(),...f.store.values()].some(v=>v.includes('my secret')),false);
+  assert.ok(f.paints.every(html=>!html.includes('my secret')));
 });
-
-test('account flow: resend cooldown only enables resend and does not erase entered digits',async()=>{
-  const f=fixture({pathname:'/login'});await settle();f.click('data-provider=email');f.fill({email:'preview@example.test'});f.submit();await settle();
-  f.fill({code:'๑๒๓'});assert.equal(f.root().querySelector('[name="code"]').value,'123');
-  f.advance(60000);assert.equal(f.root().querySelector('[name="code"]').value,'123');assert.equal(f.root().querySelector('[data-resend]').disabled,false);
-});
-
 test('account flow: sign out remains available without accepting the onboarding agreement',async()=>{
   const f=fixture({uid:'user-A',pathname:'/login'});await settle();f.click('data-switch-account');await settle();
   assert.equal(f.auth.currentUser,null);assert.equal(f.api.ready(),false);assert.ok(f.root().querySelector('[data-provider="google"]'));
@@ -436,13 +453,11 @@ test('account assets resolve from the root before a deep-link base element and o
   for(const name of ['account.css','account.js','account-actions.js','auth-bootstrap.js','cendon-tour.js'])assert.match(sw,new RegExp("'\\./"+name.replace('.','\\.')+"(?:\\?[^']*)?'"),name+' precached');
 });
 
-test('account flow: unconfigured email is hidden and cannot claim delivery',async()=>{
+test('account flow: email sign-in does not depend on the old email-code backend setting',async()=>{
   const f=fixture({pathname:'/login',transport:c=>c.path==='/api/auth/config'?response({emailOtpReady:false}):undefined});await settle();
-  assert.equal(f.root().querySelector('[data-provider="email"]'),null,'a button that cannot work is not shown');
-  assert.equal(f.root().querySelector('[name="email"]'),null);
-  assert.equal(f.calls.some(c=>c.path==='/api/auth/email/request'),false);
+  assert.ok(f.root().querySelector('[name="email"]'));assert.ok(f.root().querySelector('[name="password"]'));
+  assert.equal(f.calls.some(c=>c.path.startsWith('/api/auth/email/')),false);
 });
-
 test('account flow: missing approved policy never opens a consent form or grants completion',async()=>{
   const f=fixture({uid:'user-A',server:{...required(),policy:{enabled:false,privacyUrl:null}}});await settle();
   assert.equal(f.api.completed(),false);assert.equal(f.api.ready(),false);assert.equal(f.root().querySelector('[name="terms"]'),null);
@@ -461,12 +476,13 @@ test('legacy decorated login art is absent from both the dedicated login and nat
   const chat=readFileSync(new URL('../chat.html',import.meta.url),'utf8');const pane=chat.match(/<section[^>]*id="v-login"[\s\S]*?<\/section>/)[0];assert.doesNotMatch(pane,/logo-halo|big-logo|<svg|login\.google/);
 });
 
-test('account flow: unavailable Apple and Email are hidden while Google remains actionable',async()=>{
+test('account flow: Apple is always offered; if it is not switched on yet the person gets a calm message, not a dead button',async()=>{
   const f=fixture({pathname:'/login',transport:c=>c.path==='/api/auth/config'?response({emailOtpReady:false,appleAuthReady:false}):undefined});await settle();
-  assert.equal(f.root().querySelector('[data-provider="apple"]'),null);assert.equal(f.root().querySelector('[data-provider="email"]'),null);
-  assert.equal(f.root().querySelector('[data-provider="google"]').disabled,false);
+  assert.ok(f.root().querySelector('[data-provider="apple"]'));assert.equal(f.root().querySelector('[data-provider="google"]').disabled,false);
+  f.auth.signInWithPopup=async()=>{const e=new Error('Firebase: Error (auth/operation-not-allowed).');e.code='auth/operation-not-allowed';throw e};
+  f.click('data-provider=apple');await settle();
+  assert.match(f.root().innerHTML,/ช่องทางนี้ยังไม่เปิดให้ใช้/);assert.equal(f.root().querySelector('[data-provider="apple"]').disabled,false);
 });
-
 test('account flow: a stalled provider popup cannot keep every login button disabled forever',async()=>{
   const pending=deferred(),f=fixture({pathname:'/login'});f.auth.signInWithPopup=()=>pending.promise;await settle();
   f.click('data-provider=google');await settle();assert.equal(f.root().querySelector('[data-provider="google"]').disabled,true);
@@ -550,4 +566,16 @@ test('required or denied server responses revoke consumed paint context and prev
     assert.equal(f.document.documentElement.dataset.gate,'1');assert.equal(f.api.completed(),false);assert.equal(f.window.CendonPaint.prepare('/chat'),false);
     assert.equal(f.store.has('cendon_paint_identity'),false);assert.equal(f.sessionStore.has('cendon_paint_handoff'),false);
   }
+});
+
+test('login opening clip: plays once per session, never with reduced motion, data saver or a saved sign-in, and always has a way out',()=>{
+  const html=readFileSync(new URL('../login.html',import.meta.url),'utf8'),js=readFileSync(new URL('../login-intro.js',import.meta.url),'utf8');
+  const gate=html.match(/<script>\s*\/\* คลิปเปิดแอป[\s\S]*?<\/script>/)[0];
+  for(const rule of [/sessionStorage\.getItem\('cendon_intro'\)/,/prefers-reduced-motion: reduce/,/saveData/,/nointro/,/firebase:authUser:AIzaSyCowQ-RU7amV380yrSQ3yamgiDW58ap2yw:/])assert.match(gate,rule);
+  assert.match(js,/sessionStorage\.setItem\('cendon_intro','1'\)/);
+  assert.match(js,/intro-\$\{big\?1080:720\}\.mp4[\s\S]*intro-720\.webm/,'mp4 first, webm fallback');
+  assert.match(js,/ci-skip/);assert.match(js,/Escape/);assert.match(js,/2500/,'a slow or blocked video falls through to the login quickly');
+  assert.match(js,/muted playsinline/);assert.doesNotMatch(js,/\.mp4"[^>]*controls/);
+  for(const f of ['intro-720.mp4','intro-1080.mp4','intro-720.webm','intro-poster.jpg','login-hero.webp','login-hero.jpg'])assert.ok(readFileSync(new URL('../'+f,import.meta.url)).length>1000,f);
+  const sw=readFileSync(new URL('../sw.js',import.meta.url),'utf8');assert.match(sw,/'\.\/login-intro\.js\?v=1'/);assert.doesNotMatch(sw,/intro-\d+\.(mp4|webm)'/,'videos are not precached');
 });

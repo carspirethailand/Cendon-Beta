@@ -221,7 +221,7 @@
 | Worker ที่ deploy แล้ว | `https://spireonebackend.carspirethailand.workers.dev` |
 | D1 database | ชื่อ `spireone` · id `bf9b1815-2ef6-4463-8b35-6b97717b5d9a` |
 | Vectorize index | ชื่อ `cendon-brain` · 1024 มิติ · cosine |
-| Firebase project | `sp1p-82396` |
+| Firebase project | `cendon-1` (เดิม `sp1p-82396` — ย้ายผู้ใช้ด้วย auth:export/import) |
 
 **ไฟล์ในโปรเจกต์ frontend**
 
@@ -1723,7 +1723,7 @@ git add -A && git commit -m "..." && git push
 
 | Key | ค่าปัจจุบัน | ความหมาย |
 |-----|-----------|----------|
-| `FIREBASE_PROJECT_ID` | `sp1p-82396` | ใช้ตรวจ token |
+| `FIREBASE_PROJECT_ID` | `cendon-1` | ใช้ตรวจ token · ช่วงย้ายมี `FIREBASE_LEGACY_PROJECT_IDS` = `sp1p-82396` |
 | `OWNERS` | 2 อีเมล | เจ้าของระบบ ยศสูงสุด ลดไม่ได้ |
 | `ALLOWED_ORIGINS` | `*` | 🔴 **ต้องตั้งเป็นโดเมนจริงก่อนขึ้น production** |
 | `GEMINI_MODEL` | `gemini-3.6-flash` | โมเดลหลัก |

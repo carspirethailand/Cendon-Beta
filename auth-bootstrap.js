@@ -4,7 +4,7 @@
 if(W.__cendonAuthBootstrap)return;
 W.__cendonAuthBootstrap=true;
 W.BACKEND_URL=W.BACKEND_URL||"https://spireonebackend.carspirethailand.workers.dev";
-var config={apiKey:"AIzaSyDDtvz4d4FRG_KOq5EQHmlDijU-x1FDZlQ",authDomain:"sp1p-82396.firebaseapp.com",databaseURL:"https://sp1p-82396-default-rtdb.firebaseio.com",projectId:"sp1p-82396",storageBucket:"sp1p-82396.appspot.com",messagingSenderId:"924479207020",appId:"1:924479207020:web:ec64428a61403e1ad48a49"};
+var config={apiKey:"AIzaSyCowQ-RU7amV380yrSQ3yamgiDW58ap2yw",authDomain:"cendon-1.firebaseapp.com",projectId:"cendon-1",storageBucket:"cendon-1.firebasestorage.app",messagingSenderId:"229708644319",appId:"1:229708644319:web:849e321d755fa53d670e6a",measurementId:"G-GDLHE2EVPE"};
 var auth=null;
 try{
   if(!W.firebase||!W.firebase.auth)throw new Error("auth_unavailable");

@@ -2,6 +2,10 @@
    กุญแจคือข้อความอังกฤษใน T("ไทย","English") และพจนานุกรม EN ของหน้า · {0} {1} = ค่าที่แทนตอนแสดงผล
    เพิ่มข้อความใหม่ในหน้า → เพิ่มคำแปลที่นี่ทุกภาษา (เทสต์ i18n-home ตรวจความครบ) */
 window.CENDON_L10N={lang:"ko",t:{
+"Urgent near you · nobody has taken it":"근처 긴급 · 아직 아무도 안 받음",
+"Urgent! A breakdown near you — see My jobs":"긴급! 근처에 고장 차량 — 내 작업에서 확인",
+"Posted — {0} nearby shop{1} can see it":"게시됨 — 근처 {0}개 업체가 볼 수 있어요",
+"Posted, but no shop in this category is in range yet":"게시됨, 하지만 범위 안에 이 분야 업체가 아직 없어요",
 "Urgent · broken down now":"긴급 · 지금 고장",
 "Help for mechanics":"정비사용 도움말",
 "Urgent! A customer is broken down now — see My jobs":"긴급! 고객 차량이 지금 고장났습니다 — 내 작업에서 확인하세요",

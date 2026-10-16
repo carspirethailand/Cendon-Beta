@@ -2,6 +2,10 @@
    กุญแจคือข้อความอังกฤษใน T("ไทย","English") และพจนานุกรม EN ของหน้า · {0} {1} = ค่าที่แทนตอนแสดงผล
    เพิ่มข้อความใหม่ในหน้า → เพิ่มคำแปลที่นี่ทุกภาษา (เทสต์ i18n-home ตรวจความครบ) */
 window.CENDON_L10N={lang:"ms",t:{
+"Urgent near you · nobody has taken it":"Kecemasan berdekatan · belum ada yang ambil",
+"Urgent! A breakdown near you — see My jobs":"Kecemasan! Kereta rosak berdekatan — lihat Kerja saya",
+"Posted — {0} nearby shop{1} can see it":"Disiarkan — {0} bengkel berdekatan boleh melihatnya",
+"Posted, but no shop in this category is in range yet":"Disiarkan, tetapi belum ada bengkel kategori ini dalam jarak",
 "Urgent · broken down now":"Kecemasan · rosak sekarang",
 "Help for mechanics":"Bantuan untuk mekanik",
 "Urgent! A customer is broken down now — see My jobs":"Kecemasan! Kereta pelanggan rosak sekarang — lihat Kerja saya",

@@ -2,6 +2,10 @@
    กุญแจคือข้อความอังกฤษใน T("ไทย","English") และพจนานุกรม EN ของหน้า · {0} {1} = ค่าที่แทนตอนแสดงผล
    เพิ่มข้อความใหม่ในหน้า → เพิ่มคำแปลที่นี่ทุกภาษา (เทสต์ i18n-home ตรวจความครบ) */
 window.CENDON_L10N={lang:"vi",t:{
+"Urgent near you · nobody has taken it":"Khẩn cấp gần bạn · chưa ai nhận",
+"Urgent! A breakdown near you — see My jobs":"Khẩn cấp! Có xe hỏng gần bạn — xem Công việc của tôi",
+"Posted — {0} nearby shop{1} can see it":"Đã đăng — {0} tiệm gần đó có thể thấy",
+"Posted, but no shop in this category is in range yet":"Đã đăng, nhưng chưa có tiệm nào thuộc mục này trong phạm vi",
 "Urgent · broken down now":"Khẩn cấp · đang hỏng xe",
 "Help for mechanics":"Trợ giúp cho thợ sửa",
 "Urgent! A customer is broken down now — see My jobs":"Khẩn cấp! Xe của khách đang hỏng ngay bây giờ — xem Công việc của tôi",

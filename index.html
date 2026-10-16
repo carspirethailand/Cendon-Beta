@@ -4109,7 +4109,7 @@ function studioSettings(){
       $("ssSave").onclick=e=>busy(e.currentTarget,async()=>{
         try{
           const want=$("ssOn").checked;
-          if(want!==!!(DSTATS?DSTATS.online:t.online)){await api("/api/tech/online",{body:{online:want}});if(DSTATS)DSTATS.online=want;want?startAlerts():stopAlerts()}
+          if(want!==!!(DSTATS?DSTATS.online:t.online)){await api("/api/tech/online",{body:{online:want}});if(DSTATS)DSTATS.online=want;startAlerts()}
           const u=$("ssUntil").value?new Date($("ssUntil").value+"T23:59:59").getTime():null;
           const body={vacation:{on:$("ssVac").checked,until:u,note:$("ssVacN").value},autoReply:{on:$("ssAr").checked,text:$("ssArT").value},
             greet:$("ssGr").value,minPrice:+$("ssMin").value||0,theme};
@@ -4386,8 +4386,9 @@ async function urgentCall(){
         if(l.length)return sendGroup(l,v);
         /* ไม่มีร้านที่ออกนอกสถานที่ในรัศมี: ประกาศงานด่วน ช่างทุกร้านรอบตัวเห็นเป็นสีแดงใน Studio แล้วเสนอราคาเข้ามา */
         const id=crypto.randomUUID(),cat=catsOf(v.symptom)[0]||"";
-        await api("/api/tech/posts",{body:{...v,id,cat,mode:"mobile",symptom:v.symptom.length<10?"งานด่วน: "+v.symptom:v.symptom}});
-        toast("ประกาศงานด่วนแล้ว — ช่างรอบตัวคุณจะเห็นทันที");await refreshJobs();openPostView(id);
+        const r=await api("/api/tech/posts",{body:{...v,id,cat,mode:"mobile",symptom:v.symptom.length<10?"งานด่วน: "+v.symptom:v.symptom}});
+        toast(r&&r.reach?`แจ้งช่าง ${r.reach} ร้านใกล้คุณแล้ว — รอข้อเสนอสักครู่`:r&&r.reach===0?"ยังไม่มีช่างในรัศมีตอนนี้ — ประกาศยังเปิดอยู่ ร้านที่เข้ามาใหม่จะเห็นทันที":"ประกาศงานด่วนแล้ว",r&&r.reach===0?"ti-alert-triangle":"ti-check");
+        await refreshJobs();openPostView(id);
       });
     }});
 }
@@ -5566,7 +5567,7 @@ function applyMode(){
 }
 
 /* ═══ dashboard ช่าง ═══ */
-let DT="queue",FIND_NEW=false,DSTATS=null,NEAR=null,FMAP=null,FL=null,alertT=0,firstNear=true;
+let DT="queue",FIND_NEW=false,DSTATS=null,NEAR=null,FMAP=null,FL=null,alertT=0,firstNear=true,URG_KEY="";
 const SEEN=new Set(ls.get("spire_seen_posts",[])),SEEN_URG=new Set(ls.get("spire_seen_urgent",[]));let firstUrg=true;
 const ago=at=>{const m=Math.round((Date.now()-at)/60000);return m<1?T("เมื่อกี้","just now"):m<60?T(`${m} นาทีที่แล้ว`,`${m} min ago`):m<1440?T(`${Math.round(m/60)} ชม.ที่แล้ว`,`${Math.round(m/60)} h ago`):T(`${Math.round(m/1440)} วันที่แล้ว`,`${Math.round(m/1440)} d ago`)};
 const kfmt=n=>n>=10000?(Math.round(n/100)/10)+"k":money(n);
@@ -5589,7 +5590,9 @@ async function dash(){
   }
   drawTab();
   /* ตัวเลขสถิติใช้แค่สถานะเปิดรับงานบนหัว — ไม่ขวางการวาดหน้า */
-  api("/api/tech/stats").then(d=>{DSTATS=d;if(MODE==="tech"&&SPAGE[DT]==="jobs")stuHead();if(d.online)startAlerts()}).catch(()=>{});
+  api("/api/tech/stats").then(d=>{DSTATS=d;if(MODE==="tech"&&SPAGE[DT]==="jobs")stuHead()}).catch(()=>{});
+  /* ดึงงานใหม่ตลอดเวลาที่อยู่ใน Studio ไม่ว่าสถานะไหน — สถานะมีผลแค่เสียงเตือน (เดิมไม่เปิดรับงาน = ไม่ดึงเลย งานด่วนไม่ขึ้นจนกดรีเฟรชเอง) */
+  startAlerts();
   refreshJobs();
 }
 /* ส่วนที่เหมือนกันทุกหน้า: เมนูที่เลือก · ชื่อหน้าบนหัว (คอม) · รูปร้านมุมขวา · ป้ายนับ */
@@ -5640,7 +5643,7 @@ async function applyStatus(k,btn){
     if(wantOn!==wasOn){
       if(wantOn)unlockAudio();
       await api("/api/tech/online",{body:{online:wantOn}});
-      t.online=wantOn;if(DSTATS)DSTATS.online=wantOn;wantOn?startAlerts():stopAlerts();
+      t.online=wantOn;if(DSTATS)DSTATS.online=wantOn;startAlerts();
     }
     toast(k==="on"?T("เปิดรับงานแล้ว — มีรถเสียใกล้ ๆ จะแจ้งเตือนทันที","You're taking jobs — nearby breakdowns will alert you"):k==="pause"?T("พักร้านแล้ว — ลูกค้าจะเห็นว่าร้านปิดรับงานชั่วคราว","Shop paused — customers will see you're not taking jobs"):T("รับงานต่อ แต่ปิดเสียงเตือนงานใหม่","Still taking jobs, alerts off"),k==="pause"?"ti-beach":k==="on"?"ti-bell-ringing":"ti-bell-off");
   };
@@ -5766,10 +5769,15 @@ function tabQueue(){
   const past=all.filter(j=>!liveJob(j)).sort((a,b)=>(b.updatedAt||b.createdAt)-(a.updatedAt||a.createdAt)).slice(0,20);
   const err=JOBS_ERR?errBar(JOBS_ERR,"stuRetry"):"";
   if(!JOBS_OK&&!JOBS_ERR){B.innerHTML='<div class="skel"></div><div class="skel" style="margin-top:10px"></div>';return}
-  B.innerHTML=err+(live.length?`<section class="stu-sec" style="margin-top:8px">${live.map(jobRow).join("")}</section>`
+  const urgNear=((NEAR&&NEAR.posts)||[]).filter(p=>p.urgent&&!p.mine);
+  const urgRows=urgNear.map(p=>`<button class="stu-row urg" type="button" data-up="${esc(p.id)}"><span class="stu-ri"><i class="ti ti-urgent"></i></span>
+    <span class="stu-rb"><span class="urg-tag"><i class="ti ti-urgent"></i>${T("งานด่วนใกล้คุณ · ยังไม่มีใครรับ","Urgent near you · nobody has taken it")}</span><b class="nt">${esc(p.car||"")}</b><small class="nt">${esc(p.symptom||"")}</small><span class="stu-rs me">${T("เสนอราคาเลย","Send a quote")} · ${p.dist} ${T("กม.","km")} · ${ago(p.createdAt)}</span></span>
+    <span class="stu-rr"><i class="ti ti-chevron-right"></i></span></button>`).join("");
+  B.innerHTML=err+(urgRows?`<section class="stu-sec" style="margin-top:8px">${urgRows}</section>`:"")+(live.length?`<section class="stu-sec" style="margin-top:8px">${live.map(jobRow).join("")}</section>`
     :JOBS_ERR&&!JOBS_OK?"":`<div class="stu-empty"><i class="ti ti-clipboard-check"></i><b>${T("ยังไม่มีงานที่ต้องดำเนินการ","Nothing to do right now")}</b><p>${T("เมื่อมีคำขอใหม่ รายการจะแสดงที่นี่","New requests will show up here")}</p><button class="lx-cta" type="button" id="stuFind">${T("หางานใกล้ฉัน","Find work nearby")}</button></div>`)
     +(past.length?`<details class="stu-past"><summary>${T(`งานที่ผ่านมา (${past.length})`,`Past jobs (${past.length})`)}<i class="ti ti-chevron-down"></i></summary>${past.map(jobRow).join("")}</details>`:"");
   B.querySelectorAll("[data-j]").forEach(x=>x.onclick=()=>openJob(x.dataset.j,true));
+  B.querySelectorAll("[data-up]").forEach(x=>x.onclick=()=>openPost(urgNear.find(p=>p.id===x.dataset.up)));
   if($("stuFind"))$("stuFind").onclick=()=>setTab2("find");
   if($("stuRetry"))$("stuRetry").onclick=e=>busy(e.currentTarget,refreshJobs);
 }
@@ -5926,24 +5934,32 @@ function ding(){try{if(!ACTX||ls.get("spire_tech_sound",true)===false)return;con
   g.gain.setValueAtTime(.001,ACTX.currentTime);g.gain.exponentialRampToValueAtTime(.3,ACTX.currentTime+.02);g.gain.exponentialRampToValueAtTime(.001,ACTX.currentTime+.4);o.connect(g).connect(ACTX.destination);o.start();o.stop(ACTX.currentTime+.42)}catch(e){}}
 function startAlerts(){
   clearTimeout(alertT);
+  const loud=()=>!!(DSTATS?DSTATS.online:(myShop()||{}).online);
+  const buzz=pat=>{if(!loud())return;ding();try{navigator.vibrate&&navigator.vibrate(pat)}catch(e){}};
   const tick=async()=>{
     if(MODE!=="tech")return;
-    try{const d=await api("/api/tech/posts/near");const fresh=d.posts.filter(p=>!SEEN.has(p.id));
+    try{const d=await api("/api/tech/posts/near");NEAR=d;const fresh=d.posts.filter(p=>!SEEN.has(p.id));
       if(fresh.length){fresh.forEach(p=>SEEN.add(p.id));ls.set("spire_seen_posts",[...SEEN].slice(-300));
-        if(!firstNear){ding();try{navigator.vibrate&&navigator.vibrate([180,80,180])}catch(e){}
-          toast(fresh.some(p=>p.urgent)?T("มีงานด่วนใกล้คุณ!","Urgent job nearby!"):T(`งานใหม่ใกล้คุณ ${fresh.length} งาน`,`${fresh.length} new job${fresh.length>1?"s":""} nearby`),"ti-bell-ringing");
-          if(MODE==="tech"&&DT==="find")tabFind();else{FIND_NEW=true;stuBadges()}}}
+        if(!firstNear){const u=fresh.some(p=>p.urgent);buzz(u?[250,90,250,90,250]:[180,80,180]);
+          toast(u?T("งานด่วน! รถเสียใกล้คุณ — ดูในงานของฉัน","Urgent! A breakdown near you — see My jobs"):T(`งานใหม่ใกล้คุณ ${fresh.length} งาน`,`${fresh.length} new job${fresh.length>1?"s":""} nearby`),u?"ti-urgent":"ti-bell-ringing");
+          if(MODE==="tech"&&(DT==="find"||DT==="queue"))drawTab();else{FIND_NEW=true;stuBadges()}}
+      }
+      /* รายการงานด่วนรอบตัวเปลี่ยน (มีใหม่/มีคนรับไปแล้ว/หมดอายุ) = วาดหน้า "ต้องทำต่อ" ใหม่ · ไม่เปลี่ยนก็ไม่วาดซ้ำ ไม่กวนคนที่กำลังกดอยู่ */
+      const uk=d.posts.filter(p=>p.urgent&&!p.mine).map(p=>p.id).join();
+      if(uk!==URG_KEY){URG_KEY=uk;if(MODE==="tech"&&DT==="queue"&&!$("bs").classList.contains("on"))drawTab()}
       firstNear=false}catch(e){}
-    /* งานด่วนที่ลูกค้าส่งตรงถึงร้าน (เรียกช่างด่วน): ดึงใบงานใหม่ทุกรอบ เจอใบด่วนที่ยังไม่เคยเห็น = ดังเตือน + ขึ้นแดงบนสุด */
+    /* งานด่วนที่ลูกค้าส่งตรงถึงร้าน (เรียกช่างด่วน): ดึงใบงานใหม่ทุกรอบ เจอใบด่วนที่ยังไม่เคยเห็น = ขึ้นแดงบนสุด (+ เสียงเมื่อเปิดรับงาน) */
     try{await refreshJobs();const hot=techJobs().filter(j=>j.urgent&&j.status==="requested"&&!SEEN_URG.has(j.id));
       if(hot.length){hot.forEach(j=>SEEN_URG.add(j.id));ls.set("spire_seen_urgent",[...SEEN_URG].slice(-200));
-        if(!firstUrg){ding();try{navigator.vibrate&&navigator.vibrate([250,90,250,90,250])}catch(e){}
-          toast(T("งานด่วน! ลูกค้ารถเสียตอนนี้ — เปิดดูในงานของฉัน","Urgent! A customer is broken down now — see My jobs"),"ti-urgent");
-          if(MODE==="tech"&&DT==="queue")drawTab()}}
+        if(!firstUrg){buzz([250,90,250,90,250]);
+          toast(T("งานด่วน! ลูกค้ารถเสียตอนนี้ — เปิดดูในงานของฉัน","Urgent! A customer is broken down now — see My jobs"),"ti-urgent")}
+        if(MODE==="tech"&&DT==="queue")drawTab()}
       firstUrg=false}catch(e){}
-    alertT=setTimeout(tick,document.hidden?60000:20000)};
+    alertT=setTimeout(tick,document.hidden?60000:15000)};
   tick();
 }
+/* กลับมาที่แท็บ/แอป = ดึงงานทันที ไม่ต้องรอรอบถัดไป */
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&MODE==="tech")startAlerts()});
 function stopAlerts(){clearTimeout(alertT)}
 
 /* ═══ ลูกค้า: ประกาศหาช่าง ═══ */
@@ -5958,8 +5974,8 @@ function openPostForm(sym,cat){
     mount(){cf.mount();wireSeg("pCat");
       $("pGo").onclick=e=>busy(e.currentTarget,async()=>{
         const id=crypto.randomUUID(),v=cf.read();
-        await api("/api/tech/posts",{body:{id,...v,cat:segVal("pCat")}});
-        toast(T("ประกาศแล้ว รอช่างเสนอราคา","Posted — waiting for quotes"));await refreshJobs();openPostView(id);
+        const r=await api("/api/tech/posts",{body:{id,...v,cat:segVal("pCat")}});
+        toast(r&&typeof r.reach==="number"?(r.reach?T(`ประกาศแล้ว ช่าง ${r.reach} ร้านใกล้คุณเห็นแล้ว`,`Posted — ${r.reach} nearby shop${r.reach>1?"s":""} can see it`):T("ประกาศแล้ว แต่ยังไม่มีช่างหมวดนี้ในรัศมี — ร้านที่เข้ามาใหม่จะเห็นทันที","Posted, but no shop in this category is in range yet")):T("ประกาศแล้ว รอช่างเสนอราคา","Posted — waiting for quotes"));await refreshJobs();openPostView(id);
       });
     }});
 }

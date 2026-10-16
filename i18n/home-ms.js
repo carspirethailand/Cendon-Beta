@@ -1416,5 +1416,15 @@ window.CENDON_L10N={lang:"ms",t:{
 "Enter a valid email address.":"Masukkan alamat e-mel yang sah.",
 "Use at least 8 characters for your password.":"Gunakan sekurang-kurangnya 8 aksara untuk kata laluan.",
 "Enter your password.":"Masukkan kata laluan anda.",
-"If an account uses this email, a reset link is on its way — check your inbox (and spam).":"Jika ada akaun dengan e-mel ini, pautan tetapan semula sedang dihantar — semak peti masuk (dan spam)."
+"If an account uses this email, a reset link is on its way — check your inbox (and spam).":"Jika ada akaun dengan e-mel ini, pautan tetapan semula sedang dihantar — semak peti masuk (dan spam).",
+"Email codes aren’t available right now — use your password, Google or Apple for now.":"Kod e-mel belum boleh dihantar sekarang — guna kata laluan, Google atau Apple dahulu.",
+"Enter your email and we’ll send a six-digit code — no password needed.":"Masukkan e-mel anda dan kami akan hantar kod 6 digit — tanpa kata laluan.",
+"Email codes aren’t switched on yet — you can use your password, Google or Apple for now.":"Kod e-mel belum dihidupkan — anda boleh guna kata laluan, Google atau Apple dahulu.",
+"Sending code…":"Menghantar kod…",
+"Email me a code instead":"Hantar kod ke e-mel sahaja",
+"Use a password instead":"Guna kata laluan",
+"Please wait before requesting another code.":"Sila tunggu sebelum meminta kod baharu.",
+"Enter all six digits.":"Masukkan kesemua 6 digit.",
+"Help":"Bantuan",
+"This email isn’t verified yet — sign in with the password, Google or Apple you used before, then open the verification link we emailed you.":"E-mel ini belum disahkan — log masuk dengan kata laluan, Google atau Apple yang pernah digunakan, kemudian buka pautan pengesahan dalam e-mel."
 }};

@@ -1416,5 +1416,15 @@ window.CENDON_L10N={lang:"es",t:{
 "Enter a valid email address.":"Escribe un correo válido.",
 "Use at least 8 characters for your password.":"Usa al menos 8 caracteres para tu contraseña.",
 "Enter your password.":"Escribe tu contraseña.",
-"If an account uses this email, a reset link is on its way — check your inbox (and spam).":"Si hay una cuenta con este correo, el enlace va en camino: revisa tu bandeja de entrada (y spam)."
+"If an account uses this email, a reset link is on its way — check your inbox (and spam).":"Si hay una cuenta con este correo, el enlace va en camino: revisa tu bandeja de entrada (y spam).",
+"Email codes aren’t available right now — use your password, Google or Apple for now.":"Los códigos por correo no están disponibles ahora — usa tu contraseña, Google o Apple por ahora.",
+"Enter your email and we’ll send a six-digit code — no password needed.":"Escribe tu correo y te enviaremos un código de 6 dígitos — sin contraseña.",
+"Email codes aren’t switched on yet — you can use your password, Google or Apple for now.":"Los códigos por correo aún no están activados — puedes usar tu contraseña, Google o Apple por ahora.",
+"Sending code…":"Enviando código…",
+"Email me a code instead":"Mejor envíame un código",
+"Use a password instead":"Usar una contraseña",
+"Please wait before requesting another code.":"Espera un momento antes de pedir otro código.",
+"Enter all six digits.":"Escribe los seis dígitos.",
+"Help":"Ayuda",
+"This email isn’t verified yet — sign in with the password, Google or Apple you used before, then open the verification link we emailed you.":"Este correo aún no está verificado — inicia sesión con la contraseña, Google o Apple que usabas y abre el enlace de verificación del correo."
 }};

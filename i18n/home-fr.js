@@ -1416,5 +1416,15 @@ window.CENDON_L10N={lang:"fr",t:{
 "Enter a valid email address.":"Saisissez une adresse e-mail valide.",
 "Use at least 8 characters for your password.":"Utilisez au moins 8 caractères pour votre mot de passe.",
 "Enter your password.":"Saisissez votre mot de passe.",
-"If an account uses this email, a reset link is on its way — check your inbox (and spam).":"Si un compte utilise cet e-mail, un lien de réinitialisation est en route — vérifiez votre boîte de réception (et les spams)."
+"If an account uses this email, a reset link is on its way — check your inbox (and spam).":"Si un compte utilise cet e-mail, un lien de réinitialisation est en route — vérifiez votre boîte de réception (et les spams).",
+"Email codes aren’t available right now — use your password, Google or Apple for now.":"Les codes par e-mail ne sont pas disponibles pour l’instant — utilisez votre mot de passe, Google ou Apple.",
+"Enter your email and we’ll send a six-digit code — no password needed.":"Saisissez votre e-mail et nous vous enverrons un code à 6 chiffres — sans mot de passe.",
+"Email codes aren’t switched on yet — you can use your password, Google or Apple for now.":"Les codes par e-mail ne sont pas encore activés — vous pouvez utiliser votre mot de passe, Google ou Apple.",
+"Sending code…":"Envoi du code…",
+"Email me a code instead":"Recevoir plutôt un code par e-mail",
+"Use a password instead":"Utiliser un mot de passe",
+"Please wait before requesting another code.":"Patientez avant de demander un nouveau code.",
+"Enter all six digits.":"Saisissez les six chiffres.",
+"Help":"Aide",
+"This email isn’t verified yet — sign in with the password, Google or Apple you used before, then open the verification link we emailed you.":"Cet e-mail n’est pas encore vérifié — connectez-vous avec le mot de passe, Google ou Apple utilisé auparavant, puis ouvrez le lien de vérification reçu."
 }};

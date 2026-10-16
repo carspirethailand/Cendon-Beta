@@ -1416,5 +1416,15 @@ window.CENDON_L10N={lang:"ja",t:{
 "Enter a valid email address.":"有効なメールアドレスを入力してください。",
 "Use at least 8 characters for your password.":"パスワードは 8 文字以上にしてください。",
 "Enter your password.":"パスワードを入力してください。",
-"If an account uses this email, a reset link is on its way — check your inbox (and spam).":"このメールのアカウントがあれば、再設定リンクを送信しました。受信トレイ（迷惑メールも）をご確認ください。"
+"If an account uses this email, a reset link is on its way — check your inbox (and spam).":"このメールのアカウントがあれば、再設定リンクを送信しました。受信トレイ（迷惑メールも）をご確認ください。",
+"Email codes aren’t available right now — use your password, Google or Apple for now.":"現在メールのコードを送信できません。パスワード、Google、Apple をご利用ください。",
+"Enter your email and we’ll send a six-digit code — no password needed.":"メールアドレスを入力すると 6 桁のコードをお送りします。パスワードは不要です。",
+"Email codes aren’t switched on yet — you can use your password, Google or Apple for now.":"メールのコードはまだ有効になっていません。パスワード、Google、Apple をご利用いただけます。",
+"Sending code…":"コードを送信中…",
+"Email me a code instead":"メールでコードを受け取る",
+"Use a password instead":"パスワードを使う",
+"Please wait before requesting another code.":"新しいコードはしばらく待ってから請求してください。",
+"Enter all six digits.":"6 桁すべて入力してください。",
+"Help":"ヘルプ",
+"This email isn’t verified yet — sign in with the password, Google or Apple you used before, then open the verification link we emailed you.":"このメールはまだ確認されていません。以前のパスワード、Google、Apple でログインし、メールの確認リンクを開いてください。"
 }};

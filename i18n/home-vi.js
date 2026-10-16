@@ -1416,5 +1416,15 @@ window.CENDON_L10N={lang:"vi",t:{
 "Enter a valid email address.":"Nhập địa chỉ email hợp lệ.",
 "Use at least 8 characters for your password.":"Mật khẩu cần ít nhất 8 ký tự.",
 "Enter your password.":"Nhập mật khẩu của bạn.",
-"If an account uses this email, a reset link is on its way — check your inbox (and spam).":"Nếu có tài khoản dùng email này, liên kết đặt lại đang được gửi — hãy kiểm tra hộp thư (và thư rác)."
+"If an account uses this email, a reset link is on its way — check your inbox (and spam).":"Nếu có tài khoản dùng email này, liên kết đặt lại đang được gửi — hãy kiểm tra hộp thư (và thư rác).",
+"Email codes aren’t available right now — use your password, Google or Apple for now.":"Hiện chưa gửi được mã qua email — hãy dùng mật khẩu, Google hoặc Apple trước.",
+"Enter your email and we’ll send a six-digit code — no password needed.":"Nhập email, chúng tôi sẽ gửi mã 6 chữ số — không cần mật khẩu.",
+"Email codes aren’t switched on yet — you can use your password, Google or Apple for now.":"Mã qua email chưa được bật — bạn có thể dùng mật khẩu, Google hoặc Apple trước.",
+"Sending code…":"Đang gửi mã…",
+"Email me a code instead":"Gửi mã qua email thay thế",
+"Use a password instead":"Dùng mật khẩu",
+"Please wait before requesting another code.":"Vui lòng đợi trước khi yêu cầu mã mới.",
+"Enter all six digits.":"Nhập đủ 6 chữ số.",
+"Help":"Trợ giúp",
+"This email isn’t verified yet — sign in with the password, Google or Apple you used before, then open the verification link we emailed you.":"Email này chưa được xác minh — hãy đăng nhập bằng mật khẩu, Google hoặc Apple bạn đã dùng, rồi mở liên kết xác minh trong email."
 }};

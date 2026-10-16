@@ -3,7 +3,7 @@
    เทสต์ test/site.test.mjs ตรวจว่ามีชื่อผู้ให้บริการครบทุกตัว */
 import {L,P,UL,TABLE,NOTE,I,docBody,EMAIL} from '../layout.mjs';
 
-export const VERSION='1.9';
+export const VERSION='1.10';
 export const EFFECTIVE=['16 ตุลาคม 2569','16 October 2026'];
 
 /* ผู้ให้บริการภายนอกทุกตัวที่ได้รับข้อมูล — ชื่อในคอลัมน์แรกต้องตรงกับรายการใน test/site.test.mjs */
@@ -32,6 +32,9 @@ const PROCESSORS=[
   ['Didit',
     ['ยืนยันตัวตนผู้สมัครเป็นช่าง','Identity verification for mechanic applicants'],
     ['รูปบัตรประชาชน ภาพใบหน้า/การตรวจว่าเป็นคนจริง ผลการตรวจ','ID document images, face/liveness check, verification result']],
+  ['Resend',
+    ['ส่งรหัสเข้าสู่ระบบทางอีเมล (เมื่อคุณเลือก “ส่งรหัสเข้าอีเมลแทน” รหัสผ่าน)','Sending one-time sign-in codes by email (when you choose “Email me a code instead” of a password)'],
+    ['อีเมลของคุณ และรหัส 6 หลัก','Your email address and the six-digit code']],
   ['Web Push',
     ['ส่งการแจ้งเตือนถึงเบราว์เซอร์ของคุณ ผ่านบริการของผู้ผลิตเบราว์เซอร์ (เช่น Google Apple Mozilla Microsoft)','Delivering notifications to your browser through its maker’s push service (e.g. Google, Apple, Mozilla, Microsoft)'],
     ['ที่อยู่รับแจ้งเตือนของเบราว์เซอร์ · เนื้อหาถูกเข้ารหัส ผู้ส่งต่ออ่านไม่ได้','Your browser’s push address · contents are encrypted and unreadable in transit']],
@@ -154,6 +157,7 @@ const sections=[
       [['บันทึกการใช้ AI','AI usage logs'],['เก็บเฉพาะจำนวนการใช้ (ไม่มีข้อความแชต) · บันทึกข้อผิดพลาดเก็บแค่ราว 300 รายการล่าสุดของทั้งระบบ คำถามตัดเหลือ 80 ตัวอักษร','Usage counts only (no chat text) · error logs keep only the latest ~300 entries system-wide, questions cut to 80 characters']],
       [['แชตกับบอท LINE','LINE bot chat'],['8 ข้อความล่าสุด เริ่มบทสนทนาใหม่เมื่อเงียบเกิน 2 ชั่วโมง ลบเมื่อรีเซ็ตหรือลบบัญชี','Last 8 messages; a new conversation starts after 2 hours of quiet; erased on reset or account deletion']],
       [['ลิงก์เชื่อม LINE','LINE link tokens'],['15 นาที ใช้ได้ครั้งเดียว','15 minutes, single use']],
+      [['รหัสเข้าสู่ระบบทางอีเมล','Email sign-in codes'],['10 นาที ใช้ได้ครั้งเดียว เก็บแบบแฮช','10 minutes, single use, stored hashed']],
       [['ใบงาน ข้อความกับช่าง รีวิว','Jobs, mechanic messages, reviews'],['เก็บเป็นหลักฐานของทั้งสองฝ่าย ข้อความที่แก้ไขเก็บต้นฉบับไว้ใช้ตัดสินข้อพิพาท · เมื่อลบบัญชี: บทสนทนาถูกลบ ใบงานที่จบแล้วตัดชื่อ เบอร์ ที่อยู่ และหมายเหตุออก รีวิวเหลือเฉพาะคะแนน','Kept as a record for both sides; edited messages keep the original for disputes · on account deletion: conversations are erased, finished jobs lose name, phone, address and notes, reviews keep only the star rating']],
       [['ลิงก์ติดตามงาน','Job share links'],['24 ชั่วโมง ยกเลิกได้ทุกเมื่อ','24 hours; revocable anytime']],
       [['ตำแหน่งช่างระหว่างเดินทาง','Mechanic position while on the way'],['เก็บแค่จุดล่าสุดจุดเดียว (ไม่เก็บเส้นทาง) ลบทันทีเมื่อเริ่มซ่อม ยกเลิก หรือเปลี่ยนสถานะ · ลูกค้าเห็นเฉพาะจุดที่ส่งมาภายใน 3 นาทีล่าสุด','Only the single latest point (no route history), deleted as soon as the repair starts, the job is cancelled or its status changes · customers only see a point sent within the last 3 minutes']],
@@ -206,6 +210,7 @@ const sections=[
     P('เมื่อระบบเปลี่ยนวิธีเก็บหรือใช้ข้อมูล เราจะแก้หน้านี้ให้ตรงทันที เปลี่ยนเลขเวอร์ชันและวันที่ด้านบน และถ้าเป็นการเปลี่ยนสาระสำคัญ จะแจ้งในแอปก่อนมีผล การเปลี่ยนที่ต้องได้รับความยินยอมใหม่ เราจะขอความยินยอมใหม่ก่อน',
       'Whenever the way we collect or use data changes, we update this page straight away, with a new version number and date at the top. Material changes are announced in the app before they take effect, and anything that needs fresh consent will ask for it first.')+
     UL([
+      ['<b>1.10 · 16 ต.ค. 2569</b> — เพิ่มทางเลือก “ส่งรหัสเข้าอีเมลแทน” รหัสผ่าน (ส่งผ่าน Resend · รหัสใช้ได้ 10 นาที ครั้งเดียว เก็บแบบแฮช) · ต้องเข้าสู่ระบบก่อนใช้แอป — ลิงก์ใบงานที่แชร์ให้คนที่ไว้ใจ หน้านโยบาย ข้อกำหนด ช่วยเหลือ และ Car Passport ยังเปิดได้โดยไม่ต้องล็อกอิน','<b>1.10 · 16 Oct 2026</b> — Added “Email me a code instead” of a password (sent through Resend; codes last 10 minutes, work once and are stored hashed) · the app now requires signing in — shared trip links, this policy, the terms, help and Car Passport still open without an account'],
       ['<b>1.9 · 16 ต.ค. 2569</b> — เข้าสู่ระบบด้วย Google, Apple หรืออีเมล + รหัสผ่าน (เลิกใช้รหัสยืนยันทางอีเมล จึงไม่มีผู้ส่งอีเมล Resend แล้ว) · รหัสผ่านเก็บแบบแฮชที่ Google Firebase Cendon ไม่เห็น · ระบบล็อกอินย้ายไปบัญชี Firebase ใหม่ของ Cendon (ผู้ให้บริการเดิม) อาจต้องเข้าสู่ระบบใหม่หนึ่งครั้ง · คลิปตอนเปิดหน้าเข้าสู่ระบบไม่เก็บหรือส่งข้อมูลใด ๆ','<b>1.9 · 16 Oct 2026</b> — Sign in with Google, Apple or email + password (one-time email codes are retired, so Resend is no longer used) · passwords are stored hashed by Google Firebase and Cendon never sees them · sign-in moved to Cendon’s new Firebase project (same provider); you may need to sign in once more · the opening clip on the sign-in page collects and sends nothing'],
       ['<b>1.8 · 16 ต.ค. 2569</b> — กระดิ่งแจ้งเตือน: แจ้งในเครื่องเมื่อช่างเสนอราคา รับงาน กำลังมา ซ่อมเสร็จ หรือส่งข้อความ (ผ่าน Web Push เมื่อคุณกดเปิด) และเมื่อ AI ตอบเสร็จตอนคุณสลับไปแอปอื่น · ข้อความแจ้งเตือนมีแค่ชื่อร้าน รุ่นรถ และสถานะ ไม่มีชื่อ เบอร์ หรือที่อยู่ลูกค้า · กล่องแจ้งเตือนเก็บในเครื่องนี้เท่านั้น','<b>1.8 · 16 Oct 2026</b> — Notification bell: device alerts when a mechanic quotes, takes the job, is on the way, finishes or messages you (via Web Push once you turn it on), and when the AI finishes replying while you’re in another app · alerts carry only the shop name, car model and status — never a customer’s name, phone or address · the inbox is kept on this device only'],
       ['<b>1.7 · 16 ต.ค. 2569</b> — Cendon Valet: เมื่อคุณอนุญาต AI จะได้รายชื่อรถในการาจและรู้ว่าบัญชีมีร้านหรือไม่ เพื่อเสนอการ์ดคำสั่ง (ทำจริงเมื่อคุณกดยืนยันเท่านั้น)','<b>1.7 · 16 Oct 2026</b> — Cendon Valet: once you allow it, the AI receives your garage car list and whether the account has a shop, so it can propose action cards (carried out only when you confirm)'],

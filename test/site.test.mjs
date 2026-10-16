@@ -37,7 +37,7 @@ test('site: ทุกบริการภายนอกที่แอปใ�
   const privacy=built['privacy.html'];
   for(const name of new Set(Object.values(HOSTS)))assert.ok(privacy.includes(name),`นโยบายต้องระบุ ${name}`);
   /* ผู้ให้บริการฝั่งหลังบ้าน (ไม่เห็นในโค้ดหน้าเว็บ) */
-  for(const name of ['Groq','OpenRouter','Workers AI','LINE','Didit','Apple','Web Push','Tavily','Brave','DuckDuckGo','Bing','Wikipedia','NHTSA'])
+  for(const name of ['Groq','OpenRouter','Workers AI','LINE','Didit','Apple','Resend','Web Push','Tavily','Brave','DuckDuckGo','Bing','Wikipedia','NHTSA'])
     assert.ok(privacy.includes(name),`นโยบายต้องระบุ ${name}`);
   assert.ok(PROCESSOR_NAMES.length>=14);
 });
@@ -75,7 +75,7 @@ test('site: นโยบายตรงกับระบบ — AI ไม่ไ
   assert.match(p,/ไม่ส่ง:<\/b> อีเมล เบอร์โทร ที่อยู่/);
   assert.match(p,/หลังคุณยืนยันราคาแล้วเท่านั้น/);
   assert.match(p,/ดาวน์โหลดข้อมูลของฉัน/);assert.match(p,/ลบบัญชีถาวร/);
-  assert.match(p,/เวอร์ชัน 1\.9/);
+  assert.match(p,/เวอร์ชัน 1\.10/);
   /* ตู้เซฟใบสมัครช่าง (หลังบ้าน src/vault.js): เข้ารหัสจริง ไม่เก็บเลขบัตรเต็ม ใบค้างเกิน 30 วันลบรูปบัตรเอง */
   assert.match(p,/เข้ารหัส \(AES-256\)/);assert.match(p,/เลขบัตรประชาชนเต็มไม่ถูกเก็บ/);assert.match(p,/เกิน 30 วัน/);
   assert.match(built['help.html'],/เลขบัตรเต็มไม่ถูกเก็บ/);

@@ -1416,5 +1416,15 @@ window.CENDON_L10N={lang:"id",t:{
 "Enter a valid email address.":"Masukkan alamat email yang valid.",
 "Use at least 8 characters for your password.":"Gunakan minimal 8 karakter untuk kata sandi.",
 "Enter your password.":"Masukkan kata sandi Anda.",
-"If an account uses this email, a reset link is on its way — check your inbox (and spam).":"Jika ada akun dengan email ini, tautan atur ulang sedang dikirim — periksa kotak masuk (dan spam)."
+"If an account uses this email, a reset link is on its way — check your inbox (and spam).":"Jika ada akun dengan email ini, tautan atur ulang sedang dikirim — periksa kotak masuk (dan spam).",
+"Email codes aren’t available right now — use your password, Google or Apple for now.":"Kode email belum bisa dikirim sekarang — gunakan kata sandi, Google, atau Apple dulu.",
+"Enter your email and we’ll send a six-digit code — no password needed.":"Masukkan email Anda, kami akan mengirim kode 6 digit — tanpa kata sandi.",
+"Email codes aren’t switched on yet — you can use your password, Google or Apple for now.":"Kode email belum diaktifkan — Anda bisa memakai kata sandi, Google, atau Apple dulu.",
+"Sending code…":"Mengirim kode…",
+"Email me a code instead":"Kirim kode ke email saja",
+"Use a password instead":"Gunakan kata sandi",
+"Please wait before requesting another code.":"Tunggu sebentar sebelum meminta kode baru.",
+"Enter all six digits.":"Masukkan keenam digit.",
+"Help":"Bantuan",
+"This email isn’t verified yet — sign in with the password, Google or Apple you used before, then open the verification link we emailed you.":"Email ini belum diverifikasi — masuk dengan kata sandi, Google, atau Apple yang pernah dipakai, lalu buka tautan verifikasi di email."
 }};

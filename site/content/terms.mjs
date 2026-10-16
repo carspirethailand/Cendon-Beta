@@ -29,8 +29,8 @@ const sections=[
       'In an emergency, accident or injury, call <b>191</b> (police) or <b>1669</b> (emergency medical) first — Cendon is not an emergency service.')},
 
   {id:'account',title:['บัญชีของคุณ','Your account'],body:
-    P('คุณต้องมีอายุ 18 ปีขึ้นไป ล็อกอินได้ด้วย Google, Apple หรืออีเมล + รหัสผ่าน หนึ่งบัญชีต่อหนึ่งคน คุณรับผิดชอบสิ่งที่เกิดขึ้นในบัญชีและการดูแลการล็อกอินให้ปลอดภัย หากสงสัยว่ามีคนอื่นเข้าบัญชี แจ้งเราโดยเร็ว',
-      'You must be 18 or over. You sign in with Google, Apple or email + password, one account per person. You’re responsible for activity on your account and for keeping your sign-in secure. Tell us promptly if you think someone else has accessed it.')+
+    P('คุณต้องมีอายุ 18 ปีขึ้นไป ต้องเข้าสู่ระบบก่อนใช้งาน ด้วย Google, Apple หรืออีเมล (รหัสผ่านหรือรหัสทางอีเมล) หนึ่งบัญชีต่อหนึ่งคน คุณรับผิดชอบสิ่งที่เกิดขึ้นในบัญชีและการดูแลการล็อกอินให้ปลอดภัย หากสงสัยว่ามีคนอื่นเข้าบัญชี แจ้งเราโดยเร็ว',
+      'You must be 18 or over. You need to sign in to use the app, with Google, Apple or email (password or an emailed code), one account per person. You’re responsible for activity on your account and for keeping your sign-in secure. Tell us promptly if you think someone else has accessed it.')+
     P('กรุณาใส่ข้อมูลตามจริง ข้อมูลรถ เลขไมล์ และประวัติซ่อมบำรุงมีประโยชน์เท่าที่ถูกต้อง ข้อมูลผิดทำให้การแจ้งเตือนผิดตาม',
       'Please keep your details accurate. Car records, mileage and service history are only as useful as they are correct.')},
 

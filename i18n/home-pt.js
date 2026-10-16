@@ -1416,5 +1416,15 @@ window.CENDON_L10N={lang:"pt",t:{
 "Enter a valid email address.":"Digite um e-mail válido.",
 "Use at least 8 characters for your password.":"Use pelo menos 8 caracteres na senha.",
 "Enter your password.":"Digite sua senha.",
-"If an account uses this email, a reset link is on its way — check your inbox (and spam).":"Se houver uma conta com este e-mail, o link está a caminho — confira sua caixa de entrada (e o spam)."
+"If an account uses this email, a reset link is on its way — check your inbox (and spam).":"Se houver uma conta com este e-mail, o link está a caminho — confira sua caixa de entrada (e o spam).",
+"Email codes aren’t available right now — use your password, Google or Apple for now.":"Os códigos por e-mail não estão disponíveis agora — use sua senha, Google ou Apple por enquanto.",
+"Enter your email and we’ll send a six-digit code — no password needed.":"Digite seu e-mail e enviaremos um código de 6 dígitos — sem senha.",
+"Email codes aren’t switched on yet — you can use your password, Google or Apple for now.":"Os códigos por e-mail ainda não foram ativados — você pode usar sua senha, Google ou Apple por enquanto.",
+"Sending code…":"Enviando código…",
+"Email me a code instead":"Receber um código por e-mail",
+"Use a password instead":"Usar uma senha",
+"Please wait before requesting another code.":"Aguarde antes de pedir outro código.",
+"Enter all six digits.":"Digite os seis dígitos.",
+"Help":"Ajuda",
+"This email isn’t verified yet — sign in with the password, Google or Apple you used before, then open the verification link we emailed you.":"Este e-mail ainda não foi verificado — entre com a senha, Google ou Apple que você usava e abra o link de verificação enviado por e-mail."
 }};

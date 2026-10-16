@@ -13,7 +13,12 @@
 #accountFlow.ac-screen{position:fixed;inset:0;z-index:var(--ac-account-layer);box-sizing:border-box;overflow:auto;overscroll-behavior:contain;background:var(--a-bg);color:var(--a-ink);font-family:var(--a-font);isolation:isolate;-webkit-tap-highlight-color:transparent;color-scheme:dark}
 #accountFlow[hidden]{display:none!important}
 #accountFlow *,#accountFlow *::before,#accountFlow *::after{box-sizing:border-box}
-#accountFlow .ac-split{display:flex;flex-direction:column;min-height:100%}
+#accountFlow .ac-split{display:flex;flex-direction:column;min-height:100%;background:var(--a-bg)}
+#accountFlow .ac-sheet,#accountFlow .ac-brand,#accountFlow .ac-form,#accountFlow .ac-actions,#accountFlow .ac-legal,#accountFlow .ac-pass{background-color:var(--a-bg)}
+#accountFlow .ac-form,#accountFlow .ac-actions,#accountFlow .ac-legal,#accountFlow .ac-brand,#accountFlow .ac-pass{background-color:transparent}
+#accountFlow h1,#accountFlow p,#accountFlow label,#accountFlow span,#accountFlow b{background-color:transparent}
+/* หน้าบัญชีเปิดอยู่: พื้นหลังของทั้งเพจเป็นดำ (ตอนเด้งสุดจอบนมือถือจะไม่เห็นสีขาวโผล่) */
+html:has(#accountFlow.ac-screen:not([hidden])),html:has(#accountFlow.ac-screen:not([hidden])) body{background:#0b0b0c!important}
 #accountFlow .ac-sheet{flex:1;width:100%;max-width:440px;margin:0 auto;display:flex;flex-direction:column;position:relative;padding:calc(24px + env(safe-area-inset-top)) 24px calc(22px + env(safe-area-inset-bottom));animation:ac-arrive .32s cubic-bezier(.2,.7,.25,1) both}
 #accountFlow .ac-art{display:none;position:relative;overflow:hidden;background:#060607}
 #accountFlow .ac-art picture,#accountFlow .ac-art img{display:block;width:100%;height:100%}
@@ -43,12 +48,17 @@
 #accountFlow .ac-form{display:flex;flex-direction:column;gap:12px;flex:1;padding-top:28px;min-width:0}
 #accountFlow[data-phase="auth"] .ac-form{flex:none}
 #accountFlow .ac-label{display:block;margin:6px 0 0;font-size:13px;line-height:1.6;font-weight:500;color:#e9e6e1}
-#accountFlow .ac-input{display:block;width:100%;min-width:0;min-height:50px;margin:0;padding:12px 16px;border:1px solid var(--a-line);border-radius:12px;background:var(--a-field);color:var(--a-ink);font:400 16px/1.5 var(--a-font);box-shadow:none;outline:none;transition:border-color .18s,background .18s,box-shadow .18s}
+#accountFlow .ac-input{-webkit-appearance:none;appearance:none;display:block;width:100%;min-width:0;min-height:50px;margin:0;padding:12px 16px;border:1px solid var(--a-line);border-radius:12px;background:var(--a-field);color:var(--a-ink);font:400 16px/1.5 var(--a-font);box-shadow:none;outline:none;transition:border-color .18s,background .18s,box-shadow .18s}
 #accountFlow .ac-input::placeholder{color:var(--a-faint);opacity:1}
+/* เบราว์เซอร์เติมอีเมล/รหัสอัตโนมัติจะทาพื้นเหลือง/ขาว → ตัวหนังสือขาวมองไม่เห็น: บังคับพื้นดำ ตัวหนังสือขาว */
+#accountFlow .ac-input:-webkit-autofill,#accountFlow .ac-input:-webkit-autofill:hover,#accountFlow .ac-input:-webkit-autofill:focus,#accountFlow .ac-input:-webkit-autofill:active{-webkit-text-fill-color:var(--a-ink);caret-color:var(--a-ink);-webkit-box-shadow:0 0 0 1000px var(--a-field) inset;box-shadow:0 0 0 1000px var(--a-field) inset;border-color:var(--a-line);transition:background-color 99999s ease-out 0s}
+#accountFlow .ac-input:autofill{-webkit-text-fill-color:var(--a-ink);box-shadow:0 0 0 1000px var(--a-field) inset}
+#accountFlow .ac-input{-webkit-text-fill-color:var(--a-ink);caret-color:var(--a-accent)}
+#accountFlow .ac-input::placeholder{-webkit-text-fill-color:var(--a-faint)}
 #accountFlow .ac-input:hover{border-color:rgba(255,255,255,.22)}
-#accountFlow .ac-input:focus{border-color:var(--a-accent);background:#17171a;box-shadow:0 0 0 3px rgba(242,140,56,.18)}
+#accountFlow .ac-input:focus{border-color:var(--a-accent);background-color:#17171a;box-shadow:0 0 0 3px rgba(242,140,56,.18)}
 #accountFlow .ac-input[aria-invalid="true"]{border-color:var(--a-err)}
-#accountFlow select.ac-input{cursor:pointer;padding-right:28px}
+#accountFlow select.ac-input{cursor:pointer;padding-right:30px;background-image:linear-gradient(45deg,transparent 50%,var(--a-muted) 50%),linear-gradient(135deg,var(--a-muted) 50%,transparent 50%);background-position:calc(100% - 17px) 52%,calc(100% - 12px) 52%;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
 #accountFlow select.ac-input option{background:#141416;color:var(--a-ink)}
 #accountFlow .ac-pass{position:relative}
 #accountFlow .ac-pass .ac-input{padding-right:52px}
@@ -59,7 +69,7 @@
 #accountFlow .ac-or{display:flex;align-items:center;gap:14px;margin:8px 0 2px;color:var(--a-faint);font-size:12px;letter-spacing:.02em}
 #accountFlow .ac-or::before,#accountFlow .ac-or::after{content:"";flex:1;height:1px;background:var(--a-line)}
 #accountFlow .ac-dob{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.45fr) minmax(0,1.2fr);gap:10px;min-width:0}
-#accountFlow .ac-dob .ac-input{padding-left:10px;padding-right:19px;font-size:15px}
+#accountFlow .ac-dob .ac-input{padding-left:10px;padding-right:26px;font-size:15px}
 #accountFlow .ac-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:2px 0 8px}
 #accountFlow .ac-option{position:relative;min-height:76px;min-width:0;text-align:left;padding:17px 16px;color:var(--a-ink);border:1px solid var(--a-line);border-radius:14px;background:transparent;font:500 16px/1.4 var(--a-font);cursor:pointer;transition:border-color .18s,background .18s,transform .15s}
 #accountFlow .ac-option small,#accountFlow .ac-option>span{display:block;margin-top:5px;color:var(--a-muted);font-size:12px;font-weight:400;line-height:1.5}
@@ -130,3 +140,6 @@
 .ct-error[hidden]{display:none}
 @media(max-width:360px){.ct-card{padding:17px 18px 15px}.ct-title{font-size:20px}.ct-copy{font-size:12px}.ct-actions{gap:9px}.ct-next{padding-inline:12px}}
 @media(prefers-reduced-motion:reduce){#accountFlow .ac-sheet,#accountFlow .ac-complete,#accountFlow .ac-loading::before,.ct-card{animation:none}#accountFlow *,#accountFlow *::before,.ct-root *{transition:none!important}}
+#accountFlow .ac-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px 10px;color:var(--a-faint);font-size:13px}
+#accountFlow .ac-row .ac-link{padding:4px 0}
+#accountFlow .ac-code{font-size:26px;line-height:1.4;letter-spacing:.42em;text-align:center;font-variant-numeric:tabular-nums;padding-left:calc(16px + .42em);min-height:60px}

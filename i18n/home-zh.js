@@ -1416,5 +1416,15 @@ window.CENDON_L10N={lang:"zh",t:{
 "Enter a valid email address.":"请输入有效的邮箱地址。",
 "Use at least 8 characters for your password.":"密码至少需要 8 个字符。",
 "Enter your password.":"请输入密码。",
-"If an account uses this email, a reset link is on its way — check your inbox (and spam).":"如果该邮箱有账户，重置链接已发出——请查看收件箱（及垃圾邮件）。"
+"If an account uses this email, a reset link is on its way — check your inbox (and spam).":"如果该邮箱有账户，重置链接已发出——请查看收件箱（及垃圾邮件）。",
+"Email codes aren’t available right now — use your password, Google or Apple for now.":"暂时无法发送邮箱验证码——请先使用密码、Google 或 Apple。",
+"Enter your email and we’ll send a six-digit code — no password needed.":"输入邮箱，我们会发送 6 位验证码——无需密码。",
+"Email codes aren’t switched on yet — you can use your password, Google or Apple for now.":"邮箱验证码尚未开通——可以先使用密码、Google 或 Apple。",
+"Sending code…":"正在发送验证码…",
+"Email me a code instead":"改用邮箱验证码",
+"Use a password instead":"改用密码",
+"Please wait before requesting another code.":"请稍候再请求新的验证码。",
+"Enter all six digits.":"请输入完整的 6 位数字。",
+"Help":"帮助",
+"This email isn’t verified yet — sign in with the password, Google or Apple you used before, then open the verification link we emailed you.":"此邮箱尚未验证——请先用之前的密码、Google 或 Apple 登录，然后点击邮件中的验证链接。"
 }};

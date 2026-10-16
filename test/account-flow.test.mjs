@@ -379,18 +379,70 @@ test('account flow: a timed-out first account lookup opens retry and ignores its
   assert.ok(f.root().querySelector('button[data-retry]'));
 });
 
-test('account flow: missing Firebase proxy provider method redirects to a safe dedicated login', async () => {
-  const f = fixture({ proxyAuth: true, pathname: '/garage', search: '?jobId=123' });
-  f.click('data-provider=google'); await settle();
+test('account flow: signed out on any app page → only the sign-in page, and back to the same place afterwards', async () => {
+  const f = fixture({ proxyAuth: true, pathname: '/garage', search: '?jobId=123' }); await settle();
   assert.equal(f.navigations.length, 1);
   const dest = new URL(f.navigations[0], 'https://cendon.unit.test');
   assert.equal(dest.pathname, '/login'); assert.equal(dest.searchParams.get('next'), '/garage?jobId=123');
-  const helper = fixture({ proxyAuth: true, pathname: '/tech' });
-  helper.api.openLogin('/tech?jobId=123'); await settle();
-  const next = new URL(helper.navigations[0], 'https://cendon.unit.test');
+  assert.ok(!f.root() || f.root().hidden, 'no app page or overlay is shown while leaving');
+  for (const pathname of ['/', '/chat', '/tech', '/admin']) {
+    const g = fixture({ pathname }); await settle();
+    assert.equal(new URL(g.navigations[0], 'https://cendon.unit.test').pathname, '/login', pathname);
+  }
+  const helper = fixture({ uid: 'user-A', proxyAuth: true, pathname: '/tech', server: complete() }); await settle();
+  helper.auth.currentUser = null; helper.api.openLogin('/tech?jobId=123'); await settle();
+  const next = new URL(helper.navigations.at(-1), 'https://cendon.unit.test');
   assert.equal(next.pathname, '/login'); assert.equal(next.searchParams.get('next'), '/tech?jobId=123');
 });
 
+test('account flow: a shared trip link stays viewable without signing in; the signed-in hint follows Firebase', async () => {
+  const store = new Map([['cendon_signed', '1']]);
+  const trip = fixture({ pathname: '/trip/abc123', store }); await settle();
+  assert.equal(trip.navigations.length, 0, 'trusted-person links never bounce to sign-in');
+  assert.equal(store.has('cendon_signed'), false, 'a signed-out answer clears the hint');
+  const f = fixture({ uid: 'user-A', server: complete(), store }); await settle();
+  assert.equal(store.get('cendon_signed'), '1');
+  const gate = readFileSync(new URL('../auth-gate.js', import.meta.url), 'utf8');
+  assert.match(gate, /cendon_signed/); assert.match(gate, /\/trip\\\//); assert.match(gate, /location|L\.replace\('\/login\?next='/);
+  for (const file of ['index', 'garage', 'chat', 'news', 'spares', 'profile', 'admin', 'handbook', 'plan']) {
+    const html = readFileSync(new URL('../' + file + '.html', import.meta.url), 'utf8');
+    const head = html.slice(0, html.indexOf('</head>'));
+    assert.ok(head.indexOf('/auth-gate.js') > -1 && head.indexOf('/auth-gate.js') < head.indexOf('<link'), file + ': the gate runs before anything paints');
+  }
+  for (const file of ['privacy', 'terms', 'help', 'about', 'passport', 'login'])
+    assert.doesNotMatch(readFileSync(new URL('../' + file + '.html', import.meta.url), 'utf8'), /auth-gate\.js/, file + ' stays public');
+});
+
+test('account flow: email code option — send, enter six digits, sign in; the code is never written into the page or storage', async () => {
+  const sessionStore = new Map(), f = fixture({ pathname: '/login', sessionStore }); await settle();
+  f.click('data-mode=otp'); await settle();
+  assert.match(f.root().innerHTML, /รับรหัสทางอีเมล/); assert.equal(f.root().querySelector('[name="password"]'), null);
+  f.fill({ email: 'person@unit.test' }); f.submit(); await settle();
+  assert.equal(f.calls.find(c => c.path === '/api/auth/email/request').body.email, 'person@unit.test');
+  const field = f.root().querySelector('[name="code"]'); assert.ok(field);
+  assert.equal(field.getAttribute('autocomplete'), 'one-time-code'); assert.match(f.root().innerHTML, /ส่งรหัสไปที่ person@unit\.test/);
+  assert.equal(f.root().querySelector('[data-resend]').disabled, true, 'resend waits for the cooldown');
+  f.fill({ code: '๐๑๒' }); assert.equal(f.root().querySelector('[name="code"]').value, '012');
+  f.submit(); await settle(); assert.equal(f.calls.some(c => c.path === '/api/auth/email/verify'), false, 'three digits are not sent');
+  f.fill({ code: '012345' });
+  const saved = JSON.parse(sessionStore.get('cendon_email_challenge')); assert.equal(saved.email, 'person@unit.test'); assert.equal(JSON.stringify(saved).includes('012345'), false);
+  const again = fixture({ pathname: '/login', sessionStore }); await settle();
+  assert.ok(again.root().querySelector('[name="code"]'), 'a refresh returns to the code step'); assert.equal(again.root().querySelector('[name="code"]').value, '');
+  f.submit(); await settle();
+  assert.equal(f.calls.find(c => c.path === '/api/auth/email/verify').body.code, '012345');
+  assert.deepEqual(f.customTokens, ['unit-only-custom-token']);
+  assert.ok(f.paints.every(html => !html.includes('012345')));
+  f.advance(60000); 
+});
+
+test('account flow: if email codes are not switched on, the code screen says so plainly and never claims a code was sent', async () => {
+  const f = fixture({ pathname: '/login', transport: c => c.path === '/api/auth/config' ? response({ emailOtpReady: false }) : c.path === '/api/auth/email/request' ? response({ code: 'auth/unavailable' }, 503) : undefined }); await settle();
+  assert.ok(f.root().querySelector('[data-mode="otp"]'), 'the option is always offered');
+  f.click('data-mode=otp'); await settle(); assert.match(f.root().innerHTML, /ยังไม่เปิด/);
+  f.fill({ email: 'person@unit.test' }); f.submit(); await settle();
+  assert.equal(f.root().querySelector('[name="code"]'), null); assert.doesNotMatch(f.root().innerHTML, /ส่งรหัสไปที่/);
+  assert.match(f.root().innerHTML, /ยังส่งรหัสทางอีเมลไม่ได้/); assert.equal(f.customTokens.length, 0);
+});
 test('account flow: unsupported translation copy falls back to English while retaining selected app locale', async () => {
   const f = fixture({ uid: 'user-A' }); await settle();
   f.fill({ terms: true, privacy: true }); f.submit(); f.fill({ name: 'Porsche' }); f.submit();
@@ -571,7 +623,7 @@ test('required or denied server responses revoke consumed paint context and prev
 test('login opening clip: plays once per session, never with reduced motion, data saver or a saved sign-in, and always has a way out',()=>{
   const html=readFileSync(new URL('../login.html',import.meta.url),'utf8'),js=readFileSync(new URL('../login-intro.js',import.meta.url),'utf8');
   const gate=html.match(/<script>\s*\/\* คลิปเปิดแอป[\s\S]*?<\/script>/)[0];
-  for(const rule of [/sessionStorage\.getItem\('cendon_intro'\)/,/prefers-reduced-motion: reduce/,/saveData/,/nointro/,/firebase:authUser:AIzaSyCowQ-RU7amV380yrSQ3yamgiDW58ap2yw:/])assert.match(gate,rule);
+  for(const rule of [/sessionStorage\.getItem\('cendon_intro'\)/,/prefers-reduced-motion: reduce/,/saveData/,/nointro/,/cendon_signed/])assert.match(gate,rule);
   assert.match(js,/sessionStorage\.setItem\('cendon_intro','1'\)/);
   assert.match(js,/intro-\$\{big\?1080:720\}\.mp4[\s\S]*intro-720\.webm/,'mp4 first, webm fallback');
   assert.match(js,/ci-skip/);assert.match(js,/Escape/);assert.match(js,/2500/,'a slow or blocked video falls through to the login quickly');

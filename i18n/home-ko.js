@@ -1416,5 +1416,15 @@ window.CENDON_L10N={lang:"ko",t:{
 "Enter a valid email address.":"올바른 이메일 주소를 입력하세요.",
 "Use at least 8 characters for your password.":"비밀번호는 8자 이상이어야 합니다.",
 "Enter your password.":"비밀번호를 입력하세요.",
-"If an account uses this email, a reset link is on its way — check your inbox (and spam).":"이 이메일로 된 계정이 있다면 재설정 링크를 보냈습니다. 받은편지함(스팸함 포함)을 확인하세요."
+"If an account uses this email, a reset link is on its way — check your inbox (and spam).":"이 이메일로 된 계정이 있다면 재설정 링크를 보냈습니다. 받은편지함(스팸함 포함)을 확인하세요.",
+"Email codes aren’t available right now — use your password, Google or Apple for now.":"지금은 이메일 코드를 보낼 수 없습니다 — 비밀번호, Google 또는 Apple을 이용하세요.",
+"Enter your email and we’ll send a six-digit code — no password needed.":"이메일을 입력하면 6자리 코드를 보내드립니다 — 비밀번호가 필요 없습니다.",
+"Email codes aren’t switched on yet — you can use your password, Google or Apple for now.":"이메일 코드가 아직 켜져 있지 않습니다 — 비밀번호, Google 또는 Apple을 이용할 수 있습니다.",
+"Sending code…":"코드 보내는 중…",
+"Email me a code instead":"대신 이메일로 코드 받기",
+"Use a password instead":"비밀번호 사용하기",
+"Please wait before requesting another code.":"새 코드를 요청하기 전에 잠시 기다려 주세요.",
+"Enter all six digits.":"6자리를 모두 입력하세요.",
+"Help":"도움말",
+"This email isn’t verified yet — sign in with the password, Google or Apple you used before, then open the verification link we emailed you.":"이 이메일은 아직 인증되지 않았습니다 — 이전에 쓰던 비밀번호, Google 또는 Apple로 로그인한 뒤 이메일의 인증 링크를 여세요."
 }};

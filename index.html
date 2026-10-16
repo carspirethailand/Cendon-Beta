@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
+<script src="/call-continuity.js?v=2026-10-16-r1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css">
 <script src="/cendon-tour.js" defer></script>
@@ -2270,16 +2271,17 @@ a.mtab{text-decoration:none}
 <link rel="stylesheet" href="home-layout.css">
 <script src="category-pages.js" defer></script>
 <script src="car-sync.js"></script>
-<script src="stability.js" defer></script>
-<link rel="stylesheet" href="call-ui.css?v=2026-10-16-r5">
+<script src="stability.js?v=2026-10-16-r2" defer></script>
+<link rel="stylesheet" href="call-ui.css?v=2026-10-16-r6">
 <script src="call-sounds.js?v=1" defer></script>
 <script src="call-composer.js?v=2026-10-16-r3" defer></script>
-<script src="call-agent.js?v=2026-10-16-r3" defer></script>
-<script src="call-chat.js?v=2026-10-16-r1" defer></script>
-<script src="call-surface.js?v=2026-10-16-r4" defer></script>
+<script src="call-activity.js?v=2026-10-16-r1" defer></script>
+<script src="call-agent.js?v=2026-10-16-r4" defer></script>
+<script src="call-chat.js?v=2026-10-16-r2" defer></script>
+<script src="call-surface.js?v=2026-10-16-r5" defer></script>
 <script src="engine-scan.js?v=2026-10-16-r2" defer></script>
 <script src="call-tools.js?v=2026-10-16-r5" defer></script>
-<script src="call-session.js?v=2026-10-16-r4" defer></script>
+<script src="call-session.js?v=2026-10-16-r5" defer></script>
 </head>
 <body>
 <script id="mnav0">
@@ -2989,8 +2991,8 @@ async function api(path,o){
   let r;
   /* คำขออ่านข้อมูลรอไม่เกิน 20 วิ — เน็ตหรือเซิร์ฟเวอร์ค้าง ต้องขึ้นปุ่มลองใหม่ ไม่ใช่โครงโหลดค้างไปตลอด
      (ส่งรูป/ใบสมัครไม่ตัดเวลา เพราะไฟล์ใหญ่ใช้เวลานานได้จริง) */
-  const ac=!o.body&&window.AbortController?new AbortController():null,tm=ac&&setTimeout(()=>ac.abort(),20000);
-  try{r=await fetch(API+path,{method:o.method||(o.body?"POST":"GET"),headers:h,body:o.body?JSON.stringify(o.body):undefined,cache:"no-store",signal:ac?ac.signal:undefined})}
+  const ac=!o.body&&!o.signal&&window.AbortController?new AbortController():null,tm=ac&&setTimeout(()=>ac.abort(),20000);
+  try{r=await fetch(API+path,{method:o.method||(o.body?"POST":"GET"),headers:h,body:o.body?JSON.stringify(o.body):undefined,cache:"no-store",signal:o.signal||(ac?ac.signal:undefined)})}
   catch(e){throw new Error(ac&&ac.signal.aborted?"เซิร์ฟเวอร์ตอบช้า ลองใหม่อีกครั้ง":"เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง")}
   finally{clearTimeout(tm)}
   let d=null;try{d=await r.json()}catch(e){}
@@ -3440,7 +3442,7 @@ async function featureHandoff(o){
   try{sessionStorage.setItem("spire_featureJob",JSON.stringify({tool:o.tool||null,ids,text:o.text||"",at:Date.now()}))}catch(e){}
   if(o.car)ls.set("spire_selCar",o.car);
   if(window.CendonPaint)CendonPaint.prepare("/chat");
-  location.href="/chat"+(o.car?"?car="+encodeURIComponent(o.car):"");
+  CendonNavigate("/chat"+(o.car?"?car="+encodeURIComponent(o.car):""));
 }
 const dataBlob=d=>{const m=/^data:([^;]+);base64,(.*)$/.exec(d);return m?CendonMedia.fromB64(m[2],m[1]):null};
 /* รถที่ใช้ตรวจ: หลายคันเลือกได้ · คันเดียวบอกชื่อ · ยังไม่มี บอกว่าห้องแชตจะให้เลือก */
@@ -3798,7 +3800,7 @@ const HERO=(function(){
     await READY.user;if(!U)return needLogin();
     const [,car]=myCars();
     if(window.CendonPaint)CendonPaint.prepare("/chat");
-    location.href="/chat?q="+encodeURIComponent(v.slice(0,2000))+"&send=1"+(car?"&car="+encodeURIComponent(car):"")};
+    CendonNavigate("/chat?q="+encodeURIComponent(v.slice(0,2000))+"&send=1"+(car?"&car="+encodeURIComponent(car):""))};
   const wireVoice=()=>window.CendonCallComposer?.bind({input:ta,button:$("hVoiceSend"),form:A,onCall:startHomeCall,onSend:send,language:LANG});
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",wireVoice,{once:true});else wireVoice();
   $("hPhoto").onclick=e=>{e.preventDefault();photoPage()};
@@ -3828,14 +3830,15 @@ const HERO=(function(){
 })();
 let homeVoice=null;
 function startHomeCall(){
+  const existing=window.CendonCallContinuity?.borrowed();if(existing)return existing.start();
   if(!U)return needLogin();
   if(!window.CendonCallSession||!window.CendonCallSurface||!window.CendonCallAgent)return toast(T("ระบบเสียงกำลังเตรียมพร้อม ลองอีกครั้งครับ","Voice is loading. Please try again."));
   if(!homeVoice){
     const openFound=(id,shop)=>{if(shop){const i=TECHS.findIndex(t=>t.id===id);if(i<0)TECHS.push(shop);else TECHS[i]=shop;}openTech(id);};
-    const view=window.CendonCallSurface.create({anchor:$("hForm"),language:LANG,onSelectShop:id=>{view.minimize();openFound(id,agent.lookup(id));}}),notes=[];
+    const view=window.CendonCallSurface.create({anchor:$("hForm"),language:LANG,onSelectShop:id=>{if(!window.CendonCallContinuity?.go('/tech/'+encodeURIComponent(id))){view.minimize();openFound(id,agent.lookup(id));}}}),notes=[];
     const car=()=>{const [list,id]=myCars();return list.find(c=>c.id===id)||list[0]||null;};
     let tools;
-    const agent=window.CendonCallAgent.create({api,getCar:car,getLocation:()=>HERE,showResults:view.showResults,showDraft:view.showDraft,minimize:view.minimize,openMechanic:openFound,prepareUrgent:async(symptom,ctx)=>{if(!ctx.isCurrent())return;await urgentCall();if(ctx.isCurrent()&&$("uSym"))$("uSym").value=symptom;}});
+    const agent=window.CendonCallAgent.create({api,language:LANG,notify:r=>homeVoice?.notice(r),getCar:car,getLocation:()=>HERE,showResults:view.showResults,showDraft:view.showDraft,minimize:view.minimize,openMechanic:openFound,prepareUrgent:async(symptom,ctx)=>{if(!ctx.isCurrent())return;if(window.CendonCallContinuity?.go('/urgent?draft='+encodeURIComponent(symptom)))return;await urgentCall();if(ctx.isCurrent()&&$("uSym"))$("uSym").value=symptom;}});
     homeVoice=window.CendonCallSession.create({byId:view.byId,backendUrl:API,language:LANG,getUser:()=>U,view,agent,getTools:()=>tools,toast,getMessages:()=>notes,appendMessage:m=>{notes.push(m);if(notes.length>30)notes.shift();},systemPrompt:()=>"Cendon ช่วยคนใช้รถประจำวัน คุยเรื่องทั่วไปได้ หาช่างผ่านเครื่องมือจากข้อมูลจริง ไม่เรียกช่างหรือชำระเงินแทนผู้ใช้",storage:{get:(k,d)=>ls.get("spire_"+k,d),set:(k,v)=>ls.set("spire_"+k,v),del:k=>{try{localStorage.removeItem("spire_"+k)}catch(e){}}}});
     tools=window.CallTools?.create({voice:homeVoice.bridge,language:LANG,backendUrl:API,getUser:()=>U,getCar:car,getMessages:()=>notes,appendMessage:m=>{notes.push(m);if(notes.length>30)notes.shift();},toast});
     view.bind(homeVoice);
@@ -5715,7 +5718,7 @@ function inboxBody(list,state){
     :`<div class="ib-empty"><i class="ti ti-message-circle"></i><b>${T("ยังไม่มีแชตกับช่าง","No chats with mechanics yet")}</b><p>${T("กด ทักช่าง ที่หน้าบริการหรือหน้าร้าน แล้วห้องคุยจะเก็บไว้ที่นี่","Tap Message on a service or shop — the chat will be kept here")}</p></div>`);
 }
 function wireInbox(b){
-  b.querySelector("[data-ai]").onclick=e=>{e.preventDefault();if(window.CendonPaint)CendonPaint.prepare("/chat");location.href="/chat"};
+  b.querySelector("[data-ai]").onclick=e=>{e.preventDefault();if(window.CendonPaint)CendonPaint.prepare("/chat");CendonNavigate("/chat")};
   b.querySelectorAll(".ib-row[data-k]").forEach(x=>x.onclick=()=>openConvo(x.dataset.k,x.dataset.id));
   if($("ibLogin"))$("ibLogin").onclick=()=>needLogin();
   if($("ibStudio"))$("ibStudio").onclick=()=>{closeSheet();openStudio();setTimeout(()=>setTab2("messages"),0)};
@@ -6909,8 +6912,8 @@ async function pullCars(){
   document.addEventListener("click",e=>{if(!e.target.closest("#dd"))dd.classList.remove("show")});
   $("signinBtn").onclick=()=>{try{needLogin()}catch(e){location.href="/login?next=/"}};
   /* หน้าหลัก: ถ้ามีอะไรเปิดซ้อนอยู่ ถอยกลับหน้าแรก (ไม่ต้องโหลดใหม่) */
-  document.querySelectorAll('.navwrap [data-view="home"]').forEach(x=>x.addEventListener("click",ev=>{ev.preventDefault();if(window.Nav&&Nav.started&&Nav.top())Nav.home();else location.href="/"}));
-  dd.querySelector('[data-view="profile"]').onclick=()=>{if(window.CendonPaint)CendonPaint.prepare('/profile');location.href="/profile"};
+  document.querySelectorAll('.navwrap [data-view="home"]').forEach(x=>x.addEventListener("click",ev=>{ev.preventDefault();if(window.Nav&&Nav.started&&Nav.top())Nav.home();else CendonNavigate("/")}));
+  dd.querySelector('[data-view="profile"]').onclick=()=>{if(window.CendonPaint)CendonPaint.prepare('/profile');CendonNavigate("/profile")};
   $("ddJobs").onclick=()=>{dd.classList.remove("show");try{jobs()}catch(e){}};
   $("ddStudio").onclick=()=>{dd.classList.remove("show");openStudio()};
   $("logoutBtn").onclick=()=>{try{firebase.auth().signOut().then(()=>location.reload())}catch(e){location.reload()}};
@@ -6926,7 +6929,7 @@ async function pullCars(){
   navPaint();
 })();
 </script>
-<script src="mobile-ui.js" defer></script>
+<script src="mobile-ui.js?v=2026-10-16-r2" defer></script>
 <script type="speculationrules">
 {"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"conservative"}]}
 </script>

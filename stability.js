@@ -37,6 +37,6 @@
       return;
     }
     // Native links should not wait for unrelated images/auth or the legacy 1.2s boot gate.
-    e.preventDefault();e.stopImmediatePropagation();location.assign(t.u.href);
+    e.preventDefault();e.stopImmediatePropagation();if(!window.CendonCallContinuity?.go(t.u.href))location.assign(t.u.href);
   },true);
 })();

@@ -25,6 +25,9 @@
     const byId=id=>document.getElementById(id),canvas=byId('hhOrb');
     let session=null,mode=anchor?'inline':'full',active=false,run=0,direction=0,ghost=null,target=null,expanding=false,bead=0,beadTarget=0,lastAt=0,priorFocus=null,results=null,toolsReady=null,chat=null,connected=false,fullTouch=null;
     const ambient=document.createElement('canvas');ambient.className='cc-ambient';ambient.hidden=true;ambient.setAttribute('aria-hidden','true');document.body.append(ambient);
+    const roam=document.createElement('div');roam.className='cc-roam';roam.hidden=true;
+    roam.innerHTML=`<button type="button" data-roam="chat">Cendon · ${T('คุยสายเดิม','Same call')}</button><button type="button" data-roam="mute">${T('ปิดไมค์','Mute')}</button><button type="button" data-roam="end">${T('วางสาย','End')}</button>`;document.body.append(roam);
+    roam.querySelector('[data-roam="chat"]').onclick=()=>{session?.wake?.();toChat()};roam.querySelector('[data-roam="mute"]').onclick=()=>session?.mute();roam.querySelector('[data-roam="end"]').onclick=()=>session?.end();
     let wave=null,caption=null,stateText=null,dock=null,mute=null,observed=true,lastMuted=null;
     const reduced=window.matchMedia?.('(prefers-reduced-motion:reduce)').matches||false;
     const original=anchor?[...anchor.children]:[],savedInert=new Map();
@@ -47,7 +50,8 @@
     function setMode(next,{floating=false}={}){
       if(next==='inline'&&!anchor)return;mode=next;
       root.classList.toggle('cv-inline-call',mode==='inline');root.setAttribute('aria-hidden',mode==='inline'?'true':'false');
-      root.classList.toggle('cv-chat-mode',mode==='chat');root.inert=mode==='chat';ambient.hidden=mode!=='chat';
+      root.classList.toggle('cv-chat-mode',mode==='chat'||mode==='roam');root.inert=mode==='chat'||mode==='roam';ambient.hidden=mode!=='chat'&&mode!=='roam';roam.hidden=mode!=='roam'||!active;
+      if(mode==='roam')root.setAttribute('aria-hidden','true');
       if(mode==='chat'){root.setAttribute('aria-hidden','true');chat?.open();}else chat?.hide();
       if(mode==='full')root.setAttribute('aria-modal','true');else root.removeAttribute('aria-modal');
       if(dock){dock.hidden=!active||mode!=='inline';placeDock(floating||!observed);}
@@ -63,7 +67,7 @@
     }
     function close(){
       const closing=++run;active=false;press?.dispose();clearDrag();expanding=false;results?.remove();results=null;
-      chat?.reset();chat?.hide();ambient.hidden=true;root.classList.remove('cv-chat-mode');root.inert=false;
+      chat?.reset();chat?.hide();ambient.hidden=true;roam.hidden=true;root.classList.remove('cv-chat-mode');root.inert=false;
       if(anchor){
         const dx=(direction||1)*(Math.max(360,anchor.clientWidth)+40);
         const finish=()=>{if(run!==closing)return;dock.hidden=true;dock.style.transform='';dock.style.opacity='';placeDock(false);};
@@ -87,7 +91,7 @@
     function toChat(){
       if(!active||!session||!window.CendonCallChat)return;
       session.suspendVisuals?.();
-      if(!chat)chat=window.CendonCallChat.create({language,history:()=>session.history?.()||[],onSend:p=>session.sendChat(p),onFull:()=>full(),onEnd:()=>session.end(),onMute:()=>session.mute()});
+      if(!chat)chat=window.CendonCallChat.create({language,history:()=>session.history?.()||[],onSend:p=>session.sendChat(p),onFull:()=>full(),onBrowse:()=>{setMode('roam');resize()},onEnd:()=>session.end(),onMute:()=>session.mute()});
       chat.root.classList.toggle('cc-light',root.classList.contains('light'));chat.state(connected,session.muted);setMode('chat');resize();
       animate(chat.root,[{opacity:0,transform:'translateY(32px)'},{opacity:1,transform:'translateY(0)'}],{duration:320,easing:'cubic-bezier(.16,1,.3,1)'});
     }
@@ -132,15 +136,16 @@
       const level=clamp(Math.max(ai,user*.82),0,1);if(reduced)time=0;bead+=(beadTarget-bead)*.18;
       if(lastMuted!==muted){lastMuted=muted;if(mute){mute.setAttribute('aria-pressed',String(muted));mute.setAttribute('aria-label',muted?T('เปิดไมค์','Unmute microphone'):T('ปิดไมค์','Mute microphone'));mute.classList.toggle('cv-muted',muted);mute.querySelector('i').className='ti '+(muted?'ti-microphone-off':'ti-microphone');}byId('callMuteBtn').setAttribute('aria-pressed',String(muted));}
       if(mode==='chat')chat?.state(connected,muted);
+      if(mode==='roam'){const b=roam.querySelector('[data-roam="mute"]');const label=muted?T('เปิดไมค์','Unmute'):T('ปิดไมค์','Mute');if(b.textContent!==label)b.textContent=label;b.setAttribute('aria-pressed',String(muted));}
       if(mode==='inline'&&wave){
         const g=wave.getContext('2d'),w=wave.width,h=wave.height;g.clearRect(0,0,w,h);g.fillStyle='#151515';
         const n=clamp(Math.round(w/7),17,37),gap=w/n,bw=Math.max(2,gap*.4),cx=w/2,cy=h/2;
         for(let i=0;i<n;i++){const envelope=Math.sin((i+.5)/n*Math.PI),texture=.48+.25*Math.sin(i*.74+time*4.6)+.2*Math.cos(i*.31-time*3),height=4+level*envelope*texture*h*.9,x=(i+.5)*gap;const x2=x+(cx-x)*bead,h2=height+(42-height)*bead,b2=bw+(42-bw)*bead;g.globalAlpha=1-bead*.9;rounded(g,x2-b2/2,cy-h2/2,b2,h2);}g.globalAlpha=1;return;
       }
-      if(mode!=='full'&&mode!=='chat')return;
-      const drawCanvas=mode==='chat'?ambient:canvas,g=drawCanvas.getContext('2d'),w=drawCanvas.width,h=drawCanvas.height;g.clearRect(0,0,w,h);
-      if(camera||mode==='chat'){
-        if(level<.01&&mode!=='chat')return;const depth=(mode==='chat'?3+18*level:5+48*level)*w/Math.max(1,drawCanvas.clientWidth);
+      if(mode!=='full'&&mode!=='chat'&&mode!=='roam')return;
+      const quiet=mode==='chat'||mode==='roam',drawCanvas=quiet?ambient:canvas,g=drawCanvas.getContext('2d'),w=drawCanvas.width,h=drawCanvas.height;g.clearRect(0,0,w,h);
+      if(camera||quiet){
+        if(level<.01&&!quiet)return;const depth=(quiet?3+18*level:5+48*level)*w/Math.max(1,drawCanvas.clientWidth);
         for(let l=0;l<3;l++){g.fillStyle=l===0?'rgba(255,173,93,.18)':l===1?'rgba(255,151,84,.28)':'rgba(255,206,151,.42)';for(const side of [0,1]){g.beginPath();g.moveTo(side?w:0,0);for(let y=0;y<=h;y+=12){const d=depth*(1-l*.22)*(.55+.22*Math.sin(y/h*14+time*3+l)+.15*Math.sin(y/h*29-time*2));g.lineTo(side?w-d:d,y);}g.lineTo(side?w:0,h);g.closePath();g.fill();}for(const top of [false,true]){g.beginPath();g.moveTo(0,top?0:h);for(let x=0;x<=w;x+=12){const d=depth*(1-l*.22)*(.55+.24*Math.sin(x/w*12+time*3+l));g.lineTo(x,top?d:h-d);}g.lineTo(w,top?0:h);g.closePath();g.fill();}}return;
       }
       const cx=w*.5,cy=h*.5,r=Math.min(w,h)*(.39+.025*level+.002*Math.sin(time*1.2));
@@ -165,7 +170,7 @@
       (mode==='chat'?chat.results:mode==='inline'?anchor.parentNode:root).append(results);
     }
     function showDraft(symptom){showResults([]);results.replaceChildren();const p=document.createElement('p');p.textContent=T('ร่างงานด่วน ยังไม่ได้ส่ง: ','Urgent draft, not submitted: ')+symptom;const a=document.createElement('a');a.className='cv-result';a.textContent=T('ตรวจรายละเอียดและเลือกช่าง','Review details and choose a mechanic');a.href='/?q='+encodeURIComponent(symptom);a.target='_blank';a.rel='noopener';results.append(p,a);}
-    return Object.freeze({byId,open,close,render,resize,showResults,showDraft,bind(value){session=value;},refreshChat(){chat?.refresh()},chat:toChat,state(state,text){connected=state==='link';chat?.state(connected,session?.muted);if(caption&&text)caption.textContent=text;if(stateText)stateText.textContent=toolsReady===false?T('โหมดเสียง · เครื่องมือยังไม่เปิด','Voice · tools unavailable'):state==='link'?T('Cendon · ต่อสายแล้ว','Cendon · connected'):'Cendon';byId('callCamBtn').disabled=state!=='link'&&!session?.cameraOn;},caption(who,text){chat?.caption(who,text);if(caption)caption.textContent=text;const el=byId('callCaption');if(el.textContent!==text)el.textContent=text;},agentAvailable(ok){toolsReady=ok;capability.hidden=ok;if(!ok&&stateText)stateText.textContent=T('โหมดเสียง · เครื่องมือยังไม่เปิด','Voice · tools unavailable');},minimize(){if(session?.cameraOn)session.camera();setMode('inline',{floating:true});},expand:full,dispose(){run++;for(const animation of animations)animation.cancel();animations.clear();root.classList.remove('cv-ending','cv-chat-mode');root.inert=false;press.dispose();ro?.disconnect();observe?.disconnect();document.removeEventListener('keydown',keydown,true);window.removeEventListener('resize',resize);root.removeEventListener('pointerdown',fullDown);root.removeEventListener('pointermove',fullMove);root.removeEventListener('pointerup',fullUp);root.removeEventListener('pointercancel',fullCancel);clearDrag();results?.remove();chat?.dispose();ambient.remove();originals(false);dock?.remove();minimize.remove();capability.remove();}});
+    return Object.freeze({byId,open,close,render,resize,showResults,showDraft,bind(value){session=value;},refreshChat(){chat?.refresh()},chat:toChat,roam(){if(active){setMode('roam');resize()}},state(state,text){connected=state==='link';chat?.state(connected,session?.muted);roam.querySelector('[data-roam="chat"]').textContent=text?'Cendon · '+text:'Cendon · '+T('คุยสายเดิม','Same call');if(caption&&text)caption.textContent=text;if(stateText)stateText.textContent=toolsReady===false?T('โหมดเสียง · เครื่องมือยังไม่เปิด','Voice · tools unavailable'):state==='link'?T('Cendon · ต่อสายแล้ว','Cendon · connected'):'Cendon';byId('callCamBtn').disabled=state!=='link'&&!session?.cameraOn;},caption(who,text){chat?.caption(who,text);if(caption)caption.textContent=text;const el=byId('callCaption');if(el.textContent!==text)el.textContent=text;},agentAvailable(ok){toolsReady=ok;capability.hidden=ok;if(!ok&&stateText)stateText.textContent=T('โหมดเสียง · เครื่องมือยังไม่เปิด','Voice · tools unavailable');},minimize(){if(session?.cameraOn)session.camera();setMode('inline',{floating:true});},expand:full,dispose(){run++;for(const animation of animations)animation.cancel();animations.clear();root.classList.remove('cv-ending','cv-chat-mode');root.inert=false;press.dispose();ro?.disconnect();observe?.disconnect();document.removeEventListener('keydown',keydown,true);window.removeEventListener('resize',resize);root.removeEventListener('pointerdown',fullDown);root.removeEventListener('pointermove',fullMove);root.removeEventListener('pointerup',fullUp);root.removeEventListener('pointercancel',fullCancel);clearDrag();results?.remove();chat?.dispose();ambient.remove();roam.remove();originals(false);dock?.remove();minimize.remove();capability.remove();}});
   }
   window.CendonCallSurface=Object.freeze({create,gesture});
 })();

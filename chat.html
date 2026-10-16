@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="th" data-ctheme="midnight">
 <head>
+<script src="/call-continuity.js?v=2026-10-16-r1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css">
 <script src="/cendon-tour.js" defer></script>
@@ -3015,10 +3016,11 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 <script src="engine-scan.js?v=2026-10-16-r2" defer></script>
 <script src="call-tools.js?v=2026-10-16-r5" defer></script>
 <script src="call-composer.js?v=2026-10-16-r3" defer></script>
-<script src="call-agent.js?v=2026-10-16-r3" defer></script>
-<script src="call-chat.js?v=2026-10-16-r1" defer></script>
-<script src="call-surface.js?v=2026-10-16-r4" defer></script>
-<script src="call-session.js?v=2026-10-16-r4" defer></script>
+<script src="call-activity.js?v=2026-10-16-r1" defer></script>
+<script src="call-agent.js?v=2026-10-16-r4" defer></script>
+<script src="call-chat.js?v=2026-10-16-r2" defer></script>
+<script src="call-surface.js?v=2026-10-16-r5" defer></script>
+<script src="call-session.js?v=2026-10-16-r5" defer></script>
 <link rel="stylesheet" href="valet.css?v=1">
 <script src="valet.js?v=1" defer></script>
 <script src="bell.js?v=1" defer></script>
@@ -3032,9 +3034,9 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 @media(prefers-reduced-motion:reduce){@view-transition{navigation:none}}
 </style>
 <link rel="stylesheet" href="stability.css">
-<link rel="stylesheet" href="call-ui.css?v=2026-10-16-r5">
+<link rel="stylesheet" href="call-ui.css?v=2026-10-16-r6">
 <script src="car-sync.js"></script>
-<script src="stability.js" defer></script>
+<script src="stability.js?v=2026-10-16-r2" defer></script>
 <!-- หน้าตาชุดเดียวกับหน้าหลัก (สี การ์ด ปุ่ม พื้นหลัง) — โหลดท้ายสุดให้ชนะสไตล์เดิม -->
 <link rel="stylesheet" href="lux.css">
 </head>
@@ -5656,23 +5658,24 @@ function setLang(l){
 function markLang(){document.querySelectorAll(".lang-opt").forEach(b=>b.classList.toggle("sel",b.dataset.l===lang))}
 
 /* ===== NAVIGATION ===== */
-function goHome(){try{sessionStorage.setItem("spire_stayHome","1")}catch(e){}location.href="/"}
-function goGarage(){try{sessionStorage.setItem("spire_stayHome","1")}catch(e){}if(window.CendonPaint)CendonPaint.prepare('/garage');location.href="/garage?add=1"}
+function goHome(){try{sessionStorage.setItem("spire_stayHome","1")}catch(e){}CendonNavigate("/")}
+function goGarage(){try{sessionStorage.setItem("spire_stayHome","1")}catch(e){}if(window.CendonPaint)CendonPaint.prepare('/garage');CendonNavigate("/garage?add=1")}
 
 /* ===== TOAST ===== */
 let tt;function toast(m,ic){const el=$("toast");el.innerHTML=`<i class="ti ${ic||"ti-check"}"></i>${esc(m)}`;el.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("show"),3200)}
 
 /* ===== LIVE CALL — shared transport + the same full-screen surface as home ===== */
 function getCallSession(){
+  const existing=window.CendonCallContinuity?.borrowed();if(existing)return existing;
   if(cendonCall)return cendonCall;
   if(!window.CendonCallSession||!window.CendonCallSurface||!window.CendonCallAgent){toast(lang==="en"?"Voice is loading. Please try again.":"ระบบเสียงกำลังเตรียมพร้อม ลองอีกครั้งครับ");return null;}
   const view=window.CendonCallSurface.create({language:lang});
-  const voiceApi=async(path,{signal}={})=>{
+  const voiceApi=async(path,{signal,body}={})=>{
     const user=auth?.currentUser;if(!user)throw Error("Sign in required");
-    const token=await user.getIdToken(),response=await fetch(BACKEND_URL+path,{headers:{Authorization:"Bearer "+token},signal,cache:"no-store"});
+    const token=await user.getIdToken(),response=await fetch(BACKEND_URL+path,{method:body?'POST':'GET',headers:{Authorization:"Bearer "+token,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{}),signal,cache:"no-store"});
     if(!response.ok)throw Error("Tool unavailable");return response.json();
   };
-  const agent=window.CendonCallAgent.create({api:voiceApi,getCar:selCar,getLocation:()=>LS.get("tech_here",null),showResults:view.showResults,showDraft:view.showDraft});
+  const agent=window.CendonCallAgent.create({api:voiceApi,language:lang,notify:r=>cendonCall?.notice(r),getCar:selCar,getLocation:()=>LS.get("tech_here",null),showResults:view.showResults,showDraft:view.showDraft});
   let tools;
   cendonCall=window.CendonCallSession.create({byId:view.byId,backendUrl:BACKEND_URL,language:lang,getUser:()=>auth?.currentUser,view,agent,getTools:()=>tools,toast,storage:LS,systemPrompt:sysPrompt,getMessages:()=>messages,appendMessage:m=>messages.push(m),save:saveSession,onEnd:()=>{renderMessages();updateHint();renderChips();setPhase("thread");}});
   tools=window.CallTools?.create({voice:cendonCall.bridge,language:lang,backendUrl:BACKEND_URL,getUser:()=>auth?.currentUser,getCar:selCar,getMessages:()=>messages,appendMessage:m=>messages.push(m),save:saveSession,toast});
@@ -5829,11 +5832,11 @@ function goNav(k){
      ตัวเชื่อมเครื่องมือครอบ goNav ไว้อีกชั้นและดักคำนี้ก่อนถึงตรงนี้ */
   if(k==="tools"){ if(window.spireToolsMenu)window.spireToolsMenu(document.getElementById("wPlus")||document.body); return }
   /* ทุกหน้าแยกไฟล์แล้ว ลิงก์ตรงไปไฟล์นั้นได้เลย ไม่ต้องผ่าน index แล้วค่อยสลับ */
-  if(k==="techs"){ location.href="/tech"; return }
+  if(k==="techs"){ CendonNavigate("/tech"); return }
   const F={home:"/",garage:"/garage",magazine:"/news",
            news:"/news",shop:"/spares",spares:"/spares",
            profile:"/profile"};
-  if(window.CendonPaint)CendonPaint.prepare(F[k]||"/");location.href=F[k]||"/";
+  if(window.CendonPaint)CendonPaint.prepare(F[k]||"/");CendonNavigate(F[k]||"/");
 }
 /* ตัวเชื่อมเครื่องมือครอบฟังก์ชันนี้เพื่อดัก "tools" ให้เปิดเมนูในห้องแชต
    จึงต้องยกขึ้น window และให้ทุกปุ่มเรียกผ่าน window.goNav ไม่ใช่ตัวในสโคป
@@ -10642,7 +10645,7 @@ setInterval(flush,60000);
 setInterval(pull,15*60000);
 })();
 </script>
-<script src="mobile-ui.js" defer></script>
+<script src="mobile-ui.js?v=2026-10-16-r2" defer></script>
 <script src="nav-chat.js" defer></script>
 <script id="perfjs">
 /* ══════════════════════════════════════════════════════════════════

@@ -34,8 +34,8 @@ function fixture({permission,identity,token,worklet}={}){
   }
   const auth={currentUser:{getIdToken:()=>identity?.promise||Promise.resolve('unit-test-identity')}};
   const navigator={mediaDevices:{getUserMedia(){micRequests++;return permission?.promise||Promise.resolve(stream);}}};
-  const window={AudioContext:Context,WebSocket:Socket,CendonCallSounds:{play:kind=>cues.push(kind)},spireTheme:()=>'dark'};
-  const sandbox={window,navigator,auth,host:{},useFb:true,lang:'th',BACKEND_URL:'https://unit-test.invalid',
+  const window={AudioContext:Context,WebSocket:Socket,CendonCallSounds:{play:kind=>cues.push(kind)},spireTheme:()=>'dark',events:{},addEventListener(n,f){this.events[n]=f},removeEventListener(n){delete this.events[n]}};
+  const sandbox={window,navigator,document:{hidden:false,events:{},addEventListener(n,f){this.events[n]=f},removeEventListener(n){delete this.events[n]}},auth,host:{},useFb:true,lang:'th',BACKEND_URL:'https://unit-test.invalid',
     $:element,Image:class{},WebSocket:Socket,AudioWorkletNode:class{constructor(ctx){Object.assign(this,audioNode());this.context=ctx;}},Blob,AbortController,
     URL:{createObjectURL:()=> 'blob:unit-test-worklet',revokeObjectURL(){}},Date,performance:{now:()=>0},
     requestAnimationFrame:()=>1,sysPrompt:()=>'',tr:k=>k,toast:message=>toasts.push(message),
@@ -142,6 +142,15 @@ test('idle silence alone never triggers reconnect; pending stalled responses do'
   const f=fixture();f.run('callActive=true;liveModel="test";callHealth()');assert.equal(f.requests.length,0);
   f.run('livePendingAt=Date.now()-21000;liveGotAudio=true;callHealth();callHealth()');await settle();
   assert.equal(f.requests.length,1);f.run('endCall()');
+});
+test('background throttling is not treated as an AI stall and cannot open replacement transports',async()=>{
+ const f=fixture();f.sandbox.document.hidden=true;f.run('callActive=true;livePendingAt=Date.now()-30000;callHealth()');await settle();assert.equal(f.requests.length,0);assert.equal(f.micRequests,0);assert.equal(f.run('callActive'),true);
+});
+test('background socket loss preserves logical call until foreground recovery rather than hanging up',async()=>{
+ const f=fixture();const dial=f.run('startCall()');await settle();await f.sockets[0].setup();await dial;f.sandbox.document.hidden=true;f.sockets[0].readyState=3;f.sockets[0].onclose({code:1006,reason:'test background interruption'});assert.equal(f.run('callActive'),true);assert.equal(f.run('backgroundLost'),true);assert.equal(f.track.stopped,0);assert.equal(f.requests.length,1);f.run('endCall()');assert.equal(f.track.stopped,1);
+});
+test('bfcache/page visibility pause keeps mic/session; real page termination cleans up',async()=>{
+ const f=fixture();vm.runInContext(transport,f.sandbox);const session=f.sandbox.window.CendonCallSession.create({byId:f.element,backendUrl:'https://unit-test.invalid',getUser:()=>f.sandbox.auth.currentUser});const dial=session.start();await settle();await f.sockets[0].setup();await dial;f.sandbox.window.events.pagehide({persisted:true});assert.equal(session.active,true);assert.equal(f.track.stopped,0);f.sandbox.document.hidden=true;f.sandbox.document.events.visibilitychange();assert.equal(session.active,true);assert.equal(f.micRequests,1);f.sandbox.window.events.pagehide({persisted:false});assert.equal(session.active,false);assert.equal(f.track.stopped,1);
 });
 test('camera permission resolved after hangup cannot turn the camera back on',async()=>{
   const p=deferred(),f=fixture({permission:p});f.run('callActive=true');const opening=f.run('toggleCamera()');

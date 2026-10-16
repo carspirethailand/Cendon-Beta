@@ -12,7 +12,7 @@ function routing({pathname='/',connection,hidden=false,prerender=false}={}){
   const location={origin:'https://fixture.test',pathname,href:'https://fixture.test'+pathname,assign:url=>assigned.push(url)};
   const document={hidden,prerendering:prerender,head:{appendChild:l=>links.push(l)},
     createElement:()=>({}),addEventListener:(name,fn)=>events.set(name,fn)};
-  vm.runInNewContext(router,{document,location,navigator:{connection},URL,Set});
+  vm.runInNewContext(router,{window:{},document,location,navigator:{connection},URL,Set});
   function fire(type,href,extra={}){
     const a={href:new URL(href,location.href).href,target:extra.target||'',hasAttribute:name=>extra.download&&name==='download',getAttribute:name=>name==='aria-disabled'&&extra.disabled?'true':null};
     let prevented=false,stopped=false;
@@ -67,7 +67,7 @@ test('avatar updates observe only the avatar and coalesce instead of resetting t
 test('all app pages share one mobile implementation and early geometry CSS',()=>{
   for(const name of pages){
     const s=readFileSync(new URL('../'+name+'.html',import.meta.url),'utf8');
-    assert.equal((s.match(/src="mobile-ui\.js"/g)||[]).length,1,name);
+    assert.equal((s.match(/src="mobile-ui\.js\?v=2026-10-16-r2"/g)||[]).length,1,name);
     assert.ok(s.indexOf('href="stability.css"')<s.indexOf('</head>'),name);
     assert.ok(!s.includes('<script id="mjs">'),name);
     assert.ok(!s.includes('"prerender":'),name);

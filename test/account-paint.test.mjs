@@ -82,7 +82,7 @@ test('programmatic main-navigation controls prepare the destination without chan
     assert.ok(html.includes("CendonPaint.prepare('/chat');location.href=\"/chat\""),'floating chat button also hands off first-paint context');
   }
   const chat=readFileSync(new URL('../chat.html',import.meta.url),'utf8');
-  assert.ok(chat.includes('CendonPaint.prepare(F[k]||"/");location.href=F[k]||"/"'));
+  assert.ok(chat.includes('CendonPaint.prepare(F[k]||"/");CendonNavigate(F[k]||"/")'));
 });
 
 test('chat displays its native car chooser immediately for a valid same-tab paint even when no car exists',()=>{

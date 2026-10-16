@@ -97,6 +97,7 @@ function tabHref(k){
   return FILES[k]||"/";
 }
 function go(k){
+  const callPath=tabHref(k);if(window.CendonCallContinuity?.go(callPath))return;
   if(k==="chat"){ if(typeof window.openInbox==="function"){window.openInbox();return} if(window.CendonPaint)CendonPaint.prepare('/messages');location.href="/messages"; return }
   if(k==="account"){
     /* ยังไม่ได้เข้าระบบ → กดปุ่มเดิมของหน้า ซึ่งผูกกับ Firebase ไว้แล้ว */

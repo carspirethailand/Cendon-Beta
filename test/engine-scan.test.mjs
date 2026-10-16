@@ -74,5 +74,5 @@ test('tap explains the actual selected part with the safety restriction; legacy 
 });
 test('paired assets load in order on Home and Chat and the service worker caches the new release',async()=>{
   for(const page of ['index.html','chat.html']){const s=await read(page);assert.ok(s.indexOf('<script src="engine-scan.js?')<s.indexOf('<script src="call-tools.js?'));assert.match(s,/call-tools\.js\?v=2026-10-16-r5/);assert.ok(s.indexOf('<script src="call-chat.js?')<s.indexOf('<script src="call-surface.js?'));}
-  const sw=await read('sw.js'),css=await read('call-ui.css');assert.match(sw,/cendon-v283-ambient-chat/);assert.match(sw,/engine-scan\.js\?v=2026-10-16-r2/);assert.match(css,/\.lv-boxes\.stale\{visibility:hidden;pointer-events:none\}/);assert.match(css,/\.lv-chips\[hidden\]\{display:none\}/);
+  const sw=await read('sw.js'),css=await read('call-ui.css');assert.match(sw,/cendon-v284-persistent-call/);assert.match(sw,/engine-scan\.js\?v=2026-10-16-r2/);assert.match(css,/\.lv-boxes\.stale\{visibility:hidden;pointer-events:none\}/);assert.match(css,/\.lv-chips\[hidden\]\{display:none\}/);
 });

@@ -2271,6 +2271,13 @@ a.mtab{text-decoration:none}
 <script src="category-pages.js" defer></script>
 <script src="car-sync.js"></script>
 <script src="stability.js" defer></script>
+<link rel="stylesheet" href="call-ui.css?v=2026-10-16-r3">
+<script src="call-sounds.js?v=1" defer></script>
+<script src="call-composer.js?v=2026-10-16-r3" defer></script>
+<script src="call-agent.js?v=2026-10-16-r3" defer></script>
+<script src="call-surface.js?v=2026-10-16-r3" defer></script>
+<script src="call-tools.js?v=2026-10-16-r3" defer></script>
+<script src="call-session.js?v=2026-10-16-r3" defer></script>
 </head>
 <body>
 <script id="mnav0">
@@ -2354,8 +2361,8 @@ a.mtab{text-decoration:none}
         <form class="lx-s lx-face lx-fa" id="hForm" autocomplete="off" aria-hidden="true" inert>
           <div class="lx-r1"><i class="ti ti-sparkles lx-spark" aria-hidden="true"></i><input id="hq" type="text" enterkeyhint="send" aria-label="ถาม Cendon AI" aria-describedby="hHint"/></div>
           <div class="lx-r2"><a class="lx-tl" href="/photo" id="hPhoto" title="ถ่ายรูปให้ AI ดู" aria-label="ถ่ายรูป"><i class="ti ti-camera"></i></a>
-            <a class="lx-tl" href="/listen" id="hListen" title="ให้ AI ฟังเสียงรถ" aria-label="อัดเสียง"><i class="ti ti-microphone"></i></a>
-            <button class="lx-send" type="submit" aria-label="ส่งให้ AI"><i class="ti ti-arrow-up"></i></button></div>
+            <button class="lx-tl" type="button" id="hListen" title="โทรคุยกับ Cendon" aria-label="โทรคุยกับ Cendon"><i class="ti ti-microphone"></i></button>
+            <button class="lx-send" id="hVoiceSend" type="submit" data-mode="call" aria-label="โทรคุยกับ Cendon"><i class="ti ti-phone"></i></button></div>
         </form>
       </div>
       <p class="lx-fliphint" id="hHint"></p>
@@ -3749,9 +3756,10 @@ const HERO=(function(){
       :`${T("ดับเบิลคลิกที่ช่องค้นหา เพื่อคุยกับ","Double-click the search bar to talk to")} <b><i class="ti ti-sparkles"></i> AI</b>`;
     h.hidden=!!seen();$("hToggle").textContent=ai?T("สลับเป็นค้นหา","Switch to search"):T("สลับเป็นคุยกับ AI","Switch to AI chat")}
   function set(on,focus,dir){
+    if(homeVoice?.active)return;
     if(on===ai){turn(rot,true);return}
     ai=on;rot+=(dir||1)*180;
-    const from=on?si:ta,to=on?ta:si;if(from.value&&!to.value)to.value=from.value;from.value="";
+    const from=on?si:ta,to=on?ta:si;if(from.value&&!to.value)to.value=from.value;from.value="";ta.dispatchEvent(new Event("input",{bubbles:true}));
     F.classList.toggle("ai",ai);
     [S,A].forEach(f=>{const off=(f===A)!==ai;f.inert=off;f.setAttribute("aria-hidden",off)});
     try{sessionStorage.setItem("spire_heroAi",ai?"1":"")}catch(e){}
@@ -3762,7 +3770,7 @@ const HERO=(function(){
   }
   /* มือถือ: ปัดตามนิ้ว — แนวนอนเป็นของช่องนี้ แนวตั้งยังเลื่อนหน้าได้ปกติ (touch-action: pan-y) */
   let pid=null,sx=0,sy=0,dx=0,w=1,t0=0,lock=null,hadFocus=false;
-  F.addEventListener("pointerdown",e=>{if(e.pointerType!=="touch"||pid!==null)return;
+  F.addEventListener("pointerdown",e=>{if(homeVoice?.active||e.pointerType!=="touch"||pid!==null)return;
     pid=e.pointerId;sx=e.clientX;sy=e.clientY;dx=0;lock=null;w=Math.max(200,F.offsetWidth);t0=performance.now();
     hadFocus=document.activeElement===si||document.activeElement===ta});
   F.addEventListener("pointermove",e=>{if(e.pointerId!==pid)return;
@@ -3778,7 +3786,7 @@ const HERO=(function(){
     if(go)set(!ai,hadFocus,dx>0?1:-1);else turn(rot,true)};
   F.addEventListener("pointerup",end);F.addEventListener("pointercancel",end);
   /* คอม: ดับเบิลคลิกที่ช่องว่าง (ช่องพิมพ์ที่ยังว่างนับด้วย) */
-  F.addEventListener("dblclick",e=>{if(coarse||e.target.closest("button,a"))return;
+  F.addEventListener("dblclick",e=>{if(homeVoice?.active||coarse||e.target.closest("button,a"))return;
     const fld=e.target.closest("input");if(fld&&fld.value)return;e.preventDefault();set(!ai,true,1)});
   $("hToggle").onclick=()=>set(!ai,true,1);
   /* ค้นหา: ผลลัพธ์ช่าง/บริการเหมือนเดิม */
@@ -3789,11 +3797,10 @@ const HERO=(function(){
     const [,car]=myCars();
     if(window.CendonPaint)CendonPaint.prepare("/chat");
     location.href="/chat?q="+encodeURIComponent(v.slice(0,2000))+"&send=1"+(car?"&car="+encodeURIComponent(car):"")};
-  A.onsubmit=e=>{e.preventDefault();send()};
-  A.querySelector(".lx-send").addEventListener("click",e=>{e.preventDefault();send()});
-  ta.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.isComposing){e.preventDefault();send()}});
+  const wireVoice=()=>window.CendonCallComposer?.bind({input:ta,button:$("hVoiceSend"),form:A,onCall:startHomeCall,onSend:send,language:LANG});
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",wireVoice,{once:true});else wireVoice();
   $("hPhoto").onclick=e=>{e.preventDefault();photoPage()};
-  $("hListen").onclick=e=>{e.preventDefault();listenPage()};
+  $("hListen").onclick=e=>{e.preventDefault();startHomeCall()};
   /* ข้อความชวนในโหมด AI: สั้นพอดีช่องเดียว เปลี่ยนตามเวลา ฤดู รถที่เลือก และบอกว่าสั่งงานในแอปได้ */
   function aiHints(){
     const d=new Date(),h=d.getHours(),mo=d.getMonth()+1,[cars,cur]=myCars(),c=cars.find(x=>x.id===cur),cn=c?c.name:"";
@@ -3817,6 +3824,22 @@ const HERO=(function(){
   turn(rot,false);hint();
   return {set,get ai(){return ai}};
 })();
+let homeVoice=null;
+function startHomeCall(){
+  if(!U)return needLogin();
+  if(!window.CendonCallSession||!window.CendonCallSurface||!window.CendonCallAgent)return toast(T("ระบบเสียงกำลังเตรียมพร้อม ลองอีกครั้งครับ","Voice is loading. Please try again."));
+  if(!homeVoice){
+    const openFound=(id,shop)=>{if(shop){const i=TECHS.findIndex(t=>t.id===id);if(i<0)TECHS.push(shop);else TECHS[i]=shop;}openTech(id);};
+    const view=window.CendonCallSurface.create({anchor:$("hForm"),language:LANG,onSelectShop:id=>{view.minimize();openFound(id,agent.lookup(id));}}),notes=[];
+    const car=()=>{const [list,id]=myCars();return list.find(c=>c.id===id)||list[0]||null;};
+    let tools;
+    const agent=window.CendonCallAgent.create({api,getCar:car,getLocation:()=>HERE,showResults:view.showResults,showDraft:view.showDraft,minimize:view.minimize,openMechanic:openFound,prepareUrgent:async(symptom,ctx)=>{if(!ctx.isCurrent())return;await urgentCall();if(ctx.isCurrent()&&$("uSym"))$("uSym").value=symptom;}});
+    homeVoice=window.CendonCallSession.create({byId:view.byId,backendUrl:API,language:LANG,getUser:()=>U,view,agent,getTools:()=>tools,toast,getMessages:()=>notes,appendMessage:m=>{notes.push(m);if(notes.length>30)notes.shift();},systemPrompt:()=>"Cendon ช่วยคนใช้รถประจำวัน คุยเรื่องทั่วไปได้ หาช่างผ่านเครื่องมือจากข้อมูลจริง ไม่เรียกช่างหรือชำระเงินแทนผู้ใช้",storage:{get:(k,d)=>ls.get("spire_"+k,d),set:(k,v)=>ls.set("spire_"+k,v),del:k=>{try{localStorage.removeItem("spire_"+k)}catch(e){}}}});
+    tools=window.CallTools?.create({voice:homeVoice.bridge,language:LANG,backendUrl:API,getUser:()=>U,getCar:car,getMessages:()=>notes,appendMessage:m=>{notes.push(m);if(notes.length>30)notes.shift();},toast});
+    view.bind(homeVoice);
+  }
+  return homeVoice.start();
+}
 /* ═══ หน้าหลักใหม่: แถวหมวด + ช่างแนะนำ + หน้าหมวด ═══ */
 /* หมวดละเอียด: แต่ละอันผูกกับหมวดหลักของร้าน (base) ที่ช่างเลือกไว้ตอนสมัคร — กดแล้วเห็นร้านในหมวดหลักนั้น */
 const RAIL=[
@@ -6859,7 +6882,7 @@ async function pullCars(){
     try{
       if(!firebase.apps||!firebase.apps.length)firebase.initializeApp(fbConfig);
       auth=firebase.auth();
-      auth.onAuthStateChanged(async u=>{U=u||null;if(!U)purgeChatCache();{const sn=ls.get(SNAP,null);if(sn&&(!U||sn.uid!==U.uid)){dropSnap();if(ME&&ME.__snap)ME=null}}READY.user.done();try{navPaint(U)}catch(e){}greet();if(U)pullCars();await refreshMe();READY.me.done();if(U)await load();else diag();READY.auth.done()});
+      auth.onAuthStateChanged(async u=>{if(homeVoice&&U?.uid!==u?.uid){homeVoice.dispose();homeVoice=null;}U=u||null;if(!U)purgeChatCache();{const sn=ls.get(SNAP,null);if(sn&&(!U||sn.uid!==U.uid)){dropSnap();if(ME&&ME.__snap)ME=null}}READY.user.done();try{navPaint(U)}catch(e){}greet();if(U)pullCars();await refreshMe();READY.me.done();if(U)await load();else diag();READY.auth.done()});
     }catch(e){}
   })();
   /* ลงทะเบียน service worker หลังหน้าขึ้นแล้ว — แอปที่ติดตั้งบนมือถือจะเปิดจากหน้าที่เก็บไว้ได้ทันทีตอนเน็ตช้า

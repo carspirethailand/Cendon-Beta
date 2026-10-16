@@ -1381,4 +1381,5 @@ window.CENDON_L10N={lang:"id",t:{
 "Nothing yet — quotes, accepted jobs and messages show up here":"Belum ada — penawaran, pekerjaan diterima, dan pesan muncul di sini",
 "All my jobs":"Semua pekerjaan saya",
 "Device notifications are on":"Notifikasi perangkat aktif"
+,"Voice is loading. Please try again.":"Fitur suara sedang dimuat. Silakan coba lagi."
 }};

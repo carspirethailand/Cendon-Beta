@@ -1381,4 +1381,5 @@ window.CENDON_L10N={lang:"es",t:{
 "Nothing yet — quotes, accepted jobs and messages show up here":"Nada todavía — aquí aparecerán cotizaciones, trabajos aceptados y mensajes",
 "All my jobs":"Todos mis trabajos",
 "Device notifications are on":"Notificaciones del dispositivo activadas"
+,"Voice is loading. Please try again.":"La función de voz se está cargando. Inténtalo de nuevo."
 }};

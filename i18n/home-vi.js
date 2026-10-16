@@ -1381,4 +1381,5 @@ window.CENDON_L10N={lang:"vi",t:{
 "Nothing yet — quotes, accepted jobs and messages show up here":"Chưa có gì — báo giá, việc đã nhận và tin nhắn sẽ hiện ở đây",
 "All my jobs":"Tất cả việc của tôi",
 "Device notifications are on":"Đã bật thông báo trên thiết bị"
+,"Voice is loading. Please try again.":"Đang tải tính năng thoại. Vui lòng thử lại."
 }};

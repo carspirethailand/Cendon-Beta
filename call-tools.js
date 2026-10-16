@@ -3,11 +3,17 @@
       โหมดนี้ปิดตัวกรองทั้งหมด อัดเสียงดิบ 10 วินาที แสดงภาพคลื่นความถี่สด แล้วส่งให้ AI ฟังจริง ผลกลับเข้าไปในสายให้ผู้ช่วยพูดต่อ
    2) สแกนห้องเครื่อง: ถ่ายภาพคมจากกล้องหลัง AI ตีกรอบชิ้นส่วนที่เห็นจริงบนภาพ แตะดูว่าคืออะไร เช็กเองยังไง
    ผู้ช่วยเสียงเรียกสองอย่างนี้เองได้ (พูดว่า "ฟังเสียงเครื่องหน่อย" / "ดูห้องเครื่องให้หน่อย") หรือกดปุ่มบนจอ
-   ใช้ตัวแปรของหน้าโทรใน chat.html (callWS, callCtx, callMicStream, camOn …) ซึ่งอยู่ใน global scope เดียวกัน */
+   รับ state ผ่าน bridge ของสายที่เป็นเจ้าของ ใช้ได้ทั้ง Home/Chat โดยไม่พึ่ง global state ของหน้า */
 (function(){
 'use strict';
+function create(host){
+const voice=host.voice,lang=host.language||'th',BACKEND_URL=host.backendUrl;
+const auth={get currentUser(){return host.getUser()}};
+const messages={push:m=>host.appendMessage?.(m),filter:fn=>(host.getMessages?.()||[]).filter(fn)};
+const saveSession=()=>host.save?.(),selCar=()=>host.getCar?.(),toast=(...a)=>host.toast?.(...a),b64FromBytes=voice.b64FromBytes;
+'use strict';
 const D=document,$=id=>D.getElementById(id);
-const T=(th,en)=>(typeof lang!=='undefined'&&lang==='en')?en:th;
+const T=(th,en)=>lang!=='th'?en:th;
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const REC_SEC=10;
 const S={mode:'',holdMic:false,muteAi:false,tool:null,abort:null,raf:0,run:0};
@@ -16,10 +22,10 @@ const S={mode:'',holdMic:false,muteAi:false,tool:null,abort:null,raf:0,run:0};
 /* quiet = แค่ให้ AI รู้ (เช่น กรอบเปลี่ยนตอนขยับกล้อง) ไม่ต้องพูดแทรก */
 function tellLive(text,tool,quiet){
   try{
-    if(typeof callWS==='undefined'||!callWS||callWS.readyState!==1)return;
-    if(tool&&tool.id)callWS.send(JSON.stringify({toolResponse:{functionResponses:[{id:tool.id,name:tool.name,response:{result:text}}]}}));
-    else callWS.send(JSON.stringify({clientContent:{turns:[{role:'user',parts:[{text:'[ข้อมูลจากระบบ ไม่ใช่คำพูดของผู้ใช้] '+text+(quiet?'\n(ข้อมูลอัปเดต ไม่ต้องพูดตอนนี้ ใช้ตอบเมื่อผู้ใช้ถาม)':'\nสรุปให้ผู้ใช้ฟังสั้น ๆ เป็นภาษาพูด แล้วถามว่าอยากให้ช่วยอะไรต่อ')}]}],turnComplete:!quiet}}));
-    if(!quiet&&typeof livePendingAt!=='undefined')livePendingAt=Date.now();
+    if(typeof voice.callWS==='undefined'||!voice.callWS||voice.callWS.readyState!==1)return;
+    if(tool&&tool.id)voice.callWS.send(JSON.stringify({toolResponse:{functionResponses:[{id:tool.id,name:tool.name,response:{result:text}}]}}));
+    else voice.callWS.send(JSON.stringify({clientContent:{turns:[{role:'user',parts:[{text:'[ข้อมูลจากระบบ ไม่ใช่คำพูดของผู้ใช้] '+text+(quiet?'\n(ข้อมูลอัปเดต ไม่ต้องพูดตอนนี้ ใช้ตอบเมื่อผู้ใช้ถาม)':'\nสรุปให้ผู้ใช้ฟังสั้น ๆ เป็นภาษาพูด แล้วถามว่าอยากให้ช่วยอะไรต่อ')}]}],turnComplete:!quiet}}));
+    if(!quiet&&typeof voice.livePendingAt!=='undefined')voice.livePendingAt=Date.now();
   }catch(e){}
 }
 function remember(text){
@@ -71,28 +77,30 @@ process(i){const c=i[0]&&i[0][0];if(!c)return true;for(let k=0;k<c.length;k++){t
 registerProcessor("cendon-raw",R);`;
 /* ไมค์ดิบ: ลองปิดตัวกรองบนสายเดิมก่อน (ไม่ต้องขอสิทธิ์ใหม่) · เครื่องที่เปลี่ยนไม่ได้ ขอไมค์ดิบแยกอีกสาย */
 async function rawMic(){
-  const t=callMicStream&&callMicStream.getAudioTracks()[0];
+  const t=voice.callMicStream&&voice.callMicStream.getAudioTracks()[0];
   if(t&&t.readyState==='live'&&t.applyConstraints){
     try{
       await t.applyConstraints({echoCancellation:false,noiseSuppression:false,autoGainControl:false});
       const st=t.getSettings?t.getSettings():{};
       if(st.noiseSuppression===false&&st.echoCancellation===false)
-        return {stream:callMicStream,restore:()=>t.applyConstraints({echoCancellation:true,noiseSuppression:true,autoGainControl:true}).catch(()=>{})};
+        return {stream:voice.callMicStream,restore:()=>t.applyConstraints({echoCancellation:true,noiseSuppression:true,autoGainControl:true}).catch(()=>{})};
     }catch(e){}
   }
+  const owner=voice.callSession;
   const s=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
-  return {stream:s,restore:async()=>{s.getTracks().forEach(x=>x.stop());await reviveMic()}};
+  return {stream:s,restore:async()=>{s.getTracks().forEach(x=>x.stop());await reviveMic(owner)}};
 }
 /* บางเครื่อง (iPhone) เปิดไมค์ที่สองแล้วตัดไมค์แรก → ต่อไมค์ของสายกลับให้เอง */
-async function reviveMic(){
+async function reviveMic(owner){
   try{
-    const t=callMicStream&&callMicStream.getAudioTracks()[0];
-    if(!callActive||(t&&t.readyState==='live'))return;
+    const t=voice.callMicStream&&voice.callMicStream.getAudioTracks()[0];
+    if(owner!==voice.callSession||!voice.callActive||(t&&t.readyState==='live'))return;
     const s=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
-    try{callMicNode&&callMicNode.disconnect()}catch(e){}callMicNode=null;
-    try{callMicSrc&&callMicSrc.disconnect()}catch(e){}callMicSrc=null;
-    if(callMicStream)callMicStream.getTracks().forEach(x=>x.stop());
-    callMicStream=s;await startMicStream(callSession);
+    if(owner!==voice.callSession||!voice.callActive){s.getTracks().forEach(x=>x.stop());return;}
+    try{voice.callMicNode&&voice.callMicNode.disconnect()}catch(e){}voice.callMicNode=null;
+    try{voice.callMicSrc&&voice.callMicSrc.disconnect()}catch(e){}voice.callMicSrc=null;
+    if(voice.callMicStream)voice.callMicStream.getTracks().forEach(x=>x.stop());
+    voice.callMicStream=s;await voice.startMicStream(voice.callSession);
   }catch(e){toast(T('ไมค์หลุด แตะปุ่มไมค์อีกครั้ง','Mic lost — tap the mic button'),'ti-microphone-off')}
 }
 /* WAV 16kHz mono — ย่อด้วย OfflineAudioContext (มีตัวกรองกันเสียงเพี้ยน ไม่ใช่หยิบทีละตัวอย่าง) */
@@ -123,7 +131,7 @@ const EMBER=(()=>{const st=[[0,[14,9,8]],[.3,[92,22,18]],[.55,[214,72,40]],[.78,
     for(let j=0;j<3;j++)o[i*3+j]=ca[j]+(cb[j]-ca[j])*f}return o})();
 
 async function listenEngine(tool){
-  if(!callActive)return;
+  if(!voice.callActive)return;
   if(S.mode)closeLayer();
   const run=++S.run,args=(tool&&tool.args)||{};
   S.mode='ear';S.tool=tool||null;
@@ -137,14 +145,14 @@ async function listenEngine(tool){
   $('ctClose').onclick=()=>{finishEar(null,T('ยกเลิกการฟังเสียง','Listening cancelled'));};
   /* หยุดเสียง AI ที่ค้างอยู่ ไม่ให้เสียงพูดของ AI ถูกอัดปนไปด้วย */
   S.holdMic=true;S.muteAi=true;
-  try{callWS&&callWS.readyState===1&&callWS.send(JSON.stringify({realtimeInput:{audioStreamEnd:true}}))}catch(e){}
-  const wait=Date.now();while(playSrcs.length&&Date.now()-wait<5000){await new Promise(r=>setTimeout(r,120));if(run!==S.run)return}
-  flushPlayback();
-  let mic=null,src=null,an=null,node=null;const chunks=[];let rate=callCtx?callCtx.sampleRate:48000,maxLv=0;
+  try{voice.callWS&&voice.callWS.readyState===1&&voice.callWS.send(JSON.stringify({realtimeInput:{audioStreamEnd:true}}))}catch(e){}
+  const wait=Date.now();while(voice.playSrcs.length&&Date.now()-wait<5000){await new Promise(r=>setTimeout(r,120));if(run!==S.run)return}
+  voice.flushPlayback();
+  let mic=null,src=null,an=null,node=null;const chunks=[];let rate=voice.callCtx?voice.callCtx.sampleRate:48000,maxLv=0;
   const cleanup=async()=>{try{src&&src.disconnect();an&&an.disconnect();node&&node.disconnect()}catch(e){}if(mic){const m=mic;mic=null;await m.restore()}};
   try{
     mic=await rawMic();if(run!==S.run){await cleanup();return}
-    const ctx=callCtx;rate=ctx.sampleRate;
+    const ctx=voice.callCtx;rate=ctx.sampleRate;
     src=ctx.createMediaStreamSource(mic.stream);an=ctx.createAnalyser();an.fftSize=2048;an.smoothingTimeConstant=0.2;src.connect(an);
     const sink=ctx.createGain();sink.gain.value=0;sink.connect(ctx.destination);
     try{const url=URL.createObjectURL(new Blob([RAW_WORKLET],{type:'application/javascript'}));try{await ctx.audioWorklet.addModule(url)}finally{URL.revokeObjectURL(url)}
@@ -255,9 +263,9 @@ function step(tr,cur){
 function view(){
   const v=$('callCam');if(!v||!v.videoWidth)return null;
   const W=v.clientWidth||innerWidth,H=v.clientHeight||innerHeight,vw=v.videoWidth,vh=v.videoHeight;
-  const z=(typeof camZoom==='number'&&camZoom>1)?camZoom:1,sc=Math.max(W/vw,H/vh)*z;
+  const z=(typeof voice.camZoom==='number'&&voice.camZoom>1)?voice.camZoom:1,sc=Math.max(W/vw,H/vh)*z;
   const sw=Math.min(vw,W/sc),sh=Math.min(vh,H/sc);
-  return {v,W,H,sx:(vw-sw)/2,sy:(vh-sh)/2,sw,sh,mirror:camFacing==='user'};
+  return {v,W,H,sx:(vw-sw)/2,sy:(vh-sh)/2,sw,sh,mirror:voice.camFacing==='user'};
 }
 function drawRegion(c,w,h,R){
   c.width=w;c.height=h;const g=c.getContext('2d',{willReadFrequently:true});g.save();
@@ -374,13 +382,13 @@ function stopLive(){
   const v=$('callCam');if(LV.frozen&&v)v.play().catch(()=>{});LV.frozen=false;
 }
 async function scanBay(tool){
-  if(!callActive)return;
+  if(!voice.callActive)return;
   if(S.mode)closeLayer();
   const run=++S.run;S.mode='bay';S.tool=tool||null;
   /* สแกนต้องใช้กล้องหลัง */
-  try{if(camOn&&camFacing==='user')await flipCamera();else if(!camOn){if(camFacing!=='environment')camFacing='environment';await toggleCamera()}}catch(e){}
+  try{if(voice.camOn&&voice.camFacing==='user')await voice.flipCamera();else if(!voice.camOn){if(voice.camFacing!=='environment')voice.camFacing='environment';await voice.toggleCamera()}}catch(e){}
   if(run!==S.run)return;
-  if(!camOn){const why=T('เปิดกล้องไม่ได้ — ต้องอนุญาตกล้องก่อน','Camera unavailable — allow camera access');toast(why,'ti-video-off');finishBay(why);return}
+  if(!voice.camOn){const why=T('เปิดกล้องไม่ได้ — ต้องอนุญาตกล้องก่อน','Camera unavailable — allow camera access');toast(why,'ti-video-off');finishBay(why);return}
   const el=layer();el.classList.add('ct-live');
   el.innerHTML=`<div class="lv-boxes" id="lvBoxes"></div><div class="lv-sweep"></div>
     <header class="ct-hd lv-hd"><div><b>${T('สแกนห้องเครื่องแบบสด','Live engine-bay scan')}</b><small>${T('เล็งกล้องไปที่ห้องเครื่อง กรอบจะขึ้นบนชิ้นส่วนเอง','Point the camera at the engine bay — parts get boxed automatically')}</small></div><button type="button" class="ct-x" id="ctClose" aria-label="${T('ปิด','Close')}"><i class="ti ti-x"></i></button></header>
@@ -415,10 +423,10 @@ function onToolCall(tc){
   for(const c of calls){
     if(c.name==='listen_engine'){listenEngine(c);return}
     if(c.name==='scan_engine_bay'){scanBay(c);return}
-    try{callWS.send(JSON.stringify({toolResponse:{functionResponses:[{id:c.id,name:c.name,response:{error:'unknown tool'}}]}}))}catch(e){}
+    try{voice.callWS.send(JSON.stringify({toolResponse:{functionResponses:[{id:c.id,name:c.name,response:{error:'unknown tool'}}]}}))}catch(e){}
   }
 }
-function onCancel(){ if(S.tool){S.tool=null;if(S.mode==='bay')finishBay();else closeLayer()} }
+function onCancel(ids){ if(S.tool&&(!ids||ids.includes(S.tool.id))){S.tool=null;if(S.mode==='bay')finishBay();else closeLayer()} }
 
 /* ── ปุ่มบนหน้าโทร ── */
 function mountButtons(){
@@ -426,15 +434,17 @@ function mountButtons(){
   const bar=D.createElement('div');bar.id='ctTools';bar.className='ct-tools';
   bar.innerHTML=`<button type="button" id="ctEarBtn"><i class="ti ti-ear"></i><span>${T('ฟังเสียงเครื่อง','Listen to engine')}</span></button><button type="button" id="ctBayBtn"><i class="ti ti-scan"></i><span>${T('สแกนห้องเครื่อง','Scan engine bay')}</span></button>`;
   ui.querySelector('.hh-top').after(bar);
-  $('ctEarBtn').onclick=()=>{if(!callActive)return toast(T('รอต่อสายให้ติดก่อนนะครับ','Wait for the call to connect'),'ti-phone');listenEngine(null)};
-  $('ctBayBtn').onclick=()=>{if(!callActive)return toast(T('รอต่อสายให้ติดก่อนนะครับ','Wait for the call to connect'),'ti-phone');scanBay(null)};
+  $('ctEarBtn').onclick=()=>{if(!voice.callActive)return toast(T('รอต่อสายให้ติดก่อนนะครับ','Wait for the call to connect'),'ti-phone');listenEngine(null)};
+  $('ctBayBtn').onclick=()=>{if(!voice.callActive)return toast(T('รอต่อสายให้ติดก่อนนะครับ','Wait for the call to connect'),'ti-phone');scanBay(null)};
 }
-if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',mountButtons);else mountButtons();
+mountButtons();
 
-window.CallTools={
+return Object.freeze({
   get holdMic(){return S.holdMic},get muteAi(){return S.muteAi},get busy(){return !!S.mode},
-  onToolCall,onCancel,reset:closeLayer,listen:listenEngine,scan:scanBay,
+  onToolCall,onCancel,reset:closeLayer,listen:listenEngine,scan:scanBay,dispose(){closeLayer();$('ctTools')?.remove();},
   /* บอกผู้ช่วยเสียงว่ามีเครื่องมืออะไร (ต่อท้าย system prompt ของการโทร) */
   prompt:()=>'\nเครื่องมือระหว่างโทร: ถ้าผู้ใช้ให้ฟังเสียงเครื่องหรือเสียงแปลก ๆ ให้เรียก listen_engine (ระบบอัดเสียงดิบ 10 วินาทีแล้ววิเคราะห์ให้) ก่อนเรียกให้บอกผู้ใช้สั้น ๆ ให้จ่อมือถือใกล้จุดที่มีเสียง · ถ้าผู้ใช้ให้ดู สแกน ไฮไลต์ หรืออธิบายห้องเครื่อง ให้เรียก scan_engine_bay (ระบบเปิดกล้องหลังแล้ววาดกรอบสีพร้อมหมายเลขและชื่อชิ้นส่วนบนภาพสด กรอบเลื่อนตามกล้อง — ผลที่ส่งกลับบอกว่ากรอบไหนคืออะไร อยู่ตรงไหนบนจอ ใช้อ้างถึงได้ เช่น "กรอบที่ 2 มุมบนขวาคือแบตเตอรี่") · เมื่อได้ผลกลับมา ให้สรุปเป็นภาษาพูดสั้น ๆ เริ่มจากเรื่องที่ต้องระวังก่อน ห้ามอ้างว่าได้ยินหรือเห็นสิ่งที่ผลไม่ได้บอก'
-};
+});
+}
+window.CallTools=Object.freeze({create});
 })();

@@ -1381,4 +1381,5 @@ window.CENDON_L10N={lang:"ko",t:{
 "Nothing yet — quotes, accepted jobs and messages show up here":"아직 알림이 없어요 — 견적, 수락된 작업, 메시지가 여기에 표시됩니다",
 "All my jobs":"내 작업 전체",
 "Device notifications are on":"기기 알림이 켜졌습니다"
+,"Voice is loading. Please try again.":"음성 기능을 불러오는 중입니다. 다시 시도해 주세요."
 }};

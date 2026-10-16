@@ -1,3 +1,19 @@
+/* Shared call chrome. One palette, existing app fonts; no new UI framework. */
+.hearth{position:fixed;inset:0;z-index:1400;display:none;flex-direction:column;align-items:center;overflow:hidden;color:#f8f3ed;box-sizing:border-box;font-family:inherit}
+.hearth.show,.hearth.cv-ending{display:flex}
+.hearth .hh-top{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.hh-name{display:flex;align-items:center;gap:8px;padding:8px 13px;border-radius:24px;background:rgba(255,255,255,.05);font-size:14px;font-weight:600}
+.hh-name i{display:block;width:6px;height:6px;border-radius:50%;background:#cda783}.hh-name i.on{background:#b7c5b0}
+.hh-time{font-size:13px;font-variant-numeric:tabular-nums;opacity:.55;margin-left:auto}
+.hearth .hh-cam{display:none}.hearth.cam .hh-cam{display:block}
+.hearth .hh-btn{display:grid;place-items:center;border:0;border-radius:50%;font-size:22px;background:rgba(255,255,255,.09);color:inherit;cursor:pointer;transition:transform .2s,background .2s}
+.hearth .hh-btn:active,.cv-control:active{transform:scale(.94)}
+.hearth .hh-btn[hidden]{display:none}.hearth .hh-btn.end{background:#e5d7c8;color:#3b251c;box-shadow:none}
+.hearth .hh-btn.muted{color:#ed9c78;background:#3b2922}.hearth .hh-btn:disabled{opacity:.35;cursor:default}
+.hearth .hh-cap{margin:0;overflow:hidden;font-family:inherit}.hearth.light{color:#302922}
+.hearth.light .hh-name,.hearth.light .hh-btn:not(.end){background:rgba(48,41,34,.06);color:#302922}
+.cv-min{width:38px;height:38px;display:grid;place-items:center;border:0;border-radius:50%;background:transparent;color:inherit;font-size:22px;cursor:pointer}.cv-min[hidden]{display:none}
+.cv-capability{position:absolute;top:calc(63px + env(safe-area-inset-top));left:20px;right:20px;font-size:11px;line-height:1.4;text-align:center;opacity:.6;z-index:4;margin:0}.cv-capability[hidden]{display:none}
 /* Full-frame camera and voice edges. Keep all existing call actions. */
 .hearth{background:#17120f!important;padding:calc(12px + env(safe-area-inset-top)) 16px calc(12px + env(safe-area-inset-bottom))!important}
 .hearth.light{background:#faf6f0!important}
@@ -5,8 +21,8 @@
 .hearth .hh-stage,.hearth.cam .hh-stage{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;pointer-events:none;z-index:2;transition:none}
 .hearth #hhOrb,.hearth.cam #hhOrb{width:100%!important;height:100%!important;max-height:none;aspect-ratio:auto}
 .hearth .hh-top{position:absolute;top:calc(12px + env(safe-area-inset-top));left:16px;right:16px;width:auto;max-width:none;z-index:3}
-.hearth .hh-cam{inset:0!important;width:100%!important;height:100%!important;border-radius:0!important;object-fit:cover;box-shadow:none;animation:none!important;transform-origin:center;touch-action:pan-y pinch-zoom}
-.hearth .hh-ctrl{position:absolute;bottom:calc(12px + env(safe-area-inset-bottom));left:12px;right:12px;justify-content:center;gap:12px;margin:0;z-index:4}
+.hearth .hh-cam{position:absolute;inset:0!important;width:100%!important;height:100%!important;border-radius:0!important;object-fit:cover;box-shadow:none;animation:none!important;transform-origin:center;touch-action:pan-y pinch-zoom}
+.hearth .hh-ctrl{position:absolute;display:flex;align-items:center;bottom:calc(12px + env(safe-area-inset-bottom));left:12px;right:12px;justify-content:center;gap:12px;margin:0;z-index:4}
 .hearth .hh-btn{width:54px;height:54px;flex:none}
 .hearth .hh-state{display:block;position:absolute;left:24px;right:24px;bottom:calc(162px + env(safe-area-inset-bottom));text-align:center;font-size:13px;color:inherit;z-index:3;pointer-events:none}
 .hearth .hh-cap,.hearth.cam .hh-cap{position:absolute;bottom:calc(118px + env(safe-area-inset-bottom));height:auto;max-height:4.2em;left:20px;right:20px;width:auto;max-width:none;font-size:16px;line-height:1.4;z-index:3}
@@ -18,7 +34,37 @@
 .hh-zoom input{box-sizing:border-box;flex:1;min-width:0;width:100%;height:28px!important;min-height:28px!important;max-height:28px;padding:0;margin:0;accent-color:#f1bc83}
 .hh-zoom span{min-width:30px;text-shadow:0 1px 6px #000}
 .think-box{display:none!important}
-@media(prefers-reduced-motion:reduce){.hh-stage{opacity:.6}}
+.hearth:not(.cam){background:radial-gradient(ellipse at 50% 43%,#251c16 0,#171411 45%,#151311 100%)!important}
+.hearth.light:not(.cam){background:radial-gradient(ellipse at 50% 42%,#fff8f0,#f9f7f3 62%)!important}
+.hearth:not(.cam) .hh-stage{display:grid;place-items:center;padding-bottom:8dvh;box-sizing:border-box}
+.hearth:not(.cam) #hhOrb{width:min(76vw,390px)!important;height:auto!important;aspect-ratio:1!important;max-width:78dvh;max-height:65dvh;filter:none}
+.hearth.cam .hh-stage{display:block}.hearth.cam #hhOrb{width:100%!important;height:100%!important}
+.hearth .hh-state{font-size:12px;letter-spacing:.01em;opacity:.56;bottom:calc(165px + env(safe-area-inset-bottom))}
+.hearth .hh-cap{bottom:calc(105px + env(safe-area-inset-bottom));font-size:16px;max-width:680px;left:24px;right:24px;margin-inline:auto;line-height:1.5;height:3em}
+.hearth .hh-ctrl{gap:14px;bottom:calc(24px + env(safe-area-inset-bottom))}
+.hearth .hh-top{top:calc(16px + env(safe-area-inset-top));left:18px;right:18px}
+.hearth .hh-name i:not(.on){animation:none}.hearth.cv-inline-call{visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+.cv-host{position:relative;isolation:isolate;transition:background .35s,border-color .35s!important}
+.cv-host> :not(.cv-dock){transition:opacity .25s,transform .45s cubic-bezier(.16,1,.3,1)!important}
+.cv-host.cv-active{background:#f4f3ef!important;border-color:transparent!important;box-shadow:0 8px 28px -22px rgba(45,40,31,.3)!important}
+.cv-host.cv-active> :not(.cv-dock){opacity:0;transform:translateX(-20px);pointer-events:none}
+.cv-dock{position:absolute;inset:0;z-index:2;display:flex;align-items:center;gap:12px;padding:10px 14px 10px 20px;border-radius:inherit;background:#f4f3ef;color:#151515;box-sizing:border-box;will-change:transform,opacity;min-width:0}
+.cv-dock[hidden]{display:none}.cv-wave-touch{display:flex;align-items:center;gap:16px;min-width:0;flex:1;align-self:stretch;touch-action:pan-y;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;outline-offset:3px;border-radius:14px}
+.cv-wave{display:block;width:clamp(96px,25vw,210px);height:68px;flex:0 1 38%;min-width:76px;pointer-events:none}
+.cv-copy{display:flex;flex-direction:column;gap:6px;min-width:0;pointer-events:none}.cv-label{font-size:11px;font-weight:600;letter-spacing:.03em;color:#8c8880}.cv-caption{font-size:13px;line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;text-wrap:pretty;font-weight:500;color:#37352f}
+.cv-actions{display:flex;gap:6px;flex:none}.cv-control{border:0;display:grid;place-items:center;width:44px;height:44px;border-radius:50%;font-size:17px;background:transparent;color:#78746c;cursor:pointer;transition:transform .2s,background .2s}
+.cv-control:hover{background:#e9e6df;color:#171612}.cv-control.cv-end{background:#e6dfd5;color:#6d4234}.cv-control.cv-muted{background:#e7dacf;color:#8d4228}
+.cv-dock.cv-floating{position:fixed;inset:auto 16px calc(84px + env(safe-area-inset-bottom));margin-inline:auto;max-width:650px;min-height:94px;z-index:1401;border-radius:24px;box-shadow:0 10px 45px -15px rgba(45,39,30,.3)}
+.cv-bead{position:fixed;left:0;top:0;z-index:1501;width:56px;height:56px;background:#111;border-radius:50%;pointer-events:none;will-change:transform;transition:transform 80ms linear}
+.cv-drop{position:fixed;inset:0;z-index:1500;pointer-events:none;display:grid;place-content:center;justify-items:center;background:rgba(250,249,246,.5);color:#272622;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.cv-drop>span{width:118px;height:118px;border:1px solid rgba(20,20,20,.2);border-radius:50%;background:rgba(255,255,255,.25);transition:transform .25s,border-color .25s}.cv-drop p{font-family:inherit;font-size:13px;font-weight:500;line-height:1.6;opacity:.6;margin-top:20px}.cv-drop.cv-ready>span{transform:scale(1.15);border-color:#171612}
+.cv-results{position:relative;z-index:30;max-width:650px;margin:12px auto;padding:12px 16px;border:1px solid var(--line,#ddd8cf);border-radius:20px;background:var(--surface,#f7f6f2);color:var(--ink,#302b24);font-size:13px;box-sizing:border-box}
+.hearth>.cv-results{position:absolute;left:16px;right:16px;bottom:calc(100px + env(safe-area-inset-bottom));max-height:40dvh;overflow:auto;background:#24201d;color:#f5eade;border-color:#423830;z-index:5}
+.cv-result-head{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;font-weight:600}.cv-result-head button{width:32px;height:32px;border:0;border-radius:50%;background:transparent;color:inherit;font-size:20px;cursor:pointer}
+.cv-result{display:flex;flex-direction:column;gap:4px;padding:12px 0;width:100%;text-align:left;border:0;border-top:1px solid color-mix(in srgb,currentColor 10%,transparent);background:transparent;color:inherit;font:inherit;text-decoration:none;cursor:pointer}.cv-result small{opacity:.6;font-size:12px;line-height:1.5}.cv-result b{font-weight:600}.cv-result:active{opacity:.7}
+.cv-control:focus-visible,.cv-wave-touch:focus-visible,.cv-min:focus-visible,.hearth .hh-btn:focus-visible,.cv-result:focus-visible{outline:2px solid #d68a52;outline-offset:4px}
+@media(max-width:480px){.cv-dock{gap:8px;padding:8px 10px 8px 14px}.cv-wave-touch{flex-direction:column;align-items:stretch;justify-content:center;gap:4px}.cv-wave{width:100%;height:34px;flex:none;min-width:64px}.cv-control{width:44px;height:44px;font-size:17px}.cv-actions{gap:0}.cv-copy{gap:3px}.cv-label{font-size:10px}.cv-caption{font-size:11px;-webkit-line-clamp:1}.hearth .hh-btn{width:52px;height:52px}}
+@media(prefers-reduced-motion:reduce){.cv-host,.cv-host> :not(.cv-dock),.cv-bead,.cv-drop>span,.cv-control{transition:none!important}.hearth .hh-stage{opacity:1}.hh-name i{animation:none!important}}
 
 /* ── เครื่องมือระหว่างโทร (call-tools.js): ปุ่มฟังเสียงเครื่อง / สแกนห้องเครื่อง + ชั้นเต็มจอ ── */
 .ct-tools{position:absolute;top:calc(62px + env(safe-area-inset-top));left:12px;right:12px;display:flex;justify-content:center;gap:8px;z-index:4;flex-wrap:wrap}
@@ -215,3 +261,14 @@ body:has(#callUI.show) #cxa-fab{display:none!important}
 .lv-b.p{background:#fff;color:#111}
 @media(min-width:900px){.lv-dock{left:50%;right:auto;width:min(620px,100vw);transform:translateX(-50%);border-radius:22px 22px 0 0}}
 @media(prefers-reduced-motion:reduce){.lv-box,.ct-live .lv-boxes{transition:none}.ct-live.lv-searching .lv-sweep{animation:none}}
+/* Tools stay within a thumb's reach without covering the camera zoom. */
+.hearth .ct-tools{top:auto;bottom:calc(91px + env(safe-area-inset-bottom));gap:8px}
+.hearth .ct-tools button{height:40px;padding-inline:13px;font-size:12px}
+.hearth .hh-cap{bottom:calc(145px + env(safe-area-inset-bottom));text-align:center}
+.hearth .hh-state{bottom:calc(205px + env(safe-area-inset-bottom))}
+.hearth.cam .hh-zoom{bottom:calc(133px + env(safe-area-inset-bottom))}
+.hearth.cam .hh-cap{bottom:calc(177px + env(safe-area-inset-bottom))}
+.hearth.cam .hh-state{bottom:calc(235px + env(safe-area-inset-bottom))}
+.hearth>.cv-results{bottom:calc(145px + env(safe-area-inset-bottom));max-height:34dvh}
+.hearth .cv-capability{pointer-events:none}
+@media(max-height:580px){.hearth:not(.cam) .hh-stage{padding-bottom:14dvh}.hearth:not(.cam) #hhOrb{max-height:42dvh}.hearth .hh-cap{font-size:13px;height:2.4em}.hearth .hh-state{display:none}}

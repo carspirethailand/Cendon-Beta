@@ -74,5 +74,5 @@ test('tap explains the actual selected part with the safety restriction; legacy 
 });
 test('paired assets load in order on Home and Chat and the service worker caches the new release',async()=>{
   for(const page of ['index.html','chat.html']){const s=await read(page);assert.ok(s.indexOf('<script src="engine-scan.js?')<s.indexOf('<script src="call-tools.js?'));assert.match(s,/call-tools\.js\?v=2026-10-16-r4/);}
-  const sw=await read('sw.js'),css=await read('call-ui.css');assert.match(sw,/cendon-v282-engine-scan/);assert.match(sw,/engine-scan\.js\?v=2026-10-16-r1/);assert.match(css,/\.lv-boxes\.stale\{visibility:hidden;pointer-events:none\}/);assert.match(css,/\.lv-chips\[hidden\]\{display:none\}/);
+  const sw=await read('sw.js'),css=await read('call-ui.css');/* เลขรุ่นแคชต้องไม่ต่ำกว่ารุ่นที่ออกสแกนห้องเครื่อง (v282) — รุ่นหลังจากนี้ bump ต่อได้โดยเทสต์ไม่พัง */assert.ok(+(sw.match(/const CACHE = 'cendon-v(\d+)/)||[])[1]>=282,'sw CACHE >= v282');assert.match(sw,/engine-scan\.js\?v=2026-10-16-r1/);assert.match(css,/\.lv-boxes\.stale\{visibility:hidden;pointer-events:none\}/);assert.match(css,/\.lv-chips\[hidden\]\{display:none\}/);
 });

@@ -43,7 +43,7 @@ async function analyze(tool,attachments,context,question,signal){
   if(!u)throw Error(T('กรุณาเข้าสู่ระบบก่อน','Please sign in first'));
   const tok=await u.getIdToken();
   const r=await fetch(BACKEND_URL+'/api/features/analyze',{method:'POST',signal,headers:{'Content-Type':'application/json',Authorization:'Bearer '+tok},
-    body:JSON.stringify({tool,attachments,context,question,lang:T('th','en')})});
+    body:JSON.stringify({tool,attachments,context,question,lang:T('th','en'),...(['bay','baylive'].includes(tool)?{scanVersion:2}:{})})});
   const d=await r.json().catch(()=>null);
   if(!r.ok){
     const tag=e=>Object.assign(e,{status:r.status,code:d&&d.error});
@@ -248,8 +248,8 @@ function finishEar(d,why){
    เปิดกล้องหลัง → ส่งเฟรมที่ "เห็นบนจอจริง" ให้ AI ตีกรอบชิ้นส่วน → วาดกรอบสี+ป้ายชื่อทับภาพสด ไม่ต้องหยุดภาพ
    ขยับมือถือ กรอบเลื่อนตาม (เทียบภาพย่อ 96px ระหว่างเฟรมในเครื่อง ไม่ส่งอะไรเพิ่ม) · ภาพเปลี่ยนไปมากค่อยส่งเฟรมใหม่ให้ AI
    AI ในสายรู้ว่ากรอบไหนคืออะไร อยู่ตรงไหนบนจอ และแตะกรอบไหน AI อธิบายชิ้นนั้นให้ฟัง */
-const PAL=['#FFB020','#22D3EE','#A3E635','#F472B6','#A78BFA','#FB7185','#34D399','#60A5FA','#FACC15','#F97316','#2DD4BF','#E879F9'];
-const LV={on:false,run:0,items:[],tr:null,pend:null,bw:96,bh:0,busy:false,lastAt:0,timer:0,frozen:false,colors:{},told:'',toldAt:0,pick:-1,frames:0,noMore:false,scene:'',notes:[]};
+const scan=window.CendonEngineScan;
+const LV={on:false,run:0,items:[],tr:null,pend:null,bw:96,bh:0,busy:false,lastAt:0,timer:0,frozen:false,told:'',toldAt:0,pick:-1,frames:0,noMore:false,scene:'',notes:[],quality:'',uncertain:0,frame:'',fails:0};
 /* ตัวติดตามภาพ: เทียบกับ "เฟรมอ้างอิง" ล่าสุด เลื่อนเกิน 5px ค่อยย้ายเฟรมอ้างอิง (สะสมระยะ) — แพนช้าไม่หาย แพนเร็วก็ไม่หลุด */
 const mkTrack=g=>({ref:g,cx:0,cy:0,dx:0,dy:0,lost:0});
 function step(tr,cur){
@@ -290,13 +290,14 @@ function shiftOf(a,b,w,h){
 }
 const where=b=>{const cx=(b[1]+b[3])/2000,cy=(b[0]+b[2])/2000;
   const h=cx<.34?'ซ้าย':cx>.66?'ขวา':'กลาง',v=cy<.34?'บน':cy>.66?'ล่าง':'กลาง';return h==='กลาง'&&v==='กลาง'?'กลางจอ':v==='กลาง'?'ฝั่ง'+h:h==='กลาง'?'ด้าน'+v:'มุม'+v+h};
-function colorOf(name){if(!LV.colors[name])LV.colors[name]=PAL[Object.keys(LV.colors).length%PAL.length];return LV.colors[name]}
+function colorOf(){return scan?.color||'#FF514B'}
 function setStat(kind,msg){
   const el=$('lvStat');if(!el)return;
   const n=LV.items.length;
   const txt={scan:n?T('ภาพเปลี่ยน กำลังสแกนใหม่…','View changed — rescanning…'):T('AI กำลังมองหาชิ้นส่วน…','Finding parts…'),
-    found:T(`เจอ ${n} ชิ้นส่วน · แตะกรอบให้ AI อธิบาย`,`${n} parts · tap a box for the AI to explain`),
-    none:T('ยังไม่เห็นห้องเครื่องชัด — เปิดฝากระโปรงแล้วเล็งให้เห็นทั้งหมด','No engine bay yet — open the bonnet and fit it all in view'),
+    found:T(`ระบุได้ ${n} จุด${LV.uncertain?' · จุดไม่ชัดยังไม่ตีกรอบ':''} · แตะเพื่อฟัง`,`${n} identified${LV.uncertain?' · unclear parts omitted':''} · tap to hear`),
+    none:LV.quality==='dark'?T('ภาพมืดเกินไป — เพิ่มแสงแล้วสแกนใหม่','Too dark — improve lighting and rescan'):LV.quality==='blurred'?T('ภาพไม่คม — ถือกล้องให้นิ่งแล้วสแกนใหม่','Blurred — hold steady and rescan'):LV.quality==='blocked'?T('ภาพถูกบัง — ขยับกล้องแล้วสแกนใหม่','View blocked — reposition and rescan'):T('ยังระบุไม่ได้ชัด — จอดให้ปลอดภัยแล้วเล็งภาพใหม่','No clear identification — park safely and reframe'),
+    moved:T('ภาพเปลี่ยน — ซ่อนกรอบเดิมจนกว่าจะตรวจใหม่','View changed — hiding old boxes until checked'),
     frozen:T('หยุดภาพไว้ · แตะกรอบเพื่อดูรายละเอียด','Paused · tap a box for details'),err:msg||''}[kind]||'';
   el.className='lv-stat '+kind;el.innerHTML=(kind==='scan'?'<span class="ct-dots"><i></i><i></i><i></i></span>':kind==='err'?'<i class="ti ti-alert-triangle"></i>':kind==='frozen'?'<i class="ti ti-player-pause"></i>':'<i class="ti ti-scan"></i>')+esc(txt);
   const L2=$('ctLayer');if(L2)L2.classList.toggle('lv-searching',kind==='scan'&&!n);
@@ -305,12 +306,12 @@ function paintBoxes(){
   const box=$('lvBoxes'),chips=$('lvChips');if(!box)return;
   const keep={};box.querySelectorAll('.lv-box').forEach(b=>keep[b.dataset.k]=b);
   LV.items.forEach((x,i)=>{
-    const [y0,x0,y1,x1]=x.box,c=colorOf(x.name),k=x.name;
+    const [y0,x0,y1,x1]=x.box,c=colorOf(),k=x.key;
     let el=keep[k];delete keep[k];
     if(!el){el=D.createElement('button');el.type='button';el.className='lv-box new';el.dataset.k=k;el.innerHTML='<span class="lv-tag"><b></b><em></em></span>';box.appendChild(el);setTimeout(()=>el.classList.remove('new'),500)}
     el.dataset.i=i;el.style.setProperty('--c',c);
     Object.assign(el.style,{left:x0/10+'%',top:y0/10+'%',width:(x1-x0)/10+'%',height:(y1-y0)/10+'%'});
-    el.classList.toggle('low',y0<90);el.classList.toggle('on',LV.pick===i);
+    el.classList.toggle('low',y0<90);el.classList.toggle('right',x0>500);el.classList.toggle('on',LV.pick===i);
     el.querySelector('b').textContent=i+1;el.querySelector('em').textContent=x.name;el.setAttribute('aria-label',x.name);
     el.onclick=()=>pickPart(i);
   });
@@ -319,70 +320,83 @@ function paintBoxes(){
   if(chips)chips.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>pickPart(+b.dataset.i));
 }
 function pickPart(i){
-  const x=LV.items[i];if(!x)return;LV.pick=i;paintBoxes();
+  const x=LV.items[i],R=view();if(!x||!R||!scan.fresh({frame:LV.frame,current:scan.frameKey(R),track:LV.tr,hidden:D.hidden}))return;LV.pick=i;paintBoxes();
   const det=$('lvDet');det.hidden=false;det.style.setProperty('--c',colorOf(x.name));
-  det.innerHTML=`<div class="lv-dh"><b><span>${i+1}</span>${esc(x.name)}</b><button type="button" class="ct-x" id="lvDetX" aria-label="${T('ปิด','Close')}"><i class="ti ti-x"></i></button></div>${x.what?`<p><em>${T('คืออะไร','What it is')}</em>${esc(x.what)}</p>`:''}${x.check?`<p><em>${T('เช็กเอง','Check it')}</em>${esc(x.check)}</p>`:''}${x.look?`<p class="warn"><em>${T('ในภาพตอนนี้','Right now')}</em>${esc(x.look)}</p>`:''}`;
+  det.innerHTML=`<div class="lv-dh"><b><span>${i+1}</span>${esc(x.name)}</b><button type="button" class="ct-x" id="lvDetX" aria-label="${T('ปิด','Close')}"><i class="ti ti-x"></i></button></div>${x.what?`<p><em>${T('คืออะไร','What it is')}</em>${esc(x.what)}</p>`:''}<p><em>${T('สิ่งที่ AI ใช้ระบุ','Visual identifying clue')}</em>${esc(x.evidence)}</p>${x.check?`<p class="warn"><em>${T('ความปลอดภัย','Safety')}</em>${esc(x.check)}</p>`:''}<small>${T('AI อาจระบุผิด กรอบแดงไม่ได้แปลว่าชำรุด','AI identification can be wrong. Red does not mean damaged.')}</small>`;
   $('lvDetX').onclick=()=>{LV.pick=-1;det.hidden=true;paintBoxes()};
   /* แตะกรอบ = ให้ AI ในสายอธิบายชิ้นนี้ด้วยเสียง */
-  tellLive(`ผู้ใช้แตะกรอบหมายเลข ${i+1} "${x.name}" (${where(x.box)}) บนจอ — อธิบายสั้น ๆ ว่าคืออะไร ทำหน้าที่อะไร และเช็กเองอย่างปลอดภัยยังไง${x.look?` · ในภาพเห็นว่า: ${x.look}`:''}`);
+  tellLive(`ผู้ใช้แตะกรอบแดงหมายเลข ${i+1} "${x.name}" (${where(x.box)}) · สิ่งที่ใช้ระบุ: ${x.evidence} · หน้าที่: ${x.what} · ข้อควรระวัง: ${x.check} · เป็นการระบุจากภาพที่อาจผิด ไม่ใช่ผลวินิจฉัย ห้ามเพิ่มคำแนะนำให้สัมผัส เปิดฝา ถอดสาย หรือซ่อม อธิบายสั้น ๆ เท่านั้น`);
 }
 function tellScan(force){
-  const names=LV.items.map(x=>x.name).join('|');
+  const names=LV.items.map(x=>x.name+':'+where(x.box)).join('|');
   if(!force&&(names===LV.told||Date.now()-LV.toldAt<12000))return;
   /* ครั้งแรกให้ AI พูดสรุป · ครั้งต่อ ๆ ไป (ขยับกล้องแล้วกรอบเปลี่ยน) แค่อัปเดตให้ AI รู้ ไม่พูดแทรกทุกครั้ง */
   const quiet=!force&&!!LV.told;
   LV.told=names;LV.toldAt=Date.now();
-  const msg=LV.items.length?`ผลสแกนห้องเครื่องแบบสด: บนจอผู้ใช้มีกรอบสีพร้อมหมายเลข ${LV.items.map((x,i)=>`${i+1}. ${x.name} (${where(x.box)})${x.look?' — '+x.look:''}`).join(' · ')}${LV.notes.length?' · สิ่งที่ควรระวัง: '+LV.notes.join(' / '):''} · อ้างถึงกรอบด้วยหมายเลขหรือตำแหน่งบนจอได้`
-    :`ผลสแกน: ยังไม่เห็นห้องเครื่องชัด (${LV.scene||'unclear'}) ให้ผู้ใช้เปิดฝากระโปรงแล้วเล็งกล้องให้เห็นทั้งห้องเครื่อง`;
+  const msg=LV.items.length?`ผลสแกนห้องเครื่อง: กรอบแดงบอกตำแหน่ง ไม่ได้แปลว่าชำรุด AI อาจระบุผิด พบ ${LV.items.map((x,i)=>`${i+1}. ${x.name} (${where(x.box)}) — ${x.evidence}`).join(' · ')} · ยังไม่ยืนยัน ${LV.uncertain} จุด ห้ามเดาจุดที่ไม่เห็น ห้ามสอนให้แตะ เปิดฝา หรือถอดสาย จอด ดับเครื่องและปล่อยให้เย็นก่อนดูใกล้ ๆ`
+    :`ผลสแกน: ยังระบุไม่ได้ชัด (${LV.scene||'unclear'}, ${LV.quality||'unclear'}) ไม่มีกรอบที่ยืนยันได้ ห้ามเดาจากรุ่นรถ ให้ผู้ใช้จอดให้ปลอดภัยแล้วถ่ายให้ชัดขึ้น`;
   tellLive(msg,S.tool,quiet);S.tool=null;
 }
 async function detect(){
-  if(LV.busy||!LV.on||LV.frozen||LV.noMore)return;
+  if(LV.busy||!LV.on||LV.frozen||LV.noMore||D.hidden)return;
   const R=view();if(!R)return;
-  const run=LV.run;LV.busy=true;setStat('scan');
-  const w=Math.min(960,Math.round(R.W*Math.min(2,devicePixelRatio||1))),h=Math.round(w*R.H/R.W),c=D.createElement('canvas');
+  const run=LV.run,frame=scan.frameKey(R);LV.busy=true;setStat('scan');
+  $('lvBoxes')?.classList.add('stale');$('lvChips').hidden=true;$('lvDet').hidden=true;LV.pick=-1;
+  const {w,h}=scan.captureSize(R),c=D.createElement('canvas');
   drawRegion(c,w,h,R);const base=gray(R),b64=c.toDataURL('image/jpeg',0.8).split(',')[1];
   /* ติดตามภาพตั้งแต่ตอนถ่ายเฟรมนี้ — ระหว่างรอ AI ตอบ กล้องขยับไปเท่าไรก็รู้ กรอบใหม่จึงวางตรงทันที */
   LV.pend=mkTrack(base);
+  const controller=new AbortController();S.abort=controller;const timeout=setTimeout(()=>controller.abort(),20000);
   try{
-    let d;
-    try{d=await analyze('baylive',[{mime:'image/jpeg',b64}],{car:carCtx(),live:true},T('สแกนห้องเครื่องแบบสดระหว่างโทร','Live engine-bay scan during a call'))}
-    catch(e){if(e.status===400&&!LV.frames)d=await analyze('bay',[{mime:'image/jpeg',b64}],{car:carCtx()},T('สแกนห้องเครื่องระหว่างโทร','Engine bay scan during a call'));else throw e}
+    const d=scan.read(await analyze('baylive',[{mime:'image/jpeg',b64}],{car:carCtx(),live:true},T('ระบุชิ้นส่วนที่เห็นจริงในห้องเครื่อง','Identify visible engine-bay components'),controller.signal));
     if(run!==LV.run||!LV.on)return;
-    LV.frames++;LV.lastAt=Date.now();LV.tr=LV.pend||mkTrack(base);LV.pend=null;
-    LV.scene=d.scene;LV.notes=d.notes||[];LV.items=d.items||[];if(LV.pick>=LV.items.length)LV.pick=-1;
+    const current=view();if(!current||!scan.fresh({frame,current:scan.frameKey(current),track:LV.pend,hidden:D.hidden})){LV.tr=null;LV.lastAt=Date.now();setStat('moved');return;}
+    LV.frames++;LV.lastAt=Date.now();LV.tr=LV.pend;LV.pend=null;LV.frame=frame;LV.fails=0;
+    LV.scene=d.scene;LV.quality=d.quality;LV.uncertain=d.uncertain;LV.notes=[];LV.items=d.items;
     const bx=$('lvBoxes');if(bx){bx.style.transition='none';bx.style.transform=`translate(${(LV.tr.dx*R.W/LV.bw).toFixed(1)}px,${(LV.tr.dy*R.H/LV.bh).toFixed(1)}px)`;bx.classList.remove('stale')}
-    paintBoxes();setStat(LV.items.length?'found':'none');
+    paintBoxes();$('lvChips').hidden=false;setStat(LV.items.length?'found':'none');
     if(LV.items.length&&LV.frames===1)try{navigator.vibrate&&navigator.vibrate([12,40,12])}catch(e){}
     tellScan(!!S.tool);
   }catch(e){
     if(run!==LV.run||!LV.on)return;
-    LV.lastAt=Date.now();
+    LV.lastAt=Date.now();LV.fails++;LV.tr=null;
     if(e.code==='feature_quota'||e.status===429)LV.noMore=true;
-    setStat('err',e.message);
-    if(S.tool){tellLive(e.message,S.tool);S.tool=null}
-  }finally{if(run===LV.run){LV.busy=false;LV.pend=null}}
+    if(LV.fails>=3)LV.noMore=true;
+    const msg=e.name==='AbortError'?T('ใช้เวลานานเกินไป — แตะสแกนใหม่','Scan timed out — tap Rescan'):e.message==='scan_version'?T('ระบบสแกนสองฝั่งยังเป็นคนละรุ่น กรุณาอัปเดต backend และเว็บพร้อมกัน','Scanner versions differ. Update the backend and website together.'):e.message;
+    setStat('err',msg);
+    if(S.tool){tellLive(msg,S.tool);S.tool=null}
+  }finally{clearTimeout(timeout);if(S.abort===controller)S.abort=null;if(run===LV.run){LV.busy=false;LV.pend=null}}
 }
 function track(){
-  if(!LV.on||LV.frozen)return;
+  if(!LV.on||LV.frozen||D.hidden)return;
   const R=view();if(!R)return;
-  if(!LV.tr){if(!LV.busy&&!LV.noMore&&Date.now()-LV.lastAt>2500)detect();return}
   const cur=gray(R);
-  if(cur.length!==LV.tr.ref.length){LV.tr=null;LV.pend=null;return}
-  if(LV.pend)step(LV.pend,cur);
-  const tr=LV.tr,ok=step(tr,cur),bx=$('lvBoxes');
+  if(LV.pend){if(cur.length===LV.pend.ref.length)step(LV.pend,cur);else LV.pend.lost++;}
+  const bx=$('lvBoxes');
+  if(LV.tr&&(cur.length!==LV.tr.ref.length||scan.frameKey(R)!==LV.frame)){LV.tr=null;$('lvChips').hidden=true;$('lvDet').hidden=true;LV.pick=-1;setStat('moved');}
+  if(!LV.tr){if(bx)bx.classList.add('stale');if(!LV.busy&&!LV.noMore&&Date.now()-LV.lastAt>Math.min(30000,2500*2**LV.fails))detect();return}
+  const tr=LV.tr,ok=step(tr,cur);
   if(ok&&bx){bx.style.transition='transform .12s linear';bx.style.transform=`translate(${(tr.dx*R.W/LV.bw).toFixed(1)}px,${(tr.dy*R.H/LV.bh).toFixed(1)}px)`}
-  if(bx)bx.classList.toggle('stale',tr.lost>2);
+  if(bx)bx.classList.toggle('stale',tr.lost>0||LV.busy);
+  if(tr.lost>0){$('lvChips').hidden=true;$('lvDet').hidden=true;LV.pick=-1;setStat('moved');}
+  else if(!LV.busy){$('lvChips').hidden=false;}
   /* ภาพเปลี่ยนไปมาก หรือเลื่อนไปไกลจนกรอบเริ่มหลุดขอบ → ให้ AI ดูเฟรมใหม่ (ไม่ถี่กว่า 2.5 วิ) */
   const moved=Math.hypot(tr.dx,tr.dy)>LV.bw*.18&&Date.now()-LV.lastAt>3000;
-  if((tr.lost>4||moved)&&!LV.busy&&Date.now()-LV.lastAt>2500)detect();
+  if((tr.lost>2||moved||Date.now()-LV.lastAt>15000)&&!LV.busy&&!LV.noMore&&Date.now()-LV.lastAt>2500)detect();
 }
 function stopLive(){
   LV.on=false;LV.run++;clearInterval(LV.timer);LV.timer=0;LV.busy=false;
+  if(S.abort){S.abort.abort();S.abort=null;}
   const v=$('callCam');if(LV.frozen&&v)v.play().catch(()=>{});LV.frozen=false;
+}
+function invalidateFrame(){
+  if(!LV.on)return;
+  LV.tr=null;LV.pend=null;LV.lastAt=0;LV.pick=-1;
+  $('lvBoxes')?.classList.add('stale');if($('lvChips'))$('lvChips').hidden=true;if($('lvDet'))$('lvDet').hidden=true;setStat('moved');
 }
 async function scanBay(tool){
   if(!voice.callActive)return;
+  if(!scan){toast(T('ระบบสแกนยังโหลดไม่ครบ กรุณาโหลดหน้าใหม่','Scanner assets unavailable. Reload the page.'),'ti-alert-circle');if(tool)tellLive('Scanner unavailable',tool);return;}
   if(S.mode)closeLayer();
   const run=++S.run;S.mode='bay';S.tool=tool||null;
   /* สแกนต้องใช้กล้องหลัง */
@@ -391,16 +405,16 @@ async function scanBay(tool){
   if(!voice.camOn){const why=T('เปิดกล้องไม่ได้ — ต้องอนุญาตกล้องก่อน','Camera unavailable — allow camera access');toast(why,'ti-video-off');finishBay(why);return}
   const el=layer();el.classList.add('ct-live');
   el.innerHTML=`<div class="lv-boxes" id="lvBoxes"></div><div class="lv-sweep"></div>
-    <header class="ct-hd lv-hd"><div><b>${T('สแกนห้องเครื่องแบบสด','Live engine-bay scan')}</b><small>${T('เล็งกล้องไปที่ห้องเครื่อง กรอบจะขึ้นบนชิ้นส่วนเอง','Point the camera at the engine bay — parts get boxed automatically')}</small></div><button type="button" class="ct-x" id="ctClose" aria-label="${T('ปิด','Close')}"><i class="ti ti-x"></i></button></header>
-    <div class="lv-dock"><p class="lv-stat" id="lvStat"></p><div class="lv-det" id="lvDet" hidden></div><div class="lv-chips" id="lvChips"></div>
+    <header class="ct-hd lv-hd"><div><b>${T('รู้จักห้องเครื่อง','Know your engine bay')}</b><small>${T('AI ระบุจากภาพ อาจผิดได้ · ไม่ใช่การตรวจสภาพ','AI visual identification may be wrong · not an inspection')}</small></div><button type="button" class="ct-x" id="ctClose" aria-label="${T('ปิด','Close')}"><i class="ti ti-x"></i></button></header>
+    <div class="lv-dock"><p class="lv-safety">${T('จอด · ดับเครื่อง · รอให้เย็น · มองเท่านั้น ไม่สัมผัส','Park · engine off · let it cool · look, do not touch')}</p><p class="lv-stat" id="lvStat" role="status" aria-live="polite"></p><div class="lv-det" id="lvDet" hidden></div><div class="lv-chips" id="lvChips" aria-label="${T('ชิ้นส่วนที่ระบุได้','Identified components')}"></div><small class="lv-legend"><i></i>${T('กรอบแดง = ตำแหน่ง ไม่ได้แปลว่าชำรุด','Red = location, not damage')}</small>
       <div class="lv-acts"><button type="button" class="lv-b" id="lvRe"><i class="ti ti-refresh"></i>${T('สแกนใหม่','Rescan')}</button><button type="button" class="lv-b" id="lvFreeze"><i class="ti ti-player-pause"></i>${T('หยุดภาพ','Pause')}</button><button type="button" class="lv-b p" id="lvDone"><i class="ti ti-check"></i>${T('เสร็จ','Done')}</button></div></div>`;
-  Object.assign(LV,{on:true,run:LV.run+1,items:[],tr:null,pend:null,busy:false,lastAt:0,frozen:false,told:'',toldAt:0,pick:-1,frames:0,noMore:false,scene:'',notes:[]});
+  Object.assign(LV,{on:true,run:LV.run+1,items:[],tr:null,pend:null,busy:false,lastAt:0,frozen:false,told:'',toldAt:0,pick:-1,frames:0,noMore:false,scene:'',notes:[],quality:'',uncertain:0,frame:'',fails:0});
   setStat('scan');
   $('ctClose').onclick=()=>finishBay();
   $('lvDone').onclick=()=>finishBay();
-  $('lvRe').onclick=()=>{LV.noMore=false;LV.lastAt=0;if(LV.frozen)$('lvFreeze').click();detect()};
+  $('lvRe').onclick=()=>{LV.noMore=false;LV.fails=0;LV.lastAt=0;if(LV.frozen)$('lvFreeze').click();detect()};
   $('lvFreeze').onclick=()=>{const v=$('callCam');LV.frozen=!LV.frozen;
-    if(LV.frozen){v.pause();setStat('frozen')}else{v.play().catch(()=>{});LV.tr=null;LV.lastAt=0;setStat(LV.items.length?'found':'scan')}
+    if(LV.frozen){v.pause();setStat('frozen')}else{v.play().catch(()=>{});LV.tr=null;LV.lastAt=0;$('lvBoxes').classList.add('stale');$('lvChips').hidden=true;$('lvDet').hidden=true;setStat('scan')}
     $('lvFreeze').innerHTML=LV.frozen?`<i class="ti ti-player-play"></i>${T('เล่นต่อ','Resume')}`:`<i class="ti ti-player-pause"></i>${T('หยุดภาพ','Pause')}`};
   /* รอภาพกล้องพร้อม แล้วสแกนทันที — จากนั้นติดตามภาพ ~9 ครั้ง/วิ */
   const t0=Date.now();while(!view()&&Date.now()-t0<4000){await new Promise(r=>setTimeout(r,100));if(run!==S.run)return}
@@ -411,10 +425,11 @@ async function scanBay(tool){
 }
 function finishBay(why){
   const tool=S.tool;S.tool=null;
-  const items=LV.items.slice();stopLive();
+  const R=view(),current=R&&scan?.fresh({frame:LV.frame,current:scan.frameKey(R),track:LV.tr,hidden:D.hidden});
+  const items=current?LV.items.slice():[];stopLive();
   closeLayer();
   if(tool)tellLive(why||T('ผู้ใช้ปิดการสแกนก่อนได้ผล','The user closed the scan before a result'),tool);
-  if(items.length)remember(T('ผลสแกนห้องเครื่อง','Engine bay scan')+'\n'+items.map((x,i)=>`${i+1}. ${x.name}${x.look?' — '+x.look:''}`).join('\n')+(LV.notes.length?'\n'+LV.notes.map(n=>'⚠ '+n).join('\n'):''));
+  if(items.length)remember(T('AI ระบุชิ้นส่วนจากภาพ (อาจผิด ไม่ใช่การตรวจสภาพ)','AI visual identification (may be wrong, not an inspection)')+'\n'+items.map((x,i)=>`${i+1}. ${x.name}`).join('\n'));
 }
 
 /* ── AI เรียกเครื่องมือเอง ── */
@@ -438,12 +453,14 @@ function mountButtons(){
   $('ctBayBtn').onclick=()=>{if(!voice.callActive)return toast(T('รอต่อสายให้ติดก่อนนะครับ','Wait for the call to connect'),'ti-phone');scanBay(null)};
 }
 mountButtons();
+D.addEventListener?.('visibilitychange',invalidateFrame);
+window.addEventListener?.('resize',invalidateFrame);
 
 return Object.freeze({
   get holdMic(){return S.holdMic},get muteAi(){return S.muteAi},get busy(){return !!S.mode},
-  onToolCall,onCancel,reset:closeLayer,listen:listenEngine,scan:scanBay,dispose(){closeLayer();$('ctTools')?.remove();},
+  onToolCall,onCancel,reset:closeLayer,listen:listenEngine,scan:scanBay,dispose(){closeLayer();$('ctTools')?.remove();D.removeEventListener?.('visibilitychange',invalidateFrame);window.removeEventListener?.('resize',invalidateFrame);},
   /* บอกผู้ช่วยเสียงว่ามีเครื่องมืออะไร (ต่อท้าย system prompt ของการโทร) */
-  prompt:()=>'\nเครื่องมือระหว่างโทร: ถ้าผู้ใช้ให้ฟังเสียงเครื่องหรือเสียงแปลก ๆ ให้เรียก listen_engine (ระบบอัดเสียงดิบ 10 วินาทีแล้ววิเคราะห์ให้) ก่อนเรียกให้บอกผู้ใช้สั้น ๆ ให้จ่อมือถือใกล้จุดที่มีเสียง · ถ้าผู้ใช้ให้ดู สแกน ไฮไลต์ หรืออธิบายห้องเครื่อง ให้เรียก scan_engine_bay (ระบบเปิดกล้องหลังแล้ววาดกรอบสีพร้อมหมายเลขและชื่อชิ้นส่วนบนภาพสด กรอบเลื่อนตามกล้อง — ผลที่ส่งกลับบอกว่ากรอบไหนคืออะไร อยู่ตรงไหนบนจอ ใช้อ้างถึงได้ เช่น "กรอบที่ 2 มุมบนขวาคือแบตเตอรี่") · เมื่อได้ผลกลับมา ให้สรุปเป็นภาษาพูดสั้น ๆ เริ่มจากเรื่องที่ต้องระวังก่อน ห้ามอ้างว่าได้ยินหรือเห็นสิ่งที่ผลไม่ได้บอก'
+  prompt:()=>'\nเครื่องมือระหว่างโทร: เสียงเครื่องให้เรียก listen_engine · หากผู้ใช้ให้ดู ระบุ สแกน หรืออธิบายห้องเครื่อง ให้เรียก scan_engine_bay ซึ่งระบุชิ้นส่วนจากภาพจริงพร้อมกรอบแดง ชื่อและหมายเลข แตะกรอบเพื่อฟังคำอธิบาย กรอบแดงไม่ได้แปลว่าชำรุด เป็นเพียงการระบุที่อาจผิด ไม่ใช่การตรวจสภาพ ห้ามอ้างว่ารู้ทุกจุดหรือเห็นชิ้นส่วนที่ถูกบัง ห้ามแนะนำให้สัมผัส เปิดฝา ถอดสาย ซ่อมเอง หรือเข้าใกล้สายไฟแรงดันสูง ให้จอด ดับเครื่องและรอให้เย็นก่อนดูใกล้ ๆ อธิบายเฉพาะผลเครื่องมือล่าสุด'
 });
 }
 window.CallTools=Object.freeze({create});

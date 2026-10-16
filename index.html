@@ -711,6 +711,31 @@ html[data-theme="dark"] .ch-rec #chRecOk{box-shadow:inset 0 0 0 1px rgba(255,255
 .urg .wf{color:#fff;opacity:.2;z-index:-1}
 .urg h2{font-family:var(--kd);font-size:23px;font-weight:600;display:flex;align-items:center;gap:8px}.urg p{font-size:13px;opacity:.9}
 /* ฉุกเฉิน: เลือกรถเสีย/อุบัติเหตุ · เบอร์ฉุกเฉิน · โหมดอุบัติเหตุทีละขั้น */
+/* ช่างกำลังมา: แผนที่สด + เวลาถึง */
+.lv{position:relative;margin:0 0 14px;border-radius:20px;overflow:hidden;background:var(--surface);box-shadow:0 0 0 1px var(--line-2)}
+.lv-map{height:230px;background:var(--surface-2)}
+.lv-map .leaflet-container,.lv-map.leaflet-container{background:var(--surface-2);font-family:inherit}
+html[data-theme="dark"] .lv-map .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.82) contrast(.9) saturate(.6)}
+.lv-info{display:flex;align-items:center;gap:12px;padding:12px 14px}
+.lv-ic{flex:none;width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:#16a34a;color:#fff;font-size:21px}
+.lv.wait .lv-ic{background:var(--surface-2);color:var(--muted)}.lv.stale .lv-ic{background:#d97706}
+.lv-eta{font-size:14px;color:var(--muted);line-height:1.2}.lv-eta b{font-family:var(--kd);font-size:24px;font-weight:600;color:var(--text)}
+.lv.wait .lv-eta b,.lv.stale .lv-eta b{font-size:16px}
+.lv-sub{display:block;margin-top:3px;font-size:12px;color:var(--muted)}
+.lv-note{display:flex;gap:7px;padding:0 14px 12px;font-size:11.5px;color:var(--muted);line-height:1.45}
+.lv-car{position:relative}
+.lv-ring{position:absolute;inset:0;border-radius:50%;background:rgba(22,163,74,.25);animation:lvRing 1.8s ease-out infinite}
+.lv-dot{position:absolute;inset:8px;border-radius:50%;display:grid;place-items:center;background:#16a34a;color:#fff;font-size:17px;box-shadow:0 3px 10px rgba(0,0,0,.35),0 0 0 3px #fff}
+.lv-dot .ti{transform:rotate(var(--r,0deg))}
+@keyframes lvRing{from{transform:scale(.6);opacity:1}to{transform:scale(1.5);opacity:0}}
+.lv-home{color:#ef4444;font-size:40px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.35))}
+.live-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom));z-index:9000;display:flex;align-items:center;gap:9px;max-width:calc(100vw - 32px);padding:9px 10px 9px 14px;border-radius:999px;background:#18181b;color:#fff;font-size:12.5px;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.live-bar .dot{flex:none;width:9px;height:9px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:lvPing 1.6s infinite}
+.live-bar .dot.bad{background:#f59e0b;animation:none}
+.live-bar span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.live-bar b{flex:none;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.14);font-weight:500}
+@keyframes lvPing{70%{box-shadow:0 0 0 8px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+@media(prefers-reduced-motion:reduce){.lv-ring,.live-bar .dot{animation:none}}
 .emg{display:grid;gap:10px;margin-bottom:14px}
 .emg-c{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;padding:14px;border-radius:18px;background:var(--surface);box-shadow:0 0 0 1px var(--line-2);text-align:left;transition:transform .2s var(--spring)}
 .emg-c:active{transform:scale(.98)}
@@ -3929,13 +3954,16 @@ async function openTrip(token){
   const t=d.tech,rk=RANK[d.status];
   sheet({title:"ใบงานที่ถูกแชร์ให้คุณ",url,body:`
     ${d.status==="cancelled"?'<p class="pill bad" style="margin-bottom:14px">ยกเลิกแล้ว</p>':`<div class="track">${FLOW.map(([k,l,ic],i)=>`<div class="s ${i<=rk?"done":""} ${i===rk&&d.status!=="completed"?"now":""}"><i class="ti ${ic}"></i>${l}</div>`).join("")}</div>`}
+    ${d.status==="enroute"?`<div class="lv wait" id="tLive"><div class="lv-map"></div><div class="lv-info"><span class="lv-ic"><i class="ti ti-truck"></i></span><div><p class="lv-eta"><b>${T("รอตำแหน่งช่าง","Waiting for location")}</b></p><small class="lv-sub"></small></div></div></div>`:""}
     <div class="who e3"><span class="av sq" style="--c1:#475569${t.avatar?`;background-image:url('${img(t.avatar)}')`:""}">${t.avatar?"":initial(t.name)}</span><div><b>${esc(t.name)}</b><small>${t.vetting?"ยืนยันตัวตนแล้ว"+((t.vetting.cats||[]).length?" · ตรวจทักษะ "+esc(t.vetting.cats.map(c=>CAT[c]?CAT[c].th:c).join(", ")):""):t.verified?"ผ่านการตรวจโดยทีมงาน":""}</small></div></div>
     <div class="kv"><p><span>สถานะ</span><b>${esc(STATUS[d.status]||d.status)}</b></p><p><span>อัปเดตล่าสุด</span><b>${new Date(d.updatedAt).toLocaleString(LOC,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</b></p>
       <p><span>รถ</span><b>${esc(d.car)}</b></p><p><span>นัด</span><b>${esc(d.appointment||"")}</b></p><p><span>ซ่อมที่</span><b>${d.mode==="mobile"?"ช่างไปหา":"ที่อู่"} · ${esc(d.area||"")}</b></p></div>
     <p class="note"><i class="ti ti-shield-heart"></i>${(x=>T(`เจ้าของใบงานแชร์ให้คุณเพื่อความปลอดภัย · ไม่มีที่อยู่หรือเบอร์โทร · ลิงก์ใช้ได้ถึง ${x} · ถ้ากังวล ติดต่อเจ้าของใบงานโดยตรง หรือโทร 191`,`Shared with you for safety · no address or phone number · link valid until ${x} · if you're worried, contact the job owner directly or call 191`))(new Date(d.expiresAt).toLocaleString(LOC,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}))}</p>`,
-    foot:'<a class="btn s w" href="tel:191"><i class="ti ti-phone-call"></i> โทร 191 เหตุด่วนเหตุร้าย</a>'});
+    foot:'<a class="btn s w" href="tel:191"><i class="ti ti-phone-call"></i> โทร 191 เหตุด่วนเหตุร้าย</a>',
+    mount(b){if(LIVE_STOP){LIVE_STOP();LIVE_STOP=null}const lb=b.querySelector("#tLive");if(lb){let first=d;LIVE_STOP=liveMap(lb,{dest:null,every:6000,poll:async()=>{const x=first||(await api("/api/tech/share/"+encodeURIComponent(token))).trip;first=null;if(x.status!==d.status)setTimeout(()=>openTrip(token),50);return {status:x.status,live:x.live,km:x.live&&x.live.km,etaMin:x.live&&x.live.etaMin}}})}}});
   /* อัปเดตสถานะเองทุก 30 วินาทีระหว่างเปิดอยู่ */
-  clearTimeout(openTrip.t);openTrip.t=setTimeout(()=>{if($("bs").classList.contains("on")&&$("bsT").textContent==="ใบงานที่ถูกแชร์ให้คุณ")openTrip(token)},30000);
+  /* ระหว่างช่างกำลังมา แผนที่ดึงเองทุก 6 วิ และวาดใหม่ทั้งหน้าเมื่อสถานะเปลี่ยน — ไม่ต้องวาดทับทุก 30 วิ */
+  clearTimeout(openTrip.t);if(d.status!=="enroute")openTrip.t=setTimeout(()=>{if($("bs").classList.contains("on")&&$("bsT").textContent==="ใบงานที่ถูกแชร์ให้คุณ")openTrip(token)},30000);
 }
 /* ข้อความวินิจฉัยเซิร์ฟเวอร์ — โชว์เฉพาะเจ้าของแอป คนทั่วไปเห็นแค่ "เชื่อมต่อไม่ได้" */
 async function diag(){
@@ -4690,7 +4718,7 @@ function refreshJobs(){
   if(j.status==="fulfilled"){JOBS=j.value.jobs||[];JOBS_OK=true;JOBS_ERR=null}else JOBS_ERR=j.reason&&j.reason.message||"error";
   POSTS=p.status==="fulfilled"?p.value.posts||[]:[];
   THREADS=t.status==="fulfilled"?t.value.threads||[]:[];
-  renderActive();renderUsed();syncGarage();queueDot();saveSnap();
+  renderActive();renderUsed();syncGarage();queueDot();saveSnap();try{LiveShare.sync()}catch(e){}
   })().finally(()=>{RJ=null});
   return RJ;
 }
@@ -4728,6 +4756,103 @@ $("bJobs").onclick=()=>jobs();
 /* ═══ ใบงาน ═══ */
 const FLOW=[["requested","ขอราคา","ti-send"],["quoted","ได้ราคา","ti-receipt"],["accepted","นัดแล้ว","ti-calendar-check"],["working","ซ่อม","ti-tool"],["completed","เสร็จ","ti-circle-check"]];
 const RANK={requested:0,quoted:1,accepted:2,enroute:2,working:3,done:3,completed:4,disputed:3,cancelled:-1};
+/* ═══ ช่างกำลังมา (แผนที่แบบ Grab) ═══
+   ฝั่งช่าง: กด "กำลังไป" → แชร์ตำแหน่งทุก ~7 วินาที เฉพาะใบงานที่อยู่ในสถานะนี้ · หยุดเองเมื่อเริ่มซ่อม/ยกเลิก · กดหยุดเองได้
+   ฝั่งลูกค้า: เห็นช่างวิ่งบนแผนที่ + เวลาถึงโดยประมาณ (จากระยะทาง ไม่ใช่เส้นทางจริง)
+   เซิร์ฟเวอร์เก็บแค่จุดล่าสุดจุดเดียว ไม่เก็บเส้นทาง และลบทิ้งเมื่อออกจากสถานะนี้ */
+const LiveShare={id:null,watch:null,last:0,lock:null,fix:null,err:"",
+  sync(){
+    const off=ls.get("spire_live_off","");
+    const j=(JOBS||[]).find(x=>x.side==="technician"&&x.status==="enroute"&&x.id!==off);
+    if(j)this.start(j.id);else if(this.id&&!(JOBS||[]).some(x=>x.id===this.id&&x.status==="enroute"))this.stop();
+  },
+  start(id){
+    if(this.id===id&&this.watch!=null)return;
+    this.stop(true);this.id=id;this.err="";
+    if(!navigator.geolocation){this.err=T("เครื่องนี้หาตำแหน่งไม่ได้","Location isn't available on this device");this.paint();return}
+    this.watch=navigator.geolocation.watchPosition(p=>this.push(p),e=>{this.err=e.code===1?T("ยังไม่ได้อนุญาตตำแหน่ง — ลูกค้าจะไม่เห็นว่าคุณอยู่ไหน","Location permission is off — the customer can't see you"):T("ยังหาตำแหน่งไม่ได้","Still finding your location");this.paint()},{enableHighAccuracy:true,maximumAge:5000,timeout:25000});
+    /* จอเปิดค้างระหว่างเดินทาง — เบราว์เซอร์ส่งตำแหน่งได้เฉพาะตอนหน้าแอปเปิดอยู่ */
+    try{navigator.wakeLock&&navigator.wakeLock.request("screen").then(l=>{this.lock=l}).catch(()=>{})}catch(e){}
+    this.paint();
+  },
+  async push(p,force){
+    const c=p.coords;this.fix={lat:c.latitude,lng:c.longitude,acc:c.accuracy,heading:c.heading,speed:c.speed,at:Date.now()};this.err="";
+    if(!force&&Date.now()-this.last<7000){this.paint();return}
+    this.last=Date.now();const id=this.id;if(!id)return;
+    try{await api(`/api/tech/jobs/${id}/live`,{body:{lat:c.latitude,lng:c.longitude,acc:c.accuracy,heading:c.heading,speed:c.speed}});this.sent=Date.now()}
+    catch(e){if(e.status===409||e.status===404||e.status===403){this.stop();return}}
+    this.paint();
+  },
+  stop(keep){
+    if(this.watch!=null)try{navigator.geolocation.clearWatch(this.watch)}catch(e){}
+    this.watch=null;try{this.lock&&this.lock.release()}catch(e){}this.lock=null;
+    if(!keep){this.id=null;this.fix=null}
+    this.paint();
+  },
+  /* แถบเล็กบนจอช่างระหว่างแชร์ — รู้ตลอดว่ากำลังส่งตำแหน่ง และหยุดเองได้ */
+  paint(){
+    let b=$("liveBar");
+    if(!this.id||this.watch==null){if(b)b.remove();return}
+    if(!b){b=document.createElement("button");b.id="liveBar";b.type="button";b.className="live-bar";document.body.appendChild(b);
+      b.onclick=()=>{if(confirm(T("หยุดแชร์ตำแหน่งให้ลูกค้า?","Stop sharing your location with the customer?"))){ls.set("spire_live_off",this.id);this.stop()}}}
+    const ago=this.sent?Math.max(0,Math.round((Date.now()-this.sent)/1000)):null;
+    b.innerHTML=`<i class="dot${this.err?" bad":""}"></i><span>${this.err?esc(this.err):T("ลูกค้าเห็นคุณบนแผนที่","The customer can see you on the map")+(ago!=null?` · ${ago<5?T("เพิ่งส่ง","just now"):ago+T(" วิที่แล้ว","s ago")}`:"")}</span><b>${T("หยุด","Stop")}</b>`;
+  }};
+addEventListener("visibilitychange",()=>{if(!document.hidden&&LiveShare.watch!=null&&LiveShare.fix)navigator.geolocation.getCurrentPosition(p=>LiveShare.push(p,true),()=>{},{enableHighAccuracy:true,maximumAge:3000,timeout:8000})});
+setInterval(()=>{if(LiveShare.watch!=null)LiveShare.paint()},5000);
+
+/* เวลาถึงโดยประมาณ — สูตรเดียวกับเซิร์ฟเวอร์ (ระยะเส้นตรง ×1.35 · ในเมืองช้า ทางไกลเร็ว) */
+const etaOf=(a,b)=>{if(!a||!b)return {};const R=6371,r=x=>x*Math.PI/180,dl=r(b.lat-a.lat),dg=r(b.lng-a.lng),h=Math.sin(dl/2)**2+Math.cos(r(a.lat))*Math.cos(r(b.lat))*Math.sin(dg/2)**2;
+  const km=2*R*Math.asin(Math.sqrt(h))*1.35,kmh=km>20?55:km>5?35:25;return {km:Math.round(km*10)/10,etaMin:km<.15?0:Math.max(1,Math.round(km/kmh*60+1))}};
+const destOf=a=>{const m=String(a||"").match(/[?&]q=(-?\d{1,3}(?:\.\d+)?),\s*(-?\d{1,3}(?:\.\d+)?)/);return m?{lat:+m[1],lng:+m[2]}:null};
+const carPin=h=>window.L.divIcon({className:"lv-car",iconSize:[46,46],iconAnchor:[23,23],html:`<span class="lv-ring"></span><span class="lv-dot" style="--r:${Number.isFinite(h)?h:0}deg"><i class="ti ti-car"></i></span>`});
+const homePin=()=>window.L.divIcon({className:"lv-home",iconSize:[34,42],iconAnchor:[17,40],html:'<i class="ti ti-map-pin-filled"></i>'});
+/* วาดแผนที่ในใบงาน/ลิงก์แชร์ · poll = ฟังก์ชันขอตำแหน่งล่าสุด · คืนตัวหยุด */
+function liveMap(box,{dest,poll,every,mine}){
+  const st={m:null,car:null,anim:0,first:true,t:0,alive:true};
+  const make=()=>{
+    if(!window.L||!box.isConnected)return false;
+    const at=dest||{lat:13.7563,lng:100.5018};
+    st.m=oneWorld(window.L.map(box.querySelector(".lv-map"),{zoomControl:false,attributionControl:false})).setView([at.lat,at.lng],14);
+    window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,noWrap:true}).addTo(st.m);
+    if(dest)window.L.marker([dest.lat,dest.lng],{icon:homePin(),interactive:false}).addTo(st.m);
+    setTimeout(()=>st.m&&st.m.invalidateSize(),300);return true;
+  };
+  /* เลื่อนหมุดช่างแบบนุ่ม ๆ ไปจุดใหม่ ไม่กระโดด */
+  const move=(to,h)=>{
+    if(!st.m)return;
+    if(!st.car){st.car=window.L.marker([to.lat,to.lng],{icon:carPin(h),interactive:false,zIndexOffset:500}).addTo(st.m);return}
+    const from=st.car.getLatLng(),t0=performance.now(),D=900;cancelAnimationFrame(st.anim);
+    const el=st.car.getElement&&st.car.getElement();if(el&&Number.isFinite(h))el.querySelector(".lv-dot").style.setProperty("--r",h+"deg");
+    const step=n=>{const k=Math.min(1,(n-t0)/D),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;st.car.setLatLng([from.lat+(to.lat-from.lat)*e,from.lng+(to.lng-from.lng)*e]);if(k<1)st.anim=requestAnimationFrame(step)};
+    st.anim=requestAnimationFrame(step);
+  };
+  const paint=(d)=>{
+    const eta=box.querySelector(".lv-eta"),sub=box.querySelector(".lv-sub");
+    if(d&&d.live){
+      move(d.live,d.live.heading);
+      if(st.first&&st.m){st.first=false;const pts=[[d.live.lat,d.live.lng]];if(dest)pts.push([dest.lat,dest.lng]);if(pts.length>1)st.m.fitBounds(pts,{padding:[46,46],maxZoom:16});else st.m.setView(pts[0],15)}
+      const ago=Math.max(0,Math.round((Date.now()-d.live.at)/1000));
+      eta.innerHTML=d.etaMin!=null?(d.etaMin<=1?`<b>${T("ใกล้ถึงแล้ว","Almost there")}</b>`:`<b>~${d.etaMin}</b> ${T("นาที","min")}`):`<b>${T("กำลังมา","On the way")}</b>`;
+      sub.textContent=[d.km!=null?`${T("ระยะทางประมาณ","About")} ${d.km} ${T("กม.","km")}`:"",ago<6?T("อัปเดตเมื่อสักครู่","updated just now"):`${T("อัปเดต","updated")} ${ago} ${T("วิที่แล้ว","s ago")}`].filter(Boolean).join(" · ");
+      box.classList.remove("wait","stale");
+    }else{
+      box.classList.add(d&&d.stale?"stale":"wait");
+      eta.innerHTML=`<b>${d&&d.stale?T("สัญญาณช่างขาดหาย","Lost the mechanic's signal"):mine?T("กำลังหาตำแหน่งของคุณ","Finding your location"):T("รอตำแหน่งช่าง","Waiting for location")}</b>`;
+      sub.textContent=d&&d.stale?T("ช่างอาจอยู่ในจุดอับสัญญาณ — ลองโทรหาช่างได้","They may be out of signal — try calling them"):mine?T("เปิดตำแหน่งในเครื่องเพื่อให้ลูกค้าเห็นคุณ","Turn on location so the customer can see you"):T("ช่างกดออกเดินทางแล้ว ตำแหน่งจะขึ้นในไม่กี่วินาที","The mechanic is on the way — location appears in a few seconds");
+    }
+  };
+  const tick=async()=>{
+    if(!st.alive||!box.isConnected){st.alive=false;return}
+    /* แผนที่โหลดไม่ได้ (เน็ตช้า/ถูกบล็อก) ก็ยังบอกเวลาถึงได้ — แผนที่เป็นของแถม */
+    if(!st.m){try{make()}catch(e){}}
+    try{const d=await poll();if(!st.alive)return;paint(d);if(d&&d.status&&d.status!=="enroute"){st.alive=false;return}}catch(e){}
+    st.t=setTimeout(tick,document.hidden?15000:every||4000);
+  };
+  tick();
+  return ()=>{st.alive=false;clearTimeout(st.t)};
+}
+var LIVE_STOP=null;
 let JOB=null,jobTimer=0;
 function stopJob(){clearTimeout(jobTimer);JOB=null}
 async function openJob(id,push){
@@ -4759,8 +4884,9 @@ function drawJob(j,push){
   const safe=cust&&["accepted","enroute","working","done"].includes(s);
   if((cust||tech)&&["accepted","enroute","working","done","completed"].includes(s)&&!safe)more.push(["dispute","แจ้งปัญหา"]);
   const phone=cust&&!tech?j.technicianPhone:j.customerPhone;
+  const liveCard=s==="enroute"&&j.mode==="mobile"?`<div class="lv wait" id="jLive"><div class="lv-map"></div><div class="lv-info"><span class="lv-ic"><i class="ti ti-truck"></i></span><div><p class="lv-eta"><b>${T("รอตำแหน่งช่าง","Waiting for location")}</b></p><small class="lv-sub"></small></div></div>${tech&&!cust?`<p class="lv-note"><i class="ti ti-shield-lock"></i>${T("ลูกค้าเห็นตำแหน่งคุณเฉพาะตอนกำลังไป · หยุดเองเมื่อเริ่มซ่อม · เปิดแอปค้างไว้ระหว่างเดินทาง","The customer sees you only while you're on the way · stops when you start the repair · keep the app open while driving")}</p>`:`<p class="lv-note"><i class="ti ti-info-circle"></i>${T("เวลาถึงเป็นค่าประมาณจากระยะทาง","Arrival time is estimated from distance")}</p>`}</div>`:"";
   sheet({push,job:true,full:true,url:"/jobs/"+encodeURIComponent(j.id),title:(j.test?"ทดสอบ · ":"")+(STATUS[s]||s),body:`
-    ${track}
+    ${track}${liveCard}
     <div class="who e3">${WF}<span class="av sq" style="--c1:${PALETTE[j.id.charCodeAt(0)%PALETTE.length]}${cust&&!tech&&j.techAvatar?`;background-image:url('${img(j.techAvatar)}')`:""}">${cust&&!tech&&j.techAvatar?"":initial(other)}</span><div><b>${esc(other)}</b><small>${esc(j.car)}${cust&&!tech&&j.techVetting?` · ยืนยันตัวตนแล้ว${(j.techVetting.cats||[]).length?" · ตรวจทักษะ "+esc(j.techVetting.cats.map(c=>CAT[c]?CAT[c].th:c).join(", ")):""}`:""}</small></div>
       ${phone&&/^0\d{8,9}$/.test(phone)?`<a class="ic" href="tel:${esc(phone)}" aria-label="โทร"><i class="ti ti-phone"></i></a>`:""}
       <button class="ic" id="jChat" aria-label="แชต"><i class="ti ti-message-circle"></i>${unread?`<span class="dot">${unread}</span>`:""}</button></div>
@@ -4791,6 +4917,16 @@ function drawJob(j,push){
     foot:A.map(([k,l,c])=>`<button class="btn ${c}" data-a="${k}">${esc(l)}</button>`).join(""),
     mount(b,f){
       $("jChat").onclick=()=>openChat(j);
+      /* ช่างกำลังมา: แผนที่สด (ลูกค้า) / แชร์ตำแหน่งของตัวเอง (ช่าง) */
+      if(LIVE_STOP){LIVE_STOP();LIVE_STOP=null}
+      const lb=b.querySelector("#jLive");
+      if(lb){
+        if(tech&&!cust){ls.set("spire_live_off","");LiveShare.start(j.id)}
+        const mine=tech&&!cust;
+        /* จอช่าง: ใช้ตำแหน่งจากเครื่องตัวเองทันทีถ้าเซิร์ฟเวอร์ยังไม่ได้รับ */
+        LIVE_STOP=liveMap(lb,{dest:destOf(j.address),every:mine?5000:4000,mine,poll:async()=>{const d=await api(`/api/tech/jobs/${j.id}/live`);
+          if(mine&&!d.live&&LiveShare.fix&&LiveShare.id===j.id){d.live={...LiveShare.fix};Object.assign(d,etaOf(d.live,destOf(j.address)))}return d}});
+      }
       b.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z));
       [...b.querySelectorAll("[data-a]"),...f.querySelectorAll("[data-a]")].forEach(x=>x.onclick=()=>act(j,x.dataset.a,x));
     }});

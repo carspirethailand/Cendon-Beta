@@ -48,6 +48,7 @@ const sections=[
       'The flow in the app is designed so both sides know the price and scope before work starts:')+
     UL([
       ['<b>ขอราคา</b> — จากร้านเดียว หลายร้านแล้วเทียบ เรียกช่างด่วน หรือประกาศหาช่างให้ช่างแถวนั้นเสนอราคา','<b>Ask for a price</b> — from one shop, several to compare, an urgent call-out, or a public job post for nearby mechanics to quote on'],
+      ['<b>อายุคำขอ</b> — งานด่วน 3 ชั่วโมง · คำขอที่ร้านยังไม่เสนอราคา และประกาศหาช่าง 48 ชั่วโมง · ราคาที่เสนอแล้วแต่ยังไม่ยืนยัน 7 วัน หมดเวลาแล้วระบบยกเลิกให้ทั้งสองฝ่าย ส่งคำขอใหม่ได้เสมอ','<b>Request lifetime</b> — urgent call-outs 3 hours · requests not yet priced and job posts 48 hours · quotes not yet accepted 7 days. After that the system cancels it for both sides; you can always send a new one'],
       ['<b>ยืนยันราคา</b> — ราคาที่คุณกดยืนยันคือราคาที่ตกลงกัน แก้ย้อนหลังไม่ได้ เบอร์และที่อยู่ของคุณเปิดให้ช่างหลังขั้นนี้เท่านั้น','<b>Accept the price</b> — the price you accept is the agreed price and can’t be changed afterwards. Your phone and address are shared with the mechanic only from this point'],
       ['<b>รหัสเริ่มงาน</b> — ช่างต้องใส่รหัสจากคุณก่อนเริ่มงาน เพื่อยืนยันว่าเจอกันจริง','<b>Start code</b> — the mechanic enters a code from you before starting, confirming you’ve actually met'],
       ['<b>งานเพิ่ม</b> — ถ้าระหว่างทำต้องซ่อมเพิ่ม ช่างต้องเสนอในแอปและคุณต้องกดยอมรับก่อน ไม่ยอมรับ = ไม่ต้องจ่ายส่วนนั้น','<b>Extra work</b> — anything extra must be proposed in the app and accepted by you first. If you don’t accept it, you don’t pay for it'],

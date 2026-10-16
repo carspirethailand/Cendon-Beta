@@ -1110,6 +1110,35 @@ html[data-theme="dark"] .urg-tag{color:#f87171}
 .stu-past summary::-webkit-details-marker{display:none}
 .stu-past summary .ti{margin-left:auto;transition:transform .2s}
 .stu-past[open] summary .ti{transform:rotate(180deg)}
+/* หน้างาน: กลุ่ม (ด่วน · รอคุณ · รอลูกค้า) มีหัวข้อ + จำนวน · ใบงานเป็นการ์ดแยกกันด้วยกรอบและช่องว่าง ไม่เบียดกันบนมือถือ */
+.stu-grp{margin-top:24px}
+.stu-err+.stu-grp,.stu-grp:first-child{margin-top:10px}
+.stu-gh{display:flex;align-items:center;gap:8px;margin:0 0 10px;font:700 15px/1.3 var(--kd);color:var(--ink)}
+.stu-gh em{min-width:22px;height:20px;padding:0 7px;border-radius:10px;font:600 12px/20px var(--kb);font-style:normal;text-align:center;color:var(--muted);background:var(--surface-2)}
+.stu-grp.hot .stu-gh{color:#dc2626}
+html[data-theme="dark"] .stu-grp.hot .stu-gh{color:#f87171}
+.stu-grp.hot .stu-gh::before{content:"";width:8px;height:8px;border-radius:50%;background:#dc2626;animation:urgPulse 1.6s ease-in-out infinite}
+.stu-cards{display:grid;gap:10px}
+.stu-past .stu-cards{padding-bottom:6px}
+.stu-cards .stu-row{align-items:flex-start;gap:12px;min-height:0;margin:0;padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--surface);transition:border-color .15s}
+.stu-cards .stu-row:last-child{border-bottom:1px solid var(--line)}
+.stu-cards .stu-row:hover{border-color:color-mix(in srgb,var(--ink) 25%,var(--line))}
+.stu-cards .stu-row:hover .stu-rb b{text-decoration:none}
+.stu-cards .stu-row.urg,.stu-cards .stu-row.urg:last-child{border-color:color-mix(in srgb,#dc2626 45%,transparent);background:color-mix(in srgb,#dc2626 9%,var(--surface))}
+.stu-cards .stu-ri{width:40px;height:40px;border-radius:12px;font-size:20px}
+.stu-rt{display:flex;align-items:baseline;gap:8px}
+.stu-rt b{flex:1;min-width:0}
+.stu-rt time{flex:none;font-size:12.5px;color:var(--faint);white-space:nowrap}
+.stu-rt em{flex:none;align-self:center;min-width:20px;height:20px;padding:0 6px;border-radius:10px;font:700 11.5px/20px var(--kb);font-style:normal;text-align:center;color:#fff;background:var(--co,#E9682A)}
+.stu-cards .stu-rb small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-top:3px;line-height:1.5;white-space:normal}
+.stu-rf{display:flex;align-items:center;gap:10px;margin-top:9px}
+/* บรรทัดสถานะขึ้นบรรทัดใหม่ได้ — จอแคบไม่ตัด "หมดอายุใน..." ทิ้ง */
+.stu-rf .stu-rs{display:block;flex:1;min-width:0;margin:0;line-height:1.5}
+.stu-rf .stu-rs i{white-space:nowrap}
+.stu-rf .stu-rs.me::before{display:inline-block;margin-right:6px;vertical-align:1px}
+.stu-rf .stu-rs i{font-style:normal;font-weight:500;color:var(--muted)}
+.stu-rf>b{flex:none;font:700 15px var(--kd)!important;color:var(--ink)}
+.stu-cards .urg-tag{margin-bottom:4px}
 /* ร้านของฉัน */
 .stu-shop{display:flex;align-items:center;gap:16px;padding:4px 0 18px}
 .stu-shop .stu-av{flex:none;display:grid;place-items:center;width:72px;height:72px;border-radius:20px;font:700 26px var(--kd);background:var(--surface-2) center/cover no-repeat;box-shadow:inset 0 0 0 1px var(--line)}
@@ -5908,7 +5937,7 @@ function saveSnap(){try{
   if(!U||!ME||!ME.technician||ME.__snap)return;const t=ME.technician;
   ls.set(SNAP,{uid:U.uid,at:Date.now(),staff:!!ME.staff,admin:!!ME.admin,online:DSTATS?!!DSTATS.online:!!t.online,
     tech:{id:t.id,shop:t.shop,name:t.name,avatar:t.avatar,online:t.online,vacation:t.vacation||null,test:!!t.test,identityHold:!!t.identityHold,radius:t.radius,cats:t.cats,mobile:t.mobile},
-    jobs:JOBS_OK?techJobs().slice(0,40).map(j=>({id:j.id,status:j.status,car:j.car,symptom:j.symptom,total:j.total,unread:j.unread,needsMe:j.needsMe,urgent:j.urgent,side:j.side,techId:j.techId,techName:j.techName,createdAt:j.createdAt,updatedAt:j.updatedAt})):[],
+    jobs:JOBS_OK?techJobs().slice(0,40).map(j=>({id:j.id,status:j.status,car:j.car,symptom:j.symptom,total:j.total,unread:j.unread,needsMe:j.needsMe,urgent:j.urgent,side:j.side,techId:j.techId,techName:j.techName,createdAt:j.createdAt,updatedAt:j.updatedAt,group:j.group||null,expiresAt:j.expiresAt||null,expired:!!j.expired})):[],
     near:NEAR?{radius:NEAR.radius,center:NEAR.center,posts:(NEAR.posts||[]).filter(p=>p.urgent).slice(0,10).map(p=>({id:p.id,urgent:1,mine:p.mine,car:p.car,symptom:p.symptom,dist:p.dist,createdAt:p.createdAt,cat:p.cat}))}:null})}catch(e){}}
 function dropSnap(){try{localStorage.removeItem(SNAP)}catch(e){}}
 /* วาด Studio จากภาพล่าสุดทันที (ยังไม่ต่อเน็ต) — คืน true ถ้าวาดได้ */
@@ -5940,7 +5969,15 @@ const SPAGE={queue:"jobs",find:"jobs",messages:"msgs",posts:"svc",shop:"shop",ai
 const SFIRST={jobs:"queue",msgs:"messages",svc:"posts",shop:"shop"};
 const myShop=()=>ME&&ME.technician;
 const techJobs=()=>JOBS.filter(j=>j.side==="technician"||j.side==="both");
-const liveJob=j=>!["completed","cancelled"].includes(j.status);
+/* คำขอ/ข้อเสนอที่ยังไม่ตกลงกันมีอายุ (ตรงกับหลังบ้าน): งานด่วน 3 ชม. · ร้านยังไม่เสนอราคา และข้อเสนอในประกาศ 48 ชม. · ใบเสนอราคา 7 วัน
+   หลังบ้านส่ง expiresAt/expired มาเอง — ค่าประมาณข้างล่างใช้ตอนวาดจากภาพล่าสุด หรือหลังบ้านรุ่นก่อน
+   หมดอายุ = ไม่อยู่ในรายการเลย (ไม่ขึ้นทั้ง "ต้องทำต่อ" และ "งานที่ผ่านมา") */
+const JOB_TTL=48*3600e3,QUOTE_TTL=7*864e5;
+const expAt=j=>j.status!=="requested"&&j.status!=="quoted"?0:j.expiresAt||(j.urgent?(j.createdAt||0)+URGENT_MS
+  :j.status==="requested"||j.group?(j.createdAt||0)+JOB_TTL:(j.updatedAt||j.createdAt||0)+QUOTE_TTL);
+const goneJob=j=>!!j.expired||(expAt(j)>0&&expAt(j)<=Date.now());
+const liveJob=j=>!["completed","cancelled"].includes(j.status)&&!goneJob(j);
+const urgJob=j=>!!(j.urgent&&liveJob(j)&&Date.now()-(j.createdAt||0)<URGENT_MS);
 async function dash(){
   if(MODE!=="tech")return;
   const t=myShop();
@@ -6062,7 +6099,7 @@ async function tabFind(){
   FIND_NEW=false;stuBadges();
   try{NEAR=await api("/api/tech/posts/near")}catch(e){$("fList").innerHTML=`<div class="empty"><i class="ti ti-map-pin-off"></i><b>${esc(e.message)}</b></div>`;return}
   NEAR.posts.forEach(p=>SEEN.add(p.id));ls.set("spire_seen_posts",[...SEEN].slice(-300));
-  const LP=NEAR.posts;
+  const t0=Date.now(),LP=NEAR.posts.filter(p=>p.urgent?t0-(p.createdAt||0)<URGENT_MS:!p.expiresAt||p.expiresAt>t0).sort((a,b)=>(!!b.urgent-!!a.urgent)||((b.createdAt||0)-(a.createdAt||0)));
   $("fList").innerHTML=LP.length?`<div class="sec" style="margin-top:4px"><h2><i class="ti ti-radar-2" style="color:var(--accent)"></i>${T("รถเสียรอบตัวคุณ","Breakdowns near you")}</h2><span>${LP.length}${NEAR.radius||(myShop()||{}).radius?` · ${NEAR.radius||myShop().radius} ${T("กม.","km")}`:""}</span></div>`+LP.map((p,i)=>`<button class="pc e3${p.urgent?" urg":""}" data-p="${p.id}" style="animation-delay:${i*40}ms">
       <span class="sq" style="--c1:${p.urgent?"#dc2626":p.cat&&CAT[p.cat]?CAT[p.cat].c:"#f97316"}"><i class="ti ${p.urgent?"ti-urgent":p.cat&&CAT[p.cat]?CAT[p.cat].ic:"ti-car-crash"}"></i></span>
       <div><b class="nt">${esc(p.symptom)}</b><small><span class="nt">${esc(p.car)}</span> · ${ago(p.createdAt)}${p.urgent?' · <span class="pill bad">'+T("ด่วน","Urgent")+'</span>':""}</small>${p.mine?`<small><span class="pill ${p.mine.status==="quoted"?"act":"bad"}">${p.mine.status==="quoted"?T("เสนอแล้ว ฿","Quoted ฿")+money(p.mine.total):STATUS[p.mine.status]}</span></small>`:""}</div>
@@ -6076,7 +6113,7 @@ async function tabFind(){
   L.circle([NEAR.center.lat,NEAR.center.lng],{radius:NEAR.radius*1000,color:getComputedStyle(document.documentElement).getPropertyValue("--accent").trim()||"#E8943C",weight:1.5,fillOpacity:.05}).addTo(FMAP);
   L.marker([NEAR.center.lat,NEAR.center.lng],{icon:L.divIcon({className:"",iconSize:[18,18],html:'<div class="me-dot" style="background:var(--accent)"></div>'})}).addTo(FMAP);
   const pts=[[NEAR.center.lat,NEAR.center.lng]];
-  NEAR.posts.forEach((p,i)=>{pts.push([p.lat,p.lng]);
+  LP.forEach((p,i)=>{pts.push([p.lat,p.lng]);
     /* ช่างเห็นแค่พื้นที่โดยประมาณ (วงกลม) — หมุดจริงเปิดในใบงานหลังลูกค้าเลือกและยืนยันราคาแล้ว */
     if(p.approxKm)L.circle([p.lat,p.lng],{radius:p.approxKm*1000,color:"#64748b",weight:1,fillOpacity:.08,dashArray:"4 4"}).addTo(FMAP);
     L.marker([p.lat,p.lng],{icon:L.divIcon({className:"",iconSize:[30,30],iconAnchor:[15,30],html:`<div class="ppin ${p.urgent?"u":""} ${p.mine?"done":""}" style="animation-delay:${i*50}ms"><b><i class="ti ${p.urgent?"ti-urgent":"ti-car"}"></i></b></div>`})}).on("click",()=>openPost(p)).addTo(FMAP)});
@@ -6110,38 +6147,60 @@ function openPost(p){
       })}});
 }
 
-/* ── งาน → ต้องทำต่อ ──
-   ใบงานจริงที่ยังไม่จบ: ที่รอคุณขึ้นก่อน แต่ละแถวบอกรถ อาการ และขั้นถัดไป · งานที่ผ่านมาพับไว้ล่างสุด
-   โหลดไม่สำเร็จ ≠ ไม่มีงาน — บอกตามจริงและให้ลองใหม่ โดยยังแสดงรายการเดิมไว้ */
+/* ขั้นถัดไปของใบงานแต่ละสถานะ (มุมช่าง) */
 const NEXT={requested:[T("ต้องเสนอราคา","Send a quote"),"ti-file-dollar"],quoted:[T("รอลูกค้าตอบราคา","Waiting for the customer"),"ti-hourglass"],accepted:[T("นัดแล้ว","Booked"),"ti-calendar-check"],
   enroute:[T("กำลังเดินทาง","On the way"),"ti-truck"],working:[T("กำลังซ่อม","In repair"),"ti-tool"],done:[T("รอลูกค้าตรวจรับงาน","Waiting for sign-off"),"ti-checklist"],
   disputed:[T("มีการแจ้งปัญหา","Problem reported"),"ti-flag"],completed:[T("เสร็จแล้ว","Completed"),"ti-circle-check"],cancelled:[T("ยกเลิกแล้ว","Cancelled"),"ti-circle-x"]};
+/* เวลาสั้นมุมขวาบนของการ์ด */
+const agoS=at=>{const m=Math.round((Date.now()-at)/60000);return m<1?T("เมื่อกี้","now"):m<60?T(`${m} นาที`,`${m}m`):m<1440?T(`${Math.round(m/60)} ชม.`,`${Math.round(m/60)}h`):m<2880?T("เมื่อวาน","1d"):T(`${Math.round(m/1440)} วัน`,`${Math.round(m/1440)}d`)};
+/* เหลือเวลาก่อนหมดอายุ — บอกเฉพาะตอนเหลือไม่ถึงวัน */
+const leftS=j=>{const ms=expAt(j)-Date.now();if(!expAt(j)||ms<=0||ms>864e5)return "";const m=Math.ceil(ms/60000);
+  const h=Math.floor(m/60),r=m%60;
+  return m<60?T(`หมดอายุใน ${m} นาที`,`expires in ${m} min`):h<6&&r?T(`หมดอายุใน ${h} ชม. ${r} นาที`,`expires in ${h} h ${r} min`):T(`หมดอายุใน ${Math.round(m/60)} ชม.`,`expires in ${Math.round(m/60)} h`)};
+/* การ์ดใบงาน: บรรทัดบน รถ + เวลา · กลาง อาการ (2 บรรทัด) · ล่าง ขั้นถัดไป + ราคา — มือถือไม่ต้องเบียดราคาไว้ข้างขวา */
 function jobRow(j){
-  const [lab,ic]=NEXT[j.status]||[STATUS[j.status]||j.status,"ti-car"],me=j.needsMe&&liveJob(j),u=!!(j.urgent&&liveJob(j)&&Date.now()-(j.createdAt||0)<URGENT_MS);
+  const [lab,ic]=NEXT[j.status]||[STATUS[j.status]||j.status,"ti-car"],live=liveJob(j),me=j.needsMe&&live,u=urgJob(j),left=live?leftS(j):"";
   return `<button class="stu-row${u?" urg":""}" type="button" data-j="${j.id}"><span class="stu-ri${me?" me":""}"><i class="ti ${u?"ti-urgent":ic}"></i></span>
-    <span class="stu-rb">${u?`<span class="urg-tag"><i class="ti ti-urgent"></i>${T("งานด่วน · รถเสียตอนนี้","Urgent · broken down now")}</span>`:""}<b class="nt">${esc(j.car||T("รถของลูกค้า","Customer's car"))}</b><small class="nt">${esc(j.symptom||"")}</small><span class="stu-rs${me?" me":""}">${me?T("รอคุณ · ","Your turn · "):""}${lab} · ${ago(j.updatedAt||j.createdAt)}</span></span>
-    <span class="stu-rr">${j.total?`<b>฿${money(j.total)}</b>`:""}${j.unread?`<em>${j.unread}</em>`:""}<i class="ti ti-chevron-right"></i></span></button>`;
+    <span class="stu-rb"><span class="stu-rt"><b class="nt">${esc(j.car||T("รถของลูกค้า","Customer's car"))}</b><time>${agoS(j.updatedAt||j.createdAt)}</time>${j.unread?`<em>${j.unread}</em>`:""}</span>
+      ${j.symptom?`<small class="nt">${esc(j.symptom)}</small>`:""}
+      <span class="stu-rf"><span class="stu-rs${me?" me":""}">${me?T("รอคุณ · ","Your turn · "):""}${lab}${left?` · <i>${left}</i>`:""}</span>${j.total?`<b>฿${money(j.total)}</b>`:""}</span></span></button>`;
 }
 const errBar=(msg,id)=>`<p class="stu-err"><i class="ti ti-cloud-off"></i><span>${T("โหลดข้อมูลล่าสุดไม่สำเร็จ","Couldn't load the latest data")}${msg?` — ${esc(msg)}`:""}</span><button class="lx-gh" type="button" id="${id}">${T("ลองใหม่","Retry")}</button></p>`;
+/* ── งาน → ต้องทำต่อ ──
+   แบ่ง 3 กลุ่มชัด ๆ: งานด่วน (แดง) · รอคุณ · รอลูกค้า — ในแต่ละกลุ่มใหม่สุดอยู่บน · ที่หมดอายุไม่แสดงเลย
+   โหลดไม่สำเร็จ ≠ ไม่มีงาน — บอกตามจริงและให้ลองใหม่ โดยยังแสดงรายการเดิมไว้ */
+let EXP_T=0;
 function tabQueue(){
-  const B=$("dBody"),all=techJobs();
-  /* งานด่วนที่ยังรอคุณขึ้นบนสุดเสมอ แล้วค่อยงานที่รอคุณ */
-  const hot=j=>!!(j.urgent&&j.needsMe&&Date.now()-(j.createdAt||0)<URGENT_MS);
-  const live=all.filter(liveJob).sort((a,b)=>(hot(b)-hot(a))||(b.needsMe-a.needsMe)||((b.updatedAt||b.createdAt)-(a.updatedAt||a.createdAt)));
-  const past=all.filter(j=>!liveJob(j)).sort((a,b)=>(b.updatedAt||b.createdAt)-(a.updatedAt||a.createdAt)).slice(0,20);
+  const B=$("dBody"),all=techJobs(),t0=Date.now();
   const err=JOBS_ERR?errBar(JOBS_ERR,"stuRetry"):"";
+  clearTimeout(EXP_T);
   if(!JOBS_OK&&!JOBS_ERR){B.innerHTML='<div class="skel"></div><div class="skel" style="margin-top:10px"></div>';return}
-  const urgNear=((NEAR&&NEAR.posts)||[]).filter(p=>p.urgent&&!p.mine);
-  const urgRows=urgNear.map(p=>`<button class="stu-row urg" type="button" data-up="${esc(p.id)}"><span class="stu-ri"><i class="ti ti-urgent"></i></span>
-    <span class="stu-rb"><span class="urg-tag"><i class="ti ti-urgent"></i>${T("งานด่วนใกล้คุณ · ยังไม่มีใครรับ","Urgent near you · nobody has taken it")}</span><b class="nt">${esc(p.car||"")}</b><small class="nt">${esc(p.symptom||"")}</small><span class="stu-rs me">${T("เสนอราคาเลย","Send a quote")} · ${p.dist} ${T("กม.","km")} · ${ago(p.createdAt)}</span></span>
-    <span class="stu-rr"><i class="ti ti-chevron-right"></i></span></button>`).join("");
-  B.innerHTML=err+(urgRows?`<section class="stu-sec" style="margin-top:8px">${urgRows}</section>`:"")+(live.length?`<section class="stu-sec" style="margin-top:8px">${live.map(jobRow).join("")}</section>`
-    :JOBS_ERR&&!JOBS_OK?"":`<div class="stu-empty"><i class="ti ti-clipboard-check"></i><b>${T("ยังไม่มีงานที่ต้องดำเนินการ","Nothing to do right now")}</b><p>${T("เมื่อมีคำขอใหม่ รายการจะแสดงที่นี่","New requests will show up here")}</p><button class="lx-cta" type="button" id="stuFind">${T("หางานใกล้ฉัน","Find work nearby")}</button></div>`)
-    +(past.length?`<details class="stu-past"><summary>${T(`งานที่ผ่านมา (${past.length})`,`Past jobs (${past.length})`)}<i class="ti ti-chevron-down"></i></summary>${past.map(jobRow).join("")}</details>`:"");
+  const at=j=>j.updatedAt||j.createdAt||0,newest=(a,b)=>at(b)-at(a);
+  const live=all.filter(liveJob);
+  /* งานด่วนรอบตัวที่ยังไม่มีใครรับ (ไม่เกิน 3 ชม.) รวมกับใบงานด่วนของร้าน เรียงใหม่สุดบน */
+  const urgNear=((NEAR&&NEAR.posts)||[]).filter(p=>p.urgent&&!p.mine&&t0-(p.createdAt||0)<URGENT_MS);
+  const urg=[...urgNear.map(p=>({p,at:p.createdAt||0})),...live.filter(urgJob).map(j=>({j,at:at(j)}))].sort((a,b)=>b.at-a.at);
+  const mine=live.filter(j=>!urgJob(j)&&(j.needsMe||j.status==="disputed")).sort(newest);
+  const wait=live.filter(j=>!urgJob(j)&&!(j.needsMe||j.status==="disputed")).sort(newest);
+  const past=all.filter(j=>!liveJob(j)&&!goneJob(j)).sort(newest).slice(0,20);
+  const grp=(cls,title,list)=>`<section class="stu-grp${cls}"><h2 class="stu-gh">${title}<em>${list.length}</em></h2><div class="stu-cards">${list.join("")}</div></section>`;
+  const urgRow=p=>`<button class="stu-row urg" type="button" data-up="${esc(p.id)}"><span class="stu-ri"><i class="ti ti-urgent"></i></span>
+    <span class="stu-rb"><span class="urg-tag"><i class="ti ti-map-pin"></i>${T("ใกล้คุณ · ยังไม่มีใครรับ","Near you · nobody has taken it")}</span>
+      <span class="stu-rt"><b class="nt">${esc(p.car||"")}</b><time>${agoS(p.createdAt)}</time></span>${p.symptom?`<small class="nt">${esc(p.symptom)}</small>`:""}
+      <span class="stu-rf"><span class="stu-rs me">${T("เสนอราคาเลย","Send a quote")} · ${p.dist} ${T("กม.","km")}</span></span></span></button>`;
+  const any=urg.length||mine.length||wait.length;
+  B.innerHTML=err+(urg.length?grp(" hot",T("งานด่วน · รถเสียตอนนี้","Urgent · broken down now"),urg.map(x=>x.p?urgRow(x.p):jobRow(x.j))):"")
+    +(mine.length?grp("",T("รอคุณ","Your turn"),mine.map(jobRow)):"")
+    +(wait.length?grp("",T("รอลูกค้า","Waiting for the customer"),wait.map(jobRow)):"")
+    +(any||JOBS_ERR&&!JOBS_OK?"":`<div class="stu-empty"><i class="ti ti-clipboard-check"></i><b>${T("ยังไม่มีงานที่ต้องดำเนินการ","Nothing to do right now")}</b><p>${T("เมื่อมีคำขอใหม่ รายการจะแสดงที่นี่","New requests will show up here")}</p><button class="lx-cta" type="button" id="stuFind">${T("หางานใกล้ฉัน","Find work nearby")}</button></div>`)
+    +(past.length?`<details class="stu-past"><summary>${T(`งานที่ผ่านมา (${past.length})`,`Past jobs (${past.length})`)}<i class="ti ti-chevron-down"></i></summary><div class="stu-cards">${past.map(jobRow).join("")}</div></details>`:"");
   B.querySelectorAll("[data-j]").forEach(x=>x.onclick=()=>openJob(x.dataset.j,true));
   B.querySelectorAll("[data-up]").forEach(x=>x.onclick=()=>openPost(urgNear.find(p=>p.id===x.dataset.up)));
   if($("stuFind"))$("stuFind").onclick=()=>setTab2("find");
   if($("stuRetry"))$("stuRetry").onclick=e=>busy(e.currentTarget,refreshJobs);
+  /* ใบที่ใกล้หมดอายุ/งานด่วนที่ใกล้ครบ 3 ชม.: วาดใหม่ตอนถึงเวลา ไม่ต้องรอข้อมูลรอบถัดไป */
+  const nx=Math.min(...live.map(expAt).filter(e=>e>t0),...live.filter(urgJob).map(j=>(j.createdAt||0)+URGENT_MS),...urgNear.map(p=>(p.createdAt||0)+URGENT_MS));
+  if(nx<Infinity)EXP_T=setTimeout(()=>{if(MODE==="tech"&&DT==="queue"&&!$("bs").classList.contains("on"))drawTab()},Math.min(nx-t0+500,2e9));
 }
 /* ── ข้อความ: ลูกค้าทักถาม (ยังไม่ใช่ใบงาน) + แชตในใบงาน ── */
 function stuThRow(h){
@@ -6312,7 +6371,7 @@ function startAlerts(){
       if(uk!==URG_KEY){URG_KEY=uk;if(MODE==="tech"&&DT==="queue"&&!$("bs").classList.contains("on"))drawTab()}
       firstNear=false}catch(e){}
     /* งานด่วนที่ลูกค้าส่งตรงถึงร้าน (เรียกช่างด่วน): ดึงใบงานใหม่ทุกรอบ เจอใบด่วนที่ยังไม่เคยเห็น = ขึ้นแดงบนสุด (+ เสียงเมื่อเปิดรับงาน) */
-    try{await refreshJobs();const hot=techJobs().filter(j=>j.urgent&&j.status==="requested"&&!SEEN_URG.has(j.id));
+    try{await refreshJobs();const hot=techJobs().filter(j=>j.status==="requested"&&urgJob(j)&&!SEEN_URG.has(j.id));
       if(hot.length){hot.forEach(j=>SEEN_URG.add(j.id));ls.set("spire_seen_urgent",[...SEEN_URG].slice(-200));
         if(!firstUrg){buzz([250,90,250,90,250]);
           toast(T("งานด่วน! ลูกค้ารถเสียตอนนี้ — เปิดดูในงานของฉัน","Urgent! A customer is broken down now — see My jobs"),"ti-urgent")}

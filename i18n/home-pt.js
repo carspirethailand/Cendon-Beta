@@ -2,6 +2,15 @@
    กุญแจคือข้อความอังกฤษใน T("ไทย","English") และพจนานุกรม EN ของหน้า · {0} {1} = ค่าที่แทนตอนแสดงผล
    เพิ่มข้อความใหม่ในหน้า → เพิ่มคำแปลที่นี่ทุกภาษา (เทสต์ i18n-home ตรวจความครบ) */
 window.CENDON_L10N={lang:"pt",t:{
+"{0}m":"{0} min",
+"{0}h":"{0} h",
+"1d":"ontem",
+"{0}d":"{0} d",
+"expires in {0} min":"expira em {0} min",
+"expires in {0} h {1} min":"expira em {0} h {1} min",
+"expires in {0} h":"expira em {0} h",
+"Near you · nobody has taken it":"Perto de você · ninguém aceitou ainda",
+"Your turn":"Sua vez",
 "Urgent near you · nobody has taken it":"Urgente perto de você · ninguém pegou ainda",
 "Urgent! A breakdown near you — see My jobs":"Urgente! Uma pane perto de você — veja Meus trabalhos",
 "Posted — {0} nearby shop{1} can see it":"Publicado — {0} oficinas próximas podem ver",

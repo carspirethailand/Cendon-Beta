@@ -77,6 +77,12 @@ const sections=[
           ['<b>เรียกช่างด่วน</b> — รถเสียกลางทาง ส่งถึงร้านที่ออกนอกสถานที่ใกล้สุดพร้อมกัน (ถ้าแถวนั้นยังไม่มี ระบบประกาศงานด่วนให้ช่างรอบตัวเห็นแทน) ช่างเห็นเป็นงานสีแดงบนสุด','<b>Urgent call-out</b> — broken down? It goes to the nearest mobile shops at once (if none are nearby, it’s posted as an urgent job for every mechanic around you), and mechanics see it in red at the top'],
           ['<b>ประกาศหาช่าง</b> — โพสต์งาน ให้ช่างแถวนั้นเสนอราคาเข้ามา','<b>Post a job</b> — publish it and let nearby mechanics send quotes'],
           ['<b>ทักช่าง</b> — ถามก่อนได้โดยยังไม่ต้องจอง','<b>Message a mechanic</b> — ask questions before booking anything']]))+
+    Q('คำขอราคาและประกาศอยู่ได้นานแค่ไหน','How long do requests and posts stay open?',
+      UL([['<b>เรียกช่างด่วน</b> — 3 ชั่วโมง','<b>Urgent call-out</b> — 3 hours'],
+          ['<b>คำขอที่ร้านยังไม่เสนอราคา</b> และ<b>ประกาศหาช่าง</b> — 48 ชั่วโมง (ราคาที่ช่างเสนอในประกาศหมดพร้อมประกาศ)','<b>A request the shop hasn’t priced yet</b> and a <b>job post</b> — 48 hours (quotes on a post end with the post)'],
+          ['<b>ราคาที่ร้านเสนอมาแล้ว</b> แต่คุณยังไม่กดยืนยัน — 7 วันนับจากที่ร้านเสนอล่าสุด','<b>A quote you haven’t accepted</b> — 7 days from the shop’s latest quote']])+
+      P('หมดเวลาแล้วระบบยกเลิกให้อัตโนมัติทั้งสองฝ่าย ในใบงานบอกเหตุผลไว้ ส่งคำขอใหม่ได้ทุกเมื่อ · งานที่ยืนยันราคาแล้วไม่มีวันหมดอายุ',
+        'When time runs out the system cancels it for both sides and the job shows why. You can send a new request anytime · Jobs with an accepted price never expire.'))+
     Q('ช่างเห็นเบอร์และที่อยู่ของฉันตอนไหน','When does a mechanic see my phone and address?',
       P('<b>หลังคุณกดยืนยันราคาเท่านั้น</b> ก่อนหน้านั้นช่างเห็นแค่รถ อาการ พื้นที่ และตำแหน่งโดยประมาณ (รัศมีราว 1.6 กม.) และในการ์ดแจ้งเตือน LINE ไม่มีเบอร์หรือที่อยู่เลย',
         '<b>Only after you accept their price.</b> Before that they see the car, the symptom, the area and an approximate location (about 1.6 km). LINE notification cards never include your phone or address.'))+
@@ -115,6 +121,9 @@ const sections=[
     Q('งานด่วนใน Studio','Urgent jobs in Studio',
       P('ลูกค้าที่รถเสียตอนนี้และกด <b>เรียกช่างด่วน</b> จะขึ้นเป็นงานสีแดงบนสุดใน <b>งาน → ต้องทำต่อ</b> เองภายในไม่กี่วินาทีระหว่างที่เปิด Studio ไว้ ไม่ต้องรีเฟรช — ทั้งงานที่ส่งตรงถึงร้านคุณ และงานด่วนที่ประกาศในรัศมีรับงานของคุณ (ทุกหมวด) · ตั้งสถานะ <b>เปิดรับงาน</b> = มีเสียงเตือนด้วย · เชื่อม LINE ไว้ = ได้การ์ดแจ้งงานด่วนทาง LINE แม้ไม่ได้เปิดแอป · ลูกค้าเลือกร้านอื่นแล้ว หรือผ่านไป 3 ชั่วโมง งานด่วนหายไปเอง',
         'When a broken-down customer taps <b>Urgent call-out</b>, the job appears in red at the top of <b>Jobs → To do</b> within seconds while Studio is open — no refresh needed — whether it was sent to your shop or posted in your radius (any category). · Set <b>Taking jobs</b> to also get an alert sound · Link LINE to get urgent jobs on LINE even when the app is closed · Once the customer picks another shop, or after 3 hours, the urgent job disappears.'))+
+    Q('หน้างานใน Studio เรียงอย่างไร','How is the Jobs list in Studio arranged?',
+      P('<b>ต้องทำต่อ</b> แบ่งเป็น 3 กลุ่ม: <b>งานด่วน</b> (สีแดง) · <b>รอคุณ</b> (ต้องเสนอราคา นัดแล้ว กำลังไป กำลังซ่อม) · <b>รอลูกค้า</b> (รอตอบราคา รอตรวจรับงาน) ในแต่ละกลุ่มงานที่ขยับล่าสุดอยู่บนสุด · คำขอที่ใกล้หมดอายุบอกเวลาที่เหลือในการ์ด หมดอายุแล้วหายจากรายการเอง ไม่ค้างใน <b>งานที่ผ่านมา</b> (งานด่วน 3 ชม. · คำขอที่ยังไม่เสนอราคาและประกาศ 48 ชม. · ราคาที่ลูกค้ายังไม่ยืนยัน 7 วัน)',
+        '<b>To do</b> is split into 3 groups: <b>Urgent</b> (red) · <b>Your turn</b> (quote, booked, on the way, in repair) · <b>Waiting for the customer</b> (quote reply, sign-off). In each group the most recently active job is on top · Requests close to expiring show the time left on the card; expired ones leave the list on their own and don’t pile up under <b>Past jobs</b> (urgent 3 h · unquoted requests and posts 48 h · quotes the customer hasn’t accepted 7 days).'))+
     Q('สปอนเซอร์บริการคืออะไร เสียเงินไหม','What is sponsoring a service? Does it cost anything?',
       P('ทำให้บริการขึ้นต้นรายการ มีป้าย “สปอนเซอร์” บอกลูกค้าเสมอ (ไม่เกิน 2 บริการต่อแถว) ตอนนี้อยู่ในช่วง<b>ทดลองฟรี</b> เลือก 3, 7 หรือ 14 วัน หยุดได้ทุกเมื่อ ถ้าอนาคตมีค่าใช้จ่าย จะแสดงราคาก่อนเสมอและไม่ต่ออายุอัตโนมัติ',
         'It puts your service near the top of a list, always with a “Sponsored” label (max 2 per row). It’s in a <b>free trial</b> right now: 3, 7 or 14 days, stop anytime. If it ever costs money, you’ll see the price first and it won’t auto-renew.'))+

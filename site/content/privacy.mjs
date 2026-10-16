@@ -3,7 +3,7 @@
    เทสต์ test/site.test.mjs ตรวจว่ามีชื่อผู้ให้บริการครบทุกตัว */
 import {L,P,UL,TABLE,NOTE,I,docBody,EMAIL} from '../layout.mjs';
 
-export const VERSION='1.5';
+export const VERSION='1.6';
 export const EFFECTIVE=['16 ตุลาคม 2569','16 October 2026'];
 
 /* ผู้ให้บริการภายนอกทุกตัวที่ได้รับข้อมูล — ชื่อในคอลัมน์แรกต้องตรงกับรายการใน test/site.test.mjs */
@@ -205,6 +205,7 @@ const sections=[
     P('เมื่อระบบเปลี่ยนวิธีเก็บหรือใช้ข้อมูล เราจะแก้หน้านี้ให้ตรงทันที เปลี่ยนเลขเวอร์ชันและวันที่ด้านบน และถ้าเป็นการเปลี่ยนสาระสำคัญ จะแจ้งในแอปก่อนมีผล การเปลี่ยนที่ต้องได้รับความยินยอมใหม่ เราจะขอความยินยอมใหม่ก่อน',
       'Whenever the way we collect or use data changes, we update this page straight away, with a new version number and date at the top. Material changes are announced in the app before they take effect, and anything that needs fresh consent will ask for it first.')+
     UL([
+      ['<b>1.6 · 16 ต.ค. 2569</b> — ข้อกำหนด: คำขอ/ประกาศ/ใบเสนอราคาที่ยังไม่ตกลงกันมีอายุ (ด่วน 3 ชม. · 48 ชม. · 7 วัน) หมดแล้วระบบยกเลิกให้ ใบงานที่ยกเลิกยังอยู่ในประวัติของคุณตามเดิม ไม่มีการเก็บข้อมูลเพิ่ม','<b>1.6 · 16 Oct 2026</b> — terms: requests, posts and quotes that aren’t agreed expire (urgent 3 h · 48 h · 7 days) and the system cancels them; cancelled jobs stay in your history as before, no extra data collected'],
       ['<b>1.5 · 16 ต.ค. 2569</b> — สแกนห้องเครื่องเป็นแบบสดบนกล้อง (ส่งภาพเฉพาะตอนภาพเปลี่ยน) · การโทรคุยต่อสายต่อได้เมื่อสัญญาณสะดุด (Google เก็บสถานะสายชั่วคราว)','<b>1.5 · 16 Oct 2026</b> — the engine-bay scan is now live on the camera (pictures sent only when the view changes) · calls can resume after a drop (Google briefly keeps the call state)'],
       ['<b>1.4 · 16 ต.ค. 2569</b> — ฟีเจอร์ใหม่: ช่างกำลังมา (ตำแหน่งช่างระหว่างเดินทาง) · ฟังเสียงเครื่องและสแกนห้องเครื่องระหว่างโทร · โหมดอุบัติเหตุ · Car Passport · Cendon Wrapped · ปฏิทินค่าใช้จ่าย · สมุดรถซิงก์ตามบัญชี','<b>1.4 · 16 Oct 2026</b> — new features: live mechanic tracking while on the way · engine listening and engine-bay scan during calls · accident mode · Car Passport · Cendon Wrapped · cost calendar · logbook synced to your account'],
       ['<b>1.3 · 16 ต.ค. 2569</b> — ระบุว่า Studio เก็บรายการงานล่าสุดไว้ในเครื่องช่างเพื่อให้เปิดได้ทันที (ไม่มีข้อมูลติดต่อลูกค้า) · ประกาศหาช่างจากทุกบัญชีเป็นงานจริง','<b>1.3 · 16 Oct 2026</b> — notes that Studio keeps the latest job list on the mechanic’s device so it opens instantly (no customer contact details) · job posts from every account are real jobs'],

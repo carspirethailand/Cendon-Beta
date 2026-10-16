@@ -205,3 +205,33 @@ test('resumption handles are retained without discarding transcripts in the same
   const f=fixture();f.run('handleLiveMsg({sessionResumptionUpdate:{newHandle:"unit_resume_123",resumable:true},serverContent:{inputTranscription:{text:"คำถามใหม่"}}})');
   assert.equal(f.run('liveHandle'),'unit_resume_123');assert.equal(f.run('liveUserText'),'คำถามใหม่');
 });
+
+function connectedChat(){
+  const f=fixture();f.run('auth.currentUser.uid="call-owner";callOwner="call-owner";callActive=true;callWS=new WebSocket("fixture");callWS.readyState=1;window.chatPackets=[];callWS.send=v=>window.chatPackets.push(JSON.parse(v));');return f;
+}
+test('typed chat stays on the exact existing socket, keeps prior conversation and never requests another mic or token',async()=>{
+  const f=connectedChat();f.run('messages.push({role:"user",text:"เสียงดังตรงล้อ"});handleLiveMsg({serverContent:{outputTranscription:{text:"จอดก่อนครับ"}}});');
+  await f.run('sendChat({text:"ส่งรูปเพิ่มได้ไหม"})');
+  assert.equal(f.sockets.length,1);assert.equal(f.micRequests,0);assert.equal(f.requests.length,0);
+  assert.equal(f.sandbox.window.chatPackets[0].clientContent.turnComplete,true);assert.equal(f.run('messages[0].text'),'เสียงดังตรงล้อ');assert.equal(f.run('messages[1].text'),'จอดก่อนครับ');assert.equal(f.run('messages[2].text'),'ส่งรูปเพิ่มได้ไหม');
+});
+test('attachment analysis uses the authenticated pipeline then adds an untrusted summary to the same Live conversation, not raw file history',async()=>{
+  const f=connectedChat(),calls=[];f.sandbox.fetch=async(url,init)=>{calls.push({url,init});return{ok:true,json:async()=>({data:{summary:'Only the cover is visible',limitations:['Hidden coil not identified']}})}};
+  await f.run('sendChat({text:"ตรงไหนครับ",attachments:[{mime:"application/pdf",b64:"JVBERi0xLjc="}],names:[{name:"manual.pdf"}]})');
+  assert.equal(calls[0].url,'https://unit-test.invalid/api/features/analyze');assert.equal(JSON.parse(calls[0].init.body).tool,'call_context');assert.match(calls[0].init.headers.Authorization,/Bearer /);
+  const packet=f.sandbox.window.chatPackets[0];assert.match(packet.clientContent.turns[0].parts[0].text,/untrusted data/);assert.match(packet.clientContent.turns[0].parts[0].text,/Hidden coil/);
+  assert.ok(!f.run('JSON.stringify(messages)').includes('JVBERi0xLjc='));assert.match(f.run('messages[0].referenceSummary'),/Only the cover/);assert.equal(f.sockets.length,1);assert.equal(f.micRequests,0);
+});
+test('hangup aborts attachment extraction and ignores a late result; account changes cannot send a previous owner reference',async()=>{
+  const f=connectedChat(),p=deferred();let signal;f.sandbox.fetch=async(_u,o)=>{signal=o.signal;return p.promise};const sending=f.run('sendChat({attachments:[{mime:"image/jpeg",b64:"aGVsbG8="}]})');await settle();f.run('endCall()');assert.equal(signal.aborted,true);
+  p.resolve({ok:true,json:async()=>({data:{summary:'LATE PRIVATE CONTENT',limitations:[]}})});await assert.rejects(sending);assert.equal(f.sandbox.window.chatPackets.length,0);assert.ok(!f.run('JSON.stringify(messages)').includes('PRIVATE'));
+  const g=connectedChat();g.run('auth.currentUser.uid="other-owner"');await assert.rejects(g.run('sendChat({text:"wrong owner"})'));assert.equal(g.sandbox.window.chatPackets.length,0);
+});
+test('a stalled reference identity request times out without sending file bytes or opening a second call',async()=>{
+  const f=connectedChat(),p=deferred();f.sandbox.auth.currentUser.getIdToken=()=>p.promise;const sending=f.run('sendChat({attachments:[{mime:"image/jpeg",b64:"aGVsbG8="}]})');await settle();const timer=[...f.timers.values()].find(x=>x.ms===20000);assert.ok(timer);timer.fn();await assert.rejects(sending,/cancelled/);assert.equal(f.requests.length,0);assert.equal(f.sockets.length,1);
+});
+test('unsafe files are rejected before network access and an interrupted speech turn is committed only once',async()=>{
+  const f=connectedChat();await assert.rejects(f.run('sendChat({attachments:[{mime:"text/html",b64:"aGVsbG8="}]})'),/Invalid/);assert.equal(f.requests.length,0);
+  f.run('handleLiveMsg({serverContent:{inputTranscription:{text:"คำถาม"},outputTranscription:{text:"คำตอบบางส่วน"}}});handleLiveMsg({serverContent:{interrupted:true}});handleLiveMsg({serverContent:{turnComplete:true}});');
+  assert.equal(f.run('messages.length'),2);assert.equal(f.run('messages[1].interrupted'),true);f.run('endCall()');assert.equal(f.run('messages.length'),2);
+});

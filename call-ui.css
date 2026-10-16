@@ -13,6 +13,28 @@
 .hearth .hh-cap{margin:0;overflow:hidden;font-family:inherit}.hearth.light{color:#302922}
 .hearth.light .hh-name,.hearth.light .hh-btn:not(.end){background:rgba(48,41,34,.06);color:#302922}
 .cv-min{width:38px;height:38px;display:grid;place-items:center;border:0;border-radius:50%;background:transparent;color:inherit;font-size:22px;cursor:pointer}.cv-min[hidden]{display:none}
+.hearth.cv-chat-mode{visibility:hidden;pointer-events:none}
+.hearth .hh-stage{touch-action:none;transition:transform .2s ease-out}
+.cc-panel{--cc-bg:#191714;--cc-ink:#f3ece4;--cc-muted:#aea49b;--cc-line:#ffffff16;--cc-user:#2c2721;position:fixed;inset:0;z-index:1401;display:grid;grid-template-rows:auto minmax(0,1fr) auto;background:var(--cc-bg);color:var(--cc-ink);font-family:inherit;box-sizing:border-box;isolation:isolate}
+.cc-panel.cc-light{--cc-bg:#faf8f3;--cc-ink:#302b25;--cc-muted:#847c72;--cc-line:#35261915;--cc-user:#eee9df}
+.cc-panel[hidden],.cc-ambient[hidden]{display:none}
+.cc-ambient{position:fixed;inset:0;width:100%;height:100%;z-index:1402;pointer-events:none;filter:blur(4px)}
+.cc-head{display:flex;align-items:center;padding:calc(16px + env(safe-area-inset-top)) max(22px,calc((100vw - 740px)/2)) 14px;border-bottom:1px solid var(--cc-line);min-height:54px;box-sizing:content-box}
+.cc-head b{display:block;font-size:18px;font-weight:600;letter-spacing:-.03em}.cc-status{display:block;margin-top:3px;font-size:11px;color:var(--cc-muted)}
+.cc-thread{min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;padding:26px max(22px,calc((100vw - 740px)/2)) 18px;margin:0;max-width:none;width:auto;box-sizing:border-box}
+.cc-thread::-webkit-scrollbar{display:none}.cc-intro{max-width:34em;margin:8px auto 30px;color:var(--cc-muted);font-size:13px;line-height:1.7;text-align:center}
+.cc-messages{display:flex;flex-direction:column;gap:22px}.cc-message{max-width:92%;min-width:0}.cc-message small{display:block;margin-bottom:5px;font-size:10px;letter-spacing:.02em;color:var(--cc-muted)}
+.cc-message p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:15px;line-height:1.8;color:inherit}.cc-user{align-self:flex-end;max-width:86%;padding:12px 17px;background:var(--cc-user);border-radius:20px 20px 6px 20px}.cc-ai{align-self:flex-start;padding:2px 0}
+.cc-live{white-space:pre-wrap;overflow-wrap:anywhere;color:var(--cc-muted);font-size:13px;line-height:1.7;margin:20px 0 0}.cc-live:empty{display:none}
+.cc-compose{display:grid;gap:8px;margin:0;padding:10px max(16px,calc((100vw - 752px)/2)) calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--cc-line);background:var(--cc-bg)}
+.cc-call-controls{display:flex;justify-content:center;gap:14px;margin-bottom:5px}.cc-panel button{font:inherit;color:inherit;cursor:pointer}.cc-call-controls button{border:0;background:transparent;font-size:11px;min-height:32px;padding:4px 10px;color:var(--cc-muted)}.cc-call-controls .cc-back{font-size:0}.cc-call-controls .cc-back::after{content:'⌃ ' attr(aria-label);font-size:11px}.cc-call-controls .cc-end{color:#cc7b61}
+.cc-row{display:flex;gap:8px;align-items:flex-end;border:1px solid var(--cc-line);border-radius:24px;padding:7px;background:var(--cc-user)}
+.cc-panel textarea{font:inherit;font-size:15px;line-height:1.5;min-height:28px;max-height:132px;width:100%;resize:none;outline:0;border:0;border-radius:0;color:var(--cc-ink);background:transparent;padding:8px 0;box-shadow:none;box-sizing:content-box}.cc-panel textarea::placeholder{color:var(--cc-muted)}
+.cc-row button{flex:none;width:40px;height:40px;border:0;border-radius:50%;display:grid;place-items:center;font-size:24px;padding:0;background:transparent}.cc-row .cc-send{background:var(--cc-ink);color:var(--cc-bg)}.cc-send:disabled{opacity:.3;cursor:default}
+.cc-files{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}.cc-files:empty{display:none}.cc-files button{flex:none;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;padding:6px 10px;border:1px solid var(--cc-line);border-radius:8px;background:transparent}
+.cc-privacy{color:var(--cc-muted);font-size:9px;line-height:1.5;text-align:center}.cc-error{margin:0;font-size:12px;line-height:1.5;color:#c68069}.cc-error[hidden]{display:none}
+.cc-results .cv-results{position:static;transform:none;max-width:none;max-height:none;width:auto;margin-top:20px;background:var(--cc-user);color:var(--cc-ink);border-color:var(--cc-line);box-shadow:none}.cc-panel :focus-visible{outline:2px solid #c69867;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){.hearth .hh-stage{transition:none}.cc-ambient{filter:none}}
 .cv-capability{position:absolute;top:calc(63px + env(safe-area-inset-top));left:20px;right:20px;font-size:11px;line-height:1.4;text-align:center;opacity:.6;z-index:4;margin:0}.cv-capability[hidden]{display:none}
 /* Full-frame camera and voice edges. Keep all existing call actions. */
 .hearth{background:#17120f!important;padding:calc(12px + env(safe-area-inset-top)) 16px calc(12px + env(safe-area-inset-bottom))!important}
@@ -249,6 +271,8 @@ body:has(#callUI.show) #cxa-fab{display:none!important}
 .lv-safety{margin:0;text-align:center;font:500 11px/1.4 Kanit,system-ui,sans-serif;color:#ffe2ac;text-shadow:0 1px 4px #000}
 .lv-legend{display:flex;align-items:center;justify-content:center;gap:6px;font:400 11px/1.35 Kanit,system-ui,sans-serif;color:#f4ece5;text-shadow:0 1px 3px #000}
 .lv-legend i{width:9px;height:9px;border:1.5px solid #ff514b;border-radius:2px;flex:none}
+.lv-cover{margin:0;padding:9px 12px;border-radius:12px;background:#1a1816e6;color:#e5d5c7;font:400 12px/1.65 Kanit,system-ui,sans-serif;max-height:84px;overflow-y:auto;overscroll-behavior:contain}.lv-cover[hidden]{display:none}
+.lv-chat{border:1px solid #ffffff29;border-radius:20px;min-height:38px;padding:6px 13px;background:#15131188;color:#fff;font:inherit;font-size:12px}
 .lv-det>small{color:#c6bcb6;font:400 11px/1.4 Kanit,system-ui,sans-serif}
 .lv-det{max-height:min(42dvh,290px);overflow-y:auto;overscroll-behavior:contain}
 .lv-box:focus-visible,.lv-chip:focus-visible,.lv-b:focus-visible{outline:3px solid #fff;outline-offset:5px}

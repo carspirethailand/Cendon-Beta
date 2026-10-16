@@ -1381,4 +1381,5 @@ window.CENDON_L10N={lang:"zh",t:{
 "Nothing yet — quotes, accepted jobs and messages show up here":"暂无通知——报价、接单和消息会显示在这里",
 "All my jobs":"我的全部工单",
 "Device notifications are on":"设备通知已开启"
+,"Voice is loading. Please try again.":"语音正在加载，请重试。"
 }};

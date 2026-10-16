@@ -3,9 +3,10 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 const page=readFileSync(new URL('../chat.html',import.meta.url),'utf8');
-const begin=page.indexOf('/* ===== LIVE CALL — Gemini Live API (ephemeral token)');
-const end=page.indexOf('/* ===== INIT ===== */',begin);
-const source=page.slice(begin,end);
+const transport=readFileSync(new URL('../call-session.js',import.meta.url),'utf8');
+const begin=transport.indexOf('/* ===== LIVE CALL — Gemini Live API (ephemeral token)');
+const end=transport.indexOf('  function dispose(){',begin);
+const source=transport.slice(begin,end);
 function deferred(){let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b;});return {promise,resolve,reject};}
 async function settle(){for(let i=0;i<12;i++)await Promise.resolve();}
 function fixture({permission,identity,token,worklet}={}){
@@ -34,7 +35,7 @@ function fixture({permission,identity,token,worklet}={}){
   const auth={currentUser:{getIdToken:()=>identity?.promise||Promise.resolve('unit-test-identity')}};
   const navigator={mediaDevices:{getUserMedia(){micRequests++;return permission?.promise||Promise.resolve(stream);}}};
   const window={AudioContext:Context,WebSocket:Socket,CendonCallSounds:{play:kind=>cues.push(kind)},spireTheme:()=>'dark'};
-  const sandbox={window,navigator,auth,useFb:true,lang:'th',BACKEND_URL:'https://unit-test.invalid',
+  const sandbox={window,navigator,auth,host:{},useFb:true,lang:'th',BACKEND_URL:'https://unit-test.invalid',
     $:element,Image:class{},WebSocket:Socket,AudioWorkletNode:class{constructor(ctx){Object.assign(this,audioNode());this.context=ctx;}},Blob,AbortController,
     URL:{createObjectURL:()=> 'blob:unit-test-worklet',revokeObjectURL(){}},Date,performance:{now:()=>0},
     requestAnimationFrame:()=>1,sysPrompt:()=>'',tr:k=>k,toast:message=>toasts.push(message),
@@ -155,7 +156,7 @@ test('digital zoom clamps values, mirrors front camera, and resets controls on s
 test('voice UI uses full-frame camera, bottom controls and waveform instead of orb assets',()=>{
   const css=readFileSync(new URL('../call-ui.css',import.meta.url),'utf8');
   assert.match(css,/width:100%!important;height:100%!important;border-radius:0/);
-  assert.match(css,/\.hh-ctrl\{position:absolute;bottom:/);assert.match(css,/\.think-box\{display:none!important\}/);
+  assert.match(css,/\.hh-ctrl\{[^}]*position:absolute;[^}]*bottom:/);assert.match(css,/\.hh-ctrl\{[^}]*display:flex/);assert.match(css,/\.think-box\{display:none!important\}/);
   assert.ok(!source.includes('im.src="call-orb.png"'));assert.match(source,/getFloatTimeDomainData/);
   assert.match(source,/\.drawImage\(vd,\(vd.videoWidth-sw\)\/2/);
 });
@@ -167,4 +168,40 @@ test('a later text-only response remains eligible for recovery even after earlie
   const f=fixture();f.run('liveGotAudio=true;orb.wait=false');
   f.run(`handleLiveMsg({serverContent:{inputTranscription:{text:'คำถามใหม่'}}});handleLiveMsg({serverContent:{turnComplete:true,outputTranscription:{text:'ไม่มีเสียง'}}})`);
   assert.ok(f.run('livePendingAt')>0);assert.equal(f.run('liveTurnAudio'),false);
+});
+test('Live function response uses toolResponse envelope, runs each ID once, never restarts the call',async()=>{
+  const f=fixture();let count=0;f.sandbox.host.agent={execute:async()=>{count++;return{shops:[],note:'No matches'}}};
+  f.run('callActive=true;callWS=new WebSocket("fixture");callWS.readyState=1;window.toolSent=[];callWS.send=v=>window.toolSent.push(JSON.parse(v))');
+  f.run('handleLiveMsg({toolCall:{functionCalls:[{id:"one",name:"find_mechanics",args:{}}]}})');await settle();
+  assert.equal(f.sandbox.window.toolSent[0].toolResponse.functionResponses[0].id,'one');assert.equal(count,1);
+  f.run('handleLiveMsg({toolCall:{functionCalls:[{id:"one",name:"find_mechanics",args:{}}]}})');await settle();assert.equal(count,1);assert.equal(f.micRequests,0);
+});
+test('tool timeout and cancellation do not leave Live waiting forever or publish late results after hangup',async()=>{
+  const f=fixture(),d=deferred();f.sandbox.host.agent={execute:()=>d.promise};
+  f.run('callActive=true;callWS=new WebSocket("fixture");callWS.readyState=1;window.toolSent=[];callWS.send=v=>window.toolSent.push(JSON.parse(v))');
+  f.run('handleLiveMsg({toolCall:{functionCalls:[{id:"one",name:"find_mechanics",args:{}}]}})');await settle();
+  const timer=[...f.timers.values()].find(t=>t.ms===10000);assert.ok(timer);timer.fn();await settle();assert.match(f.sandbox.window.toolSent[0].toolResponse.functionResponses[0].response.error,/timed out/);
+  f.run('handleLiveMsg({toolCall:{functionCalls:[{id:"two",name:"find_mechanics",args:{}}]}});endCall()');d.resolve({shops:[{name:'late'}]});await settle();assert.equal(f.sandbox.window.toolSent.length,1);
+});
+test('camera can be switched off during reconnect even while callActive is false',async()=>{
+  const f=fixture();f.run('camOn=true;callActive=false');await f.run('toggleCamera()');assert.equal(f.run('camOn'),false);assert.equal(f.element('callCam').srcObject,null);
+});
+test('the real shared factory creates no mic/token until tapped and uses one transport for home and chat adapters',async()=>{
+  const f=fixture(),notes=[];vm.runInContext(transport,f.sandbox);
+  const shared=f.sandbox.window.CendonCallSession.create({byId:f.element,backendUrl:'https://unit-test.invalid',getUser:()=>f.sandbox.auth.currentUser,agent:{},getMessages:()=>notes,appendMessage:m=>notes.push(m)});
+  assert.equal(f.micRequests,0);assert.equal(f.requests.length,0);const dial=shared.start();await settle();assert.equal(f.micRequests,1);assert.equal(JSON.parse(f.requests[0].body).agent,true);
+  await f.sockets[0].setup();await dial;assert.equal(shared.active,true);shared.end();assert.equal(shared.active,false);assert.equal(f.track.stopped,1);
+});
+test('upstream engine tools and agent tools dispatch separately without a second transport',async()=>{
+  const f=fixture();let expanded=0,agent=0,legacy=[],cancelled=[];
+  f.sandbox.host.view={expand(){expanded++}};f.sandbox.host.getTools=()=>({onToolCall:v=>legacy.push(v),onCancel:ids=>cancelled.push(ids)});
+  f.sandbox.host.agent={execute:async()=>{agent++;return{shops:[]}}};
+  f.run('callActive=true;callWS=new WebSocket("fixture");callWS.readyState=1');
+  f.run('handleLiveMsg({toolCall:{functionCalls:[{id:"scan",name:"scan_engine_bay"},{id:"find",name:"find_mechanics"}]}})');await settle();
+  assert.equal(expanded,1);assert.equal(legacy[0].functionCalls.length,1);assert.equal(agent,1);assert.equal(f.micRequests,0);
+  f.run('handleLiveMsg({toolCallCancellation:{ids:["scan"]}})');assert.equal(cancelled[0][0],'scan');
+});
+test('resumption handles are retained without discarding transcripts in the same packet',()=>{
+  const f=fixture();f.run('handleLiveMsg({sessionResumptionUpdate:{newHandle:"unit_resume_123",resumable:true},serverContent:{inputTranscription:{text:"คำถามใหม่"}}})');
+  assert.equal(f.run('liveHandle'),'unit_resume_123');assert.equal(f.run('liveUserText'),'คำถามใหม่');
 });

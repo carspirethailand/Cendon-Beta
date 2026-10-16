@@ -3989,6 +3989,8 @@ a.mtab{text-decoration:none}
 <link rel="stylesheet" href="stability.css">
 <link rel="stylesheet" href="car-detail-tabs.css?v=2026-10-12-r1">
 <script src="car-detail-tabs.js?v=2026-10-12-r2" defer></script>
+<link rel="stylesheet" href="garage-extras.css?v=1">
+<script src="garage-extras.js?v=1" defer></script>
 <script src="car-sync.js"></script>
 <script src="stability.js" defer></script>
 <!-- หน้าตาชุดเดียวกับหน้าหลัก (สี การ์ด ปุ่ม พื้นหลัง) — โหลดท้ายสุดให้ชนะสไตล์เดิม -->
@@ -7571,7 +7573,10 @@ const TABS=[
  {k:"plan",  th:"บำรุงรักษา",  en:"Maintenance", ic:"ti-calendar-check"},
  {k:"parts", th:"อะไหล่",      en:"Parts",       ic:"ti-tools"},
  {k:"cost",  th:"ค่าใช้จ่าย",   en:"Costs",       ic:"ti-coin"},
- {k:"trip",  th:"สมุดเดินทาง", en:"Trips",       ic:"ti-route"}
+ {k:"trip",  th:"สมุดเดินทาง", en:"Trips",       ic:"ti-route"},
+ /* garage-extras.js: ปฏิทินค่าใช้จ่าย 12 เดือน · Car Passport */
+ {k:"cal",   th:"ปฏิทินค่าใช้จ่าย", en:"12-month plan", ic:"ti-calendar-dollar"},
+ {k:"pass",  th:"Car Passport", en:"Car Passport", ic:"ti-id-badge-2"}
 ];
 window.openCarDetail=function(id){
   const c=cars().find(x=>x.id===id); if(!c)return;
@@ -7639,8 +7644,10 @@ function renderTab(){
   const c=curCar; if(!c)return;
   const f={spec:paneSpec,equip:paneEquip,health:paneHealth,plan:panePlan,
            parts:paneParts,cost:paneCost,trip:paneTrip,
-           odo:(window.odoPane||paneSpec)}[curTab]||paneSpec;
+           odo:(window.odoPane||paneSpec),
+           cal:c=>window.CarExtras?window.CarExtras.cal(c):"",pass:c=>window.CarExtras?window.CarExtras.pass(c):""}[curTab]||paneSpec;
   ($("clBody")||{}).innerHTML=`<div class="cl-pane on">${f(c)}</div>`;
+  try{window.CarExtras&&window.CarExtras.after(curTab,c)}catch(e){}
   if(curTab==="odo"&&window.odoNotifRow)window.odoNotifRow();
 }
 const row=(k,o)=>`<div class="cl-spec"><span class="k">${esc(k)}</span>
@@ -8264,6 +8271,8 @@ D.addEventListener("click",e=>{
 /* เปิด API ให้โมดูล ODO ใช้ร่วม */
 window.SpireCarLab={
   getLog, planFor, dueOf, health, status, bodyOf, getSymptoms,
+  /* garage-extras.js วาดแท็บใหม่หลังโหลดข้อมูลจากเซิร์ฟเวอร์เสร็จ */
+  rerender:()=>{if(curCar)renderTab()},
   economy:c=>{const s=specOf(c);
     if(window.CarSpec&&CarSpec.economy)return CarSpec.economy(c);
     return null}
@@ -14401,7 +14410,8 @@ const PULLED="spire___pulled";             /* บัญชีที่ดึง�
    ไม่เคยอยู่ในรายการซิงก์มาก่อน จึงเป็นอีกสาเหตุที่เข้าเครื่องใหม่แล้วต้องตั้งค่าใหม่ */
 const FIXED=["setup","theme","chatTheme","primary","lang","chatStyle","garage","selCar",
              "skills","skillcat","chatSessions","units","notify"];
-const isTracked=k=>FIXED.indexOf(k)>=0||/^(sess|cursess|chatMsgs)_/.test(k);
+/* carlab_log_/iv_/todo_ = สมุดรถ (ซ่อม น้ำมัน ทริป) รอบบำรุงรักษา งานที่เพิ่มเอง — ตามบัญชี ไม่ใช่ตามเครื่อง (Wrapped/Passport/ปฏิทินใช้) */
+const isTracked=k=>FIXED.indexOf(k)>=0||/^(sess|cursess|chatMsgs|carlab_log|carlab_iv|carlab_todo)_/.test(k);
 
 const SYNCED="spire___synced";             /* ส่งขึ้นสำเร็จถึงเวลาไหนแล้ว ต่อคีย์ */
 const SEEN="spire___seen";                 /* ลายเซ็นที่เห็นครั้งก่อน ใช้จับว่าแก้บนเครื่องนี้จริงไหม */
@@ -14600,6 +14610,8 @@ function apply(keys){
     /* สีหลักที่เปลี่ยนจากอีกเครื่อง ต้องทาทับทันทีเหมือนธีม */
     if(has("primary"))window.spireApplyPrimary&&window.spireApplyPrimary();
     if(has("garage")||has("selCar"))window.renderCarUI&&window.renderCarUI();
+    /* สมุดรถจากอีกเครื่อง: วาดการ์ดและวิดเจ็ตใหม่ให้ตัวเลขตรง */
+    if(keys.some(k=>/^carlab_(log|iv|todo)_/.test(k))){try{window.renderCarUI&&window.renderCarUI();window.refreshWidgets&&window.refreshWidgets()}catch(e){}}
     /* บทสนทนา — ห้ามวาดทับตอนผู้ใช้กำลังพิมพ์หรือกำลังรอคำตอบอยู่
        ไม่งั้นข้อความที่เพิ่งพิมพ์จะหายไปต่อหน้าต่อตา */
     if(keys.some(k=>/^(sess|cursess|chatMsgs)_/.test(k))){

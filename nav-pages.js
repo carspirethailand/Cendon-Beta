@@ -64,13 +64,15 @@ if(PAGE==="garage"){
   Nav.watch({sel:".gx-pop",cls:"on",tag:"gx",url:el=>el.id==="gxPop"?"/garage/add":el.id==="gxInfo"?"/garage/"+enc(idOf("infoId")||"")+"/info"
     :"/garage/"+enc(idOf("gxPaintId")||"")+"/color",close:()=>{try{window.closeAddCar()}catch(e){}}});
   Nav.route({path:"add",open:()=>{try{window.openAddCar()}catch(e){}}});
+  /* สรุปปีของรถ (garage-extras.js) */
+  Nav.route({path:"wrapped",open:async()=>{await wait(()=>window.CarExtras,4000);try{window.CarExtras.wrapped()}catch(e){}}});
   Nav.route({path:":car/info",test:p=>hasCar(p.car),open:p=>{try{openInfo(p.car)}catch(e){}}});
   Nav.route({path:":car/color",test:p=>hasCar(p.car),open:p=>{try{openPaint(p.car)}catch(e){}}});
-  Nav.route({path:":car",name:"car",test:p=>hasCar(p.car)&&!["settings","add"].includes(p.car),open:p=>window.openCarDetail(p.car)});
+  Nav.route({path:":car",name:"car",test:p=>hasCar(p.car)&&!["settings","add","wrapped"].includes(p.car),open:p=>window.openCarDetail(p.car)});
 }else{
   Nav.route({path:"car/:car",name:"car",test:p=>hasCar(p.car),open:p=>window.openCarDetail&&window.openCarDetail(p.car)});
 }
-const CLTABS=["odo","spec","equip","health","plan","parts","cost","trip"];
+const CLTABS=["odo","spec","equip","health","plan","parts","cost","trip","cal","pass"];
 Nav.route({path:":tab",parent:"car",test:p=>CLTABS.includes(p.tab),open:p=>clClick(p.tab)});
 
 /* ── ตั้งค่า ── */

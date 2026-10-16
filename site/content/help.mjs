@@ -48,8 +48,14 @@ const sections=[
 
   {id:'ai',title:['ผู้ช่วย AI','The AI assistant'],body:
     Q('ช่องค้นหาหน้าแรกกับโหมด AI','The home search bar and AI mode',
-      P('หน้าแรกเป็นช่องค้นหาอาการ อู่ หรือบริการ · <b>แตะ 2 ครั้งที่พื้นที่ว่างของช่อง</b> (ไม่ใช่ปุ่ม) ช่องจะพลิกเป็น <b>Cendon AI</b> — เล่าอาการ ส่งรูป อัดเสียงเครื่อง หรือเลือกรถที่จะถามถึง แล้วกดลูกศร ห้องแชตเปิดและส่งให้ AI ทันที · แตะ 2 ครั้งอีกทีพลิกกลับเป็นค้นหา',
-        'The home page starts as a search bar for symptoms, shops or services · <b>double-tap an empty spot in the bar</b> (not a button) and it flips to <b>Cendon AI</b> — describe the problem, send a photo, record the engine or pick which car, then tap the arrow: the chat opens and sends it right away · double-tap again to flip back to search.'))+
+      P('หน้าแรกเป็นช่องค้นหาอาการ อู่ หรือบริการ · <b>มือถือ: ปัดช่องไปด้านข้าง</b> ช่องหมุนตามนิ้ว ปล่อยเกินราวหนึ่งในสี่ก็พลิกเป็น <b>Cendon AI</b> (ปัดนิดเดียวจะเด้งกลับ) · <b>คอม: ดับเบิลคลิกที่พื้นที่ว่างของช่อง</b> (ไม่ใช่ปุ่ม) · ในโหมด AI เล่าอาการ ส่งรูป หรืออัดเสียงเครื่อง แล้วกดลูกศร ห้องแชตเปิดและส่งให้ AI ทันที · AI ถามถึงรถที่เลือกไว้ในการ์ดรถหน้าแรก — แตะการ์ดรถเพื่อเปลี่ยนคันได้เลย · ปัด/ดับเบิลคลิกอีกครั้งเพื่อกลับเป็นค้นหา',
+        'The home page starts as a search bar for symptoms, shops or services · <b>On a phone, swipe the bar sideways</b>: it turns with your finger, and letting go past about a quarter flips it to <b>Cendon AI</b> (a small swipe springs back) · <b>On a computer, double-click an empty spot in the bar</b> (not a button) · in AI mode describe the problem, send a photo or record the engine, then tap the arrow: the chat opens and sends it right away · the AI asks about the car picked on the home car card — tap that card to switch cars · swipe or double-click again to go back to search.'))+
+    Q('กระดิ่งแจ้งเตือนมุมขวาบน','The notification bell (top right)',
+      P('กระดิ่งรวมเรื่องที่ต้องรู้: ช่างเสนอราคา รับงาน กำลังมา เริ่มซ่อม ซ่อมเสร็จ ข้อความใหม่ (ฝั่งช่าง: คำขอใหม่ ลูกค้ายืนยัน/ยกเลิก) และคำตอบของ AI ที่มาตอนคุณไม่ได้ดูหน้าแชต · ตัวเลขบนกระดิ่ง = ยังไม่อ่าน · แตะรายการเพื่อไปที่งานนั้น',
+        'The bell gathers what you need to know: a mechanic quoted, took the job, is on the way, started, finished, or sent a message (mechanics: new requests, customer accepted/cancelled), plus AI replies that arrived while you weren’t on the chat · the number on the bell = unread · tap an item to open that job.')+
+      UL([['<b>แจ้งเตือนในเครื่อง</b>: แตะกระดิ่ง → <b>เปิด</b> แล้วอนุญาต — เครื่องจะเด้งแจ้งเตือนแม้ปิดแอปอยู่','<b>Device notifications</b>: tap the bell → <b>Turn on</b> and allow — your phone or computer alerts you even with the app closed'],
+          ['ข้อความแจ้งเตือนมีแค่ชื่อร้าน รุ่นรถ และสถานะงาน ไม่มีเบอร์หรือที่อยู่ · กล่องแจ้งเตือนเก็บในเครื่องนี้ ล่าสุด 40 รายการ','Alerts show only the shop name, car model and job status — no phone or address · the inbox stays on this device, latest 40'],
+          ['ถ้าเชื่อม LINE ไว้ จะได้ทั้งทาง LINE และในเครื่อง','If LINE is linked you get both LINE and device alerts']]))+
     Q('Cendon Valet คืออะไร','What is Cendon Valet?',
       P('Valet คือ AI ที่ลงมือทำในแอปแทนคุณ แค่บอกในแชต เช่น “พาไปการาจ” “เปลี่ยนเป็นธีมมืด” “เพิ่มรถ Civic ปี 2020 ไมล์ 45,000” “อัปเดตเลขไมล์เป็น 90,000” “โพสต์หาช่างล้างแอร์ให้หน่อย” “ส่งรูปให้ช่าง” “ดูงานของฉัน” · ช่างสั่งเปลี่ยนสถานะร้านหรือเปิดหน้า Studio ได้ด้วย',
         'Valet is an AI that acts inside the app for you — just say it in chat, e.g. “take me to my garage”, “switch to dark mode”, “add a 2020 Civic with 45,000 km”, “update the mileage to 90,000”, “post a job for an AC clean”, “send photos to my mechanic”, “show my jobs” · mechanics can also change their shop status or open Studio pages.')+
@@ -181,8 +187,8 @@ const sections=[
       P('ปิดแอป/แท็บแล้วเปิดใหม่ หรือดึงหน้าจอลงเพื่อรีเฟรช แอปจะโหลดเวอร์ชันล่าสุดเอง ถ้ายังไม่หาย แจ้งเราพร้อมรุ่นมือถือและเบราว์เซอร์',
         'Close and reopen the app or tab, or pull down to refresh — it picks up the latest version by itself. Still stuck? Tell us your phone model and browser.'))+
     Q('ไม่ได้รับแจ้งเตือนในเบราว์เซอร์','No browser notifications',
-      P('ตรวจว่าอนุญาตการแจ้งเตือนให้เว็บ Cendon แล้ว · บน iPhone ต้อง “เพิ่มไปยังหน้าจอโฮม” แล้วเปิดจากไอคอนนั้นก่อน (iOS 16.4 ขึ้นไป) จึงจะรับแจ้งเตือนได้ · ทางที่ชัวร์ที่สุดคือเชื่อม LINE',
-        'Make sure notifications are allowed for Cendon. · On iPhone you must “Add to Home Screen” and open it from that icon first (iOS 16.4 or later) to receive notifications. · Linking LINE is the most reliable option.'))+
+      P('แตะกระดิ่งมุมขวาบนของหน้าแรก → <b>เปิด</b> · ตรวจว่าอนุญาตการแจ้งเตือนให้เว็บ Cendon แล้ว · บน iPhone ต้อง “เพิ่มไปยังหน้าจอโฮม” แล้วเปิดจากไอคอนนั้นก่อน (iOS 16.4 ขึ้นไป) จึงจะรับแจ้งเตือนได้ · ทางที่ชัวร์ที่สุดคือเชื่อม LINE',
+        'Tap the bell at the top right of the home page → <b>Turn on</b>. · Make sure notifications are allowed for Cendon. · On iPhone you must “Add to Home Screen” and open it from that icon first (iOS 16.4 or later) to receive notifications. · Linking LINE is the most reliable option.'))+
     Q('กล้อง ไมค์ หรือตำแหน่งใช้ไม่ได้','Camera, mic or location not working',
       P('เบราว์เซอร์จะถามสิทธิ์ครั้งแรกที่ใช้ ถ้าเคยกดไม่อนุญาต ให้เปิดใหม่ในการตั้งค่าเว็บไซต์ของเบราว์เซอร์ (ไอคอนแม่กุญแจข้างที่อยู่เว็บ)',
         'Your browser asks the first time. If you said no before, re-enable it in the browser’s site settings (the padlock next to the address).'))},

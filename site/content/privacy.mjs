@@ -3,7 +3,7 @@
    เทสต์ test/site.test.mjs ตรวจว่ามีชื่อผู้ให้บริการครบทุกตัว */
 import {L,P,UL,TABLE,NOTE,I,docBody,EMAIL} from '../layout.mjs';
 
-export const VERSION='1.7';
+export const VERSION='1.8';
 export const EFFECTIVE=['16 ตุลาคม 2569','16 October 2026'];
 
 /* ผู้ให้บริการภายนอกทุกตัวที่ได้รับข้อมูล — ชื่อในคอลัมน์แรกต้องตรงกับรายการใน test/site.test.mjs */
@@ -73,6 +73,7 @@ const sections=[
       [['ข้อมูลช่าง (เฉพาะผู้สมัคร)','Mechanic data (applicants only)'],['ชื่อร้าน ที่ตั้ง เบอร์ บริการ ราคา รูปอู่และผลงาน ใบรับรอง · การยืนยันตัวตนด้วยบัตรประชาชนและใบหน้า (ข้อมูลชีวภาพ — ขอความยินยอมแยกต่างหาก)','Shop name, location, phone, services, prices, workshop and work photos, certificates · identity check with ID card and face (biometric data — separate explicit consent)'],['ผู้สมัคร และ Didit','The applicant and Didit']],
       [['LINE','LINE'],['LINE user ID ชื่อและรูปใน LINE ข้อความที่คุยกับบอท','LINE user ID, LINE name and picture, messages to the bot'],['LINE ตอนคุณเชื่อมบัญชีหรือทักบอท','LINE, when you link or message the bot']],
       [['การแจ้งเตือน','Notifications'],['ที่อยู่รับแจ้งเตือนของเบราว์เซอร์ (Web Push)','Your browser’s push subscription'],['เบราว์เซอร์ เมื่อคุณเปิดแจ้งเตือน','Your browser, when you turn notifications on']],
+      [['กล่องแจ้งเตือน (กระดิ่งหน้าแรก)','Notification inbox (home bell)'],['หัวข้อสั้น ๆ ของงาน (ชื่อร้าน รุ่นรถ สถานะ) และข้อความ AI ตอนคุณไม่ได้ดูหน้าแชต ล่าสุด 40 รายการ','Short job headlines (shop name, car model, status) and AI replies that arrived while you were away, latest 40'],['เก็บในเครื่องนี้เท่านั้น ผูกกับบัญชี ไม่ส่งขึ้นเซิร์ฟเวอร์','Kept on this device only, tied to your account, never uploaded']],
       [['ความคิดเห็นที่ส่งมา','Feedback you send'],['ข้อความ คะแนน หน้าที่ส่ง ชนิดเบราว์เซอร์','Message, rating, page, browser type'],['คุณ','You']],
       [['ข้อมูลทางเทคนิค','Technical data'],['ที่อยู่ IP (ใช้นับโควตา AI ของคนที่ยังไม่ล็อกอิน และกันการเดารหัส) ตัวนับการใช้งาน บันทึกข้อผิดพลาดของ AI แบบสั้น','IP address (for the anonymous AI quota and to stop code guessing), usage counters, short AI error logs'],['ระบบ','Our systems']],
     ])+
@@ -206,6 +207,7 @@ const sections=[
     P('เมื่อระบบเปลี่ยนวิธีเก็บหรือใช้ข้อมูล เราจะแก้หน้านี้ให้ตรงทันที เปลี่ยนเลขเวอร์ชันและวันที่ด้านบน และถ้าเป็นการเปลี่ยนสาระสำคัญ จะแจ้งในแอปก่อนมีผล การเปลี่ยนที่ต้องได้รับความยินยอมใหม่ เราจะขอความยินยอมใหม่ก่อน',
       'Whenever the way we collect or use data changes, we update this page straight away, with a new version number and date at the top. Material changes are announced in the app before they take effect, and anything that needs fresh consent will ask for it first.')+
     UL([
+      ['<b>1.8 · 16 ต.ค. 2569</b> — กระดิ่งแจ้งเตือน: แจ้งในเครื่องเมื่อช่างเสนอราคา รับงาน กำลังมา ซ่อมเสร็จ หรือส่งข้อความ (ผ่าน Web Push เมื่อคุณกดเปิด) และเมื่อ AI ตอบเสร็จตอนคุณสลับไปแอปอื่น · ข้อความแจ้งเตือนมีแค่ชื่อร้าน รุ่นรถ และสถานะ ไม่มีชื่อ เบอร์ หรือที่อยู่ลูกค้า · กล่องแจ้งเตือนเก็บในเครื่องนี้เท่านั้น','<b>1.8 · 16 Oct 2026</b> — Notification bell: device alerts when a mechanic quotes, takes the job, is on the way, finishes or messages you (via Web Push once you turn it on), and when the AI finishes replying while you’re in another app · alerts carry only the shop name, car model and status — never a customer’s name, phone or address · the inbox is kept on this device only'],
       ['<b>1.7 · 16 ต.ค. 2569</b> — Cendon Valet: เมื่อคุณอนุญาต AI จะได้รายชื่อรถในการาจและรู้ว่าบัญชีมีร้านหรือไม่ เพื่อเสนอการ์ดคำสั่ง (ทำจริงเมื่อคุณกดยืนยันเท่านั้น)','<b>1.7 · 16 Oct 2026</b> — Cendon Valet: once you allow it, the AI receives your garage car list and whether the account has a shop, so it can propose action cards (carried out only when you confirm)'],
       ['<b>1.6 · 16 ต.ค. 2569</b> — ข้อกำหนด: คำขอ/ประกาศ/ใบเสนอราคาที่ยังไม่ตกลงกันมีอายุ (ด่วน 3 ชม. · 48 ชม. · 7 วัน) หมดแล้วระบบยกเลิกให้ ใบงานที่ยกเลิกยังอยู่ในประวัติของคุณตามเดิม ไม่มีการเก็บข้อมูลเพิ่ม','<b>1.6 · 16 Oct 2026</b> — terms: requests, posts and quotes that aren’t agreed expire (urgent 3 h · 48 h · 7 days) and the system cancels them; cancelled jobs stay in your history as before, no extra data collected'],
       ['<b>1.5 · 16 ต.ค. 2569</b> — สแกนห้องเครื่องเป็นแบบสดบนกล้อง (ส่งภาพเฉพาะตอนภาพเปลี่ยน) · การโทรคุยต่อสายต่อได้เมื่อสัญญาณสะดุด (Google เก็บสถานะสายชั่วคราว)','<b>1.5 · 16 Oct 2026</b> — the engine-bay scan is now live on the camera (pictures sent only when the view changes) · calls can resume after a drop (Google briefly keeps the call state)'],

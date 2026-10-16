@@ -3015,6 +3015,7 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 <script src="call-tools.js?v=2" defer></script>
 <link rel="stylesheet" href="valet.css?v=1">
 <script src="valet.js?v=1" defer></script>
+<script src="bell.js?v=1" defer></script>
 <script src="./techs.js"></script>
 <script src="./cendon-search.js"></script>
 <style id="vtcss">
@@ -5196,6 +5197,11 @@ function scrollBottom(force){
 
 let pendingAsk=null, pendingMeta=null, pendingActs=null;
 
+/* AI ตอบเสร็จตอนผู้ใช้สลับไปแอปอื่น → แจ้งบนเครื่อง + เก็บในกระดิ่งหน้าแรก (bell.js เช็กเองว่าหน้านี้ถูกซ่อนอยู่) */
+function bellAi(){
+  try{ const m=messages[messages.length-1];
+    if(m&&m.role==="ai"&&!m.typing&&window.CendonBell)CendonBell.ai(m.text,!!(m.acts&&m.acts.length)) }catch(e){}
+}
 /* typewriter streaming effect — spinning mark stays below while text streams */
 function typewrite(fullText,done){
   messages.pop(); // remove typing placeholder
@@ -5483,7 +5489,7 @@ async function sendMsg(){
       saveSession();
       if(selCar())addHistory(selCar().id,text||(lang==="en"?"media":"แนบสื่อ"),SV?SV.strip(streamed):streamed);
       try{ window.slideRelease&&window.slideRelease() }catch(e){}
-      sending=false;updateSend();renderChips();
+      sending=false;updateSend();renderChips();bellAi();
       return;
     }
     messages.push({role:"ai",typing:true});renderMessages();
@@ -5502,7 +5508,7 @@ async function sendMsg(){
       saveSession();
       if(selCar())addHistory(selCar().id,text||(lang==="en"?"media":"แนบสื่อ"),SV?SV.strip(ans):ans);
       try{ window.slideRelease&&window.slideRelease() }catch(e){}
-      sending=false;updateSend();renderChips();
+      sending=false;updateSend();renderChips();bellAi();
     });
   }catch(e){
     /* ผู้ใช้กดหยุดเอง ไม่ใช่ระบบพัง stopGen จัดการหน้าจอไปแล้ว */

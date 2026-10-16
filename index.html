@@ -27,6 +27,7 @@ if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=1"><\/s
 <meta property="og:locale" content="th_TH"><meta name="twitter:card" content="summary_large_image">
 <script src="nav.js"></script>
 <script src="media-store.js"></script>
+<script src="bell.js?v=1"></script>
 <meta name="theme-color" content="#131316"/>
 <link rel="manifest" href="./manifest.webmanifest"/>
 <link rel="icon" href="./favicon.png"/>
@@ -1483,45 +1484,65 @@ body{background:var(--bg);letter-spacing:-.005em}
    หน้าแรก = ค้นหา (แว่นขยาย + ปุ่มค้นหา) · หลัง = Cendon AI (ขอบเรืองแสง ส่งรูป เสียง เลือกรถ ลูกศรส่ง)
    ความสูงกรอบเลื่อนตามหน้าที่หงายอยู่ · ลดการเคลื่อนไหว = สลับทันทีไม่หมุน */
 @property --lxang{syntax:"<angle>";inherits:false;initial-value:0deg}
-.lx-flip{position:relative;max-width:720px;margin:0 auto;perspective:1600px;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-.lx-flipin{position:relative;height:62px;transform-style:preserve-3d;transition:transform .72s cubic-bezier(.2,.8,.2,1),height .45s cubic-bezier(.2,.8,.2,1)}
-.lx-flipin>.lx-face{position:absolute;top:0;left:0;right:0;margin:0;max-width:none;-webkit-backface-visibility:hidden;backface-visibility:hidden}
+.lx-flip{position:relative;z-index:1;max-width:720px;margin:0 auto;perspective:1600px;touch-action:pan-y;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+.lx-flip input{user-select:text;-webkit-user-select:text}
+/* สองหน้าขนาดเท่ากันเสมอ — กรอบไม่ยืดหด ตอนพลิกจึงนิ่ง · สองบรรทัด: ช่องพิมพ์เต็มความกว้าง แล้วแถวปุ่ม */
+.lx-flipin{position:relative;height:118px;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.2,.8,.2,1);will-change:transform}
+.lx-flipin>.lx-face{position:absolute;inset:0;margin:0;max-width:none;height:100%;box-sizing:border-box;-webkit-backface-visibility:hidden;backface-visibility:hidden;
+  flex-direction:column;align-items:stretch;justify-content:space-between;gap:6px;padding:12px 12px 12px 18px!important;border-radius:22px!important}
 .lx-fa{transform:rotateY(180deg)}
-.lx-flip.ai .lx-flipin{transform:rotateY(180deg)}
-.lx-fs{padding:7px 7px 7px 18px}
-.lx-fs>.ti-search{font-size:21px;color:var(--muted)}
-.lx-fs input{height:46px}
+.lx-r1{display:flex;align-items:center;gap:10px;min-width:0}
+.lx-r1 input{flex:1;min-width:0;height:44px;font-size:17px!important}
+.lx-r1>.ti-search{font-size:21px;color:var(--muted)}
 .lx-fs input::-webkit-search-cancel-button{display:none}
-.lx-fs .lx-cta{height:46px;padding:0 20px}
-/* หน้า AI: ขอบไล่สีหมุนช้า ๆ + เงาเรืองนุ่ม */
+.lx-r2{display:flex;align-items:center;justify-content:flex-end;gap:8px}
+.lx-r2 .lx-cta{height:44px;padding:0 20px}.lx-r2 .lx-cta .ti{font-size:17px}
+/* หน้า AI: ✦ ช่องพิมพ์ · แถวล่าง รูป เสียง ลูกศร — ขอบไล่สีหมุนช้า ๆ + เงาเรืองนุ่ม */
 .lx-fa{border:1.5px solid transparent!important;background:linear-gradient(var(--surface),var(--surface)) padding-box,conic-gradient(from var(--lxang),#E9682A,#f5a524,#ec4899,#7c5cff,#38bdf8,#E9682A) border-box!important;
   box-shadow:0 18px 50px -22px rgba(124,92,255,.55),0 10px 30px -18px rgba(233,104,42,.45)!important;animation:lxSpin 6s linear infinite}
 .lx-fa:focus-within{box-shadow:0 0 0 4px color-mix(in srgb,#7c5cff 16%,transparent),0 18px 50px -22px rgba(124,92,255,.6)!important}
 @keyframes lxSpin{to{--lxang:360deg}}
-.lx-aitag{display:inline-flex;align-items:center;gap:5px;align-self:flex-start;margin:-2px 0 0;font:700 11.5px/1 var(--kd);letter-spacing:.06em;
-  background:linear-gradient(90deg,#E9682A,#ec4899,#7c5cff);-webkit-background-clip:text;background-clip:text;color:transparent}
-.lx-aitag .ti{font-size:14px;color:#E9682A}
-.lx-send{margin-left:auto;flex:none;width:44px;height:44px;border:0;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:var(--bg);font-size:20px;cursor:pointer;transition:transform .2s}
+.lx-spark{flex:none;font-size:21px;background:linear-gradient(135deg,#E9682A,#ec4899 55%,#7c5cff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lx-fa .lx-r2{justify-content:flex-start}
+.lx-fa .lx-tl{flex:none;width:44px;height:44px}
+.lx-send{flex:none;margin-left:auto;width:46px;height:46px;border:0;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:var(--bg);font-size:20px;cursor:pointer;transition:transform .2s}
 .lx-send:active{transform:scale(.92)}
-.lx-carchip{display:inline-flex;align-items:center;gap:5px;min-width:0;max-width:46%;height:40px;padding:0 10px 0 11px;border-radius:12px;border:1px solid var(--line);background:none;color:var(--ink);font:500 13px var(--kb);cursor:pointer}
-.lx-carchip span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lx-carchip .ti{font-size:17px;color:var(--muted);flex:none}.lx-carchip .ti-chevron-down{font-size:14px}
-.lx-carchip.none{color:var(--muted)}
-.lx-carmenu{position:absolute;z-index:1300;min-width:220px;max-width:min(320px,calc(100vw - 24px));padding:6px;border-radius:16px;background:var(--surface);box-shadow:0 0 0 1px var(--line),0 24px 48px -20px rgba(0,0,0,.45)}
-.lx-carmenu button{display:flex;align-items:center;gap:10px;width:100%;padding:11px 12px;border:0;border-radius:12px;background:none;color:var(--ink);font:500 14px var(--kb);text-align:left;cursor:pointer}
-.lx-carmenu button:hover,.lx-carmenu button:focus-visible{background:var(--surface-2)}
-.lx-carmenu .ti{font-size:18px;color:var(--muted)}.lx-carmenu .ti-check{margin-left:auto;color:var(--ink)}
-.lx-carmenu span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* ระหว่างลากด้วยนิ้ว: เงาเอียงตามมุม ดูมีมิติ */
+.lx-flip.drag .lx-face{box-shadow:0 22px 50px -24px rgba(0,0,0,.45)!important}
 /* ตอนพลิกเข้า AI: แสงวาบพาดผ่านครั้งเดียว */
 .lx-flip.burst .lx-fa::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.55) 48%,transparent 66%);background-size:250% 100%;animation:lxSheen 1.1s .35s ease-out both}
 html[data-theme="dark"] .lx-flip.burst .lx-fa::after{background-image:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.14) 48%,transparent 66%)}
 @keyframes lxSheen{from{background-position:120% 0}to{background-position:-30% 0}}
+/* ฟ้าคลื่นดาว: เต็มความกว้างจอ อยู่หลังเนื้อหาหน้าแรก จางลงด้านล่าง */
+#vMenu{isolation:isolate}
+.lx-sky{position:absolute;top:calc(-1 * env(safe-area-inset-top));left:0;width:100%;height:0;z-index:-1;pointer-events:none;opacity:0;overflow:hidden;
+  -webkit-mask-image:linear-gradient(180deg,#000 0%,#000 48%,rgba(0,0,0,.55) 72%,transparent 100%);mask-image:linear-gradient(180deg,#000 0%,#000 48%,rgba(0,0,0,.55) 72%,transparent 100%)}
+.lx-sky canvas{position:absolute;inset:0}
+.lx-sky i,.lx-sky b{position:absolute;left:-10%;display:block;width:240%;will-change:transform;animation-play-state:paused}
+.lx-sky i{top:4%;height:58%;opacity:.55;filter:blur(48px);border-radius:50%;
+  background:linear-gradient(90deg,#FFB547 0%,#F28C38 11%,#FF4D7A 24%,#8B6BFF 37%,#FF4D7A 50%,#F28C38 63%,#FFB547 76%,#F28C38 88%,#FF4D7A 100%);animation:skyA 9s cubic-bezier(.45,0,.55,1) infinite alternate}
+.lx-sky b{top:20%;height:50%;opacity:.38;filter:blur(64px);border-radius:50%;
+  background:linear-gradient(90deg,#8B6BFF 0%,#FF4D7A 16%,#F28C38 33%,#FFB547 50%,#FF4D7A 66%,#8B6BFF 83%,#F28C38 100%);animation:skyB 12s cubic-bezier(.45,0,.55,1) infinite alternate}
+.lx-sky.on i,.lx-sky.on b{animation-play-state:running}
+@keyframes skyA{from{transform:translate3d(0,0,0) scaleY(1)}to{transform:translate3d(-52%,6%,0) scaleY(1.12)}}
+@keyframes skyB{from{transform:translate3d(-50%,4%,0) scaleY(.92)}to{transform:translate3d(0,-4%,0) scaleY(1.06)}}
+html[data-theme="dark"] .lx-sky i{opacity:.62}html[data-theme="dark"] .lx-sky b{opacity:.45}
+html:not([data-theme="dark"]) .lx-sky i{opacity:.32}html:not([data-theme="dark"]) .lx-sky b{opacity:.22}
+@media(max-width:699px){.lx-sky i{filter:blur(34px)}.lx-sky b{filter:blur(44px)}}
+@media(prefers-reduced-motion:reduce){.lx-sky i,.lx-sky b{animation:none}}
 .lx-fliphint{margin:10px 0 0;font-size:12.5px;color:var(--faint);text-align:center}
 .lx-fliphint b{color:var(--muted);font-weight:600}.lx-fliphint .ti{font-size:13px}
 .lx-srbtn{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .lx-srbtn:focus-visible{position:static;width:auto;height:auto;margin:8px auto 0;padding:6px 12px;clip:auto;border-radius:10px;background:var(--surface-2);color:var(--ink);font:500 13px var(--kb)}
+/* เมนูเลือกรถ (การ์ดรถบนหน้าแรก) */
+.lx-carmenu{position:absolute;z-index:1300;min-width:240px;max-width:min(340px,calc(100vw - 24px));padding:6px;border-radius:16px;background:var(--surface);box-shadow:0 0 0 1px var(--line),0 24px 48px -20px rgba(0,0,0,.45)}
+.lx-carmenu button,.lx-carmenu a{display:flex;align-items:center;gap:10px;width:100%;padding:11px 12px;border:0;border-radius:12px;background:none;color:var(--ink);font:500 14px var(--kb);text-align:left;cursor:pointer;text-decoration:none;box-sizing:border-box}
+.lx-carmenu button:hover,.lx-carmenu button:focus-visible,.lx-carmenu a:hover{background:var(--surface-2)}
+.lx-carmenu .ti{font-size:18px;color:var(--muted);flex:none}.lx-carmenu .ti-check{margin-left:auto;color:var(--ink)}
+.lx-carmenu span{min-width:0;flex:1}.lx-carmenu b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lx-carmenu small{display:block;font-size:12px;color:var(--muted)}
+.lx-carmenu hr{border:0;height:1px;background:var(--line);margin:4px 6px}
 @media(prefers-reduced-motion:reduce){.lx-flipin{transition:none}.lx-fa{animation:none}.lx-flip.burst .lx-fa::after{display:none}}
-@media(max-width:560px){.lx-fs{padding-left:14px}.lx-fs .lx-cta{padding:0 16px}}
+@media(max-width:560px){.lx-flipin>.lx-face{padding:11px 11px 11px 15px!important}}
 /* การ์ด "เรียกช่าง": ด่วน / ไม่ด่วน อยู่ในการ์ดเดียว ขนาดเท่าการ์ดอื่น */
 .lx-qcall{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:14px;border-radius:16px;border:1px solid var(--line);background:var(--surface);color:var(--ink);text-align:left}
 .lx-qcall>.ti{font-size:22px;color:var(--co);margin-bottom:8px}
@@ -1539,12 +1560,13 @@ html[data-theme="dark"] .lx-quick .lx-q2 button.u{color:#f87171}
   #vMenu .lx-qcall>.ti{grid-column:1;grid-row:1;font-size:20px;margin:0}
   #vMenu .lx-qcall>b{grid-column:2;grid-row:1;font-size:13px;line-height:1.4}
   #vMenu .lx-qcall .lx-q2{grid-column:1/-1;grid-row:2;margin:0}
-  #vMenu .lx-carchip{height:44px}
 }
 .lx-top:empty{display:none}.lx-top{max-width:720px;margin:6px auto 0}
 .lx-mycar{max-width:720px;margin:14px auto 0}
 .lx-car{display:flex;align-items:center;gap:12px;padding:10px 14px 10px 10px;border-radius:16px;border:1px solid var(--line);background:var(--surface);text-decoration:none;color:var(--ink);transition:border-color .2s}
 .lx-car:hover{border-color:var(--co)}
+button.lx-car{width:100%;box-sizing:border-box;font:inherit;text-align:left;cursor:pointer}
+button.lx-car[aria-expanded="true"]{border-color:var(--ink)}
 .lx-cari{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--surface-2);font-size:20px}
 .lx-cart{flex:1;min-width:0;display:flex;flex-direction:column}.lx-cart small{font-size:11.5px;color:var(--muted)}.lx-cart b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lx-carm{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:4px}
@@ -1622,10 +1644,38 @@ html[data-theme="dark"] .lx-quick .lx-q2 button.u{color:#f87171}
 .lx-top{display:none!important}
 .lx-hero{position:relative}
 .lx-logo{position:relative}
-.lx-jobs{position:absolute;right:0;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;display:grid;place-items:center;cursor:pointer;
-  border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:21px;box-shadow:var(--shadow-sm);z-index:2}
-.lx-jobs em{position:absolute;top:-3px;right:-3px;min-width:19px;height:19px;padding:0 5px;border-radius:999px;display:grid;place-items:center;
-  font:700 11px/1 var(--kb);font-style:normal;color:#fff;background:var(--co);border:2px solid var(--bg)}
+/* กระดิ่งแจ้งเตือนเล็ก ๆ มุมขวาบน (แทนปุ่มงานของฉันเดิม) · จุดตัวเลข = ยังไม่อ่าน */
+.lx-bell{position:absolute;right:0;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;display:grid;place-items:center;cursor:pointer;
+  border:0;background:none;color:var(--ink);font-size:21px;z-index:2;transition:background .2s}
+.lx-bell:hover,.lx-bell[aria-expanded="true"]{background:var(--surface-2)}
+.lx-bell em{position:absolute;top:1px;right:0;min-width:16px;height:16px;padding:0 4px;border-radius:999px;display:grid;place-items:center;
+  font:700 10px/1 var(--kb);font-style:normal;color:#fff;background:var(--co);border:2px solid var(--bg)}
+.lx-bell.ding .ti{animation:bellRing .9s cubic-bezier(.36,.07,.19,.97)}
+@keyframes bellRing{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(9deg)}60%{transform:rotate(-6deg)}75%{transform:rotate(3deg)}}
+@media(prefers-reduced-motion:reduce){.lx-bell.ding .ti{animation:none}}
+/* คอม: กระดิ่งอยู่ในแถบเมนูบน ข้างรูปโปรไฟล์ (แถวโลโก้มือถือซ่อนบนคอม) */
+.lx-bell.nb-d{position:relative;right:auto;top:auto;transform:none;width:34px;height:34px;font-size:19px;flex:none}
+@media(max-width:760px){.lx-bell.nb-d{display:none!important}}
+/* แผงแจ้งเตือน */
+.nb-pop{position:absolute;z-index:1400;width:min(380px,calc(100vw - 20px));max-height:min(72vh,560px);display:flex;flex-direction:column;border-radius:20px;background:var(--surface);
+  box-shadow:0 0 0 1px var(--line),0 30px 60px -24px rgba(0,0,0,.45);overflow:hidden;animation:nbIn .22s cubic-bezier(.32,.72,0,1);transform-origin:100% 0}
+@keyframes nbIn{from{opacity:0;transform:scale(.96) translateY(-4px)}}
+.nb-h{display:flex;align-items:center;gap:8px;padding:14px 16px 10px}
+.nb-h b{flex:1;font:700 16px var(--kd)}
+.nb-h button{border:0;background:none;color:var(--muted);font:500 13px var(--kb);cursor:pointer}
+.nb-on{display:flex;gap:10px;align-items:flex-start;margin:0 12px 8px;padding:12px;border-radius:14px;background:var(--surface-2)}
+.nb-on .ti{font-size:20px;color:var(--co);margin-top:2px}.nb-on span{flex:1;font-size:13px;line-height:1.5;color:var(--muted)}.nb-on span b{display:block;color:var(--ink);font-size:14px}
+.nb-on .lx-cta{height:34px;padding:0 14px;font-size:13px;flex:none;align-self:center}
+.nb-list{overflow:auto;padding:2px 6px 6px}
+.nb-it{display:flex;gap:12px;align-items:flex-start;width:100%;padding:11px 10px;border:0;border-radius:14px;background:none;color:var(--ink);text-align:left;font:inherit;cursor:pointer}
+.nb-it:hover,.nb-it:focus-visible{background:var(--surface-2)}
+.nb-ic{flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:12px;font-size:18px;background:var(--surface-2);color:var(--ink)}
+.nb-ic.ai{color:#fff;background:conic-gradient(from 200deg,#E9682A,#ec4899,#7c5cff,#E9682A)}
+.nb-it>span+span{flex:1;min-width:0}.nb-it b{display:block;font-size:14px;font-weight:600;line-height:1.35}.nb-it small{display:block;margin-top:2px;font-size:12.5px;line-height:1.45;color:var(--muted)}
+.nb-it time{flex:none;font-size:11.5px;color:var(--faint);margin-top:2px}
+.nb-it.new b::after{content:"";display:inline-block;width:7px;height:7px;margin-left:6px;border-radius:50%;background:var(--co);vertical-align:2px}
+.nb-empty{padding:26px 16px 30px;text-align:center;color:var(--muted);font-size:13.5px}.nb-empty .ti{display:block;font-size:30px;color:var(--faint);margin-bottom:6px}
+.nb-f{display:flex;border-top:1px solid var(--line)}.nb-f button{flex:1;height:46px;border:0;background:none;color:var(--ink);font:600 13.5px var(--kb);cursor:pointer}.nb-f button:hover{background:var(--surface-2)}
 
 
 /* โพสต์ของช่าง */
@@ -2261,6 +2311,7 @@ a.mtab{text-decoration:none}
       </div>
       <div class="nav-right">
         <button class="btn-signin" id="signinBtn"><i class="ti ti-brand-google"></i> <span data-i18n="signin">เข้าสู่ระบบ</span></button>
+        <button class="lx-bell nb-d" id="hBellD" type="button" aria-label="การแจ้งเตือน" aria-haspopup="dialog" aria-expanded="false" hidden><i class="ti ti-bell"></i><em hidden></em></button>
         <button class="avatar" id="avatarBtn"><span class="fb" id="navFb">?</span></button>
         <div class="dd" id="dd">
           <button id="ddJobs"><i class="ti ti-clipboard-list"></i> <span>งานของฉัน</span></button>
@@ -2291,24 +2342,20 @@ a.mtab{text-decoration:none}
 <section class="view menu" id="vMenu">
   <!-- HERO: บอกทันทีว่าที่นี่คือหาช่าง · ช่องค้นหาใหญ่ · ปุ่มส้มปุ่มเดียวของหน้า -->
   <header class="lx-hero">
-    <div class="lx-logo nt"><button class="lx-jobs" id="hJobs" type="button" aria-label="งานที่กำลังดำเนินการ" hidden><i class="ti ti-progress"></i><em id="hJobsN"></em></button><svg class="cmk" viewBox="-6.0 -6.0 94.8 112.0" role="img" aria-label="Cendon"><title>Cendon</title><path fill="currentColor" d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg><b>Cendon</b></div>
+    <div class="lx-sky" id="hSky" aria-hidden="true"><i></i><b></b><canvas></canvas></div>
+    <div class="lx-logo nt"><button class="lx-bell" id="hJobs" type="button" aria-label="การแจ้งเตือน" aria-haspopup="dialog" aria-expanded="false" hidden><i class="ti ti-bell"></i><em id="hJobsN" hidden></em></button><svg class="cmk" viewBox="-6.0 -6.0 94.8 112.0" role="img" aria-label="Cendon"><title>Cendon</title><path fill="currentColor" d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg><b>Cendon</b></div>
     <!-- ช่องเดียวสองหน้า: หน้าแรก = ค้นหา (แว่นขยาย) · แตะ 2 ครั้งที่พื้นที่ว่าง = พลิก 180° เป็นคุยกับ AI แล้วพลิกกลับได้เรื่อย ๆ -->
     <div class="lx-flip" id="hFlip">
       <div class="lx-flipin" id="hFlipIn">
         <form class="lx-s lx-face lx-fs" id="hSearch" role="search" autocomplete="off">
-          <i class="ti ti-search" aria-hidden="true"></i>
-          <input id="hs" type="search" enterkeyhint="search" aria-label="ค้นหาอาการ อู่ หรือบริการ" aria-describedby="hHint"/>
-          <button class="lx-cta" type="submit"><span>ค้นหา</span></button>
+          <div class="lx-r1"><i class="ti ti-search" aria-hidden="true"></i><input id="hs" type="search" enterkeyhint="search" aria-label="ค้นหาอาการ อู่ หรือบริการ" aria-describedby="hHint"/></div>
+          <div class="lx-r2"><button class="lx-cta" type="submit"><i class="ti ti-search"></i><span>ค้นหา</span></button></div>
         </form>
-        <form class="lx-s lx-ask lx-face lx-fa" id="hForm" autocomplete="off" aria-hidden="true" inert>
-          <span class="lx-aitag" aria-hidden="true"><i class="ti ti-sparkles"></i>Cendon AI</span>
-          <textarea id="hq" rows="1" enterkeyhint="send" aria-label="ถาม Cendon AI" aria-describedby="hHint"></textarea>
-          <div class="lx-tools">
-            <a class="lx-tl" href="/photo" id="hPhoto" title="ถ่ายรูปให้ AI ดู" aria-label="ถ่ายรูป"><i class="ti ti-camera"></i></a>
+        <form class="lx-s lx-face lx-fa" id="hForm" autocomplete="off" aria-hidden="true" inert>
+          <div class="lx-r1"><i class="ti ti-sparkles lx-spark" aria-hidden="true"></i><input id="hq" type="text" enterkeyhint="send" aria-label="ถาม Cendon AI" aria-describedby="hHint"/></div>
+          <div class="lx-r2"><a class="lx-tl" href="/photo" id="hPhoto" title="ถ่ายรูปให้ AI ดู" aria-label="ถ่ายรูป"><i class="ti ti-camera"></i></a>
             <a class="lx-tl" href="/listen" id="hListen" title="ให้ AI ฟังเสียงรถ" aria-label="อัดเสียง"><i class="ti ti-microphone"></i></a>
-            <button class="lx-carchip" type="button" id="hCar" aria-haspopup="menu"><i class="ti ti-car"></i><span class="nt" id="hCarN"></span><i class="ti ti-chevron-down"></i></button>
-            <button class="lx-send" type="submit" aria-label="ส่งให้ AI"><i class="ti ti-arrow-up"></i></button>
-          </div>
+            <button class="lx-send" type="submit" aria-label="ส่งให้ AI"><i class="ti ti-arrow-up"></i></button></div>
         </form>
       </div>
       <p class="lx-fliphint" id="hHint"></p>
@@ -3306,7 +3353,26 @@ function drawMyCar(){
   /* ยังไม่มีรถ: ชวนเพิ่มรถทุกครั้ง พร้อมบอกว่าได้อะไร — ข้อมูลรถคือหัวใจที่ทำให้ AI และช่างแม่นขึ้น */
   if(!c){el.hidden=false;el.innerHTML=`<a href="/garage?add=1" class="lx-car lx-addcar"><span class="lx-cari"><i class="ti ti-car-garage"></i></span><span class="lx-cart"><b>${T("เพิ่มรถของคุณ","Add your car")}</b><small>${T("AI วิเคราะห์แม่นขึ้นตามรุ่นรถ · ช่างรู้รุ่นก่อนเสนอราคา · เตือนเช็กระยะให้","Sharper AI answers for your model · mechanics know your car before quoting · service reminders")}</small></span><span class="lx-plus"><i class="ti ti-plus"></i></span></a>`;return}
   el.hidden=false;
-  el.innerHTML=`<a href="/garage" class="lx-car"><span class="lx-cari"><i class="ti ti-car"></i></span><span class="lx-cart"><small>รถของฉัน</small><b class="nt">${esc([c.name,c.year].filter(Boolean).join(" "))}</b></span><span class="lx-carm">${c.mileage?money(c.mileage)+" "+T("กม.","km"):T("ดูสมุดรถ","Car log")} <i class="ti ti-chevron-right"></i></span></a>`;
+  /* แตะการ์ดรถ = เมนูเปลี่ยนรถ (หลายคันสลับได้ทันที) + เปิดสมุดรถ/เพิ่มรถ — AI และช่างใช้คันที่เลือกนี้ */
+  el.innerHTML=`<button type="button" class="lx-car" id="myCarB" aria-haspopup="menu" aria-expanded="false"><span class="lx-cari"><i class="ti ti-car"></i></span><span class="lx-cart"><small>${T("รถของฉัน","My car")}</small><b class="nt">${esc([c.name,c.year].filter(Boolean).join(" "))}</b></span><span class="lx-carm">${c.mileage&&+c.mileage>0?money(c.mileage)+" "+T("กม.","km"):""} <i class="ti ti-chevron-down"></i></span></button>`;
+  $("myCarB").onclick=e=>carMenu(e.currentTarget,c.id);
+}
+function carMenu(btn,cur){
+  const old=document.querySelector(".lx-carmenu");if(old){old.remove();btn.setAttribute("aria-expanded","false");return}
+  const cars=(ls.get("spire_garage",[])||[]).filter(x=>x&&x.id&&x.name),m=document.createElement("div");m.className="lx-carmenu";m.setAttribute("role","menu");
+  m.innerHTML=cars.map(x=>`<button type="button" role="menuitemradio" aria-checked="${x.id===cur}" data-c="${esc(x.id)}"><i class="ti ti-car"></i><span><b class="nt">${esc([x.name,x.year].filter(Boolean).join(" "))}</b>${x.mileage&&+x.mileage>0?`<small>${money(x.mileage)} ${T("กม.","km")}</small>`:""}</span>${x.id===cur?'<i class="ti ti-check"></i>':""}</button>`).join("")
+    +`<hr><a role="menuitem" href="/garage/${encodeURIComponent(cur)}"><i class="ti ti-notebook"></i><span><b>${T("เปิดสมุดรถคันนี้","Open this car's log")}</b></span></a><a role="menuitem" href="/garage/add"><i class="ti ti-plus"></i><span><b>${T("เพิ่มรถคันใหม่","Add a car")}</b></span></a>`;
+  document.body.appendChild(m);btn.setAttribute("aria-expanded","true");
+  const r=btn.getBoundingClientRect(),w=Math.min(m.offsetWidth,innerWidth-24);
+  m.style.top=(r.bottom+6+scrollY)+"px";m.style.left=Math.max(12,Math.min(r.left+scrollX,innerWidth-w-12))+"px";m.style.width=Math.max(240,Math.min(r.width,340))+"px";
+  const close=()=>{m.remove();btn.setAttribute("aria-expanded","false");removeEventListener("pointerdown",off,true);document.removeEventListener("keydown",k)};
+  const off=ev=>{if(!m.contains(ev.target)&&!btn.contains(ev.target))close()};const k=ev=>{if(ev.key==="Escape"){close();btn.focus()}};
+  setTimeout(()=>{addEventListener("pointerdown",off,true);document.addEventListener("keydown",k)},0);
+  m.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{close();if(b.dataset.c===cur)return;
+    ls.set("spire_selCar",b.dataset.c);try{window.cloudMark&&cloudMark("selCar")}catch(e){}
+    drawMyCar();try{drawHome()}catch(e){}
+    const c=cars.find(x=>x.id===b.dataset.c);toast(T("เปลี่ยนเป็น ","Switched to ")+(c?c.name:""),"ti-car")});
+  (m.querySelector('[aria-checked="true"]')||m.querySelector("button,a")).focus();
 }
 /* ═══ ตรวจใบเสนอราคา ═══
    ปุ่มบนหน้าแรกพามาหน้านี้ก่อน: ขอรูปอย่างเดียว (เดิมพาไปห้องแชตตรง ๆ คนมักลืมแนบรูป AI เลยตอบลอย ๆ)
@@ -3599,96 +3665,157 @@ function drawQuick(){
     if(k==="quote")return quotePage();
     if(k==="listen")return listenPage()});
 }
+/* ═══ ฟ้าคลื่นดาวตอนโหมด AI (HSKY) ═══
+   ชั้นแสงไล่สี อำพัน→ส้ม→ชมพู→ม่วง ไหลเป็นคลื่น = ชุดเดียวกับตอน AI กำลังประมวลผลในห้องแชต
+   บนนั้นเป็นดาวที่ไหลไปตามเส้นคลื่น กะพริบ และมีดาวตกเป็นครั้งคราว
+   ความเข้ม = มุมที่ช่องค้นหาหมุนไป (ปัดครึ่งทางก็เห็นครึ่งหนึ่ง) · วาดเฉพาะตอนมองเห็น · ลดการเคลื่อนไหว = ภาพนิ่ง */
+const HSKY=(function(){
+  const box=$("hSky");if(!box)return null;
+  const cv=box.querySelector("canvas"),cx=cv.getContext("2d"),hero=box.parentElement;
+  const calm=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let W=0,H=0,dpr=1,lv=0,raf=0,vis=true,P=[],shoot=null,nextShoot=0,t0=performance.now();
+  const COL=[[242,140,56],[255,77,122],[255,181,71],[139,107,255]];
+  const dark=()=>document.documentElement.dataset.theme==="dark";
+  /* เส้นคลื่น 3 เส้น: ความสูง ความถี่ ความเร็วต่างกัน — ดาวไหลไปตามเส้นเหล่านี้ */
+  const WV=[{y:.30,a:.07,f:1.6,s:.18,p:0},{y:.46,a:.09,f:1.1,s:-.12,p:2.1},{y:.62,a:.06,f:2.2,s:.22,p:4.2}];
+  const wy=(k,x,t)=>{const w=WV[k];return H*(w.y+w.a*Math.sin(x/W*Math.PI*2*w.f+t*w.s+w.p)+w.a*.45*Math.sin(x/W*Math.PI*2*w.f*2.3-t*w.s*1.7+w.p*1.3))};
+  function size(){
+    const r=hero.getBoundingClientRect(),vw=document.documentElement.clientWidth;
+    /* เริ่มจากขอบบนสุดของหน้า กว้างเต็มจอ (ไม่ใช่แค่กรอบเนื้อหา) */
+    W=vw;H=Math.round(Math.min(Math.max(innerHeight*.58,360),640));
+    box.style.left=(-r.left)+"px";box.style.top=(-(r.top+scrollY))+"px";box.style.width=W+"px";box.style.height=H+"px";
+    dpr=Math.min(2,devicePixelRatio||1);cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);cv.style.width=W+"px";cv.style.height=H+"px";
+    const n=W<700?80:150;
+    P=Array.from({length:n},()=>({k:Math.random()*3|0,u:Math.random(),j:(Math.random()+Math.random()+Math.random()-1.5)*26,v:(.006+Math.random()*.018)*(Math.random()<.5?-1:1),
+      r:Math.random()<.12?1.6+Math.random()*1.2:.5+Math.random()*1.1,tw:1+Math.random()*2.6,ph:Math.random()*6.28,c:COL[Math.random()*4|0]}));
+  }
+  function draw(now){
+    const t=(now-t0)/1000,dk=dark();
+    cx.setTransform(dpr,0,0,dpr,0,0);cx.clearRect(0,0,W,H);
+    /* เส้นคลื่นเรืองบาง ๆ */
+    WV.forEach((w,k)=>{const g=cx.createLinearGradient(0,0,W,0);g.addColorStop(0,"rgba(255,181,71,0)");g.addColorStop(.2,"rgba(242,140,56,.9)");g.addColorStop(.5,"rgba(255,77,122,.9)");g.addColorStop(.8,"rgba(139,107,255,.9)");g.addColorStop(1,"rgba(139,107,255,0)");
+      cx.strokeStyle=g;cx.lineCap="round";
+      for(const [lw,al] of [[7,dk?.07:.06],[1.2,dk?.42:.32]]){cx.lineWidth=lw;cx.globalAlpha=al;cx.beginPath();for(let x=0;x<=W;x+=8){const y=wy(k,x,t);x?cx.lineTo(x,y):cx.moveTo(x,y)}cx.stroke()}});
+    /* ดาวไหลตามคลื่น */
+    for(const s of P){
+      s.u+=s.v*.016;if(s.u>1)s.u-=1;if(s.u<0)s.u+=1;
+      const x=s.u*W,y=wy(s.k,x,t)+s.j*(.8+.2*Math.sin(t*.7+s.ph)),a=.35+.65*(.5+.5*Math.sin(t*s.tw+s.ph));
+      const [r,g,b]=dk?(s.r>1.5?s.c:[255,255,255]):s.c;
+      if(s.r>1.4){cx.globalAlpha=a*(dk?.22:.16);cx.fillStyle=`rgb(${r},${g},${b})`;cx.beginPath();cx.arc(x,y,s.r*4,0,6.283);cx.fill()}
+      cx.globalAlpha=a*(dk?.95:.75);cx.fillStyle=`rgb(${r},${g},${b})`;cx.beginPath();cx.arc(x,y,s.r,0,6.283);cx.fill();
+    }
+    /* ดาวตกเป็นครั้งคราว วิ่งเลียบคลื่น */
+    if(!calm){
+      if(!shoot&&now>nextShoot){shoot={k:Math.random()*3|0,u:-.05,v:.55+Math.random()*.35,d:Math.random()<.5?1:-1};if(shoot.d<0)shoot.u=1.05}
+      if(shoot){shoot.u+=shoot.v*.016*shoot.d;const x=shoot.u*W,y=wy(shoot.k,x,t);
+        const tx=x-shoot.d*90,ty=wy(shoot.k,tx,t),g=cx.createLinearGradient(tx,ty,x,y);g.addColorStop(0,"rgba(255,255,255,0)");g.addColorStop(1,dk?"rgba(255,255,255,.95)":"rgba(255,77,122,.85)");
+        cx.globalAlpha=1;cx.strokeStyle=g;cx.lineWidth=1.6;cx.beginPath();cx.moveTo(tx,ty);cx.lineTo(x,y);cx.stroke();
+        if(shoot.u>1.1||shoot.u<-.1){shoot=null;nextShoot=now+3500+Math.random()*4500}}
+    }
+    cx.globalAlpha=1;
+  }
+  const loop=now=>{raf=0;if(lv<=0.01||!vis||document.hidden)return;draw(now);if(!calm)raf=requestAnimationFrame(loop)};
+  const kick=()=>{if(!raf&&lv>0.01&&vis&&!document.hidden)raf=requestAnimationFrame(loop)};
+  function level(k,anim){
+    lv=k;box.style.transition=anim?"opacity .7s ease":"none";box.style.opacity=k.toFixed(3);
+    box.classList.toggle("on",k>0.01);
+    if(k>0.01){if(!W)size();kick()}
+  }
+  addEventListener("resize",()=>{if(W){size();if(calm)requestAnimationFrame(draw)}});
+  document.addEventListener("visibilitychange",kick);
+  if("IntersectionObserver" in window)new IntersectionObserver(es=>{vis=es[0].isIntersecting;kick()}).observe(box);
+  return {level};
+})();
 /* ═══ ช่องค้นหา ⇄ คุยกับ AI ═══
-   หน้าแรกเป็นค้นหาธรรมดา (แว่นขยาย + ปุ่มค้นหา) · แตะ 2 ครั้งที่พื้นที่ว่างของช่อง (ไม่ใช่ปุ่ม) = พลิก 180° เป็นโหมด AI
-   โหมด AI: ส่งรูป · อัดเสียง · เลือกรถ · ลูกศรส่ง → เข้าห้องแชตแล้วส่งให้ AI ทันที · แตะ 2 ครั้งอีกทีพลิกกลับ
-   ข้อความที่พิมพ์ค้างตามไปอีกหน้า · จำโหมดไว้แค่ในแท็บนี้ (กดกลับจากแชตแล้วยังอยู่โหมด AI) */
+   หน้าแรกเป็นค้นหาธรรมดา (แว่นขยาย + ปุ่มค้นหา) · สองหน้าขนาดเท่ากันเสมอ
+   มือถือ: ปัดช่องไปซ้าย/ขวา ช่องหมุนตามนิ้ว (เลื่อนไปกี่ % ก็หมุนกี่ %) ปล่อยเกินราวหนึ่งในสี่หรือปัดเร็ว = พลิกไปอีกหน้า
+   คอม: ดับเบิลคลิกที่พื้นที่ว่าง (ไม่ใช่ปุ่ม)
+   โหมด AI: ส่งรูป · อัดเสียง · ลูกศรส่ง → เข้าห้องแชตแล้วส่งให้ AI ทันที (รถใช้คันที่เลือกบนหน้าแรก)
+   ฟ้าด้านบนเป็นคลื่นดาว (HSKY) ค่อย ๆ ปรากฏตามมุมที่หมุน · ข้อความที่พิมพ์ค้างตามไปอีกหน้า · จำโหมดไว้ในแท็บนี้ */
 const HERO=(function(){
   const F=$("hFlip"),IN=$("hFlipIn"),S=$("hSearch"),A=$("hForm"),si=$("hs"),ta=$("hq");
-  let ai=false,carSel="";
-  const fit=()=>{const f=ai?A:S;IN.style.height=f.offsetHeight+"px"};
-  const grow=()=>{ta.style.height="auto";ta.style.height=Math.min(ta.scrollHeight,140)+"px";if(ai)fit()};
+  const coarse=matchMedia("(pointer:coarse)").matches;
+  let ai=false,rot=0;
+  /* มุมหมุนจริง → ฟ้าดาวจางเข้าตามมุม (0 = ค้นหา · 1 = AI) */
+  function turn(deg,anim){
+    IN.style.transition=anim?"":"none";IN.style.transform=`rotateY(${deg}deg)`;
+    const d=((deg%360)+360)%360,k=(d>180?360-d:d)/180;
+    if(typeof HSKY!=="undefined"&&HSKY)HSKY.level(k,anim);
+  }
   const seen=()=>{try{return +localStorage.getItem("spire_flipSeen")||0}catch(e){return 0}};
-  const hint=()=>{const h=$("hHint"),n=seen();
-    h.innerHTML=n>=2?"":ai?T("แตะ 2 ครั้งที่ช่องว่าง เพื่อกลับไปค้นหา","Double-tap an empty spot to go back to search")
-      :`${T("แตะ 2 ครั้งที่ช่องค้นหา เพื่อคุยกับ","Double-tap the search bar to talk to")} <b><i class="ti ti-sparkles"></i> AI</b>`;
-    h.hidden=n>=2;$("hToggle").textContent=ai?T("สลับเป็นค้นหา","Switch to search"):T("สลับเป็นคุยกับ AI","Switch to AI chat")};
-  function set(on,focus){
-    if(on===ai)return;ai=on;
-    const from=on?si:ta,to=on?ta:si;if(from.value&&!to.value){to.value=from.value}from.value="";
+  /* คำแนะนำใต้ช่อง: หายไปเลยหลังพลิกครั้งแรก */
+  function hint(){const h=$("hHint");
+    h.innerHTML=seen()?"":coarse?`${T("ปัดช่องค้นหาไปด้านข้าง เพื่อคุยกับ","Swipe the search bar sideways to talk to")} <b><i class="ti ti-sparkles"></i> AI</b>`
+      :`${T("ดับเบิลคลิกที่ช่องค้นหา เพื่อคุยกับ","Double-click the search bar to talk to")} <b><i class="ti ti-sparkles"></i> AI</b>`;
+    h.hidden=!!seen();$("hToggle").textContent=ai?T("สลับเป็นค้นหา","Switch to search"):T("สลับเป็นคุยกับ AI","Switch to AI chat")}
+  function set(on,focus,dir){
+    if(on===ai){turn(rot,true);return}
+    ai=on;rot+=(dir||1)*180;
+    const from=on?si:ta,to=on?ta:si;if(from.value&&!to.value)to.value=from.value;from.value="";
     F.classList.toggle("ai",ai);
     [S,A].forEach(f=>{const off=(f===A)!==ai;f.inert=off;f.setAttribute("aria-hidden",off)});
     try{sessionStorage.setItem("spire_heroAi",ai?"1":"")}catch(e){}
     try{localStorage.setItem("spire_flipSeen",String(seen()+1))}catch(e){}
-    if(ai){drawCar();grow();cycle(true)}
-    fit();hint();
+    turn(rot,true);hint();if(ai)cycle(true);
     F.classList.remove("burst");void F.offsetWidth;if(ai)F.classList.add("burst");
-    if(focus)setTimeout(()=>{try{to.focus({preventScroll:true});to.setSelectionRange(to.value.length,to.value.length)}catch(e){}},ai?380:200);
+    if(focus)setTimeout(()=>{try{to.focus({preventScroll:true});to.setSelectionRange(to.value.length,to.value.length)}catch(e){}},ai?380:220);
   }
-  /* แตะ 2 ครั้ง: ช่องว่างของกรอบ หรือในช่องพิมพ์ที่ยังว่าง · ปุ่ม/ลิงก์/ชิปรถไม่นับ · มีตัวหนังสืออยู่ = แตะสองทีเลือกคำตามปกติ */
-  let last=0,lx=0,ly=0;
-  F.addEventListener("pointerup",e=>{
-    if(e.button>0||e.target.closest("button,a,select,.lx-carmenu"))return;
-    const fld=e.target.closest("input,textarea");if(fld&&fld.value)return;
-    const t=performance.now();
-    if(t-last<350&&Math.hypot(e.clientX-lx,e.clientY-ly)<36){last=0;e.preventDefault();set(!ai,true)}
-    else{last=t;lx=e.clientX;ly=e.clientY}
-  });
-  F.addEventListener("dblclick",e=>{if(!e.target.closest("button,a"))e.preventDefault()});
-  $("hToggle").onclick=()=>set(!ai,true);
+  /* มือถือ: ปัดตามนิ้ว — แนวนอนเป็นของช่องนี้ แนวตั้งยังเลื่อนหน้าได้ปกติ (touch-action: pan-y) */
+  let pid=null,sx=0,sy=0,dx=0,w=1,t0=0,lock=null,hadFocus=false;
+  F.addEventListener("pointerdown",e=>{if(e.pointerType!=="touch"||pid!==null)return;
+    pid=e.pointerId;sx=e.clientX;sy=e.clientY;dx=0;lock=null;w=Math.max(200,F.offsetWidth);t0=performance.now();
+    hadFocus=document.activeElement===si||document.activeElement===ta});
+  F.addEventListener("pointermove",e=>{if(e.pointerId!==pid)return;
+    const mx=e.clientX-sx,my=e.clientY-sy;
+    if(lock===null){if(Math.abs(mx)<7&&Math.abs(my)<7)return;lock=Math.abs(mx)>Math.abs(my)*1.1?"x":"y";
+      if(lock==="x"){F.classList.add("drag");try{F.setPointerCapture(pid)}catch(x){}}}
+    if(lock!=="x")return;
+    dx=mx;turn(rot+Math.max(-1,Math.min(1,dx/w))*180,false)});
+  const end=e=>{if(e.pointerId!==pid)return;pid=null;if(lock!=="x")return;lock=null;F.classList.remove("drag");
+    const v=dx/Math.max(1,performance.now()-t0),go=Math.abs(dx)>w*.26||Math.abs(v)>.55&&Math.abs(dx)>24;
+    /* ปัดแล้วนิ้วยกขึ้นบนปุ่ม — ไม่ให้นับเป็นการกดปุ่ม */
+    const eat=ev=>{ev.preventDefault();ev.stopPropagation()};F.addEventListener("click",eat,{capture:true,once:true});setTimeout(()=>F.removeEventListener("click",eat,true),400);
+    if(go)set(!ai,hadFocus,dx>0?1:-1);else turn(rot,true)};
+  F.addEventListener("pointerup",end);F.addEventListener("pointercancel",end);
+  /* คอม: ดับเบิลคลิกที่ช่องว่าง (ช่องพิมพ์ที่ยังว่างนับด้วย) */
+  F.addEventListener("dblclick",e=>{if(coarse||e.target.closest("button,a"))return;
+    const fld=e.target.closest("input");if(fld&&fld.value)return;e.preventDefault();set(!ai,true,1)});
+  $("hToggle").onclick=()=>set(!ai,true,1);
   /* ค้นหา: ผลลัพธ์ช่าง/บริการเหมือนเดิม */
   S.onsubmit=e=>{e.preventDefault();const v=si.value.trim();if(v.length<2){si.focus();return}openRes(v)};
-  /* AI: เข้าห้องแชตแล้วส่งข้อความทันที พร้อมรถที่เลือก */
+  /* AI: เข้าห้องแชตแล้วส่งข้อความทันที พร้อมรถคันที่เลือกบนหน้าแรก */
   const send=async()=>{const v=ta.value.trim();if(!v){ta.focus();return}
     await READY.user;if(!U)return needLogin();
-    if(carSel)ls.set("spire_selCar",carSel);
+    const [,car]=myCars();
     if(window.CendonPaint)CendonPaint.prepare("/chat");
-    location.href="/chat?q="+encodeURIComponent(v.slice(0,2000))+"&send=1"+(carSel?"&car="+encodeURIComponent(carSel):"")};
+    location.href="/chat?q="+encodeURIComponent(v.slice(0,2000))+"&send=1"+(car?"&car="+encodeURIComponent(car):"")};
   A.onsubmit=e=>{e.preventDefault();send()};
   A.querySelector(".lx-send").addEventListener("click",e=>{e.preventDefault();send()});
-  ta.addEventListener("input",grow);
-  ta.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();send()}});
+  ta.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.isComposing){e.preventDefault();send()}});
   $("hPhoto").onclick=e=>{e.preventDefault();photoPage()};
   $("hListen").onclick=e=>{e.preventDefault();listenPage()};
-  /* ชิปรถ: AI รู้ว่าถามถึงคันไหน (รุ่น ปี เลขไมล์) · ไม่มีรถ = พาไปเพิ่มรถ */
-  const nm=c=>[c.name,c.year].filter(Boolean).join(" ");
-  function drawCar(){const [cars,cur]=myCars();if(!cars.some(c=>c.id===carSel))carSel=cur;
-    const c=cars.find(x=>x.id===carSel);$("hCarN").textContent=c?c.name:T("เลือกรถ","Pick a car");$("hCar").classList.toggle("none",!c)}
-  $("hCar").onclick=e=>{
-    document.querySelector(".lx-carmenu")?.remove();
-    const [cars]=myCars(),m=document.createElement("div");m.className="lx-carmenu";m.setAttribute("role","menu");
-    m.innerHTML=cars.map(c=>`<button type="button" role="menuitemradio" aria-checked="${c.id===carSel}" data-c="${esc(c.id)}"><i class="ti ti-car"></i><span class="nt">${esc(nm(c))}</span>${c.id===carSel?'<i class="ti ti-check"></i>':""}</button>`).join("")
-      +`<button type="button" data-c="" role="menuitem"><i class="ti ti-plus"></i><span>${T("เพิ่มรถคันใหม่","Add a car")}</span></button>`;
-    document.body.appendChild(m);
-    const r=e.currentTarget.getBoundingClientRect(),w=m.offsetWidth;m.style.top=(r.bottom+6+scrollY)+"px";m.style.left=Math.max(12,Math.min(r.left+scrollX,innerWidth-w-12))+"px";
-    const off=ev=>{if(!m.contains(ev.target)){m.remove();removeEventListener("pointerdown",off,true)}};setTimeout(()=>addEventListener("pointerdown",off,true),0);
-    m.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{m.remove();removeEventListener("pointerdown",off,true);
-      if(!b.dataset.c){location.href="/garage";return}carSel=b.dataset.c;drawCar();ta.focus()});
-  };
-  /* ข้อความชวนในโหมด AI เปลี่ยนตามช่วงเวลา ฤดู รถที่เลือก และบอกว่าสั่งงานในแอปได้ */
+  /* ข้อความชวนในโหมด AI: สั้นพอดีช่องเดียว เปลี่ยนตามเวลา ฤดู รถที่เลือก และบอกว่าสั่งงานในแอปได้ */
   function aiHints(){
-    const d=new Date(),h=d.getHours(),mo=d.getMonth()+1,[cars]=myCars(),c=cars.find(x=>x.id===carSel),cn=c?c.name:"";
+    const d=new Date(),h=d.getHours(),mo=d.getMonth()+1,[cars,cur]=myCars(),c=cars.find(x=>x.id===cur),cn=c?c.name:"";
     const L=[];
-    if(h>=5&&h<10)L.push(cn?T(`ก่อนออกจากบ้าน ${cn} มีอะไรผิดปกติไหม?`,`Before you head out — anything odd with ${cn}?`):T("ก่อนออกจากบ้าน รถมีอะไรผิดปกติไหม?","Before you head out — anything odd with the car?"));
-    else if(h>=10&&h<16)L.push(T("แอร์ไม่เย็นตอนรถติดกลางวัน? เล่าได้เลย","AC weak in midday traffic? Tell me"));
-    else if(h>=16&&h<21)L.push(T("ขับกลับบ้านแล้วมีเสียงแปลก ๆ ไหม?","Any strange noises on the drive home?"));
-    else L.push(T("ไฟเตือนขึ้นตอนกลางคืน? ส่งรูปหน้าปัดมาได้","A warning light at night? Send me a photo of the dash"));
-    if(mo>=5&&mo<=10)L.push(cn?T(`หน้าฝนแล้ว ยางกับที่ปัดน้ำฝนของ ${cn} พร้อมไหม?`,`Rainy season — are ${cn}'s tyres and wipers ready?`):T("หน้าฝนแล้ว ยางกับที่ปัดน้ำฝนพร้อมไหม?","Rainy season — are your tyres and wipers ready?"));
-    else if(mo>=3&&mo<=4)L.push(T("หน้าร้อน แบตกับน้ำหล่อเย็นต้องเช็กอะไรบ้าง?","Hot season — what should I check on battery and coolant?"));
-    else L.push(T("หน้าหนาวตอนเช้าสตาร์ทยากไหม?","Hard starts on cool mornings?"));
-    if(c&&c.mileage&&+c.mileage>0)L.push(T(`${cn} วิ่ง ${money(+c.mileage)} กม. ต้องเช็กอะไรแล้วบ้าง?`,`${cn} is at ${money(+c.mileage)} km — what's due?`));
-    L.push(T("สั่งได้เลย เช่น “โพสต์หาช่างล้างแอร์ให้หน่อย”","Just ask, e.g. “post a job for an AC clean”"));
-    L.push(T("“เพิ่มรถ Honda Civic ปี 2020 ไมล์ 45,000”","“Add a 2020 Honda Civic, 45,000 km”"));
-    L.push(T("“พาไปหน้าการาจ” หรือ “เปลี่ยนเป็นธีมมืด”","“Take me to my garage” or “switch to dark mode”"));
+    if(h>=5&&h<10)L.push(cn?T(`ก่อนออกบ้าน ${cn} ปกติดีไหม?`,`Heading out — is ${cn} OK?`):T("ก่อนออกบ้าน รถปกติดีไหม?","Heading out — is the car OK?"));
+    else if(h>=10&&h<16)L.push(T("แอร์ไม่เย็นตอนรถติด?","AC weak in traffic?"));
+    else if(h>=16&&h<21)L.push(T("ขับกลับบ้านมีเสียงแปลกไหม?","Odd noises on the way home?"));
+    else L.push(T("ไฟเตือนขึ้น? ส่งรูปหน้าปัดมา","Warning light? Send a dash photo"));
+    if(mo>=5&&mo<=10)L.push(T("หน้าฝน ยางกับที่ปัดพร้อมไหม?","Rainy season — tyres & wipers OK?"));
+    else if(mo>=3&&mo<=4)L.push(T("หน้าร้อน เช็กแบตกับน้ำหล่อเย็น?","Hot season — battery & coolant?"));
+    else L.push(T("เช้า ๆ สตาร์ทยากไหม?","Hard starts in the morning?"));
+    if(c&&c.mileage&&+c.mileage>0)L.push(T(`${cn} ${money(+c.mileage)} กม. ต้องเช็กอะไร?`,`${cn} at ${money(+c.mileage)} km — what's due?`));
+    L.push(T("สั่งได้ “โพสต์หาช่างล้างแอร์”","Try “post an AC clean job”"),T("“เพิ่มรถ Civic 2020”","“Add a 2020 Civic”"),T("“พาไปหน้าการาจ”","“Take me to my garage”"));
     return L;
   }
   let hi=0,ht=0;
   function cycle(reset){clearInterval(ht);const L=aiHints();if(reset)hi=0;
-    const step=()=>{if(document.activeElement===ta&&ta.value||ta.value)return;ta.placeholder=L[hi++%L.length]};step();ht=setInterval(step,3400)}
+    const step=()=>{if(ta.value)return;ta.placeholder=L[hi++%L.length]};step();ht=setInterval(step,3400)}
   si.placeholder=T("ค้นหาอาการ อู่ หรือบริการ","Search symptoms, shops or services");
-  try{if(sessionStorage.getItem("spire_heroAi")==="1")set(true,false)}catch(e){}
-  hint();requestAnimationFrame(fit);addEventListener("resize",fit);
-  return {set,fit,get ai(){return ai}};
+  try{if(sessionStorage.getItem("spire_heroAi")==="1"){ai=true;rot=180;F.classList.add("ai");[S,A].forEach(f=>{const off=f!==A;f.inert=off;f.setAttribute("aria-hidden",off)});cycle(true)}}catch(e){}
+  turn(rot,false);hint();
+  return {set,get ai(){return ai}};
 })();
 /* ═══ หน้าหลักใหม่: แถวหมวด + ช่างแนะนำ + หน้าหมวด ═══ */
 /* หมวดละเอียด: แต่ละอันผูกกับหมวดหลักของร้าน (base) ที่ช่างเลือกไว้ตอนสมัคร — กดแล้วเห็นร้านในหมวดหลักนั้น */
@@ -3739,10 +3866,85 @@ function profCard(t,i){
 }
 function wireCards(host){host.querySelectorAll(".lx-pc").forEach(b=>b.onclick=()=>openTech(b.dataset.id))}
 /* ปุ่มงานที่กำลังดำเนินการ: วงกลมเล็กมุมขวาบน + ตัวเลข · แตะแล้วเปิดรายการงาน (ไม่กินพื้นที่หน้าแรก) */
+const bellBtns=()=>[$("hJobs"),$("hBellD")].filter(Boolean);
 function drawJobsBtn(){
-  const b=$("hJobs");if(!b)return;
-  const n=$("active")?$("active").querySelectorAll(".hs>*").length:0;
-  b.hidden=!n;$("hJobsN").textContent=n>9?"9+":n||"";
+  const n=window.CendonBell?CendonBell.unread():0;
+  bellBtns().forEach(b=>{const e=b.querySelector("em");
+    b.hidden=!U;e.hidden=!n;e.textContent=n>9?"9+":n||"";
+    b.setAttribute("aria-label",n?T(`การแจ้งเตือน ยังไม่อ่าน ${n}`,`Notifications, ${n} unread`):T("การแจ้งเตือน","Notifications"))});
+}
+/* ═══ กระดิ่งแจ้งเตือน (bell.js) ═══
+   ทุกครั้งที่ได้รายการใบงานใหม่: เทียบกับครั้งก่อน (เก็บในเครื่อง ผูกบัญชี) → ช่างเสนอราคา · กำลังมา · เริ่มซ่อม · ซ่อมเสร็จ · ข้อความใหม่
+   ฝั่งช่าง: คำขอใหม่ · ลูกค้ายืนยันราคา/งาน · ยกเลิก · รอบแรกหลังเข้าแอปจำไว้เฉย ๆ ไม่แจ้งของเก่า
+   เปิดหน้าค้างไว้: ถามหลังบ้านเบา ๆ ทุก 20 วิ (ชีพจร) มีอะไรเปลี่ยนค่อยดึงรายการเต็ม */
+if(window.CendonBell){CendonBell.setApi({get:p=>api(p),post:(p,b)=>api(p,{body:b})});CendonBell.on(()=>{try{drawJobsBtn()}catch(e){}})}
+function bellDiff(){
+  if(!U||!JOBS_OK||!window.CendonBell)return;
+  const K="spire_jobsnap",snap=ls.get(K,null),cur={};
+  JOBS.forEach(j=>{cur[j.id]=[j.status,j.unread||0]});
+  if(!snap||snap.uid!==U.uid){ls.set(K,{uid:U.uid,j:cur});return}
+  const old=snap.j||{},evs=[];
+  for(const j of JOBS){
+    if(j.side==="admin")continue;
+    const o=old[j.id],tech=j.side==="technician",shop=j.techName||T("ช่าง","The mechanic"),car=j.car||"",url="/jobs/"+encodeURIComponent(j.id),tag="cendon-job-"+j.id;
+    const ev=(kind,title,body,u)=>evs.push({id:j.id+":"+kind+":"+(j.updatedAt||j.createdAt||0),kind,title,body:body??car,url:u||url,tag});
+    if(!o){if(tech&&j.status==="requested")ev("request",T("คำขอใหม่: ","New request: ")+car,j.symptom);continue}
+    if(o[0]!==j.status){
+      if(!tech){
+        if(j.status==="quoted")ev("quote",T(`${shop} เสนอราคา`,`${shop} sent a quote`)+(j.total?` ฿${money(j.total)}`:""));
+        else if(j.status==="enroute")ev("enroute",T(`${shop} กำลังมาหาคุณ`,`${shop} is on the way`));
+        else if(j.status==="working")ev("working",T(`${shop} เริ่มซ่อมแล้ว`,`${shop} started the repair`));
+        else if(j.status==="done")ev("done",T(`${shop} ซ่อมเสร็จ — ตรวจแล้วยืนยันงาน`,`${shop} finished — check and confirm`));
+        else if(j.status==="cancelled")ev("cancel",j.expired?T("คำขอหมดอายุ","A request expired"):T(`${shop} ยกเลิกงาน`,`${shop} cancelled`));
+      }else{
+        if(j.status==="accepted")ev("accept",T(`ลูกค้ายืนยันราคา: ${car}`,`Customer accepted: ${car}`));
+        else if(j.status==="completed")ev("complete",T(`ลูกค้ายืนยันงานเสร็จ: ${car}`,`Customer confirmed: ${car}`));
+        else if(j.status==="cancelled"&&!j.expired)ev("cancel",T(`ลูกค้ายกเลิก: ${car}`,`Customer cancelled: ${car}`));
+        else if(j.status==="disputed")ev("dispute",T(`มีการแจ้งปัญหา: ${car}`,`Problem reported: ${car}`));
+      }
+    }
+    if((j.unread||0)>(o[1]||0))ev("msg",T("ข้อความใหม่ — ","New message — ")+(tech?car:shop),tech?"":car,url+"/chat");
+  }
+  ls.set(K,{uid:U.uid,j:cur});
+  if(!evs.length)return;
+  evs.forEach(e=>CendonBell.add(e,{fallback:true}));
+  drawJobsBtn();bellBtns().forEach(b=>{b.classList.remove("ding");void b.offsetWidth;b.classList.add("ding")});
+  if(!document.hidden)toast(evs[0].title,"ti-bell-ringing");
+}
+let BELL_V="",BELL_T=0;
+function bellPoll(){
+  clearTimeout(BELL_T);
+  BELL_T=setTimeout(async()=>{
+    if(U&&!document.hidden&&MODE!=="tech"){try{const r=await api("/api/tech/pulse");if(r&&r.v&&r.v!==BELL_V){const first=!BELL_V;BELL_V=r.v;if(!first)await refreshJobs()}}catch(e){}}
+    bellPoll()},20000);
+}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&U&&MODE!=="tech")refreshJobs().catch(()=>{})});
+bellPoll();
+const BELLIC={request:"ti-file-plus",quote:"ti-file-dollar",enroute:"ti-truck",working:"ti-tool",done:"ti-checklist",cancel:"ti-circle-x",accept:"ti-circle-check",complete:"ti-circle-check",dispute:"ti-flag",msg:"ti-message-circle",ai:"ti-sparkles"};
+function bellPanel(btn){
+  const old=document.querySelector(".nb-pop");if(old){old.remove();btn.setAttribute("aria-expanded","false");return}
+  if(!U)return needLogin();
+  const B=window.CendonBell,p=document.createElement("div");p.className="nb-pop";p.setAttribute("role","dialog");p.setAttribute("aria-label",T("การแจ้งเตือน","Notifications"));
+  const agoT=at=>{const m=Math.round((Date.now()-at)/60000);return m<1?T("เมื่อกี้","now"):m<60?T(`${m} นาที`,`${m}m`):m<1440?T(`${Math.round(m/60)} ชม.`,`${Math.round(m/60)}h`):T(`${Math.round(m/1440)} วัน`,`${Math.round(m/1440)}d`)};
+  const draw=()=>{const L=B?B.list():[],perm=B?B.perm():"unsupported";
+    p.innerHTML=`<div class="nb-h"><b>${T("การแจ้งเตือน","Notifications")}</b>${L.some(x=>!x.read)?`<button type="button" data-a="read">${T("อ่านทั้งหมด","Mark all read")}</button>`:""}</div>
+      ${perm==="default"||(perm==="granted"&&!B.pushOn())?`<div class="nb-on"><i class="ti ti-bell-ringing"></i><span><b>${T("แจ้งเตือนในเครื่อง","Device notifications")}</b>${T("รู้ทันทีเมื่อช่างเสนอราคา รับงาน หรือ AI ตอบ แม้ไม่ได้เปิดแอป","Know right away when a mechanic quotes, takes the job or the AI replies — even with the app closed")}</span><button type="button" class="lx-cta" data-a="on">${perm==="granted"?T("เชื่อมต่อ","Connect"):T("เปิด","Turn on")}</button></div>`
+        :perm==="denied"?`<div class="nb-on"><i class="ti ti-bell-off"></i><span><b>${T("ปิดแจ้งเตือนไว้ในเบราว์เซอร์","Notifications blocked")}</b>${T("เปิดได้ที่การตั้งค่าเว็บไซต์ของเบราว์เซอร์","Allow them in your browser's site settings")}</span></div>`:""}
+      <div class="nb-list">${L.length?L.map(x=>`<button type="button" class="nb-it${x.read?"":" new"}" data-id="${esc(x.id)}" data-u="${esc(x.url)}"><span class="nb-ic${x.kind==="ai"?" ai":""}"><i class="ti ${BELLIC[x.kind]||"ti-bell"}"></i></span><span><b class="nt">${esc(x.title)}</b>${x.body?`<small class="nt">${esc(x.body)}</small>`:""}</span><time>${agoT(x.at)}</time></button>`).join("")
+        :`<div class="nb-empty"><i class="ti ti-bell"></i>${T("ยังไม่มีการแจ้งเตือน — เมื่อช่างเสนอราคา รับงาน หรือส่งข้อความ จะขึ้นที่นี่","Nothing yet — quotes, accepted jobs and messages show up here")}</div>`}</div>
+      <div class="nb-f"><button type="button" data-a="jobs">${T("งานของฉันทั้งหมด","All my jobs")}</button></div>`;
+    p.querySelectorAll("[data-id]").forEach(x=>x.onclick=()=>{B.read(x.dataset.id);close();const u=x.dataset.u||"/";if(u[0]==="/"&&window.Nav&&Nav.owns(u))Nav.go(u);else location.href=u});
+    const r=p.querySelector('[data-a="read"]');if(r)r.onclick=()=>{B.read();draw();drawJobsBtn()};
+    const on=p.querySelector('[data-a="on"]');if(on)on.onclick=e=>busy(e.currentTarget,async()=>{const st=await B.enable();if(st==="granted")toast(T("เปิดแจ้งเตือนในเครื่องแล้ว","Device notifications are on"),"ti-bell-ringing");draw()});
+    p.querySelector('[data-a="jobs"]').onclick=()=>{close();jobs()};
+  };
+  draw();document.body.appendChild(p);btn.setAttribute("aria-expanded","true");
+  const r=btn.getBoundingClientRect();p.style.top=(r.bottom+8+scrollY)+"px";p.style.left=Math.max(10,Math.min(r.right-p.offsetWidth+scrollX,innerWidth-p.offsetWidth-10))+"px";
+  const close=()=>{p.remove();btn.setAttribute("aria-expanded","false");removeEventListener("pointerdown",off,true);document.removeEventListener("keydown",k)};
+  const off=e=>{if(!p.contains(e.target)&&!btn.contains(e.target))close()};const k=e=>{if(e.key==="Escape"){close();btn.focus()}};
+  setTimeout(()=>{addEventListener("pointerdown",off,true);document.addEventListener("keydown",k)},0);
+  /* เปิดแผง = เห็นแล้ว ป้ายตัวเลขหาย (รายการยังมีจุดใหม่จนกว่าจะแตะ) */
+  setTimeout(()=>{const n=p.querySelector(".nb-it");(n||p.querySelector("button")).focus()},40);
 }
 /* ═══ โพสต์บริการของช่าง (ร้านละไม่เกิน 2 รายการ) ═══ */
 let GIGS=null;
@@ -3989,7 +4191,7 @@ function wireGigRows(host){
   host.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>openCat(b.dataset.cat));
 }
 $("sugAll").onclick=()=>openCat("all");
-$("hJobs").onclick=()=>{try{jobs()}catch(e){}};
+bellBtns().forEach(b=>b.onclick=e=>bellPanel(e.currentTarget));
 {const _ra=renderActive;renderActive=function(){_ra.apply(this,arguments);try{drawJobsBtn()}catch(e){}}}
 let CATK="all",CATSUB="",CATQ="";
 function openCat(k,noHist){
@@ -4901,6 +5103,7 @@ function refreshJobs(){
   POSTS=p.status==="fulfilled"?p.value.posts||[]:[];
   THREADS=t.status==="fulfilled"?t.value.threads||[]:[];
   renderActive();renderUsed();syncGarage();queueDot();saveSnap();try{LiveShare.sync()}catch(e){}
+  try{bellDiff()}catch(e){}
   })().finally(()=>{RJ=null});
   return RJ;
 }

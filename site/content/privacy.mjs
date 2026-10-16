@@ -3,7 +3,7 @@
    เทสต์ test/site.test.mjs ตรวจว่ามีชื่อผู้ให้บริการครบทุกตัว */
 import {L,P,UL,TABLE,NOTE,I,docBody,EMAIL} from '../layout.mjs';
 
-export const VERSION='1.11';
+export const VERSION='1.12';
 export const EFFECTIVE=['16 ตุลาคม 2569','16 October 2026'];
 
 /* ผู้ให้บริการภายนอกทุกตัวที่ได้รับข้อมูล — ชื่อในคอลัมน์แรกต้องตรงกับรายการใน test/site.test.mjs */
@@ -32,8 +32,8 @@ const PROCESSORS=[
   ['Didit',
     ['ยืนยันตัวตนผู้สมัครเป็นช่าง','Identity verification for mechanic applicants'],
     ['รูปบัตรประชาชน ภาพใบหน้า/การตรวจว่าเป็นคนจริง ผลการตรวจ','ID document images, face/liveness check, verification result']],
-  ['Resend',
-    ['ส่งรหัสเข้าสู่ระบบทางอีเมล (เมื่อคุณเลือก “ส่งรหัสเข้าอีเมลแทน” รหัสผ่าน)','Sending one-time sign-in codes by email (when you choose “Email me a code instead” of a password)'],
+  ['Resend · Gmail ของ Cendon (Google)',
+    ['ส่งรหัสเข้าสู่ระบบทางอีเมล (เมื่อคุณเลือก “ส่งรหัสเข้าอีเมลแทน” รหัสผ่าน) — ส่งจากบัญชี Gmail ของ Cendon หรือผ่าน Resend อย่างใดอย่างหนึ่ง','Sending one-time sign-in codes by email (when you choose “Email me a code instead” of a password) — sent from Cendon’s Gmail account or through Resend'],
     ['อีเมลของคุณ และรหัส 6 หลัก','Your email address and the six-digit code']],
   ['Web Push',
     ['ส่งการแจ้งเตือนถึงเบราว์เซอร์ของคุณ ผ่านบริการของผู้ผลิตเบราว์เซอร์ (เช่น Google Apple Mozilla Microsoft)','Delivering notifications to your browser through its maker’s push service (e.g. Google, Apple, Mozilla, Microsoft)'],
@@ -211,6 +211,7 @@ const sections=[
     P('เมื่อระบบเปลี่ยนวิธีเก็บหรือใช้ข้อมูล เราจะแก้หน้านี้ให้ตรงทันที เปลี่ยนเลขเวอร์ชันและวันที่ด้านบน และถ้าเป็นการเปลี่ยนสาระสำคัญ จะแจ้งในแอปก่อนมีผล การเปลี่ยนที่ต้องได้รับความยินยอมใหม่ เราจะขอความยินยอมใหม่ก่อน',
       'Whenever the way we collect or use data changes, we update this page straight away, with a new version number and date at the top. Material changes are announced in the app before they take effect, and anything that needs fresh consent will ask for it first.')+
     UL([
+      ['<b>1.12 · 16 ต.ค. 2569</b> — รหัสเข้าสู่ระบบทางอีเมลอาจส่งจากบัญชี Gmail ของ Cendon (Google) แทน Resend · Cendon ขอสิทธิ์เฉพาะ “ส่งอีเมล” ไม่อ่านกล่องจดหมาย · ปุ่มบัญชี Apple จะขึ้นเมื่อเปิดให้ใช้','<b>1.12 · 16 Oct 2026</b> — Email sign-in codes may be sent from Cendon’s Gmail account (Google) instead of Resend · Cendon only has permission to send, never to read mail · the Apple button appears once Apple sign-in is available'],
       ['<b>1.11 · 16 ต.ค. 2569</b> — ระหว่างที่ระบบส่งรหัส 6 หลักยังไม่เปิด ปุ่มเดียวกันจะส่ง “ลิงก์เข้าสู่ระบบ” ทางอีเมลผ่าน Google Firebase แทน · อีเมลที่ขอลิงก์เก็บในเครื่องนี้จนกดลิงก์เสร็จแล้วลบทิ้ง','<b>1.11 · 16 Oct 2026</b> — Until six-digit email codes are switched on, the same button emails a sign-in link through Google Firebase instead · the email you request it with stays on this device until the link signs you in, then is removed'],
       ['<b>1.10 · 16 ต.ค. 2569</b> — เพิ่มทางเลือก “ส่งรหัสเข้าอีเมลแทน” รหัสผ่าน (ส่งผ่าน Resend · รหัสใช้ได้ 10 นาที ครั้งเดียว เก็บแบบแฮช) · ต้องเข้าสู่ระบบก่อนใช้แอป — ลิงก์ใบงานที่แชร์ให้คนที่ไว้ใจ หน้านโยบาย ข้อกำหนด ช่วยเหลือ และ Car Passport ยังเปิดได้โดยไม่ต้องล็อกอิน','<b>1.10 · 16 Oct 2026</b> — Added “Email me a code instead” of a password (sent through Resend; codes last 10 minutes, work once and are stored hashed) · the app now requires signing in — shared trip links, this policy, the terms, help and Car Passport still open without an account'],
       ['<b>1.9 · 16 ต.ค. 2569</b> — เข้าสู่ระบบด้วย Google, Apple หรืออีเมล + รหัสผ่าน (เลิกใช้รหัสยืนยันทางอีเมล จึงไม่มีผู้ส่งอีเมล Resend แล้ว) · รหัสผ่านเก็บแบบแฮชที่ Google Firebase Cendon ไม่เห็น · ระบบล็อกอินย้ายไปบัญชี Firebase ใหม่ของ Cendon (ผู้ให้บริการเดิม) อาจต้องเข้าสู่ระบบใหม่หนึ่งครั้ง · คลิปตอนเปิดหน้าเข้าสู่ระบบไม่เก็บหรือส่งข้อมูลใด ๆ','<b>1.9 · 16 Oct 2026</b> — Sign in with Google, Apple or email + password (one-time email codes are retired, so Resend is no longer used) · passwords are stored hashed by Google Firebase and Cendon never sees them · sign-in moved to Cendon’s new Firebase project (same provider); you may need to sign in once more · the opening clip on the sign-in page collects and sends nothing'],

@@ -139,7 +139,7 @@ function fixture({ uid = null, pathname = '/garage', search = '', store = new Ma
       if (path === '/api/onboarding' && options.method === 'POST') return response(complete(requestUid, { profile: { ...complete(requestUid).profile, ...bodyData } , tutorial: { status: 'pending' } }));
       if (path === '/api/onboarding/preferences') return response(complete(requestUid, { profile: { ...complete(requestUid).profile, ...bodyData } }));
       if (path === '/api/onboarding/tutorial') return response(complete(requestUid, { tutorial: { status: bodyData.status } }));
-      if (path === '/api/auth/config') return response({ emailOtpReady: true, otpLength: 6 });
+      if (path === '/api/auth/config') return response({ emailOtpReady: true, appleAuthReady: true, otpLength: 6 });
       if (path === '/api/auth/email/request') return response({ challengeId: '6bd69839-303b-4ee2-8822-08d2373e3e81', expiresIn: 600, resendAfter: 60 });
       if (path === '/api/auth/email/verify') return response({ customToken: 'unit-only-custom-token' });
       throw new Error('Unexpected fixture route ' + path);
@@ -549,12 +549,17 @@ test('legacy decorated login art is absent from both the dedicated login and nat
   const chat=readFileSync(new URL('../chat.html',import.meta.url),'utf8');const pane=chat.match(/<section[^>]*id="v-login"[\s\S]*?<\/section>/)[0];assert.doesNotMatch(pane,/logo-halo|big-logo|<svg|login\.google/);
 });
 
-test('account flow: Apple is always offered; if it is not switched on yet the person gets a calm message, not a dead button',async()=>{
-  const f=fixture({pathname:'/login',transport:c=>c.path==='/api/auth/config'?response({emailOtpReady:false,appleAuthReady:false}):undefined});await settle();
-  assert.ok(f.root().querySelector('[data-provider="apple"]'));assert.equal(f.root().querySelector('[data-provider="google"]').disabled,false);
+test('account flow: the Apple button appears only once the backend says Apple sign-in is switched on',async()=>{
+  for(const config of [{emailOtpReady:false,appleAuthReady:false},{emailOtpReady:false}]){
+    const off=fixture({pathname:'/login',transport:c=>c.path==='/api/auth/config'?response(config):undefined});await settle();
+    assert.equal(off.root().querySelector('[data-provider="apple"]'),null);assert.equal(off.root().querySelector('[data-provider="google"]').disabled,false);
+  }
+  const cut=fixture({pathname:'/login',transport:c=>c.path==='/api/auth/config'?response({code:'down'},503):undefined});await settle();
+  assert.equal(cut.root().querySelector('[data-provider="apple"]'),null,'no backend answer → no Apple button');
+  const f=fixture({pathname:'/login'});await settle();assert.ok(f.root().querySelector('[data-provider="apple"]'));
   f.auth.signInWithPopup=async()=>{const e=new Error('Firebase: Error (auth/operation-not-allowed).');e.code='auth/operation-not-allowed';throw e};
   f.click('data-provider=apple');await settle();
-  assert.match(f.root().innerHTML,/ช่องทางนี้ยังไม่เปิดให้ใช้/);assert.equal(f.root().querySelector('[data-provider="apple"]').disabled,false);
+  assert.match(f.root().innerHTML,/ช่องทางนี้ยังไม่เปิดให้ใช้/);
 });
 test('account flow: a stalled provider popup cannot keep every login button disabled forever',async()=>{
   const pending=deferred(),f=fixture({pathname:'/login'});f.auth.signInWithPopup=()=>pending.promise;await settle();

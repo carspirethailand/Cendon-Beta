@@ -20,7 +20,7 @@ const complete = (uid = 'user-A', overrides = {}) => ({ status: 'completed', com
  */
 function fixture({ uid = null, pathname = '/garage', search = '', store = new Map(), sessionStore = new Map(), server = required(), transport, token, proxyAuth = false, restoreAfterMs = 0, identityPending = false, paint = false } = {}) {
   let document, callback, clock = Date.UTC(2026, 9, 10, 12), timerId = 0;
-  const events = new Map(), timers = new Map(), calls = [], oauth = [], customTokens = [], marks = [], navigations = [], tours = [], paints=[], emails = [];
+  const events = new Map(), timers = new Map(), calls = [], oauth = [], customTokens = [], marks = [], navigations = [], tours = [], paints=[], emails = [], links = [];
   const decode = text => String(text).replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
   const attributes = text => {
     const out = {};
@@ -103,6 +103,11 @@ function fixture({ uid = null, pathname = '/garage', search = '', store = new Ma
     async createUserWithEmailAndPassword(email, password) { emails.push({ kind: 'up', email, password });
       const u = { ...user('new-user'), sendEmailVerification: async options => emails.push({ kind: 'verify', url: options && options.url }) };
       this.currentUser = u; callback(u); return { user: u }; },
+    async sendSignInLinkToEmail(email, options) { links.push({ kind: 'send', email, url: options.url, inApp: options.handleCodeInApp }); },
+    isSignInWithEmailLink(href) { return /oobCode=/.test(href); },
+    async signInWithEmailLink(email, href) { links.push({ kind: 'finish', email, href });
+      if (/oobCode=expired/.test(href)) { const e = new Error('Firebase: Error (auth/invalid-action-code).'); e.code = 'auth/invalid-action-code'; throw e; }
+      this.currentUser = user('link-user'); callback(this.currentUser); return { user: this.currentUser }; },
     async sendPasswordResetEmail(email, options) { emails.push({ kind: 'reset', email, url: options && options.url, lang: this.languageCode });
       if (email === 'nobody@unit.test') { const e = new Error('Firebase: Error (auth/user-not-found).'); e.code = 'auth/user-not-found'; throw e; } },
   });
@@ -151,7 +156,7 @@ function fixture({ uid = null, pathname = '/garage', search = '', store = new Ma
     for (const [key, value] of Object.entries(values)) { const el = root()?.querySelector(`[name="${key}"]`); assert.ok(el, 'Rendered field exists: ' + key); if (el.type === 'checkbox') el.checked = !!value; else el.value = String(value); emit(name, el); }
   };
   const submit = () => { assert.ok(root()?.querySelector('form')); emit('submit', root().querySelector('form')); };
-  return { window, api: window.CendonAccount, auth, sandbox, document, store, sessionStore, calls, marks, navigations, tours, oauth, customTokens, paints, emails, root, click, fill, submit,
+  return { window, api: window.CendonAccount, auth, sandbox, document, store, sessionStore, calls, marks, navigations, tours, oauth, customTokens, paints, emails, links, root, click, fill, submit,
     value: key => JSON.parse(store.get(key) || 'null'),
     switchAccount(id) { auth.currentUser = user(id); callback(auth.currentUser); },
     advance(ms) { clock += ms; for (const [id, timer] of [...timers]) if (timer.at <= clock) { timers.delete(id); timer.fn(); } },
@@ -435,13 +440,29 @@ test('account flow: email code option — send, enter six digits, sign in; the c
   f.advance(60000); 
 });
 
-test('account flow: if email codes are not switched on, the code screen says so plainly and never claims a code was sent', async () => {
-  const f = fixture({ pathname: '/login', transport: c => c.path === '/api/auth/config' ? response({ emailOtpReady: false }) : c.path === '/api/auth/email/request' ? response({ code: 'auth/unavailable' }, 503) : undefined }); await settle();
-  assert.ok(f.root().querySelector('[data-mode="otp"]'), 'the option is always offered');
-  f.click('data-mode=otp'); await settle(); assert.match(f.root().innerHTML, /ยังไม่เปิด/);
+test('account flow: without the email-code service, the same button emails a Firebase sign-in link back to /login', async () => {
+  const store = new Map(), f = fixture({ pathname: '/login', search: '?next=%2Fgarage', store, transport: c => c.path === '/api/auth/config' ? response({ emailOtpReady: false }) : undefined }); await settle();
+  assert.match(f.root().querySelector('[data-mode="otp"]').textContent, /ส่งลิงก์เข้าอีเมลแทน/);
+  f.click('data-mode=otp'); await settle(); assert.match(f.root().innerHTML, /รับลิงก์ทางอีเมล/);
   f.fill({ email: 'person@unit.test' }); f.submit(); await settle();
-  assert.equal(f.root().querySelector('[name="code"]'), null); assert.doesNotMatch(f.root().innerHTML, /ส่งรหัสไปที่/);
-  assert.match(f.root().innerHTML, /ยังส่งรหัสทางอีเมลไม่ได้/); assert.equal(f.customTokens.length, 0);
+  assert.deepEqual(clone(f.links), [{ kind: 'send', email: 'person@unit.test', url: 'https://cendon.unit.test/login?next=%2Fgarage', inApp: true }]);
+  assert.equal(f.calls.some(c => c.path === '/api/auth/email/request'), false, 'the unconfigured code service is never called');
+  assert.match(f.root().innerHTML, /ส่งลิงก์เข้าสู่ระบบไปที่ person@unit\.test/);
+  assert.equal(store.get('cendon_link_email'), 'person@unit.test', 'remembered on this device only, to finish the link');
+  assert.equal(f.root().querySelector('[data-resend]').disabled, true);
+});
+
+test('account flow: opening the emailed link signs in on this device; another device must retype the email; an expired link asks for a new one', async () => {
+  const link = '?apiKey=k&oobCode=good&mode=signIn&next=%2Fgarage';
+  const store = new Map([['cendon_link_email', 'person@unit.test']]), f = fixture({ pathname: '/login', search: link, store }); await settle();
+  assert.deepEqual(f.links.map(l => [l.kind, l.email]), [['finish', 'person@unit.test']]);
+  assert.match(f.links[0].href, /oobCode=good/); assert.equal(store.has('cendon_link_email'), false, 'the remembered email is removed after use');
+  const other = fixture({ pathname: '/login', search: link }); await settle();
+  assert.equal(other.links.length, 0); assert.match(other.root().innerHTML, /ยืนยันอีเมลของคุณ/);
+  other.fill({ email: 'person@unit.test' }); other.submit(); await settle();
+  assert.deepEqual(other.links.map(l => [l.kind, l.email]), [['finish', 'person@unit.test']]);
+  const old = fixture({ pathname: '/login', search: '?apiKey=k&oobCode=expired&mode=signIn', store: new Map([['cendon_link_email', 'person@unit.test']]) }); await settle();
+  assert.match(old.root().innerHTML, /ลิงก์นี้หมดอายุหรือใช้ไปแล้ว/); assert.ok(old.root().querySelector('[name="email"]'), 'back to requesting a fresh link');
 });
 test('account flow: unsupported translation copy falls back to English while retaining selected app locale', async () => {
   const f = fixture({ uid: 'user-A' }); await settle();

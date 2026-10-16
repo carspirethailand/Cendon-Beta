@@ -1426,5 +1426,17 @@ window.CENDON_L10N={lang:"ko",t:{
 "Please wait before requesting another code.":"새 코드를 요청하기 전에 잠시 기다려 주세요.",
 "Enter all six digits.":"6자리를 모두 입력하세요.",
 "Help":"도움말",
-"This email isn’t verified yet — sign in with the password, Google or Apple you used before, then open the verification link we emailed you.":"이 이메일은 아직 인증되지 않았습니다 — 이전에 쓰던 비밀번호, Google 또는 Apple로 로그인한 뒤 이메일의 인증 링크를 여세요."
+"This email isn’t verified yet — sign in with the password, Google or Apple you used before, then open the verification link we emailed you.":"이 이메일은 아직 인증되지 않았습니다 — 이전에 쓰던 비밀번호, Google 또는 Apple로 로그인한 뒤 이메일의 인증 링크를 여세요.",
+"This link has expired or was already used — request a new one.":"이 링크는 만료되었거나 이미 사용되었습니다 — 새 링크를 요청하세요.",
+"Get a sign-in link by email":"이메일로 로그인 링크 받기",
+"Confirm your email":"이메일 확인",
+"Enter your email and we’ll send a link — tap it to sign in, no password needed.":"이메일을 입력하면 링크를 보내드립니다 — 누르면 바로 로그인, 비밀번호 필요 없음.",
+"We sent a sign-in link to":"로그인 링크를 보냈습니다:",
+"— open the email on this device and tap the link (check spam too).":"— 이 기기에서 이메일을 열고 링크를 누르세요(스팸함도 확인하세요).",
+"For your security, enter the email you requested the link with.":"보안을 위해 링크를 요청한 이메일을 다시 입력하세요.",
+"Sending link…":"링크 보내는 중…",
+"Send me a link":"링크 보내기",
+"Email me a link instead":"대신 이메일로 링크 받기",
+"Send another link":"링크 다시 보내기",
+"Please wait before requesting another link.":"새 링크를 요청하기 전에 잠시 기다려 주세요."
 }};

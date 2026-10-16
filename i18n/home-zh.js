@@ -1426,5 +1426,17 @@ window.CENDON_L10N={lang:"zh",t:{
 "Please wait before requesting another code.":"请稍候再请求新的验证码。",
 "Enter all six digits.":"请输入完整的 6 位数字。",
 "Help":"帮助",
-"This email isn’t verified yet — sign in with the password, Google or Apple you used before, then open the verification link we emailed you.":"此邮箱尚未验证——请先用之前的密码、Google 或 Apple 登录，然后点击邮件中的验证链接。"
+"This email isn’t verified yet — sign in with the password, Google or Apple you used before, then open the verification link we emailed you.":"此邮箱尚未验证——请先用之前的密码、Google 或 Apple 登录，然后点击邮件中的验证链接。",
+"This link has expired or was already used — request a new one.":"此链接已过期或已被使用——请重新获取。",
+"Get a sign-in link by email":"通过邮箱获取登录链接",
+"Confirm your email":"确认你的邮箱",
+"Enter your email and we’ll send a link — tap it to sign in, no password needed.":"输入邮箱，我们会发送一个链接——点击即可登录，无需密码。",
+"We sent a sign-in link to":"登录链接已发送至",
+"— open the email on this device and tap the link (check spam too).":"——请在本设备上打开邮件并点击链接（也请查看垃圾邮件）。",
+"For your security, enter the email you requested the link with.":"为了安全，请再次输入你申请链接时使用的邮箱。",
+"Sending link…":"正在发送链接…",
+"Send me a link":"给我发链接",
+"Email me a link instead":"改用邮箱链接",
+"Send another link":"重新发送链接",
+"Please wait before requesting another link.":"请稍候再请求新的链接。"
 }};

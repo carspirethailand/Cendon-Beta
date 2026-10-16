@@ -1426,5 +1426,17 @@ window.CENDON_L10N={lang:"ja",t:{
 "Please wait before requesting another code.":"新しいコードはしばらく待ってから請求してください。",
 "Enter all six digits.":"6 桁すべて入力してください。",
 "Help":"ヘルプ",
-"This email isn’t verified yet — sign in with the password, Google or Apple you used before, then open the verification link we emailed you.":"このメールはまだ確認されていません。以前のパスワード、Google、Apple でログインし、メールの確認リンクを開いてください。"
+"This email isn’t verified yet — sign in with the password, Google or Apple you used before, then open the verification link we emailed you.":"このメールはまだ確認されていません。以前のパスワード、Google、Apple でログインし、メールの確認リンクを開いてください。",
+"This link has expired or was already used — request a new one.":"このリンクは期限切れか、すでに使用されています。新しいリンクをリクエストしてください。",
+"Get a sign-in link by email":"メールでログインリンクを受け取る",
+"Confirm your email":"メールアドレスの確認",
+"Enter your email and we’ll send a link — tap it to sign in, no password needed.":"メールアドレスを入力するとリンクをお送りします。タップするだけでログインでき、パスワードは不要です。",
+"We sent a sign-in link to":"ログインリンクを送信しました：",
+"— open the email on this device and tap the link (check spam too).":"— この端末でメールを開いてリンクをタップしてください（迷惑メールもご確認ください）。",
+"For your security, enter the email you requested the link with.":"安全のため、リンクをリクエストしたメールアドレスをもう一度入力してください。",
+"Sending link…":"リンクを送信中…",
+"Send me a link":"リンクを送る",
+"Email me a link instead":"メールでリンクを受け取る",
+"Send another link":"リンクを再送信",
+"Please wait before requesting another link.":"新しいリンクはしばらく待ってからリクエストしてください。"
 }};

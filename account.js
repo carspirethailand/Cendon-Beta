@@ -18,7 +18,9 @@
   function saveDraft(){const safe={};for(const k of ['terms','privacy','name','lang','distance','currency'])if(Object.hasOwn(S.draft,k))safe[k]=S.draft[k];write(scoped('draft'),safe)}
   const EMAIL_RE=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   /* รหัส OTP ทางอีเมล: จำแค่ "รอรหัสของอีเมลไหน" ในแท็บนี้ (ไม่เก็บตัวรหัส) รีเฟรชแล้วกลับมากรอกต่อได้ */
-  const EMAIL_SESSION='cendon_email_challenge';
+  const EMAIL_SESSION='cendon_email_challenge',LINK_EMAIL='cendon_link_email';
+  /* รหัส 6 หลักต้องให้หลังบ้านส่งอีเมล (ต้องมีโดเมนอีเมลของเราเอง) — ยังไม่พร้อมเมื่อไร ปุ่มเดียวกันส่ง "ลิงก์เข้าสู่ระบบ" ผ่าน Firebase แทน */
+  const otpReady=()=>!!(S.config&&S.config.emailOtpReady===true);
   function emailSession(value){try{if(value===null)sessionStorage.removeItem(EMAIL_SESSION);else sessionStorage.setItem(EMAIL_SESSION,JSON.stringify(value))}catch(e){}}
   function restoreEmail(){try{const p=JSON.parse(sessionStorage.getItem(EMAIL_SESSION));
     if(p&&typeof p.email==='string'&&p.email.length<=254&&typeof p.id==='string'&&p.id.length<=100&&p.expiresAt>Date.now()){
@@ -79,6 +81,7 @@
     if(/account-exists-with-different-credential/.test(code))return T('อีเมลนี้ผูกกับช่องทางอื่นอยู่ กรุณาใช้ช่องทางที่เคยสมัครไว้','This email is linked to another sign-in method. Use that method first.');
     if(/too-many|rate|cooldown/.test(code)||error&&error.status===429)return T('ลองบ่อยเกินไป รอสักครู่แล้วลองใหม่','Too many attempts. Please wait a moment and try again.');
     if(/invalid-code/.test(code))return T('รหัสไม่ถูกต้องหรือหมดอายุแล้ว กรุณาตรวจรหัสหรือขอรหัสใหม่','The code is incorrect or expired. Check it or request a new code.');
+    if(/invalid-action-code|expired-action-code/.test(code))return T('ลิงก์นี้หมดอายุหรือใช้ไปแล้ว — ขอลิงก์ใหม่ได้เลย','This link has expired or was already used — request a new one.');
     if(S.phase==='auth'&&(S.mode==='otp'||S.mode==='code')&&(/unavailable|not-configured/.test(code)||error&&error.status===503))return T('ตอนนี้ยังส่งรหัสทางอีเมลไม่ได้ — ใช้รหัสผ่าน Google หรือ Apple ไปก่อน','Email codes aren’t available right now — use your password, Google or Apple for now.');
     if(/unavailable|not-configured/.test(code)||error&&error.status===503)return T('ระบบยังไม่พร้อมใช้งาน กรุณาลองใหม่ภายหลัง','This service is unavailable. Please try again later.');
     if(/suspended|disabled|banned/.test(code)||error&&error.status===403)return T('บัญชีนี้ยังเข้าใช้งานไม่ได้ กรุณาติดต่อผู้ดูแล','This account cannot sign in. Please contact support.');
@@ -134,22 +137,26 @@
   }
   function render(){const root=host(),phase=S.phase,titles=[['ยินดีที่ได้เจอกัน','Good to meet you'],['เรียกคุณว่าอะไรดี','Make it yours'],['คุณเกิดเมื่อไหร่','When were you born?'],['ภาษาแบบที่คุณถนัด','Your familiar language'],['ระยะทางที่อ่านง่าย','Distance that makes sense'],['เงินในหน่วยที่คุ้นเคย','Your everyday currency']];
     let title,copy='',form='',actions='';
-    if(phase==='auth'){const m=S.mode,up=m==='up',reset=m==='reset',otp=m==='otp',sent=m==='code';
-      title=up?T('สร้างบัญชี Cendon','Create your Cendon account'):reset?T('ตั้งรหัสผ่านใหม่','Reset your password'):otp?T('รับรหัสทางอีเมล','Get a code by email'):sent?T('เช็กกล่องจดหมาย','Check your inbox'):T('เข้าสู่ระบบ Cendon','Sign in to Cendon');
-      copy=up?T('เริ่มดูแลรถของคุณในที่เดียว','Everything for your car, in one place'):reset?T('ใส่อีเมลที่ใช้สมัคร เราจะส่งลิงก์ตั้งรหัสผ่านใหม่ไปให้','Enter the email you signed up with and we’ll send you a reset link.'):otp?T('ใส่อีเมล เราจะส่งรหัส 6 หลักให้ ไม่ต้องใช้รหัสผ่าน','Enter your email and we’ll send a six-digit code — no password needed.'):sent?T('ส่งรหัสไปที่ ','Code sent to ')+S.email:T('ยินดีต้อนรับกลับมา','Welcome back');
+    if(phase==='auth'){const m=S.mode,up=m==='up',reset=m==='reset',otp=m==='otp',sent=m==='code',linked=m==='linksent',confirm=m==='linkemail',viaCode=otpReady();
+      title=up?T('สร้างบัญชี Cendon','Create your Cendon account'):reset?T('ตั้งรหัสผ่านใหม่','Reset your password'):otp?(viaCode?T('รับรหัสทางอีเมล','Get a code by email'):T('รับลิงก์ทางอีเมล','Get a sign-in link by email')):sent||linked?T('เช็กกล่องจดหมาย','Check your inbox'):confirm?T('ยืนยันอีเมลของคุณ','Confirm your email'):T('เข้าสู่ระบบ Cendon','Sign in to Cendon');
+      copy=up?T('เริ่มดูแลรถของคุณในที่เดียว','Everything for your car, in one place'):reset?T('ใส่อีเมลที่ใช้สมัคร เราจะส่งลิงก์ตั้งรหัสผ่านใหม่ไปให้','Enter the email you signed up with and we’ll send you a reset link.'):otp?(viaCode?T('ใส่อีเมล เราจะส่งรหัส 6 หลักให้ ไม่ต้องใช้รหัสผ่าน','Enter your email and we’ll send a six-digit code — no password needed.'):T('ใส่อีเมล เราจะส่งลิงก์ให้ กดลิงก์ในอีเมลก็เข้าสู่ระบบได้เลย ไม่ต้องใช้รหัสผ่าน','Enter your email and we’ll send a link — tap it to sign in, no password needed.')):sent?T('ส่งรหัสไปที่ ','Code sent to ')+S.email
+        :linked?T('ส่งลิงก์เข้าสู่ระบบไปที่ ','We sent a sign-in link to ')+S.email+T(' — เปิดอีเมลบนเครื่องนี้แล้วกดลิงก์ (เช็กจดหมายขยะด้วย)',' — open the email on this device and tap the link (check spam too).')
+        :confirm?T('เพื่อความปลอดภัย ใส่อีเมลที่ใช้ขอลิงก์อีกครั้ง','For your security, enter the email you requested the link with.'):T('ยินดีต้อนรับกลับมา','Welcome back');
       /* Google / Apple ใช้ได้ทั้งเข้าสู่ระบบและสมัครใหม่ — ช่องทางที่ยังไม่เปิดในระบบจะบอกตอนกด */
-      const prov=reset||otp||sent?'':`<button class="ac-provider" type="button" data-provider="google"><span class="ac-icon" aria-hidden="true">${providerIcon('Google')}</span><span>${up?T('สมัครด้วย Google','Sign up with Google'):T('เข้าสู่ระบบด้วย Google','Continue with Google')}</span></button><button class="ac-provider" type="button" data-provider="apple"><span class="ac-icon" aria-hidden="true">${providerIcon('Apple')}</span><span>${T('ใช้บัญชี Apple','Continue with Apple')}</span></button><div class="ac-or" role="separator"><span>${T('หรือใช้อีเมล','or use email')}</span></div>`;
+      const prov=reset||otp||sent||linked||confirm?'':`<button class="ac-provider" type="button" data-provider="google"><span class="ac-icon" aria-hidden="true">${providerIcon('Google')}</span><span>${up?T('สมัครด้วย Google','Sign up with Google'):T('เข้าสู่ระบบด้วย Google','Continue with Google')}</span></button><button class="ac-provider" type="button" data-provider="apple"><span class="ac-icon" aria-hidden="true">${providerIcon('Apple')}</span><span>${T('ใช้บัญชี Apple','Continue with Apple')}</span></button><div class="ac-or" role="separator"><span>${T('หรือใช้อีเมล','or use email')}</span></div>`;
       /* รหัสผ่านไม่ถูกเขียนลง HTML — ใส่กลับเข้าช่องหลังวาดเสร็จ (ดูท้าย render) */
-      const pw=reset||otp||sent?'':`<div class="ac-pass"><input class="ac-input" id="acPass" name="password" type="${S.showPw?'text':'password'}" autocomplete="${up?'new-password':'current-password'}" placeholder="${T('รหัสผ่าน','Password')}" aria-label="${T('รหัสผ่าน','Password')}"${up?' minlength="8" aria-describedby="acPwHint"':''} required><button class="ac-eye" type="button" data-eye aria-pressed="${S.showPw}" aria-label="${S.showPw?T('ซ่อนรหัสผ่าน','Hide password'):T('แสดงรหัสผ่าน','Show password')}">${EYE(S.showPw)}</button></div>${up?`<p class="ac-hint" id="acPwHint">${T('อย่างน้อย 8 ตัวอักษร','At least 8 characters')}</p>`:''}`;
+      const pw=reset||otp||sent||linked||confirm?'':`<div class="ac-pass"><input class="ac-input" id="acPass" name="password" type="${S.showPw?'text':'password'}" autocomplete="${up?'new-password':'current-password'}" placeholder="${T('รหัสผ่าน','Password')}" aria-label="${T('รหัสผ่าน','Password')}"${up?' minlength="8" aria-describedby="acPwHint"':''} required><button class="ac-eye" type="button" data-eye aria-pressed="${S.showPw}" aria-label="${S.showPw?T('ซ่อนรหัสผ่าน','Hide password'):T('แสดงรหัสผ่าน','Show password')}">${EYE(S.showPw)}</button></div>${up?`<p class="ac-hint" id="acPwHint">${T('อย่างน้อย 8 ตัวอักษร','At least 8 characters')}</p>`:''}`;
       /* รหัส OTP ก็ไม่ถูกเขียนลง HTML เหมือนรหัสผ่าน */
       const box=sent?`<input class="ac-input ac-code" id="acCode" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="••••••" aria-label="${T('รหัส 6 หลัก','Six-digit code')}" aria-describedby="acCodeNote" required><p class="ac-hint" id="acCodeNote">${T('รหัสใช้ได้ 10 นาที และใช้ได้ครั้งเดียว','The code expires in ten minutes and can be used once.')}</p>`
+        :linked?''
         :`<input class="ac-input" id="acEmail" name="email" type="email" inputmode="email" autocomplete="${up?'email':'username'}" placeholder="${T('อีเมล','Email')}" aria-label="${T('อีเมล','Email')}" value="${esc(S.email)}" required>`;
       form=prov+box+pw
-        +(otp&&S.config&&S.config.emailOtpReady===false?`<p class="ac-note" role="status">${T('ตอนนี้ระบบส่งรหัสทางอีเมลยังไม่เปิด — ใช้รหัสผ่าน Google หรือ Apple ไปก่อนได้','Email codes aren’t switched on yet — you can use your password, Google or Apple for now.')}</p>`:'')
         +(S.notice?`<p class="ac-note" role="status">${esc(S.notice)}</p>`:'');
-      actions=`<button class="ac-primary ac-wide" type="submit"${S.busy?' disabled':''}>${S.busy?(up?T('กำลังสร้างบัญชี…','Creating…'):reset?T('กำลังส่ง…','Sending…'):otp?T('กำลังส่งรหัส…','Sending code…'):sent?T('กำลังตรวจรหัส…','Checking…'):T('กำลังเข้าสู่ระบบ…','Signing in…')):(up?T('สร้างบัญชี','Create account'):reset?T('ส่งลิงก์ตั้งรหัสใหม่','Send reset link'):otp?T('ส่งรหัสให้ฉัน','Send me a code'):sent?T('ยืนยันและเข้าสู่ระบบ','Verify and sign in'):T('เข้าสู่ระบบ','Sign in'))}</button>`
-        +(m==='in'?`<div class="ac-row"><button class="ac-link" type="button" data-mode="reset">${T('ลืมรหัสผ่าน?','Forgot password?')}</button><span aria-hidden="true">·</span><button class="ac-link" type="button" data-mode="otp">${T('ส่งรหัสเข้าอีเมลแทน','Email me a code instead')}</button></div><p class="ac-swap">${T('ยังไม่มีบัญชี?','No account yet?')} <button class="ac-link ac-strong" type="button" data-mode="up">${T('สร้างบัญชี','Create one')}</button></p>`
+      actions=`<button class="ac-primary ac-wide" type="submit"${S.busy?' disabled':''}>${S.busy?(up?T('กำลังสร้างบัญชี…','Creating…'):reset?T('กำลังส่ง…','Sending…'):otp?(viaCode?T('กำลังส่งรหัส…','Sending code…'):T('กำลังส่งลิงก์…','Sending link…')):sent||confirm?T('กำลังตรวจ…','Checking…'):T('กำลังเข้าสู่ระบบ…','Signing in…')):(up?T('สร้างบัญชี','Create account'):reset?T('ส่งลิงก์ตั้งรหัสใหม่','Send reset link'):otp?(viaCode?T('ส่งรหัสให้ฉัน','Send me a code'):T('ส่งลิงก์ให้ฉัน','Send me a link')):sent?T('ยืนยันและเข้าสู่ระบบ','Verify and sign in'):confirm?T('ยืนยันและเข้าสู่ระบบ','Verify and sign in'):T('เข้าสู่ระบบ','Sign in'))}</button>`
+        +(m==='in'?`<div class="ac-row"><button class="ac-link" type="button" data-mode="reset">${T('ลืมรหัสผ่าน?','Forgot password?')}</button><span aria-hidden="true">·</span><button class="ac-link" type="button" data-mode="otp">${viaCode?T('ส่งรหัสเข้าอีเมลแทน','Email me a code instead'):T('ส่งลิงก์เข้าอีเมลแทน','Email me a link instead')}</button></div><p class="ac-swap">${T('ยังไม่มีบัญชี?','No account yet?')} <button class="ac-link ac-strong" type="button" data-mode="up">${T('สร้างบัญชี','Create one')}</button></p>`
           :otp?`<button class="ac-link" type="button" data-mode="in">${T('ใช้รหัสผ่านแทน','Use a password instead')}</button>`
+          :linked?`<div class="ac-row"><button class="ac-link" type="button" data-resend${Date.now()<S.resendAt||S.busy?' disabled':''}>${T('ส่งลิงก์อีกครั้ง','Send another link')}</button><span aria-hidden="true">·</span><button class="ac-link" type="button" data-change-email>${T('เปลี่ยนอีเมล','Change email')}</button></div>`
+          :confirm?`<button class="ac-link" type="button" data-mode="in">${T('กลับไปหน้าเข้าสู่ระบบ','Back to sign in')}</button>`
           :sent?`<div class="ac-row"><button class="ac-link" type="button" data-resend${Date.now()<S.resendAt||S.busy?' disabled':''}>${T('ส่งรหัสอีกครั้ง','Send another code')}</button><span aria-hidden="true">·</span><button class="ac-link" type="button" data-change-email>${T('เปลี่ยนอีเมล','Change email')}</button></div>`
           :up?`<p class="ac-swap">${T('มีบัญชีแล้ว?','Already have an account?')} <button class="ac-link ac-strong" type="button" data-mode="in">${T('เข้าสู่ระบบ','Sign in')}</button></p>`
           :`<button class="ac-link" type="button" data-mode="in">${T('กลับไปหน้าเข้าสู่ระบบ','Back to sign in')}</button>`);
@@ -202,9 +209,34 @@
       if(serial===S.serial)S.password='';
     });
   }
+  /* ลิงก์เข้าสู่ระบบทางอีเมล (Firebase ส่งให้ ไม่ต้องมีโดเมนอีเมลของเรา) · จำอีเมลไว้ในเครื่องนี้ไว้ยืนยันตอนกดลิงก์ แล้วลบทิ้ง */
+  async function emailLink(email){
+    const a=auth();if(!emailReady(a,'sendSignInLinkToEmail'))return;
+    try{a.languageCode=locale()==='th'?'th':'en'}catch(e){}
+    const next=S.next||safeNext(new URLSearchParams(location.search).get('next')),serial=S.serial;
+    await busy(async()=>{
+      await a.sendSignInLinkToEmail(email,{url:location.origin+'/login'+(next&&next!=='/'?'?next='+encodeURIComponent(next):''),handleCodeInApp:true});
+      if(serial!==S.serial)return;
+      try{localStorage.setItem(LINK_EMAIL,email)}catch(e){}
+      S.email=email;S.resendAt=Date.now()+60000;S.mode='linksent';
+      setTimeout(()=>{if(serial===S.serial&&S.mode==='linksent'){const b=D.getElementById('accountFlow')?.querySelector('[data-resend]');if(b)b.disabled=S.busy}},60000);
+    });
+  }
+  const linkInUrl=()=>{try{const a=auth();return !!(a&&typeof a.isSignInWithEmailLink==='function'&&a.isSignInWithEmailLink(location.href))}catch(e){return false}};
+  async function finishLink(email){
+    const a=auth();if(!a||typeof a.signInWithEmailLink!=='function')return;
+    /* เอารหัสในลิงก์ออกจากแถบที่อยู่ทันที (กันติดไปกับประวัติ/การแชร์หน้าจอ) */
+    try{const u=new URL(linkHref),keep=new URLSearchParams();if(u.searchParams.get('next'))keep.set('next',u.searchParams.get('next'));history.replaceState(null,'',u.pathname+(keep.toString()?'?'+keep:''))}catch(e){}
+    S.phase='auth';S.mode='linkemail';S.email=email||'';
+    if(!email){render();return}
+    return finishLinkWith(email);
+  }
+  let linkHref='';
   async function emailRequest(){
     const email=S.email.trim();
     if(!EMAIL_RE.test(email)||email.length>254){S.error=T('กรุณาใส่อีเมลให้ถูกต้อง','Enter a valid email address.');render();return}
+    if(S.mode==='linkemail'){return finishLinkWith(email)}
+    if(!otpReady()){if(Date.now()<S.resendAt&&S.mode==='linksent'){S.error=T('รอสักครู่ก่อนขอลิงก์ใหม่','Please wait before requesting another link.');render();return}return emailLink(email)}
     if(Date.now()<S.resendAt&&S.challenge){S.error=T('รอสักครู่ก่อนขอรหัสใหม่','Please wait before requesting another code.');render();return}
     const serial=S.serial;S.notice='';
     await busy(async()=>{const data=await request('/api/auth/email/request',{email});
@@ -216,6 +248,13 @@
       /* ครบเวลารอแล้วเปิดปุ่ม "ส่งรหัสอีกครั้ง" โดยไม่วาดใหม่ (ตัวเลขที่พิมพ์ค้างไว้ไม่หาย) */
       setTimeout(()=>{if(serial===S.serial&&S.mode==='code'&&S.challenge===challenge){const button=D.getElementById('accountFlow')?.querySelector('[data-resend]');if(button)button.disabled=S.busy}},(data.resendAfter||60)*1000);
     });
+  }
+  /* กดลิงก์บนเครื่องอื่น (ไม่มีอีเมลที่จำไว้) → ให้พิมพ์อีเมลยืนยันก่อน */
+  async function finishLinkWith(email){
+    const a=auth();if(!a||typeof a.signInWithEmailLink!=='function')return;
+    await busy(async()=>{await a.signInWithEmailLink(email,linkHref);try{localStorage.removeItem(LINK_EMAIL)}catch(e){}});
+    /* ลิงก์หมดอายุ/ใช้ไปแล้ว/อีเมลไม่ตรง → กลับไปขอลิงก์ใหม่ (ข้อความผิดพลาดยังอยู่) */
+    if(S.error&&!current()&&S.mode==='linkemail'){S.mode='otp';render()}
   }
   async function emailVerify(){
     const code=String(S.code||'').trim();
@@ -326,7 +365,10 @@
       /* ยังไม่ได้เข้าสู่ระบบ → เห็นได้แค่หน้าเข้าสู่ระบบ (หน้าแอปทุกหน้าพาไป /login แล้วกลับมาที่เดิมหลังล็อกอิน) */
       if(!LOGIN&&!openPath()){toLogin();return}
       signedOut=true;
-      if(LOGIN){S.phase='auth';restoreEmail();render()}else close();return}
+      if(LOGIN){S.phase='auth';
+        /* กลับมาจากลิงก์เข้าสู่ระบบในอีเมล → เข้าสู่ระบบให้เลย */
+        if(linkInUrl()&&!linkHref){linkHref=location.href;let saved='';try{saved=localStorage.getItem(LINK_EMAIL)||''}catch(e){}finishLink(saved);return}
+        restoreEmail();render()}else close();return}
     if(W.CendonPaint)W.CendonPaint.observed(u.uid);
     signedHint(true);S.password='';S.code='';emailSession(null);if(u.uid!==S.uid)load(u);
   }
@@ -346,7 +388,7 @@
   }
   D.addEventListener('submit',e=>{const root=D.getElementById('accountFlow');if(!root||root.hidden||!root.contains(e.target))return;e.preventDefault();
     collect(root);
-    if(S.phase==='auth'){if(S.mode==='reset')resetPassword();else if(S.mode==='otp')emailRequest();else if(S.mode==='code')emailVerify();else emailAuth()}else if(S.phase==='wizard')nextStep();
+    if(S.phase==='auth'){if(S.mode==='reset')resetPassword();else if(S.mode==='otp'||S.mode==='linkemail')emailRequest();else if(S.mode==='code')emailVerify();else emailAuth()}else if(S.phase==='wizard')nextStep();
   });
   D.addEventListener('input',e=>{const root=D.getElementById('accountFlow');if(root&&!root.hidden&&root.contains(e.target)){
     /* รหัส: รับเลขไทยได้ เหลือเฉพาะตัวเลข 6 หลัก */
@@ -362,7 +404,7 @@
     if(b.hasAttribute('data-switch-account')){busy(async()=>{if(W.CendonTour)CendonTour.stop();await auth().signOut()});return}
     if(b.dataset.provider){provider(b.dataset.provider);return}
     if(b.dataset.mode){collect(root);S.mode=b.dataset.mode;S.error='';S.notice='';S.showPw=false;render();return}
-    if(b.hasAttribute('data-resend')){emailRequest();return}
+    if(b.hasAttribute('data-resend')){if(S.mode==='linksent'){if(Date.now()>=S.resendAt)emailLink(S.email)}else emailRequest();return}
     if(b.hasAttribute('data-change-email')){S.mode='otp';S.challenge=null;S.resendAt=0;S.code='';S.error='';emailSession(null);render();return}
     if(b.hasAttribute('data-eye')){collect(root);S.showPw=!S.showPw;render();const pass=D.getElementById('accountFlow').querySelector('[name="password"]');if(pass&&typeof pass.focus==='function')pass.focus();return}
     if(b.hasAttribute('data-prev')){collect(root);S.step=Math.max(0,S.step-1);S.error='';render()}

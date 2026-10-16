@@ -1426,5 +1426,17 @@ window.CENDON_L10N={lang:"id",t:{
 "Please wait before requesting another code.":"Tunggu sebentar sebelum meminta kode baru.",
 "Enter all six digits.":"Masukkan keenam digit.",
 "Help":"Bantuan",
-"This email isn’t verified yet — sign in with the password, Google or Apple you used before, then open the verification link we emailed you.":"Email ini belum diverifikasi — masuk dengan kata sandi, Google, atau Apple yang pernah dipakai, lalu buka tautan verifikasi di email."
+"This email isn’t verified yet — sign in with the password, Google or Apple you used before, then open the verification link we emailed you.":"Email ini belum diverifikasi — masuk dengan kata sandi, Google, atau Apple yang pernah dipakai, lalu buka tautan verifikasi di email.",
+"This link has expired or was already used — request a new one.":"Tautan ini sudah kedaluwarsa atau sudah dipakai — minta tautan baru.",
+"Get a sign-in link by email":"Dapatkan tautan masuk lewat email",
+"Confirm your email":"Konfirmasi email Anda",
+"Enter your email and we’ll send a link — tap it to sign in, no password needed.":"Masukkan email Anda dan kami akan mengirim tautan — ketuk untuk masuk, tanpa kata sandi.",
+"We sent a sign-in link to":"Kami mengirim tautan masuk ke",
+"— open the email on this device and tap the link (check spam too).":"— buka email di perangkat ini lalu ketuk tautannya (cek juga folder spam).",
+"For your security, enter the email you requested the link with.":"Demi keamanan, masukkan lagi email yang Anda pakai untuk meminta tautan.",
+"Sending link…":"Mengirim tautan…",
+"Send me a link":"Kirimi saya tautan",
+"Email me a link instead":"Kirim tautan ke email saja",
+"Send another link":"Kirim tautan lagi",
+"Please wait before requesting another link.":"Tunggu sebentar sebelum meminta tautan baru."
 }};

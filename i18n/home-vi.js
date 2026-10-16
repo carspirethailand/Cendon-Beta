@@ -1426,5 +1426,17 @@ window.CENDON_L10N={lang:"vi",t:{
 "Please wait before requesting another code.":"Vui lòng đợi trước khi yêu cầu mã mới.",
 "Enter all six digits.":"Nhập đủ 6 chữ số.",
 "Help":"Trợ giúp",
-"This email isn’t verified yet — sign in with the password, Google or Apple you used before, then open the verification link we emailed you.":"Email này chưa được xác minh — hãy đăng nhập bằng mật khẩu, Google hoặc Apple bạn đã dùng, rồi mở liên kết xác minh trong email."
+"This email isn’t verified yet — sign in with the password, Google or Apple you used before, then open the verification link we emailed you.":"Email này chưa được xác minh — hãy đăng nhập bằng mật khẩu, Google hoặc Apple bạn đã dùng, rồi mở liên kết xác minh trong email.",
+"This link has expired or was already used — request a new one.":"Liên kết này đã hết hạn hoặc đã được dùng — hãy yêu cầu liên kết mới.",
+"Get a sign-in link by email":"Nhận liên kết đăng nhập qua email",
+"Confirm your email":"Xác nhận email của bạn",
+"Enter your email and we’ll send a link — tap it to sign in, no password needed.":"Nhập email, chúng tôi sẽ gửi liên kết — chạm vào là đăng nhập, không cần mật khẩu.",
+"We sent a sign-in link to":"Đã gửi liên kết đăng nhập tới",
+"— open the email on this device and tap the link (check spam too).":"— mở email trên thiết bị này và chạm vào liên kết (kiểm tra cả thư rác).",
+"For your security, enter the email you requested the link with.":"Để bảo mật, hãy nhập lại email bạn đã dùng để yêu cầu liên kết.",
+"Sending link…":"Đang gửi liên kết…",
+"Send me a link":"Gửi liên kết cho tôi",
+"Email me a link instead":"Gửi liên kết qua email thay thế",
+"Send another link":"Gửi lại liên kết",
+"Please wait before requesting another link.":"Vui lòng đợi trước khi yêu cầu liên kết mới."
 }};

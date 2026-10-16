@@ -1426,5 +1426,17 @@ window.CENDON_L10N={lang:"de",t:{
 "Please wait before requesting another code.":"Bitte warte, bevor du einen neuen Code anforderst.",
 "Enter all six digits.":"Gib alle sechs Ziffern ein.",
 "Help":"Hilfe",
-"This email isn’t verified yet — sign in with the password, Google or Apple you used before, then open the verification link we emailed you.":"Diese E-Mail ist noch nicht bestätigt — melde dich mit deinem bisherigen Passwort, Google oder Apple an und öffne dann den Bestätigungslink aus der E-Mail."
+"This email isn’t verified yet — sign in with the password, Google or Apple you used before, then open the verification link we emailed you.":"Diese E-Mail ist noch nicht bestätigt — melde dich mit deinem bisherigen Passwort, Google oder Apple an und öffne dann den Bestätigungslink aus der E-Mail.",
+"This link has expired or was already used — request a new one.":"Dieser Link ist abgelaufen oder wurde schon benutzt — fordere einen neuen an.",
+"Get a sign-in link by email":"Anmeldelink per E-Mail erhalten",
+"Confirm your email":"E-Mail bestätigen",
+"Enter your email and we’ll send a link — tap it to sign in, no password needed.":"Gib deine E-Mail ein und wir senden dir einen Link — antippen und angemeldet, ganz ohne Passwort.",
+"We sent a sign-in link to":"Wir haben einen Anmeldelink gesendet an",
+"— open the email on this device and tap the link (check spam too).":"— öffne die E-Mail auf diesem Gerät und tippe auf den Link (prüfe auch den Spam-Ordner).",
+"For your security, enter the email you requested the link with.":"Gib zur Sicherheit die E-Mail erneut ein, mit der du den Link angefordert hast.",
+"Sending link…":"Link wird gesendet…",
+"Send me a link":"Link senden",
+"Email me a link instead":"Stattdessen Link per E-Mail",
+"Send another link":"Link erneut senden",
+"Please wait before requesting another link.":"Bitte warte, bevor du einen neuen Link anforderst."
 }};

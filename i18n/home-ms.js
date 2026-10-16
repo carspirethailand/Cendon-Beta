@@ -1426,5 +1426,17 @@ window.CENDON_L10N={lang:"ms",t:{
 "Please wait before requesting another code.":"Sila tunggu sebelum meminta kod baharu.",
 "Enter all six digits.":"Masukkan kesemua 6 digit.",
 "Help":"Bantuan",
-"This email isn’t verified yet — sign in with the password, Google or Apple you used before, then open the verification link we emailed you.":"E-mel ini belum disahkan — log masuk dengan kata laluan, Google atau Apple yang pernah digunakan, kemudian buka pautan pengesahan dalam e-mel."
+"This email isn’t verified yet — sign in with the password, Google or Apple you used before, then open the verification link we emailed you.":"E-mel ini belum disahkan — log masuk dengan kata laluan, Google atau Apple yang pernah digunakan, kemudian buka pautan pengesahan dalam e-mel.",
+"This link has expired or was already used — request a new one.":"Pautan ini telah tamat tempoh atau telah digunakan — minta pautan baharu.",
+"Get a sign-in link by email":"Dapatkan pautan log masuk melalui e-mel",
+"Confirm your email":"Sahkan e-mel anda",
+"Enter your email and we’ll send a link — tap it to sign in, no password needed.":"Masukkan e-mel anda dan kami akan hantar pautan — ketik untuk log masuk, tanpa kata laluan.",
+"We sent a sign-in link to":"Kami telah menghantar pautan log masuk ke",
+"— open the email on this device and tap the link (check spam too).":"— buka e-mel pada peranti ini dan ketik pautan (semak juga folder spam).",
+"For your security, enter the email you requested the link with.":"Untuk keselamatan, masukkan semula e-mel yang anda guna untuk meminta pautan.",
+"Sending link…":"Menghantar pautan…",
+"Send me a link":"Hantar pautan kepada saya",
+"Email me a link instead":"Hantar pautan ke e-mel sahaja",
+"Send another link":"Hantar pautan lagi",
+"Please wait before requesting another link.":"Sila tunggu sebelum meminta pautan baharu."
 }};

@@ -17,7 +17,7 @@
         {left:0,top,width:left,height:bottom-top},{left:right,top,width:width-right,height:bottom-top}]};
   }
   const defaultSteps=[
-    {selector:'#hForm, #hq',th:['เล่าอาการรถได้ตรงนี้','พิมพ์สิ่งที่คุณสังเกตได้ Cendon จะช่วยทำความเข้าใจและแนะนำขั้นตอนถัดไป'],en:['Start with what you notice','Tell Cendon what is happening with your car. We will help you understand what to do next.']},
+    {selector:'#hFlip',th:['ค้นหา หรือคุยกับ AI ได้ตรงนี้','พิมพ์หาอาการ อู่ หรือบริการ · แตะ 2 ครั้งที่ช่องเพื่อพลิกเป็น Cendon AI แล้วเล่าอาการ ส่งรูป หรืออัดเสียงได้'],en:['Search or talk to the AI here','Search symptoms, shops or services · double-tap the bar to flip it to Cendon AI and describe the problem, send a photo or record a sound']},
     {selector:'#hQuick',th:['เครื่องมือที่ใช้ได้ทุกวัน','ตรวจใบเสนอราคา ฟังเสียงรถ และใช้เครื่องมือดูแลรถจากตรงนี้'],en:['Your everyday car tools','Check a quote, listen to a car sound and open your everyday car-care tools here.']},
     {selector:'#hRail',th:['หาความช่วยเหลือให้ตรงจุด','เลือกหมวดงานที่ต้องการ แล้วดูข้อมูลช่างก่อนตัดสินใจ'],en:['Find the right help','Choose the kind of work you need and review technician information before deciding.']},
     {selector:'#myCar',th:['รถของคุณอยู่ตรงนี้','เพิ่มรถและเลือกคันที่คุณใช้อยู่ เพื่อให้คำแนะนำเหมาะกับรถคันนั้น'],en:['Make it about your car','Add your car and choose the one you are using for more relevant guidance.']},

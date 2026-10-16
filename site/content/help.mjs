@@ -47,6 +47,18 @@ const sections=[
       P('ได้ — บันทึกซ่อม น้ำมัน และทริปซิงก์ตามบัญชีแล้ว เข้าบัญชีเดียวกันจากเครื่องไหนก็เห็นเหมือนกัน','Yes — service, fuel and trip logs sync with your account, so every device signed in to it shows the same thing.'))},
 
   {id:'ai',title:['ผู้ช่วย AI','The AI assistant'],body:
+    Q('ช่องค้นหาหน้าแรกกับโหมด AI','The home search bar and AI mode',
+      P('หน้าแรกเป็นช่องค้นหาอาการ อู่ หรือบริการ · <b>แตะ 2 ครั้งที่พื้นที่ว่างของช่อง</b> (ไม่ใช่ปุ่ม) ช่องจะพลิกเป็น <b>Cendon AI</b> — เล่าอาการ ส่งรูป อัดเสียงเครื่อง หรือเลือกรถที่จะถามถึง แล้วกดลูกศร ห้องแชตเปิดและส่งให้ AI ทันที · แตะ 2 ครั้งอีกทีพลิกกลับเป็นค้นหา',
+        'The home page starts as a search bar for symptoms, shops or services · <b>double-tap an empty spot in the bar</b> (not a button) and it flips to <b>Cendon AI</b> — describe the problem, send a photo, record the engine or pick which car, then tap the arrow: the chat opens and sends it right away · double-tap again to flip back to search.'))+
+    Q('Cendon Valet คืออะไร','What is Cendon Valet?',
+      P('Valet คือ AI ที่ลงมือทำในแอปแทนคุณ แค่บอกในแชต เช่น “พาไปการาจ” “เปลี่ยนเป็นธีมมืด” “เพิ่มรถ Civic ปี 2020 ไมล์ 45,000” “อัปเดตเลขไมล์เป็น 90,000” “โพสต์หาช่างล้างแอร์ให้หน่อย” “ส่งรูปให้ช่าง” “ดูงานของฉัน” · ช่างสั่งเปลี่ยนสถานะร้านหรือเปิดหน้า Studio ได้ด้วย',
+        'Valet is an AI that acts inside the app for you — just say it in chat, e.g. “take me to my garage”, “switch to dark mode”, “add a 2020 Civic with 45,000 km”, “update the mileage to 90,000”, “post a job for an AC clean”, “send photos to my mechanic”, “show my jobs” · mechanics can also change their shop status or open Studio pages.')+
+      UL([['<b>เปิดใช้</b>: แตะปุ่มรูปจับมือข้างช่องพิมพ์ (มือถือ: ปุ่ม ⋮ มุมขวาบน) แล้วกด “อนุญาต Valet” — ปิดได้ทุกเมื่อที่ปุ่มเดิม','<b>Turn it on</b>: tap the handshake button next to the message box (phone: the ⋮ button at the top right) and choose “Allow Valet” — switch it off the same way anytime'],
+          ['<b>ทุกอย่างที่เปลี่ยนข้อมูลหรือส่งถึงคนอื่น</b> (เพิ่มรถ เลขไมล์ โพสต์หาช่าง ส่งรูป สถานะร้าน) ขึ้นเป็นการ์ดให้คุณตรวจและกดยืนยันเองก่อนเสมอ · การพาไปหน้าอื่นนับถอยหลังสั้น ๆ ยกเลิกได้ · เปลี่ยนธีม/ภาษากดย้อนกลับได้','<b>Anything that changes your data or reaches someone else</b> (adding a car, mileage, job posts, photos, shop status) appears as a card for you to check and confirm · moving to another page counts down briefly and can be cancelled · theme/language changes can be undone'],
+          ['Valet ทำได้เฉพาะสิ่งที่บัญชีของคุณทำได้อยู่แล้ว · ลบข้อมูล ลบบัญชี และเรื่องเงิน ยังทำเองเท่านั้น','Valet can only do what your own account can already do · deleting data, deleting your account and anything about money stay manual']]))+
+    Q('ตั้งประสิทธิภาพ AI (Sprint · Grand Tour · Atelier)','AI performance (Sprint · Grand Tour · Atelier)',
+      P('<b>Sprint</b> ตอบไว สั้น · <b>Grand Tour</b> สมดุล Cendon เลือกให้ว่าคิดแค่ไหน · <b>Atelier</b> ละเอียดที่สุด คิดลึก ค้นหลายแหล่ง · บนคอมอยู่ที่ปุ่มข้างช่องพิมพ์ · บนมือถืออยู่ในปุ่ม ⋮ มุมขวาบนของห้องแชต (รวมกับแชตใหม่และ Valet)',
+        '<b>Sprint</b> is fast and short · <b>Grand Tour</b> is balanced — Cendon decides how deep to go · <b>Atelier</b> is the most thorough, with deeper thinking and more sources · on a computer it’s the button next to the message box · on a phone it’s in the ⋮ button at the top right of the chat (with New chat and Valet).'))+
     Q('ถามอะไรได้บ้าง','What can I ask?',
       UL([['อาการรถ เสียงแปลก ไฟเตือนบนหน้าปัด','Symptoms, odd noises, warning lights'],
           ['<b>ถ่ายรูป</b> ชิ้นส่วนหรือไฟเตือนให้ AI ดู','<b>Take a photo</b> of a part or warning light for the AI to look at'],
@@ -75,7 +87,7 @@ const sections=[
       UL([['<b>ร้านเดียว</b> — จากหน้าร้านที่คุณเลือก','<b>One shop</b> — from the shop page you pick'],
           ['<b>หลายร้านแล้วเทียบราคา</b> — ส่งคำขอทีเดียวถึงหลายร้าน แล้วเทียบในหน้าเดียว','<b>Several shops</b> — one request to many, then compare side by side'],
           ['<b>เรียกช่างด่วน</b> — รถเสียกลางทาง ส่งถึงร้านที่ออกนอกสถานที่ใกล้สุดพร้อมกัน (ถ้าแถวนั้นยังไม่มี ระบบประกาศงานด่วนให้ช่างรอบตัวเห็นแทน) ช่างเห็นเป็นงานสีแดงบนสุด','<b>Urgent call-out</b> — broken down? It goes to the nearest mobile shops at once (if none are nearby, it’s posted as an urgent job for every mechanic around you), and mechanics see it in red at the top'],
-          ['<b>ประกาศหาช่าง</b> — โพสต์งาน ให้ช่างแถวนั้นเสนอราคาเข้ามา','<b>Post a job</b> — publish it and let nearby mechanics send quotes'],
+          ['<b>ประกาศหาช่าง</b> — โพสต์งาน ให้ช่างแถวนั้นเสนอราคาเข้ามา (หน้าแรก: การ์ด <b>เรียกช่าง → ไม่ด่วน</b>) · หรือให้ Cendon Valet ร่างประกาศจากที่คุยกันในแชตให้','<b>Post a job</b> — publish it and let nearby mechanics send quotes (home page: <b>Call a mechanic → Not urgent</b>) · or let Cendon Valet draft it from your chat'],
           ['<b>ทักช่าง</b> — ถามก่อนได้โดยยังไม่ต้องจอง','<b>Message a mechanic</b> — ask questions before booking anything']]))+
     Q('คำขอราคาและประกาศอยู่ได้นานแค่ไหน','How long do requests and posts stay open?',
       UL([['<b>เรียกช่างด่วน</b> — 3 ชั่วโมง','<b>Urgent call-out</b> — 3 hours'],

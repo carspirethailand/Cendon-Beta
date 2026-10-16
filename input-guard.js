@@ -45,13 +45,18 @@
     bounds(el);var v=el.value;if(!v)return;
     var lo=el.getAttribute('min'),hi=el.getAttribute('max');
     if(hi&&v>hi){el.value=hi;tip(el,past(el)?(th()?'บันทึกนี้เป็นเรื่องที่เกิดแล้ว ใส่วันในอนาคตไม่ได้ — ปรับเป็นวันนี้':'This is a past event — the date can’t be in the future, set to today'):(th()?'วันที่ไกลเกินจริง — ปรับให้แล้ว':'That date is too far ahead — adjusted'))}
-    else if(lo&&v<lo){el.value=lo;tip(el,th()?'วันที่เก่าเกินจริง — ปรับให้แล้ว':'That date is too far back — adjusted')}
+    else if(lo&&v<lo){
+      /* ปีที่ยังพิมพ์ไม่ครบ (เช่น 0002, 0020) = ตั้งใจพิมพ์ปีปัจจุบัน ไม่ใช่ปี 1990 */
+      var y=Number(v.slice(0,4)),cur=String(new Date(Date.now()).getFullYear());
+      if(y<1000){var fixed=cur+v.slice(4);if((!lo||fixed>=lo)&&(!hi||fixed<=hi)){el.value=fixed;tip(el,th()?'ปรับเป็นปี '+cur+' ให้แล้ว':'Set to '+cur);return}}
+      el.value=lo;tip(el,th()?'วันที่เก่าเกินจริง — ปรับให้แล้ว':'That date is too far back — adjusted')}
   }
   D.addEventListener('focusin',function(e){bounds(e.target)},true);
   D.addEventListener('pointerdown',function(e){bounds(e.target)},true);
   D.addEventListener('keydown',function(e){var el=e.target;if(isNum(el)&&el.type==='number'&&(e.key==='-'||e.key==='e'||e.key==='E'||e.key==='+')){e.preventDefault();if(e.key==='-')tip(el,th()?'ตัวเลขติดลบไม่ได้':'Negative numbers aren’t allowed')}},true);
   D.addEventListener('input',function(e){if(isNum(e.target))fixNum(e.target,false)},true);
-  D.addEventListener('change',function(e){var el=e.target;if(isNum(el))fixNum(el,true);else if(isDate(el))fixDate(el)},true);
+  /* ช่องวันที่: Chrome ยิง change ทุกครั้งที่พิมพ์ตัวเลขปีแต่ละหลัก — ระหว่างยังโฟกัสอยู่ห้ามปรับ (ไม่งั้นพิมพ์ "2" ปุ๊บกลายเป็นปี 1990) ไปตรวจตอนออกจากช่อง */
+  D.addEventListener('change',function(e){var el=e.target;if(isNum(el))fixNum(el,true);else if(isDate(el)&&D.activeElement!==el)fixDate(el)},true);
   /* วางข้อความลงช่องวันที่บางเบราว์เซอร์ไม่ยิง change — ตรวจอีกรอบตอนออกจากช่อง */
   D.addEventListener('blur',function(e){var el=e.target;if(isDate(el))fixDate(el);else if(isNum(el))fixNum(el,true)},true);
   window.spireGuard={bounds:bounds,fixDate:fixDate,fixNum:fixNum};

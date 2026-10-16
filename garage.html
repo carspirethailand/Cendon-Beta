@@ -4162,6 +4162,9 @@ html.gx-lock,html.gx-lock body{overflow:hidden}
 @media(prefers-reduced-motion:reduce){.gx-sh,.gx-bd,.gx-car,.gx-empty{transition:none}}
 </style>
 <link rel="stylesheet" href="lux.css">
+<!-- กระดิ่งแจ้งเตือน: ปุ่มในแถบเมนู (คอม) / มุมขวาบน (มือถือ) -->
+<script src="bell.js?v=2" defer></script>
+<style>/* มือถือ: กระดิ่งอยู่มุมขวาบน — เลื่อนปุ่มเพิ่มรถหลบให้ */@media(max-width:760px){.gx-head{padding-right:46px}}</style>
 <script src="carspec.js?v=2026-10-12-r3" defer></script>
 </head>
 <body>
@@ -7767,7 +7770,7 @@ function panePlan(c){
         <button class="cl-mini" data-editiv="${p.k}" title="${T("แก้รอบ","Edit interval")}"><i class="ti ti-adjustments"></i></button>
       </span></div>
       <div class="cl-ivedit" id="iv-${p.k}" hidden>
-        <input type="number" inputmode="numeric" id="ivkm-${p.k}" value="${p.km}" placeholder="${T("ทุกกี่ กม.","Every km")}"/>
+        <input type="number" inputmode="numeric" min="0" max="1000000" id="ivkm-${p.k}" value="${p.km}" placeholder="${T("ทุกกี่ กม.","Every km")}"/>
         <input type="number" inputmode="numeric" id="ivmo-${p.k}" value="${p.mo}" placeholder="${T("ทุกกี่เดือน","Every months")}"/>
         <button class="btn primary" data-saveiv="${p.k}">${T("บันทึก","Save")}</button>
         <button class="btn" data-resetiv="${p.k}">${T("ค่ามาตรฐาน","Default")}</button>
@@ -7786,8 +7789,8 @@ function panePlan(c){
     :`<div class="cl-empty" style="padding:16px"><i class="ti ti-clipboard-list"></i>${
       T("ยังไม่มีงานที่เพิ่มเอง","Nothing added yet")}</div>`}
     <div class="cl-form">
-      <input id="tdT" class="wide" placeholder="${T("เช่น เปลี่ยนใบปัดน้ำฝน, ต่อ พ.ร.บ.","e.g. Replace wipers, renew tax")}"/>
-      <input id="tdKm" type="number" inputmode="numeric" placeholder="${T("ครบที่ กม. (ไม่บังคับ)","Due at km (optional)")}"/>
+      <input id="tdT" class="wide" maxlength="60" placeholder="${T("เช่น เปลี่ยนใบปัดน้ำฝน, ต่อ พ.ร.บ.","e.g. Replace wipers, renew tax")}"/>
+      <input id="tdKm" type="number" inputmode="numeric" min="0" max="1000000" placeholder="${T("ครบที่ กม. (ไม่บังคับ)","Due at km (optional)")}"/>
       <input id="tdDate" type="date"/>
       <button class="btn primary wide" id="tdAdd"><i class="ti ti-plus"></i> ${T("เพิ่มงาน","Add reminder")}</button>
     </div>
@@ -7795,7 +7798,7 @@ function panePlan(c){
   <div class="cl-grp"><h4>${T("บันทึกการเข้าศูนย์","Log a service")}</h4>
     <div class="cl-form">
       <select id="clSvcK">${planFor(c).map(p=>`<option value="${p.k}">${T(p.th,p.en)}</option>`).join("")}</select>
-      <input id="clSvcKm" type="number" inputmode="numeric" placeholder="${T("เลขไมล์ (กม.)","Mileage (km)")}" value="${km||""}"/>
+      <input id="clSvcKm" type="number" inputmode="numeric" min="0" max="1000000" placeholder="${T("เลขไมล์ (กม.)","Mileage (km)")}" value="${km||""}"/>
       <input id="clSvcAmt" type="number" inputmode="numeric" placeholder="${T("ค่าใช้จ่าย (บาท)","Cost (THB)")}"/>
       <input id="clSvcDate" type="date" value="${new Date().toISOString().slice(0,10)}"/>
       <button class="btn primary wide" id="clSvcAdd"><i class="ti ti-plus"></i> ${T("บันทึก","Add record")}</button>
@@ -7832,7 +7835,7 @@ function paneCost(c){
   </div>
   <div class="cl-grp"><h4>${T("เติมน้ำมัน / ชาร์จไฟ","Fuel / charging")}</h4>
     <div class="cl-form">
-      <input id="clFuelKm" type="number" inputmode="numeric" placeholder="${T("เลขไมล์ (กม.)","Mileage (km)")}" value="${esc(c.mileage||"")}"/>
+      <input id="clFuelKm" type="number" inputmode="numeric" min="0" max="1000000" placeholder="${T("เลขไมล์ (กม.)","Mileage (km)")}" value="${esc(c.mileage||"")}"/>
       <input id="clFuelAmt" type="number" inputmode="numeric" placeholder="${T("จำนวนเงิน (บาท)","Amount (THB)")}"/>
       <input id="clFuelL" type="number" inputmode="decimal" step="0.01" placeholder="${T("ลิตร / kWh","Litres / kWh")}"/>
       <input id="clFuelDate" type="date" value="${new Date().toISOString().slice(0,10)}"/>
@@ -7860,7 +7863,7 @@ function paneTrip(c){
   <div class="cl-grp"><h4>${T("บันทึกทริปใหม่","Log a trip")}</h4>
     <div class="cl-form">
       <input id="clTripT" class="wide" placeholder="${T("ไปไหนมา เช่น กรุงเทพ–หัวหิน","Where to? e.g. Bangkok–Hua Hin")}"/>
-      <input id="clTripKm" type="number" inputmode="numeric" placeholder="${T("ระยะทาง (กม.)","Distance (km)")}"/>
+      <input id="clTripKm" type="number" inputmode="numeric" min="0" max="1000000" placeholder="${T("ระยะทาง (กม.)","Distance (km)")}"/>
       <input id="clTripDate" type="date" value="${new Date().toISOString().slice(0,10)}"/>
       <button class="btn primary wide" id="clTripAdd"><i class="ti ti-plus"></i> ${T("บันทึกทริป","Add trip")}</button>
     </div>
@@ -8258,8 +8261,12 @@ D.addEventListener("click",e=>{
     toastx(T("กลับเป็นค่ามาตรฐาน","Reset to default"));renderTab();refreshWidgets();return}
   if(e.target.closest("#tdAdd")){
     const t=$("tdT").value.trim(); if(!t){toastx(T("ใส่ชื่องานก่อน","Name it first"));return}
+    /* ชื่องานไม่เกิน 60 ตัว · ครบที่ กม. ไม่เกิน 1,000,000 */
+    if(Array.from(t).length>60){toastx(T("ชื่องานยาวเกินไป ใช้ไม่เกิน 60 ตัวอักษร","Keep the name under 60 characters"),"ti-alert-triangle");return}
+    const dueKm=Number($("tdKm").value)||0;
+    if(dueKm<0||dueKm>1000000){toastx(T("เลขไมล์ต้องอยู่ระหว่าง 0 – 1,000,000 กม.","Mileage must be 0 – 1,000,000 km"),"ti-alert-triangle");return}
     const arr=getTodos(c.id);
-    arr.push({title:t,dueKm:Number($("tdKm").value)||0,dueDate:$("tdDate").value||"",done:false});
+    arr.push({title:t,dueKm,dueDate:$("tdDate").value||"",done:false});
     setTodos(c.id,arr);toastx(T("เพิ่มงานแล้ว","Added"));renderTab();refreshWidgets();return}
   const td=e.target.closest("[data-tdone]");
   if(td){const arr=getTodos(c.id);arr[+td.dataset.tdone].done=!arr[+td.dataset.tdone].done;

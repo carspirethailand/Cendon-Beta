@@ -3021,7 +3021,7 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 <script src="call-session.js?v=2026-10-16-r3" defer></script>
 <link rel="stylesheet" href="valet.css?v=1">
 <script src="valet.js?v=1" defer></script>
-<script src="bell.js?v=1" defer></script>
+<script src="bell.js?v=2" defer></script>
 <script src="./techs.js"></script>
 <script src="./cendon-search.js"></script>
 <style id="vtcss">
@@ -4123,7 +4123,7 @@ async function streamAnswer(contents,opts){
    ตัวที่เพิ่งโผล่ค่อย ๆ ชัดขึ้นจากจางและเบลอเล็กน้อย เหมือนหมึกซึม
    ย่อหน้าที่จบแล้ววาดครั้งเดียวแล้วไม่แตะอีก จอจึงไม่กระพริบ */
 const W_MARK=/[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E\u0300-\u036F\uFE0F\u200D\uDC00-\uDFFF]/;
-const W_FADE=120;
+const W_FADE=380;
 function flowNew(body){return{body,target:"",shown:0,acc:0,stamps:[],settled:0,active:null,caret:null,raf:0,last:0,done:false,wait:null,user:false}}
 /* ข้อความที่จะแสดง — ตัดบล็อกฟอร์มถามกลับ [[ASK]] ออก (มันจะกลายเป็นฟอร์มหลังคำตอบจบ ไม่ใช่ขึ้นเป็นโค้ดดิบระหว่างไหล) */
 function flowText(t){return String(t||"").replace(/\[\[(ASK|NEXT|ACT)\]\][\s\S]*$/,"").replace(/\[\[\s*(?:ค้นหา|search)\s*:[^\]\n]*(?:\]\])?/gi,"").replace(/\[\[[^\]\n]{0,70}$/,"").replace(/\[(\[([AN](S(K)?|E(X(T)?)?)?)?)?$/,"")}
@@ -4147,7 +4147,9 @@ function flowTick(f,now){
   if(backlog>0){
     /* ปล่อยคิวแบบค่อย ๆ ลด (คิวยาวไหลเร็ว คิวสั้นไหลช้าลงแต่ไม่หยุด) — ช่วงที่เน็ตเงียบระหว่างก้อน
        ข้อความจึงยังเดินต่อช้า ๆ แทนที่จะหยุดนิ่งแล้วกระโดดทีเดียวตอนก้อนใหม่มา */
-    const cps=Math.max(1000,backlog*1000/dt);
+    /* เห็นตัวอักษรไหลจริง (ไม่โผล่ทีเดียวทั้งก้อน) แต่ไม่ทิ้งห่างของจริง: คิวค้างนานสุดราว 0.3 วินาที
+       ข้อมูลมาครบแล้วก็เร่งปล่อยส่วนที่เหลือให้จบไว */
+    const cps=f.done?Math.max(180,backlog/.45):Math.max(60,backlog/.3);
     f.acc+=cps*dt/1000;
     let k=Math.floor(f.acc);
     if(k>0){
@@ -4210,7 +4212,8 @@ function flowFade(f,now,tailLen){
       const right=at>0?node.splitText(at):node, took=right.length;
       const p=segs[si][1], ease=1-(1-p)*(1-p);
       const sp=document.createElement("span");
-      sp.style.opacity=(0.75+0.25*ease).toFixed(3);
+      sp.style.opacity=(0.15+0.85*ease).toFixed(3);
+      if(p<.6)sp.style.filter="blur("+((1-p/.6)*1.6).toFixed(2)+"px)";
       /* ตัวหนังสือที่เพิ่งมาเริ่มเป็นสีส้ม Cendon แล้วค่อย ๆ กลายเป็นสีปกติ — ไล่สีตามคำที่ไหลมา */
       if(p<.9)sp.style.color="color-mix(in oklab,#F28C38 "+Math.round((1-p/.9)*100)+"%,var(--c-ink))";
       right.parentNode.insertBefore(sp,right); sp.appendChild(right);

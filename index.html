@@ -28,7 +28,7 @@ if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=1"><\/s
 <meta property="og:locale" content="th_TH"><meta name="twitter:card" content="summary_large_image">
 <script src="nav.js"></script>
 <script src="media-store.js"></script>
-<script src="bell.js?v=1"></script>
+<script src="bell.js?v=2"></script>
 <meta name="theme-color" content="#131316"/>
 <link rel="manifest" href="./manifest.webmanifest"/>
 <link rel="icon" href="./favicon.png"/>
@@ -460,6 +460,18 @@ textarea.inp{min-height:92px;resize:vertical}
 .seg button.on{background:var(--c-acc-soft);color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent)}
 .chk{display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:15px;background:var(--surface);font-size:14px;cursor:pointer;margin-bottom:10px}
 .chk input{width:22px;height:22px;accent-color:var(--accent);flex-shrink:0;margin-top:1px}
+/* กล่องเตือนข้อมูลไม่ครบ — อยู่เหนือแผ่นเลื่อนขึ้น */
+.fpop{position:fixed;inset:0;z-index:2100;display:grid;place-items:center;padding:16px;background:rgba(8,8,10,.52);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);animation:fpIn .18s ease-out}
+.fpop-c{width:min(380px,100%);background:var(--surface);color:var(--ink);border-radius:20px;padding:22px 20px 18px;box-shadow:0 24px 60px -12px rgba(0,0,0,.45),inset 0 0 0 1px var(--ci-line);animation:fpUp .26s cubic-bezier(.2,.9,.25,1)}
+.fpop-i{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:rgba(214,74,74,.12);color:var(--danger);font-size:24px;margin-bottom:10px}
+.fpop h3{margin:0 0 10px;font-size:17px;font-weight:600;line-height:1.4}
+.fpop ul{margin:0 0 18px;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.fpop li{position:relative;padding-left:16px;font-size:14px;line-height:1.55}
+.fpop li::before{content:"";position:absolute;left:2px;top:.66em;width:6px;height:6px;border-radius:50%;background:var(--danger)}
+.bad-f{box-shadow:0 0 0 2px var(--danger)!important;border-radius:12px}
+@keyframes fpIn{from{opacity:0}}
+@keyframes fpUp{from{opacity:0;transform:translateY(10px) scale(.97)}}
+@media(prefers-reduced-motion:reduce){.fpop,.fpop-c{animation:none}}
 .err{color:var(--danger);font-size:14px;padding:11px 13px;border-radius:13px;background:rgba(214,74,74,.1);margin-bottom:12px;animation:shake .35s}
 .err:empty{display:none}
 .note{font-size:13px;color:var(--muted);display:flex;gap:8px;align-items:flex-start;margin:4px 0 14px}
@@ -582,6 +594,7 @@ html[data-theme="dark"] .chat{--ci:#FAFAF9;--ci-2:#E4E4E7;--ci-fg:#09090B;--ci-s
 .chat .sys.safe>span>b{color:var(--ink)}
 .chat .sys.ask{padding:7px 13px;border-radius:999px;color:var(--muted);background:var(--surface);box-shadow:inset 0 0 0 1px var(--ci-line)}
 .chat .sys.ask b{color:var(--ink)}
+.sys.closed{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:999px;color:var(--muted);background:var(--surface);box-shadow:inset 0 0 0 1px var(--ci-line)}
 /* วันที่: เส้นบางสองข้างแบบหน้าหนังสือ */
 .chat .day{display:flex;align-items:center;gap:12px;width:min(260px,70%);letter-spacing:.06em}
 .chat .day::before,.chat .day::after{content:"";flex:1;height:1px;background:var(--ci-line)}
@@ -1285,6 +1298,15 @@ html[data-theme="light"]{--bg:#FAFAF9;--surface:#FFFFFF;--surface-2:#F4F4F5;--in
   --shadow:0 1px 2px rgba(9,9,11,.04),0 24px 48px -36px rgba(9,9,11,.25);--shadow-sm:0 1px 2px rgba(9,9,11,.05)}
 body{background:var(--bg);letter-spacing:-.005em}
 .wf,.ring,.deco{display:none!important}
+/* ── ธีมมืด: ของที่เบราว์เซอร์วาดเอง (รายการตัวเลือกของ select · ปฏิทินเลือกวัน · แถบเลื่อน · ช่องที่กรอกอัตโนมัติ) ──
+   ไม่บอกเบราว์เซอร์ว่าหน้านี้มืด มันจะวาดพื้นขาวทั้งที่ตัวหนังสือเป็นสีขาวตามธีม → อ่านไม่ออก */
+html[data-theme="dark"]{color-scheme:dark}
+html[data-theme="light"]{color-scheme:light}
+select option,select optgroup{background-color:var(--surface);color:var(--ink)}
+input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus,textarea:-webkit-autofill,select:-webkit-autofill{
+  -webkit-text-fill-color:var(--ink)!important;caret-color:var(--ink);-webkit-box-shadow:0 0 0 1000px var(--surface) inset!important;transition:background-color 9999s ease 0s}
+/* แถบเมนูบน: ตัวเลือกหน้าและรูปโปรไฟล์เป็นส้ม Cendon เรียบ เหมือนทุกหน้า (เดิมหน้าแรกหน้าเดียวเป็นไล่สีทอง) */
+.navwrap .nav-ind,.navwrap .avatar .fb{background:var(--co,var(--accent))!important;background-image:none!important}
 /* ปุ่ม */
 .lx-cta{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 20px;border:0;border-radius:12px;cursor:pointer;white-space:nowrap;
   font:600 14.5px/1 var(--kb);color:var(--bg);background:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12),0 10px 22px -14px rgba(0,0,0,.55);transition:background .2s,transform .15s}
@@ -1411,6 +1433,21 @@ body{background:var(--bg);letter-spacing:-.005em}
 .lx-rail{display:flex;gap:14px;justify-content:center;overflow-x:auto;scrollbar-width:none;padding:8px 4px 4px;margin:6px auto 0;max-width:1060px;
   -webkit-mask:linear-gradient(90deg,transparent,#000 16px,#000 calc(100% - 16px),transparent);mask:linear-gradient(90deg,transparent,#000 16px,#000 calc(100% - 16px),transparent)}
 .lx-rail::-webkit-scrollbar{display:none}
+.lx-railw{position:relative}
+.lx-rarr{display:none}
+@media(min-width:761px){
+  .lx-railw{max-width:1060px;margin:0 auto}
+  .lx-rarr{display:grid;place-items:center;position:absolute;top:48px;transform:translateY(-50%);z-index:3;width:40px;height:40px;padding:0;border-radius:50%;border:0;cursor:pointer;
+    background:var(--surface);color:var(--ink);font-size:19px;box-shadow:0 0 0 1px var(--line),0 10px 24px -12px rgba(0,0,0,.4);transition:background .2s,transform .2s}
+  .lx-rarr:hover{background:var(--surface-2);transform:translateY(-50%) scale(1.06)}
+  .lx-rarr:focus-visible{outline:2px solid var(--co);outline-offset:3px}
+  .lx-rarr[hidden]{display:none}
+  .lx-rarr.l{left:-4px}.lx-rarr.r{right:-4px}
+  /* ขอบจางฝั่งที่ยังมีหมวดซ่อนอยู่ */
+  #vMenu .lx-railw.fr .lx-rail{-webkit-mask:linear-gradient(90deg,#000 calc(100% - 72px),transparent);mask:linear-gradient(90deg,#000 calc(100% - 72px),transparent)}
+  #vMenu .lx-railw.fl .lx-rail{-webkit-mask:linear-gradient(90deg,transparent,#000 72px);mask:linear-gradient(90deg,transparent,#000 72px)}
+  #vMenu .lx-railw.fl.fr .lx-rail{-webkit-mask:linear-gradient(90deg,transparent,#000 72px,#000 calc(100% - 72px),transparent);mask:linear-gradient(90deg,transparent,#000 72px,#000 calc(100% - 72px),transparent)}
+}
 .lx-rail{justify-content:flex-start!important}
 .lx-rail button{position:relative;flex:none;width:104px;display:flex;flex-direction:column;align-items:center;gap:10px;padding:10px 4px 14px;border:0;background:none;cursor:pointer;color:var(--muted)}
 .lx-rail button::after{content:"";position:absolute;left:22px;right:22px;bottom:0;height:2px;border-radius:2px;background:var(--co);transform:scaleX(0);transition:transform .35s cubic-bezier(.32,.72,0,1)}
@@ -1658,26 +1695,7 @@ button.lx-car[aria-expanded="true"]{border-color:var(--ink)}
 /* คอม: กระดิ่งอยู่ในแถบเมนูบน ข้างรูปโปรไฟล์ (แถวโลโก้มือถือซ่อนบนคอม) */
 .lx-bell.nb-d{position:relative;right:auto;top:auto;transform:none;width:34px;height:34px;font-size:19px;flex:none}
 @media(max-width:760px){.lx-bell.nb-d{display:none!important}}
-/* แผงแจ้งเตือน */
-.nb-pop{position:absolute;z-index:1400;width:min(380px,calc(100vw - 20px));max-height:min(72vh,560px);display:flex;flex-direction:column;border-radius:20px;background:var(--surface);
-  box-shadow:0 0 0 1px var(--line),0 30px 60px -24px rgba(0,0,0,.45);overflow:hidden;animation:nbIn .22s cubic-bezier(.32,.72,0,1);transform-origin:100% 0}
-@keyframes nbIn{from{opacity:0;transform:scale(.96) translateY(-4px)}}
-.nb-h{display:flex;align-items:center;gap:8px;padding:14px 16px 10px}
-.nb-h b{flex:1;font:700 16px var(--kd)}
-.nb-h button{border:0;background:none;color:var(--muted);font:500 13px var(--kb);cursor:pointer}
-.nb-on{display:flex;gap:10px;align-items:flex-start;margin:0 12px 8px;padding:12px;border-radius:14px;background:var(--surface-2)}
-.nb-on .ti{font-size:20px;color:var(--co);margin-top:2px}.nb-on span{flex:1;font-size:13px;line-height:1.5;color:var(--muted)}.nb-on span b{display:block;color:var(--ink);font-size:14px}
-.nb-on .lx-cta{height:34px;padding:0 14px;font-size:13px;flex:none;align-self:center}
-.nb-list{overflow:auto;padding:2px 6px 6px}
-.nb-it{display:flex;gap:12px;align-items:flex-start;width:100%;padding:11px 10px;border:0;border-radius:14px;background:none;color:var(--ink);text-align:left;font:inherit;cursor:pointer}
-.nb-it:hover,.nb-it:focus-visible{background:var(--surface-2)}
-.nb-ic{flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:12px;font-size:18px;background:var(--surface-2);color:var(--ink)}
-.nb-ic.ai{color:#fff;background:conic-gradient(from 200deg,#E9682A,#ec4899,#7c5cff,#E9682A)}
-.nb-it>span+span{flex:1;min-width:0}.nb-it b{display:block;font-size:14px;font-weight:600;line-height:1.35}.nb-it small{display:block;margin-top:2px;font-size:12.5px;line-height:1.45;color:var(--muted)}
-.nb-it time{flex:none;font-size:11.5px;color:var(--faint);margin-top:2px}
-.nb-it.new b::after{content:"";display:inline-block;width:7px;height:7px;margin-left:6px;border-radius:50%;background:var(--co);vertical-align:2px}
-.nb-empty{padding:26px 16px 30px;text-align:center;color:var(--muted);font-size:13.5px}.nb-empty .ti{display:block;font-size:30px;color:var(--faint);margin-bottom:6px}
-.nb-f{display:flex;border-top:1px solid var(--line)}.nb-f button{flex:1;height:46px;border:0;background:none;color:var(--ink);font:600 13.5px var(--kb);cursor:pointer}.nb-f button:hover{background:var(--surface-2)}
+/* แผงแจ้งเตือน: สไตล์อยู่ใน bell.js (ใช้ร่วมทุกหน้า) */
 
 
 /* โพสต์ของช่าง */
@@ -3013,8 +3031,40 @@ async function busy(btn,fn){
   const html=btn&&btn.innerHTML;
   if(btn){btn.disabled=true;btn.innerHTML='<span class="spin"></span>'}
   try{return await fn()}
-  catch(e){const er=$("err");if(er&&$("bs").classList.contains("on")){er.textContent=e.message;er.style.animation="none";er.offsetWidth;er.style.animation=""}else toast(e.message,"ti-alert-triangle")}
+  catch(e){
+    /* ลืมกรอกหรือกรอกผิด (เช็กในเครื่อง หรือเซิร์ฟเวอร์ตอบ 400) → ขึ้นกล่องบอกกลางจอ ไม่ใช่ตัวหนังสือเล็ก ๆ ท้ายฟอร์มที่มองไม่เห็น */
+    if(e&&(e.form||e.status===400)&&$("bs").classList.contains("on")){const er=$("err");if(er)er.textContent=e.message;formPop(e.form||[{id:fieldOf(e.message),msg:e.message}]);return}
+    const er=$("err");if(er&&$("bs").classList.contains("on")){er.textContent=e.message;er.style.animation="none";er.offsetWidth;er.style.animation=""}else toast(e.message,"ti-alert-triangle")}
   finally{if(btn&&btn.isConnected){btn.disabled=false;btn.innerHTML=html}}
+}
+
+/* ═══ กล่องเตือน "ข้อมูลยังไม่ครบ" ═══
+   list = [{id: ช่องที่ต้องแก้, msg: บอกว่าต้องทำอะไร}] — กด "กลับไปแก้" แล้วพาไปที่ช่องแรกที่ผิด ช่องที่ผิดมีขอบแดงจนกว่าจะแก้ */
+const formErr=list=>Object.assign(new Error(list.map(x=>x.msg).join(" · ")),{form:list});
+/* ข้อความจากเซิร์ฟเวอร์ขึ้นต้นด้วยชื่อช่อง → รู้ว่าต้องพาไปช่องไหน */
+function fieldOf(m){m=String(m||"");
+  return /^เบอร์โทร/.test(m)?"bPhone":/^อาการ/.test(m)?($("bSym")?"bSym":"uSym"):/^รถ \//.test(m)?($("bCarX")&&!$("bCarX").hidden?"bCarX":"bCarC"):/^วันและเวลา/.test(m)?"bWhenX":/^(พื้นที่|ที่อยู่)/.test(m)?"bMap":""}
+function formPop(list){
+  const old=$("fpop");if(old)old.remove();
+  const d=document.createElement("div");d.id="fpop";d.className="fpop";
+  d.setAttribute("role","alertdialog");d.setAttribute("aria-modal","true");d.setAttribute("aria-labelledby","fpopT");
+  d.innerHTML=`<div class="fpop-c"><span class="fpop-i"><i class="ti ti-alert-circle"></i></span>
+    <h3 id="fpopT">${T("ยังส่งไม่ได้ — เช็กข้อมูลอีกนิด","Almost there — please check")}</h3>
+    <ul>${list.map(x=>`<li>${esc(x.msg)}</li>`).join("")}</ul>
+    <button class="btn p w" type="button" id="fpopOk">${T("กลับไปแก้","Fix it")}</button></div>`;
+  document.body.appendChild(d);
+  list.forEach(x=>{const el=x.id&&$(x.id);if(!el)return;el.classList.add("bad-f");
+    const off=()=>el.classList.remove("bad-f");el.addEventListener("input",off,{once:true});el.addEventListener("click",off,{once:true})});
+  const onKey=e=>{if(e.key==="Escape"||e.key==="Enter"){e.preventDefault();e.stopPropagation();close()}};
+  const close=()=>{d.remove();removeEventListener("keydown",onKey,true);
+    const f=list.find(x=>x.id&&$(x.id));if(!f)return;const el=$(f.id);
+    el.scrollIntoView({block:"center",behavior:"smooth"});
+    if(/^(INPUT|TEXTAREA)$/.test(el.tagName)&&!el.hidden)setTimeout(()=>el.focus({preventScroll:true}),260)};
+  addEventListener("keydown",onKey,true);
+  d.onclick=e=>{if(e.target===d)close()};
+  $("fpopOk").onclick=close;
+  try{navigator.vibrate&&navigator.vibrate(30)}catch(e){}
+  setTimeout(()=>{const b=$("fpopOk");if(b)b.focus()},30);
 }
 
 /* ═══ แผ่นเลื่อนขึ้น ═══
@@ -3076,7 +3126,9 @@ function closeSheet(fromNav){
   const cb=SH.onClose;SH.onClose=null;if(cb)cb();
   if(fromNav!==true&&l)Nav.drop(l);
 }
-$("bsX").onclick=()=>closeSheet();$("bsBg").onclick=()=>closeSheet();$("bsBack").onclick=()=>back();
+$("bsX").onclick=()=>closeSheet();
+/* คลิกพื้นมืด: ปิดชั้นบนสุดก่อน — ถ้าห้องแชตเปิดทับอยู่ (คอม: แผงแชตด้านขวา) ให้ปิดแชต ไม่ใช่ปิดแผ่นข้างใต้แล้วทิ้งแชตค้าง */
+$("bsBg").onclick=()=>{if($("chat").classList.contains("on")){closeChat();return}closeSheet()};$("bsBack").onclick=()=>back();
 addEventListener("keydown",e=>{if(e.key==="Escape"){if($("chat").classList.contains("on"))closeChat();else closeSheet()}});
 function zoom(src){const z=document.createElement("div");z.className="zoom";z.innerHTML=`<img src="${esc(src)}" alt=""/>`;z.onclick=()=>z.remove();document.body.appendChild(z)}
 
@@ -3914,32 +3966,8 @@ function drawJobsBtn(){
 if(window.CendonBell){CendonBell.setApi({get:p=>api(p),post:(p,b)=>api(p,{body:b})});CendonBell.on(()=>{try{drawJobsBtn()}catch(e){}})}
 function bellDiff(){
   if(!U||!JOBS_OK||!window.CendonBell)return;
-  const K="spire_jobsnap",snap=ls.get(K,null),cur={};
-  JOBS.forEach(j=>{cur[j.id]=[j.status,j.unread||0]});
-  if(!snap||snap.uid!==U.uid){ls.set(K,{uid:U.uid,j:cur});return}
-  const old=snap.j||{},evs=[];
-  for(const j of JOBS){
-    if(j.side==="admin")continue;
-    const o=old[j.id],tech=j.side==="technician",shop=j.techName||T("ช่าง","The mechanic"),car=j.car||"",url="/jobs/"+encodeURIComponent(j.id),tag="cendon-job-"+j.id;
-    const ev=(kind,title,body,u)=>evs.push({id:j.id+":"+kind+":"+(j.updatedAt||j.createdAt||0),kind,title,body:body??car,url:u||url,tag});
-    if(!o){if(tech&&j.status==="requested")ev("request",T("คำขอใหม่: ","New request: ")+car,j.symptom);continue}
-    if(o[0]!==j.status){
-      if(!tech){
-        if(j.status==="quoted")ev("quote",T(`${shop} เสนอราคา`,`${shop} sent a quote`)+(j.total?` ฿${money(j.total)}`:""));
-        else if(j.status==="enroute")ev("enroute",T(`${shop} กำลังมาหาคุณ`,`${shop} is on the way`));
-        else if(j.status==="working")ev("working",T(`${shop} เริ่มซ่อมแล้ว`,`${shop} started the repair`));
-        else if(j.status==="done")ev("done",T(`${shop} ซ่อมเสร็จ — ตรวจแล้วยืนยันงาน`,`${shop} finished — check and confirm`));
-        else if(j.status==="cancelled")ev("cancel",j.expired?T("คำขอหมดอายุ","A request expired"):T(`${shop} ยกเลิกงาน`,`${shop} cancelled`));
-      }else{
-        if(j.status==="accepted")ev("accept",T(`ลูกค้ายืนยันราคา: ${car}`,`Customer accepted: ${car}`));
-        else if(j.status==="completed")ev("complete",T(`ลูกค้ายืนยันงานเสร็จ: ${car}`,`Customer confirmed: ${car}`));
-        else if(j.status==="cancelled"&&!j.expired)ev("cancel",T(`ลูกค้ายกเลิก: ${car}`,`Customer cancelled: ${car}`));
-        else if(j.status==="disputed")ev("dispute",T(`มีการแจ้งปัญหา: ${car}`,`Problem reported: ${car}`));
-      }
-    }
-    if((j.unread||0)>(o[1]||0))ev("msg",T("ข้อความใหม่ — ","New message — ")+(tech?car:shop),tech?"":car,url+"/chat");
-  }
-  ls.set(K,{uid:U.uid,j:cur});
+  /* เทียบใบงานกับครั้งก่อนอยู่ใน bell.js (ใช้ร่วมกับหน้าอื่น — หน้าไหนเห็นก่อนก็แจ้งครั้งเดียว) */
+  const evs=CendonBell.jobEvents(JOBS,U.uid);
   if(!evs.length)return;
   evs.forEach(e=>CendonBell.add(e,{fallback:true}));
   drawJobsBtn();bellBtns().forEach(b=>{b.classList.remove("ding");void b.offsetWidth;b.classList.add("ding")});
@@ -3954,31 +3982,10 @@ function bellPoll(){
 }
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&U&&MODE!=="tech")refreshJobs().catch(()=>{})});
 bellPoll();
-const BELLIC={request:"ti-file-plus",quote:"ti-file-dollar",enroute:"ti-truck",working:"ti-tool",done:"ti-checklist",cancel:"ti-circle-x",accept:"ti-circle-check",complete:"ti-circle-check",dispute:"ti-flag",msg:"ti-message-circle",ai:"ti-sparkles"};
 function bellPanel(btn){
-  const old=document.querySelector(".nb-pop");if(old){old.remove();btn.setAttribute("aria-expanded","false");return}
   if(!U)return needLogin();
-  const B=window.CendonBell,p=document.createElement("div");p.className="nb-pop";p.setAttribute("role","dialog");p.setAttribute("aria-label",T("การแจ้งเตือน","Notifications"));
-  const agoT=at=>{const m=Math.round((Date.now()-at)/60000);return m<1?T("เมื่อกี้","now"):m<60?T(`${m} นาที`,`${m}m`):m<1440?T(`${Math.round(m/60)} ชม.`,`${Math.round(m/60)}h`):T(`${Math.round(m/1440)} วัน`,`${Math.round(m/1440)}d`)};
-  const draw=()=>{const L=B?B.list():[],perm=B?B.perm():"unsupported";
-    p.innerHTML=`<div class="nb-h"><b>${T("การแจ้งเตือน","Notifications")}</b>${L.some(x=>!x.read)?`<button type="button" data-a="read">${T("อ่านทั้งหมด","Mark all read")}</button>`:""}</div>
-      ${perm==="default"||(perm==="granted"&&!B.pushOn())?`<div class="nb-on"><i class="ti ti-bell-ringing"></i><span><b>${T("แจ้งเตือนในเครื่อง","Device notifications")}</b>${T("รู้ทันทีเมื่อช่างเสนอราคา รับงาน หรือ AI ตอบ แม้ไม่ได้เปิดแอป","Know right away when a mechanic quotes, takes the job or the AI replies — even with the app closed")}</span><button type="button" class="lx-cta" data-a="on">${perm==="granted"?T("เชื่อมต่อ","Connect"):T("เปิด","Turn on")}</button></div>`
-        :perm==="denied"?`<div class="nb-on"><i class="ti ti-bell-off"></i><span><b>${T("ปิดแจ้งเตือนไว้ในเบราว์เซอร์","Notifications blocked")}</b>${T("เปิดได้ที่การตั้งค่าเว็บไซต์ของเบราว์เซอร์","Allow them in your browser's site settings")}</span></div>`:""}
-      <div class="nb-list">${L.length?L.map(x=>`<button type="button" class="nb-it${x.read?"":" new"}" data-id="${esc(x.id)}" data-u="${esc(x.url)}"><span class="nb-ic${x.kind==="ai"?" ai":""}"><i class="ti ${BELLIC[x.kind]||"ti-bell"}"></i></span><span><b class="nt">${esc(x.title)}</b>${x.body?`<small class="nt">${esc(x.body)}</small>`:""}</span><time>${agoT(x.at)}</time></button>`).join("")
-        :`<div class="nb-empty"><i class="ti ti-bell"></i>${T("ยังไม่มีการแจ้งเตือน — เมื่อช่างเสนอราคา รับงาน หรือส่งข้อความ จะขึ้นที่นี่","Nothing yet — quotes, accepted jobs and messages show up here")}</div>`}</div>
-      <div class="nb-f"><button type="button" data-a="jobs">${T("งานของฉันทั้งหมด","All my jobs")}</button></div>`;
-    p.querySelectorAll("[data-id]").forEach(x=>x.onclick=()=>{B.read(x.dataset.id);close();const u=x.dataset.u||"/";if(u[0]==="/"&&window.Nav&&Nav.owns(u))Nav.go(u);else location.href=u});
-    const r=p.querySelector('[data-a="read"]');if(r)r.onclick=()=>{B.read();draw();drawJobsBtn()};
-    const on=p.querySelector('[data-a="on"]');if(on)on.onclick=e=>busy(e.currentTarget,async()=>{const st=await B.enable();if(st==="granted")toast(T("เปิดแจ้งเตือนในเครื่องแล้ว","Device notifications are on"),"ti-bell-ringing");draw()});
-    p.querySelector('[data-a="jobs"]').onclick=()=>{close();jobs()};
-  };
-  draw();document.body.appendChild(p);btn.setAttribute("aria-expanded","true");
-  const r=btn.getBoundingClientRect();p.style.top=(r.bottom+8+scrollY)+"px";p.style.left=Math.max(10,Math.min(r.right-p.offsetWidth+scrollX,innerWidth-p.offsetWidth-10))+"px";
-  const close=()=>{p.remove();btn.setAttribute("aria-expanded","false");removeEventListener("pointerdown",off,true);document.removeEventListener("keydown",k)};
-  const off=e=>{if(!p.contains(e.target)&&!btn.contains(e.target))close()};const k=e=>{if(e.key==="Escape"){close();btn.focus()}};
-  setTimeout(()=>{addEventListener("pointerdown",off,true);document.addEventListener("keydown",k)},0);
-  /* เปิดแผง = เห็นแล้ว ป้ายตัวเลขหาย (รายการยังมีจุดใหม่จนกว่าจะแตะ) */
-  setTimeout(()=>{const n=p.querySelector(".nb-it");(n||p.querySelector("button")).focus()},40);
+  if(!window.CendonBell)return jobs();
+  CendonBell.panel(btn,{onJobs:()=>jobs(),toast:m=>toast(m,"ti-bell-ringing")});
 }
 /* ═══ โพสต์บริการของช่าง (ร้านละไม่เกิน 2 รายการ) ═══ */
 let GIGS=null;
@@ -4185,6 +4192,21 @@ async function tabPosts(){
   B.querySelectorAll(".lx-gc[data-g]").forEach(x=>x.onclick=()=>openGig(x.dataset.g));wireSp(B);
   if($("pNew"))$("pNew").onclick=()=>gigForm();
 }
+/* คอม: แถวหมวดยาวเกินจอ แต่เมาส์เลื่อนข้างไม่ได้ → ปุ่มลูกศรซ้าย/ขวา + ขอบจางบอกว่ายังมีต่อ
+   (มือถือปัดเองได้และมีจุดบอกหน้าอยู่แล้ว ลูกศรซ่อนไว้) · ห่อแถวไว้ครั้งเดียว จุดบอกหน้ายังอยู่ต่อจากกล่องห่อเหมือนเดิม */
+function railNav(){
+  const r=$("hRail");if(!r)return;
+  if(!railNav.upd){
+    const w=document.createElement("div");w.className="lx-railw";r.before(w);w.appendChild(r);
+    w.insertAdjacentHTML("beforeend",`<button type="button" class="lx-rarr l" aria-label="${T("หมวดก่อนหน้า","Previous categories")}" hidden><i class="ti ti-chevron-left"></i></button><button type="button" class="lx-rarr r" aria-label="${T("หมวดถัดไป","More categories")}" hidden><i class="ti ti-chevron-right"></i></button>`);
+    const [L,R]=w.querySelectorAll(".lx-rarr");
+    const step=d=>r.scrollBy({left:d*Math.max(220,r.clientWidth*.75),behavior:matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth"});
+    L.onclick=()=>step(-1);R.onclick=()=>step(1);
+    railNav.upd=()=>{const max=r.scrollWidth-r.clientWidth-10;L.hidden=r.scrollLeft<=10;R.hidden=r.scrollLeft>=max;w.classList.toggle("fl",!L.hidden);w.classList.toggle("fr",!R.hidden)};
+    r.addEventListener("scroll",()=>railNav.upd(),{passive:true});addEventListener("resize",()=>railNav.upd());
+  }
+  railNav.upd();
+}
 function drawHome(){
   drawMyCar();if(!$("hQuick").childNodes.length)drawQuick();
   /* งานที่กำลังดำเนินอยู่ ขึ้นบนสุดของหน้าแรก */
@@ -4192,6 +4214,7 @@ function drawHome(){
   drawJobsBtn();
   $("hRail").innerHTML=RAIL.map(c=>`<button type="button" data-k="${c.id}">${railIc(c)}<span class="lx-rt">${c.th}</span></button>`).join("");
   $("hRail").querySelectorAll("button").forEach(b=>b.onclick=()=>b.dataset.k==="map"?setView("map"):openCat(b.dataset.k));
+  railNav();
   const host=$("sugList");
   if(!LOADED){host.innerHTML='<div class="skel"></div><div class="skel"></div><div class="skel"></div>';return}
   if(GIGS===null){host.innerHTML='<div class="skel"></div><div class="skel"></div><div class="skel"></div>';if(!loadGigs.started){loadGigs.started=1;loadGigs()}return}
@@ -4535,7 +4558,11 @@ function openTech(id,opt){
   let t=TECHS.find(x=>x.id===id);
   const mine=ME&&ME.technician&&ME.technician.id===id;
   if(mine)t={...(t||{}),...ME.technician};
-  if(!t)return;
+  /* ลิงก์ร้านที่แชร์มา แต่ร้านยังไม่เปิดให้ลูกค้าเห็น (รอตรวจสอบ/ปิดร้าน) หรือไม่มีแล้ว — บอกตรง ๆ แทนที่จะเงียบแล้วค้างหน้าแรก */
+  if(!t){const url=(opt&&opt.url)||"/tech/"+encodeURIComponent(id);
+    sheet({title:T("ร้านนี้","This shop"),url,body:`<div class="empty"><i class="ti ti-building-store"></i><b>${T("ร้านนี้ยังไม่เปิดให้ลูกค้าเห็น","This shop isn’t open to customers yet")}</b><p>${T("ร้านอาจกำลังรอทีมงานตรวจสอบ ปิดร้านชั่วคราว หรือลิงก์ไม่ถูกต้อง — ลองดูร้านอื่นที่ผ่านการตรวจสอบแล้วได้เลย","It may be waiting for our checks, paused, or the link may be wrong — you can browse checked shops instead.")}</p><button class="lx-cta" type="button" id="shopMissAll"><i class="ti ti-search"></i> ${T("ดูร้านที่ผ่านการตรวจสอบ","Browse checked shops")}</button></div>`,
+      mount(b){const x=b.querySelector("#shopMissAll");if(x)x.onclick=()=>{closeSheet();openCat("all")}}});
+    return}
   if(!mine)track(id,"shop");
   const url=(opt&&opt.url)||"/tech/"+encodeURIComponent(id);
   sheet({title:t.shop||t.name||"",full:true,store:true,shop:id,owner:!!mine,url,body:storeHTML(t,mine),foot:storeFoot(t,mine),
@@ -4759,16 +4786,28 @@ function contactForm(o){
       $("bGps").onclick=e=>busy(e.currentTarget,gps);
       gps();
     },
-    read(){
+    /* x.sym = อาการขั้นต่ำกี่ตัว (ค่าเริ่มต้น 10 เมื่อฟอร์มมีช่องอาการ) · x.extra = ช่องอื่นของหน้านั้นที่ผิดอยู่แล้ว
+       เช็กทุกช่องพร้อมกัน แล้วบอกทีเดียวในกล่องเตือน — ไม่ใช่แก้ทีละช่องแล้วเจอข้อใหม่ทุกครั้งที่กดส่ง */
+    read(x){
+      x=x||{};const bad=(x.extra||[]).slice();
       const car=G.length&&!$("bCarPick").hidden&&segVal("bCar")==="__"||(!G.length)?$("bCarX").value.trim():(c=>lab(c)+(c.mileage?" · "+money(c.mileage)+" กม.":""))(G[ci]);
-      if(!L.pos)throw new Error(T("ปักหมุดตำแหน่งรถก่อน","Pin your car's location first"));
-      if(!L.locked)throw new Error(T("กด “ล็อกตรงนี้” เพื่อยืนยันตำแหน่ง","Tap “Lock here” to confirm the location"));
+      if(car.length<2)bad.push({id:"bCarX",msg:T("ใส่รถของคุณ: ยี่ห้อ รุ่น และปี","Enter your car: make, model and year")});
+      const symEl=$("bSym"),sym=symEl?symEl.value.trim():"",smin=x.sym!=null?x.sym:symEl?10:0;
+      if(symEl&&sym.length<smin)bad.push({id:"bSym",msg:sym?T(`เล่าอาการเพิ่มอีกนิด (อย่างน้อย ${smin} ตัวอักษร) ร้านจะได้ประเมินราคาได้ตรง`,`Describe the problem a bit more (at least ${smin} characters)`):T("ยังไม่ได้บอกอาการรถ","Tell us what's wrong with the car")});
+      if(!L.pos)bad.push({id:"bMap",msg:T("ปักหมุดตำแหน่งรถก่อน","Pin your car's location first")});
+      else if(!L.locked)bad.push({id:"bLockB",msg:T("กด “ล็อกตรงนี้” เพื่อยืนยันตำแหน่ง","Tap “Lock here” to confirm the location")});
+      if(!o.urgent&&segVal("bWhen")==="__"&&$("bWhenX").value.trim().length<4)bad.push({id:"bWhenX",msg:T("บอกวันและเวลาที่สะดวก เช่น เสาร์นี้ 10 โมง","Say when suits you, e.g. Saturday 10am")});
+      /* +66 812345678 → 0812345678 */
+      const ph=$("bPhone").value.replace(/[\s-]/g,"").replace(/^\+?66(?=\d{8,9}$)/,"0");
+      if(!ph)bad.push({id:"bPhone",msg:T("ใส่เบอร์โทร — ช่างเห็นหลังคุณยืนยันราคาเท่านั้น","Enter your phone — the mechanic only sees it after you accept a quote")});
+      else if(!/^0\d{8,9}$/.test(ph))bad.push({id:"bPhone",msg:T("เบอร์โทรไม่ถูกต้อง — ขึ้นต้นด้วย 0 และมี 9–10 หลัก เช่น 0812345678","Phone number looks wrong — start with 0, 9–10 digits, e.g. 0812345678")});
+      if(bad.length)throw formErr(bad);
       const when=o.urgent?"ด่วน — ตอนนี้ ("+new Date().toLocaleTimeString(LOC,{hour:"2-digit",minute:"2-digit"})+(TH?" น.)":")"):segVal("bWhen")==="__"?$("bWhenX").value.trim():segVal("bWhen");
       const p=L.pos,coord=p.lat.toFixed(5)+", "+p.lng.toFixed(5);
       const area=(L.area||(T("พิกัด ","Coords ")+coord)).slice(0,160);
       const address=[L.line,"แผนที่ https://maps.google.com/?q="+p.lat+","+p.lng].filter(Boolean).join(" · ");
       const v={car,symptom:$("bSym")?$("bSym").value.trim():"",mode:o.urgent?"mobile":segVal("bMode"),requestedTime:when,
-        area,address,lat:p.lat,lng:p.lng,note:$("bNote").value.trim(),photos:L.photos.slice(),phone:$("bPhone").value.replace(/[\s-]/g,"")};
+        area,address,lat:p.lat,lng:p.lng,note:$("bNote").value.trim(),photos:L.photos.slice(),phone:ph};
       ls.set("spire_tech_contact",{phone:v.phone});
       return v;
     }};
@@ -4820,8 +4859,8 @@ function openMulti(sym,cat){
       $("mSym").addEventListener("change",()=>{const k=catsOf($("mSym").value)[0];if(k&&c==="all"){c=k;$("mCat").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===k));draw()}});
       $("mNext").onclick=()=>{
         const ids=[...$("mList").querySelectorAll("input:checked")].map(x=>x.value);
-        if(!ids.length){$("err").textContent="เลือกอย่างน้อย 1 ร้าน";return}
-        if(ids.length>5){$("err").textContent="เลือกได้ไม่เกิน 5 ร้าน";return}
+        if(!ids.length)return formPop([{id:"mList",msg:T("เลือกร้านอย่างน้อย 1 ร้าน","Pick at least 1 shop")}]);
+        if(ids.length>5)return formPop([{id:"mList",msg:T("เลือกได้ไม่เกิน 5 ร้าน","Pick up to 5 shops")}]);
         const list=ids.map(id=>TECHS.find(t=>t.id===id)).filter(Boolean);
         const s=$("mSym").value.trim();
         /* ข้ามอาการในขั้นแรกได้ — แต่ร้านต้องรู้ว่าจะซ่อมอะไร จึงถามต่อในหน้านี้เลย ไม่ต้องย้อนกลับไปขั้นก่อน */
@@ -4831,7 +4870,6 @@ function openMulti(sym,cat){
           foot:'<button class="btn p w" id="mGo">ส่งขอราคาทุกร้าน</button>',
           mount(){cf.mount();
             $("mGo").onclick=e=>busy(e.currentTarget,()=>{const v=cf.read(),sym=ask?v.symptom:s;
-              if(sym.length<10){$("bSym").focus();throw new Error("เล่าอาการสั้น ๆ อย่างน้อย 10 ตัวอักษร ร้านจะได้ประเมินราคาได้ตรง")}
               return sendGroup(list,{...v,symptom:sym})})}});
       };
     }});
@@ -4882,8 +4920,8 @@ async function urgentCall(pre){
       /* หมุดขยับ → รายชื่อร้านที่จะส่งถึงคิดใหม่ตามตำแหน่งจริง */
       new MutationObserver(showTo).observe($("bLocS"),{childList:true,characterData:true,subtree:true});
       $("uGo").onclick=e=>busy(e.currentTarget,async()=>{
-        const v=cf.read();v.symptom=$("uSym").value.trim();v.urgent=true;
-        if(v.symptom.length<3)throw new Error("บอกสั้น ๆ ว่าเกิดอะไรขึ้น หรือกดเลือกอาการด้านบน");
+        const us=$("uSym").value.trim();
+        const v=cf.read({extra:us.length<3?[{id:"uSym",msg:T("บอกสั้น ๆ ว่าเกิดอะไรขึ้น หรือกดเลือกอาการด้านบน","Say briefly what happened, or tap a problem above")}]:[]});v.symptom=us;v.urgent=true;
         const l=pickList();
         if(l.length)return sendGroup(l,v);
         /* ไม่มีร้านที่ออกนอกสถานที่ในรัศมี: ประกาศงานด่วน ช่างทุกร้านรอบตัวเห็นเป็นสีแดงใน Studio แล้วเสนอราคาเข้ามา */
@@ -5587,13 +5625,22 @@ function openChat(j,opt){
   $("chCall").hidden=!(phone&&/^0\d{8,9}$/.test(phone));if(phone)$("chCall").href="tel:"+phone;
   $("chBook").hidden=true;$("chSug").hidden=true;
   $("chAs").hidden=j.role!=="both";
-  $("chAs").querySelectorAll("button").forEach(b=>{b.classList.toggle("on",b.dataset.as==="customer");b.onclick=()=>{CH.as=b.dataset.as;$("chAs").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));const all=CH.all;$("msgs").innerHTML="";CH.after=0;CH.last="";CH.all=[];addMsgs(all)}});
+  $("chAs").querySelectorAll("button").forEach(b=>{b.classList.toggle("on",b.dataset.as==="customer");b.onclick=()=>{CH.as=b.dataset.as;$("chAs").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));
+    /* สลับบทบาท = วาดรายการใหม่ (ข้อความไหนเป็นของเรา) — การ์ดบนสุดและป้าย "ส่งข้อความแรก" ต้องอยู่ครบ ไม่งั้นห้องว่างเปล่าเหมือนค้าง */
+    const all=CH.all;$("msgs").innerHTML=CH.note||"";CH.after=0;CH.last="";CH.all=[];addMsgs(all);if(!all.length&&!CH.closed)$("msgs").insertAdjacentHTML("beforeend",'<p class="sys first">'+T("ส่งข้อความแรกได้เลย","Send the first message")+'</p>');if(CH.closed)$("msgs").insertAdjacentHTML("beforeend",CH.closed)}});
   const closed=["completed","cancelled"].includes(j.status)||j.role==="admin";
   $("chF").hidden=closed;
-  $("msgs").innerHTML=j.acceptedAt?safeNote(T("นัดหมายแล้ว คุยรายละเอียดได้เลย","Booked — talk through the details"),T("ทุกข้อความเก็บไว้กับใบงานนี้ ใช้อ้างอิงได้ถ้ามีปัญหา","Every message stays with this job for reference"))
+  /* งานปิดแล้ว: ไม่มีช่องพิมพ์ — บอกให้ชัดว่าทำไม และซ่อนปุ่มสลับบทบาท (ไม่งั้นดูเหมือนห้องค้าง) */
+  if(closed&&j.role!=="admin")$("chAs").hidden=true;
+  CH.closed=closed&&j.role!=="admin"?`<p class="sys closed"><i class="ti ti-lock"></i> ${j.status==="completed"?T("งานนี้เสร็จแล้ว — ห้องคุยเก็บไว้ดูย้อนหลัง ส่งข้อความเพิ่มไม่ได้","This job is finished — the chat is kept for reference and can’t take new messages")
+    :j.expired?T("คำขอนี้หมดอายุแล้ว — ส่งข้อความเพิ่มไม่ได้ ถ้ายังต้องการช่าง ขอราคาใหม่ได้เลย","This request expired — no new messages. Ask for a new quote if you still need help")
+    :T("งานนี้ถูกยกเลิกแล้ว — ส่งข้อความเพิ่มไม่ได้","This job was cancelled — no new messages")}</p>`:"";
+  CH.note=CH.closed?"":j.acceptedAt?safeNote(T("นัดหมายแล้ว คุยรายละเอียดได้เลย","Booked — talk through the details"),T("ทุกข้อความเก็บไว้กับใบงานนี้ ใช้อ้างอิงได้ถ้ามีปัญหา","Every message stays with this job for reference"))
     :safeNote(T("คุยอย่างปลอดภัยผ่าน Cendon","Chat safely on Cendon"),T("เบอร์และไลน์จะถูกซ่อนจนกว่าลูกค้ายืนยันราคา","Phone and LINE stay hidden until the customer accepts a quote"));
+  $("msgs").innerHTML=CH.note;
   addMsgs(j.messages||[]);
-  if(!(j.messages||[]).length)$("msgs").insertAdjacentHTML("beforeend",'<p class="sys first">ส่งข้อความแรกได้เลย</p>');
+  if(!(j.messages||[]).length&&!CH.closed)$("msgs").insertAdjacentHTML("beforeend",'<p class="sys first">'+T("ส่งข้อความแรกได้เลย","Send the first message")+'</p>');
+  if(CH.closed)$("msgs").insertAdjacentHTML("beforeend",CH.closed);
   chatOn("/jobs/"+encodeURIComponent(j.id)+"/chat",!closed);
   poll(async()=>(await api(`/api/tech/jobs/${j.id}/messages?after=${CH.after}&since=${CH.since}`)).messages);
 }
@@ -5627,7 +5674,7 @@ async function openThread(id,ask,shown){
 }
 function showThread(h,msgs,ask){
   recStop(true);clearAtt();
-  endEdit();CH.job={id:h.id,role:h.role,thread:true};CH.th={...h,ask:ask||null};CH.after=0;CH.since=0;CH.last="";CH.all=[];CH.as=h.role;
+  endEdit();CH.note="";CH.closed="";CH.job={id:h.id,role:h.role,thread:true};CH.th={...h,ask:ask||null};CH.after=0;CH.since=0;CH.last="";CH.all=[];CH.as=h.role;
   const cust=h.role==="customer";
   chHead(thWho(h),cust?TECHS.find(x=>x.id===h.techId):null);
   $("chCall").hidden=true;$("chAs").hidden=true;$("chBook").hidden=!cust;$("chF").hidden=h.role==="admin";

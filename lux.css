@@ -133,3 +133,11 @@ body:not([data-phase]) .set-row{background:var(--surface)!important;border:1px s
   .navwrap .nav-links{justify-self:center}
   .navwrap .nav-right{justify-self:end;gap:10px}
 }
+
+/* ── ธีมมืด: ของที่เบราว์เซอร์วาดเอง (รายการตัวเลือกของ select · ปฏิทินเลือกวัน · แถบเลื่อน · ช่องที่กรอกอัตโนมัติ) ──
+   ไม่บอกเบราว์เซอร์ว่าหน้านี้มืด มันจะวาดพื้นขาวทั้งที่ตัวหนังสือเป็นสีขาวตามธีม → อ่านไม่ออก */
+html:root[data-theme="dark"]{color-scheme:dark}
+html:root[data-theme="light"]{color-scheme:light}
+select option,select optgroup{background-color:var(--surface);color:var(--ink)}
+input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus,textarea:-webkit-autofill,select:-webkit-autofill{
+  -webkit-text-fill-color:var(--ink)!important;caret-color:var(--ink);-webkit-box-shadow:0 0 0 1000px var(--surface) inset!important;transition:background-color 9999s ease 0s}

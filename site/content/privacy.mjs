@@ -3,7 +3,7 @@
    เทสต์ test/site.test.mjs ตรวจว่ามีชื่อผู้ให้บริการครบทุกตัว */
 import {L,P,UL,TABLE,NOTE,I,docBody,EMAIL} from '../layout.mjs';
 
-export const VERSION='1.12';
+export const VERSION='1.13';
 export const EFFECTIVE=['16 ตุลาคม 2569','16 October 2026'];
 
 /* ผู้ให้บริการภายนอกทุกตัวที่ได้รับข้อมูล — ชื่อในคอลัมน์แรกต้องตรงกับรายการใน test/site.test.mjs */
@@ -76,7 +76,7 @@ const sections=[
       [['ข้อมูลช่าง (เฉพาะผู้สมัคร)','Mechanic data (applicants only)'],['ชื่อร้าน ที่ตั้ง เบอร์ บริการ ราคา รูปอู่และผลงาน ใบรับรอง · การยืนยันตัวตนด้วยบัตรประชาชนและใบหน้า (ข้อมูลชีวภาพ — ขอความยินยอมแยกต่างหาก)','Shop name, location, phone, services, prices, workshop and work photos, certificates · identity check with ID card and face (biometric data — separate explicit consent)'],['ผู้สมัคร และ Didit','The applicant and Didit']],
       [['LINE','LINE'],['LINE user ID ชื่อและรูปใน LINE ข้อความที่คุยกับบอท','LINE user ID, LINE name and picture, messages to the bot'],['LINE ตอนคุณเชื่อมบัญชีหรือทักบอท','LINE, when you link or message the bot']],
       [['การแจ้งเตือน','Notifications'],['ที่อยู่รับแจ้งเตือนของเบราว์เซอร์ (Web Push)','Your browser’s push subscription'],['เบราว์เซอร์ เมื่อคุณเปิดแจ้งเตือน','Your browser, when you turn notifications on']],
-      [['กล่องแจ้งเตือน (กระดิ่งหน้าแรก)','Notification inbox (home bell)'],['หัวข้อสั้น ๆ ของงาน (ชื่อร้าน รุ่นรถ สถานะ) และข้อความ AI ตอนคุณไม่ได้ดูหน้าแชต ล่าสุด 40 รายการ','Short job headlines (shop name, car model, status) and AI replies that arrived while you were away, latest 40'],['เก็บในเครื่องนี้เท่านั้น ผูกกับบัญชี ไม่ส่งขึ้นเซิร์ฟเวอร์','Kept on this device only, tied to your account, never uploaded']],
+      [['กล่องแจ้งเตือน (กระดิ่งมุมขวาบนทุกหน้า)','Notification inbox (the bell, top right of every page)'],['หัวข้อสั้น ๆ ของงาน (ชื่อร้าน รุ่นรถ สถานะ) และข้อความ AI ตอนคุณไม่ได้ดูหน้าแชต ล่าสุด 40 รายการ','Short job headlines (shop name, car model, status) and AI replies that arrived while you were away, latest 40'],['เก็บในเครื่องนี้เท่านั้น ผูกกับบัญชี ไม่ส่งขึ้นเซิร์ฟเวอร์','Kept on this device only, tied to your account, never uploaded']],
       [['ความคิดเห็นที่ส่งมา','Feedback you send'],['ข้อความ คะแนน หน้าที่ส่ง ชนิดเบราว์เซอร์','Message, rating, page, browser type'],['คุณ','You']],
       [['ข้อมูลทางเทคนิค','Technical data'],['ที่อยู่ IP (ใช้นับโควตา AI ของคนที่ยังไม่ล็อกอิน และกันการเดารหัส) ตัวนับการใช้งาน บันทึกข้อผิดพลาดของ AI แบบสั้น','IP address (for the anonymous AI quota and to stop code guessing), usage counters, short AI error logs'],['ระบบ','Our systems']],
     ])+
@@ -211,6 +211,7 @@ const sections=[
     P('เมื่อระบบเปลี่ยนวิธีเก็บหรือใช้ข้อมูล เราจะแก้หน้านี้ให้ตรงทันที เปลี่ยนเลขเวอร์ชันและวันที่ด้านบน และถ้าเป็นการเปลี่ยนสาระสำคัญ จะแจ้งในแอปก่อนมีผล การเปลี่ยนที่ต้องได้รับความยินยอมใหม่ เราจะขอความยินยอมใหม่ก่อน',
       'Whenever the way we collect or use data changes, we update this page straight away, with a new version number and date at the top. Material changes are announced in the app before they take effect, and anything that needs fresh consent will ask for it first.')+
     UL([
+      ['<b>1.13 · 16 ต.ค. 2569</b> — กระดิ่งแจ้งเตือนอยู่ทุกหน้าแล้ว (เดิมหน้าแรกหน้าเดียว) · หน้าอื่นเช็กสถานะใบงานของคุณเบา ๆ ระหว่างเปิดอยู่ ข้อมูลชุดเดิม เก็บในเครื่องเหมือนเดิม ไม่มีอะไรส่งเพิ่ม','<b>1.13 · 16 Oct 2026</b> — The notification bell is now on every page (it used to be home only) · other pages lightly check your job status while open — same data, still kept on this device, nothing extra is sent'],
       ['<b>1.12 · 16 ต.ค. 2569</b> — รหัสเข้าสู่ระบบทางอีเมลอาจส่งจากบัญชี Gmail ของ Cendon (Google) แทน Resend · Cendon ขอสิทธิ์เฉพาะ “ส่งอีเมล” ไม่อ่านกล่องจดหมาย · ปุ่มบัญชี Apple จะขึ้นเมื่อเปิดให้ใช้','<b>1.12 · 16 Oct 2026</b> — Email sign-in codes may be sent from Cendon’s Gmail account (Google) instead of Resend · Cendon only has permission to send, never to read mail · the Apple button appears once Apple sign-in is available'],
       ['<b>1.11 · 16 ต.ค. 2569</b> — ระหว่างที่ระบบส่งรหัส 6 หลักยังไม่เปิด ปุ่มเดียวกันจะส่ง “ลิงก์เข้าสู่ระบบ” ทางอีเมลผ่าน Google Firebase แทน · อีเมลที่ขอลิงก์เก็บในเครื่องนี้จนกดลิงก์เสร็จแล้วลบทิ้ง','<b>1.11 · 16 Oct 2026</b> — Until six-digit email codes are switched on, the same button emails a sign-in link through Google Firebase instead · the email you request it with stays on this device until the link signs you in, then is removed'],
       ['<b>1.10 · 16 ต.ค. 2569</b> — เพิ่มทางเลือก “ส่งรหัสเข้าอีเมลแทน” รหัสผ่าน (ส่งผ่าน Resend · รหัสใช้ได้ 10 นาที ครั้งเดียว เก็บแบบแฮช) · ต้องเข้าสู่ระบบก่อนใช้แอป — ลิงก์ใบงานที่แชร์ให้คนที่ไว้ใจ หน้านโยบาย ข้อกำหนด ช่วยเหลือ และ Car Passport ยังเปิดได้โดยไม่ต้องล็อกอิน','<b>1.10 · 16 Oct 2026</b> — Added “Email me a code instead” of a password (sent through Resend; codes last 10 minutes, work once and are stored hashed) · the app now requires signing in — shared trip links, this policy, the terms, help and Car Passport still open without an account'],

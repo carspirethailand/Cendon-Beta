@@ -33,7 +33,18 @@ const sections=[
         'We research manufacturer and motoring sources and keep a shared spec library. If something’s wrong, report it from the spec page. · Add a VIN and decode it to fill in model details (only the VIN is sent to be decoded).'))+
     Q('การแจ้งเตือนดูแลรถทำงานอย่างไร','How do upkeep reminders work?',
       P('บันทึกการเปลี่ยนน้ำมันเครื่อง ยาง แบตเตอรี่ ฯลฯ พร้อมเลขไมล์ ระบบคำนวณรอบถัดไปจากระยะทางและเวลา แล้วเตือนในแอป (และ LINE หรือเบราว์เซอร์ ถ้าเปิดไว้)',
-        'Log oil changes, tyres, batteries and so on with the mileage. We work out the next service from distance and time and remind you in the app (and on LINE or in your browser, if switched on).'))},
+        'Log oil changes, tyres, batteries and so on with the mileage. We work out the next service from distance and time and remind you in the app (and on LINE or in your browser, if switched on).'))+
+    Q('Cendon Wrapped คืออะไร','What is Cendon Wrapped?',
+      P('สรุปปีของรถคุณแบบสไลด์เต็มจอ — ระยะทาง ค่าน้ำมัน ทริปที่ไกลที่สุด การดูแลรถ เดือนที่ยุ่งที่สุด และฉายาประจำปีที่ AI ตั้งให้จากตัวเลขจริง กดดูได้ที่แบนเนอร์บน <b>โรงรถ</b> แล้วแชร์เป็นรูปลงสตอรี่ได้ · ตัวเลขคำนวณในเครื่องจากสมุดรถที่คุณบันทึก (ส่งให้ AI แค่ยอดรวมเพื่อตั้งฉายา) · รูปแชร์ไม่มีทะเบียนหรือชื่อคุณ',
+        'A full-screen year in review for your car — distance, fuel spend, longest trip, care, busiest month, and a yearly nickname the AI comes up with from your real numbers. Tap the banner in <b>Garage</b> and share it as a story image. · Numbers are worked out on your device from your logbook (only the totals go to the AI for the nickname) · the share image has no plate or name.'))+
+    Q('ปฏิทินค่าใช้จ่าย 12 เดือนทำงานอย่างไร','How does the 12-month cost calendar work?',
+      P('ในหน้ารถ → <b>ปฏิทินค่าใช้จ่าย</b> ระบบคำนวณว่าเดือนไหนต้องเปลี่ยนอะไรจากระยะที่คุณขับจริงและวันที่ทำครั้งล่าสุด บอกยอดรวม 12 เดือนและควรเก็บเดือนละเท่าไร · ราคาใช้ที่คุณเคยจ่ายจริงก่อน ถ้ายังไม่มีจะแสดงช่วงราคาทั่วไป (ติดเครื่องหมาย ≈) แตะราคาเพื่อใส่ราคาของคุณเองได้ · เปิด <b>เตือนก่อนถึงกำหนด 7 วัน</b> เพื่อรับแจ้งเตือนทาง LINE (ถ้าเชื่อมไว้) และในเครื่อง',
+        'Open a car → <b>12-month plan</b>. We work out what’s due each month from how far you really drive and when each item was last done, then show the 12-month total and how much to set aside monthly. · Prices use what you actually paid first; otherwise a typical range (marked ≈) — tap a price to set your own. · Turn on <b>Remind me 7 days before</b> to get reminders on LINE (if linked) and on your device.'))+
+    Q('Car Passport คืออะไร ปลอดภัยไหม','What is Car Passport? Is it safe?',
+      P('หน้าประวัติรถที่คุณเลือกเปิดให้คนอื่นดู (เช่น ตอนขายรถมือสอง) — ส่งลิงก์หรือพิมพ์ QR ติดกระจก คนซื้อสแกนแล้วเห็นเลขไมล์ตามเวลา ประวัติซ่อม และงานที่ซ่อมผ่าน Cendon ซึ่งติดป้าย <b>“ยืนยันโดยร้าน”</b> (ดึงจากระบบ แก้ไม่ได้) ส่วนที่คุณบันทึกเองติดป้าย “บันทึกโดยเจ้าของ” · ไม่มีชื่อ ทะเบียน เบอร์ หรือที่อยู่ของคุณ · ราคาแสดงเฉพาะเมื่อคุณเปิด · ปิดลิงก์ได้ทุกเมื่อ ลิงก์และ QR เดิมจะใช้ไม่ได้ทันที',
+        'A history page you choose to share (for example when selling your car) — send the link or print the QR for the window. Buyers see mileage over time, service history and repairs done through Cendon, marked <b>“Shop-verified”</b> (taken from the system, can’t be edited); your own entries are marked “Owner-recorded”. · No name, plate, phone or address · prices only if you turn them on · turn the link off anytime and the old link and QR stop working immediately.'))+
+    Q('สมุดรถย้ายไปเครื่องใหม่ได้ไหม','Does my logbook move to a new device?',
+      P('ได้ — บันทึกซ่อม น้ำมัน และทริปซิงก์ตามบัญชีแล้ว เข้าบัญชีเดียวกันจากเครื่องไหนก็เห็นเหมือนกัน','Yes — service, fuel and trip logs sync with your account, so every device signed in to it shows the same thing.'))},
 
   {id:'ai',title:['ผู้ช่วย AI','The AI assistant'],body:
     Q('ถามอะไรได้บ้าง','What can I ask?',
@@ -41,7 +52,11 @@ const sections=[
           ['<b>ถ่ายรูป</b> ชิ้นส่วนหรือไฟเตือนให้ AI ดู','<b>Take a photo</b> of a part or warning light for the AI to look at'],
           ['<b>ฟังเสียงรถ</b> อัดเสียงหรือวิดีโอเสียงเครื่องยนต์ให้ AI ฟัง','<b>Listen to the car</b> — record audio or video of the engine for the AI'],
           ['<b>เช็กใบเสนอราคา</b> ถ่ายใบเสนอราคาจากอู่ ให้ AI ดูว่าราคาสมเหตุสมผลไหม และควรถามอะไรเพิ่ม','<b>Check a quote</b> — photograph a garage quote and the AI tells you whether it looks fair and what to ask'],
-          ['คุยด้วยเสียงแบบสด ๆ ได้ (ปุ่มไมค์)','Talk to it live by voice (the mic button)']]))+
+          ['คุยด้วยเสียงแบบสด ๆ ได้ (ปุ่มไมค์)','Talk to it live by voice (the mic button)'],
+          ['<b>ระหว่างโทร</b> กด <b>ฟังเสียงเครื่อง</b> (หรือพูดว่า “ฟังเสียงเครื่องหน่อย”) แล้วจ่อมือถือใกล้จุดที่มีเสียง 10 วินาที — ระบบปิดตัวกรองเสียงรบกวนให้ AI ได้ยินเสียงเครื่องจริง เห็นคลื่นเสียงสด แล้ว AI บอกว่าได้ยินอะไร ด่วนแค่ไหน','<b>During a call</b>, tap <b>Listen to engine</b> (or say “listen to my engine”) and hold the phone near the sound for 10 seconds — noise filtering is switched off so the AI hears the real engine; you see a live sound graph, then the AI tells you what it heard and how urgent it is'],
+          ['<b>ระหว่างโทร</b> กด <b>สแกนห้องเครื่อง</b> (หรือพูดว่า “ดูห้องเครื่องให้หน่อย”) — AI ติดป้ายชื่อชิ้นส่วนบนภาพ แตะดูว่าแต่ละชิ้นคืออะไรและเช็กเองอย่างไร (ดับเครื่องและรอให้เย็นก่อนจับเสมอ)','<b>During a call</b>, tap <b>Scan engine bay</b> (or say “look at my engine bay”) — the AI labels the parts on the photo; tap one to see what it is and how to check it (always engine off and cool before touching)']]))+
+    Q('ใช้ฟังเสียงเครื่อง/สแกนห้องเครื่องได้วันละกี่ครั้ง','How often can I use engine listening or the engine-bay scan?',
+      P('อย่างละ 8 ครั้งต่อวัน (นับรวมในโควตา AI รายวันด้วย) · สรุปอุบัติเหตุด้วย AI วันละ 5 ครั้ง · ฉายา Wrapped วันละ 3 ครั้ง','8 times a day each (also counted in your daily AI quota) · AI accident summaries: 5 a day · Wrapped nicknames: 3 a day'))+
     Q('ใช้ AI ได้วันละกี่ครั้ง','How many AI questions a day?',
       P('มีโควตารายวันเพื่อให้ทุกคนใช้ได้ทั่วถึง สมาชิกได้มากกว่าคนที่ยังไม่ล็อกอิน จำนวนที่เหลือแสดงในแอป และรีเซ็ตทุกวัน',
         'There’s a daily quota so everyone gets a fair share; signed-in members get more than guests. What’s left is shown in the app and resets every day.'))+
@@ -74,6 +89,8 @@ const sections=[
     Q('จ่ายเงินอย่างไร','How do I pay?',
       P('ตอนนี้จ่ายให้ช่างโดยตรงเมื่องานเสร็จ ตามราคาในใบงาน (รวมงานเพิ่มที่คุณยอมรับ) Cendon ไม่เก็บค่าธรรมเนียมและไม่ได้ถือเงินแทน · ตรวจงานให้เรียบร้อยก่อนจ่าย',
         'For now you pay the mechanic directly when the job’s done, at the price in the job (plus any extra work you accepted). Cendon takes no fee and doesn’t hold money. · Check the work before you pay.'))+
+    Q('ดูช่างกำลังมาบนแผนที่ได้ไหม','Can I watch the mechanic coming on a map?',
+      P('ได้ — เมื่อช่างกด <b>กำลังไป</b> ในใบงาน คุณจะเห็นช่างเคลื่อนที่บนแผนที่พร้อมเวลาถึงโดยประมาณ (คำนวณจากระยะทาง ไม่ใช่เส้นทางจริง) · ถ้าสัญญาณช่างขาดหาย ใบงานจะบอก ลองโทรหาช่างได้ · ตำแหน่งหยุดแชร์เองเมื่อเริ่มซ่อม','Yes — once the mechanic taps <b>On my way</b>, you see them moving on a map with a rough arrival time (estimated from distance, not the actual route). · If their signal drops, the job tells you — try calling them. · Sharing stops on its own when the repair starts.'))+
     Q('ให้คนที่บ้านติดตามงานได้ไหม','Can family follow the job?',
       P('ได้ ในใบงานกด <b>แชร์ใบงานให้คนที่ไว้ใจ</b> คนที่ได้ลิงก์จะเห็นว่าช่างคนไหน รถอะไร นัดเมื่อไร และสถานะตอนนี้ — ไม่เห็นที่อยู่หรือเบอร์ ลิงก์หมดอายุใน 24 ชั่วโมง และยกเลิกได้ทุกเมื่อ',
         'Yes — in the job, tap <b>Share with someone you trust</b>. They’ll see which mechanic, which car, when, and the current status, but not your address or phone. The link lasts 24 hours and can be revoked anytime.'))+
@@ -93,6 +110,8 @@ const sections=[
     Q('Studio คืออะไร','What is Studio?',
       P('พื้นที่ทำงานของช่าง (<a href="/studio">/studio</a>): <b>งาน</b> (งานที่ต้องทำ และหางานจากประกาศใกล้คุณ) <b>ข้อความ</b> <b>บริการ</b> (ตั้งราคาและรายละเอียด) และ <b>ร้านของฉัน</b> (หน้าร้านที่ลูกค้าเห็น)',
         'The mechanic workspace (<a href="/studio">/studio</a>): <b>Jobs</b> (your to-do and nearby job posts), <b>Messages</b>, <b>Services</b> (prices and details) and <b>My shop</b> (the page customers see).'))+
+    Q('แชร์ตำแหน่งตอนกำลังไปหาลูกค้า','Sharing your location on the way to a customer',
+      P('กด <b>กำลังไป</b> ในใบงาน ระบบแชร์ตำแหน่งให้ลูกค้าเห็นบนแผนที่ทุกไม่กี่วินาที มีแถบบอกตลอดว่ากำลังแชร์ และกด <b>หยุด</b> ได้ · หยุดเองเมื่อเริ่มซ่อมหรือยกเลิก เก็บแค่จุดล่าสุด ไม่เก็บเส้นทาง · เบราว์เซอร์ส่งตำแหน่งได้เฉพาะตอนเปิดแอปค้างไว้ — ตั้งมือถือไว้ที่ขาตั้ง ห้ามใช้มือถือขณะขับ','Tap <b>On my way</b> in the job and your location is shared on the customer’s map every few seconds; a bar always shows it’s on, with a <b>Stop</b> button. · It stops on its own when you start the repair or the job is cancelled; only the latest point is kept, never a route. · Browsers can only send location while the app is open — mount the phone and never handle it while driving.'))+
     Q('งานด่วนใน Studio','Urgent jobs in Studio',
       P('ลูกค้าที่รถเสียตอนนี้และกด <b>เรียกช่างด่วน</b> จะขึ้นเป็นงานสีแดงบนสุดใน <b>งาน → ต้องทำต่อ</b> เองภายในไม่กี่วินาทีระหว่างที่เปิด Studio ไว้ ไม่ต้องรีเฟรช — ทั้งงานที่ส่งตรงถึงร้านคุณ และงานด่วนที่ประกาศในรัศมีรับงานของคุณ (ทุกหมวด) · ตั้งสถานะ <b>เปิดรับงาน</b> = มีเสียงเตือนด้วย · เชื่อม LINE ไว้ = ได้การ์ดแจ้งงานด่วนทาง LINE แม้ไม่ได้เปิดแอป · ลูกค้าเลือกร้านอื่นแล้ว หรือผ่านไป 3 ชั่วโมง งานด่วนหายไปเอง',
         'When a broken-down customer taps <b>Urgent call-out</b>, the job appears in red at the top of <b>Jobs → To do</b> within seconds while Studio is open — no refresh needed — whether it was sent to your shop or posted in your radius (any category). · Set <b>Taking jobs</b> to also get an alert sound · Link LINE to get urgent jobs on LINE even when the app is closed · Once the customer picks another shop, or after 3 hours, the urgent job disappears.'))+
@@ -148,8 +167,8 @@ const sections=[
         'Your browser asks the first time. If you said no before, re-enable it in the browser’s site settings (the padlock next to the address).'))},
 
   {id:'emergency',title:['เหตุฉุกเฉิน','Emergencies'],body:
-    NOTE('alert','phone','อุบัติเหตุ มีคนบาดเจ็บ หรือไม่ปลอดภัย โทร <b>191</b> (ตำรวจ) หรือ <b>1669</b> (การแพทย์ฉุกเฉิน) ก่อนเสมอ — Cendon ไม่ใช่บริการฉุกเฉิน · รถเสียกลางทางแต่ปลอดภัย ใช้ <b>เรียกช่างด่วน</b> ในแอปได้',
-      'Accident, injury or feeling unsafe? Call <b>191</b> (police) or <b>1669</b> (emergency medical) first — Cendon is not an emergency service. · Broken down but safe? Use <b>Urgent call-out</b> in the app.')},
+    NOTE('alert','phone','อุบัติเหตุ มีคนบาดเจ็บ หรือไม่ปลอดภัย โทร <b>191</b> (ตำรวจ) หรือ <b>1669</b> (การแพทย์ฉุกเฉิน) ก่อนเสมอ — Cendon ไม่ใช่บริการฉุกเฉิน · รถเสียหรือเกิดอุบัติเหตุแต่ปลอดภัยแล้ว กดปุ่ม <b>ฉุกเฉิน · รถเสีย / อุบัติเหตุ</b> ในแอป: โหมดอุบัติเหตุพาทำทีละขั้น — เช็กความปลอดภัย ถ่ายรูปหลักฐานที่ประทับวันเวลาและพิกัด (เก็บในเครื่องคุณเท่านั้น) ให้ AI ช่วยเขียนสรุปส่งประกัน แล้วเรียกรถยกหรือช่างด่วน · ไม่ด่วน ใช้ <b>เรียกช่าง (ไม่ด่วน)</b>',
+      'Accident, injury or feeling unsafe? Call <b>191</b> (police) or <b>1669</b> (emergency medical) first — Cendon is not an emergency service. · Broken down or had an accident and you’re safe? Tap <b>Emergency · breakdown / accident</b> in the app: accident mode walks you through it — safety checks, evidence photos stamped with time and location (kept on your device only), an AI-drafted summary for your insurer, then a tow or urgent mechanic. · Not urgent? Use <b>Find a mechanic (not urgent)</b>.')},
 
   {id:'contact',title:['ติดต่อเรา','Contact us'],body:
     `<div class="contact">

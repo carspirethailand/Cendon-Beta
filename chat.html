@@ -3012,7 +3012,7 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 <!-- คลังช่าง ใช้ร่วมกับหน้า /tech และหน้าหลัก
      โหลดตรงนี้เพื่อให้ AI หยิบข้อมูลช่างชุดเดียวกับที่ผู้ใช้เห็นบนหน้าเว็บ -->
 <script src="call-sounds.js?v=1" defer></script>
-<script src="call-tools.js?v=1" defer></script>
+<script src="call-tools.js?v=2" defer></script>
 <script src="./techs.js"></script>
 <script src="./cendon-search.js"></script>
 <style id="vtcss">
@@ -5703,7 +5703,7 @@ function callHealth(){
   for(const c of [callCtx,playCtx])if(c&&c.state!=='running'&&c.state!=='closed')c.resume().catch(()=>setTag('heardTag',CL('แตะหน้าจอเพื่อเปิดเสียงอีกครั้ง','Tap the screen to restore audio')));
   const pending=liveGeneratingAt||livePendingAt;
   /* ระหว่างใช้เครื่องมือ (ฟังเสียง/สแกน) AI รอผลอยู่ ไม่ใช่สายค้าง */
-  if(pending&&Date.now()-pending>20000&&playSrcs.length===0&&!(window.CallTools&&CallTools.busy)){livePendingAt=liveGeneratingAt=0;liveRecover(0,'response stalled').catch(()=>{});}
+  if(pending&&Date.now()-pending>12000&&playSrcs.length===0&&!(window.CallTools&&CallTools.busy)){livePendingAt=liveGeneratingAt=0;liveNudge=true;liveRecover(0,'response stalled',true).catch(()=>{});}
 }
 function gaugeLoop(){
   orb.light=$("callUI").classList.contains("light");
@@ -5737,9 +5737,16 @@ process(i){const c=i[0]&&i[0][0];if(!c)return true;let e=0;for(let k=0;k<c.lengt
 for(;this.p<c.length;this.p+=this.r){const s=Math.max(-1,Math.min(1,c[this.p|0]));this.b[this.n++]=s<0?s*32768:s*32767;
 if(this.n===640){this.port.postMessage({pcm:this.b.slice(0).buffer,lv:this.e},[]);this.n=0;this.e=0}}this.p-=c.length;return true}}
 registerProcessor("cendon-mic",P);`;
-function sendPcm(buf){
+/* กันเสียง AI สะท้อนเข้าไมค์ (ลำโพงมือถือ): ระหว่าง AI พูด ส่งเฉพาะเสียงที่ดังกว่าเสียงสะท้อนชัด ๆ (คนพูดแทรกจริง)
+   ที่เบากว่าส่งเป็นความเงียบแทน — ไม่งั้น AI ได้ยินเสียงตัวเองแล้วหยุดพูดกลางคันเอง (ต้นเหตุ "อยู่ ๆ AI เงียบ") */
+let echoLv=0;
+function sendPcm(buf,lv){
   /* ระหว่างฟังเสียงเครื่อง (call-tools.js) ไม่ส่งไมค์ปกติเข้าสาย — เสียงเครื่องยนต์จะไปปลุกให้ AI พูดแทรก */
   if(!callActive||callMuted||!callWS||callWS.readyState!==1||(window.CallTools&&CallTools.holdMic))return;
+  if(lv!=null&&(playSrcs.length>0||aiLevel>0.02)){
+    const th=Math.max(0.045,echoLv*2.4);
+    if(lv<th){echoLv=echoLv*0.92+lv*0.08;buf=new ArrayBuffer(buf.byteLength)}
+  }else if(lv!=null)echoLv*=0.98;
   try{callWS.send(JSON.stringify({realtimeInput:{audio:{data:b64FromBytes(new Uint8Array(buf)),mimeType:"audio/pcm;rate=16000"}}}))}catch(e){}
 }
 async function startMicStream(session=callSession){
@@ -5755,7 +5762,7 @@ async function startMicStream(session=callSession){
     try{await ctx.audioWorklet.addModule(url)}finally{URL.revokeObjectURL(url)}
     if(stale()){discard();return;}
     node=new AudioWorkletNode(ctx,"cendon-mic");
-    node.port.onmessage=e=>{if(stale())return;micLevel=Math.max(micLevel,e.data.lv);sendPcm(e.data.pcm)};
+    node.port.onmessage=e=>{if(stale())return;micLevel=Math.max(micLevel,e.data.lv);sendPcm(e.data.pcm,e.data.lv)};
   }catch(err){
     if(stale()){discard();return;}
     /* เครื่องเก่าไม่มี worklet → ScriptProcessor แต่ย่อเสียงแบบเดียวกัน */
@@ -5767,7 +5774,7 @@ async function startMicStream(session=callSession){
       micLevel=Math.max(micLevel,Math.sqrt(en/c.length));
       const out=new Int16Array(Math.ceil((c.length-p)/r));let n=0;
       for(;p<c.length;p+=r){const s=Math.max(-1,Math.min(1,c[p|0]));out[n++]=s<0?s*32768:s*32767}
-      p-=c.length;sendPcm(out.slice(0,n).buffer);
+      p-=c.length;sendPcm(out.slice(0,n).buffer,Math.sqrt(en/c.length));
     };
   }
   if(stale()){discard();return;}
@@ -5811,7 +5818,7 @@ async function startCall(){
     const stream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
     if(session!==callSession){stream.getTracks().forEach(t=>t.stop());return;}
     callMicStream=stream;
-    liveRetries=0;
+    liveRetries=0;liveHandle="";liveNudge=false;echoLv=0;
     await liveConnect(session,identity);
   }catch(e){
     if(session!==callSession)return;
@@ -5822,6 +5829,8 @@ async function startCall(){
 
 /* รุ่นที่ทำสายหลุดโดยยังไม่ทันพูด จำไว้ 6 ชม. แล้วขอรุ่นอื่นแทน */
 let liveRetries=0,liveModel="",liveGotAudio=false,liveTools=false;
+/* liveHandle = รหัสต่อสายต่อจาก Google (จำบทสนทนาเดิมเมื่อต่อใหม่) · liveNudge = ต่อใหม่เพราะ AI ค้าง ให้ตอบคำถามล่าสุดต่อ */
+let liveHandle="",liveNudge=false,liveSoft=[];
 function liveBad(){const now=Date.now(),b=LS.get("live_bad",{});for(const k in b)if(now-b[k]>6*3600e3)delete b[k];return b}
 async function liveConnect(session=callSession,identity){
   const tok=await (identity||auth.currentUser.getIdToken());
@@ -5833,7 +5842,7 @@ async function liveConnect(session=callSession,identity){
     r=await fetch(`${BACKEND_URL}/api/ai/live-token`,{method:"POST",
       headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok},
       signal:requestAbort&&requestAbort.signal,
-      body:JSON.stringify({system:liveSystemPrompt(),skip:Object.keys(liveBad()),tools:!!window.CallTools&&!(Date.now()-LS.get("live_notools",0)<86400e3)})});
+      body:JSON.stringify({system:liveSystemPrompt(),skip:Object.keys(liveBad()),handle:liveHandle||undefined,tools:!!window.CallTools&&!(Date.now()-LS.get("live_notools",0)<86400e3)})});
     d=await r.json().catch(()=>({}));
   }catch(e){
     if(session!==callSession)return;
@@ -5852,10 +5861,18 @@ async function liveConnect(session=callSession,identity){
   await openLiveWS(d.token,d.model,session);
 }
 /* สายหลุดผิดปกติ → ต่อใหม่เองเงียบๆ (ถ้ายังไม่ได้ยินเสียง AI เลย = รุ่นนี้มีปัญหา เปลี่ยนรุ่น) */
-async function liveRecover(code,why){
+async function liveRecover(code,why,soft){
   if(liveRecovering)return;
   liveRecovering=true;
   const session=callSession;
+  /* soft = Google หมุนสาย/AI ค้าง ไม่ใช่รุ่นเสีย — ห้ามโทษรุ่นหรือปิดเครื่องมือ (เดิมเงียบนาน ๆ แล้วถูกนับว่ารุ่นเสีย)
+     ต่อใหม่แบบนี้ถี่เกิน 3 ครั้งใน 90 วิ = มีปัญหาจริง → ใช้ทางเดิม (นับครั้ง ลองรุ่นอื่น) กันวนต่อสายไม่จบ */
+  if(soft){liveSoft=liveSoft.filter(t=>Date.now()-t<90000);liveSoft.push(Date.now());if(liveSoft.length>3)soft=false}
+  if(soft){const old=callWS;callWS=null;try{old&&old.close()}catch{}callActive=false;flushPlayback();
+    setCallState("wait",CL("กำลังต่อสายใหม่ (จำบทสนทนาเดิม)...","Reconnecting (keeping the conversation)..."));
+    try{await liveConnect(session)}catch(e){if(session!==callSession)return;liveHandle="";try{await liveConnect(session)}catch(e2){if(session!==callSession)return;endCall();toast(CL("โทรไม่สำเร็จ: ","Call failed: ")+e2.message,"ti-phone-off")}}
+    finally{if(session===callSession)liveRecovering=false}
+    return}
   /* สายหลุดก่อนได้ยิน AI: ถ้าเปิดเครื่องมือไว้ ลองปิดเครื่องมือก่อน (1 วัน) ค่อยโทษรุ่น — ปุ่มบนจอยังใช้ได้ครบ */
   if(!liveGotAudio&&liveModel){if(liveTools&&!(Date.now()-LS.get("live_notools",0)<86400e3))LS.set("live_notools",Date.now());else{const b=liveBad();b[liveModel]=Date.now();LS.set("live_bad",b)}}
   if(liveRetries>=3){liveRecovering=false;endCall();toast(CL("สายหลุด ","Call dropped ")+why,"ti-phone-off");return}
@@ -5887,10 +5904,19 @@ function openLiveWS(token,model,session=callSession){
           if(callCtx&&callCtx.state!=="running")callCtx.resume();
           if(playCtx&&playCtx.state!=="running")playCtx.resume();
           setCallState("link",CL("ต่อสายแล้ว พูดได้เลยครับ","Connected — just talk"));
+          /* ต่อใหม่เพราะ AI ค้าง: ให้ตอบคำถามล่าสุดต่อทันที ผู้ใช้ไม่ต้องพูดซ้ำ */
+          if(liveNudge){liveNudge=false;try{ws.send(JSON.stringify({clientContent:{turns:[{role:"user",parts:[{text:"[ข้อมูลจากระบบ] สายสะดุดไปครู่หนึ่ง ผู้ใช้ยังรอคำตอบของเรื่องล่าสุดอยู่ ตอบต่อได้เลยสั้น ๆ"}]}],turnComplete:true}}))}catch(e){}}
           resolve()}
         return;
       }
-      if(msg.goAway){liveRecover(0,'session rotation').catch(()=>{});return;}
+      /* Google แจ้งว่าจะตัดสายนี้ในอีกไม่กี่วินาที (หมุนเวียนการเชื่อมต่อตามปกติ):
+         เดิมตัดทันทีกลางประโยค = AI เงียบไปเฉย ๆ · ตอนนี้รอให้พูดประโยคนี้จบก่อน แล้วต่อใหม่โดยจำบทสนทนาเดิม */
+      if(msg.goAway){
+        const left=(parseFloat(String(msg.goAway.timeLeft||"5s"))||5)*1000,until=Date.now()+Math.max(0,left-1200);
+        const wait=()=>{if(ws!==callWS||session!==callSession)return;
+          if((playSrcs.length===0&&!liveGeneratingAt)||Date.now()>=until)liveRecover(0,'session rotation',true).catch(()=>{});else setTimeout(wait,250)};
+        wait();return;
+      }
       handleLiveMsg(msg);
     };
     callWS.onerror=()=>{if(!settled){settled=true;clearTimeout(connectTimer);reject(new Error(CL("เชื่อมต่อไม่สำเร็จ","connection failed")))}};
@@ -5898,6 +5924,7 @@ function openLiveWS(token,model,session=callSession){
       clearTimeout(connectTimer);
       const why=(e.reason||"")+" ("+e.code+")";
       if(ws!==callWS||session!==callSession){settled=true;resolve();return;}
+      if(!settled&&liveHandle)liveHandle="";
       if(!settled){settled=true;
         if(e.code===1011&&liveRetries<3){liveRecover(e.code,why).then(resolve,reject)}
         else reject(new Error(CL("การเชื่อมต่อถูกปิด ","connection closed ")+why))}
@@ -5915,6 +5942,8 @@ function setCaption(who,txt){
   el.scrollTop=el.scrollHeight;
 }
 function handleLiveMsg(msg){
+  /* รหัสต่อสายต่อล่าสุด — ใช้ตอนต้องต่อใหม่ จะได้ไม่ลืมบทสนทนา */
+  if(msg.sessionResumptionUpdate){const u=msg.sessionResumptionUpdate;if(u.newHandle&&u.resumable!==false)liveHandle=String(u.newHandle);return}
   /* AI เรียกเครื่องมือเอง: ฟังเสียงเครื่อง / สแกนห้องเครื่อง (call-tools.js) */
   if(msg.toolCall){window.CallTools?CallTools.onToolCall(msg.toolCall):0;return}
   if(msg.toolCallCancellation){window.CallTools&&CallTools.onCancel();return}
@@ -5931,7 +5960,7 @@ function handleLiveMsg(msg){
     setCaption("ai",liveAiText);
   }
   if(sc.modelTurn&&sc.modelTurn.parts)
-    for(const p of sc.modelTurn.parts)if(!p.thought&&p.inlineData&&p.inlineData.data){liveGotAudio=liveTurnAudio=true;liveGeneratingAt=Date.now();livePendingAt=0;orb.wait=false;queuePcm(p.inlineData.data)}
+    for(const p of sc.modelTurn.parts)if(!p.thought&&p.inlineData&&p.inlineData.data){liveGotAudio=liveTurnAudio=true;liveRetries=0;liveGeneratingAt=Date.now();livePendingAt=0;orb.wait=false;queuePcm(p.inlineData.data)}
   if(sc.turnComplete||sc.interrupted)orb.wait=false;
   if(sc.turnComplete){
     liveGeneratingAt=0;
@@ -6034,7 +6063,7 @@ function endCall(){
   flushPlayback();
   for(const ctx of [callCtx,playCtx])try{ctx&&ctx.close().catch(()=>{})}catch(e){}
   callCtx=null;playCtx=null;playGain=null;playAnalyser=null;callSink=null;
-  liveUserText="";liveAiText="";callMuted=false;micLevel=0;aiLevel=0;heardAt=0;
+  liveUserText="";liveAiText="";callMuted=false;micLevel=0;aiLevel=0;heardAt=0;liveHandle="";liveNudge=false;
   $("callMuteBtn").classList.remove("muted");$("callMuteBtn").querySelector(".ti").className="ti ti-microphone";
   $("callUI").classList.remove("show");$("callUI").setAttribute("aria-hidden","true");
   renderMessages();updateHint();renderChips();setPhase("thread");

@@ -13,6 +13,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <!-- ภาษาอื่นนอกจากไทย/อังกฤษ: โหลดพจนานุกรมของหน้านี้ให้เสร็จก่อนสคริปต์หลัก (เลือกภาษาแบบเดียวกับ LANG ในสคริปต์หลัก)
      ไทย/อังกฤษไม่โหลดอะไรเพิ่ม · document.write ใช้เฉพาะไฟล์ในเว็บเดียวกัน เบราว์เซอร์จึงไม่บล็อก -->
+<script>/* เปิด/รีเฟรชที่ /work หรือ /studio บนเครื่องของเจ้าของร้าน: บอก CSS ตั้งแต่ก่อนวาดเฟรมแรกว่าเป็นหน้า Studio — ไม่เห็นหน้าลูกค้าแวบ */
+(function(){try{if(/^\/(work|studio)(\/|$)/.test(location.pathname)){var p=JSON.parse(localStorage.getItem("spire_partner")||"null");if(p&&p.s==="shop")document.documentElement.dataset.boot="tech"}}catch(e){}})();</script>
 <script>(function(){try{var A=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt"],l=null;try{l=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
 if(A.indexOf(l)<0){l="en";var n=navigator.languages||[navigator.language||"en"];for(var i=0;i<n.length;i++){var b=String(n[i]).toLowerCase().split("-")[0];if(A.indexOf(b)>=0){l=b;break}}}
 if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=1"><\/script>')}catch(e){}})();</script>
@@ -944,6 +946,14 @@ body.onmap .ib-fab,body[data-mode="tech"] .ib-fab,body:has(.chat.on) .ib-fab,bod
    กรอบคงที่ ไม่เล่นแอนิเมชันเข้าใหม่ทุกครั้งที่เปลี่ยนหน้า · เส้นคั่นแทนการ์ดซ้อน · ปุ่มหลักสีหมึก ส้มเป็นแค่ขีด/จุดบอกตำแหน่ง */
 body[data-mode="tech"] .navwrap,body[data-mode="tech"] #mnav,body[data-mode="tech"] header.top{display:none!important}
 body[data-mode="tech"]{padding-top:0!important;padding-bottom:0!important}
+/* ระหว่างเปิด Studio (ก่อนรู้ว่าเป็นใคร): กรอบ Studio เต็มจอตั้งแต่เฟรมแรก ไม่มีแถบเมนูลูกค้า/ปุ่มแชตลอยโผล่ */
+html[data-boot="tech"] .navwrap,html[data-boot="tech"] #mnav,html[data-boot="tech"] header.top,html[data-boot="tech"] .ib-fab,html[data-boot="tech"] #vMenu{display:none!important}
+html[data-boot="tech"] body{padding-top:0!important;padding-bottom:0!important}
+/* โครงกำลังโหลด: รูปทรงเดียวกับรายการจริง เนื้อหาจริงมาแทนที่ตรงตำแหน่งเดิม ไม่กระโดด */
+.stu-sk{display:block;border-radius:10px;background:var(--surface-2)}
+.stu-row.sk-row{pointer-events:none}.stu-row.sk-row .stu-rb{display:grid;gap:8px;flex:1}
+.stu-row.sk-row .l1{width:42%;height:15px}.stu-row.sk-row .l2{width:68%;height:12px}
+.stu-hr .stu-sk{height:40px;border-radius:12px}.stu-hr .stu-sk.a{width:108px}.stu-hr .stu-sk.b{width:170px}
 .stu{--sw:216px;animation:none;min-height:100vh;min-height:100dvh}
 .stu [hidden]{display:none!important}
 .stu-side{display:flex;flex-direction:column;background:var(--bg)}
@@ -2188,6 +2198,7 @@ a.mtab{text-decoration:none}
 <!-- ═══ Cendon Studio (มุมช่าง) — กรอบคงที่: คอม = แถบซ้าย 4 เมนู · มือถือ = แถบล่าง 4 ช่อง
      เปลี่ยนหน้าแล้วกรอบไม่ขยับ โหลดเฉพาะเนื้อหา · เมนูอยู่ที่เดิมเสมอ ═══ -->
 <section class="view stu" id="vTech" hidden>
+<script>if(document.documentElement.dataset.boot==="tech")document.getElementById("vTech").hidden=false</script>
   <aside class="stu-side">
     <a class="stu-brand" href="/work" data-sp="jobs"><svg class="cmk stu-mk" aria-hidden="true" viewBox="-6.0 -6.0 94.8 112.0" ><path fill="currentColor" d="M 79.33 0.29 Q 79.62 0.00 79.97 0.21 L 81.37 1.05 Q 82.80 1.91 82.80 3.58 L 82.80 4.36 Q 82.80 6.37 82.17 8.27 L 75.34 28.74 Q 74.52 31.21 71.93 30.97 L 49.09 28.90 Q 46.50 28.66 44.60 30.44 L 37.56 37.07 Q 35.67 38.85 34.46 41.16 L 29.87 49.93 Q 28.66 52.23 28.92 54.82 L 29.04 56.01 Q 29.30 58.60 31.49 60.00 L 45.43 68.97 Q 47.13 70.06 49.14 69.78 L 49.59 69.71 Q 51.59 69.43 52.63 67.68 L 60.46 54.47 Q 61.78 52.23 64.32 52.79 L 64.98 52.94 Q 67.52 53.50 68.61 55.86 L 70.25 59.42 Q 71.34 61.78 70.55 64.26 L 63.84 85.42 Q 63.06 87.90 60.77 89.13 L 48.79 95.58 Q 46.50 96.82 43.96 96.25 L 43.14 96.07 Q 40.76 95.54 39.04 97.26 L 38.66 97.64 Q 36.94 99.36 34.52 99.61 L 33.16 99.74 Q 30.57 100.00 30.70 97.40 L 31.08 89.86 Q 31.21 87.26 29.02 85.87 L 5.38 70.82 Q 3.18 69.43 2.55 66.90 L 0.63 59.21 Q 0.00 56.69 1.41 54.50 L 27.26 14.29 Q 28.66 12.10 29.48 9.64 L 31.02 5.01 Q 31.85 2.55 34.36 3.22 L 45.90 6.33 Q 48.41 7.01 51.01 7.01 L 61.73 7.01 Q 64.33 7.01 66.72 5.97 L 78.61 0.80 Q 78.98 0.64 79.27 0.35 Z"/></svg><span>Cendon<small>Studio</small></span></a>
     <nav class="stu-nav" id="stuNav" aria-label="Studio">
@@ -3823,7 +3834,7 @@ const READY=(()=>{const mk=()=>{let d;const p=new Promise(r=>d=r);p.done=d;retur
 setTimeout(()=>{READY.auth.done();READY.user.done();READY.me.done()},9000);   /* ล็อกอินไม่ตอบ (เน็ตช้า/บล็อก) ก็ไม่ค้างตลอดไป */
 const needU=async()=>{await READY.auth;if(!U){needLogin();return false}return true};
 /* Studio รอแค่รู้ว่าเป็นใคร (ME) ไม่ต้องรอรายชื่อร้านทั้งตลาดโหลดเสร็จ — รีเฟรชในหน้า Studio แล้วขึ้น Studio ทันที */
-const needMe=async()=>{await READY.me;BOOT_TECH=false;if(!U){applyMode();needLogin();return false}return true};
+const needMe=async()=>{await READY.me;BOOT_TECH=false;delete document.documentElement.dataset.boot;if(!U){applyMode();needLogin();return false}return true};
 Nav.route({path:"tech/:id",name:"tech",open:async p=>{await READY.techs;await READY.gigs.catch(()=>0);openTech(p.id)}});
 Nav.route({path:":tab",name:"techTab",parent:"tech",test:p=>!!URLTAB[p.tab],open:p=>{const o=SH.cur;if(o&&o.setTab){o.setTab(URLTAB[p.tab]);Nav.push({url:o.url+"/"+p.tab,tag:"tab",close:()=>{if(SH.cur===o)o.setTab(o.first||"svc")}})}}});
 Nav.route({path:"quote",parent:["tech","techTab"],open:async()=>{if(!await needU())return;const t=SH.cur&&TECHS.find(x=>x.id===SH.cur.shop);if(t)book(t)}});
@@ -4489,12 +4500,19 @@ function syncGarage(){
   });
   if(changed)try{localStorage.setItem("spire_garage",JSON.stringify(g))}catch(e){}
 }
-async function refreshJobs(){
+let RJ=null;
+function refreshJobs(){
+  if(RJ)return RJ;
+  RJ=(async()=>{
   if(!U){JOBS=[];THREADS=[];JOBS_OK=false;JOBS_ERR=null;renderActive();renderUsed();return}
-  try{JOBS=(await api("/api/tech/jobs")).jobs||[];JOBS_OK=true;JOBS_ERR=null}catch(e){JOBS_ERR=e.message}
-  try{POSTS=(await api("/api/tech/posts")).posts||[]}catch(e){POSTS=[]}
-  try{THREADS=(await api("/api/tech/threads")).threads||[]}catch(e){THREADS=[]}
-  renderActive();renderUsed();syncGarage();queueDot();
+  /* ใบงาน ประกาศของฉัน และห้องทัก ดึงพร้อมกัน — รอเท่ากับอันที่ช้าที่สุด ไม่ใช่รวมกันสามรอบ */
+  const [j,p,t]=await Promise.allSettled([api("/api/tech/jobs"),api("/api/tech/posts"),api("/api/tech/threads")]);
+  if(j.status==="fulfilled"){JOBS=j.value.jobs||[];JOBS_OK=true;JOBS_ERR=null}else JOBS_ERR=j.reason&&j.reason.message||"error";
+  POSTS=p.status==="fulfilled"?p.value.posts||[]:[];
+  THREADS=t.status==="fulfilled"?t.value.threads||[]:[];
+  renderActive();renderUsed();syncGarage();queueDot();saveSnap();
+  })().finally(()=>{RJ=null});
+  return RJ;
 }
 function queueDot(){
   stuBadges();markUnread();
@@ -5558,12 +5576,40 @@ function setTab2(t,fromNav){
 }
 function applyMode(){
   const tech=MODE==="tech"||BOOT_TECH;
-  if(BOOT_TECH&&MODE!=="tech"&&!$("dBody").dataset.boot){$("dBody").dataset.boot=1;$("dHead").innerHTML=`<div class="stu-h"><h1>Studio</h1></div>`;$("dBody").innerHTML='<div class="skel"></div><div class="skel" style="margin-top:10px"></div><div class="skel" style="margin-top:10px"></div>'}
+  if(BOOT_TECH&&MODE!=="tech"&&!$("dBody").dataset.boot){$("dBody").dataset.boot=1;if(!paintSnap())stuSkel()}
   if(tech&&VIEW==="map"){VIEW="menu";document.body.classList.remove("onmap");$("vMap").hidden=true}
   $("vMenu").hidden=tech||VIEW==="map";$("vTech").hidden=!tech;
   const sb=$("staff");if(sb&&ME&&ME.staff)sb.hidden=MODE!=="staff";
-  document.body.dataset.mode=MODE;
+  document.body.dataset.mode=tech?"tech":MODE;
   if(!tech)stopAlerts();
+}
+
+/* ═══ ภาพล่าสุดของ Studio ═══
+   เก็บเฉพาะที่หน้าแรกของ Studio ต้องใช้ (ชื่อ/รูปร้าน สถานะ รายการงาน: รถ อาการ สถานะ) ไม่มีชื่อ เบอร์ หรือที่อยู่ลูกค้า
+   ผูกกับบัญชี เปลี่ยนบัญชี/ออกจากระบบ = ลบ · ใช้ได้ 7 วัน */
+const SNAP="spire_studio_snap",URGENT_MS=3*3600e3;   /* งานด่วนแดงอยู่ 3 ชม. — เท่ากับหลังบ้าน */
+function saveSnap(){try{
+  if(!U||!ME||!ME.technician||ME.__snap)return;const t=ME.technician;
+  ls.set(SNAP,{uid:U.uid,at:Date.now(),staff:!!ME.staff,admin:!!ME.admin,online:DSTATS?!!DSTATS.online:!!t.online,
+    tech:{id:t.id,shop:t.shop,name:t.name,avatar:t.avatar,online:t.online,vacation:t.vacation||null,test:!!t.test,identityHold:!!t.identityHold,radius:t.radius,cats:t.cats,mobile:t.mobile},
+    jobs:JOBS_OK?techJobs().slice(0,40).map(j=>({id:j.id,status:j.status,car:j.car,symptom:j.symptom,total:j.total,unread:j.unread,needsMe:j.needsMe,urgent:j.urgent,side:j.side,techId:j.techId,techName:j.techName,createdAt:j.createdAt,updatedAt:j.updatedAt})):[],
+    near:NEAR?{radius:NEAR.radius,center:NEAR.center,posts:(NEAR.posts||[]).filter(p=>p.urgent).slice(0,10).map(p=>({id:p.id,urgent:1,mine:p.mine,car:p.car,symptom:p.symptom,dist:p.dist,createdAt:p.createdAt,cat:p.cat}))}:null})}catch(e){}}
+function dropSnap(){try{localStorage.removeItem(SNAP)}catch(e){}}
+/* วาด Studio จากภาพล่าสุดทันที (ยังไม่ต่อเน็ต) — คืน true ถ้าวาดได้ */
+function paintSnap(){
+  const sn=ls.get(SNAP,null),pt=ls.get("spire_partner",null);
+  if(!sn||!pt||pt.uid!==sn.uid||pt.s!=="shop"||Date.now()-sn.at>7*864e5)return false;
+  if(!ME)ME={uid:sn.uid,staff:sn.staff,admin:sn.admin,technician:sn.tech,__snap:true};
+  if(!JOBS_OK){JOBS=sn.jobs||[];JOBS_OK=true}
+  if(!NEAR&&sn.near)NEAR=sn.near;
+  if(!DSTATS)DSTATS={online:!!sn.online,__snap:true};
+  const m=MODE;MODE="tech";try{drawTab()}catch(e){}MODE=m;return true;
+}
+/* ยังไม่เคยมีภาพล่าสุด: โครงรูปทรงเดียวกับหน้างานจริง (หัว แถบสลับ แถวงาน) ของจริงมาแทนตรงตำแหน่งเดิม */
+function stuSkel(){
+  $("dHead").innerHTML=`<div class="stu-h"><h1>${T("งานของฉัน","My jobs")}</h1><div class="stu-hr"><span class="stu-sk a"></span><span class="stu-sk b"></span></div></div>
+    <div class="stu-seg" role="tablist"><button type="button" class="on" tabindex="-1">${T("ต้องทำต่อ","To do")}</button><button type="button" tabindex="-1">${T("หางานใกล้ฉัน","Find work nearby")}</button></div>`;
+  $("dBody").innerHTML=`<section class="stu-sec" style="margin-top:8px">${`<div class="stu-row sk-row" aria-hidden="true"><span class="stu-ri stu-sk"></span><span class="stu-rb"><i class="stu-sk l1"></i><i class="stu-sk l2"></i></span></div>`.repeat(3)}</section>`;
 }
 
 /* ═══ dashboard ช่าง ═══ */
@@ -5755,7 +5801,7 @@ const NEXT={requested:[T("ต้องเสนอราคา","Send a quote"),
   enroute:[T("กำลังเดินทาง","On the way"),"ti-truck"],working:[T("กำลังซ่อม","In repair"),"ti-tool"],done:[T("รอลูกค้าตรวจรับงาน","Waiting for sign-off"),"ti-checklist"],
   disputed:[T("มีการแจ้งปัญหา","Problem reported"),"ti-flag"],completed:[T("เสร็จแล้ว","Completed"),"ti-circle-check"],cancelled:[T("ยกเลิกแล้ว","Cancelled"),"ti-circle-x"]};
 function jobRow(j){
-  const [lab,ic]=NEXT[j.status]||[STATUS[j.status]||j.status,"ti-car"],me=j.needsMe&&liveJob(j),u=!!(j.urgent&&liveJob(j));
+  const [lab,ic]=NEXT[j.status]||[STATUS[j.status]||j.status,"ti-car"],me=j.needsMe&&liveJob(j),u=!!(j.urgent&&liveJob(j)&&Date.now()-(j.createdAt||0)<URGENT_MS);
   return `<button class="stu-row${u?" urg":""}" type="button" data-j="${j.id}"><span class="stu-ri${me?" me":""}"><i class="ti ${u?"ti-urgent":ic}"></i></span>
     <span class="stu-rb">${u?`<span class="urg-tag"><i class="ti ti-urgent"></i>${T("งานด่วน · รถเสียตอนนี้","Urgent · broken down now")}</span>`:""}<b class="nt">${esc(j.car||T("รถของลูกค้า","Customer's car"))}</b><small class="nt">${esc(j.symptom||"")}</small><span class="stu-rs${me?" me":""}">${me?T("รอคุณ · ","Your turn · "):""}${lab} · ${ago(j.updatedAt||j.createdAt)}</span></span>
     <span class="stu-rr">${j.total?`<b>฿${money(j.total)}</b>`:""}${j.unread?`<em>${j.unread}</em>`:""}<i class="ti ti-chevron-right"></i></span></button>`;
@@ -5764,7 +5810,7 @@ const errBar=(msg,id)=>`<p class="stu-err"><i class="ti ti-cloud-off"></i><span>
 function tabQueue(){
   const B=$("dBody"),all=techJobs();
   /* งานด่วนที่ยังรอคุณขึ้นบนสุดเสมอ แล้วค่อยงานที่รอคุณ */
-  const hot=j=>!!(j.urgent&&j.needsMe);
+  const hot=j=>!!(j.urgent&&j.needsMe&&Date.now()-(j.createdAt||0)<URGENT_MS);
   const live=all.filter(liveJob).sort((a,b)=>(hot(b)-hot(a))||(b.needsMe-a.needsMe)||((b.updatedAt||b.createdAt)-(a.updatedAt||a.createdAt)));
   const past=all.filter(j=>!liveJob(j)).sort((a,b)=>(b.updatedAt||b.createdAt)-(a.updatedAt||a.createdAt)).slice(0,20);
   const err=JOBS_ERR?errBar(JOBS_ERR,"stuRetry"):"";
@@ -5932,12 +5978,13 @@ let ACTX=null;
 function unlockAudio(){try{ACTX=ACTX||new (window.AudioContext||window.webkitAudioContext)();ACTX.resume()}catch(e){}}
 function ding(){try{if(!ACTX||ls.get("spire_tech_sound",true)===false)return;const o=ACTX.createOscillator(),g=ACTX.createGain();o.type="sine";o.frequency.setValueAtTime(880,ACTX.currentTime);o.frequency.setValueAtTime(1320,ACTX.currentTime+.12);
   g.gain.setValueAtTime(.001,ACTX.currentTime);g.gain.exponentialRampToValueAtTime(.3,ACTX.currentTime+.02);g.gain.exponentialRampToValueAtTime(.001,ACTX.currentTime+.4);o.connect(g).connect(ACTX.destination);o.start();o.stop(ACTX.currentTime+.42)}catch(e){}}
+let PULSE="",PULSE_OK=null,FULL_AT=0,ALERT_GEN=0;
 function startAlerts(){
-  clearTimeout(alertT);
+  clearTimeout(alertT);const gen=++ALERT_GEN;   /* เริ่มรอบใหม่ = รอบเก่าที่ค้างอยู่หยุดเอง ไม่วิ่งซ้อนกันสองชุด */
   const loud=()=>!!(DSTATS?DSTATS.online:(myShop()||{}).online);
   const buzz=pat=>{if(!loud())return;ding();try{navigator.vibrate&&navigator.vibrate(pat)}catch(e){}};
-  const tick=async()=>{
-    if(MODE!=="tech")return;
+  /* ดึงรายการเต็ม (ประกาศรอบตัว + ใบงาน) — ทำเฉพาะตอนชีพจรบอกว่ามีอะไรเปลี่ยน หรือครบ 60 วิ */
+  const full=async()=>{FULL_AT=Date.now();
     try{const d=await api("/api/tech/posts/near");NEAR=d;const fresh=d.posts.filter(p=>!SEEN.has(p.id));
       if(fresh.length){fresh.forEach(p=>SEEN.add(p.id));ls.set("spire_seen_posts",[...SEEN].slice(-300));
         if(!firstNear){const u=fresh.some(p=>p.urgent);buzz(u?[250,90,250,90,250]:[180,80,180]);
@@ -5955,7 +6002,16 @@ function startAlerts(){
           toast(T("งานด่วน! ลูกค้ารถเสียตอนนี้ — เปิดดูในงานของฉัน","Urgent! A customer is broken down now — see My jobs"),"ti-urgent")}
         if(MODE==="tech"&&DT==="queue")drawTab()}
       firstUrg=false}catch(e){}
-    alertT=setTimeout(tick,document.hidden?60000:15000)};
+    saveSnap()};
+  /* ชีพจร: ถามหลังบ้านสั้น ๆ ทุก 3 วิว่ามีอะไรใหม่ไหม (งานด่วน ข้อความ ประกาศ) — มีเมื่อไรดึงทันที = เห็นงานแทบจะทันที
+     หลังบ้านรุ่นเก่ายังไม่มีชีพจร → ดึงรายการเต็มทุก 15 วิแทน · ซ่อนแท็บ = ทุก 30 วิ */
+  const tick=async()=>{
+    if(MODE!=="tech"||gen!==ALERT_GEN)return;
+    let changed=true;
+    if(PULSE_OK!==false){try{const r=await api("/api/tech/pulse");PULSE_OK=true;changed=r.v!==PULSE;PULSE=r.v}
+      catch(e){if(e.status===404)PULSE_OK=false;else changed=Date.now()-FULL_AT>15000}}
+    if(changed||Date.now()-FULL_AT>60000)await full();
+    if(MODE==="tech"&&gen===ALERT_GEN)alertT=setTimeout(tick,document.hidden?30000:PULSE_OK?3000:15000)};
   tick();
 }
 /* กลับมาที่แท็บ/แอป = ดึงงานทันที ไม่ต้องรอรอบถัดไป */
@@ -6066,7 +6122,7 @@ async function pullCars(){
     try{
       if(!firebase.apps||!firebase.apps.length)firebase.initializeApp(fbConfig);
       auth=firebase.auth();
-      auth.onAuthStateChanged(async u=>{U=u||null;if(!U)purgeChatCache();READY.user.done();try{navPaint(U)}catch(e){}greet();if(U)pullCars();await refreshMe();READY.me.done();if(U)await load();else diag();READY.auth.done()});
+      auth.onAuthStateChanged(async u=>{U=u||null;if(!U)purgeChatCache();{const sn=ls.get(SNAP,null);if(sn&&(!U||sn.uid!==U.uid)){dropSnap();if(ME&&ME.__snap)ME=null}}READY.user.done();try{navPaint(U)}catch(e){}greet();if(U)pullCars();await refreshMe();READY.me.done();if(U)await load();else diag();READY.auth.done()});
     }catch(e){}
   })();
   /* ลงทะเบียน service worker หลังหน้าขึ้นแล้ว — แอปที่ติดตั้งบนมือถือจะเปิดจากหน้าที่เก็บไว้ได้ทันทีตอนเน็ตช้า

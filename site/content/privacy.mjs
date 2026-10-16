@@ -3,8 +3,8 @@
    เทสต์ test/site.test.mjs ตรวจว่ามีชื่อผู้ให้บริการครบทุกตัว */
 import {L,P,UL,TABLE,NOTE,I,docBody,EMAIL} from '../layout.mjs';
 
-export const VERSION='1.2';
-export const EFFECTIVE=['15 ตุลาคม 2569','15 October 2026'];
+export const VERSION='1.3';
+export const EFFECTIVE=['16 ตุลาคม 2569','16 October 2026'];
 
 /* ผู้ให้บริการภายนอกทุกตัวที่ได้รับข้อมูล — ชื่อในคอลัมน์แรกต้องตรงกับรายการใน test/site.test.mjs */
 const PROCESSORS=[
@@ -184,8 +184,8 @@ const sections=[
       `No system is 100% secure. If a breach puts you at risk, we’ll notify the regulator within 72 hours and tell you promptly, as the law requires. · Found a vulnerability? Email <a href="mailto:${EMAIL}">${EMAIL}</a>.`)},
 
   {id:'device',title:['ข้อมูลในเครื่องและคุกกี้','On your device, and cookies'],body:
-    P('แอปเก็บประวัติแชต AI สำเนาโรงรถ ภาษา ธีม และการตั้งค่าไว้ในพื้นที่เก็บของเบราว์เซอร์บนเครื่องคุณ (localStorage / IndexedDB) เพื่อให้เปิดเร็วและใช้ออฟไลน์ได้บางส่วน ระบบล็อกอินของ Firebase เก็บสถานะการล็อกอินไว้ในเครื่องเช่นกัน เราไม่ใช้คุกกี้ติดตามหรือคุกกี้โฆษณา จึงไม่มีป้ายขอความยินยอมคุกกี้',
-      'The app keeps your AI chat history, a copy of your garage, language, theme and settings in your browser’s storage on your device (localStorage / IndexedDB) so it opens fast and partly works offline. Firebase sign-in also keeps your session on the device. We use no tracking or advertising cookies, so there’s no cookie banner.')+
+    P('แอปเก็บประวัติแชต AI สำเนาโรงรถ ภาษา ธีม การตั้งค่า และ (สำหรับช่าง) รายการงานล่าสุดใน Studio — รถ อาการ สถานะ ไม่มีชื่อ เบอร์ หรือที่อยู่ลูกค้า ลบเองเมื่อออกจากระบบ — ไว้ในพื้นที่เก็บของเบราว์เซอร์บนเครื่องคุณ (localStorage / IndexedDB) เพื่อให้เปิดเร็วและใช้ออฟไลน์ได้บางส่วน ระบบล็อกอินของ Firebase เก็บสถานะการล็อกอินไว้ในเครื่องเช่นกัน เราไม่ใช้คุกกี้ติดตามหรือคุกกี้โฆษณา จึงไม่มีป้ายขอความยินยอมคุกกี้',
+      'The app keeps your AI chat history, a copy of your garage, language, theme, settings and (for mechanics) your latest Studio job list — car, symptom and status only, no customer name, phone or address, cleared when you sign out — in your browser’s storage on your device (localStorage / IndexedDB) so it opens fast and partly works offline. Firebase sign-in also keeps your session on the device. We use no tracking or advertising cookies, so there’s no cookie banner.')+
     P('ล้างข้อมูลเว็บไซต์ในเบราว์เซอร์ = ลบข้อมูลในเครื่องทั้งหมด (ข้อมูลบนเซิร์ฟเวอร์ยังอยู่จนกว่าคุณจะลบบัญชี) · เว็บนี้ (หน้าเกี่ยวกับ นโยบาย ข้อกำหนด ช่วยเหลือ) จำแค่ภาษาที่คุณเลือก',
       'Clearing site data in your browser removes everything stored locally (server data stays until you delete your account). · This website (about, policy, terms and help pages) only remembers the language you pick.')},
 
@@ -197,6 +197,7 @@ const sections=[
     P('เมื่อระบบเปลี่ยนวิธีเก็บหรือใช้ข้อมูล เราจะแก้หน้านี้ให้ตรงทันที เปลี่ยนเลขเวอร์ชันและวันที่ด้านบน และถ้าเป็นการเปลี่ยนสาระสำคัญ จะแจ้งในแอปก่อนมีผล การเปลี่ยนที่ต้องได้รับความยินยอมใหม่ เราจะขอความยินยอมใหม่ก่อน',
       'Whenever the way we collect or use data changes, we update this page straight away, with a new version number and date at the top. Material changes are announced in the app before they take effect, and anything that needs fresh consent will ask for it first.')+
     UL([
+      ['<b>1.3 · 16 ต.ค. 2569</b> — ระบุว่า Studio เก็บรายการงานล่าสุดไว้ในเครื่องช่างเพื่อให้เปิดได้ทันที (ไม่มีข้อมูลติดต่อลูกค้า) · ประกาศหาช่างจากทุกบัญชีเป็นงานจริง','<b>1.3 · 16 Oct 2026</b> — notes that Studio keeps the latest job list on the mechanic’s device so it opens instantly (no customer contact details) · job posts from every account are real jobs'],
       ['<b>1.2 · 15 ต.ค. 2569</b> — ใบสมัครช่างและรูปบัตรเข้ารหัสก่อนเก็บ · เลิกเก็บเลขบัตรเต็ม · ใบสมัครค้างรอตรวจเกิน 30 วันลบรูปบัตรทิ้งเอง (เป็นการเพิ่มการป้องกัน ไม่ต้องยอมรับใหม่)','<b>1.2 · 15 Oct 2026</b> — mechanic applications and ID images are encrypted before storage · full ID numbers are no longer stored · ID images of applications waiting over 30 days are deleted automatically (added protection; no new consent needed)'],
       ['<b>1.1 · 15 ต.ค. 2569</b> — เขียนใหม่ทั้งฉบับให้ตรงกับระบบปัจจุบัน: ตลาดช่าง การยืนยันตัวตนช่าง LINE ดาวน์โหลด/ลบบัญชีเองในแอป รายชื่อผู้ให้บริการครบ เลิกเก็บข้อความแชตในบันทึกการใช้ และไม่ส่งอีเมลให้ AI','<b>1.1 · 15 Oct 2026</b> — rewritten to match the current system: mechanic marketplace, mechanic identity checks, LINE, self-service download/delete, full provider list, chat text no longer kept in usage logs, and email no longer sent to the AI'],
       ['<b>1.0 · 1 ส.ค. 2569</b> — ฉบับแรก','<b>1.0 · 1 Aug 2026</b> — first version'],

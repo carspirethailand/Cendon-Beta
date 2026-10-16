@@ -19,3 +19,144 @@
 .hh-zoom span{min-width:30px;text-shadow:0 1px 6px #000}
 .think-box{display:none!important}
 @media(prefers-reduced-motion:reduce){.hh-stage{opacity:.6}}
+
+/* ── เครื่องมือระหว่างโทร (call-tools.js): ปุ่มฟังเสียงเครื่อง / สแกนห้องเครื่อง + ชั้นเต็มจอ ── */
+.ct-tools{position:absolute;top:calc(62px + env(safe-area-inset-top));left:12px;right:12px;display:flex;justify-content:center;gap:8px;z-index:4;flex-wrap:wrap}
+.ct-tools button{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 15px;border-radius:999px;border:1px solid rgba(255,236,214,.16);
+  background:rgba(255,236,214,.08);color:inherit;font:500 13.5px/1 Kanit,system-ui,sans-serif;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);cursor:pointer;transition:transform .15s,background .2s}
+.ct-tools button:active{transform:scale(.96)}
+.ct-tools .ti{font-size:17px;color:#ffb35c}
+.hearth.light .ct-tools button{border-color:rgba(58,36,24,.14);background:rgba(58,36,24,.06)}
+.hearth.light .ct-tools .ti{color:#c2410c}
+.hearth.cam .ct-tools button{background:rgba(20,18,16,.5);color:#fff;border-color:rgba(255,255,255,.18)}
+
+.ct-layer{position:absolute;inset:0;z-index:8;display:flex;flex-direction:column;gap:12px;overflow:auto;overscroll-behavior:contain;
+  padding:calc(14px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));
+  background:linear-gradient(180deg,rgba(14,9,8,.97),rgba(18,12,10,.98));color:#fff4e8;animation:ctIn .35s cubic-bezier(.2,.9,.25,1)}
+.ct-layer[hidden]{display:none}
+@keyframes ctIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.ct-layer.ct-bay.aim{background:transparent;pointer-events:none}
+.ct-layer.ct-bay.aim>*{pointer-events:auto}
+.ct-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;width:100%;max-width:640px;margin:0 auto}
+.ct-hd b{display:block;font:600 18px/1.3 Kanit,system-ui,sans-serif}
+.ct-hd small{display:block;margin-top:3px;font-size:12.5px;color:rgba(255,236,214,.62);line-height:1.45}
+.ct-bay.aim .ct-hd{text-shadow:0 1px 10px #000}
+.ct-bay.aim .ct-hd small{color:rgba(255,255,255,.85)}
+.ct-x{flex:none;width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,236,214,.1);color:inherit;display:grid;place-items:center;font-size:19px;cursor:pointer}
+
+/* ฟังเสียง: คลื่นความถี่สด + วงนับถอยหลัง */
+.ct-scope{position:relative;width:100%;max-width:640px;margin:0 auto;height:min(38vh,300px);min-height:190px;border-radius:22px;overflow:hidden;background:#0e0908;box-shadow:0 0 0 1px rgba(255,236,214,.08),0 20px 50px -20px rgba(255,120,60,.25)}
+.ct-scope canvas{position:absolute;inset:0;width:100%;height:100%}
+.ct-axis{position:absolute;left:10px;top:8px;bottom:8px;display:flex;flex-direction:column;justify-content:space-between;font-size:10px;color:rgba(255,236,214,.45);font-variant-numeric:tabular-nums;pointer-events:none}
+.ct-ring{color:#fff4e8;position:absolute;right:14px;top:50%;transform:translateY(-50%);width:104px;height:104px;display:grid;place-items:center;align-content:center;text-align:center;border-radius:50%;background:rgba(14,9,8,.6);backdrop-filter:blur(6px)}
+.ct-ring svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.ct-ring circle{fill:none;stroke-width:5}
+.ct-ring .bg{stroke:rgba(255,236,214,.12)}
+.ct-ring .fg{stroke:#ff8a3d;stroke-linecap:round;stroke-dasharray:339;stroke-dashoffset:339;transition:stroke-dashoffset .12s linear}
+.ct-ring b{position:relative;font:600 30px/1 Kanit,system-ui,sans-serif;font-variant-numeric:tabular-nums}
+.ct-ring b .ti{font-size:28px;color:#ffb35c}
+.ct-ring small{position:relative;font-size:11px;color:rgba(255,236,214,.7);margin-top:4px}
+.ct-ring.rec::before{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid rgba(255,90,78,.5);animation:ctPulse 1.2s ease-out infinite}
+.ct-ring.busy b .ti{animation:ctSpin 1.6s linear infinite}
+@keyframes ctPulse{from{transform:scale(.92);opacity:1}to{transform:scale(1.18);opacity:0}}
+@keyframes ctSpin{to{transform:rotate(360deg)}}
+.ct-ear.thinking .ct-scope::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,179,92,.16) 50%,transparent 70%);background-size:220% 100%;animation:ctShine 1.4s linear infinite}
+@keyframes ctShine{from{background-position:120% 0}to{background-position:-120% 0}}
+.ct-meter{width:100%;max-width:640px;margin:0 auto;height:4px;border-radius:4px;background:rgba(255,236,214,.08);overflow:hidden}
+.ct-meter i{display:block;height:100%;background:linear-gradient(90deg,#ff8a3d,#ffd9a8);transform-origin:left;transform:scaleX(0);transition:transform .08s}
+.ct-steps{list-style:none;margin:0 auto;padding:0;width:100%;max-width:640px;display:grid;gap:6px}
+.ct-steps li{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;font-size:14px;color:rgba(255,236,214,.5);background:rgba(255,236,214,.03);transition:all .3s}
+.ct-steps li.on{color:#fff4e8;background:rgba(255,138,61,.14)}
+.ct-steps .ti{font-size:18px;color:#ffb35c}
+
+/* ผลลัพธ์ (ใช้ร่วมกันทั้งสองเครื่องมือ) */
+.ct-out,.ct-list{width:100%;max-width:640px;margin:0 auto;display:grid;gap:10px;animation:ctIn .4s}
+.ct-out[hidden],.ct-list[hidden]{display:none}
+.ct-badge{justify-self:start;display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:999px;font-weight:600;font-size:14px;color:#fff;background:var(--c)}
+.ct-lead{margin:0;font-size:16px;line-height:1.6}
+.ct-note{margin:0;font-size:13.5px;color:rgba(255,236,214,.7)}
+.ct-causes{display:grid;gap:8px;padding:12px;border-radius:16px;background:rgba(255,236,214,.05)}
+.ct-cause{display:grid;gap:4px;animation:ctIn .4s both}
+.ct-cause b{display:flex;justify-content:space-between;gap:8px;font-weight:500;font-size:14.5px}
+.ct-cause b small{font-weight:400;color:#ffb35c;font-size:12px}
+.ct-cause>small{font-size:12.5px;color:rgba(255,236,214,.62)}
+.ct-bar{height:5px;border-radius:5px;background:rgba(255,236,214,.08);overflow:hidden}
+.ct-bar i{display:block;height:100%;width:var(--w);background:linear-gradient(90deg,#ff8a3d,#ffd9a8);animation:ctGrow .8s cubic-bezier(.2,.9,.25,1) both}
+@keyframes ctGrow{from{width:0}}
+.ct-next{margin:0;padding-left:20px;display:grid;gap:5px;font-size:14px;line-height:1.5}
+.ct-fine{margin:0;font-size:11.5px;color:rgba(255,236,214,.5);line-height:1.5}
+.ct-acts{display:flex;gap:8px;flex-wrap:wrap}
+.ct-b{flex:1 1 130px;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:46px;padding:0 14px;border-radius:14px;border:1px solid rgba(255,236,214,.16);background:rgba(255,236,214,.06);color:inherit;font:500 14.5px/1 Kanit,system-ui,sans-serif;text-decoration:none;cursor:pointer}
+.ct-b.p{background:#fff4e8;color:#1c1310;border-color:transparent}
+
+/* สแกนห้องเครื่อง: กรอบเล็ง → ภาพนิ่ง + เส้นสแกน → กรอบชิ้นส่วนพร้อมหมายเลข */
+.ct-aim{position:absolute;left:8%;right:8%;top:22%;bottom:30%;pointer-events:none}
+.ct-aim i{position:absolute;width:34px;height:34px;border:3px solid #ffb35c;filter:drop-shadow(0 0 6px rgba(0,0,0,.6))}
+.ct-aim i:nth-child(1){left:0;top:0;border-right:0;border-bottom:0;border-radius:12px 0 0 0}
+.ct-aim i:nth-child(2){right:0;top:0;border-left:0;border-bottom:0;border-radius:0 12px 0 0}
+.ct-aim i:nth-child(3){left:0;bottom:0;border-right:0;border-top:0;border-radius:0 0 0 12px}
+.ct-aim i:nth-child(4){right:0;bottom:0;border-left:0;border-top:0;border-radius:0 0 12px 0}
+.ct-shot{position:absolute;left:0;right:0;bottom:calc(96px + env(safe-area-inset-bottom));display:grid;justify-items:center;gap:6px;color:#fff;text-shadow:0 1px 8px #000;font-size:12.5px}
+.ct-shutter{width:76px;height:76px;border-radius:50%;border:4px solid #fff;background:radial-gradient(circle,#ff8a3d 0 54%,transparent 56%);box-shadow:0 8px 30px rgba(0,0,0,.45);cursor:pointer;display:grid;place-items:center;color:#fff;font:600 26px/1 Kanit,system-ui,sans-serif}
+.ct-shutter:active{transform:scale(.95)}
+.ct-frame{width:100%;max-width:720px;margin:0 auto;display:grid;place-items:center}
+.ct-pic{position:relative;width:100%;max-height:52vh;border-radius:18px;overflow:hidden;background:#000;box-shadow:0 0 0 1px rgba(255,236,214,.1)}
+.ct-pic img{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;display:block}
+.ct-sweep{position:absolute;left:0;right:0;height:22%;top:-22%;background:linear-gradient(180deg,transparent,rgba(255,138,61,.28) 70%,#ffd9a8 100%);animation:ctSweep 1.6s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes ctSweep{to{top:100%}}
+.ct-grid{position:absolute;inset:0;opacity:0;background-image:linear-gradient(rgba(255,236,214,.09) 1px,transparent 1px),linear-gradient(90deg,rgba(255,236,214,.09) 1px,transparent 1px);background-size:32px 32px;transition:opacity .4s}
+.scanning .ct-grid{opacity:1}
+.ct-box{position:absolute;border:0;padding:0;background:transparent;cursor:pointer;animation:ctPop .45s cubic-bezier(.2,1.3,.4,1) both}
+.ct-box::before{content:"";position:absolute;inset:0;border:2px solid rgba(255,179,92,.9);border-radius:8px;box-shadow:0 0 0 1px rgba(0,0,0,.35),inset 0 0 0 1px rgba(0,0,0,.2);transition:all .2s}
+.ct-box span{position:absolute;left:-2px;top:-2px;transform:translate(-30%,-30%);min-width:24px;height:24px;padding:0 6px;border-radius:12px;display:grid;place-items:center;background:#ff8a3d;color:#1c1310;font:700 13px/1 Kanit,system-ui,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.45)}
+.ct-box.on::before{border-color:#fff;background:rgba(255,179,92,.16);box-shadow:0 0 0 3px rgba(255,138,61,.55)}
+.ct-box.on span{background:#fff}
+@keyframes ctPop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+.ct-status{width:100%;max-width:720px;margin:0 auto;display:flex;align-items:center;gap:8px;font-size:14px;color:rgba(255,236,214,.85)}
+.ct-status .ti{font-size:18px;color:#ffb35c}
+.ct-dots{display:inline-flex;gap:4px}
+.ct-dots i{width:6px;height:6px;border-radius:50%;background:#ffb35c;animation:ctDot 1s ease-in-out infinite}
+.ct-dots i:nth-child(2){animation-delay:.15s}.ct-dots i:nth-child(3){animation-delay:.3s}
+@keyframes ctDot{50%{opacity:.25;transform:translateY(-3px)}}
+.ct-list{max-width:720px}
+.ct-warn{display:grid;gap:6px;padding:10px 12px;border-radius:14px;background:rgba(214,161,58,.14);border:1px solid rgba(214,161,58,.3)}
+.ct-warn p{margin:0;display:flex;gap:8px;font-size:13.5px;line-height:1.45}
+.ct-warn .ti{color:#f5c26b;flex:none;margin-top:2px}
+.ct-parts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.ct-part{display:grid;grid-template-columns:auto 1fr;align-items:center;column-gap:9px;text-align:left;padding:10px 11px;border-radius:14px;border:1px solid rgba(255,236,214,.1);background:rgba(255,236,214,.04);color:inherit;cursor:pointer;animation:ctIn .4s both;font-family:Kanit,system-ui,sans-serif}
+.ct-part span{grid-row:span 2;width:26px;height:26px;border-radius:13px;display:grid;place-items:center;background:#ff8a3d;color:#1c1310;font-weight:700;font-size:13px}
+.ct-part b{font-weight:500;font-size:14px}
+.ct-part small{font-size:11.5px;color:rgba(255,236,214,.6);line-height:1.35}
+.ct-part.on{border-color:#ffb35c;background:rgba(255,138,61,.12)}
+.ct-detail{display:grid;gap:7px;padding:13px 14px;border-radius:16px;background:rgba(255,236,214,.07);animation:ctIn .3s}
+.ct-detail[hidden]{display:none}
+.ct-detail>b{display:flex;align-items:center;gap:9px;font-weight:600;font-size:16px}
+.ct-detail>b span{width:24px;height:24px;border-radius:12px;display:grid;place-items:center;background:#ff8a3d;color:#1c1310;font-size:12.5px}
+.ct-detail p{margin:0;font-size:14px;line-height:1.55}
+.ct-detail em{display:block;font-style:normal;font-size:11.5px;color:#ffb35c;margin-bottom:1px}
+@media(min-width:900px){.ct-layer.ct-bay.found{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(320px,1fr);grid-template-rows:auto auto 1fr;align-content:start;column-gap:22px}
+  .ct-bay.found .ct-hd{grid-column:1/-1;max-width:none}.ct-bay.found .ct-frame{grid-row:2/4}.ct-bay.found .ct-status,.ct-bay.found .ct-list{max-width:none}}
+@media(prefers-reduced-motion:reduce){.ct-sweep,.ct-ring.rec::before,.ct-dots i{animation:none}.ct-box,.ct-part,.ct-cause{animation:none}}
+/* ระหว่างใช้เครื่องมือ: ซ่อนของหน้าโทรที่อยู่ใต้ชั้นนี้ (หัว/ปุ่มเครื่องมือ/คำบรรยาย) ไม่ให้ซ้อนกัน · ปุ่มแผงแอดมินไม่ทับหน้าโทร */
+.hearth.ct-on .hh-top,.hearth.ct-on .ct-tools,.hearth.ct-on .hh-state,.hearth.ct-on .hh-cap{visibility:hidden}
+.ct-bay.aim .ct-hd{padding:4px 2px 18px;margin:-4px -2px 0;background:linear-gradient(180deg,rgba(0,0,0,.55),transparent)}
+.ct-bay.aim .ct-shot{bottom:calc(122px + env(safe-area-inset-bottom))}
+body:has(#callUI.show) #cxa-fab{display:none!important}
+/* ธีมสว่าง: ชั้นเครื่องมือเป็นพื้นครีมเหมือนหน้าโทร · ช่องคลื่นเสียงและภาพสแกนยังเป็นพื้นเข้มเหมือนจอเครื่องมือวัด */
+.hearth.light .ct-layer:not(.aim){background:linear-gradient(180deg,#fffaf4,#fbf1e6);color:#2b1a12}
+.hearth.light .ct-layer:not(.aim) .ct-hd small,.hearth.light .ct-note,.hearth.light .ct-cause>small,.hearth.light .ct-part small{color:rgba(58,36,24,.62)}
+.hearth.light .ct-fine{color:rgba(58,36,24,.5)}
+.hearth.light .ct-layer:not(.aim) .ct-x{background:rgba(58,36,24,.07)}
+.hearth.light .ct-steps li{color:rgba(58,36,24,.45);background:rgba(58,36,24,.03)}
+.hearth.light .ct-steps li.on{color:#2b1a12;background:rgba(255,138,61,.14)}
+.hearth.light .ct-steps .ti,.hearth.light .ct-status .ti,.hearth.light .ct-cause b small,.hearth.light .ct-detail em{color:#c2410c}
+.hearth.light .ct-meter,.hearth.light .ct-bar{background:rgba(58,36,24,.08)}
+.hearth.light .ct-causes,.hearth.light .ct-detail{background:rgba(58,36,24,.05)}
+.hearth.light .ct-part{border-color:rgba(58,36,24,.12);background:#fff}
+.hearth.light .ct-part.on{border-color:#ff8a3d;background:#fff3e8}
+.hearth.light .ct-status{color:rgba(58,36,24,.85)}
+.hearth.light .ct-warn{background:#fff6e0;border-color:#f2d48a}
+.hearth.light .ct-warn .ti{color:#b7791f}
+.hearth.light .ct-b{border-color:rgba(58,36,24,.16);background:#fff}
+.hearth.light .ct-b.p{background:#1c1310;color:#fff4e8}
+.hearth.light .ct-dots i{background:#c2410c}

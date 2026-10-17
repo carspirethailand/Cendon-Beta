@@ -7,7 +7,7 @@
 <script src="/cendon-tour.js" defer></script>
 <script src="/account-actions.js" defer></script>
 <script src="/account.js?v=2026-10-16-login5" defer></script>
-<script src="/input-guard.js?v=1" defer></script>
+<script src="/input-guard.js?v=2" defer></script>
 <script src="/cloud-swap.js?v=3" defer></script>
 <meta charset="UTF-8"/>
 <!-- ที่อยู่แบบลึก (/garage/…) — ไฟล์ประกอบทุกตัวอ้างจากรากเว็บเสมอ -->
@@ -933,7 +933,7 @@ body[data-depth="1"] .stat-row{perspective:1400px}
 .cl-mt:last-child{border-bottom:none}
 .cl-mt .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
 .cl-mt .nm{flex:1;min-width:0}
-.cl-mt .nm b{display:block;font-size:13px;font-weight:600}
+.cl-mt .nm b{display:block;font-size:13px;font-weight:600;overflow-wrap:anywhere}
 .cl-mt .nm span{display:block;font-size:11px;color:var(--faint);margin-top:1px}
 .cl-mt .due{font-size:11.5px;font-weight:700;text-align:right;white-space:nowrap;
   font-variant-numeric:tabular-nums}
@@ -949,7 +949,7 @@ body[data-depth="1"] .stat-row{perspective:1400px}
   font-size:12.5px}
 .cl-log:last-child{border-bottom:none}
 .cl-log .d{color:var(--faint);font-size:11px;width:64px;flex-shrink:0;font-variant-numeric:tabular-nums}
-.cl-log .t{flex:1;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.cl-log .t{flex:1;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cl-log .a{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
 .cl-log .x{color:var(--faint);font-size:15px;padding:2px 4px;flex-shrink:0}
 .cl-log .x:hover{color:var(--danger)}
@@ -1020,7 +1020,7 @@ body[data-depth="1"] .stat-row{perspective:1400px}
 .cl-sym{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:11px;
   border:1px solid var(--line);background:var(--surface-2);margin-bottom:6px}
 .cl-sym .tx{flex:1;min-width:0}
-.cl-sym .tx b{display:block;font-size:13px;font-weight:600;line-height:1.5}
+.cl-sym .tx b{display:block;font-size:13px;font-weight:600;line-height:1.5;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .cl-sym .tx small{font-size:11px;color:var(--muted)}
 @media(max-width:520px){
   .cl-rec .in label{min-width:calc(50% - 4px)}
@@ -3991,7 +3991,7 @@ a.mtab{text-decoration:none}
 <link rel="stylesheet" href="car-detail-tabs.css?v=2026-10-12-r1">
 <script src="car-detail-tabs.js?v=2026-10-12-r2" defer></script>
 <link rel="stylesheet" href="garage-extras.css?v=3">
-<script src="garage-extras.js?v=3" defer></script>
+<script src="garage-extras.js?v=4" defer></script>
 <script src="car-sync.js"></script>
 <script src="stability.js" defer></script>
 <!-- หน้าตาชุดเดียวกับหน้าหลัก (สี การ์ด ปุ่ม พื้นหลัง) — โหลดท้ายสุดให้ชนะสไตล์เดิม -->
@@ -4479,8 +4479,8 @@ window.spireI18nCoverage=code=>{
 
           <div id="gCustomBox" style="display:none; margin-top:12px; overflow:visible;">
             <div class="grid2" style="overflow:visible; margin-bottom:12px;">
-              <input class="input" id="gCustomMake" placeholder="ยี่ห้อ (พิมพ์เอง)"/>
-              <input class="input" id="gCustomModel" placeholder="รุ่น (พิมพ์เอง)"/>
+              <input class="input" id="gCustomMake" maxlength="30" placeholder="ยี่ห้อ (พิมพ์เอง)"/>
+              <input class="input" id="gCustomModel" maxlength="30" placeholder="รุ่น (พิมพ์เอง)"/>
             </div>
             <div class="custom-select" id="gBodySelect">
               <div class="custom-select-trigger" onclick="toggleCustomSelect('gBodySelect')">
@@ -5584,6 +5584,9 @@ $("garageList")?.addEventListener("click",async e=>{
     make=($("gCustomMake").value||"").trim();
     model=($("gCustomModel").value||"").trim();
     if(!make||!model){toast((window.spireT?window.spireT("กรุณาพิมพ์ยี่ห้อและรุ่นรถ","Please type Make and Model"):(lang==="en"?"Please type Make and Model":"กรุณาพิมพ์ยี่ห้อและรุ่นรถ")),"ti-alert-triangle");return}
+    /* ยี่ห้อ/รุ่นที่พิมพ์เองต้องอ่านได้ (ไม่เกิน 30 ตัว) — ชื่อมั่วทำให้ AI หาสเปกผิด */
+    const G=window.spireGuard;
+    for(const v of [make,model]){const r=G?G.text(v,{max:30,min:1,eg:"Toyota Yaris",egEn:"Toyota Yaris"}):{ok:true};if(!r.ok){toast(r.msg,"ti-alert-triangle");return}}
     type=selectedBody||"sedan";
   }else{
     if(!selectedMake || !selectedModel){toast((window.spireT?window.spireT("กรุณาเลือกยี่ห้อและรุ่นรถ","Please select Make and Model"):(lang==="en"?"Please select Make and Model":"กรุณาเลือกยี่ห้อและรุ่นรถ")),"ti-alert-triangle");return}
@@ -5593,6 +5596,7 @@ $("garageList")?.addEventListener("click",async e=>{
   const name = `${make} ${model}`.trim();
   const year = String(selectedYear);
   const mileage = $("gMileage").value.trim() || "-";
+  if(mileage!=="-"&&!(+mileage.replace(/,/g,"")<=1000000)){toast((window.spireT?window.spireT("เลขไมล์ต้องไม่เกิน 1,000,000 กม.","Mileage can't exceed 1,000,000 km"):"เลขไมล์ต้องไม่เกิน 1,000,000 กม."),"ti-alert-triangle");return}
 
   let addInfo;try{addInfo=readInfo($("gxMore"))}catch(e){toast(e.message,"ti-alert-triangle");return}
   ($("gAdd")||{}).disabled=true;
@@ -7731,14 +7735,14 @@ function paneHealth(c){
         <label><small>${T("เปลี่ยนล่าสุดวันที่","Last changed")}</small>
           <input type="date" data-rd="${p.k}" value="${esc(last?last.date:"")}"></label>
         <label><small>${T("ที่เลขไมล์ (กม.)","At odometer (km)")}</small>
-          <input type="number" inputmode="numeric" data-rk="${p.k}"
+          <input type="number" inputmode="numeric" min="0" max="1000000" data-rk="${p.k}"
             placeholder="${num(km)}" value="${last&&last.km?esc(last.km):""}"></label>
         <label><small>${T("ค่าใช้จ่าย (บาท)","Cost (baht)")}</small>
           <input type="number" inputmode="numeric" data-ra="${p.k}"
             placeholder="0" value="${last&&last.amount?esc(last.amount):""}"></label>
         <button class="btn primary" data-rsave="${p.k}"><i class="ti ti-check"></i></button>
       </div>
-      <div class="nt"><input type="text" data-rn="${p.k}"
+      <div class="nt"><input type="text" maxlength="80" data-rn="${p.k}"
         placeholder="${T("ยี่ห้อที่ใช้ อู่ที่ทำ หรือหมายเหตุ","Brand used, which garage, or a note")}"
         value="${esc(last&&last.note||"")}"></div>
     </div>`}).join("");
@@ -7749,7 +7753,7 @@ function paneHealth(c){
       "จดไว้ตอนเจอ เดี๋ยวลืม พอเข้าอู่หรือคุยกับ AI จะเล่าได้ครบและตรง",
       "Note it when it happens — you'll forget. It makes talking to a garage or the AI far more accurate.")}</p>
     <div class="cl-symadd">
-      <input type="text" id="symTxt" placeholder="${T(
+      <input type="text" id="symTxt" maxlength="120" placeholder="${T(
         "เช่น มีเสียงเอี๊ยดตอนเลี้ยวซ้าย เฉพาะตอนเช้า","e.g. squeal when turning left, mornings only")}">
       <button class="btn primary" id="symAdd"><i class="ti ti-plus"></i>${T("เพิ่ม","Add")}</button>
     </div>
@@ -7806,8 +7810,8 @@ function panePlan(c){
         <button class="cl-mini" data-editiv="${p.k}" title="${T("แก้รอบ","Edit interval")}"><i class="ti ti-adjustments"></i></button>
       </span></div>
       <div class="cl-ivedit" id="iv-${p.k}" hidden>
-        <input type="number" inputmode="numeric" min="0" max="1000000" id="ivkm-${p.k}" value="${p.km}" placeholder="${T("ทุกกี่ กม.","Every km")}"/>
-        <input type="number" inputmode="numeric" id="ivmo-${p.k}" value="${p.mo}" placeholder="${T("ทุกกี่เดือน","Every months")}"/>
+        <input type="number" inputmode="numeric" min="500" max="200000" id="ivkm-${p.k}" value="${p.km}" placeholder="${T("ทุกกี่ กม.","Every km")}"/>
+        <input type="number" inputmode="numeric" min="1" max="120" id="ivmo-${p.k}" value="${p.mo}" placeholder="${T("ทุกกี่เดือน","Every months")}"/>
         <button class="btn primary" data-saveiv="${p.k}">${T("บันทึก","Save")}</button>
         <button class="btn" data-resetiv="${p.k}">${T("ค่ามาตรฐาน","Default")}</button>
       </div>`).join("")}
@@ -7898,18 +7902,19 @@ function paneTrip(c){
   </div>
   <div class="cl-grp"><h4>${T("บันทึกทริปใหม่","Log a trip")}</h4>
     <div class="cl-form">
-      <input id="clTripT" class="wide" placeholder="${T("ไปไหนมา เช่น กรุงเทพ–หัวหิน","Where to? e.g. Bangkok–Hua Hin")}"/>
-      <input id="clTripKm" type="number" inputmode="numeric" min="0" max="1000000" placeholder="${T("ระยะทาง (กม.)","Distance (km)")}"/>
+      <input id="clTripT" class="wide" maxlength="60" placeholder="${T("ไปไหนมา เช่น กรุงเทพ–หัวหิน","Where to? e.g. Bangkok–Hua Hin")}"/>
+      <input id="clTripKm" type="number" inputmode="numeric" min="0" max="10000" placeholder="${T("ระยะทาง (กม.)","Distance (km)")}"/>
       <input id="clTripDate" type="date" value="${new Date().toISOString().slice(0,10)}"/>
       <button class="btn primary wide" id="clTripAdd"><i class="ti ti-plus"></i> ${T("บันทึกทริป","Add trip")}</button>
     </div>
   </div>
   ${trips.length?`<div class="cl-grp"><h4>${T("ทริปที่ผ่านมา","Past trips")}</h4>${
-    trips.map((t,i)=>`<div class="cl-log">
+    /* ลบตามตำแหน่งในข้อมูลจริง ไม่ใช่ลำดับที่เรียงตามวันที่ (เดิมกดลบแล้วทริปอื่นหาย) */
+    trips.map(t=>`<div class="cl-log">
       <span class="d">${esc((t.date||"").slice(5))}</span>
       <span class="t">${esc(t.title||T("ไม่ระบุ","Untitled"))}</span>
       <span class="a">${num(t.km)} ${T("กม.","km")}</span>
-      <button class="x" data-del="trips" data-i="${i}" aria-label="ลบ"><i class="ti ti-x"></i></button></div>`).join("")
+      <button class="x" data-del="trips" data-i="${l.trips.indexOf(t)}" aria-label="ลบ"><i class="ti ti-x"></i></button></div>`).join("")
     }</div>`:`<div class="cl-empty"><i class="ti ti-route"></i>${T("ยังไม่มีทริป — บันทึกอันแรกได้เลย","No trips yet — log your first")}</div>`}`;
 }
 
@@ -7940,6 +7945,7 @@ D.addEventListener("click",async e=>{
   if(e.target.closest("#clSvcAdd")&&c){
     const km=$("clSvcKm").value,amt=$("clSvcAmt").value,dt=$("clSvcDate").value,k=$("clSvcK").value;
     if(!km){toastx(T("ใส่เลขไมล์ก่อน","Enter mileage"));return}
+    if(!okKm(km,c)||!okMoney(amt,c,{job:k,what:jobName(c,k)}))return;
     const l=getLog(c.id);l.services.push({k,km:+km,amount:+amt||0,date:dt});setLog(c.id,l);
     try{if(window.SpireODO)window.SpireODO.confirm(c,+km,"service")}catch(e){}
     toastx(T("บันทึกแล้ว","Saved"));renderTab();refreshWidgets();
@@ -7947,13 +7953,19 @@ D.addEventListener("click",async e=>{
   if(e.target.closest("#clFuelAdd")&&c){
     const km=$("clFuelKm").value,amt=$("clFuelAmt").value,li=$("clFuelL").value,dt=$("clFuelDate").value;
     if(!amt){toastx(T("ใส่จำนวนเงินก่อน","Enter amount"));return}
+    if(km&&!okKm(km,c))return;
+    {const g=GD(),r=g?g.fuel(amt,li):{ok:true};if(!r.ok){toastx(r.msg,"ti-alert-triangle");return}if(r.ask&&!confirm(r.ask))return}
     const l=getLog(c.id);l.fuel.push({km:+km||0,amount:+amt,litres:+li||0,date:dt});setLog(c.id,l);
     if(+km)try{if(window.SpireODO)window.SpireODO.confirm(c,+km,"manual")}catch(e){}
     toastx(T("บันทึกแล้ว","Saved"));renderTab();refreshWidgets();
     try{window.odoRefresh&&window.odoRefresh()}catch(e){}return}
   if(e.target.closest("#clTripAdd")&&c){
-    const ti=$("clTripT").value.trim(),km=$("clTripKm").value,dt=$("clTripDate").value;
+    const ti=okText($("clTripT").value,{max:60,min:0,eg:"กรุงเทพ–หัวหิน",egEn:"Bangkok–Hua Hin"}),km=$("clTripKm").value,dt=$("clTripDate").value;
+    if(ti===null)return;
     if(!km){toastx(T("ใส่ระยะทางก่อน","Enter distance"));return}
+    /* ทริปเดียวในไทยไกลสุดราว 2,000 กม. (ไป-กลับ ~4,000) — เกิน 10,000 เป็นไปไม่ได้ · เกิน 3,000 ถามก่อน */
+    if(+km>10000){toastx(T("ทริปเดียวไม่เกิน 10,000 กม. — ถ้าเป็นระยะรวมหลายทริป แยกบันทึกทีละทริป","One trip can't exceed 10,000 km — log each trip separately"),"ti-alert-triangle");return}
+    if(+km>3000&&!confirm(T(`ทริปเดียว ${num(km)} กม. ถูกต้องไหม?`,`${num(km)} km in one trip — is that right?`)))return;
     const l=getLog(c.id);l.trips.push({title:ti,km:+km,date:dt});setLog(c.id,l);
     toastx(T("บันทึกทริปแล้ว","Trip saved"));renderTab();return}
   if(e.target.closest("#clAIclear")&&c){
@@ -7961,8 +7973,21 @@ D.addEventListener("click",async e=>{
 
   if(e.target.closest("#clShop")){closeCL()}
 });
-function toastx(m){try{if(typeof window.toast==="function")return window.toast(m)}catch(e){}
+function toastx(m,ic){try{if(typeof window.toast==="function")return window.toast(m,ic)}catch(e){}
   console.log(m)}
+/* ตรวจก่อนบันทึก (input-guard.js): ข้อความต้องอ่านได้ ตัวเลขต้องสมจริงตามรุ่นรถ — ไม่ผ่านบอกเหตุผลและไม่บันทึก
+   ยอดที่สูงผิดปกติแต่เป็นไปได้ (เช่น รถหรู) ถามยืนยันก่อน ไม่ปัดตัวเลขเอง */
+const GD=()=>window.spireGuard;
+function okText(v,o){const g=GD();if(!g)return String(v||"").trim().slice(0,(o&&o.max)||80);
+  const r=g.text(v,o);if(!r.ok){toastx(r.msg,"ti-alert-triangle");return null}return r.v}
+function okMoney(n,c,o){const g=GD();if(!g||!(+n>0))return true;const r=g.money(n,c,o);
+  if(!r.ok){toastx(r.msg,"ti-alert-triangle");return false}return !r.ask||confirm(r.ask)}
+/* เลขไมล์ของงานที่ทำไปแล้ว: เกิน 1 ล้าน กม. ไม่รับ · มากกว่าเลขไมล์ปัจจุบันเกิน 30,000 กม. ถามก่อน */
+function okKm(km,c){km=+km||0;
+  if(km>1000000){toastx(T("เลขไมล์ต้องไม่เกิน 1,000,000 กม.","Mileage can't exceed 1,000,000 km"),"ti-alert-triangle");return false}
+  const now=KM(c);if(now&&km>now+30000)return confirm(T(`เลขไมล์ ${num(km)} กม. มากกว่าเลขไมล์ปัจจุบันของรถ (${num(now)} กม.) มาก ตัวเลขถูกต้องไหม?`,`${num(km)} km is far above this car's current ${num(now)} km. Is that right?`));
+  return true}
+const jobName=(c,k)=>{const p=planFor(c).find(x=>x.k===k);return p?T(p.th,p.en):T("รายการนี้","this item")};
 
 /* ═══════════ ปุ่ม "ดูรายละเอียด" บนการ์ดรถ ═══════════ */
 function addDetailBtns(){
@@ -8244,12 +8269,15 @@ D.addEventListener("click",e=>{
     const g=sel=>{const el=D.querySelector(`[data-${sel}="${k}"]`); return el?el.value.trim():""};
     const date=g("rd"), kmv=g("rk"), amt=g("ra"), note=g("rn");
     if(!date&&!kmv){ toastx(T("ใส่วันที่หรือเลขไมล์อย่างน้อยหนึ่งช่อง","Enter a date or an odometer reading"),"ti-alert-triangle"); return }
+    if(kmv&&!okKm(kmv,c))return;
+    if(!okMoney(amt,c,{job:k,what:jobName(c,k)}))return;
+    const nt=note?okText(note,{max:80,min:2,eg:"Shell Helix ที่ศูนย์ฮอนด้า",egEn:"Shell Helix at the dealer"}):"";if(nt===null)return;
     const l=getLog(c.id);
     /* แก้ของเดิมถ้าเคยบันทึกไว้แล้ว ไม่ใช่ยัดแถวใหม่ทุกครั้งจนประวัติซ้ำ */
     const idx=l.services.map((x,i)=>({x,i})).filter(o=>o.x.k===k)
       .sort((a,b)=>new Date(b.x.date)-new Date(a.x.date))[0];
     const rec={k,km:parseInt(kmv)||0,amount:parseInt(amt)||0,
-      date:date||new Date().toISOString().slice(0,10),note:note||""};
+      date:date||new Date().toISOString().slice(0,10),note:nt||""};
     if(idx)l.services[idx.i]=rec; else l.services.push(rec);
     setLog(c.id,l);
     if(rec.km){try{if(window.SpireODO&&rec.km>=KM(c))window.SpireODO.confirm(c,rec.km,"service")}catch(err){}}
@@ -8259,10 +8287,11 @@ D.addEventListener("click",e=>{
   }
   const sa=e.target.closest("#symAdd");
   if(sa){
-    const el=$("symTxt"), t=el?el.value.trim():"";
-    if(!t)return;
+    const el=$("symTxt"), raw=el?el.value.trim():"";
+    if(!raw)return;
+    const t=okText(raw,{max:120,min:3,eg:"เสียงดังตอนเบรก",egEn:"squeal when braking"});if(t===null){el&&el.focus();return}
     const list=getSymptoms(c.id);
-    list.unshift({t:t.slice(0,200),date:new Date().toISOString().slice(0,10),km:KM(c)});
+    list.unshift({t,date:new Date().toISOString().slice(0,10),km:KM(c)});
     setSymptoms(c.id,list.slice(0,40)); renderTab(); return;
   }
   const sd=e.target.closest("[data-symdel]");
@@ -8289,6 +8318,8 @@ D.addEventListener("click",e=>{
   const sv2=e.target.closest("[data-saveiv]");
   if(sv2){const k=sv2.dataset.saveiv, iv=getIv(c.id);
     const kmv=Number(($("ivkm-"+k)||{}).value), mov=Number(($("ivmo-"+k)||{}).value);
+    if(kmv>0&&(kmv<500||kmv>200000)){toastx(T("รอบต้องอยู่ระหว่าง 500 – 200,000 กม.","Interval must be 500 – 200,000 km"),"ti-alert-triangle");return}
+    if(mov&&(mov<1||mov>120||mov%1)){toastx(T("รอบเดือนต้องเป็น 1 – 120 เดือน","Months must be 1 – 120"),"ti-alert-triangle");return}
     if(kmv>0){iv[k]={km:kmv,mo:mov>0?mov:undefined};setIv(c.id,iv);
       toastx(T("ปรับรอบแล้ว","Interval updated"));renderTab();refreshWidgets();}
     else toastx(T("ใส่จำนวนกิโลเมตรก่อน","Enter a km interval"));return}
@@ -8296,11 +8327,12 @@ D.addEventListener("click",e=>{
   if(rs){const iv=getIv(c.id);delete iv[rs.dataset.resetiv];setIv(c.id,iv);
     toastx(T("กลับเป็นค่ามาตรฐาน","Reset to default"));renderTab();refreshWidgets();return}
   if(e.target.closest("#tdAdd")){
-    const t=$("tdT").value.trim(); if(!t){toastx(T("ใส่ชื่องานก่อน","Name it first"));return}
-    /* ชื่องานไม่เกิน 60 ตัว · ครบที่ กม. ไม่เกิน 1,000,000 */
-    if(Array.from(t).length>60){toastx(T("ชื่องานยาวเกินไป ใช้ไม่เกิน 60 ตัวอักษร","Keep the name under 60 characters"),"ti-alert-triangle");return}
+    if(!$("tdT").value.trim()){toastx(T("ใส่ชื่องานก่อน","Name it first"));return}
+    /* ชื่องานอ่านได้ ไม่เกิน 60 ตัว · ครบที่ กม. ไม่เกิน 1,000,000 · น้อยกว่าเลขไมล์ปัจจุบัน = เลยกำหนดทันที ถามก่อน */
+    const t=okText($("tdT").value,{max:60,eg:"เปลี่ยนใบปัดน้ำฝน",egEn:"Replace wipers"});if(t===null)return;
     const dueKm=Number($("tdKm").value)||0;
     if(dueKm<0||dueKm>1000000){toastx(T("เลขไมล์ต้องอยู่ระหว่าง 0 – 1,000,000 กม.","Mileage must be 0 – 1,000,000 km"),"ti-alert-triangle");return}
+    if(dueKm&&KM(c)&&dueKm<KM(c)&&!confirm(T(`${num(dueKm)} กม. น้อยกว่าเลขไมล์ปัจจุบัน (${num(KM(c))} กม.) งานนี้จะขึ้นว่าเลยกำหนดทันที ใช่ไหม?`,`${num(dueKm)} km is below the current ${num(KM(c))} km, so it will show as overdue right away. Continue?`)))return;
     const arr=getTodos(c.id);
     arr.push({title:t,dueKm,dueDate:$("tdDate").value||"",done:false});
     setTodos(c.id,arr);toastx(T("เพิ่มงานแล้ว","Added"));renderTab();refreshWidgets();return}

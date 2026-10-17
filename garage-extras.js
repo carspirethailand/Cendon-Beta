@@ -44,10 +44,13 @@ async function api(path,body,method){
 const REF={oil:[1200,2500],airf:[300,800],cabin:[250,700],plug:[1200,3500],brakepad:[1500,3500],brakeoil:[500,1200],tire:[8000,20000],align:[400,900],batt:[2500,5000],coolant:[600,1500],gearoil:[1200,3500],belt:[800,2500],shock:[6000,16000]};
 const RATE_DEFAULT=41;   /* ~15,000 กม./ปี ค่าเฉลี่ยคนไทย ใช้จนกว่าจะมีเลขไมล์จริงพอคำนวณ */
 const myPrices=c=>LG('cal_price_'+c.id,{})||{};
+/* เพดานราคาต่องานตามกลุ่มรถ (input-guard.js) — ตัวเลขที่เป็นไปไม่ได้ซึ่งบันทึกไว้ก่อนมีการตรวจ จะไม่ถูกนำมารวมยอด */
+function capOf(c,k){const g=window.spireGuard;if(!g)return Infinity;const t=g.tier(c),j=g.JOB[k];return j?Math.min(j[0]*t.f,t.ceil):t.ceil}
 function priceOf(c,k,own){
-  const paid=own.filter(s=>s.k===k&&+s.amount>0).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')))[0];
+  const cap=capOf(c,k);
+  const paid=own.filter(s=>s.k===k&&+s.amount>0&&+s.amount<=cap).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')))[0];
   if(paid)return {v:+paid.amount,src:'paid'};
-  const mine=+myPrices(c)[k];if(mine>0)return {v:mine,src:'mine'};
+  const mine=+myPrices(c)[k];if(mine>0&&mine<=cap)return {v:mine,src:'mine'};
   const r=REF[k];return r?{v:Math.round((r[0]+r[1])/2/50)*50,lo:r[0],hi:r[1],src:'ref'}:{v:0,src:'none'};
 }
 function calendar(c){
@@ -112,8 +115,15 @@ function mountCal(c){
   box.querySelectorAll('.cx-pr').forEach(b=>b.onclick=()=>{
     const k=b.dataset.k,cur=myPrices(c)[k]||'';
     const v=prompt(T(`ราคาที่คุณคาดว่าจะจ่ายสำหรับ "${itemName(c,k)}" (บาท)`,`Your expected price for "${itemName(c,k)}" (THB)`),cur);
-    if(v===null)return;const n=Math.round(Number(String(v).replace(/[^\d.]/g,'')));
-    const all=myPrices(c);if(n>0&&n<1000000)all[k]=n;else delete all[k];LSet('cal_price_'+c.id,all);rerender();
+    if(v===null)return;const all=myPrices(c);
+    /* เว้นว่าง = กลับไปใช้ราคาทั่วไป · ตัวเลขต้องสมจริงตามรุ่นรถ — ไม่ผ่านบอกเหตุผล ไม่ลบราคาเดิมเงียบ ๆ */
+    if(!String(v).trim()){delete all[k];LSet('cal_price_'+c.id,all);rerender();return}
+    const n=Math.round(Number(String(v).replace(/[^\d.]/g,'')));
+    if(!(n>0)){toast(T('ใส่ราคาเป็นตัวเลข (บาท)','Enter the price as a number (THB)'),'ti-alert-triangle');return}
+    const g=window.spireGuard,r=g?g.money(n,c,{job:k,what:itemName(c,k)}):{ok:true};
+    if(!r.ok){toast(r.msg,'ti-alert-triangle');return}
+    if(r.ask&&!confirm(r.ask))return;
+    all[k]=n;LSet('cal_price_'+c.id,all);rerender();
   });
   const rem=$('cxRem');if(rem)rem.onchange=async()=>{
     const on=rem.checked;rem.disabled=true;

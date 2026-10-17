@@ -59,5 +59,67 @@
   D.addEventListener('change',function(e){var el=e.target;if(isNum(el))fixNum(el,true);else if(isDate(el)&&D.activeElement!==el)fixDate(el)},true);
   /* วางข้อความลงช่องวันที่บางเบราว์เซอร์ไม่ยิง change — ตรวจอีกรอบตอนออกจากช่อง */
   D.addEventListener('blur',function(e){var el=e.target;if(isDate(el))fixDate(el);else if(isNum(el))fixNum(el,true)},true);
-  window.spireGuard={bounds:bounds,fixDate:fixDate,fixNum:fixNum};
+
+  /* ── ข้อความที่ผู้ใช้ตั้งเอง (อาการ งานของฉัน ชื่อทริป หมายเหตุ): กันพิมพ์มั่วและยาวเกิน ──
+     ไม่ได้ตัดสินว่าสะกดถูกไหม จับเฉพาะแบบที่ไม่ใช่ข้อความจริงแน่ ๆ: ไม่มีตัวอักษรเลย · ตัวเดียวซ้ำยาว ๆ
+     · กดไล่แป้นพิมพ์ (asdfg / ฟหกด) · ชุดเดิมวนซ้ำ · พยัญชนะอังกฤษติดกันยาวผิดธรรมชาติ
+     ไทยไม่มีเว้นวรรคและ อ ว ย ร ทำหน้าที่สระได้ จึงไม่นับพยัญชนะไทยติดกัน (เช่น "ตรวจสอบรถ" ต้องผ่าน) */
+  var ROWS=['qwertyuiop','asdfghjkl','zxcvbnm','ภถุึคตจขช','ๆไำพะัีรนยบลฃ','ฟหกดเ้่าสวง','ผปแอิืทมใฝ'];
+  function junk(s){
+    var t=String(s||'').toLowerCase().replace(/\s+/g,' ').trim();if(!t)return '';
+    var L=t.replace(/[^a-z฀-๿぀-ヿ一-鿿가-힯]/g,'');
+    /* รหัสสั้น ๆ อย่างรุ่นรถ "2" "X5" ไม่ใช่ข้อความมั่ว */
+    if(!L.length)return /\d/.test(t)&&t.length<=6?'':'letters';
+    /* ลากเสียงแบบ "ดังงงงง" ยังนับเป็นคำ — ยุบตัวซ้ำก่อน แล้วดูว่าเหลือคำจริงไหม */
+    var C=L.replace(/(.)\1{2,}/g,'$1');
+    if((L.length>=3&&C.length<2)||(L.length>=6&&new Set(Array.from(L)).size<=2))return 'repeat';
+    if(/(.{2,5})\1{2,}/.test(C))return 'repeat';
+    for(var i=0;i<ROWS.length;i++){var r=ROWS[i],w=/[a-z]/.test(r)?5:4,rv=Array.from(r).reverse().join('');
+      for(var j=0;j+w<=r.length;j++)if(C.indexOf(r.substr(j,w))>=0||C.indexOf(rv.substr(j,w))>=0)return 'mash'}
+    if(/[bcdfghjklmnpqrstvwxz]{6,}/.test(C)||/[a-z]{25,}/.test(C))return 'mash';
+    return '';
+  }
+  function chars(v){return Array.from(v).length}
+  /* text(ค่า,{max,min,eg,egEn}) → {ok,v,msg} · v คือข้อความที่ตัดช่องว่างเกินแล้ว */
+  function text(s,o){
+    o=o||{};var v=String(s==null?'':s).replace(/\s+/g,' ').trim(),max=o.max||80,min=o.min==null?2:o.min;
+    if(!v)return min?{ok:false,v:v,msg:th()?'ยังไม่ได้พิมพ์อะไร':'Nothing typed yet'}:{ok:true,v:v};
+    if(chars(v)>max)return {ok:false,v:v,msg:th()?'ยาวเกินไป ใช้ไม่เกิน '+max+' ตัวอักษร (ตอนนี้ '+chars(v)+')':'Too long — keep it under '+max+' characters (now '+chars(v)+')'};
+    if(chars(v)<min)return {ok:false,v:v,msg:th()?'สั้นเกินไป ช่วยพิมพ์ให้ชัดขึ้นอีกนิด':'Too short — add a little more detail'};
+    if(junk(v))return {ok:false,v:v,msg:th()?'ข้อความนี้อ่านไม่ออก ช่วยพิมพ์เป็นคำที่อ่านได้ เช่น “'+(o.eg||'เสียงดังตอนเบรก')+'”':'We can’t read that — please use real words, e.g. “'+(o.egEn||'squeal when braking')+'”'};
+    return {ok:true,v:v};
+  }
+
+  /* ── มูลค่ารถโดยประมาณจากยี่ห้อ/รุ่น ──
+     ระบบไม่มีราคารถจริง จึงจัดกลุ่มตามยี่ห้อ/รุ่น ใช้เพดานราคารถใหม่ของกลุ่มนั้นในไทย และตัวคูณค่าอะไหล่/ค่าแรง
+     รถแพงได้เพดานสูงตาม ไม่ตัดยอดของคนที่ใช้รถหรูจริง · ยอดหนึ่งรายการเกินมูลค่ารถรุ่นนี้ = เป็นไปไม่ได้ */
+  var TIERS=[
+    {k:'exotic',ceil:8e7,f:10,re:/ferrari|lamborghini|rolls|bentley|mclaren|bugatti|pagani|koenigsegg|aston|maybach|rimac/},
+    {k:'lux',ceil:25e6,f:5,re:/porsche|maserati|land ?rover|range ?rover|lotus|alphard|vellfire|land ?cruiser|lexus ?l[mxc]\b|\bamg\b|\bg ?63\b|\bm[2-8]\b|\br8\b|\brs ?[3-7q]\b|gt-?r\b|lucid/},
+    {k:'premium',ceil:1e7,f:2.5,re:/bmw|mercedes|benz|audi|lexus|volvo|jaguar|tesla|mini|genesis|cadillac|lincoln|infiniti|acura|alfa|polestar|jeep|mustang|zeekr|denza|hongqi|lynk|supra|type ?r\b|nismo|corvette|chevrolet camaro|camaro/}
+  ],STD={k:'std',ceil:3e6,f:1};
+  function tier(c){var n=[c&&c.make,c&&c.model,c&&c.name].filter(Boolean).join(' ').toLowerCase();
+    for(var i=0;i<TIERS.length;i++)if(TIERS[i].re.test(n))return TIERS[i];return STD}
+  var fmt=function(n){return Math.round(n).toLocaleString('en-US')};
+  /* ราคาต่องานของรถทั่วไป: hi = เพดานที่เป็นไปได้ (คูณตามกลุ่มรถ) · ref = ช่วงราคาปกติ (เกิน 4 เท่าของปกติ = ถามก่อน) */
+  var JOB={oil:[15e3,1200,2500],airf:[5e3,300,800],cabin:[5e3,250,700],plug:[2e4,1200,3500],brakepad:[25e3,1500,3500],brakeoil:[6e3,500,1200],
+    tire:[8e4,8000,20000],align:[6e3,400,900],batt:[3e4,2500,5000],coolant:[1e4,600,1500],gearoil:[2e4,1200,3500],belt:[25e3,800,2500],shock:[8e4,6000,16000]};
+  /* money(ยอด,รถ,{job,what}) → {ok,msg} หรือ {ok:true,ask} (ให้หน้าเรียก confirm) */
+  function money(n,c,o){
+    o=o||{};n=Number(n)||0;if(n<=0)return {ok:true};
+    var t=tier(c),j=JOB[o.job],hard=j?Math.min(j[0]*t.f,t.ceil):t.ceil,what=o.what||(th()?'รายการนี้':'this item');
+    if(n>hard)return {ok:false,msg:th()?'฿'+fmt(n)+' สูงเกินจริงสำหรับ'+what+'ของรถรุ่นนี้ (ไม่เกิน ฿'+fmt(hard)+') — ตรวจตัวเลขอีกครั้ง':'฿'+fmt(n)+' is more than '+what+' could cost for this car (max ฿'+fmt(hard)+') — please check the number'};
+    if(j&&n>j[2]*4*t.f)return {ok:true,ask:th()?'฿'+fmt(n)+' สูงกว่าปกติของ'+what+'มาก (รถทั่วไปราว ฿'+fmt(j[1])+'–'+fmt(j[2])+') ตัวเลขถูกต้องไหม?':'฿'+fmt(n)+' is far above the usual '+what+' cost (about ฿'+fmt(j[1])+'–'+fmt(j[2])+' for most cars). Is that right?'};
+    return {ok:true};
+  }
+  /* เติมน้ำมัน/ชาร์จหนึ่งครั้ง: ถังใหญ่สุดของรถทั่วไป ~150 ลิตร · ราคาต่อลิตร/หน่วยต้องเป็นไปได้ */
+  function fuel(amt,lit){
+    amt=Number(amt)||0;lit=Number(lit)||0;
+    if(amt>15000)return {ok:false,msg:th()?'เติมครั้งเดียว ฿'+fmt(amt)+' สูงเกินจริง (ไม่เกิน ฿15,000) — ถ้ารวมหลายครั้ง แยกบันทึกทีละครั้ง':'฿'+fmt(amt)+' for one fill-up is too high (max ฿15,000) — log each fill-up separately'};
+    if(lit>300)return {ok:false,msg:th()?'เติมครั้งเดียวไม่เกิน 300 ลิตร / kWh':'One fill-up can’t be more than 300 L / kWh'};
+    if(amt&&lit){var p=amt/lit;if(p<2||p>120)return {ok:true,ask:th()?'ตกลิตร/หน่วยละ ฿'+p.toFixed(1)+' ดูไม่ปกติ ตัวเลขถูกต้องไหม?':'That works out to ฿'+p.toFixed(1)+' per litre/kWh, which looks off. Is that right?'}}
+    if(amt>6000)return {ok:true,ask:th()?'เติมครั้งเดียว ฿'+fmt(amt)+' ถูกต้องไหม?':'฿'+fmt(amt)+' for one fill-up — is that right?'};
+    return {ok:true};
+  }
+  window.spireGuard={bounds:bounds,fixDate:fixDate,fixNum:fixNum,junk:junk,text:text,tier:tier,money:money,fuel:fuel,JOB:JOB};
 })();

@@ -161,12 +161,17 @@ function logAdd(carId,kind,e){
   const c=cars().find(x=>x.id===carId);if(!c)need([T("ไม่พบรถคันนี้ในการาจ","That car isn't in your garage")]);
   const k="carlab_log_"+carId,l=LG(k,null)||{services:[],fuel:[],trips:[]};["services","fuel","trips"].forEach(x=>{if(!Array.isArray(l[x]))l[x]=[]});
   const date=okDate(e.date)?e.date:today(),n=v=>Math.max(0,Math.round(+String(v==null?"":v).replace(/[^\d.]/g,"")||0)),bad=[];
-  if(kind==="fuel"){const amount=n(e.amount);if(!amount||amount>200000)bad.push(T("ยอดเติม (บาท)","Amount (฿)"));need(bad);
-    l.fuel.push({km:Math.min(n(e.km),3e6),amount,litres:Math.min(+(+e.litres||0).toFixed(2),500),date})}
-  else if(kind==="service"){const key=SVC[e.item]?e.item:"";if(!key)bad.push(T("รายการซ่อมบำรุง","Which service"));if(!n(e.km))bad.push(T("เลขไมล์ตอนทำ","Mileage at the time"));need(bad);
-    l.services.push({k:key,km:Math.min(n(e.km),3e6),amount:Math.min(n(e.amount),1000000),date})}
-  else if(kind==="trip"){const title=one(e.title,60);if(title.length<2)bad.push(T("ชื่อทริป","Trip name"));if(!n(e.km))bad.push(T("ระยะทาง (กม.)","Distance (km)"));need(bad);
-    l.trips.push({title,km:Math.min(n(e.km),20000),date})}
+  /* กติกาเดียวกับฟอร์มในการาจ (input-guard.js): ยอดเงินสมจริงตามรุ่นรถ ชื่ออ่านได้ — ไม่ผ่านแจ้งกลับให้แก้ ไม่ปัดตัวเลขเอง */
+  const G=window.spireGuard,tooMuch=r=>{if(r&&!r.ok)throw new Error(r.msg)};
+  if(kind==="fuel"){const amount=n(e.amount),lit=+(+e.litres||0).toFixed(2);if(!amount)bad.push(T("ยอดเติม (บาท)","Amount (฿)"));if(n(e.km)>1000000)bad.push(T("เลขไมล์ (ไม่เกิน 1,000,000)","Mileage (max 1,000,000)"));need(bad);
+    if(G)tooMuch(G.fuel(amount,lit));else if(amount>15000||lit>300)need([T("ยอดเติม (บาท)","Amount (฿)")]);
+    l.fuel.push({km:n(e.km),amount,litres:lit,date})}
+  else if(kind==="service"){const key=SVC[e.item]?e.item:"";if(!key)bad.push(T("รายการซ่อมบำรุง","Which service"));if(!n(e.km)||n(e.km)>1000000)bad.push(T("เลขไมล์ตอนทำ (ไม่เกิน 1,000,000)","Mileage at the time (max 1,000,000)"));need(bad);
+    const amount=n(e.amount);if(G)tooMuch(G.money(amount,c,{job:key,what:T(SVC[key][0],SVC[key][1])}));
+    l.services.push({k:key,km:n(e.km),amount:Math.min(amount,1000000),date})}
+  else if(kind==="trip"){const title=one(e.title,60);if(title.length<2)bad.push(T("ชื่อทริป","Trip name"));if(!n(e.km)||n(e.km)>10000)bad.push(T("ระยะทาง (ไม่เกิน 10,000 กม. ต่อทริป)","Distance (max 10,000 km per trip)"));need(bad);
+    if(G){const r=G.text(title,{max:60,eg:"กรุงเทพ–หัวหิน",egEn:"Bangkok–Hua Hin"});tooMuch(r)}
+    l.trips.push({title,km:n(e.km),date})}
   else throw new Error(T("บันทึกแบบนี้ไม่ได้","Can't log that"));
   LS(k,l);return {date};
 }

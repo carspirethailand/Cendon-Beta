@@ -3033,13 +3033,14 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 <script src="engine-scan.js?v=2026-10-17-r4" defer></script>
 <script src="call-tools.js?v=2026-10-17-r8" defer></script>
 <script src="call-composer.js?v=2026-10-17-r4" defer></script>
-<script src="call-agent.js?v=2026-10-17-r5" defer></script>
+<script src="call-agent.js?v=2026-10-17-r6" defer></script>
 <script src="call-surface.js?v=2026-10-17-r7" defer></script>
 <script src="call-shell.js?v=1" defer></script>
-<script src="call-session.js?v=2026-10-17-r6" defer></script>
+<script src="garage-care.js?v=1" defer></script>
+<script src="call-session.js?v=2026-10-17-r7" defer></script>
 <link rel="stylesheet" href="valet.css?v=2">
-<script src="valet-core.js?v=4" defer></script>
-<script src="valet.js?v=3" defer></script>
+<script src="valet-core.js?v=5" defer></script>
+<script src="valet.js?v=4" defer></script>
 <script src="bell.js?v=6" defer></script>
 <script src="drop.js?v=3" defer></script>
 <script src="./techs.js"></script>
@@ -4963,6 +4964,8 @@ function attachSvc(pre){
   const SV=window.CendonSearch;if(!SV)return;
   const m=[...messages].reverse().find(x=>x.role==="ai"&&!x.typing);if(!m||(m.acts&&m.acts.length))return;
   const ask=SV.takeMarker(m);
+  const user=[...messages].reverse().find(x=>x.role==='user');
+  if(user&&window.CendonValet?.wantsAct(user.text))return;
   const done=r=>{ if(!r)return; m.svc=SV.ref(r); renderMessages(); saveSession(); SV.open(r,{auto:true}) };
   if(pre){ done(pre); return }
   if(ask)SV.find(ask,{label:ask}).then(done).catch(()=>{});
@@ -5499,6 +5502,12 @@ async function sendMsg(){
     messages.push({role:"ai",text:"",acts:[{do:"enable",text}]});renderMessages();saveSession();
     sending=false;updateSend();renderChips();return;
   }
+  // Explicit message requests become reviewable drafts, never search queries.
+  const directValet=!featureJob&&!atts.length&&window.CendonValet?.on()&&CendonValet.intent?.(text);
+  if(directValet){
+    messages.push({role:'ai',text:lang==='en'?'Review the shop and message in the card, then confirm to send. Nothing has been sent yet.':'ตรวจชื่อร้านและข้อความในการ์ด แล้วกดยืนยันเพื่อส่งครับ ตอนนี้ยังไม่ได้ส่งอะไร',acts:[directValet]});
+    renderMessages();saveSession();sending=false;updateSend();renderChips();return;
+  }
   messages.push({role:"ai",typing:true});renderMessages();
   try{
     if(featureJob){
@@ -5746,7 +5755,7 @@ function getCallSession(){
   };
   const agent=window.CendonCallAgent.create({api:voiceApi,getCar:selCar,getLocation:()=>LS.get("tech_here",null),showResults:view.showResults,showDraft:view.showDraft,showValet:view.showValet,minimize:view.minimize});
   let tools;
-  cendonCall=window.CendonCallSession.create({byId:view.byId,backendUrl:BACKEND_URL,language:lang,getUser:()=>auth?.currentUser,view,agent,getTools:()=>tools,toast,storage:LS,systemPrompt:sysPrompt,getMessages:()=>messages,appendMessage:m=>messages.push(m),save:saveSession,onEnd:()=>{renderMessages();updateHint();renderChips();setPhase("thread");}});
+  cendonCall=window.CendonCallSession.create({byId:view.byId,backendUrl:BACKEND_URL,language:lang,getUser:()=>auth?.currentUser,getCar:selCar,view,agent,getTools:()=>tools,toast,storage:LS,systemPrompt:sysPrompt,getMessages:()=>messages,appendMessage:m=>messages.push(m),save:saveSession,onEnd:()=>{renderMessages();updateHint();renderChips();setPhase("thread");}});
   tools=window.CallTools?.create({voice:cendonCall.bridge,language:lang,backendUrl:BACKEND_URL,getUser:()=>auth?.currentUser,getCar:selCar,getMessages:()=>messages,appendMessage:m=>messages.push(m),save:saveSession,toast});
   view.bind(cendonCall);return cendonCall;
 }
@@ -11019,7 +11028,7 @@ const PULLED="spire___pulled";             /* บัญชีที่ดึง�
 const FIXED=["setup","theme","chatTheme","primary","lang","chatStyle","garage","selCar",
              "skills","skillcat","chatSessions","units","notify"];
 /* carlab_log_/iv_/todo_ = สมุดรถ (ซ่อม น้ำมัน ทริป) รอบบำรุงรักษา งานที่เพิ่มเอง — ตามบัญชี ไม่ใช่ตามเครื่อง (Wrapped/Passport/ปฏิทินใช้) */
-const isTracked=k=>FIXED.indexOf(k)>=0||/^(sess|cursess|chatMsgs|carlab_log|carlab_iv|carlab_todo)_/.test(k);
+const isTracked=k=>FIXED.indexOf(k)>=0||/^(sess|cursess|chatMsgs|carlab_log|carlab_iv|carlab_todo|reg)_/.test(k);
 
 const SYNCED="spire___synced";             /* ส่งขึ้นสำเร็จถึงเวลาไหนแล้ว ต่อคีย์ */
 const SEEN="spire___seen";                 /* ลายเซ็นที่เห็นครั้งก่อน ใช้จับว่าแก้บนเครื่องนี้จริงไหม */

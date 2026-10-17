@@ -8,6 +8,7 @@
     const current=c=>{if(c.signal.aborted||!c.isCurrent())throw Error('Call no longer active');};
     async function execute(name,args={},ctx){
       current(ctx);
+      if(name==='garage_checkin_control')return session?.garageCareControl?.(args.action,ctx)||{error:'Optional check-ins unavailable'};
       if(name==='get_my_car'){
         const c=host.getCar?.();return c?{car:{name:clean(c.name||[c.make,c.model].filter(Boolean).join(' ')),year:clean(c.year,4),mileage:clean(c.mileage,12)},note:'User-saved information, not verified specifications'}:{car:null,note:'No selected car. Ask the user; do not invent one.'};
       }
@@ -45,7 +46,12 @@
        ตำแหน่งมาจาก GPS ของเครื่องเท่านั้น · AI เห็นแค่ย่านกับเบอร์แบบปิดกลาง · ทำผ่าน API เดิมด้วยบัญชีผู้ใช้ (CendonValetCore) ══ */
     const VC=()=>window.CendonValetCore||null;
     const DOS=['urgent','post_job','book','msg_shop','job','jobs','log','due','go','search','setting','pick_car','cars','threads','add_car','car_km','shop_status'],OPS=['accept','cancel','complete','message'];
-    let pend=null,seq=0,heardAt=0,session=null,waiting=null;
+    let pend=null,seq=0,heardAt=0,heardText='',session=null,waiting=null;
+    const garageYes=text=>{
+      const t=String(text||'').toLowerCase().replace(/[\s.,!?。ๆ]/g,'');
+      if(/ไม่|อย่า|ยกเลิก|\b(?:no|not|cancel|stop)\b/.test(String(text||'').toLowerCase()))return false;
+      return /^(?:ใช่|ใช่เลย|ได้|ได้เลย|ตกลง|ยืนยัน|บันทึก|บันทึกเลย|บันทึกได้|ใช่บันทึกเลย|โอเค|ok|okay|yes|yep|confirm|saveit|pleasesave)(?:ครับ|ค่ะ|คะ|นะ|นะครับ|เลย)?$/.test(t);
+    };
     const live=j=>!['completed','cancelled'].includes(j.status);
     const canDo=(j,op)=>op==='message'?live(j):(VC().JOB_OPS[op]||[]).includes(j.status)&&(op==='cancel'?j.side!=='admin':j.side==='customer'||j.side==='both');
     const say=t=>{try{session?.note?.(t);}catch{}};
@@ -83,6 +89,7 @@
       const a={do:d};
       for(const k of ['car','symptom','cat','when','mode','shop_id','text','op','job_id','note','phone','kind','item','title','key','date'])if(args[k]!=null&&args[k]!=='')a[k]=clean(args[k],k==='symptom'||k==='text'?600:200);
       for(const k of ['amount','litres','km'])if(Number.isFinite(+args[k])&&+args[k]>0)a[k]=+args[k];
+      if(d==='car_km'&&(args.km===0||args.km==='0'))a.km=0;
       const c=V.findCar(a.car),carL=c?V.carLabel(c):clean(a.car,80),miss=[],lines=[];
       let title='',red=false,place='';
       if(['urgent','post_job','book'].includes(d)){
@@ -109,7 +116,7 @@
         if(op==='message'&&!a.text)miss.push(T('ข้อความ','the message'));
       }
       if(d==='log'||d==='due'||d==='car_km'){if(!c)miss.push(T('รถคันไหนในการาจ','which car in the garage'));}
-      if(d==='car_km'&&!(a.km>0&&a.km<=3e6))miss.push(T('เลขไมล์ใหม่','the new mileage'));
+      if(d==='car_km'&&!(Number.isFinite(a.km)&&a.km>=0&&a.km<=3e6))miss.push(T('เลขไมล์ใหม่','the new mileage'));
       if(d==='add_car'){for(const k of ['make','model','year','mileage'])if(args[k]!=null&&args[k]!=='')a[k]=clean(args[k],50);
         if(String(a.make||'').length<2)miss.push(T('ยี่ห้อ','the make'));if(!a.model)miss.push(T('รุ่น','the model'));if(!/^\d{4}$/.test(String(a.year||'')))miss.push(T('ปีรถ','the year'));}
       if(d==='shop_status'){if(!V.isMech())return{error:'Only accounts with a Studio shop can change shop status'};a.state=['on','quiet','pause'].includes(args.state)?args.state:'';if(!a.state)miss.push(T('สถานะ (เปิดรับงาน / เงียบ / พักร้าน)','the status (on, quiet or pause)'));}
@@ -146,6 +153,7 @@
       if(pend.result)return pend.result;
       if(pend.miss.length)return{error:'Still missing: '+pend.miss.join(', ')+'. Ask the user, then call valet again. Nothing was sent.'};
       if(!pend.running&&!(heardAt>pend.at))return{error:'The user has not answered yet. Read the summary back, wait for a clear yes, then call valet_confirm. Nothing was sent.'};
+      if(!pend.running&&['car_km','due','log'].includes(pend.d)&&!garageYes(heardText))return{error:'No clear explicit confirmation of this Garage change. Ask once for a clear yes or let the user tap Confirm. Silence, an unrelated reply or a refusal cannot save data.'};
       current(ctx);return run(pend,'voice');
     }
     function run(p,how){
@@ -163,7 +171,7 @@
         if(p.d==='job'){await V.jobDo(a.job.id,a.op,{note:a.note,text:a.text});url='/jobs/'+encodeURIComponent(a.job.id);
           msg={accept:T('รับราคาแล้ว ร้านได้รับนัดพร้อมเบอร์ของคุณ','Quote accepted — the shop has your booking'),cancel:T('ยกเลิกใบงานแล้ว','Job cancelled'),complete:T('ปิดงานแล้ว','Job closed'),message:T('ส่งข้อความแล้ว','Message sent')}[a.op];}
         if(p.d==='log'){const r=V.logAdd(p.c.id,a.kind,{amount:a.amount,litres:a.litres,km:a.km,item:a.item,title:a.title,date:a.date});url='/garage';msg=T('บันทึกลงสมุดรถแล้ว ','Saved to the logbook ')+r.date;}
-        if(p.d==='due'){const r=V.dueSet(p.c.id,a.key,a.date);url='/garage';msg=T('ตั้งวันที่แล้ว ','Date set ')+r.date;}
+        if(p.d==='due'){const r=await V.dueSet(p.c.id,a.key,a.date);url='/garage';msg=T('ตั้งวันที่แล้ว ','Date set ')+r.date;}
         if(p.d==='car_km'){const r=await V.setKm(p.c.id,a.km);url='/garage';msg=T(`${r.label}: ${r.km.toLocaleString()} กม. แล้ว`,`${r.label} is now at ${r.km.toLocaleString()} km`);}
         if(p.d==='add_car'){const r=await V.addCar({make:a.make,model:a.model,year:a.year,mileage:a.mileage});url='/garage';msg=T(`เพิ่ม ${r.label} เข้าการาจแล้ว`,`Added ${r.label} to your garage`);}
         if(p.d==='shop_status'){await V.shopStatus(a.state);url='/studio';msg=T('ตั้งสถานะร้านแล้ว','Shop status updated');}
@@ -179,9 +187,9 @@
       });
       return p.running;
     }
-    return Object.freeze({execute,lookup:id=>known.get(id)||null,clear(){known.clear();pend=null;waiting=null;host.showValet?.(null);},
+    return Object.freeze({execute,get pending(){return!!waiting||!!(pend&&!pend.result)},lookup:id=>known.get(id)||null,clear(){known.clear();pend=null;waiting=null;heardAt=0;heardText='';host.showValet?.(null);},
       /* ตัวเชื่อมกับสาย: รู้ว่าผู้ใช้พูดตอบแล้ว · ส่งผลจากการกดบนจอกลับเข้าสาย */
-      heard(t){heardAt=t||Date.now();},bind(s){session=s;}});
+      heard(t,text){heardAt=t||Date.now();heardText=String(text||'').slice(-500);},bind(s){session=s;}});
   }
   window.CendonCallAgent=Object.freeze({create});
 })();

@@ -6,10 +6,10 @@ const page=readFileSync(new URL('../chat.html',import.meta.url),'utf8');
 const transport=readFileSync(new URL('../call-session.js',import.meta.url),'utf8');
 const begin=transport.indexOf('/* ===== LIVE CALL — Gemini Live API (ephemeral token)');
 const end=transport.indexOf('  function dispose(){',begin);
-const source=transport.slice(begin,end);
+const source=transport.slice(begin,end)+transport.slice(transport.indexOf('  function note(text)'),transport.indexOf('  const api=Object.freeze'));
 function deferred(){let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b;});return {promise,resolve,reject};}
 async function settle(){for(let i=0;i<12;i++)await Promise.resolve();}
-function fixture({permission,identity,token,worklet}={}){
+function fixture({permission,identity,token,worklet,care}={}){
   const elements=new Map(),contexts=[],sockets=[],cues=[],requests=[],toasts=[],timers=new Map();let timerId=0,micRequests=0;
   const track={stopped:0,stop(){this.stopped++;}},stream={getTracks:()=>[track]};
   const element=id=>{
@@ -32,20 +32,37 @@ function fixture({permission,identity,token,worklet}={}){
     close(){this.readyState=3;this.onclose?.({code:1000,reason:''});}
     async setup(){this.readyState=1;this.onopen?.();await this.onmessage?.({data:JSON.stringify({setupComplete:{}})});}
   }
-  const auth={currentUser:{getIdToken:()=>identity?.promise||Promise.resolve('unit-test-identity')}};
+  const auth={currentUser:{uid:care?'owner':undefined,getIdToken:()=>identity?.promise||Promise.resolve('unit-test-identity')}};
   const navigator={mediaDevices:{getUserMedia(){micRequests++;return permission?.promise||Promise.resolve(stream);}}};
   const window={AudioContext:Context,WebSocket:Socket,CendonCallSounds:{play:kind=>cues.push(kind)},spireTheme:()=>'dark'};
-  const sandbox={window,navigator,auth,host:{},useFb:true,lang:'th',BACKEND_URL:'https://unit-test.invalid',
+  const sandbox={window,navigator,auth,host:care?{getCar:()=>care.car}: {},document:{hidden:false},useFb:true,lang:'th',BACKEND_URL:'https://unit-test.invalid',
     $:element,Image:class{},WebSocket:Socket,AudioWorkletNode:class{constructor(ctx){Object.assign(this,audioNode());this.context=ctx;}},Blob,AbortController,
-    URL:{createObjectURL:()=> 'blob:unit-test-worklet',revokeObjectURL(){}},Date,performance:{now:()=>0},
+    URL:{createObjectURL:()=> 'blob:unit-test-worklet',revokeObjectURL(){}},Date:care?class extends Date{static now(){return care.now}}:Date,performance:{now:()=>0},
     requestAnimationFrame:()=>1,sysPrompt:()=>'',tr:k=>k,toast:message=>toasts.push(message),
     LS:{get:(_k,fallback)=>fallback,set(){},del(){}},messages:[],saveSession(){},renderMessages(){},updateHint(){},renderChips(){},setPhase(){},
     setTimeout(fn,ms){const id=++timerId;timers.set(id,{fn,ms});return id;},clearTimeout:id=>timers.delete(id),
     setInterval:()=>++timerId,clearInterval(){},
-    fetch:async(_url,options)=>{requests.push(options);return token?.promise||{ok:true,json:async()=>({token:'unit-test-ephemeral',model:'test-live-model'})};}};
-  vm.createContext(sandbox);vm.runInContext(source,sandbox);
+    fetch:async(url,options)=>{requests.push(options);if(url.endsWith('/api/garage/check-in')){care.claims.push(options);return{ok:true,json:async()=>({question:{ticket:'ticket1',carId:'c1',field:'mileage',text:'Optional odometer question'}})}}return token?.promise||{ok:true,json:async()=>({token:'unit-test-ephemeral',model:'test-live-model',agent:!!care,garageCare:!!care&&!care.oldBackend})};}};
+  vm.createContext(sandbox);if(care)vm.runInContext(readFileSync(new URL('../garage-care.js',import.meta.url),'utf8'),sandbox);vm.runInContext(source,sandbox);
   return {sandbox,element,stream,track,contexts,sockets,cues,requests,toasts,timers,get micRequests(){return micRequests;},run:code=>vm.runInContext(code,sandbox)};
 }
+
+test('actual transport asks one authenticated scheduled Garage question only after an idle completed conversation',async()=>{
+  const care={now:1000,car:{id:'c1'},claims:[]},f=fixture({care}),dial=f.run('startCall()');await settle();await f.sockets[0].setup();await dial;
+  f.run(`handleLiveMsg({serverContent:{inputTranscription:{text:'สวัสดี'},modelTurn:{parts:[{inlineData:{data:'AAAA'}}]},turnComplete:true}})`);
+  care.now+=61000;f.run('callHealth()');await settle();
+  assert.equal(care.claims.length,1);assert.equal(JSON.parse(care.claims[0].body).carId,'c1');
+  assert.equal(care.claims[0].headers.Authorization,'Bearer unit-test-identity');
+  assert.match(f.sockets[0].sent,/Scheduled optional Garage check-in/);
+  f.run(`handleLiveMsg({serverContent:{modelTurn:{parts:[{inlineData:{data:'AAAA'}}]},turnComplete:true}})`);
+  care.now+=120000;f.run('callHealth()');await settle();assert.equal(care.claims.length,1);f.run('endCall()');
+});
+
+test('new transport never schedules check-ins against an older backend without the capability flag',async()=>{
+  const care={now:1000,car:{id:'c1'},claims:[],oldBackend:true},f=fixture({care}),dial=f.run('startCall()');await settle();await f.sockets[0].setup();await dial;
+  f.run(`handleLiveMsg({serverContent:{inputTranscription:{text:'hello'},modelTurn:{parts:[{inlineData:{data:'AAAA'}}]},turnComplete:true}})`);
+  care.now+=120000;f.run('callHealth()');await settle();assert.equal(care.claims.length,0);f.run('endCall()');
+});
 test('dial begins microphone/auth immediately with no 450ms chime delay',async()=>{
   const p=deferred(),f=fixture({permission:p});const dial=f.run('startCall()');
   assert.deepEqual(f.cues,['start']);assert.equal(f.micRequests,1);

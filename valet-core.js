@@ -173,12 +173,75 @@ function dueSet(carId,key,date){
   const k="reg_"+carId,r=LG(k,{})||{};r[key]=date;LS(k,r);return {date};
 }
 
+/* ── การาจ: เพิ่มรถ · เลขไมล์ · เลือกคันที่คุยถึง (รูปแบบเดียวกับหน้าการาจ ซิงก์ขึ้นบัญชีผ่าน /api/cars) ── */
+const garageLS=()=>{const g=LG("garage",[]);return Array.isArray(g)?g:[]};
+function saveGarageLS(g){LS("garage",g);try{W.cloudMark&&W.cloudMark("garage")}catch(e){}try{W.dispatchEvent(new CustomEvent("cendon:garage"))}catch(e){}try{typeof W.renderCarUI==="function"&&W.renderCarUI()}catch(e){}}
+async function addCar(o){
+  const make=one(o.make,40),model=one(o.model,50),year=String(o.year||"").replace(/\D/g,""),km=String(o.mileage||o.km||"").replace(/[^\d]/g,""),y=new Date().getFullYear()+1,bad=[];
+  if(make.length<2)bad.push(T("ยี่ห้อรถ","The make"));if(!model)bad.push(T("รุ่น","The model"));
+  if(!/^\d{4}$/.test(year)||+year<1950||+year>y)bad.push(T(`ปีรถ (1950–${y})`,`The year (1950–${y})`));if(km&&+km>3e6)bad.push(T("เลขไมล์ (สูงเกินจริง)","Mileage looks too high"));need(bad);
+  const r=await api("/api/cars",{make,model,year,mileage:km||"-"}),id=(r&&r.id)||("c"+Date.now());
+  const g=garageLS();if(!g.some(c=>c.id===id))g.push({id,make,model,name:(make+" "+model).trim(),year,mileage:km||"-",type:"sedan",color:"#FFFFFF",history:[]});saveGarageLS(g);
+  try{W.CarSpec&&W.CarSpec.ensure({id,make,model,year}).catch(()=>{})}catch(e){}
+  return {id,label:[make,model,year].join(" ")};
+}
+async function setKm(carId,km){
+  const g=garageLS(),c=g.find(x=>x.id===carId);if(!c)need([T("ไม่พบรถคันนี้ในการาจ","That car isn't in your garage")]);
+  const n=Math.round(+String(km==null?"":km).replace(/[^\d.]/g,""));if(!(n>0&&n<=3e6))need([T("เลขไมล์","The mileage")]);
+  c.mileage=String(n);saveGarageLS(g);
+  await api("/api/cars",{id:c.id,make:c.make||c.name||"",model:c.model||"",year:c.year||"",mileage:c.mileage,color:c.color||undefined,body:c.type||undefined,info:c.info||undefined});
+  return {km:n,label:carLabel(c)};
+}
+function pickCar(carId){
+  const c=cars().find(x=>x.id===carId);if(!c)need([T("ไม่พบรถคันนี้ในการาจ","That car isn't in your garage")]);
+  if(typeof W.pickCar==="function"){try{W.pickCar(c.id)}catch(e){LS("selCar",c.id)}}else LS("selCar",c.id);
+  try{W.cloudMark&&W.cloudMark("selCar")}catch(e){}try{W.dispatchEvent(new CustomEvent("cendon:garage"))}catch(e){}
+  return {label:carLabel(c)};
+}
+/* ธีมสว่าง/มืด (ทุกหน้าใช้คีย์เดียวกัน) */
+function setTheme(v){
+  if(v!=="light"&&v!=="dark")need([T("ธีม (สว่างหรือมืด)","Theme (light or dark)")]);
+  LS("theme",v);LS("chatTheme",v);
+  try{if(typeof W.setChatTheme==="function")W.setChatTheme(v);else W.spireThemeSync&&W.spireThemeSync()}catch(e){}
+  try{W.cloudMark&&W.cloudMark("theme")}catch(e){}
+  return {theme:v};
+}
+/* แชตกับร้านของฉัน (ฝั่งลูกค้าเท่านั้น — ข้อความของลูกค้าคนอื่นในร้านไม่อ่านออกเสียง) */
+async function threads(){
+  const L=((await api("/api/tech/threads")).threads||[]);
+  const mine=L.filter(t=>t&&t.role!=="technician").slice(0,6).map(t=>({id:t.id,shop:one(t.techName,80),last:t.last?one(t.last.text,140):"",fromShop:!!(t.last&&t.last.role==="technician"),unread:+t.unread||0}));
+  const shopUnread=L.filter(t=>t&&t.role==="technician").reduce((n,t)=>n+(+t.unread||0),0);
+  return {threads:mine,shopUnread};
+}
+/* ช่างเท่านั้น: เปิดรับงาน / เงียบ / พักร้าน */
+const isMech=()=>{try{const p=LG("partner",null),u=(W.spireAuth||W.auth||{}).currentUser;return !!(p&&p.s==="shop"&&(!p.uid||!u||p.uid===u.uid))}catch(e){return false}};
+async function shopStatus(state){
+  if(!["on","quiet","pause"].includes(state))need([T("สถานะร้าน","Shop status")]);
+  const me=await api("/api/tech/me"),t=me&&me.technician;if(!t)throw new Error(T("บัญชีนี้ยังไม่มีร้าน","This account has no shop"));
+  const want=state==="pause",raw=t.vacationRaw||t.vacation||{};
+  if(want!==!!t.vacation)await api("/api/tech/shop",{vacation:{on:want,until:want&&raw.until&&raw.until>Date.now()?raw.until:null,note:raw.note||""}});
+  if(!want)await api("/api/tech/online",{online:state==="on"});
+  return {state};
+}
+/* หน้าที่พาไปได้ (รายการคงที่ ไม่รับลิงก์จาก AI) · หน้าทีมงาน/แอดมินไม่มีในรายการ */
+const PAGES={home:["หน้าหลัก","Home","/"],garage:["การาจ","Garage","/garage"],news:["นิตยสาร","Magazine","/news"],shop:["ร้านค้าอะไหล่","Parts shop","/spares"],
+  profile:["โปรไฟล์และตั้งค่า","Profile & settings","/profile"],jobs:["ใบงานของฉัน","My jobs","/jobs"],map:["แผนที่ช่างรอบตัว","Mechanics map","/map"],
+  messages:["ข้อความ","Messages","/messages"],chat:["แชตกับ Cendon AI","Cendon AI chat","/chat"],help:["วิธีใช้","Help","/help"],
+  passport:["Car Passport","Car Passport",c=>c?"/garage/"+enc(c)+"/pass":"/garage"],calendar:["ปฏิทินค่าใช้จ่าย","Cost calendar",c=>c?"/garage/"+enc(c)+"/cal":"/garage"],
+  wrapped:["สรุปปีของรถ","Car Wrapped","/garage/wrapped"],join:["สมัครเป็นช่าง","Become a mechanic","/join"],
+  studio:["Studio","Studio","/studio"],studio_find:["หางานใกล้ฉัน","Find work nearby","/work/find"],studio_messages:["ข้อความใน Studio","Studio messages","/work/messages"],
+  studio_services:["บริการของร้าน","Shop services","/work/posts"],studio_shop:["ร้านของฉัน","My shop","/work/shop"],studio_settings:["ตั้งค่า Studio","Studio settings","/studio/settings"],studio_stats:["สถิติร้าน","Shop stats","/studio/stats"]};
+function pageOf(key){
+  let k=PAGES[key]?key:null;if(!k)return null;if(/^studio/.test(k)&&!isMech())k="join";
+  const p=PAGES[k],c=curCar();return {key:k,label:T(p[0],p[1]),url:typeof p[2]==="function"?p[2](c&&c.id):p[2]};
+}
+
 /* สิทธิ์ Valet ("ฝากกุญแจ") ตัวเดียวกับปุ่มจับมือในแชต — เปิดได้ด้วยการกดของผู้ใช้เท่านั้น */
 const on=()=>!!(LG("valet",{})||{}).on;
 const allow=()=>LS("valet",{on:true,at:Date.now()});
 /* เบอร์แบบปิดกลาง สำหรับสรุปบนจอ/ให้ AI อ่านทวน */
 const maskPhone=v=>{const p=cleanPhone(v);return p.length>=9?p.slice(0,3)+"-xxx-"+p.slice(-4):""};
 
-W.CendonValetCore=Object.freeze({on,allow,maskPhone,api,cars,carName,carLabel,curCar,findCar,here,lastHere,revgeo,savedPhone,cleanPhone,okPhone,
+W.CendonValetCore=Object.freeze({on,allow,maskPhone,addCar,setKm,pickCar,setTheme,threads,isMech,shopStatus,PAGES,pageOf,api,cars,carName,carLabel,curCar,findCar,here,lastHere,revgeo,savedPhone,cleanPhone,okPhone,
   post,shops,shopName,quote,message,jobs,job,jobDo,JOB_OPS,logAdd,dueSet,SVC,DUE,today,okDate,T});
 })(window);

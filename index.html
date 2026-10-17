@@ -2300,15 +2300,16 @@ a.mtab{text-decoration:none}
 <script src="category-pages.js" defer></script>
 <script src="car-sync.js"></script>
 <script src="stability.js" defer></script>
-<link rel="stylesheet" href="call-ui.css?v=2026-10-17-r6">
+<link rel="stylesheet" href="call-ui.css?v=2026-10-17-r7">
 <script src="call-sounds.js?v=1" defer></script>
 <script src="call-composer.js?v=2026-10-16-r3" defer></script>
-<script src="valet-core.js?v=1" defer></script>
-<script src="call-agent.js?v=2026-10-17-r4" defer></script>
-<script src="call-surface.js?v=2026-10-17-r5" defer></script>
+<script src="valet-core.js?v=2" defer></script>
+<script src="call-agent.js?v=2026-10-17-r5" defer></script>
+<script src="call-surface.js?v=2026-10-17-r6" defer></script>
 <script src="engine-scan.js?v=2026-10-16-r1" defer></script>
 <script src="call-tools.js?v=2026-10-16-r4" defer></script>
-<script src="call-session.js?v=2026-10-17-r5" defer></script>
+<script src="call-shell.js?v=1" defer></script>
+<script src="call-session.js?v=2026-10-17-r6" defer></script>
 </head>
 <body>
 <script id="mnav0">
@@ -3889,16 +3890,20 @@ const HERO=(function(){
   return {set,get ai(){return ai}};
 })();
 let homeVoice=null;
+/* ความจำของสาย: บทสนทนาล่าสุดเก็บในเครื่องนี้ (ของบัญชีนี้) 30 นาที — โทรใหม่หรือเปลี่ยนหน้าแล้วโทรอีก AI ยังจำเรื่องเดิมได้ */
+const CALLMEM="spire_callnotes",CALLMEM_MS=30*60e3;
+function callNotes(){try{const d=JSON.parse(localStorage.getItem(CALLMEM)||"null");if(d&&U&&d.uid===U.uid&&Date.now()-d.at<CALLMEM_MS&&Array.isArray(d.list))return d.list.filter(m=>m&&(m.role==="user"||m.role==="ai")&&typeof m.text==="string").slice(-30)}catch(e){}return []}
+function saveCallNotes(list){try{if(U)localStorage.setItem(CALLMEM,JSON.stringify({uid:U.uid,at:Date.now(),list:list.slice(-30).map(m=>({role:m.role,text:String(m.text||"").slice(0,600)}))}))}catch(e){}}
 function startHomeCall(){
   if(!U)return needLogin();
   if(!window.CendonCallSession||!window.CendonCallSurface||!window.CendonCallAgent)return toast(T("ระบบเสียงกำลังเตรียมพร้อม ลองอีกครั้งครับ","Voice is loading. Please try again."));
   if(!homeVoice){
     const openFound=(id,shop)=>{if(shop){const i=TECHS.findIndex(t=>t.id===id);if(i<0)TECHS.push(shop);else TECHS[i]=shop;}openTech(id);};
-    const view=window.CendonCallSurface.create({anchor:$("hForm"),language:LANG,onSelectShop:id=>{view.minimize();openFound(id,agent.lookup(id));}}),notes=[];
+    const view=window.CendonCallSurface.create({anchor:$("hForm"),language:LANG,onSelectShop:id=>{view.minimize();openFound(id,agent.lookup(id));}}),notes=callNotes();
     const car=()=>{const [list,id]=myCars();return list.find(c=>c.id===id)||list[0]||null;};
     let tools;
     const agent=window.CendonCallAgent.create({api,getCar:car,getLocation:()=>HERE,showResults:view.showResults,showDraft:view.showDraft,showValet:view.showValet,minimize:view.minimize,openMechanic:openFound,prepareUrgent:async(symptom,ctx)=>{if(!ctx.isCurrent())return;await urgentCall();if(ctx.isCurrent()&&$("uSym"))$("uSym").value=symptom;}});
-    homeVoice=window.CendonCallSession.create({byId:view.byId,backendUrl:API,language:LANG,getUser:()=>U,view,agent,getTools:()=>tools,toast,getMessages:()=>notes,appendMessage:m=>{notes.push(m);if(notes.length>30)notes.shift();},systemPrompt:()=>"Cendon ช่วยคนใช้รถประจำวัน คุยเรื่องทั่วไปได้ หาช่างผ่านเครื่องมือจากข้อมูลจริง เรียกช่างหรือขอราคาผ่าน Cendon Valet ได้เมื่อผู้ใช้ยืนยันเท่านั้น ไม่ชำระเงินแทนผู้ใช้",storage:{get:(k,d)=>ls.get("spire_"+k,d),set:(k,v)=>ls.set("spire_"+k,v),del:k=>{try{localStorage.removeItem("spire_"+k)}catch(e){}}}});
+    homeVoice=window.CendonCallSession.create({byId:view.byId,backendUrl:API,language:LANG,getUser:()=>U,view,agent,getTools:()=>tools,toast,getMessages:()=>notes,appendMessage:m=>{notes.push(m);if(notes.length>30)notes.shift();saveCallNotes(notes);},systemPrompt:()=>"Cendon ช่วยคนใช้รถประจำวัน คุยเรื่องทั่วไปได้ หาช่างผ่านเครื่องมือจากข้อมูลจริง เรียกช่างหรือขอราคาผ่าน Cendon Valet ได้เมื่อผู้ใช้ยืนยันเท่านั้น ไม่ชำระเงินแทนผู้ใช้",storage:{get:(k,d)=>ls.get("spire_"+k,d),set:(k,v)=>ls.set("spire_"+k,v),del:k=>{try{localStorage.removeItem("spire_"+k)}catch(e){}}}});
     tools=window.CallTools?.create({voice:homeVoice.bridge,language:LANG,backendUrl:API,getUser:()=>U,getCar:car,getMessages:()=>notes,appendMessage:m=>{notes.push(m);if(notes.length>30)notes.shift();},toast});
     view.bind(homeVoice);
   }
@@ -5554,7 +5559,7 @@ function chCacheSave(){
   },300);
 }
 /* ออกจากระบบ: ลบแชตและกล่องข้อความที่เก็บไว้ในเครื่องทั้งหมด */
-function purgeChatCache(){try{Object.keys(localStorage).filter(k=>k.startsWith("spire_chatc_")||k.startsWith("spire_inbox_")).forEach(k=>localStorage.removeItem(k))}catch(e){}}
+function purgeChatCache(){try{Object.keys(localStorage).filter(k=>k.startsWith("spire_chatc_")||k.startsWith("spire_inbox_")||k==="spire_callnotes").forEach(k=>localStorage.removeItem(k))}catch(e){}}
 /* เปิดห้องจากกล่องข้อความ: ขึ้นทันทีจากข้อมูลในเครื่อง (เดิมรอเซิร์ฟเวอร์ตอบก่อน ช้าหลายวินาทีบนเน็ตมือถือ) */
 async function openConvo(k,id){
   const c=chCacheGet(k,id);

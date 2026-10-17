@@ -52,11 +52,14 @@
     let bead=null,beadPos={x:0,y:0},beadGoal={x:0,y:0},beadBorn=0,beadBack=0;
     /* วงกลมเต็มจอ */
     const O={bloomAt:0,closingAt:0};
-    const minimize=document.createElement('button');minimize.className='cv-min';minimize.type='button';minimize.setAttribute('aria-label',T('ย่อสาย กลับหน้าหลัก','Minimize call'));minimize.innerHTML='<i class="ti ti-chevron-down"></i>';minimize.hidden=!anchor;root.querySelector('.hh-top').prepend(minimize);
-    if(anchor){
-      anchor.classList.add('cv-host');dock=document.createElement('div');dock.className='cv-dock';dock.hidden=true;
-      dock.innerHTML=`<div class="cv-wave-touch" tabindex="0" role="button" aria-label="${T('สายกับ Cendon: ปัดซ้ายหรือขวาเพื่อวางสาย · แตะเพื่อปิดหรือเปิดไมค์ · กดค้างหนึ่งวินาทีแล้วลากมากลางจอเพื่อคุยเต็มจอ','Call with Cendon: swipe left or right to hang up · tap to mute or unmute · hold one second and drag to the centre for full screen')}"><canvas class="cv-wave" aria-hidden="true"></canvas></div><p class="cv-sr" aria-live="polite"><span class="cv-label">Cendon</span> <span class="cv-caption">${T('กำลังต่อสาย','Connecting')}</span></p><div class="cv-actions"><button class="cv-control" data-cv="mute" type="button" aria-label="${T('ปิดไมค์','Mute microphone')}"><i class="ti ti-microphone"></i></button><button class="cv-control" data-cv="expand" type="button" aria-label="${T('ขยายสายเต็มจอ','Expand call')}"><i class="ti ti-arrows-maximize"></i></button><button class="cv-control cv-end" data-cv="end" type="button" aria-label="${T('วางสาย','End call')}"><i class="ti ti-phone-off"></i></button></div>`;
-      anchor.append(dock);wave=dock.querySelector('canvas');caption=dock.querySelector('.cv-caption');stateText=dock.querySelector('.cv-label');mute=dock.querySelector('[data-cv="mute"]');
+    const minimize=document.createElement('button');minimize.className='cv-min';minimize.type='button';minimize.setAttribute('aria-label',T('ย่อสาย กลับหน้าหลัก','Minimize call'));minimize.innerHTML='<i class="ti ti-chevron-down"></i>';minimize.hidden=false;root.querySelector('.hh-top').prepend(minimize);
+    /* ส่งรูปให้ AI ดูระหว่างโทร (คลังรูปหรือถ่ายใหม่) — ไม่ต้องวางสาย */
+    if(!byId('callPhotoBtn')){const b=document.createElement('button');b.className='hh-btn';b.id='callPhotoBtn';b.type='button';b.innerHTML='<i class="ti ti-photo-plus"></i>';const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.hidden=true;inp.id='callPhotoIn';inp.setAttribute('data-nocrop','');byId('callMuteBtn').before(b);root.append(inp);}
+    byId('callPhotoBtn').setAttribute('aria-label',T('ส่งรูปให้ AI ดู','Show the AI a photo'));
+    {
+      if(anchor)anchor.classList.add('cv-host');dock=document.createElement('div');dock.className='cv-dock'+(anchor?'':' cv-floating');dock.hidden=true;
+      dock.innerHTML=`<div class="cv-wave-touch" tabindex="0" role="button" aria-label="${T('สายกับ Cendon: ปัดซ้ายหรือขวาเพื่อวางสาย · แตะเพื่อปิดหรือเปิดไมค์ · กดค้างหนึ่งวินาทีแล้วลากมากลางจอเพื่อคุยเต็มจอ','Call with Cendon: swipe left or right to hang up · tap to mute or unmute · hold one second and drag to the centre for full screen')}"><canvas class="cv-wave" aria-hidden="true"></canvas></div><button class="cv-pmic" data-cv="pmute" type="button" aria-label="${T('ปิดไมค์','Mute microphone')}"><i class="ti ti-microphone"></i></button><p class="cv-sr" aria-live="polite"><span class="cv-label">Cendon</span> <span class="cv-caption">${T('กำลังต่อสาย','Connecting')}</span></p><div class="cv-actions"><button class="cv-control" data-cv="mute" type="button" aria-label="${T('ปิดไมค์','Mute microphone')}"><i class="ti ti-microphone"></i></button><button class="cv-control" data-cv="expand" type="button" aria-label="${T('ขยายสายเต็มจอ','Expand call')}"><i class="ti ti-arrows-maximize"></i></button><button class="cv-control cv-end" data-cv="end" type="button" aria-label="${T('วางสาย','End call')}"><i class="ti ti-phone-off"></i></button></div>`;
+      (anchor||document.body).append(dock);wave=dock.querySelector('canvas');caption=dock.querySelector('.cv-caption');stateText=dock.querySelector('.cv-label');mute=dock.querySelector('[data-cv="mute"]');
     }
     const animate=(el,frames,options)=>{if(reduced||!el.animate)return Promise.resolve();try{const animation=el.animate(frames,options);animations.add(animation);return animation.finished.catch(()=>{}).finally(()=>animations.delete(animation));}catch{return Promise.resolve();}};
     function originals(on){for(const el of original){if(on){if(!savedInert.has(el))savedInert.set(el,el.inert);el.inert=true;}else{el.inert=savedInert.get(el)||false;savedInert.delete(el);}}}
@@ -65,24 +68,29 @@
     function readColors(){if(!dock)return;const cs=getComputedStyle(dock);barTo=rgbOf(cs.getPropertyValue('--cv-bar'),[11,11,12,1]);}
     /* สีพื้นของแถบเดิม (ก่อนละลาย) — แถบไล่สีใช้ตัวแปร --surface */
     function surfaceRGB(){const cs=getComputedStyle(anchor);let c=rgbOf(cs.backgroundColor,null);if(!c||c[3]<.5)c=rgbOf(cs.getPropertyValue('--surface'),null);return c&&c[3]>=.5?c:[17,18,20,1];}
+    const shelled=()=>document.documentElement.classList.contains('cv-shelled');
     function placeDock(floating){
-      if(!dock)return;
+      if(!dock)return;floating=floating||!anchor||shelled();
       const parent=floating?document.body:anchor;
       if(dock.parentNode!==parent)parent.append(dock);
       dock.classList.toggle('cv-floating',floating);readColors();bars=[];
       requestAnimationFrame(resize);
     }
     function setMode(next,{floating=false}={}){
-      if(next==='inline'&&!anchor)return;mode=next;
+      mode=next;
       root.classList.toggle('cv-inline-call',mode==='inline');root.setAttribute('aria-hidden',mode==='inline'?'true':'false');
       if(mode==='full')root.setAttribute('aria-modal','true');else root.removeAttribute('aria-modal');
       if(dock){dock.hidden=!active||mode!=='inline';placeDock(floating||!observed);}
-      if(results)(mode==='full'?root:anchor.parentNode).append(results);
+      if(results)placeResults();
       resize();if(mode==='full'&&active)root.querySelector('.hh-btn.end')?.focus({preventScroll:true});
       kick();
     }
     /* ศูนย์กลางวงกลมเต็มจอ = จุดวางเป้า = จุดที่จุดดำแผ่ออก (ตรงกันทั้งสามอย่าง) */
     function orbCenter(){const r=canvas.getBoundingClientRect();return r.width&&r.height?{x:r.left+r.width/2,y:r.top+r.height/2}:{x:innerWidth/2,y:innerHeight*.46};}
+    /* การ์ดผลลัพธ์/Valet: เต็มจอ = ในจอโทร · คลื่นในแถบ = ใต้แถบ · เม็ดยาลอย = ลอยเหนือหน้า */
+    function placeResults(){if(!results)return;const fl=mode!=='full'&&(floating()||!anchor);(mode==='full'?root:fl?document.body:anchor.parentNode).append(results);results.classList.toggle('cv-float',fl);}
+    function resetRootStyle(){root.style.transform='';root.style.opacity='';root.style.borderRadius='';root.style.transition='';root.style.clipPath='';}
+    const pillCenter=()=>({x:innerWidth/2,y:innerHeight-118});
     const center=el=>{const r=el.getBoundingClientRect();return{x:r.left+r.width/2,y:r.top+r.height/2,w:r.width,h:r.height};};
     function originOf(el){if(!el||el===document.body||!el.getBoundingClientRect)return null;const c=center(el);return c.w&&c.y>0&&c.y<innerHeight?c:null;}
     /* จุดแผ่เต็มจอ: เปิดหน้าโทรเป็นวงกลมจากจุดนั้นจนเต็มจอ */
@@ -110,15 +118,18 @@
       return animate(dock,[{transform:`translateX(${x}px)`,opacity:+(dock.style.opacity||1)},{transform:`translateX(${d*(w+80)}px) rotate(${d*2.5}deg)`,opacity:0}],{duration:320,easing:'cubic-bezier(.3,.1,.7,.2)',fill:'forwards'});}
     /* แถบเดิมกลับมา: ปัดทิ้ง = เลื่อนเข้าจากอีกฝั่ง · วางสายวิธีอื่น = แท่งรวมกลับเป็นแถบแล้ว */
     function restoreBar(dir){
-      dock.getAnimations?.().forEach(a=>a.cancel());dock.hidden=true;dock.style.transform='';dock.style.opacity='';dock.style.transition='';placeDock(false);bars=[];outroAt=0;
+      if(!dock)return;dock.getAnimations?.().forEach(a=>a.cancel());dock.hidden=true;dock.style.transform='';dock.style.opacity='';dock.style.transition='';bars=[];outroAt=0;
+      if(!anchor)return;placeDock(false);
       anchor.classList.remove('cv-active');originals(false);
-      if(dir&&slideEl&&!reduced)animate(slideEl,[{translate:`${dir*64}px 0`,opacity:0,filter:'blur(8px)'},{translate:'0 0',opacity:1,filter:'blur(0px)'}],{duration:640,easing:EASE});
+      if(dir&&slideEl&&!reduced&&!shelled())animate(slideEl,[{translate:`${dir*64}px 0`,opacity:0,filter:'blur(8px)'},{translate:'0 0',opacity:1,filter:'blur(0px)'}],{duration:640,easing:EASE});
     }
     function close(){
       const closing=++run,wasFull=mode==='full';active=false;press?.dispose();clearDrag();expanding=false;results?.remove();results=null;
-      if(anchor){
+      resetRootStyle();
+      if(dock){
         if(!wasFull&&direction&&!reduced&&!dock.hidden)flyOut(direction).then(()=>{if(run===closing)restoreBar(-direction);});
-        else if(!wasFull&&!reduced&&!dock.hidden&&!floating()){outroAt=performance.now();outroDone=()=>{if(run===closing)restoreBar(0);};kick();}
+        else if(anchor&&!wasFull&&!reduced&&!dock.hidden&&!floating()){outroAt=performance.now();outroDone=()=>{if(run===closing)restoreBar(0);};kick();}
+        else if(!wasFull&&!reduced&&!dock.hidden)animate(dock,[{opacity:1,transform:'scale(1)'},{opacity:0,transform:'scale(.9)'}],{duration:220,easing:'ease-in',fill:'forwards'}).then(()=>{if(run===closing)restoreBar(0);});
         else restoreBar(0);
       }
       if(wasFull){
@@ -158,14 +169,27 @@
       if(wipe&&bead&&!reduced){const c=orbCenter();beadGoal=c;bead.classList.toggle('cv-bead-light',root.classList.contains('light'));try{navigator.vibrate?.(8);}catch{}setTimeout(()=>go(c,28),150);}
       else go(wipe&&bead?beadPos:mode==='inline'&&dock&&!dock.hidden?waveCenter():null,14);
     }
-    /* เต็มจอ → ย่อกลับเป็นแท่งในแถบ: วงกลมหดกลับไปที่แถบ แล้วแท่งแตกออกจากกลาง */
+    /* เต็มจอ → ย่อ (ปัดลงหรือปุ่ม ⌄): ทั้งจอหดลงไปที่แถบ (หน้าแรก) หรือเม็ดยาลอย แล้วแท่งแตกออกจากกลาง · สายยังคุยต่อ */
     function collapse(){
       if(!active||mode!=='full')return;
-      if(!anchor||reduced||!root.animate){setMode('inline');return;}
-      const pt=observed?center(anchor):{x:innerWidth/2,y:innerHeight-130},R=Math.hypot(Math.max(pt.x,innerWidth-pt.x),Math.max(pt.y,innerHeight-pt.y))+12,r=run;
-      animate(root,[{clipPath:`circle(${R}px at ${pt.x}px ${pt.y}px)`},{clipPath:`circle(10px at ${pt.x}px ${pt.y}px)`}],{duration:520,easing:'cubic-bezier(.55,0,.75,.2)',fill:'forwards'}).then(()=>{
-        if(r!==run)return;root.getAnimations?.().forEach(a=>a.cancel());root.style.clipPath='';gatherK=1;ungatherAt=performance.now();setMode('inline');});
+      if(session?.cameraOn)session.camera();
+      const pt=anchor&&observed&&!shelled()?center(anchor):pillCenter(),r=run;
+      if(reduced||!root.animate){resetRootStyle();gatherK=0;setMode('inline');return;}
+      const cur=root.style.transform||'translateY(0px) scale(1)',op=+(root.style.opacity||1),br=root.style.borderRadius||'0px';root.style.transition='none';
+      animate(root,[{transform:cur,opacity:op,borderRadius:br},{transform:`translate(${pt.x-innerWidth/2}px,${pt.y-innerHeight/2}px) scale(.06)`,opacity:0,borderRadius:'60px'}],{duration:440,easing:'cubic-bezier(.5,0,.7,.4)',fill:'forwards'}).then(()=>{
+        if(r!==run)return;root.getAnimations?.().forEach(a=>a.cancel());resetRootStyle();gatherK=1;ungatherAt=performance.now();setMode('inline');});
     }
+    /* ปัดลงที่จอโทร = ย่อ (จอตามนิ้ว ปล่อยไม่ถึงก็เด้งกลับ) */
+    let sd=null;
+    const noSwipe='button,input,a,label,select,textarea,.cv-results,.ct-layer,.ct-tools,.hh-zoom,.lv-box,.lv-det,.lv-stat';
+    root.addEventListener('pointerdown',e=>{if(!active||mode!=='full'||expanding||e.button!==0||root.classList.contains('ct-on')||e.target.closest(noSwipe))return;sd={x:e.clientX,y:e.clientY,t:e.timeStamp,id:e.pointerId,on:false};});
+    root.addEventListener('pointermove',e=>{if(!sd||e.pointerId!==sd.id)return;const dx=e.clientX-sd.x,dy=e.clientY-sd.y;
+      if(!sd.on){if(dy>10&&dy>Math.abs(dx)*1.2){sd.on=true;try{root.setPointerCapture(e.pointerId);}catch{}}else{if(Math.hypot(dx,dy)>16)sd=null;return;}}
+      const k=Math.max(0,dy);root.style.transition='none';root.style.transform=`translateY(${(k*.86).toFixed(1)}px) scale(${(1-Math.min(.14,k/2200)).toFixed(4)})`;root.style.borderRadius=Math.min(40,k/5).toFixed(1)+'px';root.style.opacity=String(1-Math.min(.3,k/1400));});
+    const sdEnd=e=>{if(!sd||e.pointerId!==sd.id)return;const s1=sd;sd=null;if(!s1.on)return;const dy=e.clientY-s1.y,v=dy/Math.max(1,e.timeStamp-s1.t);
+      if(e.type!=='pointercancel'&&(dy>120||(dy>40&&v>.6))){try{navigator.vibrate?.(8);}catch{}collapse();}
+      else{root.style.transition='transform .5s cubic-bezier(.2,1.2,.35,1),border-radius .5s,opacity .3s';root.style.transform='';root.style.borderRadius='';root.style.opacity='';}};
+    root.addEventListener('pointerup',sdEnd);root.addEventListener('pointercancel',sdEnd);
     const press=gesture({
       onPress:()=>{if(active&&mode==='inline')holdFrom=performance.now();kick();},
       onUnpress:()=>{holdFrom=0;},
@@ -174,18 +198,23 @@
       onSwipe:d=>{direction=d;try{navigator.vibrate?.(10);}catch{}session?.end();},
       onDrop:()=>{if(!expanding)dropBack();},
       onCancel:()=>{if(expanding||bead||!dock)return;dock.style.transition='transform .55s cubic-bezier(.2,1.25,.35,1),opacity .3s';dock.style.transform='';dock.style.opacity='';},
-      onTap:()=>{if(active&&!bead)session?.mute();}});
+      onTap:()=>{if(!active||bead)return;if(floating())full();else session?.mute();}});
     if(dock){
       dock.addEventListener('pointerdown',()=>session?.wake?.());
       const touch=dock.querySelector('.cv-wave-touch'),point=e=>({x:e.clientX,y:e.clientY,time:e.timeStamp});
       touch.addEventListener('pointerdown',e=>{if(e.button!==0||!active)return;try{touch.setPointerCapture(e.pointerId);}catch{}press.down(point(e));});
       touch.addEventListener('pointermove',e=>press.move(point(e)));touch.addEventListener('pointerup',e=>press.up(point(e),dock.clientWidth));touch.addEventListener('pointercancel',()=>press.cancel());touch.addEventListener('lostpointercapture',()=>{if(!expanding&&!bead)press.cancel();});
       touch.addEventListener('contextmenu',e=>e.preventDefault());touch.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();full();}else if(e.key===' '){e.preventDefault();session?.mute();}});
-      dock.querySelector('[data-cv="end"]').onclick=()=>session?.end();mute.onclick=()=>session?.mute();dock.querySelector('[data-cv="expand"]').onclick=()=>full();
+      dock.querySelector('[data-cv="end"]').onclick=()=>session?.end();mute.onclick=()=>session?.mute();dock.querySelector('[data-cv="expand"]').onclick=()=>full();dock.querySelector('[data-cv="pmute"]').onclick=e=>{e.stopPropagation();session?.mute();};
     }
     minimize.onclick=()=>{if(session?.cameraOn)session.camera();collapse();};
+    byId('callPhotoBtn').onclick=()=>byId('callPhotoIn').click();
+    byId('callPhotoIn').onchange=async e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(!f||!session?.sendImage)return;const url=URL.createObjectURL(f);photoFly(url);
+      try{await session.sendImage(f);}catch(err){byId('callCaption').textContent=T('ส่งรูปไม่สำเร็จ ลองอีกครั้ง','Couldn\'t send the photo — try again');}finally{setTimeout(()=>URL.revokeObjectURL(url),4000);}};
+    function photoFly(url){if(mode!=='full')return;const im=document.createElement('img');im.className='cv-photo';im.src=url;im.alt='';root.append(im);const c=orbCenter();
+      animate(im,[{opacity:0,transform:'translate(-50%,0) scale(.7)'},{opacity:1,transform:'translate(-50%,-8px) scale(1)',offset:.35},{opacity:1,transform:'translate(-50%,-8px) scale(1)',offset:.7},{opacity:0,transform:`translate(-50%,${Math.round(c.y-(innerHeight-260))}px) scale(.2)`}],{duration:1600,easing:'cubic-bezier(.32,.72,0,1)'}).then(()=>im.remove());if(reduced)setTimeout(()=>im.remove(),1200);}
     root.querySelector('.hh-btn.end').onclick=()=>session?.end();byId('callMuteBtn').onclick=()=>session?.mute();byId('callCamBtn').onclick=()=>{full();session?.camera();};byId('callFlipBtn').onclick=()=>session?.flip();byId('callZoom').oninput=e=>session?.zoom(e.target.value);
-    const keydown=e=>{if(!active||mode!=='full')return;if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();if(anchor)minimize.click();else session?.end();}if(e.key==='Tab'){const buttons=[...root.querySelectorAll('button,input')].filter(e=>!e.disabled&&e.getClientRects().length);if(!buttons.length)return;const i=buttons.indexOf(document.activeElement);if((e.shiftKey&&i<=0)||(!e.shiftKey&&i===buttons.length-1)){e.preventDefault();buttons[e.shiftKey?buttons.length-1:0].focus();}}};
+    const keydown=e=>{if(!active||mode!=='full')return;if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();minimize.click();}if(e.key==='Tab'){const buttons=[...root.querySelectorAll('button,input')].filter(e=>!e.disabled&&e.getClientRects().length);if(!buttons.length)return;const i=buttons.indexOf(document.activeElement);if((e.shiftKey&&i<=0)||(!e.shiftKey&&i===buttons.length-1)){e.preventDefault();buttons[e.shiftKey?buttons.length-1:0].focus();}}};
     document.addEventListener('keydown',keydown,true);
     const observe=window.IntersectionObserver&&anchor?new IntersectionObserver(entries=>{observed=entries[0].isIntersecting;if(active&&mode==='inline')placeDock(!observed);}):null;observe?.observe(anchor);
     function resize(){
@@ -267,7 +296,7 @@
     }
     function render({ai=0,user=0,time=0,camera=false,muted=false,waiting=false}){
       lv.time=time;lv.ai=clamp(ai,0,1);lv.user=clamp(user,0,1);lv.camera=camera;lv.muted=muted;lv.waiting=waiting;
-      if(lastMuted!==muted){lastMuted=muted;if(mute){mute.setAttribute('aria-pressed',String(muted));mute.setAttribute('aria-label',muted?T('เปิดไมค์','Unmute microphone'):T('ปิดไมค์','Mute microphone'));mute.classList.toggle('cv-muted',muted);mute.querySelector('i').className='ti '+(muted?'ti-microphone-off':'ti-microphone');}byId('callMuteBtn').setAttribute('aria-pressed',String(muted));dock?.classList.toggle('cv-is-muted',muted);}
+      if(lastMuted!==muted){lastMuted=muted;if(mute){mute.setAttribute('aria-pressed',String(muted));mute.setAttribute('aria-label',muted?T('เปิดไมค์','Unmute microphone'):T('ปิดไมค์','Mute microphone'));mute.classList.toggle('cv-muted',muted);mute.querySelector('i').className='ti '+(muted?'ti-microphone-off':'ti-microphone');}byId('callMuteBtn').setAttribute('aria-pressed',String(muted));dock?.classList.toggle('cv-is-muted',muted);const pm=dock?.querySelector('.cv-pmic');if(pm){pm.setAttribute('aria-pressed',String(muted));pm.querySelector('i').className='ti '+(muted?'ti-microphone-off':'ti-microphone');}}
       kick();
     }
     function showResults(cards){
@@ -275,7 +304,7 @@
       const heading=document.createElement('div');heading.className='cv-result-head';heading.textContent=T('ช่างที่ค้นพบ','Mechanics found');const close=document.createElement('button');close.type='button';close.textContent='×';close.setAttribute('aria-label',T('ปิดผลค้นหา','Close results'));close.onclick=()=>{results?.remove();results=null;};heading.append(close);results.append(heading);
       if(!cards.length){const p=document.createElement('p');p.textContent=T('ยังไม่พบร้านที่ตรง ลองระบุพื้นที่หรือหมวดงานครับ','No matching shop. Try an area or category.');results.append(p);}
       for(const card of cards.slice(0,5)){const button=document.createElement(onSelectShop?'button':'a');button.className='cv-result';if(onSelectShop){button.type='button';button.onclick=()=>onSelectShop(card.id);}else{button.href='/tech/'+encodeURIComponent(card.id);button.target='_blank';button.rel='noopener';}const name=document.createElement('b'),detail=document.createElement('small');name.textContent=card.name;detail.textContent=[card.area,card.distanceKm!=null?card.distanceKm+' '+T('กม. โดยประมาณ','km approx.'):null,card.startingPrice?T('เริ่ม ฿','from ฿')+card.startingPrice:null].filter(Boolean).join(' · ');button.append(name,detail);results.append(button);}
-      (mode==='inline'?anchor.parentNode:root).append(results);
+      placeResults();
     }
     function showDraft(symptom){showResults([]);results.replaceChildren();const p=document.createElement('p');p.textContent=T('ร่างงานด่วน ยังไม่ได้ส่ง: ','Urgent draft, not submitted: ')+symptom;const a=document.createElement('a');a.className='cv-result';a.textContent=T('ตรวจรายละเอียดและเลือกช่าง','Review details and choose a mechanic');a.href='/?q='+encodeURIComponent(symptom);a.target='_blank';a.rel='noopener';results.append(p,a);}
     /* การ์ด Cendon Valet ในสาย: สรุปสิ่งที่จะทำ · ยังขาดอะไร · ปุ่มยืนยัน/ยกเลิก (ผู้ใช้พูดยืนยันแทนการกดก็ได้) · ผลจริงหลังทำ */
@@ -296,13 +325,13 @@
       if(v.state==='done'&&v.url){const a=document.createElement('a');a.className='cv-vb gh';a.textContent=T('เปิดดู','Open');a.href=v.url;a.target='_blank';a.rel='noopener';acts.append(a);}
       if(v.state==='ready'){const h=document.createElement('p');h.className='cv-hint';h.textContent=T('พูดว่า “ยืนยัน” หรือกดปุ่ม — ยังไม่มีอะไรถูกส่งจนกว่าคุณยืนยัน','Say “confirm” or tap — nothing is sent until you confirm');results.append(h);}
       if(acts.childNodes.length)results.append(acts);
-      (mode==='inline'?anchor.parentNode:root).append(results);
+      placeResults();
     }
     return Object.freeze({byId,open,close,render,resize,showResults,showDraft,showValet,bind(value){session=value;},
       state(state,text){connecting=state!=='link';if(caption&&text)caption.textContent=text;if(stateText)stateText.textContent=toolsReady===false?T('โหมดเสียง · เครื่องมือยังไม่เปิด','Voice · tools unavailable'):state==='link'?T('Cendon · ต่อสายแล้ว','Cendon · connected'):'Cendon';byId('callCamBtn').disabled=state!=='link'&&!session?.cameraOn;},
       caption(who,text){if(caption)caption.textContent=text;const el=byId('callCaption');if(el.textContent!==text)el.textContent=text;},
       agentAvailable(ok){toolsReady=ok;capability.hidden=ok;if(!ok&&stateText)stateText.textContent=T('โหมดเสียง · เครื่องมือยังไม่เปิด','Voice · tools unavailable');},
-      minimize(){if(session?.cameraOn)session.camera();root.style.clipPath='';setMode('inline',{floating:true});},expand:full,
+      minimize(){if(!active)return;if(mode==='full')collapse();else placeDock(true),placeResults();},refresh(){if(active&&mode==='inline'){placeDock(!observed);placeResults();}},expand:full,
       dispose(){run++;cancelAnimationFrame(raf);raf=0;for(const animation of animations)animation.cancel();animations.clear();root.classList.remove('cv-ending');root.style.clipPath='';press.dispose();ro?.disconnect();observe?.disconnect();document.removeEventListener('keydown',keydown,true);window.removeEventListener('resize',resize);clearDrag();results?.remove();originals(false);dock?.remove();anchor?.classList.remove('cv-host','cv-active');minimize.remove();capability.remove();}});
   }
   window.CendonCallSurface=Object.freeze({create,gesture});

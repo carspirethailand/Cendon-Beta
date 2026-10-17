@@ -1,11 +1,12 @@
 # หัวข้อความปลอดภัยของทุกหน้า (Cloudflare Pages อ่านไฟล์นี้เอง)
 # - ห้ามเว็บอื่นฝังหน้า Cendon ไว้ในกรอบ (กันหลอกกดปุ่ม/หลอกกรอกข้อมูล ซ้อนหน้าเรา)
+#   ยกเว้นหน้าของ Cendon เอง: ระหว่างโทรคุยกับ AI หน้าอื่นเปิดในกรอบทับหน้าที่ถือสาย (call-shell.js) สายจึงไม่หลุด
 # - เบราว์เซอร์ห้ามเดาชนิดไฟล์เอง · ไม่ส่งที่อยู่หน้าเต็มไปเว็บอื่น · บังคับ HTTPS
 # - กล้อง ไมค์ ตำแหน่ง ใช้ได้เฉพาะหน้าของเราเอง · ปิดความสามารถที่แอปไม่ได้ใช้
 # ล็อกอิน Google ใช้หน้าของ firebaseapp.com (ไม่ใช่โดเมนเรา) จึงไม่โดนกฎห้ามฝังกรอบ
 /*
-  X-Frame-Options: DENY
-  Content-Security-Policy: frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'self'
+  X-Frame-Options: SAMEORIGIN
+  Content-Security-Policy: frame-ancestors 'self'; base-uri 'self'; object-src 'none'; form-action 'self'
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Strict-Transport-Security: max-age=31536000

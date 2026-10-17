@@ -76,3 +76,39 @@ test('home call: AI bar dissolves into bars only (no card, no visible buttons), 
   for(const c of ["'#fff4d2'","'#ffd19a'","'#ffa360'","'#ff893c'","rgba(255,244,202,.48)"])assert.ok(surface.includes(c),c);
   assert.match(home,/id="hFlip" data-cv-slide/);
 });
+const shell=await read('call-shell.js'),headers=await read('_headers'),session=await read('call-session.js'),core=await read('valet-core.js');
+test('call keeps going across pages: same-site frames only, navigations intercepted, child pages reuse the live call',()=>{
+  assert.match(headers,/X-Frame-Options: SAMEORIGIN/);assert.match(headers,/frame-ancestors 'self'/);assert.ok(!/frame-ancestors 'none'|X-Frame-Options: DENY/.test(headers),'own pages may frame each other, other sites still cannot');
+  assert.match(shell,/navigation\.addEventListener\('navigate',onNavigate\)/);assert.match(shell,/e\.intercept\(/);assert.match(shell,/destination\.sameDocument\)return/,'page-internal pushState routes are left alone');
+  assert.match(shell,/location\.replace\(h\)/,'after the call the visible page becomes a real page');
+  assert.match(session,/P\.CendonCallShell\.active\(\)\)\{P\.CendonCallShell\.expand\(\);return\}/,'a call button inside the frame opens the existing call');
+  assert.match(session,/CendonCallShell\?\.started\(api\)/);assert.match(session,/CendonCallShell\?\.ended\(api\)/);
+  for(const page of [home,chat])assert.match(page,/call-shell\.js\?v=\d+/);
+});
+test('call shell contract: inactive until a call starts, ignores foreign end signals',()=>{
+  const nav={l:null,addEventListener(n,f){this.l=f}},W={navigation:nav,addEventListener(){},location:{href:'https://x.test/',origin:'https://x.test',search:''}};W.parent=W;
+  const D={documentElement:{classList:{add(){},remove(){},contains:()=>false}},title:'t',addEventListener(){}};
+  vm.runInNewContext(shell,{window:W,document:D,history:{replaceState(){}},location:W.location,URL,setTimeout,clearTimeout});
+  const S=W.CendonCallShell,a={},b={};assert.equal(S.active(),false);S.started(a);assert.equal(S.active(),true);S.ended(b);assert.equal(S.active(),true,'another session cannot end this call');S.ended(a);assert.equal(S.active(),false);
+  let caught=false;nav.l({canIntercept:true,destination:{url:'https://x.test/garage',sameDocument:false},navigationType:'push',intercept(){caught=true}});assert.equal(caught,false,'no call, no interception');
+});
+test('swipe down minimizes the full call; the floating pill reopens it; photos can be sent mid-call',()=>{
+  assert.match(surface,/root\.addEventListener\('pointerdown'/);assert.match(surface,/dy>120\|\|\(dy>40&&v>\.6\)/);assert.match(surface,/function collapse\(\)/);
+  assert.match(surface,/onTap:\(\)=>\{if\(!active\|\|bead\)return;if\(floating\(\)\)full\(\);else session\?\.mute\(\);\}/);
+  assert.match(surface,/data-cv="pmute"/);assert.match(surface,/inp\.setAttribute\('data-nocrop',''\)/);assert.match(session,/async function sendImage\(file\)/);assert.match(session,/realtimeInput:\{video:\{data,mimeType:"image\/jpeg"\}\}/);
+  assert.match(home,/const CALLMEM="spire_callnotes",CALLMEM_MS=30\*60e3/,'home call memory lasts 30 minutes on this device');assert.match(home,/k==="spire_callnotes"/,'cleared on sign-out');
+});
+test('voice agent: own-account actions, fixed page list, nothing for other people or staff',async()=>{
+  const window={},calls=[];vm.runInNewContext(agent,{window,setTimeout:(f)=>f(),location:{assign:u=>calls.push(['nav',u])},encodeURIComponent});
+  const cars=[{id:'c1',name:'City',year:'2019',mileage:'85000',vin:'SECRET',plate:'SECRET'}];
+  window.CendonValetCore={on:()=>true,T:(th)=>th,PAGES:{garage:1,news:1},pageOf:k=>k==='garage'?{label:'การาจ',url:'/garage'}:null,cars:()=>cars,curCar:()=>cars[0],carName:c=>c.name,findCar:r=>cars.find(c=>c.id===r||c.name===r)||null,
+    pickCar:id=>(calls.push(['pick',id]),{label:'City 2019'}),setTheme:v=>(calls.push(['theme',v]),{theme:v}),threads:async()=>({threads:[{shop:'A',last:'hi'}],shopUnread:2})};
+  const a=window.CendonCallAgent.create({minimize:()=>calls.push(['min'])}),ctx={signal:new AbortController().signal,isCurrent:()=>true};
+  const go=await a.execute('valet',{do:'go',to:'garage'},ctx);assert.equal(go.done,true);assert.deepEqual(calls.slice(0,2),[['min'],['nav','/garage']]);
+  assert.match((await a.execute('valet',{do:'go',to:'admin'},ctx)).error,/Unknown page/);
+  assert.equal((await a.execute('valet',{do:'setting',key:'theme',value:'dark'},ctx)).theme,'dark');
+  assert.equal((await a.execute('valet',{do:'pick_car',car:'City'},ctx)).selected,'City 2019');
+  const list=await a.execute('valet',{do:'cars'},ctx);assert.equal(list.cars[0].km,85000);assert.ok(!JSON.stringify(list).includes('SECRET'));
+  for(const bad of ['admin','delete_account','users','pay'])assert.match((await a.execute('valet',{do:bad},ctx)).error,/Unsupported/);
+  assert.match(core,/role!=="technician"/,'shop-side customer chats are never read out');assert.ok(!/admin|handbook/.test(core.slice(core.indexOf('const PAGES='),core.indexOf('function pageOf'))),'no staff pages');
+});

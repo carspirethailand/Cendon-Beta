@@ -313,3 +313,25 @@ body:has(#callUI.show) #cxa-fab{display:none!important}
 .cv-bead{transition:background .22s ease-out}.cv-bead.cv-bead-light{background:#fbf6ef;box-shadow:0 14px 40px -10px rgba(120,80,40,.35)}
 .hearth.cv-ending{pointer-events:none}
 @media(prefers-reduced-motion:reduce){.cv-host,.cv-host> :not(.cv-dock),.cv-bead,.cv-drop,.cv-drop>span,.cv-control{transition:none!important;animation:none!important}.hearth .hh-stage{opacity:1}.hh-name i{animation:none!important}}
+/* ══ ย่อสายแล้วไปหน้าไหนก็ได้: เม็ดยาลอย (คลื่น + ปุ่มไมค์) · แตะคลื่น = กลับเต็มจอ · ปัดซ้าย/ขวา = วางสาย ══ */
+.cv-pmic{display:none}
+.cv-dock.cv-floating .cv-wave-touch{right:54px;border-radius:999px}
+.cv-dock.cv-floating .cv-pmic{display:grid;place-items:center;position:absolute;right:10px;top:50%;width:42px;height:42px;margin-top:-21px;border:0;border-radius:50%;background:rgba(255,255,255,.12);color:#f4efe8;font-size:19px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .2s,transform .15s}
+.cv-dock.cv-floating .cv-pmic:active{transform:scale(.92)}
+.cv-dock.cv-floating .cv-pmic[aria-pressed="true"]{background:#f4efe8;color:#0b0b0c}
+:root[data-theme="light"] .cv-dock.cv-floating .cv-pmic{background:rgba(11,11,12,.07);color:#0b0b0c}
+:root[data-theme="light"] .cv-dock.cv-floating .cv-pmic[aria-pressed="true"]{background:#0b0b0c;color:#fff}
+.cv-dock.cv-floating{animation:cvPill .42s cubic-bezier(.32,.72,0,1) both}
+@keyframes cvPill{from{opacity:0;transform:translateY(14px) scale(.94)}}
+/* การ์ดผลลัพธ์/Valet ตอนย่อสาย: ลอยเหนือเม็ดยา อ่านและกดได้ทุกหน้า */
+.cv-results.cv-float{position:fixed;left:12px;right:12px;bottom:calc(160px + env(safe-area-inset-bottom));max-width:520px;margin:0 auto;z-index:1402;max-height:46vh;overflow:auto;box-shadow:0 22px 60px -20px rgba(0,0,0,.45)}
+/* ปัดลงย่อจอ: เบราว์เซอร์ไม่แย่งนิ้วไปเลื่อนหน้า (รายการผลลัพธ์ยังเลื่อนได้) */
+.hearth{touch-action:none;transform-origin:50% 50%;overflow:hidden}
+.hearth .cv-results{touch-action:pan-y}
+/* รูปที่ส่งให้ AI ดู: ลอยเข้าไปในวงกลม */
+.cv-photo{position:absolute;left:50%;bottom:calc(250px + env(safe-area-inset-bottom));width:92px;height:92px;object-fit:cover;border-radius:20px;z-index:6;pointer-events:none;box-shadow:0 16px 40px -14px rgba(0,0,0,.55);border:2px solid rgba(255,255,255,.85)}
+/* ══ เปลี่ยนหน้าระหว่างสาย (call-shell.js): หน้าใหม่เปิดในกรอบเต็มจอ สายอยู่หน้าเดิมข้างใต้ ══ */
+#cvShell{position:fixed;inset:0;width:100%;height:100%;border:0;margin:0;padding:0;z-index:1300;background:var(--bg,#0b0b0c);opacity:0;transition:opacity .2s ease-out}
+#cvShell.in{opacity:1}
+html.cv-shelled,html.cv-shelled body{overflow:hidden!important;overscroll-behavior:none}
+html.cv-shell-in body>*:not(#cvShell):not(#callUI):not(.cv-dock):not(.cv-results):not(.cv-bead):not(.cv-drop):not(.vl-pop):not(script):not(style){visibility:hidden!important}

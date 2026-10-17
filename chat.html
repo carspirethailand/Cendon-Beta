@@ -3016,11 +3016,12 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 <script src="engine-scan.js?v=2026-10-16-r1" defer></script>
 <script src="call-tools.js?v=2026-10-16-r4" defer></script>
 <script src="call-composer.js?v=2026-10-16-r3" defer></script>
-<script src="call-agent.js?v=2026-10-17-r4" defer></script>
-<script src="call-surface.js?v=2026-10-17-r5" defer></script>
-<script src="call-session.js?v=2026-10-17-r5" defer></script>
+<script src="call-agent.js?v=2026-10-17-r5" defer></script>
+<script src="call-surface.js?v=2026-10-17-r6" defer></script>
+<script src="call-shell.js?v=1" defer></script>
+<script src="call-session.js?v=2026-10-17-r6" defer></script>
 <link rel="stylesheet" href="valet.css?v=2">
-<script src="valet-core.js?v=1" defer></script>
+<script src="valet-core.js?v=2" defer></script>
 <script src="valet.js?v=2" defer></script>
 <script src="bell.js?v=4" defer></script>
 <script src="drop.js?v=2" defer></script>
@@ -3034,7 +3035,7 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 @media(prefers-reduced-motion:reduce){@view-transition{navigation:none}}
 </style>
 <link rel="stylesheet" href="stability.css">
-<link rel="stylesheet" href="call-ui.css?v=2026-10-17-r6">
+<link rel="stylesheet" href="call-ui.css?v=2026-10-17-r7">
 <script src="car-sync.js"></script>
 <script src="stability.js" defer></script>
 <!-- หน้าตาชุดเดียวกับหน้าหลัก (สี การ์ด ปุ่ม พื้นหลัง) — โหลดท้ายสุดให้ชนะสไตล์เดิม -->
@@ -5692,7 +5693,7 @@ function getCallSession(){
     const token=await user.getIdToken(),response=await fetch(BACKEND_URL+path,{headers:{Authorization:"Bearer "+token},signal,cache:"no-store"});
     if(!response.ok)throw Error("Tool unavailable");return response.json();
   };
-  const agent=window.CendonCallAgent.create({api:voiceApi,getCar:selCar,getLocation:()=>LS.get("tech_here",null),showResults:view.showResults,showDraft:view.showDraft,showValet:view.showValet});
+  const agent=window.CendonCallAgent.create({api:voiceApi,getCar:selCar,getLocation:()=>LS.get("tech_here",null),showResults:view.showResults,showDraft:view.showDraft,showValet:view.showValet,minimize:view.minimize});
   let tools;
   cendonCall=window.CendonCallSession.create({byId:view.byId,backendUrl:BACKEND_URL,language:lang,getUser:()=>auth?.currentUser,view,agent,getTools:()=>tools,toast,storage:LS,systemPrompt:sysPrompt,getMessages:()=>messages,appendMessage:m=>messages.push(m),save:saveSession,onEnd:()=>{renderMessages();updateHint();renderChips();setPhase("thread");}});
   tools=window.CallTools?.create({voice:cendonCall.bridge,language:lang,backendUrl:BACKEND_URL,getUser:()=>auth?.currentUser,getCar:selCar,getMessages:()=>messages,appendMessage:m=>messages.push(m),save:saveSession,toast});

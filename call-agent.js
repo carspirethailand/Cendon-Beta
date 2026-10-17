@@ -44,7 +44,7 @@
     /* ══ Cendon Valet ในสาย: เตรียม → การ์ดบนจอ + สรุปให้ AI อ่านทวน → ทำจริงเมื่อผู้ใช้พูดยืนยัน (หรือกดยืนยันบนจอ)
        ตำแหน่งมาจาก GPS ของเครื่องเท่านั้น · AI เห็นแค่ย่านกับเบอร์แบบปิดกลาง · ทำผ่าน API เดิมด้วยบัญชีผู้ใช้ (CendonValetCore) ══ */
     const VC=()=>window.CendonValetCore||null;
-    const DOS=['urgent','post_job','book','msg_shop','job','jobs','log','due'],OPS=['accept','cancel','complete','message'];
+    const DOS=['urgent','post_job','book','msg_shop','job','jobs','log','due','go','search','setting','pick_car','cars','threads','add_car','car_km','shop_status'],OPS=['accept','cancel','complete','message'];
     let pend=null,seq=0,heardAt=0,session=null,waiting=null;
     const live=j=>!['completed','cancelled'].includes(j.status);
     const canDo=(j,op)=>op==='message'?live(j):(VC().JOB_OPS[op]||[]).includes(j.status)&&(op==='cancel'?j.side!=='admin':j.side==='customer'||j.side==='both');
@@ -65,6 +65,17 @@
           onCancel:()=>{waiting=null;host.showValet?.(null);say('[ระบบ] ผู้ใช้ไม่อนุญาต Valet ไม่มีอะไรถูกทำ');}});
         return{error:'Valet is off. Ask the user to tap Allow on the screen. Nothing was done.'};
       }
+      /* พาไปหน้า / ค้นหา: ย่อสายเป็นเม็ดยาเล็ก แล้วเปิดหน้านั้น — สายไม่หลุด (call-shell) */
+      if(d==='go'||d==='search'){
+        const pg=d==='go'?V.pageOf(String(args.to||'')):(clean(args.q,120).length>1?{label:T('ค้นหา: ','Search: ')+clean(args.q,120),url:'/search?q='+encodeURIComponent(clean(args.q,120))}:null);
+        if(!pg)return{error:d==='go'?'Unknown page. Allowed: '+Object.keys(V.PAGES).join(', '):'Say what to search for'};
+        current(ctx);host.minimize?.();setTimeout(()=>{try{host.navigate?host.navigate(pg.url):location.assign(pg.url)}catch(e){}},260);
+        return{done:true,opened:pg.label,note:'The page is opening behind the minimized call; the call continues. Tell the user briefly.'};
+      }
+      if(d==='setting'){if(args.key!=='theme')return{error:'Only key=theme is supported (value light or dark)'};const r=V.setTheme(String(args.value||''));return{done:true,theme:r.theme};}
+      if(d==='pick_car'){const c=V.findCar(args.car);if(!c||!args.car)return{error:'Which car? Use a name or id from get_my_car / valet do=cars'};const r=V.pickCar(c.id);return{done:true,selected:r.label};}
+      if(d==='cars'){const cur=V.curCar();return{cars:V.cars().slice(0,8).map(c=>({id:String(c.id),name:clean(V.carName(c),60),year:clean(c.year,4),km:+String(c.mileage||'').replace(/[^\d]/g,'')||null,selected:!!cur&&cur.id===c.id})),note:'User-saved data. No plates or VINs are shared.'};}
+      if(d==='threads'){const r=await V.threads();current(ctx);return{...r,note:'Your own chats with shops (latest message only). Shop-side customer chats are never read out.'};}
       if(d==='jobs'){
         const L=(await V.jobs()).filter(live).slice(0,6);current(ctx);
         return{jobs:L.map(j=>({job_id:j.id,shop:clean(j.techName,80),car:clean(j.car,80),status:j.status,side:j.side,quote:j.quote?{total:Number(j.quote.total)||0,scope:clean(j.quote.scope,200),appointment:clean(j.quote.appointment,80)}:null})),note:'Data only. To act on one, call valet with do=job, op and job_id.'};
@@ -97,7 +108,11 @@
         if(op==='cancel'&&String(a.note||'').length<5)miss.push(T('เหตุผลที่ยกเลิก','the reason for cancelling'));
         if(op==='message'&&!a.text)miss.push(T('ข้อความ','the message'));
       }
-      if(d==='log'||d==='due'){if(!c)miss.push(T('รถคันไหนในการาจ','which car in the garage'));}
+      if(d==='log'||d==='due'||d==='car_km'){if(!c)miss.push(T('รถคันไหนในการาจ','which car in the garage'));}
+      if(d==='car_km'&&!(a.km>0&&a.km<=3e6))miss.push(T('เลขไมล์ใหม่','the new mileage'));
+      if(d==='add_car'){for(const k of ['make','model','year','mileage'])if(args[k]!=null&&args[k]!=='')a[k]=clean(args[k],50);
+        if(String(a.make||'').length<2)miss.push(T('ยี่ห้อ','the make'));if(!a.model)miss.push(T('รุ่น','the model'));if(!/^\d{4}$/.test(String(a.year||'')))miss.push(T('ปีรถ','the year'));}
+      if(d==='shop_status'){if(!V.isMech())return{error:'Only accounts with a Studio shop can change shop status'};a.state=['on','quiet','pause'].includes(args.state)?args.state:'';if(!a.state)miss.push(T('สถานะ (เปิดรับงาน / เงียบ / พักร้าน)','the status (on, quiet or pause)'));}
       if(d==='log'){a.kind=['fuel','service','trip'].includes(a.kind)?a.kind:'fuel';
         if(a.kind==='fuel'&&!a.amount)miss.push(T('ยอดเติม (บาท)','the amount in baht'));
         if(a.kind==='service'){if(!V.SVC[a.item])miss.push(T('รายการซ่อมบำรุง','which service'));if(!a.km)miss.push(T('เลขไมล์ตอนทำ','the mileage'));}
@@ -116,6 +131,9 @@
         if(a.op==='cancel')lines.push(a.note);if(a.op==='message')lines.push(a.text);}
       if(d==='log'){title=T('จดสมุดรถ','Logbook');lines.push(carL,a.kind==='fuel'?T('เติมน้ำมัน ','Fuel ')+'฿'+n(a.amount||0)+(a.litres?' · '+a.litres+T(' ลิตร',' L'):''):a.kind==='service'?T(...(V.SVC[a.item]||['ซ่อมบำรุง','Service'])):a.title,a.km?n(a.km)+T(' กม.',' km'):'',a.date||V.today());}
       if(d==='due'){title=T('ตั้งวันครบกำหนด','Set a due date');lines.push(carL,V.DUE[a.key]?T(...V.DUE[a.key]):'',a.date);}
+      if(d==='car_km'){const old=c?+String(c.mileage||'').replace(/[^\d]/g,'')||0:0;title=T('อัปเดตเลขไมล์','Update mileage');lines.push(carL,(old?n(old)+' → ':'')+n(a.km||0)+T(' กม.',' km'),old&&a.km<old?T('น้อยกว่าเลขเดิม — ตรวจให้แน่ใจ','Lower than before — please double-check'):'');}
+      if(d==='add_car'){title=T('เพิ่มรถเข้าการาจ','Add a car to the garage');lines.push([a.make,a.model,a.year].filter(Boolean).join(' '),a.mileage?n(String(a.mileage).replace(/[^\d]/g,'')||0)+T(' กม.',' km'):'');}
+      if(d==='shop_status'){title=T('สถานะร้าน','Shop status');lines.push({on:T('เปิดรับงาน แจ้งเตือนทันที','Taking jobs, alerts on'),quiet:T('รับงาน ไม่แจ้งเตือน','Taking jobs, no alerts'),pause:T('พักร้านชั่วคราว','Paused')}[a.state]||'');}
       const p={id:'v'+(++seq),d,a,c,at:Date.now(),title,red,miss,lines:lines.filter(Boolean).map(x=>clean(x,200)),running:null,result:null};
       pend=p;current(ctx);card(p,miss.length?'missing':'ready');
       return{pending_id:p.id,summary:title+': '+p.lines.join(' · '),missing:miss,submitted:false,
@@ -146,6 +164,9 @@
           msg={accept:T('รับราคาแล้ว ร้านได้รับนัดพร้อมเบอร์ของคุณ','Quote accepted — the shop has your booking'),cancel:T('ยกเลิกใบงานแล้ว','Job cancelled'),complete:T('ปิดงานแล้ว','Job closed'),message:T('ส่งข้อความแล้ว','Message sent')}[a.op];}
         if(p.d==='log'){const r=V.logAdd(p.c.id,a.kind,{amount:a.amount,litres:a.litres,km:a.km,item:a.item,title:a.title,date:a.date});url='/garage';msg=T('บันทึกลงสมุดรถแล้ว ','Saved to the logbook ')+r.date;}
         if(p.d==='due'){const r=V.dueSet(p.c.id,a.key,a.date);url='/garage';msg=T('ตั้งวันที่แล้ว ','Date set ')+r.date;}
+        if(p.d==='car_km'){const r=await V.setKm(p.c.id,a.km);url='/garage';msg=T(`${r.label}: ${r.km.toLocaleString()} กม. แล้ว`,`${r.label} is now at ${r.km.toLocaleString()} km`);}
+        if(p.d==='add_car'){const r=await V.addCar({make:a.make,model:a.model,year:a.year,mileage:a.mileage});url='/garage';msg=T(`เพิ่ม ${r.label} เข้าการาจแล้ว`,`Added ${r.label} to your garage`);}
+        if(p.d==='shop_status'){await V.shopStatus(a.state);url='/studio';msg=T('ตั้งสถานะร้านแล้ว','Shop status updated');}
         p.result={done:true,submitted:true,result:msg,...extra,note:'This really happened. Tell the user briefly; do not repeat the action.'};
         card(p,'done',{text:msg,url});
         if(how==='tap')say('[ระบบ] ผู้ใช้กดยืนยันบนจอแล้ว ผลจริง: '+msg+' — บอกผู้ใช้สั้น ๆ ไม่ต้องทำซ้ำ');

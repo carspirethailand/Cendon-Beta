@@ -4,7 +4,7 @@
    หน้าเว็บเป็นไฟล์เดียวที่เปลี่ยนบ่อย จึงถามเน็ตก่อนเสมอ (ไม่งั้นผู้ใช้จะติดอยู่กับเวอร์ชันเก่า)
    แต่รอแค่ครู่เดียว — เน็ตมือถือช้า/ค้าง ต้องไม่ทำให้แอปค้างหน้าจอโหลด
    ══════════════════════════════════════════════════════════════════ */
-const CACHE = 'cendon-v292-voice-wave';
+const CACHE = 'cendon-v293-call-anywhere';
 /* หน้าเว็บที่โหลดสำเร็จล่าสุด แยกตู้ไว้และ "ไม่ลบตอนอัปเดตเวอร์ชัน"
    เดิมทุกครั้งที่ deploy ตู้เก่าถูกล้างหมด เปิดแอปครั้งแรกหลังอัปเดตจึงไม่มีของสำรอง
    ต้องรอเน็ตอย่างเดียว — เน็ตมือถือช้าเมื่อไรก็ค้างหน้าจอโหลดของมือถือ */
@@ -14,7 +14,7 @@ const WAIT = 1500;
 /* โหลดล่วงหน้าเฉพาะไฟล์เล็กที่หน้าแรกใช้จริง
    เดิมโหลดทุกหน้า (~7 MB) แย่งเน็ตตอนผู้ใช้กำลังเปิดแอป และในรายการมีไฟล์ที่ไม่มีอยู่จริง
    (cendon-one.css, about, help, privacy) ทำให้ addAll ล้มทั้งชุด = ไม่เคยเก็บอะไรได้เลย */
-const CORE = ['./account-paint.js?v=2026-10-16-r2', './account.css?v=2026-10-16-login5', './account.js?v=2026-10-16-login5', './account-actions.js', './auth-gate.js?v=1', './login-intro.js?v=1', './login-hero.webp', './auth-bootstrap.js', './cendon-tour.js', './nav.js', './input-guard.js?v=1', './media-store.js', './car-sync.js', './carspec.js?v=2026-10-12-r3', './car-detail-tabs.css?v=2026-10-12-r1', './car-detail-tabs.js?v=2026-10-12-r2', './call-ui.css?v=2026-10-17-r6', './call-composer.js?v=2026-10-16-r3', './call-agent.js?v=2026-10-17-r4', './call-surface.js?v=2026-10-17-r5', './call-session.js?v=2026-10-17-r5', './lux.css', './category-pages.js', './home-layout.css', './stability.css', './stability.js', './mobile-ui.js', './fluid.js', './crop.js', './cendon-admin.js', './call-sounds.js?v=1', './call-tools.js?v=2026-10-16-r4', './engine-scan.js?v=2026-10-16-r1', './valet-core.js?v=1', './valet.js?v=2', './valet.css?v=2', './bell.js?v=4', './drop.js?v=2', './garage-extras.js?v=2', './garage-extras.css?v=2', './cendon-search.js', './cendon-line.js', './cloud-swap.js?v=3', './manifest.webmanifest', './icon192.png'];
+const CORE = ['./account-paint.js?v=2026-10-16-r2', './account.css?v=2026-10-16-login5', './account.js?v=2026-10-16-login5', './account-actions.js', './auth-gate.js?v=1', './login-intro.js?v=1', './login-hero.webp', './auth-bootstrap.js', './cendon-tour.js', './nav.js', './input-guard.js?v=1', './media-store.js', './car-sync.js', './carspec.js?v=2026-10-12-r3', './car-detail-tabs.css?v=2026-10-12-r1', './car-detail-tabs.js?v=2026-10-12-r2', './call-ui.css?v=2026-10-17-r7', './call-composer.js?v=2026-10-16-r3', './call-agent.js?v=2026-10-17-r5', './call-surface.js?v=2026-10-17-r6', './call-session.js?v=2026-10-17-r6', './lux.css', './category-pages.js', './home-layout.css', './stability.css', './stability.js', './mobile-ui.js', './fluid.js', './crop.js', './cendon-admin.js', './call-sounds.js?v=1', './call-tools.js?v=2026-10-16-r4', './engine-scan.js?v=2026-10-16-r1', './valet-core.js?v=2', './call-shell.js?v=1', './valet.js?v=2', './valet.css?v=2', './bell.js?v=4', './drop.js?v=2', './garage-extras.js?v=2', './garage-extras.css?v=2', './cendon-search.js', './cendon-line.js', './cloud-swap.js?v=3', './manifest.webmanifest', './icon192.png'];
 const BUILD_HEADER = 'X-Cendon-Shell';
 /* /about /help /privacy /terms = เว็บไซต์ (สร้างจาก site/) เก็บไว้ให้เปิดได้ตอนออฟไลน์ด้วย */
 const SHELL_ROUTES = new Set(['/', '/index', '/garage', '/news', '/spares', '/profile', '/chat', '/plan', '/handbook', '/tech', '/techs', '/terms', '/login', '/about', '/help', '/privacy']);

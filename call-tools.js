@@ -250,7 +250,7 @@ function finishEar(d,why){
    ขยับมือถือ กรอบเลื่อนตาม (เทียบภาพย่อ 96px ระหว่างเฟรมในเครื่อง ไม่ส่งอะไรเพิ่ม) · ภาพเปลี่ยนไปมากค่อยส่งเฟรมใหม่ให้ AI
    AI ในสายรู้ว่ากรอบไหนคืออะไร อยู่ตรงไหนบนจอ และแตะกรอบไหน AI อธิบายชิ้นนั้นให้ฟัง */
 const scan=window.CendonEngineScan;
-const LV={on:false,run:0,items:[],tr:null,pend:null,bw:96,bh:0,busy:false,lastAt:0,timer:0,frozen:false,told:'',toldAt:0,pick:-1,frames:0,noMore:false,scene:'',notes:[],quality:'',uncertain:0,frame:'',fails:0};
+const LV={on:false,run:0,items:[],tr:null,pend:null,bw:96,bh:0,busy:false,lastAt:0,timer:0,frozen:false,told:'',toldAt:0,pick:-1,frames:0,noMore:false,scene:'',notes:[],quality:'',uncertain:0,frame:'',fails:0,vehicleKind:'unknown',guide:null};
 /* ตัวติดตามภาพ: เทียบกับ "เฟรมอ้างอิง" ล่าสุด เลื่อนเกิน 5px ค่อยย้ายเฟรมอ้างอิง (สะสมระยะ) — แพนช้าไม่หาย แพนเร็วก็ไม่หลุด */
 const mkTrack=g=>({ref:g,cx:0,cy:0,dx:0,dy:0,lost:0});
 function step(tr,cur){
@@ -334,9 +334,9 @@ function tellScan(force){
   /* ครั้งแรกให้ AI พูดสรุป · ครั้งต่อ ๆ ไป (ขยับกล้องแล้วกรอบเปลี่ยน) แค่อัปเดตให้ AI รู้ ไม่พูดแทรกทุกครั้ง */
   const quiet=!force&&!!LV.told;
   LV.told=names;LV.toldAt=Date.now();
-  const msg=LV.items.length?`ผลสแกนห้องเครื่อง: กรอบแดงบอกตำแหน่ง ไม่ได้แปลว่าชำรุด AI อาจระบุผิด พบ ${LV.items.map((x,i)=>`${i+1}. ${x.name} (${where(x.box)}) — ${x.evidence}`).join(' · ')} · ยังไม่ยืนยัน ${LV.uncertain} จุด ห้ามเดาจุดที่ไม่เห็น ห้ามสอนให้แตะ เปิดฝา หรือถอดสาย จอด ดับเครื่องและปล่อยให้เย็นก่อนดูใกล้ ๆ`
+  const msg=LV.items.length?`ผลสแกนชิ้นส่วนรถ (${LV.vehicleKind==='motorcycle'?'ภาพมอเตอร์ไซค์':LV.vehicleKind==='car'?'ภาพรถยนต์':'ยังไม่ยืนยันประเภทพาหนะ'} อาจไม่ใช่รถที่เลือกไว้ใน garage): กรอบแดงบอกตำแหน่ง ไม่ได้แปลว่าชำรุด AI อาจระบุผิด พบ ${LV.items.map((x,i)=>`${i+1}. ${x.name} (${where(x.box)}) — ${x.evidence}`).join(' · ')} · ยังไม่ยืนยัน ${LV.uncertain} จุด ห้ามเดาจุดที่ไม่เห็น ห้ามสอนให้แตะ เปิดฝา หรือถอดสาย จอด ดับเครื่องและปล่อยให้เย็นก่อนดูใกล้ ๆ`
     :`ผลสแกน: ยังระบุไม่ได้ชัด (${LV.scene||'unclear'}, ${LV.quality||'unclear'}) ไม่มีกรอบที่ยืนยันได้ ห้ามเดาจากรุ่นรถ ให้ผู้ใช้จอดให้ปลอดภัยแล้วถ่ายให้ชัดขึ้น`;
-  tellLive(msg,S.tool,quiet);S.tool=null;
+  tellLive(msg+(LV.guide?' · ข้อจำกัดภาพจากระบบ: '+LV.guide.message+' · ห้ามให้ถอดฝา แฟริ่ง เบาะ หรือถังเพื่อสแกนให้ครบ':''),S.tool,quiet);S.tool=null;
 }
 async function detect(){
   if(LV.busy||!LV.on||LV.frozen||LV.noMore||D.hidden)return;
@@ -353,7 +353,9 @@ async function detect(){
     if(run!==LV.run||!LV.on)return;
     const current=view();if(!current||!scan.fresh({frame,current:scan.frameKey(current),track:LV.pend,hidden:D.hidden})){LV.tr=null;LV.lastAt=Date.now();setStat('moved');return;}
     LV.frames++;LV.lastAt=Date.now();LV.tr=LV.pend;LV.pend=null;LV.frame=frame;LV.fails=0;
-    LV.scene=d.scene;LV.quality=d.quality;LV.uncertain=d.uncertain;LV.notes=[];LV.items=d.items;
+    LV.scene=d.scene;LV.quality=d.quality;LV.uncertain=d.uncertain;LV.notes=[];LV.items=d.items;LV.vehicleKind=d.vehicleKind;LV.guide=d.coverGuidance;
+    const title=$('lvTitle');if(title)title.textContent=LV.vehicleKind==='motorcycle'?T('รู้จักชิ้นส่วนมอเตอร์ไซค์','Know your motorcycle'):T('รู้จักชิ้นส่วนรถ','Know your vehicle');
+    const guide=$('lvCover');if(guide){guide.hidden=!LV.guide?.coverVisible;guide.textContent=LV.guide?.message||'';}
     const bx=$('lvBoxes');if(bx){bx.style.transition='none';bx.style.transform=`translate(${(LV.tr.dx*R.W/LV.bw).toFixed(1)}px,${(LV.tr.dy*R.H/LV.bh).toFixed(1)}px)`;bx.classList.remove('stale')}
     paintBoxes();$('lvChips').hidden=false;setStat(LV.items.length?'found':'none');
     if(LV.items.length&&LV.frames===1)try{navigator.vibrate&&navigator.vibrate([12,40,12])}catch(e){}
@@ -406,10 +408,10 @@ async function scanBay(tool){
   if(!voice.camOn){const why=T('เปิดกล้องไม่ได้ — ต้องอนุญาตกล้องก่อน','Camera unavailable — allow camera access');toast(why,'ti-video-off');finishBay(why);return}
   const el=layer();el.classList.add('ct-live');
   el.innerHTML=`<div class="lv-boxes" id="lvBoxes"></div><div class="lv-sweep"></div>
-    <header class="ct-hd lv-hd"><div><b>${T('รู้จักห้องเครื่อง','Know your engine bay')}</b><small>${T('AI ระบุจากภาพ อาจผิดได้ · ไม่ใช่การตรวจสภาพ','AI visual identification may be wrong · not an inspection')}</small></div><button type="button" class="ct-x" id="ctClose" aria-label="${T('ปิด','Close')}"><i class="ti ti-x"></i></button></header>
-    <div class="lv-dock"><p class="lv-safety">${T('จอด · ดับเครื่อง · รอให้เย็น · มองเท่านั้น ไม่สัมผัส','Park · engine off · let it cool · look, do not touch')}</p><p class="lv-stat" id="lvStat" role="status" aria-live="polite"></p><div class="lv-det" id="lvDet" hidden></div><div class="lv-chips" id="lvChips" aria-label="${T('ชิ้นส่วนที่ระบุได้','Identified components')}"></div><small class="lv-legend"><i></i>${T('กรอบแดง = ตำแหน่ง ไม่ได้แปลว่าชำรุด','Red = location, not damage')}</small>
+    <header class="ct-hd lv-hd"><div><b id="lvTitle">${T('รู้จักชิ้นส่วนรถ','Know your vehicle')}</b><small>${T('รถยนต์ · มอเตอร์ไซค์ · AI อาจระบุผิด ไม่ใช่การตรวจสภาพ','Cars · motorcycles · AI may be wrong, not an inspection')}</small></div><button type="button" class="ct-x" id="ctClose" aria-label="${T('ปิด','Close')}"><i class="ti ti-x"></i></button></header>
+    <div class="lv-dock"><p class="lv-safety">${T('จอด · ดับเครื่อง · รอให้เย็น · มองเท่านั้น ไม่สัมผัส','Park · engine off · let it cool · look, do not touch')}</p><p class="lv-stat" id="lvStat" role="status" aria-live="polite"></p><p class="lv-cover" id="lvCover" hidden></p><div class="lv-det" id="lvDet" hidden></div><div class="lv-chips" id="lvChips" aria-label="${T('ชิ้นส่วนที่ระบุได้','Identified components')}"></div><small class="lv-legend"><i></i>${T('กรอบแดง = ตำแหน่ง ไม่ได้แปลว่าชำรุด','Red = location, not damage')}</small>
       <div class="lv-acts"><button type="button" class="lv-b" id="lvRe"><i class="ti ti-refresh"></i>${T('สแกนใหม่','Rescan')}</button><button type="button" class="lv-b" id="lvFreeze"><i class="ti ti-player-pause"></i>${T('หยุดภาพ','Pause')}</button><button type="button" class="lv-b p" id="lvDone"><i class="ti ti-check"></i>${T('เสร็จ','Done')}</button></div></div>`;
-  Object.assign(LV,{on:true,run:LV.run+1,items:[],tr:null,pend:null,busy:false,lastAt:0,frozen:false,told:'',toldAt:0,pick:-1,frames:0,noMore:false,scene:'',notes:[],quality:'',uncertain:0,frame:'',fails:0});
+  Object.assign(LV,{on:true,run:LV.run+1,items:[],tr:null,pend:null,busy:false,lastAt:0,frozen:false,told:'',toldAt:0,pick:-1,frames:0,noMore:false,scene:'',notes:[],quality:'',uncertain:0,frame:'',fails:0,vehicleKind:'unknown',guide:null});
   setStat('scan');
   $('ctClose').onclick=()=>finishBay();
   $('lvDone').onclick=()=>finishBay();
@@ -449,7 +451,7 @@ function onCancel(ids){ if(S.tool&&(!ids||ids.includes(S.tool.id))){S.tool=null;
 function mountButtons(){
   const ui=$('callUI');if(!ui||$('ctTools'))return;
   const bar=D.createElement('div');bar.id='ctTools';bar.className='ct-tools';
-  bar.innerHTML=`<button type="button" id="ctEarBtn"><i class="ti ti-ear"></i><span>${T('ฟังเสียงเครื่อง','Listen to engine')}</span></button><button type="button" id="ctBayBtn"><i class="ti ti-scan"></i><span>${T('สแกนห้องเครื่อง','Scan engine bay')}</span></button>`;
+  bar.innerHTML=`<button type="button" id="ctEarBtn"><i class="ti ti-ear"></i><span>${T('ฟังเสียงเครื่อง','Listen to engine')}</span></button><button type="button" id="ctBayBtn"><i class="ti ti-scan"></i><span>${T('สแกนชิ้นส่วน','Scan vehicle parts')}</span></button>`;
   ui.querySelector('.hh-top').after(bar);
   $('ctEarBtn').onclick=()=>{if(!voice.callActive)return toast(T('รอต่อสายให้ติดก่อนนะครับ','Wait for the call to connect'),'ti-phone');listenEngine(null)};
   $('ctBayBtn').onclick=()=>{if(!voice.callActive)return toast(T('รอต่อสายให้ติดก่อนนะครับ','Wait for the call to connect'),'ti-phone');scanBay(null)};
@@ -462,7 +464,7 @@ return Object.freeze({
   get holdMic(){return S.holdMic},get muteAi(){return S.muteAi},get busy(){return !!S.mode},
   onToolCall,onCancel,reset:closeLayer,listen:listenEngine,scan:scanBay,dispose(){closeLayer();$('ctTools')?.remove();D.removeEventListener?.('visibilitychange',invalidateFrame);window.removeEventListener?.('resize',invalidateFrame);},
   /* บอกผู้ช่วยเสียงว่ามีเครื่องมืออะไร (ต่อท้าย system prompt ของการโทร) */
-  prompt:()=>'\nเครื่องมือระหว่างโทร: เสียงเครื่องให้เรียก listen_engine · หากผู้ใช้ให้ดู ระบุ สแกน หรืออธิบายห้องเครื่อง ให้เรียก scan_engine_bay ซึ่งระบุชิ้นส่วนจากภาพจริงพร้อมกรอบแดง ชื่อและหมายเลข แตะกรอบเพื่อฟังคำอธิบาย กรอบแดงไม่ได้แปลว่าชำรุด เป็นเพียงการระบุที่อาจผิด ไม่ใช่การตรวจสภาพ ห้ามอ้างว่ารู้ทุกจุดหรือเห็นชิ้นส่วนที่ถูกบัง ห้ามแนะนำให้สัมผัส เปิดฝา ถอดสาย ซ่อมเอง หรือเข้าใกล้สายไฟแรงดันสูง ให้จอด ดับเครื่องและรอให้เย็นก่อนดูใกล้ ๆ อธิบายเฉพาะผลเครื่องมือล่าสุด'
+  prompt:()=>'\nเครื่องมือระหว่างโทร: เสียงเครื่องให้เรียก listen_engine · หากผู้ใช้ให้ดู ระบุ สแกน หรืออธิบายห้องเครื่อง ชิ้นส่วนรถยนต์ มอเตอร์ไซค์ หรือสกู๊ตเตอร์ ให้เรียก scan_engine_bay ซึ่งระบุชิ้นส่วนจากภาพจริงพร้อมกรอบแดง ชื่อและหมายเลข แตะกรอบเพื่อฟังคำอธิบาย กรอบแดงไม่ได้แปลว่าชำรุด เป็นเพียงการระบุที่อาจผิด ไม่ใช่การตรวจสภาพ ห้ามอ้างว่ารู้ทุกจุดหรือเห็นชิ้นส่วนที่ถูกบัง ห้ามแนะนำให้สัมผัส เปิดฝา ถอดสาย ซ่อมเอง หรือเข้าใกล้สายไฟแรงดันสูง ให้จอด ดับเครื่องและรอให้เย็นก่อนดูใกล้ ๆ ห้ามให้ถอดฝาครอบ แฟริ่ง เบาะ หรือถังน้ำมันเพื่อสแกนให้ครบ อธิบายเฉพาะผลเครื่องมือล่าสุด'
 });
 }
 window.CallTools=Object.freeze({create});

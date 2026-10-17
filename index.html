@@ -28,8 +28,9 @@ if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=3"><\/s
 <meta property="og:locale" content="th_TH"><meta name="twitter:card" content="summary_large_image">
 <script src="nav.js"></script>
 <script src="media-store.js"></script>
-<script src="bell.js?v=5"></script>
-<script src="drop.js?v=2" defer></script>
+<script src="bell.js?v=6"></script>
+<script src="drop.js?v=3" defer></script>
+<script src="car-menu.js?v=1" defer></script>
 <meta name="theme-color" content="#131316"/>
 <link rel="manifest" href="./manifest.webmanifest"/>
 <link rel="icon" href="./favicon.png"/>
@@ -286,7 +287,7 @@ html[data-theme="dark"] .e3{box-shadow:inset 0 1px 0 rgba(255,255,255,var(--glos
 .tabs button.on{color:var(--on-acc,#fff)}
 .tabs .knob{position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);border-radius:11px;background:var(--grad);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 6px 14px -6px var(--accent);transition:transform .45s var(--spring)}
 .tabs.right .knob{transform:translateX(100%)}
-.view{position:relative;z-index:1;animation:fadeup .4s var(--ease)}
+.view{position:relative;z-index:1;animation:fadeup .18s ease-out}
 .view[hidden]{display:none}
 
 /* ── เมนู ── */
@@ -471,7 +472,7 @@ textarea.inp{min-height:92px;resize:vertical}
 .fpop li::before{content:"";position:absolute;left:2px;top:.66em;width:6px;height:6px;border-radius:50%;background:var(--danger)}
 .bad-f{box-shadow:0 0 0 2px var(--danger)!important;border-radius:12px}
 @keyframes fpIn{from{opacity:0}}
-@keyframes fpUp{from{opacity:0;transform:translateY(10px) scale(.97)}}
+@keyframes fpUp{from{opacity:0;transform:translateY(6px)}}
 @media(prefers-reduced-motion:reduce){.fpop,.fpop-c{animation:none}}
 .err{color:var(--danger);font-size:14px;padding:11px 13px;border-radius:13px;background:rgba(214,74,74,.1);margin-bottom:12px;animation:shake .35s}
 .err:empty{display:none}
@@ -796,10 +797,11 @@ html[data-theme="dark"] .lv-map .leaflet-tile-pane{filter:invert(1) hue-rotate(1
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,160%);opacity:0;pointer-events:none;z-index:2000;background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:16px;font-size:14px;font-weight:500;display:flex;gap:8px;align-items:center;max-width:calc(100vw - 32px);transition:transform .45s var(--spring),opacity .3s;box-shadow:0 14px 30px -10px rgba(0,0,0,.5)}
 .toast.on{transform:translate(-50%,0);opacity:1}
 
-@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-@keyframes fadeup{from{opacity:0;transform:translateY(8px)}}
-@keyframes pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
-@keyframes bub{from{opacity:0;transform:translateY(8px) scale(.9)}to{opacity:1;transform:none}}
+/* เข้าฉากแบบนิ่ง: จางเข้า เลื่อนนิดเดียว ไม่เด้ง ไม่เบลอ (เบลอระหว่างเคลื่อนไหวกินเครื่องมือถือจนกระตุก) */
+@keyframes rise{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes fadeup{from{opacity:0}}
+@keyframes pop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
+@keyframes bub{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 @keyframes drop{from{opacity:0;transform:rotate(-45deg) translate(0,-34px)}to{opacity:1;transform:rotate(-45deg)}}
 @keyframes shimmer{to{background-position:-200% 0}}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -1394,7 +1396,7 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
 .ch-tabs button.on{color:var(--ink)}
 .ch-tabs button.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;border-radius:2px;background:var(--co)}
 .ch-pane{display:none;padding:20px 16px 40px;animation:chIn .45s cubic-bezier(.32,.72,0,1)}.ch-pane.on{display:block}
-@keyframes chIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes chIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 .ch-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
 .ch-chips span{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--line);font-size:13px;color:var(--ink)}
 .ch-chips .ti{color:var(--muted)}
@@ -1475,9 +1477,9 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
 /* การ์ดโปรไฟล์ช่าง */
 .lx-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}
 .lx-pc{display:block;text-align:left;padding:0;border-radius:18px;overflow:hidden;cursor:pointer;color:var(--ink);background:var(--surface);border:1px solid var(--line);
-  box-shadow:var(--shadow-sm);animation:pcIn .7s cubic-bezier(.22,.61,.12,1) backwards;transition:transform .4s cubic-bezier(.32,.72,0,1),border-color .25s,box-shadow .4s}
+  box-shadow:var(--shadow-sm);animation:pcIn .3s cubic-bezier(.2,.8,.2,1) backwards;transition:transform .4s cubic-bezier(.32,.72,0,1),border-color .25s,box-shadow .4s}
 .lx-pc:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--co) 50%,var(--line));box-shadow:var(--shadow)}
-@keyframes pcIn{from{opacity:0;transform:translateY(14px);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+@keyframes pcIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 .lx-pcv{position:relative;display:block;aspect-ratio:16/9;background:radial-gradient(120% 120% at 85% 0%,var(--co-soft),transparent 60%),var(--surface-2) center/cover}
 .lx-live{position:absolute;right:10px;top:10px;display:inline-flex;gap:6px;align-items:center;padding:5px 10px;border-radius:999px;font:600 11.5px var(--kb);font-style:normal;color:#fff;background:rgba(9,9,11,.55);backdrop-filter:blur(8px)}
 .lx-live i{width:6px;height:6px;border-radius:50%;background:var(--co)}
@@ -1703,7 +1705,7 @@ button.lx-car[aria-expanded="true"]{border-color:var(--ink)}
 .lx-gigs{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
 @media(max-width:560px){.lx-gigs{grid-template-columns:repeat(2,1fr);gap:10px}}
 .lx-gc{display:flex;flex-direction:column;padding:0;text-align:left;border-radius:16px;overflow:hidden;cursor:pointer;color:var(--ink);background:var(--surface);border:1px solid var(--line);
-  animation:pcIn .7s cubic-bezier(.22,.61,.12,1) backwards;transition:transform .4s cubic-bezier(.32,.72,0,1),border-color .25s}
+  animation:pcIn .3s cubic-bezier(.2,.8,.2,1) backwards;transition:transform .4s cubic-bezier(.32,.72,0,1),border-color .25s}
 .lx-gc:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--co) 50%,var(--line))}
 .lx-gcv{position:relative;display:block;aspect-ratio:4/3;background:radial-gradient(120% 120% at 85% 0%,var(--co-soft),transparent 60%),var(--surface-2) center/cover}
 .lx-gk,.lx-gn{position:absolute;top:8px;font-style:normal;font:600 11px var(--kb);padding:4px 8px;border-radius:999px;color:#fff;background:rgba(9,9,11,.55);backdrop-filter:blur(8px)}
@@ -2311,9 +2313,9 @@ a.mtab{text-decoration:none}
 <script src="category-pages.js" defer></script>
 <script src="car-sync.js"></script>
 <script src="stability.js" defer></script>
-<link rel="stylesheet" href="call-ui.css?v=2026-10-17-r9">
+<link rel="stylesheet" href="call-ui.css?v=2026-10-17-r10">
 <script src="call-sounds.js?v=1" defer></script>
-<script src="call-composer.js?v=2026-10-16-r3" defer></script>
+<script src="call-composer.js?v=2026-10-17-r4" defer></script>
 <script src="valet-core.js?v=4" defer></script>
 <script src="call-agent.js?v=2026-10-17-r5" defer></script>
 <script src="call-surface.js?v=2026-10-17-r7" defer></script>
@@ -2404,7 +2406,7 @@ a.mtab{text-decoration:none}
           <div class="lx-r1"><i class="ti ti-sparkles lx-spark" aria-hidden="true"></i><input id="hq" type="text" enterkeyhint="send" aria-label="ถาม Cendon AI" aria-describedby="hHint"/></div>
           <div class="lx-r2"><a class="lx-tl" href="/photo" id="hPhoto" title="ถ่ายรูปให้ AI ดู" aria-label="ถ่ายรูป"><i class="ti ti-camera"></i></a>
             <button class="lx-tl" type="button" id="hListen" title="โทรคุยกับ Cendon" aria-label="โทรคุยกับ Cendon"><i class="ti ti-microphone"></i></button>
-            <button class="lx-send" id="hVoiceSend" type="submit" data-mode="call" aria-label="โทรคุยกับ Cendon"><i class="ti ti-phone"></i></button></div>
+            <button class="lx-send" id="hVoiceSend" type="submit" data-mode="call" aria-label="โทรคุยกับ Cendon"><i class="ti cd-wv"></i></button></div>
         </form>
       </div>
       <p class="lx-fliphint" id="hHint"></p>
@@ -3274,7 +3276,7 @@ function thumb(t){
 const distTxt=d=>d==null?"":d<1?Math.round(d*1000)+" ม.":d+" กม.";
 function card(t,i){
   const stars=t.reviewCount?`<span class="st"><i class="ti ti-star-filled"></i> ${Number(t.rating).toFixed(1)}</span><span>(${t.reviewCount})</span>`:'<span class="new">ใหม่</span>';
-  return `<button class="card e3" data-id="${esc(t.id)}" style="animation-delay:${Math.min(i*45,450)}ms">${WF}${thumb(t)}
+  return `<button class="card e3" data-id="${esc(t.id)}" style="animation-delay:${Math.min(i*25,150)}ms">${WF}${thumb(t)}
     <span class="cb"><span class="nm">${esc(t.shop||t.name)}${t.verified?'<i class="ti ti-rosette-discount-check-filled" title="ตรวจแล้ว"></i>':""}${isMine(t)?`<em class="mine-tag">${T("ร้านของคุณ","Your shop")}</em>`:""}</span>
     <span class="meta">${stars}${t.dist!=null?`<span>·</span><span>${distTxt(t.dist)}</span>`:""}${t.mobile?'<span>·</span><span>มาถึงที่</span>':""}</span>
     <span class="row3"><span class="mini">${(t.cats||[]).slice(0,2).map(c=>CAT[c]?`<span>${CAT[c].th}</span>`:"").join("")}</span>${t.from?`<span class="price">เริ่ม <b>฿${money(t.from)}</b></span>`:""}</span></span></button>`;
@@ -3440,22 +3442,16 @@ function drawMyCar(){
   el.innerHTML=`<button type="button" class="lx-car" id="myCarB" aria-haspopup="menu" aria-expanded="false"><span class="lx-cari"><i class="ti ti-car"></i></span><span class="lx-cart"><small>${T("รถของฉัน","My car")}</small><b class="nt">${esc([c.name,c.year].filter(Boolean).join(" "))}</b></span><span class="lx-carm">${c.mileage&&+c.mileage>0?money(c.mileage)+" "+T("กม.","km"):""} <i class="ti ti-chevron-down"></i></span></button>`;
   $("myCarB").onclick=e=>carMenu(e.currentTarget,c.id);
 }
+/* เมนูเลือกรถ (car-menu.js ใช้ร่วมกับหน้าร้านค้า) — แถวใหญ่แตะง่าย ไม่โฟกัสบนมือถือ (เดิมหน้าเลื่อน/กระตุกตอนเปิด) */
 function carMenu(btn,cur){
-  const old=document.querySelector(".lx-carmenu");if(old){old.remove();btn.setAttribute("aria-expanded","false");return}
-  const cars=(ls.get("spire_garage",[])||[]).filter(x=>x&&x.id&&x.name),m=document.createElement("div");m.className="lx-carmenu";m.setAttribute("role","menu");
-  m.innerHTML=cars.map(x=>`<button type="button" role="menuitemradio" aria-checked="${x.id===cur}" data-c="${esc(x.id)}"><i class="ti ti-car"></i><span><b class="nt">${esc([x.name,x.year].filter(Boolean).join(" "))}</b>${x.mileage&&+x.mileage>0?`<small>${money(x.mileage)} ${T("กม.","km")}</small>`:""}</span>${x.id===cur?'<i class="ti ti-check"></i>':""}</button>`).join("")
-    +`<hr><a role="menuitem" href="/garage/${encodeURIComponent(cur)}"><i class="ti ti-notebook"></i><span><b>${T("เปิดสมุดรถคันนี้","Open this car's log")}</b></span></a><a role="menuitem" href="/garage/add"><i class="ti ti-plus"></i><span><b>${T("เพิ่มรถคันใหม่","Add a car")}</b></span></a>`;
-  document.body.appendChild(m);btn.setAttribute("aria-expanded","true");
-  const r=btn.getBoundingClientRect(),w=Math.min(m.offsetWidth,innerWidth-24);
-  m.style.top=(r.bottom+6+scrollY)+"px";m.style.left=Math.max(12,Math.min(r.left+scrollX,innerWidth-w-12))+"px";m.style.width=Math.max(240,Math.min(r.width,340))+"px";
-  const close=()=>{m.remove();btn.setAttribute("aria-expanded","false");removeEventListener("pointerdown",off,true);document.removeEventListener("keydown",k)};
-  const off=ev=>{if(!m.contains(ev.target)&&!btn.contains(ev.target))close()};const k=ev=>{if(ev.key==="Escape"){close();btn.focus()}};
-  setTimeout(()=>{addEventListener("pointerdown",off,true);document.addEventListener("keydown",k)},0);
-  m.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{close();if(b.dataset.c===cur)return;
-    ls.set("spire_selCar",b.dataset.c);try{window.cloudMark&&cloudMark("selCar")}catch(e){}
-    drawMyCar();try{drawHome()}catch(e){}
-    const c=cars.find(x=>x.id===b.dataset.c);toast(T("เปลี่ยนเป็น ","Switched to ")+(c?c.name:""),"ti-car")});
-  (m.querySelector('[aria-checked="true"]')||m.querySelector("button,a")).focus();
+  const cars=(ls.get("spire_garage",[])||[]).filter(x=>x&&x.id&&x.name);
+  if(!window.CendonCarMenu)return;
+  CendonCarMenu.show(btn,{cur,
+    cars:cars.map(x=>({id:x.id,name:[x.name,x.year].filter(Boolean).join(" "),sub:x.mileage&&+x.mileage>0?money(x.mileage)+" "+T("กม.","km"):""})),
+    links:[{href:"/garage/"+encodeURIComponent(cur),icon:"ti-notebook",label:T("เปิดสมุดรถคันนี้","Open this car's log")},{href:"/garage/add",icon:"ti-plus",label:T("เพิ่มรถคันใหม่","Add a car")}],
+    onPick:id=>{ls.set("spire_selCar",id);try{window.cloudMark&&cloudMark("selCar")}catch(e){}
+      drawMyCar();try{drawHome()}catch(e){}
+      const c=cars.find(x=>x.id===id);toast(T("เปลี่ยนเป็น ","Switched to ")+(c?c.name:""),"ti-car")}});
 }
 /* ═══ ตรวจใบเสนอราคา ═══
    ปุ่มบนหน้าแรกพามาหน้านี้ก่อน: ขอรูปอย่างเดียว (เดิมพาไปห้องแชตตรง ๆ คนมักลืมแนบรูป AI เลยตอบลอย ๆ)
@@ -3960,7 +3956,7 @@ const catImg=id=>CAT_IMG.has(id)?`<img src="img/cat/${id}.webp" alt="" decoding=
 const railIc=c=>`<span class="lx-ri" style="--a:${c.c||"#F07A36"};--b:${c.c2||c.c||"#F07A36"}">${catImg(c.id)}<i class="ti ${c.ic}"></i></span>`;
 function profCard(t,i){
   const cov=t.cover,av=t.avatar,d=t.dist!=null?distTxt(t.dist):"";
-  return `<button class="lx-pc" data-id="${esc(t.id)}" style="animation-delay:${Math.min(i*50,500)}ms">
+  return `<button class="lx-pc" data-id="${esc(t.id)}" style="animation-delay:${Math.min(i*25,150)}ms">
     <span class="lx-pcv"${cov?` style="background-image:url('${img(cov)}')"`:""}>${t.online?'<em class="lx-live"><i></i>เปิดรับงาน</em>':""}</span>
     <span class="lx-pcb"><span class="lx-pav"${av?` style="background-image:url('${img(av)}')"`:""}>${av?"":initial(t.shop||t.name)}</span>
       <span class="lx-pct"><b class="nt">${esc(t.shop||t.name)}${t.verified?' <i class="ti ti-rosette-discount-check-filled"></i>':""}${isMine(t)?' <em class="mine-tag">'+T("ร้านของคุณ","Your shop")+'</em>':""}</b>
@@ -4015,7 +4011,7 @@ function rankGigs(list){
    รูปจริงอยู่กลางกรอบ 16:9 พื้นหลังเป็นรูปเดียวกันแบบเบลอ ไม่มีแถบดำ */
 function gigCard(g,i,o){
   const t=g.tech||{},ph=(g.photos||[])[0],av=t.avatar,n=t.reviewCount||0,fit=o&&o.fit&&ph;
-  return `<button class="lx-gc" data-g="${g.id}" style="animation-delay:${Math.min(i*50,500)}ms">
+  return `<button class="lx-gc" data-g="${g.id}" style="animation-delay:${Math.min(i*25,150)}ms">
     <span class="lx-gch"><span class="lx-pav"${av?` style="background-image:url('${img(av)}')"`:""}>${av?"":initial(t.shop||t.name)}</span><b class="nt">${esc(t.shop||t.name||"")}</b>${isMine(t)?'<em class="mine-tag">ของคุณ</em>':""}${g.ad?`<em class="ad-tag">${T("สปอนเซอร์","Sponsored")}</em>`:""}</span>
     <span class="lx-gcv${fit?" fit":""}"${ph&&!fit?` style="background-image:url('${img(ph)}')"`:""}>${fit?`<img class="lx-fb" src="${img(ph)}" alt="" aria-hidden="true" loading="lazy"><img class="lx-fi" src="${img(ph)}" alt="" loading="lazy">`:""}${(g.photos||[]).length>1?`<em class="lx-gn"><i class="ti ti-photo"></i>${g.photos.length}</em>`:""}</span>
     <span class="lx-gcf">

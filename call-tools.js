@@ -228,7 +228,7 @@ function showEar(d,local){
     <p class="ct-fine">${T('ประเมินจากเสียงเท่านั้น ไม่ใช่การวินิจฉัยแน่นอน — ให้ช่างตรวจจริงก่อนซ่อม','Based on sound only, not a definite diagnosis — have a mechanic confirm it')}</p>
     <div class="ct-acts"><button type="button" class="ct-b" id="ctAgain"><i class="ti ti-refresh"></i>${T('ฟังอีกครั้ง','Listen again')}</button>
       ${d.urgency!=='ok'&&good?`<a class="ct-b" href="/${d.urgency==='stop'?'urgent':'post'}" id="ctHelp"><i class="ti ti-${d.urgency==='stop'?'urgent':'tool'}"></i>${d.urgency==='stop'?T('เรียกช่างด่วน','Call help now'):T('หาช่าง','Find a mechanic')}</a>`:''}
-      <button type="button" class="ct-b p" id="ctBack"><i class="ti ti-phone"></i>${T('คุยต่อ','Back to call')}</button></div>`;
+      <button type="button" class="ct-b p" id="ctBack"><i class="ti cd-wv"></i>${T('คุยต่อ','Back to call')}</button></div>`;
   $('ctAgain').onclick=()=>listenEngine(null);
   $('ctBack').onclick=()=>finishEar(d);
   const help=$('ctHelp');if(help)help.onclick=()=>{try{endCall()}catch(e){}};

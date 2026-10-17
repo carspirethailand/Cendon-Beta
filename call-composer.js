@@ -4,7 +4,7 @@
   function bind({input,button,form=null,onCall,onSend,hasAttachment=()=>false,language='th'}){
     const en=language!=='th';let composing=false;
     const mode=()=>input.value.trim()||hasAttachment()?'send':'call';
-    function sync(){const next=mode();button.disabled=false;button.dataset.mode=next;button.setAttribute('aria-label',next==='call'?(en?'Call Cendon':'โทรคุยกับ Cendon'):(en?'Send':'ส่ง'));const icon=button.querySelector('i');if(icon)icon.className='ti '+(next==='call'?'ti-phone':'ti-arrow-up');const label=button.querySelector('span');if(label)label.textContent=next==='call'?(en?'Call':'โทร'):(en?'Send':'ส่ง');}
+    function sync(){const next=mode();button.disabled=false;button.dataset.mode=next;button.setAttribute('aria-label',next==='call'?(en?'Call Cendon':'โทรคุยกับ Cendon'):(en?'Send':'ส่ง'));const icon=button.querySelector('i');if(icon)icon.className='ti '+(next==='call'?'cd-wv':'ti-arrow-up');const label=button.querySelector('span');if(label)label.textContent=next==='call'?(en?'Call':'โทร'):(en?'Send':'ส่ง');}
     function go(e){e?.preventDefault();if(composing)return;sync();if(mode()==='call')onCall();else onSend(input.value.trim());}
     function key(e){if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing&&!composing){e.preventDefault();if(mode()==='send')go();}}
     function begin(){composing=true;}function finish(){composing=false;sync();}

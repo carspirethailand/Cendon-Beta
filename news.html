@@ -104,10 +104,10 @@ a{color:inherit;text-decoration:none}button{font-family:inherit;cursor:pointer;b
 
 /* ===== VIEWS ===== */
 .main{flex:1;min-height:0;display:flex;justify-content:center;overflow:hidden}
-.view{display:none;width:100%;max-width:920px;height:100%;flex-direction:column;animation:fade .4s ease}
+.view{display:none;width:100%;max-width:920px;height:100%;flex-direction:column;animation:fade .18s ease-out}
 .view.active{display:flex}
 .scroll{flex:1;overflow-y:auto;padding:18px 22px 110px}
-@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
 
 /* ===== DASHBOARD ===== */
 .greet{font-family:var(--kd);font-size:clamp(26px,3.6vw,34px);font-weight:600;line-height:1.12;margin:2px 2px 2px;letter-spacing:-.01em;
@@ -501,20 +501,8 @@ a{color:inherit;text-decoration:none}button{font-family:inherit;cursor:pointer;b
 .greet,.section-title,.mag-hero h2,.mag-modal-body h2,.phead h2{font-weight:600;letter-spacing:.01em}
 .dash-head h3,.widget-header h3,.brand b{font-weight:700;letter-spacing:.02em}
 
-/* ===== PAGE TRANSITION — staggered slide-up (faint start, sharp finish) ===== */
-@keyframes riseUp{0%{opacity:0;transform:translateY(30px)}45%{opacity:.35}100%{opacity:1;transform:none}}
-.view.active .scroll>*{animation:riseUp .6s cubic-bezier(.16,.84,.28,1) backwards}
-.view.active .scroll>*:nth-child(1){animation-delay:.03s}
-.view.active .scroll>*:nth-child(2){animation-delay:.1s}
-.view.active .scroll>*:nth-child(3){animation-delay:.17s}
-.view.active .scroll>*:nth-child(4){animation-delay:.24s}
-.view.active .scroll>*:nth-child(n+5){animation-delay:.3s}
-.view.active .widget{animation:riseUp .65s cubic-bezier(.16,.84,.28,1) backwards}
-.view.active .widget:nth-child(1){animation-delay:.14s}
-.view.active .widget:nth-child(2){animation-delay:.24s}
-.view.active .widget:nth-child(3){animation-delay:.34s}
-.view.active .widget:nth-child(4){animation-delay:.44s}
-.view.active .widget:nth-child(n+5){animation-delay:.54s}
+/* ===== เปลี่ยนหน้า: จางเข้าครั้งเดียวทั้งหน้า (.view) — เลิกไล่ลอยขึ้นทีละกล่อง ที่ทำให้ของ (รวมถึงกระดิ่ง) เลื่อนขึ้นทุกครั้งที่เปลี่ยนหน้า ===== */
+@keyframes riseUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .widget-grid.edit-mode .widget{animation:widgetWiggle .3s ease infinite alternate}
 
 /* ===== SKELETON LOADER (magazine) ===== */
@@ -524,7 +512,7 @@ a{color:inherit;text-decoration:none}button{font-family:inherit;cursor:pointer;b
 [data-theme="cyber"],[data-theme="carbon"]{--sk-glow:.07}
 @keyframes skSweep{to{transform:translateX(100%)}}
 .sk-line{height:12px;border-radius:6px}
-.mag-in{animation:riseUp .55s cubic-bezier(.16,.84,.28,1) backwards}
+.mag-in{animation:riseUp .26s cubic-bezier(.2,.8,.2,1) backwards}
 
 /* ===== BUTTON PRESS BOUNCE ===== */
 .btn,.cdiag,.fab,.mag-widget-btn,.theme-btn,.theme-btn-p,.widget-nav-btn{transition:transform .38s cubic-bezier(.32,.72,0,1),box-shadow .3s,border-color .2s,color .2s,background .2s}
@@ -3255,7 +3243,7 @@ button.lg-card:active,.cl-card:active{
    motion.js เป็นคนติดคลาส .is-in ให้ตอนของเลื่อนเข้ามาในจอ
    ══════════════════════════════════════════════════════════════════ */
 @keyframes spRise{
-  from{opacity:0;transform:translateY(14px) scale(.985)}
+  from{opacity:0;transform:translateY(6px)}
   to{opacity:1;transform:none}
 }
 @keyframes spFade{ from{opacity:0} to{opacity:1} }
@@ -4118,8 +4106,8 @@ a.mtab{text-decoration:none}
 <!-- หน้าตาชุดเดียวกับหน้าหลัก (สี การ์ด ปุ่ม พื้นหลัง) — โหลดท้ายสุดให้ชนะสไตล์เดิม -->
 <link rel="stylesheet" href="lux.css">
 <!-- กระดิ่งแจ้งเตือน: ปุ่มในแถบเมนู (คอม) / มุมขวาบน (มือถือ) -->
-<script src="bell.js?v=5" defer></script>
-<script src="drop.js?v=2" defer></script>
+<script src="bell.js?v=6" defer></script>
+<script src="drop.js?v=3" defer></script>
 <script src="carspec.js?v=2026-10-12-r3" defer></script>
 </head>
 <body>

@@ -139,6 +139,8 @@ const CSS=`
   border:0;background:none;color:var(--ink,#09090B);font-size:20px;transition:background .2s}
 .cb-bell:hover,.cb-bell[aria-expanded="true"]{background:var(--surface-2,rgba(127,127,127,.12))}
 .cb-bell[hidden]{display:none!important}
+/* กระดิ่งอยู่นิ่งที่เดิมทุกหน้า — ไม่เล่นแอนิเมชันเข้าฉากของหน้า (เดิมเลื่อนขึ้นทุกครั้งที่เปลี่ยนหน้า) */
+.cb-bell.cb-m,.cb-bell.cb-d,.cb-bell.cb-fx{animation:none!important}
 .cb-bell em{position:absolute;top:1px;right:0;min-width:16px;height:16px;padding:0 4px;border-radius:999px;display:grid;place-items:center;
   font:700 10px/1 Kanit,system-ui,sans-serif;font-style:normal;color:#fff;background:var(--co,#E9682A);border:2px solid var(--bg,#fff)}
 .cb-bell em[hidden]{display:none}

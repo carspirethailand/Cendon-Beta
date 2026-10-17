@@ -14,7 +14,7 @@ const MENUS=[
   ['.custom-select-options',e=>!!(e.closest('.custom-select')||{}).classList&&e.closest('.custom-select').classList.contains('active')],
   ['.car-pop,.att-pop,.pl-menu',e=>e.classList.contains('on')],
   ['.p-drop',e=>e.classList.contains('open')],
-  ['.lx-carmenu,.stu-menu,.ch-menu,.nb-pop,.sess-pop,.dp-pop,.acct-drop,.vl-more,.sk-pop,.cs-list',()=>true]
+  ['.cm-pop,.lx-carmenu,.stu-menu,.ch-menu,.nb-pop,.sess-pop,.dp-pop,.acct-drop,.vl-more,.sk-pop,.cs-list',()=>true]
 ];
 const SEL=MENUS.map(m=>m[0]).join(',');
 const calm=()=>matchMedia('(prefers-reduced-motion:reduce)').matches;
@@ -30,16 +30,16 @@ let lastY=null;
 D.addEventListener('pointerdown',e=>{lastY=e.clientY},true);
 D.addEventListener('keydown',()=>{lastY=null},true);
 const state=new WeakMap();
+/* ขยับแค่ opacity + translate (การ์ดจอทำให้ ไม่ต้องวาดใหม่ทุกเฟรม) — เดิมใช้ clip-path ซึ่งต้องวาดเมนูทั้งอัน
+   รวมเงาใหญ่ใหม่ทุกเฟรม มือถือเลยกระตุก โดยเฉพาะแผงแจ้งเตือนกับเมนูเลือกรถ */
 function play(e,open){
   if(calm())return;
-  const r=e.getBoundingClientRect(),rad=getComputedStyle(e).borderTopLeftRadius||'14px';
-  /* เปิดขึ้นเหนือจุดที่กด = คลี่ขึ้น · นอกนั้นคลี่ลง */
+  const r=e.getBoundingClientRect();
+  /* เปิดขึ้นเหนือจุดที่กด = เลื่อนขึ้น · นอกนั้นเลื่อนลง */
   const up=lastY!=null&&r.bottom<=lastY+6&&r.top<lastY;
-  const shut=up?`inset(100% 0 0 0 round ${rad})`:`inset(0 0 100% 0 round ${rad})`;
-  const full=`inset(-30px -30px -60px -30px round ${rad})`;
-  const k0={clipPath:shut,translate:`0 ${up?10:-10}px`,opacity:0},k1={clipPath:full,translate:'0 0',opacity:1};
+  const k0={translate:`0 ${up?6:-6}px`,opacity:0},k1={translate:'0 0',opacity:1};
   try{if(e._cdAnim)e._cdAnim.cancel()}catch(x){}
-  e._cdAnim=e.animate(open?[k0,k1]:[k1,k0],{duration:open?340:220,easing:open?'cubic-bezier(.2,.9,.25,1)':'cubic-bezier(.4,0,.8,.4)'});
+  e._cdAnim=e.animate(open?[k0,k1]:[k1,k0],{duration:open?180:120,easing:open?'cubic-bezier(.2,.8,.2,1)':'cubic-bezier(.4,0,1,1)'});
 }
 function check(e){
   const was=state.get(e)||false,now=openOf(e);
@@ -79,8 +79,13 @@ function closeList(back){
   if(!calm()){play(c.L,false);setTimeout(()=>c.L.remove(),200)}else c.L.remove();
   if(back&&!c.touch)try{c.sel.focus({preventScroll:true})}catch(e){}
 }
-const onWin=()=>closeList(false);
-const onScroll=e=>{if(CS&&!CS.L.contains(e.target))closeList(false)};
+/* มือถือ: แถบที่อยู่ของเบราว์เซอร์ยุบ/ขยายตอนแตะ = มีทั้ง resize และ scroll เล็ก ๆ ตามมาทันที
+   เดิมปิดรายการทุกครั้ง → รายการเปิดแล้วหายไปเอง (เลือกรถไม่ได้) · ตอนนี้ปิดเฉพาะเมื่อความกว้างจอเปลี่ยนจริง
+   หรือช่องเลือกเลื่อนไปไกลกว่า 40px หลังเปิดเกินครู่หนึ่ง */
+const onWin=()=>{if(CS&&Math.abs(innerWidth-CS.w)>2)closeList(false)};
+const onScroll=e=>{if(!CS||CS.L.contains(e.target))return;
+  if(performance.now()-CS.at<350)return;
+  const y=CS.sel.getBoundingClientRect().top;if(Math.abs(y-CS.y)>40)closeList(false)};
 const onOut=e=>{if(CS&&!CS.L.contains(e.target)&&e.target!==CS.sel)closeList(false)};
 function pick(i){
   const c=CS;if(!c)return;const sel=c.sel,changed=sel.selectedIndex!==i;
@@ -107,7 +112,7 @@ function openList(sel,touch){
   if(up)L.style.bottom=(vh-r.top+6)+'px';else L.style.top=(r.bottom+6)+'px';
   lastY=up?r.top:r.bottom;
   sel.setAttribute('aria-expanded','true');
-  CS={sel,L,touch:!!touch};
+  CS={sel,L,touch:!!touch,w:innerWidth,y:r.top,at:performance.now()};
   const cur=L.querySelector('[aria-selected="true"]');if(cur){cur.scrollIntoView({block:'nearest'});if(!touch)cur.focus({preventScroll:true})}else if(!touch){const f=L.querySelector('.cs-o:not(:disabled)');if(f)f.focus({preventScroll:true})}
   L.addEventListener('click',e=>{const b=e.target.closest('.cs-o');if(b&&!b.disabled)pick(+b.dataset.i)});
   L.addEventListener('keydown',e=>{

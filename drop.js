@@ -33,7 +33,7 @@ const state=new WeakMap();
 /* ขยับแค่ opacity + translate (การ์ดจอทำให้ ไม่ต้องวาดใหม่ทุกเฟรม) — เดิมใช้ clip-path ซึ่งต้องวาดเมนูทั้งอัน
    รวมเงาใหญ่ใหม่ทุกเฟรม มือถือเลยกระตุก โดยเฉพาะแผงแจ้งเตือนกับเมนูเลือกรถ */
 function play(e,open){
-  if(calm())return;
+  if(calm()||e.matches('.nb-pop,.cm-pop'))return;
   const r=e.getBoundingClientRect();
   /* เปิดขึ้นเหนือจุดที่กด = เลื่อนขึ้น · นอกนั้นเลื่อนลง */
   const up=lastY!=null&&r.bottom<=lastY+6&&r.top<lastY;

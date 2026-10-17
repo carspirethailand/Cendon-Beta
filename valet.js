@@ -364,8 +364,9 @@ async function act(btn){
     if(add.vin){add.vin=add.vin.toUpperCase().replace(/[\s-]/g,"");if(!/^[A-HJ-NPR-Z0-9]{17}$/.test(add.vin))throw new Error(T("เลขตัวถัง (VIN) ต้องมี 17 ตัว ไม่มี I O Q","A VIN has 17 characters, no I, O or Q"))}
     if(add.model_year&&!(/^\d{4}$/.test(add.model_year)&&+add.model_year>=1950&&+add.model_year<=new Date().getFullYear()+1))throw new Error(T("ปีรุ่นไม่ถูกต้อง","That model year doesn't look right"));
     if(!Object.keys(add).length)return;
-    c.info={...(c.info||{}),...add};saveGarage(g);
-    if(typeof carsAreRemote==="function"&&carsAreRemote()&&typeof pushCar==="function"){const u=(W.spireAuth||W.auth).currentUser;await pushCar(c,await u.getIdToken())}
+    if(!VC())throw Error(T('อัปเดตหน้าเว็บก่อนบันทึก','Update the app before saving'));
+    await VC().setInfo(c.id,add,{allowPrivate:true});
+    c.info={...(c.info||{}),...add};
     try{W.CarSpec&&W.CarSpec.ensure({id:c.id,make:c.make,model:c.model,year:c.year,info:c.info}).catch(()=>{})}catch(e){}
     try{typeof renderCarUI==="function"&&renderCarUI()}catch(e){}
     finish(m,a,"done",T(`บันทึกข้อมูล ${carName(c)} แล้ว (${Object.keys(add).length} ช่อง)`,`Saved ${Object.keys(add).length} detail${Object.keys(add).length>1?"s":""} for ${carName(c)}`));
@@ -373,8 +374,8 @@ async function act(btn){
   if(k==="km")return busyBtn(btn,async()=>{
     const g=garage(),c=g.find(x=>x.id===btn.dataset.car);if(!c)return;
     const nw=Math.round(+String(a.km).replace(/[^\d.]/g,""));if(!(nw>0&&nw<=3e6))return;
-    c.mileage=String(nw);saveGarage(g);
-    if(typeof carsAreRemote==="function"&&carsAreRemote()&&typeof pushCar==="function"){const u=(W.spireAuth||W.auth).currentUser;await pushCar(c,await u.getIdToken())}
+    if(!VC())throw Error(T('อัปเดตหน้าเว็บก่อนบันทึก','Update the app before saving'));
+    await VC().setKm(c.id,nw);
     try{typeof renderCarUI==="function"&&renderCarUI()}catch(e){}
     finish(m,a,"done",T(`${carName(c)}: ${nw.toLocaleString()} กม. แล้ว`,`${carName(c)} is now at ${nw.toLocaleString()} km`));
   }).catch(e=>finish(m,a,"err",e.message));
@@ -408,7 +409,7 @@ async function act(btn){
       cancel:["ยกเลิกใบงานแล้ว","Job cancelled"],complete:["ปิดงานแล้ว — ให้คะแนนช่างได้ในใบงาน","Job closed — you can rate the mechanic in the job"],message:["ส่งข้อความแล้ว","Message sent"]}[op]));
   }).catch(e=>errOn(el,vErr(e)));
   if(k==="log"){try{errOn(el,"");const kind=LOGK[a.kind]?a.kind:"fuel";
-      const r=VC().logAdd(v("car"),kind,{amount:v("amount"),litres:v("litres"),km:v("km"),item:v("item"),title:v("title"),date:v("date")});
+      const r=await VC().logAdd(v("car"),kind,{amount:v("amount"),litres:v("litres"),km:v("km"),item:v("item"),title:v("title"),date:v("date")});
       a.rid="garage";finish(m,a,"done",T("บันทึกลงสมุดรถแล้ว","Saved to the logbook")+" · "+r.date)}catch(e){errOn(el,vErr(e))}return}
   if(k==="due"){try{errOn(el,"");const key=v("key"),r=await VC().dueSet(v("car"),key,v("date")),L=VC().DUE[key];
       a.rid="garage";finish(m,a,"done",T(`ตั้ง${L[0]}ไว้ ${r.date} แล้ว`,`${L[1]} set for ${r.date}`))}catch(e){errOn(el,vErr(e))}return}

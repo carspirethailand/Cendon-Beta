@@ -55,6 +55,7 @@
     if(!card){card=D.createElement('section');card.id='faInsight';card.className='fa-insight';D.getElementById('lgQuote')?.after(card);}
     const result=results.get(key);
     card.innerHTML=`<div class="fa-insight-head"><span class="fa-mark">AU+I</span><div><h3>${t(['มองให้ลึกขึ้น ด้วยข้อมูลของคุณ','A second look at your real data'])}</h3><p>${escape(hint(key))}</p></div></div><div class="fa-actions"><button type="button" class="fa-primary" id="faAnalyze" ${busy?'disabled':''}><i class="ti ti-sparkles"></i>${busy?t(['กำลังวิเคราะห์…','Analyzing…']):t(['วิเคราะห์ด้วย AU+I','Analyze with AU+I'])}</button>${D.getElementById('composer')?'':`<a href="/chat?tool=${key}" class="fa-link">${t(['คุยต่อในแชต','Continue in chat'])} ↗</a>`}</div><p class="fa-privacy">${t(['ส่งข้อมูลเพื่อวิเคราะห์เมื่อคุณกดเท่านั้น • ไม่ส่งพิกัดที่จอดให้ AI','Data is sent only when you ask • Parking coordinates stay local'])}</p><div id="faResult" role="status" aria-live="polite" class="fa-result" ${result?'':'hidden'}>${escape(result)}</div>`;
+    if(key==='own')costEntry(card);
     D.getElementById('faAnalyze').onclick=async()=>{
       if(busy)return;
       const controller=new AbortController(), timeout=setTimeout(()=>controller.abort(),90000);
@@ -63,6 +64,37 @@
       catch(e){results.set(key,e.name==='AbortError'?t(['ใช้เวลานานเกินไป กรุณาลองใหม่','Timed out. Please retry.']):e.message);}
       finally{clearTimeout(timeout);busy=false;mount(bridge.current());}
     };
+  }
+
+  function costEntry(card){
+    const form=D.createElement('form');form.className='fa-entry';form.id='faCostEntry';
+    const V=window.CendonValetCore,c=V?.curCar();
+    form.innerHTML=`<h4>${t(['บันทึกลงสมุดรถ','Add a logbook entry'])}</h4><p>${escape(c?V.carLabel(c):t(['เลือกรถก่อนบันทึก','Select a car first']))}</p>
+      <label>${t(['ประเภท','Type'])}<select name="kind"><option value="fuel">${t(['เติมน้ำมัน / ชาร์จ','Fuel / charging'])}</option><option value="service">${t(['บำรุงรักษา','Maintenance'])}</option><option value="trip">${t(['เดินทาง','Trip'])}</option></select></label>
+      <label data-kind="service" hidden>${t(['รายการ','Item'])}<select name="item">${Object.entries(V?.SVC||{}).map(([k,v])=>`<option value="${k}">${escape(t(v))}</option>`).join('')}</select></label>
+      <label data-kind="trip" hidden>${t(['ชื่อทริป','Trip name'])}<input name="title" maxlength="60"></label>
+      <label data-kind="fuel service">${t(['จำนวนเงิน (บาท)','Amount (THB)'])}<input name="amount" type="number" min="0" max="1000000000" step="0.01" inputmode="decimal"></label>
+      <label data-kind="fuel">${t(['ลิตร / kWh (ไม่บังคับ)','Litres / kWh (optional)'])}<input name="litres" type="number" min="0" max="300" step="0.01" inputmode="decimal"></label>
+      <label><span data-km-label>${t(['เลขไมล์ (กม.)','Odometer (km)'])}</span><input name="km" type="number" min="0" max="3000000" step="1" inputmode="numeric"></label>
+      <label>${t(['วันที่','Date'])}<input name="date" type="date" data-past="1" value="${V?.today()||''}" required></label>
+      <button class="fa-primary" type="submit" ${c?'':'disabled'}>${t(['ยืนยันและบันทึก','Confirm and save'])}</button><p data-entry-result role="status" aria-live="polite"></p>`;
+    card.prepend(form);
+    const kind=form.elements.namedItem('kind'),km=form.elements.namedItem('km');
+    kind.onchange=()=>{form.querySelectorAll('[data-kind]').forEach(el=>el.hidden=!el.dataset.kind.split(' ').includes(kind.value));form.querySelector('[data-km-label]').textContent=kind.value==='trip'?t(['ระยะทางทริป (กม.)','Trip distance (km)']):t(['เลขไมล์ (กม.)','Odometer (km)']);km.max=kind.value==='trip'?'10000':'3000000';};
+    form.onsubmit=async e=>{
+      e.preventDefault();const button=form.querySelector('[type="submit"]'),status=form.querySelector('[data-entry-result]');
+      if(button.disabled)return;button.disabled=true;status.textContent=t(['กำลังบันทึกขึ้นบัญชี…','Saving to your account…']);
+      try{
+        if(!c||V.curCar()?.id!==c.id)throw Error(t(['รถที่เลือกเปลี่ยนแล้ว เปิดฟอร์มใหม่อีกครั้ง','Selected car changed; reopen the form']));
+        const value=k=>form.elements.namedItem(k)?.value||'';
+        await V.logAdd(c.id,kind.value,{amount:value('amount'),litres:value('litres'),km:value('km'),item:value('item'),title:value('title'),date:value('date')});
+        status.textContent=t(['บันทึกขึ้นบัญชีแล้ว','Saved to your account']);results.delete('own');
+      }catch(error){status.textContent=error.message}finally{button.disabled=false}
+    };
+  }
+  function openEntry(){
+    selected='own';paintSelection();const view=D.getElementById('v-quote'),workspace=D.getElementById('faInline');
+    if(view&&workspace){workspace.hidden=false;workspace.append(view);view.classList.add('active');bridge?.open('own',true);}
   }
 
   function paintSelection(){
@@ -110,7 +142,7 @@
   }
 
   window.CendonFeatureAI={
-    register(value){bridge=value;queueMicrotask(chatToolbar);},mount,select,reset,
+    register(value){bridge=value;queueMicrotask(chatToolbar);},mount,select,reset,openEntry,
     async prepare(attachments,question,previous){
       if(!selected)return null;
       const key=selected,context=bridge.context(key);

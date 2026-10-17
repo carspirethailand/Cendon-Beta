@@ -106,9 +106,14 @@
     tire:[8e4,8000,20000],align:[6e3,400,900],batt:[3e4,2500,5000],coolant:[1e4,600,1500],gearoil:[2e4,1200,3500],belt:[25e3,800,2500],shock:[8e4,6000,16000]};
   /* money(ยอด,รถ,{job,what}) → {ok,msg} หรือ {ok:true,ask} (ให้หน้าเรียก confirm) */
   function money(n,c,o){
-    o=o||{};n=Number(n)||0;if(n<=0)return {ok:true};
+    o=o||{};n=Number(n);if(!Number.isFinite(n)||n<0)return {ok:false,msg:th()?'จำนวนเงินไม่ถูกต้อง':'Invalid amount'};if(n===0)return {ok:true};
+    var policy=window.CendonGarageData&&window.CendonGarageData.policy(c||{});
+    if(policy&&policy.basis==='model-reference'){
+      var cap=Math.min(policy.cap,(policy.maxByJob||{})[o.job]||policy.cap);
+      return n<=cap?{ok:true}:{ok:false,msg:th()?'ยอดสูงกว่าเกณฑ์อ้างอิงของรถรุ่นและปีนี้ กรุณาตรวจตัวเลข':'Above this model-year reference limit; check the amount'};
+    }
     var t=tier(c),j=JOB[o.job],hard=j?Math.min(j[0]*t.f,t.ceil):t.ceil,what=o.what||(th()?'รายการนี้':'this item');
-    if(n>hard)return {ok:false,msg:th()?'฿'+fmt(n)+' สูงเกินจริงสำหรับ'+what+'ของรถรุ่นนี้ (ไม่เกิน ฿'+fmt(hard)+') — ตรวจตัวเลขอีกครั้ง':'฿'+fmt(n)+' is more than '+what+' could cost for this car (max ฿'+fmt(hard)+') — please check the number'};
+    if(n>hard)return {ok:false,msg:th()?'฿'+fmt(n)+' เกินเกณฑ์ตรวจสอบเบื้องต้น (ไม่เกิน ฿'+fmt(hard)+') — ยังไม่มีราคาอ้างอิงตรงรุ่น/ปี กรุณาตรวจเลข':'฿'+fmt(n)+' exceeds the preliminary limit (฿'+fmt(hard)+'); no exact model-year price reference is available'};
     if(j&&n>j[2]*4*t.f)return {ok:true,ask:th()?'฿'+fmt(n)+' สูงกว่าปกติของ'+what+'มาก (รถทั่วไปราว ฿'+fmt(j[1])+'–'+fmt(j[2])+') ตัวเลขถูกต้องไหม?':'฿'+fmt(n)+' is far above the usual '+what+' cost (about ฿'+fmt(j[1])+'–'+fmt(j[2])+' for most cars). Is that right?'};
     return {ok:true};
   }

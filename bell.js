@@ -1,6 +1,7 @@
 /* ══ กระดิ่งแจ้งเตือนของ Cendon (ทุกหน้า ตำแหน่งเดียวกันเป๊ะ) ══
    ไฟล์นี้วาดปุ่มให้ทุกหน้า รวมหน้าแรก — ไม่มีหน้าไหนวาดเอง ตำแหน่งจึงไม่กระโดดตอนเปลี่ยนหน้า
-   · มือถือ: มุมขวาบนของจอ ติดอยู่กับที่ (ห้องแชต = ปุ่มขวาสุดของแถบบน จุดเดียวกัน)
+   · มือถือ: ไอคอนเปล่าบนสุดของหน้า มุมขวา จุดเดียวกับกระดิ่งเดิมของหน้าแรก — เลื่อนหน้าแล้วเลื่อนขึ้นไปด้วย
+     ไม่ลอยตามจอ จึงไม่บังเนื้อหาและไม่ทับปุ่มอื่น · แผ่น/หน้าต่างที่เปิดทับจะบังกระดิ่งตามปกติ (ห้องแชต = ในแถบบนของห้อง)
    · คอม: ในแถบเมนูบน ข้างรูปโปรไฟล์ (ห้องแชตไม่มีแถบเมนู → วางลอยไว้ตรงจุดเดียวกันบนจอ)
    · ขึ้นทันทีที่เปิดหน้า ถ้าเครื่องนี้ล็อกอินค้างไว้ (ไม่รอระบบบัญชีโหลดเสร็จ) · แผงรายการใช้ตัวเดียวกันทุกหน้า
    กล่องข้อความแจ้งเตือนเก็บในเครื่องนี้ ผูกกับบัญชี (เปลี่ยนบัญชี = เริ่มใหม่) · ล่าสุด 40 รายการ
@@ -127,12 +128,11 @@ const CSS=`
 .cb-bell em[hidden]{display:none}
 .cb-bell.ding .ti{animation:cbRing .9s cubic-bezier(.36,.07,.19,.97)}
 @keyframes cbRing{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(9deg)}60%{transform:rotate(-6deg)}75%{transform:rotate(3deg)}}
-/* มือถือ: จุดศูนย์กลางห่างขอบขวา 28px ขอบบน 28px — ตรงกับปุ่มขวาสุดในแถบบนของห้องแชตพอดี (วัดจริงทุกขนาดจอ) */
-.cb-m{position:fixed;top:calc(8px + env(safe-area-inset-top));right:8px;width:40px;height:40px;z-index:60;background:var(--surface,#fff);
-  box-shadow:0 0 0 1px var(--line,rgba(0,0,0,.08)),0 8px 18px -10px rgba(0,0,0,.3)}
+/* มือถือ: จุดเดียวกับกระดิ่งเดิมของหน้าแรก (ศูนย์กลางห่างขอบขวา 34px ขอบบน 41px) · ติดอยู่กับหน้า ไม่ติดจอ */
+.cb-m{position:absolute;top:calc(23px + env(safe-area-inset-top) + var(--cb-dy,0px));right:calc(16px + var(--cb-dx,0px));width:36px;height:36px;font-size:21px;z-index:30}
 @media(min-width:761px){.cb-m{display:none!important}}
-/* หน้าตั้งค่าเปิดทับทั้งจอและมีขอบ 1px — ชดเชยให้ตรงกับจุดเดียวกันพอดี */
-#v-settings .cb-sh{margin:-1px -1px 0 0}
+/* หน้าตั้งค่าเปิดทับทั้งจอ (เลื่อนในตัวเอง มีขอบ 1px) — วางในหน้านั้น ชดเชยขอบให้ตรงจุดเดิมพอดี */
+#v-settings>.cb-sh{top:calc(22px + env(safe-area-inset-top));right:15px}
 /* ห้องแชตบนมือถือ: ปุ่มขวาสุดของแถบบน (หลังปุ่ม ⋮) */
 .pill .cb-bell{order:99}
 /* ห้องแชตบนคอม: ไม่มีแถบเมนู — ลอยไว้จุดเดียวกับกระดิ่งในแถบเมนูของหน้าอื่น */
@@ -216,19 +216,29 @@ function mount(){
   const nr=document.querySelector(".navwrap .nav-right");
   if(nr){const b=mkBtn("cb-d");const av=nr.querySelector("#avatarBtn");nr.insertBefore(b,av||null)}
   const chat=!!document.querySelector("header.pill");
-  /* มือถือ (ทุกหน้ายกเว้นห้องแชต): มุมขวาบนของจอ */
-  if(!chat)document.body.appendChild(mkBtn("cb-m"));
+  /* มือถือ (ทุกหน้ายกเว้นห้องแชต): บนสุดของหน้า มุมขวา · หน้าที่เลื่อนในกล่องของตัวเอง (การาจ นิตยสาร ร้านค้า)
+     ต้องอยู่ในกล่องนั้น ไม่งั้นเนื้อหาเลื่อนลอดใต้กระดิ่ง · ชดเชยขอบกล่องให้ตรงจุดเดียวกับหน้าแรกพอดี */
+  const page=chat?null:mkBtn("cb-m");if(page)document.body.appendChild(page);
+  const home=()=>{if(!page)return;
+    const sc=document.querySelector(".view.active>.scroll")||document.querySelector(".view.active .scroll");
+    const host=sc||document.body;
+    if(page.parentNode!==host)host.appendChild(page);
+    /* ให้กล่องเลื่อนเป็นจุดอ้างอิงของกระดิ่ง กระดิ่งจะเลื่อนไปกับเนื้อหา (ในกล่องนี้ไม่มีอะไรอื่นอ้างอิงตำแหน่งกับกล่องอยู่แล้ว) */
+    if(sc&&getComputedStyle(sc).position==="static")sc.style.position="relative";
+    if(sc){const r=sc.getBoundingClientRect();page.style.setProperty("--cb-dy",(-r.top-sc.clientTop)+"px");page.style.setProperty("--cb-dx",(r.left+sc.clientLeft+sc.clientWidth-innerWidth)+"px")}
+    else{page.style.removeProperty("--cb-dy");page.style.removeProperty("--cb-dx")}};
+  home();addEventListener("resize",home);
   /* ห้องแชตบนคอม: จุดเดียวกับในแถบเมนูของหน้าอื่น */
-  else document.body.appendChild(mkBtn("cb-fx"));
-  /* ห้องแชตบนมือถือ: ปุ่มขวาสุดของแถบบน (ปุ่ม ⋮ ที่ valet.js สร้างทีหลัง) · หน้าตั้งค่าเปิดทับทั้งจอ → ใส่ไว้ในหัวหน้าตั้งค่าด้วย
+  if(chat)document.body.appendChild(mkBtn("cb-fx"));
+  /* ห้องแชตบนมือถือ: ปุ่มขวาสุดของแถบบน (ปุ่ม ⋮ ที่ valet.js สร้างทีหลัง) · หน้าตั้งค่าเปิดทับทั้งจอ → ใส่ไว้ในหน้าตั้งค่าด้วย
      แถบพวกนี้ถูกวาดใหม่ได้ → คอยใส่กลับทุกครั้งที่หายไป (เช็กเบา ๆ เฟรมละครั้ง) */
   let q=0;
   const put=()=>{q=0;
     const at=(host,cls)=>{if(host&&!host.querySelector(":scope>.cb-bell")){host.appendChild(mkBtn(cls));paint()}};
     /* ใส่ในแถบทันทีไม่ต้องรอปุ่ม ⋮ — order:99 ทำให้อยู่ขวาสุดเสมอ */
     if(chat)at(document.querySelector("header.pill"),"p-btn");
-    else at(document.querySelector("#v-settings .set-head"),"cb-m cb-sh")};
-  put();new MutationObserver(()=>{if(!q)q=requestAnimationFrame(put)}).observe(document.body,{childList:true,subtree:true});
+    else{at(document.getElementById("v-settings"),"cb-m cb-sh");home()}};
+  put();new MutationObserver(()=>{if(!q)q=requestAnimationFrame(put)}).observe(document.body,chat?{childList:true,subtree:true}:{childList:true,subtree:true,attributes:true,attributeFilter:["class"]});
   paint();on(paint);
   poll();
 }

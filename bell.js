@@ -187,6 +187,20 @@ function style(){if(document.getElementById("cbCss"))return;const st=document.cr
 const ICON={request:"ti-file-plus",quote:"ti-file-dollar",enroute:"ti-truck",working:"ti-tool",done:"ti-checklist",cancel:"ti-circle-x",accept:"ti-circle-check",complete:"ti-circle-check",dispute:"ti-flag",msg:"ti-message-circle",ai:"ti-sparkles"};
 const escH=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const go=u=>{u=u||"/";if(u[0]==="/"&&W.Nav&&Nav.owns&&Nav.owns(u))Nav.go(u);else location.href=u};
+/* เตือนจดเลขไมล์ 18:00 (เปิด/ปิดที่แผงนี้) — มี LINE = ถามใน LINE พิมพ์เลขตอบได้เลย · ไม่มี = เด้งบนเครื่อง แตะแล้วใส่เลข
+   คันที่จดเลขแล้ววันนั้นไม่ถาม · จำสถานะล่าสุดไว้ในเครื่อง (ผูกบัญชี) ให้แผงขึ้นทันที แล้วค่อยถามหลังบ้านอีกที */
+const KMK="spire_kmRemind";
+const kmGet=()=>{try{const v=JSON.parse(localStorage.getItem(KMK)||"null");return v&&v.uid===uid()?v:null}catch(e){return null}};
+const kmPut=v=>{try{localStorage.setItem(KMK,JSON.stringify({uid:uid(),on:!!(v&&v.on),line:!!(v&&v.line)}))}catch(e){}};
+const hasCar=()=>{try{return (JSON.parse(localStorage.getItem("spire_garage")||"[]")||[]).length>0}catch(e){return false}};
+function kmRow(){
+  if(!uid()||!hasCar())return "";
+  const k=kmGet(),on=!!(k&&k.on);
+  return `<div class="nb-on${on?" is-on":""}"><i class="ti ti-gauge"></i><span><b>${T("เตือนจดเลขไมล์ 18:00","Mileage reminder at 6 pm")}${on?` <em>${T("เปิดอยู่","On")}</em>`:""}</b>${on
+    ?(k.line?T("ถามทาง LINE ทุกเย็น พิมพ์เลขตอบในแชตได้เลย · คันที่จดแล้ววันนั้นไม่ถาม","Asked on LINE every evening — just reply with the number · cars already logged that day are skipped")
+      :T("เด้งบนเครื่องทุกเย็น แตะแล้วใส่เลขได้เลย · คันที่จดแล้ววันนั้นไม่ถาม","A notification every evening — tap it to enter the reading · cars already logged that day are skipped"))
+    :T("ช่วยจำเลขไมล์ทุกเย็น ระบบจะเตือนเปลี่ยนน้ำมันเครื่องและอะไหล่ได้แม่นขึ้น","A daily nudge so oil-change and parts reminders stay accurate")}</span><button type="button" class="nb-cta${on?" off":""}" data-a="${on?"kmoff":"kmon"}">${on?T("ปิด","Turn off"):T("เปิด","Turn on")}</button></div>`;
+}
 /* แผงรายการ · o.onJobs = ปุ่ม "งานของฉันทั้งหมด" (หน้าแรกเปิดในหน้าเดิม หน้าอื่นไป /jobs) · o.toast = ข้อความเด้งของหน้านั้น */
 function panel(btn,o){
   o=o||{};style();
@@ -197,6 +211,7 @@ function panel(btn,o){
     p.innerHTML=`<div class="nb-h"><b>${T("การแจ้งเตือน","Notifications")}</b>${L.some(x=>!x.read)?`<button type="button" data-a="read">${T("อ่านทั้งหมด","Mark all read")}</button>`:""}</div>
       ${pm==="default"||pm==="granted"?(on=>`<div class="nb-on${on?" is-on":""}"><i class="ti ti-bell-${on?"ringing":"off"}"></i><span><b>${T("แจ้งเตือนในเครื่อง","Device notifications")}${on?` <em>${T("เปิดอยู่","On")}</em>`:""}</b>${on?T("เด้งบนเครื่องเมื่อช่างเสนอราคา รับงาน หรือ AI ตอบ แม้ไม่ได้เปิดแอป","Pops up on this device when a mechanic quotes, takes the job or the AI replies"):T("รู้ทันทีเมื่อช่างเสนอราคา รับงาน หรือ AI ตอบ แม้ไม่ได้เปิดแอป","Know right away when a mechanic quotes, takes the job or the AI replies — even with the app closed")}</span><button type="button" class="nb-cta${on?" off":""}" data-a="${on?"off":"on"}">${on?T("ปิด","Turn off"):T("เปิด","Turn on")}</button></div>`)(pushOn())
         :pm==="denied"?`<div class="nb-on"><i class="ti ti-bell-off"></i><span><b>${T("ปิดแจ้งเตือนไว้ในเบราว์เซอร์","Notifications blocked")}</b>${T("เปิดได้ที่การตั้งค่าเว็บไซต์ของเบราว์เซอร์","Allow them in your browser's site settings")}</span></div>`:""}
+      ${kmRow()}
       <div class="nb-list">${L.length?L.map(x=>`<button type="button" class="nb-it${x.read?"":" new"}" data-id="${escH(x.id)}" data-u="${escH(x.url)}"><span class="nb-ic${x.kind==="ai"?" ai":""}"><i class="ti ${ICON[x.kind]||"ti-bell"}"></i></span><span><b class="nt">${escH(x.title)}</b>${x.body?`<small class="nt">${escH(x.body)}</small>`:""}</span><time>${agoT(x.at)}</time></button>`).join("")
         :`<div class="nb-empty"><i class="ti ti-bell"></i>${T("ยังไม่มีการแจ้งเตือน — เมื่อช่างเสนอราคา รับงาน หรือส่งข้อความ จะขึ้นที่นี่","Nothing yet — quotes, accepted jobs and messages show up here")}</div>`}</div>
       <div class="nb-f"><button type="button" data-a="jobs">${T("งานของฉันทั้งหมด","All my jobs")}</button></div>`;
@@ -207,8 +222,19 @@ function panel(btn,o){
     const off_=p.querySelector('[data-a="off"]');if(off_)off_.onclick=async()=>{off_.disabled=true;await disable();
       if(o.toast)o.toast(T("ปิดแจ้งเตือนในเครื่องแล้ว — ยังดูรายการได้ที่กระดิ่งนี้","Device notifications off — still listed under this bell"));draw()};
     p.querySelector('[data-a="jobs"]').onclick=()=>{close();o.onJobs?o.onJobs():go("/jobs")};
+    const km=p.querySelector('[data-a^="km"]');if(km)km.onclick=async()=>{km.disabled=true;const want=km.dataset.a==="kmon";
+      try{
+        /* ไม่มี LINE → ต้องเด้งบนเครื่องได้ ขอสิทธิ์ตอนกดนี้เลย (เบราว์เซอร์ให้ขอได้เฉพาะตอนผู้ใช้กด) */
+        if(want){const s=await get("/api/km/remind").catch(()=>null);
+          if(!(s&&s.line)&&!pushOn()&&await enable()!=="granted"){if(o.toast)o.toast(T("เปิดแจ้งเตือนในเครื่องหรือเชื่อม LINE ก่อน แล้วค่อยเปิดเตือนเลขไมล์","Allow device notifications or link LINE first"));draw();return}}
+        const r=await post("/api/km/remind",{on:want});kmPut(r);
+        if(o.toast)o.toast(want?(r.line?T("เปิดแล้ว — ทุก 18:00 จะถามเลขไมล์ทาง LINE","On — we'll ask on LINE at 6 pm"):T("เปิดแล้ว — ทุก 18:00 จะเด้งบนเครื่อง","On — a notification at 6 pm")):T("ปิดเตือนจดเลขไมล์แล้ว","Mileage reminder off"));
+      }catch(e){if(o.toast)o.toast(T("ตั้งค่าไม่สำเร็จ ลองใหม่อีกครั้ง","Couldn't change that — try again"))}
+      draw()};
   };
   draw();document.body.appendChild(p);btn.setAttribute("aria-expanded","true");
+  /* สถานะจริงจากหลังบ้าน (อีกเครื่อง/LINE อาจเปิดปิดไว้) — ต่างจากที่จำไว้ค่อยวาดใหม่ */
+  if(uid()&&hasCar())get("/api/km/remind").then(r=>{const k=kmGet();kmPut(r);if(p.isConnected&&(!k||k.on!==!!r.on||k.line!==!!r.line))draw()}).catch(()=>{});
   const rc=btn.getBoundingClientRect();p.style.top=(rc.bottom+8+scrollY)+"px";p.style.left=Math.max(10,Math.min(rc.right-p.offsetWidth+scrollX,innerWidth-p.offsetWidth-10))+"px";
   const close=()=>{p.remove();btn.setAttribute("aria-expanded","false");removeEventListener("pointerdown",off,true);document.removeEventListener("keydown",k)};
   const off=e=>{if(!p.contains(e.target)&&!btn.contains(e.target))close()};const k=e=>{if(e.key==="Escape"){close();btn.focus()}};

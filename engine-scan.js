@@ -12,7 +12,9 @@ function read(data){
       key:x.part+':'+i,part:x.part,name:text(x.name,50),box:x.box.slice(),certainty:'high',evidence:text(x.evidence,100),
       what:text(x.what,220),check:text(x.check,300),look:'',hazard:['high_voltage','keep_clear','observe'].includes(x.hazard)?x.hazard:'observe'
     })):[];
-  return {scene:data.scene,quality:data.quality,items,uncertain:Number.isInteger(data.uncertain)?Math.max(0,Math.min(80,data.uncertain)):0};
+  const vehicleKind=['car','motorcycle'].includes(data.vehicleKind)?data.vehicleKind:'unknown';
+  const guide=data.coverGuidance,coverGuidance=guide&&['leave_on','change_view'].includes(guide.action)?{action:guide.action,coverVisible:guide.coverVisible===true,maySuggestRemoval:false,message:text(guide.message,650)}:null;
+  return {scene:data.scene,quality:data.quality,items,vehicleKind,coverGuidance,uncertain:Number.isInteger(data.uncertain)?Math.max(0,Math.min(80,data.uncertain)):0};
 }
 function frameKey(r){return [r.W,r.H,r.v.videoWidth,r.v.videoHeight,r.sx,r.sy,r.sw,r.sh,r.mirror?1:0].map(v=>Math.round(v*10)/10).join(':')}
 function captureSize(r){const scale=Math.min(1,1280/Math.max(r.sw,r.sh));return{w:Math.max(1,Math.round(r.sw*scale)),h:Math.max(1,Math.round(r.sh*scale))}}

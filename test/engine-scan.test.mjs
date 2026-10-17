@@ -17,6 +17,18 @@ test('two visible parts of the same type have separate selectable keys; no inner
   const d=scan.read(data([item({part:'radiator_hose',name:'<img onerror=x>',look:'Fault invented'}),item({part:'radiator_hose'})]));
   assert.equal(d.items.length,2);assert.notEqual(d.items[0].key,d.items[1].key);assert.ok(!d.items[0].name.includes('<'));assert.equal(d.items[0].look,'');
 });
+test('motorcycle metadata and cover guidance stay bounded; clients cannot authorise cover removal',()=>{
+  const d=scan.read(data([item({part:'cvt_cover',name:'ฝาครอบ CVT'})],{vehicleKind:'motorcycle',coverGuidance:{action:'change_view',coverVisible:true,maySuggestRemoval:true,message:'<b>คงฝาไว้</b>'}}));
+  assert.equal(d.vehicleKind,'motorcycle');assert.equal(d.coverGuidance.maySuggestRemoval,false);assert.equal(d.coverGuidance.coverVisible,true);assert.ok(!d.coverGuidance.message.includes('<'));
+  assert.equal(scan.read(data([],{vehicleKind:'<script>',coverGuidance:{action:'remove'}})).vehicleKind,'unknown');
+  assert.equal(scan.read(data([],{coverGuidance:{action:'remove'}})).coverGuidance,null);
+});
+test('actual motorcycle scanner shows red component boxes and cover guidance in the same call',async()=>{
+  const f=rig();await f.tools.scan();await f.settle();await f.respond(data([item({part:'cvt_cover',name:'ฝาครอบ CVT'})],{vehicleKind:'motorcycle',coverGuidance:{action:'leave_on',coverVisible:true,maySuggestRemoval:false,message:'คงฝาครอบไว้ ไม่ต้องถอด'}}));
+  assert.equal(f.nodes.get('lvBoxes').children.length,1);assert.equal(f.nodes.get('lvBoxes').children[0].style['--c'],'#FF514B');
+  assert.equal(f.nodes.get('lvTitle').textContent,'รู้จักชิ้นส่วนมอเตอร์ไซค์');assert.equal(f.nodes.get('lvCover').hidden,false);assert.match(f.nodes.get('lvCover').textContent,/ไม่ต้องถอด/);
+  assert.match(JSON.stringify(f.sent),/ภาพมอเตอร์ไซค์/);assert.equal(f.voice.callActive,true);f.tools.dispose();
+});
 
 test('safe scanner errors distinguish temporary provider capacity from daily allowance; never echo provider text',()=>{
   assert.match(scan.failure(503,{error:'scan_provider_busy'},'th'),/ชั่วคราว/);
@@ -88,6 +100,6 @@ test('tap explains the actual selected part with the safety restriction; legacy 
   const r=rig();await r.tools.scan();await r.settle();await r.respond({scene:'engine_bay',items:[item()]});assert.equal(r.nodes.get('lvBoxes').children.length,0);assert.match(r.nodes.get('lvStat').innerHTML,/คนละรุ่น/);r.tools.dispose();
 });
 test('paired assets load in order on Home and Chat and the service worker caches the new release',async()=>{
-  for(const page of ['index.html','chat.html']){const s=await read(page);assert.ok(s.indexOf('<script src="engine-scan.js?')<s.indexOf('<script src="call-tools.js?'));assert.match(s,/call-tools\.js\?v=2026-10-17-r7/);}
-  const sw=await read('sw.js'),css=await read('call-ui.css');/* เลขรุ่นแคชต้องไม่ต่ำกว่ารุ่นที่ออกสแกนห้องเครื่อง (v282) — รุ่นหลังจากนี้ bump ต่อได้โดยเทสต์ไม่พัง */assert.ok(+(sw.match(/const CACHE = 'cendon-v(\d+)/)||[])[1]>=282,'sw CACHE >= v282');assert.match(sw,/engine-scan\.js\?v=2026-10-17-r3/);assert.match(css,/\.lv-boxes\.stale\{visibility:hidden;pointer-events:none\}/);assert.match(css,/\.lv-chips\[hidden\]\{display:none\}/);
+  for(const page of ['index.html','chat.html']){const s=await read(page);assert.ok(s.indexOf('<script src="engine-scan.js?')<s.indexOf('<script src="call-tools.js?'));assert.match(s,/call-tools\.js\?v=2026-10-17-r8/);}
+  const sw=await read('sw.js'),css=await read('call-ui.css');/* เลขรุ่นแคชต้องไม่ต่ำกว่ารุ่นที่ออกสแกนห้องเครื่อง (v282) — รุ่นหลังจากนี้ bump ต่อได้โดยเทสต์ไม่พัง */assert.ok(+(sw.match(/const CACHE = 'cendon-v(\d+)/)||[])[1]>=282,'sw CACHE >= v282');assert.match(sw,/engine-scan\.js\?v=2026-10-17-r4/);assert.match(css,/\.lv-boxes\.stale\{visibility:hidden;pointer-events:none\}/);assert.match(css,/\.lv-chips\[hidden\]\{display:none\}/);
 });

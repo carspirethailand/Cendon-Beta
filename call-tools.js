@@ -48,6 +48,7 @@ async function analyze(tool,attachments,context,question,signal){
   if(!r.ok){
     const tag=e=>Object.assign(e,{status:r.status,code:d&&d.error});
     if(d&&d.error==='feature_quota')throw tag(Error(T(`ใช้เครื่องมือนี้ครบ ${d.limit} ครั้งของวันนี้แล้ว พรุ่งนี้ใช้ได้อีกครับ`,`You've used this ${d.limit} times today. Try again tomorrow.`)));
+    if(['bay','baylive'].includes(tool)&&window.CendonEngineScan?.failure)throw tag(Error(window.CendonEngineScan.failure(r.status,d,lang)));
     if(r.status===429)throw tag(Error(T('โควตา AI วันนี้หมดแล้ว','Daily AI quota reached')));
     throw tag(Error(T('วิเคราะห์ไม่ได้ชั่วคราว ลองอีกครั้งนะครับ','Analysis is unavailable right now. Please try again.')));
   }
@@ -360,7 +361,7 @@ async function detect(){
   }catch(e){
     if(run!==LV.run||!LV.on)return;
     LV.lastAt=Date.now();LV.fails++;LV.tr=null;
-    if(e.code==='feature_quota'||e.status===429)LV.noMore=true;
+    if(e.code==='feature_quota'||e.code==='quota'||e.status===429||e.status===401||e.status===403)LV.noMore=true;
     if(LV.fails>=3)LV.noMore=true;
     const msg=e.name==='AbortError'?T('ใช้เวลานานเกินไป — แตะสแกนใหม่','Scan timed out — tap Rescan'):e.message==='scan_version'?T('ระบบสแกนสองฝั่งยังเป็นคนละรุ่น กรุณาอัปเดต backend และเว็บพร้อมกัน','Scanner versions differ. Update the backend and website together.'):e.message;
     setStat('err',msg);
@@ -419,6 +420,7 @@ async function scanBay(tool){
   /* รอภาพกล้องพร้อม แล้วสแกนทันที — จากนั้นติดตามภาพ ~9 ครั้ง/วิ */
   const t0=Date.now();while(!view()&&Date.now()-t0<4000){await new Promise(r=>setTimeout(r,100));if(run!==S.run)return}
   if(run!==S.run)return;
+  if(!view()){LV.noMore=true;setStat('err',T('ยังไม่ได้ภาพจากกล้อง ตรวจสิทธิ์กล้องแล้วแตะสแกนใหม่','No camera frame yet. Check camera permission and tap Rescan.'));return;}
   await new Promise(r=>setTimeout(r,350));
   detect();
   LV.timer=setInterval(track,110);

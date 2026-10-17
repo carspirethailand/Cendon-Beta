@@ -798,6 +798,53 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 .fb-msg{font-size:13.5px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
 .fb-meta{margin-top:5px;font-size:11.5px;color:var(--faint,#888)}
 .fb-act{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+/* ── รับช่าง ──
+   แถวเดียวบอกพอว่าใคร อู่ไหน AI ว่าอย่างไร ตัวตนถึงไหน รอมานานแค่ไหน · กดแถวเพื่อกางรายละเอียด */
+.rc-item{border-bottom:1px solid var(--line,rgba(var(--hl),.08))}
+.rc-item:last-child{border-bottom:0}
+.rc-row{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:12px;width:100%;padding:14px 4px;cursor:pointer;border-radius:12px}
+.rc-row:hover{background:rgba(var(--hl),.03)}
+.rc-row:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.rc-av{width:38px;height:38px;flex-shrink:0;border-radius:12px;display:grid;place-items:center;font-weight:600;font-size:15px;background:var(--acc-14,rgba(232,148,60,.16));color:var(--acc)}
+.rc-bd{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.rc-bd b{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rc-bd small{font-size:12px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rc-tags{display:flex;flex-wrap:wrap;gap:4px}
+.rc-tags span{font-size:10.5px;padding:2px 8px;border-radius:999px;background:rgba(var(--hl),.06);color:var(--mut)}
+.rc-side{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;text-align:right}
+.rc-side small{font-size:11px;color:var(--faint)}
+.rc-pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:3px 9px;border-radius:999px;white-space:nowrap;background:rgba(var(--hl),.06);color:var(--mut)}
+.rc-pill.ok{background:rgba(77,190,135,.14);color:var(--ok)}
+.rc-pill.warn{background:rgba(240,169,60,.15);color:var(--warn)}
+.rc-pill.bad{background:rgba(232,92,92,.14);color:var(--danger)}
+.rc-pill.test{background:rgba(91,169,217,.14);color:var(--info)}
+.rc-chev{color:var(--faint);transition:transform .3s cubic-bezier(.32,.72,0,1)}
+.rc-item.open .rc-chev{transform:rotate(180deg)}
+.rc-det{display:grid;grid-template-rows:0fr;transition:grid-template-rows .36s cubic-bezier(.32,.72,0,1)}
+.rc-item.open .rc-det{grid-template-rows:1fr}
+.rc-det>div{overflow:hidden;min-height:0}
+.rc-in{padding:4px 4px 18px 54px;display:grid;gap:16px}
+.rc-kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 18px}
+.rc-kv p{display:flex;flex-direction:column;gap:2px;font-size:13px;line-height:1.5;word-break:break-word}
+.rc-kv span{font-size:11px;color:var(--faint)}
+.rc-kv a{color:var(--acc)}
+.rc-box{border:1px solid var(--line,rgba(var(--hl),.1));border-radius:14px;padding:12px 14px;display:grid;gap:6px;font-size:13px;line-height:1.55}
+.rc-box h4{font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:6px}
+.rc-box small{font-size:11.5px;color:var(--faint)}
+.rc-flag{display:flex;gap:7px;align-items:flex-start}
+.rc-flag .ti{margin-top:2px}
+.rc-flag.high{color:var(--danger)}.rc-flag.medium{color:var(--warn)}.rc-flag.low{color:var(--mut)}
+.rc-docs{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+.rc-docs figure{margin:0;display:grid;gap:4px}
+.rc-docs img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;cursor:zoom-in;background:rgba(var(--hl),.05)}
+.rc-docs figcaption{font-size:11px;color:var(--faint)}
+.rc-act{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.rc-act small{font-size:11.5px;color:var(--faint);flex-basis:100%}
+.rc-zoom{position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.86);display:grid;place-items:center;padding:24px;cursor:zoom-out;animation:rcZ .2s ease-out}
+.rc-zoom img{max-width:100%;max-height:100%;border-radius:12px}
+@keyframes rcZ{from{opacity:0}to{opacity:1}}
+@media(max-width:640px){.rc-in{padding-left:4px}.rc-kv{grid-template-columns:repeat(2,minmax(0,1fr))}.rc-side .rc-pill+.rc-pill{display:none}}
+@media(prefers-reduced-motion:reduce){.rc-det,.rc-chev{transition:none}}
 .fb-act button{padding:5px 11px;border-radius:9px;border:1px solid var(--line,rgba(var(--hl),.12));
   background:none;color:inherit;font:inherit;font-size:12px;cursor:pointer}
 .fb-act button:hover{background:rgba(127,127,127,.14)}
@@ -1752,8 +1799,10 @@ td .empty::before,td.empty::before{display:none}
         <a data-tab="system" data-mod="system"><i class="ti ti-heartbeat"></i> สุขภาพระบบ</a>
       </div>
 
-      <div class="ng" data-mods="users,cars,feedback">
+      <div class="ng" data-mods="recruit,users,cars,feedback">
         <span class="ng-t">คนและข้อมูล</span>
+        <a data-tab="recruit" data-mod="recruit"><i class="ti ti-id-badge-2"></i> รับช่าง
+          <span class="nav-badge" id="rcBadge"></span></a>
         <a data-tab="users" data-mod="users"><i class="ti ti-users"></i> ผู้คน</a>
         <a data-tab="cars" data-mod="cars"><i class="ti ti-car"></i> รถในระบบ</a>
         <a data-tab="feedback" data-mod="feedback"><i class="ti ti-message-2-heart"></i> ความเห็นผู้ใช้
@@ -2213,6 +2262,25 @@ td .empty::before,td.empty::before{display:none}
           </div>
         </div>
         <div class="card"><div id="fbList"><div class="empty">กำลังโหลด...</div></div></div>
+      </section>
+
+      <!-- ══ รับช่าง ══
+           ทีมงานทุกตำแหน่งเห็นหน้านี้ — ใครเห็นใบสมัครค้างก็ช่วยดูได้
+           การอนุมัติ/ส่งกลับอยู่ในหน้าตรวจเต็มของแอปที่เดียว (ด่านครบทุกข้อ ไม่ทำซ้ำสองที่) -->
+      <section class="view" id="v-recruit">
+        <div class="page-head"><div><h1>รับช่าง</h1>
+          <p>ใบสมัครช่างที่รอตรวจ ทีมงานทุกคนดูได้ · อนุมัติหรือส่งกลับให้แก้ได้เฉพาะ admin ในหน้าตรวจเต็ม · เปิดดูเอกสารทุกครั้งมีบันทึก</p></div>
+          <button class="btn sm" onclick="loadRecruit()"><i class="ti ti-refresh"></i> รีเฟรช</button></div>
+        <div class="stat-grid" id="rcStats"></div>
+        <div class="card" style="margin-bottom:12px">
+          <div class="fb-filter" id="rcFilter">
+            <button data-rc="" class="on">ทั้งหมด</button>
+            <button data-rc="pass">AI ผ่านเบื้องต้น</button>
+            <button data-rc="review">ต้องตรวจเพิ่ม</button>
+            <button data-rc="fail">ไม่ผ่าน · ต้องแก้</button>
+          </div>
+        </div>
+        <div class="card"><div id="rcList"><div class="empty">กำลังโหลด...</div></div></div>
       </section>
 
       <!-- AUDIT -->
@@ -2780,8 +2848,12 @@ const NOT_TEAM={th:"ผู้ใช้แอป",ab:"ผู้ใช้",base:"u
 function posInfo(u){ return POSITIONS[posOf(u)]||NOT_TEAM }
 /* ดูแลโมดูลนี้ไหม — ตรวจทั้งตำแหน่งและยศพื้นฐาน
    ยศพื้นฐานยังเป็นเพดานเสมอ ตำแหน่งเปิดสิทธิ์เกินยศไม่ได้ */
+/* หน้าที่ทีมงานทุกคนเห็น ไม่ว่าตำแหน่งไหน — การรับช่างเป็นงานของทั้งบริษัท
+   ใครเห็นใบสมัครค้างก็ช่วยโทรยืนยันหรือดูเอกสารได้ · การตัดสินยังเป็นของ admin (เซิร์ฟเวอร์กันอีกชั้น) */
+const ALL_TEAM=["recruit"];
 function can(mod){
   if(!me)return false;
+  if(ALL_TEAM.includes(mod))return isTeam(me);
   const inf=posInfo(me);
   if(!inf||!inf.can)return false;
   return inf.can.includes("*")||inf.can.includes(mod);
@@ -2911,6 +2983,7 @@ async function enterAdmin(){
   /* ตรวจว่ายอมรับกฎแล้วหรือยัง ถ้ายัง จะขวางไว้ทั้งหน้าจนกว่าจะเซ็น */
   checkLegal();
   if(can("overview"))loadStats();
+  if(can("recruit"))loadRecruit(true);
   if(can("users"))loadUsers();
   if(can("magazine"))loadMag();
   if(can("cars")){loadCars();loadSpecs()}
@@ -3023,6 +3096,7 @@ function denyMsg(e,what){
 /* ══ การเซ็นรับรองก่อนเข้าดูของลับ ══ */
 const NDA_AREAS={
   finance:"ข้อมูลการเงินและต้นทุนของบริษัท",
+  recruit:"ใบสมัครช่าง ข้อมูลตัวตน เบอร์โทร และเอกสารของผู้สมัคร",
   cars:"ข้อมูลรถและเจ้าของรถ ซึ่งเป็นข้อมูลส่วนบุคคล",
   feedback:"ข้อความที่ลูกค้าส่งเข้ามา",
   audit:"บันทึกว่าใครทำอะไรในระบบ",
@@ -3391,6 +3465,8 @@ const TOUR=[
   d:"คุยกับทีมได้ที่นี่ แยกห้องตามแผนกและตามงาน สร้างห้องใหม่เองได้ และทุกห้องมีห้องเสียงของตัวเอง"},
  {sel:'#nav a[data-tab="meet"]',t:"ประชุม",
   d:"นัดหมาย ใส่วาระ และจดบันทึกร่วมกัน จบแล้วให้ AI สรุปเป็นมติและงานที่ต้องทำต่อได้"},
+ {sel:'#nav a[data-tab="recruit"]',t:"รับช่าง",
+  d:"ใบสมัครช่างที่รอตรวจ ทุกคนในทีมดูได้ ช่วยโทรยืนยัน ดูเอกสาร หรือเปิดหน้าตรวจเต็มได้ · อนุมัติเป็นงานของ admin"},
  {sel:"#rside",t:"เพื่อนร่วมแผนก",
   d:"คนในแผนกเดียวกับคุณอยู่ตรงนี้ จุดเขียวแปลว่าเขาอยู่ในห้องเสียง กดทักหรือกดโทรได้ทันที",
   skipIfHidden:true},
@@ -4784,6 +4860,7 @@ function go(t){
   if(t==="chat")openChat();
   if(t==="meet"){ loadTeamNames(); loadMeet() }
   if(t==="legal")$("legalPaper").innerHTML=legalHtml();
+  if(t==="recruit")loadRecruit();else rcHideDocs();
   /* ห้องคุยกินเต็มจอ หน้าอื่นใช้ระยะขอบปกติ สลับด้วยคลาสที่ body จุดเดียว */
   document.body.classList.toggle("chatfull",t==="chat");
   crumb(t);
@@ -5794,6 +5871,156 @@ document.addEventListener("click",e=>{
   document.querySelectorAll("#fbFilter button").forEach(x=>x.classList.toggle("on",x===b));
   fbStatus=b.dataset.st; loadFeedback();
 });
+
+/* ═══════════ รับช่าง ═══════════
+   ใบสมัครช่างที่รอตรวจ — ทีมงานทุกตำแหน่งดูได้ (ALL_TEAM ใน can)
+   หน้านี้ไว้ดูและช่วยตรวจ ส่วนการอนุมัติ/ส่งกลับอยู่ในหน้าตรวจเต็มของแอป (/staff/review/<uid>)
+   ที่มีด่านครบทุกข้อ (เทียบเลขบัตร หลักฐานรายข้อ จุดสงสัยของ AI) — ทำซ้ำสองที่ วันหนึ่งด่านจะไม่เท่ากัน
+   หลังบ้านกันอีกชั้น: ทีมงานดูได้ · ตัดสินได้เฉพาะ admin · เปิดเอกสารทุกครั้งมีบันทึกว่าใครเปิด */
+const RC_CAT={air:"แอร์",eng:"เครื่องยนต์",tyre:"ยาง & ช่วงล่าง",ev:"ไฟฟ้า/EV",body:"ตัวถัง/สี",mobile:"มาถึงที่",urgent:"รับงานด่วน"};
+const RC_DOC={id:"บัตรประชาชน",selfie:"รูปคู่บัตร",shop:"อู่ / เครื่องมือ",work:"ผลงาน",cert:"ใบรับรอง"};
+const RC_AI={pass:["ok","ti-circle-check","AI ผ่านเบื้องต้น"],review:["warn","ti-alert-triangle","ต้องตรวจเพิ่ม"],fail:["bad","ti-circle-x","ไม่ผ่าน · ต้องแก้"]};
+const RC_ID={approved:["ok","Didit ผ่าน"],review:["warn","Didit กำลังตรวจ"],declined:["bad","Didit ไม่ผ่าน"],expired:["warn","Didit หมดอายุ"],pending:["warn","รอผู้สมัครยืนยัน"],not_started:["warn","ยังไม่ยืนยันตัวตน"]};
+const RC_LV={high:"ti-alert-octagon",medium:"ti-alert-triangle",low:"ti-info-circle"};
+let RC=[], rcFilter="", rcOpen="";
+/* AI ยังไม่มีผล/ตรวจไม่สำเร็จ = คนต้องดูเอง จึงนับเป็น "ต้องตรวจเพิ่ม" */
+function rcKind(a){
+  const ai=a.ai; if(!ai||ai.status!=="complete")return"review";
+  if((ai.flags||[]).some(f=>f.block))return"fail";
+  return RC_AI[ai.verdict]?ai.verdict:"review";
+}
+function rcAgo(t){
+  const m=Math.max(0,Math.round((Date.now()-t)/60000));
+  return m<1?"เมื่อกี้":m<60?m+" นาทีที่แล้ว":m<1440?Math.round(m/60)+" ชม.ที่แล้ว":Math.round(m/1440)+" วันที่แล้ว";
+}
+function rcIdPill(a){
+  const i=a.identity||{};
+  if(i.mode==="didit"){const r=RC_ID[i.status]||RC_ID.not_started;return`<span class="rc-pill ${r[0]}"><i class="ti ti-id"></i>${r[1]}</span>`}
+  return a.idChecked?`<span class="rc-pill ok"><i class="ti ti-id"></i>เทียบเลขบัตรแล้ว</span>`:`<span class="rc-pill"><i class="ti ti-id"></i>ยังไม่เทียบเลขบัตร</span>`;
+}
+async function loadRecruit(quiet){
+  if(!quiet){
+    $("rcList").innerHTML=`<div class="empty">กำลังโหลด...</div>`;
+    $("rcStats").innerHTML=Array.from({length:4},()=>`<div class="stat"><div class="skel" style="height:78px"></div></div>`).join("");
+  }
+  try{
+    RC=(await api("/api/tech/applications")).applications||[];
+    const b=$("rcBadge"); if(b){ b.textContent=RC.length||""; b.classList.toggle("on",!!RC.length) }
+    if(!quiet)rcDraw();
+  }catch(e){
+    if(quiet)return;
+    $("rcStats").innerHTML="";
+    $("rcList").innerHTML=`<div class="empty">โหลดไม่ได้: ${esc(e.message)}<br>
+      <button class="btn sm" style="margin-top:10px" onclick="loadRecruit()"><i class="ti ti-refresh"></i> ลองใหม่</button></div>`;
+  }
+}
+function rcDraw(){
+  const n=k=>RC.filter(a=>rcKind(a)===k).length;
+  const oldest=RC.length?Math.min(...RC.map(a=>a.createdAt||Date.now())):0;
+  const days=oldest?Math.floor((Date.now()-oldest)/864e5):null;
+  $("rcStats").innerHTML=[
+    {ic:"ti-inbox",cls:"",n:RC.length,l:"รอตรวจ"},
+    {ic:"ti-circle-check",cls:"g",n:n("pass"),l:"AI ผ่านเบื้องต้น"},
+    {ic:"ti-alert-triangle",cls:"b",n:n("review")+n("fail"),l:"ต้องตรวจเพิ่ม / ต้องแก้"},
+    {ic:"ti-hourglass",cls:"r",n:days==null?"—":days<1?"< 1":days,l:"รอนานสุด (วัน)"},
+  ].map((c,i)=>`<div class="stat" style="--i:${i}"><div class="ic ${c.cls}"><i class="ti ${c.ic}"></i></div><div class="n">${c.n}</div><div class="l">${c.l}</div></div>`).join("");
+  const L=RC.filter(a=>!rcFilter||rcKind(a)===rcFilter);
+  if(!L.length){
+    $("rcList").innerHTML=`<div class="empty"><i class="ti ti-inbox" style="font-size:22px;display:block;margin-bottom:6px"></i>${RC.length?"ไม่มีใบสมัครในกลุ่มนี้":"ไม่มีใบสมัครรอตรวจ"}</div>`;
+    return;
+  }
+  $("rcList").innerHTML=L.map(a=>{
+    const v=RC_AI[rcKind(a)],open=a.uid===rcOpen;
+    return `<div class="rc-item${open?" open":""}" data-uid="${esc(a.uid)}">
+      <button class="rc-row" type="button" aria-expanded="${open}">
+        <span class="rc-av">${esc((a.name||"?").trim().charAt(0).toUpperCase()||"?")}</span>
+        <span class="rc-bd"><b>${esc(a.name||"ไม่ระบุชื่อ")}</b>
+          <small>${esc([a.shop,a.area].filter(Boolean).join(" · ")||"—")}</small>
+          <span class="rc-tags">${a.test?'<span class="rc-pill test">ใบทดสอบ</span>':""}${(a.cats||[]).map(c=>`<span>${esc(RC_CAT[c]||c)}</span>`).join("")}</span></span>
+        <span class="rc-side"><span class="rc-pill ${v[0]}"><i class="ti ${v[1]}"></i>${v[2]}</span>${rcIdPill(a)}
+          <small>${a.createdAt?"ส่งเมื่อ "+rcAgo(a.createdAt):""}</small></span>
+        <i class="ti ti-chevron-down rc-chev"></i>
+      </button>
+      <div class="rc-det"><div>${open?rcDetail(a):""}</div></div></div>`;
+  }).join("");
+}
+/* รายละเอียดใบสมัคร — เฉพาะที่ทีมงานต้องใช้ตรวจ · เลขบัตรเต็มไม่มีให้เห็น (ระบบไม่เก็บ) */
+function rcDetail(a){
+  const ai=a.ai,i=a.identity||{},admin=rank(me.role)>=rank("admin");
+  const kv=[
+    ["เบอร์",a.phone?`<a href="tel:${esc(a.phone)}">${esc(a.phone)}</a>`:"—"],
+    ["อีเมล",esc(a.email||"—")],
+    ["อู่",esc(a.shop||"—")],
+    ["อายุ / ประสบการณ์",`${a.age!=null?esc(String(a.age))+" ปี":"—"} / ${a.years!=null?esc(String(a.years))+" ปี":"—"}`],
+    ["พื้นที่",esc(a.area||"—")+(a.lat&&a.lng?` · <a href="https://maps.google.com/?q=${encodeURIComponent(a.lat+","+a.lng)}" target="_blank" rel="noopener">แผนที่</a>`:"")],
+    ["งานที่รับ",esc((a.cats||[]).map(c=>RC_CAT[c]||c).join(", ")||"—")],
+    ["ราคาเริ่ม / รับประกัน",`${a.from?"฿"+Number(a.from).toLocaleString("th-TH"):"—"} / ${a.warranty!=null?esc(String(a.warranty))+" วัน":"—"}`],
+    ["ออกไปซ่อมนอกสถานที่",a.mobile?`ได้${a.radius?" · รัศมี "+esc(String(a.radius))+" กม.":""}`:"ไม่"],
+    ["ใบรับรอง",a.hasCert?"มี":"ไม่มี — ต้องสัมภาษณ์ทักษะ"],
+    ["ส่งเมื่อ",a.createdAt?new Date(a.createdAt).toLocaleString("th-TH",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})+(a.revision>1?` · แก้ไขครั้งที่ ${esc(String(a.revision-1))}`:""):"—"],
+  ];
+  const flags=(ai&&ai.flags)||[];
+  const aiBox=!ai?`<small>ยังไม่มีผล AI — ทีมงานตรวจเองทั้งหมด</small>`
+    :`${ai.status!=="complete"?`<small>${ai.status==="skipped"?"AI ไม่ได้ดูรูป (ผู้สมัครไม่ยินยอม) — ทีมงานตรวจเอง":"AI ยังตรวจไม่สำเร็จ — กดตรวจอีกครั้งในหน้าตรวจเต็ม"}</small>`:""}
+      ${flags.length?flags.map(f=>`<div class="rc-flag ${f.block?"high":esc(f.level||"low")}"><i class="ti ${f.block?"ti-ban":RC_LV[f.level]||RC_LV.low}"></i><span>${f.block?"<b>ไม่ผ่าน:</b> ":""}${esc(f.msg)}</span></div>`).join(""):ai.status==="complete"?"<small>ไม่พบจุดน่าสงสัย</small>":""}
+      ${ai.summary?`<div>${esc(ai.summary)}</div>`:""}`;
+  const idBox=i.mode==="didit"
+    ?`<div>${(RC_ID[i.status]||RC_ID.not_started)[1]}</div>${i.name?`<div>ชื่อตามบัตร: <b>${esc(i.name)}</b></div>`:""}${i.birth?`<div>วันเกิดตามบัตร: ${esc(i.birth)}</div>`:""}${i.last3?`<div>เลขบัตรลงท้าย …${esc(i.last3)}</div>`:""}
+      ${(i.flags||[]).map(f=>`<div class="rc-flag ${f.block?"high":esc(f.level||"low")}"><i class="ti ${f.block?"ti-ban":RC_LV[f.level]||RC_LV.low}"></i><span>${esc(f.msg)}</span></div>`).join("")}`
+    :`<div>ทีมงานตรวจบัตรเอง${a.idLast3?` · เลขที่กรอกลงท้าย …${esc(String(a.idLast3))}`:""}</div>
+      <div>${a.idChecked?'<span class="rc-pill ok"><i class="ti ti-circle-check"></i>เทียบเลขบนรูปบัตรแล้ว ตรงกับที่กรอก</span>':'<span class="rc-pill warn"><i class="ti ti-scan"></i>ยังไม่มีใครเทียบเลขบนรูปบัตร</span>'}</div>`;
+  return `<div class="rc-in">
+    <div class="rc-kv">${kv.map(([k,v])=>`<p><span>${k}</span>${v}</p>`).join("")}${a.about?`<p style="grid-column:1/-1"><span>ถนัด / แนะนำตัว</span>${esc(a.about)}</p>`:""}</div>
+    <div class="rc-box"><h4><i class="ti ti-robot"></i> AI คัดกรอง</h4>${aiBox}<small>AI ชี้จุดที่ควรดู ไม่ได้อนุมัติแทนคน</small></div>
+    <div class="rc-box"><h4><i class="ti ti-id"></i> ตัวตน</h4>${idBox}</div>
+    <div class="rc-box"><h4><i class="ti ti-photo"></i> เอกสารและรูป</h4>
+      <div class="rc-docs" data-docs></div>
+      <div><button class="btn sm" type="button" data-rc-docs><i class="ti ti-eye"></i> ดูเอกสาร</button></div>
+      <small>บัตรประชาชน รูปคู่บัตร และใบรับรอง เป็นข้อมูลส่วนบุคคล — เปิดดูทุกครั้งมีบันทึกว่าใครเปิด และระบบลบทิ้งเองเมื่อตรวจเสร็จ</small></div>
+    <div class="rc-act">
+      <a class="btn sm primary" href="/staff/review/${encodeURIComponent(a.uid)}" target="_blank" rel="noopener"><i class="ti ti-clipboard-check"></i> ${admin?"ตรวจและตัดสิน":"เปิดหน้าตรวจเต็ม"}</a>
+      <small>${admin?"หน้าตรวจเต็มในแอป: เทียบเลขบัตร บันทึกหลักฐานรายข้อ แล้วอนุมัติหรือส่งกลับให้แก้":"อนุมัติหรือส่งกลับให้แก้ได้เฉพาะ admin · คุณช่วยโทรยืนยัน เทียบเลขบัตร และดูเอกสารได้"}</small>
+    </div></div>`;
+}
+async function rcDocs(item,btn){
+  const box=item.querySelector("[data-docs]"),uid=item.dataset.uid;
+  btn.disabled=true;btn.innerHTML='<i class="ti ti-loader-2"></i> กำลังเปิด...';
+  try{
+    const docs=(await api("/api/tech/docs?uid="+encodeURIComponent(uid))).docs||[];
+    /* ปิดแถวไปแล้วระหว่างรอ — ไม่วางรูปลงหน้าจอที่ไม่มีใครดู */
+    if(!item.isConnected||!item.classList.contains("open"))return;
+    box.innerHTML=docs.length?docs.map(d=>`<figure><img src="${esc(d.url)}" alt="${esc(RC_DOC[d.kind]||d.kind)}" data-zoom><figcaption>${esc(RC_DOC[d.kind]||d.kind)}</figcaption></figure>`).join("")
+      :'<small>ไม่มีเอกสาร (ตรวจเสร็จแล้วระบบลบรูปบัตรทิ้ง หรือผู้สมัครยังไม่ได้แนบ)</small>';
+    btn.remove();
+  }catch(e){ btn.disabled=false;btn.innerHTML='<i class="ti ti-eye"></i> ดูเอกสาร';toast("เปิดเอกสารไม่ได้: "+e.message,"ti-alert-triangle") }
+}
+/* ออกจากหน้านี้ = เอารูปเอกสารออกจากจอ ไม่ทิ้งรูปบัตรค้างไว้ในหน้าที่ซ่อนอยู่ */
+function rcHideDocs(){
+  document.querySelectorAll("#rcList [data-docs]").forEach(b=>{b.innerHTML=""});
+  document.querySelectorAll(".rc-zoom").forEach(z=>z.remove());
+  if(rcOpen){rcOpen="";if(RC.length&&$("rcList").querySelector(".rc-item"))rcDraw()}
+}
+document.addEventListener("click",e=>{
+  const f=e.target.closest("#rcFilter [data-rc]");
+  if(f){document.querySelectorAll("#rcFilter button").forEach(x=>x.classList.toggle("on",x===f));rcFilter=f.dataset.rc;rcDraw();return}
+  const row=e.target.closest("#rcList .rc-row");
+  if(row){
+    const item=row.closest(".rc-item"),uid=item.dataset.uid,a=RC.find(x=>x.uid===uid);if(!a)return;
+    /* กางได้ทีละใบ — ใบที่ปิดไปเอารายละเอียดและรูปออกจากหน้าด้วย */
+    document.querySelectorAll("#rcList .rc-item.open").forEach(x=>{if(x!==item){x.classList.remove("open");x.querySelector(".rc-row").setAttribute("aria-expanded","false");const d=x.querySelector(".rc-det>div");setTimeout(()=>{if(!x.classList.contains("open"))d.innerHTML=""},380)}});
+    const open=!item.classList.contains("open");rcOpen=open?uid:"";
+    const det=item.querySelector(".rc-det>div");
+    if(open)det.innerHTML=rcDetail(a);
+    else setTimeout(()=>{if(!item.classList.contains("open"))det.innerHTML=""},380);
+    requestAnimationFrame(()=>{item.classList.toggle("open",open);row.setAttribute("aria-expanded",String(open))});
+    return;
+  }
+  const db=e.target.closest("#rcList [data-rc-docs]");
+  if(db){rcDocs(db.closest(".rc-item"),db);return}
+  const im=e.target.closest("#rcList img[data-zoom]");
+  if(im){const z=document.createElement("div");z.className="rc-zoom";z.innerHTML=`<img src="${esc(im.src)}" alt="${esc(im.alt)}">`;z.onclick=()=>z.remove();document.body.append(z);return}
+});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelectorAll(".rc-zoom").forEach(z=>z.remove())});
 
 /* ═══════════ สอน AI ═══════════ */
 async function loadKb(){

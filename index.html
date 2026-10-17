@@ -4353,9 +4353,12 @@ Nav.route({path:"studio",name:"studio",open:async()=>{if(await needMe())openStud
 Nav.route({path:":k",parent:"studio",test:p=>["settings","stats","edit","post","qr"].includes(p.k),open:p=>{if(!myShop()||MODE!=="tech")return;({settings:studioSettings,stats:studioStats,edit:openShopEdit,post:()=>gigForm(),qr:shopQr})[p.k]()}});
 Nav.route({path:"work",name:"work",open:async()=>{if(await needMe()&&modesAvail().includes("tech"))setMode("tech");else applyMode()}});
 Nav.route({path:":t",parent:"work",test:p=>["find","queue","messages","shop","ai","posts"].includes(p.t),open:p=>{if(MODE==="tech")setTab2(p.t)}});
-Nav.route({path:"staff",open:async()=>{if(await needU()&&modesAvail().includes("staff"))setMode("staff")}});
+/* เส้นทางยาวต้องลงทะเบียนก่อนเส้นทางสั้นที่ขึ้นต้นเหมือนกัน — ตัวจับเส้นทางเลือกอันแรกที่ตรง ถ้า "staff" มาก่อน ลิงก์ /staff/review จะเปิดแค่โหมดทีมงาน */
+/* ลิงก์จากหน้า "รับช่าง" ใน Cendon Experience — เปิดใบสมัครของคนนั้นตรง ๆ */
+Nav.route({path:"staff/review/:uid",test:p=>/^[\w-]{6,128}$/.test(p.uid),open:async p=>{if(await needU()&&modesAvail().includes("staff")){setMode("staff");await reviewList(p.uid)}}});
 /* ลิงก์จากการ์ด LINE ของทีมงาน "มีใบสมัครช่างใหม่" — เปิดหน้าตรวจใบสมัครทันที */
-Nav.route({path:"staff/review",open:async()=>{if(await needU()&&modesAvail().includes("staff")){setMode("staff");reviewList()}}});
+Nav.route({path:"staff/review",open:async()=>{if(await needU()&&modesAvail().includes("staff")){setMode("staff");await reviewList()}}});
+Nav.route({path:"staff",open:async()=>{if(await needU()&&modesAvail().includes("staff"))setMode("staff")}});
 Nav.route({path:"join",open:async()=>{if(await needU())return openJoin()}});
 Nav.route({path:"quote",name:"qcheck",open:()=>quotePage()});
 Nav.route({path:"listen",name:"listen",open:()=>listenPage()});
@@ -6200,13 +6203,16 @@ function testTech(){
       });
     }});
 }
-async function reviewList(){
+async function reviewList(open){
   sheet({title:"ตรวจใบสมัคร",body:'<div class="skel"></div>'});
   try{
     const L=(await api("/api/tech/applications")).applications||[];
+    /* เปิดตรงจากลิงก์ (/staff/review/<uid>) — ไม่มีใบนั้นแล้ว (ตรวจไปแล้ว/ถอนใบ) ก็เหลือรายการให้เห็น */
+    const want=typeof open==="string"&&L.find(x=>x.uid===open);
     sheet({title:"ตรวจใบสมัคร",body:(L.length?L.map((a,i)=>`<button class="jl" data-i="${i}" style="animation-delay:${i*35}ms"><span class="av sq" style="--c1:${PALETTE[i%PALETTE.length]}">${initial(a.name)}</span><span class="jb"><b>${esc(a.name)}</b><small>${esc(a.shop||"")} · ${esc(a.area)} · ${a.years} ปี</small></span>${aiBadge(a.ai)}<i class="ti ti-chevron-right"></i></button>`).join("")
       :'<div class="empty"><i class="ti ti-inbox"></i><b>ไม่มีใบสมัครรอตรวจ</b></div>'),
       mount(b){b.querySelectorAll("[data-i]").forEach(x=>x.onclick=()=>reviewOne(L[+x.dataset.i]))}});
+    if(want)reviewOne(want);else if(typeof open==="string")toast("ใบสมัครนี้ไม่ได้รอตรวจแล้ว");
   }catch(e){$("bsB").innerHTML=`<div class="empty"><i class="ti ti-cloud-off"></i><b>${esc(e.message)}</b></div>`}
 }
 /* ── ผล AI คัดกรองใบสมัคร (ทีมงานเห็นเท่านั้น) — AI ไม่ได้อนุมัติแทนคน แค่ชี้ว่าควรดูตรงไหน ── */

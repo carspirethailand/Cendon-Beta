@@ -23,7 +23,7 @@
     if (key === 'quote' && !attachments.some(a=>a.mime?.startsWith('image/'))) throw Error(t(['แนบรูปใบเสนอราคาก่อนวิเคราะห์','Attach a quote photo first.']));
     if (key === 'listen' && !attachments.some(a=>a.mime?.startsWith('audio/'))) throw Error(t(['แนบเสียงหรือกดอัดเสียงก่อนวิเคราะห์','Attach or record audio first.']));
     if (key === 'shake' && !context.measurement?.peaks?.length) throw Error(t(['เปิดเตรียมข้อมูลและวัดการสั่นให้เสร็จก่อน','Open Prepare data and complete a measurement first.']));
-    if (key === 'own' && !context.cost?.entryCount) throw Error(t(['ยังไม่มีประวัติค่าใช้จ่าย ให้บันทึกก่อนเพื่อให้ AI วิเคราะห์จากข้อมูลจริง','Save cost records first so AI has real data to analyze.']));
+    if (key === 'own' && !context.cost?.entryCount) throw Object.assign(Error(t(['ยังไม่มีประวัติค่าใช้จ่าย ให้บันทึกก่อนเพื่อให้ AI วิเคราะห์จากข้อมูลจริง','Save cost records first so AI has real data to analyze.'])),{code:'no_cost'});
     if (key === 'park' && !context.parking && !attachments.length && !question) throw Error(t(['บันทึกจุดจอด หรือแนบรูปและโน้ตก่อน','Save a parking spot, or attach a photo and note first.']));
     if (attachments.length > 3 || attachments.reduce((n,a)=>n+(a.b64?.length||0),0)>12000000) throw Error(t(['แนบไม่เกิน 3 ไฟล์ และลดขนาดไฟล์ก่อนส่ง','Use up to 3 smaller files.']));
     if (attachments.some(a=>! /^(image\/(jpeg|png|webp)|audio\/(webm|mp4|mpeg|wav|ogg|x-wav))(;[\w=.-]+)?$/i.test(a.mime||''))) throw Error(t(['เครื่องมือนี้รองรับภาพ JPG/PNG/WebP และไฟล์เสียงเท่านั้น','Use JPG/PNG/WebP images or audio for this tool.']));

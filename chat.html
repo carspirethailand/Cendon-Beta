@@ -3025,7 +3025,7 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 <script src="call-session.js?v=2026-10-17-r7" defer></script>
 <link rel="stylesheet" href="valet.css?v=2">
 <script src="valet-core.js?v=5" defer></script>
-<script src="valet.js?v=4" defer></script>
+<script src="valet.js?v=5" defer></script>
 <script src="bell.js?v=6" defer></script>
 <script src="drop.js?v=3" defer></script>
 <script src="./techs.js"></script>
@@ -5438,7 +5438,11 @@ async function sendMsg(){
   if(!text&&pending.length===0)return;
   let featureJob=null;
   try{featureJob=window.CendonFeatureAI?await window.CendonFeatureAI.prepare(pending,text,messages.filter(m=>m.role==="user").at(-1)):null;}
-  catch(e){toast(e.message,"ti-info-circle");return;}
+  catch(e){
+    /* ต้นทุน & สมุดรถ แต่ยังไม่มีค่าใช้จ่ายที่บันทึก: ไม่ปล่อยให้ตัน — พาไปหน้าบันทึกค่าใช้จ่ายของรถคันนี้ (หรือบอก AI ให้จดให้ผ่าน Valet) */
+    if(e.code==="no_cost"){const c=selCar();toast(TT("ยังไม่มีค่าใช้จ่ายที่บันทึก — กำลังพาไปหน้าบันทึกของรถคันนี้ · หรือพิมพ์บอก AI เช่น “เติมน้ำมัน 1,200 บาท” ให้จดให้","No costs saved yet — opening this car's cost log · or tell the AI e.g. “filled up for 1,200 baht” to log it"),"ti-receipt");
+      if(c)setTimeout(()=>{location.href="/garage/"+encodeURIComponent(c.id)+"/cost"},1600);return}
+    toast(e.message,"ti-info-circle");return;}
   if(sending)return;
   const atts=featureJob?featureJob.attachments.map(a=>({...a,kind:a.kind||(a.mime.startsWith("audio/")?"audio":"image"),name:a.name||featureJob.key})):pending.slice();pending=[];window.pending=pending;renderAtts();
   /* ไฟล์ที่ส่งแล้วเก็บถาวร: มีรหัสแล้ว = ส่งขึ้นเซิร์ฟเวอร์ · ไฟล์ที่เครื่องมือ AI สร้างใหม่ (ยังไม่มีรหัส) = เก็บก่อนแล้วส่งขึ้น */
@@ -12776,7 +12780,7 @@ setTimeout(mount,800); setTimeout(mount,2500);
 <!-- แผงผู้ดูแลแบบลอย: โหลดทุกหน้า แต่แสดงเฉพาะผู้ดูแลที่เปิดไว้ในตั้งค่า -->
 <script src="cendon-admin.js" defer></script>
 <link rel="stylesheet" href="feature-ai.css?v=1">
-<script src="feature-ai.js?v=2"></script>
+<script src="feature-ai.js?v=3"></script>
 <script src="fluid.js" defer></script>
 <script src="crop.js" defer></script>
 <script src="cendon-line.js" defer></script>

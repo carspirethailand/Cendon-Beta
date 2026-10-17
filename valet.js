@@ -42,7 +42,7 @@ function body(){
 }
 
 /* ═══ แกะบล็อกคำสั่งออกจากคำตอบ ═══ */
-const ACTS=["enable","go","search","setting","add_car","car_km","pick_car","post_job","urgent","book","msg_shop","job","send_photos","jobs","log","due","shop_status"];
+const ACTS=["enable","go","search","setting","add_car","car_km","car_info","pick_car","post_job","urgent","book","msg_shop","job","send_photos","jobs","log","due","shop_status"];
 const one=(v,n)=>String(v==null?"":v).replace(/[\r\n\t]+/g," ").trim().slice(0,n);
 const LEN={symptom:600,text:600,note:300,q:120,shop:80,title:60,phone:20};
 function clean(o){
@@ -50,8 +50,14 @@ function clean(o){
   const a={do:o.do};
   ["to","q","key","value","make","model","year","mileage","car","km","symptom","cat","when","mode","text","state",
    "shop","op","job","note","kind","amount","litres","item","title","date","phone"].forEach(k=>{if(o[k]!=null&&o[k]!=="")a[k]=one(o[k],LEN[k]||80)});
+  if(o.do==="car_info")INFO_K.forEach(k=>{if(o[k]!=null&&o[k]!=="")a[k]=one(o[k],INFO_MAX[k])});
   return a;
 }
+/* ข้อมูลรถที่ AI กรอกให้จากที่ผู้ใช้พูด (ช่องเดียวกับ "ข้อมูลเพิ่มเติม" ในการาจ · หลังบ้านตรวจซ้ำด้วย cleanInfo) */
+const INFO_K=["trim","engine","engine_code","model_year","gear","fuel","drive","tire","vin","plate","province"];
+const INFO_MAX={trim:60,engine:60,engine_code:40,model_year:4,gear:20,fuel:20,drive:20,tire:30,vin:17,plate:20,province:40};
+const INFO_LBL={trim:["รุ่นย่อย / เกรด","Trim"],engine:["เครื่องยนต์","Engine"],engine_code:["รหัสเครื่องยนต์","Engine code"],model_year:["ปีรุ่น (ค.ศ.)","Model year"],
+  gear:["เกียร์","Gearbox"],fuel:["เชื้อเพลิง","Fuel"],drive:["ระบบขับเคลื่อน","Drivetrain"],tire:["ขนาดยาง","Tyre size"],vin:["เลขตัวถัง (VIN)","VIN"],plate:["ทะเบียนรถ","Plate"],province:["จังหวัด","Province"]};
 /* ประโยคสั่งให้ทำในแอป (ไม่ใช่แค่ถาม) — ใช้ตัดสินว่าไม่ต้องค้นร้านล่วงหน้า และ Valet ปิดอยู่ให้ขึ้นการ์ดขออนุญาตแทน */
 const ACT_RE=/(ทัก|ส่งข้อความ|แชท|แจ้ง|บอก)\s*(ไป)?\s*(หา|ถึง|กับ)?\s*(ร้าน|ช่าง|อู่)|ขอ\s*(ใบ)?ราคา\s*(จาก|กับ)?\s*(ร้าน|ช่าง|อู่)|(เรียก|ตาม)\s*ช่าง|ช่างด่วน|(ประกาศ|โพสต์)\s*หาช่าง|ยกเลิก\s*(งาน|ใบงาน|นัด)|รับราคา|ปิดงาน|งานเสร็จแล้ว|เพิ่มรถ|(อัปเดต|อัพเดท|แก้|เปลี่ยน)\s*(เลข)?ไมล์|พาไป(หน้า)?|เปิดหน้า|เปลี่ยน\s*(เป็น)?\s*ธีม|ธีม(มืด|สว่าง)|จด\s*(เติม)?\s*น้ำมัน|ตั้งวัน|ส่งรูปให้ช่าง|\b(message|text|tell)\s+(the\s+)?(shop|mechanic|garage)|\bbook\b|\bcancel\s+(the\s+|my\s+)?(job|booking)|\bdark mode\b|\badd\s+(a|my)\s+car\b/i;
 const denied=t=>/^(?:ช่วย\s*)?(?:อย่า|ห้าม|ไม่ต้อง|ยังไม่ต้อง|do not|don't|never)\s*(?:ทัก|ส่งข้อความ|แจ้ง|บอก|message|text|tell)/i.test(t);
@@ -179,6 +185,14 @@ function card(m,i){
       ${done?stLine(a):`<div class="vl-km"><span>${old?old.toLocaleString():"—"}</span><i class="ti ti-arrow-right"></i><b>${nw?nw.toLocaleString():"—"}</b><small>${T("กม.","km")}</small></div>
       ${low?`<p class="vl-warn"><i class="ti ti-alert-triangle"></i>${T("น้อยกว่าเลขเดิม — ตรวจให้แน่ใจก่อนยืนยัน","Lower than the current reading — double-check first")}</p>`:""}
       <div class="vl-acts"><button type="button" class="vl-b" data-va="km" data-car="${esc(c.id)}" ${nw>0&&nw<=3e6?"":"disabled"}><i class="ti ti-check"></i>${low?T("ยืนยันแม้น้อยกว่าเดิม","Confirm anyway"):T("ยืนยัน","Confirm")}</button><button type="button" class="vl-b gh" data-va="no">${T("ไม่ใช่ตอนนี้","Not now")}</button></div>`}</div>`}
+  /* บันทึกข้อมูลรถที่ผู้ใช้บอก: เห็นทุกช่องที่จะบันทึก แก้ได้ก่อนกด · ไม่มีช่องไหน = ไม่มีปุ่ม */
+  if(a.do==="car_info"){const c=cars().find(x=>x.id===a.car)||curCar(),F=INFO_K.filter(k=>a[k]);
+    if(!c)return `<div class="vl" ${id}>${head("ti-car","—")}<p class="vl-st err"><i class="ti ti-alert-triangle"></i>${T("ไม่พบรถคันนี้ในการาจ","That car isn't in your garage")}</p></div>`;
+    return `<div class="vl" ${id}>${head("ti-file-text",T("บันทึกข้อมูลรถ · ","Save car details · ")+esc(carName(c)))}
+      ${done?stLine(a):F.length?`${F.map(k=>`<div class="vl-f"><label><span>${T(INFO_LBL[k][0],INFO_LBL[k][1])}</span><input data-f="${k}" maxlength="${INFO_MAX[k]}" value="${esc(a[k])}"></label></div>`).join("")}
+      <p class="vl-warn" style="color:inherit;opacity:.7"><i class="ti ti-info-circle"></i>${T("ตรวจให้ตรงก่อนบันทึก แก้ในช่องได้ · ข้อมูลเดิมช่องอื่นไม่เปลี่ยน","Check before saving — you can edit · other saved details stay as they are")}</p><p class="vl-err" hidden></p>
+      <div class="vl-acts"><button type="button" class="vl-b" data-va="info" data-car="${esc(c.id)}"><i class="ti ti-check"></i>${T("บันทึก","Save")}</button><button type="button" class="vl-b gh" data-va="no">${T("ไม่ใช่ตอนนี้","Not now")}</button></div>`
+      :`<p class="vl-st err"><i class="ti ti-alert-triangle"></i>${T("ยังไม่มีข้อมูลรถให้บันทึก","No car details to save")}</p>`}</div>`}
   if(a.do==="post_job"){const when=a.when||T("วันนี้","Today"),mode=a.mode==="shop"?"shop":"mobile";
     return `<div class="vl" ${id}>${head("ti-speakerphone",T("ประกาศหาช่าง (ไม่ด่วน)","Post a job (not urgent)"))}
       ${done?stLine(a)+seeBtn(a,T("ดูข้อเสนอจากช่าง","See offers")):`${carH(a)}
@@ -343,6 +357,18 @@ async function act(btn){
     try{W.CarSpec&&W.CarSpec.ensure({id,make,model,year}).catch(()=>{})}catch(e){}
     try{typeof renderCarUI==="function"&&renderCarUI()}catch(e){}
     a._id=id;finish(m,a,"done",T(`เพิ่ม ${make} ${model} ${year} เข้าการาจแล้ว`,`Added ${make} ${model} ${year} to your garage`));
+  }).catch(e=>errOn(el,e.message));
+  if(k==="info")return busyBtn(btn,async()=>{
+    const g=garage(),c=g.find(x=>x.id===btn.dataset.car);if(!c)return;
+    const add={};INFO_K.forEach(f=>{const x=el.querySelector(`[data-f="${f}"]`);if(x&&x.value.trim())add[f]=x.value.trim().slice(0,INFO_MAX[f])});
+    if(add.vin){add.vin=add.vin.toUpperCase().replace(/[\s-]/g,"");if(!/^[A-HJ-NPR-Z0-9]{17}$/.test(add.vin))throw new Error(T("เลขตัวถัง (VIN) ต้องมี 17 ตัว ไม่มี I O Q","A VIN has 17 characters, no I, O or Q"))}
+    if(add.model_year&&!(/^\d{4}$/.test(add.model_year)&&+add.model_year>=1950&&+add.model_year<=new Date().getFullYear()+1))throw new Error(T("ปีรุ่นไม่ถูกต้อง","That model year doesn't look right"));
+    if(!Object.keys(add).length)return;
+    c.info={...(c.info||{}),...add};saveGarage(g);
+    if(typeof carsAreRemote==="function"&&carsAreRemote()&&typeof pushCar==="function"){const u=(W.spireAuth||W.auth).currentUser;await pushCar(c,await u.getIdToken())}
+    try{W.CarSpec&&W.CarSpec.ensure({id:c.id,make:c.make,model:c.model,year:c.year,info:c.info}).catch(()=>{})}catch(e){}
+    try{typeof renderCarUI==="function"&&renderCarUI()}catch(e){}
+    finish(m,a,"done",T(`บันทึกข้อมูล ${carName(c)} แล้ว (${Object.keys(add).length} ช่อง)`,`Saved ${Object.keys(add).length} detail${Object.keys(add).length>1?"s":""} for ${carName(c)}`));
   }).catch(e=>errOn(el,e.message));
   if(k==="km")return busyBtn(btn,async()=>{
     const g=garage(),c=g.find(x=>x.id===btn.dataset.car);if(!c)return;

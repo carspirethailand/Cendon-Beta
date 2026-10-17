@@ -102,7 +102,7 @@
     }
     function open(){
       for(const animation of animations)animation.cancel();animations.clear();
-      run++;active=true;direction=0;expanding=false;connecting=true;holdFrom=gatherK=ungatherAt=outroAt=0;outroDone=null;priorFocus=document.activeElement;root.classList.remove('cv-ending');clearDrag();root.style.clipPath='';
+      run++;active=true;document.documentElement.classList.add('cv-calling');direction=0;expanding=false;connecting=true;holdFrom=gatherK=ungatherAt=outroAt=0;outroDone=null;priorFocus=document.activeElement;root.classList.remove('cv-ending');clearDrag();root.style.clipPath='';
       O.bloomAt=performance.now()+(anchor?0:200);O.closingAt=0;
       if(anchor){
         barFrom=surfaceRGB();barR=parseFloat(getComputedStyle(anchor).borderTopLeftRadius)||16;
@@ -124,7 +124,7 @@
       if(dir&&slideEl&&!reduced&&!shelled())animate(slideEl,[{translate:`${dir*64}px 0`,opacity:0,filter:'blur(8px)'},{translate:'0 0',opacity:1,filter:'blur(0px)'}],{duration:640,easing:EASE});
     }
     function close(){
-      const closing=++run,wasFull=mode==='full';active=false;press?.dispose();clearDrag();expanding=false;results?.remove();results=null;
+      const closing=++run,wasFull=mode==='full';active=false;document.documentElement.classList.remove('cv-calling');press?.dispose();clearDrag();expanding=false;results?.remove();results=null;
       resetRootStyle();
       if(dock){
         if(!wasFull&&direction&&!reduced&&!dock.hidden)flyOut(direction).then(()=>{if(run===closing)restoreBar(-direction);});
@@ -197,13 +197,15 @@
       onMove:dx=>{if(!dock||!active||bead)return;holdFrom=0;dock.style.transition='none';dock.style.transform=`translateX(${dx*.86}px) rotate(${dx*.006}deg)`;dock.style.opacity=String(1-Math.min(.75,Math.abs(dx)/380));},
       onSwipe:d=>{direction=d;try{navigator.vibrate?.(10);}catch{}session?.end();},
       onDrop:()=>{if(!expanding)dropBack();},
-      onCancel:()=>{if(expanding||bead||!dock)return;dock.style.transition='transform .55s cubic-bezier(.2,1.25,.35,1),opacity .3s';dock.style.transform='';dock.style.opacity='';},
+      onCancel:()=>{if(bead&&!expanding){dropBack();return;}if(expanding||bead||!dock)return;dock.style.transition='transform .55s cubic-bezier(.2,1.25,.35,1),opacity .3s';dock.style.transform='';dock.style.opacity='';},
       onTap:()=>{if(!active||bead)return;if(floating())full();else session?.mute();}});
     if(dock){
       dock.addEventListener('pointerdown',()=>session?.wake?.());
       const touch=dock.querySelector('.cv-wave-touch'),point=e=>({x:e.clientX,y:e.clientY,time:e.timeStamp});
       touch.addEventListener('pointerdown',e=>{if(e.button!==0||!active)return;try{touch.setPointerCapture(e.pointerId);}catch{}press.down(point(e));});
       touch.addEventListener('pointermove',e=>press.move(point(e)));touch.addEventListener('pointerup',e=>press.up(point(e),dock.clientWidth));touch.addEventListener('pointercancel',()=>press.cancel());touch.addEventListener('lostpointercapture',()=>{if(!expanding&&!bead)press.cancel();});
+      /* จุดดำขึ้นแล้ว: นิ้วเป็นของการลาก — ห้ามเบราว์เซอร์เอาไปเลื่อนหน้า/ดึงรีเฟรช (ไม่งั้นสายลากหลุดกลางทาง) */
+      touch.addEventListener('touchmove',e=>{if(bead&&e.cancelable)e.preventDefault();},{passive:false});
       touch.addEventListener('contextmenu',e=>e.preventDefault());touch.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();full();}else if(e.key===' '){e.preventDefault();session?.mute();}});
       dock.querySelector('[data-cv="end"]').onclick=()=>session?.end();mute.onclick=()=>session?.mute();dock.querySelector('[data-cv="expand"]').onclick=()=>full();dock.querySelector('[data-cv="pmute"]').onclick=e=>{e.stopPropagation();session?.mute();};
     }

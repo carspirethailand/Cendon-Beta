@@ -130,3 +130,9 @@ test('chat Valet: commands are recognised, Valet-off asks once with an allow car
   assert.match(chat,/#wAsk,#inp\{border:0!important/,'no inner box in the chat field');
   assert.match(core,/การช่าง\|ช่าง\|อู่\|ร้าน/,'"นนท์การช่าง" matches "นนท์แอร์ แอนด์ เซอร์วิส" by its core name');
 });
+test('dragging the dot owns the finger: no page scroll or pull-to-refresh mid-drag, a cancelled drag never leaves the dot stuck',()=>{
+  assert.match(surface,/touch\.addEventListener\('touchmove',e=>\{if\(bead&&e\.cancelable\)e\.preventDefault\(\);\},\{passive:false\}\)/,'touchmove is blocked only while the dot exists, so a plain swipe on the wave still scrolls the page');
+  assert.match(surface,/onCancel:\(\)=>\{if\(bead&&!expanding\)\{dropBack\(\);return;\}/,'a browser cancel mid-drag returns the dot to the wave');
+  assert.match(surface,/active=true;document\.documentElement\.classList\.add\('cv-calling'\)/);assert.match(surface,/active=false;document\.documentElement\.classList\.remove\('cv-calling'\)/);
+  assert.match(css,/html\.cv-calling,html\.cv-calling body\{overscroll-behavior-y:none\}/,'pull-to-refresh (which would drop the call) is off only during a call');
+});

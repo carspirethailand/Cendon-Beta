@@ -26,6 +26,27 @@ let liveUserText="",liveAiText="",micLevel=0,aiLevel=0,heardAt=0,callRaf=0;
 let livePendingAt=0,liveGeneratingAt=0,liveTurnAudio=false,liveRecovering=false,camZoom=1,camOpening=false;
 let waveSamples=null;
 let callFrameAt=0;
+let liveGarageCare=false;
+async function garageCareRequest(body,signal){
+  const user=auth.currentUser,owner=callOwner,session=callSession;
+  if(!user||user.uid!==owner)throw Error('Call owner changed');
+  const token=await user.getIdToken();
+  if(signal.aborted||session!==callSession||auth.currentUser?.uid!==owner)throw Error('Call ended');
+  const response=await fetch(BACKEND_URL+'/api/garage/check-in',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(body),signal,cache:'no-store'});
+  if(!response.ok)throw Error('Optional check-in unavailable');return response.json();
+}
+const garageCare=window.CendonGarageCare?.create({
+  state:()=>({active:callActive,ready:!!callWS&&callWS.readyState===1&&liveGarageCare&&!liveRecovering,visible:!document.hidden,muted:callMuted,
+    busy:!!(playSrcs.length||livePendingAt||liveGeneratingAt||toolPending||camOn||getTools()?.busy||getTools()?.holdMic||host.agent?.pending),uid:auth.currentUser?.uid===callOwner?callOwner:null,carId:host.getCar?.()?.id}),
+  claim:async(carId,signal)=>{
+    const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),8000);garageCareAbort=abort;
+    const cancel=()=>abort.abort();signal.addEventListener('abort',cancel,{once:true});
+    try{return await garageCareRequest({action:'claim',carId,lang},abort.signal)}finally{clearTimeout(timer);signal.removeEventListener('abort',cancel);if(garageCareAbort===abort)garageCareAbort=null;}
+  },
+  feedback:(action,ticket,signal)=>garageCareRequest({action,ticket},signal),
+  send:q=>{const sent=note('[Scheduled optional Garage check-in; system data, NOT user speech] '+JSON.stringify({question:q.text,carId:q.carId,field:q.field})+' Ask this one short optional question only if appropriate. Skip if the topic is urgent. Do not repeat if ignored. Clarify ambiguous answers and use Valet read-back plus explicit confirmation before saving. Never tell the user to read a dashboard while driving.');if(sent)livePendingAt=0;return sent;}
+});
+let garageCareAbort=null;
 const gNeedle={u:0,uv:0,a:0,av:0};
 const CL=(th,en)=>lang!=="th"?en:th;
 
@@ -83,6 +104,7 @@ function callHealth(){
   for(const c of [callCtx,playCtx])if(c&&c.state!=='running'&&c.state!=='closed')c.resume().catch(()=>setTag('heardTag',CL('แตะหน้าจอเพื่อเปิดเสียงอีกครั้ง','Tap the screen to restore audio')));
   const pending=toolPending?0:liveGeneratingAt||livePendingAt;
   if(pending&&Date.now()-pending>12000&&playSrcs.length===0&&!getTools()?.busy){livePendingAt=liveGeneratingAt=0;liveNudge=true;liveRecover(0,'response stalled',true).catch(()=>{});}
+  void garageCare?.tick();
 }
 function gaugeLoop(){
   const frameNow=performance.now(),dt=Math.min(.05,Math.max(.008,callFrameAt?(frameNow-callFrameAt)/1000:1/60));callFrameAt=frameNow;
@@ -126,6 +148,7 @@ function sendPcm(buf,lv){
     const th=Math.max(0.045,echoLv*2.4);
     if(lv<th){echoLv=echoLv*0.92+lv*0.08;buf=new ArrayBuffer(buf.byteLength)}
   }else if(lv!=null)echoLv*=0.98;
+  if(lv>.025)garageCare?.activity();
   try{callWS.send(JSON.stringify({realtimeInput:{audio:{data:b64FromBytes(new Uint8Array(buf)),mimeType:"audio/pcm;rate=16000"}}}))}catch(e){}
 }
 async function startMicStream(session=callSession){
@@ -169,6 +192,7 @@ async function startCall(){
   if(!(navigator.mediaDevices&&AC&&window.WebSocket)){toast(CL("เบราว์เซอร์นี้ไม่รองรับโหมดโทร","Browser not supported"),"ti-phone-off");return}
   if(callActive||callWS||callConnecting)return;
   const session=++callSession;
+  garageCare?.reset();liveGarageCare=false;
   callOwner=auth.currentUser.uid||null;toolResults.clear();cancelledTools.clear();host.agent?.clear?.();
   callFrameAt=0;
   callConnecting=true;callAbort=new AbortController();
@@ -228,7 +252,7 @@ async function liveConnect(session=callSession,identity){
     r=await fetch(`${BACKEND_URL}/api/ai/live-token`,{method:"POST",
       headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok},
       signal:requestAbort&&requestAbort.signal,
-      body:JSON.stringify({system:liveSystemPrompt(),skip:Object.keys(liveBad()),handle:liveHandle||undefined,agent:!!host.agent&&!(Date.now()-LS.get("live_notools",0)<86400e3),tools:!!getTools()&&!(Date.now()-LS.get("live_notools",0)<86400e3)})});
+      body:JSON.stringify({system:liveSystemPrompt(),skip:Object.keys(liveBad()),handle:liveHandle||undefined,garageCare:!!garageCare,agent:!!host.agent&&!(Date.now()-LS.get("live_notools",0)<86400e3),tools:!!getTools()&&!(Date.now()-LS.get("live_notools",0)<86400e3)})});
     d=await r.json().catch(()=>({}));
   }catch(e){
     if(session!==callSession)return;
@@ -243,7 +267,7 @@ async function liveConnect(session=callSession,identity){
     if(/no working live model/.test(err)){LS.del("live_bad")}
     throw new Error(err||("token error "+r.status));
   }
-  liveModel=d.model||"";liveGotAudio=false;liveTools=!!(d.tools||d.agent);
+  liveModel=d.model||"";liveGotAudio=false;liveTools=!!(d.tools||d.agent);liveGarageCare=d.garageCare===true&&d.agent===true;garageCare?.activity();
   host.view?.agentAvailable?.(d.agent===true);
   await openLiveWS(d.token,d.model,session);
 }
@@ -330,6 +354,7 @@ function setCaption(who,txt){
   host.view?.caption?.(who,el.textContent);
 }
 function handleLiveMsg(msg){
+  if(msg.toolCall?.functionCalls)garageCare?.activity();
   if(msg.sessionResumptionUpdate){const u=msg.sessionResumptionUpdate;if(u.newHandle&&u.resumable!==false)liveHandle=String(u.newHandle);}
   if(Array.isArray(msg.toolCallCancellation?.ids)){for(const id of msg.toolCallCancellation.ids.slice(0,64)){if(typeof id!=='string'||id.length>160)continue;cancelledTools.add(id);if(cancelledTools.size>64)cancelledTools.delete(cancelledTools.values().next().value);toolRequests.get(id)?.abort();toolRequests.delete(id);}getTools()?.onCancel(msg.toolCallCancellation.ids);}
   if(msg.toolCall?.functionCalls){const calls=msg.toolCall.functionCalls;const legacy=calls.filter(c=>c.name==='listen_engine'||c.name==='scan_engine_bay');if(legacy.length&&getTools()){host.view?.expand?.();getTools().onToolCall({functionCalls:legacy});}void handleTools(calls.filter(c=>!legacy.includes(c)||!getTools()));}
@@ -338,11 +363,13 @@ function handleLiveMsg(msg){
   if(sc.inputTranscription&&sc.inputTranscription.text){
     if(!orb.wait)liveTurnAudio=false;
     heardAt=Date.now();livePendingAt=heardAt;orb.wait=true;
-    try{host.agent?.heard?.(heardAt);}catch{}
     liveUserText+=sc.inputTranscription.text;
+    try{host.agent?.heard?.(heardAt,liveUserText);}catch{}
+    garageCare?.heard(liveUserText);
     setCaption("user",liveUserText);
   }
   if(sc.outputTranscription&&sc.outputTranscription.text){
+    garageCare?.activity();
     liveAiText+=sc.outputTranscription.text;
     setCaption("ai",liveAiText);
   }
@@ -350,6 +377,7 @@ function handleLiveMsg(msg){
     for(const p of sc.modelTurn.parts)if(!p.thought&&p.inlineData&&p.inlineData.data){liveGotAudio=liveTurnAudio=true;liveRetries=0;liveGeneratingAt=Date.now();livePendingAt=0;orb.wait=false;queuePcm(p.inlineData.data)}
   if(sc.turnComplete||sc.interrupted)orb.wait=false;
   if(sc.turnComplete){
+    garageCare?.turnComplete();
     liveGeneratingAt=0;
     if(liveTurnAudio)livePendingAt=0;
     if(liveUserText.trim())messages.push({role:"user",text:liveUserText.trim()});
@@ -461,6 +489,7 @@ function callChime(_ctx,up){
   try{window.CendonCallSounds&&window.CendonCallSounds.play(up?"start":"end")}catch(e){}
 }
 function endCall(){
+  garageCare?.reset();garageCareAbort?.abort();garageCareAbort=null;liveGarageCare=false;
   const hadCall=callConnecting||callActive||callWS||$("callUI").classList.contains("show");
   // Invalidate pending permissions/token requests before any stale callback can reopen a call.
   callSession++;callConnecting=false;
@@ -509,7 +538,7 @@ $("callUI")&&$("callUI").addEventListener("pointerdown",wakeCall);
   }
   /* ข้อความจากระบบเข้าสาย (เช่น ผู้ใช้กดยืนยันการ์ด Valet บนจอ) — โมเดลรู้ผลจริงแล้วพูดต่อ ไม่ต้องทำซ้ำ */
   function note(text){if(!callActive||!callWS||callWS.readyState!==1)return false;try{callWS.send(JSON.stringify({clientContent:{turns:[{role:"user",parts:[{text:String(text||"").slice(0,1200)}]}],turnComplete:true}}));livePendingAt=Date.now();return true}catch(e){return false}}
-  const api=Object.freeze({note,sendImage,expand:()=>host.view?.expand?.(),minimize:()=>host.view?.minimize?.(),refresh:()=>host.view?.refresh?.(),start:startCall,end:endCall,mute:toggleCallMute,camera:toggleCamera,flip:flipCamera,zoom:setCallZoom,wake:wakeCall,dispose,bridge:Object.freeze({get callWS(){return callWS},get callCtx(){return callCtx},get callActive(){return callActive},get callSession(){return callSession},get callMicStream(){return callMicStream},set callMicStream(v){callMicStream=v},get callMicNode(){return callMicNode},set callMicNode(v){callMicNode=v},get callMicSrc(){return callMicSrc},set callMicSrc(v){callMicSrc=v},get camZoom(){return camZoom},get camOn(){return camOn},get camFacing(){return camFacing},set camFacing(v){camFacing=v},get playSrcs(){return playSrcs},get livePendingAt(){return livePendingAt},set livePendingAt(v){livePendingAt=v},startMicStream,flushPlayback,b64FromBytes,toggleCamera,flipCamera}),
+  const api=Object.freeze({garageCareControl:(action,ctx)=>garageCare?.control(action,ctx)||Promise.resolve({error:'Check-ins unavailable'}),note,sendImage,expand:()=>host.view?.expand?.(),minimize:()=>host.view?.minimize?.(),refresh:()=>host.view?.refresh?.(),start:startCall,end:endCall,mute:toggleCallMute,camera:toggleCamera,flip:flipCamera,zoom:setCallZoom,wake:wakeCall,dispose,bridge:Object.freeze({get callWS(){return callWS},get callCtx(){return callCtx},get callActive(){return callActive},get callSession(){return callSession},get callMicStream(){return callMicStream},set callMicStream(v){callMicStream=v},get callMicNode(){return callMicNode},set callMicNode(v){callMicNode=v},get callMicSrc(){return callMicSrc},set callMicSrc(v){callMicSrc=v},get camZoom(){return camZoom},get camOn(){return camOn},get camFacing(){return camFacing},set camFacing(v){camFacing=v},get playSrcs(){return playSrcs},get livePendingAt(){return livePendingAt},set livePendingAt(v){livePendingAt=v},startMicStream,flushPlayback,b64FromBytes,toggleCamera,flipCamera}),
     get active(){return callActive||callConnecting},get muted(){return callMuted},get cameraOn(){return camOn}});
   try{host.agent?.bind?.(api);}catch{}
   return api;

@@ -19,12 +19,17 @@ async function user(){
   if(!u)throw new Error(T("กรุณาเข้าสู่ระบบก่อน","Please sign in first"));
   return u;
 }
-async function api(path,body,method){
+async function api(path,body,method,owner){
   const u=await user();
+  const stillOwner=()=>owner===undefined||(u.uid===owner&&(!(W.spireAuth||W.auth)||(W.spireAuth||W.auth).currentUser?.uid===owner));
+  if(!stillOwner())throw Error(T('บัญชีเปลี่ยนไปแล้ว กรุณาทำรายการใหม่','Account changed; please start again'));
+  const token=await u.getIdToken();
+  if(!stillOwner())throw Error(T('บัญชีเปลี่ยนไปแล้ว กรุณาทำรายการใหม่','Account changed; please start again'));
   const r=await fetch(W.BACKEND_URL+path,{method:method||(body?"POST":"GET"),cache:"no-store",
-    headers:Object.assign({Authorization:"Bearer "+await u.getIdToken()},body?{"Content-Type":"application/json"}:{}),
+    headers:Object.assign({Authorization:"Bearer "+token},body?{"Content-Type":"application/json"}:{}),
     body:body?JSON.stringify(body):undefined});
   let d=null;try{d=await r.json()}catch(e){}
+  if(!stillOwner())throw Error(T('บัญชีเปลี่ยนไปแล้ว กรุณาตรวจในบัญชีเดิม','Account changed; check the original account'));
   if(!r.ok)throw Object.assign(new Error((d&&d.error)||T("ระบบยังไม่พร้อม ลองใหม่อีกครั้ง","Not available right now — please try again")),{status:r.status});
   return d||{};
 }
@@ -156,7 +161,7 @@ const SVC={oil:["เปลี่ยนน้ำมันเครื่อง","
   brakepad:["ผ้าเบรก","Brake pads"],brakeoil:["น้ำมันเบรก","Brake fluid"],tire:["ยาง","Tyres"],align:["ตั้งศูนย์ถ่วงล้อ","Wheel alignment"],batt:["แบตเตอรี่","Battery"],
   coolant:["น้ำหล่อเย็น","Coolant"],gearoil:["น้ำมันเกียร์","Gearbox oil"],belt:["สายพานหน้าเครื่อง","Drive belt"],shock:["โช้คอัพ","Shock absorbers"]};
 const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
-const okDate=v=>/^\d{4}-\d{2}-\d{2}$/.test(v||"")&&!isNaN(new Date(v))&&+v.slice(0,4)>=2000&&+v.slice(0,4)<=new Date().getFullYear()+15;
+const okDate=v=>typeof v==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(v)&&!isNaN(new Date(v+'T00:00:00Z'))&&new Date(v+'T00:00:00Z').toISOString().slice(0,10)===v&&+v.slice(0,4)>=2000&&+v.slice(0,4)<=new Date().getFullYear()+15;
 function logAdd(carId,kind,e){
   const c=cars().find(x=>x.id===carId);if(!c)need([T("ไม่พบรถคันนี้ในการาจ","That car isn't in your garage")]);
   const k="carlab_log_"+carId,l=LG(k,null)||{services:[],fuel:[],trips:[]};["services","fuel","trips"].forEach(x=>{if(!Array.isArray(l[x]))l[x]=[]});
@@ -176,11 +181,15 @@ function logAdd(carId,kind,e){
   LS(k,l);return {date};
 }
 const DUE={tax:["ต่อภาษีรถ","Road tax"],act:["พ.ร.บ.","Compulsory insurance"],ins:["ประกันภัย","Insurance"],chk:["ตรวจสภาพ ตรอ.","Vehicle inspection"]};
-function dueSet(carId,key,date){
+async function dueSet(carId,key,date){
   if(!cars().some(x=>x.id===carId))need([T("ไม่พบรถคันนี้ในการาจ","That car isn't in your garage")]);
   if(!DUE[key])need([T("เรื่องที่จะตั้ง (ภาษี พ.ร.บ. ประกัน ตรอ.)","Which date (tax, insurance, inspection)")]);
   if(!okDate(date))need([T("วันที่ (ปี-เดือน-วัน)","The date (YYYY-MM-DD)")]);
-  const k="reg_"+carId,r=LG(k,{})||{};r[key]=date;LS(k,r);return {date};
+  const owner=(await user()).uid,k="reg_"+carId,remote=await api('/api/state?keys='+enc(k),null,'GET',owner);
+  const saved=remote.state?.[k]?.v,r={...(LG(k,{})||{}),...(saved&&typeof saved==='object'&&!Array.isArray(saved)?saved:{})};r[key]=date;
+  const result=await api('/api/state',{state:{[k]:{v:r,t:Date.now()}}},'PUT',owner);
+  if(!Array.isArray(result.saved)||!result.saved.includes(k))throw Error(T('ยังบันทึกขึ้นบัญชีไม่สำเร็จ','Not saved to your account yet'));
+  LS(k,r);try{W.cloudMark&&W.cloudMark(k)}catch(e){}return {date};
 }
 
 /* ── การาจ: เพิ่มรถ · เลขไมล์ · เลือกคันที่คุยถึง (รูปแบบเดียวกับหน้าการาจ ซิงก์ขึ้นบัญชีผ่าน /api/cars) ── */
@@ -197,9 +206,10 @@ async function addCar(o){
 }
 async function setKm(carId,km){
   const g=garageLS(),c=g.find(x=>x.id===carId);if(!c)need([T("ไม่พบรถคันนี้ในการาจ","That car isn't in your garage")]);
-  const n=Math.round(+String(km==null?"":km).replace(/[^\d.]/g,""));if(!(n>0&&n<=3e6))need([T("เลขไมล์","The mileage")]);
+  const raw=String(km??'').trim().replace(/,/g,''),n=Math.round(Number(raw));if(!/^\d+(?:\.\d+)?$/.test(raw)||!(n>=0&&n<=3e6))need([T("เลขไมล์","The mileage")]);
+  const owner=(await user()).uid;
+  await api("/api/cars",{id:c.id,make:c.make||c.name||"",model:c.model||"",year:c.year||"",mileage:String(n),color:c.color||undefined,body:c.type||undefined,info:c.info||undefined},'POST',owner);
   c.mileage=String(n);saveGarageLS(g);
-  await api("/api/cars",{id:c.id,make:c.make||c.name||"",model:c.model||"",year:c.year||"",mileage:c.mileage,color:c.color||undefined,body:c.type||undefined,info:c.info||undefined});
   return {km:n,label:carLabel(c)};
 }
 function pickCar(carId){
@@ -247,8 +257,8 @@ function pageOf(key){
 }
 
 /* สิทธิ์ Valet ("ฝากกุญแจ") ตัวเดียวกับปุ่มจับมือในแชต — เปิดได้ด้วยการกดของผู้ใช้เท่านั้น */
-const on=()=>!!(LG("valet",{})||{}).on;
-const allow=()=>LS("valet",{on:true,at:Date.now()});
+const on=()=>{const p=LG('valet',{})||{},uid=(W.spireAuth||W.auth)?.currentUser?.uid;return!!uid&&p.on===true&&p.uid===uid};
+const allow=()=>{const uid=(W.spireAuth||W.auth)?.currentUser?.uid;if(!uid)return false;LS('valet',{on:true,uid,at:Date.now()});return true};
 /* เบอร์แบบปิดกลาง สำหรับสรุปบนจอ/ให้ AI อ่านทวน */
 const maskPhone=v=>{const p=cleanPhone(v);return p.length>=9?p.slice(0,3)+"-xxx-"+p.slice(-4):""};
 

@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 /* เจ้าของระบบในแอป (index.html) และ Cendon Experience (admin.html) + คำตัดสินใบสมัคร 3 แบบ */
-const home=readFileSync(new URL('../index.html',import.meta.url),'utf8');
-const admin=readFileSync(new URL('../admin.html',import.meta.url),'utf8');
+const home=readFileSync(new URL('../index.html',import.meta.url),'utf8').replace(/\r\n/g,'\n');
+const admin=readFileSync(new URL('../admin.html',import.meta.url),'utf8').replace(/\r\n/g,'\n');
 const part=(src,a,b)=>src.slice(src.indexOf(a),src.indexOf(b,src.indexOf(a)));
 
 test('review sheet: ไม่ผ่าน · ให้แก้ · อนุมัติ for admins, plus owner-only test approval',()=>{

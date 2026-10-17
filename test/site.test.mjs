@@ -6,11 +6,11 @@ import {PROCESSOR_NAMES} from '../site/content/privacy.mjs';
 
 /* เว็บ Cendon (/about /help /terms /privacy) สร้างจาก site/ — เทสต์นี้กันหน้าเว็บกับระบบจริงพูดไม่ตรงกัน */
 const root=new URL('../',import.meta.url);
-const read=f=>readFileSync(new URL(f,root),'utf8');
+const read=f=>readFileSync(new URL(f,root),'utf8').replace(/\r\n/g,'\n');
 const built=Object.fromEntries(render().map(p=>[p.file,p.html]));
 
 test('site: ไฟล์ html ในรีโปตรงกับเนื้อหาใน site/ (แก้ site/content แล้วต้องรัน node site/build.mjs)',()=>{
-  for(const [file,html] of Object.entries(built))assert.equal(read(file),html,`${file} ไม่ตรง — รัน node site/build.mjs`);
+  for(const [file,html] of Object.entries(built))assert.equal(read(file),html.replace(/\r\n/g,'\n'),`${file} ไม่ตรง — รัน node site/build.mjs`);
 });
 
 /* ทุกโดเมนภายนอกที่แอปติดต่อหรือโหลดไฟล์ ต้องอยู่ในนโยบายความเป็นส่วนตัว (หรือเป็นแค่ลิงก์ที่ผู้ใช้กดออกไปเอง)

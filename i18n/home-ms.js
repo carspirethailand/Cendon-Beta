@@ -1479,5 +1479,13 @@ window.CENDON_L10N={lang:"ms",t:{
 "Removes the trial shop, your application and documents — you can apply again later":"Memadam bengkel percubaan, permohonan dan dokumen anda — anda boleh memohon semula kemudian",
 "Cancel your mechanic application? Your application, documents and any trial shop will be deleted. You can apply again later.":"Batalkan permohonan mekanik? Permohonan, dokumen dan bengkel percubaan (jika ada) akan dipadam. Anda boleh memohon semula kemudian.",
 "Application cancelled":"Permohonan dibatalkan",
-"Cancel application":"Batalkan permohonan"
+"Cancel application":"Batalkan permohonan",
+"Urgent mechanic":"Mekanik kecemasan",
+"Breakdown or accident, now":"Rosak atau kemalangan, sekarang",
+"Find a mechanic":"Cari mekanik (tidak segera)",
+"Nearby shops send quotes":"Bengkel berdekatan hantar sebut harga",
+"Switch urgent / not urgent":"Tukar segera / tidak segera",
+"QR":"QR",
+"Shop card: tap to switch profile / QR":"Kad bengkel: ketik untuk tukar profil / QR",
+"Scan to open the shop on Cendon":"Imbas untuk buka bengkel di Cendon"
 }};

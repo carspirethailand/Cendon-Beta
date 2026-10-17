@@ -1479,5 +1479,13 @@ window.CENDON_L10N={lang:"vi",t:{
 "Removes the trial shop, your application and documents — you can apply again later":"Xóa tiệm dùng thử, đơn đăng ký và giấy tờ của bạn — bạn có thể đăng ký lại sau",
 "Cancel your mechanic application? Your application, documents and any trial shop will be deleted. You can apply again later.":"Hủy đơn đăng ký thợ? Đơn, giấy tờ và tiệm dùng thử (nếu có) sẽ bị xóa. Bạn có thể đăng ký lại sau.",
 "Application cancelled":"Đã hủy đơn đăng ký",
-"Cancel application":"Hủy đơn đăng ký"
+"Cancel application":"Hủy đơn đăng ký",
+"Urgent mechanic":"Gọi thợ khẩn cấp",
+"Breakdown or accident, now":"Xe hỏng hoặc tai nạn, ngay bây giờ",
+"Find a mechanic":"Tìm thợ (không gấp)",
+"Nearby shops send quotes":"Các tiệm gần bạn gửi báo giá",
+"Switch urgent / not urgent":"Đổi khẩn cấp / không gấp",
+"QR":"QR",
+"Shop card: tap to switch profile / QR":"Thẻ tiệm: chạm để đổi hồ sơ / QR",
+"Scan to open the shop on Cendon":"Quét để mở tiệm trên Cendon"
 }};

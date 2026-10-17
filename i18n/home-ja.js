@@ -1479,5 +1479,13 @@ window.CENDON_L10N={lang:"ja",t:{
 "Removes the trial shop, your application and documents — you can apply again later":"お試しショップ、申請内容、書類を削除します — あとで再申請できます",
 "Cancel your mechanic application? Your application, documents and any trial shop will be deleted. You can apply again later.":"整備士の申請を取り消しますか？申請内容、書類、お試しショップ（ある場合）は削除されます。あとで再申請できます。",
 "Application cancelled":"申請を取り消しました",
-"Cancel application":"申請を取り消す"
+"Cancel application":"申請を取り消す",
+"Urgent mechanic":"緊急で整備士を呼ぶ",
+"Breakdown or accident, now":"故障・事故、今すぐ",
+"Find a mechanic":"整備士を探す（急ぎでない）",
+"Nearby shops send quotes":"近くの店から見積もりが届く",
+"Switch urgent / not urgent":"緊急 / 通常を切り替え",
+"QR":"QR",
+"Shop card: tap to switch profile / QR":"ショップカード：タップでプロフィール / QR を切替",
+"Scan to open the shop on Cendon":"スキャンして Cendon でショップを開く"
 }};

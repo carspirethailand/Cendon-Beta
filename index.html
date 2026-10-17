@@ -18,7 +18,7 @@
 (function(){try{if(/^\/(work|studio)(\/|$)/.test(location.pathname)){var p=JSON.parse(localStorage.getItem("spire_partner")||"null");if(p&&p.s==="shop")document.documentElement.dataset.boot="tech"}}catch(e){}})();</script>
 <script>(function(){try{var A=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt"],l=null;try{l=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
 if(A.indexOf(l)<0){l="en";var n=navigator.languages||[navigator.language||"en"];for(var i=0;i<n.length;i++){var b=String(n[i]).toLowerCase().split("-")[0];if(A.indexOf(b)>=0){l=b;break}}}
-if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=3"><\/script>')}catch(e){}})();</script>
+if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=4"><\/script>')}catch(e){}})();</script>
 <title>Cendon</title>
 <meta name="description" content="ถามอาการรถ ส่งรูปหรือเสียงให้ AI ช่วยดู เช็กใบเสนอราคา และหาช่างที่ผ่านการตรวจใกล้คุณ">
 <!-- การ์ดตอนแชร์ลิงก์ (LINE / Facebook / X) — รูปต้องเป็นที่อยู่เต็ม -->
@@ -449,6 +449,13 @@ html[data-theme="dark"] .map .leaflet-tile-pane{filter:invert(1) hue-rotate(180d
 
 /* ฟอร์ม */
 .fld{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+/* เลือกหมวดบริการได้หลายหมวด: ชิปแตะง่าย สูง 40px · เลือกแล้วเป็นสีเข้ม */
+.gcp{display:flex;flex-direction:column;gap:12px;padding:12px;border-radius:16px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line)}
+.gcp-g>small{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:0 2px 6px}
+.gcp-r{display:flex;flex-wrap:wrap;gap:8px}
+.gcp-c{min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:500 13.5px var(--kb,inherit);cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+.gcp-c[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.gcp-n{font-weight:600;color:var(--accent);margin-left:4px}
 .fld>span{font-size:13px;color:var(--muted);font-weight:500}
 .fld>span em{color:var(--danger);font-style:normal}
 .inp{width:100%;min-height:52px;padding:13px 15px;border-radius:15px;border:1.5px solid var(--line-2);background:var(--surface);font-size:16px;outline:none;transition:border-color .2s,box-shadow .2s;box-shadow:inset 0 1px 2px rgba(0,0,0,.04)}
@@ -1162,6 +1169,23 @@ html[data-theme="dark"] .stu-grp.hot .stu-gh{color:#f87171}
 .stu-shop .stu-av{flex:none;display:grid;place-items:center;width:72px;height:72px;border-radius:20px;font:700 26px var(--kd);background:var(--surface-2) center/cover no-repeat;box-shadow:inset 0 0 0 1px var(--line)}
 .stu-shop>div{flex:1;min-width:0}.stu-shop b{display:block;font:700 19px/1.3 var(--kd)}
 .stu-shop small{display:block;margin-top:3px;font-size:13.5px;color:var(--muted)}
+/* การ์ดร้านแบบพลิก (Studio › ร้านของฉัน) */
+.so-flip{display:block;width:100%;margin:0 0 16px;padding:0;border:0;background:none;color:inherit;text-align:left;cursor:pointer;perspective:1100px;font:inherit}
+.so-flip .sf-in{display:grid;grid-template-columns:minmax(0,1fr);transform-style:preserve-3d;transition:transform .55s cubic-bezier(.2,.8,.2,1)}
+.so-flip.back .sf-in{transform:rotateY(180deg)}
+.so-flip .sf-face{grid-area:1/1;position:relative;display:flex;align-items:center;gap:18px;min-height:176px;padding:22px;border-radius:26px;box-sizing:border-box;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:inset 0 0 0 1px var(--line)}
+.so-flip .sf-f{background:radial-gradient(120% 140% at 0% 0%,color-mix(in srgb,var(--sc) 30%,transparent),transparent 60%),var(--surface)}
+.so-flip .sf-b{transform:rotateY(180deg);background:#fff;color:#09090B;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.so-flip .stu-av{flex:none;display:grid;place-items:center;width:88px;height:88px;border-radius:24px;font:700 32px var(--kd);background:var(--surface-2) center/cover no-repeat;box-shadow:inset 0 0 0 1px var(--line)}
+.so-flip .sf-tx{flex:1;min-width:0;padding-right:28px}.so-flip .sf-tx b{display:block;font:700 21px/1.3 var(--kd);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.so-flip .sf-tx small{display:block;margin-top:4px;font-size:13.5px;line-height:1.5;color:var(--muted)}
+.so-flip .sf-b small{color:#52525b}.so-flip .sf-b code{display:block;margin-top:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11.5px;color:#71717a;font-family:ui-monospace,monospace}
+.so-flip .sf-qr{flex:none;width:132px;height:132px;display:grid;place-items:center;border-radius:12px;background:#fff}
+.so-flip .sf-qr img,.so-flip .sf-qr canvas{width:132px!important;height:132px!important;image-rendering:pixelated}
+.so-flip .sf-hint{position:absolute;top:12px;right:12px;display:inline-flex;align-items:center;gap:4px;height:28px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:600;background:var(--bg);color:var(--muted);box-shadow:inset 0 0 0 1px var(--line)}
+.so-flip .sf-b .sf-hint{background:#f4f4f5;color:#52525b;box-shadow:none}
+@media(max-width:420px){.so-flip .sf-face{gap:14px;padding:18px;min-height:160px}.so-flip .stu-av{width:72px;height:72px}.so-flip .sf-qr,.so-flip .sf-qr img,.so-flip .sf-qr canvas{width:112px!important;height:112px!important}}
+@media(prefers-reduced-motion:reduce){.so-flip .sf-in{transition:none}}
 .stu-acts{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 6px}
 .stu-vet{display:flex;gap:14px;align-items:flex-start;padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .stu-vet b{display:block;font-size:14.5px;font-weight:600}.stu-vet small{display:block;margin-top:3px;font-size:13px;line-height:1.55;color:var(--muted)}
@@ -1584,7 +1608,23 @@ html:not([data-theme="dark"]) .lx-sky i{opacity:.32}html:not([data-theme="dark"]
 .lx-carmenu hr{border:0;height:1px;background:var(--line);margin:4px 6px}
 @media(prefers-reduced-motion:reduce){.lx-flipin{transition:none}.lx-fa{animation:none}.lx-flip.burst .lx-fa::after{display:none}}
 @media(max-width:560px){.lx-flipin>.lx-face{padding:11px 11px 11px 15px!important}}
-/* การ์ด "เรียกช่าง": ด่วน / ไม่ด่วน อยู่ในการ์ดเดียว ขนาดเท่าการ์ดอื่น */
+/* การ์ด "เรียกช่าง" แบบพลิก: สองหน้าซ้อนในช่องเดียวกัน (grid) ความสูงเท่าการ์ดอื่น · พลิกด้วย rotateY (การ์ดจอทำ ไม่กระตุก) */
+.lx-qflip{position:relative;perspective:900px;min-width:0}
+.lx-qflip .qf-in{display:grid;height:100%;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.lx-qflip.back .qf-in{transform:rotateY(180deg)}
+.lx-qflip .qf-face{grid-area:1/1;width:100%;height:100%;min-width:0;box-sizing:border-box;backface-visibility:hidden;-webkit-backface-visibility:hidden;padding-right:44px!important}
+.lx-qflip .qf-f{transform:none!important;border-color:color-mix(in srgb,#dc2626 45%,var(--line))}
+.lx-qflip .qf-f .ti,.lx-qflip .qf-f b{color:#dc2626!important}
+html[data-theme="dark"] .lx-qflip .qf-f .ti,html[data-theme="dark"] .lx-qflip .qf-f b{color:#f87171!important}
+.lx-qflip .qf-b{transform:rotateY(180deg)!important}
+.lx-qflip .qf-b .ti{color:var(--co)!important}
+.qf-dot{display:inline-block;width:7px;height:7px;margin-right:6px;border-radius:50%;background:#dc2626;vertical-align:1px;animation:urgPulse 1.6s ease-in-out infinite}
+#hQuick .lx-qflip .qf-sw{position:absolute;top:8px;right:8px;z-index:2;display:grid;place-items:center;width:34px;height:34px;min-height:0;padding:0;border-radius:50%;
+  border:1px solid var(--line);background:var(--bg);color:var(--muted);transform:none}
+#hQuick .lx-qflip .qf-sw .ti{font-size:17px;margin:0;color:inherit}
+#hQuick .lx-qflip .qf-sw:hover{color:var(--ink);border-color:var(--ink)}
+@media(prefers-reduced-motion:reduce){.lx-qflip .qf-in{transition:none}}
+/* (เดิม) การ์ด "เรียกช่าง": ด่วน / ไม่ด่วน อยู่ในการ์ดเดียว ขนาดเท่าการ์ดอื่น */
 .lx-qcall{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:14px;border-radius:16px;border:1px solid var(--line);background:var(--surface);color:var(--ink);text-align:left}
 .lx-qcall>.ti{font-size:22px;color:var(--co);margin-bottom:8px}
 .lx-qcall>b{font:600 14px var(--kb)}
@@ -3736,13 +3776,29 @@ function photoPage(){
 function drawQuick(){
   const Q=[["quote","ti-file-invoice",T("เช็กใบเสนอราคา","Check a quote"),T("แพงไปไหม AI บอก","AI tells you if it's too pricey")],
     ["listen","ti-wave-sine",T("ฟังเสียงเครื่อง","Engine sound check"),T("อัดเสียงให้ AI ฟัง","Record it for the AI")],["multi","ti-arrows-exchange",T("ขอราคา 3 ร้าน","Quotes from 3 shops"),T("เทียบแล้วค่อยเลือก","Compare, then choose")]];
-  $("hQuick").innerHTML=`<div class="lx-qcall" role="group" aria-label="${T("เรียกช่าง","Call a mechanic")}"><i class="ti ti-tool"></i><b>${T("เรียกช่าง","Call a mechanic")}</b>
-      <span class="lx-q2"><button type="button" data-q="urgent" class="u"><i></i>${T("ด่วน","Urgent")}</button><button type="button" data-q="post">${T("ไม่ด่วน","Not urgent")}</button></span></div>`
+  /* การ์ด "เรียกช่าง" แบบพลิก 180°: หน้า = ด่วน (แดง) · หลัง = ไม่ด่วน — แตะทั้งการ์ดได้เลย (เดิมปุ่มเล็กสองปุ่มกดยาก)
+     สลับด้าน: ปุ่ม ⇄ มุมขวาบน หรือปัดการ์ดไปซ้าย/ขวา */
+  $("hQuick").innerHTML=`<div class="lx-qflip" id="qFlip" role="group" aria-label="${T("เรียกช่าง","Call a mechanic")}"><div class="qf-in">
+      <button type="button" class="qf-face qf-f" data-q="urgent"><i class="ti ti-urgent"></i><b>${T("เรียกช่างด่วน","Urgent mechanic")}</b><small><em class="qf-dot"></em>${T("รถเสีย / อุบัติเหตุ ตอนนี้","Breakdown or accident, now")}</small></button>
+      <button type="button" class="qf-face qf-b" data-q="post" tabindex="-1" aria-hidden="true"><i class="ti ti-speakerphone"></i><b>${T("เรียกช่าง (ไม่ด่วน)","Find a mechanic")}</b><small>${T("ช่างรอบตัวเสนอราคา","Nearby shops send quotes")}</small></button></div>
+      <button type="button" class="qf-sw" aria-label="${T("สลับ ด่วน / ไม่ด่วน","Switch urgent / not urgent")}"><i class="ti ti-arrows-exchange"></i></button></div>`
     +Q.map(([k,i,t,d])=>`<button type="button" data-q="${k}"><i class="ti ${i}"></i><b>${t}</b><small>${d}</small></button>`).join("");
-  $("hQuick").querySelectorAll("button").forEach(b=>b.onclick=()=>{const k=b.dataset.q;
+  qFlipWire();
+  $("hQuick").querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{const k=b.dataset.q;if(b.closest("#qFlip")&&$("qFlip").dataset.swiped)return;
     if(k==="urgent")return emergency();if(k==="post")return openPostForm("","");if(k==="multi")return openMulti("","");
     if(k==="quote")return quotePage();
     if(k==="listen")return listenPage()});
+}
+/* พลิกการ์ดเรียกช่าง: ด้านที่ไม่ได้หันมาแตะไม่ได้ (โปรแกรมอ่านจอก็ไม่อ่าน) · ปัดเกิน 36px = พลิก ไม่นับเป็นการแตะ */
+function qFlipWire(){
+  const box=$("qFlip");if(!box)return;const f=box.querySelector(".qf-f"),bk=box.querySelector(".qf-b");
+  const set=back=>{box.classList.toggle("back",back);f.tabIndex=back?-1:0;bk.tabIndex=back?0:-1;f.setAttribute("aria-hidden",back);bk.setAttribute("aria-hidden",!back)};
+  box.querySelector(".qf-sw").onclick=e=>{e.stopPropagation();set(!box.classList.contains("back"))};
+  let x0=null,y0=0;
+  box.addEventListener("pointerdown",e=>{x0=e.clientX;y0=e.clientY;delete box.dataset.swiped},{passive:true});
+  box.addEventListener("pointermove",e=>{if(x0==null)return;const dx=e.clientX-x0;
+    if(Math.abs(dx)>36&&Math.abs(dx)>Math.abs(e.clientY-y0)*1.4){box.dataset.swiped="1";x0=null;set(!box.classList.contains("back"));setTimeout(()=>delete box.dataset.swiped,350)}},{passive:true});
+  box.addEventListener("pointerup",()=>{x0=null},{passive:true});box.addEventListener("pointercancel",()=>{x0=null},{passive:true});
 }
 /* ═══ ฟ้าคลื่นดาวตอนโหมด AI (HSKY) ═══
    ชั้นแสงไล่สี อำพัน→ส้ม→ชมพู→ม่วง ไหลเป็นคลื่น = ชุดเดียวกับตอน AI กำลังประมวลผลในห้องแชต
@@ -3949,6 +4005,8 @@ const topOf=id=>{const r=RAIL.find(x=>x.id===id);return r&&!NOT_GCAT.includes(r.
 const OTHER_CAT={id:"other",th:"บริการอื่น ๆ",ic:"ti-tool",c:"#64748b",c2:"#a3b1c6"};
 /* หมวดของโพสต์: หมวดที่ช่างเลือก → โพสต์เก่าที่ยังไม่มีหมวด เดาจากคำในหัวข้อ → ไม่ได้จริง ๆ เป็น "อื่น ๆ" */
 function gigCat(g){for(const c of g.cats||[])if(topOf(c))return c;const w=catsOf((g.title||"")+" "+(g.body||""));return w[0]||"other"}
+/* บริการหนึ่งอยู่ได้หลายหมวด (สูงสุด 6) — แถวหน้าแรกและหน้าหมวดต้องเห็นทุกหมวดที่ช่างเลือก ไม่ใช่แค่หมวดแรก */
+function gigCats(g){const L=(g.cats||[]).filter(c=>topOf(c));return L.length?L:[gigCat(g)]}
 /* รูปไอคอน 3D: ใส่ชื่อหมวดที่มีไฟล์จริงใน img/cat/ ลงรายการนี้ — ไม่มีไฟล์ไม่ต้องโหลด (กันคำขอ 404 ทั้งแถวบนมือถือ)
    ไฟล์เป็น WebP 256px พื้นใส (ย่อจากต้นฉบับ ~2 MB เหลือ ~15 KB) · โหลดไม่ได้ก็กลับไปใช้ไอคอนเส้นเดิมเอง */
 const CAT_IMG=new Set(["all","air","air-clean","eng","oil","service","gear","cool","exhaust","tyre","brake","susp","align","ev","battery","audio","body","detail","glass","wash","mobile","tow","urgent","map","other"]);
@@ -4132,7 +4190,7 @@ function openGig(id){
 }
 /* ฟอร์มโพสต์บริการ: รูป · หัวข้อ · ราคา · รายละเอียด · หมวด · ยี่ห้อรถ (ร้านละไม่เกิน GIG_MAX รายการ) */
 const asData=f=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f)});
-const GIG_MAX=2;
+const GIG_MAX=2,GIG_CATS=6;   /* หมวดต่อบริการสูงสุด — ตรงกับหลังบ้าน (cats.slice(0,6)) */
 /* ลงบริการได้เฉพาะหมวดที่ผ่านการตรวจทักษะ (backend บังคับเหมือนกัน) — ร้านทดสอบลงได้ทุกหมวด */
 const gigAllowed=top=>{const t=ME&&ME.technician;if(!t||t.test)return true;return top==="mobile"?!!t.mobile:(t.cats||[]).includes(top)};
 /* หลังโพสต์/แก้/ลบ: ถอยกลับหน้าก่อน แล้ววาดหน้าร้านหรือรายละเอียดโพสต์ใหม่ด้วยข้อมูลล่าสุด */
@@ -4155,12 +4213,18 @@ function gigForm(g,opt){
     <label class="fld"><span>หัวข้อ</span><input class="inp" id="gT" maxlength="100" value="${esc(g.title||"")}" placeholder="เช่น ล้างแอร์ครบชุด ถอดตู้ล้าง พร้อมเติมน้ำยา"/></label>
     <label class="fld"><span>ราคา (บาท)</span><input class="inp" id="gP" type="number" inputmode="numeric" value="${g.price||""}" placeholder="1200"/></label>
     <label class="fld"><span>รายละเอียด</span><textarea class="inp" id="gB" rows="5" placeholder="ทำอะไรบ้าง ใช้เวลากี่ชั่วโมง รับประกันกี่วัน">${esc(g.body||"")}</textarea></label>
-    <label class="fld"><span>หมวดหมู่บริการ <small style="font-weight:400;color:var(--muted)">· เฉพาะหมวดที่ผ่านการตรวจทักษะ</small></span><select class="inp" id="gC"><option value="">เลือกหมวดหมู่…</option>${RAIL.filter(c=>!c.base&&!NOT_GCAT.includes(c.id)&&(boss||gigAllowed(c.id))).map(top=>`<optgroup label="${top.th}"><option value="${top.id}">${top.th} (ทั่วไป)</option>${RAIL.filter(x=>x.base===top.id).map(x=>`<option value="${x.id}">${x.th}</option>`).join("")}</optgroup>`).join("")}</select></label>
+    <div class="fld"><span>หมวดหมู่บริการ <small style="font-weight:400;color:var(--muted)">· เลือกได้หลายหมวด สูงสุด ${GIG_CATS} · เฉพาะหมวดที่ผ่านการตรวจทักษะ</small> <b class="gcp-n" id="gCn"></b></span>
+      <div class="gcp" id="gC">${RAIL.filter(c=>!c.base&&!NOT_GCAT.includes(c.id)&&(boss||gigAllowed(c.id))).map(top=>`<div class="gcp-g"><small>${esc(top.th)}</small><div class="gcp-r"><button type="button" class="gcp-c" data-c="${top.id}">${esc(top.th)} (ทั่วไป)</button>${RAIL.filter(x=>x.base===top.id).map(x=>`<button type="button" class="gcp-c" data-c="${x.id}">${esc(x.th)}</button>`).join("")}</div></div>`).join("")}</div></div>
     <label class="fld"><span>${T("ยี่ห้อรถที่ถนัด (คั่นด้วย ,)","Car brands (comma separated)")}</span><input class="inp" id="gBr" value="${esc((g.brands||[]).join(", "))}" placeholder="Toyota, Honda, BMW"/></label>
     <p class="err" id="gErr"></p>`,
     foot:`<button class="lx-cta" id="gSave" style="flex:1">${g.id?"บันทึก":"โพสต์เลย"}</button>`,
     mount(){
-      if(g.id){const gc=gigCat(g);if(topOf(gc))$("gC").value=gc}
+      /* เลือกหมวดได้หลายอัน: แตะชิปเพื่อเลือก/เอาออก · หมวดที่ร้านไม่ได้ผ่านการตรวจจะไม่มีชิปให้เลือก */
+      const pick=new Set([...$("gC").querySelectorAll("[data-c]")].map(b=>b.dataset.c));
+      F2.cats=(g.id&&!F2.cats.some(c=>pick.has(c))?[gigCat(g)]:F2.cats).filter(c=>pick.has(c)).slice(0,GIG_CATS);
+      const paintC=()=>{$("gC").querySelectorAll("[data-c]").forEach(b=>b.setAttribute("aria-pressed",F2.cats.includes(b.dataset.c)));$("gCn").textContent=F2.cats.length?`${F2.cats.length}/${GIG_CATS}`:""};paintC();
+      $("gC").onclick=e=>{const b=e.target.closest("[data-c]");if(!b)return;const c=b.dataset.c,i=F2.cats.indexOf(c);
+        if(i>=0)F2.cats.splice(i,1);else if(F2.cats.length>=GIG_CATS){toast(`เลือกได้สูงสุด ${GIG_CATS} หมวด — เอาหมวดอื่นออกก่อน`,"ti-alert-triangle");return}else F2.cats.push(c);paintC()};
       const draw=()=>{$("gPh").innerHTML=F2.keep.map((id,i)=>`<div class="doc"><img src="${img(id)}" alt=""/><button class="rm" data-k="${i}"><i class="ti ti-x"></i></button></div>`).join("")+F2.add.map((a,i)=>`<div class="doc"><img src="${a.data}" alt=""/><button class="rm" data-a="${i}"><i class="ti ti-x"></i></button></div>`).join("")+`<button class="doc" id="gAdd" type="button"><i class="ti ti-camera-plus"></i>เพิ่มรูป</button>`;
         $("gPh").querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{F2.keep.splice(+b.dataset.k,1);draw()});
         $("gPh").querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{F2.add.splice(+b.dataset.a,1);draw()});
@@ -4169,9 +4233,9 @@ function gigForm(g,opt){
       $("gFile").onchange=async()=>{for(const f of [...$("gFile").files]){try{F2.add.push({data:await asData(f)})}catch(e){}}draw()};
       $("gSave").onclick=e=>busy(e.currentTarget,async()=>{
         try{
-          if(!$("gC").value)throw new Error("เลือกหมวดหมู่บริการก่อน — ลูกค้าจะหาบริการนี้เจอในหมวดนั้น");
+          if(!F2.cats.length)throw new Error("เลือกหมวดหมู่บริการอย่างน้อย 1 หมวด — ลูกค้าจะหาบริการนี้เจอในทุกหมวดที่เลือก");
           const base={kind:"package",title:$("gT").value,price:+$("gP").value||0,body:$("gB").value,
-            cats:[$("gC").value],brands:$("gBr").value.split(",").map(x=>x.trim()).filter(Boolean)};
+            cats:[...F2.cats],brands:$("gBr").value.split(",").map(x=>x.trim()).filter(Boolean)};
           /* รูปไม่จำกัด: ส่งทีละ 4 รูป ต่อท้ายโพสต์เดิม */
           let id=g.id,keep=[...F2.keep],rest=[...F2.add];
           do{const part=rest.splice(0,4);$("gSave").textContent=rest.length?`กำลังอัปโหลด… เหลือ ${rest.length} รูป`:"กำลังบันทึก…";
@@ -4231,7 +4295,7 @@ function drawHome(){
   host.className="lx-gsecs";
   if(!l.length){host.innerHTML=`<div class="empty"><b>ยังไม่มีบริการจากช่าง</b>เมื่อช่างโพสต์บริการพร้อมราคา จะขึ้นที่นี่</div>`;return}
   /* แบ่งตามหมวดหลัก เรียงตามแถวหมวดด้านบน — ในแต่ละหมวดยังเรียงตามรถของคุณ/ระยะทางเหมือนเดิม */
-  const G=new Map();for(const g of l){const k=topOf(gigCat(g))||"other";if(!G.has(k))G.set(k,[]);G.get(k).push(g)}
+  const G=new Map();for(const g of l)for(const k of new Set(gigCats(g).map(c=>topOf(c)||"other"))){if(!G.has(k))G.set(k,[]);G.get(k).push(g)}
   const order=[...RAIL.filter(c=>!c.base&&G.has(c.id)).map(c=>c.id),...(G.has("other")?["other"]:[])];
   host.innerHTML=order.map(k=>gigRow(RAIL.find(x=>x.id===k)||OTHER_CAT,G.get(k),k!=="other")).join("");
   wireGigRows(host);
@@ -4278,7 +4342,7 @@ function drawCat(){
   $("catSym").innerHTML=sy.length&&!CATQ?`<p><i class="ti ti-sparkles"></i>ไม่แน่ใจว่าเป็นอะไร? แตะอาการ ให้ AI ดูก่อนเลือกช่าง</p><div>${sy.map(x=>`<button type="button" data-q="${esc(x)}">${esc(tr(x))}</button>`).join("")}</div>`:"";
   $("catSym").querySelectorAll("button").forEach(b=>b.onclick=()=>openRes(b.dataset.q||b.textContent));
   /* บริการพร้อมราคา: หมวดหลักรวมหมวดย่อยทั้งหมด · หมวดย่อยเอาเฉพาะของหมวดนั้น · ยอดนิยมเอาทุกหมวด */
-  const gl=GIGS?rankGigs(GIGS).filter(g=>{const gc=gigCat(g);return CATK==="all"||(rc&&rc.base?gc===CATK:topOf(gc)===CATK||gc===CATK)}):[];
+  const gl=GIGS?rankGigs(GIGS).filter(g=>CATK==="all"||gigCats(g).some(gc=>rc&&rc.base?gc===CATK:topOf(gc)===CATK||gc===CATK)):[];
   $("catGigs").innerHTML=gl.length?gigRow({...(rc||OTHER_CAT),th:"บริการพร้อมราคา"},gl,false,true):"";
   if(gl.length)wireGigRows($("catGigs"));
   $("catShopsH").hidden=!gl.length;
@@ -6726,8 +6790,13 @@ function tabShop(){
     :!t.verified?[`<i class="ti ti-hourglass stu-ri"></i>`,T("รอทีมงานตรวจข้อมูล","Waiting for review"),T("ลูกค้าจะเห็นร้านเมื่อผ่านการตรวจแล้ว","Customers see your shop once it's approved")]
     :[`<i class="ti ti-shield so-vi"></i>`,T("ผ่านการตรวจโดยทีมงาน","Approved by the team"),facts.length?facts.map(f=>f[1]).join(" · ")+(t.vetting&&t.vetting.at?T(" · ตรวจเมื่อ "," · checked ")+fmtDay(t.vetting.at):""):T("ลูกค้าเห็นป้ายผ่านการตรวจบนหน้าร้าน","Customers see the approval on your storefront")];
   const row=(id,ic,a,b2)=>`<button class="stu-row" type="button" id="${id}"><span class="stu-ri"><i class="ti ${ic}"></i></span><span class="stu-rb"><b>${a}</b><small>${b2}</small></span><span class="stu-rr"><i class="ti ti-chevron-right"></i></span></button>`;
-  B.innerHTML=`<div class="stu-shop"><span class="stu-av"${t.avatar?` style="background-image:url('${img(t.avatar)}')"`:""}>${t.avatar?"":esc(initial(t.shop||t.name))}</span>
-      <div><b class="nt">${esc(t.shop||t.name)}</b><small>${[t.area,t.reviewCount?`★ ${Number(t.rating).toFixed(1)} (${t.reviewCount})`:T("ยังไม่มีรีวิว","No reviews yet"),t.jobs?T(t.jobs+" งานสำเร็จ",t.jobs+" jobs done"):""].filter(Boolean).map(esc).join(" · ")}</small></div></div>
+  /* การ์ดร้านแบบพลิก 180°: หน้า = โปรไฟล์ร้าน · หลัง = QR หน้าร้าน (สแกนได้จริง พื้นขาวเสมอแม้โหมดมืด) — แตะหรือปัดการ์ดเพื่อพลิก */
+  const meta=[t.area,t.reviewCount?`★ ${Number(t.rating).toFixed(1)} (${t.reviewCount})`:T("ยังไม่มีรีวิว","No reviews yet"),t.jobs?T(t.jobs+" งานสำเร็จ",t.jobs+" jobs done"):""].filter(Boolean).map(esc).join(" · ");
+  B.innerHTML=`<button type="button" class="so-flip" id="sFlip" aria-pressed="false" aria-label="${T("การ์ดร้าน: แตะเพื่อสลับโปรไฟล์ / QR","Shop card: tap to switch profile / QR")}"><span class="sf-in">
+      <span class="sf-face sf-f" style="--sc:${colorOf(t)}"><span class="stu-av"${t.avatar?` style="background-image:url('${img(t.avatar)}')"`:""}>${t.avatar?"":esc(initial(t.shop||t.name))}</span>
+        <span class="sf-tx"><b class="nt">${esc(t.shop||t.name)}</b><small>${meta}</small></span><span class="sf-hint"><i class="ti ti-qrcode"></i>${T("QR","QR")}</span></span>
+      <span class="sf-face sf-b"><span class="sf-qr" id="sfQr"></span><span class="sf-tx"><b class="nt">${esc(t.shop||t.name)}</b><small>${T("สแกนเพื่อเปิดหน้าร้านบน Cendon","Scan to open the shop on Cendon")}</small><code class="nt">${esc(link.replace(/^https?:\/\//,""))}</code></span><span class="sf-hint"><i class="ti ti-user"></i></span></span>
+    </span></button>
     <div class="stu-acts"><button class="lx-cta" type="button" id="sView" style="height:44px;padding:0 18px"><i class="ti ti-eye"></i>${T("ดูหน้าร้าน","View storefront")}</button>
       <button class="lx-gh" type="button" id="sShare" style="height:44px"><i class="ti ti-share-2"></i>${T("แชร์ลิงก์ร้าน","Share link")}</button></div>
     <div class="stu-vet" style="margin-top:14px">${vet[0]}<span><b>${vet[1]}</b><small>${vet[2]}</small></span></div>
@@ -6739,6 +6808,15 @@ function tabShop(){
       ${row("sSet","ti-settings",T("ตั้งค่า","Settings"),T("รับงาน พักร้าน ตอบอัตโนมัติ แจ้งเตือน สีร้าน","Availability, pause, auto-reply, alerts, colour"))}
       ${row("sHelp","ti-help-circle",T("วิธีใช้สำหรับช่าง","Help for mechanics"),T("กติกาใบงาน การเสนอราคา และการรับเงิน","Job rules, quoting and getting paid"))}
     </section>`;
+  /* พลิกการ์ดร้าน: แตะ = พลิก · ปัดซ้าย/ขวาเกิน 36px = พลิก (ไม่นับเป็นแตะซ้ำ) · QR วาดตอนพลิกครั้งแรก */
+  {const fl=$("sFlip");let x0=null,swiped=false,drawn=false;
+    const turn=()=>{const back=!fl.classList.contains("back");fl.classList.toggle("back",back);fl.setAttribute("aria-pressed",back);
+      if(back&&!drawn){drawn=true;const q=$("sfQr"),draw=()=>{try{q.innerHTML="";new QRCode(q,{text:link,width:264,height:264,colorDark:"#09090B",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M})}catch(e){}};
+        if(window.QRCode)draw();else{const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";sc.onload=draw;document.head.appendChild(sc)}}};
+    fl.onclick=()=>{if(swiped){swiped=false;return}turn()};
+    fl.addEventListener("pointerdown",e=>{x0=e.clientX;swiped=false},{passive:true});
+    fl.addEventListener("pointermove",e=>{if(x0!=null&&Math.abs(e.clientX-x0)>36){x0=null;swiped=true;turn()}},{passive:true});
+    fl.addEventListener("pointerup",()=>{x0=null},{passive:true});}
   $("sView").onclick=()=>openTech(t.id);
   $("sShare").onclick=()=>{try{navigator.share?navigator.share({title:t.shop||t.name,url:link}).catch(()=>{}):navigator.clipboard.writeText(link).then(()=>toast(T("คัดลอกลิงก์ร้านแล้ว","Shop link copied")))}catch(e){}};
   $("sEdit").onclick=()=>openShopEdit();$("sStats").onclick=()=>studioStats();$("sAi").onclick=()=>setTab2("ai");

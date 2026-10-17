@@ -1479,5 +1479,13 @@ window.CENDON_L10N={lang:"ko",t:{
 "Removes the trial shop, your application and documents — you can apply again later":"체험 매장, 신청서, 서류가 삭제됩니다 — 나중에 다시 신청할 수 있어요",
 "Cancel your mechanic application? Your application, documents and any trial shop will be deleted. You can apply again later.":"정비사 신청을 취소할까요? 신청서, 서류, 체험 매장(있는 경우)이 삭제됩니다. 나중에 다시 신청할 수 있어요.",
 "Application cancelled":"신청이 취소되었습니다",
-"Cancel application":"신청 취소"
+"Cancel application":"신청 취소",
+"Urgent mechanic":"긴급 정비사 호출",
+"Breakdown or accident, now":"고장·사고, 지금 바로",
+"Find a mechanic":"정비사 찾기 (긴급 아님)",
+"Nearby shops send quotes":"주변 정비소가 견적을 보내요",
+"Switch urgent / not urgent":"긴급 / 일반 전환",
+"QR":"QR",
+"Shop card: tap to switch profile / QR":"매장 카드: 탭하여 프로필 / QR 전환",
+"Scan to open the shop on Cendon":"스캔하면 Cendon 매장 페이지가 열려요"
 }};

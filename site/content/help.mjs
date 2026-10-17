@@ -28,6 +28,9 @@ const sections=[
         '12 languages: Thai, English, Chinese, Japanese, Korean, Indonesian, Vietnamese, Malay, German, French, Spanish and Portuguese (anything not yet translated shows in English). Change it under <b>Language</b> in the app’s settings. · This website comes in Thai and English (the TH/EN switch at the top).'))},
 
   {id:'cars',title:['รถและการดูแลรถ','Cars and upkeep'],body:
+    Q('เรียกช่างจากหน้าแรก (ด่วน / ไม่ด่วน)','Calling a mechanic from Home (urgent / not urgent)',
+      P('การ์ด <b>เรียกช่าง</b> มีสองด้าน: ด้านหน้า (แดง) = <b>ด่วน</b> รถเสียหรืออุบัติเหตุตอนนี้ · แตะปุ่ม ⇄ หรือปัดการ์ดเพื่อพลิกเป็น <b>ไม่ด่วน</b> ให้ช่างรอบตัวเสนอราคา · แตะที่การ์ดด้านที่เห็นเพื่อเริ่ม · ในห้องแชตกับ AI มีการ์ดรถของคุณ (เลขไมล์ เข้าศูนย์ล่าสุด ที่จอด) พร้อมปุ่มเครื่องมือ — ข้อมูลมาจากที่คุณบันทึกไว้เท่านั้น',
+        'The <b>Call a mechanic</b> card has two sides: the red front = <b>urgent</b> (breakdown or accident right now) · tap ⇄ or swipe the card to flip to <b>not urgent</b>, where nearby shops send quotes · tap the side you see to start · the AI chat shows your car card (mileage, last service, parking spot) with tool buttons — built only from what you have saved'))+
     Q('เพิ่มรถอย่างไร','How do I add a car?',
       P('ไปที่ <b>โรงรถ</b> → เพิ่มรถ ใส่ยี่ห้อ รุ่น ปี และเลขไมล์ ข้อมูลอื่น (เช่น เลขตัวถัง VIN) ใส่หรือไม่ก็ได้ — ยิ่งครบ AI ยิ่งตอบตรงกับรถคันนั้น',
         'Go to <b>Garage</b> → add a car with make, model, year and mileage. Everything else (such as the VIN) is optional — the more you add, the more precisely the AI can answer for that car.'))+
@@ -166,6 +169,9 @@ const sections=[
     Q('Studio คืออะไร','What is Studio?',
       P('พื้นที่ทำงานของช่าง (<a href="/studio">/studio</a>): <b>งาน</b> (งานที่ต้องทำ และหางานจากประกาศใกล้คุณ) <b>ข้อความ</b> <b>บริการ</b> (ตั้งราคาและรายละเอียด) และ <b>ร้านของฉัน</b> (หน้าร้านที่ลูกค้าเห็น)',
         'The mechanic workspace (<a href="/studio">/studio</a>): <b>Jobs</b> (your to-do and nearby job posts), <b>Messages</b>, <b>Services</b> (prices and details) and <b>My shop</b> (the page customers see).'))+
+    Q('ลงบริการให้อยู่หลายหมวด · การ์ดร้านกับ QR','Services in several categories · shop card & QR',
+      UL([['ตอนโพสต์บริการ แตะเลือกหมวดได้หลายหมวด (สูงสุด 6 · เฉพาะหมวดที่ผ่านการตรวจทักษะ) ลูกค้าจะเห็นบริการนี้ในทุกหมวดที่เลือก','When posting a service, tap to pick several categories (up to 6, only skill-checked ones) — customers see it under every category you chose'],
+          ['Studio › ร้านของฉัน: แตะหรือปัดการ์ดร้านเพื่อพลิกเป็น QR หน้าร้าน ให้ลูกค้าสแกนจากจอได้ทันที (ด้านหลังเป็นพื้นขาวเสมอ สแกนง่ายแม้เปิดโหมดมืด)','Studio › My shop: tap or swipe the shop card to flip it to your storefront QR so customers can scan it straight off the screen (always on white, easy to scan in dark mode)']]))+
     Q('แชร์ตำแหน่งตอนกำลังไปหาลูกค้า','Sharing your location on the way to a customer',
       P('กด <b>กำลังไป</b> ในใบงาน ระบบแชร์ตำแหน่งให้ลูกค้าเห็นบนแผนที่ทุกไม่กี่วินาที มีแถบบอกตลอดว่ากำลังแชร์ และกด <b>หยุด</b> ได้ · หยุดเองเมื่อเริ่มซ่อมหรือยกเลิก เก็บแค่จุดล่าสุด ไม่เก็บเส้นทาง · เบราว์เซอร์ส่งตำแหน่งได้เฉพาะตอนเปิดแอปค้างไว้ — ตั้งมือถือไว้ที่ขาตั้ง ห้ามใช้มือถือขณะขับ','Tap <b>On my way</b> in the job and your location is shared on the customer’s map every few seconds; a bar always shows it’s on, with a <b>Stop</b> button. · It stops on its own when you start the repair or the job is cancelled; only the latest point is kept, never a route. · Browsers can only send location while the app is open — mount the phone and never handle it while driving.'))+
     Q('งานด่วนใน Studio','Urgent jobs in Studio',

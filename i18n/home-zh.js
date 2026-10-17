@@ -1479,5 +1479,13 @@ window.CENDON_L10N={lang:"zh",t:{
 "Removes the trial shop, your application and documents — you can apply again later":"将删除试用店铺、你的申请和文件——之后可以重新申请",
 "Cancel your mechanic application? Your application, documents and any trial shop will be deleted. You can apply again later.":"取消技师申请？你的申请、文件以及试用店铺（如有）将被删除。之后可以重新申请。",
 "Application cancelled":"申请已取消",
-"Cancel application":"取消申请"
+"Cancel application":"取消申请",
+"Urgent mechanic":"紧急叫技师",
+"Breakdown or accident, now":"车坏了或出事故，现在",
+"Find a mechanic":"找技师（不紧急）",
+"Nearby shops send quotes":"附近的店铺会报价",
+"Switch urgent / not urgent":"切换 紧急 / 不紧急",
+"QR":"二维码",
+"Shop card: tap to switch profile / QR":"店铺卡片：点按切换资料 / 二维码",
+"Scan to open the shop on Cendon":"扫码在 Cendon 打开店铺"
 }};

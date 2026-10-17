@@ -1479,5 +1479,13 @@ window.CENDON_L10N={lang:"es",t:{
 "Removes the trial shop, your application and documents — you can apply again later":"Elimina el taller de prueba, tu solicitud y tus documentos — puedes volver a solicitar más tarde",
 "Cancel your mechanic application? Your application, documents and any trial shop will be deleted. You can apply again later.":"¿Cancelar tu solicitud de mecánico? Se eliminarán tu solicitud, tus documentos y el taller de prueba (si lo hay). Puedes volver a solicitar más tarde.",
 "Application cancelled":"Solicitud cancelada",
-"Cancel application":"Cancelar solicitud"
+"Cancel application":"Cancelar solicitud",
+"Urgent mechanic":"Mecánico urgente",
+"Breakdown or accident, now":"Avería o accidente, ahora",
+"Find a mechanic":"Buscar mecánico (no urgente)",
+"Nearby shops send quotes":"Los talleres cercanos envían presupuestos",
+"Switch urgent / not urgent":"Cambiar urgente / no urgente",
+"QR":"QR",
+"Shop card: tap to switch profile / QR":"Tarjeta del taller: toca para cambiar perfil / QR",
+"Scan to open the shop on Cendon":"Escanea para abrir el taller en Cendon"
 }};

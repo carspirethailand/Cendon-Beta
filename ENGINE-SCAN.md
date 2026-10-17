@@ -1,5 +1,14 @@
 # Cendon engine-bay scanner v2 — 16 October 2026
 
+## 17 October 2026 error recovery
+
+Paired backend fixes a reproduced HTTP 400 caused by provider schema constraints.
+The existing strict result reader and red-box renderer are retained. Scanner
+errors now distinguish unavailable provider, timeout, invalid result, sign-in and
+daily allowance without exposing provider responses. Rescan stays in the same
+call. Missing camera frames produce an explicit retry state, not an endless scan.
+Home/Chat use tools r7 and scanner helper r3 (17 October); cache v295.
+
 The existing Home/Chat call scanner now requests versioned image identification:
 42 component types, at most 24 visible objects per frame, red numbered boxes,
 bilingual canonical names and tap-to-hear explanations. Red is a location marker,

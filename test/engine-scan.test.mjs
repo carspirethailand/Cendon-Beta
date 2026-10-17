@@ -17,6 +17,21 @@ test('two visible parts of the same type have separate selectable keys; no inner
   const d=scan.read(data([item({part:'radiator_hose',name:'<img onerror=x>',look:'Fault invented'}),item({part:'radiator_hose'})]));
   assert.equal(d.items.length,2);assert.notEqual(d.items[0].key,d.items[1].key);assert.ok(!d.items[0].name.includes('<'));assert.equal(d.items[0].look,'');
 });
+
+test('safe scanner errors distinguish temporary provider capacity from daily allowance; never echo provider text',()=>{
+  assert.match(scan.failure(503,{error:'scan_provider_busy'},'th'),/ชั่วคราว/);
+  assert.match(scan.failure(504,{error:'scan_timeout'},'en'),/without ending the call/);
+  assert.match(scan.failure(502,{error:'scan_invalid_result'},'th'),/ตำแหน่งไม่ครบ/);
+  assert.match(scan.failure(429,{error:'quota'},'en'),/Today/);
+  assert.ok(!scan.failure(500,{error:'private-provider-payload'},'en').includes('private-provider-payload'));
+});
+
+test('actual scanner reports a provider failure without fake boxes and rescan can recover in the same call',async()=>{
+  const f=rig();await f.tools.scan();await f.settle();await f.fail(503,'scan_provider_busy');
+  assert.match(f.nodes.get('lvStat').innerHTML,/ชั่วคราว/);assert.equal(f.nodes.get('lvBoxes').children.length,0);
+  f.nodes.get('lvRe').onclick();await f.settle();assert.equal(f.requests.length,2);await f.respond(data());
+  assert.equal(f.nodes.get('lvBoxes').children.length,1);assert.equal(f.voice.callActive,true);f.tools.dispose();
+});
 const view=()=>({W:390,H:844,v:{videoWidth:1920,videoHeight:1080},sx:710.5,sy:0,sw:499,sh:1080,mirror:false});
 test('camera zoom, rotation, mirror, dimensions and backgrounding invalidate old coordinates',()=>{
   const r=view(),frame=scan.frameKey(r);assert.equal(scan.fresh({frame,current:frame,track:{lost:0}}),true);
@@ -45,7 +60,7 @@ function rig(){
   const voice={callActive:true,camOn:true,camFacing:'environment',camZoom:1,callSession:1,callWS:{readyState:1,send:s=>sent.push(JSON.parse(s))}};
   const tools=win.CallTools.create({voice,language:'th',getUser:()=>({getIdToken:async()=>'unit-test-only'}),backendUrl:'https://unit.test'});
   const settle=async()=>{for(let i=0;i<10;i++)await Promise.resolve()};
-  return{tools,voice,nodes,document,requests,sent,ticks,timers,events,settle,respond:async d=>{fetchResolve(Response.json({data:d}));await settle()}};
+  return{tools,voice,nodes,document,requests,sent,ticks,timers,events,settle,respond:async d=>{fetchResolve(Response.json({data:d}));await settle()},fail:async(status,error)=>{fetchResolve(Response.json({error},{status}));await settle()}};
 }
 test('real scanner sends the current image and version; renders red identified boxes, including two hoses, without a second call',async()=>{
   const f=rig();await f.tools.scan();await f.settle();assert.equal(f.requests.length,1);assert.equal(f.requests[0].body.scanVersion,2);assert.equal(f.requests[0].body.attachments[0].b64,'aGVsbG8=');
@@ -73,6 +88,6 @@ test('tap explains the actual selected part with the safety restriction; legacy 
   const r=rig();await r.tools.scan();await r.settle();await r.respond({scene:'engine_bay',items:[item()]});assert.equal(r.nodes.get('lvBoxes').children.length,0);assert.match(r.nodes.get('lvStat').innerHTML,/คนละรุ่น/);r.tools.dispose();
 });
 test('paired assets load in order on Home and Chat and the service worker caches the new release',async()=>{
-  for(const page of ['index.html','chat.html']){const s=await read(page);assert.ok(s.indexOf('<script src="engine-scan.js?')<s.indexOf('<script src="call-tools.js?'));assert.match(s,/call-tools\.js\?v=2026-10-16-r4/);}
-  const sw=await read('sw.js'),css=await read('call-ui.css');/* เลขรุ่นแคชต้องไม่ต่ำกว่ารุ่นที่ออกสแกนห้องเครื่อง (v282) — รุ่นหลังจากนี้ bump ต่อได้โดยเทสต์ไม่พัง */assert.ok(+(sw.match(/const CACHE = 'cendon-v(\d+)/)||[])[1]>=282,'sw CACHE >= v282');assert.match(sw,/engine-scan\.js\?v=2026-10-16-r1/);assert.match(css,/\.lv-boxes\.stale\{visibility:hidden;pointer-events:none\}/);assert.match(css,/\.lv-chips\[hidden\]\{display:none\}/);
+  for(const page of ['index.html','chat.html']){const s=await read(page);assert.ok(s.indexOf('<script src="engine-scan.js?')<s.indexOf('<script src="call-tools.js?'));assert.match(s,/call-tools\.js\?v=2026-10-17-r7/);}
+  const sw=await read('sw.js'),css=await read('call-ui.css');/* เลขรุ่นแคชต้องไม่ต่ำกว่ารุ่นที่ออกสแกนห้องเครื่อง (v282) — รุ่นหลังจากนี้ bump ต่อได้โดยเทสต์ไม่พัง */assert.ok(+(sw.match(/const CACHE = 'cendon-v(\d+)/)||[])[1]>=282,'sw CACHE >= v282');assert.match(sw,/engine-scan\.js\?v=2026-10-17-r3/);assert.match(css,/\.lv-boxes\.stale\{visibility:hidden;pointer-events:none\}/);assert.match(css,/\.lv-chips\[hidden\]\{display:none\}/);
 });

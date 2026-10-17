@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 /* ชุด D: บริการหลายหมวด · การ์ดเรียกช่างแบบพลิก · ช่องพิมพ์ 2 แถวบนคอม · การ์ดร้านพลิกเป็น QR */
-const r=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8');
+const r=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8').replace(/\r\n/g,'\n');
 const home=r('index.html'),chat=r('chat.html');
 
 test('a service can sit in up to 6 categories and shows up under every one of them',()=>{

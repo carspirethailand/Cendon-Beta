@@ -3,6 +3,8 @@
    แก้เนื้อหาที่ site/content/*.mjs แล้วรันใหม่ — ห้ามแก้ไฟล์ html ที่สร้างออกมาตรง ๆ
    node site/build.mjs --check = ตรวจว่าไฟล์ในรีโปตรงกับที่ควรสร้าง (ใช้ในเทสต์) ไม่เขียนไฟล์ */
 import {readFileSync,writeFileSync,existsSync} from 'node:fs';
+import {pathToFileURL} from 'node:url';
+import {resolve} from 'node:path';
 import {page} from './layout.mjs';
 import about from './content/about.mjs';
 import privacy from './content/privacy.mjs';
@@ -16,7 +18,7 @@ export function render(){
   return PAGES.map(p=>({file:p.file,html:page(p)}));
 }
 
-if(import.meta.url===`file://${process.argv[1]}`){
+if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href){
   const check=process.argv.includes('--check');let stale=[];
   for(const {file,html} of render()){
     const out=new URL(file,root);

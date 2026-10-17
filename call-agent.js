@@ -8,9 +8,12 @@
     const current=c=>{if(c.signal.aborted||!c.isCurrent())throw Error('Call no longer active');};
     async function execute(name,args={},ctx){
       current(ctx);
+      if(name==='get_parking'){const data=await VC()?.parking();current(ctx);return data||{saved:false};}
       if(name==='garage_checkin_control')return session?.garageCareControl?.(args.action,ctx)||{error:'Optional check-ins unavailable'};
       if(name==='get_my_car'){
-        const c=host.getCar?.();return c?{car:{name:clean(c.name||[c.make,c.model].filter(Boolean).join(' ')),year:clean(c.year,4),mileage:clean(c.mileage,12)},note:'User-saved information, not verified specifications'}:{car:null,note:'No selected car. Ask the user; do not invent one.'};
+        const c=host.getCar?.();if(!c)return{car:null,note:'No selected car. Ask the user; do not invent one.'};
+        let specs='';if(window.CendonGarageData&&c.id){try{const r=await host.api('/api/garage/context?car='+encodeURIComponent(c.id));current(ctx);specs=clean(r.context,8000)}catch{current(ctx)}}
+        return{car:{name:clean(c.name||[c.make,c.model].filter(Boolean).join(' ')),year:clean(c.year,4),mileage:clean(c.mileage,12)},specifications:specs||null,note:'Owner-reported car. Specifications come only from the saved sourced library; missing data is unknown. No new research was run.'};
       }
       if(name==='find_mechanics'){
         const result=await host.api('/api/tech',{signal:ctx.signal});current(ctx);
@@ -45,7 +48,7 @@
     /* ══ Cendon Valet ในสาย: เตรียม → การ์ดบนจอ + สรุปให้ AI อ่านทวน → ทำจริงเมื่อผู้ใช้พูดยืนยัน (หรือกดยืนยันบนจอ)
        ตำแหน่งมาจาก GPS ของเครื่องเท่านั้น · AI เห็นแค่ย่านกับเบอร์แบบปิดกลาง · ทำผ่าน API เดิมด้วยบัญชีผู้ใช้ (CendonValetCore) ══ */
     const VC=()=>window.CendonValetCore||null;
-    const DOS=['urgent','post_job','book','msg_shop','job','jobs','log','due','go','search','setting','pick_car','cars','threads','add_car','car_km','shop_status'],OPS=['accept','cancel','complete','message'];
+    const DOS=['urgent','post_job','book','msg_shop','job','jobs','log','due','go','search','setting','pick_car','cars','threads','add_car','car_km','car_info','shop_status'],OPS=['accept','cancel','complete','message'];
     let pend=null,seq=0,heardAt=0,heardText='',session=null,waiting=null;
     const garageYes=text=>{
       const t=String(text||'').toLowerCase().replace(/[\s.,!?。ๆ]/g,'');
@@ -92,6 +95,12 @@
       if(d==='car_km'&&(args.km===0||args.km==='0'))a.km=0;
       const c=V.findCar(a.car),carL=c?V.carLabel(c):clean(a.car,80),miss=[],lines=[];
       let title='',red=false,place='';
+      if(d==='car_info'){
+        if(!c)miss.push(T('รถคันไหน','which car'));
+        try{a.info=V.infoDraft(args)}catch{return{error:'Invalid explicit car details. Ask for a clear value; nothing saved.'}}
+        if(!Object.keys(a.info).length)miss.push(T('ข้อมูลที่คุณบอกชัดเจน','explicit car details'));
+        title=T('บันทึกข้อมูลรถ','Save car details');lines.push(carL,...Object.entries(a.info).map(([k,v])=>k+': '+v));
+      }
       if(['urgent','post_job','book'].includes(d)){
         a.pos=await V.here(9000);current(ctx);
         if(a.pos)place=(await V.revgeo(a.pos)).area||T('ตำแหน่งปัจจุบัน','current location');current(ctx);
@@ -153,7 +162,7 @@
       if(pend.result)return pend.result;
       if(pend.miss.length)return{error:'Still missing: '+pend.miss.join(', ')+'. Ask the user, then call valet again. Nothing was sent.'};
       if(!pend.running&&!(heardAt>pend.at))return{error:'The user has not answered yet. Read the summary back, wait for a clear yes, then call valet_confirm. Nothing was sent.'};
-      if(!pend.running&&['car_km','due','log'].includes(pend.d)&&!garageYes(heardText))return{error:'No clear explicit confirmation of this Garage change. Ask once for a clear yes or let the user tap Confirm. Silence, an unrelated reply or a refusal cannot save data.'};
+      if(!pend.running&&['car_km','car_info','due','log'].includes(pend.d)&&!garageYes(heardText))return{error:'No clear explicit confirmation of this Garage change. Ask once for a clear yes or let the user tap Confirm. Silence, an unrelated reply or a refusal cannot save data.'};
       current(ctx);return run(pend,'voice');
     }
     function run(p,how){
@@ -170,9 +179,10 @@
         if(p.d==='msg_shop'){const r=await V.message(a.shop.id,a.text);url=r.url;msg=T(`ส่งข้อความถึง ${V.shopName(a.shop)} แล้ว`,`Message sent to ${V.shopName(a.shop)}`);}
         if(p.d==='job'){await V.jobDo(a.job.id,a.op,{note:a.note,text:a.text});url='/jobs/'+encodeURIComponent(a.job.id);
           msg={accept:T('รับราคาแล้ว ร้านได้รับนัดพร้อมเบอร์ของคุณ','Quote accepted — the shop has your booking'),cancel:T('ยกเลิกใบงานแล้ว','Job cancelled'),complete:T('ปิดงานแล้ว','Job closed'),message:T('ส่งข้อความแล้ว','Message sent')}[a.op];}
-        if(p.d==='log'){const r=V.logAdd(p.c.id,a.kind,{amount:a.amount,litres:a.litres,km:a.km,item:a.item,title:a.title,date:a.date});url='/garage';msg=T('บันทึกลงสมุดรถแล้ว ','Saved to the logbook ')+r.date;}
+        if(p.d==='log'){const r=await V.logAdd(p.c.id,a.kind,{amount:a.amount,litres:a.litres,km:a.km,item:a.item,title:a.title,date:a.date});url='/garage';msg=T('บันทึกลงสมุดรถแล้ว ','Saved to the logbook ')+r.date;}
         if(p.d==='due'){const r=await V.dueSet(p.c.id,a.key,a.date);url='/garage';msg=T('ตั้งวันที่แล้ว ','Date set ')+r.date;}
         if(p.d==='car_km'){const r=await V.setKm(p.c.id,a.km);url='/garage';msg=T(`${r.label}: ${r.km.toLocaleString()} กม. แล้ว`,`${r.label} is now at ${r.km.toLocaleString()} km`);}
+        if(p.d==='car_info'){const r=await V.setInfo(p.c.id,a.info);url='/garage';msg=T('บันทึกข้อมูลรถแล้ว','Car details saved')+' · '+r.fields.join(', ');}
         if(p.d==='add_car'){const r=await V.addCar({make:a.make,model:a.model,year:a.year,mileage:a.mileage});url='/garage';msg=T(`เพิ่ม ${r.label} เข้าการาจแล้ว`,`Added ${r.label} to your garage`);}
         if(p.d==='shop_status'){await V.shopStatus(a.state);url='/studio';msg=T('ตั้งสถานะร้านแล้ว','Shop status updated');}
         p.result={done:true,submitted:true,result:msg,...extra,note:'This really happened. Tell the user briefly; do not repeat the action.'};

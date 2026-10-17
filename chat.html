@@ -3021,8 +3021,8 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 <script src="call-shell.js?v=1" defer></script>
 <script src="call-session.js?v=2026-10-17-r6" defer></script>
 <link rel="stylesheet" href="valet.css?v=2">
-<script src="valet-core.js?v=2" defer></script>
-<script src="valet.js?v=2" defer></script>
+<script src="valet-core.js?v=3" defer></script>
+<script src="valet.js?v=3" defer></script>
 <script src="bell.js?v=4" defer></script>
 <script src="drop.js?v=2" defer></script>
 <script src="./techs.js"></script>
@@ -4917,7 +4917,7 @@ function techHits(text){
    pre = ผลที่ค้นไว้ก่อนถาม AI · ถ้าไม่มี ดูว่า AI ขอค้นเองด้วย [[ค้นหา: …]] หรือเปล่า */
 function attachSvc(pre){
   const SV=window.CendonSearch;if(!SV)return;
-  const m=[...messages].reverse().find(x=>x.role==="ai"&&!x.typing);if(!m)return;
+  const m=[...messages].reverse().find(x=>x.role==="ai"&&!x.typing);if(!m||(m.acts&&m.acts.length))return;
   const ask=SV.takeMarker(m);
   const done=r=>{ if(!r)return; m.svc=SV.ref(r); renderMessages(); saveSession(); SV.open(r,{auto:true}) };
   if(pre){ done(pre); return }
@@ -5450,6 +5450,11 @@ async function sendMsg(){
   try{ window.slideToLast&&window.slideToLast() }catch(e){}
   /* บันทึกและซิงก์ทันทีที่กดส่ง ถ้าปิดแอปก่อน AI ตอบ ข้อความที่พิมพ์ไปจะได้ไม่หาย */
   try{ saveSession() }catch(e){}
+  /* สั่งให้ทำในแอปแต่ยังไม่ได้อนุญาต Valet: ขึ้นการ์ดกดอนุญาตแล้วทำต่อเลย (ไม่ต้องให้ AI บอกทางแล้วพิมพ์ใหม่) */
+  if(!featureJob&&!atts.length&&window.CendonValet&&!CendonValet.on()&&CendonValet.wantsAct(text)){
+    messages.push({role:"ai",text:"",acts:[{do:"enable",text}]});renderMessages();saveSession();
+    sending=false;updateSend();renderChips();return;
+  }
   messages.push({role:"ai",typing:true});renderMessages();
   try{
     if(featureJob){
@@ -5491,9 +5496,11 @@ async function sendMsg(){
     /* หาช่าง/บริการ: ค้นช่างของ Cendon ก่อน แล้วให้ AI แนะนำจากรายการนั้นเท่านั้น
        รอบนี้ปิดค้นเว็บ ไม่งั้น AI ไปหยิบอู่ข้างนอกจาก Google มาแนะนำ */
     const SV=window.CendonSearch;let svc=null;
-    const svcMode=!!(SV&&SV.wants(text));
+    /* สั่ง Valet ทำ (ทักร้าน ขอราคา ฯลฯ) ไม่ใช่การหาช่าง — ไม่ค้นร้านล่วงหน้า ไม่งั้น AI ถูกบอกให้แนะนำร้านแทนการทำงาน */
+    const svcMode=!!(SV&&SV.wants(text))&&!(window.CendonValet&&CendonValet.wantsAct(text));
     if(svcMode){ try{ svc=await Promise.race([SV.find(text),new Promise(r=>setTimeout(()=>r(null),4000))]) }catch(e){ svc=null } }
-    let sys=sysPrompt()+(svc?SV.context(svc):techHits(text))+(SV?SV.rule():"");
+    const valetCmd=!!(window.CendonValet&&CendonValet.on()&&CendonValet.wantsAct(text));
+    let sys=sysPrompt()+(svc?SV.context(svc):valetCmd?"":techHits(text))+(SV?SV.rule():"");
     const skillIds=[];
     /* ── เลือกทางก่อน ระหว่างทางสตรีมกับทางปกติ ──
        ทางสตรีมสวยกว่าเพราะเห็นความคิดสด ๆ แต่ตอนนี้หลังบ้านยังไม่อ่าน
@@ -12215,6 +12222,8 @@ body[data-phase="thread"] .composer{animation:wUp .55s cubic-bezier(.22,1,.36,1)
 @keyframes wUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 .composer::before{display:none!important}
 #inp::placeholder,#wAsk::placeholder{color:var(--c-faint)!important}
+/* ช่องพิมพ์อยู่ในกล่องแชตอยู่แล้ว — ไม่ต้องมีกรอบซ้อนข้างใน (lux.css ใส่กรอบให้ textarea ทุกอันแบบ !important) */
+#wAsk,#inp{border:0!important;box-shadow:none!important;background:transparent!important;outline:none!important;border-radius:0!important}
 .att-btn{background:none!important;border:0!important;box-shadow:none!important;color:var(--c-mut)!important;border-radius:50%!important;
   transition:background .16s,color .16s!important}
 .att-btn:hover{background:var(--c-glass)!important;color:var(--c-ink)!important}

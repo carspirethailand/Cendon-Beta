@@ -106,7 +106,12 @@ async function shops(q,cat){
   let L=(d.techs||[]).filter(t=>t&&t.verified&&!t.test&&!t.suspended&&t.uid!==mine);
   const s=String(q||"").toLowerCase().trim(),c=["air","eng","tyre","ev","body"].includes(cat)?cat:null;
   if(s){const exact=L.filter(t=>String(t.id)===String(q));if(exact.length)return exact.map(t=>({...t,dist:null}));
-    const terms=s.split(/\s+/).filter(Boolean);L=L.filter(t=>{const hay=[t.shop,t.name,t.area].join(" ").toLowerCase();return hay.includes(s)||terms.every(x=>hay.includes(x))})}
+    const terms=s.split(/\s+/).filter(Boolean),hay=t=>[t.shop,t.name,t.area].join(" ").toLowerCase();
+    let M=L.filter(t=>{const h=hay(t);return h.includes(s)||terms.every(x=>h.includes(x))});
+    /* ชื่อที่ผู้ใช้เรียกไม่ตรงชื่อจริง ("นนท์การช่าง" → "นนท์แอร์ แอนด์ เซอร์วิส"): ตัดคำทั่วไปออก เหลือแก่นชื่อแล้วเทียบ */
+    if(!M.length){const core=s.replace(/การช่าง|ช่าง|อู่|ร้าน|ศูนย์|บริการ|เซอร์วิส|แอนด์|ยนต์|service|garage|auto|motors?|shop|and|&/gi," ").split(/\s+/).filter(w=>w.length>=2);
+      if(core.length)M=L.map(t=>({t,n:core.filter(w=>hay(t).includes(w)).length})).filter(x=>x.n).sort((a,b)=>b.n-a.n).map(x=>x.t);}
+    L=M}
   if(c)L=L.filter(t=>(t.cats||[]).includes(c));
   const h=lastHere();
   return L.map(t=>({...t,dist:km(h,t)})).sort((a,b)=>(a.dist??1e9)-(b.dist??1e9)).slice(0,5);

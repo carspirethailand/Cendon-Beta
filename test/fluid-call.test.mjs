@@ -112,3 +112,21 @@ test('voice agent: own-account actions, fixed page list, nothing for other peopl
   for(const bad of ['admin','delete_account','users','pay'])assert.match((await a.execute('valet',{do:bad},ctx)).error,/Unsupported/);
   assert.match(core,/role!=="technician"/,'shop-side customer chats are never read out');assert.ok(!/admin|handbook/.test(core.slice(core.indexOf('const PAGES='),core.indexOf('function pageOf'))),'no staff pages');
 });
+const valetJs=await read('valet.js');
+test('chat Valet: commands are recognised, Valet-off asks once with an allow card, shop names match loosely',()=>{
+  const store={};const window={localStorage:{getItem:k=>store[k]??null,setItem:(k,v)=>{store[k]=v}}};const document={readyState:'complete',addEventListener(){},querySelector:()=>null,querySelectorAll:()=>[],getElementById:()=>null};
+  window.MutationObserver=function(){return{observe(){}}};
+  vm.runInNewContext(valetJs,{window,document,localStorage:window.localStorage,MutationObserver:window.MutationObserver,setTimeout:()=>0,JSON,encodeURIComponent});
+  const V=window.CendonValet;
+  for(const t of ['ช่วยทักไปหาช่างนนท์การช่างและบอกว่า รถสตาร์ทไม่ติด','ขอราคาจากร้านนนท์แอร์','เรียกช่างด่วน ยางแตก','เพิ่มรถ Civic 2020','อัปเดตเลขไมล์เป็น 90000','message the shop about Saturday'])assert.ok(V.wantsAct(t),t);
+  for(const t of ['แอร์ไม่เย็นเกิดจากอะไร','ร้านไหนซ่อมแอร์ดีแถวบางนา','บอกหน่อยว่าน้ำมันเครื่องควรเปลี่ยนเมื่อไร'])assert.ok(!V.wantsAct(t),t);
+  /* Valet ปิด: หลังบ้านใหม่ส่ง enable · หลังบ้านเก่าบอกทางเปิด → ทั้งสองแบบได้การ์ดอนุญาต ไม่มีคำสั่งอื่นหลุดมา */
+  const J=x=>JSON.stringify(x);
+  assert.equal(J(V.cut('ทำให้ได้ครับ\n[[ACT]]{"do":"enable"}[[/ACT]]').acts),'[{"do":"enable"}]');
+  assert.equal(J(V.cut('ได้ [[ACT]]{"do":"post_job","symptom":"x"}[[/ACT]]').acts),'[]','no real actions while Valet is off');
+  const old=V.cut('เปิด Cendon Valet ได้ที่ปุ่มรูปจับมือข้างช่องพิมพ์ แล้วสั่งใหม่');assert.equal(J(old.acts),'[{"do":"enable"}]');assert.equal(old.text,'');
+  assert.match(chat,/CendonValet\.wantsAct\(text\)\)\{\s*messages\.push\(\{role:"ai",text:"",acts:\[\{do:"enable",text\}\]\}\)/,'Valet off + a command → allow card without asking the AI');
+  assert.match(chat,/const svcMode=!!\(SV&&SV\.wants\(text\)\)&&!\(window\.CendonValet&&CendonValet\.wantsAct\(text\)\)/,'commands skip the shop pre-search');
+  assert.match(chat,/#wAsk,#inp\{border:0!important/,'no inner box in the chat field');
+  assert.match(core,/การช่าง\|ช่าง\|อู่\|ร้าน/,'"นนท์การช่าง" matches "นนท์แอร์ แอนด์ เซอร์วิส" by its core name');
+});

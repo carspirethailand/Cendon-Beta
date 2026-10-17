@@ -42,7 +42,7 @@ function body(){
 }
 
 /* ═══ แกะบล็อกคำสั่งออกจากคำตอบ ═══ */
-const ACTS=["go","search","setting","add_car","car_km","pick_car","post_job","urgent","book","msg_shop","job","send_photos","jobs","log","due","shop_status"];
+const ACTS=["enable","go","search","setting","add_car","car_km","pick_car","post_job","urgent","book","msg_shop","job","send_photos","jobs","log","due","shop_status"];
 const one=(v,n)=>String(v==null?"":v).replace(/[\r\n\t]+/g," ").trim().slice(0,n);
 const LEN={symptom:600,text:600,note:300,q:120,shop:80,title:60,phone:20};
 function clean(o){
@@ -52,12 +52,17 @@ function clean(o){
    "shop","op","job","note","kind","amount","litres","item","title","date","phone"].forEach(k=>{if(o[k]!=null&&o[k]!=="")a[k]=one(o[k],LEN[k]||80)});
   return a;
 }
+/* ประโยคสั่งให้ทำในแอป (ไม่ใช่แค่ถาม) — ใช้ตัดสินว่าไม่ต้องค้นร้านล่วงหน้า และ Valet ปิดอยู่ให้ขึ้นการ์ดขออนุญาตแทน */
+const ACT_RE=/(ทัก|ส่งข้อความ|แชท|แจ้ง|บอก)\s*(ไป)?\s*(หา|ถึง|กับ)?\s*(ร้าน|ช่าง|อู่)|ขอ\s*(ใบ)?ราคา\s*(จาก|กับ)?\s*(ร้าน|ช่าง|อู่)|(เรียก|ตาม)\s*ช่าง|ช่างด่วน|(ประกาศ|โพสต์)\s*หาช่าง|ยกเลิก\s*(งาน|ใบงาน|นัด)|รับราคา|ปิดงาน|งานเสร็จแล้ว|เพิ่มรถ|(อัปเดต|อัพเดท|แก้|เปลี่ยน)\s*(เลข)?ไมล์|พาไป(หน้า)?|เปิดหน้า|เปลี่ยน\s*(เป็น)?\s*ธีม|ธีม(มืด|สว่าง)|จด\s*(เติม)?\s*น้ำมัน|ตั้งวัน|ส่งรูปให้ช่าง|\b(message|text|tell)\s+(the\s+)?(shop|mechanic|garage)|\bbook\b|\bcancel\s+(the\s+|my\s+)?(job|booking)|\bdark mode\b|\badd\s+(a|my)\s+car\b/i;
+const wantsAct=t=>ACT_RE.test(String(t||""));
 function cut(txt){
-  const acts=[];
-  const text=String(txt||"").replace(/\[\[ACT\]\]([\s\S]*?)(\[\[\/ACT\]\]|$)/g,(m,j)=>{
-    if(acts.length<3&&isOn()){try{const a=clean(JSON.parse(j.trim()));if(a)acts.push(a)}catch(e){}}
+  const acts=[],on=isOn();
+  let text=String(txt||"").replace(/\[\[ACT\]\]([\s\S]*?)(\[\[\/ACT\]\]|$)/g,(m,j)=>{
+    if(acts.length<3){try{const o=JSON.parse(j.trim());if(on){const a=clean(o);if(a)acts.push(a)}else if(o&&o.do==="enable")acts.push({do:"enable"})}catch(e){}}
     return "";
   }).replace(/\n{3,}/g,"\n\n").trim();
+  /* หลังบ้านรุ่นเก่า: Valet ปิดอยู่ AI แค่บอกทางเปิด — แปลงเป็นการ์ดกดอนุญาตแล้วทำต่อ */
+  if(!on&&!acts.length&&/ปุ่มรูปจับมือ|handshake button/i.test(text)){acts.push({do:"enable"});text="";}
   return {text,acts};
 }
 /* เก็บลงประวัติ: เฉพาะค่าเล็ก ๆ ที่จำเป็น (ไม่เก็บรูปในร่าง) */
@@ -138,6 +143,10 @@ const LOGK={fuel:["ti-gas-station","เติมน้ำมัน","Fuel"],serv
 function card(m,i){
   const a=m.acts[i],id=`data-vm="${esc(m._vid)}" data-vi="${i}"`;
   const done=!!a.s;
+  if(a.do==="enable"){
+    return `<div class="vl vl-ask" ${id}>${head("ti-key",T("ให้ Cendon Valet ทำเรื่องนี้ให้ไหม?","Let Cendon Valet do this for you?"))}
+      ${done?stLine(a):`<p class="vl-note">${T("Valet ทำในแอปแทนคุณได้ — อะไรที่ส่งถึงคนอื่นหรือเปลี่ยนข้อมูล จะขึ้นการ์ดให้คุณตรวจและกดยืนยันก่อนทุกครั้ง · ปิดได้ทุกเมื่อ","Valet can act in the app for you — anything that reaches others or changes your data shows a card for you to check and confirm first · switch it off anytime")}</p>
+      <div class="vl-acts"><button type="button" class="vl-b" data-va="enable"><i class="ti ti-key"></i>${T("อนุญาตและทำต่อ","Allow and continue")}</button><button type="button" class="vl-b gh" data-va="no">${T("ไม่ใช่ตอนนี้","Not now")}</button></div>`}</div>`}
   if(a.do==="go"||a.do==="search"){const d=dest(a);if(!d)return "";
     return `<div class="vl" ${id}>${head(a.do==="search"?"ti-search":"ti-route",(a.do==="search"?"":T("พาไป ","Go to "))+esc(d.label))}
       ${a._cd&&!done?`<div class="vl-cd"><span class="vl-bar"><i style="animation-duration:${a._cd}ms"></i></span><button type="button" class="vl-b gh" data-va="stop">${T("ยกเลิก","Cancel")}</button></div>`
@@ -294,6 +303,15 @@ async function act(btn){
     if(k==="apply"){a._prev=s.get();s.set(s.v);finish(m,a,"done",T("เปลี่ยนแล้ว","Done"))}else{s.set(a._prev);a._prev=null;finish(m,a,"no",T("ย้อนกลับแล้ว","Undone"))}return}
   if(k==="pick"){try{pickCar(btn.dataset.car)}catch(e){}return}
   if(k==="open"){go("/jobs/"+enc(btn.dataset.job)+"/chat");return}
+  /* อนุญาต Valet แล้วทำคำขอเดิมต่อทันที (ไม่ต้องพิมพ์ใหม่) */
+  if(k==="enable"){
+    localStorage.setItem(KEY,JSON.stringify({on:true,at:Date.now()}));paintBtns();
+    const list=typeof messages!=="undefined"?messages:[],mi=list.indexOf(m),prev=mi>0?list[mi-1]:null,q=a.text||(prev&&prev.role==="user"?prev.text:"");
+    if(mi>=0)list.splice(mi,1);if(prev&&prev.role==="user"&&prev.text===q)list.splice(list.indexOf(prev),1);
+    try{saveSession()}catch(e){}try{renderMessages()}catch(e){}
+    const inp=D.getElementById("inp");if(q&&inp&&typeof sendMsg==="function"){inp.value=q;sendMsg()}
+    try{toast(T("Valet พร้อมแล้ว","Valet is on"),"ti-key")}catch(e){}
+    return}
   if(k==="urgfull"){go("/urgent");return}
   if(k==="form"){toForm(el,a);return}
   if(k==="see"){const u=seeUrl(a);if(u)go(u);return}
@@ -511,5 +529,5 @@ function sheet(){
 if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",inject);else inject();
 setTimeout(inject,800);
 
-W.CendonValet={on:isOn,body,cut,save,html,run,open:sheet,inject};
+W.CendonValet={on:isOn,body,cut,save,html,run,open:sheet,inject,wantsAct};
 })(window,document);

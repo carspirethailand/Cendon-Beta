@@ -1474,5 +1474,10 @@ window.CENDON_L10N={lang:"ja",t:{
 "The service belongs to this shop":"サービスはこの店舗のものになります",
 "Remove from what customers see":"お客様に表示される一覧から外す",
 "Hide this shop from customers?":"この店舗をお客様から非表示にしますか？",
-"Edit shop (owner)":"店舗を編集（オーナー）"
+"Edit shop (owner)":"店舗を編集（オーナー）",
+"Cancel my mechanic application":"整備士の申請を取り消す",
+"Removes the trial shop, your application and documents — you can apply again later":"お試しショップ、申請内容、書類を削除します — あとで再申請できます",
+"Cancel your mechanic application? Your application, documents and any trial shop will be deleted. You can apply again later.":"整備士の申請を取り消しますか？申請内容、書類、お試しショップ（ある場合）は削除されます。あとで再申請できます。",
+"Application cancelled":"申請を取り消しました",
+"Cancel application":"申請を取り消す"
 }};

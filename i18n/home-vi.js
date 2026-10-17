@@ -1474,5 +1474,10 @@ window.CENDON_L10N={lang:"vi",t:{
 "The service belongs to this shop":"Dịch vụ thuộc về cửa hàng này",
 "Remove from what customers see":"Gỡ khỏi danh sách khách hàng nhìn thấy",
 "Hide this shop from customers?":"Ẩn cửa hàng này khỏi khách hàng?",
-"Edit shop (owner)":"Sửa cửa hàng (chủ sở hữu)"
+"Edit shop (owner)":"Sửa cửa hàng (chủ sở hữu)",
+"Cancel my mechanic application":"Hủy đơn đăng ký thợ của tôi",
+"Removes the trial shop, your application and documents — you can apply again later":"Xóa tiệm dùng thử, đơn đăng ký và giấy tờ của bạn — bạn có thể đăng ký lại sau",
+"Cancel your mechanic application? Your application, documents and any trial shop will be deleted. You can apply again later.":"Hủy đơn đăng ký thợ? Đơn, giấy tờ và tiệm dùng thử (nếu có) sẽ bị xóa. Bạn có thể đăng ký lại sau.",
+"Application cancelled":"Đã hủy đơn đăng ký",
+"Cancel application":"Hủy đơn đăng ký"
 }};

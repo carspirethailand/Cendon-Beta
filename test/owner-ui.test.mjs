@@ -47,3 +47,13 @@ test('Cendon Experience: the owner role sees every page and skips the NDA',()=>{
   c.setMe({uid:'s',role:'moderator',pos:'staff'});assert.equal(c.can('finance'),false);
   assert.match(admin,/function ndaNeeded\(tab\)\{ return !!NDA_AREAS\[tab\]&&!NDA_OK&&!\(me&&me\.role==="owner"\) \}/);
 });
+
+test('applicants can cancel: status page (รอตรวจ/ให้แก้) and a non-staff trial shop in Studio settings',()=>{
+  const sp=part(home,'function statusPage(a,fresh,pv){','function previewStatus');
+  assert.match(sp,/!pv&&\(st==="pending"\|\|st==="rejected"\)\?`<button class="lx-gh ss-wd" id="sWd"/,'never offered for declined or in staff previews');
+  assert.match(home,/t\.test&&!\(ME&&ME\.staff\)\?`<section class="ss-g">[\s\S]{0,200}id="ssWd"/);
+  const wd=part(home,'function withdrawApp(btn){','function statusPage');
+  assert.match(wd,/if\(!confirm\(/,'asks before deleting');
+  assert.match(wd,/api\("\/api\/tech\/apply\/withdraw",\{body:\{\}\}\)/);
+  assert.match(wd,/if\(MODE==="tech"\)setMode\("customer"\)/,'leaves Studio once the trial shop is gone');
+});

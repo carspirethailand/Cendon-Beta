@@ -29,11 +29,17 @@ function load(){try{const d=JSON.parse(localStorage.getItem(KEY)||"null");return
 function save(items){try{localStorage.setItem(KEY,JSON.stringify({uid:uid(),items:items.slice(0,MAX)}))}catch(e){}subs.forEach(f=>{try{f()}catch(e){}})}
 const supported=()=>"Notification" in W&&"serviceWorker" in navigator;
 const perm=()=>supported()?Notification.permission:"unsupported";
-const pushOn=()=>{try{return JSON.parse(localStorage.getItem("spire_notifOn")||"false")===true}catch(e){return false}};
+/* แจ้งเตือนในเครื่อง "เปิด/ปิด" = ตัวเลือกของผู้ใช้ (เก็บในเครื่อง) แยกจาก "สมัคร Push กับเซิร์ฟเวอร์แล้ว"
+   เดิมใช้ค่าเดียวกัน — หลังบ้านไม่มีกุญแจ Push ค่าไม่เคยถูกบันทึก ปุ่ม "เปิด" จึงค้างตลอดแม้เปิดแล้ว
+   ยังไม่เคยเลือก + อนุญาตในเบราว์เซอร์แล้ว = ถือว่าเปิด (ผู้ใช้เดิม) */
+const PREF="spire_notifOn",SUB="spire_pushSub";
+const pref=()=>{try{const v=localStorage.getItem(PREF);return v==null?perm()==="granted":JSON.parse(v)===true}catch(e){return false}};
+const pushOn=()=>perm()==="granted"&&pref();
+const pushSub=()=>{try{return localStorage.getItem(SUB)==="true"}catch(e){return false}};
 
 /* แสดงบนเครื่องผ่าน service worker (มือถือบางรุ่นใช้ new Notification ตรง ๆ ไม่ได้) */
 async function sys(ev){
-  if(perm()!=="granted")return false;
+  if(!pushOn())return false;
   try{const reg=await navigator.serviceWorker.ready;
     await reg.showNotification(ev.title,{body:ev.body||"",icon:"/icon192.png",badge:"/icon192.png",tag:ev.tag||"cendon",data:{url:ev.url||"/"}});return true}
   catch(e){return false}
@@ -46,7 +52,7 @@ function add(ev,opt){
   const it={id,kind:ev.kind||"info",title:String(ev.title).slice(0,120),body:String(ev.body||"").slice(0,200),url:ev.url||"/",tag:ev.tag||"cendon",at:Date.now(),read:false};
   items.unshift(it);save(items);
   const o=opt||{};
-  if(document.hidden&&(o.system||(o.fallback&&!pushOn())))sys(it);
+  if(document.hidden&&(o.system||(o.fallback&&!pushSub())))sys(it);
   return it;
 }
 const list=()=>load();
@@ -68,6 +74,7 @@ async function enable(){
   let p=Notification.permission;
   if(p==="default")p=await Notification.requestPermission();
   if(p!=="granted")return p;
+  try{localStorage.setItem(PREF,"true")}catch(e){}
   try{
     const reg=await navigator.serviceWorker.ready;
     const kj=await get("/api/push/key").catch(()=>null);
@@ -75,10 +82,19 @@ async function enable(){
       let sub=await reg.pushManager.getSubscription();
       if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8(kj.key)});
       await post("/api/push/subscribe",{sub:sub.toJSON(),cars:pushCars(),lang:W.lang||"th"});
-      localStorage.setItem("spire_notifOn","true");
+      localStorage.setItem(SUB,"true");
     }
   }catch(e){}
+  subs.forEach(f=>{try{f()}catch(e){}});
   return "granted";
+}
+/* ปิดแจ้งเตือนในเครื่อง: ยกเลิก Push ที่เซิร์ฟเวอร์และในเครื่อง · รายการในกระดิ่งยังขึ้นตามปกติ (แค่ไม่เด้งบนเครื่อง) */
+async function disable(){
+  try{localStorage.setItem(PREF,"false");localStorage.removeItem(SUB)}catch(e){}
+  try{const reg=await navigator.serviceWorker.ready;const sub=reg.pushManager&&await reg.pushManager.getSubscription();
+    if(sub){await post("/api/push/unsubscribe",{endpoint:sub.endpoint}).catch(()=>{});await sub.unsubscribe().catch(()=>{})}}catch(e){}
+  subs.forEach(f=>{try{f()}catch(e){}});
+  return "off";
 }
 function on(f){subs.add(f);return ()=>subs.delete(f)}
 
@@ -149,6 +165,8 @@ const CSS=`
 .nb-h button{border:0;background:none;color:var(--muted,#71717A);font:500 13px Kanit,system-ui,sans-serif;cursor:pointer}
 .nb-on{display:flex;gap:10px;align-items:flex-start;margin:0 12px 8px;padding:12px;border-radius:14px;background:var(--surface-2,#F4F4F5)}
 .nb-on .ti{font-size:20px;color:var(--co,#E9682A);margin-top:2px}.nb-on span{flex:1;font-size:13px;line-height:1.5;color:var(--muted,#71717A)}.nb-on span b{display:block;color:var(--ink,#09090B);font-size:14px}
+.nb-on.is-on .ti{color:#22a06b}.nb-on b em{font-style:normal;font-size:11.5px;font-weight:600;color:#22a06b;margin-left:4px}
+.nb-cta.off{background:none;color:var(--ink,#09090B);border:1px solid var(--line,rgba(0,0,0,.14))}
 .nb-cta{height:34px;padding:0 14px;border:0;border-radius:999px;flex:none;align-self:center;cursor:pointer;background:var(--ink,#09090B);color:var(--bg,#fff);font:600 13px Kanit,system-ui,sans-serif}
 .nb-cta:disabled{opacity:.6}
 .nb-list{overflow:auto;padding:2px 6px 6px}
@@ -175,7 +193,7 @@ function panel(btn,o){
   const agoT=at=>{const m=Math.round((Date.now()-at)/60000);return m<1?T("เมื่อกี้","now"):m<60?T(`${m} นาที`,`${m}m`):m<1440?T(`${Math.round(m/60)} ชม.`,`${Math.round(m/60)}h`):T(`${Math.round(m/1440)} วัน`,`${Math.round(m/1440)}d`)};
   const draw=()=>{const L=list(),pm=perm();
     p.innerHTML=`<div class="nb-h"><b>${T("การแจ้งเตือน","Notifications")}</b>${L.some(x=>!x.read)?`<button type="button" data-a="read">${T("อ่านทั้งหมด","Mark all read")}</button>`:""}</div>
-      ${pm==="default"||(pm==="granted"&&!pushOn())?`<div class="nb-on"><i class="ti ti-bell-ringing"></i><span><b>${T("แจ้งเตือนในเครื่อง","Device notifications")}</b>${T("รู้ทันทีเมื่อช่างเสนอราคา รับงาน หรือ AI ตอบ แม้ไม่ได้เปิดแอป","Know right away when a mechanic quotes, takes the job or the AI replies — even with the app closed")}</span><button type="button" class="nb-cta" data-a="on">${pm==="granted"?T("เชื่อมต่อ","Connect"):T("เปิด","Turn on")}</button></div>`
+      ${pm==="default"||pm==="granted"?(on=>`<div class="nb-on${on?" is-on":""}"><i class="ti ti-bell-${on?"ringing":"off"}"></i><span><b>${T("แจ้งเตือนในเครื่อง","Device notifications")}${on?` <em>${T("เปิดอยู่","On")}</em>`:""}</b>${on?T("เด้งบนเครื่องเมื่อช่างเสนอราคา รับงาน หรือ AI ตอบ แม้ไม่ได้เปิดแอป","Pops up on this device when a mechanic quotes, takes the job or the AI replies"):T("รู้ทันทีเมื่อช่างเสนอราคา รับงาน หรือ AI ตอบ แม้ไม่ได้เปิดแอป","Know right away when a mechanic quotes, takes the job or the AI replies — even with the app closed")}</span><button type="button" class="nb-cta${on?" off":""}" data-a="${on?"off":"on"}">${on?T("ปิด","Turn off"):T("เปิด","Turn on")}</button></div>`)(pushOn())
         :pm==="denied"?`<div class="nb-on"><i class="ti ti-bell-off"></i><span><b>${T("ปิดแจ้งเตือนไว้ในเบราว์เซอร์","Notifications blocked")}</b>${T("เปิดได้ที่การตั้งค่าเว็บไซต์ของเบราว์เซอร์","Allow them in your browser's site settings")}</span></div>`:""}
       <div class="nb-list">${L.length?L.map(x=>`<button type="button" class="nb-it${x.read?"":" new"}" data-id="${escH(x.id)}" data-u="${escH(x.url)}"><span class="nb-ic${x.kind==="ai"?" ai":""}"><i class="ti ${ICON[x.kind]||"ti-bell"}"></i></span><span><b class="nt">${escH(x.title)}</b>${x.body?`<small class="nt">${escH(x.body)}</small>`:""}</span><time>${agoT(x.at)}</time></button>`).join("")
         :`<div class="nb-empty"><i class="ti ti-bell"></i>${T("ยังไม่มีการแจ้งเตือน — เมื่อช่างเสนอราคา รับงาน หรือส่งข้อความ จะขึ้นที่นี่","Nothing yet — quotes, accepted jobs and messages show up here")}</div>`}</div>
@@ -184,6 +202,8 @@ function panel(btn,o){
     const r=p.querySelector('[data-a="read"]');if(r)r.onclick=()=>{read();draw()};
     const on_=p.querySelector('[data-a="on"]');if(on_)on_.onclick=async()=>{on_.disabled=true;const st=await enable();
       if(st==="granted"&&o.toast)o.toast(T("เปิดแจ้งเตือนในเครื่องแล้ว","Device notifications are on"));draw()};
+    const off_=p.querySelector('[data-a="off"]');if(off_)off_.onclick=async()=>{off_.disabled=true;await disable();
+      if(o.toast)o.toast(T("ปิดแจ้งเตือนในเครื่องแล้ว — ยังดูรายการได้ที่กระดิ่งนี้","Device notifications off — still listed under this bell"));draw()};
     p.querySelector('[data-a="jobs"]').onclick=()=>{close();o.onJobs?o.onJobs():go("/jobs")};
   };
   draw();document.body.appendChild(p);btn.setAttribute("aria-expanded","true");
@@ -266,6 +286,6 @@ function ai(text,valet){
   add({kind:"ai",title:valet?T("Cendon Valet เตรียมการ์ดให้แล้ว — รอคุณยืนยัน","Cendon Valet has a card ready — waiting for you"):T("Cendon AI ตอบแล้ว","Cendon AI replied"),
     body:t.slice(0,140),url:location.pathname+location.search,tag:"cendon-ai"},{system:true});
 }
-W.CendonBell={add,list,unread,read,clear,enable,perm,pushOn,on,setApi,ai,sys,jobEvents,panel,style,paint,ding,buttons:()=>BTNS.slice()};
+W.CendonBell={add,list,unread,read,clear,enable,disable,perm,pushOn,pushSub,on,setApi,ai,sys,jobEvents,panel,style,paint,ding,buttons:()=>BTNS.slice()};
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount);else mount();
 })(window);

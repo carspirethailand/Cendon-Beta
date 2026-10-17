@@ -1474,5 +1474,10 @@ window.CENDON_L10N={lang:"fr",t:{
 "The service belongs to this shop":"Le service appartient à cet atelier",
 "Remove from what customers see":"Retirer de ce que voient les clients",
 "Hide this shop from customers?":"Masquer cet atelier aux clients ?",
-"Edit shop (owner)":"Modifier l'atelier (propriétaire)"
+"Edit shop (owner)":"Modifier l'atelier (propriétaire)",
+"Cancel my mechanic application":"Annuler ma candidature de mécanicien",
+"Removes the trial shop, your application and documents — you can apply again later":"Supprime l’atelier d’essai, votre candidature et vos documents — vous pourrez postuler à nouveau plus tard",
+"Cancel your mechanic application? Your application, documents and any trial shop will be deleted. You can apply again later.":"Annuler votre candidature de mécanicien ? Votre candidature, vos documents et l’atelier d’essai éventuel seront supprimés. Vous pourrez postuler à nouveau plus tard.",
+"Application cancelled":"Candidature annulée",
+"Cancel application":"Annuler la candidature"
 }};

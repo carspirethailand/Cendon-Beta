@@ -1474,5 +1474,10 @@ window.CENDON_L10N={lang:"pt",t:{
 "The service belongs to this shop":"O serviço pertence a esta oficina",
 "Remove from what customers see":"Remover do que os clientes veem",
 "Hide this shop from customers?":"Ocultar esta oficina dos clientes?",
-"Edit shop (owner)":"Editar oficina (proprietário)"
+"Edit shop (owner)":"Editar oficina (proprietário)",
+"Cancel my mechanic application":"Cancelar minha candidatura de mecânico",
+"Removes the trial shop, your application and documents — you can apply again later":"Remove a oficina de teste, sua candidatura e documentos — você pode se candidatar de novo depois",
+"Cancel your mechanic application? Your application, documents and any trial shop will be deleted. You can apply again later.":"Cancelar sua candidatura de mecânico? Sua candidatura, documentos e a oficina de teste (se houver) serão excluídos. Você pode se candidatar de novo depois.",
+"Application cancelled":"Candidatura cancelada",
+"Cancel application":"Cancelar candidatura"
 }};

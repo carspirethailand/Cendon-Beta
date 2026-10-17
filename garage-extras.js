@@ -140,6 +140,8 @@ async function loadPass(c){
   try{
     const [m,j]=await Promise.all([api('/api/tech/passport?car='+encodeURIComponent(c.id)),api('/api/tech/jobs').catch(()=>({jobs:[]}))]);
     st.data=m.passport||null;
+    /* สวิตช์ "แสดงค่าใช้จ่าย" เริ่มตามที่หน้า Passport ใช้อยู่จริง (ยังไม่เคยแตะเองเท่านั้น) */
+    if(!st.costTouched)st.showCost=!!(st.data&&st.data.showCost);
     st.jobs=(j.jobs||[]).filter(x=>x.side!=='technician'&&x.status==='completed');
     /* เดาใบงานของรถคันนี้จากชื่อรุ่น — เจ้าของติ๊กเพิ่ม/เอาออกเองได้ */
     if(!st.touched){const key=String(c.model||c.name||'').toLowerCase();st.picked=new Set(st.jobs.filter(x=>key&&String(x.car||'').toLowerCase().includes(key)).map(x=>x.id))}
@@ -160,6 +162,8 @@ function panePass(c){
       <div class="cx-acts"><button type="button" class="cx-b" id="cxCopy"><i class="ti ti-link"></i>${T('คัดลอกลิงก์','Copy link')}</button><button type="button" class="cx-b" id="cxShare"><i class="ti ti-share-3"></i>${T('แชร์','Share')}</button><button type="button" class="cx-b" id="cxDl"><i class="ti ti-download"></i>QR</button><a class="cx-b" href="${esc(passUrl(d.token))}" target="_blank" rel="noopener"><i class="ti ti-external-link"></i>${T('ดูหน้า','Open')}</a></div></div></div>`:''}
     ${(st.jobs||[]).length?`<div class="cx-jobs"><h4>${T('งานซ่อมผ่าน Cendon ที่จะติดป้าย "ยืนยันโดยร้าน"','Cendon repairs shown as "shop-verified"')}</h4>${st.jobs.map(j=>`<label class="cx-job"><input type="checkbox" data-j="${esc(j.id)}" ${st.picked.has(j.id)?'checked':''}><div><b>${esc(j.techName||'')}</b><small>${esc(j.car||'')} · ${esc(String(j.symptom||'').slice(0,60))}</small></div></label>`).join('')}</div>`:''}
     <label class="cx-rem"><span class="sq"><i class="ti ti-coin"></i></span><div><b>${T('แสดงค่าใช้จ่าย','Show costs')}</b><small>${T('ปิดไว้ = คนดูเห็นแค่รายการและวันที่','Off = viewers see items and dates only')}</small></div><input type="checkbox" id="cxCost" ${st.showCost?'checked':''}><i class="sw"></i></label>
+    ${st.showCost?(()=>{const sv=L.services.filter(x=>+x.amount>0),tot=sv.reduce((a,x)=>a+(+x.amount||0),0);
+      return `<p class="cx-cost">${sv.length?T(`ค่าใช้จ่ายที่จะแสดง: ${sv.length} รายการ · รวม ฿${num(tot)}`,`Costs shown: ${sv.length} items · ฿${num(tot)} total`):T('ยังไม่มีรายการที่ใส่ค่าใช้จ่าย — ใส่ราคาตอนบันทึกการดูแลรถ แล้วจะแสดงที่นี่','No records with a cost yet — add the price when you log maintenance')}${d?'':T(' · แสดงเมื่อกดสร้าง Car Passport',' · appears once you create the Car Passport')}</p>`})():''}
     <p class="cx-fine"><i class="ti ti-shield-lock"></i>${T('ไม่มีชื่อ ทะเบียน เบอร์ หรือที่อยู่ของคุณ · รายการที่คุณบันทึกเองติดป้าย "บันทึกโดยเจ้าของ" · งานผ่าน Cendon ดึงจากระบบจริง แก้ไม่ได้ · ปิดลิงก์ได้ทุกเมื่อ','No name, plate, phone or address · your own records are labelled "owner-recorded" · Cendon jobs come straight from the system and can\'t be edited · turn the link off any time')}</p>
     <div class="cx-acts main"><button type="button" class="cx-b p" id="cxPub"><i class="ti ti-${d?'refresh':'sparkles'}"></i>${d?T('อัปเดตข้อมูลล่าสุด','Update with latest'):T('สร้าง Car Passport','Create Car Passport')}</button>${d?`<button type="button" class="cx-b" id="cxOff"><i class="ti ti-link-off"></i>${T('ปิดลิงก์','Turn off')}</button>`:''}</div>
     ${st.err&&st.err!=='login'?`<p class="cx-err">${esc(st.err)}</p>`:''}
@@ -173,11 +177,19 @@ function qrInto(el,text,cb){
 function mountPass(c){
   const st=PASS[c.id];if(!st)return;const box=D.querySelector('.cx-pass');if(!box)return;
   box.querySelectorAll('[data-j]').forEach(x=>x.onchange=()=>{st.touched=true;x.checked?st.picked.add(x.dataset.j):st.picked.delete(x.dataset.j);const s=box.querySelectorAll('.cx-pstat b')[1];if(s)s.textContent=st.picked.size});
-  const cost=$('cxCost');if(cost)cost.onchange=()=>{st.showCost=cost.checked};
+  const publish=async msg=>{
+    const r=await api('/api/tech/passport',payload(c,st));st.data={token:r.token,updatedAt:r.updatedAt,views:(st.data&&st.data.views)||0,jobs:r.jobs,showCost:!!st.showCost};st.err='';
+    toast(msg||T('Car Passport พร้อมแล้ว — แชร์ลิงก์หรือ QR ได้เลย','Car Passport is ready — share the link or QR'),'ti-id-badge-2');};
+  /* เปิด/ปิดค่าใช้จ่าย: มีหน้า Passport อยู่แล้ว = อัปเดตหน้าจริงทันที (เดิมต้องกดอัปเดตเองจึงดูเหมือนไม่ทำงาน) */
+  const cost=$('cxCost');if(cost)cost.onchange=async()=>{
+    st.showCost=cost.checked;st.costTouched=true;
+    if(st.data){cost.disabled=true;
+      try{await publish(st.showCost?T('หน้า Car Passport แสดงค่าใช้จ่ายแล้ว','Costs now show on your Car Passport'):T('ซ่อนค่าใช้จ่ายจากหน้า Car Passport แล้ว','Costs hidden from your Car Passport'))}
+      catch(e){st.showCost=!st.showCost;st.err=e.message}}
+    rerender();};
   const pub=$('cxPub');if(pub)pub.onclick=async()=>{
     pub.disabled=true;const h=pub.innerHTML;pub.innerHTML='<span class="spin"></span>';
-    try{const r=await api('/api/tech/passport',payload(c,st));st.data={token:r.token,updatedAt:r.updatedAt,views:(st.data&&st.data.views)||0,jobs:r.jobs};st.err='';
-      toast(T('Car Passport พร้อมแล้ว — แชร์ลิงก์หรือ QR ได้เลย','Car Passport is ready — share the link or QR'),'ti-id-badge-2');}
+    try{await publish()}
     catch(e){st.err=e.status===404?T('ฟีเจอร์นี้ยังไม่พร้อมใช้งานชั่วคราว','This feature is temporarily unavailable'):e.message}
     pub.innerHTML=h;pub.disabled=false;rerender();
   };
@@ -289,8 +301,11 @@ async function wrapped(opt){
   D.body.appendChild(W);D.body.style.overflow='hidden';fx.start(W);
   /* ซ่อนหน้าการาจด้านหลังทั้งหมดระหว่างดู — Safari บนไอโฟนวาดชั้นสีรถ (ผสมสีแบบคูณ + หน้ากากรูป) ทะลุขึ้นมาทับสตอรี่ได้
      คนที่เลือกสีแดงให้รถจึงเห็นสีแดงบังจอ · หน้าด้านหลังถูกบังอยู่แล้ว ซ่อนไปก็ไม่มีใครเห็นต่าง */
+  /* แถบเบราว์เซอร์ (iPhone) ย้อมสีตาม theme-color — ระหว่างดูให้ดำเหมือนสตอรี่ ไม่ใช่สีส้มแดงตั้งต้นของหน้า · จำตำแหน่งเลื่อนไว้คืนตอนปิด */
+  const tc=D.querySelector('meta[name="theme-color"]'),tc0=tc&&tc.getAttribute('content'),sy=scrollY;
+  if(tc)tc.setAttribute('content','#0b0b0d');
   D.documentElement.classList.add('wr-open');
-  WR={W,i:-1,t:0,paused:false,start:0,left:0,DUR:5200,name:null};
+  WR={W,i:-1,t:0,paused:false,start:0,left:0,DUR:5200,name:null,tc,tc0,sy};
   const bars=[...W.querySelectorAll('.wr-bars i b')],S=[...W.querySelectorAll('.wr-s')];
   const nameP=nickname(s).then(n=>{WR&&(WR.name=n);const a=$('wrName'),b=$('wrLine'),c=$('wrCName');if(a)a.textContent=n.nickname;if(b)b.textContent=n.line;if(c)c.textContent=n.nickname;return n});
   const go=i=>{
@@ -321,6 +336,8 @@ async function wrapped(opt){
 function closeWrapped(fromUi){
   if(!WR)return;const w=WR;WR=null;clearTimeout(w.t);fx.stop();
   D.documentElement.classList.remove('wr-open');
+  if(w.tc&&w.tc0)w.tc.setAttribute('content',w.tc0);
+  scrollTo(0,w.sy||0);
   w.W.classList.add('out');setTimeout(()=>w.W.remove(),280);D.body.style.overflow='';
   if(fromUi&&w.nav&&window.Nav)try{Nav.drop(w.nav)}catch(e){}
 }

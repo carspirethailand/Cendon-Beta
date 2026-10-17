@@ -1474,5 +1474,10 @@ window.CENDON_L10N={lang:"id",t:{
 "The service belongs to this shop":"Layanan ini milik bengkel ini",
 "Remove from what customers see":"Hapus dari daftar yang dilihat pelanggan",
 "Hide this shop from customers?":"Sembunyikan bengkel ini dari pelanggan?",
-"Edit shop (owner)":"Ubah bengkel (pemilik)"
+"Edit shop (owner)":"Ubah bengkel (pemilik)",
+"Cancel my mechanic application":"Batalkan pendaftaran mekanik saya",
+"Removes the trial shop, your application and documents — you can apply again later":"Menghapus bengkel uji coba, pendaftaran, dan dokumen Anda — Anda bisa mendaftar lagi nanti",
+"Cancel your mechanic application? Your application, documents and any trial shop will be deleted. You can apply again later.":"Batalkan pendaftaran mekanik? Pendaftaran, dokumen, dan bengkel uji coba (jika ada) akan dihapus. Anda bisa mendaftar lagi nanti.",
+"Application cancelled":"Pendaftaran dibatalkan",
+"Cancel application":"Batalkan pendaftaran"
 }};

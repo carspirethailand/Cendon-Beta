@@ -1474,5 +1474,10 @@ window.CENDON_L10N={lang:"ms",t:{
 "The service belongs to this shop":"Perkhidmatan ini milik kedai ini",
 "Remove from what customers see":"Keluarkan daripada senarai yang dilihat pelanggan",
 "Hide this shop from customers?":"Sembunyikan kedai ini daripada pelanggan?",
-"Edit shop (owner)":"Edit kedai (pemilik)"
+"Edit shop (owner)":"Edit kedai (pemilik)",
+"Cancel my mechanic application":"Batalkan permohonan mekanik saya",
+"Removes the trial shop, your application and documents — you can apply again later":"Memadam bengkel percubaan, permohonan dan dokumen anda — anda boleh memohon semula kemudian",
+"Cancel your mechanic application? Your application, documents and any trial shop will be deleted. You can apply again later.":"Batalkan permohonan mekanik? Permohonan, dokumen dan bengkel percubaan (jika ada) akan dipadam. Anda boleh memohon semula kemudian.",
+"Application cancelled":"Permohonan dibatalkan",
+"Cancel application":"Batalkan permohonan"
 }};

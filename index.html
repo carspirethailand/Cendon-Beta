@@ -18,7 +18,7 @@
 (function(){try{if(/^\/(work|studio)(\/|$)/.test(location.pathname)){var p=JSON.parse(localStorage.getItem("spire_partner")||"null");if(p&&p.s==="shop")document.documentElement.dataset.boot="tech"}}catch(e){}})();</script>
 <script>(function(){try{var A=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt"],l=null;try{l=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
 if(A.indexOf(l)<0){l="en";var n=navigator.languages||[navigator.language||"en"];for(var i=0;i<n.length;i++){var b=String(n[i]).toLowerCase().split("-")[0];if(A.indexOf(b)>=0){l=b;break}}}
-if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=2"><\/script>')}catch(e){}})();</script>
+if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=3"><\/script>')}catch(e){}})();</script>
 <title>Cendon</title>
 <meta name="description" content="ถามอาการรถ ส่งรูปหรือเสียงให้ AI ช่วยดู เช็กใบเสนอราคา และหาช่างที่ผ่านการตรวจใกล้คุณ">
 <!-- การ์ดตอนแชร์ลิงก์ (LINE / Facebook / X) — รูปต้องเป็นที่อยู่เต็ม -->
@@ -28,7 +28,7 @@ if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=2"><\/s
 <meta property="og:locale" content="th_TH"><meta name="twitter:card" content="summary_large_image">
 <script src="nav.js"></script>
 <script src="media-store.js"></script>
-<script src="bell.js?v=4"></script>
+<script src="bell.js?v=5"></script>
 <script src="drop.js?v=2" defer></script>
 <meta name="theme-color" content="#131316"/>
 <link rel="manifest" href="./manifest.webmanifest"/>
@@ -2011,6 +2011,7 @@ html[data-theme="dark"] .so-vi{box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
 .rv-test small{font-size:12px;color:var(--muted);line-height:1.55}
 .btn.rv-ban{color:#c0392b;border-color:rgba(192,57,43,.35)}
 .btn.rv-ban:disabled{color:var(--muted);border-color:var(--line)}
+.lx-gh.ss-wd{color:#c0392b;border-color:rgba(192,57,43,.3);justify-content:center}
 /* เครื่องมือเจ้าของระบบ: ปุ่มซ่อนรีวิว · แถวแก้/ลบบริการของร้านอื่น */
 .rv header .rv-hide{margin-left:auto;display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:none;color:var(--muted);font:inherit;font-size:12px;cursor:pointer}
 .rv header .rv-hide:hover{color:#c0392b;border-color:rgba(192,57,43,.35)}
@@ -4656,9 +4657,11 @@ function studioSettings(){
       <p class="ss-k">สีประจำร้าน</p><div class="ss-th" id="ssTh">${Object.entries(THEME).map(([k,c])=>`<button type="button" data-k="${k}" class="${(t.theme||"orange")===k?"on":""}" style="--c:${c}" aria-label="${k}"></button>`).join("")}</div>
       <p class="ss-k">${T("ลิงก์และ QR ร้าน","Shop link & QR code")} <small>${T("พิมพ์ไปติดหน้าอู่ ลูกค้าสแกนแล้วเข้าหน้าร้านเลย","Print it for your garage — customers scan it to open your shop")}</small></p>
       <div class="ss-qr"><div id="ssQr" class="ss-qrb"></div><div class="ss-qra"><code class="nt">${esc(link)}</code><button class="lx-gh" id="ssCopy" type="button"><i class="ti ti-copy"></i>คัดลอกลิงก์</button><button class="lx-gh" id="ssDl" type="button"><i class="ti ti-download"></i>บันทึก QR</button></div></div></section>
+    ${t.test&&!(ME&&ME.staff)?`<section class="ss-g"><h3><i class="ti ti-flask"></i>${T("ร้านทดลอง","Trial shop")}</h3><button class="lx-gh ss-wd" id="ssWd" type="button"><i class="ti ti-door-exit"></i>${T("ยกเลิกการสมัครช่าง","Cancel my mechanic application")}</button><p class="ss-k"><small>${T("ลบร้านทดลอง ใบสมัคร และเอกสารทั้งหมด — สมัครใหม่ได้ภายหลัง","Removes the trial shop, your application and documents — you can apply again later")}</small></p></section>`:""}
     <p class="err" id="ssErr"></p></div>`,
     foot:`<button class="lx-cta" id="ssSave" style="flex:1">บันทึกการตั้งค่า</button>`,
     mount(){
+      if($("ssWd"))$("ssWd").onclick=e=>withdrawApp(e.currentTarget);
       const tog=()=>{$("ssVacF").hidden=!$("ssVac").checked;$("ssArF").hidden=!$("ssAr").checked};tog();
       $("ssVac").onchange=$("ssAr").onchange=tog;
       let theme=t.theme||"orange";
@@ -6154,6 +6157,12 @@ function step(n){
       })}});}
 }
 /* สถานะใบสมัคร — มีเลขที่ใบสมัครอ้างอิง และเห็นว่าอยู่ขั้นไหนของการพิจารณา */
+/* ยกเลิกการสมัครช่าง (รอตรวจ / ต้องแก้ / ร้านทดลอง) — หลังบ้านลบใบสมัคร เอกสาร และปล่อยเลขบัตรคืน */
+function withdrawApp(btn){
+  if(!confirm(T("ยกเลิกการสมัครช่าง? ใบสมัคร เอกสาร และร้านทดลอง (ถ้ามี) จะถูกลบ สมัครใหม่ได้ภายหลัง","Cancel your mechanic application? Your application, documents and any trial shop will be deleted. You can apply again later.")))return;
+  busy(btn,async()=>{await api("/api/tech/apply/withdraw",{body:{}});await refreshMe();await load();closeSheet();if(MODE==="tech")setMode("customer");
+    toast(T("ยกเลิกการสมัครแล้ว","Application cancelled"),"ti-door-exit")});
+}
 function statusPage(a,fresh,pv){
   const st=a.status,d=a.submittedAt||a.createdAt;
   const kyc=!pv&&st==="pending"&&a.identity&&a.identity.mode==="didit"?a.identity:null,kycTodo=!!(kyc&&kyc.status!=="approved");
@@ -6170,10 +6179,12 @@ function statusPage(a,fresh,pv){
     <div class="tl">${(kyc?[["ยื่นใบสมัครออนไลน์",esc(a.name)],["ยืนยันตัวตนกับ Didit",kycTodo?"รอคุณยืนยันตัวตน":"ผ่านแล้ว"],["ทีมงานตรวจและโทรยืนยัน","ทีมงานโทรหา "+esc(a.phone||"")],["อนุมัติ เริ่มรับงาน",""]]
       :[["ยื่นใบสมัครออนไลน์",esc(a.name)],["ตรวจสอบเอกสาร",st==="rejected"?"ต้องแก้ไขเพิ่มเติม":st==="declined"?"ไม่ผ่านการคัดเลือก":"1–3 วันทำการ"],["โทรยืนยันตัวตนและทักษะ","ทีมงานโทรหา "+esc(a.phone||"")],["อนุมัติ เริ่มรับงาน",st==="approved"?"ร้านของคุณแสดงในแอปแล้ว":""]]).map(([b,s],i)=>`<div data-n="${i+1}" class="${i+1<n?"ok":i+1===n&&st!=="approved"?"on":""}"><b>${b}</b><small>${s}</small></div>`).join("")}</div>
     ${st==="rejected"&&!(a.review&&a.review.auto)?`<div class="err" style="animation:none"><b>หมายเหตุจากทีมงาน:</b> ${esc(a.review&&a.review.note||"")}</div>`:""}
+    ${!pv&&(st==="pending"||st==="rejected")?`<button class="lx-gh ss-wd" id="sWd" type="button" style="width:100%;margin-top:14px"><i class="ti ti-door-exit"></i>${T("ยกเลิกการสมัคร","Cancel application")}</button>`:""}
     ${st==="declined"?`<div class="err" style="animation:none"><b>ใบสมัครไม่ผ่านการคัดเลือก</b> — ส่งใบสมัครใหม่ไม่ได้${a.review&&a.review.note?`<br>หมายเหตุจากทีมงาน: ${esc(a.review.note)}`:""}<br><small>ถ้าคิดว่าผิดพลาด ติดต่อทีมงานได้ทางหน้าช่วยเหลือ</small></div>`:""}`,
     foot:st==="rejected"?'<button class="btn p w" id="sFix">แก้ไขและยื่นใหม่</button>':st==="approved"?'<button class="btn p w" id="sJobs">เปิดงานของฉัน</button>':'<button class="btn s w" id="sOk">ปิด</button>',
     mount(){if(pv){$("pvS").querySelectorAll("button").forEach(b=>b.onclick=()=>previewStatus(b.dataset.v,false));if($("sFix"))$("sFix").onclick=()=>landing(true);if($("sJobs"))$("sJobs").onclick=()=>{closeSheet();setMode("tech")};if($("sOk"))$("sOk").onclick=()=>closeSheet();return}
       if($("sFix"))$("sFix").onclick=()=>landing(true);if($("sJobs"))$("sJobs").onclick=()=>{closeSheet();openStudio()};if($("sOk"))$("sOk").onclick=()=>closeSheet();
+      if($("sWd"))$("sWd").onclick=e=>withdrawApp(e.currentTarget);
       /* ยืนยันตัวตน: ขอลิงก์ Didit แล้วเปิดในแท็บเดิม (Didit พากลับมาที่ /join เอง) · ตรวจผล = ดึงผลล่าสุดจาก Didit */
       if($("kGo"))$("kGo").onclick=e=>busy(e.currentTarget,async()=>{const r=await api("/api/tech/apply/identity",{body:{}});if(r.url){location.href=r.url;return}await refreshMe();statusPage(ME.application)});
       if($("kChk"))$("kChk").onclick=e=>busy(e.currentTarget,async()=>{const r=await api("/api/tech/apply/identity/refresh",{body:{}});await refreshMe();

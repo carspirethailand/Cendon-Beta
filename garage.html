@@ -3990,8 +3990,8 @@ a.mtab{text-decoration:none}
 <link rel="stylesheet" href="stability.css">
 <link rel="stylesheet" href="car-detail-tabs.css?v=2026-10-12-r1">
 <script src="car-detail-tabs.js?v=2026-10-12-r2" defer></script>
-<link rel="stylesheet" href="garage-extras.css?v=2">
-<script src="garage-extras.js?v=2" defer></script>
+<link rel="stylesheet" href="garage-extras.css?v=3">
+<script src="garage-extras.js?v=3" defer></script>
 <script src="car-sync.js"></script>
 <script src="stability.js" defer></script>
 <!-- หน้าตาชุดเดียวกับหน้าหลัก (สี การ์ด ปุ่ม พื้นหลัง) — โหลดท้ายสุดให้ชนะสไตล์เดิม -->
@@ -4163,7 +4163,7 @@ html.gx-lock,html.gx-lock body{overflow:hidden}
 </style>
 <link rel="stylesheet" href="lux.css">
 <!-- กระดิ่งแจ้งเตือน: ปุ่มในแถบเมนู (คอม) / มุมขวาบน (มือถือ) -->
-<script src="bell.js?v=4" defer></script>
+<script src="bell.js?v=5" defer></script>
 <script src="drop.js?v=2" defer></script>
 <style>/* มือถือ: กระดิ่งอยู่มุมขวาบน · ปุ่มเพิ่มรถลงมาแถวที่สอง ชิดขวาตรงกับการ์ดรถพอดี (ไม่ต้องหลบเข้ามาอีก) */
 @media(max-width:760px){.gx-head{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:40px auto;column-gap:12px;align-items:end}
@@ -5340,10 +5340,33 @@ const gxT=(th,en)=>(window.spireT?window.spireT(th,en):((window.lang||"th")==="e
 const carColor=c=>/^#[0-9a-f]{6}$/i.test(c||"")?String(c).toUpperCase():"#FFFFFF";
 const carColorName=c=>{const x=CAR_COLORS.find(k=>k.c===carColor(c));return x?gxT(x.th,x.en):gxT("สีของฉัน","Custom")};
 const carTypeOf=c=>{const t=c&&(getBodyStyle([c.make,c.model].filter(Boolean).join(" ")||c.name)||c.type);return GD_BODY[t]?t:"sedan"};
+/* ── สีรถ ──
+   เดิม: ชั้นสีใช้รูปเดียวกันเป็นหน้ากาก CSS — เบราว์เซอร์ (Safari ชัดสุด) โหลด/ถอดรหัสหน้ากากแยกอีกรอบ รถขาวขึ้นก่อน สีค่อยตามมา
+   ตอนนี้: โหลดรูปรถทุกแบบไว้ตั้งแต่เปิดหน้า แล้ววาดรถที่ลงสีแล้วด้วย canvas ครั้งเดียวต่อ (แบบตัวถัง, สี) เก็บไว้ใช้ซ้ำ
+   รูปยังไม่มา (เปิดครั้งแรกจริง ๆ) = ใช้แบบหน้ากากชั่วคราว แล้วสลับเป็นรูปลงสีทันทีที่รูปโหลดเสร็จ */
+const CAR_PIX={},CAR_TINT={};
+function carPix(t){
+  if(CAR_PIX[t])return CAR_PIX[t];
+  const im=new Image();im.decoding="async";
+  im.onload=()=>document.querySelectorAll(`.car-art[data-tt="${t}"]`).forEach(el=>{const u=tintURL(t,el.dataset.tc);if(u){el.innerHTML=`<img src="${u}" alt=""/>`;el.removeAttribute("data-tt")}});
+  im.src=`img/cars/${t}.webp`;return CAR_PIX[t]=im;
+}
+function tintURL(t,col){
+  const k=t+col;if(CAR_TINT[k])return CAR_TINT[k];
+  const im=carPix(t);if(!im.complete||!im.naturalWidth)return null;
+  try{const cv=document.createElement("canvas");cv.width=im.naturalWidth;cv.height=im.naturalHeight;const g=cv.getContext("2d");
+    /* คูณสีทับตัวถังขาว (เงา/กระจกยังอยู่) แล้วตัดส่วนนอกตัวรถด้วยรูปเดิม — ผลเท่าแบบหน้ากากเดิม */
+    g.drawImage(im,0,0);g.globalCompositeOperation="multiply";g.globalAlpha=.9;g.fillStyle=col;g.fillRect(0,0,cv.width,cv.height);
+    g.globalAlpha=1;g.globalCompositeOperation="destination-in";g.drawImage(im,0,0);
+    return CAR_TINT[k]=cv.toDataURL("image/png");}catch(e){return null}
+}
+["sedan","coupe","mpv","pickup","van"].forEach(carPix);
 function carArt(k,color){
   const t=CAR_IMG.has(k)?k:(CAR_IMG_ALT[k]||"sedan"),src=`img/cars/${t}.webp`,col=carColor(color);
-  return `<span class="car-art" aria-hidden="true"><img src="${src}" alt="" decoding="async" onerror="this.parentNode.classList.add('none')"/>${
-    col==="#FFFFFF"?"":`<span class="car-tint" style="background:${col};-webkit-mask-image:url(${src});mask-image:url(${src})"></span>`}</span>`}
+  if(col==="#FFFFFF")return `<span class="car-art" aria-hidden="true"><img src="${src}" alt="" decoding="async" onerror="this.parentNode.classList.add('none')"/></span>`;
+  const u=tintURL(t,col);
+  if(u)return `<span class="car-art" aria-hidden="true"><img src="${u}" alt=""/></span>`;
+  return `<span class="car-art" aria-hidden="true" data-tt="${t}" data-tc="${col}"><img src="${src}" alt="" decoding="async" onerror="this.parentNode.classList.add('none')"/><span class="car-tint" style="background:${col};-webkit-mask-image:url(${src});mask-image:url(${src})"></span></span>`}
 function colorDots(sel){sel=carColor(sel);
   return CAR_COLORS.map(x=>`<button type="button" class="gx-dot${x.c===sel?" on":""}" data-color="${x.c}" role="radio" aria-checked="${x.c===sel}" aria-label="${gxT(x.th,x.en)}" title="${gxT(x.th,x.en)}" style="--dot:${x.c}"></button>`).join("")}
 const gxArt=(k,color)=>carArt(k,color);
@@ -7438,6 +7461,8 @@ function costOf(c){
   box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 8px 18px -16px rgba(0,0,0,.6);
   transition:transform .18s cubic-bezier(.32,.72,0,1),box-shadow .18s,border-color .18s}
 .cl-a span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* เรียกช่าง: ปุ่มด่วนสีแดง แยกจากปุ่มหลักสีส้ม */
+.cl-a.cl-urg{background:#dc2626!important;border-color:#dc2626!important;color:#fff!important}
 .cl-a i{font-size:17px;flex:0 0 auto}
 .cl-a:hover{transform:translateY(-2px);
   border-color:color-mix(in srgb,var(--accent) 50%,transparent);
@@ -7623,15 +7648,22 @@ D.addEventListener("click",async e=>{
   if(a&&a.closest("#clAct")&&curCar){
     const c=curCar, k=a.dataset.act;
     if(k==="diag"){
-      /* ส่งรถคันนี้ไปให้ห้องแชตพร้อมกัน AI จะได้ไม่ต้องถามว่ารถอะไรอีก */
-      try{ if(window.openChat){ closeCL(); window.openChat({car:c.id,starter:true}); return } }catch(err){}
+      /* ส่งรถคันนี้ไปให้ห้องแชตพร้อมกัน AI จะได้ไม่ต้องถามว่ารถอะไรอีก
+         ห้ามปิดหน้ารถก่อน — การปิดสั่งย้อนประวัติ ซึ่งมาทีหลังแล้วยกเลิกการไปห้องแชต (กดแล้วไม่มีอะไรเกิดขึ้น) */
+      try{ if(window.openChat){ window.openChat({car:c.id,starter:true}); return } }catch(err){}
       location.href="/chat?car="+encodeURIComponent(c.id)+"&starter=1"; return;
     }
     if(k==="tech"){
-      /* พาไปหน้าช่างพร้อมข้อมูลรถ ระบบจะได้กรองช่างที่รับยี่ห้อนี้ให้ */
-      const q=[c.make||"",c.model||"",c.name||""].filter(Boolean).join(" ").trim();
-      location.href="/tech"+(q?"?q="+encodeURIComponent(q):""); return;
+      /* เรียกช่างจริง (เดิมพาไป /tech ซึ่งไม่มีหน้า เลยตกไปหน้าแรกเฉย ๆ): เลือก ด่วน / ไม่ด่วน แล้วเข้าขั้นตอนเรียกช่างพร้อมรถคันนี้ */
+      const box=$("clAct");box.dataset.prev=box.innerHTML;
+      box.innerHTML=`<button class="cl-a p cl-urg" data-act="urg"><i class="ti ti-flame"></i><span>${T("ด่วน · รถเสียตอนนี้","Urgent · broken down")}</span></button>
+        <button class="cl-a" data-act="post"><i class="ti ti-calendar-event"></i><span>${T("ไม่ด่วน · ให้ช่างเสนอราคา","Not urgent · get quotes")}</span></button>
+        <button class="cl-a x" data-act="back" aria-label="${T("ย้อนกลับ","Back")}"><i class="ti ti-arrow-back-up"></i></button>`;
+      return;
     }
+    if(k==="back"){const box=$("clAct");box.innerHTML=box.dataset.prev||"";return}
+    if(k==="urg"){LS.set("selCar",c.id);location.href="/urgent/breakdown";return}
+    if(k==="post"){LS.set("selCar",c.id);try{sessionStorage.setItem("spire_postDraft",JSON.stringify({sym:"",cat:"",carId:c.id,at:Date.now()}))}catch(err){}location.href="/post";return}
     if(k==="del"){
       if(!confirm(T("ลบรถคันนี้ออกจากการาจ?","Remove this car from your garage?")))return;
       a.disabled=true;

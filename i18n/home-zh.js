@@ -1474,5 +1474,10 @@ window.CENDON_L10N={lang:"zh",t:{
 "The service belongs to this shop":"该服务属于此店铺",
 "Remove from what customers see":"从顾客可见的列表中移除",
 "Hide this shop from customers?":"向顾客隐藏此店铺？",
-"Edit shop (owner)":"编辑店铺（所有者）"
+"Edit shop (owner)":"编辑店铺（所有者）",
+"Cancel my mechanic application":"取消我的技师申请",
+"Removes the trial shop, your application and documents — you can apply again later":"将删除试用店铺、你的申请和文件——之后可以重新申请",
+"Cancel your mechanic application? Your application, documents and any trial shop will be deleted. You can apply again later.":"取消技师申请？你的申请、文件以及试用店铺（如有）将被删除。之后可以重新申请。",
+"Application cancelled":"申请已取消",
+"Cancel application":"取消申请"
 }};

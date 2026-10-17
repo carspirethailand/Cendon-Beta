@@ -1474,5 +1474,10 @@ window.CENDON_L10N={lang:"ko",t:{
 "The service belongs to this shop":"서비스는 이 매장에 속합니다",
 "Remove from what customers see":"고객에게 보이는 목록에서 제거",
 "Hide this shop from customers?":"이 매장을 고객에게서 숨길까요?",
-"Edit shop (owner)":"매장 수정 (소유자)"
+"Edit shop (owner)":"매장 수정 (소유자)",
+"Cancel my mechanic application":"정비사 신청 취소",
+"Removes the trial shop, your application and documents — you can apply again later":"체험 매장, 신청서, 서류가 삭제됩니다 — 나중에 다시 신청할 수 있어요",
+"Cancel your mechanic application? Your application, documents and any trial shop will be deleted. You can apply again later.":"정비사 신청을 취소할까요? 신청서, 서류, 체험 매장(있는 경우)이 삭제됩니다. 나중에 다시 신청할 수 있어요.",
+"Application cancelled":"신청이 취소되었습니다",
+"Cancel application":"신청 취소"
 }};

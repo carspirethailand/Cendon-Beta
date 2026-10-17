@@ -14,7 +14,7 @@ const enc=encodeURIComponent;
 const KEY="spire_valet";
 const NAME="Cendon Valet";
 const read=()=>{try{return JSON.parse(localStorage.getItem(KEY)||"null")||{}}catch(e){return {}}};
-const isOn=()=>!!read().on;
+const isOn=()=>{const p=read(),uid=uidNow();return!!uid&&p.on===true&&p.uid===uid};
 const cars=()=>{try{return typeof garage==="function"?garage():[]}catch(e){return []}};
 const carName=c=>c?(c.name||[c.make,c.model].filter(Boolean).join(" ")):"";
 const curCar=()=>{try{return typeof selCar==="function"?selCar():null}catch(e){return null}};
@@ -54,7 +54,18 @@ function clean(o){
 }
 /* ประโยคสั่งให้ทำในแอป (ไม่ใช่แค่ถาม) — ใช้ตัดสินว่าไม่ต้องค้นร้านล่วงหน้า และ Valet ปิดอยู่ให้ขึ้นการ์ดขออนุญาตแทน */
 const ACT_RE=/(ทัก|ส่งข้อความ|แชท|แจ้ง|บอก)\s*(ไป)?\s*(หา|ถึง|กับ)?\s*(ร้าน|ช่าง|อู่)|ขอ\s*(ใบ)?ราคา\s*(จาก|กับ)?\s*(ร้าน|ช่าง|อู่)|(เรียก|ตาม)\s*ช่าง|ช่างด่วน|(ประกาศ|โพสต์)\s*หาช่าง|ยกเลิก\s*(งาน|ใบงาน|นัด)|รับราคา|ปิดงาน|งานเสร็จแล้ว|เพิ่มรถ|(อัปเดต|อัพเดท|แก้|เปลี่ยน)\s*(เลข)?ไมล์|พาไป(หน้า)?|เปิดหน้า|เปลี่ยน\s*(เป็น)?\s*ธีม|ธีม(มืด|สว่าง)|จด\s*(เติม)?\s*น้ำมัน|ตั้งวัน|ส่งรูปให้ช่าง|\b(message|text|tell)\s+(the\s+)?(shop|mechanic|garage)|\bbook\b|\bcancel\s+(the\s+|my\s+)?(job|booking)|\bdark mode\b|\badd\s+(a|my)\s+car\b/i;
-const wantsAct=t=>ACT_RE.test(String(t||""));
+const denied=t=>/^(?:ช่วย\s*)?(?:อย่า|ห้าม|ไม่ต้อง|ยังไม่ต้อง|do not|don't|never)\s*(?:ทัก|ส่งข้อความ|แจ้ง|บอก|message|text|tell)/i.test(t);
+function intent(text){
+  const t=String(text||'').trim();if(t.length>1000||denied(t))return null;
+  // A narrow, explicit command grammar. No inferred recipient, symptom or send.
+  const th=t.match(/^(?:(?:ช่วย|รบกวน|ฝาก)\s*)?(?:ทัก|ส่งข้อความ|ส่งแชท|ส่งแชต|แชท|แชต)\s*(?:ไป\s*)?(?:หา|ถึง|กับ)\s*(?:ร้าน|ช่าง|อู่)?\s*(.{2,80}?)\s*(?:และ\s*)?(?:บอก|แจ้ง)(?:เขา|ช่าง|ร้าน)?\s*ว่า\s*([\s\S]{1,600})$/i);
+  const en=t.match(/^(?:please\s+)?(?:message|text)\s+(?:(?:the\s+)?(?:shop|mechanic|garage)\s+)?(.{2,80}?)\s+(?:and\s+)?(?:say|saying|tell them)\s*[:,-]?\s+([\s\S]{1,600})$/i);
+  const m=th||en;if(!m)return null;
+  const shop=one(m[1],80),message=one(m[2],600);
+  if(!shop||message.length<2||/^(?:anyone|someone|ใครก็ได้)$/i.test(shop))return null;
+  return{do:'msg_shop',shop,text:message};
+}
+const wantsAct=t=>!denied(String(t||'').trim())&&(!!intent(t)||ACT_RE.test(String(t||"")));
 function cut(txt){
   const acts=[],on=isOn();
   let text=String(txt||"").replace(/\[\[ACT\]\]([\s\S]*?)(\[\[\/ACT\]\]|$)/g,(m,j)=>{
@@ -305,7 +316,7 @@ async function act(btn){
   if(k==="open"){go("/jobs/"+enc(btn.dataset.job)+"/chat");return}
   /* อนุญาต Valet แล้วทำคำขอเดิมต่อทันที (ไม่ต้องพิมพ์ใหม่) */
   if(k==="enable"){
-    localStorage.setItem(KEY,JSON.stringify({on:true,at:Date.now()}));paintBtns();
+    localStorage.setItem(KEY,JSON.stringify({on:true,uid:uidNow(),at:Date.now()}));paintBtns();
     const list=typeof messages!=="undefined"?messages:[],mi=list.indexOf(m),prev=mi>0?list[mi-1]:null,q=a.text||(prev&&prev.role==="user"?prev.text:"");
     if(mi>=0)list.splice(mi,1);if(prev&&prev.role==="user"&&prev.text===q)list.splice(list.indexOf(prev),1);
     try{saveSession()}catch(e){}try{renderMessages()}catch(e){}
@@ -373,7 +384,7 @@ async function act(btn){
   if(k==="log"){try{errOn(el,"");const kind=LOGK[a.kind]?a.kind:"fuel";
       const r=VC().logAdd(v("car"),kind,{amount:v("amount"),litres:v("litres"),km:v("km"),item:v("item"),title:v("title"),date:v("date")});
       a.rid="garage";finish(m,a,"done",T("บันทึกลงสมุดรถแล้ว","Saved to the logbook")+" · "+r.date)}catch(e){errOn(el,vErr(e))}return}
-  if(k==="due"){try{errOn(el,"");const key=v("key"),r=VC().dueSet(v("car"),key,v("date")),L=VC().DUE[key];
+  if(k==="due"){try{errOn(el,"");const key=v("key"),r=await VC().dueSet(v("car"),key,v("date")),L=VC().DUE[key];
       a.rid="garage";finish(m,a,"done",T(`ตั้ง${L[0]}ไว้ ${r.date} แล้ว`,`${L[1]} set for ${r.date}`))}catch(e){errOn(el,vErr(e))}return}
   if(k==="send")return busyBtn(btn,async()=>{
     const job=v("job"),P=(a._ph||[]).slice(0,4);if(!job||!P.length)return;
@@ -420,9 +431,13 @@ function hydrate(wrap,m){
     /* ร้าน: หาจากชื่อ/รหัสที่ AI ส่งมา (ร้านที่ผ่านการตรวจเท่านั้น) */
     if((a.do==="book"||a.do==="msg_shop")&&VC()){const sel=el.querySelector('[data-f="shop"]'),go1=el.querySelector('[data-va="book"],[data-va="msg"]');
       const fill=L=>{a._shops=L;if(!sel)return;
-        if(!L.length){sel.innerHTML=`<option value="">${T("ไม่พบร้านนี้ — ลองบอกชื่อร้านอีกครั้ง หรือให้ Valet หาช่างให้","Shop not found — say the name again, or let Valet find one")}</option>`;return}
-        sel.innerHTML=L.map(t=>`<option value="${esc(t.id)}">${esc(VC().shopName(t))}${t.area?" · "+esc(t.area):""}${t.dist!=null?" · "+t.dist.toFixed(1)+" "+T("กม.","km"):""}</option>`).join("");
-        sel.disabled=false;if(go1)go1.disabled=false};
+        if(!L.length){sel.innerHTML=`<option value="">${T("ไม่พบร้านนี้ — ลองบอกชื่อร้านอีกครั้ง หรือให้ Valet หาช่างให้","Shop not found — say the name again, or let Valet find one")}</option>`;sel.disabled=true;if(go1)go1.disabled=true;return}
+        const q=String(a.shop||'').trim().toLocaleLowerCase(),only=L.length===1?L[0]:null;
+        const exact=only&&(String(only.id)===a.shop||String(VC().shopName(only)).trim().toLocaleLowerCase()===q);
+        const chosen=L.some(t=>String(t.id)===a._chosen)?a._chosen:exact?String(only.id):'';
+        sel.innerHTML=(chosen?'':`<option value="" selected disabled>${T('ตรวจและเลือกร้านผู้รับ','Check and select the recipient shop')}</option>`)+L.map(t=>`<option value="${esc(t.id)}">${esc(VC().shopName(t))}${t.area?" · "+esc(t.area):""}${t.dist!=null?" · "+t.dist.toFixed(1)+" "+T("กม.","km"):""}</option>`).join("");
+        sel.value=chosen;sel.disabled=false;if(go1)go1.disabled=!chosen;
+        sel.onchange=()=>{a._chosen=sel.value;if(go1)go1.disabled=!shopOf(el,a)};};
       if(a._shops)fill(a._shops);else VC().shops(a.shop,a.cat).then(fill).catch(e=>errOn(el,vErr(e)))}
     /* ใบงาน: เฉพาะใบที่ทำขั้นนี้ได้ตอนนี้ (ตามกติกาหลังบ้าน) */
     if(a.do==="job"&&VC()){const op=JOBOP[a.op]?a.op:"message",sel=el.querySelector('[data-f="job"]'),b=el.querySelector('[data-va="jobdo"]'),q=el.querySelector("[data-q]"),ck=el.querySelector('[data-f="consent"]');
@@ -520,7 +535,7 @@ function sheet(){
   const esc1=e=>{if(e.key==="Escape")close()};D.addEventListener("keydown",esc1);
   p.onclick=e=>{if(e.target===p)close()};
   p.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{const k=b.dataset.p;
-    if(k==="on"){localStorage.setItem(KEY,JSON.stringify({on:true,at:Date.now()}));paintBtns();close();
+    if(k==="on"){localStorage.setItem(KEY,JSON.stringify({on:true,uid:uidNow(),at:Date.now()}));paintBtns();close();
       try{toast(T("Valet พร้อมแล้ว — ลองพิมพ์ “พาไปการาจ” หรือ “เพิ่มรถ Civic 2020”","Valet is ready — try “take me to my garage” or “add a 2020 Civic”"),"ti-key")}catch(e){}}
     else if(k==="off"){localStorage.setItem(KEY,JSON.stringify({on:false,at:Date.now()}));paintBtns();close();try{toast(T("ปิด Valet แล้ว","Valet is off"),"ti-key-off")}catch(e){}}
     else close()});
@@ -529,5 +544,5 @@ function sheet(){
 if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",inject);else inject();
 setTimeout(inject,800);
 
-W.CendonValet={on:isOn,body,cut,save,html,run,open:sheet,inject,wantsAct};
+W.CendonValet={on:isOn,body,cut,save,html,run,open:sheet,inject,wantsAct,intent};
 })(window,document);

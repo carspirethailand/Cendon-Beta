@@ -15,7 +15,8 @@ const here=p=>new URL(p,import.meta.url);
 const WORDMARK=readFileSync(here('./brand/wordmark.svg.txt'),'utf8').trim();
 const LOGO=readFileSync(here('./brand/logo-path.txt'),'utf8').trim();
 /* ใส่ลายนิ้วมือไฟล์ท้ายลิงก์ แก้ css/js แล้วเครื่องผู้ใช้โหลดใหม่ทันที ไม่ค้างของเก่า */
-const ver=p=>createHash('sha1').update(readFileSync(here(p))).digest('hex').slice(0,10);
+// Text asset versions must be stable in both LF and Windows CRLF checkouts.
+const ver=p=>createHash('sha1').update(readFileSync(here(p),'utf8').replace(/\r\n/g,'\n')).digest('hex').slice(0,10);
 const V={css:ver('./static/site.css'),js:ver('./static/site.js'),font:ver('./static/spire09.css')};
 
 /* ── ตัวช่วยสองภาษา ── */

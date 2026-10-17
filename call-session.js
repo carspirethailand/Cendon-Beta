@@ -182,7 +182,8 @@ async function startCall(){
   playGain=playCtx.createGain();playAnalyser=playCtx.createAnalyser();playAnalyser.fftSize=512;
   playGain.connect(playAnalyser);playAnalyser.connect(playCtx.destination);
   playTime=0;
-  $("callUI").classList.toggle("light",((window.spireTheme&&window.spireTheme())||"dark")==="light");
+  /* ธีมของหน้า: แชตมี spireTheme() · หน้าอื่นอ่านจาก <html data-theme> */
+  $("callUI").classList.toggle("light",((window.spireTheme&&window.spireTheme())||document.documentElement.getAttribute("data-theme")||"dark")==="light");
   $("callUI").classList.add("show");$("callUI").setAttribute("aria-hidden","false");
   host.view?.open?.();
   buildGauges();

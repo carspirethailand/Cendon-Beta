@@ -61,3 +61,18 @@ test('a floating call is portalled above sheets; camera fills its containing scr
 test('all modified inline scripts parse, excluding browser JSON/import maps',()=>{
   for(const html of [home,chat])for(const m of html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)){if(/speculationrules|application\/|importmap/.test(m[1]))continue;assert.doesNotThrow(()=>new vm.Script(m[2]));}
 });
+test('tap mutes (no hang-up), the hold shows progress and a horizontal drag cancels it',()=>{
+  const window={};vm.runInNewContext(surface,{window});const timers=new Map(),events=[];let id=0;
+  const p=window.CendonCallSurface.gesture({later(fn,ms){timers.set(++id,{fn,ms});return id},cancel:id=>timers.delete(id),onTap:()=>events.push('tap'),onPress:()=>events.push('press'),onUnpress:()=>events.push('unpress'),onSwipe:d=>events.push(d),onCancel:()=>events.push('cancel'),onHold:()=>events.push('hold')});
+  p.down({x:100,y:40,time:0});p.up({x:103,y:41,time:180});assert.deepEqual(events,['press','unpress','tap','cancel']);
+  events.length=0;p.down({x:100,y:40,time:500});p.move({x:160,y:42,time:560});assert.deepEqual(events,['press','unpress']);assert.equal(timers.size,0);
+  events.length=0;p.down({x:100,y:40,time:900});[...timers.values()].at(-1).fn();p.up({x:100,y:40,time:2000});assert.ok(!events.includes('tap'),'a completed hold is never a tap');
+});
+test('home call: AI bar dissolves into bars only (no card, no visible buttons), dot spreads from the orb centre, original orb kept',()=>{
+  assert.match(css,/\.cv-host\.cv-active\{background:transparent!important/);
+  assert.match(css,/\.cv-sr,\.cv-actions\{position:absolute!important;width:1px/);
+  assert.match(surface,/function orbCenter\(\)/);assert.ok(surface.includes("circle(${from}px at"),"dot spreads as a growing circle");
+  /* วงกลมเต็มจอแบบเดิมที่ผู้ใช้เลือก: ชั้นโปร่ง 4 ชั้น สีส้มพีช แกนครีม */
+  for(const c of ["'#fff4d2'","'#ffd19a'","'#ffa360'","'#ff893c'","rgba(255,244,202,.48)"])assert.ok(surface.includes(c),c);
+  assert.match(home,/id="hFlip" data-cv-slide/);
+});

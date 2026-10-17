@@ -2,8 +2,10 @@
    ปุ่มรูปจับมือข้างช่องพิมพ์ → ถามก่อนว่า "ฝากกุญแจให้ Valet ไหม" → อนุญาตแล้ว AI ปิดท้ายคำตอบด้วยบล็อก [[ACT]]{...}[[/ACT]]
    ไฟล์นี้แปลงบล็อกเป็นการ์ด แล้วทำผ่าน API เดิมด้วยสิทธิ์ของบัญชีนี้เท่านั้น
    · พาไปหน้า / เปลี่ยนธีม-ภาษา = ทำทันที (ยกเลิก/ย้อนได้)
-   · อะไรที่เปลี่ยนข้อมูลหรือส่งถึงคนอื่น (เพิ่มรถ เลขไมล์ โพสต์หาช่าง ส่งรูป สถานะร้าน) = ต้องกดยืนยันในการ์ดก่อนเสมอ
-   · ปลายทางมาจากรายการคงที่ (ไม่รับลิงก์จาก AI) · ค่าทุกช่องตรวจก่อนใช้ */
+   · อะไรที่เปลี่ยนข้อมูลหรือส่งถึงคนอื่น (เพิ่มรถ เลขไมล์ ประกาศหาช่าง เรียกช่างด่วน ขอราคา ทักร้าน รับราคา/ยกเลิก/ปิดงาน
+     ส่งรูป จดสมุดรถ ตั้งวันครบกำหนด สถานะร้าน) = ต้องกดยืนยันในการ์ดก่อนเสมอ แล้วส่งจริงผ่าน valet-core.js
+   · ปลายทางมาจากรายการคงที่ (ไม่รับลิงก์จาก AI) · ค่าทุกช่องตรวจก่อนใช้
+   · ไม่มีคำสั่งอันตราย: ลบบัญชี/ข้อมูล/รถ · รหัสผ่าน/อีเมล · จ่ายเงิน/โฆษณา · แชร์ตำแหน่งให้คนอื่น */
 (function(W,D){
 'use strict';
 const T=(th,en)=>(W.spireT?W.spireT(th,en):((W.lang||"th")==="en"?en:th));
@@ -40,12 +42,14 @@ function body(){
 }
 
 /* ═══ แกะบล็อกคำสั่งออกจากคำตอบ ═══ */
-const ACTS=["go","search","setting","add_car","car_km","pick_car","post_job","urgent","send_photos","jobs","shop_status"];
+const ACTS=["go","search","setting","add_car","car_km","pick_car","post_job","urgent","book","msg_shop","job","send_photos","jobs","log","due","shop_status"];
 const one=(v,n)=>String(v==null?"":v).replace(/[\r\n\t]+/g," ").trim().slice(0,n);
+const LEN={symptom:600,text:600,note:300,q:120,shop:80,title:60,phone:20};
 function clean(o){
   if(!o||typeof o!=="object"||!ACTS.includes(o.do))return null;
   const a={do:o.do};
-  ["to","q","key","value","make","model","year","mileage","car","km","symptom","cat","when","mode","text","state"].forEach(k=>{if(o[k]!=null&&o[k]!=="")a[k]=one(o[k],k==="symptom"||k==="text"?600:k==="q"?120:80)});
+  ["to","q","key","value","make","model","year","mileage","car","km","symptom","cat","when","mode","text","state",
+   "shop","op","job","note","kind","amount","litres","item","title","date","phone"].forEach(k=>{if(o[k]!=null&&o[k]!=="")a[k]=one(o[k],LEN[k]||80)});
   return a;
 }
 function cut(txt){
@@ -107,6 +111,30 @@ const JOBST={requested:["รอร้านเสนอราคา","Waiting fo
 const JOBST_T={requested:["ต้องเสนอราคา","Send a quote"],quoted:["รอลูกค้าตอบราคา","Waiting for the customer"]};
 const jobSt=j=>T(...((j.side==="technician"&&JOBST_T[j.status])||JOBST[j.status]||[j.status,j.status]));
 const liveJob=j=>!["completed","cancelled"].includes(j.status);
+
+/* ── ชิ้นส่วนฟอร์มที่ใช้ร่วมกัน (ส่งจริงผ่าน CendonValetCore) ── */
+const VC=()=>W.CendonValetCore||null;
+const money=n=>Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2});
+/* รถ: เลือกจากการาจ หรือพิมพ์เอง ("คันอื่น") */
+function carH(a){const G=cars(),c=VC()?VC().findCar(a.car):curCar(),other=!c&&a.car?a.car:"";
+  if(!G.length)return `<div class="vl-f"><label><span>${T("รถ","Car")}</span><input data-f="cartext" maxlength="80" value="${esc(other)}" placeholder="${T("ยี่ห้อ รุ่น ปี","Make, model, year")}"></label></div>`;
+  return `<div class="vl-f"><label><span>${T("รถ","Car")}</span><select data-f="car">${G.map(x=>`<option value="${esc(x.id)}"${c&&x.id===c.id?" selected":""}>${esc(carName(x))}${x.year?" "+esc(x.year):""}</option>`).join("")}<option value=""${c?"":" selected"}>${T("คันอื่น","Another car")}</option></select></label>
+    <input data-f="cartext" maxlength="80" value="${esc(other)}" placeholder="${T("ยี่ห้อ รุ่น ปี","Make, model, year")}"${c?" hidden":""}></div>`}
+const locH=()=>`<div class="vl-loc" data-loc><i class="ti ti-map-pin"></i><span data-lt>${T("ยังไม่มีตำแหน่งรถ","No location yet")}</span><button type="button" class="vl-b gh sm" data-va="loc">${T("ใช้ตำแหน่งปัจจุบัน","Use my location")}</button></div>`;
+const phoneH=a=>`<label><span>${T("เบอร์โทร","Phone")}</span><input data-f="phone" type="tel" inputmode="tel" maxlength="15" autocomplete="tel" value="${esc(a.phone||(VC()?VC().savedPhone():""))}" placeholder="08x xxx xxxx"></label>`;
+const shopH=()=>`<div class="vl-f"><label><span>${T("ร้าน","Shop")}</span><select data-f="shop" disabled><option>${T("กำลังหาร้าน…","Finding shops…")}</option></select></label></div>`;
+/* ปลายทางหลังทำเสร็จ: สร้างจากรหัสที่หลังบ้านตอบกลับ (ไม่ใช่ลิงก์จาก AI) */
+function seeUrl(a){const id=/^[\w-]{1,64}$/.test(a.rid||"")?enc(a.rid):"";
+  if(a.do==="log"||a.do==="due")return "/garage";if(!id)return "";
+  return a.do==="post_job"||a.do==="urgent"?"/post/"+id:a.do==="msg_shop"?"/messages/"+id:"/jobs/"+id}
+const seeBtn=(a,label)=>a.s==="done"&&seeUrl(a)?`<div class="vl-acts"><button type="button" class="vl-b gh" data-va="see"><i class="ti ti-arrow-right"></i>${label}</button></div>`:"";
+const URG=[["ยางแตก","Flat tyre","tyre"],["แบตหมด","Dead battery","eng"],["สตาร์ทไม่ติด","Won't start","eng"],["ความร้อนขึ้น","Overheating","eng"],["น้ำมันหมด","Out of fuel","eng"],["กุญแจติดในรถ","Locked out","body"],["รถชน","Accident","body"]];
+/* ใบงาน: [ไอคอน, หัวการ์ด, ปุ่ม] + สถานะที่ทำได้ (ตามกติกาหลังบ้าน) */
+const JOBOP={accept:["ti-circle-check","รับราคาและนัดช่าง","Accept the quote","ยืนยันรับราคา","Accept quote"],
+  cancel:["ti-circle-x","ยกเลิกใบงาน","Cancel the job","ยืนยันยกเลิก","Cancel job"],
+  complete:["ti-checks","ยืนยันว่างานเสร็จ","Confirm the job is done","ยืนยันงานเสร็จ","Confirm done"],
+  message:["ti-message","ส่งข้อความถึงช่าง","Message your mechanic","ส่งข้อความ","Send"]};
+const LOGK={fuel:["ti-gas-station","เติมน้ำมัน","Fuel"],service:["ti-tool","ซ่อมบำรุง","Service"],trip:["ti-route","ทริป","Trip"]};
 function card(m,i){
   const a=m.acts[i],id=`data-vm="${esc(m._vid)}" data-vi="${i}"`;
   const done=!!a.s;
@@ -131,19 +159,62 @@ function card(m,i){
       ${done?stLine(a):`<div class="vl-km"><span>${old?old.toLocaleString():"—"}</span><i class="ti ti-arrow-right"></i><b>${nw?nw.toLocaleString():"—"}</b><small>${T("กม.","km")}</small></div>
       ${low?`<p class="vl-warn"><i class="ti ti-alert-triangle"></i>${T("น้อยกว่าเลขเดิม — ตรวจให้แน่ใจก่อนยืนยัน","Lower than the current reading — double-check first")}</p>`:""}
       <div class="vl-acts"><button type="button" class="vl-b" data-va="km" data-car="${esc(c.id)}" ${nw>0&&nw<=3e6?"":"disabled"}><i class="ti ti-check"></i>${low?T("ยืนยันแม้น้อยกว่าเดิม","Confirm anyway"):T("ยืนยัน","Confirm")}</button><button type="button" class="vl-b gh" data-va="no">${T("ไม่ใช่ตอนนี้","Not now")}</button></div>`}</div>`}
-  if(a.do==="post_job"){const G=cars(),c=G.find(x=>x.id===a.car)||(a.car?null:curCar());
-    const when=a.when||T("วันนี้","Today"),mode=a.mode==="shop"?"shop":"mobile";
-    return `<div class="vl" ${id}>${head("ti-speakerphone",T("ร่างประกาศหาช่าง (ไม่ด่วน)","Job post draft (not urgent)"))}
-      ${done?stLine(a):`<div class="vl-f"><label><span>${T("รถ","Car")}</span>${G.length?`<select data-f="car">${G.map(x=>`<option value="${esc(x.id)}"${c&&x.id===c.id?" selected":""}>${esc(carName(x))}${x.year?" "+esc(x.year):""}</option>`).join("")}<option value=""${c?"":" selected"}>${T("คันอื่น","Another car")}</option></select>`:`<input data-f="cartext" maxlength="80" value="${esc(c?carName(c):a.car||"")}" placeholder="${T("ยี่ห้อ รุ่น ปี","Make, model, year")}">`}</label></div>
+  if(a.do==="post_job"){const when=a.when||T("วันนี้","Today"),mode=a.mode==="shop"?"shop":"mobile";
+    return `<div class="vl" ${id}>${head("ti-speakerphone",T("ประกาศหาช่าง (ไม่ด่วน)","Post a job (not urgent)"))}
+      ${done?stLine(a)+seeBtn(a,T("ดูข้อเสนอจากช่าง","See offers")):`${carH(a)}
       <div class="vl-f"><label><span>${T("อาการ","Symptom")}</span><textarea data-f="symptom" rows="2" maxlength="600">${esc(a.symptom||"")}</textarea></label></div>
       <div class="vl-f two"><label><span>${T("เมื่อไร","When")}</span><input data-f="when" maxlength="60" value="${esc(when)}"></label>
         <label><span>${T("ซ่อมที่ไหน","Where")}</span><select data-f="mode"><option value="mobile"${mode==="mobile"?" selected":""}>${T("ให้ช่างมาหา","Come to me")}</option><option value="shop"${mode==="shop"?" selected":""}>${T("เอารถเข้าอู่","At the garage")}</option></select></label></div>
+      ${locH()}<div class="vl-f">${phoneH(a)}</div>
       <div class="vl-ph" data-ph></div><input type="file" accept="image/*" multiple hidden data-file data-nocrop>
-      <p class="vl-note"><i class="ti ti-lock"></i>${T("ขั้นต่อไปยืนยันตำแหน่งรถกับเบอร์โทร แล้วค่อยกดประกาศ — เบอร์กับที่อยู่ช่างเห็นหลังคุณยืนยันราคาเท่านั้น","Next you confirm the car's location and your phone, then post — mechanics see them only after you accept a quote")}</p>
-      <p class="vl-err" hidden></p><div class="vl-acts"><button type="button" class="vl-b" data-va="post"><i class="ti ti-map-pin-check"></i>${T("ยืนยันตำแหน่งแล้วประกาศ","Confirm location & post")}</button><button type="button" class="vl-b gh" data-va="addph"><i class="ti ti-camera-plus"></i>${T("แนบรูป","Photos")}</button></div>`}</div>`}
-  if(a.do==="urgent")return `<div class="vl urg" ${id}>${head("ti-urgent",T("เรียกช่างด่วน","Urgent call-out"))}
-      <p class="vl-note">${T("จอดชิดขอบให้ปลอดภัย เปิดไฟฉุกเฉิน แล้วกดปุ่มด้านล่าง — ช่างที่ใกล้ที่สุดเห็นทันที","Pull over safely and turn on your hazard lights, then tap below — the nearest mechanics see it right away")}</p>
-      <div class="vl-acts"><button type="button" class="vl-b red" data-va="urgent"><i class="ti ti-urgent"></i>${T("เปิดโหมดเรียกช่างด่วน","Open urgent call-out")}</button></div></div>`;
+      <p class="vl-note"><i class="ti ti-lock"></i>${T("ช่างรอบตัวเห็นแค่ย่านกับอาการ — เบอร์กับที่อยู่เปิดให้ร้านที่คุณรับราคาเท่านั้น","Nearby mechanics see only the area and problem — your phone and address go only to the shop whose quote you accept")}</p>
+      <p class="vl-err" hidden></p><div class="vl-acts"><button type="button" class="vl-b" data-va="post"><i class="ti ti-send"></i>${T("ประกาศหาช่างเลย","Post it now")}</button><button type="button" class="vl-b gh" data-va="addph"><i class="ti ti-camera-plus"></i>${T("แนบรูป","Photos")}</button></div>`}</div>`}
+  if(a.do==="urgent")return `<div class="vl vl-red" ${id}>${head("ti-urgent",T("เรียกช่างด่วน","Urgent call-out"))}
+      ${done?stLine(a)+seeBtn(a,T("ดูช่างที่ตอบรับ","See who's coming")):`<p class="vl-sos"><i class="ti ti-phone"></i><span>${T("มีคนเจ็บหรือไม่ปลอดภัย โทร","Injured or unsafe? Call")} <a href="tel:1669">1669</a> · <a href="tel:191">191</a> · <a href="tel:1193">1193</a> ${T("ก่อน","first")}</span></p>
+      ${carH(a)}
+      <div class="vl-f"><label><span>${T("เกิดอะไรขึ้น","What happened")}</span><input data-f="symptom" maxlength="300" value="${esc(a.symptom||"")}" placeholder="${T("เช่น ยางแตก แบตหมด","e.g. flat tyre, dead battery")}"></label></div>
+      <div class="vl-chips">${URG.map(x=>`<button type="button" data-va="chip" data-t="${esc(T(x[0],x[1]))}" data-c="${x[2]}">${T(x[0],x[1])}</button>`).join("")}</div>
+      ${locH()}<div class="vl-f">${phoneH(a)}</div>
+      <p class="vl-err" hidden></p><div class="vl-acts"><button type="button" class="vl-b red" data-va="urg"><i class="ti ti-urgent"></i>${T("เรียกช่างด่วนเลย","Call a mechanic now")}</button><button type="button" class="vl-b gh" data-va="urgfull"><i class="ti ti-car-crash"></i>${T("โหมดอุบัติเหตุ","Accident mode")}</button></div>`}</div>`;
+  if(a.do==="book"){const when=a.when||T("วันนี้","Today"),mode=a.mode==="mobile"?"mobile":"shop";
+    return `<div class="vl" ${id}>${head("ti-file-dollar",T("ขอราคาจากร้าน","Ask a shop for a quote"))}
+      ${done?stLine(a)+seeBtn(a,T("เปิดใบงาน","Open the job")):`${shopH()}${carH(a)}
+      <div class="vl-f"><label><span>${T("อาการ","Symptom")}</span><textarea data-f="symptom" rows="2" maxlength="600">${esc(a.symptom||"")}</textarea></label></div>
+      <div class="vl-f two"><label><span>${T("เมื่อไร","When")}</span><input data-f="when" maxlength="60" value="${esc(when)}"></label>
+        <label><span>${T("ซ่อมที่ไหน","Where")}</span><select data-f="mode"><option value="shop"${mode==="shop"?" selected":""}>${T("เอารถเข้าอู่","At the garage")}</option><option value="mobile"${mode==="mobile"?" selected":""}>${T("ให้ช่างมาหา","Come to me")}</option></select></label></div>
+      ${locH()}<div class="vl-f">${phoneH(a)}</div>
+      <div class="vl-ph" data-ph></div><input type="file" accept="image/*" multiple hidden data-file data-nocrop>
+      <p class="vl-note"><i class="ti ti-info-circle"></i>${T("ร้านจะส่งราคามาให้ก่อน — ยังไม่ใช่การจ้าง คุณเลือกรับราคาเองทีหลัง","The shop sends a quote first — this isn't a booking yet; you decide after")}</p>
+      <p class="vl-err" hidden></p><div class="vl-acts"><button type="button" class="vl-b" data-va="book" disabled><i class="ti ti-send"></i>${T("ส่งคำขอราคา","Send the request")}</button><button type="button" class="vl-b gh" data-va="addph"><i class="ti ti-camera-plus"></i>${T("แนบรูป","Photos")}</button></div>`}</div>`}
+  if(a.do==="msg_shop")return `<div class="vl" ${id}>${head("ti-message-circle",T("ทักร้าน","Message a shop"))}
+      ${done?stLine(a)+seeBtn(a,T("เปิดแชตกับร้าน","Open the chat")):`${shopH()}
+      <div class="vl-f"><label><span>${T("ข้อความ","Message")}</span><textarea data-f="text" rows="2" maxlength="600">${esc(a.text||"")}</textarea></label></div>
+      <p class="vl-err" hidden></p><div class="vl-acts"><button type="button" class="vl-b" data-va="msg" disabled><i class="ti ti-send"></i>${T("ส่งข้อความ","Send")}</button></div>`}</div>`;
+  if(a.do==="job"){const op=JOBOP[a.op]?a.op:"message",L=JOBOP[op];
+    return `<div class="vl${op==="cancel"?" vl-red":""}" ${id}>${head(L[0],T(L[1],L[2]))}
+      ${done?stLine(a)+seeBtn(a,T("เปิดใบงาน","Open the job")):`<div class="vl-f"><label><span>${T("ใบงาน","Job")}</span><select data-f="job" disabled><option>${T("กำลังโหลดใบงาน…","Loading jobs…")}</option></select></label></div>
+      ${op==="accept"?`<div class="vl-q" data-q hidden></div><label class="vl-ck"><input type="checkbox" data-f="consent"><span>${T("ยอมรับขอบเขตงานและราคา ยินยอมเปิดเบอร์โทรและที่อยู่ให้ร้านนี้เพื่อนัดซ่อม","I accept the scope and price, and agree to share my phone and address with this shop to arrange the repair")}</span></label>
+        <p class="vl-note"><i class="ti ti-cash"></i>${T("ยังไม่มีการตัดเงินผ่าน Cendon — ชำระกับช่างโดยตรงตามที่ตกลง","Cendon doesn't take payment — you pay the mechanic directly as agreed")}</p>`:""}
+      ${op==="cancel"?`<div class="vl-f"><label><span>${T("เหตุผลที่ยกเลิก","Reason")}</span><textarea data-f="note" rows="2" maxlength="300">${esc(a.note||"")}</textarea></label></div>`:""}
+      ${op==="message"?`<div class="vl-f"><label><span>${T("ข้อความถึงช่าง","Message")}</span><input data-f="text" maxlength="600" value="${esc(a.text||"")}"></label></div>`:""}
+      ${op==="complete"?`<p class="vl-note"><i class="ti ti-eye-check"></i>${T("ตรวจรถให้เรียบร้อยก่อนยืนยัน — ยืนยันแล้วใบงานปิดและให้คะแนนช่างได้","Check the car first — confirming closes the job and lets you rate the mechanic")}</p>`:""}
+      <p class="vl-err" hidden></p><div class="vl-acts"><button type="button" class="vl-b${op==="cancel"?" red":""}" data-va="jobdo" disabled><i class="ti ${L[0]}"></i>${T(L[3],L[4])}</button><button type="button" class="vl-b gh" data-va="no">${T("ไม่ใช่ตอนนี้","Not now")}</button></div>`}</div>`}
+  if(a.do==="log"){const k=LOGK[a.kind]?a.kind:"fuel",G=cars(),c=VC()?VC().findCar(a.car):curCar(),d=VC()&&VC().okDate(a.date)?a.date:(VC()?VC().today():""),SVC=VC()?VC().SVC:{};
+    const num=(f,lab,v,ph)=>`<label><span>${lab}</span><input data-f="${f}" inputmode="decimal" maxlength="9" value="${esc(String(v||"").replace(/[^\d.]/g,""))}"${ph?` placeholder="${ph}"`:""}></label>`;
+    return `<div class="vl" ${id}>${head(LOGK[k][0],T("จดสมุดรถ · ","Logbook · ")+T(LOGK[k][1],LOGK[k][2]))}
+      ${done?stLine(a)+seeBtn(a,T("เปิดการาจ","Open garage")):!G.length?`<p class="vl-st err"><i class="ti ti-alert-triangle"></i>${T("ยังไม่มีรถในการาจ","No cars in your garage yet")}</p>`:`
+      <div class="vl-f"><label><span>${T("รถ","Car")}</span><select data-f="car">${G.map(x=>`<option value="${esc(x.id)}"${c&&x.id===c.id?" selected":""}>${esc(carName(x))}${x.year?" "+esc(x.year):""}</option>`).join("")}</select></label></div>
+      ${k==="fuel"?`<div class="vl-f two">${num("amount",T("ยอดเติม (บาท)","Amount (฿)"),a.amount)}${num("litres",T("ลิตร","Litres"),a.litres,T("ไม่บังคับ","optional"))}</div><div class="vl-f two">${num("km",T("เลขไมล์","Odometer"),a.km,T("ไม่บังคับ","optional"))}<label><span>${T("วันที่","Date")}</span><input data-f="date" type="date" value="${esc(d)}"></label></div>`:""}
+      ${k==="service"?`<div class="vl-f"><label><span>${T("รายการ","Service")}</span><select data-f="item">${Object.keys(SVC).map(x=>`<option value="${x}"${x===a.item?" selected":""}>${T(SVC[x][0],SVC[x][1])}</option>`).join("")}</select></label></div><div class="vl-f two">${num("km",T("เลขไมล์ตอนทำ","Odometer"),a.km)}${num("amount",T("ค่าใช้จ่าย (บาท)","Cost (฿)"),a.amount,T("ไม่บังคับ","optional"))}</div><div class="vl-f"><label><span>${T("วันที่","Date")}</span><input data-f="date" type="date" value="${esc(d)}"></label></div>`:""}
+      ${k==="trip"?`<div class="vl-f"><label><span>${T("ชื่อทริป","Trip")}</span><input data-f="title" maxlength="60" value="${esc(a.title||"")}"></label></div><div class="vl-f two">${num("km",T("ระยะทาง (กม.)","Distance (km)"),a.km)}<label><span>${T("วันที่","Date")}</span><input data-f="date" type="date" value="${esc(d)}"></label></div>`:""}
+      <p class="vl-err" hidden></p><div class="vl-acts"><button type="button" class="vl-b" data-va="log"><i class="ti ti-check"></i>${T("บันทึก","Save")}</button><button type="button" class="vl-b gh" data-va="no">${T("ไม่ใช่ตอนนี้","Not now")}</button></div>`}</div>`}
+  if(a.do==="due"){const G=cars(),c=VC()?VC().findCar(a.car):curCar(),DUE=VC()?VC().DUE:{},k=DUE[a.key]?a.key:"tax",d=VC()&&VC().okDate(a.date)?a.date:"";
+    return `<div class="vl" ${id}>${head("ti-calendar-due",T("ตั้งวันครบกำหนด","Set a due date"))}
+      ${done?stLine(a)+seeBtn(a,T("เปิดการาจ","Open garage")):!G.length?`<p class="vl-st err"><i class="ti ti-alert-triangle"></i>${T("ยังไม่มีรถในการาจ","No cars in your garage yet")}</p>`:`
+      <div class="vl-f"><label><span>${T("รถ","Car")}</span><select data-f="car">${G.map(x=>`<option value="${esc(x.id)}"${c&&x.id===c.id?" selected":""}>${esc(carName(x))}${x.year?" "+esc(x.year):""}</option>`).join("")}</select></label></div>
+      <div class="vl-f two"><label><span>${T("เรื่อง","What")}</span><select data-f="key">${Object.keys(DUE).map(x=>`<option value="${x}"${x===k?" selected":""}>${T(DUE[x][0],DUE[x][1])}</option>`).join("")}</select></label>
+        <label><span>${T("ครบกำหนด","Due on")}</span><input data-f="date" type="date" value="${esc(d)}"></label></div>
+      <p class="vl-err" hidden></p><div class="vl-acts"><button type="button" class="vl-b" data-va="due"><i class="ti ti-check"></i>${T("ตั้งวันที่","Set date")}</button><button type="button" class="vl-b gh" data-va="no">${T("ไม่ใช่ตอนนี้","Not now")}</button></div>`}</div>`}
   if(a.do==="send_photos")return `<div class="vl" ${id}>${head("ti-photo-up",T("ส่งรูปให้ช่าง","Send photos to your mechanic"))}
       ${done?stLine(a)+(a.s==="done"&&a._job?`<div class="vl-acts"><button type="button" class="vl-b gh" data-va="open" data-job="${esc(a._job)}"><i class="ti ti-message-circle"></i>${T("เปิดแชตใบงาน","Open the job chat")}</button></div>`:""):`
       <div class="vl-f"><label><span>${T("ใบงาน","Job")}</span><select data-f="job" disabled><option>${T("กำลังโหลดใบงาน…","Loading jobs…")}</option></select></label></div>
@@ -179,6 +250,40 @@ function drawPh(el,a){const box=el.querySelector("[data-ph]");if(!box)return;con
   box.innerHTML=P.map((p,i)=>`<span class="vl-pi"><img src="${p.url}" alt=""><button type="button" data-va="rmph" data-i="${i}" aria-label="${T("ลบรูป","Remove")}"><i class="ti ti-x"></i></button></span>`).join("");
   box.hidden=!P.length;const s=el.querySelector('[data-va="send"]');if(s&&a.do==="send_photos")s.disabled=!P.length||!el.querySelector('[data-f="job"]').value}
 
+/* ตำแหน่งรถ: GPS ของเครื่อง (ผู้ใช้กดเอง หรือการ์ดด่วนขอให้ทันที) — ชื่อย่านแสดงให้ตรวจก่อนส่ง */
+function drawLoc(el,a){const b=el.querySelector("[data-loc]");if(!b)return;const t=b.querySelector("[data-lt]"),btn=b.querySelector('[data-va="loc"]');
+  b.classList.toggle("ok",!!a._pos);b.classList.toggle("bad",!a._pos&&!!a._locErr);
+  t.textContent=a._pos?(a._place||T("ตำแหน่งปัจจุบันของคุณ","Your current location")):(a._locErr||T("ยังไม่มีตำแหน่งรถ","No location yet"));
+  if(btn&&!btn.disabled)btn.innerHTML=a._pos?T("อัปเดต","Refresh"):T("ใช้ตำแหน่งปัจจุบัน","Use my location");
+  let f=b.querySelector('[data-va="form"]');
+  if(!a._pos&&a._locErr&&(a.do==="post_job"||a.do==="book")&&!f){f=D.createElement("button");f.type="button";f.className="vl-b gh sm";f.dataset.va="form";f.textContent=T("ปักหมุดเองในฟอร์ม","Pin it on the form");b.appendChild(f)}
+  else if(f&&a._pos)f.remove()}
+async function getLoc(el,a){
+  if(!VC())return null;const p=await VC().here(12000);
+  if(!p){a._locErr=T("ยังไม่ได้ตำแหน่ง — อนุญาตตำแหน่งในเบราว์เซอร์ แล้วกดอีกครั้ง","No location yet — allow location access, then tap again");drawLoc(el,a);errOn(el,a._locErr);return null}
+  a._pos=p;a._locErr="";a._place="";drawLoc(el,a);
+  VC().revgeo(p).then(g=>{a._place=[g.line,g.area].filter(Boolean).join(" · ");drawLoc(el,a)}).catch(()=>{});
+  return p}
+function carOf(el){const s=el.querySelector('[data-f="car"]');if(s&&s.value){const c=cars().find(x=>x.id===s.value);if(c)return [carName(c),c.year].filter(Boolean).join(" ")}
+  const t=el.querySelector('[data-f="cartext"]');return t?t.value.trim():""}
+function shopOf(el,a){const s=el.querySelector('[data-f="shop"]');return s&&s.value?(a._shops||[]).find(t=>String(t.id)===s.value)||null:null}
+const vErr=e=>e&&e.issues?T("ยังขาด: ","Still needed: ")+e.issues.join(" · "):(e&&e.message)||T("ทำไม่สำเร็จ ลองใหม่อีกครั้ง","That didn't work — try again");
+function reachMsg(n,urgent){
+  if(urgent)return n>0?T(`แจ้งช่างด่วน ${n} ร้านรอบตัวแล้ว — รอช่างตอบรับ อยู่ในที่ปลอดภัยไว้ก่อนนะ`,`Alerted ${n} nearby shop${n>1?"s":""} — wait somewhere safe for a reply`)
+    :n===0?T("ส่งคำขอด่วนแล้ว แต่ตอนนี้ยังไม่มีร้านในรัศมี — ร้านที่ออนไลน์เข้ามาจะเห็นทันที หรือโทรประกัน/1193","Sent, but no shops are in range right now — new shops coming online will see it; or call your insurer / 1193")
+    :T("ส่งคำขอด่วนแล้ว — รอช่างตอบรับ","Urgent request sent — waiting for a mechanic");
+  return n>0?T(`ประกาศแล้ว — ส่งถึงช่าง ${n} ร้านรอบตัว รอข้อเสนอราคา`,`Posted — ${n} nearby shop${n>1?"s":""} can see it; offers will come in`)
+    :T("ประกาศแล้ว — ร้านในรัศมีที่เข้ามาจะเห็นและเสนอราคาได้","Posted — shops in range will see it and can send offers")}
+/* ปักหมุดเองไม่ได้ในการ์ด → ส่งร่างไปฟอร์มประกาศเต็ม (เลือกจุดบนแผนที่ได้) */
+async function toForm(el,a){
+  const v=f=>{const x=el.querySelector(`[data-f="${f}"]`);return x?x.value.trim():""};
+  const carId=v("car"),c=cars().find(x=>x.id===carId);
+  const photos=[];for(const p of (a._ph||[]).slice(0,3))photos.push(await b2d(p.blob));
+  const d={at:Date.now(),sym:v("symptom"),cat:["air","eng","tyre","ev","body"].includes(a.cat)?a.cat:"",carId:c?c.id:undefined,car:c?undefined:(v("cartext")||a.car||""),when:v("when"),mode:v("mode")==="shop"?"shop":"mobile",photos};
+  try{sessionStorage.setItem("spire_postDraft",JSON.stringify(d))}catch(e){d.photos=[];try{sessionStorage.setItem("spire_postDraft",JSON.stringify(d))}catch(e2){}}
+  finish(MSG(el),a,"no",T("ส่งร่างไปฟอร์มประกาศแล้ว","Draft moved to the post form"));go("/post")}
+const MSG=el=>msgOf(el.dataset.vm);
+
 async function act(btn){
   const el=btn.closest(".vl"),m=msgOf(el.dataset.vm),i=+el.dataset.vi,a=m&&m.acts[i],k=btn.dataset.va;if(!a)return;
   const v=f=>{const x=el.querySelector(`[data-f="${f}"]`);return x?x.value.trim():""};
@@ -189,7 +294,12 @@ async function act(btn){
     if(k==="apply"){a._prev=s.get();s.set(s.v);finish(m,a,"done",T("เปลี่ยนแล้ว","Done"))}else{s.set(a._prev);a._prev=null;finish(m,a,"no",T("ย้อนกลับแล้ว","Undone"))}return}
   if(k==="pick"){try{pickCar(btn.dataset.car)}catch(e){}return}
   if(k==="open"){go("/jobs/"+enc(btn.dataset.job)+"/chat");return}
-  if(k==="urgent"){go("/urgent");return}
+  if(k==="urgfull"){go("/urgent");return}
+  if(k==="form"){toForm(el,a);return}
+  if(k==="see"){const u=seeUrl(a);if(u)go(u);return}
+  if(k==="loc")return busyBtn(btn,()=>getLoc(el,a)).then(()=>drawLoc(el,a));
+  if(k==="chip"){const x=el.querySelector('[data-f="symptom"]');if(x){x.value=btn.dataset.t;a._cat=btn.dataset.c}
+    el.querySelectorAll(".vl-chips button").forEach(b=>b.classList.toggle("on",b===btn));return}
   if(k==="addph"){el.querySelector("[data-file]").click();return}
   if(k==="rmph"){(a._ph||[]).splice(+btn.dataset.i,1);drawPh(el,a);return}
   if(k==="add")return busyBtn(btn,async()=>{
@@ -213,16 +323,40 @@ async function act(btn){
     try{typeof renderCarUI==="function"&&renderCarUI()}catch(e){}
     finish(m,a,"done",T(`${carName(c)}: ${nw.toLocaleString()} กม. แล้ว`,`${carName(c)} is now at ${nw.toLocaleString()} km`));
   }).catch(e=>finish(m,a,"err",e.message));
-  if(k==="post")return busyBtn(btn,async()=>{
-    const sym=v("symptom");if(sym.length<10)return errOn(el,T("เล่าอาการอย่างน้อย 10 ตัวอักษร ช่างจะได้ประเมินราคาได้","Describe the problem in at least 10 characters"));
-    const carId=v("car"),G=cars(),c=G.find(x=>x.id===carId);
+  /* ประกาศหาช่าง / เรียกช่างด่วน — ส่งถึงช่างรอบตัวจริง (ด่วน: หลังบ้านแจ้งร้านในรัศมีทาง LINE ทันที) */
+  if(k==="post"||k==="urg")return busyBtn(btn,async()=>{
+    const urgent=k==="urg";errOn(el,"");
+    const pos=a._pos||await getLoc(el,a);if(!pos)return;
     const photos=[];for(const p of (a._ph||[]).slice(0,3))photos.push(await b2d(p.blob));
-    const cat=["air","eng","tyre","ev","body"].includes(a.cat)?a.cat:"";
-    const d={at:Date.now(),sym,cat,carId:c?c.id:undefined,car:c?undefined:(v("cartext")||a.car||""),when:v("when"),mode:v("mode")==="shop"?"shop":"mobile",photos};
-    try{sessionStorage.setItem("spire_postDraft",JSON.stringify(d))}catch(e){d.photos=[];sessionStorage.setItem("spire_postDraft",JSON.stringify(d))}
-    finish(m,a,"done",T("ส่งร่างไปหน้าประกาศแล้ว — ยืนยันตำแหน่งแล้วกดประกาศ","Draft sent to the post form — confirm the location and post"));
-    go("/post");
-  });
+    const r=await VC().post({urgent,car:carOf(el),symptom:v("symptom"),cat:a._cat||a.cat,when:v("when"),mode:v("mode"),pos,phone:v("phone"),photos});
+    a._ph=[];a.rid=r.id;finish(m,a,"done",reachMsg(r.reach,urgent));
+  }).catch(e=>errOn(el,vErr(e)));
+  /* ขอราคาจากร้านที่เลือก = ใบงานจริงถึงร้านนั้น (ยังไม่ใช่การจ้าง) */
+  if(k==="book")return busyBtn(btn,async()=>{
+    errOn(el,"");const sh=shopOf(el,a);
+    const pos=a._pos||await getLoc(el,a);if(!pos)return;
+    const photos=[];for(const p of (a._ph||[]).slice(0,3))photos.push(await b2d(p.blob));
+    const r=await VC().quote({techId:sh&&sh.id,car:carOf(el),symptom:v("symptom"),when:v("when"),mode:v("mode"),pos,phone:v("phone"),photos});
+    a._ph=[];a.rid=r.id;finish(m,a,"done",T(`ส่งคำขอราคาให้ ${VC().shopName(sh)} แล้ว — รอร้านเสนอราคา`,`Request sent to ${VC().shopName(sh)} — waiting for their quote`));
+  }).catch(e=>errOn(el,vErr(e)));
+  if(k==="msg")return busyBtn(btn,async()=>{
+    errOn(el,"");const sh=shopOf(el,a);
+    const r=await VC().message(sh&&sh.id,v("text"));
+    a.rid=r.id;finish(m,a,"done",T(`ส่งข้อความถึง ${VC().shopName(sh)} แล้ว`,`Message sent to ${VC().shopName(sh)}`));
+  }).catch(e=>errOn(el,vErr(e)));
+  /* ใบงาน: รับราคา (ติ๊กยินยอมในการ์ดเอง) · ยกเลิก (ต้องมีเหตุผล) · ยืนยันงานเสร็จ · ส่งข้อความ */
+  if(k==="jobdo")return busyBtn(btn,async()=>{
+    const op=JOBOP[a.op]?a.op:"message",jid=v("job");if(!jid)return errOn(el,T("เลือกใบงานก่อน","Pick a job first"));
+    if(op==="accept"&&!(el.querySelector('[data-f="consent"]')||{}).checked)return errOn(el,T("ติ๊กยอมรับขอบเขตงานและราคาก่อน","Tick to accept the scope and price first"));
+    errOn(el,"");await VC().jobDo(jid,op,{note:v("note"),text:v("text")});
+    a.rid=jid;finish(m,a,"done",T(...{accept:["รับราคาแล้ว — ร้านได้รับนัดพร้อมเบอร์ของคุณ","Quote accepted — the shop has your booking and number"],
+      cancel:["ยกเลิกใบงานแล้ว","Job cancelled"],complete:["ปิดงานแล้ว — ให้คะแนนช่างได้ในใบงาน","Job closed — you can rate the mechanic in the job"],message:["ส่งข้อความแล้ว","Message sent"]}[op]));
+  }).catch(e=>errOn(el,vErr(e)));
+  if(k==="log"){try{errOn(el,"");const kind=LOGK[a.kind]?a.kind:"fuel";
+      const r=VC().logAdd(v("car"),kind,{amount:v("amount"),litres:v("litres"),km:v("km"),item:v("item"),title:v("title"),date:v("date")});
+      a.rid="garage";finish(m,a,"done",T("บันทึกลงสมุดรถแล้ว","Saved to the logbook")+" · "+r.date)}catch(e){errOn(el,vErr(e))}return}
+  if(k==="due"){try{errOn(el,"");const key=v("key"),r=VC().dueSet(v("car"),key,v("date")),L=VC().DUE[key];
+      a.rid="garage";finish(m,a,"done",T(`ตั้ง${L[0]}ไว้ ${r.date} แล้ว`,`${L[1]} set for ${r.date}`))}catch(e){errOn(el,vErr(e))}return}
   if(k==="send")return busyBtn(btn,async()=>{
     const job=v("job"),P=(a._ph||[]).slice(0,4);if(!job||!P.length)return;
     if(!W.CendonMedia)throw new Error(T("เครื่องนี้ส่งไฟล์ไม่ได้","This device can't send files"));
@@ -246,8 +380,8 @@ function hydrate(wrap,m){
   wrap.querySelectorAll(".vl").forEach(el=>{
     const a=m.acts[+el.dataset.vi];if(!a)return;
     const f=el.querySelector("[data-file]");
-    if(f)f.onchange=async()=>{const max=a.do==="post_job"?3:4;a._ph=a._ph||[];
-      for(const x of [...f.files].slice(0,max-a._ph.length)){try{const b=await shrinkImg(x,1600);a._ph.push({blob:b,url:URL.createObjectURL(b)})}catch(e){errOn(el,e.message)}}
+    if(f)f.onchange=async()=>{const max=a.do==="send_photos"?4:3;a._ph=a._ph||[];
+      for(const x of [...f.files].slice(0,max-a._ph.length)){try{const b=await shrinkImg(x,a.do==="send_photos"?1600:1280);a._ph.push({blob:b,url:URL.createObjectURL(b)})}catch(e){errOn(el,e.message)}}
       f.value="";drawPh(el,a)};
     drawPh(el,a);
     if(a.do==="send_photos"&&!a.s)vapi("/api/tech/jobs").then(d=>{
@@ -260,6 +394,28 @@ function hydrate(wrap,m){
       box.innerHTML=L.length?L.map(j=>`<button type="button" class="vl-row" data-va="open" data-job="${esc(j.id)}"><span><b class="nt">${esc(j.car||"")}</b><small>${esc(j.side==="technician"?T("งานของร้านคุณ","Your shop's job"):j.techName||"")}</small></span><em class="${liveJob(j)?"on":""}">${esc(jobSt(j))}</em></button>`).join("")
         :`<p class="vl-note">${T("ยังไม่มีใบงาน — บอกอาการรถแล้วให้ Valet ช่วยหาช่างได้เลย","No jobs yet — describe the problem and Valet can help you find a mechanic")}</p>`;
     }).catch(e=>{const box=el.querySelector("[data-jobs]");if(box)box.innerHTML=`<p class="vl-st err"><i class="ti ti-alert-triangle"></i>${esc(e.message)}</p>`});
+    if(a.s)return;
+    /* รถ "คันอื่น" → ช่องพิมพ์ชื่อรถ */
+    const cs=el.querySelector('select[data-f="car"]'),ct=el.querySelector('[data-f="cartext"]');
+    if(cs&&ct)cs.addEventListener("change",()=>{ct.hidden=!!cs.value;if(!cs.value)ct.focus()});
+    drawLoc(el,a);
+    /* ร้าน: หาจากชื่อ/รหัสที่ AI ส่งมา (ร้านที่ผ่านการตรวจเท่านั้น) */
+    if((a.do==="book"||a.do==="msg_shop")&&VC()){const sel=el.querySelector('[data-f="shop"]'),go1=el.querySelector('[data-va="book"],[data-va="msg"]');
+      const fill=L=>{a._shops=L;if(!sel)return;
+        if(!L.length){sel.innerHTML=`<option value="">${T("ไม่พบร้านนี้ — ลองบอกชื่อร้านอีกครั้ง หรือให้ Valet หาช่างให้","Shop not found — say the name again, or let Valet find one")}</option>`;return}
+        sel.innerHTML=L.map(t=>`<option value="${esc(t.id)}">${esc(VC().shopName(t))}${t.area?" · "+esc(t.area):""}${t.dist!=null?" · "+t.dist.toFixed(1)+" "+T("กม.","km"):""}</option>`).join("");
+        sel.disabled=false;if(go1)go1.disabled=false};
+      if(a._shops)fill(a._shops);else VC().shops(a.shop,a.cat).then(fill).catch(e=>errOn(el,vErr(e)))}
+    /* ใบงาน: เฉพาะใบที่ทำขั้นนี้ได้ตอนนี้ (ตามกติกาหลังบ้าน) */
+    if(a.do==="job"&&VC()){const op=JOBOP[a.op]?a.op:"message",sel=el.querySelector('[data-f="job"]'),b=el.querySelector('[data-va="jobdo"]'),q=el.querySelector("[data-q]"),ck=el.querySelector('[data-f="consent"]');
+      const can=j=>op==="message"?liveJob(j):(VC().JOB_OPS[op]||[]).includes(j.status)&&(op==="cancel"?j.side!=="admin":j.side==="customer"||j.side==="both");
+      const paintQ=()=>{const j=(a._jobs||[]).find(x=>x.id===sel.value);if(b)b.disabled=!j||(op==="accept"&&ck&&!ck.checked);
+        if(q){q.hidden=!(j&&j.quote);if(j&&j.quote)q.innerHTML=`<b>฿${money(j.quote.total)}</b><span>${esc(j.techName||"")}</span><p>${esc(j.quote.scope||"")}</p>${j.quote.appointment?`<small><i class="ti ti-calendar"></i>${esc(j.quote.appointment)}</small>`:""}${j.quote.warranty?`<small><i class="ti ti-shield-check"></i>${T("รับประกัน","Warranty")} ${esc(j.quote.warranty)} ${T("วัน","days")}</small>`:""}`}};
+      if(ck)ck.onchange=paintQ;
+      VC().jobs().then(all=>{const L=all.filter(can).sort((x,y)=>(y.updatedAt||0)-(x.updatedAt||0)).slice(0,10);a._jobs=L;if(!sel)return;
+        if(!L.length){sel.innerHTML=`<option value="">${T("ไม่มีใบงานที่ทำขั้นนี้ได้ตอนนี้","No jobs at this step right now")}</option>`;return}
+        sel.innerHTML=L.map(j=>`<option value="${esc(j.id)}"${j.id===a.job?" selected":""}>${esc(j.side==="technician"?T("ลูกค้า","Customer"):j.techName||"")} · ${esc(j.car||"")}${j.quote?" · ฿"+money(j.quote.total):""}</option>`).join("");
+        sel.disabled=false;sel.onchange=paintQ;paintQ()}).catch(e=>errOn(el,vErr(e)))}
   });
 }
 /* คำตอบใหม่สด ๆ เท่านั้น (ไม่ใช่ตอนเปิดประวัติ): พาไปหน้า = นับถอยหลังสั้น ๆ ยกเลิกได้ · เปลี่ยนธีม/ภาษา = ทำเลย ย้อนได้ */
@@ -269,6 +425,7 @@ function run(m){
     if(a.s)return;
     if(a.do==="setting"){const s=setting(a);if(!s)return;a._prev=s.get();if(String(a._prev)===String(s.v)){a.s="done";a.r=T("ตั้งไว้แบบนี้อยู่แล้ว","Already set");a._prev=null;return}
       s.set(s.v);a.s="done";a.r=T("เปลี่ยนแล้ว","Done")}
+    if(a.do==="urgent")setTimeout(()=>{const el=D.querySelector(`.vl[data-vm="${m._vid}"][data-vi="${m.acts.indexOf(a)}"]`);if(el&&!a._pos&&!a.s)getLoc(el,a)},400);
     if((a.do==="go"||a.do==="search")&&dest(a)&&m.acts.filter(x=>x.do==="go"||x.do==="search").length===1){a._cd=2200;a._t=setTimeout(()=>{if(!a.s){a.s="done";a.r=T("พาไปแล้ว","Opened");try{saveSession()}catch(e){}go(dest(a).url)}},2200)}
   });
   try{saveSession()}catch(e){}
@@ -331,10 +488,12 @@ function sheet(){
     <ul>
       <li><i class="ti ti-route"></i>${T("พาไปหน้าไหนก็ได้ · เปลี่ยนธีม ภาษา โหมด AI","Takes you anywhere · changes theme, language, AI mode")}</li>
       <li><i class="ti ti-car-garage"></i>${T("เพิ่มรถ อัปเดตเลขไมล์ในการาจ","Adds cars and updates mileage in your garage")}</li>
-      <li><i class="ti ti-speakerphone"></i>${T("ร่างโพสต์หาช่าง · ส่งรูปให้ช่างในใบงาน · ดูสถานะงาน","Drafts job posts · sends photos to your mechanic · checks your jobs")}</li>
+      <li><i class="ti ti-urgent"></i>${T("เรียกช่างด่วน · ประกาศหาช่าง · ขอราคาและทักร้าน ส่งถึงช่างจริง","Calls an urgent mechanic · posts jobs · asks shops for quotes and messages them — for real")}</li>
+      <li><i class="ti ti-clipboard-check"></i>${T("รับราคา ยกเลิก ปิดงาน ส่งรูปและข้อความในใบงาน","Accepts quotes, cancels or closes jobs, sends photos and messages")}</li>
+      <li><i class="ti ti-notebook"></i>${T("จดน้ำมัน ซ่อมบำรุง ทริป · ตั้งวันต่อภาษี พ.ร.บ. ประกัน","Logs fuel, services and trips · sets tax, insurance and inspection dates")}</li>
       ${mech?`<li><i class="ti ti-building-store"></i>${T("คุมสถานะร้านและหน้า Studio","Runs your shop status and Studio pages")}</li>`:""}
     </ul>
-    <p class="vl-safe"><i class="ti ti-shield-lock"></i>${T("อะไรที่เปลี่ยนข้อมูลหรือส่งถึงคนอื่น Valet จะขึ้นการ์ดให้คุณกดยืนยันก่อนทุกครั้ง · ทำได้เฉพาะในบัญชีของคุณ · ปิดได้ทุกเมื่อที่ปุ่มนี้","Anything that changes your data or reaches someone else waits for your tap on a card · only inside your own account · switch it off anytime here")}</p>
+    <p class="vl-safe"><i class="ti ti-shield-lock"></i>${T("อะไรที่เปลี่ยนข้อมูลหรือส่งถึงคนอื่น Valet จะขึ้นการ์ดให้คุณตรวจและกดยืนยันก่อนทุกครั้ง · ไม่ลบข้อมูล ไม่แตะรหัสผ่าน ไม่จ่ายเงิน · ทำได้เฉพาะในบัญชีของคุณ · ปิดได้ทุกเมื่อที่ปุ่มนี้","Anything that changes your data or reaches someone else waits for you to check and tap a card · never deletes data, touches passwords or pays · only inside your own account · switch it off anytime here")}</p>
     <div class="vl-pa">${o?`<button type="button" class="vl-b gh" data-p="off">${T("ปิด Valet","Turn Valet off")}</button><button type="button" class="vl-b" data-p="x">${T("ปิดหน้าต่าง","Close")}</button>`
       :`<button type="button" class="vl-b gh" data-p="x">${T("ไม่ใช่ตอนนี้","Not now")}</button><button type="button" class="vl-b" data-p="on"><i class="ti ti-key"></i>${T("อนุญาต Valet","Allow Valet")}</button>`}</div>
   </div>`;

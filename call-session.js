@@ -333,6 +333,7 @@ function handleLiveMsg(msg){
   if(sc.inputTranscription&&sc.inputTranscription.text){
     if(!orb.wait)liveTurnAudio=false;
     heardAt=Date.now();livePendingAt=heardAt;orb.wait=true;
+    try{host.agent?.heard?.(heardAt);}catch{}
     liveUserText+=sc.inputTranscription.text;
     setCaption("user",liveUserText);
   }
@@ -364,7 +365,7 @@ async function handleTools(calls){
     let response=toolResults.get(call.id);
     if(!response){
       const abort=new AbortController();toolRequests.set(call.id,abort);toolPending++;
-      const timer=setTimeout(()=>abort.abort(),10000);
+      const timer=setTimeout(()=>abort.abort(),/^valet/.test(call.name)?30000:10000);
       const isCurrent=()=>session===callSession&&ws===callWS&&callActive&&!abort.signal.aborted;
       try{
         if(!host.agent)throw Error('Tools not available');
@@ -487,8 +488,12 @@ $("callUI")&&$("callUI").addEventListener("pointerdown",wakeCall);
   function dispose(){endCall();$("callUI")?.removeEventListener?.("pointerdown",wakeCall);global.removeEventListener?.("pagehide",pageExit);getTools()?.dispose?.();host.view?.dispose?.();}
   function pageExit(){if(callActive||callConnecting)endCall();}
   global.addEventListener?.("pagehide",pageExit);
-  return Object.freeze({start:startCall,end:endCall,mute:toggleCallMute,camera:toggleCamera,flip:flipCamera,zoom:setCallZoom,wake:wakeCall,dispose,bridge:Object.freeze({get callWS(){return callWS},get callCtx(){return callCtx},get callActive(){return callActive},get callSession(){return callSession},get callMicStream(){return callMicStream},set callMicStream(v){callMicStream=v},get callMicNode(){return callMicNode},set callMicNode(v){callMicNode=v},get callMicSrc(){return callMicSrc},set callMicSrc(v){callMicSrc=v},get camZoom(){return camZoom},get camOn(){return camOn},get camFacing(){return camFacing},set camFacing(v){camFacing=v},get playSrcs(){return playSrcs},get livePendingAt(){return livePendingAt},set livePendingAt(v){livePendingAt=v},startMicStream,flushPlayback,b64FromBytes,toggleCamera,flipCamera}),
+  /* ข้อความจากระบบเข้าสาย (เช่น ผู้ใช้กดยืนยันการ์ด Valet บนจอ) — โมเดลรู้ผลจริงแล้วพูดต่อ ไม่ต้องทำซ้ำ */
+  function note(text){if(!callActive||!callWS||callWS.readyState!==1)return false;try{callWS.send(JSON.stringify({clientContent:{turns:[{role:"user",parts:[{text:String(text||"").slice(0,1200)}]}],turnComplete:true}}));livePendingAt=Date.now();return true}catch(e){return false}}
+  const api=Object.freeze({note,start:startCall,end:endCall,mute:toggleCallMute,camera:toggleCamera,flip:flipCamera,zoom:setCallZoom,wake:wakeCall,dispose,bridge:Object.freeze({get callWS(){return callWS},get callCtx(){return callCtx},get callActive(){return callActive},get callSession(){return callSession},get callMicStream(){return callMicStream},set callMicStream(v){callMicStream=v},get callMicNode(){return callMicNode},set callMicNode(v){callMicNode=v},get callMicSrc(){return callMicSrc},set callMicSrc(v){callMicSrc=v},get camZoom(){return camZoom},get camOn(){return camOn},get camFacing(){return camFacing},set camFacing(v){camFacing=v},get playSrcs(){return playSrcs},get livePendingAt(){return livePendingAt},set livePendingAt(v){livePendingAt=v},startMicStream,flushPlayback,b64FromBytes,toggleCamera,flipCamera}),
     get active(){return callActive||callConnecting},get muted(){return callMuted},get cameraOn(){return camOn}});
+  try{host.agent?.bind?.(api);}catch{}
+  return api;
 }
 global.CendonCallSession=Object.freeze({create});
 })(window);

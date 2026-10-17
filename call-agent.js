@@ -1,4 +1,5 @@
-/* A read/prepare allowlist, never an automatic hiring, payment or posting agent. */
+/* A fixed allowlist: read, prepare, and Cendon Valet actions that run only after the user confirms (voice yes or a tap).
+   Never pays, deletes, changes passwords/email, or shares location with anyone but the chosen request. */
 (() => {
   'use strict';
   function create(host){
@@ -35,9 +36,131 @@
         if(host.prepareUrgent){await host.prepareUrgent(symptom,ctx);current(ctx);return{prepared:true,submitted:false,requiresUserConfirmation:true,note:'Draft open. Nobody contacted. User must review recipients, location/contact and submit themselves.'};}
         host.showDraft?.(symptom);return{prepared:true,submitted:false,requiresUserConfirmation:true,note:'Draft shown. User must open the form and confirm. Nobody contacted.'};
       }
-      return{error:'Unsupported tool. Allowed: get_my_car, find_mechanics, show_mechanic, prepare_urgent_request'};
+      if(name==='valet')return valet(args,ctx);
+      if(name==='valet_confirm')return confirm(args,ctx);
+      return{error:'Unsupported tool. Allowed: get_my_car, find_mechanics, show_mechanic, prepare_urgent_request, valet, valet_confirm'};
     }
-    return Object.freeze({execute,lookup:id=>known.get(id)||null,clear(){known.clear();}});
+
+    /* ══ Cendon Valet ในสาย: เตรียม → การ์ดบนจอ + สรุปให้ AI อ่านทวน → ทำจริงเมื่อผู้ใช้พูดยืนยัน (หรือกดยืนยันบนจอ)
+       ตำแหน่งมาจาก GPS ของเครื่องเท่านั้น · AI เห็นแค่ย่านกับเบอร์แบบปิดกลาง · ทำผ่าน API เดิมด้วยบัญชีผู้ใช้ (CendonValetCore) ══ */
+    const VC=()=>window.CendonValetCore||null;
+    const DOS=['urgent','post_job','book','msg_shop','job','jobs','log','due'],OPS=['accept','cancel','complete','message'];
+    let pend=null,seq=0,heardAt=0,session=null,waiting=null;
+    const live=j=>!['completed','cancelled'].includes(j.status);
+    const canDo=(j,op)=>op==='message'?live(j):(VC().JOB_OPS[op]||[]).includes(j.status)&&(op==='cancel'?j.side!=='admin':j.side==='customer'||j.side==='both');
+    const say=t=>{try{session?.note?.(t);}catch{}};
+    function card(p,state,extra={}){
+      host.showValet?.(p?{id:p.id,title:p.title,lines:p.lines,missing:p.miss,red:p.red,state,...extra,
+        onConfirm:()=>run(p,'tap').catch(()=>{}),onCancel:()=>{if(pend===p)pend=null;host.showValet?.(null);say('[ระบบ] ผู้ใช้กดยกเลิกการ์ด Valet บนจอ ไม่มีอะไรถูกส่ง');}}:null);
+    }
+    async function valet(args,ctx){
+      const V=VC();if(!V)return{error:'Valet is not available on this screen. Use the normal controls.'};
+      const T=V.T,d=String(args.do||'');if(!DOS.includes(d))return{error:'Unsupported Valet action'};
+      /* ยังไม่ได้ฝากกุญแจ: ขอให้กดอนุญาตบนจอ (เสียงอนุญาตแทนไม่ได้) */
+      if(!V.on()){
+        waiting={args};current(ctx);
+        host.showValet?.({id:'allow',title:T('ฝากกุญแจให้ Cendon Valet ไหม?','Hand the keys to Cendon Valet?'),lines:[T('ให้ AI ทำในแอปแทนคุณ เช่น เรียกช่าง ขอราคา จดสมุดรถ — ทุกอย่างรอคุณยืนยันก่อน','Let the AI act in the app for you — calling mechanics, quotes, logbook — everything waits for your OK')],state:'allow',
+          onConfirm:async()=>{V.allow();const w=waiting;waiting=null;if(!w)return;const r=await valet(w.args,{signal:{aborted:false},isCurrent:()=>true}).catch(e=>({error:e.message}));
+            say('[ระบบ] ผู้ใช้กดอนุญาต Valet บนจอแล้ว ผลการเตรียม: '+JSON.stringify(r).slice(0,900));},
+          onCancel:()=>{waiting=null;host.showValet?.(null);say('[ระบบ] ผู้ใช้ไม่อนุญาต Valet ไม่มีอะไรถูกทำ');}});
+        return{error:'Valet is off. Ask the user to tap Allow on the screen. Nothing was done.'};
+      }
+      if(d==='jobs'){
+        const L=(await V.jobs()).filter(live).slice(0,6);current(ctx);
+        return{jobs:L.map(j=>({job_id:j.id,shop:clean(j.techName,80),car:clean(j.car,80),status:j.status,side:j.side,quote:j.quote?{total:Number(j.quote.total)||0,scope:clean(j.quote.scope,200),appointment:clean(j.quote.appointment,80)}:null})),note:'Data only. To act on one, call valet with do=job, op and job_id.'};
+      }
+      const a={do:d};
+      for(const k of ['car','symptom','cat','when','mode','shop_id','text','op','job_id','note','phone','kind','item','title','key','date'])if(args[k]!=null&&args[k]!=='')a[k]=clean(args[k],k==='symptom'||k==='text'?600:200);
+      for(const k of ['amount','litres','km'])if(Number.isFinite(+args[k])&&+args[k]>0)a[k]=+args[k];
+      const c=V.findCar(a.car),carL=c?V.carLabel(c):clean(a.car,80),miss=[],lines=[];
+      let title='',red=false,place='';
+      if(['urgent','post_job','book'].includes(d)){
+        a.pos=await V.here(9000);current(ctx);
+        if(a.pos)place=(await V.revgeo(a.pos)).area||T('ตำแหน่งปัจจุบัน','current location');current(ctx);
+        a.phone=V.cleanPhone(a.phone||V.savedPhone());
+        if(!carL)miss.push(T('รถคันไหน','which car'));
+        const min=d==='urgent'?3:10;if(String(a.symptom||'').length<min)miss.push(min>3?T('อาการรถ (เล่าให้ละเอียดขึ้น)','the problem in more detail'):T('เกิดอะไรขึ้น','what happened'));
+        if(!a.pos)miss.push(T('ตำแหน่งรถ — ให้ผู้ใช้อนุญาตตำแหน่งบนเครื่อง','the location — ask the user to allow location on the device'));
+        if(!V.okPhone(a.phone))miss.push(T('เบอร์โทร','a phone number'));
+      }
+      if(d==='book'||d==='msg_shop'){
+        a.shop=known.get(String(a.shop_id||''))||(a.shop_id?(await V.shops(a.shop_id))[0]:null)||null;current(ctx);
+        if(!a.shop)miss.push(T('ร้าน — ค้นหาด้วย find_mechanics ก่อน','the shop — search with find_mechanics first'));
+        if(d==='msg_shop'&&String(a.text||'').length<2)miss.push(T('ข้อความถึงร้าน','the message'));
+      }
+      if(d==='job'){
+        const op=OPS.includes(a.op)?a.op:'';if(!op)return{error:'op must be accept, cancel, complete or message'};
+        const L=(await V.jobs()).filter(j=>canDo(j,op));current(ctx);
+        a.job=a.job_id?L.find(j=>j.id===a.job_id):L.length===1?L[0]:null;
+        if(!a.job){if(L.length>1)return{needChoice:true,jobs:L.slice(0,6).map(j=>({job_id:j.id,shop:clean(j.techName,80),car:clean(j.car,80),status:j.status,total:j.quote?Number(j.quote.total)||0:null})),note:'Ask which one, then call valet again with job_id.'};
+          return{error:'No job is at that step right now. Nothing was done.'};}
+        if(op==='cancel'&&String(a.note||'').length<5)miss.push(T('เหตุผลที่ยกเลิก','the reason for cancelling'));
+        if(op==='message'&&!a.text)miss.push(T('ข้อความ','the message'));
+      }
+      if(d==='log'||d==='due'){if(!c)miss.push(T('รถคันไหนในการาจ','which car in the garage'));}
+      if(d==='log'){a.kind=['fuel','service','trip'].includes(a.kind)?a.kind:'fuel';
+        if(a.kind==='fuel'&&!a.amount)miss.push(T('ยอดเติม (บาท)','the amount in baht'));
+        if(a.kind==='service'){if(!V.SVC[a.item])miss.push(T('รายการซ่อมบำรุง','which service'));if(!a.km)miss.push(T('เลขไมล์ตอนทำ','the mileage'));}
+        if(a.kind==='trip'){if(String(a.title||'').length<2)miss.push(T('ชื่อทริป','the trip name'));if(!a.km)miss.push(T('ระยะทาง','the distance'));}}
+      if(d==='due'){if(!V.DUE[a.key])miss.push(T('เรื่องที่จะตั้ง','which date'));if(!V.okDate(a.date))miss.push(T('วันที่','the date'));}
+      /* สรุปบนจอ = สิ่งที่ AI อ่านทวน */
+      const n=x=>Number(x).toLocaleString();
+      const shopN=a.shop?V.shopName(a.shop):'',jb=a.job;
+      if(d==='urgent'){title=T('เรียกช่างด่วน','Urgent call-out');red=true;lines.push(carL,a.symptom,place,V.maskPhone(a.phone)&&T('เบอร์ ','Phone ')+V.maskPhone(a.phone));}
+      if(d==='post_job'){title=T('ประกาศหาช่าง (ไม่ด่วน)','Post a job (not urgent)');lines.push(carL,a.symptom,a.when||T('วันนี้','Today'),a.mode==='shop'?T('เอารถเข้าอู่','At the garage'):T('ให้ช่างมาหา','Come to me'),place);}
+      if(d==='book'){title=T('ขอราคาจากร้าน','Ask a shop for a quote');lines.push(shopN,carL,a.symptom,a.when||T('วันนี้','Today'),a.mode==='mobile'?T('ให้ช่างมาหา','Come to me'):T('เอารถเข้าอู่','At the garage'));}
+      if(d==='msg_shop'){title=T('ทักร้าน','Message a shop');lines.push(shopN,a.text);}
+      if(d==='job'&&jb){const q=jb.quote;title={accept:T('รับราคาและนัดช่าง','Accept the quote'),cancel:T('ยกเลิกใบงาน','Cancel the job'),complete:T('ยืนยันว่างานเสร็จ','Confirm the job is done'),message:T('ส่งข้อความถึงช่าง','Message your mechanic')}[a.op];red=a.op==='cancel';
+        lines.push(clean(jb.techName,80)+' · '+clean(jb.car,80));
+        if(a.op==='accept'&&q)lines.push('฿'+n(q.total)+' · '+clean(q.scope,160),clean(q.appointment,80),T('ยินยอมเปิดเบอร์และที่อยู่ให้ร้านนี้เพื่อนัดซ่อม','Shares your phone and address with this shop'));
+        if(a.op==='cancel')lines.push(a.note);if(a.op==='message')lines.push(a.text);}
+      if(d==='log'){title=T('จดสมุดรถ','Logbook');lines.push(carL,a.kind==='fuel'?T('เติมน้ำมัน ','Fuel ')+'฿'+n(a.amount||0)+(a.litres?' · '+a.litres+T(' ลิตร',' L'):''):a.kind==='service'?T(...(V.SVC[a.item]||['ซ่อมบำรุง','Service'])):a.title,a.km?n(a.km)+T(' กม.',' km'):'',a.date||V.today());}
+      if(d==='due'){title=T('ตั้งวันครบกำหนด','Set a due date');lines.push(carL,V.DUE[a.key]?T(...V.DUE[a.key]):'',a.date);}
+      const p={id:'v'+(++seq),d,a,c,at:Date.now(),title,red,miss,lines:lines.filter(Boolean).map(x=>clean(x,200)),running:null,result:null};
+      pend=p;current(ctx);card(p,miss.length?'missing':'ready');
+      return{pending_id:p.id,summary:title+': '+p.lines.join(' · '),missing:miss,submitted:false,
+        next:miss.length?'Ask the user for the missing items, then call valet again with every field (a new pending_id replaces this one).'
+          :'Read the summary back in one short sentence and ask for a clear yes. Only after the user clearly agrees, call valet_confirm with this pending_id. The user can also tap Confirm on screen.'};
+    }
+    async function confirm(args,ctx){
+      const id=clean(args.pending_id,20);
+      if(!pend||pend.id!==id)return{error:'No matching pending action. Call valet first. Nothing was sent.'};
+      if(pend.result)return pend.result;
+      if(pend.miss.length)return{error:'Still missing: '+pend.miss.join(', ')+'. Ask the user, then call valet again. Nothing was sent.'};
+      if(!pend.running&&!(heardAt>pend.at))return{error:'The user has not answered yet. Read the summary back, wait for a clear yes, then call valet_confirm. Nothing was sent.'};
+      current(ctx);return run(pend,'voice');
+    }
+    function run(p,how){
+      if(p.result)return Promise.resolve(p.result);
+      if(p.running)return p.running;
+      const V=VC(),T=V.T,a=p.a;card(p,'busy');
+      p.running=(async()=>{
+        let msg='',url='',extra={};
+        if(p.d==='urgent'||p.d==='post_job'){const r=await V.post({urgent:p.d==='urgent',car:V.carLabel(p.c)||a.car,symptom:a.symptom,cat:a.cat,when:a.when,mode:a.mode,pos:a.pos,phone:a.phone});
+          url=r.url;extra={shopsReached:r.reach};
+          msg=p.d==='urgent'?(r.reach>0?T(`แจ้งช่างด่วน ${r.reach} ร้านรอบตัวแล้ว รอช่างตอบรับ`,`Alerted ${r.reach} nearby shops — waiting for a reply`):T('ส่งคำขอด่วนแล้ว แต่ตอนนี้ยังไม่มีร้านในรัศมี','Sent, but no shops are in range right now'))
+            :(r.reach>0?T(`ประกาศแล้ว ช่าง ${r.reach} ร้านรอบตัวเห็นแล้ว`,`Posted — ${r.reach} nearby shops can see it`):T('ประกาศแล้ว ร้านในรัศมีที่เข้ามาจะเห็น','Posted — shops in range will see it'));}
+        if(p.d==='book'){const r=await V.quote({techId:a.shop.id,car:V.carLabel(p.c)||a.car,symptom:a.symptom,when:a.when,mode:a.mode,pos:a.pos,phone:a.phone});url=r.url;msg=T(`ส่งคำขอราคาให้ ${V.shopName(a.shop)} แล้ว รอร้านเสนอราคา`,`Quote request sent to ${V.shopName(a.shop)}`);}
+        if(p.d==='msg_shop'){const r=await V.message(a.shop.id,a.text);url=r.url;msg=T(`ส่งข้อความถึง ${V.shopName(a.shop)} แล้ว`,`Message sent to ${V.shopName(a.shop)}`);}
+        if(p.d==='job'){await V.jobDo(a.job.id,a.op,{note:a.note,text:a.text});url='/jobs/'+encodeURIComponent(a.job.id);
+          msg={accept:T('รับราคาแล้ว ร้านได้รับนัดพร้อมเบอร์ของคุณ','Quote accepted — the shop has your booking'),cancel:T('ยกเลิกใบงานแล้ว','Job cancelled'),complete:T('ปิดงานแล้ว','Job closed'),message:T('ส่งข้อความแล้ว','Message sent')}[a.op];}
+        if(p.d==='log'){const r=V.logAdd(p.c.id,a.kind,{amount:a.amount,litres:a.litres,km:a.km,item:a.item,title:a.title,date:a.date});url='/garage';msg=T('บันทึกลงสมุดรถแล้ว ','Saved to the logbook ')+r.date;}
+        if(p.d==='due'){const r=V.dueSet(p.c.id,a.key,a.date);url='/garage';msg=T('ตั้งวันที่แล้ว ','Date set ')+r.date;}
+        p.result={done:true,submitted:true,result:msg,...extra,note:'This really happened. Tell the user briefly; do not repeat the action.'};
+        card(p,'done',{text:msg,url});
+        if(how==='tap')say('[ระบบ] ผู้ใช้กดยืนยันบนจอแล้ว ผลจริง: '+msg+' — บอกผู้ใช้สั้น ๆ ไม่ต้องทำซ้ำ');
+        return p.result;
+      })().catch(e=>{
+        p.running=null;const err=e&&e.issues?T('ยังขาด: ','Still missing: ')+e.issues.join(' · '):(e&&e.message)||T('ทำไม่สำเร็จ','It did not work');
+        card(p,'error',{text:err});
+        if(how==='tap')say('[ระบบ] ผู้ใช้กดยืนยันบนจอ แต่ทำไม่สำเร็จ: '+err+' — ไม่มีอะไรถูกส่ง บอกผู้ใช้และช่วยแก้');
+        return{error:err,submitted:false};
+      });
+      return p.running;
+    }
+    return Object.freeze({execute,lookup:id=>known.get(id)||null,clear(){known.clear();pend=null;waiting=null;host.showValet?.(null);},
+      /* ตัวเชื่อมกับสาย: รู้ว่าผู้ใช้พูดตอบแล้ว · ส่งผลจากการกดบนจอกลับเข้าสาย */
+      heard(t){heardAt=t||Date.now();},bind(s){session=s;}});
   }
   window.CendonCallAgent=Object.freeze({create});
 })();

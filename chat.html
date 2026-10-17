@@ -3016,13 +3016,14 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 <script src="engine-scan.js?v=2026-10-16-r1" defer></script>
 <script src="call-tools.js?v=2026-10-16-r4" defer></script>
 <script src="call-composer.js?v=2026-10-16-r3" defer></script>
-<script src="call-agent.js?v=2026-10-16-r3" defer></script>
-<script src="call-surface.js?v=2026-10-16-r3" defer></script>
-<script src="call-session.js?v=2026-10-16-r3" defer></script>
-<link rel="stylesheet" href="valet.css?v=1">
-<script src="valet.js?v=1" defer></script>
+<script src="call-agent.js?v=2026-10-17-r4" defer></script>
+<script src="call-surface.js?v=2026-10-17-r4" defer></script>
+<script src="call-session.js?v=2026-10-17-r4" defer></script>
+<link rel="stylesheet" href="valet.css?v=2">
+<script src="valet-core.js?v=1" defer></script>
+<script src="valet.js?v=2" defer></script>
 <script src="bell.js?v=4" defer></script>
-<script src="drop.js?v=1" defer></script>
+<script src="drop.js?v=2" defer></script>
 <script src="./techs.js"></script>
 <script src="./cendon-search.js"></script>
 <style id="vtcss">
@@ -3033,7 +3034,7 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 @media(prefers-reduced-motion:reduce){@view-transition{navigation:none}}
 </style>
 <link rel="stylesheet" href="stability.css">
-<link rel="stylesheet" href="call-ui.css?v=2026-10-16-r4">
+<link rel="stylesheet" href="call-ui.css?v=2026-10-17-r5">
 <script src="car-sync.js"></script>
 <script src="stability.js" defer></script>
 <!-- หน้าตาชุดเดียวกับหน้าหลัก (สี การ์ด ปุ่ม พื้นหลัง) — โหลดท้ายสุดให้ชนะสไตล์เดิม -->
@@ -3737,8 +3738,18 @@ const TT=(th,en)=>(window.spireT?window.spireT(th,en):((window.lang||"th")==="en
 let chatPrefs={style:LS.get("chatStyle","precise")},chatStyles=[],tokState=null;
 window.chatPrefs=chatPrefs;
 
+/* ผู้ใช้ที่ล็อกอินอยู่ — เปิดหน้าใหม่ ระบบบัญชีอาจยังกู้การล็อกอินไม่เสร็จ (ราว 1 วิ) รอได้ถึง 10 วิ ไม่ใช่ตอบพังทันที
+   ของเดิมเช็กทันที: กดถาม AI จากหน้าแรกแล้วมาถึงห้องแชตก่อนระบบบัญชีพร้อม → "ตอบไม่ได้ชั่วคราว" ต้องพิมพ์ใหม่ */
+async function aiUser(){
+  if(auth&&auth.currentUser)return auth.currentUser;
+  try{if(window.spireAwaitUser){const u=await window.spireAwaitUser(10000);if(u)return u}}catch(e){}
+  return (auth&&auth.currentUser)||null;
+}
+/* เอาตัวยึด "กำลังพิมพ์" ออก — หาเอา ไม่ใช่ตัดตัวท้ายสุด (ของเดิมตัดตัวท้าย ถ้าห้องถูกโหลดใหม่ระหว่างรอ คำถามของผู้ใช้หายแทน) */
+function dropTyping(){let n=0;for(let i=messages.length-1;i>=0;i--)if(messages[i]&&messages[i].typing){messages.splice(i,1);n++}return n}
+function dropMsg(m){const i=messages.indexOf(m);if(i>=0)messages.splice(i,1)}
 async function authFetch(path,opts){
-  const u=auth&&auth.currentUser; if(!u||!BACKEND_URL) throw new Error("not signed in");
+  const u=await aiUser(); if(!u||!BACKEND_URL) throw new Error("not signed in");
   const tok=await u.getIdToken();
   return fetch(BACKEND_URL+path,Object.assign({},opts,{
     headers:Object.assign({"Content-Type":"application/json","Authorization":"Bearer "+tok},
@@ -4025,9 +4036,10 @@ function noTools(t){
 }
 async function streamAnswer(contents,opts){
   opts=opts||{};
-  if(!(useFb&&auth&&auth.currentUser))throw new Error(lang==="en"?"Please sign in first":"กรุณาเข้าสู่ระบบก่อนใช้งาน");
+  const au=useFb?await aiUser():null;
+  if(!au)throw new Error(lang==="en"?"Please sign in first":"กรุณาเข้าสู่ระบบก่อนใช้งาน");
   if(typeof ReadableStream==="undefined"||!window.TextDecoder)return null;   /* เบราว์เซอร์เก่า ใช้ทางเดิม */
-  const tok=await auth.currentUser.getIdToken();
+  const tok=await au.getIdToken();
   const ac=(typeof AbortController!=="undefined")?new AbortController():null;
   window.__aiAbort=ac;
   const car=selCar()||{};
@@ -4063,7 +4075,7 @@ async function streamAnswer(contents,opts){
 
   /* เตรียมข้อความของ AI ที่จะโตขึ้นเรื่อย ๆ ระหว่างสตรีม */
   const m={role:"ai",text:"",reasoning:"",streaming:true,status:""};
-  messages.pop();                                /* เอาตัวยึด typing ออก */
+  dropTyping();                                  /* เอาตัวยึด typing ออก */
   messages.push(m);
   renderMessages();
   const nodes=liveNodes();
@@ -4099,8 +4111,8 @@ async function streamAnswer(contents,opts){
   try{ await flowFinish(nodes) }catch(e){}
   m.streaming=false; m.status="";
   liveDone(nodes);
-  if(!m.text.trim()&&failed){ messages.pop(); renderMessages(); throw new Error(failed) }
-  if(!m.text.trim()){ messages.pop(); renderMessages(); return null }   /* ไม่ได้อะไรเลย ลองทางเดิม */
+  if(!m.text.trim()&&failed){ dropMsg(m); renderMessages(); throw new Error(failed) }
+  if(!m.text.trim()){ dropMsg(m); renderMessages(); return null }   /* ไม่ได้อะไรเลย ลองทางเดิม */
 
   /* แกะฟอร์มที่ AI ขอ ออกจากข้อความก่อนแสดงผลจริง */
   const parsed=parseAsk(m.text);
@@ -4361,8 +4373,9 @@ function parseAsk(txt){
   return{text:clean,ask,next,acts};
 }
 async function gemini(contents,opts){opts=opts||{};
-  if(!(useFb&&auth&&auth.currentUser))throw new Error(lang==="en"?"Please sign in first":"กรุณาเข้าสู่ระบบก่อนใช้งาน");
-  const tok=await auth.currentUser.getIdToken();
+  const au=useFb?await aiUser():null;
+  if(!au)throw new Error(lang==="en"?"Please sign in first":"กรุณาเข้าสู่ระบบก่อนใช้งาน");
+  const tok=await au.getIdToken();
   /* ผูกตัวยกเลิกไว้ที่ window เพื่อให้ปุ่มหยุดเรียกถึงได้จากทุกที่ */
   const ac=(typeof AbortController!=="undefined")?new AbortController():null;
   window.__aiAbort=ac;
@@ -4656,7 +4669,8 @@ function decideStart(){
   if(useFb&&!currentUser){setPhase("login");return}
   const c=selCar();
   if(!c){renderGate();setPhase("gate");return}
-  loadSession();
+  /* AI กำลังตอบอยู่ (เช่น ส่งคำถามจากหน้าแรกไปแล้ว แล้วระบบบัญชีเพิ่งพร้อม) — ห้องในเครื่องใหม่กว่าที่เก็บไว้ ห้ามโหลดทับ */
+  if(!(sending&&messages.length))loadSession();
   if(messages.length){renderMessages();setPhase("thread")}
   else setPhase("welcome");
   renderCarUI();
@@ -4675,7 +4689,9 @@ function renderGate(){
 function pickCar(id){window.CendonFeatureAI?.reset();LS.set("selCar",id);loadSession();renderCarUI();
   if(messages.length){renderMessages();setPhase("thread")}else setPhase("welcome");
   /* มาจากหน้าตรวจใบเสนอราคาแต่ยังไม่มีรถ — เลือกรถแล้วตรวจต่อให้ทันที */
-  setTimeout(()=>{try{runFeatureJob()}catch(e){}},0)}
+  setTimeout(()=>{try{runFeatureJob()}catch(e){}},0);
+  /* มีคำถามจากหน้าแรกค้างอยู่ (ตอนนั้นยังไม่มีรถ) → ส่งต่อเลย */
+  const ask=window.__askAfterCar;if(ask&&ask.q){window.__askAfterCar=null;setTimeout(()=>{try{enterThread({});$("inp").value=ask.q;autoSize();updateSend();if(ask.send)sendMsg();else autoFocusInp(150)}catch(e){}},60)}}
 
 /* ===== งานจากหน้าแรก (ใบเสนอราคา · ฟังเสียง · ส่งรูป) =====
    หน้าเหล่านั้นเก็บไฟล์ไว้ในเครื่อง (CendonMedia) แล้วฝากรหัส เครื่องมือ และคำถามไว้ใน sessionStorage
@@ -5215,7 +5231,7 @@ function bellAi(){
 }
 /* typewriter streaming effect — spinning mark stays below while text streams */
 function typewrite(fullText,done){
-  messages.pop(); // remove typing placeholder
+  dropTyping(); // remove typing placeholder
   const extra={};
   if(pendingAsk){ extra.ask=pendingAsk; pendingAsk=null }
   if(pendingActs){ extra.acts=pendingActs; pendingActs=null }
@@ -5274,11 +5290,11 @@ async function makeSummary(){
 บทสนทนา:
 ${convo}`}]}],{temp:0.3});
     const d=gParse(txt);
-    messages.pop();
+    dropTyping();
     if(d&&d.symptom){messages.push({role:"sum",data:d});renderMessages();saveSession()}
     else{messages.push({role:"ai",text:txt||"(สรุปไม่สำเร็จ)"});renderMessages();saveSession()}
   }catch(e){
-    messages.pop();
+    dropTyping();
     let adm=false; try{ const cu=JSON.parse(localStorage.getItem("spire_cachedUser")||"null"); adm=!!(cu&&(cu.admin||/admin|owner/i.test(cu.role||""))) }catch(err){}
     messages.push({role:"ai",text:(lang==="en"?"Couldn't make the summary right now. Please try again in a moment 🙏":"ตอนนี้สรุปผลไม่ได้ชั่วคราว ลองใหม่อีกครั้งนะครับ 🙏")+(adm?"\n\n(ผู้ดูแลเห็นเท่านั้น) สาเหตุ: "+String(e&&e.message||e).slice(0,300):"")});
     renderMessages();
@@ -5390,7 +5406,7 @@ function stopGen(){
   try{ if(window.__aiAbort) window.__aiAbort.abort() }catch(e){}
   window.__stopped=true;
   /* เอาตัวยึดที่กำลังพิมพ์ออก แล้วบอกให้รู้ว่าหยุดเพราะผู้ใช้สั่ง */
-  try{ if(messages.length&&messages[messages.length-1].typing)messages.pop() }catch(e){}
+  try{ dropTyping() }catch(e){}
   messages.push({role:"ai",text:lang==="en"?"Stopped.":"หยุดแล้วครับ"});
   sending=false;
   renderMessages(); saveSession(); updateSend(); renderChips();
@@ -5441,7 +5457,7 @@ async function sendMsg(){
       try{
         const answer=await window.CendonFeatureAI.analyze(featureJob,controller.signal);
         if(window.__stopped||controller.signal.aborted)return;
-        if(messages[messages.length-1]?.typing)messages.pop();
+        dropTyping();
         messages.push({role:"ai",text:answer});renderMessages();saveSession();
         if(selCar())addHistory(selCar().id,text,answer);
         sending=false;updateSend();renderChips();
@@ -5524,7 +5540,7 @@ async function sendMsg(){
   }catch(e){
     /* ผู้ใช้กดหยุดเอง ไม่ใช่ระบบพัง stopGen จัดการหน้าจอไปแล้ว */
     if(window.__stopped||(e&&e.name==="AbortError")){ window.__stopped=false; return }
-    messages.pop();
+    dropTyping();
     /* ผู้ใช้ไม่ต้องเห็นข้อความเทคนิคของระบบหลังบ้าน (ชื่อผู้ให้บริการ โควตา รหัสผิดพลาด)
        บอกแค่สิ่งที่เขาทำได้ — รายละเอียดจริงบันทึกไว้ให้ผู้ดูแลที่หน้าตรวจระบบแล้ว */
     const quota=!!(e&&e.userQuota);
@@ -5676,7 +5692,7 @@ function getCallSession(){
     const token=await user.getIdToken(),response=await fetch(BACKEND_URL+path,{headers:{Authorization:"Bearer "+token},signal,cache:"no-store"});
     if(!response.ok)throw Error("Tool unavailable");return response.json();
   };
-  const agent=window.CendonCallAgent.create({api:voiceApi,getCar:selCar,getLocation:()=>LS.get("tech_here",null),showResults:view.showResults,showDraft:view.showDraft});
+  const agent=window.CendonCallAgent.create({api:voiceApi,getCar:selCar,getLocation:()=>LS.get("tech_here",null),showResults:view.showResults,showDraft:view.showDraft,showValet:view.showValet});
   let tools;
   cendonCall=window.CendonCallSession.create({byId:view.byId,backendUrl:BACKEND_URL,language:lang,getUser:()=>auth?.currentUser,view,agent,getTools:()=>tools,toast,storage:LS,systemPrompt:sysPrompt,getMessages:()=>messages,appendMessage:m=>messages.push(m),save:saveSession,onEnd:()=>{renderMessages();updateHint();renderChips();setPhase("thread");}});
   tools=window.CallTools?.create({voice:cendonCall.bridge,language:lang,backendUrl:BACKEND_URL,getUser:()=>auth?.currentUser,getCar:selCar,getMessages:()=>messages,appendMessage:m=>messages.push(m),save:saveSession,toast});
@@ -5781,7 +5797,8 @@ function runEntry(){
   /* ลิงก์ตรงจากห้องนักบิน: เปิดเซสชันที่ระบุ หรือเปิดโต๊ะทำงานเลย */
   if(p.session&&getSessions().some(s=>s.id===p.session)){switchSession(p.session);return}
   if(p.pane==="desk"||p.pane==="flow"){setTimeout(()=>{try{goNav("flow")}catch(e){}},60);return}
-  if(!selCar())return;
+  /* ยังไม่ได้เลือกรถ: เก็บคำถามจากหน้าแรกไว้ เลือกรถเสร็จแล้วส่งต่อให้เอง (ของเดิมทิ้งคำถามเงียบ ๆ) */
+  if(!selCar()){if(p.q)window.__askAfterCar=p;return}
   /* มาจากหน้าใบเสนอราคา / ฟังเสียง / ส่งรูป: แนบไฟล์แล้วส่งให้ AI ทันที */
   if(featureJob()){setTimeout(()=>{try{runFeatureJob()}catch(e){}},120);return}
   if(p.attach==="text"){enterThread({focus:true})}

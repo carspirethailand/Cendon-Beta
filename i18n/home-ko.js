@@ -1459,5 +1459,20 @@ window.CENDON_L10N={lang:"ko",t:{
 "Send the first message":"첫 메시지를 보내 보세요",
 "This job is finished — the chat is kept for reference and can’t take new messages":"이 작업은 완료되었어요 — 채팅은 기록용으로 보관되며 새 메시지를 보낼 수 없어요",
 "This request expired — no new messages. Ask for a new quote if you still need help":"이 요청은 만료되었어요 — 새 메시지를 보낼 수 없어요. 아직 도움이 필요하면 새 견적을 요청하세요",
-"This job was cancelled — no new messages":"이 작업은 취소되었어요 — 새 메시지를 보낼 수 없어요"
+"This job was cancelled — no new messages":"이 작업은 취소되었어요 — 새 메시지를 보낼 수 없어요",
+"Edit (owner)":"수정 (소유자)",
+"Delete":"삭제",
+"Hide this review? It disappears everywhere and leaves the shop rating":"이 리뷰를 숨길까요? 모든 곳에서 사라지고 매장 평점에서도 제외됩니다",
+"Review hidden":"리뷰를 숨겼습니다",
+"Hide":"숨기기",
+"Trial shop":"체험 매장",
+"Customers can't see this shop yet — it opens once it passes the full review":"아직 고객에게 이 매장이 보이지 않습니다 — 정식 심사를 통과하면 공개됩니다",
+"Owner tools":"소유자 도구",
+"Every change to someone else's shop is logged":"다른 사람의 매장을 변경하면 모두 기록됩니다",
+"Name, expertise, categories, location, photos, hours":"이름, 전문 분야, 카테고리, 위치, 사진, 영업시간",
+"Add a service for this shop":"이 매장에 서비스 추가",
+"The service belongs to this shop":"서비스는 이 매장에 속합니다",
+"Remove from what customers see":"고객에게 보이는 목록에서 제거",
+"Hide this shop from customers?":"이 매장을 고객에게서 숨길까요?",
+"Edit shop (owner)":"매장 수정 (소유자)"
 }};

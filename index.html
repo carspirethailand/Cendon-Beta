@@ -18,7 +18,7 @@
 (function(){try{if(/^\/(work|studio)(\/|$)/.test(location.pathname)){var p=JSON.parse(localStorage.getItem("spire_partner")||"null");if(p&&p.s==="shop")document.documentElement.dataset.boot="tech"}}catch(e){}})();</script>
 <script>(function(){try{var A=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt"],l=null;try{l=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
 if(A.indexOf(l)<0){l="en";var n=navigator.languages||[navigator.language||"en"];for(var i=0;i<n.length;i++){var b=String(n[i]).toLowerCase().split("-")[0];if(A.indexOf(b)>=0){l=b;break}}}
-if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=1"><\/script>')}catch(e){}})();</script>
+if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=2"><\/script>')}catch(e){}})();</script>
 <title>Cendon</title>
 <meta name="description" content="ถามอาการรถ ส่งรูปหรือเสียงให้ AI ช่วยดู เช็กใบเสนอราคา และหาช่างที่ผ่านการตรวจใกล้คุณ">
 <!-- การ์ดตอนแชร์ลิงก์ (LINE / Facebook / X) — รูปต้องเป็นที่อยู่เต็ม -->
@@ -2006,6 +2006,16 @@ html[data-theme="dark"] .so-vi{box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
 .fixl b{display:flex;gap:6px;align-items:center;font-size:14.5px}.fixl b .ti{color:#b91c1c}
 .fixl ul{margin:8px 0 0;padding-left:20px;display:grid;gap:6px;font-size:14px;line-height:1.6}
 .idp{margin:0 0 12px;padding:14px 16px;border-radius:16px;border:1px solid var(--line);background:var(--surface)}
+/* อนุมัติทดสอบ (เจ้าของระบบ) — แยกกล่องเส้นประ ไม่ปนกับการอนุมัติจริง · ปุ่ม "ไม่ผ่าน" สีแดงอ่อน */
+.rv-test{margin:4px 0 14px;padding:12px;border:1.5px dashed var(--line);border-radius:16px;display:grid;gap:8px}
+.rv-test small{font-size:12px;color:var(--muted);line-height:1.55}
+.btn.rv-ban{color:#c0392b;border-color:rgba(192,57,43,.35)}
+.btn.rv-ban:disabled{color:var(--muted);border-color:var(--line)}
+/* เครื่องมือเจ้าของระบบ: ปุ่มซ่อนรีวิว · แถวแก้/ลบบริการของร้านอื่น */
+.rv header .rv-hide{margin-left:auto;display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:none;color:var(--muted);font:inherit;font-size:12px;cursor:pointer}
+.rv header .rv-hide:hover{color:#c0392b;border-color:rgba(192,57,43,.35)}
+.gd-boss{display:flex;gap:8px;margin-top:12px;padding:8px;border:1.5px dashed var(--line);border-radius:14px}
+.gd-boss .lx-gh{flex:1;justify-content:center}
 .lc-pair{display:flex;align-items:center;justify-content:center;gap:14px;margin:8px 0 18px}
 .lc-side{flex:1 1 0;min-width:0;display:grid;justify-items:center;gap:3px;text-align:center}
 .lc-side small{font-size:12px;color:var(--muted)}.lc-side b{font-size:15px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -4060,7 +4070,7 @@ function openGig(id){
   const g=(GIGS||[]).find(x=>x.id==id);if(!g)return;if(g.tech)track(g.tech.id,"gig");
   const t0=g.tech||{},t={...t0,...(TECHS.find(x=>x.id===t0.id)||{})},mine=isMine(t),P=g.photos||[];
   const c=RAIL.find(x=>x.id===gigCat(g)),top=c&&c.base?RAIL.find(x=>x.id===c.base):null,path=[top,c].filter(Boolean);
-  const d=mine?null:km(HERE,t),av=t.avatar;
+  const d=mine?null:km(HERE,t),av=t.avatar,boss=!mine&&!!(ME&&ME.owner);
   const facts=[
     path.length&&["ti-category","หมวดหมู่",path.map(x=>tr(x.th)).join(" › ")],
     (g.brands||[]).length&&["ti-car","ยี่ห้อรถที่ถนัด",g.brands.join(", ")],
@@ -4070,7 +4080,7 @@ function openGig(id){
     ["ti-calendar","ลงประกาศ",new Date(g.createdAt).toLocaleDateString(LOC,{day:"numeric",month:"short",year:"numeric"})]].filter(Boolean);
   const rating=t.reviewCount?`<i class="ti ti-star-filled"></i><b>${Number(t.rating).toFixed(1)}</b><span>(${t.reviewCount} รีวิว)</span>`:`<span>ยังไม่มีรีวิว</span>`;
   const pav=`<span class="lx-pav"${av?` style="background-image:url('${img(av)}')"`:""}>${av?"":initial(t.shop||t.name)}</span>`;
-  sheet({title:"",full:true,store:true,gig:g.id,owner:!!mine,url:"/service/"+encodeURIComponent(g.id),body:`<div class="gd">
+  sheet({title:"",full:true,store:true,gig:g.id,owner:!!mine,boss,url:"/service/"+encodeURIComponent(g.id),body:`<div class="gd">
     <div class="gd-gal">${P.length?`<div class="gd-hero" id="gdHero" style="background-image:url('${img(P[0])}')" role="img" aria-label="${esc(g.title)}">
         ${P.length>1?`<button class="gd-nav l" data-d="-1" type="button" aria-label="รูปก่อนหน้า"><i class="ti ti-chevron-left"></i></button><button class="gd-nav r" data-d="1" type="button" aria-label="รูปถัดไป"><i class="ti ti-chevron-right"></i></button><span class="gd-cnt" id="gdCnt">1 / ${P.length}</span>`:""}</div>
       ${P.length>1?`<div class="gd-th">${P.map((p,i)=>`<button type="button" class="${i?"":"on"}" data-i="${i}" style="background-image:url('${img(p)}')" aria-label="รูปที่ ${i+1}"></button>`).join("")}</div>`:""}`
@@ -4083,6 +4093,7 @@ function openGig(id){
       <ul class="gd-trust"><li><i class="ti ti-cash"></i>จ่ายเงินกับช่างโดยตรงเมื่องานเสร็จ</li>${t.warranty?`<li><i class="ti ti-shield-check"></i>รับประกันงาน ${t.warranty} วัน</li>`:""}${t.verified?`<li><i class="ti ti-id-badge-2"></i>ช่างผ่านการตรวจสอบตัวตนแล้ว</li>`:""}</ul>
       <div class="gd-buy">
         <div class="gd-price"><b>฿${money(g.price)}</b><small>ราคาเริ่มต้น · ช่างยืนยันราคาจริงก่อนเริ่มงาน</small></div>
+        ${boss?`<div class="gd-boss"><button class="lx-gh" data-a="edit" type="button"><i class="ti ti-pencil"></i>${T("แก้ไข (เจ้าของระบบ)","Edit (owner)")}</button><button class="lx-gh" data-a="del" type="button"><i class="ti ti-trash"></i>${T("ลบบริการ","Delete")}</button></div>`:""}
         <div class="gd-act">${mine?`<button class="lx-cta" data-a="edit" type="button"><i class="ti ti-pencil"></i>แก้ไขบริการ</button><button class="lx-gh" data-a="del" type="button"><i class="ti ti-trash"></i>ลบบริการนี้</button><button class="gd-sp${spOn(g)?" on":""}" data-a="sponsor" type="button"><i class="ti ti-rocket"></i><span>${spOn(g)?T("กำลังสปอนเซอร์","Sponsored"):T("สปอนเซอร์บริการนี้","Sponsor this service")}<small>${spOn(g)?T(`ถึง ${spDate(g.sponsor.until,1)} · ต่อเวลาหรือหยุดได้`,`Until ${spDate(g.sponsor.until,1)} · extend or stop`):T("ขึ้นก่อนในหน้าแรกและหน้าหมวด · ฟรีช่วงทดลอง","Shown first on home and category pages · free trial")}</small></span><i class="ti ti-chevron-right"></i></button>`
           :`<button class="lx-cta" data-a="book" type="button">จองบริการนี้</button><div class="gd-2"><button class="lx-gh" data-a="msg" type="button"><i class="ti ti-message-circle"></i>ทักช่าง</button>${t.phone?`<a class="lx-gh" href="tel:${esc(t.phone)}"><i class="ti ti-phone"></i>โทร</a>`:""}</div>`}</div>
       </div>
@@ -4096,8 +4107,8 @@ function openGig(id){
       :`<div class="gd-ft"><span class="gd-fp"><small>ราคาเริ่มต้น</small><b>฿${money(g.price)}</b></span><button class="lx-gh lx-ic" data-a="msg" type="button" aria-label="ทักช่าง"><i class="ti ti-message-circle"></i></button>${t.phone?`<a class="lx-gh lx-ic" href="tel:${esc(t.phone)}" aria-label="โทร"><i class="ti ti-phone"></i></a>`:""}<button class="lx-cta" data-a="book" type="button">จองบริการนี้</button></div>`,
     mount(b,f){
       const tech=()=>TECHS.find(x=>x.id===t.id)||t;
-      const A={book:()=>book(tech(),"สนใจบริการ: "+g.title),msg:()=>messageTech(tech(),g),shop:()=>openTech(t.id),edit:()=>gigForm(g),sponsor:()=>sponsorSheet(g),
-        del:e=>busy(e.currentTarget,async()=>{if(!confirm("ลบบริการนี้?"))return;await api("/api/tech/gig/delete",{body:{id:g.id}});toast("ลบแล้ว");await afterGig()})};
+      const A={book:()=>book(tech(),"สนใจบริการ: "+g.title),msg:()=>messageTech(tech(),g),shop:()=>openTech(t.id),edit:()=>gigForm(g,boss?{tech:t.id}:null),sponsor:()=>sponsorSheet(g),
+        del:e=>busy(e.currentTarget,async()=>{if(!confirm(boss?"ลบบริการนี้ของร้าน "+(t.shop||t.name||"")+"?":"ลบบริการนี้?"))return;await api("/api/tech/gig/delete",{body:{id:g.id}});toast("ลบแล้ว");await afterGig()})};
       [b,f].forEach(r=>r.querySelectorAll("[data-a]").forEach(x=>x.onclick=e=>A[x.dataset.a](e)));
       b.querySelectorAll(".gd-path [data-cat]").forEach(x=>x.onclick=()=>{closeSheet();openCat(x.dataset.cat)});
       /* แกลเลอรี: ปุ่มซ้ายขวา (คอม) · ปัดซ้ายขวา (มือถือ) · แตะรูปเพื่อขยาย · รูปย่อด้านล่าง */
@@ -4117,7 +4128,7 @@ function openGig(id){
       api("/api/tech/reviews?id="+encodeURIComponent(t.id)).then(r=>r.reviews||[]).catch(()=>[]).then(list=>{
         const h=b.querySelector("#gdRev");if(!h)return;
         h.innerHTML=`<h2>รีวิวจากลูกค้า</h2>${reviewsHTML(t,list,3)}${list.length>3?`<button class="lx-gh gd-more" type="button">${T(`ดูรีวิวทั้งหมด ${list.length} รีวิว`,`See all ${list.length} reviews`)}</button>`:""}`;
-        h.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z));
+        h.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z));wireRvHide(h);
         const m=h.querySelector(".gd-more");if(m)m.onclick=()=>{openTech(t.id);const o=SH.cur;if(o&&o.setTab)o.setTab("rev")};
       });
     }});
@@ -4136,8 +4147,10 @@ async function afterGig(){
   else if(c&&c.gig){if((GIGS||[]).some(x=>x.id==c.gig))openGig(c.gig);else back()}
 }
 const myGigs=()=>(GIGS||[]).filter(g=>isMine(g.tech));
-function gigForm(g){
-  if(!(g&&g.id)&&myGigs().length>=GIG_MAX)return toast(T(`โพสต์บริการได้ร้านละ ${GIG_MAX} รายการ — แก้หรือลบรายการเดิมแทน`,`Up to ${GIG_MAX} services per shop — edit or delete one instead`),"ti-info-circle");
+function gigForm(g,opt){
+  /* opt.tech = เจ้าของระบบลง/แก้บริการให้ร้านอื่น: เลือกได้ทุกหมวด ไม่ติดเพดานจำนวน */
+  const boss=!!(opt&&opt.tech&&ME&&ME.owner);
+  if(!boss&&!(g&&g.id)&&myGigs().length>=GIG_MAX)return toast(T(`โพสต์บริการได้ร้านละ ${GIG_MAX} รายการ — แก้หรือลบรายการเดิมแทน`,`Up to ${GIG_MAX} services per shop — edit or delete one instead`),"ti-info-circle");
   g=g||{photos:[],cats:[],brands:[]};
   const F2={keep:[...(g.photos||[])],add:[],cats:[...(g.cats||[])]};
   sheet({push:true,url:g.id?undefined:stuUrl("post"),slug:g.id?"edit":"post",full:true,title:g.id?"แก้ไขโพสต์":"โพสต์ใหม่",body:`
@@ -4145,7 +4158,7 @@ function gigForm(g){
     <label class="fld"><span>หัวข้อ</span><input class="inp" id="gT" maxlength="100" value="${esc(g.title||"")}" placeholder="เช่น ล้างแอร์ครบชุด ถอดตู้ล้าง พร้อมเติมน้ำยา"/></label>
     <label class="fld"><span>ราคา (บาท)</span><input class="inp" id="gP" type="number" inputmode="numeric" value="${g.price||""}" placeholder="1200"/></label>
     <label class="fld"><span>รายละเอียด</span><textarea class="inp" id="gB" rows="5" placeholder="ทำอะไรบ้าง ใช้เวลากี่ชั่วโมง รับประกันกี่วัน">${esc(g.body||"")}</textarea></label>
-    <label class="fld"><span>หมวดหมู่บริการ <small style="font-weight:400;color:var(--muted)">· เฉพาะหมวดที่ผ่านการตรวจทักษะ</small></span><select class="inp" id="gC"><option value="">เลือกหมวดหมู่…</option>${RAIL.filter(c=>!c.base&&!NOT_GCAT.includes(c.id)&&gigAllowed(c.id)).map(top=>`<optgroup label="${top.th}"><option value="${top.id}">${top.th} (ทั่วไป)</option>${RAIL.filter(x=>x.base===top.id).map(x=>`<option value="${x.id}">${x.th}</option>`).join("")}</optgroup>`).join("")}</select></label>
+    <label class="fld"><span>หมวดหมู่บริการ <small style="font-weight:400;color:var(--muted)">· เฉพาะหมวดที่ผ่านการตรวจทักษะ</small></span><select class="inp" id="gC"><option value="">เลือกหมวดหมู่…</option>${RAIL.filter(c=>!c.base&&!NOT_GCAT.includes(c.id)&&(boss||gigAllowed(c.id))).map(top=>`<optgroup label="${top.th}"><option value="${top.id}">${top.th} (ทั่วไป)</option>${RAIL.filter(x=>x.base===top.id).map(x=>`<option value="${x.id}">${x.th}</option>`).join("")}</optgroup>`).join("")}</select></label>
     <label class="fld"><span>${T("ยี่ห้อรถที่ถนัด (คั่นด้วย ,)","Car brands (comma separated)")}</span><input class="inp" id="gBr" value="${esc((g.brands||[]).join(", "))}" placeholder="Toyota, Honda, BMW"/></label>
     <p class="err" id="gErr"></p>`,
     foot:`<button class="lx-cta" id="gSave" style="flex:1">${g.id?"บันทึก":"โพสต์เลย"}</button>`,
@@ -4165,11 +4178,12 @@ function gigForm(g){
           /* รูปไม่จำกัด: ส่งทีละ 4 รูป ต่อท้ายโพสต์เดิม */
           let id=g.id,keep=[...F2.keep],rest=[...F2.add];
           do{const part=rest.splice(0,4);$("gSave").textContent=rest.length?`กำลังอัปโหลด… เหลือ ${rest.length} รูป`:"กำลังบันทึก…";
-            const r=await api("/api/tech/gig",{body:{...base,id,keep,addPhotos:part}});id=r.id;
-            if(rest.length){const cur=(await api("/api/tech/gigs?mine=1")).gigs.find(x=>x.id===id);keep=cur?cur.photos:keep}
+            const r=await api("/api/tech/gig",{body:{...base,id,keep,addPhotos:part,...(boss&&!id?{tech:opt.tech}:{})}});id=r.id;
+            if(rest.length){if(r.photos)keep=r.photos;else{const cur=(await api("/api/tech/gigs?mine=1")).gigs.find(x=>x.id===id);keep=cur?cur.photos:keep}}
           }while(rest.length);
         }catch(err){$("gErr").textContent=err.message;throw err}
-        toast(g.id?"บันทึกแล้ว":"โพสต์แล้ว — ขึ้นหน้าแรกให้ลูกค้าเห็นแล้ว");await afterGig();
+        toast(g.id?"บันทึกแล้ว":"โพสต์แล้ว — ขึ้นหน้าแรกให้ลูกค้าเห็นแล้ว");
+        if(boss&&!g.id){closeSheet();await loadGigs();openTech(opt.tech)}else await afterGig();
       });
     }});
 }
@@ -4424,12 +4438,16 @@ const img=id=>`${API}/api/tech/img/${id}`;
 const agoTh=at=>{const m=Math.round((Date.now()-at)/6e4);return m<1?"เมื่อกี้":m<60?m+" นาที":m<1440?Math.round(m/60)+" ชม.":m<43200?Math.round(m/1440)+" วัน":new Date(at).toLocaleDateString(LOC,{day:"numeric",month:"short",year:"2-digit"})};
 const starTxt=n=>"★".repeat(Math.round(n))+"☆".repeat(5-Math.round(n));
 /* รีวิวลูกค้า: คะแนน ข้อความ รูปจากลูกค้า — ไม่มีชื่อลูกค้า */
+/* ปุ่มซ่อนรีวิว — มีเฉพาะเจ้าของระบบ (หลังบ้านส่งรหัสใบงานมาให้เจ้าของเท่านั้น) */
+function wireRvHide(h){h.querySelectorAll("[data-hide]").forEach(x=>x.onclick=e=>busy(e.currentTarget,async()=>{
+  if(!confirm(T("ซ่อนรีวิวนี้? จะไม่แสดงที่ไหนอีก และหักออกจากคะแนนร้าน","Hide this review? It disappears everywhere and leaves the shop rating")))return;
+  await api("/api/tech/reviews/hide",{body:{job:x.dataset.hide}});x.closest(".rv").remove();toast(T("ซ่อนรีวิวแล้ว","Review hidden"));load()}))}
 function reviewsHTML(t,list,lim){
   if(!list)return '<div class="skel"></div><div class="skel"></div>';
   if(!list.length)return `<p class="ch-empty">${T("ยังไม่มีรีวิว — รีวิวมาจากลูกค้าที่ใช้บริการผ่านแอปเท่านั้น","No reviews yet")}</p>`;
   const avg=list.reduce((a,r)=>a+r.rating,0)/list.length;
   return `<div class="rv-sum"><span class="rv-big">${avg.toFixed(1)}</span><div><span class="rv-st">${starTxt(avg)}</span><small>${list.length} ${T("รีวิวจากลูกค้าที่ใช้บริการจริง","verified reviews")}</small></div></div>
-    <div class="rv-list">${list.slice(0,lim||list.length).map(r=>`<article class="rv"><header><span class="rv-st">${starTxt(r.rating)}</span><small>${agoTh(r.at)}</small></header>
+    <div class="rv-list">${list.slice(0,lim||list.length).map(r=>`<article class="rv"><header><span class="rv-st">${starTxt(r.rating)}</span><small>${agoTh(r.at)}</small>${r.job?`<button class="rv-hide" type="button" data-hide="${esc(r.job)}"><i class="ti ti-eye-off"></i>${T("ซ่อน","Hide")}</button>`:""}</header>
       ${r.text?`<p class="nt">${esc(r.text)}</p>`:""}
       ${(r.photos||[]).length?`<div class="rv-ph">${r.photos.map(p=>`<img src="${img(p)}" alt="" loading="lazy" data-z="${img(p)}"/>`).join("")}</div>`:""}</article>`).join("")}</div>`;
 }
@@ -4495,7 +4513,8 @@ function storeHTML(t,mine){
       </div>
       <button class="so-share" type="button" data-share aria-label="${T("แชร์ร้านนี้","Share this shop")}"><i class="ti ti-share-2"></i></button>
     </header>
-    ${t.test?`<p class="so-note test"><i class="ti ti-flask"></i><span><b>${T("ร้านทดสอบของทีมงาน","Staff test shop")}</b>${T("ไม่ใช่ร้านจริง ใช้ทดลองระบบเท่านั้น","Not a real shop — for testing only")}</span></p>`:""}
+    ${t.test?(ME&&ME.staff?`<p class="so-note test"><i class="ti ti-flask"></i><span><b>${T("ร้านทดสอบของทีมงาน","Staff test shop")}</b>${T("ไม่ใช่ร้านจริง ใช้ทดลองระบบเท่านั้น","Not a real shop — for testing only")}</span></p>`
+      :`<p class="so-note test"><i class="ti ti-flask"></i><span><b>${T("ร้านทดลอง","Trial shop")}</b>${T("ลูกค้าทั่วไปยังไม่เห็นร้านนี้ — เปิดให้ลูกค้าเห็นเมื่อผ่านการตรวจจริง","Customers can't see this shop yet — it opens once it passes the full review")}</span></p>`):""}
     ${v?`<p class="so-note"><i class="ti ti-beach"></i><span><b>${T("ร้านพักรับงานชั่วคราว","Shop is taking a break")}${v.until?T(" ถึง "," until ")+new Date(v.until).toLocaleDateString(LOC,{day:"numeric",month:"short"}):""}</b>${v.note?`<span class="nt">${esc(v.note)}</span>`:T("ตอนนี้ยังขอราคาไม่ได้ ทักถามช่างได้","Quotes are paused — you can still message")}</span></p>`:""}
     <dl class="so-facts">
       <div><dt><i class="ti ti-map-pin"></i>${T("ที่ตั้ง","Location")}</dt><dd class="nt">${where.length?esc(where.join(" · ")):T("ไม่ได้ระบุ","Not specified")}</dd></div>
@@ -4537,7 +4556,8 @@ function storeFoot(t,mine){
   const v=t.vacation;
   return `<div class="so-ft"><button class="lx-gh" id="bMsg" type="button"><i class="ti ti-message-circle"></i>${T("ทักช่าง","Message")}</button>
     ${t.phone?`<a class="lx-gh lx-ic" id="bTel" href="tel:${esc(t.phone)}" aria-label="${T("โทร","Call")}"><i class="ti ti-phone"></i></a>`:""}
-    ${ME&&ME.staff&&!t.test?`<button class="lx-gh lx-ic" id="bSus" type="button" title="${T("ซ่อนร้าน","Hide shop")}" aria-label="${T("ซ่อนร้าน","Hide shop")}"><i class="ti ti-eye-off"></i></button>`:""}
+    ${ME&&ME.owner?`<button class="lx-gh lx-ic" id="bBoss" type="button" title="${T("เครื่องมือเจ้าของระบบ","Owner tools")}" aria-label="${T("เครื่องมือเจ้าของระบบ","Owner tools")}"><i class="ti ti-crown"></i></button>`
+      :ME&&ME.staff&&!t.test?`<button class="lx-gh lx-ic" id="bSus" type="button" title="${T("ซ่อนร้าน","Hide shop")}" aria-label="${T("ซ่อนร้าน","Hide shop")}"><i class="ti ti-eye-off"></i></button>`:""}
     <button class="lx-cta" id="bBook" type="button"${v?" disabled":""}>${v?T("ปิดรับงานชั่วคราว","Not taking jobs"):T("ขอราคา","Get a quote")}</button></div>`;
 }
 /* นับยอดเข้าชม (ไม่นับร้านตัวเอง) — ไม่รอผล ไม่แจ้ง error */
@@ -4549,7 +4569,7 @@ function loadReviews(b,t){
   const h=b.querySelector("#chRev");if(!h)return;
   h.innerHTML=reviewsHTML(t,null);
   /* โหลดไม่สำเร็จ ≠ ไม่มีรีวิว — บอกตามจริงและให้ลองใหม่ */
-  api("/api/tech/reviews?id="+encodeURIComponent(t.id)).then(r=>{h.innerHTML=reviewsHTML(t,r.reviews||[]);h.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z))})
+  api("/api/tech/reviews?id="+encodeURIComponent(t.id)).then(r=>{h.innerHTML=reviewsHTML(t,r.reviews||[]);h.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z));wireRvHide(h)})
     .catch(()=>{h.innerHTML=`<p class="so-err"><i class="ti ti-cloud-off"></i>${T("โหลดรีวิวไม่สำเร็จ","Couldn't load reviews")}<button class="lx-gh" type="button">${T("ลองใหม่","Retry")}</button></p>`;
       h.querySelector("button").onclick=()=>loadReviews(b,t)});
 }
@@ -4564,7 +4584,7 @@ function openTech(id,opt){
     return}
   if(!mine)track(id,"shop");
   const url=(opt&&opt.url)||"/tech/"+encodeURIComponent(id);
-  sheet({title:t.shop||t.name||"",full:true,store:true,shop:id,owner:!!mine,url,body:storeHTML(t,mine),foot:storeFoot(t,mine),
+  sheet({title:t.shop||t.name||"",full:true,store:true,shop:id,owner:!!mine,boss:!!(ME&&ME.owner),url,body:storeHTML(t,mine),foot:storeFoot(t,mine),
     mount(b,f,o){
       /* /tech/<ร้าน>/reviews ฯลฯ — เลื่อนไปส่วนนั้น */
       o.setTab=k=>{o.tab=k;const s=b.querySelector("#"+SO_SEC[k]);if(s)setTimeout(()=>s.scrollIntoView({behavior:"smooth",block:"start"}),60)};
@@ -4584,7 +4604,22 @@ function openTech(id,opt){
       if($("bTel"))$("bTel").addEventListener("click",()=>track(id,"call"));
       $("bBook").onclick=()=>book(t);
       $("bMsg").onclick=()=>messageTech(t);
+      if($("bBoss"))$("bBoss").onclick=()=>bossMenu(t);
       if($("bSus"))$("bSus").onclick=e=>busy(e.currentTarget,async()=>{if(!confirm("ซ่อนช่างคนนี้จากรายชื่อ?"))return;await api("/api/tech/moderate",{body:{id:t.id,suspend:true}});closeSheet();toast("ซ่อนแล้ว");load()});
+    }});
+}
+/* ═══ เครื่องมือเจ้าของระบบบนหน้าร้านของคนอื่น ═══
+   แก้ร้าน · ลงบริการให้ร้าน · ซ่อนร้าน — หลังบ้านตรวจสิทธิ์อีกชั้น (เฉพาะเจ้าของระบบ) และบันทึกทุกครั้ง */
+function bossMenu(t){
+  const row=(id,ic,c,b,sm)=>`<button class="jl" id="${id}" type="button"><span class="av sq" style="--c1:${c}"><i class="ti ${ic}"></i></span><span class="jb"><b>${b}</b><small>${sm}</small></span><i class="ti ti-chevron-right"></i></button>`;
+  sheet({push:true,title:T("เครื่องมือเจ้าของระบบ","Owner tools"),body:`<p class="note"><i class="ti ti-crown"></i>${esc(t.shop||t.name||"")} · ${T("ทุกการแก้ไขร้านคนอื่นมีบันทึกในระบบ","Every change to someone else's shop is logged")}</p>
+    ${row("oEdit","ti-pencil","var(--accent)",T("แก้ไขร้าน","Edit shop"),T("ชื่อ ความถนัด หมวดงาน ตำแหน่ง รูป เวลาทำการ — แก้ได้ทุกช่อง","Name, expertise, categories, location, photos, hours"))}
+    ${row("oGig","ti-square-plus","#22a06b",T("ลงบริการให้ร้านนี้","Add a service for this shop"),T("บริการจะเป็นของร้านนี้","The service belongs to this shop"))}
+    ${t.test?"":row("oHide","ti-eye-off","#c0392b",T("ซ่อนร้าน","Hide shop"),T("เอาออกจากรายชื่อที่ลูกค้าเห็น","Remove from what customers see"))}`,
+    mount(){
+      $("oEdit").onclick=()=>openShopEdit(t);
+      $("oGig").onclick=()=>gigForm(null,{tech:t.id});
+      if($("oHide"))$("oHide").onclick=e=>busy(e.currentTarget,async()=>{if(!confirm(T("ซ่อนร้านนี้จากลูกค้า?","Hide this shop from customers?")))return;await api("/api/tech/moderate",{body:{id:t.id,suspend:true}});closeSheet();toast(T("ซ่อนแล้ว","Hidden"));load()});
     }});
 }
 /* ═══ Studio: กดเข้ามาแล้วไปหน้าร้านตัวเองเลย ═══ */
@@ -4592,7 +4627,7 @@ function openTech(id,opt){
 function openStudio(){
   if(!U)return needLogin();
   const t=ME&&ME.technician;
-  if(!t||(t.test&&!(ME&&ME.staff)))return openJoin();
+  if(!t)return openJoin();
   if($("bs").classList.contains("on"))closeSheet();
   if(MODE!=="tech")setMode("tech");else if(DT!=="queue")setTab2("queue");
 }
@@ -5980,7 +6015,7 @@ async function openJoin(){
     <button class="jl" id="jStat"><span class="av sq" style="--c1:#8b5cf6"><i class="ti ti-timeline"></i></span><span class="jb"><b>ดูหน้าสถานะใบสมัคร</b><small>ตัวอย่างทุกสถานะ: รอตรวจ · ต้องแก้ไข · อนุมัติ</small></span><i class="ti ti-chevron-right"></i></button>`,
     mount(){$("jStaff").onclick=testTech;$("jReal").onclick=()=>landing(true);$("jSkip").onclick=e=>busy(e.currentTarget,quickTech);$("jStat").onclick=()=>previewStatus("pending",true)}});
   /* ผ่านการอนุมัติแล้ว มีร้านจริง = เข้า Studio ตรง ๆ (หน้าสถานะใบสมัครมีไว้ตอนยังรอตรวจ/ต้องแก้ไขเท่านั้น) */
-  if(t&&!t.test)return openStudio();
+  if(t&&(!t.test||!(ME&&ME.staff)))return openStudio();
   if(a&&!a.test)return statusPage(a);
   landing();
 }
@@ -6123,8 +6158,8 @@ function statusPage(a,fresh,pv){
   const st=a.status,d=a.submittedAt||a.createdAt;
   const kyc=!pv&&st==="pending"&&a.identity&&a.identity.mode==="didit"?a.identity:null,kycTodo=!!(kyc&&kyc.status!=="approved");
   const kycAt=a.identity&&a.identity.mode==="didit"&&st==="pending"&&!pv?(a.identity.status==="approved"?3:2):2;
-  const n=st==="approved"?5:st==="rejected"?2:kycAt;
-  sheet({push:pv&&pv.push,url:"/join",full:true,title:"ใบสมัครพาร์ทเนอร์",body:(pv?`<div class="seg pvs" id="pvS">${[["pending","รอตรวจ"],["rejected","ต้องแก้ไข"],["approved","อนุมัติ"]].map(([k,l])=>`<button type="button" data-v="${k}" class="${k===pv.st?"on":""}">${l}</button>`).join("")}</div>`:"")+`
+  const n=st==="approved"?5:st==="rejected"||st==="declined"?2:kycAt;
+  sheet({push:pv&&pv.push,url:"/join",full:true,title:"ใบสมัครพาร์ทเนอร์",body:(pv?`<div class="seg pvs" id="pvS">${[["pending","รอตรวจ"],["rejected","ต้องแก้ไข"],["declined","ไม่ผ่าน"],["approved","อนุมัติ"]].map(([k,l])=>`<button type="button" data-v="${k}" class="${k===pv.st?"on":""}">${l}</button>`).join("")}</div>`:"")+`
     ${pv?'<p class="note"><b>โหมดตัวอย่าง UI เท่านั้น</b> · ไม่ส่งใบสมัคร ไม่ตรวจ AI และไม่อนุมัติร้านจริง</p>':st==='pending'&&!kycTodo&&!fresh?`<p class="note">ใบสมัครอยู่ในคิว ทีมงานจะตรวจตัวตน เบอร์โทร ผลงาน และทักษะ</p>`:''}
     ${fresh&&st==='pending'?`<div class="state"><div class="big" style="background:rgba(62,158,110,.14);color:var(--ok)"><i class="ti ti-send"></i></div><h2>ยื่นใบสมัครเรียบร้อย</h2><p>${kycTodo?"เหลืออีก 1 ขั้น: ยืนยันตัวตนกับ Didit":"ทีมงานจะติดต่อกลับภายใน 3 วันทำการ"}</p></div>`:""}
     ${fresh&&kycTodo?`<div class="note"><b><i class="ti ti-id-badge-2"></i> ก่อนเริ่ม</b><br>เตรียมบัตรประชาชนตัวจริง อยู่ในที่แสงเพียงพอ และอนุญาตให้ใช้กล้องหน้าได้ ใช้เวลาประมาณ 2 นาที ปิดหน้านี้ได้ แต่ต้องกลับมายืนยันให้เสร็จก่อนทีมงานจะเริ่มพิจารณา</div>`:""}
@@ -6133,8 +6168,9 @@ function statusPage(a,fresh,pv){
     <div class="appno"><div><small>เลขที่ใบสมัคร</small><b>${esc(a.appNo||"—")}</b></div><div style="text-align:right"><small>วันที่ยื่น</small><b style="font-size:14px">${d?new Date(d).toLocaleDateString(LOC,{day:"numeric",month:"short",year:"numeric"}):"—"}</b></div></div>
     <p class="h4">สถานะการพิจารณา</p>
     <div class="tl">${(kyc?[["ยื่นใบสมัครออนไลน์",esc(a.name)],["ยืนยันตัวตนกับ Didit",kycTodo?"รอคุณยืนยันตัวตน":"ผ่านแล้ว"],["ทีมงานตรวจและโทรยืนยัน","ทีมงานโทรหา "+esc(a.phone||"")],["อนุมัติ เริ่มรับงาน",""]]
-      :[["ยื่นใบสมัครออนไลน์",esc(a.name)],["ตรวจสอบเอกสาร",st==="rejected"?"ต้องแก้ไขเพิ่มเติม":"1–3 วันทำการ"],["โทรยืนยันตัวตนและทักษะ","ทีมงานโทรหา "+esc(a.phone||"")],["อนุมัติ เริ่มรับงาน",st==="approved"?"ร้านของคุณแสดงในแอปแล้ว":""]]).map(([b,s],i)=>`<div data-n="${i+1}" class="${i+1<n?"ok":i+1===n&&st!=="approved"?"on":""}"><b>${b}</b><small>${s}</small></div>`).join("")}</div>
-    ${st==="rejected"&&!(a.review&&a.review.auto)?`<div class="err" style="animation:none"><b>หมายเหตุจากทีมงาน:</b> ${esc(a.review&&a.review.note||"")}</div>`:""}`,
+      :[["ยื่นใบสมัครออนไลน์",esc(a.name)],["ตรวจสอบเอกสาร",st==="rejected"?"ต้องแก้ไขเพิ่มเติม":st==="declined"?"ไม่ผ่านการคัดเลือก":"1–3 วันทำการ"],["โทรยืนยันตัวตนและทักษะ","ทีมงานโทรหา "+esc(a.phone||"")],["อนุมัติ เริ่มรับงาน",st==="approved"?"ร้านของคุณแสดงในแอปแล้ว":""]]).map(([b,s],i)=>`<div data-n="${i+1}" class="${i+1<n?"ok":i+1===n&&st!=="approved"?"on":""}"><b>${b}</b><small>${s}</small></div>`).join("")}</div>
+    ${st==="rejected"&&!(a.review&&a.review.auto)?`<div class="err" style="animation:none"><b>หมายเหตุจากทีมงาน:</b> ${esc(a.review&&a.review.note||"")}</div>`:""}
+    ${st==="declined"?`<div class="err" style="animation:none"><b>ใบสมัครไม่ผ่านการคัดเลือก</b> — ส่งใบสมัครใหม่ไม่ได้${a.review&&a.review.note?`<br>หมายเหตุจากทีมงาน: ${esc(a.review.note)}`:""}<br><small>ถ้าคิดว่าผิดพลาด ติดต่อทีมงานได้ทางหน้าช่วยเหลือ</small></div>`:""}`,
     foot:st==="rejected"?'<button class="btn p w" id="sFix">แก้ไขและยื่นใหม่</button>':st==="approved"?'<button class="btn p w" id="sJobs">เปิดงานของฉัน</button>':'<button class="btn s w" id="sOk">ปิด</button>',
     mount(){if(pv){$("pvS").querySelectorAll("button").forEach(b=>b.onclick=()=>previewStatus(b.dataset.v,false));if($("sFix"))$("sFix").onclick=()=>landing(true);if($("sJobs"))$("sJobs").onclick=()=>{closeSheet();setMode("tech")};if($("sOk"))$("sOk").onclick=()=>closeSheet();return}
       if($("sFix"))$("sFix").onclick=()=>landing(true);if($("sJobs"))$("sJobs").onclick=()=>{closeSheet();openStudio()};if($("sOk"))$("sOk").onclick=()=>closeSheet();
@@ -6171,16 +6207,16 @@ async function quickTech(){
 /* หน้าสถานะใบสมัครแบบตัวอย่าง — ไม่ยื่นจริง ไม่สร้างข้อมูล สลับดูได้ทุกสถานะ */
 function previewStatus(st,push){
   const nm=(APP&&APP.name)||"ตัวอย่าง ผู้สมัคร";
-  statusPage({appNo:"CP-PREVIEW",status:st,name:nm,submittedAt:Date.now(),review:st==="rejected"?{note:"ตัวอย่างหมายเหตุจากทีมงาน: รูปบัตรไม่ชัด กรุณาถ่ายใหม่"}:null},false,{st,push});
+  statusPage({appNo:"CP-PREVIEW",status:st,name:nm,submittedAt:Date.now(),review:st==="rejected"||st==="declined"?{note:"ตัวอย่างหมายเหตุจากทีมงาน: รูปบัตรไม่ชัด กรุณาถ่ายใหม่"}:null},false,{st,push});
 }
 
 function staffBar(){
   const s=$("staff");
   if(!ME||!ME.staff){s.hidden=true;s.innerHTML="";return}
   s.hidden=MODE!=="staff";
-  s.innerHTML=`${ME.admin?`<button id="sTest"><i class="ti ti-shield-check"></i>${ME.technician&&ME.technician.test?"ช่างทีมงานของฉัน":"เป็นช่างทีมงาน"}</button>`:""}<button id="sApps"><i class="ti ti-id-badge-2"></i>ตรวจใบสมัคร<span class="n" id="sN" hidden></span></button><button id="sAll"><i class="ti ti-list-details"></i>งานทั้งหมด</button>`;
+  s.innerHTML=`${ME.admin?`<button id="sTest"><i class="ti ti-shield-check"></i>${ME.technician&&ME.technician.test?"ช่างทีมงานของฉัน":"เป็นช่างทีมงาน"}</button>`:""}<button id="sApps"><i class="ti ti-id-badge-2"></i>ตรวจใบสมัคร<span class="n" id="sAppN" hidden></span></button><button id="sAll"><i class="ti ti-list-details"></i>งานทั้งหมด</button>`;
   if($("sTest"))$("sTest").onclick=testTech;$("sApps").onclick=reviewList;$("sAll").onclick=()=>jobs(true);
-  api("/api/tech/applications").then(d=>{const n=(d.applications||[]).length;if(n&&$("sN")){$("sN").hidden=false;$("sN").textContent=n}}).catch(()=>{});
+  api("/api/tech/applications").then(d=>{const n=(d.applications||[]).length;if(n&&$("sAppN")){$("sAppN").hidden=false;$("sAppN").textContent=n}}).catch(()=>{});
 }
 /* ช่างทีมงาน — ใช้แค่ตำแหน่งอู่ ไม่ต้องมีเอกสาร เห็นเฉพาะทีมงาน Cendon ลูกค้าทั่วไปไม่เห็น */
 function testTech(){
@@ -6264,8 +6300,10 @@ async function reviewOne(a){
     <div id="aiFindings">${reviewFindings(a.ai,a)}</div>
     ${CHECKS.map(([k,l])=>`<section class="sect"><label class="chk"><input type="checkbox" data-k="${k}"/> ${k==="identity"&&isDidit(a)?"Didit ผ่าน · ชื่อและวันเกิดตามบัตรตรงกับใบสมัคร · อายุ 18+":l}</label><select class="inp" data-method="${k}"><option value="">เลือกวิธีที่ตรวจจริง</option>${(k==="identity"&&isDidit(a)?[["didit","ยืนยันผ่าน Didit + ทีมงานตรวจผล"],...REVIEW_METHODS[k]]:REVIEW_METHODS[k]).map(([v,n])=>`<option value="${v}">${n}</option>`).join('')}</select><textarea class="inp" data-evidence="${k}" minlength="20" maxlength="1000" placeholder="บันทึกหลักฐานที่ตรวจจริง อย่างน้อย 20 ตัวอักษร ไม่ใส่เลขบัตรเต็ม"></textarea></section>`).join("")}
     <label class="fld"><span>บันทึก</span><textarea class="inp" id="rvN" placeholder="ตรวจอะไรไปบ้าง / ต้องแก้อะไร (อย่างน้อย 10 ตัวอักษร)"></textarea></label>
-    <p class="note" id="rvWhy"></p>`,
-    foot:'<button class="btn s" id="rvNo">ให้แก้ไข</button><button class="btn p" id="rvOk" disabled>อนุมัติ</button>',
+    <p class="note" id="rvWhy"></p>
+    ${ME&&ME.owner?`<div class="rv-test"><button class="btn s w" id="rvTest" type="button"><i class="ti ti-flask"></i> อนุมัติทดสอบ — ข้ามการตรวจทั้งหมด</button><small>เฉพาะเจ้าของระบบ · ได้ "ร้านทดสอบ" ที่ทีมงานเห็นเท่านั้น ลูกค้าทั่วไปไม่เห็น ไม่มีป้ายยืนยัน · จะเปิดให้ลูกค้าเห็นต้องผ่านการตรวจจริง</small></div>`:""}`,
+    /* คำตัดสิน 3 แบบ: ไม่ผ่าน (ปิดใบสมัคร ส่งใหม่ไม่ได้) · ให้แก้ (ผู้สมัครแก้แล้วส่งใหม่ได้) · อนุมัติ */
+    foot:'<button class="btn s rv-ban" id="rvBan">ไม่ผ่าน</button><button class="btn s" id="rvNo">ให้แก้</button><button class="btn p" id="rvOk" disabled>อนุมัติ</button>',
     mount(b){
       b.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z));
       const boxes=[...b.querySelectorAll("[data-k]")];
@@ -6294,7 +6332,7 @@ async function reviewOne(a){
       };
       bindId();
       b.addEventListener('input',ready);b.addEventListener('change',ready);ready();
-      $("rvNo").disabled=!(ME&&ME.admin)||ME.uid===a.uid;
+      $("rvNo").disabled=$("rvBan").disabled=!(ME&&ME.admin)||ME.uid===a.uid;
       const bindAI=()=>{const btn=$("aiRe");if(!btn)return;btn.onclick=()=>busy(btn,async()=>{const r=await api('/api/tech/rescreen',{body:{uid:a.uid}});a.ai=r.ai;if(r.identity)a.identity=r.identity;
         $("aiBox").innerHTML=aiCard(r.ai);$("aiFindings").innerHTML=reviewFindings(r.ai,a);$("idBox").innerHTML=idPanel(a);bindAI();bindId();ready();
         toast(r.ai&&r.ai.status==='complete'?'AI ตรวจครบแล้ว กรุณาตรวจหลักฐานต่อ':r.ai&&r.ai.status==='skipped'?'ผลล่าสุดแล้ว — AI ไม่ได้ดูรูป ทีมงานตรวจเอง':'AI ยังไม่สำเร็จ ยังอนุมัติไม่ได้')})};bindAI();
@@ -6302,9 +6340,17 @@ async function reviewOne(a){
         const evidence=Object.fromEntries(CHECKS.map(([k])=>[k,{method:b.querySelector(`[data-method="${k}"]`).value,note:b.querySelector(`[data-evidence="${k}"]`).value.trim()}]));
         const resolutions=Object.fromEntries([...b.querySelectorAll('[data-resolution]')].map(x=>[x.dataset.resolution,{outcome:'false_positive',note:x.value.trim()}]));
         await api("/api/tech/review",{body:{uid:a.uid,revision:a.revision,decision,note:$("rvN").value.trim(),checks:Object.fromEntries(boxes.map(x=>[x.dataset.k,x.checked])),evidence,resolutions}});
-        toast(decision==="approve"?"อนุมัติแล้ว":"ส่งกลับให้แก้ไขแล้ว");await load();staffBar();reviewList();
+        toast(decision==="approve"?"อนุมัติแล้ว":decision==="decline"?"บันทึกว่าไม่ผ่านแล้ว":"ส่งกลับให้แก้ไขแล้ว");await load();staffBar();reviewList();
       });
-      $("rvOk").onclick=e=>go("approve",e.currentTarget);$("rvNo").onclick=e=>go("reject",e.currentTarget);
+      /* ส่งกลับ/ไม่ผ่าน ต้องมีเหตุผลให้ผู้สมัครอ่าน (หลังบ้านบังคับ 10 ตัวอักษรเหมือนกัน) — บอกก่อนยิง ไม่ปล่อยให้ error */
+      const why=()=>{if($("rvN").value.trim().length>=10)return true;$("rvWhy").textContent="เขียนเหตุผลในช่องบันทึก (อย่างน้อย 10 ตัวอักษร) — ผู้สมัครจะเห็นข้อความนี้";$("rvN").focus();return false};
+      $("rvOk").onclick=e=>go("approve",e.currentTarget);$("rvNo").onclick=e=>{if(why())go("reject",e.currentTarget)};
+      $("rvBan").onclick=e=>{if(why()&&confirm("ใบสมัครนี้ไม่ผ่าน — ผู้สมัครจะส่งใหม่ไม่ได้อีก ยืนยัน?"))go("decline",e.currentTarget)};
+      /* อนุมัติทดสอบ (เจ้าของระบบ) — ไม่ต้องติ๊ก ไม่ต้องเทียบบัตร ได้ร้านทดสอบที่ลูกค้าไม่เห็น */
+      if($("rvTest"))$("rvTest").onclick=e=>busy(e.currentTarget,async()=>{
+        await api("/api/tech/review",{body:{uid:a.uid,revision:a.revision,decision:"approve_test",note:$("rvN").value.trim()}});
+        toast("อนุมัติทดสอบแล้ว — เปิดเป็นร้านทดสอบ ลูกค้าทั่วไปไม่เห็น");await load();staffBar();reviewList();
+      });
     }});
 }
 
@@ -6314,8 +6360,8 @@ $("bMe").onclick=()=>{
   const t=ME&&ME.technician,a=ME&&ME.application;
   sheet({title:"บัญชี",body:`<div class="who"><span class="av sq" style="--c1:var(--accent)">${initial(U.email)}</span><div><b>${esc(U.displayName||U.email)}</b><small>${esc(U.email)}${ME&&ME.staff?" · ทีมงาน":""}</small></div></div>
     <button class="jl" id="mJobs"><span class="av sq" style="--c1:#2f9bd8"><i class="ti ti-clipboard-list"></i></span><span class="jb"><b>งานของฉัน</b></span><i class="ti ti-chevron-right"></i></button>
-    <button class="jl" id="mJoin"><span class="av sq" style="--c1:#22a06b"><i class="ti ti-tool"></i></span><span class="jb"><b>${t&&!t.test?"Studio — หน้าร้านของฉัน":a&&!a.test?"ใบสมัครพาร์ทเนอร์ ("+({pending:"กำลังพิจารณา",rejected:"ต้องแก้ไข",approved:"อนุมัติแล้ว"}[a.status]||a.status)+")":"สมัครเป็นช่าง"}</b></span><i class="ti ti-chevron-right"></i></button>${ME&&ME.staff?`<button class="jl" id="mStaff"><span class="av sq" style="--c1:#7c5cff"><i class="ti ti-shield-check"></i></span><span class="jb"><b>มุมทีมงาน</b></span><i class="ti ti-chevron-right"></i></button>`:""}`,
-    mount(){$("mJobs").onclick=()=>jobs();$("mJoin").onclick=()=>{if(t&&!t.test||(ME&&ME.staff&&t)){closeSheet();openStudio()}else openJoin()};
+    <button class="jl" id="mJoin"><span class="av sq" style="--c1:#22a06b"><i class="ti ti-tool"></i></span><span class="jb"><b>${t&&(!t.test||!(ME&&ME.staff))?"Studio — หน้าร้านของฉัน":a&&!a.test?"ใบสมัครพาร์ทเนอร์ ("+({pending:"กำลังพิจารณา",rejected:"ต้องแก้ไข",declined:"ไม่ผ่าน",approved:"อนุมัติแล้ว"}[a.status]||a.status)+")":"สมัครเป็นช่าง"}</b></span><i class="ti ti-chevron-right"></i></button>${ME&&ME.staff?`<button class="jl" id="mStaff"><span class="av sq" style="--c1:#7c5cff"><i class="ti ti-shield-check"></i></span><span class="jb"><b>มุมทีมงาน</b></span><i class="ti ti-chevron-right"></i></button>`:""}`,
+    mount(){$("mJobs").onclick=()=>jobs();$("mJoin").onclick=()=>{if(t){closeSheet();openStudio()}else openJoin()};
       if($("mStaff"))$("mStaff").onclick=()=>{closeSheet();setMode("staff")}}});
 };
 
@@ -6328,7 +6374,8 @@ let MODE="customer";
 let BOOT_TECH=/^\/(work|studio)(\/|$)/.test(location.pathname);
 function modesAvail(){
   const m=["customer"];
-  if(ME&&(ME.staff||(ME.technician&&!ME.technician.test)))m.push("tech");
+  /* ร้านทดสอบที่เจ้าของระบบอนุมัติทดสอบให้ผู้สมัคร (ไม่ใช่ทีมงาน) ก็เข้า Studio ได้ — ลองระบบได้ทุกขั้น ลูกค้าทั่วไปไม่เห็น */
+  if(ME&&(ME.staff||ME.technician))m.push("tech");
   if(ME&&ME.staff)m.push("staff");
   return m;
 }
@@ -6668,7 +6715,7 @@ let SHOPED=null;
 /* แท็บร้านของฉัน: ตัวอย่างหน้าร้านแบบที่ลูกค้าเห็น + ปุ่มแก้ไข (ฟอร์มย้ายไปอยู่ในแผ่นแยก ไม่ปนกับหน้าร้าน) */
 function tabShop(){
   const t=myShop(),B=$("dBody"),facts=vetFacts(t),link=location.origin+"/tech/"+encodeURIComponent(t.id);
-  const vet=t.test?[`<i class="ti ti-flask stu-ri" style="color:var(--ink)"></i>`,T("ร้านทดสอบของทีมงาน","Staff test shop"),T("ลูกค้าทั่วไปไม่เห็นร้านนี้ ใช้ทดลองระบบเท่านั้น","Ordinary customers can't see this shop — for testing only")]
+  const vet=t.test?[`<i class="ti ti-flask stu-ri" style="color:var(--ink)"></i>`,ME&&ME.staff?T("ร้านทดสอบของทีมงาน","Staff test shop"):T("ร้านทดลอง","Trial shop"),ME&&ME.staff?T("ลูกค้าทั่วไปไม่เห็นร้านนี้ ใช้ทดลองระบบเท่านั้น","Ordinary customers can't see this shop — for testing only"):T("ลูกค้าทั่วไปยังไม่เห็นร้านนี้ — เปิดให้ลูกค้าเห็นเมื่อผ่านการตรวจจริง","Customers can't see this shop yet — it opens once it passes the full review")]
     :!t.verified?[`<i class="ti ti-hourglass stu-ri"></i>`,T("รอทีมงานตรวจข้อมูล","Waiting for review"),T("ลูกค้าจะเห็นร้านเมื่อผ่านการตรวจแล้ว","Customers see your shop once it's approved")]
     :[`<i class="ti ti-shield so-vi"></i>`,T("ผ่านการตรวจโดยทีมงาน","Approved by the team"),facts.length?facts.map(f=>f[1]).join(" · ")+(t.vetting&&t.vetting.at?T(" · ตรวจเมื่อ "," · checked ")+fmtDay(t.vetting.at):""):T("ลูกค้าเห็นป้ายผ่านการตรวจบนหน้าร้าน","Customers see the approval on your storefront")];
   const row=(id,ic,a,b2)=>`<button class="stu-row" type="button" id="${id}"><span class="stu-ri"><i class="ti ${ic}"></i></span><span class="stu-rb"><b>${a}</b><small>${b2}</small></span><span class="stu-rr"><i class="ti ti-chevron-right"></i></span></button>`;
@@ -6703,12 +6750,14 @@ function shopQr(){
       $("qrDl").onclick=()=>{const c=$("qrB").querySelector("canvas"),im=$("qrB").querySelector("img");const u=c?c.toDataURL("image/png"):im&&im.src;if(!u)return;const a=document.createElement("a");a.href=u;a.download=(t.shop||"cendon")+"-qr.png";a.click()};
     }});
 }
-function openShopEdit(){
-  const t=ME.technician;
+function openShopEdit(t0){
+  /* t0 = ร้านของคนอื่นที่เจ้าของระบบเปิดแก้ (bossMenu) · ไม่ส่ง = ร้านตัวเอง */
+  const boss=!!(t0&&ME&&ME.owner&&!(ME.technician&&ME.technician.id===t0.id));
+  const t=boss?t0:ME.technician;
   /* ร้านที่ผ่านการตรวจแล้ว: ความถนัด งานที่รับ ตำแหน่ง และรูปร้าน/ผลงาน คือหลักฐานที่ตรวจแล้ว — เปลี่ยนต้องให้ทีมงานตรวจใหม่ (backend บังคับเหมือนกัน) */
-  const locked=!t.test;
+  const locked=!t.test&&!(ME&&ME.owner);
   SHOPED={add:[],remove:[],lat:t.lat,lng:t.lng,cover:t.cover||null,newCover:null};
-  sheet({title:T("แก้ไขร้าน","Edit shop"),url:stuUrl("edit"),slug:"edit",full:true,push:true,body:`
+  sheet({title:boss?T("แก้ไขร้าน (เจ้าของระบบ)","Edit shop (owner)"):T("แก้ไขร้าน","Edit shop"),url:boss?undefined:stuUrl("edit"),slug:"edit",full:true,push:true,body:`
     <p class="h4" style="margin-top:0">${T("รูปโปรไฟล์ร้าน","Shop profile photo")}</p>
     <div class="ed-av"><span class="ch-av" id="sAv">${initial(t.shop||t.name)}</span><div><button class="lx-gh" id="sAvB" type="button"><i class="ti ti-camera"></i> ${T("เปลี่ยนรูปโปรไฟล์","Change photo")}</button><small>${T("แนะนำโลโก้ร้านหรือรูปหน้าร้าน","Your logo or storefront")}</small></div></div><input type="file" id="sAvF" accept="image/*" hidden data-crop="1:1" data-crop-round data-crop-w="640" data-crop-title="${T("รูปโปรไฟล์ร้าน","Shop photo")}"/>
     <p class="h4" hidden>${T("รูปปก (แบนเนอร์)","Cover banner")}</p>
@@ -6755,17 +6804,25 @@ function openShopEdit(){
     let pos={lat:SHOPED.lat,lng:SHOPED.lng};sheet({push:true,slug:"location",title:T("ตำแหน่งร้าน","Shop location"),body:'<div class="picker" id="lMap"></div><p class="coord" id="lXY"></p><button class="btn s w" id="lGps"><i class="ti ti-current-location"></i> '+T("ใช้ตำแหน่งปัจจุบัน","Use my location")+'</button>',
     foot:`<button class="btn p w" id="lOk">${T("ใช้ตำแหน่งนี้","Use this location")}</button>`,mount(){const pk=picker($("lMap"),pos.lat?pos:null,p=>{pos=p;$("lXY").textContent=p.lat.toFixed(5)+", "+p.lng.toFixed(5)});
       $("lGps").onclick=e=>busy(e.currentTarget,async()=>{const p=await locate();if(p)pk.set(p)});$("lOk").onclick=()=>{SHOPED.lat=pos.lat;SHOPED.lng=pos.lng;back();toast(T("ย้ายตำแหน่งแล้ว กดบันทึกร้าน","Moved — tap Save shop"))}}})};
-  $("sSave").onclick=e=>busy(e.currentTarget,async()=>{
-    try{await api("/api/tech/shop",{body:{shop:$("sN").value,about:$("sA").value,from:+$("sF").value||0,warranty:+$("sW").value||0,radius:+$("sR").value||0,hours:$("sH").value,
+  /* เจ้าของระบบแก้ร้านคนอื่น: ฟอร์มเห็นแค่ข้อมูลสาธารณะ — ส่งเฉพาะช่องที่เปลี่ยนจริง กันช่องที่ซ่อนอยู่ (เช่นเบอร์ที่ไม่เปิด) ถูกล้างเป็นค่าว่าง */
+  const collect=()=>({shop:$("sN").value,about:$("sA").value,from:+$("sF").value||0,warranty:+$("sW").value||0,radius:+$("sR").value||0,hours:$("sH").value,
       cats:[...$("sC").querySelectorAll(".on")].map(b=>b.dataset.v),mobile:$("sM").querySelector('[data-v="mobile"]').classList.contains("on"),urgent:$("sM").querySelector('[data-v="urgent"]').classList.contains("on"),
       lat:SHOPED.lat,lng:SHOPED.lng,addPhotos:SHOPED.add,removePhotos:SHOPED.remove,
       phone:$("sTel").value,showPhone:$("sShowTel").checked,
       subs:[...$("sSub").querySelectorAll(".on")].map(b=>b.dataset.v),brands2:$("sBr").value.split(",").map(x=>x.trim()).filter(Boolean),
       week:[...$("sWk").querySelectorAll(".wkr")].map(r=>{const i=r.querySelectorAll("input");return {on:i[0].checked,open:i[1].value,close:i[2].value}}),
       line:$("sLine").value,facebook:$("sFb").value,address:$("sAddr").value,...(SHOPED.newAvatar?{addAvatar:SHOPED.newAvatar}:{}),
-      ...(SHOPED.newCover?{addCover:SHOPED.newCover}:{cover:SHOPED.remove.includes(SHOPED.cover)?0:(SHOPED.cover||0)})}})}
+      ...(SHOPED.newCover?{addCover:SHOPED.newCover}:{cover:SHOPED.remove.includes(SHOPED.cover)?0:(SHOPED.cover||0)})});
+  /* ค่าตั้งต้นจับครั้งเดียวตอนเปิดฟอร์มครั้งแรก — กลับจากเลือกตำแหน่งแล้วฟอร์มวาดใหม่ ต้องไม่ถือว่าค่าที่แก้ไว้คือค่าเดิม */
+  if(!SHOPED.base)SHOPED.base=JSON.parse(JSON.stringify(collect()));const start=SHOPED.base;
+  $("sSave").onclick=e=>busy(e.currentTarget,async()=>{
+    let body=collect();
+    if(boss){const ch={tech:t.id};for(const[k,v]of Object.entries(body))if(JSON.stringify(v)!==JSON.stringify(start[k])&&!(Array.isArray(v)&&!v.length&&start[k]===undefined))ch[k]=v;body=ch}
+    try{await api("/api/tech/shop",{body})}
     catch(err){$("sErr").textContent=tr(err.message);throw err}
-    toast(T("บันทึกร้านแล้ว","Shop saved"));await refreshMe();await load();closeSheet();if(MODE==="tech")drawTab();
+    toast(T("บันทึกร้านแล้ว","Shop saved"));
+    if(boss){closeSheet();await load();openTech(t.id);return}
+    await refreshMe();await load();closeSheet();if(MODE==="tech")drawTab();
   });
   }});
 }
@@ -6887,7 +6944,10 @@ async function refreshMe(){
   const t=ME&&ME.technician,a=ME&&ME.application;
   /* เปิดลิงก์หน้าร้าน/บริการของตัวเองตรง ๆ: หน้านั้นวาดก่อนรู้ว่าเป็นเจ้าของ — วาดใหม่ให้มีปุ่มของเจ้าของ (แก้ไข · สปอนเซอร์) */
   {const oc=$("bs").classList.contains("on")&&SH.cur;
-   if(oc&&!oc.owner&&t){if(oc.shop===t.id)openTech(oc.shop);else if(oc.gig){const g=(GIGS||[]).find(x=>x.id==oc.gig);if(g&&g.tech&&g.tech.id===t.id)openGig(oc.gig)}}}
+   const og=oc&&oc.gig?(GIGS||[]).find(x=>x.id==oc.gig):null,mineOpen=!!(t&&oc&&(oc.shop===t.id||(og&&og.tech&&og.tech.id===t.id)));
+   if(oc&&!oc.owner&&mineOpen){if(oc.shop)openTech(oc.shop);else openGig(oc.gig)}
+   /* เจ้าของระบบเปิดลิงก์ร้าน/บริการของคนอื่นตรง ๆ: วาดใหม่ให้มีเครื่องมือเจ้าของระบบ */
+   else if(oc&&!oc.owner&&!oc.boss&&ME&&ME.owner){if(oc.shop)openTech(oc.shop);else if(oc.gig)openGig(oc.gig)}}
   /* หน้าบัญชี (มือถือ) อ่านค่านี้เพื่อเขียนปุ่มว่า "สมัครเป็นช่าง" หรือ "Studio" — เก็บแค่สถานะ ไม่มีข้อมูลส่วนตัว */
   if(ME)try{localStorage.setItem("spire_partner",JSON.stringify({uid:U.uid,s:t&&(!t.test||ME.staff)?"shop":a&&!a.test?a.status:"none"}))}catch(e){}
   $("joinT").textContent=t&&!t.test?"พื้นที่พาร์ทเนอร์":a&&!a.test&&a.status==="pending"?"ใบสมัครกำลังพิจารณา":"ร่วมเป็นพาร์ทเนอร์ช่าง";

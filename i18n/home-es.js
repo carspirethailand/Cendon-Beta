@@ -1459,5 +1459,20 @@ window.CENDON_L10N={lang:"es",t:{
 "Send the first message":"Envía el primer mensaje",
 "This job is finished — the chat is kept for reference and can’t take new messages":"Este trabajo terminó — el chat se guarda como referencia y no admite mensajes nuevos",
 "This request expired — no new messages. Ask for a new quote if you still need help":"Esta solicitud caducó — no admite mensajes nuevos. Pide un nuevo presupuesto si aún necesitas ayuda",
-"This job was cancelled — no new messages":"Este trabajo se canceló — no admite mensajes nuevos"
+"This job was cancelled — no new messages":"Este trabajo se canceló — no admite mensajes nuevos",
+"Edit (owner)":"Editar (propietario)",
+"Delete":"Eliminar",
+"Hide this review? It disappears everywhere and leaves the shop rating":"¿Ocultar esta reseña? Desaparece en todas partes y deja de contar en la calificación del taller",
+"Review hidden":"Reseña oculta",
+"Hide":"Ocultar",
+"Trial shop":"Taller de prueba",
+"Customers can't see this shop yet — it opens once it passes the full review":"Los clientes aún no ven este taller — se abrirá cuando pase la revisión completa",
+"Owner tools":"Herramientas del propietario",
+"Every change to someone else's shop is logged":"Cada cambio en el taller de otra persona queda registrado",
+"Name, expertise, categories, location, photos, hours":"Nombre, especialidad, categorías, ubicación, fotos, horario",
+"Add a service for this shop":"Añadir un servicio a este taller",
+"The service belongs to this shop":"El servicio pertenece a este taller",
+"Remove from what customers see":"Quitar de lo que ven los clientes",
+"Hide this shop from customers?":"¿Ocultar este taller a los clientes?",
+"Edit shop (owner)":"Editar taller (propietario)"
 }};

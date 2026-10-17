@@ -1459,5 +1459,20 @@ window.CENDON_L10N={lang:"ms",t:{
 "Send the first message":"Hantar mesej pertama",
 "This job is finished — the chat is kept for reference and can’t take new messages":"Kerja ini telah selesai — sembang disimpan sebagai rujukan dan tidak boleh menerima mesej baharu",
 "This request expired — no new messages. Ask for a new quote if you still need help":"Permintaan ini telah tamat tempoh — tiada mesej baharu. Minta sebut harga baharu jika masih perlukan bantuan",
-"This job was cancelled — no new messages":"Kerja ini telah dibatalkan — tiada mesej baharu"
+"This job was cancelled — no new messages":"Kerja ini telah dibatalkan — tiada mesej baharu",
+"Edit (owner)":"Edit (pemilik)",
+"Delete":"Padam",
+"Hide this review? It disappears everywhere and leaves the shop rating":"Sembunyikan ulasan ini? Ulasan hilang di semua tempat dan tidak dikira dalam penarafan kedai",
+"Review hidden":"Ulasan disembunyikan",
+"Hide":"Sembunyikan",
+"Trial shop":"Kedai percubaan",
+"Customers can't see this shop yet — it opens once it passes the full review":"Pelanggan belum dapat melihat kedai ini — dibuka selepas lulus semakan penuh",
+"Owner tools":"Alat pemilik",
+"Every change to someone else's shop is logged":"Setiap perubahan pada kedai orang lain direkodkan",
+"Name, expertise, categories, location, photos, hours":"Nama, kepakaran, kategori, lokasi, foto, waktu operasi",
+"Add a service for this shop":"Tambah perkhidmatan untuk kedai ini",
+"The service belongs to this shop":"Perkhidmatan ini milik kedai ini",
+"Remove from what customers see":"Keluarkan daripada senarai yang dilihat pelanggan",
+"Hide this shop from customers?":"Sembunyikan kedai ini daripada pelanggan?",
+"Edit shop (owner)":"Edit kedai (pemilik)"
 }};

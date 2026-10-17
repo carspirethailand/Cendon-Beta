@@ -1459,5 +1459,20 @@ window.CENDON_L10N={lang:"ja",t:{
 "Send the first message":"最初のメッセージを送りましょう",
 "This job is finished — the chat is kept for reference and can’t take new messages":"この作業は完了しました — チャットは記録として残り、新しいメッセージは送れません",
 "This request expired — no new messages. Ask for a new quote if you still need help":"このリクエストは期限切れです — 新しいメッセージは送れません。まだ必要なら新しい見積もりを依頼してください",
-"This job was cancelled — no new messages":"この作業はキャンセルされました — 新しいメッセージは送れません"
+"This job was cancelled — no new messages":"この作業はキャンセルされました — 新しいメッセージは送れません",
+"Edit (owner)":"編集（オーナー）",
+"Delete":"削除",
+"Hide this review? It disappears everywhere and leaves the shop rating":"このレビューを非表示にしますか？すべての場所から消え、店舗の評価からも除外されます",
+"Review hidden":"レビューを非表示にしました",
+"Hide":"非表示",
+"Trial shop":"お試し店舗",
+"Customers can't see this shop yet — it opens once it passes the full review":"この店舗はまだお客様に表示されません — 本審査に通過すると公開されます",
+"Owner tools":"オーナーツール",
+"Every change to someone else's shop is logged":"他の人の店舗への変更はすべて記録されます",
+"Name, expertise, categories, location, photos, hours":"名前、得意分野、カテゴリー、所在地、写真、営業時間",
+"Add a service for this shop":"この店舗にサービスを追加",
+"The service belongs to this shop":"サービスはこの店舗のものになります",
+"Remove from what customers see":"お客様に表示される一覧から外す",
+"Hide this shop from customers?":"この店舗をお客様から非表示にしますか？",
+"Edit shop (owner)":"店舗を編集（オーナー）"
 }};

@@ -1459,5 +1459,20 @@ window.CENDON_L10N={lang:"vi",t:{
 "Send the first message":"Gửi tin nhắn đầu tiên",
 "This job is finished — the chat is kept for reference and can’t take new messages":"Công việc đã hoàn tất — cuộc trò chuyện được lưu để tham khảo và không thể gửi tin mới",
 "This request expired — no new messages. Ask for a new quote if you still need help":"Yêu cầu này đã hết hạn — không thể gửi tin mới. Hãy yêu cầu báo giá mới nếu vẫn cần",
-"This job was cancelled — no new messages":"Công việc này đã bị hủy — không thể gửi tin mới"
+"This job was cancelled — no new messages":"Công việc này đã bị hủy — không thể gửi tin mới",
+"Edit (owner)":"Sửa (chủ sở hữu)",
+"Delete":"Xóa",
+"Hide this review? It disappears everywhere and leaves the shop rating":"Ẩn đánh giá này? Đánh giá sẽ biến mất ở mọi nơi và không còn tính vào điểm của cửa hàng",
+"Review hidden":"Đã ẩn đánh giá",
+"Hide":"Ẩn",
+"Trial shop":"Cửa hàng dùng thử",
+"Customers can't see this shop yet — it opens once it passes the full review":"Khách hàng chưa thấy cửa hàng này — sẽ mở sau khi qua kiểm duyệt đầy đủ",
+"Owner tools":"Công cụ chủ sở hữu",
+"Every change to someone else's shop is logged":"Mọi thay đổi trên cửa hàng của người khác đều được ghi lại",
+"Name, expertise, categories, location, photos, hours":"Tên, chuyên môn, danh mục, vị trí, ảnh, giờ mở cửa",
+"Add a service for this shop":"Thêm dịch vụ cho cửa hàng này",
+"The service belongs to this shop":"Dịch vụ thuộc về cửa hàng này",
+"Remove from what customers see":"Gỡ khỏi danh sách khách hàng nhìn thấy",
+"Hide this shop from customers?":"Ẩn cửa hàng này khỏi khách hàng?",
+"Edit shop (owner)":"Sửa cửa hàng (chủ sở hữu)"
 }};

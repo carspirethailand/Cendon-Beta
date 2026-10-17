@@ -2853,6 +2853,8 @@ function posInfo(u){ return POSITIONS[posOf(u)]||NOT_TEAM }
 const ALL_TEAM=["recruit"];
 function can(mod){
   if(!me)return false;
+  /* เจ้าของบริษัท (ยศ owner — เซิร์ฟเวอร์ให้เฉพาะอีเมลเจ้าของที่ยืนยันแล้ว) เห็นทุกหน้าเสมอ ไม่ว่าตั้งตำแหน่งไว้เป็นอะไร */
+  if(me.role==="owner")return true;
   if(ALL_TEAM.includes(mod))return isTeam(me);
   const inf=posInfo(me);
   if(!inf||!inf.can)return false;
@@ -3106,7 +3108,8 @@ const NDA_AREAS={
 const NDA_VER=1;
 let NDA_OK=false, ndaPad=null, ndaInk=[], ndaOn=false, ndaWant=null;
 
-function ndaNeeded(tab){ return !!NDA_AREAS[tab]&&!NDA_OK }
+/* เจ้าของบริษัทไม่ต้องเซ็นรักษาความลับข้อมูลของบริษัทตัวเอง */
+function ndaNeeded(tab){ return !!NDA_AREAS[tab]&&!NDA_OK&&!(me&&me.role==="owner") }
 function ndaSetup(){
   const c=$("ndaSig"); if(!c)return;
   const r=c.getBoundingClientRect(), dpr=window.devicePixelRatio||1;

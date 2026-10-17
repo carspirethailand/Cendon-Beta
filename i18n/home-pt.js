@@ -1459,5 +1459,20 @@ window.CENDON_L10N={lang:"pt",t:{
 "Send the first message":"Envie a primeira mensagem",
 "This job is finished — the chat is kept for reference and can’t take new messages":"Este serviço foi concluído — o chat fica guardado para consulta e não aceita novas mensagens",
 "This request expired — no new messages. Ask for a new quote if you still need help":"Este pedido expirou — sem novas mensagens. Peça um novo orçamento se ainda precisar de ajuda",
-"This job was cancelled — no new messages":"Este serviço foi cancelado — sem novas mensagens"
+"This job was cancelled — no new messages":"Este serviço foi cancelado — sem novas mensagens",
+"Edit (owner)":"Editar (proprietário)",
+"Delete":"Excluir",
+"Hide this review? It disappears everywhere and leaves the shop rating":"Ocultar esta avaliação? Ela some em todos os lugares e deixa de contar na nota da oficina",
+"Review hidden":"Avaliação ocultada",
+"Hide":"Ocultar",
+"Trial shop":"Oficina de teste",
+"Customers can't see this shop yet — it opens once it passes the full review":"Os clientes ainda não veem esta oficina — ela abre após passar na revisão completa",
+"Owner tools":"Ferramentas do proprietário",
+"Every change to someone else's shop is logged":"Toda alteração na oficina de outra pessoa é registrada",
+"Name, expertise, categories, location, photos, hours":"Nome, especialidade, categorias, localização, fotos, horário",
+"Add a service for this shop":"Adicionar um serviço a esta oficina",
+"The service belongs to this shop":"O serviço pertence a esta oficina",
+"Remove from what customers see":"Remover do que os clientes veem",
+"Hide this shop from customers?":"Ocultar esta oficina dos clientes?",
+"Edit shop (owner)":"Editar oficina (proprietário)"
 }};

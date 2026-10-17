@@ -1459,5 +1459,20 @@ window.CENDON_L10N={lang:"zh",t:{
 "Send the first message":"发送第一条消息吧",
 "This job is finished — the chat is kept for reference and can’t take new messages":"此工单已完成 — 聊天记录保留供查阅，无法再发送新消息",
 "This request expired — no new messages. Ask for a new quote if you still need help":"此请求已过期 — 无法发送新消息。如仍需帮助，请重新询价",
-"This job was cancelled — no new messages":"此工单已取消 — 无法发送新消息"
+"This job was cancelled — no new messages":"此工单已取消 — 无法发送新消息",
+"Edit (owner)":"编辑（所有者）",
+"Delete":"删除",
+"Hide this review? It disappears everywhere and leaves the shop rating":"隐藏此评价？它将在所有地方消失，并从店铺评分中移除",
+"Review hidden":"评价已隐藏",
+"Hide":"隐藏",
+"Trial shop":"试用店铺",
+"Customers can't see this shop yet — it opens once it passes the full review":"顾客暂时看不到此店铺 — 通过完整审核后才会开放",
+"Owner tools":"所有者工具",
+"Every change to someone else's shop is logged":"对他人店铺的每次修改都会被记录",
+"Name, expertise, categories, location, photos, hours":"名称、专长、类别、位置、照片、营业时间",
+"Add a service for this shop":"为此店铺添加服务",
+"The service belongs to this shop":"该服务属于此店铺",
+"Remove from what customers see":"从顾客可见的列表中移除",
+"Hide this shop from customers?":"向顾客隐藏此店铺？",
+"Edit shop (owner)":"编辑店铺（所有者）"
 }};

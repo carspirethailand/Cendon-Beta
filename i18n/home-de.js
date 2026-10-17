@@ -1459,5 +1459,20 @@ window.CENDON_L10N={lang:"de",t:{
 "Send the first message":"Schick die erste Nachricht",
 "This job is finished — the chat is kept for reference and can’t take new messages":"Dieser Auftrag ist abgeschlossen — der Chat bleibt zum Nachlesen, neue Nachrichten sind nicht möglich",
 "This request expired — no new messages. Ask for a new quote if you still need help":"Diese Anfrage ist abgelaufen — keine neuen Nachrichten. Fordere ein neues Angebot an, wenn du noch Hilfe brauchst",
-"This job was cancelled — no new messages":"Dieser Auftrag wurde storniert — keine neuen Nachrichten"
+"This job was cancelled — no new messages":"Dieser Auftrag wurde storniert — keine neuen Nachrichten",
+"Edit (owner)":"Bearbeiten (Inhaber)",
+"Delete":"Löschen",
+"Hide this review? It disappears everywhere and leaves the shop rating":"Diese Bewertung ausblenden? Sie verschwindet überall und zählt nicht mehr zur Werkstattbewertung",
+"Review hidden":"Bewertung ausgeblendet",
+"Hide":"Ausblenden",
+"Trial shop":"Probewerkstatt",
+"Customers can't see this shop yet — it opens once it passes the full review":"Kunden sehen diese Werkstatt noch nicht — sie wird nach der vollständigen Prüfung freigeschaltet",
+"Owner tools":"Inhaber-Werkzeuge",
+"Every change to someone else's shop is logged":"Jede Änderung an der Werkstatt einer anderen Person wird protokolliert",
+"Name, expertise, categories, location, photos, hours":"Name, Fachgebiet, Kategorien, Standort, Fotos, Öffnungszeiten",
+"Add a service for this shop":"Leistung für diese Werkstatt hinzufügen",
+"The service belongs to this shop":"Die Leistung gehört zu dieser Werkstatt",
+"Remove from what customers see":"Aus der Ansicht für Kunden entfernen",
+"Hide this shop from customers?":"Diese Werkstatt vor Kunden ausblenden?",
+"Edit shop (owner)":"Werkstatt bearbeiten (Inhaber)"
 }};

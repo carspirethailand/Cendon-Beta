@@ -1459,5 +1459,20 @@ window.CENDON_L10N={lang:"fr",t:{
 "Send the first message":"Envoyez le premier message",
 "This job is finished — the chat is kept for reference and can’t take new messages":"Cette intervention est terminée — la discussion est conservée pour référence et ne peut plus recevoir de messages",
 "This request expired — no new messages. Ask for a new quote if you still need help":"Cette demande a expiré — plus de nouveaux messages. Demandez un nouveau devis si vous avez encore besoin d’aide",
-"This job was cancelled — no new messages":"Cette intervention a été annulée — plus de nouveaux messages"
+"This job was cancelled — no new messages":"Cette intervention a été annulée — plus de nouveaux messages",
+"Edit (owner)":"Modifier (propriétaire)",
+"Delete":"Supprimer",
+"Hide this review? It disappears everywhere and leaves the shop rating":"Masquer cet avis ? Il disparaît partout et n'est plus compté dans la note de l'atelier",
+"Review hidden":"Avis masqué",
+"Hide":"Masquer",
+"Trial shop":"Atelier d'essai",
+"Customers can't see this shop yet — it opens once it passes the full review":"Les clients ne voient pas encore cet atelier — il ouvrira après la vérification complète",
+"Owner tools":"Outils du propriétaire",
+"Every change to someone else's shop is logged":"Chaque modification de l'atelier d'une autre personne est enregistrée",
+"Name, expertise, categories, location, photos, hours":"Nom, expertise, catégories, emplacement, photos, horaires",
+"Add a service for this shop":"Ajouter un service pour cet atelier",
+"The service belongs to this shop":"Le service appartient à cet atelier",
+"Remove from what customers see":"Retirer de ce que voient les clients",
+"Hide this shop from customers?":"Masquer cet atelier aux clients ?",
+"Edit shop (owner)":"Modifier l'atelier (propriétaire)"
 }};

@@ -60,5 +60,5 @@ test('skip/disable/enable preferences are real authenticated requests, not fabri
 });
 test('paired assets load before transport on Home/Chat and selected car is passed to the scheduler',()=>{
   for(const page of ['index.html','chat.html']){const s=readFileSync(new URL('../'+page,import.meta.url),'utf8');assert.ok(s.indexOf('<script src="garage-care.js?v=1"')<s.indexOf('<script src="call-session.js?v=2026-10-17-r7"'));assert.match(s,/getUser:[^\n]+getCar:/);}
-  const sw=readFileSync(new URL('../sw.js',import.meta.url),'utf8');assert.match(sw,/cendon-v302-garage-care/);assert.match(sw,/garage-care\.js\?v=1/);
+  const sw=readFileSync(new URL('../sw.js',import.meta.url),'utf8');assert.match(sw,/cendon-v303-garage-care/);assert.match(sw,/garage-care\.js\?v=1/);
 });

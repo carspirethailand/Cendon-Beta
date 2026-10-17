@@ -204,10 +204,11 @@ function mountPass(c){
 /* ═════════════════ 1) Cendon Wrapped ═════════════════ */
 const WY=()=>{const n=new Date();return n.getMonth()===0?n.getFullYear()-1:n.getFullYear()};
 const MONTHS=()=>Array.from({length:12},(_,i)=>new Date(2026,i,1).toLocaleDateString(LOC(),{month:'short'}));
-function yearStats(Y){
+/* only = รหัสรถ → สรุปเฉพาะคันนั้น (Wrap ของคันนี้ จากการพลิกการ์ด) · ไม่ใส่ = ทุกคันรวมกัน */
+function yearStats(Y,only){
   const ys=String(Y),inY=x=>String(x&&x.date||'').startsWith(ys);
-  const out={Y,km:0,fuel:0,litres:0,refuels:0,svc:0,svcCost:0,trips:0,tripKm:0,longest:null,months:Array(12).fill(0),monthsCost:Array(12).fill(0),top:{},cars:[],topCar:null,entries:0};
-  for(const c of cars()){
+  const out={Y,only:only||null,km:0,fuel:0,litres:0,refuels:0,svc:0,svcCost:0,trips:0,tripKm:0,longest:null,months:Array(12).fill(0),monthsCost:Array(12).fill(0),top:{},cars:[],topCar:null,entries:0};
+  for(const c of cars().filter(c=>!only||c.id===only)){
     const L=logOf(c),F=L.fuel.filter(inY),S=L.services.filter(inY),R=L.trips.filter(inY);
     const reads=[...F,...S].filter(x=>+x.km>0).map(x=>+x.km);
     const odo=reads.length>1?Math.max(...reads)-Math.min(...reads):0,tk=R.reduce((a,t)=>a+(+t.km||0),0);
@@ -234,8 +235,9 @@ function ruleName(s){
   if(s.km>0&&s.km<6000)return {nickname:T('สายชิลในเมือง','The City Cruiser'),line:T(`${num(s.km)} กม. แบบสบาย ๆ ไม่เร่งไม่รีบ`,`${num(s.km)} km, nice and easy`)};
   return {nickname:T('คู่หูประจำวัน','The Daily Companion'),line:T('อยู่ด้วยกันทุกวัน ปีหน้าบันทึกให้ครบ จะได้เห็นเรื่องราวของรถชัดขึ้น','Always there — log more next year to see the full story')};
 }
+const nickKey=s=>'wrapped_'+s.Y+(s.only?'_'+s.only:'');
 async function nickname(s){
-  const key='wrapped_'+s.Y,sig=[s.km,s.fuel,s.svc,s.trips,s.refuels].join('|'),hit=LG(key,null);
+  const key=nickKey(s),sig=[s.km,s.fuel,s.svc,s.trips,s.refuels].join('|'),hit=LG(key,null);
   if(hit&&hit.sig===sig&&hit.nickname)return hit;
   try{
     const top=s.topCar&&s.topCar.c;
@@ -259,14 +261,16 @@ function countUp(el,to,ms){
   if(matchMedia('(prefers-reduced-motion:reduce)').matches){el.textContent=fmt.replace('#',num(to));return}requestAnimationFrame(step);
 }
 let WR=null;
-async function wrapped(){
+/* opt.car = รหัสรถ → Wrap ของคันนั้นคันเดียว (กดจากแบนเนอร์ = ทุกคันรวมกัน · onclick ส่ง event มา จึงเช็กก่อน) */
+async function wrapped(opt){
   if(WR)return;
-  const s=yearStats(WY());
+  opt=opt&&opt.car?opt:{};
+  const s=yearStats(WY(),opt.car);
   const W=D.createElement('div');W.className='wr';W.setAttribute('role','dialog');W.setAttribute('aria-modal','true');W.setAttribute('aria-label','Cendon Wrapped '+s.Y);
-  const top=s.topCar&&s.topCar.c,empty=s.entries<3;
+  const top=s.topCar&&s.topCar.c,empty=s.entries<3,one=!!(s.only&&top);
   const bkk=Math.round(s.km/690*10)/10;
   const slides=[];
-  slides.push({cls:'s-intro',html:`<div class="wr-in"><span class="wr-kick lat">CENDON WRAPPED</span><b class="wr-year">${s.Y}</b><p>${empty?T('ปีนี้รถของคุณมีเรื่องเล่าน้อยไปหน่อย…','Your car kept a low profile this year…'):T('ปีนี้รถของคุณมีเรื่องจะเล่า','Your car has a story to tell')}</p>${top?`<small>${esc(nameOf(top))}${s.cars.length>1?T(` และอีก ${s.cars.length-1} คัน`,` + ${s.cars.length-1} more`):''}</small>`:''}</div>`});
+  slides.push({cls:'s-intro',html:`<div class="wr-in"><span class="wr-kick lat">CENDON WRAPPED</span><b class="wr-year">${s.Y}</b><p>${empty?(one?T(`ปีนี้ ${esc(nameOf(top))} มีเรื่องเล่าน้อยไปหน่อย…`,`${esc(nameOf(top))} kept a low profile this year…`):T('ปีนี้รถของคุณมีเรื่องเล่าน้อยไปหน่อย…','Your car kept a low profile this year…')):(one?T(`ปีนี้ ${esc(nameOf(top))} มีเรื่องจะเล่า`,`${esc(nameOf(top))} has a story to tell`):T('ปีนี้รถของคุณมีเรื่องจะเล่า','Your car has a story to tell'))}</p>${top&&!one?`<small>${esc(nameOf(top))}${s.cars.length>1?T(` และอีก ${s.cars.length-1} คัน`,` + ${s.cars.length-1} more`):''}</small>`:''}</div>`});
   if(s.km>0)slides.push({cls:'s-km',html:`<div class="wr-in"><span class="wr-kick">${T('ระยะทางทั้งปี','Distance this year')}</span><b class="wr-big" data-n="${Math.round(s.km)}" data-fmt="#"></b><em>${T('กิโลเมตร','kilometres')}</em><p>${bkk>=1?T(`เท่ากับขับ กรุงเทพ–เชียงใหม่ ${num(bkk)} เที่ยว`,`That's Bangkok–Chiang Mai ${bkk} times`):T('ทุกกิโลเมตรมีความหมาย','Every kilometre counts')}</p><small>${T('จากเลขไมล์และทริปที่บันทึก','From your logged mileage and trips')}</small></div>`});
   if(s.fuel>0)slides.push({cls:'s-fuel',html:`<div class="wr-in"><span class="wr-kick">${T('ค่าน้ำมันทั้งปี','Fuel this year')}</span><b class="wr-big" data-n="${Math.round(s.fuel)}" data-fmt="฿#"></b><p>${T(`เติม ${s.refuels} ครั้ง`,`${s.refuels} fill-ups`)}${s.litres>0?T(` · ${num(s.litres)} ลิตร · เฉลี่ย ฿${(s.fuel/s.litres).toFixed(2)}/ลิตร`,` · ${num(s.litres)} L · avg ฿${(s.fuel/s.litres).toFixed(2)}/L`):''}</p><small>${T(`เท่ากับกาแฟเย็น ~${num(s.fuel/60)} แก้ว`,`About ${num(s.fuel/60)} iced coffees`)}</small></div>`});
   if(s.trips>0)slides.push({cls:'s-trip',html:`<div class="wr-in"><span class="wr-kick">${T('ทริปที่บันทึก','Trips logged')}</span><b class="wr-big" data-n="${s.trips}" data-fmt="#"></b><em>${T('ทริป','trips')}</em>${s.longest&&s.longest.km?`<div class="wr-chip"><i class="ti ti-route-2"></i><div><small>${T('ไกลที่สุด','Longest')}</small><b>${esc(s.longest.title||T('ทริปไม่มีชื่อ','Untitled trip'))} · ${num(s.longest.km)} ${T('กม.','km')}</b></div></div>`:''}</div>`});
@@ -283,6 +287,9 @@ async function wrapped(){
     <div class="wr-stage">${slides.map((x,i)=>`<section class="wr-s ${x.cls}" data-i="${i}">${x.html}</section>`).join('')}</div>
     <button type="button" class="wr-tap l" aria-label="${T('ก่อนหน้า','Previous')}"></button><button type="button" class="wr-tap r" aria-label="${T('ถัดไป','Next')}"></button>`;
   D.body.appendChild(W);D.body.style.overflow='hidden';fx.start(W);
+  /* ซ่อนหน้าการาจด้านหลังทั้งหมดระหว่างดู — Safari บนไอโฟนวาดชั้นสีรถ (ผสมสีแบบคูณ + หน้ากากรูป) ทะลุขึ้นมาทับสตอรี่ได้
+     คนที่เลือกสีแดงให้รถจึงเห็นสีแดงบังจอ · หน้าด้านหลังถูกบังอยู่แล้ว ซ่อนไปก็ไม่มีใครเห็นต่าง */
+  D.documentElement.classList.add('wr-open');
   WR={W,i:-1,t:0,paused:false,start:0,left:0,DUR:5200,name:null};
   const bars=[...W.querySelectorAll('.wr-bars i b')],S=[...W.querySelectorAll('.wr-s')];
   const nameP=nickname(s).then(n=>{WR&&(WR.name=n);const a=$('wrName'),b=$('wrLine'),c=$('wrCName');if(a)a.textContent=n.nickname;if(b)b.textContent=n.line;if(c)c.textContent=n.nickname;return n});
@@ -303,7 +310,7 @@ async function wrapped(){
   W.querySelector('.wr-x').onclick=()=>closeWrapped(true);
   W.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(WR.i+1);if(e.key==='ArrowLeft')go(WR.i-1);if(e.key==='Escape')closeWrapped(true)});
   $('wrAgain').onclick=()=>go(0);
-  const file=async()=>{const n=await nameP;const blob=await shareImage(s,n);return new File([blob],`cendon-wrapped-${s.Y}.png`,{type:'image/png'})};
+  const file=async()=>{const n=await nameP;const blob=await shareImage(s,n);return new File([blob],`cendon-wrapped-${s.Y}${one?'-'+String(nameOf(top)).replace(/[^\w\u0E00-\u0E7F-]+/g,'-').slice(0,40):''}.png`,{type:'image/png'})};
   $('wrSave').onclick=async()=>{const f=await file();const a=D.createElement('a');a.href=URL.createObjectURL(f);a.download=f.name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000)};
   $('wrShare').onclick=async()=>{const f=await file();
     try{if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f],text:T(`Cendon Wrapped ${s.Y} — สรุปปีของรถฉัน`,`My car's ${s.Y} on Cendon Wrapped`)});else $('wrSave').click()}catch(e){}};
@@ -313,6 +320,7 @@ async function wrapped(){
 }
 function closeWrapped(fromUi){
   if(!WR)return;const w=WR;WR=null;clearTimeout(w.t);fx.stop();
+  D.documentElement.classList.remove('wr-open');
   w.W.classList.add('out');setTimeout(()=>w.W.remove(),280);D.body.style.overflow='';
   if(fromUi&&w.nav&&window.Nav)try{Nav.drop(w.nav)}catch(e){}
 }
@@ -350,10 +358,71 @@ function banner(){
   b.innerHTML=`<span class="wr-bk">CENDON WRAPPED</span><b>${s.Y}</b><span class="wr-bt">${T('สรุปปีของรถคุณ — ดูเลย','Your car\'s year in review — watch now')}</span><i class="ti ti-player-play-filled"></i>`;
 }
 
+/* ═════════════════ 4) ความลับของการ์ดรถ: ปัดการ์ดพลิก 180° → Wrap ของคันนั้น ═════════════════
+   แบบเดียวกับช่องค้นหาหน้าแรก: การ์ดหมุนตามนิ้ว (มือถือ) หรือตามเมาส์ที่ลาก (คอม) · ปล่อยเกินราวหนึ่งในสี่ = พลิก ไม่ถึง = เด้งกลับ
+   แนวตั้งยังเลื่อนหน้าได้ปกติ · ลากแล้วปล่อยบนการ์ด ไม่นับเป็นการกดเข้าหน้ารถ · ไม่มีป้ายบอก — เป็นของลับ
+   ด้านหลัง = ฉายาและตัวเลขของคันนี้ปีนี้ (คำนวณจากสมุดรถจริงตอนพลิก) + ปุ่มเล่นสตอรี่ Wrap ของคันนี้ */
+const carOf=id=>cars().find(c=>c.id===id);
+function backHTML(c){
+  const s=yearStats(WY(),c.id),hit=LG(nickKey(s),null),n=hit&&hit.nickname?hit:ruleName(s);
+  return `<div class="gx-bk"><span class="gx-bk-glow" aria-hidden="true"></span>
+    <button type="button" class="gx-bk-x" data-unflip aria-label="${T('พลิกกลับ','Flip back')}"><i class="ti ti-rotate-2"></i></button>
+    <span class="gx-bk-k">CENDON WRAPPED ${s.Y}</span>
+    <b class="gx-bk-n">${esc(n.nickname)}</b>
+    <small class="gx-bk-c">${esc(nameOf(c))}</small>
+    <span class="gx-bk-g"><span><b>${num(s.km)}</b><small>${T('กม.','km')}</small></span><span><b>฿${num(s.fuel)}</b><small>${T('ค่าน้ำมัน','fuel')}</small></span><span><b>${s.svc}</b><small>${T('ครั้งที่ดูแล','services')}</small></span><span><b>${s.trips}</b><small>${T('ทริป','trips')}</small></span></span>
+    <button type="button" class="gx-bk-play" data-wrap="${esc(c.id)}"><i class="ti ti-player-play-filled"></i>${T('ดู Wrap ของคันนี้','Play this car’s Wrap')}</button></div>`;
+}
+const turn=(el,deg,anim)=>{el.style.transition=anim?'':'none';el.style.transform=`rotateY(${deg}deg)`};
+function setFlip(f,on,dir){
+  const fin=f.querySelector('.gx-flipin'),front=f.querySelector('.gx-car'),back=f.querySelector('.gx-back');if(!fin||!back)return;
+  if(on&&!back.firstChild){const c=carOf(f.dataset.car);if(!c)return;back.innerHTML=backHTML(c)}
+  const rot=(+f.dataset.rot||0)+(on===f.classList.contains('on')?0:(dir||1)*180);f.dataset.rot=rot;
+  f.classList.toggle('on',on);f.classList.add('moving');clearTimeout(f._mv);f._mv=setTimeout(()=>f.classList.remove('moving'),760);
+  front.inert=on;front.setAttribute('aria-hidden',on);back.inert=!on;back.setAttribute('aria-hidden',!on);
+  turn(fin,rot,true);
+  if(on){f.classList.remove('burst');void f.offsetWidth;f.classList.add('burst');try{navigator.vibrate&&navigator.vibrate(8)}catch(e){}}
+}
+let FP=null;
+D.addEventListener('pointerdown',e=>{
+  const f=e.target.closest&&e.target.closest('.gx-flip');
+  if(!f||FP||e.button>0||WR||e.target.closest('button,a,input,select,textarea'))return;
+  FP={f,fin:f.querySelector('.gx-flipin'),id:e.pointerId,sx:e.clientX,sy:e.clientY,dx:0,lock:null,w:Math.max(220,f.offsetWidth),t0:performance.now(),rot:+f.dataset.rot||0};
+},true);
+D.addEventListener('pointermove',e=>{
+  const P=FP;if(!P||e.pointerId!==P.id)return;
+  const mx=e.clientX-P.sx,my=e.clientY-P.sy;
+  if(P.lock===null){
+    if(Math.abs(mx)<8&&Math.abs(my)<8)return;
+    P.lock=Math.abs(mx)>Math.abs(my)*1.15?'x':'y';if(P.lock==='y'){FP=null;return}
+    const back=P.f.querySelector('.gx-back');
+    /* เพิ่งเริ่มพลิกจากด้านหน้า → วาดด้านหลังใหม่ ตัวเลขจะได้เป็นของล่าสุด */
+    if(back&&!P.f.classList.contains('on')){const c=carOf(P.f.dataset.car);if(c)back.innerHTML=backHTML(c)}
+    P.f.classList.add('drag');try{P.f.setPointerCapture(P.id)}catch(x){}
+  }
+  if(P.lock!=='x')return;
+  e.preventDefault();P.dx=mx;turn(P.fin,P.rot+Math.max(-1,Math.min(1,mx/P.w))*180,false);
+},{passive:false});
+const flipEnd=e=>{
+  const P=FP;if(!P||e.pointerId!==P.id)return;FP=null;if(P.lock!=='x')return;
+  P.f.classList.remove('drag');
+  const v=P.dx/Math.max(1,performance.now()-P.t0),go=Math.abs(P.dx)>P.w*.26||(Math.abs(v)>.55&&Math.abs(P.dx)>24);
+  /* ลากแล้วปล่อยบนการ์ด → ไม่นับเป็นการกด (ไม่งั้นเด้งเข้าหน้ารถ) */
+  const eat=ev=>{ev.preventDefault();ev.stopPropagation()};D.addEventListener('click',eat,{capture:true,once:true});setTimeout(()=>D.removeEventListener('click',eat,true),400);
+  if(go)setFlip(P.f,!P.f.classList.contains('on'),P.dx>0?1:-1);else turn(P.fin,P.rot,true);
+};
+D.addEventListener('pointerup',flipEnd,true);D.addEventListener('pointercancel',flipEnd,true);
+D.addEventListener('click',e=>{
+  const u=e.target.closest&&e.target.closest('.gx-back [data-unflip]');if(u){setFlip(u.closest('.gx-flip'),false,-1);return}
+  const w=e.target.closest&&e.target.closest('.gx-back [data-wrap]');if(w)wrapped({car:w.dataset.wrap});
+});
+/* ลากรูปรถบนคอม = ลากการ์ด ไม่ใช่ลากรูปออกไป */
+D.addEventListener('dragstart',e=>{if(e.target.closest&&e.target.closest('.gx-flip'))e.preventDefault()});
+
 /* ── ต่อเข้ากับหน้ารถ ── */
 function rerender(){try{CL().rerender&&CL().rerender()}catch(e){}}
 window.CarExtras={
-  cal:paneCal,pass:panePass,wrapped,
+  cal:paneCal,pass:panePass,wrapped,flip:setFlip,
   after(tab,c){if(tab==='cal')mountCal(c);if(tab==='pass')mountPass(c)},
   _stats:yearStats,_cal:calendar
 };

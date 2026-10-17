@@ -3990,8 +3990,8 @@ a.mtab{text-decoration:none}
 <link rel="stylesheet" href="stability.css">
 <link rel="stylesheet" href="car-detail-tabs.css?v=2026-10-12-r1">
 <script src="car-detail-tabs.js?v=2026-10-12-r2" defer></script>
-<link rel="stylesheet" href="garage-extras.css?v=1">
-<script src="garage-extras.js?v=1" defer></script>
+<link rel="stylesheet" href="garage-extras.css?v=2">
+<script src="garage-extras.js?v=2" defer></script>
 <script src="car-sync.js"></script>
 <script src="stability.js" defer></script>
 <!-- หน้าตาชุดเดียวกับหน้าหลัก (สี การ์ด ปุ่ม พื้นหลัง) — โหลดท้ายสุดให้ชนะสไตล์เดิม -->
@@ -4163,7 +4163,8 @@ html.gx-lock,html.gx-lock body{overflow:hidden}
 </style>
 <link rel="stylesheet" href="lux.css">
 <!-- กระดิ่งแจ้งเตือน: ปุ่มในแถบเมนู (คอม) / มุมขวาบน (มือถือ) -->
-<script src="bell.js?v=2" defer></script>
+<script src="bell.js?v=3" defer></script>
+<script src="drop.js?v=1" defer></script>
 <style>/* มือถือ: กระดิ่งอยู่มุมขวาบน — เลื่อนปุ่มเพิ่มรถหลบให้ */@media(max-width:760px){.gx-head{padding-right:46px}}</style>
 <script src="carspec.js?v=2026-10-12-r3" defer></script>
 </head>
@@ -5368,7 +5369,8 @@ function renderGarage(){if(!document.getElementById("garageList"))return;const g
     const model=String(c.model||String(c.name||"").slice(make.length)||c.name||"").trim()||make;
     const km=c.mileage&&c.mileage!=="-"&&!isNaN(Number(c.mileage))?Number(c.mileage).toLocaleString("en-US"):"-";
     const col=carColor(c.color);
-    return `<div class="gx-car" role="button" tabindex="0" data-open="${esc(c.id)}" aria-label="${esc(make+" "+model)}">
+    /* การ์ดอยู่ในกรอบพลิกได้ (garage-extras.js): ปัดการ์ดไปด้านข้าง = พลิก 180° ไปเห็น Wrap ของคันนี้ */
+    return `<div class="gx-flip" data-car="${esc(c.id)}"><div class="gx-flipin"><div class="gx-car" role="button" tabindex="0" data-open="${esc(c.id)}" aria-label="${esc(make+" "+model)}">
       <span class="gx-hero" style="--car:${col}">
         ${gxArt(bodyStyle,col)}
         <span class="gx-chip"><i class="ti ${lbl.ic}"></i>${esc(tx(lbl.th,lbl.en))}</span>
@@ -5386,7 +5388,7 @@ function renderGarage(){if(!document.getElementById("garageList"))return;const g
         </span>
         <span class="gx-foot">${tx("ดูรายละเอียดและประวัติ","Details & history")}<i class="ti ti-arrow-right"></i></span>
       </span>
-    </div>`
+    </div><div class="gx-back" aria-hidden="true" inert></div></div></div>`
   }).join("")+`</div>`;
   renderCarSel()}
 

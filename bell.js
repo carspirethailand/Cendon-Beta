@@ -1,6 +1,8 @@
-/* ══ กระดิ่งแจ้งเตือนของ Cendon (ทุกหน้า) ══
-   หน้าแรกวาดปุ่มเอง (#hJobs มือถือ · #hBellD คอม) · หน้าอื่นไฟล์นี้วาดให้เอง: คอมอยู่ในแถบเมนูข้างรูปโปรไฟล์
-   มือถืออยู่มุมขวาบนของหน้า (ห้องแชตอยู่ในแถบบน ข้างปุ่ม ⋮) · แผงรายการใช้ตัวเดียวกันทุกหน้า
+/* ══ กระดิ่งแจ้งเตือนของ Cendon (ทุกหน้า ตำแหน่งเดียวกันเป๊ะ) ══
+   ไฟล์นี้วาดปุ่มให้ทุกหน้า รวมหน้าแรก — ไม่มีหน้าไหนวาดเอง ตำแหน่งจึงไม่กระโดดตอนเปลี่ยนหน้า
+   · มือถือ: มุมขวาบนของจอ ติดอยู่กับที่ (ห้องแชต = ปุ่มขวาสุดของแถบบน จุดเดียวกัน)
+   · คอม: ในแถบเมนูบน ข้างรูปโปรไฟล์ (ห้องแชตไม่มีแถบเมนู → วางลอยไว้ตรงจุดเดียวกันบนจอ)
+   · ขึ้นทันทีที่เปิดหน้า ถ้าเครื่องนี้ล็อกอินค้างไว้ (ไม่รอระบบบัญชีโหลดเสร็จ) · แผงรายการใช้ตัวเดียวกันทุกหน้า
    กล่องข้อความแจ้งเตือนเก็บในเครื่องนี้ ผูกกับบัญชี (เปลี่ยนบัญชี = เริ่มใหม่) · ล่าสุด 40 รายการ
    แจ้งเตือนในเครื่องจริง:
    · แอปปิดอยู่ → หลังบ้านส่ง Web Push เอง (ช่างเสนอราคา รับงาน กำลังมา ซ่อมเสร็จ ข้อความใหม่)
@@ -125,14 +127,20 @@ const CSS=`
 .cb-bell em[hidden]{display:none}
 .cb-bell.ding .ti{animation:cbRing .9s cubic-bezier(.36,.07,.19,.97)}
 @keyframes cbRing{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(9deg)}60%{transform:rotate(-6deg)}75%{transform:rotate(3deg)}}
-.cb-m{position:absolute;top:calc(16px + env(safe-area-inset-top));right:12px;z-index:60;background:var(--surface,#fff);box-shadow:0 0 0 1px var(--line,rgba(0,0,0,.08)),0 8px 18px -10px rgba(0,0,0,.3)}
+/* มือถือ: จุดศูนย์กลางห่างขอบขวา 28px ขอบบน 28px — ตรงกับปุ่มขวาสุดในแถบบนของห้องแชตพอดี (วัดจริงทุกขนาดจอ) */
+.cb-m{position:fixed;top:calc(8px + env(safe-area-inset-top));right:8px;width:40px;height:40px;z-index:60;background:var(--surface,#fff);
+  box-shadow:0 0 0 1px var(--line,rgba(0,0,0,.08)),0 8px 18px -10px rgba(0,0,0,.3)}
 @media(min-width:761px){.cb-m{display:none!important}}
-.pill .cb-bell{margin-left:auto}.pill .cb-bell+#pMore{margin-left:0}
-.side-top .cb-sb{margin-left:auto;width:30px;height:30px;font-size:17px;border-radius:9px;color:var(--c-mut,var(--muted))}.side-top .cb-sb+.side-fold{margin-left:0}
-@media(max-width:899px){.side-top .cb-sb{display:none!important}}
-body[data-side="0"] .side-top .cb-sb{display:none!important}
+/* หน้าตั้งค่าเปิดทับทั้งจอและมีขอบ 1px — ชดเชยให้ตรงกับจุดเดียวกันพอดี */
+#v-settings .cb-sh{margin:-1px -1px 0 0}
+/* ห้องแชตบนมือถือ: ปุ่มขวาสุดของแถบบน (หลังปุ่ม ⋮) */
+.pill .cb-bell{order:99}
+/* ห้องแชตบนคอม: ไม่มีแถบเมนู — ลอยไว้จุดเดียวกับกระดิ่งในแถบเมนูของหน้าอื่น */
+.cb-fx{position:fixed;top:25px;left:calc(50% + 276px);width:34px;height:34px;font-size:19px;z-index:60}
+@media(max-width:899px){.cb-fx{display:none!important}}
+.cb-d{width:34px;height:34px;font-size:19px}
 @media(max-width:760px){.cb-d{display:none!important}}
-.set-head .cb-sh{margin-left:auto}@media(min-width:761px){.set-head .cb-sh{display:none!important}}
+
 .nb-pop{position:absolute;z-index:1400;width:min(380px,calc(100vw - 20px));max-height:min(72vh,560px);display:flex;flex-direction:column;border-radius:20px;background:var(--surface,#fff);color:var(--ink,#09090B);
   font-family:Kanit,system-ui,sans-serif;box-shadow:0 0 0 1px var(--line,rgba(0,0,0,.08)),0 30px 60px -24px rgba(0,0,0,.45);overflow:hidden;animation:nbIn .22s cubic-bezier(.32,.72,0,1);transform-origin:100% 0}
 @keyframes nbIn{from{opacity:0;transform:scale(.96) translateY(-4px)}}
@@ -194,29 +202,32 @@ function mkBtn(cls){
   b.innerHTML='<i class="ti ti-bell"></i><em hidden></em>';b.onclick=()=>panel(b);BTNS.push(b);return b;
 }
 function paint(){
-  const n=unread(),me=!!uid();
+  let hint=false;try{hint=localStorage.getItem("cendon_signed")==="1"}catch(e){}
+  const n=unread(),me=!!uid()||hint;
   for(let i=BTNS.length-1;i>=0;i--)if(!BTNS[i].isConnected)BTNS.splice(i,1);
   BTNS.forEach(b=>{const e=b.querySelector("em");b.hidden=!me;e.hidden=!n;e.textContent=n>9?"9+":n||"";
     b.setAttribute("aria-label",n?T(`การแจ้งเตือน ยังไม่อ่าน ${n}`,`Notifications, ${n} unread`):T("การแจ้งเตือน","Notifications"))});
 }
 function ding(){BTNS.forEach(b=>{b.classList.remove("ding");void b.offsetWidth;b.classList.add("ding")})}
 function mount(){
-  if(document.getElementById("hBellD")||document.getElementById("hJobs")||document.querySelector(".cb-bell"))return;
+  if(document.querySelector(".cb-bell"))return;
   style();
   /* คอม: แถบเมนูบน ข้างรูปโปรไฟล์ */
   const nr=document.querySelector(".navwrap .nav-right");
   if(nr){const b=mkBtn("cb-d");const av=nr.querySelector("#avatarBtn");nr.insertBefore(b,av||null)}
-  /* ห้องแชต: มือถืออยู่แถบบน ข้างปุ่ม ⋮ (valet.js สร้างทีหลัง) · คอมอยู่หัวแถบซ้าย ข้างปุ่มย่อแถบ (สร้างทีหลังเหมือนกัน)
-     หน้าอื่นบนมือถือ: มุมขวาบนของหน้า + หัวหน้าตั้งค่า (เปิดทับทั้งจอ)
-     แถบพวกนี้ถูกวาดใหม่ได้ → คอยใส่กลับทุกครั้งที่หายไป (เช็กเบา ๆ เฟรมละครั้ง) */
   const chat=!!document.querySelector("header.pill");
-  if(!chat&&nr)document.body.appendChild(mkBtn("cb-m"));
+  /* มือถือ (ทุกหน้ายกเว้นห้องแชต): มุมขวาบนของจอ */
+  if(!chat)document.body.appendChild(mkBtn("cb-m"));
+  /* ห้องแชตบนคอม: จุดเดียวกับในแถบเมนูของหน้าอื่น */
+  else document.body.appendChild(mkBtn("cb-fx"));
+  /* ห้องแชตบนมือถือ: ปุ่มขวาสุดของแถบบน (ปุ่ม ⋮ ที่ valet.js สร้างทีหลัง) · หน้าตั้งค่าเปิดทับทั้งจอ → ใส่ไว้ในหัวหน้าตั้งค่าด้วย
+     แถบพวกนี้ถูกวาดใหม่ได้ → คอยใส่กลับทุกครั้งที่หายไป (เช็กเบา ๆ เฟรมละครั้ง) */
   let q=0;
   const put=()=>{q=0;
-    const at=(host,cls,before)=>{if(host&&!host.querySelector(":scope>.cb-bell")){host.insertBefore(mkBtn(cls),before||null);paint()}};
-    if(chat){const more=document.getElementById("pMore"),fold=document.getElementById("sideFold");
-      if(more)at(more.parentNode,"p-btn",more);if(fold)at(fold.parentNode,"cb-sb",fold)}
-    else if(nr)at(document.querySelector("#v-settings .set-head"),"cb-sh")};
+    const at=(host,cls)=>{if(host&&!host.querySelector(":scope>.cb-bell")){host.appendChild(mkBtn(cls));paint()}};
+    /* ใส่ในแถบทันทีไม่ต้องรอปุ่ม ⋮ — order:99 ทำให้อยู่ขวาสุดเสมอ */
+    if(chat)at(document.querySelector("header.pill"),"p-btn");
+    else at(document.querySelector("#v-settings .set-head"),"cb-m cb-sh")};
   put();new MutationObserver(()=>{if(!q)q=requestAnimationFrame(put)}).observe(document.body,{childList:true,subtree:true});
   paint();on(paint);
   poll();
@@ -224,6 +235,7 @@ function mount(){
 /* หน้าอื่นก็ต้องรู้ทันว่าช่างตอบ: ถามหลังบ้านเบา ๆ ทุก 25 วิ (ชีพจร) มีอะไรเปลี่ยนค่อยดึงรายการใบงาน */
 let PV="",PT=0;
 async function tick(){
+  if(W.CendonBellOwnPoll){paint();return}
   const me=uid();
   if(me&&!document.hidden&&(W.spireAuth||W.auth)&&(W.spireAuth||W.auth).currentUser){
     try{const r=await get("/api/tech/pulse");
@@ -244,6 +256,6 @@ function ai(text,valet){
   add({kind:"ai",title:valet?T("Cendon Valet เตรียมการ์ดให้แล้ว — รอคุณยืนยัน","Cendon Valet has a card ready — waiting for you"):T("Cendon AI ตอบแล้ว","Cendon AI replied"),
     body:t.slice(0,140),url:location.pathname+location.search,tag:"cendon-ai"},{system:true});
 }
-W.CendonBell={add,list,unread,read,clear,enable,perm,pushOn,on,setApi,ai,sys,jobEvents,panel,style};
+W.CendonBell={add,list,unread,read,clear,enable,perm,pushOn,on,setApi,ai,sys,jobEvents,panel,style,paint,ding,buttons:()=>BTNS.slice()};
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount);else mount();
 })(window);

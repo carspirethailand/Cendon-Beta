@@ -1487,5 +1487,13 @@ window.CENDON_L10N={lang:"zh",t:{
 "Switch urgent / not urgent":"切换 紧急 / 不紧急",
 "QR":"二维码",
 "Shop card: tap to switch profile / QR":"店铺卡片：点按切换资料 / 二维码",
-"Scan to open the shop on Cendon":"扫码在 Cendon 打开店铺"
+"Scan to open the shop on Cendon":"扫码在 Cendon 打开店铺",
+"Best match":"最适合你",
+"Knows your car":"熟悉你的车型",
+"List":"列表",
+"Lowest starting price":"起价最低",
+"Map unavailable — try again":"地图无法加载 — 请重试",
+"Most jobs done":"完成订单最多",
+"Nearest":"最近",
+"Top rated":"评分最高"
 }};

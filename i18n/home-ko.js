@@ -1487,5 +1487,13 @@ window.CENDON_L10N={lang:"ko",t:{
 "Switch urgent / not urgent":"긴급 / 일반 전환",
 "QR":"QR",
 "Shop card: tap to switch profile / QR":"매장 카드: 탭하여 프로필 / QR 전환",
-"Scan to open the shop on Cendon":"스캔하면 Cendon 매장 페이지가 열려요"
+"Scan to open the shop on Cendon":"스캔하면 Cendon 매장 페이지가 열려요",
+"Best match":"추천",
+"Knows your car":"내 차종에 능숙",
+"List":"목록",
+"Lowest starting price":"시작 가격 낮은 순",
+"Map unavailable — try again":"지도를 불러올 수 없어요 — 다시 시도하세요",
+"Most jobs done":"완료 작업 많은 순",
+"Nearest":"가까운 순",
+"Top rated":"평점 높은 순"
 }};

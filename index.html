@@ -1522,6 +1522,15 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
 .lx-subs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin-bottom:20px}
 .lx-subs button{flex:none;height:36px;padding:0 15px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);font:600 13px var(--kb);cursor:pointer}
 .lx-subs button.on{color:var(--ink);border-color:var(--ink)}
+/* หน้าหมวด: เรียงลำดับ · สลับแผนที่ · ร้านที่เหมาะที่สุด */
+.lx-catbar{display:flex;align-items:center;gap:8px;margin:-8px 0 16px}
+.lx-sort{flex:1;min-width:0;display:flex;align-items:center;gap:8px;height:40px;padding:0 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface)}
+.lx-sort .ti{color:var(--muted);font-size:17px}.lx-sort select{flex:1;min-width:0;border:0;background:none;color:var(--ink);font:600 13.5px var(--kb);outline:none;appearance:none;-webkit-appearance:none;cursor:pointer}
+.lx-mapt{height:40px;padding:0 14px;display:inline-flex;align-items:center;gap:6px;flex:none}
+.lx-catmap{height:min(62vh,520px);border-radius:20px;overflow:hidden;background:var(--surface-2);margin-bottom:16px;box-shadow:inset 0 0 0 1px var(--line)}
+html[data-theme="dark"] .lx-catmap .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.82) contrast(.9) saturate(.6)}
+.lx-pbest{display:flex;align-items:center;gap:4px;margin-top:3px;color:var(--co)!important;font-weight:600}
+.lx-maplink{margin-right:10px}
 .lx-subs button:hover{border-color:var(--co)}
 @media(max-width:560px){.lx-cards{grid-template-columns:1fr;gap:14px}.lx-pcv{aspect-ratio:21/8}.lx-rail button{width:84px}.lx-ri{width:52px;height:52px}}
 
@@ -2459,7 +2468,7 @@ a.mtab{text-decoration:none}
   <!-- หมวดช่าง: แถวไอคอน 3D (ใส่รูปที่ img/cat/<หมวด>.png ได้เลย ไม่มีรูปใช้ไอคอนสีแทน) · กดแล้วเข้าหน้าหมวด -->
   <nav class="lx-rail" id="hRail" aria-label="หมวดช่าง"></nav>
   <section class="lx-sec">
-    <div class="lx-sh"><h2>บริการจากช่าง<span id="sugN"></span></h2><button class="lx-link" id="sugAll" type="button">ดูร้านทั้งหมด <i class="ti ti-arrow-right"></i></button></div>
+    <div class="lx-sh"><h2>บริการจากช่าง<span id="sugN"></span></h2><button class="lx-link lx-maplink" id="sugMap" type="button" aria-label="แผนที่ช่าง"><i class="ti ti-map-2"></i><span data-t="แผนที่|Map">แผนที่</span></button><button class="lx-link" id="sugAll" type="button">ดูร้านทั้งหมด <i class="ti ti-arrow-right"></i></button></div>
     <div class="lx-cards" id="sugList"></div>
   </section>
   <div class="left">
@@ -2502,7 +2511,10 @@ a.mtab{text-decoration:none}
   <div id="catGigs"></div>
   <header class="lx-gsh lx-shops" id="catShopsH" hidden></header>
   <div class="lx-subs" id="catSubs"></div>
+  <div class="lx-catbar"><label class="lx-sort"><i class="ti ti-arrows-sort"></i><select id="catSort" aria-label="เรียงตาม"></select></label>
+    <button type="button" class="lx-gh lx-mapt" id="catMapT" aria-pressed="false"><i class="ti ti-map-2"></i><span>แผนที่</span></button></div>
   <div class="lx-cards" id="catList"></div>
+  <div class="lx-catmap" id="catMap" hidden></div>
 </section>
 
 <!-- ═══ Cendon Studio (มุมช่าง) — กรอบคงที่: คอม = แถบซ้าย 4 เมนู · มือถือ = แถบล่าง 4 ช่อง
@@ -4020,6 +4032,7 @@ function profCard(t,i){
     <span class="lx-pcb"><span class="lx-pav"${av?` style="background-image:url('${img(av)}')"`:""}>${av?"":initial(t.shop||t.name)}</span>
       <span class="lx-pct"><b class="nt">${esc(t.shop||t.name)}${t.verified?' <i class="ti ti-rosette-discount-check-filled"></i>':""}${isMine(t)?' <em class="mine-tag">'+T("ร้านของคุณ","Your shop")+'</em>':""}</b>
       <small>${t.reviewCount?`★ ${Number(t.rating).toFixed(1)} (${t.reviewCount})`:"ร้านใหม่"}${d?" · "+d:""}${t.from?` · เริ่ม ฿${money(t.from)}`:""}</small>
+      ${t._best?`<small class="lx-pbest"><i class="ti ti-sparkles"></i>${T("เหมาะกับคุณที่สุด","Best match")} · ${t._best.map(esc).join(" · ")}</small>`:""}
       <span class="lx-pcc">${(t.cats||[]).slice(0,3).map(c=>CAT[c]?`<span>${CAT[c].th}</span>`:"").join("")}</span></span></span></button>`;
 }
 function wireCards(host){host.querySelectorAll(".lx-pc").forEach(b=>b.onclick=()=>openTech(b.dataset.id))}
@@ -4285,7 +4298,8 @@ function drawHome(){
   /* งานที่กำลังดำเนินอยู่ ขึ้นบนสุดของหน้าแรก */
   const act=$("active");if(act&&act.parentNode&&!act.parentNode.classList.contains("lx-top")){const w=document.createElement("div");w.className="lx-top";$("myCar").after(w);w.appendChild(act)}
   drawJobsBtn();
-  $("hRail").innerHTML=RAIL.map(c=>`<button type="button" data-k="${c.id}">${railIc(c)}<span class="lx-rt">${c.th}</span></button>`).join("");
+  /* "แผนที่" ไม่ใช่หมวดช่าง — ไม่อยู่ในแถวหมวดแล้ว ไปอยู่เป็นปุ่มในหน้าหมวด (สลับ รายการ/แผนที่) และหัวข้อบริการหน้าแรก */
+  $("hRail").innerHTML=RAIL.filter(c=>c.id!=="map").map(c=>`<button type="button" data-k="${c.id}">${railIc(c)}<span class="lx-rt">${c.th}</span></button>`).join("");
   $("hRail").querySelectorAll("button").forEach(b=>b.onclick=()=>b.dataset.k==="map"?setView("map"):openCat(b.dataset.k));
   railNav();
   const host=$("sugList");
@@ -4321,12 +4335,47 @@ function wireGigRows(host){
   host.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>openCat(b.dataset.cat));
 }
 $("sugAll").onclick=()=>openCat("all");
+$("sugMap").onclick=()=>setView("map");
 {const _ra=renderActive;renderActive=function(){_ra.apply(this,arguments);try{drawJobsBtn()}catch(e){}}}
-let CATK="all",CATSUB="",CATQ="";
+let CATK="all",CATSUB="",CATQ="",CATSORT="best",CATMAP=false,CMAP=null,CMAPL=null;
+/* จับคู่ช่างให้เร็ว: คะแนนจากสิ่งที่วัดได้จริงเท่านั้น (เปิดรับงาน ระยะ รีวิว งานสำเร็จ ผ่านการตรวจ ถนัดยี่ห้อรถคุณ) ไม่มี AI เดา
+   คืนคะแนน + เหตุผลสั้น ๆ ให้ผู้ใช้เห็นว่าทำไมร้านนี้ขึ้นก่อน */
+function matchOf(t,car){
+  let sc=0;const why=[],d=t.dist;
+  if(t.online){sc+=25;why.push(T("เปิดรับงานตอนนี้","Open now"))}
+  if(d!=null){sc+=Math.max(0,30-d*2);if(d<=10)why.push(T("ห่าง ","")+distTxt(d))}
+  if(t.reviewCount){const r=+t.rating||0;sc+=(r-3)*10*Math.min(1,t.reviewCount/5)}   /* คะแนนรีวิวขึ้นในการ์ดอยู่แล้ว ไม่ต้องซ้ำในเหตุผล */
+  if(t.jobs){sc+=Math.min(15,t.jobs);if(t.jobs>=10)why.push(T(t.jobs+" งานสำเร็จ",t.jobs+" jobs done"))}
+  if(t.verified)sc+=10;
+  const br=[...(t.brands||[]),...(t.brands2||[])].map(x=>String(x).toLowerCase()).filter(Boolean);
+  if(car&&br.some(b=>car.includes(b))){sc+=20;why.unshift(T("ถนัดรถของคุณ","Knows your car"))}
+  return {sc,why:why.slice(0,2)};
+}
+const CAT_SORTS=()=>[["best",T("แนะนำสำหรับคุณ","Best match")],["near",T("ใกล้สุด","Nearest")],["rating",T("คะแนนรีวิวสูง","Top rated")],["price",T("ราคาเริ่มต้นต่ำ","Lowest starting price")],["jobs",T("งานสำเร็จมากสุด","Most jobs done")]];
+function sortShops(l){
+  if(CATSORT==="near")return l.slice().sort((a,b)=>(a.dist??1e9)-(b.dist??1e9));
+  if(CATSORT==="rating")return l.slice().sort((a,b)=>((b.reviewCount?+b.rating:0)-(a.reviewCount?+a.rating:0))||((b.reviewCount||0)-(a.reviewCount||0)));
+  if(CATSORT==="price")return l.slice().sort((a,b)=>(+a.from||1e9)-(+b.from||1e9));
+  if(CATSORT==="jobs")return l.slice().sort((a,b)=>(b.jobs||0)-(a.jobs||0));
+  const car=myCarText();return l.map(t=>({...t,_m:matchOf(t,car)})).sort((a,b)=>b._m.sc-a._m.sc);
+}
+/* แผนที่ในหน้าหมวด: เฉพาะร้านในรายการตอนนี้ (หมวด + ตัวกรอง) · แตะหมุดเปิดหน้าร้าน */
+function drawCatMap(l){
+  const box=$("catMap");if(!window.L){box.innerHTML=`<div class="empty">${T("โหลดแผนที่ไม่ได้ — ลองใหม่อีกครั้ง","Map unavailable — try again")}</div>`;return}
+  if(!CMAP||!box.querySelector(".leaflet-container")){box.innerHTML="";const c=HERE||{lat:13.7563,lng:100.5018};
+    CMAP=oneWorld(L.map(box,{zoomControl:false,attributionControl:false})).setView([c.lat,c.lng],HERE?12:10);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,noWrap:true,bounds:[[-85,-180],[85,180]]}).addTo(CMAP);CMAPL=L.layerGroup().addTo(CMAP)}
+  CMAPL.clearLayers();const pts=[];
+  l.forEach(t=>{if(t.lat==null||t.lng==null)return;pts.push([t.lat,t.lng]);
+    L.circleMarker([t.lat,t.lng],{radius:9,color:"#fff",weight:2.5,fillColor:colorOf(t),fillOpacity:1}).addTo(CMAPL)
+      .bindTooltip(esc(t.shop||t.name),{direction:"top",offset:[0,-8]}).on("click",()=>openTech(t.id))});
+  if(HERE){pts.push([HERE.lat,HERE.lng]);L.circleMarker([HERE.lat,HERE.lng],{radius:7,color:"#fff",weight:3,fillColor:"#3b82f6",fillOpacity:1}).addTo(CMAPL)}
+  setTimeout(()=>{CMAP.invalidateSize();if(pts.length>1)CMAP.fitBounds(pts,{padding:[30,30],maxZoom:14});else if(pts.length)CMAP.setView(pts[0],13)},40);
+}
 function openCat(k,noHist){
   const c=RAIL.find(x=>x.id===k)||RAIL[0];
   const prev=curView();
-  CATK=k;CATSUB="";CATQ="";
+  CATK=k;CATSUB="";CATQ="";CATMAP=false;
   $("catIc").innerHTML=railIc(c);$("catT").textContent=k==="all"?"ช่างทั้งหมด":c.th;
   $("vMenu").hidden=true;$("vRes").hidden=true;$("vCat").hidden=false;window.scrollTo(0,0);
   if(!noHist)Nav.push({url:"/category/"+encodeURIComponent(k),tag:"cat",close:()=>restoreView(prev)});
@@ -4350,7 +4399,16 @@ function drawCat(){
   $("catShopsH").innerHTML=`<span class="lx-gst">${railIc(rc||OTHER_CAT)}<b>ร้านช่างในหมวดนี้</b><small>${LOADED?l.length+" ร้าน":""}</small></span>`;
   $("catSubs").innerHTML=[["","ทั้งหมด"],["open","เปิดรับงานตอนนี้"],["mobile","มาถึงที่"],["urgent","รับงานด่วน"]].map(([k,t])=>`<button type="button" class="${CATSUB===k?"on":""}" data-s="${k}">${t}</button>`).join("");
   $("catSubs").querySelectorAll("button").forEach(b=>b.onclick=()=>{CATSUB=b.dataset.s;drawCat()});
-  const host=$("catList");
+  /* เรียงลำดับ + ร้านที่เหมาะที่สุดขึ้นการ์ดเด่นพร้อมเหตุผล + สลับดูบนแผนที่ */
+  l=sortShops(l);
+  const so=$("catSort");so.innerHTML=CAT_SORTS().map(([k,t])=>`<option value="${k}"${k===CATSORT?" selected":""}>${t}</option>`).join("");
+  so.onchange=()=>{CATSORT=so.value;drawCat()};
+  const mt=$("catMapT");mt.setAttribute("aria-pressed",CATMAP);mt.querySelector("span").textContent=CATMAP?T("รายการ","List"):T("แผนที่","Map");mt.querySelector("i").className="ti "+(CATMAP?"ti-list":"ti-map-2");
+  mt.onclick=()=>{CATMAP=!CATMAP;drawCat()};
+  /* ร้านที่เหมาะที่สุดไม่แยกเป็นกล่องใหม่ (รก) — ขึ้นบนสุดของรายการ พร้อมบรรทัดเล็กบอกเหตุผลในการ์ดเดิม */
+  if(CATSORT==="best"&&l.length>1&&l[0]._m&&l[0]._m.why.length)l[0]={...l[0],_best:l[0]._m.why};
+  const host=$("catList");host.hidden=CATMAP;$("catMap").hidden=!CATMAP;
+  if(CATMAP&&LOADED)drawCatMap(l);
   host.innerHTML=!LOADED?'<div class="skel"></div><div class="skel"></div>':l.length?l.map(profCard).join(""):`<div class="empty"><b>ยังไม่มีช่างในหมวดนี้</b>ลองหมวดอื่น หรือให้ AI ช่วยดูอาการ</div>`;
   wireCards(host);
 }

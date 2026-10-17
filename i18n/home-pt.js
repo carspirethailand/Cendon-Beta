@@ -1487,5 +1487,13 @@ window.CENDON_L10N={lang:"pt",t:{
 "Switch urgent / not urgent":"Alternar urgente / não urgente",
 "QR":"QR",
 "Shop card: tap to switch profile / QR":"Cartão da oficina: toque para alternar perfil / QR",
-"Scan to open the shop on Cendon":"Escaneie para abrir a oficina no Cendon"
+"Scan to open the shop on Cendon":"Escaneie para abrir a oficina no Cendon",
+"Best match":"Melhor opção",
+"Knows your car":"Conhece seu carro",
+"List":"Lista",
+"Lowest starting price":"Menor preço inicial",
+"Map unavailable — try again":"Mapa indisponível — tente novamente",
+"Most jobs done":"Mais serviços feitos",
+"Nearest":"Mais perto",
+"Top rated":"Mais bem avaliados"
 }};

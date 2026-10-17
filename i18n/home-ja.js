@@ -1487,5 +1487,13 @@ window.CENDON_L10N={lang:"ja",t:{
 "Switch urgent / not urgent":"緊急 / 通常を切り替え",
 "QR":"QR",
 "Shop card: tap to switch profile / QR":"ショップカード：タップでプロフィール / QR を切替",
-"Scan to open the shop on Cendon":"スキャンして Cendon でショップを開く"
+"Scan to open the shop on Cendon":"スキャンして Cendon でショップを開く",
+"Best match":"おすすめ",
+"Knows your car":"あなたの車種に詳しい",
+"List":"リスト",
+"Lowest starting price":"開始価格が安い順",
+"Map unavailable — try again":"地図を読み込めません — もう一度お試しください",
+"Most jobs done":"実績が多い順",
+"Nearest":"近い順",
+"Top rated":"評価が高い順"
 }};

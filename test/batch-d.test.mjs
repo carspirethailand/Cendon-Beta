@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-/* ชุด D: บริการหลายหมวด · การ์ดเรียกช่างแบบพลิก · การ์ดรถแบบแอปในแชต · ช่องพิมพ์ 2 แถวบนคอม · การ์ดร้านพลิกเป็น QR */
+/* ชุด D: บริการหลายหมวด · การ์ดเรียกช่างแบบพลิก · ช่องพิมพ์ 2 แถวบนคอม · การ์ดร้านพลิกเป็น QR */
 const r=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8');
 const home=r('index.html'),chat=r('chat.html');
 
@@ -21,13 +21,6 @@ test('home call card flips 180° (front urgent, back not urgent); the hidden sid
   assert.match(home,/\.lx-qflip\.back \.qf-in\{transform:rotateY\(180deg\)\}/);
   assert.match(home,/f\.tabIndex=back\?-1:0;bk\.tabIndex=back\?0:-1;/);
   assert.match(home,/if\(b\.closest\("#qFlip"\)&&\$\("qFlip"\)\.dataset\.swiped\)return;/,'a swipe never doubles as a tap');
-});
-
-test('chat welcome has a car-app card built only from real on-device data',()=>{
-  assert.match(chat,/<div class="w-carapp" id="wCarApp" hidden><\/div>/);
-  assert.match(chat,/function renderCarApp\(\)\{/);
-  assert.match(chat,/TT\("ยังไม่บันทึก","Not logged"\)/);assert.match(chat,/TT\("ยังไม่ได้ปักหมุด","Not pinned"\)/);
-  assert.match(chat,/updateGreeting\(\);renderCarApp\(\);/);
 });
 
 test('desktop chat composer: text on top, buttons on the row below',()=>{

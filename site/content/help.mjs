@@ -29,8 +29,8 @@ const sections=[
 
   {id:'cars',title:['รถและการดูแลรถ','Cars and upkeep'],body:
     Q('เรียกช่างจากหน้าแรก (ด่วน / ไม่ด่วน)','Calling a mechanic from Home (urgent / not urgent)',
-      P('การ์ด <b>เรียกช่าง</b> มีสองด้าน: ด้านหน้า (แดง) = <b>ด่วน</b> รถเสียหรืออุบัติเหตุตอนนี้ · แตะปุ่ม ⇄ หรือปัดการ์ดเพื่อพลิกเป็น <b>ไม่ด่วน</b> ให้ช่างรอบตัวเสนอราคา · แตะที่การ์ดด้านที่เห็นเพื่อเริ่ม · ในห้องแชตกับ AI มีการ์ดรถของคุณ (เลขไมล์ เข้าศูนย์ล่าสุด ที่จอด) พร้อมปุ่มเครื่องมือ — ข้อมูลมาจากที่คุณบันทึกไว้เท่านั้น',
-        'The <b>Call a mechanic</b> card has two sides: the red front = <b>urgent</b> (breakdown or accident right now) · tap ⇄ or swipe the card to flip to <b>not urgent</b>, where nearby shops send quotes · tap the side you see to start · the AI chat shows your car card (mileage, last service, parking spot) with tool buttons — built only from what you have saved'))+
+      P('การ์ด <b>เรียกช่าง</b> มีสองด้าน: ด้านหน้า (แดง) = <b>ด่วน</b> รถเสียหรืออุบัติเหตุตอนนี้ · แตะปุ่ม ⇄ หรือปัดการ์ดเพื่อพลิกเป็น <b>ไม่ด่วน</b> ให้ช่างรอบตัวเสนอราคา · แตะที่การ์ดด้านที่เห็นเพื่อเริ่ม',
+        'The <b>Call a mechanic</b> card has two sides: the red front = <b>urgent</b> (breakdown or accident right now) · tap ⇄ or swipe the card to flip to <b>not urgent</b>, where nearby shops send quotes · tap the side you see to start'))+
     Q('เพิ่มรถอย่างไร','How do I add a car?',
       P('ไปที่ <b>โรงรถ</b> → เพิ่มรถ ใส่ยี่ห้อ รุ่น ปี และเลขไมล์ ข้อมูลอื่น (เช่น เลขตัวถัง VIN) ใส่หรือไม่ก็ได้ — ยิ่งครบ AI ยิ่งตอบตรงกับรถคันนั้น',
         'Go to <b>Garage</b> → add a car with make, model, year and mileage. Everything else (such as the VIN) is optional — the more you add, the more precisely the AI can answer for that car.'))+

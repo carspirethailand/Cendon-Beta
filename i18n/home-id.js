@@ -1487,5 +1487,13 @@ window.CENDON_L10N={lang:"id",t:{
 "Switch urgent / not urgent":"Ganti darurat / tidak darurat",
 "QR":"QR",
 "Shop card: tap to switch profile / QR":"Kartu bengkel: ketuk untuk ganti profil / QR",
-"Scan to open the shop on Cendon":"Pindai untuk membuka bengkel di Cendon"
+"Scan to open the shop on Cendon":"Pindai untuk membuka bengkel di Cendon",
+"Best match":"Paling cocok",
+"Knows your car":"Paham mobil Anda",
+"List":"Daftar",
+"Lowest starting price":"Harga awal termurah",
+"Map unavailable — try again":"Peta tidak tersedia — coba lagi",
+"Most jobs done":"Pekerjaan terbanyak",
+"Nearest":"Terdekat",
+"Top rated":"Rating tertinggi"
 }};

@@ -248,21 +248,6 @@ body[data-phase="login"] .w-aura,body[data-phase="login"] .w-sweep,body[data-pha
 .w-car-tag{display:inline-flex;align-items:center;gap:7px;margin-top:14px;padding:7px 16px;border-radius:30px;
   background:var(--c-glass);border:1px solid var(--c-line);font-size:13px;font-weight:600;color:var(--c-ink)}
 .w-car-tag i{color:var(--c-acc)}
-/* การ์ดรถแบบแอปรถยนต์ (หน้าเริ่มแชต) */
-.w-carapp{width:min(680px,100%);margin:16px auto 0;padding:14px;border-radius:22px;background:var(--c-glass,rgba(255,255,255,.04));border:1px solid var(--c-line);box-sizing:border-box;text-align:left}
-.w-carapp[hidden]{display:none}
-.wc-hd{display:flex;align-items:center;gap:10px}
-.wc-ic{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--c-acc-soft,rgba(242,140,56,.14));color:var(--c-acc,#F28C38);font-size:19px;flex:none}
-.wc-nm{flex:1;min-width:0}.wc-nm b{display:block;font-size:15px;font-weight:600;color:var(--c-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.wc-nm small{font-size:12px;color:var(--c-mut)}
-.wc-go{display:inline-flex;align-items:center;gap:2px;font-size:13px;font-weight:500;color:var(--c-mut);text-decoration:none;padding:6px 4px}.wc-go:hover{color:var(--c-ink)}
-.wc-st{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
-.wc-st span{padding:9px 10px;border-radius:14px;background:var(--c-bg1,rgba(127,127,127,.06));min-width:0}
-.wc-st small{display:block;font-size:11px;color:var(--c-mut)}.wc-st b{display:block;font-size:13px;font-weight:600;color:var(--c-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.wc-gr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.wc-t{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:74px;padding:10px 6px;border-radius:16px;border:1px solid var(--c-line);background:none;color:var(--c-ink);font:500 12.5px inherit;font-family:inherit;cursor:pointer;transition:border-color .15s,background .15s}
-.wc-t .ti{font-size:22px;color:var(--c-acc,#F28C38)}.wc-t span{line-height:1.3;text-align:center}
-.wc-t:hover{border-color:var(--c-acc,#F28C38)}
-@media(min-width:900px){.wc-gr{grid-template-columns:repeat(6,minmax(0,1fr))}}
 .w-actions{display:flex;flex-direction:column;gap:12px;width:100%;max-width:380px;margin-top:26px}
 .act-btn{position:relative;display:flex;align-items:center;gap:14px;padding:17px 20px;border-radius:20px;
   font-size:15px;font-weight:700;overflow:hidden;isolation:isolate;transition:transform .28s cubic-bezier(.32,.72,0,1),box-shadow .28s;
@@ -3569,9 +3554,6 @@ window.spireApplySetup=()=>{ const k=level();
         </div>
       </div>
 
-      <!-- การ์ดรถแบบแอปรถยนต์: คันที่เลือก เลขไมล์ เข้าศูนย์ล่าสุด ที่จอด + ปุ่มเครื่องมือใหญ่ ๆ แตะทีเดียว (วาดใน renderCarApp) -->
-      <div class="w-carapp" id="wCarApp" hidden></div>
-
       <div class="w-quick">
         <button class="w-q" onclick="showSymCats()"><i class="ti ti-alert-triangle"></i>
           <span data-t="w.sym">บอกอาการหรือปัญหา</span></button>
@@ -4745,37 +4727,13 @@ async function runFeatureJob(){
 window.runFeatureJob=runFeatureJob;
 
 /* ===== PILL / CAR UI ===== */
-/* การ์ดรถแบบแอปรถยนต์บนหน้าเริ่มแชต — ข้อมูลจริงจากเครื่อง (การาจ สมุดรถ ที่จอด) ไม่มีตัวเลขสมมติ
-   ไม่มีข้อมูล = บอกตรง ๆ ว่ายังไม่มี · ปุ่มเปิดเครื่องมือในห้องแชตนี้เลย ไม่เด้งออกไปหน้าอื่น */
-function renderCarApp(){
-  const el=$("wCarApp");if(!el)return;const c=selCar();if(!c){el.hidden=true;return}
-  const J=k=>{try{return JSON.parse(localStorage.getItem("spire_"+k)||"null")}catch(e){return null}};
-  const km=+String(c.mileage||"").replace(/[^\d]/g,"")||0,lg=J("carlab_log_"+c.id)||{},pk=J("park_"+c.id);
-  const svc=(lg.services||[]).filter(s=>s&&s.date).sort((a,b)=>String(b.date).localeCompare(String(a.date)))[0];
-  const ago=t=>{const m=Math.max(0,Math.round((Date.now()-t)/60000));return m<60?TT(m+" นาทีก่อน",m+" min ago"):m<1440?TT(Math.round(m/60)+" ชม.ก่อน",Math.round(m/60)+" h ago"):TT(Math.round(m/1440)+" วันก่อน",Math.round(m/1440)+" d ago")};
-  const svcTxt=svc?new Date(svc.date).toLocaleDateString(lang==="en"?"en-GB":"th-TH",{day:"numeric",month:"short",year:"2-digit"}):TT("ยังไม่บันทึก","Not logged");
-  const parkTxt=pk&&pk.lat!=null?ago(pk.t||Date.now())+(pk.floor?TT(" · ชั้น "," · floor ")+esc(String(pk.floor)):""):TT("ยังไม่ได้ปักหมุด","Not pinned");
-  const T6=[["listen","ti-ear",TT("ฟังเสียงเครื่อง","Engine sound")],["shake","ti-activity",TT("วัดอาการสั่น","Shake test")],
-    ["park","ti-map-pin",pk&&pk.lat!=null?TT("ไปหารถ","Find my car"):TT("จำที่จอด","Save parking")],["quote","ti-receipt-2",TT("ตรวจใบเสนอราคา","Check a quote")],
-    ["own","ti-report-money",TT("ค่าใช้จ่าย","Costs")],["__mech","ti-tool",TT("เรียกช่าง","Get a mechanic")]];
-  el.hidden=false;
-  el.innerHTML=`<div class="wc-hd"><span class="wc-ic"><i class="ti ti-car"></i></span><span class="wc-nm"><b>${esc(String(c.name||""))}</b><small>${esc(String(c.year||""))}</small></span>
-      <a class="wc-go" href="/garage/${encodeURIComponent(c.id)}">${TT("สมุดรถ","Logbook")}<i class="ti ti-chevron-right"></i></a></div>
-    <div class="wc-st"><span><small>${TT("เลขไมล์","Mileage")}</small><b>${km?km.toLocaleString("en-US")+" "+TT("กม.","km"):"—"}</b></span>
-      <span><small>${TT("เข้าศูนย์ล่าสุด","Last service")}</small><b>${svcTxt}</b></span>
-      <span><small>${TT("ที่จอด","Parked")}</small><b>${parkTxt}</b></span></div>
-    <div class="wc-gr">${T6.map(([k,i,t])=>`<button type="button" class="wc-t" data-wc="${k}"><i class="ti ${i}"></i><span>${t}</span></button>`).join("")}</div>`;
-  el.querySelectorAll("[data-wc]").forEach(b=>b.onclick=()=>{const k=b.dataset.wc;
-    if(k==="__mech"){try{sessionStorage.setItem("spire_postDraft",JSON.stringify({sym:"",cat:"",carId:c.id,at:Date.now()}))}catch(e){}location.href="/post";return}
-    let n=0;(function go(){if(window.openTool){window.openTool(k);return}if(n++<12)setTimeout(go,150)})()});
-}
 function renderCarUI(){
   const c=selCar();
   $("pCarName").textContent=c?c.name:(window.spireT?window.spireT("เลือกรถ","Select car"):(lang==="en"?"Select car":"เลือกรถ"));
   const tag=$("wCarTag");
   if(c){tag.style.display="inline-flex";tag.querySelector("span").textContent=`${c.name} · ${c.year||"-"}`}
   else tag.style.display="none";
-  updateGreeting();renderCarApp();
+  updateGreeting();
 }
 /* ป้าย "เลือกรถ" ในมาร์กอัปเป็นภาษาไทย — แปลทันทีตอนโหลด (renderCarUI จะเขียนทับเป็นชื่อรถเมื่อมีรถแล้ว) */
 (function(){const e=document.getElementById("pCarName");if(e&&e.textContent==="เลือกรถ"&&window.spireT)e.textContent=window.spireT("เลือกรถ","Select car")})();

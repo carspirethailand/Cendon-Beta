@@ -1487,5 +1487,13 @@ window.CENDON_L10N={lang:"vi",t:{
 "Switch urgent / not urgent":"Đổi khẩn cấp / không gấp",
 "QR":"QR",
 "Shop card: tap to switch profile / QR":"Thẻ tiệm: chạm để đổi hồ sơ / QR",
-"Scan to open the shop on Cendon":"Quét để mở tiệm trên Cendon"
+"Scan to open the shop on Cendon":"Quét để mở tiệm trên Cendon",
+"Best match":"Phù hợp nhất",
+"Knows your car":"Rành xe của bạn",
+"List":"Danh sách",
+"Lowest starting price":"Giá khởi điểm thấp nhất",
+"Map unavailable — try again":"Không tải được bản đồ — thử lại",
+"Most jobs done":"Nhiều việc nhất",
+"Nearest":"Gần nhất",
+"Top rated":"Đánh giá cao nhất"
 }};

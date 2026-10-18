@@ -26,5 +26,6 @@ async function append(car,kind,entry,baseLog){
   if(!r.ok||!r.entry||!r.log)throw Error('Save not acknowledged');
   return r;
 }
-W.CendonGarageData=Object.freeze({policy,loadPolicy,append});
+function refreshPolicy(car){const uid=auth()?.currentUser?.uid;if(uid)policies.delete(uid+':'+car.id);return loadPolicy(car)}
+W.CendonGarageData=Object.freeze({policy,loadPolicy,refreshPolicy,append});
 })(window);

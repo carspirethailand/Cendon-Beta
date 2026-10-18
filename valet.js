@@ -375,7 +375,7 @@ async function act(btn){
     const g=garage(),c=g.find(x=>x.id===btn.dataset.car);if(!c)return;
     const nw=Math.round(+String(a.km).replace(/[^\d.]/g,""));if(!(nw>0&&nw<=3e6))return;
     if(!VC())throw Error(T('อัปเดตหน้าเว็บก่อนบันทึก','Update the app before saving'));
-    await VC().setKm(c.id,nw);
+    await VC().setKm(c.id,nw,{confirmJump:true});
     try{typeof renderCarUI==="function"&&renderCarUI()}catch(e){}
     finish(m,a,"done",T(`${carName(c)}: ${nw.toLocaleString()} กม. แล้ว`,`${carName(c)} is now at ${nw.toLocaleString()} km`));
   }).catch(e=>finish(m,a,"err",e.message));

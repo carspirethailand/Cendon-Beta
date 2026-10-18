@@ -8,10 +8,12 @@
 <script src="/cendon-tour.js" defer></script>
 <script src="/account-actions.js" defer></script>
 <script src="/account.js?v=2026-10-18-lang1" defer></script>
-<script src="/garage-rules.js?v=1" defer></script>
-<script src="/garage-data.js?v=1" defer></script>
-<script src="/valet-core.js?v=6" defer></script>
-<script src="/input-guard.js?v=3" defer></script>
+<script src="/garage-rules.js?v=2" defer></script>
+<script src="/garage-data.js?v=2" defer></script>
+<script src="/mileage-session.js?v=1" defer></script>
+<script src="/mileage-review.js?v=1" defer></script>
+<script src="/valet-core.js?v=7" defer></script>
+<script src="/input-guard.js?v=4" defer></script>
 <script src="/cloud-swap.js?v=3" defer></script>
 <meta charset="UTF-8"/>
 <!-- ที่อยู่แบบลึก (/garage/…) — ไฟล์ประกอบทุกตัวอ้างจากรากเว็บเสมอ -->
@@ -3982,8 +3984,8 @@ a.mtab{text-decoration:none}
 <link rel="stylesheet" href="stability.css">
 <link rel="stylesheet" href="car-detail-tabs.css?v=2026-10-12-r1">
 <script src="car-detail-tabs.js?v=2026-10-12-r2" defer></script>
-<link rel="stylesheet" href="garage-extras.css?v=3">
-<script src="garage-extras.js?v=5" defer></script>
+<link rel="stylesheet" href="garage-extras.css?v=4">
+<script src="garage-extras.js?v=6" defer></script>
 <script src="car-sync.js"></script>
 <script src="stability.js" defer></script>
 <!-- หน้าตาชุดเดียวกับหน้าหลัก (สี การ์ด ปุ่ม พื้นหลัง) — โหลดท้ายสุดให้ชนะสไตล์เดิม -->
@@ -4160,7 +4162,7 @@ html.gx-lock,html.gx-lock body{overflow:hidden}
 <style>/* มือถือ: กระดิ่งอยู่มุมขวาบน · ปุ่มเพิ่มรถลงมาแถวที่สอง ชิดขวาตรงกับการ์ดรถพอดี (ไม่ต้องหลบเข้ามาอีก) */
 @media(max-width:760px){.gx-head{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:40px auto;column-gap:12px;align-items:end}
   .gx-head>.gx-hl{grid-row:1/3;grid-column:1;align-self:start}.gx-head>.gx-add{grid-row:2;grid-column:2;margin-top:0}}</style>
-<script src="carspec.js?v=2026-10-18-deep" defer></script>
+<script src="carspec.js?v=2026-10-18-r1" defer></script>
 <link rel="stylesheet" href="calm-ui.css?v=1">
 </head>
 <body>
@@ -12878,16 +12880,18 @@ function tripMetres(pts){
   return sum;
 }
 
-let dv={on:false,pts:[],watch:null,lock:null,tick:null,t0:0,speed:0,saved:null,err:""};
+let dv={on:false,pts:[],watch:null,lock:null,tick:null,t0:0,speed:0,saved:null,err:"",meter:null,paused:false,seq:0,starting:false};
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&dv.on){dv.paused=true;dv.seq++;dv.meter?.pause();if(dv.meter)window.CendonMileage.save(dv.meter);if(dv.watch!=null)navigator.geolocation.clearWatch(dv.watch);dv.watch=null}else if(dv.on)renderTool()});
+window.addEventListener("pagehide",()=>{if(dv.on&&dv.meter){dv.paused=true;dv.seq++;dv.meter.pause();window.CendonMileage.save(dv.meter);if(dv.watch!=null)navigator.geolocation.clearWatch(dv.watch);dv.watch=null}});
 
 function driveCard(){
   const p=getPark();
   if(dv.saved)return `<div class="lg-card">
       <div class="lg-head"><div class="tx"><small>${T("บันทึกให้แล้ว","Saved for you")}</small>
-        <b>${T("รถจอดแล้ว เก็บจุดไว้เรียบร้อย","Parked — spot recorded")}</b></div></div>
+        <b>${dv.saved.parked?T("บันทึกจุดจอดแล้ว","Parking spot saved"):T("สรุประยะประมาณ · ยังไม่บันทึกจุดจอด","Distance estimate · parking not saved")}</b></div></div>
       <div class="lg-urg fine"><i class="ti ti-circle-check"></i><span>${T(
         `ขับไปทั้งหมดราว ${(dv.saved.km).toFixed(1)} กม. ใช้เวลา ${dv.saved.mins} นาที`,
-        `About ${(dv.saved.km).toFixed(1)} km over ${dv.saved.mins} minutes`)}</span></div>
+        `About ${(dv.saved.km).toFixed(1)} km over ${dv.saved.mins} minutes`)}</span></div>${dv.saved.incomplete?`<p class="lg-note">${T("ข้อมูล GPS มีช่วงขาด ระยะนี้อาจน้อยกว่าที่ขับจริง ไม่ใช้แทนเลขหน้าปัด","GPS has gaps. Distance may be incomplete; it is not an odometer reading.")}</p>`:""}
       ${dv.saved.km>=1?`<div class="lg-keep"><span><i class="ti ti-gauge"></i>
         ${T("ระยะ GPS เป็นค่าประเมิน ไม่ใช่เลขหน้าปัด","GPS distance is estimated, not the dashboard odometer")}
         <b>+${Math.round(dv.saved.km)} ${T("กม.","km")}</b></span>
@@ -12895,9 +12899,10 @@ function driveCard(){
       <div class="lg-acts"><button class="btn" id="dvClose">${T("ปิด","Close")}</button></div>
     </div>`;
 
+  if(dv.on&&dv.paused)return `<div class="lg-card"><h4>${T("พักการติดตามแล้ว","Tracking paused")}</h4><p>${T("แอปถูกพักหรือดับจอ ระยะช่วงที่หายไปจะไม่ถูกเดา ตรวจว่ารถยังเป็นคันเดิมแล้วกดติดตามต่อขณะจอด","The app was hidden or suspended. Missing distance is not guessed. Check the selected car, then resume while parked.")}</p><button class="btn primary" id="dvResume">${T("รถคันเดิม · ติดตามต่อ","Same car · resume")}</button><button class="btn" id="dvStop">${T("จบรอบนี้","Finish")}</button></div>`;
   if(dv.on){
     const mins=Math.round((Date.now()-dv.t0)/60000);
-    const km=tripMetres(dv.pts)/1000;
+    const km=(dv.meter?dv.meter.summary().metres:tripMetres(dv.pts))/1000;
     const st=parkedNow(dv.pts,Date.now());
     const stillSec=st.still?Math.round(st.still/1000):0;
     return `<div class="lg-card">
@@ -12928,18 +12933,20 @@ function driveCard(){
     <div class="lg-head"><div class="tx"><small>${T("อัตโนมัติ","Automatic")}</small>
       <b>${T("โหมดขับรถ","Drive mode")}</b></div></div>
     <p class="lg-sub">${T(
-      "กดก่อนออกรถครั้งเดียว จากนั้นไม่ต้องแตะอะไรอีก พอรถจอดนิ่ง ระบบบันทึกจุดจอดให้เอง และสรุประยะทางที่ขับจริงมาให้ด้วย",
-      "Tap once before you set off. When the car comes to rest we save the spot automatically and tell you how far you actually drove")}</p>
+      "ตรวจว่าคันที่เลือกคือรถที่คุณกำลังใช้ แล้วกดเริ่มขณะจอด ระบบประเมินระยะจาก GPS ไม่สามารถยืนยันคนขับหรือรถจากเซนเซอร์มือถือได้",
+      "Check the selected car and start while parked. GPS estimates distance; phone sensors do not prove the car or driver identity.")}</p>
+    <p class="lg-note">${T("รถที่เลือก: ","Selected car: ")}${esc(window.CendonValetCore?.carLabel(car())||car()?.name||T("ยังไม่เลือกรถ","No car selected"))}</p>
     <div class="lg-acts"><button class="btn primary" id="dvGo">
       <i class="ti ti-steering-wheel"></i>${T("เริ่มโหมดขับรถ","Start drive mode")}</button></div>
     ${dv.err?`<div class="lg-err"><i class="ti ti-alert-triangle"></i>${esc(dv.err)}</div>`:""}
     <p class="lg-note">${T(
-      "เว็บรันเบื้องหลังไม่ได้เหมือนแอปที่ติดตั้ง จึงต้องกดเริ่มเอง แต่ส่วนที่คนลืมจริง ๆ คือตอนจอด ซึ่งอันนี้ทำให้เอง",
-      "The web can't run in the background like an installed app, so you tap to start — but the part people actually forget is the parking, and that's handled")}</p>
+      "เมื่อดับจอหรือสลับแอป ระบบพักและไม่นับช่วงที่หายไป กลับมาแล้วกดติดตามต่อขณะจอด ไม่เพิ่มเลขไมล์หน้าปัดเอง",
+      "Hiding or suspending the app pauses tracking. Missing distance is not guessed. Resume while parked; the confirmed odometer is never incremented automatically.")}</p>
   </div>`;
 }
 
 async function startDrive(){
+  if(dv.starting||dv.on)return;dv.starting=true;try{
   dv.err="";
   const selected=car(),owner=(window.spireAuth||window.auth)?.currentUser?.uid;
   if(!selected||!owner){dv.err=T("เลือกรถและเข้าสู่ระบบก่อน","Select a car and sign in first");renderTool();return}
@@ -12952,55 +12959,67 @@ async function startDrive(){
     renderTool(); return;
   }
   if(car()?.id!==dv.carId||(window.spireAuth||window.auth)?.currentUser?.uid!==dv.owner){dv.err=T("รถหรือบัญชีเปลี่ยนแล้ว เริ่มใหม่อีกครั้ง","Car or account changed; start again");renderTool();return}
+  const prior=window.CendonMileage.load(owner,selected.id),resume=prior&&confirm(T("พบระยะประมาณรอบก่อนของรถคันนี้ ต้องการเก็บระยะเดิมต่อไหม? ช่วงที่แอปปิดจะไม่นับ","Resume the previous estimate for this car? Distance while the app was closed is not counted."))?prior:null;
+  dv.meter=window.CendonMileage.create(owner,selected.id,resume);dv.paused=false;
+  if(document.hidden){dv.err=T("กลับมาเปิดแอปแล้วเริ่มขณะจอด","Reopen the app and start while parked");renderTool();return}
   dv.on=true; dv.pts=[]; dv.t0=Date.now(); dv.saved=null;
   /* หน้าจอดับเมื่อไร เบราว์เซอร์หยุดส่งพิกัด ทริปจะขาดกลางคัน */
   try{ if(navigator.wakeLock)dv.lock=await navigator.wakeLock.request("screen") }catch(e){}
+  watchDrive();
+  dv.tick=setInterval(()=>{ if(tool==="park")renderTool() },3000);
+  renderTool();
+  }finally{dv.starting=false}
+}
+function watchDrive(){
+  const run=++dv.seq;
   dv.watch=navigator.geolocation.watchPosition(pos=>{
+    if(!dv.on||dv.paused||run!==dv.seq)return;
     if(car()?.id!==dv.carId||(window.spireAuth||window.auth)?.currentUser?.uid!==dv.owner){stopDrive();dv.pts=[];dv.saved=null;dv.err=T("หยุดติดตามเพราะรถหรือบัญชีเปลี่ยน","Tracking stopped: car or account changed");renderTool();return}
     const c=pos.coords;
     dv.speed=(c.speed!=null&&isFinite(c.speed)&&c.speed>0)?c.speed*3.6:0;
-    dv.pts.push({lat:c.latitude,lng:c.longitude,acc:c.accuracy,t:Date.now()});
+    const point={lat:c.latitude,lng:c.longitude,acc:c.accuracy,t:Number(pos.timestamp)||Date.now()},result=dv.meter.push(point);
+    window.CendonMileage.save(dv.meter);if(!result.accepted)return;
+    dv.pts.push(point);
     if(dv.pts.length>3000)dv.pts.splice(0,1000);
     const st=parkedNow(dv.pts,Date.now());
-    if(st.stopped)finishDrive(true);
-  },()=>{},{enableHighAccuracy:true,maximumAge:1000,timeout:20000});
-  dv.tick=setInterval(()=>{ if(tool==="park")renderTool() },3000);
-  renderTool();
+    if(st.stopped){dv.err=T("อาจจอดแล้ว ถ้าเป็นไฟแดงให้ติดตามต่อ กดจบรอบเมื่อจอดจริง","Possible stop — a traffic light is not parking. Finish only when actually parked.");}
+  },()=>{if(!dv.on||dv.paused||run!==dv.seq)return;dv.err=T("GPS ขาดช่วง ระยะที่ขาดจะไม่นับ","GPS interrupted; missing distance is not counted")},{enableHighAccuracy:true,maximumAge:1000,timeout:20000});
 }
 async function finishDrive(auto){
   if(car()?.id!==dv.carId||(window.spireAuth||window.auth)?.currentUser?.uid!==dv.owner){stopDrive();dv.pts=[];dv.saved=null;renderTool();return}
   const pts=dv.pts.slice();
   stopDrive();
-  if(!pts.length){ renderTool(); return }
+  if(!pts.length&&!dv.meter?.summary().metres){ renderTool(); return }
   const last=pts[pts.length-1];
-  const km=tripMetres(pts)/1000;
+  const km=(dv.meter?dv.meter.summary().metres:tripMetres(pts))/1000;
+  const canPark=!!last&&!document.hidden&&!dv.paused&&Date.now()-last.t<30000&&last.acc<=50;
   const mins=Math.max(1,Math.round((Date.now()-dv.t0)/60000));
   const old=getPark()||{};
   /* หมุดที่ผู้ใช้ปักเองห้ามถูกเขียนทับเด็ดขาด — เขายืนอยู่ตรงนั้นตอนปัก
      ส่วนนี่คือพิกัดสุดท้ายของ GPS ซึ่งในลานจอดเพี้ยนได้เป็นร้อยเมตร
      ถ้าทับแล้วหมุดเลื่อน คนจะเลิกเชื่อแอปทันที */
-  if(old&&old.frozen){
+  if(canPark&&old&&old.frozen){
     setPark(Object.assign({},old,{km:+km.toFixed(1)}));
-  }else{
+  }else if(canPark){
     setPark({lat:last.lat,lng:last.lng,acc:last.acc,t:Date.now(),
       note:old.note||"",photo:"",timerAt:0,auto:!!auto,km:+km.toFixed(1)});
   }
-  dv.saved={km,mins};
+  dv.saved={km,mins,parked:canPark,incomplete:dv.meter?.summary().incomplete};window.CendonMileage.clear(dv.owner,dv.carId);
   /* สั่นเตือนสั้น ๆ ให้รู้ว่าบันทึกแล้ว โดยไม่ต้องมองจอ */
   try{ if(navigator.vibrate)navigator.vibrate([60,40,60]) }catch(e){}
   try{
-    if(("Notification" in window)&&Notification.permission==="granted"){
+    if(canPark&&("Notification" in window)&&Notification.permission==="granted"){
       const reg=await navigator.serviceWorker.getRegistration();
       if(reg)reg.showNotification(T("บันทึกจุดจอดแล้ว","Parking spot saved"),
         {body:T(`ขับมา ${km.toFixed(1)} กม.`,`${km.toFixed(1)} km driven`),
          icon:"./icon192.png",tag:"park"});
     }
   }catch(e){}
-  startPkWatch();
+  if(canPark)startPkWatch();
   renderTool();
 }
 function stopDrive(){
-  dv.on=false;
+  dv.on=false;dv.seq++;
   if(dv.watch!=null&&navigator.geolocation)navigator.geolocation.clearWatch(dv.watch);
   dv.watch=null;
   if(dv.tick)clearInterval(dv.tick); dv.tick=null;
@@ -13008,6 +13027,7 @@ function stopDrive(){
 }
 function wireDrive(){
   const g=$("dvGo"); if(g)g.onclick=startDrive;
+  const resume=$("dvResume");if(resume)resume.onclick=()=>{if(!dv.on||!dv.paused)return;if(car()?.id!==dv.carId||(window.spireAuth||window.auth)?.currentUser?.uid!==dv.owner){stopDrive();dv.saved=null;renderTool();return}dv.paused=false;dv.meter.resume();watchDrive();renderTool()};
   const st=$("dvStop"); if(st)st.onclick=()=>finishDrive(false);
   const cl=$("dvClose"); if(cl)cl.onclick=()=>{ dv.saved=null; renderTool() };
   const od=$("dvOdo"); if(od)od.onclick=async()=>{
@@ -13016,7 +13036,7 @@ function wireDrive(){
       const raw=prompt(T("อ่านเลขไมล์จริงจากหน้าปัดขณะจอด (ไม่ใช้ระยะ GPS บวกเอง)","Enter the actual parked dashboard reading (GPS distance is only an estimate)"),"");
       if(raw===null)return;
       const actual=window.CendonGarageRules.number(raw,0,3000000,"km",true);
-      await window.CendonValetCore.setKm(c.id,actual);
+      try{await window.CendonValetCore.setKm(c.id,actual)}catch(e){if(e.code!=="mileage_jump"||!confirm(e.message))throw e;await window.CendonValetCore.setKm(c.id,actual,{confirmJump:true})}
       od.disabled=true; od.textContent=T("บันทึกแล้ว","Saved");
       window.odoRefresh&&window.odoRefresh();
       window.clRefreshWidgets&&window.clRefreshWidgets();
@@ -14075,19 +14095,21 @@ const num=n=>(n==null||isNaN(n))?"—":Math.round(n).toLocaleString("en-US");
 const LG=(k,d)=>{try{const v=localStorage.getItem("spire_"+k);return v?JSON.parse(v):d}catch(e){return d}};
 const LS=(k,v)=>{try{localStorage.setItem("spire_"+k,JSON.stringify(v))}catch(e){}};
 
-async function api(path,body){
+async function api(path,body,owner){
   const auth=window.spireAuth;
   let u=auth&&auth.currentUser;
   if(!u&&window.spireAwaitUser)u=await window.spireAwaitUser();
   if(!u)throw new Error("noauth");
-  const tok=await u.getIdToken();
+  const expected=owner||u.uid;if(u.uid!==expected)throw new Error("account_changed");
+  const tok=await u.getIdToken();if(auth.currentUser?.uid!==expected)throw new Error("account_changed");
   const r=await fetch(window.BACKEND_URL+path,{
     method:body?"POST":"GET",
     headers:Object.assign({Authorization:"Bearer "+tok},
       body?{"Content-Type":"application/json"}:{}),
     body:body?JSON.stringify(body):undefined});
   let d=null; try{ d=await r.json() }catch(e){}
-  if(!r.ok)throw new Error((d&&d.error)||("Error "+r.status));
+  if(auth.currentUser?.uid!==expected)throw new Error("account_changed");
+  if(!r.ok)throw Object.assign(new Error((d&&d.error)||("Error "+r.status)),{status:r.status,code:d?.code});
   return d||{};
 }
 
@@ -14097,35 +14119,37 @@ async function api(path,body){
    มีค่าเกินกว่าจะปล่อยให้หลุดเพราะเน็ตสะดุดวินาทีเดียว */
 const QK="odo_queue";
 const queue=()=>LG(QK,[])||[];
-const setQ=q=>LS(QK,q.slice(-200));
+const setQ=q=>LS(QK,q.slice(0,200));
 
 function enqueue(carId,km,source,observedAt){
-  const v=Math.round(Number(km)||0);
-  if(!carId||!v||v<0)return;
+  const uid=window.spireAuth?.currentUser?.uid,raw=String(km??"").trim(),v=Number(raw.replace(/,/g,""));
+  if(!uid||!carId||!/^(?:\d+|\d{1,3}(?:,\d{3})+)$/.test(raw)||!Number.isInteger(v)||v<0||v>3000000)return;
   const q=queue();
-  const sig=carId+"|"+source+"|"+v+"|"+(observedAt||0);
+  if(q.length>=200){window.toast&&window.toast(T("คิวเลขไมล์เต็ม กรุณาตรวจรายการค้างก่อน","Mileage queue full; review pending entries first"));return}
+  const sig=uid+"|"+carId+"|"+source+"|"+v+"|"+(observedAt||0);
   if(q.some(x=>x.sig===sig))return;             /* ใบเดิมสแกนซ้ำ ไม่ต้องส่งซ้ำ */
-  q.push({sig,carId,km:v,source,observedAt:observedAt||Date.now()});
+  q.push({uid,sig,carId,km:v,source,observedAt:observedAt||Date.now()});
   setQ(q); flush();
 }
 
 let flushing=false;
 async function flush(){
   if(flushing)return;
-  const q=queue(); if(!q.length)return;
+  const owner=window.spireAuth?.currentUser?.uid,q=queue(); if(!owner||!q.length)return;
   flushing=true;
   try{
-    for(const it of q.slice(0,20)){
+    for(const it of q.filter(x=>x.uid===owner&&!x.needsReview).slice(0,20)){
       try{
         await api("/api/odo/anchor",{carId:it.carId,km:it.km,source:it.source,
-          observedAt:it.observedAt});
+          observedAt:it.observedAt},owner);
         setQ(queue().filter(x=>x.sig!==it.sig));
       }catch(e){
         const m=String(e&&e.message||"");
         /* ยังไม่ล็อกอินหรือเน็ตล่ม — เก็บไว้ก่อน เดี๋ยวรอบหน้าค่อยส่ง
            แต่ถ้าเซิร์ฟเวอร์บอกว่าข้อมูลผิดเอง ทิ้งเลย ไม่งั้นค้างในคิวตลอดกาล */
-        if(m==="noauth"||m.indexOf("Error 5")===0||m==="Failed to fetch")break;
-        setQ(queue().filter(x=>x.sig!==it.sig));
+        if(m==="noauth"||m==="account_changed"||!e.status||e.status>=500)break;
+        setQ(queue().map(x=>x.sig===it.sig?{...x,needsReview:true}:x));
+        window.toast&&window.toast(T("เลขไมล์ยังไม่ซิงก์: ตรวจเลขและวันที่ในรถคันนี้ ข้อมูลค้างยังเก็บไว้","Mileage not synced: check this car reading/date. Pending data is retained."));
       }
     }
   }finally{ flushing=false }
@@ -14976,7 +15000,7 @@ window.spireApplyPrimary=()=>apply(read());
 <!-- แผงผู้ดูแลแบบลอย: โหลดทุกหน้า แต่แสดงเฉพาะผู้ดูแลที่เปิดไว้ในตั้งค่า -->
 <script src="cendon-admin.js" defer></script>
 <link rel="stylesheet" href="feature-ai.css?v=1">
-<script src="feature-ai.js?v=4"></script>
+<script src="feature-ai.js?v=5"></script>
 <script src="fluid.js" defer></script>
 <script src="crop.js" defer></script>
 <script src="cendon-line.js" defer></script>

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 /* รอบตรวจซ้ำรายการ feedback: ของที่ยังพังจริงตอนทดสอบในเบราว์เซอร์ แล้วแก้ในรอบนี้ */
-const r=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8');
+const r=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8').replace(/\r\n/g,'\n');
 const chat=r('chat.html'),bell=r('bell.js'),garage=r('garage.html');
 
 test('#10 หาสาเหตุกับ AI: opens the symptom picker for that car, and the late sign-in check no longer throws it back to the welcome page', () => {
@@ -64,5 +64,5 @@ test('#26 specs go deeper: performance, clearance, turning radius, boot, suspens
   const cs=r('carspec.js');
   for(const k of ['top_kmh','accel_s','ground_clearance_mm','turning_m','cargo_l','suspension_front','suspension_rear','brakes_front','brakes_rear'])assert.ok(cs.includes(k),k);
   assert.match(cs,/have\.data\?\.schema===2&&have\.sources\?\.length&&\(equipment\|\|have\.data\.depth>=2\)/);
-  for(const f of ['garage.html','news.html','profile.html','spares.html','sw.js'])assert.match(r(f),/carspec\.js\?v=2026-10-18-deep/,f);
+  for(const f of ['garage.html','news.html','profile.html','spares.html','sw.js'])assert.match(r(f),/carspec\.js\?v=2026-10-18-r1/,f);
 });

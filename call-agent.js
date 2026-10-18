@@ -181,7 +181,7 @@
           msg={accept:T('รับราคาแล้ว ร้านได้รับนัดพร้อมเบอร์ของคุณ','Quote accepted — the shop has your booking'),cancel:T('ยกเลิกใบงานแล้ว','Job cancelled'),complete:T('ปิดงานแล้ว','Job closed'),message:T('ส่งข้อความแล้ว','Message sent')}[a.op];}
         if(p.d==='log'){const r=await V.logAdd(p.c.id,a.kind,{amount:a.amount,litres:a.litres,km:a.km,item:a.item,title:a.title,date:a.date});url='/garage';msg=T('บันทึกลงสมุดรถแล้ว ','Saved to the logbook ')+r.date;}
         if(p.d==='due'){const r=await V.dueSet(p.c.id,a.key,a.date);url='/garage';msg=T('ตั้งวันที่แล้ว ','Date set ')+r.date;}
-        if(p.d==='car_km'){const r=await V.setKm(p.c.id,a.km);url='/garage';msg=T(`${r.label}: ${r.km.toLocaleString()} กม. แล้ว`,`${r.label} is now at ${r.km.toLocaleString()} km`);}
+        if(p.d==='car_km'){const r=await V.setKm(p.c.id,a.km,{confirmJump:true});url='/garage';msg=T(`${r.label}: ${r.km.toLocaleString()} กม. แล้ว`,`${r.label} is now at ${r.km.toLocaleString()} km`);}
         if(p.d==='car_info'){const r=await V.setInfo(p.c.id,a.info);url='/garage';msg=T('บันทึกข้อมูลรถแล้ว','Car details saved')+' · '+r.fields.join(', ');}
         if(p.d==='add_car'){const r=await V.addCar({make:a.make,model:a.model,year:a.year,mileage:a.mileage});url='/garage';msg=T(`เพิ่ม ${r.label} เข้าการาจแล้ว`,`Added ${r.label} to your garage`);}
         if(p.d==='shop_status'){await V.shopStatus(a.state);url='/studio';msg=T('ตั้งสถานะร้านแล้ว','Shop status updated');}

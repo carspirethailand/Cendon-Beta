@@ -30,7 +30,7 @@ async function api(path,body,method,owner){
     body:body?JSON.stringify(body):undefined});
   let d=null;try{d=await r.json()}catch(e){}
   if(!stillOwner())throw Error(T('บัญชีเปลี่ยนไปแล้ว กรุณาตรวจในบัญชีเดิม','Account changed; check the original account'));
-  if(!r.ok)throw Object.assign(new Error((d&&d.error)||T("ระบบยังไม่พร้อม ลองใหม่อีกครั้ง","Not available right now — please try again")),{status:r.status});
+  if(!r.ok)throw Object.assign(new Error((d&&d.error)||T("ระบบยังไม่พร้อม ลองใหม่อีกครั้ง","Not available right now — please try again")),{status:r.status,code:d?.code});
   return d||{};
 }
 
@@ -208,12 +208,11 @@ async function addCar(o){
   try{W.CarSpec&&W.CarSpec.ensure({id,make,model,year}).catch(()=>{})}catch(e){}
   return {id,label:[make,model,year].join(" ")};
 }
-async function setKm(carId,km){
+async function setKm(carId,km,{confirmJump=false}={}){
   const g=garageLS(),c=g.find(x=>x.id===carId);if(!c)need([T("ไม่พบรถคันนี้ในการาจ","That car isn't in your garage")]);
-  const raw=String(km??'').trim().replace(/,/g,''),n=Math.round(Number(raw));if(!/^\d+(?:\.\d+)?$/.test(raw)||!(n>=0&&n<=3e6))need([T("เลขไมล์","The mileage")]);
+  const raw=String(km??'').trim(),n=Number(raw.replace(/,/g,''));if(!/^(?:\d+|\d{1,3}(?:,\d{3})+)$/.test(raw)||!Number.isInteger(n)||!(n>=0&&n<=3e6))need([T("เลขไมล์","The mileage")]);
   const owner=(await user()).uid;
-  await api("/api/cars",{id:c.id,make:c.make||c.name||"",model:c.model||"",year:c.year||"",mileage:String(n),color:c.color||undefined,body:c.type||undefined,info:c.info||undefined},'POST',owner);
-  await api('/api/odo/anchor',{carId:c.id,km:n,source:'manual',observedAt:Date.now()},'POST',owner);
+  await api('/api/odo/anchor',{carId:c.id,km:n,source:'manual',observedAt:Date.now(),confirmJump},'POST',owner);
   c.mileage=String(n);saveGarageLS(g);
   return {km:n,label:carLabel(c)};
 }

@@ -38,6 +38,17 @@ test('call card turns with the finger like the search bar, the ⇄ turns with th
   assert.match(home,/#hQuick \.lx-qflip \.qf-f\{background:linear-gradient\(160deg,#e02424,#c81e1e\)!important;/);
 });
 
+test('the urgent card works like an emergency light: first tap counts, even right after scrolling or before the account loads',()=>{
+  /* ทำงานตอนยกนิ้ว ไม่รอ click (มือถือกลืน click แรกตอนหน้ายังไหล) · กัน click ที่ตามมาไม่ให้ซ้ำ */
+  assert.match(home,/box\.addEventListener\("touchend",e=>\{\n    if\(tm\|\|e\.touches\.length\|\|box\.dataset\.swiped\|\|performance\.now\(\)-tt>900\)return;tm=true;\n    if\(e\.cancelable\)e\.preventDefault\(\);/);
+  assert.match(home,/go\(back\?"post":"urgent"\)\}\);/);
+  assert.match(home,/\.lx-qflip\.press \.qf-in\{scale:\.97\}/,'instant pressed feedback');
+  /* เพิ่งเปิดแอป บัญชียังโหลดไม่เสร็จ: เปิดหน้าฉุกเฉินได้เลย ไม่เด้งไปหน้าเข้าสู่ระบบ */
+  assert.match(home,/function emergency\(\)\{\n  if\(!U&&!signedHint\(\)\)return needLogin\(\);/);
+  assert.match(home,/async function urgentCall\(pre\)\{\n  if\(!await userReady\(\)\)return needLogin\(\);/);
+  assert.match(home,/async function accident\(step\)\{\n  if\(!await userReady\(\)\)return needLogin\(\);/);
+});
+
 test('desktop chat composer: text on top, buttons on the row below',()=>{
   assert.match(chat,/@media\(min-width:900px\)\{\n  #composer \.crow\{flex-wrap:wrap!important;/);
   assert.match(chat,/#composer \.crow #inp\{order:-1;flex:1 0 100%!important;/);

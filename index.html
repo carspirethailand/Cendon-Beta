@@ -1630,8 +1630,10 @@ html:not([data-theme="dark"]) .lx-sky i{opacity:.32}html:not([data-theme="dark"]
 /* การ์ด "เรียกช่าง" แบบพลิก: สองหน้าซ้อนในช่องเดียวกัน (grid) ความสูงเท่าการ์ดอื่น · พลิกด้วย rotateY (การ์ดจอทำ ไม่กระตุก)
    ลากตามนิ้วได้ (แนวนอนเป็นของการ์ด แนวตั้งยังเลื่อนหน้าได้) · ปุ่ม ⇄ อยู่ในการ์ดแต่ละหน้า จึงหมุนไปพร้อมการ์ด */
 .lx-qflip{position:relative;perspective:900px;min-width:0;touch-action:pan-y;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
-.lx-qflip .qf-in{display:grid;height:100%;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.2,.8,.2,1);will-change:transform}
+.lx-qflip .qf-in{display:grid;height:100%;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.2,.8,.2,1),scale 90ms ease-out;will-change:transform}
 .lx-qflip.back .qf-in{transform:rotateY(180deg)}
+/* นิ้วแตะปุ๊บ การ์ดยุบนิดเดียวทันที — รู้ว่ากดติดแล้ว */
+.lx-qflip.press .qf-in{scale:.97}
 .lx-qflip .qf-face{position:relative;grid-area:1/1;width:100%;height:100%;min-width:0;box-sizing:border-box;backface-visibility:hidden;-webkit-backface-visibility:hidden}
 /* ด้านหลังต้องหันกลับเสมอ แม้ตอนเอาเมาส์ชี้ (กฎ "ชี้แล้วไม่ลอย" ใน motion.css ห้ามทับ ไม่งั้นการ์ดหายตอนชี้) */
 html #hQuick .lx-qflip .qf-f{transform:none!important}
@@ -3845,16 +3847,19 @@ function drawQuick(){
       <button type="button" class="qf-face qf-b" data-q="post" tabindex="-1" aria-hidden="true"><i class="ti ti-speakerphone"></i><b>${T("เรียกช่าง (ไม่ด่วน)","Find a mechanic")}</b>${SW}<small>${T("ช่างรอบตัวเสนอราคา","Nearby shops send quotes")}</small></button></div>
       <button type="button" class="qf-tg">${T("สลับเป็น เรียกช่างไม่ด่วน","Switch to not urgent")}</button></div>`
     +Q.map(([k,i,t,d])=>`<button type="button" data-q="${k}"><i class="ti ${i}"></i><b>${t}</b><small>${d}</small></button>`).join("");
-  qFlipWire();
-  $("hQuick").querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{const k=b.dataset.q;if(b.closest("#qFlip")&&$("qFlip").dataset.swiped)return;
+  const go=k=>{
     if(k==="urgent")return emergency();if(k==="post")return openPostForm("","");if(k==="multi")return openMulti("","");
     if(k==="quote")return quotePage();
-    if(k==="listen")return listenPage()});
+    if(k==="listen")return listenPage()};
+  qFlipWire(go);
+  $("hQuick").querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{const k=b.dataset.q;if(b.closest("#qFlip")&&$("qFlip").dataset.swiped)return;go(k)});
 }
 /* พลิกการ์ดเรียกช่าง — แบบเดียวกับช่องค้นหา: ลากไปซ้าย/ขวา การ์ดหมุนตามนิ้ว (เลื่อนไปกี่ % ก็หมุนกี่ %)
    ปล่อยเกินราวหนึ่งในสามของการ์ด หรือปัดเร็ว = พลิกไปอีกหน้า · ไม่ถึง = กลับที่เดิม · ลากแล้วไม่นับเป็นการแตะ
-   ด้านที่ไม่ได้หันมาแตะไม่ได้ (โปรแกรมอ่านจอก็ไม่อ่าน) */
-function qFlipWire(){
+   ด้านที่ไม่ได้หันมาแตะไม่ได้ (โปรแกรมอ่านจอก็ไม่อ่าน)
+   ปุ่มนี้คือไฟฉุกเฉิน: แตะด้วยนิ้วแล้วทำงานทันทีตอนยกนิ้ว ไม่รอ click ของเบราว์เซอร์
+   (ตอนหน้ายังไหลค้างจากการเลื่อน มือถือจะกลืน click ของแตะแรกไปเป็น "หยุดเลื่อน" ผู้ใช้ต้องรอแล้วกดซ้ำ) */
+function qFlipWire(go){
   const box=$("qFlip");if(!box)return;
   const IN=box.querySelector(".qf-in"),f=box.querySelector(".qf-f"),bk=box.querySelector(".qf-b"),tg=box.querySelector(".qf-tg");
   let back=false,rot=0;
@@ -3869,18 +3874,31 @@ function qFlipWire(){
   box.addEventListener("click",e=>{if(!e.target.closest(".qf-sw"))return;e.preventDefault();e.stopPropagation();if(!box.dataset.swiped)set(!back,1)},true);
   let pid=null,sx=0,sy=0,dx=0,w=1,t0=0,lock=null;
   box.addEventListener("pointerdown",e=>{if(pid!==null||e.button>0)return;
-    pid=e.pointerId;sx=e.clientX;sy=e.clientY;dx=0;lock=null;w=Math.max(120,box.offsetWidth);t0=performance.now();delete box.dataset.swiped});
+    pid=e.pointerId;sx=e.clientX;sy=e.clientY;dx=0;lock=null;w=Math.max(120,box.offsetWidth);t0=performance.now();delete box.dataset.swiped;
+    box.classList.add("press")});
   box.addEventListener("pointermove",e=>{if(e.pointerId!==pid)return;
     const mx=e.clientX-sx,my=e.clientY-sy;
-    if(lock===null){if(Math.abs(mx)<7&&Math.abs(my)<7)return;lock=Math.abs(mx)>Math.abs(my)*1.1?"x":"y";
+    if(lock===null){if(Math.abs(mx)<7&&Math.abs(my)<7)return;lock=Math.abs(mx)>Math.abs(my)*1.1?"x":"y";box.classList.remove("press");
       if(lock==="x"){box.dataset.swiped="1";try{box.setPointerCapture(pid)}catch(x){}}}
     if(lock!=="x")return;
     dx=mx;turn(rot+Math.max(-1,Math.min(1,dx/w))*180,false)});
-  const end=e=>{if(e.pointerId!==pid)return;pid=null;const was=lock;lock=null;if(was!=="x")return;
+  const end=e=>{if(e.pointerId!==pid)return;pid=null;box.classList.remove("press");if(e.type==="pointercancel")tm=true;
+    const was=lock;lock=null;if(was!=="x")return;
     const v=dx/Math.max(1,performance.now()-t0),go=Math.abs(dx)>w*.3||Math.abs(v)>.5&&Math.abs(dx)>20;
     if(go)set(!back,dx>0?1:-1);else turn(rot,true);
     setTimeout(()=>delete box.dataset.swiped,350)};
   box.addEventListener("pointerup",end);box.addEventListener("pointercancel",end);
+  /* แตะ (นิ้วไม่ขยับเกิน 10px) = ทำงานตอนยกนิ้วเลย แล้วกัน click ที่ตามมาไม่ให้ทำซ้ำ */
+  let tx=0,ty=0,tt=0,tm=true;
+  box.addEventListener("touchstart",e=>{const t=e.touches[0];tm=e.touches.length>1;tx=t.clientX;ty=t.clientY;tt=performance.now()},{passive:true});
+  box.addEventListener("touchmove",e=>{const t=e.touches[0];if(Math.hypot(t.clientX-tx,t.clientY-ty)>10)tm=true},{passive:true});
+  box.addEventListener("touchcancel",()=>{tm=true},{passive:true});
+  box.addEventListener("touchend",e=>{
+    if(tm||e.touches.length||box.dataset.swiped||performance.now()-tt>900)return;tm=true;
+    if(e.cancelable)e.preventDefault();
+    box.dataset.swiped="1";setTimeout(()=>delete box.dataset.swiped,400);
+    if(e.target.closest(".qf-sw"))return set(!back,1);
+    go(back?"post":"urgent")});
 }
 /* ═══ ฟ้าคลื่นดาวตอนโหมด AI (HSKY) ═══
    ชั้นแสงไล่สี อำพัน→ส้ม→ชมพู→ม่วง ไหลเป็นคลื่น = ชุดเดียวกับตอน AI กำลังประมวลผลในห้องแชต
@@ -5124,7 +5142,7 @@ async function openGroup(G,push){
 /* ═══ เรียกช่างด่วน ═══
    ส่งถึงร้านที่รับงานด่วนและออกนอกสถานที่ได้ ใกล้ที่สุด 3 ร้านพร้อมกัน พร้อมพิกัดจริง */
 async function urgentCall(pre){
-  if(!U)return needLogin();
+  if(!await userReady())return needLogin();
   pre=pre&&pre.symptom?pre:null;
   const QK=pre?["ต้องการรถยก","รถขับต่อได้ ขอช่างมาดู","ยางแตก","แบตหมด"]:["สตาร์ทไม่ติด","แบตหมด","ยางแตก","เครื่องร้อนจัด","รถดับกลางทาง","กุญแจติดในรถ"];
   const cf=contactForm({urgent:true,noSym:true,photos:pre&&pre.photos});
@@ -5163,8 +5181,12 @@ async function urgentCall(pre){
 /* ═══ ฉุกเฉิน: จุดเดียวสำหรับ "รถเสีย" และ "อุบัติเหตุ" ═══
    รถเสีย → ฟอร์มเรียกช่างด่วนเดิม · อุบัติเหตุ → ความปลอดภัยก่อน → เก็บหลักฐาน (ประทับเวลา+พิกัดลงบนรูป) → AI ช่วยเขียนสรุปส่งประกัน → เรียกรถยก/ช่างด่วน
    รูปหลักฐานอยู่ในเครื่องนี้เท่านั้น (IndexedDB) จนกว่าผู้ใช้กดส่งเอง · ลบได้ทุกเมื่อ · เก็บไม่เกิน 7 วัน */
+/* ปุ่มฉุกเฉินต้องกดได้ทันที แม้เพิ่งเปิดแอปและบัญชียังโหลดไม่เสร็จ: เครื่องนี้ล็อกอินค้างไว้ = เปิดได้เลย (เบอร์ฉุกเฉินใช้ได้ทันที)
+   ขั้นต่อไปที่ต้องใช้บัญชีจริงค่อยรอบัญชี (ปกติไม่ถึงวินาที) */
+function signedHint(){try{return localStorage.getItem("cendon_signed")==="1"}catch(e){return false}}
+async function userReady(){if(!U&&signedHint())await READY.user;return !!U}
 function emergency(){
-  if(!U)return needLogin();
+  if(!U&&!signedHint())return needLogin();
   sheet({title:"",url:"/urgent",body:`
     <div class="urg">${WF}<h2><i class="ti ti-urgent"></i> ${T("ฉุกเฉิน","Emergency")}</h2><p>${T("เลือกสิ่งที่เกิดขึ้น ระบบพาทำทีละขั้น","Choose what happened — we'll guide you step by step")}</p></div>
     <div class="emg">
@@ -5208,7 +5230,7 @@ function stampPhoto(file,pos){
   });
 }
 async function accident(step){
-  if(!U)return needLogin();
+  if(!await userReady())return needLogin();
   let D0=await ACC.get()||{at:Date.now(),photos:{},note:"",safe:{},ai:null,pos:null,area:""};
   const save=()=>{D0.at=D0.at||Date.now();ACC.put(D0)};
   let st=step||(D0.ai?3:Object.keys(D0.photos).length?2:1);

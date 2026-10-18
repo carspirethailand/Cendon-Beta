@@ -206,7 +206,7 @@ function kmRow(){
   if(!uid()||!hasCar())return "";
   const k=kmGet(),on=!!(k&&k.on);
   return `<div class="nb-on${on?" is-on":""}"><i class="ti ti-gauge"></i><span><b>${T("เตือนจดเลขไมล์ 18:00","Mileage reminder at 6 pm")}${on?` <em>${T("เปิดอยู่","On")}</em>`:""}</b>${on
-    ?(k.line?T("ถามทาง LINE ทุกเย็น พิมพ์เลขตอบในแชตได้เลย · คันที่จดแล้ววันนั้นไม่ถาม","Asked on LINE every evening — just reply with the number · cars already logged that day are skipped")
+    ?(k.line?T("ถามทาง LINE และแจ้งเตือนในเครื่องที่เปิดไว้ทุกเย็น · พิมพ์เลขตอบใน LINE ได้ · คันที่จดแล้ววันนั้นไม่ถาม","Asked on LINE and on enabled devices each evening · reply on LINE · cars already logged that day are skipped")
       :T("เด้งบนเครื่องทุกเย็น แตะแล้วใส่เลขได้เลย · คันที่จดแล้ววันนั้นไม่ถาม","A notification every evening — tap it to enter the reading · cars already logged that day are skipped"))
     :T("ช่วยจำเลขไมล์ทุกเย็น ระบบจะเตือนเปลี่ยนน้ำมันเครื่องและอะไหล่ได้แม่นขึ้น","A daily nudge so oil-change and parts reminders stay accurate")}</span><button type="button" class="nb-cta${on?" off":""}" data-a="${on?"kmoff":"kmon"}">${on?T("ปิด","Turn off"):T("เปิด","Turn on")}</button></div>`;
 }
@@ -286,7 +286,7 @@ function mount(){
     else{page.style.removeProperty("--cb-dy");page.style.removeProperty("--cb-dx")}};
   home();addEventListener("resize",home);
   /* ห้องแชตบนคอม: จุดเดียวกับในแถบเมนูของหน้าอื่น */
-  if(chat)document.body.appendChild(mkBtn("cb-fx"));
+  /* Desktop chat has no floating notification bell. Mobile retains the header control. */
   /* ห้องแชตบนมือถือ: ปุ่มขวาสุดของแถบบน (ปุ่ม ⋮ ที่ valet.js สร้างทีหลัง) · หน้าตั้งค่าเปิดทับทั้งจอ → ใส่ไว้ในหน้าตั้งค่าด้วย
      แถบพวกนี้ถูกวาดใหม่ได้ → คอยใส่กลับทุกครั้งที่หายไป (เช็กเบา ๆ เฟรมละครั้ง) */
   let q=0;

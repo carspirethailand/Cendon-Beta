@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 /* เตือนจดเลขไมล์ 18:00: ปุ่มเปิด/ปิดอยู่ในแผงกระดิ่ง (ทุกหน้า ไม่เพิ่มกล่องใหม่ในหน้า) · แตะแจ้งเตือนแล้วเปิดช่องใส่เลขไมล์ของคันนั้น */
-const r=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8');
+const r=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8').replace(/\r\n/g,'\n');
 
 test('bell panel: one row to turn the 6 pm mileage reminder on or off, only for signed-in users with a car', () => {
   const b=r('bell.js');
@@ -15,8 +15,8 @@ test('bell panel: one row to turn the 6 pm mileage reminder on or off, only for 
 });
 
 test('every page loads the new bell; the 6 pm notification opens that car\'s mileage box', () => {
-  for(const f of ['index.html','garage.html','chat.html','news.html','profile.html','spares.html'])assert.match(r(f),/bell\.js\?v=8/,f);
-  assert.match(r('sw.js'),/'\.\/bell\.js\?v=8'/);
+  for(const f of ['index.html','garage.html','chat.html','news.html','profile.html','spares.html'])assert.match(r(f),/bell\.js\?v=9/,f);
+  assert.match(r('sw.js'),/'\.\/bell\.js\?v=9'/);
   const g=r('garage.html');
   assert.match(g,/const car=q\.get\("car"\), due=q\.get\("due"\);[\s\S]{0,300}if\(car\)sheet\(car,due\|\|""\);/);
 });

@@ -162,23 +162,27 @@ const SVC={oil:["เปลี่ยนน้ำมันเครื่อง","
   coolant:["น้ำหล่อเย็น","Coolant"],gearoil:["น้ำมันเกียร์","Gearbox oil"],belt:["สายพานหน้าเครื่อง","Drive belt"],shock:["โช้คอัพ","Shock absorbers"]};
 const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
 const okDate=v=>typeof v==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(v)&&!isNaN(new Date(v+'T00:00:00Z'))&&new Date(v+'T00:00:00Z').toISOString().slice(0,10)===v&&+v.slice(0,4)>=2000&&+v.slice(0,4)<=new Date().getFullYear()+15;
-function logAdd(carId,kind,e){
+async function logAdd(carId,kind,e){
   const c=cars().find(x=>x.id===carId);if(!c)need([T("ไม่พบรถคันนี้ในการาจ","That car isn't in your garage")]);
   const k="carlab_log_"+carId,l=LG(k,null)||{services:[],fuel:[],trips:[]};["services","fuel","trips"].forEach(x=>{if(!Array.isArray(l[x]))l[x]=[]});
-  const date=okDate(e.date)?e.date:today(),n=v=>Math.max(0,Math.round(+String(v==null?"":v).replace(/[^\d.]/g,"")||0)),bad=[];
+  if(e.date&&(!okDate(e.date)||e.date>today()))throw Error(T('วันที่บันทึกไม่ถูกต้อง','Invalid record date'));
+  const date=e.date||today(),n=v=>{if(v==null||v==='')return 0;return W.CendonGarageRules.number(v,0,1000000000)},bad=[];
   /* กติกาเดียวกับฟอร์มในการาจ (input-guard.js): ยอดเงินสมจริงตามรุ่นรถ ชื่ออ่านได้ — ไม่ผ่านแจ้งกลับให้แก้ ไม่ปัดตัวเลขเอง */
   const G=window.spireGuard,tooMuch=r=>{if(r&&!r.ok)throw new Error(r.msg)};
-  if(kind==="fuel"){const amount=n(e.amount),lit=+(+e.litres||0).toFixed(2);if(!amount)bad.push(T("ยอดเติม (บาท)","Amount (฿)"));if(n(e.km)>1000000)bad.push(T("เลขไมล์ (ไม่เกิน 1,000,000)","Mileage (max 1,000,000)"));need(bad);
+  if(kind==="fuel"){const amount=n(e.amount),lit=n(e.litres);if(!amount)bad.push(T("ยอดเติม (บาท)","Amount (฿)"));if(n(e.km)>3000000)bad.push(T("เลขไมล์ (ไม่เกิน 3,000,000)","Mileage (max 3,000,000)"));need(bad);
     if(G)tooMuch(G.fuel(amount,lit));else if(amount>15000||lit>300)need([T("ยอดเติม (บาท)","Amount (฿)")]);
     l.fuel.push({km:n(e.km),amount,litres:lit,date})}
-  else if(kind==="service"){const key=SVC[e.item]?e.item:"";if(!key)bad.push(T("รายการซ่อมบำรุง","Which service"));if(!n(e.km)||n(e.km)>1000000)bad.push(T("เลขไมล์ตอนทำ (ไม่เกิน 1,000,000)","Mileage at the time (max 1,000,000)"));need(bad);
+  else if(kind==="service"){const key=SVC[e.item]?e.item:"";if(!key)bad.push(T("รายการซ่อมบำรุง","Which service"));if(!n(e.km)||n(e.km)>3000000)bad.push(T("เลขไมล์ตอนทำ (ไม่เกิน 3,000,000)","Mileage at the time (max 3,000,000)"));need(bad);
     const amount=n(e.amount);if(G)tooMuch(G.money(amount,c,{job:key,what:T(SVC[key][0],SVC[key][1])}));
-    l.services.push({k:key,km:n(e.km),amount:Math.min(amount,1000000),date})}
-  else if(kind==="trip"){const title=one(e.title,60);if(title.length<2)bad.push(T("ชื่อทริป","Trip name"));if(!n(e.km)||n(e.km)>10000)bad.push(T("ระยะทาง (ไม่เกิน 10,000 กม. ต่อทริป)","Distance (max 10,000 km per trip)"));need(bad);
+    l.services.push({k:key,km:n(e.km),amount,date})}
+  else if(kind==="trip"){if(W.CendonGarageRules)W.CendonGarageRules.label(e.title,60,2);const title=one(e.title,60);if(title.length<2)bad.push(T("ชื่อทริป","Trip name"));if(!n(e.km)||n(e.km)>10000)bad.push(T("ระยะทาง (ไม่เกิน 10,000 กม. ต่อทริป)","Distance (max 10,000 km per trip)"));need(bad);
     if(G){const r=G.text(title,{max:60,eg:"กรุงเทพ–หัวหิน",egEn:"Bangkok–Hua Hin"});tooMuch(r)}
     l.trips.push({title,km:n(e.km),date})}
   else throw new Error(T("บันทึกแบบนี้ไม่ได้","Can't log that"));
-  LS(k,l);return {date};
+  const bucket={fuel:'fuel',service:'services',trip:'trips'}[kind],entry=l[bucket].pop();
+  if(!W.CendonGarageData)throw Error(T('อัปเดตหน้าเว็บก่อนบันทึก','Update the app before saving'));
+  const result=await W.CendonGarageData.append(c,bucket,entry,l);
+  LS(k,result.log);try{W.cloudMark&&W.cloudMark(k)}catch(e){}return {date,id:result.entry.id};
 }
 const DUE={tax:["ต่อภาษีรถ","Road tax"],act:["พ.ร.บ.","Compulsory insurance"],ins:["ประกันภัย","Insurance"],chk:["ตรวจสภาพ ตรอ.","Vehicle inspection"]};
 async function dueSet(carId,key,date){
@@ -209,6 +213,7 @@ async function setKm(carId,km){
   const raw=String(km??'').trim().replace(/,/g,''),n=Math.round(Number(raw));if(!/^\d+(?:\.\d+)?$/.test(raw)||!(n>=0&&n<=3e6))need([T("เลขไมล์","The mileage")]);
   const owner=(await user()).uid;
   await api("/api/cars",{id:c.id,make:c.make||c.name||"",model:c.model||"",year:c.year||"",mileage:String(n),color:c.color||undefined,body:c.type||undefined,info:c.info||undefined},'POST',owner);
+  await api('/api/odo/anchor',{carId:c.id,km:n,source:'manual',observedAt:Date.now()},'POST',owner);
   c.mileage=String(n);saveGarageLS(g);
   return {km:n,label:carLabel(c)};
 }
@@ -256,12 +261,51 @@ function pageOf(key){
   const p=PAGES[k],c=curCar();return {key:k,label:T(p[0],p[1]),url:typeof p[2]==="function"?p[2](c&&c.id):p[2]};
 }
 
+const PUBLIC_INFO=['trim','engine','engine_code','model_year','market','gear','fuel','drive','tire','tax_due','ins_due','ins_co','note'];
+function infoDraft(input){
+  if(!W.CendonGarageRules)throw Error('Garage rules unavailable');
+  return W.CendonGarageRules.infoPatch(Object.fromEntries(PUBLIC_INFO.filter(k=>input[k]!=null).map(k=>[k,input[k]])));
+}
+async function setInfo(carId,input,{allowPrivate=false}={}){
+  const g=garageLS(),c=g.find(x=>x.id===carId);if(!c)throw Error('Car not found');
+  const owner=(await user()).uid,add=allowPrivate?W.CendonGarageRules.infoPatch(input):infoDraft(input),info={...(c.info||{}),...add};
+  if(!Object.keys(add).length)throw Error('No explicit car details');
+  await api('/api/cars',{id:c.id,make:c.make||c.name||'',model:c.model||'',year:c.year||'',mileage:c.mileage||'',info},'POST',owner);
+  c.info=info;saveGarageLS(g);return {fields:Object.keys(add),label:carLabel(c)};
+}
+const parkingQuestion=t=>/(?:จอด.*(?:ไหน|ไกล|ห่าง)|(?:ที่จอด|จุดจอด).*(?:ไหน|ไกล|ห่าง)|where.*park|how far.*(?:car|park))/i.test(String(t||''));
+async function parking(){
+  const owner=(await user()).uid,c=curCar();if(!c||!cars().some(x=>x.id===c.id))return {saved:false};
+  const owned=await api('/api/cars',null,'GET',owner);
+  if(!Array.isArray(owned)||!owned.some(x=>x.id===c.id))return {saved:false};
+  const p=LG('park_'+c.id,null);
+  if(!p||!Number.isFinite(p.lat)||!Number.isFinite(p.lng)||Math.abs(p.lat)>90||Math.abs(p.lng)>180)return {saved:false};
+  const result={saved:true,car:carLabel(c),note:one([p.floor,p.note].filter(Boolean).join(' · '),160),savedAt:Number(p.t)||null,straightLineMeters:null,accuracyMeters:null,coordinatesShared:false};
+  if(W.navigator?.geolocation){
+    try{
+      const fix=await new Promise((resolve,reject)=>W.navigator.geolocation.getCurrentPosition(resolve,reject,{enableHighAccuracy:true,timeout:6500,maximumAge:15000}));
+      const a=fix.coords,rad=x=>x*Math.PI/180,dLat=rad(p.lat-a.latitude),dLng=rad(p.lng-a.longitude);
+      const h=Math.sin(dLat/2)**2+Math.cos(rad(a.latitude))*Math.cos(rad(p.lat))*Math.sin(dLng/2)**2;
+      const meters=6371000*2*Math.asin(Math.min(1,Math.sqrt(h)));
+      result.accuracyMeters=Math.ceil(Math.max(a.accuracy||0,p.acc||0,10));
+      const step=Math.max(10,Math.min(100,result.accuracyMeters));result.straightLineMeters=Math.round(meters/step)*step;
+    }catch{result.locationUnavailable=true}
+  }
+  if((W.spireAuth||W.auth)?.currentUser?.uid!==owner||curCar()?.id!==c.id)throw Error('Account or selected car changed');
+  return result;
+}
+function parkingText(p){
+  if(!p.saved)return T('ยังไม่มีจุดจอดของรถคันที่เลือก บันทึกจุดจอดก่อนครับ','No saved parking spot for the selected car. Save one first.');
+  return p.car+' — '+(p.note||T('ยังไม่มีโน้ตชั้นหรือเสาที่จอด','No level or pillar note'))+
+    (p.straightLineMeters!=null?T(' · ห่างโดยเส้นตรงประมาณ ',' · About ')+p.straightLineMeters+T(' เมตร',' m in a straight line')+T(' (ความคลาดเคลื่อน GPS ราว ±',' (GPS uncertainty about ±')+p.accuracyMeters+T(' เมตร ไม่ใช่ระยะเดิน)',' m, not walking distance)'):T(' · ยังอ่านตำแหน่งปัจจุบันไม่ได้ จึงไม่เดาระยะ',' · Current location unavailable; distance unknown'))+
+    (p.savedAt?T(' · บันทึกไว้เมื่อ ',' · Saved ')+new Date(p.savedAt).toLocaleString():'');
+}
 /* สิทธิ์ Valet ("ฝากกุญแจ") ตัวเดียวกับปุ่มจับมือในแชต — เปิดได้ด้วยการกดของผู้ใช้เท่านั้น */
 const on=()=>{const p=LG('valet',{})||{},uid=(W.spireAuth||W.auth)?.currentUser?.uid;return!!uid&&p.on===true&&p.uid===uid};
 const allow=()=>{const uid=(W.spireAuth||W.auth)?.currentUser?.uid;if(!uid)return false;LS('valet',{on:true,uid,at:Date.now()});return true};
 /* เบอร์แบบปิดกลาง สำหรับสรุปบนจอ/ให้ AI อ่านทวน */
 const maskPhone=v=>{const p=cleanPhone(v);return p.length>=9?p.slice(0,3)+"-xxx-"+p.slice(-4):""};
 
-W.CendonValetCore=Object.freeze({on,allow,maskPhone,addCar,setKm,pickCar,setTheme,threads,isMech,shopStatus,PAGES,pageOf,api,cars,carName,carLabel,curCar,findCar,here,lastHere,revgeo,savedPhone,cleanPhone,okPhone,
+W.CendonValetCore=Object.freeze({on,allow,maskPhone,addCar,setKm,setInfo,infoDraft,PUBLIC_INFO,parking,parkingQuestion,parkingText,pickCar,setTheme,threads,isMech,shopStatus,PAGES,pageOf,api,cars,carName,carLabel,curCar,findCar,here,lastHere,revgeo,savedPhone,cleanPhone,okPhone,
   post,shops,shopName,quote,message,jobs,job,jobDo,JOB_OPS,logAdd,dueSet,SVC,DUE,today,okDate,T});
 })(window);

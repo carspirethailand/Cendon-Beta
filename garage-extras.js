@@ -118,7 +118,7 @@ function mountCal(c){
     if(v===null)return;const all=myPrices(c);
     /* เว้นว่าง = กลับไปใช้ราคาทั่วไป · ตัวเลขต้องสมจริงตามรุ่นรถ — ไม่ผ่านบอกเหตุผล ไม่ลบราคาเดิมเงียบ ๆ */
     if(!String(v).trim()){delete all[k];LSet('cal_price_'+c.id,all);rerender();return}
-    const n=Math.round(Number(String(v).replace(/[^\d.]/g,'')));
+    let n;try{n=window.CendonGarageRules?window.CendonGarageRules.number(v,1,1000000000,'amount'):Number(v)}catch(e){toast(e.message,'ti-alert-triangle');return}
     if(!(n>0)){toast(T('ใส่ราคาเป็นตัวเลข (บาท)','Enter the price as a number (THB)'),'ti-alert-triangle');return}
     const g=window.spireGuard,r=g?g.money(n,c,{job:k,what:itemName(c,k)}):{ok:true};
     if(!r.ok){toast(r.msg,'ti-alert-triangle');return}

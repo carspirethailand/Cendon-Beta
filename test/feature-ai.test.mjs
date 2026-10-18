@@ -5,10 +5,10 @@ import vm from 'node:vm';
 const source=readFileSync(new URL('../feature-ai.js',import.meta.url),'utf8');
 function fixture({user=true,status=200}={}){
   const calls=[],input={value:'',focus(){},dispatchEvent(){}};
-  const context={car:{make:'Test',model:'Fixture'},measurement:{peaks:[{hz:12}],ok:true},parking:{note:'B2 fixture',accuracyMeters:20},cost:{entryCount:1,total:100}};
+  const context={car:{make:'Test',model:'Fixture'},audioVehicle:{version:1,source:'unknown',vehicle:{}},measurement:{peaks:[{hz:12}],ok:true},parking:{note:'B2 fixture',accuracyMeters:20},cost:{entryCount:1,total:100}};
   const document={body:{dataset:{phase:'thread'}},getElementById:id=>id==='inp'?input:null,querySelectorAll:()=>[]};
   const window={lang:'en',BACKEND_URL:'https://test.invalid',spireAuth:{currentUser:user?{getIdToken:async()=>'test-only-token'}:null},spireHasFeature:()=>true};
-  const sandbox={window,document,location:{search:''},Event:class{},queueMicrotask,URLSearchParams,AbortController,setTimeout,clearTimeout,fetch:async(url,options)=>{calls.push({url,options});return {ok:status===200,status,json:async()=>status===200?{source:'ai',text:'Test transport response'}:{error:'quota'}}}};
+  const sandbox={window,document,location:{search:''},Event:class{},queueMicrotask,URLSearchParams,AbortController,setTimeout,clearTimeout,fetch:async(url,options)=>{calls.push({url,options});return {ok:status===200,status,json:async()=>status===200?{source:'ai',text:'Test transport response',data:{audioVersion:2}}:{error:'quota'}}}};
   vm.runInNewContext(source,sandbox);
   const api=window.CendonFeatureAI;
   api.register({current:()=> 'quote',context:()=>context,media:async()=>[],stop(){},open(){}});

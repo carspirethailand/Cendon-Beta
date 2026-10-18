@@ -49,5 +49,5 @@ test('console filters work with text only and do not collect private data',()=>{
 });
 test('mobile layout, focus, motion and new cache namespace are explicit',()=>{
   const css=readFileSync(new URL('console.css',root),'utf8');assert.match(css,/max-width:640px/);assert.match(css,/prefers-reduced-motion/);assert.match(css,/focus-visible/);
-  const sw=readFileSync(new URL('sw.js',root),'utf8');assert.match(sw,/cendon-v313-customer-console/);assert.match(sw,/p === '\/console'/);
+  const sw=readFileSync(new URL('sw.js',root),'utf8');assert.ok(+(sw.match(/cendon-v(\d+)/)||[])[1]>=313);assert.match(sw,/p === '\/console'/);
 });

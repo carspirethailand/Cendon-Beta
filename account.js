@@ -99,16 +99,29 @@
     D.documentElement.dataset.gate='0';
     if(canonical(S.status,S.uid))D.documentElement.dataset.level='enthusiast';
   }
+  /* ภาษา: เลือกใน Settings แล้วต้องคงเดิมทุกหน้าจนกว่าจะเปลี่ยนเอง
+     เดิมทุกครั้งที่หน้าโหลดสถานะบัญชีใหม่ (ร้านค้า นิตยสาร ...) ภาษาถูกเขียนทับด้วยภาษาตอนสมัคร (ไทย)
+     ใช้ภาษาในโปรไฟล์เมื่อ: เครื่องนี้ยังไม่เคยใช้บัญชีนี้ · ยังไม่เคยเลือกภาษา · หรือภาษาในโปรไฟล์เพิ่งเปลี่ยน (เลือกจากอีกเครื่อง/ตอนสมัคร) */
+  function pickLang(p,old){
+    const srv=typeof p.lang==='string'?p.lang:'',seen=read('spire_langSrv',null),local=read('spire_lang',null);
+    const fromServer=!local||!(old&&old.uid===S.uid)||(!!srv&&seen!==null&&seen!==srv);
+    write('spire_langSrv',srv);
+    return fromServer?(srv||local||'th'):local;
+  }
+  /* เปลี่ยนภาษาใน Settings → บันทึกลงโปรไฟล์ด้วย (เครื่องอื่นได้ภาษาเดียวกัน และหน้าไหนโหลดสถานะใหม่ก็ไม่ย้อนกลับ) */
+  function langHook(){if(langHook.on||!W.spireOnLang)return;langHook.on=1;
+    W.spireOnLang(code=>{const p=S.status&&S.status.profile;if(!code||!setupDone()||(p&&p.lang===code))return;setupSave({lang:code})})}
   function publish(data){
     if(!canonical(data,S.uid)||!uidIs(S.uid))return;
     S.status=data;const cachedStatus={...data,profile:{...data.profile}};delete cachedStatus.profile.birthDate;write(scoped('status'),cachedStatus);
     const p=data.profile||{},old=read('spire_setup',{}),prior=old&&old.uid===S.uid?old:{};
-    const complete=!!canonical(data,S.uid),projection={...prior,...p,v:3,uid:S.uid,accountComplete:complete,onboardingComplete:complete,completed:complete,level:p.level||prior.level||'enthusiast',plan:p.plan||prior.plan||'free'};
+    const complete=!!canonical(data,S.uid),lang=pickLang(p,old),projection={...prior,...p,lang,v:3,uid:S.uid,accountComplete:complete,onboardingComplete:complete,completed:complete,level:p.level||prior.level||'enthusiast',plan:p.plan||prior.plan||'free'};
     delete projection.birthDate;
-    write('spire_setup',projection);write('spire_lang',p.lang||'th');write('spire_units',p.units||'metric');
+    write('spire_setup',projection);write('spire_lang',lang);write('spire_units',p.units||'metric');
     const cached=read('spire_cachedUser',null);if(cached&&cached.uid===S.uid){cached.name=p.name||cached.name;write('spire_cachedUser',cached)}
     try{if(W.currentUser&&W.currentUser.uid===S.uid)W.currentUser.name=p.name||W.currentUser.name}catch(e){}
-    try{if(W.spireSetLang&&p.lang)W.spireSetLang(p.lang);if(W.spireApplySetup)W.spireApplySetup()}catch(e){}
+    try{if(W.spireSetLang&&lang&&!(W.spireLang&&W.spireLang()===lang))W.spireSetLang(lang);if(W.spireApplySetup)W.spireApplySetup()}catch(e){}
+    langHook();
     D.documentElement.dataset.level='enthusiast';
     for(const name of ['renderAuthUI','renderProfile','updateGreeting'])try{if(W[name])W[name]()}catch(e){}
   }

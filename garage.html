@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
 <script src="/cendon-tour.js" defer></script>
 <script src="/account-actions.js" defer></script>
-<script src="/account.js?v=2026-10-16-login5" defer></script>
+<script src="/account.js?v=2026-10-18-lang1" defer></script>
 <script src="/garage-rules.js?v=1" defer></script>
 <script src="/garage-data.js?v=1" defer></script>
 <script src="/valet-core.js?v=6" defer></script>
@@ -14635,8 +14635,13 @@ async function pull(){
   St.pulled=new Date().toISOString(); St.error=null;
   const m=meta(), st=d.state||{};
   let touched=[];
+  const sn0=seen();
   Object.keys(st).forEach(k=>{
     if(!isTracked(k))return;
+    /* แก้บนเครื่องนี้แล้วแต่ยังไม่ได้ส่งขึ้น (เช่น เปลี่ยนภาษาในหน้าที่ไม่มีตัวซิงก์) = ของในเครื่องใหม่กว่า
+       ห้ามดึงของเก่าจากเซิร์ฟเวอร์มาทับ — เดิมภาษา/ธีมที่เพิ่งเปลี่ยนเด้งกลับเป็นค่าเก่า */
+    const cur=localStorage.getItem("spire_"+k);
+    if(cur!==null&&sn0[k]!==undefined&&sig(cur)!==sn0[k]){m[k]=Date.now();return}
     const remote=st[k], mine=m[k]||0;
     if(!(remote.t>mine))return;
     const value=k==="garage"?CendonCars.filter(remote.v):(k==="selCar"&&CendonCars.isDeleted(remote.v)?"":remote.v);

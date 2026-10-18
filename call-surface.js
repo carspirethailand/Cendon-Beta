@@ -188,7 +188,7 @@
       const k=Math.max(0,dy);root.style.transition='none';root.style.transform=`translateY(${(k*.86).toFixed(1)}px) scale(${(1-Math.min(.14,k/2200)).toFixed(4)})`;root.style.borderRadius=Math.min(40,k/5).toFixed(1)+'px';root.style.opacity=String(1-Math.min(.3,k/1400));});
     const sdEnd=e=>{if(!sd||e.pointerId!==sd.id)return;const s1=sd;sd=null;if(!s1.on)return;const dy=e.clientY-s1.y,v=dy/Math.max(1,e.timeStamp-s1.t);
       if(e.type!=='pointercancel'&&(dy>120||(dy>40&&v>.6))){try{navigator.vibrate?.(8);}catch{}collapse();}
-      else{root.style.transition='transform .5s cubic-bezier(.2,1.2,.35,1),border-radius .5s,opacity .3s';root.style.transform='';root.style.borderRadius='';root.style.opacity='';}};
+      else{root.style.transition='transform .32s cubic-bezier(.32,.72,0,1),border-radius .32s,opacity .25s';root.style.transform='';root.style.borderRadius='';root.style.opacity='';}};
     root.addEventListener('pointerup',sdEnd);root.addEventListener('pointercancel',sdEnd);
     const press=gesture({
       onPress:()=>{if(active&&mode==='inline')holdFrom=performance.now();kick();},
@@ -197,7 +197,7 @@
       onMove:dx=>{if(!dock||!active||bead)return;holdFrom=0;dock.style.transition='none';dock.style.transform=`translateX(${dx*.86}px) rotate(${dx*.006}deg)`;dock.style.opacity=String(1-Math.min(.75,Math.abs(dx)/380));},
       onSwipe:d=>{direction=d;try{navigator.vibrate?.(10);}catch{}session?.end();},
       onDrop:()=>{if(!expanding)dropBack();},
-      onCancel:()=>{if(bead&&!expanding){dropBack();return;}if(expanding||bead||!dock)return;dock.style.transition='transform .55s cubic-bezier(.2,1.25,.35,1),opacity .3s';dock.style.transform='';dock.style.opacity='';},
+      onCancel:()=>{if(bead&&!expanding){dropBack();return;}if(expanding||bead||!dock)return;dock.style.transition='transform .32s cubic-bezier(.32,.72,0,1),opacity .25s';dock.style.transform='';dock.style.opacity='';},
       onTap:()=>{if(!active||bead)return;if(floating())full();else session?.mute();}});
     if(dock){
       dock.addEventListener('pointerdown',()=>session?.wake?.());

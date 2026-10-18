@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
+<script>/* ธีมตั้งแต่เฟรมแรก (ก่อน CSS วาด) — เดิมหน้าเปิดด้วยธีมตั้งต้นแวบหนึ่งแล้วค่อยสลับ (แชตขึ้นจอดำ) ดูเหมือนกระพริบ/กระตุก */(function(){try{var O={warm:"light",pearl:"light",emerald:"light",plant:"light",moss:"light",carbon:"dark",night:"dark",midnight:"dark",cyber:"dark",aurora:"dark",ocean:"dark",sunset:"dark",magma:"dark"},v=null;try{v=JSON.parse(localStorage.getItem("spire_theme"))}catch(e){}if(typeof v!=="string")try{v=JSON.parse(localStorage.getItem("spire_chatTheme"))}catch(e){}v=v==="light"||v==="dark"?v:(O[v]||"light");var e=document.documentElement;e.setAttribute("data-theme",v);e.setAttribute("data-ctheme",v)}catch(x){}})();</script>
 <script src="/auth-gate.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
@@ -4151,7 +4152,7 @@ html.gx-lock,html.gx-lock body{overflow:hidden}
 </style>
 <link rel="stylesheet" href="lux.css">
 <!-- กระดิ่งแจ้งเตือน: ปุ่มในแถบเมนู (คอม) / มุมขวาบน (มือถือ) -->
-<script src="bell.js?v=7" defer></script>
+<script src="bell.js?v=8" defer></script>
 <script src="drop.js?v=3" defer></script>
 <style>/* มือถือ: กระดิ่งอยู่มุมขวาบน · ปุ่มเพิ่มรถลงมาแถวที่สอง ชิดขวาตรงกับการ์ดรถพอดี (ไม่ต้องหลบเข้ามาอีก) */
 @media(max-width:760px){.gx-head{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:40px auto;column-gap:12px;align-items:end}
@@ -7818,7 +7819,7 @@ function panePlan(c){
       T("ยังไม่มีงานที่เพิ่มเอง","Nothing added yet")}</div>`}
     <div class="cl-form">
       <input id="tdT" class="wide" maxlength="60" placeholder="${T("เช่น เปลี่ยนใบปัดน้ำฝน, ต่อ พ.ร.บ.","e.g. Replace wipers, renew tax")}"/>
-      <input id="tdKm" type="number" inputmode="numeric" min="0" max="1000000" placeholder="${T("ครบที่ กม. (ไม่บังคับ)","Due at km (optional)")}"/>
+      <input id="tdKm" type="number" inputmode="numeric" min="0" max="${Math.min(1000000,(KM(c)||0)+200000)}" placeholder="${T("ครบที่ กม. (ไม่บังคับ)","Due at km (optional)")}"/>
       <input id="tdDate" type="date"/>
       <button class="btn primary wide" id="tdAdd"><i class="ti ti-plus"></i> ${T("เพิ่มงาน","Add reminder")}</button>
     </div>
@@ -8320,6 +8321,9 @@ D.addEventListener("click",e=>{
     const t=okText($("tdT").value,{max:60,eg:"เปลี่ยนใบปัดน้ำฝน",egEn:"Replace wipers"});if(t===null)return;
     const dueKm=Number($("tdKm").value)||0;
     if(dueKm<0||dueKm>1000000){toastx(T("เลขไมล์ต้องอยู่ระหว่าง 0 – 1,000,000 กม.","Mileage must be 0 – 1,000,000 km"),"ti-alert-triangle");return}
+    /* ไกลเกินจริง: งานบำรุงรักษาตั้งล่วงหน้าได้ไม่เกิน 200,000 กม. จากเลขไมล์ตอนนี้ (รอบยาวสุดของชิ้นส่วนทั่วไป) */
+    const kmCap=Math.min(1000000,(KM(c)||0)+200000);
+    if(dueKm>kmCap){toastx(T(`${num(dueKm)} กม. ไกลเกินจริง — ตั้งได้ไม่เกิน ${num(kmCap)} กม. (เลขไมล์ตอนนี้ + 200,000)`,`${num(dueKm)} km is unrealistic — set it at ${num(kmCap)} km or less (current mileage + 200,000)`),"ti-alert-triangle");return}
     if(dueKm&&KM(c)&&dueKm<KM(c)&&!confirm(T(`${num(dueKm)} กม. น้อยกว่าเลขไมล์ปัจจุบัน (${num(KM(c))} กม.) งานนี้จะขึ้นว่าเลยกำหนดทันที ใช่ไหม?`,`${num(dueKm)} km is below the current ${num(KM(c))} km, so it will show as overdue right away. Continue?`)))return;
     const arr=getTodos(c.id);
     arr.push({title:t,dueKm,dueDate:$("tdDate").value||"",done:false});

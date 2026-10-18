@@ -69,29 +69,38 @@ function pushCars(){
 }
 const u8=b=>{const p="=".repeat((4-b.length%4)%4),s=atob((b+p).replace(/-/g,"+").replace(/_/g,"/"));return Uint8Array.from(s,c=>c.charCodeAt(0))};
 /* เปิดแจ้งเตือนในเครื่อง: ขอสิทธิ์ (ต้องมาจากการกดของผู้ใช้) → สมัคร Push ถ้าหลังบ้านพร้อม */
+/* ตัวช่วยเบื้องหลังของเบราว์เซอร์ (service worker) — บางเครื่อง/บางเบราว์เซอร์ไม่ตอบเลย (ยังไม่ติดตั้งแอป ปิดไว้ โหมดไม่ระบุตัวตน)
+   เดิมรอ ready ตรง ๆ จนค้าง ปุ่มเปิด/ปิดเลยไม่เปลี่ยนตาม → รอไม่เกิน 4 วิ แล้วไปต่อ */
+const swReady=()=>"serviceWorker" in navigator?Promise.race([navigator.serviceWorker.ready,new Promise(r=>setTimeout(()=>r(null),4000))]).catch(()=>null):Promise.resolve(null);
+async function subscribeBg(){
+  try{
+    const reg=await swReady();if(!reg||!reg.pushManager||!pref())return;
+    const kj=await get("/api/push/key").catch(()=>null);
+    if(kj&&kj.enabled&&kj.key){
+      let sub=await reg.pushManager.getSubscription();
+      if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8(kj.key)});
+      if(!pref())return;   // ผู้ใช้กดปิดระหว่างรอ
+      await post("/api/push/subscribe",{sub:sub.toJSON(),cars:pushCars(),lang:W.lang||"th"});
+      localStorage.setItem(SUB,"true");
+    }
+  }catch(e){}
+}
+/* เปิดแจ้งเตือนในเครื่อง: ขอสิทธิ์ (ต้องมาจากการกดของผู้ใช้) → ปุ่มเปลี่ยนเป็น "ปิด" ทันที · สมัคร Push กับหลังบ้านทำเบื้องหลัง */
 async function enable(){
   if(!supported())return "unsupported";
   let p=Notification.permission;
   if(p==="default")p=await Notification.requestPermission();
   if(p!=="granted")return p;
   try{localStorage.setItem(PREF,"true")}catch(e){}
-  try{
-    const reg=await navigator.serviceWorker.ready;
-    const kj=await get("/api/push/key").catch(()=>null);
-    if(kj&&kj.enabled&&kj.key&&reg.pushManager){
-      let sub=await reg.pushManager.getSubscription();
-      if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8(kj.key)});
-      await post("/api/push/subscribe",{sub:sub.toJSON(),cars:pushCars(),lang:W.lang||"th"});
-      localStorage.setItem(SUB,"true");
-    }
-  }catch(e){}
+  subscribeBg();
   subs.forEach(f=>{try{f()}catch(e){}});
   return "granted";
 }
 /* ปิดแจ้งเตือนในเครื่อง: ยกเลิก Push ที่เซิร์ฟเวอร์และในเครื่อง · รายการในกระดิ่งยังขึ้นตามปกติ (แค่ไม่เด้งบนเครื่อง) */
 async function disable(){
   try{localStorage.setItem(PREF,"false");localStorage.removeItem(SUB)}catch(e){}
-  try{const reg=await navigator.serviceWorker.ready;const sub=reg.pushManager&&await reg.pushManager.getSubscription();
+  subs.forEach(f=>{try{f()}catch(e){}});
+  try{const reg=await swReady();const sub=reg&&reg.pushManager&&await reg.pushManager.getSubscription();
     if(sub){await post("/api/push/unsubscribe",{endpoint:sub.endpoint}).catch(()=>{});await sub.unsubscribe().catch(()=>{})}}catch(e){}
   subs.forEach(f=>{try{f()}catch(e){}});
   return "off";
@@ -219,7 +228,7 @@ function panel(btn,o){
     const r=p.querySelector('[data-a="read"]');if(r)r.onclick=()=>{read();draw()};
     const on_=p.querySelector('[data-a="on"]');if(on_)on_.onclick=async()=>{on_.disabled=true;const st=await enable();
       if(st==="granted"&&o.toast)o.toast(T("เปิดแจ้งเตือนในเครื่องแล้ว","Device notifications are on"));draw()};
-    const off_=p.querySelector('[data-a="off"]');if(off_)off_.onclick=async()=>{off_.disabled=true;await disable();
+    const off_=p.querySelector('[data-a="off"]');if(off_)off_.onclick=()=>{off_.disabled=true;disable();
       if(o.toast)o.toast(T("ปิดแจ้งเตือนในเครื่องแล้ว — ยังดูรายการได้ที่กระดิ่งนี้","Device notifications off — still listed under this bell"));draw()};
     p.querySelector('[data-a="jobs"]').onclick=()=>{close();o.onJobs?o.onJobs():go("/jobs")};
     const km=p.querySelector('[data-a^="km"]');if(km)km.onclick=async()=>{km.disabled=true;const want=km.dataset.a==="kmon";

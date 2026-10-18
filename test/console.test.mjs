@@ -6,6 +6,7 @@ const root=new URL('../',import.meta.url),source=readFileSync(new URL('console-e
 function parser(){const window={location:{pathname:'/console',search:''}},document={};vm.runInNewContext(source,{window,document,URLSearchParams,Set,Object});return window.CendonConsoleEntry.readIntent;}
 test('console is an unlisted static catalogue with no admin or backend controls',()=>{
   assert.match(html,/noindex,nofollow,noarchive/);assert.match(html,/<html lang="th">/);
+  assert.match(html,/Content-Security-Policy/);assert.match(html,/script-src 'self'/);assert.match(html,/connect-src 'none'/);
   assert.doesNotMatch(html,/href="\/(?:admin|staff|backyard)(?:[/?"])/i);
   assert.doesNotMatch(html,/api\/|firebase|Authorization|GEMINI_KEY|CLOUDFLARE_API_TOKEN/);
   assert.equal((html.match(/class="tool"/g)||[]).length,38);

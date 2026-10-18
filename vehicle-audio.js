@@ -37,5 +37,23 @@
     for(const k of ['make','model','year','engine','fuel']){const input=D.getElementById(prefix+'_'+k);if(input)input.oninput=read;}
   }
   const prompt=c=>'\nSaved Garage candidate (not proof of the car now heard): '+JSON.stringify(car(c))+' Never identify make/model/year from audio. Ask whether this is the saved car or another car; use listen_engine and wait for its result. A user-selected recording vehicle overrides old assistant guesses, but never changes Garage records.';
-  window.CendonVehicleAudio=Object.freeze({car,label,choice,current,payload,picker,bind,prompt});
+  function recording(stream,source='dedicated_microphone'){
+    const settings=stream?.getAudioTracks?.()[0]?.getSettings?.()||{},processing={};
+    for(const k of ['echoCancellation','noiseSuppression','autoGainControl'])if(typeof settings[k]==='boolean')processing[k]=settings[k];
+    return {source,processing,...(Number.isFinite(settings.sampleRate)?{sampleRate:settings.sampleRate}:{})};
+  }
+  function researchMarkup(r,lang='th'){
+    if(!r)return '';
+    const en=lang==='en',lines=(r.sources||[]).slice(0,3).map(s=>{
+      try{const u=new URL(s.url);if(u.protocol!=='https:'||u.username||u.password)return '';
+        return '<li><a href="'+esc(u.href)+'" target="_blank" rel="noopener noreferrer">'+esc(s.title||u.hostname)+'</a> · '+(s.status==='read'?(en?'page read; applicability unconfirmed':'อ่านหน้าเว็บแล้ว ยังต้องตรวจว่าใช้กับรุ่นนี้หรือไม่'):(en?'link only; not read':'พบลิงก์ ยังไม่ได้อ่าน'))+'</li>';
+      }catch{return ''}
+    }).filter(Boolean);
+    return '<section class="va-research"><b>'+(en?'Internet references':'ข้อมูลอ้างอิงจากอินเทอร์เน็ต')+'</b><p>'+(r.status==='found'?(en?'Documents found, not a confirmed fault or recall.':'พบเอกสาร ไม่ใช่การยืนยันอาการเสียหรือการเรียกคืน'):r.status==='links_only'?(en?'Links found, content not verified.':'พบลิงก์ แต่ยังตรวจเนื้อหาไม่ได้'):r.status==='needs_vehicle'?(en?'Choose a model to research; audio observations are still available.':'ระบุรุ่นเพื่อค้นอ้างอิงเพิ่มเติมได้ ยังฟังลักษณะเสียงได้ตามปกติ'):(en?'Online sources unavailable; no model-specific fault is verified.':'ยังค้นเอกสารออนไลน์ไม่ได้ จึงยังไม่ยืนยันอาการประจำรุ่น'))+'</p>'+(lines.length?'<ul>'+lines.join('')+'</ul>':'')+'</section>';
+  }
+  function assessmentLabel(value,lang='th'){
+    const labels={no_clear_abnormality:['ยังไม่พบเสียงผิดปกติชัด','No clear abnormality heard'],possible_abnormality:['อาจมีเสียงผิดปกติ ต้องตรวจเพิ่ม','Possible abnormality — check further'],abnormal_sound:['ได้ยินเสียงผิดปกติ ควรให้ช่างตรวจ','Unusual sound — inspection advised'],inconclusive:['หลักฐานเสียงยังไม่พอ','Insufficient audio evidence']};
+    return (labels[value]||labels.inconclusive)[lang==='en'?1:0];
+  }
+  window.CendonVehicleAudio=Object.freeze({car,label,choice,current,payload,picker,bind,prompt,recording,researchMarkup,assessmentLabel});
 })();

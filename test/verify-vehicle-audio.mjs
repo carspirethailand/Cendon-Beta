@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
 const origin=process.argv[2];if(!/^https:\/\/[a-z0-9.-]+\.pages\.dev$/.test(origin||''))throw Error('Expected Pages origin');
-const files=['vehicle-audio.js','vehicle-audio.css','call-tools.js','call-session.js','feature-ai.js','sw.js','chat.html','index.html','repair-proof.js'];
+const files=['vehicle-audio.js','vehicle-audio.css','call-tools.js','call-session.js','call-agent.js','call-surface.js','feature-ai.js','sw.js','chat.html','index.html','repair-proof.js'];
 const checks=[];
 for(const name of files){const path=name==='index.html'?'/':name==='chat.html'?'/chat':'/'+name;
   const r=await fetch(origin+path+'?audio-release='+Date.now(),{cache:'no-store',signal:AbortSignal.timeout(20000)});assert.equal(r.status,200,name);

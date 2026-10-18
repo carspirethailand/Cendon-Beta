@@ -86,12 +86,12 @@ async function rawMic(){
       await t.applyConstraints({echoCancellation:false,noiseSuppression:false,autoGainControl:false});
       const st=t.getSettings?t.getSettings():{};
       if(st.noiseSuppression===false&&st.echoCancellation===false)
-        return {stream:voice.callMicStream,restore:()=>t.applyConstraints({echoCancellation:true,noiseSuppression:true,autoGainControl:true}).catch(()=>{})};
+        return {stream:voice.callMicStream,recording:window.CendonVehicleAudio.recording(voice.callMicStream),restore:()=>t.applyConstraints({echoCancellation:true,noiseSuppression:true,autoGainControl:true}).catch(()=>{})};
     }catch(e){}
   }
   const owner=voice.callSession;
   const s=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
-  return {stream:s,restore:async()=>{s.getTracks().forEach(x=>x.stop());await reviveMic(owner)}};
+  return {stream:s,recording:window.CendonVehicleAudio.recording(s),restore:async()=>{s.getTracks().forEach(x=>x.stop());await reviveMic(owner)}};
 }
 /* บางเครื่อง (iPhone) เปิดไมค์ที่สองแล้วตัดไมค์แรก → ต่อไมค์ของสายกลับให้เอง */
 async function reviveMic(owner){
@@ -126,7 +126,7 @@ async function toWav(chunks,rate){
   w(0,'RIFF');v.setUint32(4,36+data.length*2,true);w(8,'WAVE');w(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);
   v.setUint32(24,out,true);v.setUint32(28,out*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,data.length*2,true);
   for(let i=0;i<data.length;i++){const s=Math.max(-1,Math.min(1,data[i]*g));v.setInt16(44+i*2,s<0?s*32768:s*32767,true)}
-  return {b64:b64FromBytes(new Uint8Array(b)),peak};
+  return {b64:b64FromBytes(new Uint8Array(b)),peak,gain:g,sampleRate:out,durationSeconds:n/rate};
 }
 /* สีคลื่นความถี่: ดำ → แดงเข้ม → ส้ม Cendon → ครีม */
 const EMBER=(()=>{const st=[[0,[14,9,8]],[.3,[92,22,18]],[.55,[214,72,40]],[.78,[255,150,70]],[1,[255,240,214]]],o=new Uint8ClampedArray(256*3);
@@ -167,10 +167,10 @@ async function listenEngine(tool){
   try{voice.callWS&&voice.callWS.readyState===1&&voice.callWS.send(JSON.stringify({realtimeInput:{audioStreamEnd:true}}))}catch(e){}
   const wait=Date.now();while(voice.playSrcs.length&&Date.now()-wait<5000){await new Promise(r=>setTimeout(r,120));if(run!==S.run)return}
   voice.flushPlayback();
-  let mic=null,src=null,an=null,node=null;const chunks=[];let rate=voice.callCtx?voice.callCtx.sampleRate:48000,maxLv=0;
+  let mic=null,recording={},src=null,an=null,node=null;const chunks=[];let rate=voice.callCtx?voice.callCtx.sampleRate:48000,maxLv=0;
   const cleanup=async()=>{try{src&&src.disconnect();an&&an.disconnect();node&&node.disconnect()}catch(e){}if(mic){const m=mic;mic=null;await m.restore()}};
   try{
-    mic=await rawMic();if(run!==S.run){await cleanup();return}
+    mic=await rawMic();recording=mic.recording;if(run!==S.run){await cleanup();return}
     const ctx=voice.callCtx;rate=ctx.sampleRate;
     src=ctx.createMediaStreamSource(mic.stream);an=ctx.createAnalyser();an.fftSize=2048;an.smoothingTimeConstant=0.2;src.connect(an);
     const sink=ctx.createGain();sink.gain.value=0;sink.connect(ctx.destination);
@@ -219,10 +219,10 @@ async function listenEngine(tool){
     if(!isCurrent()){finishEar(null,T('รถหรือบัญชีเปลี่ยนแล้ว ผลเก่าถูกยกเลิก','Vehicle or account changed; the old analysis was discarded'));return}
     if(maxLv<0.004){showEar({quality:'too_quiet',hear:'',causes:[],urgency:'soon',next:[T('ขยับมือถือเข้าใกล้จุดที่มีเสียงมากขึ้น แล้วลองใหม่','Move the phone closer to the sound and try again')],speak:''},true);return}
     S.abort=new AbortController();
-    const requestAbort=S.abort,requestTimer=setTimeout(()=>requestAbort.abort(),26000);
+    const requestAbort=S.abort,requestTimer=setTimeout(()=>requestAbort.abort(),38000);
     const area=args.area||'',when=args.when||'';
     let data;
-    try{data=await analyze('ear',[{mime:'audio/wav',b64:wav.b64}],{car:selected.vehicle,audioVehicle:VA.payload(selected),phoneAt:area,soundWhen:when},
+    try{data=await analyze('ear',[{mime:'audio/wav',b64:wav.b64}],{car:selected.vehicle,audioVehicle:VA.payload(selected),recording:{...recording,durationSeconds:wav.durationSeconds,sampleRate:wav.sampleRate,gain:wav.gain},phoneAt:area,soundWhen:when},
       T('ฟังเสียงจากรถคันนี้ระหว่างโทร','Listening to this car during a call')+(area?' · '+area:'')+(when?' · '+when:''),requestAbort.signal)}finally{clearTimeout(requestTimer)}
     if(!isCurrent()){if(run===S.run)finishEar(null,T('ข้อมูลรถเปลี่ยนแล้ว กรุณาเริ่มใหม่','Vehicle context changed. Please start again'));return;}
     showEar(data);
@@ -243,9 +243,11 @@ function showEar(d,local){
   $('ctSec').innerHTML=`<i class="ti ti-${good?'ear':'ear-off'}"></i>`;$('ctRingL').textContent=QUAL[d.quality]||'';
   const out=$('ctOut');out.hidden=false;
   out.innerHTML=`${d.identity?`<p class="ct-note">${esc(d.identity.label||T('ยังไม่ยืนยันรุ่นรถ','Unconfirmed vehicle'))} · ${T('ตามที่ผู้ใช้เลือก ไม่ใช่ระบุจากเสียง','User-selected, not identified from sound')}</p>`:''}${good?`<span class="ct-badge" style="--c:${u[0]}"><i class="ti ti-${d.urgency==='stop'?'urgent':'alert-circle'}"></i>${esc(u[1])}</span>`:`<span class="ct-badge" style="--c:#d6a13a"><i class="ti ti-microphone-2"></i>${esc(QUAL[d.quality]||'')}</span>`}
+    ${d.assessment?`<p class="ct-note"><b>${esc(window.CendonVehicleAudio.assessmentLabel(d.assessment,lang))}</b></p>`:''}
     ${d.hear?`<p class="ct-lead">${esc(d.hear)}</p>`:''}${d.normal?`<p class="ct-note">${esc(d.normal)}</p>`:''}
     ${(d.causes||[]).length?`<div class="ct-causes">${d.causes.map(c=>`<div class="ct-cause"><b>${esc(c.name)}<small>${T('ข้อสันนิษฐาน ต้องตรวจยืนยัน','Hypothesis — needs confirmation')}</small></b>${c.clue?`<small>${esc(c.clue)}</small>`:''}</div>`).join('')}</div>`:''}
     ${(d.next||[]).length?`<ul class="ct-next">${d.next.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
+    ${window.CendonVehicleAudio?.researchMarkup(d.research,lang)||''}
     <p class="ct-fine">${T('ประเมินจากเสียงเท่านั้น ไม่ใช่การวินิจฉัยแน่นอน — ให้ช่างตรวจจริงก่อนซ่อม','Based on sound only, not a definite diagnosis — have a mechanic confirm it')}</p>
     <div class="ct-acts"><button type="button" class="ct-b" id="ctAgain"><i class="ti ti-refresh"></i>${T('ฟังอีกครั้ง','Listen again')}</button>
       ${d.urgency!=='ok'&&good?`<a class="ct-b" href="/${d.urgency==='stop'?'urgent':'post'}" id="ctHelp"><i class="ti ti-${d.urgency==='stop'?'urgent':'tool'}"></i>${d.urgency==='stop'?T('เรียกช่างด่วน','Call help now'):T('หาช่าง','Find a mechanic')}</a>`:''}

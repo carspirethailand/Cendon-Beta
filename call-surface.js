@@ -308,6 +308,14 @@
       for(const card of cards.slice(0,5)){const button=document.createElement(onSelectShop?'button':'a');button.className='cv-result';if(onSelectShop){button.type='button';button.onclick=()=>onSelectShop(card.id);}else{button.href='/tech/'+encodeURIComponent(card.id);button.target='_blank';button.rel='noopener';}const name=document.createElement('b'),detail=document.createElement('small');name.textContent=card.name;detail.textContent=[card.area,card.distanceKm!=null?card.distanceKm+' '+T('กม. โดยประมาณ','km approx.'):null,card.startingPrice?T('เริ่ม ฿','from ฿')+card.startingPrice:null].filter(Boolean).join(' · ');button.append(name,detail);results.append(button);}
       placeResults();
     }
+    function showResearch(r){
+      results?.remove();results=document.createElement('section');results.className='cv-results';results.setAttribute('role','status');results.setAttribute('aria-live','polite');
+      const head=document.createElement('div');head.className='cv-result-head';head.textContent=T('ค้นอินเทอร์เน็ต','Internet research');
+      const close=document.createElement('button');close.type='button';close.textContent='×';close.setAttribute('aria-label',T('ปิดผลค้นหา','Close results'));close.onclick=()=>{results?.remove();results=null};head.append(close);results.append(head);
+      const p=document.createElement('p');p.textContent=r.status==='searching'?T('กำลังค้นเอกสารสาธารณะ…','Searching public documents…'):r.status==='found'?T('พบเอกสาร ยังไม่ใช่การยืนยันอาการเสีย','Documents found — not a confirmed diagnosis'):r.status==='links_only'?T('พบลิงก์ แต่ยังอ่านเนื้อหาไม่ได้','Links found; content not read'):T('ยังค้นเอกสารไม่ได้ ไม่ใช้ข้อมูลที่เดาขึ้น','Research unavailable; no invented sources');results.append(p);
+      for(const s of (r.sources||[]).slice(0,3)){try{const u=new URL(s.url);if(u.protocol!=='https:'||u.username||u.password)continue;const a=document.createElement('a');a.className='cv-result';a.href=u.href;a.target='_blank';a.rel='noopener noreferrer';const b=document.createElement('b'),small=document.createElement('small');b.textContent=s.title||u.hostname;small.textContent=s.status==='read'?T('อ่านหน้าเว็บแล้ว • ตรวจความตรงรุ่นก่อนใช้','Page read • check model applicability'):T('ลิงก์เท่านั้น ยังไม่ได้อ่าน','Link only; not read');a.append(b,small);results.append(a)}catch{}}
+      placeResults();
+    }
     function showDraft(symptom){showResults([]);results.replaceChildren();const p=document.createElement('p');p.textContent=T('ร่างงานด่วน ยังไม่ได้ส่ง: ','Urgent draft, not submitted: ')+symptom;const a=document.createElement('a');a.className='cv-result';a.textContent=T('ตรวจรายละเอียดและเลือกช่าง','Review details and choose a mechanic');a.href='/?q='+encodeURIComponent(symptom);a.target='_blank';a.rel='noopener';results.append(p,a);}
     /* การ์ด Cendon Valet ในสาย: สรุปสิ่งที่จะทำ · ยังขาดอะไร · ปุ่มยืนยัน/ยกเลิก (ผู้ใช้พูดยืนยันแทนการกดก็ได้) · ผลจริงหลังทำ */
     function showValet(v){
@@ -329,7 +337,7 @@
       if(acts.childNodes.length)results.append(acts);
       placeResults();
     }
-    return Object.freeze({byId,open,close,render,resize,showResults,showDraft,showValet,bind(value){session=value;},
+    return Object.freeze({byId,open,close,render,resize,showResults,showDraft,showValet,showResearch,bind(value){session=value;},
       state(state,text){connecting=state!=='link';if(caption&&text)caption.textContent=text;if(stateText)stateText.textContent=toolsReady===false?T('โหมดเสียง · เครื่องมือยังไม่เปิด','Voice · tools unavailable'):state==='link'?T('Cendon · ต่อสายแล้ว','Cendon · connected'):'Cendon';byId('callCamBtn').disabled=state!=='link'&&!session?.cameraOn;},
       caption(who,text){if(caption)caption.textContent=text;const el=byId('callCaption');if(el.textContent!==text)el.textContent=text;},
       agentAvailable(ok){toolsReady=ok;capability.hidden=ok;if(!ok&&stateText)stateText.textContent=T('โหมดเสียง · เครื่องมือยังไม่เปิด','Voice · tools unavailable');},

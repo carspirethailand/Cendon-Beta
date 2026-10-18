@@ -3032,15 +3032,15 @@ html[data-idle="1"] *{animation-play-state:paused!important}
      โหลดตรงนี้เพื่อให้ AI หยิบข้อมูลช่างชุดเดียวกับที่ผู้ใช้เห็นบนหน้าเว็บ -->
 <script src="call-sounds.js?v=1" defer></script>
 <script src="engine-scan.js?v=2026-10-17-r4" defer></script>
-<link rel="stylesheet" href="vehicle-audio.css?v=1">
-<script src="vehicle-audio.js?v=1" defer></script>
-<script src="call-tools.js?v=2026-10-18-audio1" defer></script>
+<link rel="stylesheet" href="vehicle-audio.css?v=2">
+<script src="vehicle-audio.js?v=2" defer></script>
+<script src="call-tools.js?v=2026-10-18-audio2" defer></script>
 <script src="call-composer.js?v=2026-10-17-r4" defer></script>
-<script src="call-agent.js?v=2026-10-18-r1" defer></script>
-<script src="call-surface.js?v=2026-10-18-r8" defer></script>
+<script src="call-agent.js?v=2026-10-18-web1" defer></script>
+<script src="call-surface.js?v=2026-10-18-web1" defer></script>
 <script src="call-shell.js?v=1" defer></script>
 <script src="garage-care.js?v=1" defer></script>
-<script src="call-session.js?v=2026-10-18-audio1" defer></script>
+<script src="call-session.js?v=2026-10-18-audio2" defer></script>
 <link rel="stylesheet" href="valet.css?v=2">
 <script src="valet-core.js?v=7" defer></script>
 <script src="chat-garage.js?v=1" defer></script>
@@ -6818,12 +6818,12 @@ function getCallSession(){
   if(cendonCall)return cendonCall;
   if(!window.CendonCallSession||!window.CendonCallSurface||!window.CendonCallAgent){toast(lang==="en"?"Voice is loading. Please try again.":"ระบบเสียงกำลังเตรียมพร้อม ลองอีกครั้งครับ");return null;}
   const view=window.CendonCallSurface.create({language:lang});
-  const voiceApi=async(path,{signal}={})=>{
+  const voiceApi=async(path,{signal,method='GET',body}={})=>{
     const user=auth?.currentUser;if(!user)throw Error("Sign in required");
-    const token=await user.getIdToken(),response=await fetch(BACKEND_URL+path,{headers:{Authorization:"Bearer "+token},signal,cache:"no-store"});
+    const token=await user.getIdToken(),response=await fetch(BACKEND_URL+path,{method,body:body?JSON.stringify(body):undefined,headers:{Authorization:"Bearer "+token,...(body?{'Content-Type':'application/json'}:{})},signal,cache:"no-store"});
     if(!response.ok)throw Error("Tool unavailable");return response.json();
   };
-  const agent=window.CendonCallAgent.create({api:voiceApi,getCar:selCar,getLocation:()=>LS.get("tech_here",null),showResults:view.showResults,showDraft:view.showDraft,showValet:view.showValet,minimize:view.minimize});
+  const agent=window.CendonCallAgent.create({api:voiceApi,getCar:selCar,getLocation:()=>LS.get("tech_here",null),showResearch:view.showResearch,showResults:view.showResults,showDraft:view.showDraft,showValet:view.showValet,minimize:view.minimize});
   let tools;
   cendonCall=window.CendonCallSession.create({byId:view.byId,backendUrl:BACKEND_URL,language:lang,getUser:()=>auth?.currentUser,getCar:selCar,view,agent,getTools:()=>tools,toast,storage:LS,systemPrompt:sysPrompt,getMessages:()=>messages,appendMessage:m=>messages.push(m),save:saveSession,onEnd:()=>{renderMessages();updateHint();renderChips();setPhase("thread");}});
   tools=window.CallTools?.create({voice:cendonCall.bridge,language:lang,backendUrl:BACKEND_URL,getUser:()=>auth?.currentUser,getCar:selCar,getMessages:()=>messages,appendMessage:m=>messages.push(m),save:saveSession,toast});
@@ -9307,12 +9307,12 @@ const URG={
 };
 let lTake="idle",lRec=null,lChunks=[],lBlob=null,lUrl="",lBusy=false,lRes=null,lErr="",lSec=0,lTimer=null;
 let lChat=[],lAsk=false,lArmed=false;
-let lVehicle=null,lCapture=null,lCaptureUid='';
+let lVehicle=null,lCapture=null,lCaptureUid='',lRecording={source:'unknown',processing:{}};
 function listenContext(){
   const VA=window.CendonVehicleAudio,v=lCapture||lVehicle;
   if(!VA||!VA.current(v,car()))throw Error(T('ยืนยันรถในคลิปก่อนครับ หากเปลี่ยนรถให้เริ่มฟังใหม่','Confirm the recording vehicle first. Start again if the car changed.'));
   if(lCaptureUid&&lCaptureUid!==window.spireAuth?.currentUser?.uid)throw Error(T('บัญชีเปลี่ยนแล้ว กรุณาอัดใหม่','Account changed. Please record again.'));
-  return {car:v.vehicle,audioVehicle:VA.payload(v),recordingCondition:lTake};
+  return {car:v.vehicle,audioVehicle:VA.payload(v),recording:lRecording,recordingCondition:lTake};
 }
 
 function listenBody(){
@@ -9359,10 +9359,11 @@ function listenResult(){
   return `<div class="lg-card">
       <div class="lg-head"><div class="tx">
         <small>${tk?T(tk.th,tk.en):T("คลิปที่อัด","Your clip")}</small>
-        <b>${T(u.th,u.en)}</b></div>
+        <b>${r.assessment?esc(window.CendonVehicleAudio.assessmentLabel(r.assessment,EN()?'en':'th')):T(u.th,u.en)}</b></div>
         <button class="btn" id="lgLAgain"><i class="ti ti-refresh"></i>${T("อัดใหม่","Record again")}</button></div>
       <div class="lg-urg ${u.c}"><i class="ti ${r.normal?"ti-check":"ti-alert-triangle"}"></i>
         <span>${esc(r.heard)}</span></div><p class="lg-note">${esc(r.identity?.label||T('ยังไม่ยืนยันรุ่นรถ','Unconfirmed vehicle'))} · ${T('ตามที่ผู้ใช้เลือก ไม่ใช่ระบุจากเสียง • คลิปนี้ยืนยันความปลอดภัยในการขับไม่ได้','User-selected, not identified from audio • This clip cannot establish safe driving')}</p>
+      ${window.CendonVehicleAudio?.researchMarkup(r.research,EN()?'en':'th')||''}
       ${r.quality==="noisy"?`<div class="lg-tip"><i class="ti ti-volume-3"></i>${T(
         "คลิปมีเสียงรบกวนพอควร ถ้าอัดใหม่ในที่เงียบกว่านี้ผลจะแม่นขึ้น",
         "There's a fair bit of background noise — a quieter take would read better")}</div>`:""}
@@ -9423,7 +9424,7 @@ async function startRec(){
   try{
     const st=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
     if(!window.CendonVehicleAudio.current(recordingVehicle,car())||window.spireAuth?.currentUser?.uid!==recordingUid){st.getTracks().forEach(t=>t.stop());throw Error('Vehicle or account changed')}
-    lChunks=[]; lSec=0;
+    lRecording=window.CendonVehicleAudio.recording(st);lChunks=[]; lSec=0;
     /* ไม่ระบุ mimeType ปล่อยให้เบราว์เซอร์เลือกที่รองรับเอง
        Safari กับ Chrome คนละฟอร์แมตกัน ถ้าฟิกซ์ไว้จะพังบนเครื่องหนึ่ง */
     lRec=new MediaRecorder(st);
@@ -9431,7 +9432,7 @@ async function startRec(){
     lRec.onstop=()=>{
       st.getTracks().forEach(t=>t.stop());
       if(!window.CendonVehicleAudio.current(recordingVehicle,car())||window.spireAuth?.currentUser?.uid!==recordingUid){lRec=null;clearInterval(lTimer);lTimer=null;lBlob=null;lCapture=null;lErr=T('รถหรือบัญชีเปลี่ยนแล้ว กรุณาอัดใหม่','Vehicle or account changed. Please record again');renderTool();return}
-      lCapture=recordingVehicle;lCaptureUid=recordingUid;
+      lCapture=recordingVehicle;lCaptureUid=recordingUid;lRecording.durationSeconds=lSec;
       const type=(lChunks[0]&&lChunks[0].type)||lRec.mimeType||"audio/webm";
       lBlob=new Blob(lChunks,{type});
       if(lUrl)URL.revokeObjectURL(lUrl);
@@ -9466,7 +9467,7 @@ async function runListen(){
     const context=listenContext(),owner=window.spireAuth?.currentUser?.uid;
     const d64=await blobB64(lBlob);
     const d=await api("/api/listen",{audio:d64,mime:lBlob.type||"audio/webm",
-      take:lTake,car:context.car,audioVehicle:context.audioVehicle,lang:window.lang||"th"});
+      take:lTake,car:context.car,audioVehicle:context.audioVehicle,recording:context.recording,lang:window.lang||"th"});
     if(d.audioVersion!==2)throw Error(T('ต้องอัปเดตระบบฟังเสียงให้ตรงกับแอปก่อนครับ','The audio service must be updated to match the app'));
     if(owner!==window.spireAuth?.currentUser?.uid||JSON.stringify(context.audioVehicle)!==JSON.stringify(listenContext().audioVehicle))throw Error(T('บริบทรถเปลี่ยนแล้ว กรุณาเริ่มใหม่','Vehicle context changed. Please start again'));
     lRes=d;
@@ -9512,7 +9513,7 @@ function wireListen(){
     try{listenContext();lCapture=structuredClone(lVehicle);lCaptureUid=window.spireAuth?.currentUser?.uid||''}catch(error){lErr=error.message;e.target.value='';renderTool();return}
     if(f.size>5e6){ lErr=T("ไฟล์ใหญ่เกินไป ใช้คลิปสั้นกว่านี้","File too large — use a shorter clip");
       e.target.value=""; renderTool(); return }
-    lBlob=f; if(lUrl)URL.revokeObjectURL(lUrl); lUrl=URL.createObjectURL(f);
+    lRecording={source:'uploaded_file',processing:{}};lBlob=f; if(lUrl)URL.revokeObjectURL(lUrl); lUrl=URL.createObjectURL(f);
     e.target.value=""; renderTool();
   };
   const ag=$("lgLAgain"); if(ag)ag.onclick=()=>{

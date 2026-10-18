@@ -6,7 +6,7 @@
   function car(c={}){
     if(!c||typeof c!=='object')return {};
     const words=clean(c.name).split(/\s+/);
-    return Object.fromEntries(Object.entries({make:clean(c.make||words[0]),model:clean(c.model||words.slice(1).join(' ')),year:clean(c.model_year||c.year,4),engine:clean(c.engine,80),engine_code:clean(c.engine_code,24),fuel:clean(c.fuel||c.fuelType,30),mileage:clean(c.mileage,12)}).filter(([,v])=>v));
+    return Object.fromEntries(Object.entries({make:clean(c.make||words[0]),model:clean(c.model||words.slice(1).join(' ')),year:clean(c.model_year||c.year,4),engine:clean(c.engine,80),engine_code:clean(c.engine_code,24),fuel:clean(c.fuel||c.fuelType,30),mileage:clean(c.mileage,12),market:clean(c.market||c.country,40),kind:clean(c.kind||c.vehicle_type,20)}).filter(([,v])=>v));
   }
   const label=c=>{const v=car(c);return [v.make,v.model,v.year,v.engine,v.engine_code].filter(Boolean).join(' ')};
   const key=c=>JSON.stringify([clean(c?.id),car(c)]);
@@ -49,7 +49,12 @@
         return '<li><a href="'+esc(u.href)+'" target="_blank" rel="noopener noreferrer">'+esc(s.title||u.hostname)+'</a> · '+(s.status==='read'?(en?'page read; applicability unconfirmed':'อ่านหน้าเว็บแล้ว ยังต้องตรวจว่าใช้กับรุ่นนี้หรือไม่'):(en?'link only; not read':'พบลิงก์ ยังไม่ได้อ่าน'))+'</li>';
       }catch{return ''}
     }).filter(Boolean);
-    return '<section class="va-research"><b>'+(en?'Internet references':'ข้อมูลอ้างอิงจากอินเทอร์เน็ต')+'</b><p>'+(r.status==='found'?(en?'Documents found, not a confirmed fault or recall.':'พบเอกสาร ไม่ใช่การยืนยันอาการเสียหรือการเรียกคืน'):r.status==='links_only'?(en?'Links found, content not verified.':'พบลิงก์ แต่ยังตรวจเนื้อหาไม่ได้'):r.status==='needs_vehicle'?(en?'Choose a model to research; audio observations are still available.':'ระบุรุ่นเพื่อค้นอ้างอิงเพิ่มเติมได้ ยังฟังลักษณะเสียงได้ตามปกติ'):(en?'Online sources unavailable; no model-specific fault is verified.':'ยังค้นเอกสารออนไลน์ไม่ได้ จึงยังไม่ยืนยันอาการประจำรุ่น'))+'</p>'+(lines.length?'<ul>'+lines.join('')+'</ul>':'')+'</section>';
+    const curated=(r.manufacturerEvidence?.records||[]).slice(0,4).map(s=>{
+      try{const u=new URL(s.url);if(u.protocol!=='https:'||u.hostname!=='static.nhtsa.gov'||u.username||u.password)return '';
+        return '<li><a href="'+esc(u.href)+'" target="_blank" rel="noopener noreferrer">'+esc(s.title)+'</a> · '+(en?'Source market: ':'เอกสารตลาด ')+esc((s.markets||[]).join(', '))+' · '+(en?'vehicle applicability unconfirmed':'ยังไม่ยืนยันใช้กับรถคันนี้')+'</li>';
+      }catch{return ''}
+    }).filter(Boolean);
+    return '<section class="va-research"><b>'+(en?'Internet references':'ข้อมูลอ้างอิงจากอินเทอร์เน็ต')+'</b><p>'+(r.status==='found'?(en?'Documents found, not a confirmed fault or recall.':'พบเอกสาร ไม่ใช่การยืนยันอาการเสียหรือการเรียกคืน'):r.status==='links_only'?(en?'Links found, content not verified.':'พบลิงก์ แต่ยังตรวจเนื้อหาไม่ได้'):r.status==='needs_vehicle'?(en?'Choose a model to research; audio observations are still available.':'ระบุรุ่นเพื่อค้นอ้างอิงเพิ่มเติมได้ ยังฟังลักษณะเสียงได้ตามปกติ'):(en?'Online sources unavailable; no model-specific fault is verified.':'ยังค้นเอกสารออนไลน์ไม่ได้ จึงยังไม่ยืนยันอาการประจำรุ่น'))+'</p>'+(lines.length?'<ul>'+lines.join('')+'</ul>':'')+(curated.length?'<b>'+(en?'Separately reviewed manufacturer documents':'เอกสารผู้ผลิตที่ตรวจไว้แยกจากการค้นสด')+'</b><p>'+(en?'Not audio-training examples or a diagnosis. Check engine, market and production range.':'ไม่ใช่ตัวอย่างเสียงที่ใช้ฝึกหรือผลวินิจฉัย ต้องเทียบเครื่องยนต์ ตลาด และช่วงผลิต')+'</p><ul>'+curated.join('')+'</ul>':'')+'</section>';
   }
   function assessmentLabel(value,lang='th'){
     const labels={no_clear_abnormality:['ยังไม่พบเสียงผิดปกติชัด','No clear abnormality heard'],possible_abnormality:['อาจมีเสียงผิดปกติ ต้องตรวจเพิ่ม','Possible abnormality — check further'],abnormal_sound:['ได้ยินเสียงผิดปกติ ควรให้ช่างตรวจ','Unusual sound — inspection advised'],inconclusive:['หลักฐานเสียงยังไม่พอ','Insufficient audio evidence']};

@@ -46,7 +46,10 @@ test('#16 chat opens without flashing or jumping: theme set on the first frame, 
   const body=chat.slice(chat.indexOf('<body'));
   const firstMarkup=body.search(/<(div|section|header|main)\b/);
   for(const id of ['chatui2','cendon-one','feat-css'])assert.ok(body.indexOf(`<style id="${id}">`)<firstMarkup,id+' is read before the page content');
-  assert.match(chat,/animation:pillIn \.18s ease-out\}\n@keyframes pillIn\{from\{opacity:0\}to\{opacity:1\}\}/,'header fades, no slide-down');
+  assert.doesNotMatch(chat,/animation:pillIn/,'the top bar is page chrome: it stays put, no fade or slide');
+  assert.match(chat,/<link rel="expect" href="#chatShellReady" blocking="render">/,'first frame waits until the chat layout is assembled');
+  assert.match(chat,/<\/script>\n<i id="chatShellReady" hidden><\/i>/);
+  assert.match(chat,/if\(D\.readyState==="loading"\)\{try\{wrap\(\)\}catch\(e\)\{\}D\.addEventListener\("DOMContentLoaded",boot\)\}/);
 });
 
 test('#14 no overshooting (bouncy) easing left in the call screen', () => {
@@ -81,7 +84,7 @@ test('desktop bell is in the navbar markup from the first frame (no blink on pag
     assert.match(nr,/<button type="button" class="cb-bell cb-d" aria-label="การแจ้งเตือน"><i class="ti ti-bell"><\/i><em hidden><\/em><\/button>\n        <button class="avatar" id="avatarBtn">/,f);
     assert.match(nr,/if\(!on\)\{bl\.hidden=true;return\}/,f);
     assert.match(nr,/x\.textContent=String\(u\.name\|\|"\?"\)\.charAt\(0\)\.toUpperCase\(\)/,f+': cached name is text, never HTML');
-    assert.match(s,/bell\.js\?v=11/,f);
+    assert.match(s,/bell\.js\?v=12/,f);
   }
   assert.match(bell,/if\(own\)wire\(own\);else\{const b=mkBtn\("cb-d"\)/);
   assert.match(bell,/if\(W\.__cbMounted\)return;W\.__cbMounted=1;/);

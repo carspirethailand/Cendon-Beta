@@ -59,6 +59,9 @@ function paint(el){
   const card=el.querySelector(".cl");if(card&&!card.querySelector(".cl-fx"))card.insertAdjacentHTML("afterbegin",FX);
   const empty=!el.innerHTML.trim(),host=el.closest("[data-line-card]");
   el.style.display=empty?"none":"";if(host)host.style.display=empty?"none":"";
+  /* จำว่าการ์ดโชว์ไหม สูงเท่าไร — หน้าตั้งค่าครั้งหน้าจองที่ไว้ก่อน ส่วนด้านล่างจะได้ไม่กระโดด */
+  el.style.minHeight="";
+  if(host)try{localStorage.setItem("cendon_line_card",empty?"0":"1");if(!empty&&el.offsetHeight)localStorage.setItem("cendon_line_h",String(el.offsetHeight))}catch(e){}
 }
 function draw(el){
   const nudge=el.dataset.lineConnect==="nudge";

@@ -1,0 +1,90 @@
+/* ══════════════════════════════════════════════════════════════════
+   Cendon Motion v2 — นิ่ง มั่นคง ไม่ดิ้น ไม่กระตุก (ทุกหน้าในแอปโหลดไฟล์นี้ในส่วนหัว)
+
+   หลักการ
+   1) โครงของหน้า (แถบเมนู แถบล่าง กระดิ่ง ตัวชี้แท็บ พื้นหลัง) อยู่นิ่ง ไม่จาง ไม่เลื่อน ไม่กระพริบตอนเปลี่ยนหน้า
+   2) ขยับเฉพาะ opacity + transform (การ์ดจอทำให้ ไม่ต้องจัดหน้าใหม่ทุกเฟรม) · ระยะสั้น ไม่เกิน 8px · ไม่ขยายเกิน 2%
+   3) จังหวะเดียวทั้งแอป: ค่อย ๆ ช้าลงจนหยุด (ไม่มีเด้งเกิน ไม่มีสปริง) · ปิดเร็วกว่าเปิด
+   4) ไม่มีของขยับวนตลอดเวลาเพื่อความสวย — เหลือเฉพาะที่บอกสถานะ (กำลังโหลด กำลังฟัง/พูด ระหว่างโทร)
+   5) เอาเมาส์ชี้แล้วของไม่ลอย/ไม่หมุน — บอกด้วยสีและเส้นขอบแทน · กดแล้วยุบนิดเดียวทันที
+   6) ผู้ใช้ที่ตั้งเครื่องให้ลดภาพเคลื่อนไหว: ตัดทั้งหมด
+   ══════════════════════════════════════════════════════════════════ */
+:root{
+  --m-instant:90ms;   /* กด · สลับสถานะเล็ก ๆ */
+  --m-fast:140ms;     /* เมนู ป๊อปอัป ปิดหน้าต่าง */
+  --m-base:200ms;     /* หน้าต่างกลางจอ */
+  --m-slow:280ms;     /* แผ่นเลื่อนขึ้นจากล่าง/ข้าง */
+  --m-ease:cubic-bezier(.2,0,0,1);      /* ช้าลงจนหยุดนิ่ง ไม่เกินเป้า */
+  --m-exit:cubic-bezier(.4,0,1,1);      /* ปิด: เร่งออกสั้น ๆ */
+  --m-rise:6px;
+}
+@keyframes m-fade{from{opacity:0}}
+@keyframes m-pop{from{opacity:0;transform:scale(.985)}}
+@keyframes m-drop{from{opacity:0;transform:translateY(-4px)}}
+@keyframes m-sheet{from{opacity:0;transform:translateY(24px)}}
+
+/* ── ระหว่างหน้ากำลังเปิด: ไม่เล่นทรานซิชันเลย — สคริปต์ตั้งค่าเริ่มต้นแล้วสีไม่ต้องค่อย ๆ เปลี่ยนให้เห็น (ดูสคริปต์ m-boot ในส่วนหัว) ── */
+html.m-boot *,html.m-boot *::before,html.m-boot *::after{transition:none!important}
+
+/* ── 1) โครงของหน้าอยู่นิ่ง ── */
+html .navwrap,html .navwrap .nav,html .mnav,html header.pill,html .stu-top,html .cb-bell,html #fabDock{animation:none!important}
+/* ตัวชี้แท็บ: อยู่ที่แท็บที่เลือกทันที ไม่ไถลข้ามแถบ (ทุกหน้า เหมือนหน้าหลัก) */
+html .nav-ind{transition:none!important}
+::view-transition-group(navind){animation:none!important}
+::view-transition-old(navind){animation:none!important;opacity:0!important}
+::view-transition-new(navind){animation:none!important;opacity:1!important}
+/* แถบล่างมือถือข้ามหน้าโดยไม่ขยับ */
+::view-transition-group(mnav){animation:none!important}
+html .mtab .mt-i{transition:none!important}
+
+/* ── 4) ไม่มีของขยับวนเพื่อความสวย (ภาพยังอยู่ครบ แค่ไม่ขยับ) ── */
+html #hForm{animation:none!important}                                   /* วงแหวนไล่สีหมุนรอบช่องค้นหา AI */
+html .lx-sky i,html .lx-sky b{animation:none!important}               /* คลื่นสีหลังช่อง AI: ภาพคงอยู่ ไม่เลื่อนไปมา */
+html .qf-dot,html .mz-live{animation:none!important}                    /* จุดแดง "ด่วน" / "สด" กะพริบ */
+html .cl-fx i,html .cl-fx .cl-sh{animation:none!important}              /* การ์ด LINE: ประกายลอย แสงกวาด */
+html .w-sweep i,html .w-sweep b{animation:none!important}               /* แชต: คลื่นสีพื้นหลังเลื่อนไปมา */
+html .big-logo,html .logo-halo,html .logo-halo::before,html .hint-logo{animation:none!important}                /* แชต: โลโก้ลอยขึ้นลง วงแสงเต้น */
+/* โหลดอยู่: แถบวาวกวาดช้าลงและจางลง ไม่ดึงสายตา */
+html .skel{animation-duration:1.8s!important}
+
+/* ── 5) ชี้เมาส์แล้วไม่ลอย ไม่ขยาย ไม่หมุน ── */
+html .qa:hover,html .card:hover,html .widget:hover,html .tile:hover,html .lx-pc:hover,html .lx-gc:hover,
+html .lx-quick button:hover,html .mag-card:hover,html .hf-card:hover,html .sk-card:hover,html .sp-card:hover,
+html .gate-car:hover,html .pro:hover,html .spw:hover,html .kcard:hover,html .act-btn:hover,html .bw:hover,
+html .btn.primary:hover,html .cdiag:hover,html .chip:hover,html .cl-a:hover,html .find:hover,html .ft:hover,
+html .hist-new:hover,html .set-ext:hover,html .side-new:hover,html .sk-tab:hover,html .lg-tab:hover,
+html .nx .go:hover,html .p:hover,html .s:hover,html .wbtn.primary:hover,html .dim-sw:hover,html .sym-item:hover,
+html .fab:hover,html .ib-fab:hover,html .gx-dot:hover,html .gx-paint:hover,html .side-mark:hover,
+html .send:hover,html .w-send:hover,html .w-ic:hover,html .ctl-send:hover,
+html .qa:hover .qa-ic,html .tile:hover .ic,html .hf-card:hover .hf-ic,html .sk-card:hover .sk-ic,html .lt-row:hover .lt-ic,
+html .lx-rail button:hover .lx-ri,html .gx-car:hover .gx-foot i,html .ch-grid img:hover,
+html .mz-card:hover .mz-img,html .mz-row:hover .mz-img,html .mz-hero:hover .mz-img,html .qa:hover .sq img{transform:none!important}
+html .qa:hover .deco{transform:rotate(20deg)!important}
+html .lx-rarr:hover{transform:translateY(-50%)!important}
+html .gx-car:hover .gx-hero .car-art{transform:translateX(-50%)!important}
+/* กด: ยุบนิดเดียวทันที แล้วกลับ */
+html button:active,html .qa:active,html .card:active{transition-duration:var(--m-instant)!important}
+
+/* ── 2–3) หน้าต่างและแผ่นเลื่อน: จังหวะเดียวกันทั้งแอป ──
+   ฉากหลังมืดลงอย่างเดียว ไม่เบลอทั้งจอ (เบลอทั้งจอทุกเฟรมทำให้เปิดหน้าต่างแล้วกระตุก โดยเฉพาะมือถือ) */
+html .carx-bd,html .gx-bd,html .fpop,html .mag-modal-backdrop,html .mzr-bd,html #sheetBg,html .bs .bg{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+html .carx-bd.show{animation:m-fade var(--m-base) var(--m-ease)!important}
+html .carx{animation:m-pop var(--m-base) var(--m-ease)!important}
+/* หน้ารถบนคอม: สูงคงที่ สลับแท็บแล้วหน้าต่างไม่ยืดหด/ไม่กระโดด (เนื้อหาเลื่อนในตัว) */
+@media(min-width:641px){html .carx{height:min(88dvh,900px)}}
+@media(max-width:640px){html .carx{animation:m-sheet var(--m-slow) var(--m-ease)!important}}
+html .mag-modal-backdrop{transition:opacity var(--m-base) var(--m-ease)!important}
+html .bs .bg{transition:opacity var(--m-slow) var(--m-ease)!important}
+html .bs .pn{transition:transform var(--m-slow) var(--m-ease),opacity var(--m-slow) var(--m-ease)!important}
+/* แผงกระดิ่ง: จางเข้าพร้อมขยายนิดเดียวจากมุมกระดิ่ง (การ์ดจอทำ ไม่กระตุก) */
+html .nb-pop{animation:m-pop var(--m-fast) var(--m-ease)!important;transform-origin:100% 0}
+
+/* ── 6) ตั้งเครื่องให้ลดภาพเคลื่อนไหว: ตัดหมด ── */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+
+/* ── ปุ่มที่วางไว้ล่วงหน้า (เห็นตั้งแต่เฟรมแรก ก่อน bell.js ใส่หน้าตาเต็ม) ── */
+#v-settings>.cb-bell.cb-pre{position:absolute;top:calc(22px + env(safe-area-inset-top));right:15px;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;padding:0;border:0;background:none;color:var(--ink,#09090B);font-size:21px;z-index:30;cursor:pointer}
+#v-settings>.cb-bell.cb-pre[hidden],#v-settings>.cb-bell.cb-pre em[hidden]{display:none}
+@media(min-width:761px){#v-settings>.cb-bell.cb-pre{display:none}}

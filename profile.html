@@ -24,11 +24,15 @@
 <meta property="og:title" content="บัญชีของฉัน · Cendon"><meta property="og:description" content="บัญชีและการตั้งค่า Cendon">
 <meta property="og:image" content="https://cendon-beta.pages.dev/og.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta property="og:locale" content="th_TH"><meta name="twitter:card" content="summary_large_image">
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css" media="print" onload="this.media='all'"/>
-<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css"></noscript></noscript>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
+<!-- ฟอนต์และไอคอนจากเว็บเราเอง โหลดก่อนวาดเฟรมแรก: เปลี่ยนหน้าแล้วไอคอนไม่หายแวบ ตัวหนังสือ/เมนูไม่ขยับ (เดิมโหลดจาก CDN แบบไม่รอ) -->
+<link rel="preload" href="/icons/ti.woff2?v=9723453e" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/kanit-400-thai.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/kanit-500-thai.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/kanit-600-thai.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/fonts/kanit.css?v=1">
+<link rel="stylesheet" href="/icons/ti.css?v=659da0e4">
+<link rel="stylesheet" href="/motion.css?v=1">
+<script>/* Motion v2: ระหว่างหน้ากำลังเปิดไม่เล่นทรานซิชัน (สีไม่ค่อย ๆ เปลี่ยนให้เห็นตอนสคริปต์ตั้งค่าเริ่มต้น) — ปลดหลังหน้าพร้อม */(function(){var e=document.documentElement;e.classList.add("m-boot");var off=function(){setTimeout(function(){requestAnimationFrame(function(){e.classList.remove("m-boot")})},250)};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",off);else off()})();</script>
 <style>
 /* Spire09 เฉพาะอักษรละติน  ฝังมาในไฟล์เพื่อไม่ต้องพึ่งโฟลเดอร์ fonts
    ที่ไม่เคยถูกอัปขึ้นเซิร์ฟเวอร์  ภาษาไทยไม่อยู่ในช่วงนี้ จึงยังใช้ Kanit เหมือนเดิม
@@ -3985,7 +3989,7 @@ a.mtab{text-decoration:none}
 <!-- หน้าตาชุดเดียวกับหน้าหลัก (สี การ์ด ปุ่ม พื้นหลัง) — โหลดท้ายสุดให้ชนะสไตล์เดิม -->
 <link rel="stylesheet" href="lux.css">
 <!-- กระดิ่งแจ้งเตือน: ปุ่มในแถบเมนู (คอม) / มุมขวาบน (มือถือ) -->
-<script src="bell.js?v=11" defer></script>
+<script src="bell.js?v=12" defer></script>
 <script src="drop.js?v=4" defer></script>
 <script src="carspec.js?v=2026-10-18-r1" defer></script>
 <link rel="stylesheet" href="calm-ui.css?v=1">
@@ -4856,9 +4860,13 @@ function setTheme(theme) {
   currentTheme = theme;
   LS.set("theme", theme);
   const root = document.documentElement;
-  root.classList.add("theme-fade");
-  clearTimeout(setTheme._t);
-  setTheme._t = setTimeout(() => root.classList.remove("theme-fade"), 560);
+  /* ค่อย ๆ เปลี่ยนสีเฉพาะตอนผู้ใช้สลับธีมเอง — ตอนเปิดหน้าใหม่ ธีมตั้งไว้แล้วตั้งแต่เฟรมแรก
+     เดิมทุกครั้งที่เปลี่ยนหน้า ทุกสีในหน้าค่อย ๆ จางครึ่งวินาที (เมนู การ์ด พื้นหลังกระพริบ) */
+  if (root.getAttribute("data-theme") !== theme && document.readyState === "complete") {
+    root.classList.add("theme-fade");
+    clearTimeout(setTheme._t);
+    setTheme._t = setTimeout(() => root.classList.remove("theme-fade"), 560);
+  }
   root.setAttribute("data-theme", theme);
   
   document.querySelectorAll(".theme-btn, .theme-btn-p").forEach(btn => {
@@ -5570,8 +5578,8 @@ function body(){
       ${u.uid||u.email?"":row("ti-login",t("ยังไม่ได้เข้าสู่ระบบ","Not signed in"),
         t("เข้าสู่ระบบเพื่อเก็บรถ ใบงาน และรับแจ้งเตือน","Sign in to keep your cars, jobs and alerts"),
         `<a class="set-btn primary" style="margin-top:0" href="./login?next=${encodeURIComponent(location.pathname+location.search)}">${t("เข้าสู่ระบบ","Sign in")}</a>`)}
-      <section data-line-card style="display:none;margin-top:26px">
-        <h2>${t("แจ้งเตือนทาง LINE","LINE notifications")}</h2><div data-line-connect></div></section>
+      ${/* การ์ด LINE: จองที่ไว้ตั้งแต่แรก (ความสูงที่เคยวัดได้ในเครื่องนี้ หรือค่าปกติ) ไม่ให้ส่วนด้านล่างกระโดดลงตอนการ์ดโหลดเสร็จ · เคยรู้ว่าไม่มีการ์ด = ไม่จอง */(h=>`<section data-line-card style="${h?"":"display:none;"}margin-top:26px">
+        <h2>${t("แจ้งเตือนทาง LINE","LINE notifications")}</h2><div data-line-connect${h?` style="min-height:${h}px"`:""}></div></section>`)((()=>{try{const f=localStorage.getItem("cendon_line_card");return f==="0"?0:Math.min(400,+localStorage.getItem("cendon_line_h")||(innerWidth>760?134:146))}catch(e){return 0}})())}
       ${["owner","admin","moderator"].includes(u.role)?`<a class="set-ext" href="./admin" style="margin-top:14px">
         <i class="ti ti-shield-lock"></i><span><b>${t("แผงควบคุมแอดมิน","Admin panel")}</b>
         <small>${t("จัดการผู้ใช้ ช่าง และตั้งค่าเว็บ","Users, mechanics and site settings")}</small></span>
@@ -5665,6 +5673,8 @@ function extLink(href,ic,title,sub){
 
 function render(){
   const v=$("v-settings"); if(!v)return;
+  /* กระดิ่งของหน้าตั้งค่าอยู่ต่อข้ามการวาดใหม่ — เดิมสลับแท็บแล้วกระดิ่งถูกลบแล้วโผล่ใหม่ (กระพริบ) */
+  const bell=v.querySelector(":scope>.cb-bell");
   v.innerHTML=`<div class="set-wrap">
     <div class="set-head">
       <button class="set-btn" id="stBack" aria-label="${t("กลับ","Back")}">
@@ -5677,6 +5687,7 @@ function render(){
       <div class="set-main" id="stMain">${body()}</div>
     </div>
   </div>`;
+  if(bell)v.appendChild(bell);
   wire();
 }
 
@@ -5729,6 +5740,9 @@ function open(which){
     D.body.appendChild(v);
   }
   v.classList.add("on");
+  /* กระดิ่งมือถือวางไว้ตั้งแต่เปิดหน้าตั้งค่า — bell.js รับช่วง ไม่ให้โผล่ตามมาทีหลัง */
+  if(!v.querySelector(":scope>.cb-bell")){const b=D.createElement("button");b.type="button";b.className="cb-bell cb-m cb-sh cb-pre";b.setAttribute("aria-label",t("การแจ้งเตือน","Notifications"));
+    b.innerHTML='<i class="ti ti-bell"></i><em hidden></em>';try{if(localStorage.getItem("cendon_signed")!=="1")b.hidden=true}catch(e){}v.appendChild(b)}
   render();
 }
 /* ที่ /profile หน้าตั้งค่าคือทั้งหน้า (ไม่มีหน้าเก่าข้างหลังแล้ว) — กดกลับคือออกจากหน้านี้ */
@@ -6310,7 +6324,9 @@ body.insertBefore(cv,body.firstChild); body.appendChild(pool); body.appendChild(
 /* มือถือ: พื้นหลังเป็นภาพนิ่งเป็นค่าเริ่มต้น (สีเหมือนเดิม แค่ไม่ขยับ) — วาดเต็มจอซ้ำ 20 ครั้งต่อวินาที
    ทำให้กระจกเบลอทุกชิ้นต้องวาดใหม่ตาม เครื่องไม่ว่างจนกดแท็บ/เลื่อนจอหน่วง · เปิดขยับเองได้ในตั้งค่า "พื้นหลังมีชีวิต" */
 const PHONE=matchMedia("(max-width:900px)").matches;
-let alive=LSg("alive",!PHONE), depth=LSg("depth",true), gyro=LSg("gyro",false);
+/* ค่าเริ่มต้น: พื้นหลังนิ่ง (สีเดียวกับหน้าแรก) ไม่มีแสงตามเมาส์และการ์ดเอียง — เดิมเปิดบนคอม พื้นหลังสุ่มก้อนสีใหม่ทุกหน้า
+   แล้วค่อยวาด/ค่อยจางเข้า เปลี่ยนหน้าแล้วพื้นหลังกระพริบ การ์ดขยับตามเมาส์ · คนที่เปิดเองไว้ยังได้แบบเดิม */
+let alive=LSg("alive",false), depth=LSg("depth",false), gyro=LSg("gyro",false);
 function applyFlags(){
   body.dataset.alive=alive?"1":"0";
   body.dataset.depth=(depth&&!reduce.matches)?"1":"0";
@@ -11010,7 +11026,7 @@ function listenBody(){
         ${lRec?`<button class="btn danger" id="lgStop"><i class="ti ti-player-stop"></i>${T("หยุดอัด","Stop")}</button>`
           :`<button class="btn" id="lgRec"><i class="ti ti-microphone"></i>${
             lUrl?T("อัดใหม่","Record again"):T("เริ่มอัด","Start recording")}</button>`}
-        ${lUrl&&!lRec?`<button class="btn primary" id="lgSend"><i class="ti ti-waveform"></i>${
+        ${lUrl&&!lRec?`<button class="btn primary" id="lgSend"><i class="ti ti-wave-sine"></i>${
           T("ให้ระบบฟัง","Analyse it")}</button>`:""}
         ${!lRec&&!lUrl?`<button class="btn" id="lgUpBtn"><i class="ti ti-upload"></i>${
           T("ใช้ไฟล์เสียงที่มีอยู่","Use a file")}</button>`:""}
@@ -13598,6 +13614,6 @@ window.switchView=function(v){
 <script src="feature-ai.js?v=5"></script>
 <script src="fluid.js" defer></script>
 <script src="crop.js" defer></script>
-<script src="cendon-line.js" defer></script>
+<script src="cendon-line.js?v=2" defer></script>
 </body>
 </html>

@@ -22,7 +22,7 @@ test('picker escapes untrusted names, has no pre-selected Garage option and rema
 });
 test('Home, Chat and SW load paired helper, styles and updated tools',()=>{
   for(const f of ['index.html','chat.html']){const s=readFileSync(new URL('../'+f,import.meta.url),'utf8');assert.ok(s.indexOf('<script src="vehicle-audio.js?v=1"')<s.indexOf('<script src="call-tools.js?'));assert.match(s,/vehicle-audio\.css\?v=1/);assert.match(s,/call-session\.js\?v=2026-10-18-audio1/);}
-  assert.match(readFileSync(new URL('../sw.js',import.meta.url),'utf8'),/cendon-v314-vehicle-audio/);
+  assert.ok(+(readFileSync(new URL('../sw.js',import.meta.url),'utf8').match(/cendon-v(\d+)/)||[])[1]>=319);
 });
 test('actual live tool opens vehicle confirmation without accessing any microphone or provider; cancelling settles it',async()=>{
   const nodes=new Map();let resources=0;

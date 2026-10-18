@@ -164,7 +164,7 @@ body[data-mode="tech"] .cb-bell.cb-m{display:none!important}
 /* หน้าตั้งค่าเปิดทับทั้งจอ (เลื่อนในตัวเอง มีขอบ 1px) — วางในหน้านั้น ชดเชยขอบให้ตรงจุดเดิมพอดี */
 #v-settings>.cb-sh{top:calc(22px + env(safe-area-inset-top));right:15px}
 /* ห้องแชตบนมือถือ: ปุ่มขวาสุดของแถบบน (หลังปุ่ม ⋮) */
-.pill .cb-bell{order:99}
+.pill .cb-bell{order:99;margin-left:auto}
 /* ห้องแชตบนคอม: ไม่มีแถบเมนู — ลอยไว้จุดเดียวกับกระดิ่งในแถบเมนูของหน้าอื่น */
 .cb-fx{position:fixed;top:25px;left:calc(50% + 276px);width:34px;height:34px;font-size:19px;z-index:60}
 @media(max-width:899px){.cb-fx{display:none!important}}
@@ -283,7 +283,9 @@ function mount(){
   const chat=!!document.querySelector("header.pill");
   /* มือถือ (ทุกหน้ายกเว้นห้องแชต): บนสุดของหน้า มุมขวา · หน้าที่เลื่อนในกล่องของตัวเอง (การาจ นิตยสาร ร้านค้า)
      ต้องอยู่ในกล่องนั้น ไม่งั้นเนื้อหาเลื่อนลอดใต้กระดิ่ง · ชดเชยขอบกล่องให้ตรงจุดเดียวกับหน้าแรกพอดี */
-  const page=chat?null:mkBtn("cb-m");if(page)document.body.appendChild(page);
+  /* หน้าที่วางกระดิ่งมือถือไว้ในมาร์กอัปแล้ว (การาจ นิตยสาร ร้านค้า) → รับช่วงปุ่มนั้น เห็นตั้งแต่เฟรมแรก */
+  const pre=chat?null:document.querySelector(".cb-bell.cb-m.cb-pre");
+  const page=chat?null:pre?wire(pre):mkBtn("cb-m");if(page&&!pre)document.body.appendChild(page);
   const home=()=>{if(!page)return;
     const sc=document.querySelector(".view.active>.scroll")||document.querySelector(".view.active .scroll");
     const host=sc||document.body;
@@ -299,7 +301,9 @@ function mount(){
      แถบพวกนี้ถูกวาดใหม่ได้ → คอยใส่กลับทุกครั้งที่หายไป (เช็กเบา ๆ เฟรมละครั้ง) */
   let q=0;
   const put=()=>{q=0;
-    const at=(host,cls)=>{if(host&&!host.querySelector(":scope>.cb-bell")){host.appendChild(mkBtn(cls));paint()}};
+    const at=(host,cls)=>{if(!host)return;const own=host.querySelector(":scope>.cb-bell");
+      /* ปุ่มที่หน้าเว็บวางไว้แล้ว (เห็นตั้งแต่เฟรมแรก) → รับช่วง · ไม่มี → สร้างใหม่ */
+      if(own){if(!BTNS.includes(own)){wire(own);paint()}}else{host.appendChild(mkBtn(cls));paint()}};
     /* ใส่ในแถบทันทีไม่ต้องรอปุ่ม ⋮ — order:99 ทำให้อยู่ขวาสุดเสมอ */
     if(chat)at(document.querySelector("header.pill"),"p-btn");
     else{at(document.getElementById("v-settings"),"cb-m cb-sh");home()}

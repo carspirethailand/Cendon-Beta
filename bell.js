@@ -258,8 +258,11 @@ function panel(btn,o){
 const BTNS=[];
 function mkBtn(cls){
   const b=document.createElement("button");b.type="button";b.className="cb-bell "+cls;b.hidden=true;
+  b.innerHTML='<i class="ti ti-bell"></i><em hidden></em>';return wire(b);
+}
+function wire(b){
   b.setAttribute("aria-haspopup","dialog");b.setAttribute("aria-expanded","false");b.setAttribute("aria-label",T("การแจ้งเตือน","Notifications"));
-  b.innerHTML='<i class="ti ti-bell"></i><em hidden></em>';b.onclick=()=>panel(b);BTNS.push(b);return b;
+  b.onclick=()=>panel(b);BTNS.push(b);return b;
 }
 function paint(){
   let hint=false;try{hint=localStorage.getItem("cendon_signed")==="1"}catch(e){}
@@ -270,11 +273,13 @@ function paint(){
 }
 function ding(){BTNS.forEach(b=>{b.classList.remove("ding");void b.offsetWidth;b.classList.add("ding")})}
 function mount(){
-  if(document.querySelector(".cb-bell"))return;
+  if(W.__cbMounted)return;W.__cbMounted=1;
   style();
-  /* คอม: แถบเมนูบน ข้างรูปโปรไฟล์ */
+  /* คอม: แถบเมนูบน ข้างรูปโปรไฟล์ · หน้าที่วางกระดิ่งไว้ในมาร์กอัปแล้ว (เห็นตั้งแต่เฟรมแรก) → รับช่วงปุ่มนั้น ไม่สร้างใหม่
+     เดิมสร้างหลังโหลดสคริปต์ กระดิ่งจึงหายแวบแล้วโผล่ทุกครั้งที่เปลี่ยนหน้าบนคอม */
   const nr=document.querySelector(".navwrap .nav-right");
-  if(nr){const b=mkBtn("cb-d");const av=nr.querySelector("#avatarBtn");nr.insertBefore(b,av||null)}
+  if(nr){const own=nr.querySelector(":scope>.cb-bell");
+    if(own)wire(own);else{const b=mkBtn("cb-d");const av=nr.querySelector("#avatarBtn");nr.insertBefore(b,av||null)}}
   const chat=!!document.querySelector("header.pill");
   /* มือถือ (ทุกหน้ายกเว้นห้องแชต): บนสุดของหน้า มุมขวา · หน้าที่เลื่อนในกล่องของตัวเอง (การาจ นิตยสาร ร้านค้า)
      ต้องอยู่ในกล่องนั้น ไม่งั้นเนื้อหาเลื่อนลอดใต้กระดิ่ง · ชดเชยขอบกล่องให้ตรงจุดเดียวกับหน้าแรกพอดี */

@@ -15,8 +15,8 @@ test('bell panel: one row to turn the 6 pm mileage reminder on or off, only for 
 });
 
 test('every page loads the new bell; the 6 pm notification opens that car\'s mileage box', () => {
-  for(const f of ['index.html','garage.html','chat.html','news.html','profile.html','spares.html'])assert.match(r(f),/bell\.js\?v=10/,f);
-  assert.match(r('sw.js'),/'\.\/bell\.js\?v=10'/);
+  for(const f of ['index.html','garage.html','chat.html','news.html','profile.html','spares.html'])assert.match(r(f),/bell\.js\?v=11/,f);
+  assert.match(r('sw.js'),/'\.\/bell\.js\?v=11'/);
   const g=r('garage.html');
   assert.match(g,/const car=q\.get\("car"\), due=q\.get\("due"\);[\s\S]{0,300}if\(car\)sheet\(car,due\|\|""\);/);
 });

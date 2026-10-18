@@ -31,7 +31,7 @@ if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=5"><\/s
 <meta property="og:locale" content="th_TH"><meta name="twitter:card" content="summary_large_image">
 <script src="nav.js"></script>
 <script src="media-store.js"></script>
-<script src="bell.js?v=10"></script>
+<script src="bell.js?v=11"></script>
 <script src="drop.js?v=4" defer></script>
 <script src="car-menu.js?v=1" defer></script>
 <meta name="theme-color" content="#131316"/>
@@ -2193,7 +2193,8 @@ html[data-theme="dark"] .so-vi{box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
 .brand b{font-size:17px;font-weight:700;letter-spacing:.2px;font-family:var(--kd)}
 .nav-links{display:flex;gap:2px;justify-content:center;position:relative}
 .nav-ind{position:absolute;top:50%;left:0;height:38px;width:0;transform:translateY(-50%);border-radius:30px;z-index:0;pointer-events:none;
-  background:var(--grad);box-shadow:0 8px 20px -8px rgba(217,94,60,.6);transition:transform .42s cubic-bezier(.5,0,.1,1),width .42s cubic-bezier(.5,0,.1,1)}
+  background:var(--grad);box-shadow:0 8px 20px -8px rgba(217,94,60,.6);transition:none}
+/* หน้าหลัก: ตัวชี้แท็บอยู่นิ่งที่แท็บที่เลือก ไม่ไถล (เดิมไถลมาจากขอบซ้ายทุกครั้งที่เปิดหน้า) */
 .nav-links a .ti{font-size:18px}
 .nav-links a:hover{color:var(--ink)}
 .nav-links a.active{color:#fff}
@@ -2313,7 +2314,7 @@ html[data-theme="light"] .mnav,html[data-theme="plant"] .mnav{
 .mtab .mt-i{
   width:38px;height:26px;display:grid;place-items:center;
   border-radius:13px;
-  transition:background .22s cubic-bezier(.4,0,.2,1),color .18s ease}
+  transition:none}
 .mtab .mt-i i{font-size:19px;line-height:1}
 .mtab .mt-i img,.mtab .mt-i .fb{
   width:21px;height:21px;border-radius:50%;object-fit:cover;
@@ -2331,6 +2332,10 @@ html[data-theme="light"] .mnav,html[data-theme="plant"] .mnav{
 .mtab{position:relative}
 }@media(prefers-reduced-motion:reduce){.mtab .mt-i,.mtool .mt-ic,.msheet{transition:none}
 }#navInd{view-transition-name:navind}
+/* เปลี่ยนหน้ามาหน้าหลัก: ตัวชี้แท็บไปอยู่ที่ใหม่ทันที ไม่เลื่อนข้ามแถบ */
+::view-transition-group(navind){animation:none}
+::view-transition-old(navind){animation:none;opacity:0}
+::view-transition-new(navind){animation:none;opacity:1}
 
 /* แถบบนแบบใหม่ของหน้านี้ไม่ใช้แล้ว (เหลือไว้แค่ให้ปุ่มในโค้ดเดิมยังเรียกได้) */
 .top{display:none!important}
@@ -2415,9 +2420,24 @@ a.mtab{text-decoration:none}
         <a href="/news" data-view="magazine"><i class="ti ti-book-2"></i> <span data-i18n="nav.magazine">นิตยสาร</span></a>
         <a href="/spares" data-view="shop"><i class="ti ti-shopping-cart"></i> <span data-i18n="nav.shop">ร้านค้า</span></a>
       </div>
+      <script>/* วางตัวชี้แท็บที่แท็บที่เลือกตั้งแต่เฟรมแรก */(function(){try{var i=document.getElementById("navInd"),a=document.querySelector(".nav-links a.active");if(i&&a&&a.offsetWidth){i.style.width=a.offsetWidth+"px";i.style.transform="translate("+a.offsetLeft+"px,-50%)"}}catch(e){}})();</script>
       <div class="nav-right">
         <button class="btn-signin" id="signinBtn"><i class="ti ti-brand-google"></i> <span data-i18n="signin">เข้าสู่ระบบ</span></button>
+        <style>/* กระดิ่งในแถบเมนู (คอม) อยู่ในหน้าตั้งแต่เฟรมแรก — bell.js รับช่วงปุ่มนี้ (เดิมโผล่ทีหลัง จึงกระพริบทุกครั้งที่เปลี่ยนหน้า) */
+.nav-right>.cb-bell{position:relative;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none;padding:0;border:0;background:none;color:var(--ink,#09090B);font-size:19px;cursor:pointer}
+.nav-right>.cb-bell[hidden],.nav-right>.cb-bell em[hidden]{display:none}
+@media(max-width:760px){.nav-right>.cb-bell{display:none}}</style>
+        <button type="button" class="cb-bell cb-d" aria-label="การแจ้งเตือน"><i class="ti ti-bell"></i><em hidden></em></button>
         <button class="avatar" id="avatarBtn"><span class="fb" id="navFb">?</span></button>
+        <script>/* แถบเมนูตั้งแต่เฟรมแรก: เคยล็อกอินในเครื่องนี้ → แสดงกระดิ่งกับรูปโปรไฟล์เลย ไม่โชว์ปุ่มเข้าสู่ระบบแวบหนึ่ง (สคริปต์หน้าเว็บอัปเดตตามสถานะจริงทีหลัง) */(function(){try{
+  var av=document.currentScript.previousElementSibling,bl=av.previousElementSibling,si=document.getElementById("signinBtn"),on=localStorage.getItem("cendon_signed")==="1",u=null;
+  if(!on){bl.hidden=true;return}
+  try{u=JSON.parse(localStorage.getItem("spire_cachedUser"))}catch(e){}
+  if(!u||typeof u!=="object")return;
+  if(si)si.style.display="none";av.style.display="block";
+  var x;if(typeof u.photo==="string"&&/^https:\/\//.test(u.photo)){x=document.createElement("img");x.referrerPolicy="no-referrer";x.src=u.photo}
+  else{x=document.createElement("span");x.className="fb";x.textContent=String(u.name||"?").charAt(0).toUpperCase()}
+  av.replaceChildren(x)}catch(e){}})();</script>
         <div class="dd" id="dd">
           <button id="ddJobs"><i class="ti ti-clipboard-list"></i> <span>งานของฉัน</span></button>
           <button id="ddStudio"><i class="ti ti-building-store"></i> <span>Studio · ร้านของฉัน</span></button>

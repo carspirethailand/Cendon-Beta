@@ -376,15 +376,6 @@ async function shareImage(s,n){
   g.fillStyle='#ff8a3d';g.font='600 42px Kanit, sans-serif';g.fillText('cendon',90,1830);g.fillStyle='rgba(255,244,232,.55)';g.font='400 30px Kanit, sans-serif';g.textAlign='right';g.fillText(T('สรุปปีของรถคุณ','your car\'s year'),990,1830);
   return new Promise(r=>cv.toBlob(r,'image/png'));
 }
-/* แบนเนอร์บนหน้าการาจ */
-function banner(){
-  const list=$('garageList');if(!list||!cars().length)return;
-  let b=$('wrBanner');
-  if(!b){b=D.createElement('button');b.id='wrBanner';b.type='button';b.className='wr-banner';b.onclick=wrapped;list.parentNode.insertBefore(b,list)}
-  const s=yearStats(WY());
-  b.innerHTML=`<span class="wr-bk">CENDON WRAPPED</span><b>${s.Y}</b><span class="wr-bt">${T('สรุปปีของรถคุณ — ดูเลย','Your car\'s year in review — watch now')}</span><i class="ti ti-player-play-filled"></i>`;
-}
-
 /* ═════════════════ 4) ความลับของการ์ดรถ: ปัดการ์ดพลิก 180° → Wrap ของคันนั้น ═════════════════
    แบบเดียวกับช่องค้นหาหน้าแรก: การ์ดหมุนตามนิ้ว (มือถือ) หรือตามเมาส์ที่ลาก (คอม) · ปล่อยเกินราวหนึ่งในสี่ = พลิก ไม่ถึง = เด้งกลับ
    แนวตั้งยังเลื่อนหน้าได้ปกติ · ลากแล้วปล่อยบนการ์ด ไม่นับเป็นการกดเข้าหน้ารถ · ไม่มีป้ายบอก — เป็นของลับ
@@ -453,10 +444,5 @@ window.CarExtras={
   after(tab,c){if(tab==='cal')mountCal(c);if(tab==='pass')mountPass(c)},
   _stats:yearStats,_cal:calendar
 };
-const tickBanner=()=>{try{banner()}catch(e){}};
-if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',()=>setTimeout(tickBanner,300));else setTimeout(tickBanner,300);
-/* วาดแบนเนอร์ใหม่เมื่อรายการรถถูกวาดใหม่ */
-const mo=new MutationObserver(()=>{if(!$('wrBanner'))tickBanner()});
-const watchList=()=>{const l=$('garageList');if(l&&l.parentNode)mo.observe(l.parentNode,{childList:true})};
-if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',watchList);else watchList();
+/* ไม่มีแบนเนอร์ Wrapped บนหน้าการาจแล้ว — ดู Wrap ได้ทางเดียวคือปัดการ์ดรถไปด้านหลัง */
 })();

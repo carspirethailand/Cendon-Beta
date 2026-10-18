@@ -66,3 +66,30 @@ test('#26 specs go deeper: performance, clearance, turning radius, boot, suspens
   assert.match(cs,/have\.data\?\.schema===2&&have\.sources\?\.length&&\(equipment\|\|have\.data\.depth>=2\)/);
   for(const f of ['garage.html','news.html','profile.html','spares.html','sw.js'])assert.match(r(f),/carspec\.js\?v=2026-10-18-deep/,f);
 });
+
+test('home navbar selector stays put: no slide on load or when arriving from another page', () => {
+  const home=r('index.html');
+  assert.match(home,/box-shadow:0 8px 20px -8px rgba\(217,94,60,\.6\);transition:none\}/);
+  assert.match(home,/::view-transition-group\(navind\)\{animation:none\}/);
+  assert.match(home,/<\/div>\n      <script>\/\* วางตัวชี้แท็บที่แท็บที่เลือกตั้งแต่เฟรมแรก \*\//,'placed on the first frame, before the page scripts');
+  for(const f of ['garage.html','spares.html','news.html'])assert.match(r(f),/i\.style\.transition="none";i\.style\.width=a\.offsetWidth\+"px"/,f);
+});
+
+test('desktop bell is in the navbar markup from the first frame (no blink on page change); bell.js adopts it', () => {
+  for(const f of ['index.html','garage.html','spares.html','news.html','profile.html']){
+    const s=r(f),nr=s.slice(s.indexOf('<div class="nav-right">'),s.indexOf('<div class="dd" id="dd">'));
+    assert.match(nr,/<button type="button" class="cb-bell cb-d" aria-label="การแจ้งเตือน"><i class="ti ti-bell"><\/i><em hidden><\/em><\/button>\n        <button class="avatar" id="avatarBtn">/,f);
+    assert.match(nr,/if\(!on\)\{bl\.hidden=true;return\}/,f);
+    assert.match(nr,/x\.textContent=String\(u\.name\|\|"\?"\)\.charAt\(0\)\.toUpperCase\(\)/,f+': cached name is text, never HTML');
+    assert.match(s,/bell\.js\?v=11/,f);
+  }
+  assert.match(bell,/if\(own\)wire\(own\);else\{const b=mkBtn\("cb-d"\)/);
+  assert.match(bell,/if\(W\.__cbMounted\)return;W\.__cbMounted=1;/);
+});
+
+test('garage has no Wrapped banner — Wrap is reached only by flipping a car card', () => {
+  const gx=r('garage-extras.js');
+  assert.doesNotMatch(gx,/wrBanner|function banner/);assert.doesNotMatch(r('garage-extras.css'),/\.wr-banner/);
+  assert.match(gx,/closest\('\.gx-back \[data-wrap\]'\);if\(w\)wrapped\(\{car:w\.dataset\.wrap\}\)/);
+  assert.match(r('garage.html'),/garage-extras\.js\?v=6/);assert.match(r('sw.js'),/garage-extras\.js\?v=6'/);
+});

@@ -3970,7 +3970,7 @@ a.mtab{text-decoration:none}
 <!-- หน้าตาชุดเดียวกับหน้าหลัก (สี การ์ด ปุ่ม พื้นหลัง) — โหลดท้ายสุดให้ชนะสไตล์เดิม -->
 <link rel="stylesheet" href="lux.css">
 <!-- กระดิ่งแจ้งเตือน: ปุ่มในแถบเมนู (คอม) / มุมขวาบน (มือถือ) -->
-<script src="bell.js?v=10" defer></script>
+<script src="bell.js?v=11" defer></script>
 <script src="drop.js?v=4" defer></script>
 <script src="car-menu.js?v=1" defer></script>
 <style>/* มือถือ: กระดิ่งอยู่บนสุดมุมขวา — หัวหน้าเว้นที่ให้ ปุ่มตั้งค่าไม่ทับ */@media(max-width:760px){.sp-head{padding-right:44px}}</style>
@@ -4199,9 +4199,24 @@ window.spireI18nCoverage=code=>{
         <a href="/news" data-view="magazine"><i class="ti ti-book-2"></i> <span data-i18n="nav.magazine">นิตยสาร</span></a>
         <a href="/spares" data-view="shop" class="active"><i class="ti ti-shopping-cart"></i> <span data-i18n="nav.shop">ร้านค้า</span></a>
       </div>
+      <script>/* วางตัวชี้แท็บที่แท็บที่เลือกตั้งแต่เฟรมแรก (ไม่ไถลมาจากซ้าย) — เดิมโผล่ตามหลังหน้าเว็บ ตอนเปลี่ยนหน้าบนคอมจึงแวบ */(function(){try{var i=document.getElementById("navInd"),a=document.querySelector(".nav-links a.active");if(i&&a&&a.offsetWidth){i.style.transition="none";i.style.width=a.offsetWidth+"px";i.style.transform="translate("+a.offsetLeft+"px,-50%)";void i.offsetWidth;i.style.transition=""}}catch(e){}})();</script>
       <div class="nav-right">
         <button class="btn-signin" id="signinBtn"><i class="ti ti-brand-google"></i> <span data-i18n="signin">เข้าสู่ระบบ</span></button>
+        <style>/* กระดิ่งในแถบเมนู (คอม) อยู่ในหน้าตั้งแต่เฟรมแรก — bell.js รับช่วงปุ่มนี้ (เดิมโผล่ทีหลัง จึงกระพริบทุกครั้งที่เปลี่ยนหน้า) */
+.nav-right>.cb-bell{position:relative;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none;padding:0;border:0;background:none;color:var(--ink,#09090B);font-size:19px;cursor:pointer}
+.nav-right>.cb-bell[hidden],.nav-right>.cb-bell em[hidden]{display:none}
+@media(max-width:760px){.nav-right>.cb-bell{display:none}}</style>
+        <button type="button" class="cb-bell cb-d" aria-label="การแจ้งเตือน"><i class="ti ti-bell"></i><em hidden></em></button>
         <button class="avatar" id="avatarBtn"><span class="fb" id="navFb">?</span></button>
+        <script>/* แถบเมนูตั้งแต่เฟรมแรก: เคยล็อกอินในเครื่องนี้ → แสดงกระดิ่งกับรูปโปรไฟล์เลย ไม่โชว์ปุ่มเข้าสู่ระบบแวบหนึ่ง (สคริปต์หน้าเว็บอัปเดตตามสถานะจริงทีหลัง) */(function(){try{
+  var av=document.currentScript.previousElementSibling,bl=av.previousElementSibling,si=document.getElementById("signinBtn"),on=localStorage.getItem("cendon_signed")==="1",u=null;
+  if(!on){bl.hidden=true;return}
+  try{u=JSON.parse(localStorage.getItem("spire_cachedUser"))}catch(e){}
+  if(!u||typeof u!=="object")return;
+  if(si)si.style.display="none";av.style.display="block";
+  var x;if(typeof u.photo==="string"&&/^https:\/\//.test(u.photo)){x=document.createElement("img");x.referrerPolicy="no-referrer";x.src=u.photo}
+  else{x=document.createElement("span");x.className="fb";x.textContent=String(u.name||"?").charAt(0).toUpperCase()}
+  av.replaceChildren(x)}catch(e){}})();</script>
         <div class="dd" id="dd">
           <button data-view="profile"><i class="ti ti-user"></i> <span data-i18n="menu.profile">โปรไฟล์ & ตั้งค่า</span></button>
           <button id="ddAdmin" style="display:none" onclick="location.href='/admin'"><i class="ti ti-shield-lock"></i> <span data-i18n="menu.admin">แผงควบคุมแอดมิน</span></button>

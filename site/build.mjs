@@ -5,7 +5,7 @@
 import {readFileSync,writeFileSync,existsSync} from 'node:fs';
 import {pathToFileURL} from 'node:url';
 import {resolve} from 'node:path';
-import {page,SITE} from './layout.mjs';
+import {page,SITE,I,ssrShell,SSR_ICONS} from './layout.mjs';
 import about from './content/about.mjs';
 import privacy from './content/privacy.mjs';
 import terms from './content/terms.mjs';
@@ -22,14 +22,22 @@ function sitemap(){
 }
 const robots=()=>`# Cendon — เปิดให้เก็บทุกหน้าได้ หน้าในแอป/ลิงก์ส่วนตัวกันด้วย noindex (_headers) ไม่ใช่ Disallow
 # (Disallow ทำให้เครื่องมือค้นหามองไม่เห็นคำสั่ง noindex แล้วอาจเก็บแค่ที่อยู่ไปขึ้นผลค้นหาแทน)
+# หน้าร้าน/บริการ/หมวดช่างสาธารณะอยู่ใน /sitemaps/shops (สร้างสดจากรายชื่อร้านที่ผ่านการตรวจ)
 User-agent: *
 Allow: /
 
 Sitemap: ${SITE}/sitemap.xml
+Sitemap: ${SITE}/sitemaps/shops
+`;
+
+/* โครงหน้าร้าน/บริการ/หมวดช่างสำหรับ Pages Functions (functions/ → lib/public-pages.mjs) — ไฟล์โค้ด ไม่ใช่หน้าเว็บ */
+const ssrModule=()=>`/* สร้างโดย node site/build.mjs จาก site/layout.mjs — ห้ามแก้ไฟล์นี้เอง */
+export const SHELL=${JSON.stringify(ssrShell())};
+export const ICONS=${JSON.stringify(Object.fromEntries(SSR_ICONS.map(k=>[k,I[k]])))};
 `;
 
 export function render(){
-  return [...PAGES.map(p=>({file:p.file,html:page(p)})),{file:'sitemap.xml',html:sitemap()},{file:'robots.txt',html:robots()}];
+  return [...PAGES.map(p=>({file:p.file,html:page(p)})),{file:'sitemap.xml',html:sitemap()},{file:'robots.txt',html:robots()},{file:'lib/ssr-shell.mjs',html:ssrModule()}];
 }
 
 if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href){

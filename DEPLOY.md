@@ -19,8 +19,11 @@
 ### SEO (ให้ Google ค้นเจอ)
 - หน้าที่ให้ค้นเจอ: `/about` (หน้าแรกของเว็บ) `/help` `/privacy` `/terms` — อยู่ใน `sitemap.xml` · `robots.txt` `sitemap.xml` `404.html` สร้างจาก `node site/build.mjs` พร้อมกัน
 - หน้าในแอป (ต้องล็อกอิน) หน้าเข้าสู่ระบบ และลิงก์ส่วนตัว (`/trip` `/passport`) ห้ามขึ้นผลค้นหา → `X-Robots-Tag: noindex` ใน `_headers` · **เพิ่มที่อยู่ใหม่ใน `_redirects` เมื่อไร เพิ่มใน `_headers` ด้วย** (ไม่เพิ่มใน `_redirects` = ที่อยู่นั้นได้หน้า 404)
-- การ์ดแชร์ลิงก์ร้าน/บริการ (`/tech/<id>` `/service/<id>`): Cloudflare Pages Functions ใน `functions/` + `lib/share-meta.mjs` deploy ไปพร้อมหน้าเว็บอัตโนมัติ ไม่ต้องตั้งค่า (ถ้าเปลี่ยนที่อยู่หลังบ้าน ตั้งตัวแปร `TECH_API_URL` ในโปรเจกต์ Pages)
-- เจ้าของทำครั้งเดียว: เพิ่มเว็บใน **Google Search Console** (ยืนยันด้วยไฟล์ HTML ที่ Google ให้ วางไว้รากเว็บ หรือ DNS เมื่อมีโดเมนจริง) → ส่ง `https://<โดเมน>/sitemap.xml` · ย้ายไปโดเมนของตัวเองเมื่อพร้อม แล้วแก้ `SITE` ใน `site/layout.mjs` + `APP_URL` ในหลังบ้าน
+- **หน้าสาธารณะที่ค้นเจอ** หน้าร้าน `/tech/<id>` บริการ `/service/<id>` หมวดช่าง `/category/<air|eng|tyre|ev|body|mobile>` และแผนผังสด `/sitemaps/shops`: Cloudflare Pages Functions ใน `functions/` + `lib/public-pages.mjs` (สร้าง HTML ฝั่งเซิร์ฟเวอร์จากรายชื่อสาธารณะของหลังบ้าน) deploy ไปพร้อมหน้าเว็บอัตโนมัติ ไม่ต้องตั้งค่า
+  - คนที่ล็อกอินอยู่ (คุกกี้ `cendon_signed=1` ที่ `account.js`/`auth-gate.js` ตั้งให้) ได้หน้าแอปเหมือนเดิม · คนทั่วไปและ Google ได้หน้าสาธารณะ (ไม่มีเบอร์ ไลน์ ที่อยู่ละเอียด พิกัด ข้อความรีวิวรายคน)
+  - โครงหน้า (หัว/ส่วนท้าย/CSS) มาจาก `lib/ssr-shell.mjs` ที่ `node site/build.mjs` สร้างให้ · หมวดช่างอยู่ใน `lib/cats.mjs`
+  - ถ้าเปลี่ยนที่อยู่หลังบ้าน ตั้งตัวแปร `TECH_API_URL` ในโปรเจกต์ Pages · หลังบ้านล่ม = หน้าแอปเดิม (ลิงก์ไม่เสีย)
+- เจ้าของทำครั้งเดียว: เพิ่มเว็บใน **Google Search Console** (ยืนยันด้วยไฟล์ HTML ที่ Google ให้ วางไว้รากเว็บ หรือ DNS เมื่อมีโดเมนจริง) → ส่ง `https://<โดเมน>/sitemap.xml` และ `https://<โดเมน>/sitemaps/shops` · ย้ายไปโดเมนของตัวเองเมื่อพร้อม แล้วแก้ `SITE` ใน `site/layout.mjs` + `APP_URL` ในหลังบ้าน
 
 ## 2. หลังบ้าน (repo `SpireONE-backend`) — Cloudflare Worker + D1
 

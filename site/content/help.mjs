@@ -184,6 +184,9 @@ const sections=[
         'Tap <b>Report a problem</b> in the job, describe what happened and add photos if you have them. Staff review the evidence in the job — accepted price, messages, before/after photos — make a decision, and may suspend shops that break the rules.'))},
 
   {id:'mechanics',title:['สำหรับช่าง','For mechanics'],body:
+    Q('หน้าร้านของฉันค้นเจอใน Google ไหม','Can people find my shop on Google?',
+      P('ได้ เมื่อร้านผ่านการตรวจแล้ว หน้าร้าน (<b>/tech/…</b>) บริการแต่ละรายการ และหน้าหมวดช่างจะเปิดดูได้โดยไม่ต้องล็อกอิน และ Google ค้นเจอได้ — ลูกค้ากดขอราคา/จอง/แชตแล้วจะเข้าสู่ระบบก่อน แล้วกลับมาที่ร้านคุณ · หน้าสาธารณะแสดงชื่อร้าน พื้นที่ ความถนัด รูป บริการพร้อมราคาเริ่ม เวลาทำการ คะแนนรวม และสิ่งที่ทีมงานตรวจ <b>ไม่แสดง</b>เบอร์โทร ไลน์ ที่อยู่ละเอียด หรือพิกัด · อยากติดผลค้นหา: ใส่คำอธิบายร้านให้ชัด รูปจริง และลงบริการพร้อมราคา แชร์ลิงก์หน้าร้านใน LINE หรือ Facebook การ์ดจะขึ้นชื่อและรูปร้านคุณ',
+        'Yes. Once your shop is checked, your shop page (<b>/tech/…</b>), each service and the category pages can be viewed without signing in and found on Google — when a customer taps quote/book/chat they sign in first, then return to your shop. · Public pages show your name, area, specialties, photos, services with starting prices, hours, overall rating and what staff checked; they <b>never show</b> your phone, LINE, full address or coordinates. · To rank better: write a clear description, use real photos and list services with prices. Shared in LINE or Facebook, your shop link shows your name and photo.'))+
     Q('สมัครเป็นช่างกับ Cendon','How do I join as a mechanic?',
       OL([['ล็อกอิน แล้วกด <b>สมัครเป็นช่าง</b> (หรือเปิด <a href="/join">/join</a>)','Sign in and tap <b>Become a mechanic</b> (or open <a href="/join">/join</a>)'],
           ['กรอกข้อมูลร้าน บริการ พื้นที่ และแนบรูปอู่/ผลงาน','Fill in your shop, services and area, and add workshop and work photos'],

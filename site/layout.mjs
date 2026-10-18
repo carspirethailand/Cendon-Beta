@@ -3,6 +3,7 @@
    เนื้อหาเขียนเองทั้งหมด (ไม่รับจากผู้ใช้) จึงใส่เป็น HTML ได้ตรง ๆ */
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
+import {CATS} from '../lib/cats.mjs';
 
 /* โดเมนจริงของเว็บ — เปลี่ยนโดเมนเมื่อไรแก้ที่นี่ที่เดียวแล้วรัน build */
 export const SITE='https://cendon-beta.pages.dev';
@@ -94,6 +95,7 @@ function foot(active){
 <div class="brandcol"><a class="brand" href="/about" aria-label="Cendon">${MARK}${WM}</a>
 <p class="about">${L('ผู้ช่วยดูแลรถที่คุยรู้เรื่อง และช่างที่ผ่านการตรวจ ใกล้คุณ','A car companion that explains things plainly, and checked mechanics near you.')}</p></div>
 <nav aria-label="Cendon"><h4>Cendon</h4><ul><li><a href="/">${L('เปิดแอป','Open the app')}</a></li><li>${a('/about','about','เกี่ยวกับ','About')}</li><li>${a('/help','help','ศูนย์ช่วยเหลือ','Help centre')}</li></ul></nav>
+<nav aria-label="หาช่าง · Find a mechanic"><h4>${L('หาช่าง','Find a mechanic')}</h4><ul>${CATS.map(c=>`<li><a href="/category/${c.k}">${L(c.th,c.en)}</a></li>`).join('')}</ul></nav>
 <nav aria-label="ข้อตกลง · Legal"><h4>${L('ข้อตกลง','Legal')}</h4><ul><li>${a('/terms','terms','ข้อกำหนดการใช้งาน','Terms of service')}</li><li>${a('/privacy','privacy','นโยบายความเป็นส่วนตัว','Privacy policy')}</li></ul></nav>
 <div><h4>${L('ติดต่อ','Contact')}</h4><ul><li><a href="mailto:${EMAIL}">${EMAIL}</a></li><li><a href="${LINE_ADD}" rel="noopener">LINE ${LINE_OA}</a></li></ul></div>
 <div class="legal"><span>© 2026 Car Spire Thailand · Cendon</span><span>${L('ไม่มีโฆษณา ไม่มีตัวติดตาม','No ads. No trackers.')}</span>${LANG}</div>
@@ -176,3 +178,12 @@ ${summary?`<section class="summary rv" aria-label="${esc(summary.title[0])}"><h2
 }</article>
 </div>`;
 }
+
+/* โครงหน้าสาธารณะที่สร้างตอนเปิด (หน้าร้าน บริการ หมวดช่าง) — Pages Functions เติมหัวเรื่อง คำอธิบาย ที่อยู่ ข้อมูลโครงสร้าง และเนื้อหา
+   ใช้หัว/ส่วนท้าย/ฟอนต์/CSS ชุดเดียวกับ /about ทุกตัวอักษร (สร้างใหม่ทุกครั้งที่รัน node site/build.mjs) */
+export const SSR_MARK={title:'__SSR_TITLE__',titleEn:'__SSR_TITLE_EN__',desc:'__SSR_DESC__',path:'/__SSR_PATH__',body:'<!--SSR_BODY-->',ld:'<!--SSR_LD-->'};
+export function ssrShell(){
+  const M=SSR_MARK;
+  return page({key:'ssr',path:M.path,title:[M.title,M.titleEn],desc:[M.desc,M.desc],body:M.body}).replace('</head>',M.ld+'</head>');
+}
+export const SSR_ICONS=['star','shield','check','pin','clock','wrench','store','usercheck','phoneapp','car','zap','image','info'];

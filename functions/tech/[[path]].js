@@ -1,3 +1,3 @@
-/* /tech/<รหัสร้าน>/… — การ์ดแชร์ลิงก์เป็นชื่อร้าน รูป และความถนัดจริง (ดู lib/share-meta.mjs) */
-import {preview} from '../../lib/share-meta.mjs';
-export const onRequestGet=ctx=>preview(ctx,'tech');
+/* /tech/<รหัสร้าน> — หน้าร้านสาธารณะ (ค้นเจอใน Google) หรือหน้าแอปสำหรับคนที่ล็อกอินอยู่ (ดู lib/public-pages.mjs) */
+import {handle} from '../../lib/public-pages.mjs';
+export const onRequestGet=ctx=>handle(ctx,'tech');

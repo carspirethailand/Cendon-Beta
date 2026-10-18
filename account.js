@@ -35,7 +35,9 @@
   const OPENED_TRIP=tripPath();let signedOut=false;
   const openPath=()=>tripPath()||OPENED_TRIP&&!signedOut;
   const toLogin=()=>{close();location.replace('/login?next='+encodeURIComponent(safeNext(location.pathname+location.search+location.hash)))};
-  const signedHint=on=>{try{if(on)localStorage.setItem('cendon_signed','1');else localStorage.removeItem('cendon_signed')}catch(e){}};
+  /* คุกกี้ cendon_signed คู่กับป้ายในเครื่อง: หน้าร้าน/บริการ/หมวดช่าง (Pages Functions) ใช้แยกว่าส่งหน้าแอปหรือหน้าสาธารณะ — เป็นแค่คำใบ้ ไม่ใช่สิทธิ์เข้าระบบ */
+  const signedCookie=on=>{try{document.cookie='cendon_signed='+(on?'1; max-age=31536000':'; max-age=0')+'; path=/; samesite=lax'+(location.protocol==='https:'?'; secure':'')}catch(e){}};
+  const signedHint=on=>{try{if(on)localStorage.setItem('cendon_signed','1');else localStorage.removeItem('cendon_signed')}catch(e){}signedCookie(on)};
   function safeNext(raw){
     try{if(/[\\\p{Cc}]/u.test(decodeURIComponent(raw||'')))return '/';
       const u=new URL(raw||'/',location.origin),p=u.pathname.replace(/\.html$/,'').replace(/\/$/,'')||'/';

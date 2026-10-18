@@ -70,6 +70,11 @@ a{color:inherit}
 .tl .meta{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:3px;font-size:12.5px;color:var(--muted)}
 .badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600}
 .badge.v{background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
+.pp{margin:6px 0 0;font-size:13px;color:var(--muted)}
+.clips{margin-top:8px}.clips summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--ink)}
+.clips .cg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px}
+.clips figure{margin:0;min-width:0}.clips video{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:10px;background:#000;display:block}
+.clips figcaption{margin-top:3px;font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .badge.o{background:var(--surface-2);color:var(--muted)}
 .tl .work{margin-top:4px;font-size:13px;color:var(--muted);line-height:1.5}
 .note{display:flex;gap:9px;padding:14px 16px;border-radius:18px;background:var(--surface-2);font-size:13px;line-height:1.6;color:var(--muted)}
@@ -112,6 +117,18 @@ if(!/^[A-Za-z0-9_-]{20,64}$/.test(token))return fail(T("ลิงก์ไม่
 fetch(API+"/api/tech/passport/"+encodeURIComponent(token),{cache:"no-store"}).then(function(r){return r.json().then(function(d){if(!r.ok)throw Error(d&&d.error||"");return d})})
 .then(function(d){render(d.passport)}).catch(function(e){fail(e.message||T("เปิดหน้านี้ไม่ได้ตอนนี้","Can't open this page right now"))});
 
+/* หลักฐานการซ่อม: คลิปที่ช่างอัดในแอประหว่างซ่อม (เปิดผ่านลิงก์นี้เท่านั้น) · อะไหล่มือสองบอกตามจริง */
+var SHOT={old:T("อะไหล่เก่าที่ถอดออก","Old part removed"),"new":T("อะไหล่ใหม่ + ป้ายเลข","New part + label"),fit:T("ใส่เสร็จในตัวรถ","Fitted in the car"),before:T("ก่อนซ่อม","Before"),after:T("หลังซ่อมเสร็จ","After")};
+function proof(d){
+  var h="";
+  if(d.parts&&d.parts.note)h+='<p class="pp">'+T("อะไหล่: ","Parts: ")+esc(d.parts.note)+(d.parts.used?' · <b>'+T("มือสอง","used")+'</b>':"")+'</p>';
+  if(d.proof&&d.proof.clips&&d.proof.clips.length){
+    h+='<div class="meta" style="margin-top:6px"><span class="badge '+(d.proof.level==="verified"?"v":"o")+'"><i class="ti ti-video"></i>'+(d.proof.level==="verified"?T("มีคลิปหลักฐาน · AI ตรวจผ่าน","Proof clips · AI checked"):T("มีคลิปหลักฐาน · AI ตรวจไม่ชัด","Proof clips · AI unsure"))+'</span></div>'
+      +'<details class="clips"><summary>'+T("ดูคลิปหลักฐาน","Watch the proof clips")+' ('+d.proof.clips.length+')</summary><div class="cg">'
+      +d.proof.clips.map(function(c){return '<figure><video src="'+API+"/api/tech/passport/"+encodeURIComponent(token)+"/media/"+encodeURIComponent(c.media)+'" controls playsinline preload="none"></video><figcaption>'+esc(SHOT[c.shot]||"")+'</figcaption></figure>'}).join("")+'</div></details>';
+  }
+  return h;
+}
 function chart(p){
   var pts=(p.odo||[]).map(function(o){return {t:new Date(o.date+"T00:00:00").getTime(),km:o.km}}).filter(function(o){return o.t>0&&o.km>0});
   if(pts.length<2)return "";
@@ -143,7 +160,7 @@ function render(p){
     +(chart(p)?'<section class="card"><h2><i class="ti ti-chart-line"></i>'+T("เลขไมล์ตามเวลา","Mileage over time")+'</h2>'+chart(p)+'</section>':"")
     +'<section class="card"><h2><i class="ti ti-list-check"></i>'+T("ประวัติการดูแล","Service history")+'</h2>'
       +(items.length?'<ul class="tl">'+items.map(function(x){var d=x.d;
-        return x.v?'<li class="v"><span class="dot"><i class="ti ti-rosette-discount-check"></i></span><div><b>'+esc(d.work||T("งานซ่อมผ่าน Cendon","Repair via Cendon"))+'</b><div class="meta"><span class="badge v"><i class="ti ti-check"></i>'+T("ยืนยันโดยร้าน","Shop-verified")+'</span><span>'+esc(day(d.at))+'</span><span>'+esc(d.shop)+(d.shopVerified?' · '+T("ร้านผ่านการตรวจ","vetted shop"):"")+'</span>'+(d.km?'<span>'+num(d.km)+' '+T("กม.","km")+'</span>':"")+(d.warranty?'<span>'+T("รับประกัน ","Warranty ")+d.warranty+T(" วัน"," days")+'</span>':"")+(d.amount?'<span>฿'+num(d.amount)+'</span>':"")+(d.rating?'<span>'+"★".repeat(d.rating)+'</span>':"")+'</div></div></li>'
+        return x.v?'<li class="v"><span class="dot"><i class="ti ti-rosette-discount-check"></i></span><div><b>'+esc(d.work||T("งานซ่อมผ่าน Cendon","Repair via Cendon"))+'</b><div class="meta"><span class="badge v"><i class="ti ti-check"></i>'+T("ยืนยันโดยร้าน","Shop-verified")+'</span><span>'+esc(day(d.at))+'</span><span>'+esc(d.shop)+(d.shopVerified?' · '+T("ร้านผ่านการตรวจ","vetted shop"):"")+'</span>'+(d.km?'<span>'+num(d.km)+' '+T("กม.","km")+'</span>':"")+(d.warranty?'<span>'+T("รับประกัน ","Warranty ")+d.warranty+T(" วัน"," days")+'</span>':"")+(d.amount?'<span>฿'+num(d.amount)+'</span>':"")+(d.rating?'<span>'+"★".repeat(d.rating)+'</span>':"")+'</div>'+proof(d)+'</div></li>'
           :'<li><span class="dot"><i class="ti ti-tool"></i></span><div><b>'+esc(d.item)+'</b><div class="meta"><span class="badge o">'+T("บันทึกโดยเจ้าของ","Owner-recorded")+'</span><span>'+esc(day(d.date))+'</span>'+(d.km?'<span>'+num(d.km)+' '+T("กม.","km")+'</span>':"")+(d.amount?'<span>฿'+num(d.amount)+'</span>':"")+'</div></div></li>'}).join("")+'</ul>'
         :'<p style="margin:0;color:var(--muted);font-size:14px">'+T("ยังไม่มีประวัติการดูแลที่เปิดให้ดู","No service history shared yet")+'</p>')+'</section>'
     +'<p class="note"><i class="ti ti-info-circle"></i><span>'+T("“ยืนยันโดยร้าน” = งานที่ซ่อมผ่าน Cendon ดึงจากระบบโดยตรง เจ้าของแก้ไขไม่ได้ · “บันทึกโดยเจ้าของ” = เจ้าของรถจดเอง · Cendon ไม่ได้ตรวจสภาพรถคันนี้ ควรให้ช่างตรวจก่อนซื้อขายทุกครั้ง · อัปเดตล่าสุด ","“Shop-verified” = repairs done through Cendon, taken straight from the system — the owner can't edit them · “Owner-recorded” = logged by the owner · Cendon hasn't inspected this car; always get an inspection before buying · last updated ")+esc(day(p.updatedAt))+'</span></p>'

@@ -2281,6 +2281,10 @@ td .empty::before,td.empty::before{display:none}
           </div>
         </div>
         <div class="card"><div id="rcList"><div class="empty">กำลังโหลด...</div></div></div>
+        <!-- แจ้งร้าน/หลักฐานน่าสงสัย: ลูกค้าหรือช่างแจ้งเข้ามา · ร้านไม่เห็นว่าใครแจ้ง · แจ้งไม่จริงซ้ำ ๆ ระบบจำกัดเอง -->
+        <div class="card"><h3>แจ้งร้าน / หลักฐานน่าสงสัย</h3>
+          <div class="sub">ดูใบงานและคลิปหลักฐานก่อนตัดสิน · "แจ้งจริง" = ร้านมีปัญหา (ระงับร้านได้จากหน้าร้าน) · "ไม่จริง" = นับเป็นการแจ้งไม่ตรงความจริงของคนแจ้ง</div>
+          <div id="rpList"><div class="empty">กำลังโหลด...</div></div></div>
       </section>
 
       <!-- AUDIT -->
@@ -5901,6 +5905,23 @@ function rcIdPill(a){
   if(i.mode==="didit"){const r=RC_ID[i.status]||RC_ID.not_started;return`<span class="rc-pill ${r[0]}"><i class="ti ti-id"></i>${r[1]}</span>`}
   return a.idChecked?`<span class="rc-pill ok"><i class="ti ti-id"></i>เทียบเลขบัตรแล้ว</span>`:`<span class="rc-pill"><i class="ti ti-id"></i>ยังไม่เทียบเลขบัตร</span>`;
 }
+/* รายการแจ้งร้าน/หลักฐานน่าสงสัยที่ยังไม่ตัดสิน */
+async function loadReports(){
+  const box=$("rpList");if(!box)return;
+  try{
+    const l=(await api("/api/tech/reports")).reports||[];
+    box.innerHTML=l.length?l.map(r=>`<div class="rp-i" style="display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line)">
+      <div style="flex:1;min-width:0"><b>${esc(r.shop||"ร้าน")}</b> <small style="color:var(--muted)">· ${new Date(r.at).toLocaleString("th-TH",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</small>
+        <p style="margin:4px 0 6px">${esc(r.reason)}</p>
+        <a class="btn sm" href="/tech/${encodeURIComponent(r.techId)}" target="_blank" rel="noopener"><i class="ti ti-building-store"></i> หน้าร้าน</a>
+        ${r.jobId?`<a class="btn sm" href="/?job=${encodeURIComponent(r.jobId)}" target="_blank" rel="noopener"><i class="ti ti-file-text"></i> ใบงาน + คลิป</a>`:""}</div>
+      <div style="display:flex;gap:6px;flex:none"><button class="btn sm" data-rp="rejected:${r.id}">ไม่จริง</button><button class="btn sm primary" data-rp="upheld:${r.id}">แจ้งจริง</button></div></div>`).join("")
+      :`<div class="empty">ไม่มีเรื่องที่รอตัดสิน</div>`;
+    box.querySelectorAll("[data-rp]").forEach(b=>b.onclick=async()=>{const [outcome,id]=b.dataset.rp.split(":");
+      const note=prompt(outcome==="upheld"?"บันทึกผลการตรวจ (เช่น คลิปไม่ใช่รถคันนี้ — ระงับร้านแล้ว)":"บันทึกผลการตรวจ (เช่น ตรวจคลิปแล้วถูกต้อง)");if(!note||note.trim().length<5)return;
+      b.disabled=true;try{await api("/api/tech/reports/decide",{body:{id:+id,outcome,note:note.trim()}});loadReports()}catch(e){alert(e.message);b.disabled=false}});
+  }catch(e){box.innerHTML=`<div class="empty">โหลดไม่ได้: ${esc(e.message)}</div>`}
+}
 async function loadRecruit(quiet){
   if(!quiet){
     $("rcList").innerHTML=`<div class="empty">กำลังโหลด...</div>`;
@@ -5908,6 +5929,7 @@ async function loadRecruit(quiet){
   }
   try{
     RC=(await api("/api/tech/applications")).applications||[];
+    if(!quiet)loadReports();
     const b=$("rcBadge"); if(b){ b.textContent=RC.length||""; b.classList.toggle("on",!!RC.length) }
     if(!quiet)rcDraw();
   }catch(e){

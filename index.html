@@ -21,7 +21,7 @@
 (function(){try{if(/^\/(work|studio)(\/|$)/.test(location.pathname)){var p=JSON.parse(localStorage.getItem("spire_partner")||"null");if(p&&p.s==="shop")document.documentElement.dataset.boot="tech"}}catch(e){}})();</script>
 <script>(function(){try{var A=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt"],l=null;try{l=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
 if(A.indexOf(l)<0){l="en";var n=navigator.languages||[navigator.language||"en"];for(var i=0;i<n.length;i++){var b=String(n[i]).toLowerCase().split("-")[0];if(A.indexOf(b)>=0){l=b;break}}}
-if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=6"><\/script>')}catch(e){}})();</script>
+if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=7"><\/script>')}catch(e){}})();</script>
 <title>Cendon</title>
 <meta name="description" content="ถามอาการรถ ส่งรูปหรือเสียงให้ AI ช่วยดู เช็กใบเสนอราคา และหาช่างที่ผ่านการตรวจใกล้คุณ">
 <!-- การ์ดตอนแชร์ลิงก์ (LINE / Facebook / X) — รูปต้องเป็นที่อยู่เต็ม -->
@@ -31,6 +31,7 @@ if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=6"><\/s
 <meta property="og:locale" content="th_TH"><meta name="twitter:card" content="summary_large_image">
 <script src="nav.js"></script>
 <script src="media-store.js"></script>
+<script src="repair-proof.js?v=1" defer></script>
 <script src="bell.js?v=12"></script>
 <script src="drop.js?v=4" defer></script>
 <script src="car-menu.js?v=1" defer></script>
@@ -217,12 +218,12 @@ window.spireThemeSync=sync;
 </script>
 
 <!-- ฟอนต์และไอคอนจากเว็บเราเอง โหลดก่อนวาดเฟรมแรก: เปลี่ยนหน้าแล้วไอคอนไม่หายแวบ ตัวหนังสือ/เมนูไม่ขยับ (เดิมโหลดจาก CDN แบบไม่รอ) -->
-<link rel="preload" href="/icons/ti.woff2?v=26c330ba" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/icons/ti.woff2?v=9723453e" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/kanit-400-thai.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/kanit-500-thai.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/kanit-600-thai.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/fonts/kanit.css?v=1">
-<link rel="stylesheet" href="/icons/ti.css?v=19a20a43">
+<link rel="stylesheet" href="/icons/ti.css?v=659da0e4">
 <link rel="stylesheet" href="/motion.css?v=1">
 <script>/* Motion v2: ระหว่างหน้ากำลังเปิดไม่เล่นทรานซิชัน (สีไม่ค่อย ๆ เปลี่ยนให้เห็นตอนสคริปต์ตั้งค่าเริ่มต้น) — ปลดหลังหน้าพร้อม */(function(){var e=document.documentElement;e.classList.add("m-boot");var off=function(){setTimeout(function(){requestAnimationFrame(function(){e.classList.remove("m-boot")})},250)};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",off);else off()})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1999,6 +2000,18 @@ html[data-theme="dark"] .so-vi{box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
 .so-dl dt{display:flex;align-items:center;gap:8px;color:var(--muted)}.so-dl dt .ti{font-size:17px}.so-dl dd{margin:0}
 .so-pics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
 .so-pics img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;background:var(--surface-2);cursor:zoom-in}
+/* Studio: งานค้าง/เพดาน */
+.stu-cap{display:flex;gap:8px;align-items:flex-start;margin:0 0 12px;padding:9px 12px;border-radius:12px;font-size:13px;line-height:1.5;color:var(--muted);background:var(--surface-2)}
+.stu-cap .ti{font-size:17px;margin-top:1px}.stu-cap.full{color:var(--ink);background:color-mix(in srgb,#d97706 14%,transparent)}.stu-cap.full .ti{color:#b45309}
+/* ประกาศหาช่าง: งบ + อะไหล่มือสอง */
+.pb-row{align-items:end}.pb-used{margin:0 0 12px}
+.pb-ai{display:flex;gap:8px;align-items:flex-start}.pb-ai.ok .ti{color:var(--ok,#16a34a)}.pb-ai.tight .ti,.pb-ai.low .ti{color:#d97706}
+/* ผลงานที่มีคลิปหลักฐาน (เจ้าของรถอนุญาตแล้ว) */
+.so-pf{display:inline-flex;align-items:center;gap:4px;color:var(--ok,#16a34a)}.so-pf .ti{font-size:15px}
+.so-work{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.so-work figure{margin:0;min-width:0}.so-work video{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:12px;background:#000;display:block}
+.so-work figcaption{margin-top:4px;font-size:11.5px;line-height:1.35;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.so-rep{display:block;margin:14px auto 0;padding:6px 10px;border:0;background:none;color:var(--muted);font:500 12.5px var(--kb);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .so-care ul{display:grid;gap:4px;margin:0;padding:0;list-style:none}
 .so-care li{display:flex;gap:12px;padding:7px 0;font-size:14px;line-height:1.6;color:var(--ink)}.so-care li .ti{flex:none;font-size:19px;color:var(--muted);margin-top:1px}
 .so-ser{display:flex;justify-content:space-between;margin:26px 0 0;padding-top:10px;border-top:1px dashed var(--line);font:600 10.5px ui-monospace,Menlo,monospace;letter-spacing:.14em;color:var(--faint)}
@@ -4436,6 +4449,10 @@ function matchOf(t,car){
   if(t.reviewCount){const r=+t.rating||0;sc+=(r-3)*10*Math.min(1,t.reviewCount/5)}   /* คะแนนรีวิวขึ้นในการ์ดอยู่แล้ว ไม่ต้องซ้ำในเหตุผล */
   if(t.jobs){sc+=Math.min(15,t.jobs);if(t.jobs>=10)why.push(T(t.jobs+" งานสำเร็จ",t.jobs+" jobs done"))}
   if(t.verified)sc+=10;
+  /* งานที่ซ่อมจบพร้อมคลิปหลักฐานที่ AI ตรวจผ่าน — หมวดที่กำลังดูนับหนักกว่า · ร้านงานค้างเต็มรับงานใหม่ไม่ได้ตอนนี้ ลงท้าย */
+  if(t.proven){const inCat=(t.provenCats||{})[F.cat]||0;sc+=Math.min(20,t.proven*2)+Math.min(15,inCat*5);
+    if(t.proven>=3)why.push(inCat?T(`ซ่อมหมวดนี้จบพร้อมหลักฐาน ${inCat} งาน`,`${inCat} proven jobs here`):T(`${t.proven} งานมีคลิปหลักฐาน`,`${t.proven} jobs with proof`))}
+  if(t.full)sc-=40;
   const br=[...(t.brands||[]),...(t.brands2||[])].map(x=>String(x).toLowerCase()).filter(Boolean);
   if(car&&br.some(b=>car.includes(b))){sc+=20;why.unshift(T("ถนัดรถของคุณ","Knows your car"))}
   return {sc,why:why.slice(0,2)};
@@ -4717,7 +4734,7 @@ function storeHTML(t,mine){
       ${avHTML}
       <div class="so-nm">
         <h1 class="nt">${esc(t.shop||t.name)}</h1>
-        <p class="so-sub">${rate}${t.jobs?`<span>${T(t.jobs+" งานสำเร็จ",t.jobs+" jobs done")}</span>`:""}</p>
+        <p class="so-sub">${rate}${t.jobs?`<span>${T(t.jobs+" งานสำเร็จ",t.jobs+" jobs done")}</span>`:""}${t.proven?`<span class="so-pf"><i class="ti ti-shield-check"></i>${T(t.proven+" งานมีคลิปหลักฐาน",t.proven+" with proof clips")}</span>`:""}</p>
         ${cats.length?`<p class="so-cats">${esc(cats.join(" · "))}</p>`:""}
       </div>
       <button class="so-share" type="button" data-share aria-label="${T("แชร์ร้านนี้","Share this shop")}"><i class="ti ti-share-2"></i></button>
@@ -4746,6 +4763,8 @@ function storeHTML(t,mine){
       :`<p class="so-empty">${T("ร้านนี้ยังไม่ได้ลงบริการพร้อมราคา — กดขอราคาเพื่อให้ช่างประเมินให้","No priced services yet — ask for a quote and the mechanic will estimate")}</p>`}
     </section>
     <section class="so-sec" id="soRev"><h2>${T("รีวิวจากงานจริง","Reviews from real jobs")}</h2><div id="chRev">${reviewsHTML(t,null)}</div></section>
+    <section class="so-sec" id="soWork" hidden><h2>${T("ผลงานที่มีคลิปหลักฐาน","Work with proof clips")}</h2><div class="so-work" id="soWorkL"></div>
+      <p class="so-fine">${T("คลิปที่ช่างอัดในแอประหว่างซ่อมงานจริง ขึ้นที่นี่เมื่อเจ้าของรถอนุญาตเท่านั้น","Clips recorded in the app during real jobs — shown only with the car owner's permission")}</p></section>
     <section class="so-sec" id="soAbout"><h2>${T("ข้อมูลร้าน","About the shop")}</h2>
       ${t.about&&t.greet?`<p class="so-about2 nt">${esc(t.about)}</p>`:""}
       <dl class="so-dl">${info.map(([i,k,x])=>`<div><dt><i class="ti ${i}"></i>${k}</dt><dd class="nt">${x}</dd></div>`).join("")}</dl>
@@ -4756,6 +4775,7 @@ function storeHTML(t,mine){
       <li><i class="ti ti-lock"></i>${T("เบอร์และที่อยู่ของคุณถูกซ่อนไว้จนกว่าคุณยืนยันราคา","Your phone and address stay hidden until you accept a quote")}</li>
       <li><i class="ti ti-cash"></i>${T("จ่ายเงินกับช่างโดยตรงเมื่องานเสร็จ ตามราคาในใบงาน งานเพิ่มต้องให้คุณกดยอมรับก่อน","Pay the mechanic directly when done, at the agreed price — extra work needs your approval first")}</li>
       <li><i class="ti ti-flag"></i>${T("มีปัญหา กด \"แจ้งปัญหา\" ในใบงานได้ตลอด ทีมงานช่วยดู","Something wrong? Tap \"Report a problem\" in the job anytime")}</li></ul></section>
+    ${!mine&&U?`<button class="so-rep" type="button" data-report>${T("แจ้งร้านนี้ให้ทีมงานตรวจ","Report this shop to the team")}</button>`:""}
     <p class="so-ser"><span>CENDON</span><span>${T("ร้าน","Shop")} #${esc(String(t.id).slice(0,8).toUpperCase())}</span></p>
   </article>`;
 }
@@ -4774,6 +4794,22 @@ function track(id,kind){try{if(ME&&ME.technician&&ME.technician.id===id)return;f
 /* ที่อยู่ลึกของหน้าร้าน: /tech/<ร้าน>/services · /reviews · /about — หน้าเดียวไม่มีแท็บแล้ว จึงเลื่อนไปที่ส่วนนั้นแทน */
 const TABURL={svc:"services",rev:"reviews",about:"about"},URLTAB={services:"svc",reviews:"rev",about:"about"};
 const SO_SEC={svc:"soSvc",rev:"soRev",about:"soAbout"};
+/* ผลงานที่มีคลิปหลักฐาน — เปิดได้โดยไม่ต้องล็อกอิน (เฉพาะคลิปที่เจ้าของรถอนุญาต) · ไม่มี = ไม่แสดงส่วนนี้ */
+function loadWork(b,t){
+  const sec=b.querySelector("#soWork");if(!sec)return;
+  fetch(API+"/api/tech/showcase?tech="+encodeURIComponent(t.id)).then(r=>r.ok?r.json():{items:[]}).then(d=>{
+    const l=(d.items||[]).slice(0,9);if(!l.length||!sec.isConnected)return;
+    sec.querySelector("#soWorkL").innerHTML=l.map(x=>`<figure><video src="${API}/api/tech/showcase/media/${encodeURIComponent(x.media)}" controls playsinline preload="metadata"></video><figcaption>${esc(window.CendonProof?CendonProof.name(x.shot):"")}${x.car?" · "+esc(x.car):""}</figcaption></figure>`).join("");
+    sec.hidden=false}).catch(()=>{});
+}
+/* แจ้งร้าน/หลักฐานน่าสงสัย → ทีมงานตัดสิน · ร้านไม่เห็นว่าใครแจ้ง */
+function reportShop(techId,jobId){
+  if(!U)return needLogin();
+  sheet({push:true,title:T("แจ้งร้านนี้ให้ทีมงานตรวจ","Report this shop"),body:`<p class="note"><i class="ti ti-shield-lock"></i>${T("ร้านจะไม่เห็นว่าใครแจ้ง ทีมงานตรวจหลักฐานแล้วตัดสินเอง · แจ้งเรื่องที่ไม่จริงซ้ำ ๆ จะถูกจำกัดการแจ้ง","The shop won't see who reported. Staff check the evidence and decide. Repeated false reports are limited.")}</p>
+    <label class="fld"><span>${T("เล่าสิ่งที่พบ","What did you notice?")}</span><textarea class="inp" id="rpT" maxlength="500" placeholder="${T("เช่น คลิปหลักฐานดูเหมือนถ่ายจากรถคันอื่น / เปลี่ยนอะไหล่ไม่ตรงกับที่ตกลง","e.g. the proof clip looks like another car / the part doesn't match what was agreed")}"></textarea></label>`,
+    foot:`<button class="btn p w" id="rpGo">${T("ส่งให้ทีมงาน","Send to the team")}</button>`,
+    mount(){$("rpGo").onclick=e=>busy(e.currentTarget,async()=>{await api("/api/tech/report",{body:{techId,jobId:jobId||undefined,reason:$("rpT").value.trim()}});back();toast(T("ส่งให้ทีมงานแล้ว ขอบคุณที่ช่วยกันดูแล","Sent to the team — thank you"),"ti-check")})}});
+}
 function loadReviews(b,t){
   const h=b.querySelector("#chRev");if(!h)return;
   h.innerHTML=reviewsHTML(t,null);
@@ -4808,7 +4844,8 @@ function openTech(id,opt){
       if(vb&&vd)vb.onclick=()=>{vd.hidden=!vd.hidden;vb.setAttribute("aria-expanded",String(!vd.hidden));vb.classList.toggle("open",!vd.hidden)};
       const sh=b.querySelector("[data-share]");
       if(sh)sh.onclick=()=>{const u=location.origin+"/tech/"+encodeURIComponent(t.id);try{navigator.share?navigator.share({title:t.shop||t.name,url:u}).catch(()=>{}):navigator.clipboard.writeText(u).then(()=>toast(T("คัดลอกลิงก์ร้านแล้ว","Shop link copied")))}catch(e){}};
-      loadReviews(b,t);
+      loadReviews(b,t);loadWork(b,t);
+      const rp=b.querySelector("[data-report]");if(rp)rp.onclick=()=>reportShop(t.id);
       if(mine)return;
       if($("bTel"))$("bTel").addEventListener("click",()=>track(id,"call"));
       $("bBook").onclick=()=>book(t);
@@ -4824,10 +4861,12 @@ function bossMenu(t){
   sheet({push:true,title:T("เครื่องมือเจ้าของระบบ","Owner tools"),body:`<p class="note"><i class="ti ti-crown"></i>${esc(t.shop||t.name||"")} · ${T("ทุกการแก้ไขร้านคนอื่นมีบันทึกในระบบ","Every change to someone else's shop is logged")}</p>
     ${row("oEdit","ti-pencil","var(--accent)",T("แก้ไขร้าน","Edit shop"),T("ชื่อ ความถนัด หมวดงาน ตำแหน่ง รูป เวลาทำการ — แก้ได้ทุกช่อง","Name, expertise, categories, location, photos, hours"))}
     ${row("oGig","ti-square-plus","#22a06b",T("ลงบริการให้ร้านนี้","Add a service for this shop"),T("บริการจะเป็นของร้านนี้","The service belongs to this shop"))}
+    ${row("oBays","ti-stack-2","#6366f1",T("จำนวนช่องซ่อม","Repair bays"),T("งานค้างพร้อมกันได้กี่งาน (ช่างเคลื่อนที่ 1 · อู่เริ่มต้น 3)","How many open jobs at once (mobile 1 · shops start at 3)"))}
     ${t.test?"":row("oHide","ti-eye-off","#c0392b",T("ซ่อนร้าน","Hide shop"),T("เอาออกจากรายชื่อที่ลูกค้าเห็น","Remove from what customers see"))}`,
     mount(){
       $("oEdit").onclick=()=>openShopEdit(t);
       $("oGig").onclick=()=>gigForm(null,{tech:t.id});
+      $("oBays").onclick=e=>{const n=prompt(T("จำนวนช่องซ่อมของร้านนี้ (1–30)","Repair bays for this shop (1–30)"));if(!n)return;busy(e.currentTarget,async()=>{const r=await api("/api/tech/bays",{body:{id:t.id,bays:+n}});toast(T(`ตั้งเป็น ${r.bays} ช่องแล้ว`,`Set to ${r.bays} bays`),"ti-check")})};
       if($("oHide"))$("oHide").onclick=e=>busy(e.currentTarget,async()=>{if(!confirm(T("ซ่อนร้านนี้จากลูกค้า?","Hide this shop from customers?")))return;await api("/api/tech/moderate",{body:{id:t.id,suspend:true}});closeSheet();toast(T("ซ่อนแล้ว","Hidden"));load()});
     }});
 }
@@ -5147,7 +5186,8 @@ async function urgentCall(pre){
   const QK=pre?["ต้องการรถยก","รถขับต่อได้ ขอช่างมาดู","ยางแตก","แบตหมด"]:["สตาร์ทไม่ติด","แบตหมด","ยางแตก","เครื่องร้อนจัด","รถดับกลางทาง","กุญแจติดในรถ"];
   const cf=contactForm({urgent:true,noSym:true,photos:pre&&pre.photos});
   const pickList=()=>{
-    const TS=TECHS.filter(t=>!isMine(t));let l=TS.filter(t=>t.mobile&&t.urgent);if(!l.length)l=TS.filter(t=>t.mobile);
+    /* ร้านที่งานค้างเต็ม (full) รับงานใหม่ไม่ได้ตอนนี้ — ไม่ส่งงานด่วนไปให้รอเก้อ */
+    const TS=TECHS.filter(t=>!isMine(t)&&!t.full);let l=TS.filter(t=>t.mobile&&t.urgent);if(!l.length)l=TS.filter(t=>t.mobile);
     const at=cf.pos()||HERE;
     return l.map(t=>({...t,dist:km(at,t)})).filter(t=>t.dist==null||t.dist<=Math.max(t.radius||30,30)).sort((a,b)=>(a.dist??1e9)-(b.dist??1e9)).slice(0,3);
   };
@@ -5580,7 +5620,8 @@ function drawJob(j,push){
   if(tech&&s==="accepted"&&j.mode==="mobile")A.push(["enroute","กำลังไป","p"]);
   if(tech&&["accepted","enroute"].includes(s))A.push(["start","เริ่มซ่อม",j.mode==="mobile"&&s==="accepted"?"s":"p"]);
   if(tech&&s==="working")A.push(["done","ซ่อมเสร็จแล้ว","p"]);
-  if(cust&&s==="done")A.push(["complete","ตรวจแล้ว งานเรียบร้อย","p"]);
+  /* ลูกค้ากดยืนยันได้เสมอหลังช่างส่งงาน (รวมตอนที่ช่างแจ้งว่าลูกค้าไม่ตอบ) — แทนช่องจ่ายเงินไปก่อน */
+  if(cust&&(s==="done"||s==="disputed"&&j.noreplyAt))A.push(["complete","ตรวจแล้ว งานเรียบร้อย","p"]);
   if(cust&&s==="completed"&&!j.review)A.push(["review","ให้คะแนน","p"]);
   if(ME&&ME.staff&&s==="disputed")A.push(["resolve","ปิดเรื่อง","p"]);
   const more=[];
@@ -5589,6 +5630,9 @@ function drawJob(j,push){
   /* ลูกค้าระหว่างงาน: ปุ่มแจ้งปัญหาอยู่ในกล่องความปลอดภัยแทน */
   const safe=cust&&["accepted","enroute","working","done"].includes(s);
   if((cust||tech)&&["accepted","enroute","working","done","completed"].includes(s)&&!safe)more.push(["dispute","แจ้งปัญหา"]);
+  /* ส่งงานแล้วเกิน 24 ชม. ลูกค้ายังเงียบ: ช่างขอให้ทีมงานช่วย — งานนี้เลิกนับเป็นงานค้างทันที */
+  if(tech&&!cust&&s==="done"&&j.noreplyFrom&&Date.now()>=j.noreplyFrom)more.unshift(["noreply","ลูกค้าไม่ตอบ"]);
+  if(cust&&!tech&&s==="completed")more.push(["report","แจ้งร้านนี้ให้ทีมงานตรวจ"]);
   const phone=cust&&!tech?j.technicianPhone:j.customerPhone;
   const liveCard=s==="enroute"&&j.mode==="mobile"?`<div class="lv wait" id="jLive"><div class="lv-map"></div><div class="lv-info"><span class="lv-ic"><i class="ti ti-truck"></i></span><div><p class="lv-eta"><b>${T("รอตำแหน่งช่าง","Waiting for location")}</b></p><small class="lv-sub"></small></div></div>${tech&&!cust?`<p class="lv-note"><i class="ti ti-shield-lock"></i>${T("ลูกค้าเห็นตำแหน่งคุณเฉพาะตอนกำลังไป · หยุดเองเมื่อเริ่มซ่อม · เปิดแอปค้างไว้ระหว่างเดินทาง","The customer sees you only while you're on the way · stops when you start the repair · keep the app open while driving")}</p>`:`<p class="lv-note"><i class="ti ti-info-circle"></i>${T("เวลาถึงเป็นค่าประมาณจากระยะทาง","Arrival time is estimated from distance")}</p>`}</div>`:"";
   sheet({push,job:true,full:true,url:"/jobs/"+encodeURIComponent(j.id),title:(j.test?"ทดสอบ · ":"")+(STATUS[s]||s),body:`
@@ -5596,7 +5640,7 @@ function drawJob(j,push){
     <div class="who e3">${WF}<span class="av sq" style="--c1:${PALETTE[j.id.charCodeAt(0)%PALETTE.length]}${cust&&!tech&&j.techAvatar?`;background-image:url('${img(j.techAvatar)}')`:""}">${cust&&!tech&&j.techAvatar?"":initial(other)}</span><div><b>${esc(other)}</b><small>${esc(j.car)}${cust&&!tech&&j.techVetting?` · ยืนยันตัวตนแล้ว${(j.techVetting.cats||[]).length?" · ตรวจทักษะ "+esc(j.techVetting.cats.map(c=>CAT[c]?CAT[c].th:c).join(", ")):""}`:""}</small></div>
       ${phone&&/^0\d{8,9}$/.test(phone)?`<a class="ic" href="tel:${esc(phone)}" aria-label="โทร"><i class="ti ti-phone"></i></a>`:""}
       <button class="ic" id="jChat" aria-label="แชต"><i class="ti ti-message-circle"></i>${unread?`<span class="dot">${unread}</span>`:""}</button></div>
-    ${q?`<div class="quote"><span class="pill act">ราคา</span><div class="tot">฿${money(q.total)}</div><div class="ln"><span>ค่าแรง ${money(q.labor)}</span><span>อะไหล่ ${money(q.parts)}</span><span>เดินทาง ${money(q.travel)}</span></div><p>${esc(q.scope)}</p><p class="note" style="margin:8px 0 0"><i class="ti ti-calendar"></i>${esc(q.appointment)} · รับประกัน ${q.warranty} วัน</p></div>`:""}
+    ${q?`<div class="quote"><span class="pill act">ราคา</span><div class="tot">฿${money(q.total)}</div><div class="ln"><span>ค่าแรง ${money(q.labor)}</span><span>อะไหล่ ${money(q.parts)}</span><span>เดินทาง ${money(q.travel)}</span></div><p>${esc(q.scope)}</p>${q.partsNote?`<p class="note" style="margin:8px 0 0"><i class="ti ti-package"></i>อะไหล่: ${esc(q.partsNote)}${q.partsUsed?" · <b>มือสอง</b>":""}</p>`:""}<p class="note" style="margin:8px 0 0"><i class="ti ti-calendar"></i>${esc(q.appointment)} · รับประกัน ${q.warranty} วัน</p></div>${window.CendonProof?CendonProof.plainCard(j):""}`:""}
     ${cust&&j.startCode?`<div class="sc"><small>รหัสเริ่มงาน</small><b class="nt">${esc(j.startCode)}</b>
       <p>บอกรหัสนี้กับช่าง<b>หลังพบกันแล้ว</b> — ตรวจว่าเป็นคนเดียวกับรูปโปรไฟล์ และตรวจรายละเอียดงานกับราคาก่อน · ใช้ได้ครั้งเดียว · หมดอายุ ${new Date(j.startCodeExp).toLocaleDateString(LOC,{day:"numeric",month:"short"})}</p>
       <button class="lnk" data-a="newcode">ขอรหัสใหม่</button></div>`:""}
@@ -5604,6 +5648,8 @@ function drawJob(j,push){
     ${(j.extras||[]).length?`<div class="ext"><p class="h4" style="margin-top:0">งานเพิ่ม</p>${j.extras.map(x=>`<div class="ext-i ${x.status}"><div><b class="nt">${esc(x.desc)}</b><small>ค่าแรง ${money(x.labor)} · อะไหล่ ${money(x.parts)}</small></div><span>฿${money(x.total)}</span>
       ${x.status==="pending"?(cust?`<div class="ext-a"><button class="btn s" data-a="extra_no:${esc(x.id)}">ไม่ทำเพิ่ม</button><button class="btn p" data-a="extra_ok:${esc(x.id)}">ยอมรับ +฿${money(x.total)}</button></div>`:'<em>รอลูกค้าตอบ</em>'):`<em>${x.status==="accepted"?"ลูกค้ายอมรับแล้ว":"ลูกค้าไม่ทำเพิ่ม"}</em>`}</div>`).join("")}
       <p class="ext-t"><span>ยอดที่ตกลงแล้ว</span><b>฿${money(j.agreedTotal)}</b></p></div>`:""}
+    ${window.CendonProof?CendonProof.card(j):""}
+    ${tech&&!cust&&s==="done"&&j.noreplyFrom&&Date.now()<j.noreplyFrom?`<p class="note"><i class="ti ti-clock"></i>ถ้าลูกค้ายังไม่ยืนยันงาน กด "ลูกค้าไม่ตอบ" ได้ตั้งแต่ ${new Date(j.noreplyFrom).toLocaleString(LOC,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})} ทีมงานจะช่วยดูแล และงานนี้จะไม่นับเป็นงานค้าง</p>`:""}
     ${(j.photosBefore||[]).length?`<p class="h4">รูปก่อนเริ่มซ่อม</p><div class="gal">${j.photosBefore.map(u=>`<img src="${u}" data-z="${u}" alt=""/>`).join("")}</div>`:""}
     ${(j.photosAfter||[]).length?`<p class="h4">รูปหลังซ่อมเสร็จ</p><div class="gal">${j.photosAfter.map(u=>`<img src="${u}" data-z="${u}" alt=""/>`).join("")}</div>`:""}
     <div class="kv"><p><span>อาการ</span><b>${esc(j.symptom)}</b></p><p><span>ซ่อมที่</span><b>${j.mode==="mobile"?"ช่างมาหา":"ที่อู่"}</b></p><p><span>เวลา</span><b>${esc(j.requestedTime)}</b></p><p><span>พื้นที่</span><b>${esc(j.area)}</b></p>${j.address?`<p><span>ที่อยู่</span><b>${esc(j.address)}</b></p>`:""}</div>
@@ -5635,6 +5681,8 @@ function drawJob(j,push){
       }
       b.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z));
       [...b.querySelectorAll("[data-a]"),...f.querySelectorAll("[data-a]")].forEach(x=>x.onclick=()=>act(j,x.dataset.a,x));
+      /* หลักฐานการซ่อม + สรุปภาษาคน (repair-proof.js) */
+      if(window.CendonProof){const ctx=proofCtx(j);CendonProof.wire(b.querySelector("#pfBox"),j,ctx);CendonProof.plain(b.querySelector("#plBox"),j,ctx)}
     }});
   JOB={id:j.id,rev:j.revision,msgs:(j.messages||[]).length};
   /* เฝ้าใบงานระหว่างเปิดอยู่ — อีกฝ่ายกดอะไร ใบงานนี้อัปเดตเองภายในไม่กี่วินาที */
@@ -5646,6 +5694,14 @@ function drawJob(j,push){
     watch()},document.hidden?15000:4000)};
   watch();
 }
+/* ให้ repair-proof.js เรียก API/วาดใบงานใหม่/แจ้งเตือน ด้วยเครื่องมือเดียวกับใบงาน */
+function proofCtx(j){return {api,toast,busy,refresh:async()=>{try{const nj=(await api("/api/tech/jobs/"+j.id)).job;if(JOB&&JOB.id===j.id){const st=SH.stack;drawJob(nj,false);SH.stack=st;$("bsBack").hidden=!st.length}}catch(e){}}}}
+/* อะไหล่ในใบเสนอราคา: มีค่าอะไหล่ต้องบอกว่าอะไหล่อะไร — ลูกค้าเห็นก่อนยืนยัน · ใช้เทียบเลขกับคลิปหลักฐาน · ขึ้น Passport ตามจริง */
+const partsFields=(px,q)=>`<div id="${px}PN" ${q&&q.parts>0?"":"hidden"}><label class="fld"><span>${T("อะไหล่ที่ใช้ (ชื่อ ยี่ห้อ หรือเลขอะไหล่)","Parts used (name, brand or part number)")}</span><input class="inp" id="${px}N" maxlength="300" value="${esc(q&&q.partsNote||"")}" placeholder="${T("เช่น ผ้าเบรก Bendix DB1234","e.g. Bendix DB1234 brake pads")}"/></label>
+  <label class="chk"><input type="checkbox" id="${px}U" ${q&&q.partsUsed?"checked":""}/> ${T("เป็นอะไหล่มือสอง","These are used parts")}</label>
+  <p class="note"><i class="ti ti-video"></i>${T("งานเปลี่ยนอะไหล่ ต้องถ่ายคลิปหลักฐาน 3 ช็อตในแอปก่อนกดซ่อมเสร็จ","Jobs with parts need 3 in-app proof clips before you mark them finished")}</p></div>`;
+const partsWire=(px,inp)=>{const t=()=>{$(px+"PN").hidden=!(+$(inp).value>0)};$(inp).addEventListener("input",t);t()};
+const partsRead=px=>({partsNote:$(px+"N")?$(px+"N").value.trim():"",partsUsed:!!($(px+"U")&&$(px+"U").checked)});
 async function change(j,action,extra,btn){
   await busy(btn,async()=>{
     await api("/api/tech/jobs/"+j.id,{body:{action,revision:j.revision,...(extra||{})}});
@@ -5671,6 +5727,14 @@ function act(j,a,btn){
       <p class="note"><i class="ti ti-info-circle"></i>ขอรหัสจากลูกค้าเมื่อพบกันแล้ว ใส่ผิดได้ไม่เกิน 5 ครั้ง</p>`:""}
       <p class="h4">รูปรถก่อนเริ่มซ่อม <small style="font-weight:400;color:var(--muted)">· ${T("ไม่บังคับ สูงสุด 3 รูป · ช่วยเป็นหลักฐานทั้งสองฝ่าย","optional, up to 3 photos · evidence for both sides")}</small></p><div class="phg" id="sP"></div><input type="file" id="sPF" accept="image/*" multiple hidden/>`,
     foot:'<button class="btn p w" id="sGo">เริ่มซ่อม</button>',mount(){stagePics("sP",P);$("sGo").onclick=e=>change(j,"start",{code:$("sC")?$("sC").value.trim():"",photos:P},e.currentTarget)}})}
+  if(a==="done"&&window.CendonProof&&CendonProof.missing(j).length){
+    const m=CendonProof.missing(j);toast(`ถ่ายคลิปหลักฐานให้ครบก่อน — ยังขาด ${m.map(CendonProof.name).join(" · ")}`,"ti-video");
+    const box=$("pfBox");if(box)box.scrollIntoView({behavior:"smooth",block:"center"});return}
+  if(a==="noreply")return sheet({push:true,slug:a,title:"ลูกค้าไม่ตอบ",body:`<p>ส่งงานไปแล้วเกิน 24 ชั่วโมง แต่ลูกค้ายังไม่ยืนยันงาน</p>
+      <p class="note"><i class="ti ti-users"></i>ทีมงานจะติดต่อลูกค้าและดูหลักฐานการซ่อม แล้วช่วยปิดงาน · งานนี้จะไม่นับเป็นงานค้างของคุณทันที รับงานใหม่ได้เลย</p>
+      <p class="note"><i class="ti ti-info-circle"></i>ลูกค้ายังกดยืนยันงานเองได้ตามปกติ</p>`,
+    foot:'<button class="btn p w" id="nrGo">ส่งให้ทีมงานช่วย</button>',mount(){$("nrGo").onclick=e=>change(j,"noreply",{},e.currentTarget)}});
+  if(a==="report")return reportShop(j.techId,j.id);
   if(a==="done"){const P=[];return sheet({push:true,slug:a,title:"ซ่อมเสร็จแล้ว",body:`<label class="fld"><span>สรุปงานที่ทำ</span><textarea class="inp" id="nT" placeholder="เช่น เปลี่ยนโอริง เติมน้ำยา 600 กรัม"></textarea></label>
       <p class="h4">รูปหลังซ่อมเสร็จ <small style="font-weight:400;color:var(--muted)">· ${T("ไม่บังคับ สูงสุด 3 รูป","optional, up to 3 photos")}</small></p><div class="phg" id="dP"></div><input type="file" id="dPF" accept="image/*" multiple hidden/>`,
     foot:'<button class="btn p w" id="nGo">แจ้งลูกค้าว่าซ่อมเสร็จ</button>',mount(){stagePics("dP",P);$("nGo").onclick=e=>change(j,"done",{note:$("nT").value.trim(),photos:P},e.currentTarget)}})}
@@ -5681,13 +5745,14 @@ function act(j,a,btn){
   if(a==="quote"){const q=j.quote||{};return sheet({push:true,slug:a,title:"เสนอราคา",body:`
       <div class="two"><label class="fld"><span>ค่าแรง</span><input class="inp" id="qL" type="number" inputmode="decimal" value="${q.labor||""}" placeholder="0"/></label>
       <label class="fld"><span>อะไหล่</span><input class="inp" id="qP" type="number" inputmode="decimal" value="${q.parts||""}" placeholder="0"/></label></div>
+      ${partsFields("q",q)}
       <label class="fld"><span>ค่าเดินทาง</span><input class="inp" id="qT" type="number" inputmode="decimal" value="${q.travel||""}" placeholder="0"/></label>
       <label class="fld"><span>ทำอะไรบ้าง</span><textarea class="inp" id="qS" placeholder="เช่น ตรวจรั่ว เติมน้ำยา เปลี่ยนโอริง">${esc(q.scope||"")}</textarea></label>
       <label class="fld"><span>นัดวันเวลา</span><input class="inp" id="qA" value="${esc(q.appointment||j.requestedTime||"")}"/></label>
       <label class="fld"><span>รับประกัน (วัน)</span><input class="inp" id="qW" type="number" inputmode="numeric" value="${q.warranty??30}"/></label>`,
     foot:'<button class="btn p w" id="qGo">ส่งราคา <b id="qSum"></b></button>',
-    mount(){const sum=()=>{$("qSum").textContent=" ฿"+money((+$("qL").value||0)+(+$("qP").value||0)+(+$("qT").value||0))};["qL","qP","qT"].forEach(k=>$(k).oninput=sum);sum();
-      $("qGo").onclick=e=>change(j,"quote",{labor:+$("qL").value||0,parts:+$("qP").value||0,travel:+$("qT").value||0,scope:$("qS").value.trim(),appointment:$("qA").value.trim(),warranty:+$("qW").value||0},e.currentTarget)}});}
+    mount(){const sum=()=>{$("qSum").textContent=" ฿"+money((+$("qL").value||0)+(+$("qP").value||0)+(+$("qT").value||0))};["qL","qP","qT"].forEach(k=>$(k).oninput=sum);sum();partsWire("q","qP");
+      $("qGo").onclick=e=>change(j,"quote",{labor:+$("qL").value||0,parts:+$("qP").value||0,travel:+$("qT").value||0,...partsRead("q"),scope:$("qS").value.trim(),appointment:$("qA").value.trim(),warranty:+$("qW").value||0},e.currentTarget)}});}
   if(a==="accept")return sheet({push:true,slug:a,title:"ยืนยันราคา",body:`<div class="quote"><div class="tot">฿${money(j.quote.total)}</div><p>${esc(j.quote.scope)}</p><p class="note" style="margin:8px 0 0"><i class="ti ti-calendar"></i>${esc(j.quote.appointment)}</p></div>
       <label class="chk"><input type="checkbox" id="cOk"/> ตกลงราคานี้ และให้ช่างเห็นเบอร์กับที่อยู่ของฉันเพื่อนัดซ่อม</label>
       <p class="note"><i class="ti ti-info-circle"></i>จ่ายเงินกับช่างโดยตรงเมื่องานเสร็จ — <b>Cendon ไม่ได้ถือเงิน และยังไม่มีระบบคืนเงิน</b> ถ้ามีปัญหากด "แจ้งปัญหา" ในใบงาน ทีมงานช่วยประสานให้</p>
@@ -6836,12 +6901,14 @@ function openPost(p){
       <p><span>${T("ต้องการ","When")}</span><b class="nt">${esc(p.requestedTime)}</b></p><p><span>${T("ซ่อมที่","Where")}</span><b>${p.mode==="mobile"?T("ช่างไปหา","At the car"):T("เอาเข้าอู่","At the garage")}</b></p>
       <p><span>${T("ระยะทาง","Distance")}</span><b>${p.approxKm?T("ประมาณ ","about "):""}${p.dist} ${T("กม.","km")} · ${esc(p.area||"")}</b></p>
       ${p.approxKm?`<p class="note" style="margin:6px 0 0"><i class="ti ti-lock"></i>${T("แสดงพื้นที่โดยประมาณ — ที่อยู่ เบอร์ และหมุดจริงจะเปิดให้เมื่อลูกค้าเลือกคุณและยืนยันราคาแล้ว","Approximate area only — exact address, phone and pin unlock after the customer picks you and confirms the price")}</p>`:""}
+      ${p.budget?`<p><span>${T("งบลูกค้า","Customer's budget")}</span><b>฿${money(p.budget)}${p.usedOk?` · ${T("รับอะไหล่มือสองได้","used parts OK")}`:""}</b></p>`:p.usedOk?`<p><span>${T("อะไหล่","Parts")}</span><b>${T("รับอะไหล่มือสองได้","used parts OK")}</b></p>`:""}
       <p><span>${T("ประกาศเมื่อ","Posted")}</span><b>${ago(p.createdAt)}</b></p></div>
     ${p.note?`<div class="kv"><p><span>${T("ลูกค้าบอกเพิ่ม","Customer's note")}</span><b class="nt">${esc(p.note)}</b></p></div>`:""}
     ${p.photos?`<div class="gal" id="oGal"><div class="ph skel" style="height:190px"></div></div>`:""}
     ${p.mine?`<p class="note"><i class="ti ti-info-circle"></i>${T("คุณเสนอไปแล้ว ฿","You quoted ฿")}${money(p.mine.total)} — ${T("ส่งใหม่เพื่อแก้ราคา","send again to update")}</p>`:""}
     <p class="h4" style="margin-top:6px">${T("เสนอราคา","Your quote")}</p>
     <div class="two"><label class="fld"><span>${T("ค่าแรง","Labour")}</span><input class="inp" id="oL" type="number" inputmode="decimal" placeholder="0"/></label><label class="fld"><span>${T("อะไหล่","Parts")}</span><input class="inp" id="oP" type="number" inputmode="decimal" placeholder="0"/></label></div>
+    ${partsFields("o",null)}
     <label class="fld"><span>${T("ค่าเดินทาง","Travel")}</span><input class="inp" id="oT" type="number" inputmode="decimal" placeholder="0"/></label>
     <label class="fld"><span>${T("ทำอะไรบ้าง","What's included")}</span><textarea class="inp" id="oS" placeholder="${T("เช่น ตรวจรั่ว เติมน้ำยา เปลี่ยนโอริง","e.g. leak test, refill gas, replace O-ring")}"></textarea></label>
     <div class="two"><label class="fld"><span>${T("ไปถึง / นัด","Arrival / appointment")}</span><input class="inp" id="oA" placeholder="${T("เช่น 30 นาที","e.g. 30 min")}"/></label><label class="fld"><span>${T("รับประกัน (วัน)","Warranty (days)")}</span><input class="inp" id="oW" type="number" value="30"/></label></div>
@@ -6849,9 +6916,9 @@ function openPost(p){
     foot:`<button class="btn p w" id="oGo">${T("ส่งราคา","Send quote")} <b id="oSum"></b></button>`,
     mount(){
       if(p.photos)api("/api/tech/posts/"+p.id).then(d=>{const g=$("oGal");if(!g)return;g.innerHTML=(d.post.photos||[]).map(u=>`<img src="${u}" data-z="${u}" alt=""/>`).join("");g.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z))}).catch(()=>{});
-      const sum=()=>{$("oSum").textContent=" ฿"+money((+$("oL").value||0)+(+$("oP").value||0)+(+$("oT").value||0))};["oL","oP","oT"].forEach(k=>$(k).oninput=sum);sum();
+      const sum=()=>{$("oSum").textContent=" ฿"+money((+$("oL").value||0)+(+$("oP").value||0)+(+$("oT").value||0))};["oL","oP","oT"].forEach(k=>$(k).oninput=sum);sum();partsWire("o","oP");
       $("oGo").onclick=e=>busy(e.currentTarget,async()=>{
-        await api(`/api/tech/posts/${p.id}/offer`,{body:{labor:+$("oL").value||0,parts:+$("oP").value||0,travel:+$("oT").value||0,scope:$("oS").value.trim(),appointment:$("oA").value.trim(),warranty:+$("oW").value||0}});
+        await api(`/api/tech/posts/${p.id}/offer`,{body:{labor:+$("oL").value||0,parts:+$("oP").value||0,travel:+$("oT").value||0,...partsRead("o"),scope:$("oS").value.trim(),appointment:$("oA").value.trim(),warranty:+$("oW").value||0}});
         closeSheet();toast(T("ส่งราคาแล้ว รอลูกค้าเลือก","Quote sent — waiting for the customer"));refreshJobs();if(DT==="find")tabFind();
       })}});
 }
@@ -6898,7 +6965,10 @@ function tabQueue(){
       <span class="stu-rt"><b class="nt">${esc(p.car||"")}</b><time>${agoS(p.createdAt)}</time></span>${p.symptom?`<small class="nt">${esc(p.symptom)}</small>`:""}
       <span class="stu-rf"><span class="stu-rs me">${T("เสนอราคาเลย","Send a quote")} · ${p.dist} ${T("กม.","km")}</span></span></span></button>`;
   const any=urg.length||mine.length||wait.length;
-  B.innerHTML=err+(urg.length?grp(" hot",T("งานด่วน · รถเสียตอนนี้","Urgent · broken down now"),urg.map(x=>x.p?urgRow(x.p):jobRow(x.j))):"")
+  /* งานค้าง (ยืนยันราคาแล้ว ลูกค้ายังไม่กดว่างานเสร็จ) — เต็มแล้วเสนอราคางานใหม่ไม่ได้ บอกก่อนช่างเสียเวลากรอกราคา */
+  const capN=(ME&&ME.technician&&ME.technician.capacity&&ME.technician.capacity.cap)||0,openN=live.filter(j=>["accepted","enroute","working","done"].includes(j.status)).length;
+  const cap=capN&&openN?`<p class="stu-cap${openN>=capN?" full":""}"><i class="ti ti-${openN>=capN?"lock":"stack-2"}"></i><span>${openN>=capN?T(`งานค้างเต็ม ${openN}/${capN} — เสนอราคางานใหม่ได้เมื่อลูกค้ายืนยันงานที่ส่งแล้ว หรือกด "ลูกค้าไม่ตอบ" ในงานที่ส่งเกิน 24 ชม.`,`Open jobs full ${openN}/${capN} — you can quote again once a customer signs off, or flag "customer not responding" on jobs sent over 24 h ago`):T(`งานค้าง ${openN}/${capN}`,`Open jobs ${openN}/${capN}`)}</span></p>`:"";
+  B.innerHTML=err+cap+(urg.length?grp(" hot",T("งานด่วน · รถเสียตอนนี้","Urgent · broken down now"),urg.map(x=>x.p?urgRow(x.p):jobRow(x.j))):"")
     +(mine.length?grp("",T("รอคุณ","Your turn"),mine.map(jobRow)):"")
     +(wait.length?grp("",T("รอลูกค้า","Waiting for the customer"),wait.map(jobRow)):"")
     +(any||JOBS_ERR&&!JOBS_OK?"":`<div class="stu-empty"><i class="ti ti-clipboard-check"></i><b>${T("ยังไม่มีงานที่ต้องดำเนินการ","Nothing to do right now")}</b><p>${T("เมื่อมีคำขอใหม่ รายการจะแสดงที่นี่","New requests will show up here")}</p><button class="lx-cta" type="button" id="stuFind">${T("หางานใกล้ฉัน","Find work nearby")}</button></div>`)
@@ -7133,9 +7203,12 @@ function openPostForm(sym,cat,d){
   const cf=contactForm({sym:sym??$("q").value.trim(),mobile:true,carId:d.carId,photos:d.photos});
   sheet({title:T("ประกาศหาช่าง","Post a job"),url:"/post",body:`
     <p class="note"><i class="ti ti-speakerphone"></i>${T("ช่างรอบตัวจะเห็นหมุดของคุณบนแผนที่ แล้วเสนอราคาแข่งกัน คุณเลือกเองว่าจะใช้ใคร","Nearby mechanics see your pin and send competing quotes — you choose")}</p>
-    <div class="fld"><span>${T("หมวดงาน","Category")}</span>${segs("pCat",[["",T("ไม่แน่ใจ","Not sure")],...["air","eng","tyre","ev","body"].map(k=>[k,CAT[k].th])],cat)}</div>`+cf.html,
+    <div class="fld"><span>${T("หมวดงาน","Category")}</span>${segs("pCat",[["",T("ไม่แน่ใจ","Not sure")],...["air","eng","tyre","ev","body"].map(k=>[k,CAT[k].th])],cat)}</div>`+cf.html+`
+    <div class="two pb-row"><label class="fld"><span>${T("งบที่ตั้งไว้ (ไม่บังคับ)","Your budget (optional)")}</span><input class="inp" id="pBud" type="number" inputmode="numeric" min="100" max="1000000" placeholder="${T("เช่น 1500","e.g. 1500")}"/></label>
+      <label class="chk pb-used"><input type="checkbox" id="pUsed"/> ${T("รับอะไหล่มือสองได้","Used parts are OK")}</label></div>
+    <p class="note pb-ai" id="pBudAi" hidden></p>`,
     foot:`<button class="btn p w" id="pGo"><i class="ti ti-speakerphone"></i> ${T("ประกาศเลย","Post now")}</button>`,
-    mount(){cf.mount();wireSeg("pCat");
+    mount(){cf.mount();wireSeg("pCat");budgetCheck();
       /* ร่างจาก Cendon Valet: เติมช่องที่รู้แล้ว เหลือให้ผู้ใช้ยืนยันตำแหน่งกับเบอร์ */
       const pick=(id,v)=>{const b=$(id)&&$(id).querySelector(`[data-v="${CSS.escape(v)}"]`);if(b)b.click();return !!b};
       if(d.car&&!d.carId&&$("bCarX")){if($("bCarChg")){$("bCarChg").click();pick("bCar","__")}$("bCarX").value=d.car}
@@ -7144,10 +7217,33 @@ function openPostForm(sym,cat,d){
       if(d.note||(d.photos&&d.photos.length)){if($("bMore").hidden)$("bMoreB").click();if(d.note)$("bNote").value=d.note}
       $("pGo").onclick=e=>busy(e.currentTarget,async()=>{
         const id=crypto.randomUUID(),v=cf.read();
-        const r=await api("/api/tech/posts",{body:{id,...v,cat:segVal("pCat")}});
+        const bud=+$("pBud").value||0;
+        const r=await api("/api/tech/posts",{body:{id,...v,cat:segVal("pCat"),...(bud?{budget:Math.round(bud)}:{}),usedOk:$("pUsed").checked}});
         toast(r&&typeof r.reach==="number"?(r.reach?T(`ประกาศแล้ว ช่าง ${r.reach} ร้านใกล้คุณเห็นแล้ว`,`Posted — ${r.reach} nearby shop${r.reach>1?"s":""} can see it`):T("ประกาศแล้ว แต่ยังไม่มีช่างหมวดนี้ในรัศมี — ร้านที่เข้ามาใหม่จะเห็นทันที","Posted, but no shop in this category is in range yet")):T("ประกาศแล้ว รอช่างเสนอราคา","Posted — waiting for quotes"));await refreshJobs();openPostView(id);
       });
     }});
+}
+/* งบที่ลูกค้าตั้ง: AI บอกว่าสมจริงไหมเทียบราคาทั่วไปในไทย (ประเมินกว้าง ๆ) — เรียกเมื่อพิมพ์งบเสร็จ ไม่เรียกซ้ำค่าเดิม */
+function budgetCheck(){
+  const inp=$("pBud"),out=$("pBudAi");if(!inp||!out)return;
+  let t=0,last="";
+  const run=async()=>{
+    const bud=Math.round(+inp.value||0),sym=($("bSym")&&$("bSym").value||"").trim();
+    if(bud<100||sym.length<3){out.hidden=true;return}
+    const car=($("bCarX")&&$("bCarX").value.trim())||(((ls.get("spire_garage",[])||[]).find(c=>c&&c.id===ls.get("spire_selCar",null))||{}).name||""),key=[bud,sym,car,$("pUsed").checked].join("|");
+    if(key===last)return;last=key;
+    out.hidden=false;out.innerHTML=`<i class="ti ti-sparkles"></i>${T("AI กำลังดูว่างบนี้สมจริงไหม…","Checking your budget…")}`;
+    try{
+      const d=(await api("/api/features/analyze",{body:{tool:"budget",lang:LANG,question:T("งบนี้พอไหม","Is this budget enough?"),context:{car,symptom:sym,budget:bud,usedOk:$("pUsed").checked,cat:segVal("pCat")}}})).data;
+      if(key!==last||!out.isConnected)return;
+      const rg=d.range?` (${T("ราคาทั่วไป","typical")} ฿${money(d.range.min)}–${money(d.range.max)})`:"";
+      const head={ok:T("งบนี้สมจริง","This budget looks realistic"),tight:T("งบค่อนข้างตึง","This budget is tight"),low:T("งบต่ำกว่าราคาทั่วไป","This budget is below the usual price"),unknown:T("ประเมินงบนี้ไม่ได้","Can't judge this budget")}[d.verdict]||"";
+      out.className="note pb-ai "+d.verdict;
+      out.innerHTML=`<i class="ti ti-${d.verdict==="ok"?"circle-check":d.verdict==="unknown"?"info-circle":"alert-triangle"}"></i><span><b>${head}</b>${esc(rg)}${d.note?" — "+esc(d.note):""}${d.usedTip?`<br>${esc(d.usedTip)}`:""}</span>`;
+    }catch(e){out.hidden=true;last=""}
+  };
+  const soon=()=>{clearTimeout(t);t=setTimeout(run,900)};
+  inp.addEventListener("input",soon);$("pUsed").addEventListener("change",soon);if($("bSym"))$("bSym").addEventListener("change",soon);
 }
 let POSTS=[],postT=0;
 async function openPostView(id,push){

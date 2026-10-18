@@ -4,7 +4,7 @@
    หน้าเว็บเป็นไฟล์เดียวที่เปลี่ยนบ่อย จึงถามเน็ตก่อนเสมอ (ไม่งั้นผู้ใช้จะติดอยู่กับเวอร์ชันเก่า)
    แต่รอแค่ครู่เดียว — เน็ตมือถือช้า/ค้าง ต้องไม่ทำให้แอปค้างหน้าจอโหลด
    ══════════════════════════════════════════════════════════════════ */
-const CACHE = 'cendon-v312-nav-still';
+const CACHE = 'cendon-v313-customer-console';
 /* หน้าเว็บที่โหลดสำเร็จล่าสุด แยกตู้ไว้และ "ไม่ลบตอนอัปเดตเวอร์ชัน"
    เดิมทุกครั้งที่ deploy ตู้เก่าถูกล้างหมด เปิดแอปครั้งแรกหลังอัปเดตจึงไม่มีของสำรอง
    ต้องรอเน็ตอย่างเดียว — เน็ตมือถือช้าเมื่อไรก็ค้างหน้าจอโหลดของมือถือ */
@@ -24,6 +24,7 @@ const DEEP_PAGES = new Set(['garage', 'news', 'spares', 'profile', 'chat', 'pass
 const DEEP_HOME = new Set(['tech', 'service', 'category', 'search', 'map', 'jobs', 'messages', 'quote', 'listen', 'photo', 'line', 'studio', 'work', 'staff', 'join', 'trip', 'quotes', 'compare', 'urgent', 'diagnose', 'post']);
 function shellOf(pathname) {
   const p = pathname.replace(/\.html$/, '').replace(/\/index$/, '/');
+  if (p === '/console') return '/console';
   if (SHELL_ROUTES.has(p)) return p;
   const seg = p.split('/')[1] || '';
   if (DEEP_PAGES.has(seg)) return '/' + seg;

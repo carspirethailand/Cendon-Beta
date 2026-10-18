@@ -23,6 +23,21 @@ test('home call card flips 180° (front urgent, back not urgent); the hidden sid
   assert.match(home,/if\(b\.closest\("#qFlip"\)&&\$\("qFlip"\)\.dataset\.swiped\)return;/,'a swipe never doubles as a tap');
 });
 
+test('call card turns with the finger like the search bar, the ⇄ turns with the card, and urgent is solid red',()=>{
+  /* มือถือ: แนวนอนเป็นของการ์ด (ไม่งั้นเบราว์เซอร์แย่งท่าปัดไป) · หมุนตามระยะลาก · ปล่อยเกินหนึ่งในสามหรือปัดเร็ว = พลิก */
+  assert.match(home,/\.lx-qflip\{position:relative;perspective:900px;min-width:0;touch-action:pan-y;/);
+  assert.match(home,/dx=mx;turn\(rot\+Math\.max\(-1,Math\.min\(1,dx\/w\)\)\*180,false\)/);
+  assert.match(home,/go=Math\.abs\(dx\)>w\*\.3\|\|Math\.abs\(v\)>\.5&&Math\.abs\(dx\)>20;\n    if\(go\)set\(!back,dx>0\?1:-1\);else turn\(rot,true\);/);
+  /* ⇄ อยู่ในการ์ดแต่ละหน้า (ไม่ใช่ปุ่มลอยนอกการ์ด) แตะแล้วพลิก ไม่เปิดงาน */
+  assert.match(home,/<b>\$\{T\("เรียกช่างด่วน","Urgent mechanic"\)\}<\/b>\$\{SW\}/);
+  assert.match(home,/<b>\$\{T\("เรียกช่าง \(ไม่ด่วน\)","Find a mechanic"\)\}<\/b>\$\{SW\}/);
+  assert.match(home,/box\.addEventListener\("click",e=>\{if\(!e\.target\.closest\("\.qf-sw"\)\)return;e\.preventDefault\(\);e\.stopPropagation\(\);/);
+  assert.doesNotMatch(home,/<button type="button" class="qf-sw"/);
+  /* ด้านหลังไม่หายตอนเอาเมาส์ชี้ (motion.css ตั้ง transform:none ตอนชี้การ์ด) */
+  assert.match(home,/html #hQuick \.lx-qflip \.qf-b\{transform:rotateY\(180deg\)!important\}/);
+  assert.match(home,/#hQuick \.lx-qflip \.qf-f\{background:linear-gradient\(160deg,#e02424,#c81e1e\)!important;/);
+});
+
 test('desktop chat composer: text on top, buttons on the row below',()=>{
   assert.match(chat,/@media\(min-width:900px\)\{\n  #composer \.crow\{flex-wrap:wrap!important;/);
   assert.match(chat,/#composer \.crow #inp\{order:-1;flex:1 0 100%!important;/);

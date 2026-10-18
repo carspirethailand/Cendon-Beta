@@ -21,7 +21,7 @@
 (function(){try{if(/^\/(work|studio)(\/|$)/.test(location.pathname)){var p=JSON.parse(localStorage.getItem("spire_partner")||"null");if(p&&p.s==="shop")document.documentElement.dataset.boot="tech"}}catch(e){}})();</script>
 <script>(function(){try{var A=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt"],l=null;try{l=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
 if(A.indexOf(l)<0){l="en";var n=navigator.languages||[navigator.language||"en"];for(var i=0;i<n.length;i++){var b=String(n[i]).toLowerCase().split("-")[0];if(A.indexOf(b)>=0){l=b;break}}}
-if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=5"><\/script>')}catch(e){}})();</script>
+if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=6"><\/script>')}catch(e){}})();</script>
 <title>Cendon</title>
 <meta name="description" content="ถามอาการรถ ส่งรูปหรือเสียงให้ AI ช่วยดู เช็กใบเสนอราคา และหาช่างที่ผ่านการตรวจใกล้คุณ">
 <!-- การ์ดตอนแชร์ลิงก์ (LINE / Facebook / X) — รูปต้องเป็นที่อยู่เต็ม -->
@@ -1627,21 +1627,38 @@ html:not([data-theme="dark"]) .lx-sky i{opacity:.32}html:not([data-theme="dark"]
 .lx-carmenu hr{border:0;height:1px;background:var(--line);margin:4px 6px}
 @media(prefers-reduced-motion:reduce){.lx-flipin{transition:none}.lx-fa{animation:none}.lx-flip.burst .lx-fa::after{display:none}}
 @media(max-width:560px){.lx-flipin>.lx-face{padding:11px 11px 11px 15px!important}}
-/* การ์ด "เรียกช่าง" แบบพลิก: สองหน้าซ้อนในช่องเดียวกัน (grid) ความสูงเท่าการ์ดอื่น · พลิกด้วย rotateY (การ์ดจอทำ ไม่กระตุก) */
-.lx-qflip{position:relative;perspective:900px;min-width:0}
-.lx-qflip .qf-in{display:grid;height:100%;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+/* การ์ด "เรียกช่าง" แบบพลิก: สองหน้าซ้อนในช่องเดียวกัน (grid) ความสูงเท่าการ์ดอื่น · พลิกด้วย rotateY (การ์ดจอทำ ไม่กระตุก)
+   ลากตามนิ้วได้ (แนวนอนเป็นของการ์ด แนวตั้งยังเลื่อนหน้าได้) · ปุ่ม ⇄ อยู่ในการ์ดแต่ละหน้า จึงหมุนไปพร้อมการ์ด */
+.lx-qflip{position:relative;perspective:900px;min-width:0;touch-action:pan-y;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+.lx-qflip .qf-in{display:grid;height:100%;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.2,.8,.2,1);will-change:transform}
 .lx-qflip.back .qf-in{transform:rotateY(180deg)}
-.lx-qflip .qf-face{grid-area:1/1;width:100%;height:100%;min-width:0;box-sizing:border-box;backface-visibility:hidden;-webkit-backface-visibility:hidden;padding-right:44px!important}
-.lx-qflip .qf-f{transform:none!important;border-color:color-mix(in srgb,#dc2626 45%,var(--line))}
-.lx-qflip .qf-f .ti,.lx-qflip .qf-f b{color:#dc2626!important}
-html[data-theme="dark"] .lx-qflip .qf-f .ti,html[data-theme="dark"] .lx-qflip .qf-f b{color:#f87171!important}
-.lx-qflip .qf-b{transform:rotateY(180deg)!important}
-.lx-qflip .qf-b .ti{color:var(--co)!important}
-.qf-dot{display:inline-block;width:7px;height:7px;margin-right:6px;border-radius:50%;background:#dc2626;vertical-align:1px;animation:urgPulse 1.6s ease-in-out infinite}
-#hQuick .lx-qflip .qf-sw{position:absolute;top:8px;right:8px;z-index:2;display:grid;place-items:center;width:34px;height:34px;min-height:0;padding:0;border-radius:50%;
-  border:1px solid var(--line);background:var(--bg);color:var(--muted);transform:none}
-#hQuick .lx-qflip .qf-sw .ti{font-size:17px;margin:0;color:inherit}
-#hQuick .lx-qflip .qf-sw:hover{color:var(--ink);border-color:var(--ink)}
+.lx-qflip .qf-face{position:relative;grid-area:1/1;width:100%;height:100%;min-width:0;box-sizing:border-box;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+/* ด้านหลังต้องหันกลับเสมอ แม้ตอนเอาเมาส์ชี้ (กฎ "ชี้แล้วไม่ลอย" ใน motion.css ห้ามทับ ไม่งั้นการ์ดหายตอนชี้) */
+html #hQuick .lx-qflip .qf-f{transform:none!important}
+html #hQuick .lx-qflip .qf-b{transform:rotateY(180deg)!important}
+/* ด่วน = แดงสดทั้งใบ ตัวหนังสือขาว — เห็นทันทีว่าอันนี้สำคัญ (ขาวบนแดงอ่านชัด ผ่านเกณฑ์ความต่างสี) */
+#hQuick .lx-qflip .qf-f{background:linear-gradient(160deg,#e02424,#c81e1e)!important;border-color:transparent!important;color:#fff;box-shadow:0 12px 26px -14px rgba(200,30,30,.8),inset 0 1px 0 rgba(255,255,255,.2)}
+#hQuick .lx-qflip .qf-f .ti,#hQuick .lx-qflip .qf-f b,#hQuick .lx-qflip .qf-f small{color:#fff!important}
+#hQuick .lx-qflip .qf-f .qf-dot{background:#fff}
+/* ไม่ด่วน = การ์ดธรรมดาเหมือนใบอื่น */
+#hQuick .lx-qflip .qf-b>.ti{color:var(--co)!important}
+.qf-dot{display:inline-block;width:7px;height:7px;margin-right:6px;border-radius:50%;background:#dc2626;vertical-align:1px}
+/* ปุ่ม ⇄: วงกลมมุมขวาบนของแต่ละหน้า (พื้นที่แตะกว้าง 46px) */
+#hQuick .lx-qflip .qf-sw{position:absolute;top:10px;right:10px;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;box-sizing:border-box;
+  border:1px solid var(--line);background:var(--bg);color:var(--muted)}
+#hQuick .lx-qflip .qf-sw::after{content:"";position:absolute;inset:-8px;border-radius:50%}
+#hQuick .lx-qflip .qf-sw .ti{font-size:16px;margin:0;color:inherit!important}
+#hQuick .lx-qflip .qf-f .qf-sw{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.16);color:#fff}
+@media(hover:hover){#hQuick .lx-qflip .qf-b .qf-sw:hover{color:var(--ink);border-color:var(--ink)}#hQuick .lx-qflip .qf-f .qf-sw:hover{background:rgba(255,255,255,.28)}}
+/* มือถือ: ปุ่ม ⇄ อยู่แถวเดียวกับชื่อ ตรงกันพอดี · คำอธิบายใช้ความกว้างเต็มด้านล่าง */
+@media(max-width:760px){
+  #vMenu #hQuick .lx-qflip .qf-face{grid-template-columns:20px minmax(0,1fr) 28px;padding-right:6px}
+  #vMenu #hQuick .lx-qflip .qf-sw{position:relative;top:auto;right:auto;grid-column:3;grid-row:1;width:28px;height:28px}
+  #vMenu #hQuick .lx-qflip .qf-face>small{grid-column:2/4}
+}
+/* ปุ่มสลับสำหรับคีย์บอร์ด/โปรแกรมอ่านจอ: มองไม่เห็น แต่โฟกัสแล้วการ์ดมีกรอบ */
+.lx-qflip .qf-tg{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.lx-qflip:has(.qf-tg:focus-visible){outline:2px solid var(--co);outline-offset:3px;border-radius:16px}
 @media(prefers-reduced-motion:reduce){.lx-qflip .qf-in{transition:none}}
 /* (เดิม) การ์ด "เรียกช่าง": ด่วน / ไม่ด่วน อยู่ในการ์ดเดียว ขนาดเท่าการ์ดอื่น */
 .lx-qcall{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:14px;border-radius:16px;border:1px solid var(--line);background:var(--surface);color:var(--ink);text-align:left}
@@ -3820,12 +3837,13 @@ function photoPage(){
 function drawQuick(){
   const Q=[["quote","ti-file-invoice",T("เช็กใบเสนอราคา","Check a quote"),T("แพงไปไหม AI บอก","AI tells you if it's too pricey")],
     ["listen","ti-wave-sine",T("ฟังเสียงเครื่อง","Engine sound check"),T("อัดเสียงให้ AI ฟัง","Record it for the AI")],["multi","ti-arrows-exchange",T("ขอราคา 3 ร้าน","Quotes from 3 shops"),T("เทียบแล้วค่อยเลือก","Compare, then choose")]];
-  /* การ์ด "เรียกช่าง" แบบพลิก 180°: หน้า = ด่วน (แดง) · หลัง = ไม่ด่วน — แตะทั้งการ์ดได้เลย (เดิมปุ่มเล็กสองปุ่มกดยาก)
-     สลับด้าน: ปุ่ม ⇄ มุมขวาบน หรือปัดการ์ดไปซ้าย/ขวา */
+  /* การ์ด "เรียกช่าง" แบบพลิก 180°: หน้า = ด่วน (แดงสด) · หลัง = ไม่ด่วน — แตะทั้งการ์ดได้เลย (เดิมปุ่มเล็กสองปุ่มกดยาก)
+     สลับด้าน: ลากการ์ดไปซ้าย/ขวา (หมุนตามนิ้ว) หรือแตะ ⇄ ที่อยู่บนการ์ดแต่ละหน้า (หมุนไปพร้อมการ์ด) */
+  const SW=`<span class="qf-sw" aria-hidden="true"><i class="ti ti-arrows-exchange"></i></span>`;
   $("hQuick").innerHTML=`<div class="lx-qflip" id="qFlip" role="group" aria-label="${T("เรียกช่าง","Call a mechanic")}"><div class="qf-in">
-      <button type="button" class="qf-face qf-f" data-q="urgent"><i class="ti ti-urgent"></i><b>${T("เรียกช่างด่วน","Urgent mechanic")}</b><small><em class="qf-dot"></em>${T("รถเสีย / อุบัติเหตุ ตอนนี้","Breakdown or accident, now")}</small></button>
-      <button type="button" class="qf-face qf-b" data-q="post" tabindex="-1" aria-hidden="true"><i class="ti ti-speakerphone"></i><b>${T("เรียกช่าง (ไม่ด่วน)","Find a mechanic")}</b><small>${T("ช่างรอบตัวเสนอราคา","Nearby shops send quotes")}</small></button></div>
-      <button type="button" class="qf-sw" aria-label="${T("สลับ ด่วน / ไม่ด่วน","Switch urgent / not urgent")}"><i class="ti ti-arrows-exchange"></i></button></div>`
+      <button type="button" class="qf-face qf-f" data-q="urgent"><i class="ti ti-urgent"></i><b>${T("เรียกช่างด่วน","Urgent mechanic")}</b>${SW}<small><em class="qf-dot"></em>${T("รถเสีย / อุบัติเหตุ ตอนนี้","Breakdown or accident, now")}</small></button>
+      <button type="button" class="qf-face qf-b" data-q="post" tabindex="-1" aria-hidden="true"><i class="ti ti-speakerphone"></i><b>${T("เรียกช่าง (ไม่ด่วน)","Find a mechanic")}</b>${SW}<small>${T("ช่างรอบตัวเสนอราคา","Nearby shops send quotes")}</small></button></div>
+      <button type="button" class="qf-tg">${T("สลับเป็น เรียกช่างไม่ด่วน","Switch to not urgent")}</button></div>`
     +Q.map(([k,i,t,d])=>`<button type="button" data-q="${k}"><i class="ti ${i}"></i><b>${t}</b><small>${d}</small></button>`).join("");
   qFlipWire();
   $("hQuick").querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{const k=b.dataset.q;if(b.closest("#qFlip")&&$("qFlip").dataset.swiped)return;
@@ -3833,16 +3851,36 @@ function drawQuick(){
     if(k==="quote")return quotePage();
     if(k==="listen")return listenPage()});
 }
-/* พลิกการ์ดเรียกช่าง: ด้านที่ไม่ได้หันมาแตะไม่ได้ (โปรแกรมอ่านจอก็ไม่อ่าน) · ปัดเกิน 36px = พลิก ไม่นับเป็นการแตะ */
+/* พลิกการ์ดเรียกช่าง — แบบเดียวกับช่องค้นหา: ลากไปซ้าย/ขวา การ์ดหมุนตามนิ้ว (เลื่อนไปกี่ % ก็หมุนกี่ %)
+   ปล่อยเกินราวหนึ่งในสามของการ์ด หรือปัดเร็ว = พลิกไปอีกหน้า · ไม่ถึง = กลับที่เดิม · ลากแล้วไม่นับเป็นการแตะ
+   ด้านที่ไม่ได้หันมาแตะไม่ได้ (โปรแกรมอ่านจอก็ไม่อ่าน) */
 function qFlipWire(){
-  const box=$("qFlip");if(!box)return;const f=box.querySelector(".qf-f"),bk=box.querySelector(".qf-b");
-  const set=back=>{box.classList.toggle("back",back);f.tabIndex=back?-1:0;bk.tabIndex=back?0:-1;f.setAttribute("aria-hidden",back);bk.setAttribute("aria-hidden",!back)};
-  box.querySelector(".qf-sw").onclick=e=>{e.stopPropagation();set(!box.classList.contains("back"))};
-  let x0=null,y0=0;
-  box.addEventListener("pointerdown",e=>{x0=e.clientX;y0=e.clientY;delete box.dataset.swiped},{passive:true});
-  box.addEventListener("pointermove",e=>{if(x0==null)return;const dx=e.clientX-x0;
-    if(Math.abs(dx)>36&&Math.abs(dx)>Math.abs(e.clientY-y0)*1.4){box.dataset.swiped="1";x0=null;set(!box.classList.contains("back"));setTimeout(()=>delete box.dataset.swiped,350)}},{passive:true});
-  box.addEventListener("pointerup",()=>{x0=null},{passive:true});box.addEventListener("pointercancel",()=>{x0=null},{passive:true});
+  const box=$("qFlip");if(!box)return;
+  const IN=box.querySelector(".qf-in"),f=box.querySelector(".qf-f"),bk=box.querySelector(".qf-b"),tg=box.querySelector(".qf-tg");
+  let back=false,rot=0;
+  const turn=(deg,anim)=>{IN.style.transition=anim?"":"none";IN.style.transform=`rotateY(${deg}deg)`};
+  const set=(to,dir)=>{
+    if(to!==back){back=to;rot+=(dir||1)*180;box.classList.toggle("back",back);
+      f.tabIndex=back?-1:0;bk.tabIndex=back?0:-1;f.setAttribute("aria-hidden",back);bk.setAttribute("aria-hidden",!back);
+      tg.textContent=back?T("สลับเป็น เรียกช่างด่วน","Switch to urgent"):T("สลับเป็น เรียกช่างไม่ด่วน","Switch to not urgent")}
+    turn(rot,true)};
+  tg.onclick=()=>set(!back,1);
+  /* แตะ ⇄ บนการ์ด = พลิก ไม่ใช่เปิดงาน */
+  box.addEventListener("click",e=>{if(!e.target.closest(".qf-sw"))return;e.preventDefault();e.stopPropagation();if(!box.dataset.swiped)set(!back,1)},true);
+  let pid=null,sx=0,sy=0,dx=0,w=1,t0=0,lock=null;
+  box.addEventListener("pointerdown",e=>{if(pid!==null||e.button>0)return;
+    pid=e.pointerId;sx=e.clientX;sy=e.clientY;dx=0;lock=null;w=Math.max(120,box.offsetWidth);t0=performance.now();delete box.dataset.swiped});
+  box.addEventListener("pointermove",e=>{if(e.pointerId!==pid)return;
+    const mx=e.clientX-sx,my=e.clientY-sy;
+    if(lock===null){if(Math.abs(mx)<7&&Math.abs(my)<7)return;lock=Math.abs(mx)>Math.abs(my)*1.1?"x":"y";
+      if(lock==="x"){box.dataset.swiped="1";try{box.setPointerCapture(pid)}catch(x){}}}
+    if(lock!=="x")return;
+    dx=mx;turn(rot+Math.max(-1,Math.min(1,dx/w))*180,false)});
+  const end=e=>{if(e.pointerId!==pid)return;pid=null;const was=lock;lock=null;if(was!=="x")return;
+    const v=dx/Math.max(1,performance.now()-t0),go=Math.abs(dx)>w*.3||Math.abs(v)>.5&&Math.abs(dx)>20;
+    if(go)set(!back,dx>0?1:-1);else turn(rot,true);
+    setTimeout(()=>delete box.dataset.swiped,350)};
+  box.addEventListener("pointerup",end);box.addEventListener("pointercancel",end);
 }
 /* ═══ ฟ้าคลื่นดาวตอนโหมด AI (HSKY) ═══
    ชั้นแสงไล่สี อำพัน→ส้ม→ชมพู→ม่วง ไหลเป็นคลื่น = ชุดเดียวกับตอน AI กำลังประมวลผลในห้องแชต

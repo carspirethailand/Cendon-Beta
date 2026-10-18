@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 const source=readFileSync(new URL('../vehicle-audio.js',import.meta.url),'utf8');
-const window={};vm.runInNewContext(source,{window});const A=window.CendonVehicleAudio;
+const window={};vm.runInNewContext(source,{window,URL});const A=window.CendonVehicleAudio;
 const saved={id:'car-1',name:'Toyota Fortuner',year:2013,engine:'3.0L D-4D',fuel:'diesel',vin:'private-vin',plate:'private-plate'};
 const json=v=>JSON.parse(JSON.stringify(v));
 test('normalise saved name and explicit metadata without guessing engine, dropping zero mileage or exposing personal fields',()=>{
@@ -21,8 +21,13 @@ test('picker escapes untrusted names, has no pre-selected Garage option and rema
   const s=A.picker('test',{name:'<img src=x> "Honda"'},null);assert.ok(!s.includes('<img'));assert.ok(!s.includes('garage_confirmed" selected'));assert.match(s,/other_confirmed/);assert.match(s,/unknown/);assert.ok(!A.picker('test',null,null).includes('value="garage_confirmed"'));
 });
 test('Home, Chat and SW load paired helper, styles and updated tools',()=>{
-  for(const f of ['index.html','chat.html']){const s=readFileSync(new URL('../'+f,import.meta.url),'utf8');assert.ok(s.indexOf('<script src="vehicle-audio.js?v=2"')<s.indexOf('<script src="call-tools.js?'));assert.match(s,/vehicle-audio\.css\?v=2/);assert.match(s,/call-session\.js\?v=2026-10-18-audio2/);}
+  for(const f of ['index.html','chat.html']){const s=readFileSync(new URL('../'+f,import.meta.url),'utf8');const helper=s.indexOf('<script src="vehicle-audio.js?v=3"');assert.ok(helper>=0&&helper<s.indexOf('<script src="call-tools.js?'));assert.match(s,/vehicle-audio\.css\?v=2/);assert.match(s,/call-session\.js\?v=2026-10-18-audio2/);assert.match(s,/call-surface\.js\?v=2026-10-18-web2/);}
   assert.ok(+(readFileSync(new URL('../sw.js',import.meta.url),'utf8').match(/cendon-v(\d+)/)||[])[1]>=319);
+});
+test('curated manufacturer sources are separate from live results, scoped by market and safely escaped',()=>{
+  const r={status:'unavailable',sources:[],manufacturerEvidence:{records:[{url:'https://static.nhtsa.gov/odi/tsbs/2022/MC-10212106-0001.pdf',title:'<img src=x> Ford',markets:['US']},{url:'https://evil.test/a',title:'bad',markets:['TH']}]}};
+  const html=A.researchMarkup(r);assert.match(html,/เอกสารผู้ผลิตที่ตรวจไว้แยก/);assert.match(html,/ตลาด US/);assert.match(html,/ยังไม่ยืนยันใช้กับรถคันนี้/);assert.match(html,/ไม่ใช่ตัวอย่างเสียงที่ใช้ฝึก/);assert.ok(!html.includes('<img')&&!html.includes('evil.test'));
+  assert.equal(A.car({...saved,market:'TH',kind:'car'}).market,'TH');
 });
 test('actual live tool opens vehicle confirmation without accessing any microphone or provider; cancelling settles it',async()=>{
   const nodes=new Map();let resources=0;

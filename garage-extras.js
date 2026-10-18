@@ -269,19 +269,9 @@ async function nickname(s){
   }catch(e){}
   return {...ruleName(s),sig};
 }
-const fx=(()=>{let cv,g,parts=[],raf=0,on=false;
-  return {start(host){cv=D.createElement('canvas');cv.className='wr-fx';host.prepend(cv);g=cv.getContext('2d');on=true;
-      const fit=()=>{const r=Math.min(2,devicePixelRatio||1);cv.width=cv.clientWidth*r;cv.height=cv.clientHeight*r};fit();addEventListener('resize',fit);
-      parts=Array.from({length:46},()=>({x:Math.random(),y:Math.random(),r:.6+Math.random()*2.2,v:.0006+Math.random()*.0016,a:.25+Math.random()*.6}));
-      const loop=()=>{if(!on)return;g.clearRect(0,0,cv.width,cv.height);
-        for(const p of parts){p.y-=p.v;if(p.y<-.02){p.y=1.02;p.x=Math.random()}g.beginPath();g.arc(p.x*cv.width,p.y*cv.height,p.r*(devicePixelRatio||1),0,7);g.fillStyle=`rgba(255,${150+Math.round(p.a*80)},${70+Math.round(p.a*60)},${p.a})`;g.fill()}
-        raf=requestAnimationFrame(loop)};if(!matchMedia('(prefers-reduced-motion:reduce)').matches)loop()},
-    stop(){on=false;cancelAnimationFrame(raf)}}})();
-function countUp(el,to,ms){
-  if(!el)return;const t0=performance.now(),dur=ms||1400,fmt=el.dataset.fmt||'';
-  const step=n=>{const k=Math.min(1,(n-t0)/dur),e=1-Math.pow(1-k,3);el.textContent=fmt.replace('#',num(to*e));if(k<1)requestAnimationFrame(step)};
-  if(matchMedia('(prefers-reduced-motion:reduce)').matches){el.textContent=fmt.replace('#',num(to));return}requestAnimationFrame(step);
-}
+/* Calm, static story surfaces: no perpetual canvas loop or detached counters. */
+const fx={start(){},stop(){}};
+function countUp(el,to){if(el)el.textContent=(el.dataset.fmt||'').replace('#',num(to));}
 let WR=null;
 /* opt.car = รหัสรถ → Wrap ของคันนั้นคันเดียว (กดจากแบนเนอร์ = ทุกคันรวมกัน · onclick ส่ง event มา จึงเช็กก่อน) */
 async function wrapped(opt){
@@ -305,9 +295,10 @@ async function wrapped(opt){
     <small class="wr-car">${top?esc(nameOf(top)):''}</small></div>
     ${empty?`<p class="wr-tip">${T('บันทึกน้ำมัน ซ่อม และทริปในการาจ — ปีหน้า Wrapped ของคุณจะปังกว่านี้','Log fuel, services and trips in Garage — next year\'s Wrapped will be epic')}</p>`:''}
     <div class="wr-acts"><button type="button" class="wr-b p" id="wrShare"><i class="ti ti-share-3"></i>${T('แชร์','Share')}</button><button type="button" class="wr-b" id="wrSave"><i class="ti ti-download"></i>${T('บันทึกรูป','Save image')}</button><button type="button" class="wr-b" id="wrAgain"><i class="ti ti-refresh"></i>${T('ดูอีกครั้ง','Replay')}</button></div></div>`});
-  W.innerHTML=`<div class="wr-bars">${slides.map(()=>'<i><b></b></i>').join('')}</div><button type="button" class="wr-x" aria-label="${T('ปิด','Close')}"><i class="ti ti-x"></i></button>
+  W.innerHTML=`<div class="wr-bars">${slides.map(()=>'<i><b></b></i>').join('')}</div><button type="button" class="wr-x" aria-label="${T('ปิด','Close')}"><span aria-hidden="true">×</span></button>
     <div class="wr-stage">${slides.map((x,i)=>`<section class="wr-s ${x.cls}" data-i="${i}">${x.html}</section>`).join('')}</div>
     <button type="button" class="wr-tap l" aria-label="${T('ก่อนหน้า','Previous')}"></button><button type="button" class="wr-tap r" aria-label="${T('ถัดไป','Next')}"></button>`;
+  const previousOverflow=D.body.style.overflow,previousFocus=D.activeElement;
   D.body.appendChild(W);D.body.style.overflow='hidden';fx.start(W);
   /* ซ่อนหน้าการาจด้านหลังทั้งหมดระหว่างดู — Safari บนไอโฟนวาดชั้นสีรถ (ผสมสีแบบคูณ + หน้ากากรูป) ทะลุขึ้นมาทับสตอรี่ได้
      คนที่เลือกสีแดงให้รถจึงเห็นสีแดงบังจอ · หน้าด้านหลังถูกบังอยู่แล้ว ซ่อนไปก็ไม่มีใครเห็นต่าง */
@@ -315,25 +306,26 @@ async function wrapped(opt){
   const tc=D.querySelector('meta[name="theme-color"]'),tc0=tc&&tc.getAttribute('content'),sy=scrollY;
   if(tc)tc.setAttribute('content','#0b0b0d');
   D.documentElement.classList.add('wr-open');
-  WR={W,i:-1,t:0,paused:false,start:0,left:0,DUR:5200,name:null,tc,tc0,sy};
+  const session={W,i:-1,t:0,paused:false,start:0,left:0,DUR:5200,name:null,tc,tc0,sy,overflow:previousOverflow,focus:previousFocus};WR=session;
   const bars=[...W.querySelectorAll('.wr-bars i b')],S=[...W.querySelectorAll('.wr-s')];
-  const nameP=nickname(s).then(n=>{WR&&(WR.name=n);const a=$('wrName'),b=$('wrLine'),c=$('wrCName');if(a)a.textContent=n.nickname;if(b)b.textContent=n.line;if(c)c.textContent=n.nickname;return n});
+  const nameP=nickname(s).then(n=>{if(WR!==session)return n;WR.name=n;const a=$('wrName'),b=$('wrLine'),c=$('wrCName');if(a)a.textContent=n.nickname;if(b)b.textContent=n.line;if(c)c.textContent=n.nickname;return n});
   const go=i=>{
-    if(!WR)return;i=Math.max(0,Math.min(S.length-1,i));WR.i=i;clearTimeout(WR.t);
+    if(WR!==session)return;i=Math.max(0,Math.min(S.length-1,i));WR.i=i;clearTimeout(WR.t);
     S.forEach((x,k)=>x.classList.toggle('on',k===i));
     bars.forEach((b,k)=>{b.style.transition='none';b.style.width=k<i?'100%':'0%'});
     const cur=S[i];cur.querySelectorAll('[data-n]').forEach(el=>countUp(el,+el.dataset.n));
-    const last=i===S.length-1;
+    const last=i===S.length-1;W.dataset.last=String(last);
     if(!last){requestAnimationFrame(()=>{bars[i].style.transition=`width ${WR.DUR}ms linear`;bars[i].style.width='100%'});WR.start=Date.now();WR.left=WR.DUR;WR.t=setTimeout(()=>go(i+1),WR.DUR)}
     else bars[i].style.width='100%';
   };
-  const pause=on=>{if(!WR||WR.i===S.length-1)return;const b=bars[WR.i];
+  const pause=on=>{if(WR!==session||WR.i===S.length-1)return;const b=bars[WR.i];
     if(on&&!WR.paused){WR.paused=true;clearTimeout(WR.t);WR.left-=Date.now()-WR.start;const w=getComputedStyle(b).width;b.style.transition='none';b.style.width=w}
     else if(!on&&WR.paused){WR.paused=false;WR.start=Date.now();requestAnimationFrame(()=>{b.style.transition=`width ${Math.max(0,WR.left)}ms linear`;b.style.width='100%'});WR.t=setTimeout(()=>go(WR.i+1),Math.max(0,WR.left))}};
   W.querySelector('.wr-tap.l').onclick=()=>go(WR.i-1);W.querySelector('.wr-tap.r').onclick=()=>go(WR.i+1);
   W.querySelectorAll('.wr-tap').forEach(t=>{t.onpointerdown=()=>pause(true);t.onpointerup=t.onpointerleave=()=>pause(false)});
+  const visibility=()=>pause(D.hidden);D.addEventListener('visibilitychange',visibility);session.visibility=visibility;
   W.querySelector('.wr-x').onclick=()=>closeWrapped(true);
-  W.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(WR.i+1);if(e.key==='ArrowLeft')go(WR.i-1);if(e.key==='Escape')closeWrapped(true)});
+  W.addEventListener('keydown',e=>{if(e.key==='Tab'){const a=[...W.querySelectorAll('button,a[href]')].filter(x=>!x.disabled&&x.getClientRects().length);const n=a.indexOf(D.activeElement);if(a.length&&((e.shiftKey&&n<=0)||(!e.shiftKey&&n===a.length-1))){e.preventDefault();a[e.shiftKey?a.length-1:0].focus()}}if(e.key==='ArrowRight')go(WR.i+1);if(e.key==='ArrowLeft')go(WR.i-1);if(e.key==='Escape')closeWrapped(true)});
   $('wrAgain').onclick=()=>go(0);
   const file=async()=>{const n=await nameP;const blob=await shareImage(s,n);return new File([blob],`cendon-wrapped-${s.Y}${one?'-'+String(nameOf(top)).replace(/[^\w\u0E00-\u0E7F-]+/g,'-').slice(0,40):''}.png`,{type:'image/png'})};
   $('wrSave').onclick=async()=>{const f=await file();const a=D.createElement('a');a.href=URL.createObjectURL(f);a.download=f.name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000)};
@@ -345,10 +337,11 @@ async function wrapped(opt){
 }
 function closeWrapped(fromUi){
   if(!WR)return;const w=WR;WR=null;clearTimeout(w.t);fx.stop();
+  D.removeEventListener('visibilitychange',w.visibility);w.W.remove();
   D.documentElement.classList.remove('wr-open');
   if(w.tc&&w.tc0)w.tc.setAttribute('content',w.tc0);
   scrollTo(0,w.sy||0);
-  w.W.classList.add('out');setTimeout(()=>w.W.remove(),280);D.body.style.overflow='';
+  D.body.style.overflow=w.overflow||'';try{if(w.focus?.isConnected)w.focus.focus({preventScroll:true})}catch{}
   if(fromUi&&w.nav&&window.Nav)try{Nav.drop(w.nav)}catch(e){}
 }
 /* รูปแชร์ 1080×1920 (สตอรี่ IG/TikTok/LINE) — ไม่มีทะเบียน ชื่อเจ้าของ หรือที่อยู่ */
@@ -450,7 +443,7 @@ D.addEventListener('dragstart',e=>{if(e.target.closest&&e.target.closest('.gx-fl
 function rerender(){try{CL().rerender&&CL().rerender()}catch(e){}}
 window.CarExtras={
   cal:paneCal,pass:panePass,wrapped,flip:setFlip,
-  after(tab,c){if(tab==='cal')mountCal(c);if(tab==='pass')mountPass(c)},
+  after(tab,c){if(tab==='cal')mountCal(c);if(tab==='pass')mountPass(c);if(tab==='odo')window.CendonMileageReview?.mount(c)},
   _stats:yearStats,_cal:calendar
 };
 const tickBanner=()=>{try{banner()}catch(e){}};

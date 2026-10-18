@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 /* ภาษาที่เลือกใน Settings ต้องคงเดิมทุกหน้า — เดิมหน้าร้านค้า/นิตยสารโหลดสถานะบัญชีใหม่แล้วเขียนทับด้วยภาษาตอนสมัคร (ไทย) */
-const r=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8');
+const r=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8').replace(/\r\n/g,'\n');
 const acc=r('account.js');
 
 function pick({local,setupUid,seen,srv}){

@@ -79,21 +79,20 @@
 .wr-banner>.ti{grid-row:1/4;grid-column:2;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:#fff;color:#111;font-size:22px;box-shadow:0 8px 24px rgba(255,138,61,.4)}
 
 /* Wrapped: สไลด์เต็มจอ */
-.wr{position:fixed;inset:0;z-index:2147482000;background:#0b0b0d;color:#fff;font-family:Kanit,system-ui,sans-serif;overflow:hidden;animation:wrIn .4s cubic-bezier(.2,.9,.25,1);outline:none;
-  isolation:isolate;will-change:opacity}
+.wr{position:fixed;inset:0;z-index:2147482000;background:#0b0b0d;color:#fff;font-family:Kanit,system-ui,sans-serif;overflow:hidden;animation:none;outline:none;isolation:isolate;contain:paint}
 /* ระหว่างดูสตอรี่ ซ่อนทุกอย่างด้านหลัง — Safari วาดชั้นสีรถ (คูณสี + หน้ากากรูป) ทะลุขึ้นมาทับสตอรี่ได้ (สีแดงบังจอ) */
 /* ซ่อนด้วย display (ไม่ใช่ visibility) — Safari แยกชั้นสีรถ (คูณสี + หน้ากากรูป) เป็นเลเยอร์ของมันเอง ซึ่งไม่ฟัง visibility ของแม่ จึงยังทะลุขึ้นมา */
 html.wr-open body>*:not(.wr){display:none!important}
 .wr.out{animation:wrOut .28s ease forwards}
-@keyframes wrIn{from{opacity:0;transform:scale(1.03)}}@keyframes wrOut{to{opacity:0;transform:scale(.98)}}
+@keyframes wrIn{from{opacity:0}}@keyframes wrOut{to{opacity:0}}
 .wr-fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
 .wr-bars{position:absolute;top:calc(10px + env(safe-area-inset-top));left:12px;right:12px;display:flex;gap:4px;z-index:5}
 .wr-bars i{flex:1;height:3px;border-radius:3px;background:rgba(255,255,255,.22);overflow:hidden}
 .wr-bars b{display:block;height:100%;width:0;background:#fff}
 .wr-x{position:absolute;top:calc(22px + env(safe-area-inset-top));right:12px;z-index:6;width:42px;height:42px;border:0;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;font-size:20px;display:grid;place-items:center;cursor:pointer}
 .wr-stage{position:absolute;inset:0;z-index:2}
-.wr-s{position:absolute;inset:0;display:grid;place-items:center;padding:80px 28px calc(40px + env(safe-area-inset-bottom));opacity:0;visibility:hidden;transition:opacity .45s,visibility .45s}
-.wr-s.on{opacity:1;visibility:visible}
+.wr-s{position:absolute;inset:0;display:none;place-items:center;padding:80px 28px calc(40px + env(safe-area-inset-bottom));isolation:isolate;overflow:auto}
+.wr-s.on{display:grid}
 .wr-s::before{content:"";position:absolute;inset:0;z-index:-1}
 .s-intro::before{background:radial-gradient(70% 50% at 80% 15%,rgba(255,138,61,.5),transparent 70%),radial-gradient(70% 50% at 10% 90%,rgba(255,120,60,.2),transparent 70%),#0b0b0d}
 .s-km::before{background:radial-gradient(80% 60% at 50% 0,rgba(255,138,61,.55),transparent 70%),linear-gradient(180deg,#1a0f0a,#0b0b0d)}
@@ -106,8 +105,8 @@ html.wr-open body>*:not(.wr){display:none!important}
 .s-name::before{background:radial-gradient(60% 50% at 50% 45%,rgba(255,138,61,.5),transparent 70%),#0b0b0d}
 .s-sum::before{background:radial-gradient(70% 50% at 80% 10%,rgba(255,138,61,.4),transparent 70%),#0b0b0d}
 .wr-in{width:min(560px,100%);display:grid;justify-items:start;gap:6px}
-.wr-in>*{opacity:0;transform:translateY(18px)}
-.wr-s.on .wr-in>*{animation:wrUp .7s cubic-bezier(.2,.9,.25,1) forwards}
+.wr-in>*{opacity:1;transform:none}
+.wr-s.on .wr-in>*{animation:none}
 .wr-s.on .wr-in>*:nth-child(2){animation-delay:.12s}.wr-s.on .wr-in>*:nth-child(3){animation-delay:.28s}.wr-s.on .wr-in>*:nth-child(4){animation-delay:.44s}.wr-s.on .wr-in>*:nth-child(5){animation-delay:.6s}
 @keyframes wrUp{to{opacity:1;transform:none}}
 .wr-kick{font-size:14px;font-weight:600;color:#ffb35c}
@@ -151,6 +150,7 @@ html.wr-open body>*:not(.wr){display:none!important}
 .wr-tap.l{left:0;width:32%}.wr-tap.r{right:0;width:68%}
 .s-sum.on~.wr-tap{display:none}
 .wr:has(.s-sum.on) .wr-tap{pointer-events:none}
+.wr[data-last="true"] .wr-tap{display:none}
 @media(min-width:900px){.wr-stage{left:50%;width:min(460px,100vw);transform:translateX(-50%);border-radius:0}
   .wr-s{border-left:1px solid rgba(255,255,255,.06);border-right:1px solid rgba(255,255,255,.06)}
   .wr-bars{left:50%;right:auto;width:min(436px,100vw);transform:translateX(-50%)}

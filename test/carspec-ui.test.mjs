@@ -25,6 +25,12 @@ test('car spec UI: simultaneous views reuse one request and shared market/year c
   await f.api.ensure({...car,info:{market:'JP',model_year:'2021'}});assert.equal(f.calls.length,2);
   const b=JSON.parse(f.calls[1].opt.body);assert.equal(b.market,'JP');assert.equal(b.year,'2021');
 });
+
+test('deep lookup has a separate request and cache, preserving the base specifications',async()=>{
+  const f=fixture({transport:async url=>{const body=complete();if(url.endsWith('/details'))body.key+='|details';return {body}}});await f.api.ensure(car);await f.api.ensure(car,{kind:'details'});await f.api.ensure(car);
+  assert.equal(f.calls.length,2);assert.match(f.calls[1].url,/\/api\/car-spec\/details$/);
+  assert.ok([...f.store.keys()].some(k=>k.endsWith('|details')));assert.ok([...f.store.keys()].some(k=>!k.endsWith('|details')));
+});
 test('car spec UI: make/model/year alone request reference specs, without VIN, trim or market prerequisites',async()=>{
   const f=fixture(),el=await f.pane({...car,info:{}});const Q=JSON.parse(f.calls[0].opt.body);
   assert.deepEqual(Q,{make:car.make,model:car.model,year:car.year,market:'GLOBAL'});assert.match(el.innerHTML,/Test engine Alpha|Model reference specifications/);assert.doesNotMatch(el.innerHTML,/Check model year|data-cs-details/);

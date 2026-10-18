@@ -4,7 +4,7 @@ import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 const source=readFileSync(new URL('../carspec.js',import.meta.url),'utf8');
 const car={id:'test-car',make:'Fixture Maker',model:'Roadster',name:'Fixture Maker Roadster',year:'2020'};
-const complete=()=>({status:'ready',key:'fixture maker|roadster|2020|global',make:car.make,model:car.model,year:car.year,sources:[{url:'https://maker.example.test/spec',title:'Test manufacturer'}],data:{schema:2,query:{market:'GLOBAL'},body:'coupe',body_ok:false,score:{cells:3,confirmed:0},facts:{seats:{v:2,ok:null}},variants:[{name:'Fixture Alpha',engine:{v:'Test engine Alpha',ok:null},l_per_100km:{v:6.1,ok:null}},{name:'Fixture Beta',engine:{v:'Test engine Beta',ok:null},l_per_100km:{v:8.3,ok:false,alt:9.1}}]}});
+const complete=()=>({status:'ready',key:'fixture maker|roadster|2020|global',make:car.make,model:car.model,year:car.year,sources:[{url:'https://maker.example.test/spec',title:'Test manufacturer'}],data:{schema:2,depth:2,query:{market:'GLOBAL'},body:'coupe',body_ok:false,score:{cells:3,confirmed:0},facts:{seats:{v:2,ok:null}},variants:[{name:'Fixture Alpha',engine:{v:'Test engine Alpha',ok:null},l_per_100km:{v:6.1,ok:null}},{name:'Fixture Beta',engine:{v:'Test engine Beta',ok:null},l_per_100km:{v:8.3,ok:false,alt:9.1}}]}});
 const settle=async()=>{for(let i=0;i<100;i++)await Promise.resolve()};
 function fixture({reply,transport,token}={}){
   const store=new Map(),elements=new Map(),events={},calls=[],timers=new Map();let now=100000,id=0;
@@ -172,4 +172,11 @@ test('equipment UI: unconfirmed documents never imply the model has no equipment
 test('equipment UI: a one-pass sourced result is explicit and never claims repeat confirmation',async()=>{
   const reply=equipmentReply();reply.data.coverage={passes:1,siteCount:1};reply.data.score.confirmed=0;
   const f=fixture({reply}),el=await f.pane(car,'equip');assert.match(el.innerHTML,/Only one extraction pass completed/);assert.match(el.innerHTML,/no repeat agreement is claimed/);assert.doesNotMatch(el.innerHTML,/Two extraction passes are not independent/);
+});
+test('car spec UI: a spec saved on this device before the deeper fields is asked for again (the library tops it up in the background)',async()=>{
+  const deep=fixture(),cur=complete();cur._at=Date.now();deep.store.set('spire_spec_'+cur.key,JSON.stringify(cur));
+  await deep.api.ensure(car);assert.equal(deep.calls.length,0,'a current saved copy is used without asking');
+  const f=fixture(),old=complete();delete old.data.depth;old._at=Date.now();f.store.set('spire_spec_'+old.key,JSON.stringify(old));
+  await f.api.ensure(car);assert.equal(f.calls.length,1,'old saved copy is refreshed from the library');
+  await f.api.ensure(car);assert.equal(f.calls.length,1,'the refreshed copy is reused');
 });

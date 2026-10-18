@@ -158,6 +158,9 @@ const CSS=`
 /* มือถือ: จุดเดียวกับกระดิ่งเดิมของหน้าแรก (ศูนย์กลางห่างขอบขวา 34px ขอบบน 41px) · ติดอยู่กับหน้า ไม่ติดจอ */
 .cb-m{position:absolute;top:calc(23px + env(safe-area-inset-top) + var(--cb-dy,0px));right:calc(16px + var(--cb-dx,0px));width:36px;height:36px;font-size:21px;z-index:30}
 @media(min-width:761px){.cb-m{display:none!important}}
+/* โหมดช่าง (Studio): กระดิ่งอยู่ในแถบบนของ Studio ข้างรูปร้าน — ตัวลอยมุมขวาจะทับรูปร้าน จึงซ่อน */
+body[data-mode="tech"] .cb-bell.cb-m{display:none!important}
+.cb-st{width:40px;height:40px;font-size:22px}
 /* หน้าตั้งค่าเปิดทับทั้งจอ (เลื่อนในตัวเอง มีขอบ 1px) — วางในหน้านั้น ชดเชยขอบให้ตรงจุดเดิมพอดี */
 #v-settings>.cb-sh{top:calc(22px + env(safe-area-inset-top));right:15px}
 /* ห้องแชตบนมือถือ: ปุ่มขวาสุดของแถบบน (หลังปุ่ม ⋮) */
@@ -294,7 +297,9 @@ function mount(){
     const at=(host,cls)=>{if(host&&!host.querySelector(":scope>.cb-bell")){host.appendChild(mkBtn(cls));paint()}};
     /* ใส่ในแถบทันทีไม่ต้องรอปุ่ม ⋮ — order:99 ทำให้อยู่ขวาสุดเสมอ */
     if(chat)at(document.querySelector("header.pill"),"p-btn");
-    else{at(document.getElementById("v-settings"),"cb-m cb-sh");home()}};
+    else{at(document.getElementById("v-settings"),"cb-m cb-sh");home()}
+    const st=document.querySelector(".stu-top");
+    if(st&&!st.querySelector(":scope>.cb-bell")){st.insertBefore(mkBtn("cb-st"),st.querySelector(":scope>.stu-me"));paint()}};
   put();new MutationObserver(()=>{if(!q)q=requestAnimationFrame(put)}).observe(document.body,chat?{childList:true,subtree:true}:{childList:true,subtree:true,attributes:true,attributeFilter:["class"]});
   paint();on(paint);
   poll();

@@ -53,3 +53,16 @@ test('#14 no overshooting (bouncy) easing left in the call screen', () => {
   for(const f of ['call-ui.css','call-surface.js'])
     for(const m of r(f).matchAll(/cubic-bezier\(([^)]*)\)/g)){const v=m[1].split(',').map(Number);assert.ok(v[1]>=0&&v[1]<=1&&v[3]>=0&&v[3]<=1,f+' '+m[0])}
 });
+
+test('Studio: the bell sits in the Studio top bar next to the shop picture — the floating one is hidden so it never covers the picture', () => {
+  assert.match(bell,/body\[data-mode="tech"\] \.cb-bell\.cb-m\{display:none!important\}/);
+  assert.match(bell,/const st=document\.querySelector\("\.stu-top"\);\n    if\(st&&!st\.querySelector\(":scope>\.cb-bell"\)\)\{st\.insertBefore\(mkBtn\("cb-st"\),st\.querySelector\(":scope>\.stu-me"\)\);paint\(\)\}/);
+  assert.match(r('index.html'),/<header class="stu-top">[\s\S]{0,900}<button type="button" class="stu-me" id="stuMe"/);
+});
+
+test('#26 specs go deeper: performance, clearance, turning radius, boot, suspension and brakes are shown; old saved specs are asked for again', () => {
+  const cs=r('carspec.js');
+  for(const k of ['top_kmh','accel_s','ground_clearance_mm','turning_m','cargo_l','suspension_front','suspension_rear','brakes_front','brakes_rear'])assert.ok(cs.includes(k),k);
+  assert.match(cs,/have\.data\?\.schema===2&&have\.sources\?\.length&&\(equipment\|\|have\.data\.depth>=2\)/);
+  for(const f of ['garage.html','news.html','profile.html','spares.html','sw.js'])assert.match(r(f),/carspec\.js\?v=2026-10-18-deep/,f);
+});

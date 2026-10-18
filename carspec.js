@@ -85,7 +85,7 @@ async function ensureScoped(c,opt){
   const equipment=opt?.kind==='equip',endpoint='/api/car-spec'+(equipment?'/equipment':''),Q=q(c),k=keyOf(Q)+(equipment?'|equipment':''),retry=!!(opt&&opt.retry),car=[Q.make,Q.model,Q.year].join(" ");
   if(!/^\d{4}$/.test(Q.year)||!Q.make){clog("ไม่ค้น: ข้อมูลรถไม่ครบ ("+(Q.make?"ไม่มีปี":"ไม่มียี่ห้อ")+")",{car});return {status:"invalid"}}
   const have=LS.get("spec_"+k);
-  if(!retry&&have&&DONE.includes(have.status)&&(have.status==="notfound"||have.status==="verified"||have.data?.schema===2&&have.sources?.length)&&Date.now()-(have._at||0)<(have.status==="notfound"?86400000:7*86400000)){
+  if(!retry&&have&&DONE.includes(have.status)&&(have.status==="notfound"||have.status==="verified"||have.data?.schema===2&&have.sources?.length&&(equipment||have.data.depth>=2))&&Date.now()-(have._at||0)<(have.status==="notfound"?86400000:7*86400000)){
     clog("ใช้ข้อมูลที่เก็บในเครื่อง ("+have.status+")",{car,ok:true});return have}
   const recent=recentFailures.get(k);
   if(!retry&&recent&&Date.now()-recent.at<120000)return recent.value;
@@ -150,7 +150,10 @@ function head(s){
 function powerRows(v,s){const show=(f,unit)=>val(f,unit,undefined,s.sources),ev=v.fuel==='ev';return row(T('เครื่องยนต์','Engine'),show(v.engine))+row(T('เชื้อเพลิง','Fuel'),v.fuel?esc(lab(FUEL,v.fuel))+refs(v.fuelSourceIds,s.sources):null)+
   (ev?'':row(T('ความจุกระบอกสูบ','Displacement'),show(v.cc,'cc')))+row(T('กำลังสูงสุด','Power'),show(v.hp,T('แรงม้า','hp')))+row(T('แรงบิดสูงสุด','Torque'),show(v.torque_nm,'Nm'))+
   row(T('ระบบเกียร์','Gearbox'),show(v.gearbox))+row(T('ระบบขับเคลื่อน','Drive'),v.drive?.v?show({...v.drive,v:lab(DRIVE,v.drive.v),alt:v.drive.alt&&lab(DRIVE,v.drive.alt)}):null)+
-  (ev?row(T('แบตเตอรี่','Battery'),show(v.battery_kwh,'kWh'))+row(T('ระยะทางต่อการชาร์จ','Range'),show(v.range_km,T('กม.','km'))):row(T('อัตราสิ้นเปลือง','Fuel economy'),show(v.l_per_100km,T('ลิตร/100 กม.','L/100km'))))}
+  (ev?row(T('แบตเตอรี่','Battery'),show(v.battery_kwh,'kWh'))+row(T('ระยะทางต่อการชาร์จ','Range'),show(v.range_km,T('กม.','km'))):row(T('อัตราสิ้นเปลือง','Fuel economy'),show(v.l_per_100km,T('ลิตร/100 กม.','L/100km'))))+perfRows(v,s)}
+/* สมรรถนะ: แสดงเฉพาะค่าที่มีหลักฐานในเอกสาร */
+function perfRows(v,s){const show=(f,unit)=>val(f,unit,undefined,s.sources);
+  return row(T('ความเร็วสูงสุด','Top speed'),show(v.top_kmh,T('กม./ชม.','km/h')))+row(T('อัตราเร่ง 0-100 กม./ชม.','0-100 km/h'),show(v.accel_s,T('วินาที','s')))}
 function specHTML(c,s){
   const d=s.data||{},f=d.facts||{},vs=d.variants||[],vi=variantIdx(c,s),v=vs[vi]||{};
   const show=(f,unit,fmt)=>val(f,unit,fmt,s.sources);
@@ -172,6 +175,7 @@ function specHTML(c,s){
     ${ev?row(T("แบตเตอรี่","Battery"),show(v.battery_kwh,"kWh"))+row(T("ระยะทางต่อการชาร์จ","Range"),show(v.range_km,T("กม.","km"))):""}
     ${ev?"":row(T("อัตราสิ้นเปลือง","Fuel economy"),show(v.l_per_100km,T("ลิตร/100 กม.","L/100km")))}
     ${!ev&&l100?row(T("เทียบเป็น","Equivalent"),num(100/l100)+" "+T("กม./ลิตร","km/L")):""}
+    ${perfRows(v,s)}
   </div>`)+
   `<div class="cl-grp"><h4>${T("ตัวถังและขนาด","Body & dimensions")}</h4>
     ${row(T("ประเภทตัวถัง","Body type"),d.body?esc(lab(BODY,d.body))+(d.body_ok?mark({ok:true}):mark({ok:null}))+refs(d.bodySourceIds,s.sources):null)}
@@ -184,7 +188,16 @@ function specHTML(c,s){
     ${row(T("น้ำหนักตัวรถ","Kerb weight"),show(f.kerb_kg,"กก."))}
     ${ev?"":row(T("ความจุถังน้ำมัน","Fuel tank"),show(f.tank_l,T("ลิตร","L")))}
     ${row(T("ขนาดยางเดิม","Tyre size"),show(f.tire))}
+    ${row(T("ระยะต่ำสุดจากพื้น","Ground clearance"),show(f.ground_clearance_mm,"มม."))}
+    ${row(T("รัศมีวงเลี้ยวแคบสุด","Turning radius"),show(f.turning_m,T("ม.","m")))}
+    ${row(T("ที่เก็บของท้ายรถ","Boot space"),show(f.cargo_l,T("ลิตร","L")))}
   </div>
+  ${["suspension_front","suspension_rear","brakes_front","brakes_rear"].some(k=>f[k]&&f[k].v)?`<div class="cl-grp"><h4>${T("ช่วงล่างและเบรก","Suspension & brakes")}</h4>
+    ${row(T("ช่วงล่างหน้า","Front suspension"),show(f.suspension_front))}
+    ${row(T("ช่วงล่างหลัง","Rear suspension"),show(f.suspension_rear))}
+    ${row(T("เบรกหน้า","Front brakes"),show(f.brakes_front))}
+    ${row(T("เบรกหลัง","Rear brakes"),show(f.brakes_rear))}
+  </div>`:""}
   ${d.notes?`<div class="cl-grp"><h4>${T("ข้อควรรู้ของรุ่นนี้","Good to know")}</h4><p class="cs-note">${esc(d.notes)}</p></div>`:""}`+foot(s);
 }
 function foot(s){

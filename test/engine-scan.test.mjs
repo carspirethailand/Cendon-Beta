@@ -71,7 +71,8 @@ function rig(){
   const ctx=vm.createContext(sandbox);vm.runInContext(helper,ctx);vm.runInContext(source,ctx);
   const voice={callActive:true,camOn:true,camFacing:'environment',camZoom:1,callSession:1,callWS:{readyState:1,send:s=>sent.push(JSON.parse(s))}};
   const tools=win.CallTools.create({voice,language:'th',getUser:()=>({getIdToken:async()=>'unit-test-only'}),backendUrl:'https://unit.test'});
-  const settle=async()=>{for(let i=0;i<10;i++)await Promise.resolve()};
+  /* รอให้งานค้างทั้งหมดเสร็จจริง (อ่าน Response ใช้จำนวนรอบ microtask ต่างกันตามรุ่น Node) — ไม่ใช่นับรอบตายตัว */
+  const settle=async()=>{for(let i=0;i<5;i++)await new Promise(r=>setImmediate(r))};
   return{tools,voice,nodes,document,requests,sent,ticks,timers,events,settle,respond:async d=>{fetchResolve(Response.json({data:d}));await settle()},fail:async(status,error)=>{fetchResolve(Response.json({error},{status}));await settle()}};
 }
 test('real scanner sends the current image and version; renders red identified boxes, including two hoses, without a second call',async()=>{

@@ -20,8 +20,11 @@ test('page changes fade once — no staggered slide-up (which also dragged the b
 test('no overshoot or blur in entrance keyframes on Home and Chat',()=>{
   const home=r('index.html'),chat=r('chat.html');
   assert.match(home,/@keyframes pcIn\{from\{opacity:0;transform:translateY\(4px\)\}/);
-  assert.match(chat,/@keyframes msgIn\{from\{opacity:0;transform:translateY\(6px\)\}to\{opacity:1;transform:none\}\}/);
-  assert.match(chat,/@keyframes wRise\{from\{opacity:0;transform:translateY\(4px\)\}to\{opacity:1;transform:none\}\}/);
+  /* แชต: ข้อความ หน้าต้อนรับ และการสลับแผง จางเข้าอย่างเดียว ไม่ลอยขึ้น */
+  for(const k of ['msgIn','wRise','paneIn'])assert.match(chat,new RegExp('@keyframes '+k+'\\{from\\{opacity:0\\}to\\{opacity:1\\}\\}'),k);
+  /* ของที่เลื่อนเข้ามาในจอ (motion.js) ทุกหน้า: จางเข้า ไม่ลอย */
+  for(const f of ['chat.html','garage.html','news.html','profile.html','spares.html'])
+    assert.match(r(f),/@keyframes spRise\{\n  from\{opacity:0\}\n  to\{opacity:1\}\n\}/,f);
   assert.doesNotMatch(chat,/@keyframes wInMe\{[^}]*blur/);
 });
 

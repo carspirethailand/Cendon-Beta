@@ -2433,13 +2433,15 @@ a.mtab{text-decoration:none}
 <script src="call-sounds.js?v=1" defer></script>
 <script src="call-composer.js?v=2026-10-17-r4" defer></script>
 <script src="valet-core.js?v=7" defer></script>
-<script src="call-agent.js?v=2026-10-18-r1" defer></script>
-<script src="call-surface.js?v=2026-10-18-r8" defer></script>
+<script src="call-agent.js?v=2026-10-18-web1" defer></script>
+<script src="call-surface.js?v=2026-10-18-web2" defer></script>
 <script src="engine-scan.js?v=2026-10-17-r4" defer></script>
-<script src="call-tools.js?v=2026-10-17-r8" defer></script>
+<link rel="stylesheet" href="vehicle-audio.css?v=2">
+<script src="vehicle-audio.js?v=3" defer></script>
+<script src="call-tools.js?v=2026-10-18-audio2" defer></script>
 <script src="call-shell.js?v=1" defer></script>
 <script src="garage-care.js?v=1" defer></script>
-<script src="call-session.js?v=2026-10-17-r8" defer></script>
+<script src="call-session.js?v=2026-10-18-audio2" defer></script>
 <link rel="stylesheet" href="calm-ui.css?v=1">
 </head>
 <body>
@@ -3168,7 +3170,7 @@ async function api(path,o){
   /* คำขออ่านข้อมูลรอไม่เกิน 20 วิ — เน็ตหรือเซิร์ฟเวอร์ค้าง ต้องขึ้นปุ่มลองใหม่ ไม่ใช่โครงโหลดค้างไปตลอด
      (ส่งรูป/ใบสมัครไม่ตัดเวลา เพราะไฟล์ใหญ่ใช้เวลานานได้จริง) */
   const ac=!o.body&&window.AbortController?new AbortController():null,tm=ac&&setTimeout(()=>ac.abort(),20000);
-  try{r=await fetch(API+path,{method:o.method||(o.body?"POST":"GET"),headers:h,body:o.body?JSON.stringify(o.body):undefined,cache:"no-store",signal:ac?ac.signal:undefined})}
+  try{r=await fetch(API+path,{method:o.method||(o.body?"POST":"GET"),headers:h,body:o.body?JSON.stringify(o.body):undefined,cache:"no-store",signal:o.signal||(ac?ac.signal:undefined)})}
   catch(e){throw new Error(ac&&ac.signal.aborted?"เซิร์ฟเวอร์ตอบช้า ลองใหม่อีกครั้ง":"เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง")}
   finally{clearTimeout(tm)}
   let d=null;try{d=await r.json()}catch(e){}
@@ -4102,7 +4104,7 @@ function startHomeCall(){
     const view=window.CendonCallSurface.create({anchor:$("hForm"),language:LANG,onSelectShop:id=>{view.minimize();openFound(id,agent.lookup(id));}}),notes=callNotes();
     const car=()=>{const [list,id]=myCars();return list.find(c=>c.id===id)||list[0]||null;};
     let tools;
-    const agent=window.CendonCallAgent.create({api,getCar:car,getLocation:()=>HERE,showResults:view.showResults,showDraft:view.showDraft,showValet:view.showValet,minimize:view.minimize,openMechanic:openFound,prepareUrgent:async(symptom,ctx)=>{if(!ctx.isCurrent())return;await urgentCall();if(ctx.isCurrent()&&$("uSym"))$("uSym").value=symptom;}});
+    const agent=window.CendonCallAgent.create({api,getCar:car,getLocation:()=>HERE,showResearch:view.showResearch,showResults:view.showResults,showDraft:view.showDraft,showValet:view.showValet,minimize:view.minimize,openMechanic:openFound,prepareUrgent:async(symptom,ctx)=>{if(!ctx.isCurrent())return;await urgentCall();if(ctx.isCurrent()&&$("uSym"))$("uSym").value=symptom;}});
     homeVoice=window.CendonCallSession.create({byId:view.byId,backendUrl:API,language:LANG,getUser:()=>U,getCar:car,view,agent,getTools:()=>tools,toast,getMessages:()=>notes,appendMessage:m=>{notes.push(m);if(notes.length>30)notes.shift();saveCallNotes(notes);},systemPrompt:()=>"Cendon ช่วยคนใช้รถประจำวัน คุยเรื่องทั่วไปได้ หาช่างผ่านเครื่องมือจากข้อมูลจริง เรียกช่างหรือขอราคาผ่าน Cendon Valet ได้เมื่อผู้ใช้ยืนยันเท่านั้น ไม่ชำระเงินแทนผู้ใช้",storage:{get:(k,d)=>ls.get("spire_"+k,d),set:(k,v)=>ls.set("spire_"+k,v),del:k=>{try{localStorage.removeItem("spire_"+k)}catch(e){}}}});
     tools=window.CallTools?.create({voice:homeVoice.bridge,language:LANG,backendUrl:API,getUser:()=>U,getCar:car,getMessages:()=>notes,appendMessage:m=>{notes.push(m);if(notes.length>30)notes.shift();},toast});
     view.bind(homeVoice);

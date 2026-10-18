@@ -19,7 +19,8 @@
   const hint = key => t(descriptions[key]);
 
   function validate(key, attachments, context, question) {
-    if (!context.car?.model && !context.car?.make) throw Error(t(['เลือกหรือเพิ่มรถใน Garage ก่อนครับ','Select a car in Garage first.']));
+    if (key!=='listen' && !context.car?.model && !context.car?.make) throw Error(t(['เลือกหรือเพิ่มรถใน Garage ก่อนครับ','Select a car in Garage first.']));
+    if(key==='listen' && !(context.audioVehicle?.version===1&&['garage_confirmed','other_confirmed','unknown'].includes(context.audioVehicle.source)))throw Error(t(['กดเตรียมข้อมูลแล้วเลือกรถในคลิปก่อนครับ','Open Prepare data and choose the recording vehicle first.']));
     if (key === 'quote' && !attachments.some(a=>a.mime?.startsWith('image/'))) throw Error(t(['แนบรูปใบเสนอราคาก่อนวิเคราะห์','Attach a quote photo first.']));
     if (key === 'listen' && !attachments.some(a=>a.mime?.startsWith('audio/'))) throw Error(t(['แนบเสียงหรือกดอัดเสียงก่อนวิเคราะห์','Attach or record audio first.']));
     if (key === 'shake' && !context.measurement?.peaks?.length) throw Error(t(['เปิดเตรียมข้อมูลและวัดการสั่นให้เสร็จก่อน','Open Prepare data and complete a measurement first.']));
@@ -34,16 +35,21 @@
     const user = window.spireAuth?.currentUser || await window.spireAwaitUser?.();
     if (!user) throw Error(t(['กรุณาเข้าสู่ระบบเพื่อใช้ AI','Sign in to use AI.']));
     const token = await user.getIdToken();
+    const audioKey=()=>JSON.stringify(bridge.context('listen').audioVehicle);
+    const expected=key==='listen'?JSON.stringify(context.audioVehicle):'';
+    if(key==='listen'&&(window.spireAuth?.currentUser?.uid!==user.uid||audioKey()!==expected))throw Error(t(['รถหรือบัญชีเปลี่ยนแล้ว กรุณาเริ่มใหม่','Vehicle or account changed. Start again.']));
     const response = await fetch(window.BACKEND_URL + '/api/features/analyze', {
       method:'POST', signal, headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},
       body:JSON.stringify({tool:key,attachments:attachments.map(a=>({mime:a.mime,b64:a.b64})),context,question,lang:en()?'en':'th'})
     });
     const data = await response.json().catch(()=>null);
+    if(key==='listen'&&(window.spireAuth?.currentUser?.uid!==user.uid||audioKey()!==expected))throw Error(t(['รถหรือบัญชีเปลี่ยนแล้ว ผลเก่าถูกยกเลิก','Vehicle or account changed. The old result was discarded.']));
     if (!response.ok) {
       const error = Error(response.status===429?t(['โควตา AI หมดแล้ว กรุณาลองใหม่ภายหลัง','AI usage limit reached. Try again later.']):response.status===404?t(['ต้องอัปเดต backend เพื่อเปิดใช้ AI เครื่องมือนี้','Update the backend to enable tool analysis.']):t(['วิเคราะห์ไม่ได้ชั่วคราว กรุณาตรวจข้อมูลแล้วลองใหม่','Analysis unavailable. Check your input and try again.']));
       error.userQuota = response.status===429; throw error;
     }
     if (!data?.text || data.source !== 'ai') throw Error(t(['ยังไม่ได้รับผลจาก AI กรุณาลองใหม่','No AI result received. Please retry.']));
+    if(key==='listen'&&data.data?.audioVersion!==2)throw Error(t(['ต้องอัปเดตระบบฟังเสียงให้ตรงกับแอปก่อนครับ','The audio service must be updated to match the app']));
     return data.text;
   }
 
@@ -123,7 +129,7 @@
     const input=D.getElementById('inp');
     if(input && !input.value.trim()) {input.value=t(['ช่วยวิเคราะห์ข้อมูลด้วยเครื่องมือนี้','Please analyze my data with this tool']);input.dispatchEvent(new Event('input',{bubbles:true}));}
     input?.focus();
-    if(key==='shake')D.getElementById('faPrepare')?.click();
+    if(key==='shake'||key==='listen')D.getElementById('faPrepare')?.click();
   }
 
   function chatToolbar(){
@@ -149,7 +155,7 @@
       if(!selected)return null;
       const key=selected,context=bridge.context(key);
       let media=attachments.length?attachments.slice():await bridge.media(key);
-      if(!media.length && previous?.featureTool===key)media=(previous.atts||[]).filter(a=>a.b64&&a.mime);
+      if(!media.length && key!=='listen' && previous?.featureTool===key)media=(previous.atts||[]).filter(a=>a.b64&&a.mime);
       validate(key,media,context,question);
       return {key,context,question,attachments:media};
     },

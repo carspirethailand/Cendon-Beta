@@ -3032,13 +3032,15 @@ html[data-idle="1"] *{animation-play-state:paused!important}
      โหลดตรงนี้เพื่อให้ AI หยิบข้อมูลช่างชุดเดียวกับที่ผู้ใช้เห็นบนหน้าเว็บ -->
 <script src="call-sounds.js?v=1" defer></script>
 <script src="engine-scan.js?v=2026-10-17-r4" defer></script>
-<script src="call-tools.js?v=2026-10-17-r8" defer></script>
+<link rel="stylesheet" href="vehicle-audio.css?v=2">
+<script src="vehicle-audio.js?v=3" defer></script>
+<script src="call-tools.js?v=2026-10-18-audio2" defer></script>
 <script src="call-composer.js?v=2026-10-17-r4" defer></script>
-<script src="call-agent.js?v=2026-10-18-r1" defer></script>
-<script src="call-surface.js?v=2026-10-18-r8" defer></script>
+<script src="call-agent.js?v=2026-10-18-web1" defer></script>
+<script src="call-surface.js?v=2026-10-18-web2" defer></script>
 <script src="call-shell.js?v=1" defer></script>
 <script src="garage-care.js?v=1" defer></script>
-<script src="call-session.js?v=2026-10-17-r8" defer></script>
+<script src="call-session.js?v=2026-10-18-audio2" defer></script>
 <link rel="stylesheet" href="valet.css?v=2">
 <script src="valet-core.js?v=7" defer></script>
 <script src="chat-garage.js?v=1" defer></script>
@@ -6816,12 +6818,12 @@ function getCallSession(){
   if(cendonCall)return cendonCall;
   if(!window.CendonCallSession||!window.CendonCallSurface||!window.CendonCallAgent){toast(lang==="en"?"Voice is loading. Please try again.":"ระบบเสียงกำลังเตรียมพร้อม ลองอีกครั้งครับ");return null;}
   const view=window.CendonCallSurface.create({language:lang});
-  const voiceApi=async(path,{signal}={})=>{
+  const voiceApi=async(path,{signal,method='GET',body}={})=>{
     const user=auth?.currentUser;if(!user)throw Error("Sign in required");
-    const token=await user.getIdToken(),response=await fetch(BACKEND_URL+path,{headers:{Authorization:"Bearer "+token},signal,cache:"no-store"});
+    const token=await user.getIdToken(),response=await fetch(BACKEND_URL+path,{method,body:body?JSON.stringify(body):undefined,headers:{Authorization:"Bearer "+token,...(body?{'Content-Type':'application/json'}:{})},signal,cache:"no-store"});
     if(!response.ok)throw Error("Tool unavailable");return response.json();
   };
-  const agent=window.CendonCallAgent.create({api:voiceApi,getCar:selCar,getLocation:()=>LS.get("tech_here",null),showResults:view.showResults,showDraft:view.showDraft,showValet:view.showValet,minimize:view.minimize});
+  const agent=window.CendonCallAgent.create({api:voiceApi,getCar:selCar,getLocation:()=>LS.get("tech_here",null),showResearch:view.showResearch,showResults:view.showResults,showDraft:view.showDraft,showValet:view.showValet,minimize:view.minimize});
   let tools;
   cendonCall=window.CendonCallSession.create({byId:view.byId,backendUrl:BACKEND_URL,language:lang,getUser:()=>auth?.currentUser,getCar:selCar,view,agent,getTools:()=>tools,toast,storage:LS,systemPrompt:sysPrompt,getMessages:()=>messages,appendMessage:m=>messages.push(m),save:saveSession,onEnd:()=>{renderMessages();updateHint();renderChips();setPhase("thread");}});
   tools=window.CallTools?.create({voice:cendonCall.bridge,language:lang,backendUrl:BACKEND_URL,getUser:()=>auth?.currentUser,getCar:selCar,getMessages:()=>messages,appendMessage:m=>messages.push(m),save:saveSession,toast});
@@ -8632,6 +8634,7 @@ const fmtDate=d=>new Date(d).toLocaleDateString(EN()?"en-GB":"th-TH",{day:"numer
 function car(){ try{const c=window.selCar&&window.selCar(); return c||(window.garage()||[])[0]||null}
   catch(e){ return null } }
 function carParts(c){
+  if(window.CendonVehicleAudio)return window.CendonVehicleAudio.car(c);
   if(!c)return {make:"",model:"",year:"",mileage:""};
   const p=String(c.name||"").trim().split(/\s+/);
   return {make:p[0]||"",model:p.slice(1).join(" ")||"",
@@ -9287,11 +9290,11 @@ const TAKES=[
    tip:["เปิดฝากระโปรง ถือมือถือห่างเครื่องราวหนึ่งช่วงแขน ปิดแอร์",
         "Open the bonnet, hold the phone an arm's length from the engine, A/C off"]},
   {k:"rev",  ic:"ti-gauge",         th:"เร่งเครื่องอยู่กับที่", en:"Revving",
-   tip:["เกียร์ว่าง เหยียบคันเร่งขึ้นลงช้า ๆ สองสามครั้ง",
-        "In neutral, ease the throttle up and down a few times"]},
+   tip:["ใช้คลิปที่มีอยู่แล้วเท่านั้น ไม่ต้องเร่งเครื่องที่สงสัยว่ามีปัญหาเพื่อทดสอบ",
+        "Use an existing clip only. Do not rev a suspect engine to test it"]},
   {k:"brake",ic:"ti-disc",          th:"ตอนเหยียบเบรก", en:"Braking",
-   tip:["ขับช้า ๆ ในที่ปลอดภัย เหยียบเบรกเบา ๆ ปิดแอร์และเพลง",
-        "Drive slowly somewhere safe and brake gently, A/C and music off"]},
+   tip:["ใช้คลิปที่มีอยู่แล้ว ไม่ขับหรือเบรกซ้ำเพื่ออัดเสียง ถ้ามีเสียงบดเบรกให้หยุดใช้รถ",
+        "Use an existing clip. Do not drive or brake to reproduce it; brake grinding means stop using the vehicle"]},
   {k:"drive",ic:"ti-steering-wheel",th:"ตอนขับอยู่", en:"Driving",
    tip:["ให้คนอื่นถือมือถือ อย่าอัดเองขณะขับ",
         "Have a passenger hold the phone — never record while driving"]}
@@ -9304,19 +9307,25 @@ const URG={
 };
 let lTake="idle",lRec=null,lChunks=[],lBlob=null,lUrl="",lBusy=false,lRes=null,lErr="",lSec=0,lTimer=null;
 let lChat=[],lAsk=false,lArmed=false;
+let lVehicle=null,lCapture=null,lCaptureUid='',lRecording={source:'unknown',processing:{}};
+function listenContext(){
+  const VA=window.CendonVehicleAudio,v=lCapture||lVehicle;
+  if(!VA||!VA.current(v,car()))throw Error(T('ยืนยันรถในคลิปก่อนครับ หากเปลี่ยนรถให้เริ่มฟังใหม่','Confirm the recording vehicle first. Start again if the car changed.'));
+  if(lCaptureUid&&lCaptureUid!==window.spireAuth?.currentUser?.uid)throw Error(T('บัญชีเปลี่ยนแล้ว กรุณาอัดใหม่','Account changed. Please record again.'));
+  return {car:v.vehicle,audioVehicle:VA.payload(v),recording:lRecording,recordingCondition:lTake};
+}
 
 function listenBody(){
   const c=car();
-  if(!c)return noCarCard();
   if(lBusy)return `<div class="lg-card"><div class="lg-scan"><div class="lg-spin"></div>
     <b>${T("กำลังฟังคลิปนี้…","Listening…")}</b>
-    <small>${T("เทียบกับอาการที่พบบ่อยของรถรุ่นนี้","Comparing against common faults for this model")}</small></div></div>`;
+    <small>${T("ฟังสิ่งที่มีในคลิป ไม่เดารุ่นรถหรือยืนยันว่าเครื่องปกติ","Observing this clip, not guessing the model or certifying engine health")}</small></div></div>`;
   if(lRes)return listenResult();
 
   const tk=TAKES.find(x=>x.k===lTake)||TAKES[1];
-  return `<div class="lg-card">
+  return `${window.CendonVehicleAudio?.picker('lgVehicle',c,lVehicle,window.lang||'th')||''}<div class="lg-card">
       <div class="lg-head"><div class="tx"><small>${T("กำลังอัดอยู่ตอนนี้","Recording now")}</small>
-        <b>${T("เปลี่ยนท่าได้ระหว่างอัด","Switch take while it records")}</b></div></div>
+        <b>${T("อัดขณะจอดในที่ปลอดภัย ไม่เร่งเครื่องที่สงสัยว่ามีปัญหา","Record safely while parked; do not rev a suspect engine")}</b></div></div>
       <div class="lg-takes">${TAKES.map(x=>`<button class="lg-take${x.k===lTake?" on":""}" data-take="${x.k}">
         <i class="ti ${x.ic}"></i><span>${T(x.th,x.en)}</span></button>`).join("")}</div>
       <div class="lg-tip"><i class="ti ti-bulb"></i>${T(tk.tip[0],tk.tip[1])}</div>
@@ -9350,10 +9359,11 @@ function listenResult(){
   return `<div class="lg-card">
       <div class="lg-head"><div class="tx">
         <small>${tk?T(tk.th,tk.en):T("คลิปที่อัด","Your clip")}</small>
-        <b>${T(u.th,u.en)}</b></div>
+        <b>${r.assessment?esc(window.CendonVehicleAudio.assessmentLabel(r.assessment,EN()?'en':'th')):T(u.th,u.en)}</b></div>
         <button class="btn" id="lgLAgain"><i class="ti ti-refresh"></i>${T("อัดใหม่","Record again")}</button></div>
       <div class="lg-urg ${u.c}"><i class="ti ${r.normal?"ti-check":"ti-alert-triangle"}"></i>
-        <span>${esc(r.heard)}</span></div>
+        <span>${esc(r.heard)}</span></div><p class="lg-note">${esc(r.identity?.label||T('ยังไม่ยืนยันรุ่นรถ','Unconfirmed vehicle'))} · ${T('ตามที่ผู้ใช้เลือก ไม่ใช่ระบุจากเสียง • คลิปนี้ยืนยันความปลอดภัยในการขับไม่ได้','User-selected, not identified from audio • This clip cannot establish safe driving')}</p>
+      ${window.CendonVehicleAudio?.researchMarkup(r.research,EN()?'en':'th')||''}
       ${r.quality==="noisy"?`<div class="lg-tip"><i class="ti ti-volume-3"></i>${T(
         "คลิปมีเสียงรบกวนพอควร ถ้าอัดใหม่ในที่เงียบกว่านี้ผลจะแม่นขึ้น",
         "There's a fair bit of background noise — a quieter take would read better")}</div>`:""}
@@ -9404,20 +9414,25 @@ function listenResult(){
 
 async function startRec(){
   lErr="";
+  try{listenContext();lCapture=structuredClone(lVehicle);lCaptureUid=window.spireAuth?.currentUser?.uid||''}catch(e){lErr=e.message;renderTool();return}
+  const recordingVehicle=lCapture,recordingUid=lCaptureUid;
   if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia&&window.MediaRecorder)){
     lErr=T("เบราว์เซอร์นี้อัดเสียงไม่ได้ ใช้ปุ่มเลือกไฟล์เสียงแทนได้",
            "This browser can't record — use the file button instead");
     renderTool(); return;
   }
   try{
-    const st=await navigator.mediaDevices.getUserMedia({audio:true});
-    lChunks=[]; lSec=0;
+    const st=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+    if(!window.CendonVehicleAudio.current(recordingVehicle,car())||window.spireAuth?.currentUser?.uid!==recordingUid){st.getTracks().forEach(t=>t.stop());throw Error('Vehicle or account changed')}
+    lRecording=window.CendonVehicleAudio.recording(st);lChunks=[]; lSec=0;
     /* ไม่ระบุ mimeType ปล่อยให้เบราว์เซอร์เลือกที่รองรับเอง
        Safari กับ Chrome คนละฟอร์แมตกัน ถ้าฟิกซ์ไว้จะพังบนเครื่องหนึ่ง */
     lRec=new MediaRecorder(st);
     lRec.ondataavailable=e=>{ if(e.data&&e.data.size)lChunks.push(e.data) };
     lRec.onstop=()=>{
       st.getTracks().forEach(t=>t.stop());
+      if(!window.CendonVehicleAudio.current(recordingVehicle,car())||window.spireAuth?.currentUser?.uid!==recordingUid){lRec=null;clearInterval(lTimer);lTimer=null;lBlob=null;lCapture=null;lErr=T('รถหรือบัญชีเปลี่ยนแล้ว กรุณาอัดใหม่','Vehicle or account changed. Please record again');renderTool();return}
+      lCapture=recordingVehicle;lCaptureUid=recordingUid;lRecording.durationSeconds=lSec;
       const type=(lChunks[0]&&lChunks[0].type)||lRec.mimeType||"audio/webm";
       lBlob=new Blob(lChunks,{type});
       if(lUrl)URL.revokeObjectURL(lUrl);
@@ -9446,12 +9461,15 @@ function blobB64(b){
   });
 }
 async function runListen(){
-  const c=car(); if(!c||!lBlob)return;
+  if(!lBlob)return;
   lBusy=true; lErr=""; renderTool();
   try{
+    const context=listenContext(),owner=window.spireAuth?.currentUser?.uid;
     const d64=await blobB64(lBlob);
     const d=await api("/api/listen",{audio:d64,mime:lBlob.type||"audio/webm",
-      take:lTake,car:carParts(c),lang:window.lang||"th"});
+      take:lTake,car:context.car,audioVehicle:context.audioVehicle,recording:context.recording,lang:window.lang||"th"});
+    if(d.audioVersion!==2)throw Error(T('ต้องอัปเดตระบบฟังเสียงให้ตรงกับแอปก่อนครับ','The audio service must be updated to match the app'));
+    if(owner!==window.spireAuth?.currentUser?.uid||JSON.stringify(context.audioVehicle)!==JSON.stringify(listenContext().audioVehicle))throw Error(T('บริบทรถเปลี่ยนแล้ว กรุณาเริ่มใหม่','Vehicle context changed. Please start again'));
     lRes=d;
   }catch(e){ lErr=String(e&&e.message||e).slice(0,240) }
   lBusy=false; renderTool();
@@ -9460,33 +9478,18 @@ async function runListen(){
    เจ้าของจึงไม่ต้องเล่าอาการซ้ำ ซึ่งเป็นจุดที่แชทบอตทั่วไปทำให้เสียเวลาที่สุด */
 async function askListen(q){
   q=String(q||"").trim(); if(!q||lAsk)return;
-  const c=car(); if(!c||!lRes)return;
+  if(!lRes)return;
   const qi=$("lgQ"); if(qi)qi.value="";
   lChat.push({role:"me",text:q}); lAsk=true; renderTool();
 
-  const cp=carParts(c);
-  const brief=[
-    `รถ: ${[cp.year,cp.make,cp.model].filter(Boolean).join(" ")}${cp.mileage?` เลขไมล์ ${cp.mileage} กม.`:""}`,
-    `อัดเสียง: ${(TAKES.find(x=>x.k===lRes.take)||{}).th||"ระหว่างใช้งาน"}`,
-    `สิ่งที่ได้ยิน: ${lRes.heard}`,
-    lRes.causes.length?`สาเหตุที่ประเมินไว้: ${lRes.causes.map(x=>
-      `${x.what} (${x.chance}%)`).join(", ")}`:""
-  ].filter(Boolean).join("\n");
-
-  const contents=[{role:"user",parts:[{text:
-    `นี่คือผลวิเคราะห์เสียงรถของฉันที่ระบบทำไว้แล้ว ใช้เป็นบริบทในการตอบ\n\n${brief}\n\n`+
-    `ตอบสั้น ตรงประเด็น เป็นภาษา${EN()?"อังกฤษ":"ไทย"} ไม่ต้องทวนบริบท\n\nคำถาม: ${q}`}]}];
-  lChat.slice(0,-1).forEach(m=>{ /* เทิร์นก่อนหน้าใส่ต่อท้ายให้บทสนทนาต่อเนื่อง */ });
-  const hist=lChat.slice(0,-1).map(m=>({role:m.role==="me"?"user":"model",parts:[{text:m.text}]}));
-  const payload=[contents[0],...hist.slice(-6)];
-  if(hist.length)payload.push({role:"user",parts:[{text:q}]});
 
   try{
-    const d=await api("/api/ai/chat",{contents:payload,
-      make:cp.make,model:cp.model,year:cp.year,mileage:cp.mileage});
-    const txt=(d&&(d.text||d.reply||d.message))||
-      (d&&d.candidates&&d.candidates[0]&&d.candidates[0].content&&
-       (d.candidates[0].content.parts||[]).map(x=>x.text||"").join(""))||"";
+    const context=listenContext(),owner=window.spireAuth?.currentUser?.uid;
+    if(!lBlob)throw Error(T('แนบเสียงอีกครั้งก่อนถามต่อครับ','Attach the recording again before asking a follow-up'));
+    const d=await api('/api/features/analyze',{tool:'listen',context,question:q,attachments:[{mime:lBlob.type||'audio/webm',b64:(await blobB64(lBlob)).replace(/^data:[^,]+,/, '')}],lang:EN()?'en':'th'});
+    if(owner!==window.spireAuth?.currentUser?.uid||JSON.stringify(context.audioVehicle)!==JSON.stringify(listenContext().audioVehicle))throw Error(T('รถหรือบัญชีเปลี่ยนแล้ว กรุณาเริ่มใหม่','Vehicle or account changed. Start again'));
+    if(d.data?.audioVersion!==2)throw Error(T('ต้องอัปเดตระบบฟังเสียงก่อนครับ','The audio service needs updating'));
+    const txt=d.text||'';
     lChat.push({role:"ai",text:txt||T("ตอบไม่ได้ ลองถามใหม่","No answer — try again")});
   }catch(e){
     lChat.push({role:"ai",text:String(e&&e.message||e).slice(0,240)});
@@ -9496,6 +9499,8 @@ async function askListen(q){
 }
 
 function wireListen(){
+  window.CendonVehicleAudio?.bind('lgVehicle',car(),v=>{lVehicle=v;lCapture=null;lCaptureUid='';lBlob=null;lRes=null;if(lUrl)URL.revokeObjectURL(lUrl);lUrl='';});
+  if($('lgVehiclePicker'))$('lgVehiclePicker').disabled=!!lRec;
   const t=D.getElementById("lgTakeWrap");
   D.querySelectorAll("[data-take]").forEach(b=>b.onclick=()=>{lTake=b.dataset.take;renderTool()});
   const rec=$("lgRec"); if(rec)rec.onclick=startRec;
@@ -9505,9 +9510,10 @@ function wireListen(){
   if(ub&&ua)ub.onclick=()=>ua.click();
   if(ua)ua.onchange=e=>{
     const f=e.target.files&&e.target.files[0]; if(!f)return;
+    try{listenContext();lCapture=structuredClone(lVehicle);lCaptureUid=window.spireAuth?.currentUser?.uid||''}catch(error){lErr=error.message;e.target.value='';renderTool();return}
     if(f.size>5e6){ lErr=T("ไฟล์ใหญ่เกินไป ใช้คลิปสั้นกว่านี้","File too large — use a shorter clip");
       e.target.value=""; renderTool(); return }
-    lBlob=f; if(lUrl)URL.revokeObjectURL(lUrl); lUrl=URL.createObjectURL(f);
+    lRecording={source:'uploaded_file',processing:{}};lBlob=f; if(lUrl)URL.revokeObjectURL(lUrl); lUrl=URL.createObjectURL(f);
     e.target.value=""; renderTool();
   };
   const ag=$("lgLAgain"); if(ag)ag.onclick=()=>{
@@ -10975,7 +10981,7 @@ const featureBridge={
     if(key==="park"){const p=getPark();context.parking=p?{note:p.note||"",elapsedMinutes:Math.max(0,Math.round((Date.now()-p.t)/60000)),accuracyMeters:p.acc||null,remainingMinutes:p.timerAt?Math.round((p.timerAt-Date.now())/60000):null}:null;}
     if(key==="own"&&c){const o=ownData(c);context.cost={fuel:o.sFuel,service:o.sSvc,total:o.total,recordedDistanceKm:o.span,months:o.months,perKm:o.span>0?o.perKm:null,perMonth:o.months>0?o.perMonth:null,entryCount:o.entries.length,entries:o.entries.slice(0,35).map(x=>({type:x.type,date:x.date,amount:x.amount,km:x.km,service:x.k,note:String(x.note||"").slice(0,160)}))};}
     if(key==="quote")context.previousAnalysis=qRes;
-    if(key==="listen")context.recordingCondition=lTake;
+    if(key==="listen")return listenContext();
     return context;
   },
   media:async key=>{
@@ -12905,7 +12911,7 @@ setTimeout(mount,800); setTimeout(mount,2500);
 <!-- แผงผู้ดูแลแบบลอย: โหลดทุกหน้า แต่แสดงเฉพาะผู้ดูแลที่เปิดไว้ในตั้งค่า -->
 <script src="cendon-admin.js" defer></script>
 <link rel="stylesheet" href="feature-ai.css?v=1">
-<script src="feature-ai.js?v=5"></script>
+<script src="feature-ai.js?v=2026-10-18-audio1"></script>
 <script src="fluid.js" defer></script>
 <script src="crop.js" defer></script>
 <script src="cendon-line.js?v=3" defer></script>

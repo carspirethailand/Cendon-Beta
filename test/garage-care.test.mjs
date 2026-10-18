@@ -59,6 +59,6 @@ test('skip/disable/enable preferences are real authenticated requests, not fabri
   assert.ok((await f.care.control('pay',ctx)).error);assert.equal(f.controls.length,3);
 });
 test('paired assets load before transport on Home/Chat and selected car is passed to the scheduler',()=>{
-  for(const page of ['index.html','chat.html']){const s=readFileSync(new URL('../'+page,import.meta.url),'utf8');assert.ok(s.indexOf('<script src="garage-care.js?v=1"')<s.indexOf('<script src="call-session.js?v=2026-10-17-r8"'));assert.match(s,/getUser:[^\n]+getCar:/);}
+  for(const page of ['index.html','chat.html']){const s=readFileSync(new URL('../'+page,import.meta.url),'utf8');assert.ok(s.indexOf('<script src="garage-care.js?v=1"')<s.indexOf('<script src="call-session.js?'));assert.match(s,/getUser:[^\n]+getCar:/);}
   const sw=readFileSync(new URL('../sw.js',import.meta.url),'utf8');/* รุ่นแคชต้องไม่ต่ำกว่ารุ่นที่ออก Garage care (v303) — รุ่นหลังจากนี้ bump ต่อได้โดยเทสต์ไม่พัง */assert.ok(+(sw.match(/const CACHE = 'cendon-v(\d+)/)||[])[1]>=303);assert.match(sw,/garage-care\.js\?v=1/);
 });

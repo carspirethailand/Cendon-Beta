@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 /* Motion v2: นิ่ง มั่นคง ไม่ดิ้น ไม่กระตุก — ตรวจทั้งหน้าใน browser แล้วแก้ที่ต้นเหตุ ไฟล์นี้กันไม่ให้ถอยกลับ */
-const r=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8');
+const r=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8').replace(/\r\n/g,'\n');
 const PAGES=['index.html','garage.html','spares.html','news.html','profile.html','chat.html'];
 const M=r('motion.css');
 

@@ -4,7 +4,7 @@ import {readFileSync,readdirSync,existsSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 /* ฟอนต์และไอคอนโหลดจากเว็บเราเองก่อนวาดเฟรมแรก — เดิมโหลดจาก CDN แบบไม่รอ
    เปลี่ยนหน้าแล้วไอคอน (กระดิ่ง เมนู) หายแวบ ตัวหนังสือ/เมนูขยับทุกครั้ง */
-const u=f=>new URL('../'+f,import.meta.url),r=f=>readFileSync(u(f),'utf8'),h8=b=>createHash('sha256').update(b).digest('hex').slice(0,8);
+const u=f=>new URL('../'+f,import.meta.url),r=f=>readFileSync(u(f),'utf8').replace(/\r\n/g,'\n'),h8=b=>createHash('sha256').update(b).digest('hex').slice(0,8);
 const PAGES=['index.html','garage.html','spares.html','news.html','profile.html','chat.html'];
 const ti=r('icons/ti.css'),have=new Set([...ti.matchAll(/\.ti-([a-z0-9-]+):before/g)].map(m=>m[1]));
 
@@ -18,7 +18,7 @@ test('every icon the app names exists in the local icon font (add new ones with 
 test('app pages load fonts and icons from this site before the first frame, versioned by file hash', () => {
   const wv=ti.match(/ti\.woff2\?v=([a-f0-9]{8})/)[1];
   assert.equal(wv,h8(readFileSync(u('icons/ti.woff2'))),'icon font version is its hash');
-  const cv=h8(readFileSync(u('icons/ti.css')));
+  const cv=h8(Buffer.from(ti,'utf8')); // Hash canonical source text, not Windows checkout CRLF.
   for(const f of PAGES){const s=r(f),head=s.slice(0,s.indexOf('</head>'));
     assert.doesNotMatch(s,/tabler-icons\.min\.css|family=Kanit/,f+': no CDN icon font or Google Kanit');
     assert.match(head,new RegExp(`<link rel="preload" href="/icons/ti\\.woff2\\?v=${wv}" as="font" type="font/woff2" crossorigin>`),f);

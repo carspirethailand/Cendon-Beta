@@ -20,11 +20,11 @@ const HOSTS={
   'www.gstatic.com':'Google Firebase','cendon-1.firebaseapp.com':'Google Firebase',
   'generativelanguage.googleapis.com':'Google Gemini',
   'fonts.googleapis.com':'Google Fonts','fonts.gstatic.com':'Google Fonts','cdn.jsdelivr.net':'jsDelivr','unpkg.com':'unpkg',
-  'tile.openstreetmap.org':'OpenStreetMap','nominatim.openstreetmap.org':'OpenStreetMap','www.openstreetmap.org':'OpenStreetMap',
+  'tiles.openfreemap.org':'OpenFreeMap','tile.openstreetmap.org':'OpenStreetMap','nominatim.openstreetmap.org':'OpenStreetMap','www.openstreetmap.org':'OpenStreetMap',
   'api.open-meteo.com':'Open-Meteo','geocoding-api.open-meteo.com':'Open-Meteo',
 };
 /* ลิงก์ที่ผู้ใช้กดออกไปเอง ไม่มีข้อมูลส่งไปจากระบบเรา */
-const LINKS=new Set(['www.google.com','maps.google.com','line.me','facebook.com','www.tiktok.com','shopee.co.th','www.lazada.co.th','www.jd.co.th','www.ebay.com','www.amazon.com','www.aliexpress.com','www.pdpc.or.th']);
+const LINKS=new Set(['www.google.com','search.google.com','maps.google.com','line.me','facebook.com','www.tiktok.com','shopee.co.th','www.lazada.co.th','www.jd.co.th','www.ebay.com','www.amazon.com','www.aliexpress.com','www.pdpc.or.th']);
 
 test('site: ทุกบริการภายนอกที่แอปใช้ มีชื่ออยู่ในนโยบายความเป็นส่วนตัว',()=>{
   const files=readdirSync(root).filter(f=>/\.(html|js)$/.test(f)&&!PAGES.some(p=>p.file===f));

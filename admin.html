@@ -374,6 +374,38 @@ tr.banned-row{opacity:.5}
 .field .hint{font-size:12px;color:var(--faint);margin-top:6px}
 .toggle-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid var(--line2)}
 .toggle-row:last-of-type{border-bottom:none}
+/* ══ ตั้งค่าทั้งหมด: สารบัญติดซ้าย (จอใหญ่) / แถบเลื่อนติดบน (มือถือ) ══ */
+.cfg{display:grid;grid-template-columns:220px minmax(0,1fr);gap:22px;align-items:start}
+.cfg-ix{position:sticky;top:18px;display:flex;flex-direction:column;gap:10px}
+.cfg-q{display:flex;align-items:center;gap:8px;padding:0 12px;height:42px;border-radius:13px;background:var(--surface);border:1px solid var(--line);color:var(--mut)}
+.cfg-q input{flex:1;min-width:0;border:0;outline:0;background:none;font:inherit;color:var(--ink)}
+.cfg-ix nav{display:flex;flex-direction:column;gap:2px}
+.cfg-ix nav a{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:11px;color:var(--mut);font-size:13.5px;text-decoration:none;white-space:nowrap}
+.cfg-ix nav a:hover{background:var(--surface);color:var(--ink)}
+.cfg-ix nav a.on{background:var(--ink);color:var(--surface)}
+.cfg-ix nav a[hidden]{display:none}
+.cfg-body{display:flex;flex-direction:column;gap:16px;min-width:0}
+.cfg-card{scroll-margin-top:18px}
+.cfg-card[hidden]{display:none}
+.cfg-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.cfg-links{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 8px}
+.cfg-links a{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:11px;border:1px solid var(--line);color:var(--ink);font-size:13px;text-decoration:none}
+.cfg-hero{position:relative;overflow:hidden;border-color:color-mix(in srgb,#E8943C 40%,var(--line))}
+.cfg-hero::before{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,#E8943C,#f6c48d,#E8943C)}
+.lc-state{display:flex;align-items:center;gap:9px;margin:14px 0 4px;padding:12px 14px;border-radius:13px;background:var(--surface-2,rgba(0,0,0,.04));font-size:13.5px;line-height:1.5}
+.lc-state.live{background:rgba(232,148,60,.12);color:#9a4f0e}
+.lc-state.done{background:rgba(6,199,85,.1);color:#04913F}
+.lc-state b{font-weight:600}
+.lc-lock{display:flex;align-items:center;gap:6px;margin-top:10px}
+.lc-lock[hidden]{display:none}
+.cfg-body textarea.input{resize:vertical;min-height:64px;padding-top:10px;line-height:1.5}
+@media(max-width:900px){
+  .cfg{grid-template-columns:1fr;gap:12px}
+  .cfg-ix{top:0;z-index:5;margin:0 -16px;padding:10px 16px;background:var(--bg);border-bottom:1px solid var(--line)}
+  .cfg-ix nav{flex-direction:row;overflow-x:auto;scrollbar-width:none;gap:6px}
+  .cfg-ix nav::-webkit-scrollbar{display:none}
+  .cfg-ix nav a{flex:none;padding:7px 12px;border:1px solid var(--line);background:var(--surface)}
+}
 .toggle-row b{font-size:14px;font-weight:600}
 .toggle-row small{display:block;font-size:12px;color:var(--mut);margin-top:2px}
 
@@ -1818,7 +1850,7 @@ td .empty::before,td.empty::before{display:none}
 
       <div class="ng" data-mods="config,audit">
         <span class="ng-t">ควบคุม</span>
-        <a data-tab="config" data-mod="config"><i class="ti ti-settings"></i> ตั้งค่าเว็บ</a>
+        <a data-tab="config" data-mod="config"><i class="ti ti-settings"></i> ตั้งค่าทั้งหมด</a>
         <a data-tab="audit" data-mod="audit"><i class="ti ti-history"></i> บันทึกการทำงาน</a>
       </div>
 
@@ -2032,8 +2064,40 @@ td .empty::before,td.empty::before{display:none}
 
       <!-- CONFIG -->
       <section class="view" id="v-config">
-        <div class="page-head"><div><h1>ตั้งค่าเว็บ</h1><p>ประกาศบนหน้าเว็บ และโหมดปิดปรับปรุง</p></div></div>
-        <div class="card">
+        <div class="page-head"><div><h1>ตั้งค่าทั้งหมด</h1><p>ทุกอย่างที่ปรับได้ของ Cendon รวมไว้ที่เดียว · บันทึกทีละหมวด มีผลกับผู้ใช้ทันที</p></div></div>
+        <!-- ══ หน้าตั้งค่ารวม: สารบัญซ้าย (มือถือ = แถบเลื่อนบนสุด) + ช่องค้นหา · การ์ดแต่ละหมวดมี data-q เป็นคำค้น ══ -->
+        <div class="cfg">
+          <aside class="cfg-ix">
+            <label class="cfg-q"><i class="ti ti-search"></i><input id="cfgQ" type="search" placeholder="ค้นหาการตั้งค่า" autocomplete="off"></label>
+            <nav id="cfgNav"><a href="#cfg-launch" data-cfg="cfg-launch"><i class="ti ti-rocket"></i> เปิดตัวแอป</a><a href="#cfg-ann" data-cfg="cfg-ann"><i class="ti ti-speakerphone"></i> ประกาศ</a><a href="#cfg-maint" data-cfg="cfg-maint"><i class="ti ti-tool"></i> ปิดปรับปรุง</a><a href="#cfg-quota" data-cfg="cfg-quota"><i class="ti ti-gauge"></i> โควตา AI</a><a href="#cfg-feat" data-cfg="cfg-feat"><i class="ti ti-toggle-left"></i> ฟีเจอร์</a><a href="#cfg-line" data-cfg="cfg-line"><i class="ti ti-brand-line"></i> LINE</a><a href="#cfg-seo" data-cfg="cfg-seo"><i class="ti ti-brand-google"></i> Google</a><a href="#cfg-export" data-cfg="cfg-export"><i class="ti ti-download"></i> ส่งออกข้อมูล</a></nav>
+          </aside>
+          <div class="cfg-body" id="cfgBody">
+        <div class="card cfg-card cfg-hero" id="cfg-launch" data-q="เปิดตัว นับถอยหลัง countdown launch วันเปิด จองช่าง">
+          <h3><i class="ti ti-rocket"></i> เปิดตัวแอป · นับถอยหลัง</h3>
+          <div class="sub">ตั้งวันและเวลาเปิดตัว — ระหว่างนี้ผู้ใช้ทั่วไปเห็นหน้านับถอยหลัง 3 มิติ และจองสิทธิ์เป็นช่างพาร์ทเนอร์ได้ · ทีมงานเข้าแอปได้ตามปกติ ·
+            ถึงเวลาแล้วแอปเปิดเองพร้อมแอนิเมชันบินผ่านเมฆ ไม่ต้องกลับมากดปิด</div>
+          <div class="lc-state" id="lcState"><i class="ti ti-loader-2"></i> กำลังโหลด…</div>
+          <div class="toggle-row"><div><b>เปิดโหมดนับถอยหลัง</b><small>ปิด = แอปเปิดให้ใช้ตามปกติ</small></div>
+            <label class="switch"><input type="checkbox" id="lcOn"><span class="sl"></span></label></div>
+          <div class="grid2" style="margin-top:14px">
+            <div class="field"><label for="lcDate">วันเปิดตัว</label><input class="input" type="date" id="lcDate"></div>
+            <div class="field"><label for="lcTime">เวลา</label><input class="input" type="time" id="lcTime" value="19:00"></div>
+          </div>
+          <div class="field"><label for="lcTitle">หัวข้อบนหน้านับถอยหลัง</label>
+            <input class="input" id="lcTitle" maxlength="80" placeholder="ช่างที่ไว้ใจได้ กำลังมาถึงคุณ"></div>
+          <div class="field"><label for="lcMsg">ข้อความใต้หัวข้อ</label>
+            <textarea class="input" id="lcMsg" maxlength="240" rows="2" placeholder="หาช่างใกล้บ้าน เทียบราคา และดูช่างกำลังมาแบบสด ๆ — เจอกันวันเปิดตัว"></textarea>
+            <div class="hint">เว้นว่างได้ — ใช้ข้อความตั้งต้นให้</div></div>
+          <div class="toggle-row"><div><b>ปุ่มจองสิทธิ์เป็นช่าง</b><small>ให้คนสมัครเป็นช่างพาร์ทเนอร์ได้จากหน้านับถอยหลัง (ใบสมัครเข้าเมนู "รับช่าง" ตามปกติ)</small></div>
+            <label class="switch"><input type="checkbox" id="lcJoin" checked><span class="sl"></span></label></div>
+          <div class="cfg-btns">
+            <button class="btn primary" id="lcSave" onclick="saveLaunch()"><i class="ti ti-device-floppy"></i> บันทึก</button>
+            <a class="btn" href="/launch?preview=1" target="_blank" rel="noopener"><i class="ti ti-eye"></i> ดูตัวอย่างหน้า</a>
+            <button class="btn" onclick="go('recruit')"><i class="ti ti-id-badge-2"></i> ใบสมัครช่าง</button>
+          </div>
+          <div class="hint lc-lock" id="lcLock" hidden><i class="ti ti-lock"></i> เฉพาะเจ้าของระบบที่เปลี่ยนการตั้งค่านี้ได้ — คุณดูได้อย่างเดียว</div>
+        </div>
+        <div class="card cfg-card" id="cfg-ann" data-q="ประกาศ แถบ ข่าว announcement banner">
           <h3><i class="ti ti-speakerphone"></i> ประกาศบนหน้าเว็บ</h3>
           <div class="sub">แถบข้อความที่แสดงบนสุดของหน้าเว็บให้ผู้ใช้ทุกคนเห็น</div>
           <div class="toggle-row"><div><b>เปิดใช้งานประกาศ</b><small>แสดงแถบประกาศบนหน้าหลัก</small></div>
@@ -2051,7 +2115,7 @@ td .empty::before,td.empty::before{display:none}
           </div>
           <button class="btn primary" onclick="saveAnnouncement()"><i class="ti ti-device-floppy"></i> บันทึกประกาศ</button>
         </div>
-        <div class="card">
+        <div class="card cfg-card" id="cfg-maint" data-q="ปิดปรับปรุง maintenance ปิดเว็บ">
           <h3><i class="ti ti-tool"></i> โหมดปิดปรับปรุง</h3>
           <div class="sub">เมื่อเปิด ผู้ใช้ทั่วไปจะเข้าเว็บไม่ได้และใช้ AI ไม่ได้ (แอดมิน/ผู้ควบคุมยังเข้าได้)</div>
           <div class="toggle-row"><div><b>เปิดโหมดปิดปรับปรุง</b><small>ปิดการใช้งานสำหรับผู้ใช้ทั่วไป</small></div>
@@ -2062,7 +2126,7 @@ td .empty::before,td.empty::before{display:none}
           </div>
           <button class="btn primary" onclick="saveMaintenance()"><i class="ti ti-device-floppy"></i> บันทึก</button>
         </div>
-        <div class="card">
+        <div class="card cfg-card" id="cfg-quota" data-q="โควตา ai จำกัด ข้อความ limit">
           <h3><i class="ti ti-gauge"></i> โควตาการใช้ AI</h3>
           <div class="sub">จำกัดจำนวนข้อความต่อคนต่อวัน — แอดมินและเจ้าของไม่ถูกจำกัด</div>
           <div class="grid2">
@@ -2073,13 +2137,13 @@ td .empty::before,td.empty::before{display:none}
           </div>
           <button class="btn primary" onclick="saveLimits()"><i class="ti ti-device-floppy"></i> บันทึกโควตา</button>
         </div>
-        <div class="card">
+        <div class="card cfg-card" id="cfg-feat" data-q="ฟีเจอร์ เปิด ปิด features แผนที่ 3 มิติ">
           <h3><i class="ti ti-toggle-left"></i> เปิด/ปิดฟีเจอร์</h3>
           <div class="sub">ปิดฟีเจอร์ชั่วคราวได้ทันทีโดยไม่ต้องแก้โค้ดหรือ deploy ใหม่</div>
           <div id="featureRows"></div>
           <button class="btn primary" onclick="saveFeatures()"><i class="ti ti-device-floppy"></i> บันทึกฟีเจอร์</button>
         </div>
-        <div class="card">
+        <div class="card cfg-card" id="cfg-line" data-q="line ไลน์ webhook บอท">
           <h3><img src="./img/line-logo.svg" alt="" width="18" height="18" style="vertical-align:-3px"> การเชื่อม LINE</h3>
           <div class="sub">บอท LINE ไม่ตอบ ดูที่นี่ก่อน — ตรวจทีละขั้นว่าติดตรงไหน และตั้ง Webhook ให้ได้ในกดเดียว</div>
           <div id="lineStat" class="sub">กำลังตรวจ…</div>
@@ -2088,17 +2152,31 @@ td .empty::before,td.empty::before{display:none}
             <button class="btn" onclick="loadLineStatus()"><i class="ti ti-refresh"></i> ตรวจอีกครั้ง</button>
           </div>
         </div>
-        <div class="card">
+        <div class="card cfg-card" id="cfg-linemenu" data-q="line ไลน์ เมนู rich menu">
           <h3><img src="./img/line-logo.svg" alt="" width="18" height="18" style="vertical-align:-3px"> เมนูในห้องแชต LINE</h3>
           <div class="sub">6 ปุ่มใต้ห้องแชต LINE ของ Cendon แต่ละปุ่มเปิดแอปในเบราว์เซอร์ของเครื่อง · กดตั้งครั้งเดียวใช้กับทุกคน (เปลี่ยนรูปเมื่อไรค่อยกดใหม่)</div>
           <img src="./img/line-richmenu.png" alt="ตัวอย่างเมนู LINE" loading="lazy" style="display:block;width:100%;max-width:560px;margin:4px 0 14px;border:1px solid var(--line);border-radius:12px">
           <div class="sub" id="lineMenuSt">กำลังตรวจสถานะ…</div>
           <button class="btn primary" id="lineMenuBtn" onclick="setLineMenu()"><i class="ti ti-upload"></i> ตั้งเมนูให้ทุกคน</button>
         </div>
-        <div class="card">
+        <div class="card cfg-card" id="cfg-seo" data-q="seo google ค้นหา sitemap robots search console">
+          <h3><i class="ti ti-brand-google"></i> การค้นหาบน Google</h3>
+          <div class="sub">หน้าที่ Google เห็น: หน้าแนะนำ หน้าช่วยเหลือ นโยบาย และหน้าร้าน/บริการ/หมวดช่างที่ผ่านการตรวจแล้ว (ไม่มีเบอร์ ที่อยู่ หรือพิกัด) · หน้าในแอปและลิงก์ส่วนตัวไม่ขึ้นผลค้นหา</div>
+          <div class="cfg-links">
+            <a href="/sitemap.xml" target="_blank" rel="noopener"><i class="ti ti-sitemap"></i> แผนผังหน้าหลัก</a>
+            <a href="/sitemaps/shops" target="_blank" rel="noopener"><i class="ti ti-building-store"></i> แผนผังหน้าร้าน</a>
+            <a href="/robots.txt" target="_blank" rel="noopener"><i class="ti ti-robot"></i> robots.txt</a>
+            <a href="https://search.google.com/search-console" target="_blank" rel="noopener"><i class="ti ti-external-link"></i> Search Console</a>
+          </div>
+          <div class="hint">ส่งแผนผังทั้งสองลิงก์ใน Search Console ครั้งเดียว Google จะกลับมาอ่านเอง</div>
+        </div>
+        <div class="card cfg-card" id="cfg-export" data-q="ส่งออก export json ดาวน์โหลด">
           <h3><i class="ti ti-download"></i> ส่งออกข้อมูล</h3>
           <div class="sub">ดาวน์โหลดผู้ใช้ รถ นิตยสาร ร้านค้า และบันทึกการทำงานทั้งหมดเป็นไฟล์ JSON</div>
           <button class="btn" onclick="doExport()" id="exportBtn"><i class="ti ti-file-download"></i> ส่งออกเป็น JSON</button>
+        </div>
+            <div class="empty" id="cfgNone" hidden>ไม่เจอการตั้งค่าที่ตรงกับคำค้น</div>
+          </div>
         </div>
       </section>
 
@@ -5383,8 +5461,62 @@ async function loadConfig(){
     if($("limAnon"))$("limAnon").value=l.anonDaily||15;
     featureState=c.features||{};
     if($("featureRows"))renderFeatures();
+    fillLaunch(c.launch||{},c.now);
   }catch(e){}
 }
+/* ═══ เปิดตัวแอป (นับถอยหลัง) — ตั้งได้เฉพาะเจ้าของระบบ (หลังบ้านตรวจซ้ำ) ═══
+   เวลาเก็บเป็นมิลลิวินาที · กรอกเป็นเวลาตามเครื่องของคนตั้ง (ในไทย = เวลาไทย) */
+let launchCfg={};
+const pad2=n=>String(n).padStart(2,"0");
+let launchDirty=false;
+document.addEventListener("input",e=>{if(e.target&&e.target.closest&&e.target.closest("#cfg-launch"))launchDirty=true});
+function fillLaunch(L,now){
+  launchCfg=L||{};const owner=me&&me.role==="owner";
+  /* โหลดค่าซ้ำระหว่างเจ้าของกำลังแก้ = ไม่ทับสิ่งที่พิมพ์ค้างไว้ */
+  if(launchDirty){launchState();return}
+  $("lcOn").checked=!!L.enabled;$("lcJoin").checked=L.join!==false;$("lcTitle").value=L.title||"";$("lcMsg").value=L.message||"";
+  const d=L.at?new Date(L.at):new Date(Date.now()+7*864e5);
+  $("lcDate").value=`${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;if(L.at)$("lcTime").value=`${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+  ["lcOn","lcJoin","lcTitle","lcMsg","lcDate","lcTime","lcSave"].forEach(k=>$(k).disabled=!owner);$("lcLock").hidden=owner;
+  launchState();
+}
+const launchAt=()=>{const v=$("lcDate").value,t=$("lcTime").value||"00:00";return v?new Date(`${v}T${t}`).getTime():NaN};
+function launchState(){
+  const el=$("lcState"),on=$("lcOn").checked,at=launchAt(),left=at-Date.now();
+  const when=Number.isFinite(at)?new Date(at).toLocaleString("th-TH",{weekday:"long",day:"numeric",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"})+" น.":"";
+  const dur=ms=>{const m=Math.floor(ms/6e4),d=Math.floor(m/1440),h=Math.floor(m%1440/60);return d?`${d} วัน ${h} ชม.`:h?`${h} ชม. ${m%60} นาที`:`${m%60} นาที`};
+  const saved=launchCfg.enabled===on&&(!on||launchCfg.at===at);
+  el.className="lc-state"+(on&&left>0?" live":on?" done":"");
+  el.innerHTML=!on?`<i class="ti ti-circle-dashed"></i><span>ปิดอยู่ — แอปเปิดให้ทุกคนใช้ตามปกติ</span>`
+    :!Number.isFinite(at)?`<i class="ti ti-calendar-question"></i><span>เลือกวันเปิดตัวก่อน</span>`
+    :left>0?`<i class="ti ti-rocket"></i><span><b>${saved?"นับถอยหลังอยู่":"จะนับถอยหลัง"}</b> · เปิดตัว${when} · อีก ${dur(left)}</span>`
+    :`<i class="ti ti-circle-check"></i><span>${saved?"ถึงเวลาเปิดตัวแล้ว — แอปเปิดให้ทุกคนแล้ว":"เวลานี้ผ่านไปแล้ว — เลือกเวลาในอนาคต"}</span>`;
+}
+["lcOn","lcDate","lcTime"].forEach(k=>document.addEventListener("input",e=>{if(e.target&&e.target.id===k)launchState()}));
+setInterval(()=>{if($("v-config")&&$("v-config").classList.contains("on"))launchState()},30000);
+async function saveLaunch(){
+  const on=$("lcOn").checked,at=launchAt();
+  if(on&&!(at>Date.now()))return toast("เลือกวันและเวลาเปิดตัวที่ยังมาไม่ถึง","ti-alert-triangle");
+  const body={launch:{enabled:on,at:Number.isFinite(at)?at:0,title:$("lcTitle").value.trim(),message:$("lcMsg").value.trim(),join:$("lcJoin").checked}};
+  const b=$("lcSave");b.disabled=true;
+  try{await api("/api/admin/config",{method:"POST",body});launchCfg=body.launch;launchDirty=false;launchState();
+    toast(on?"ตั้งเวลาเปิดตัวแล้ว — ผู้ใช้เห็นหน้านับถอยหลังทันที":"ปิดโหมดนับถอยหลังแล้ว — แอปเปิดตามปกติ","ti-rocket");loadAudit()}
+  catch(e){toast(e.message,"ti-alert-triangle")}
+  b.disabled=false;
+}
+/* ค้นหาการตั้งค่า + สารบัญบอกว่ากำลังดูหมวดไหน */
+(function cfgNav(){
+  const q=$("cfgQ");if(!q)return;
+  /* ค้นจากคำค้นของหมวด + หัวข้อ + คำอธิบาย + ชื่อช่อง (ไม่ค้นข้อความสถานะที่เปลี่ยนไปมา) */
+  const words=c=>[c.dataset.q,...[...c.querySelectorAll("h3,.sub,label,.toggle-row b,.feat-row b")].map(x=>x.textContent)].join(" ").toLowerCase();
+  q.addEventListener("input",()=>{const w=q.value.trim().toLowerCase();let n=0;
+    document.querySelectorAll(".cfg-card").forEach(c=>{const hit=!w||words(c).includes(w);c.hidden=!hit;if(hit)n++;
+      const a=document.querySelector(`[data-cfg="${c.id}"]`);if(a)a.hidden=!hit});
+    $("cfgNone").hidden=!!n});
+  document.querySelectorAll("#cfgNav a").forEach(a=>a.onclick=e=>{e.preventDefault();const c=$(a.dataset.cfg);if(c)c.scrollIntoView({behavior:"smooth",block:"start"})});
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)document.querySelectorAll("#cfgNav a").forEach(a=>a.classList.toggle("on",a.dataset.cfg===e.target.id))}),{rootMargin:"-20% 0px -70% 0px"});
+  document.querySelectorAll(".cfg-card").forEach(c=>io.observe(c));
+})();
 /* การเชื่อม LINE — หลังบ้านตรวจค่าลับ token บัญชี OA และ Webhook ให้ แล้วบอกเป็นข้อ ๆ ว่าติดตรงไหน */
 const lnTime=ms=>ms?new Date(ms).toLocaleString("th-TH",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"";
 function lineRow(ok,label,val){return `<div style="display:flex;gap:10px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--line2)">
@@ -5571,6 +5703,7 @@ const FEATURES=[
   {k:"shop",     n:"ร้านค้า",            d:"หน้าสินค้าอะไหล่และของตกแต่ง"},
   {k:"brief",    n:"Today's Brief",     d:"สรุปประจำวันบนหน้าแรก"},
   {k:"cockpit",  n:"ห้องนักบิน 3 มิติ",  d:"ปิดแล้วหน้าแรกจะเป็นแดชบอร์ดล้วน"},
+  {k:"map3d",    n:"แผนที่ช่างกำลังมา 3 มิติ", d:"ปิดแล้วลูกค้าเห็นแผนที่ 2 มิติแบบเดิม (เช่น เครื่องลูกค้าบ่นว่าช้า)"},
 ];
 let featureState={};
 function renderFeatures(){

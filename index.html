@@ -6,6 +6,7 @@
    กันค้าง: ถ้ากล่องข้อความไม่ขึ้นใน 4 วิ เปิดหน้าตามปกติ */
 if(/^\/messages(\/|$)/.test(location.pathname)){document.documentElement.classList.add("ib-boot");setTimeout(function(){document.documentElement.classList.remove("ib-boot")},4000)}</script>
 <style>html.ib-boot #top,html.ib-boot .view,html.ib-boot #ibFab{visibility:hidden!important}</style>
+<script src="/launch-gate.js?v=1"></script>
 <script src="/auth-gate.js?v=2"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
@@ -25,7 +26,7 @@ if(/^\/messages(\/|$)/.test(location.pathname)){document.documentElement.classLi
 (function(){try{if(/^\/(work|studio)(\/|$)/.test(location.pathname)){var p=JSON.parse(localStorage.getItem("spire_partner")||"null");if(p&&p.s==="shop")document.documentElement.dataset.boot="tech"}}catch(e){}})();</script>
 <script>(function(){try{var A=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt"],l=null;try{l=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
 if(A.indexOf(l)<0){l="en";var n=navigator.languages||[navigator.language||"en"];for(var i=0;i<n.length;i++){var b=String(n[i]).toLowerCase().split("-")[0];if(A.indexOf(b)>=0){l=b;break}}}
-if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=8"><\/script>')}catch(e){}})();</script>
+if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=9"><\/script>')}catch(e){}})();</script>
 <title>Cendon</title>
 <meta name="description" content="ถามอาการรถ ส่งรูปหรือเสียงให้ AI ช่วยดู เช็กใบเสนอราคา และหาช่างที่ผ่านการตรวจใกล้คุณ">
 <!-- การ์ดตอนแชร์ลิงก์ (LINE / Facebook / X) — รูปต้องเป็นที่อยู่เต็ม -->
@@ -222,12 +223,12 @@ window.spireThemeSync=sync;
 </script>
 
 <!-- ฟอนต์และไอคอนจากเว็บเราเอง โหลดก่อนวาดเฟรมแรก: เปลี่ยนหน้าแล้วไอคอนไม่หายแวบ ตัวหนังสือ/เมนูไม่ขยับ (เดิมโหลดจาก CDN แบบไม่รอ) -->
-<link rel="preload" href="/icons/ti.woff2?v=9723453e" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/icons/ti.woff2?v=87caf03b" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/kanit-400-thai.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/kanit-500-thai.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/kanit-600-thai.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/fonts/kanit.css?v=1">
-<link rel="stylesheet" href="/icons/ti.css?v=659da0e4">
+<link rel="stylesheet" href="/icons/ti.css?v=2429cae5">
 <link rel="stylesheet" href="/motion.css?v=1">
 <script>/* Motion v2: ระหว่างหน้ากำลังเปิดไม่เล่นทรานซิชัน (สีไม่ค่อย ๆ เปลี่ยนให้เห็นตอนสคริปต์ตั้งค่าเริ่มต้น) — ปลดหลังหน้าพร้อม */(function(){var e=document.documentElement;e.classList.add("m-boot");var off=function(){setTimeout(function(){requestAnimationFrame(function(){e.classList.remove("m-boot")})},250)};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",off);else off()})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -272,6 +273,9 @@ html[data-theme="dark"] .e3{box-shadow:inset 0 1px 0 rgba(255,255,255,var(--glos
 .sq::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.32),rgba(255,255,255,.03) 50%,rgba(0,0,0,.16))}
 .sq>*{position:relative;z-index:1}
 .av.sq,.thumb.sq{--c2:color-mix(in srgb,var(--c1) 62%,#000)}
+/* รูปโปรไฟล์ (ช่าง ร้าน คนในแชต) ไม่มีแสงฟุ้งสีใต้รูป — เจ้าของแอปขอเอาออกทุกที่ · เหลือแค่ขอบเงาบาง ๆ ให้รูปไม่จมพื้น */
+.av.sq,.thumb.sq{box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 0 0 1px rgba(0,0,0,.06)}
+html[data-theme="dark"] .av.sq,html[data-theme="dark"] .thumb.sq{box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 0 0 1px rgba(255,255,255,.06)}
 .wf{position:absolute;right:-14px;bottom:-14px;height:130%;width:auto;pointer-events:none;color:var(--accent);opacity:var(--wireframe-opacity,.15);
   -webkit-mask-image:linear-gradient(95deg,transparent 0%,rgba(0,0,0,.28) 32%,#000 70%);mask-image:linear-gradient(95deg,transparent 0%,rgba(0,0,0,.28) 32%,#000 70%)}
 
@@ -672,6 +676,52 @@ html[data-theme="dark"] .ch-rec #chRecOk{box-shadow:inset 0 0 0 1px rgba(255,255
 .hero small{font-size:11px;letter-spacing:.16em;opacity:.7;display:block}
 .hero h2{font-family:var(--kd);font-size:26px;font-weight:600;margin:6px 0 4px}
 .hero p{font-size:13px;opacity:.8}
+/* ═══ หน้าแรกของใบสมัครช่าง (หรู): หัวหมึกเข้ม + โลโก้ 3 มิติ (fx3d.js) · ทองส้ม · ตัวหนังสือไล่สีแชมเปญ ═══ */
+.jx-hero{position:relative;overflow:hidden;isolation:isolate;margin:-4px -16px 16px;min-height:320px;padding:24px 22px 26px;display:flex;align-items:flex-end;color:#fff;
+  background:radial-gradient(110% 70% at 82% 18%,rgba(232,148,60,.34),transparent 62%),radial-gradient(90% 60% at 0% 100%,rgba(232,148,60,.14),transparent 70%),linear-gradient(160deg,#17181e,#07080b 72%)}
+.jx-hero::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(1px 1px at 12% 22%,rgba(255,255,255,.7),transparent),radial-gradient(1px 1px at 34% 12%,rgba(255,255,255,.5),transparent),radial-gradient(1.5px 1.5px at 58% 30%,rgba(255,220,180,.6),transparent),radial-gradient(1px 1px at 22% 48%,rgba(255,255,255,.35),transparent),radial-gradient(1px 1px at 46% 8%,rgba(255,255,255,.45),transparent)}
+.jx-gl{position:absolute;right:-8px;top:0;width:min(66%,320px);height:250px;z-index:0}
+.jx-mark{position:absolute;right:48px;top:40px;width:104px;height:124px;color:#E8943C;filter:drop-shadow(0 18px 36px rgba(232,148,60,.45));z-index:0}
+.jx-hero.fx-on .jx-mark{display:none}
+.jx-tx{position:relative;z-index:1;max-width:540px}
+.jx-eye{display:block;font:600 11px var(--kd);letter-spacing:.24em;color:#f6c48d}
+.jx-pre{display:inline-flex;align-items:center;gap:8px;margin-top:10px;padding:6px 12px;border-radius:999px;background:rgba(232,148,60,.16);border:1px solid rgba(232,148,60,.45);font-size:12.5px;color:#ffd9b0}
+.jx-pre i{width:7px;height:7px;border-radius:50%;background:#E8943C;animation:lvPing 1.6s infinite}
+.jx-hero h2{font-family:var(--kd);font-weight:600;font-size:clamp(28px,7.4vw,40px);line-height:1.14;margin:12px 0 8px;background:linear-gradient(180deg,#fff 35%,#f3d8bb);-webkit-background-clip:text;background-clip:text;color:transparent}
+.jx-hero h2 em{display:block;font-style:normal;background:linear-gradient(90deg,#f6c48d,#E8943C 70%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.jx-hero p{font-size:13.5px;color:rgba(255,255,255,.72);line-height:1.55}
+.jx-ben{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:6px}
+.jx-ben div{padding:16px 8px 14px;border-radius:18px;background:var(--surface);text-align:center;box-shadow:0 0 0 1px var(--line-2)}
+.jx-ben span{display:grid;place-items:center;width:44px;height:44px;margin:0 auto 10px;border-radius:50%;color:#E8943C;font-size:21px;background:radial-gradient(circle at 30% 25%,rgba(246,196,141,.38),rgba(232,148,60,.08));box-shadow:inset 0 0 0 1px rgba(232,148,60,.45)}
+.jx-ben b{display:block;font-family:var(--kd);font-size:14px;font-weight:600;color:var(--ink)}
+.jx-ben small{display:block;margin-top:2px;font-size:11.5px;color:var(--muted);line-height:1.35}
+.jx-get{display:flex;flex-direction:column;border-radius:20px;background:var(--surface);box-shadow:0 0 0 1px var(--line-2);overflow:hidden;margin-bottom:6px}
+.jx-get>div{display:flex;gap:14px;align-items:center;padding:14px 16px}
+.jx-get>div+div{border-top:1px solid var(--line-2)}
+.jx-get>div>i{flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-size:19px;color:#f6c48d;background:linear-gradient(135deg,#2a2b33,#0e0f13)}
+.jx-get b{display:block;font-size:14px;font-weight:600}.jx-get small{display:block;font-size:12px;color:var(--muted)}
+.bs.jx .h4{letter-spacing:.14em}
+/* ปุ่มหลักของแอปเป็นหมึก — หน้านี้ใช้ทองส้มให้ต่างจากหน้าอื่น (ระบุเจาะจงกว่ากฎหมึกที่มี !important) */
+.bs .btn.p.jx-go{gap:10px;background:linear-gradient(135deg,#f0a457,#E8943C 45%,#c96d1f)!important;color:#1a0f05!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 14px 30px -14px rgba(232,148,60,.8)}
+/* โหมดจองสิทธิ์ระหว่างนับถอยหลัง: เห็นแค่ใบสมัคร (พื้นหลังหมึก ไม่เห็นหน้าแอปที่ยังไม่เปิด) */
+html.prejoin body{background:#06070b}
+html.prejoin body>:not(#bs):not(#toast):not(script):not(style){visibility:hidden}
+html.prejoin #bs .bg{background:#06070b}
+/* ═══ การ์ดชวนเป็นช่างพาร์ทเนอร์บนหน้าแรก ═══ */
+.lx-partner{max-width:880px;margin:18px auto 0}
+.lp-card{position:relative;overflow:hidden;isolation:isolate;display:flex;align-items:center;gap:14px;width:100%;min-height:118px;padding:18px 18px 18px 20px;border:0;border-radius:22px;text-align:left;color:#fff;cursor:pointer;
+  background:radial-gradient(90% 120% at 100% 0%,rgba(232,148,60,.32),transparent 60%),linear-gradient(150deg,#1b1c22,#08090c 75%);box-shadow:0 0 0 1px rgba(232,148,60,.22);transition:transform .3s cubic-bezier(.32,.72,0,1)}
+.lp-card:active{transform:scale(.985)}
+.lp-gl{position:absolute;right:-18px;top:50%;width:170px;height:170px;transform:translateY(-50%);z-index:0;pointer-events:none}
+.lp-mark{position:absolute;right:28px;top:50%;width:54px;height:64px;transform:translateY(-50%);color:#E8943C;opacity:.95;filter:drop-shadow(0 10px 22px rgba(232,148,60,.5));z-index:0}
+.lx-partner.fx-on .lp-mark,.lp-card.fx-on .lp-mark{display:none}
+.lp-tx{position:relative;z-index:1;flex:1;min-width:0;padding-right:96px}
+.lp-tx small{display:block;font:600 10.5px var(--kd);letter-spacing:.22em;color:#f6c48d}
+.lp-tx b{display:block;margin-top:4px;font-family:var(--kd);font-size:17.5px;font-weight:600;line-height:1.25}
+.lp-tx em{display:block;margin-top:3px;font-style:normal;font-size:12.5px;color:rgba(255,255,255,.7)}
+.lp-cta{position:absolute;left:20px;bottom:14px;z-index:1;display:none}
+@media(min-width:640px){.lp-tx{padding-right:0}.lp-cta{position:relative;left:auto;bottom:auto;display:inline-flex;align-items:center;gap:6px;flex:none;margin-right:150px;padding:10px 16px;border-radius:999px;background:linear-gradient(135deg,#f0a457,#E8943C 45%,#c96d1f);color:#1a0f05;font-weight:600;font-size:13.5px}
+  .lp-gl{right:0}.lp-mark{right:52px}}
 .ben{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
 .ben div{background:var(--surface);border-radius:16px;padding:14px 8px;text-align:center;font-size:12px;color:var(--muted)}
 .ben .sq{width:40px;height:40px;font-size:20px;margin:0 auto 8px;border-radius:13px}
@@ -1248,7 +1298,7 @@ html[data-theme="dark"] .stu-grp.hot .stu-gh{color:#f87171}
 .sf-live{left:auto;right:16px}
 .sf-mine{left:auto;right:16px;bottom:56px}.sf-live i{width:7px;height:7px;border-radius:50%;background:#3be27a;box-shadow:0 0 8px #3be27a}
 .sf-id{display:flex;align-items:flex-end;gap:12px;padding:0 16px;margin-top:-34px;position:relative;z-index:2}
-.sf-av{width:76px;height:76px;flex:none;border-radius:22px;display:grid;place-items:center;font-size:30px;font-weight:700;color:#fff;background:var(--c1);border:4px solid var(--surface);box-shadow:0 10px 24px rgba(0,0,0,.25)}
+.sf-av{width:76px;height:76px;flex:none;border-radius:22px;display:grid;place-items:center;font-size:30px;font-weight:700;color:#fff;background:var(--c1);border:4px solid var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .sf-nm{min-width:0;padding-top:40px}
 .sf-nm h2{margin:0;font-family:var(--kd);font-size:21px;line-height:1.25;display:flex;align-items:center;gap:6px}
 .sf-nm p{margin:3px 0 0;font-size:13px;color:var(--muted)}
@@ -1523,7 +1573,7 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
 .lx-live{position:absolute;right:10px;top:10px;display:inline-flex;gap:6px;align-items:center;padding:5px 10px;border-radius:999px;font:600 11.5px var(--kb);font-style:normal;color:#fff;background:rgba(9,9,11,.55);backdrop-filter:blur(8px)}
 .lx-live i{width:6px;height:6px;border-radius:50%;background:var(--co)}
 .lx-pcb{position:relative;z-index:1;display:flex;gap:12px;padding:0 16px 16px}
-.lx-pav{flex:none;width:52px;height:52px;margin-top:-20px;border-radius:50%;display:grid;place-items:center;font:700 20px var(--kd);color:var(--ink);background:var(--surface-2) center/cover;border:3px solid var(--surface);box-shadow:0 4px 10px rgba(0,0,0,.12)}
+.lx-pav{flex:none;width:52px;height:52px;margin-top:-20px;border-radius:50%;display:grid;place-items:center;font:700 20px var(--kd);color:var(--ink);background:var(--surface-2) center/cover;border:3px solid var(--surface);box-shadow:none}
 .lx-pct{min-width:0;padding-top:10px;display:flex;flex-direction:column;gap:4px}
 .lx-pct b{font:600 15.5px/1.3 var(--kd);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lx-pct b .ti{color:var(--muted);font-size:.85em}
 .lx-pct small{font-size:12.5px;color:var(--muted)}
@@ -1951,7 +2001,7 @@ button.lx-car[aria-expanded="true"]{border-color:var(--ink)}
 .so-av{position:relative;flex:none;display:grid;place-items:center;width:84px;height:84px;border-radius:24px;font:700 32px/1 var(--kd);color:var(--ink);background:var(--surface) center/cover no-repeat;box-shadow:inset 0 0 0 1px var(--line)}
 .so-av.img{cursor:zoom-in;box-shadow:none}
 .has-cover .so-id{align-items:flex-start}.has-cover .so-nm{padding-top:12px}.has-cover .so-share{align-self:flex-start;margin-top:10px}
-.has-cover .so-av{margin-top:-42px;box-shadow:0 0 0 4px var(--bg),0 12px 26px -16px rgba(0,0,0,.5)}
+.has-cover .so-av{margin-top:-42px;box-shadow:0 0 0 4px var(--bg)}
 .has-cover .so-av:not(.img){box-shadow:inset 0 0 0 1px var(--line),0 0 0 4px var(--bg)}
 .so-nm{flex:1;min-width:0;padding-bottom:2px}
 .so-nm h1{margin:0;font:700 clamp(23px,4vw,30px)/1.22 var(--kd);letter-spacing:-.015em;overflow-wrap:anywhere}
@@ -2552,6 +2602,8 @@ a.mtab{text-decoration:none}
   <div class="lx-quick" id="hQuick"></div>
   <!-- หมวดช่าง: แถวไอคอน 3D (ใส่รูปที่ img/cat/<หมวด>.png ได้เลย ไม่มีรูปใช้ไอคอนสีแทน) · กดแล้วเข้าหน้าหมวด -->
   <nav class="lx-rail" id="hRail" aria-label="หมวดช่าง"></nav>
+  <!-- ชวนเป็นช่างพาร์ทเนอร์ (มือถือหาเจอง่าย ไม่ต้องเข้าเมนูบัญชี) · ช่างแล้ว = ทางลัดเข้า Studio · สมัครแล้ว = ดูสถานะ -->
+  <div class="lx-partner" id="hPartner"></div>
   <section class="lx-sec">
     <div class="lx-sh"><h2>บริการจากช่าง<span id="sugN"></span></h2><button class="lx-link lx-maplink" id="sugMap" type="button" aria-label="แผนที่ช่าง"><i class="ti ti-map-2"></i><span data-t="แผนที่|Map">แผนที่</span></button><button class="lx-link" id="sugAll" type="button">ดูร้านทั้งหมด <i class="ti ti-arrow-right"></i></button></div>
     <div class="lx-cards" id="sugList"></div>
@@ -3232,7 +3284,7 @@ function paintSheet(o){
   $("bsB").innerHTML=(o.body||"")+'<p class="err" id="err" role="alert"></p>';
   $("bsF").innerHTML=o.foot||"";
   $("bsBack").hidden=!SH.stack.length;
-  bs.classList.toggle("full",!!o.full);bs.classList.toggle("store",!!o.store);bs.classList.toggle("inbox",!!o.inbox);bs.classList.remove("so-up");
+  bs.classList.toggle("full",!!o.full);bs.classList.toggle("store",!!o.store);bs.classList.toggle("inbox",!!o.inbox);bs.classList.remove("so-up");bs.classList.toggle("jx",o.cls==="jx");
   $("bsB").scrollTop=0;
   if(o.mount)o.mount($("bsB"),$("bsF"),o);
 }
@@ -3281,6 +3333,8 @@ function closeSheet(fromNav){
   const l=SH.layers[0];SH.layers=[];SH.cur=null;
   const cb=SH.onClose;SH.onClose=null;if(cb)cb();
   if(fromNav!==true&&l)Nav.drop(l);
+  /* จองสิทธิ์ช่างจากหน้านับถอยหลัง: ปิดใบสมัคร = กลับหน้านับถอยหลัง (แอปยังไม่เปิด) */
+  if(document.documentElement.classList.contains("prejoin"))location.replace("/launch");
 }
 $("bsX").onclick=()=>closeSheet();
 /* คลิกพื้นมืด: ปิดชั้นบนสุดก่อน — ถ้าห้องแชตเปิดทับอยู่ (คอม: แผงแชตด้านขวา) ให้ปิดแชต ไม่ใช่ปิดแผ่นข้างใต้แล้วทิ้งแชตค้าง */
@@ -3873,6 +3927,26 @@ function photoPage(){
       });
     }});
 }
+/* three.js เล็ก ๆ ในแอป (fx3d.js) — โหลดเมื่อจะใช้ · เครื่องไม่รองรับ/ประหยัดเน็ต → เหลือโลโก้นิ่ง (SVG ข้างใต้) */
+function fx3d(cv,o){
+  if(!cv||(navigator.connection&&navigator.connection.saveData))return;
+  import("/fx3d.js?v=1").then(M=>{if(!cv.isConnected)return;M.emblem(cv,o);cv.parentElement.classList.add("fx-on")}).catch(()=>{});
+}
+/* การ์ดพาร์ทเนอร์บนหน้าแรก — สถานะจาก spire_partner (refreshMe เขียนไว้) จึงวาดได้ทันทีไม่ต้องรอหลังบ้าน */
+function drawPartner(){
+  const box=$("hPartner");if(!box)return;
+  const p=ls.get("spire_partner",null),mine=p&&U&&p.uid===U.uid?p.s:"none";
+  const k=mine==="shop"?"shop":mine&&mine!=="none"&&mine!=="withdrawn"?"app":"join";
+  if(box.dataset.k===k&&box.childNodes.length)return;box.dataset.k=k;
+  const st={pending:T("รอทีมงานตรวจ","Waiting for review"),approved:T("อนุมัติแล้ว","Approved"),rejected:T("ทีมงานขอให้แก้ไข","Changes requested"),declined:T("ยังไม่ผ่านการพิจารณา","Not approved")}[mine]||T("ดูความคืบหน้า","See progress");
+  const [eye,b,em,cta]=k==="shop"?["STUDIO",T("หน้าร้านของฉัน","My shop"),T("งาน แชต บริการ และรีวิว ในที่เดียว","Jobs, chats, services and reviews in one place"),T("เปิด Studio","Open Studio")]
+    :k==="app"?["CENDON PARTNER",T("ใบสมัครช่างของคุณ","Your mechanic application"),st,T("ดูสถานะ","View status")]
+    :["CENDON PARTNER",T("เป็นช่างพาร์ทเนอร์กับ Cendon","Become a Cendon partner mechanic"),T("รับงานใกล้ร้าน · ไม่มีค่าสมัคร · ตั้งราคาเอง","Jobs near you · no sign-up fee · set your own prices"),T("สมัครเลย","Apply now")];
+  box.innerHTML=`<button type="button" class="lp-card" id="lpGo"><canvas class="lp-gl" aria-hidden="true"></canvas><svg class="lp-mark" viewBox="-6.0 -6.0 94.8 112.0" aria-hidden="true"><path fill="currentColor" d="${LOGO}"/></svg>
+    <span class="lp-tx"><small>${eye}</small><b>${b}</b><em>${em}</em></span><span class="lp-cta">${cta}<i class="ti ti-arrow-right"></i></span></button>`;
+  $("lpGo").onclick=()=>{if(!U)return needLogin();k==="shop"?openStudio():openJoin()};
+  fx3d(box.querySelector(".lp-gl"),{particles:420,dist:12.5});
+}
 /* การ์ดลัด 4 ช่อง · ช่องแรก "เรียกช่าง" รวมด่วน/ไม่ด่วนไว้ในการ์ดเดียว (ไม่เพิ่มการ์ด)
    ด่วน = โหมดฉุกเฉิน (3 ร้านใกล้สุด / ประกาศงานด่วน) · ไม่ด่วน = ประกาศหาช่าง ให้ช่างรอบตัวเสนอราคา */
 function drawQuick(){
@@ -4420,7 +4494,7 @@ function railNav(){
   railNav.upd();
 }
 function drawHome(){
-  drawMyCar();if(!$("hQuick").childNodes.length)drawQuick();
+  drawMyCar();if(!$("hQuick").childNodes.length)drawQuick();drawPartner();
   /* งานที่กำลังดำเนินอยู่ ขึ้นบนสุดของหน้าแรก */
   const act=$("active");if(act&&act.parentNode&&!act.parentNode.classList.contains("lx-top")){const w=document.createElement("div");w.className="lx-top";$("myCar").after(w);w.appendChild(act)}
   drawJobsBtn();
@@ -4666,7 +4740,7 @@ async function openTrip(token){
       <p><span>รถ</span><b>${esc(d.car)}</b></p><p><span>นัด</span><b>${esc(d.appointment||"")}</b></p><p><span>ซ่อมที่</span><b>${d.mode==="mobile"?"ช่างไปหา":"ที่อู่"} · ${esc(d.area||"")}</b></p></div>
     <p class="note"><i class="ti ti-shield-heart"></i>${(x=>T(`เจ้าของใบงานแชร์ให้คุณเพื่อความปลอดภัย · ไม่มีที่อยู่หรือเบอร์โทร · ลิงก์ใช้ได้ถึง ${x} · ถ้ากังวล ติดต่อเจ้าของใบงานโดยตรง หรือโทร 191`,`Shared with you for safety · no address or phone number · link valid until ${x} · if you're worried, contact the job owner directly or call 191`))(new Date(d.expiresAt).toLocaleString(LOC,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}))}</p>`,
     foot:'<a class="btn s w" href="tel:191"><i class="ti ti-phone-call"></i> โทร 191 เหตุด่วนเหตุร้าย</a>',
-    mount(b){if(LIVE_STOP){LIVE_STOP();LIVE_STOP=null}const lb=b.querySelector("#tLive");if(lb){let first=d;LIVE_STOP=liveMap(lb,{dest:null,every:6000,poll:async()=>{const x=first||(await api("/api/tech/share/"+encodeURIComponent(token))).trip;first=null;if(x.status!==d.status)setTimeout(()=>openTrip(token),50);return {status:x.status,live:x.live,km:x.live&&x.live.km,etaMin:x.live&&x.live.etaMin}}})}}});
+    mount(b){if(LIVE_STOP){LIVE_STOP();LIVE_STOP=null}const lb=b.querySelector("#tLive");if(lb){let first=d;LIVE_STOP=liveMap(lb,{dest:null,every:4000,poll:async()=>{const x=first||(await api("/api/tech/share/"+encodeURIComponent(token))).trip;first=null;if(x.status!==d.status)setTimeout(()=>openTrip(token),50);return {status:x.status,live:x.live,km:x.live&&x.live.km,etaMin:x.live&&x.live.etaMin}}})}}});
   /* อัปเดตสถานะเองทุก 30 วินาทีระหว่างเปิดอยู่ */
   /* ระหว่างช่างกำลังมา แผนที่ดึงเองทุก 6 วิ และวาดใหม่ทั้งหน้าเมื่อสถานะเปลี่ยน — ไม่ต้องวาดทับทุก 30 วิ */
   clearTimeout(openTrip.t);if(d.status!=="enroute")openTrip.t=setTimeout(()=>{if($("bs").classList.contains("on")&&$("bsT").textContent==="ใบงานที่ถูกแชร์ให้คุณ")openTrip(token)},30000);
@@ -5584,8 +5658,8 @@ $("bJobs").onclick=()=>jobs();
 const FLOW=[["requested","ขอราคา","ti-send"],["quoted","ได้ราคา","ti-receipt"],["accepted","นัดแล้ว","ti-calendar-check"],["working","ซ่อม","ti-tool"],["completed","เสร็จ","ti-circle-check"]];
 const RANK={requested:0,quoted:1,accepted:2,enroute:2,working:3,done:3,completed:4,disputed:3,cancelled:-1};
 /* ═══ ช่างกำลังมา (แผนที่แบบ Grab) ═══
-   ฝั่งช่าง: กด "กำลังไป" → แชร์ตำแหน่งทุก ~7 วินาที เฉพาะใบงานที่อยู่ในสถานะนี้ · หยุดเองเมื่อเริ่มซ่อม/ยกเลิก · กดหยุดเองได้
-   ฝั่งลูกค้า: เห็นช่างวิ่งบนแผนที่ + เวลาถึงโดยประมาณ (จากระยะทาง ไม่ใช่เส้นทางจริง)
+   ฝั่งช่าง: กด "กำลังไป" → แชร์ตำแหน่งทุก ~4 วินาที เฉพาะใบงานที่อยู่ในสถานะนี้ · หยุดเองเมื่อเริ่มซ่อม/ยกเลิก · กดหยุดเองได้
+   ฝั่งลูกค้า: เห็นช่างวิ่งบนแผนที่ 3 มิติ (ขอทุก ~3 วินาที รถไหลต่อเนื่องระหว่างจุด) + เวลาถึงโดยประมาณ (จากระยะทาง ไม่ใช่เส้นทางจริง)
    เซิร์ฟเวอร์เก็บแค่จุดล่าสุดจุดเดียว ไม่เก็บเส้นทาง และลบทิ้งเมื่อออกจากสถานะนี้ */
 const LiveShare={id:null,watch:null,last:0,lock:null,fix:null,err:"",
   sync(){
@@ -5604,7 +5678,7 @@ const LiveShare={id:null,watch:null,last:0,lock:null,fix:null,err:"",
   },
   async push(p,force){
     const c=p.coords;this.fix={lat:c.latitude,lng:c.longitude,acc:c.accuracy,heading:c.heading,speed:c.speed,at:Date.now()};this.err="";
-    if(!force&&Date.now()-this.last<7000){this.paint();return}
+    if(!force&&Date.now()-this.last<4000){this.paint();return}
     this.last=Date.now();const id=this.id;if(!id)return;
     try{await api(`/api/tech/jobs/${id}/live`,{body:{lat:c.latitude,lng:c.longitude,acc:c.accuracy,heading:c.heading,speed:c.speed}});this.sent=Date.now()}
     catch(e){if(e.status===409||e.status===404||e.status===403){this.stop();return}}
@@ -5634,10 +5708,13 @@ const etaOf=(a,b)=>{if(!a||!b)return {};const R=6371,r=x=>x*Math.PI/180,dl=r(b.l
 const destOf=a=>{const m=String(a||"").match(/[?&]q=(-?\d{1,3}(?:\.\d+)?),\s*(-?\d{1,3}(?:\.\d+)?)/);return m?{lat:+m[1],lng:+m[2]}:null};
 const carPin=h=>window.L.divIcon({className:"lv-car",iconSize:[46,46],iconAnchor:[23,23],html:`<span class="lv-ring"></span><span class="lv-dot" style="--r:${Number.isFinite(h)?h:0}deg"><i class="ti ti-car"></i></span>`});
 const homePin=()=>window.L.divIcon({className:"lv-home",iconSize:[34,42],iconAnchor:[17,40],html:'<i class="ti ti-map-pin-filled"></i>'});
-/* วาดแผนที่ในใบงาน/ลิงก์แชร์ · poll = ฟังก์ชันขอตำแหน่งล่าสุด · คืนตัวหยุด */
+/* วาดแผนที่ในใบงาน/ลิงก์แชร์ · poll = ฟังก์ชันขอตำแหน่งล่าสุด · คืนตัวหยุด
+   ลองแผนที่ 3 มิติก่อน (live3d.js: ตึก 3 มิติ รถช่าง ลำแสงจุดหมาย) · เครื่องไม่รองรับ/โหลดไม่ขึ้น/ประหยัดเน็ต → แผนที่ 2 มิติเดิม */
+/* ทีมงานปิดแผนที่ 3 มิติทั้งระบบได้ (ตั้งค่าทั้งหมด → ฟีเจอร์) · ค่าจำจาก launch-gate.js */
+const want3d=()=>!ls.get("spire_map2d",false)&&!(navigator.connection&&navigator.connection.saveData)&&!(window.CendonLaunch&&((CendonLaunch.cfg()||{}).features||{}).map3d===false);
 function liveMap(box,{dest,poll,every,mine}){
-  const st={m:null,car:null,anim:0,first:true,t:0,alive:true};
-  const make=()=>{
+  const st={m:null,d3:null,making:false,car:null,anim:0,first:true,t:0,alive:true,last:null};
+  const flat=()=>{
     if(!window.L||!box.isConnected)return false;
     const at=dest||{lat:13.7563,lng:100.5018};
     st.m=oneWorld(window.L.map(box.querySelector(".lv-map"),{zoomControl:false,attributionControl:false})).setView([at.lat,at.lng],14);
@@ -5645,7 +5722,18 @@ function liveMap(box,{dest,poll,every,mine}){
     if(dest)window.L.marker([dest.lat,dest.lng],{icon:homePin(),interactive:false}).addTo(st.m);
     setTimeout(()=>st.m&&st.m.invalidateSize(),300);return true;
   };
-  /* เลื่อนหมุดช่างแบบนุ่ม ๆ ไปจุดใหม่ ไม่กระโดด */
+  const make=async()=>{
+    if(st.making||!box.isConnected)return;st.making=true;
+    if(want3d())try{
+      const M=await import("/live3d.js?v=1");
+      const d3=await M.mount(box.querySelector(".lv-map"),{dest,dark:document.documentElement.getAttribute("data-theme")==="dark",
+        L:{recenter:T("กลับมาที่ช่าง","Recenter"),expand:T("ขยายเต็มจอ","Full screen"),shrink:T("ย่อแผนที่","Exit full screen"),gesture:T("ใช้สองนิ้วเพื่อเลื่อนแผนที่","Use two fingers to move the map")}});
+      if(!st.alive||!box.isConnected){d3.destroy();return}
+      st.d3=d3;if(st.last)paint(st.last);return;
+    }catch(e){console.warn("live3d",e&&e.message)}
+    try{flat();if(st.last)paint(st.last)}catch(e){}
+  };
+  /* เลื่อนหมุดช่างแบบนุ่ม ๆ ไปจุดใหม่ ไม่กระโดด (แผนที่ 2 มิติ) */
   const move=(to,h)=>{
     if(!st.m)return;
     if(!st.car){st.car=window.L.marker([to.lat,to.lng],{icon:carPin(h),interactive:false,zIndexOffset:500}).addTo(st.m);return}
@@ -5654,10 +5742,13 @@ function liveMap(box,{dest,poll,every,mine}){
     const step=n=>{const k=Math.min(1,(n-t0)/D),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;st.car.setLatLng([from.lat+(to.lat-from.lat)*e,from.lng+(to.lng-from.lng)*e]);if(k<1)st.anim=requestAnimationFrame(step)};
     st.anim=requestAnimationFrame(step);
   };
-  const paint=(d)=>{
+  const tagOf=d=>d&&d.live&&d.etaMin!=null?(d.etaMin<=1?T("ใกล้ถึงแล้ว","Almost there"):`~${d.etaMin} ${T("นาที","min")}`):"";
+const paint=(d)=>{
     const eta=box.querySelector(".lv-eta"),sub=box.querySelector(".lv-sub");
+    st.last=d;
+    if(st.d3)st.d3.update(d&&d.live,{stale:!!(d&&d.stale),tag:tagOf(d)});
     if(d&&d.live){
-      move(d.live,d.live.heading);
+      if(!st.d3)move(d.live,d.live.heading);
       if(st.first&&st.m){st.first=false;const pts=[[d.live.lat,d.live.lng]];if(dest)pts.push([dest.lat,dest.lng]);if(pts.length>1)st.m.fitBounds(pts,{padding:[46,46],maxZoom:16});else st.m.setView(pts[0],15)}
       const ago=Math.max(0,Math.round((Date.now()-d.live.at)/1000));
       eta.innerHTML=d.etaMin!=null?(d.etaMin<=1?`<b>${T("ใกล้ถึงแล้ว","Almost there")}</b>`:`<b>~${d.etaMin}</b> ${T("นาที","min")}`):`<b>${T("กำลังมา","On the way")}</b>`;
@@ -5670,14 +5761,18 @@ function liveMap(box,{dest,poll,every,mine}){
     }
   };
   const tick=async()=>{
-    if(!st.alive||!box.isConnected){st.alive=false;return}
+    if(!st.alive||!box.isConnected){stop();return}
     /* แผนที่โหลดไม่ได้ (เน็ตช้า/ถูกบล็อก) ก็ยังบอกเวลาถึงได้ — แผนที่เป็นของแถม */
-    if(!st.m){try{make()}catch(e){}}
-    try{const d=await poll();if(!st.alive)return;paint(d);if(d&&d.status&&d.status!=="enroute"){st.alive=false;return}}catch(e){}
-    st.t=setTimeout(tick,document.hidden?15000:every||4000);
+    if(!st.m&&!st.d3)make();
+    try{const d=await poll();if(!st.alive)return;paint(d);if(d&&d.status&&d.status!=="enroute"){stop();return}}catch(e){}
+    st.t=setTimeout(tick,document.hidden?15000:every||3000);
   };
+  /* ปิดใบงาน/ช่างเริ่มซ่อม → คืนการ์ดจอทันที (มือถือเปิดแผนที่ WebGL พร้อมกันได้ไม่กี่อัน) */
+  const stop=()=>{st.alive=false;clearTimeout(st.t);if(st.d3){st.d3.destroy();st.d3=null}};
+  /* วางกล่องแผนที่เดิมแทนที่กล่องใหม่ (ตอนใบงานวาดใหม่) — ถ้ากำลังขยายเต็มจออยู่ ให้จำที่ใหม่ไว้กลับไปตอนย่อ */
+  stop.adopt=el=>{if(st.d3&&box.classList.contains("lv-full"))st.d3.rehome(el);else{el.replaceWith(box);if(st.m)setTimeout(()=>st.m&&st.m.invalidateSize(),50)}};
   tick();
-  return ()=>{st.alive=false;clearTimeout(st.t)};
+  return stop;
 }
 var LIVE_STOP=null;
 let JOB=null,jobTimer=0;
@@ -5751,14 +5846,19 @@ function drawJob(j,push){
     mount(b,f){
       $("jChat").onclick=()=>openChat(j);
       /* ช่างกำลังมา: แผนที่สด (ลูกค้า) / แชร์ตำแหน่งของตัวเอง (ช่าง) */
-      if(LIVE_STOP){LIVE_STOP();LIVE_STOP=null}
       const lb=b.querySelector("#jLive");
-      if(lb){
-        if(tech&&!cust){ls.set("spire_live_off","");LiveShare.start(j.id)}
-        const mine=tech&&!cust;
-        /* จอช่าง: ใช้ตำแหน่งจากเครื่องตัวเองทันทีถ้าเซิร์ฟเวอร์ยังไม่ได้รับ */
-        LIVE_STOP=liveMap(lb,{dest:destOf(j.address),every:mine?5000:4000,mine,poll:async()=>{const d=await api(`/api/tech/jobs/${j.id}/live`);
-          if(mine&&!d.live&&LiveShare.fix&&LiveShare.id===j.id){d.live={...LiveShare.fix};Object.assign(d,etaOf(d.live,destOf(j.address)))}return d}});
+      /* ใบงานเดิมวาดใหม่ (มีข้อความเข้า ฯลฯ) → ย้ายแผนที่เดิมมาใส่ ไม่สร้างใหม่ (ไม่กระพริบ ไม่บินเข้าใหม่) */
+      if(lb&&LIVE_STOP&&LIVE_STOP.job===j.id&&LIVE_STOP.adopt){LIVE_STOP.adopt(lb);if(tech&&!cust)LiveShare.start(j.id)}
+      else{
+        if(LIVE_STOP){LIVE_STOP();LIVE_STOP=null}
+        if(lb){
+          if(tech&&!cust){ls.set("spire_live_off","");LiveShare.start(j.id)}
+          const mine=tech&&!cust;
+          /* จอช่าง: ใช้ตำแหน่งจากเครื่องตัวเองทันทีถ้าเซิร์ฟเวอร์ยังไม่ได้รับ */
+          LIVE_STOP=liveMap(lb,{dest:destOf(j.address),every:mine?4000:3000,mine,poll:async()=>{const d=await api(`/api/tech/jobs/${j.id}/live`);
+            if(mine&&!d.live&&LiveShare.fix&&LiveShare.id===j.id){d.live={...LiveShare.fix};Object.assign(d,etaOf(d.live,destOf(j.address)))}return d}});
+          LIVE_STOP.job=j.id;
+        }
       }
       b.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z));
       [...b.querySelectorAll("[data-a]"),...f.querySelectorAll("[data-a]")].forEach(x=>x.onclick=()=>act(j,x.dataset.a,x));
@@ -6387,9 +6487,16 @@ async function openJoin(){
 function wizBack(n){const p=SH.stack[SH.stack.length-1];if(SH.cur&&SH.cur.wiz>n&&p&&p.wiz===n){back();return true}return false}
 function landing(push){
   if(wizBack(0))return;
-  sheet({push,full:true,wiz:0,redo:()=>landing(false),url:SH.cur&&SH.cur.wiz>=0?undefined:"/join",title:"",body:`
-    <div class="hero">${WF}<svg class="logo" viewBox="-6.0 -6.0 94.8 112.0" aria-hidden="true"><path fill="currentColor" d="${LOGO}"/></svg><small>CENDON PARTNER PROGRAM</small><h2>ร่วมเป็นพาร์ทเนอร์ช่าง</h2><p>รับงานจากเจ้าของรถในพื้นที่ของคุณ · ใช้เวลากรอกประมาณ 10 นาที</p></div>
-    <div class="ben"><div><span class="sq"><i class="ti ti-map-pin"></i></span><b>งานใกล้คุณ</b>ลูกค้าในรัศมีที่เลือก</div><div><span class="sq"><i class="ti ti-receipt-off"></i></span><b>ไม่มีค่าสมัคร</b>ไม่มีค่าแรกเข้า</div><div><span class="sq"><i class="ti ti-cash"></i></span><b>ตั้งราคาเอง</b>เสนอราคาทุกงาน</div></div>
+  /* ช่วงนับถอยหลังเปิดตัว: บอกวันเปิดตัวบนหัวหน้า (จองสิทธิ์ล่วงหน้า) */
+  const lc=window.CendonLaunch&&CendonLaunch.pre()&&CendonLaunch.cfg().launch,pre=lc?new Date(lc.at).toLocaleDateString(TH?"th-TH":"en-GB",{day:"numeric",month:"short",year:"numeric"}):"";
+  sheet({push,full:true,wiz:0,redo:()=>landing(false),url:SH.cur&&SH.cur.wiz>=0?undefined:"/join",title:"",cls:"jx",body:`
+    <div class="jx-hero"><canvas class="jx-gl" id="jxGl" aria-hidden="true"></canvas><svg class="jx-mark" viewBox="-6.0 -6.0 94.8 112.0" aria-hidden="true"><path fill="currentColor" d="${LOGO}"/></svg>
+      <div class="jx-tx"><small class="jx-eye">CENDON PARTNER PROGRAM</small>${pre?`<span class="jx-pre"><i></i>${T("จองสิทธิ์ก่อนเปิดตัว","Reserve before launch")} · ${esc(pre)}</span>`:""}
+        <h2>${T("ร่วมเป็นพาร์ทเนอร์ช่าง","Become a partner mechanic")}<em>${T("กับ Cendon","with Cendon")}</em></h2>
+        <p>${T("รับงานจากเจ้าของรถในพื้นที่ของคุณ · ใช้เวลากรอกประมาณ 10 นาที","Get jobs from car owners near you · takes about 10 minutes")}</p></div></div>
+    <div class="jx-ben">${[["ti-map-pin",T("งานใกล้คุณ","Jobs near you"),T("ลูกค้าในรัศมีที่เลือก","Customers in your radius")],["ti-receipt-off",T("ไม่มีค่าสมัคร","No sign-up fee"),T("ไม่มีค่าแรกเข้า","No joining fee")],["ti-cash",T("ตั้งราคาเอง","Your prices"),T("เสนอราคาทุกงาน","You quote every job")]].map(([ic,b,t])=>`<div><span><i class="ti ${ic}"></i></span><b>${b}</b><small>${t}</small></div>`).join("")}</div>
+    <p class="h4">${T("สิ่งที่พาร์ทเนอร์ได้","What partners get")}</p>
+    <div class="jx-get">${[["ti-brand-google",T("หน้าร้านค้นเจอใน Google","A shop page Google can find"),T("ลูกค้าค้นชื่อร้านหรือหมวดงานแล้วเจอคุณ","Customers find you by shop name or job type")],["ti-map-2",T("ลูกค้าเห็นคุณกำลังไปบนแผนที่ 3 มิติ","Customers watch you arrive on a 3D map"),T("ลดการโทรถามว่าถึงไหนแล้ว","Fewer \"where are you?\" calls")],["ti-bell-ringing",T("แจ้งเตือนงานใหม่ทันที","Instant new-job alerts"),T("ในแอปและทาง LINE","In the app and on LINE")],["ti-layout-dashboard",T("Studio จัดการร้านในที่เดียว","Studio: run your shop in one place"),T("งาน แชต บริการ รีวิว และสถิติ","Jobs, chats, services, reviews and stats")]].map(([ic,b,t])=>`<div><i class="ti ${ic}"></i><span><b>${b}</b><small>${t}</small></span></div>`).join("")}</div>
     <p class="h4">คุณสมบัติผู้สมัคร</p>
     <div class="rules">${[["ti-user-check","อายุ 18 ปีขึ้นไป มีบัตรประชาชนไทย"],["ti-calendar-stats","ประสบการณ์ซ่อมรถ 2 ปีขึ้นไป"],["ti-phone-check","มีเบอร์โทรที่ติดต่อได้จริง"],["ti-building-warehouse","มีอู่ หรือเครื่องมือพร้อมออกหน้างาน"]].map(([ic,t])=>`<div class="rule"><span class="sq"><i class="ti ${ic}"></i></span><div><b>${t}</b></div></div>`).join("")}</div>
     <p class="h4">เอกสารที่ต้องเตรียม</p>
@@ -6397,8 +6504,8 @@ function landing(push){
     <p class="h4">ขั้นตอนการพิจารณา</p>
     <div class="tl">${(DIDIT()?[["ยื่นใบสมัครออนไลน์","กรอกข้อมูลและแนบรูปผลงาน"],["ยืนยันตัวตนกับ Didit","ถ่ายบัตรประชาชนและใบหน้า ประมาณ 2 นาที"],["ทีมงานตรวจและโทรยืนยัน","1–3 วันทำการ"],["อนุมัติ เริ่มรับงาน","ร้านของคุณแสดงในแอปทันที"]]:[["ยื่นใบสมัครออนไลน์","กรอกข้อมูลและแนบเอกสาร"],["ตรวจสอบเอกสาร","1–3 วันทำการ"],["โทรยืนยันตัวตนและทักษะ","ทีมงานติดต่อตามเบอร์ที่ให้ไว้"],["อนุมัติ เริ่มรับงาน","ร้านของคุณแสดงในแอปทันที"]]).map(([b,t],i)=>`<div data-n="${i+1}"><b>${b}</b><small>${t}</small></div>`).join("")}</div>
     <p class="note"><i class="ti ti-shield-lock"></i>${DIDIT()?T("บัตรประชาชนและใบหน้าตรวจที่ Didit โดยตรง Cendon ไม่เก็บรูปบัตรหรือรูปหน้า","Your ID card and face are checked directly by Didit — Cendon never stores ID or face photos"):T("รูปบัตรประชาชนและรูปถ่ายคู่บัตร ทีมงานดูเพื่อยืนยันตัวตนเท่านั้น และถูกลบทันทีหลังพิจารณาเสร็จ","Your ID card photo and selfie with the card are seen by our team only to verify you, and are deleted as soon as the review is done")} · <button class="lnk" id="lTerms">ข้อตกลงพาร์ทเนอร์</button> · <a class="lnk" href="/privacy" target="_blank" rel="noopener">นโยบายความเป็นส่วนตัว</a></p>`,
-    foot:'<button class="btn p w" id="lGo">เริ่มกรอกใบสมัคร</button>',
-    mount(){$("lTerms").onclick=terms;$("lGo").onclick=e=>busy(e.currentTarget,async()=>{const a=ME&&ME.application;const rej=a&&!a.test&&a.status==="rejected";
+    foot:`<button class="btn p w jx-go" id="lGo">${pre?T("จองสิทธิ์ · เริ่มกรอกใบสมัคร","Reserve · start the application"):T("เริ่มกรอกใบสมัคร","Start the application")}<i class="ti ti-arrow-right"></i></button>`,
+    mount(){$("lTerms").onclick=terms;fx3d($("jxGl"));$("lGo").onclick=e=>busy(e.currentTarget,async()=>{const a=ME&&ME.application;const rej=a&&!a.test&&a.status==="rejected";
       /* เซิร์ฟเวอร์ยังไม่รองรับข้อความยินยอมรุ่นนี้ = บอกตั้งแต่ต้น ไม่ให้กรอกจนจบแล้วส่งไม่ได้ */
       if(!(await techPolicy()).ok)throw Error("ระบบสมัครช่างกำลังอัปเดต กรุณาลองใหม่อีกครั้งภายหลัง");
       APP=APP||{cats:[],mobile:false,urgent:false,docs:{},...(rej?{title:a.title,name:a.name,shop:a.shop,phone:a.phone,birth:a.birth,years:a.years,area:a.area,from:a.from,warranty:a.warranty,radius:a.radius,cats:a.cats||[],mobile:a.mobile,urgent:a.urgent,lat:a.lat,lng:a.lng,about:a.about}:{})};step(1)})}});
@@ -7359,6 +7466,8 @@ let meTimer=0;
 async function refreshMe(){
   if(!U){ME=null;return}
   try{ME=await api("/api/tech/me")}catch(e){ME=null}
+  /* ช่วงนับถอยหลังเปิดตัว: ทีมงานเข้าแอปได้ คนอื่นกลับไปหน้านับถอยหลัง (launch-gate.js) */
+  if(ME&&window.CendonLaunch)CendonLaunch.staff(!!(ME.staff||ME.owner));
   const n=ME&&ME.attention||0;$("jobDot").hidden=!n;$("jobDot").textContent=n;
   const t=ME&&ME.technician,a=ME&&ME.application;
   /* เปิดลิงก์หน้าร้าน/บริการของตัวเองตรง ๆ: หน้านั้นวาดก่อนรู้ว่าเป็นเจ้าของ — วาดใหม่ให้มีปุ่มของเจ้าของ (แก้ไข · สปอนเซอร์) */
@@ -7369,6 +7478,7 @@ async function refreshMe(){
    else if(oc&&!oc.owner&&!oc.boss&&ME&&ME.owner){if(oc.shop)openTech(oc.shop);else if(oc.gig)openGig(oc.gig)}}
   /* หน้าบัญชี (มือถือ) อ่านค่านี้เพื่อเขียนปุ่มว่า "สมัครเป็นช่าง" หรือ "Studio" — เก็บแค่สถานะ ไม่มีข้อมูลส่วนตัว */
   if(ME)try{localStorage.setItem("spire_partner",JSON.stringify({uid:U.uid,s:t&&(!t.test||ME.staff)?"shop":a&&!a.test?a.status:"none"}))}catch(e){}
+  try{drawPartner()}catch(e){}
   $("joinT").textContent=t&&!t.test?"พื้นที่พาร์ทเนอร์":a&&!a.test&&a.status==="pending"?"ใบสมัครกำลังพิจารณา":"ร่วมเป็นพาร์ทเนอร์ช่าง";
   $("joinS").textContent=t&&!t.test?"ดูงานที่ลูกค้าส่งมา":a&&!a.test?"เลขที่ "+(a.appNo||"")+(a.status==="rejected"?" · ต้องแก้ไข":""):ME&&ME.staff?"ทีมงานเป็นช่างได้ทันที":"รับงานจากลูกค้าในพื้นที่";
   staffBar();drawModes();refreshJobs().then(()=>{greet();if(MODE==="tech")dash()});

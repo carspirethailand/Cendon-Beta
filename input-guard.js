@@ -108,8 +108,8 @@
   function money(n,c,o){
     o=o||{};n=Number(n);if(!Number.isFinite(n)||n<0)return {ok:false,msg:th()?'จำนวนเงินไม่ถูกต้อง':'Invalid amount'};if(n===0)return {ok:true};
     var policy=window.CendonGarageData&&window.CendonGarageData.policy(c||{});
-    if(policy&&policy.basis==='model-reference'){
-      var cap=Math.min(policy.cap,(policy.maxByJob||{})[o.job]||policy.cap);
+    if(policy&&policy.basis!=='heuristic'){
+      var cap=Math.min(policy.cap,(policy.maxByJob||{})[o.job]||(JOB[o.job]?JOB[o.job][0]*(policy.factor||1):policy.cap));
       return n<=cap?{ok:true}:{ok:false,msg:th()?'ยอดสูงกว่าเกณฑ์อ้างอิงของรถรุ่นและปีนี้ กรุณาตรวจตัวเลข':'Above this model-year reference limit; check the amount'};
     }
     var t=tier(c),j=JOB[o.job],hard=j?Math.min(j[0]*t.f,t.ceil):t.ceil,what=o.what||(th()?'รายการนี้':'this item');

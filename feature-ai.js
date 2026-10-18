@@ -79,6 +79,8 @@
       <label>${t(['วันที่','Date'])}<input name="date" type="date" data-past="1" value="${V?.today()||''}" required></label>
       <button class="fa-primary" type="submit" ${c?'':'disabled'}>${t(['ยืนยันและบันทึก','Confirm and save'])}</button><p data-entry-result role="status" aria-live="polite"></p>`;
     card.prepend(form);
+    if(c&&window.CendonGarageData){const policyText=D.createElement('p');policyText.className='cs-hint';form.prepend(policyText);window.CendonGarageData.loadPolicy(c).then(p=>{if(!policyText.isConnected)return;policyText.textContent=p?.basis==='documented-new-price'?t(['เกณฑ์ยอดอ้างอิงราคาจำหน่ายเดิมของรุ่น/ปีนี้จากเอกสาร ไม่ใช่มูลค่ารถมือสองในปัจจุบัน','Amount ceiling uses the documented original model-year list price, not current used-car value']):p?.basis==='model-reference'?t(['ใช้เกณฑ์ตรงรุ่น/ปีที่ทีมงานตรวจแล้ว','Using a reviewed model-year reference limit']):t(['ยังไม่มีราคาอ้างอิงตรงรุ่น/ปี ใช้เกณฑ์เบื้องต้น ไม่ใช่ราคาประเมินรถ','No exact model-year reference yet. A preliminary sanity limit is used, not a vehicle valuation']);if(p?.source&&/^https:\/\//.test(p.source)){const link=D.createElement('a');link.href=p.source;link.target='_blank';link.rel='noopener noreferrer';link.textContent=t([' ดูแหล่งอ้างอิง',' View source']);policyText.append(link)}});}
+
     const kind=form.elements.namedItem('kind'),km=form.elements.namedItem('km');
     kind.onchange=()=>{form.querySelectorAll('[data-kind]').forEach(el=>el.hidden=!el.dataset.kind.split(' ').includes(kind.value));form.querySelector('[data-km-label]').textContent=kind.value==='trip'?t(['ระยะทางทริป (กม.)','Trip distance (km)']):t(['เลขไมล์ (กม.)','Odometer (km)']);km.max=kind.value==='trip'?'10000':'3000000';};
     form.onsubmit=async e=>{

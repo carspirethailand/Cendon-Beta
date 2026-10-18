@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 /* การเคลื่อนไหวแบบนิ่ง: เปลี่ยนหน้าจางเข้าครั้งเดียว ไม่ไล่ลอยขึ้นทีละกล่อง · ไม่เด้ง · ไม่เบลอระหว่างเคลื่อนไหว
    + ปุ่มโทรคุยกับ AI เป็นคลื่นเสียง 4 แท่งทุกจุด + เมนูเลือกรถอันเดียวกันทั้งหน้าแรกและร้านค้า */
-const r=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8');
+const r=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8').replace(/\r\n/g,'\n');
 
 test('page changes fade once — no staggered slide-up (which also dragged the bell up on every page)',()=>{
   for(const f of ['garage.html','spares.html','news.html','profile.html']){

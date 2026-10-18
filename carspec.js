@@ -60,7 +60,7 @@ function clog(msg,o){
 }
 async function call(method,path,body){
   const t0=Date.now(),ac=new AbortController();let timer,credential='';
-  const expiry=new Promise((_,reject)=>{timer=setTimeout(()=>{ac.abort();reject(Object.assign(new Error('Spec request timed out'),{name:'AbortError'}))},method==="POST"&&['/api/car-spec','/api/car-spec/equipment'].includes(path)?65000:12000)});
+  const expiry=new Promise((_,reject)=>{timer=setTimeout(()=>{ac.abort();reject(Object.assign(new Error('Spec request timed out'),{name:'AbortError'}))},method==="POST"&&['/api/car-spec','/api/car-spec/equipment','/api/car-spec/details'].includes(path)?65000:12000)});
   try{return await Promise.race([expiry,(async()=>{
     const session=await tok(ac.signal);credential=session.token;if(ac.signal.aborted)throw Object.assign(new Error('timed out'),{name:'AbortError'});
     if((currentAuth()?.currentUser?.uid||null)!==session.uid)throw authError('auth_changed');
@@ -82,7 +82,7 @@ async function ensure(c,opt){
   return s;
 }
 async function ensureScoped(c,opt){
-  const equipment=opt?.kind==='equip',endpoint='/api/car-spec'+(equipment?'/equipment':''),Q=q(c),k=keyOf(Q)+(equipment?'|equipment':''),retry=!!(opt&&opt.retry),car=[Q.make,Q.model,Q.year].join(" ");
+  const equipment=opt?.kind==='equip',deep=opt?.kind==='details',endpoint='/api/car-spec'+(equipment?'/equipment':deep?'/details':''),Q=q(c),k=keyOf(Q)+(equipment?'|equipment':deep?'|details':''),retry=!!(opt&&opt.retry),car=[Q.make,Q.model,Q.year].join(" ");
   if(!/^\d{4}$/.test(Q.year)||!Q.make){clog("ไม่ค้น: ข้อมูลรถไม่ครบ ("+(Q.make?"ไม่มีปี":"ไม่มียี่ห้อ")+")",{car});return {status:"invalid"}}
   const have=LS.get("spec_"+k);
   if(!retry&&have&&DONE.includes(have.status)&&(have.status==="notfound"||have.status==="verified"||have.data?.schema===2&&have.sources?.length&&(equipment||have.data.depth>=2))&&Date.now()-(have._at||0)<(have.status==="notfound"?86400000:7*86400000)){
@@ -198,7 +198,16 @@ function specHTML(c,s){
     ${row(T("เบรกหน้า","Front brakes"),show(f.brakes_front))}
     ${row(T("เบรกหลัง","Rear brakes"),show(f.brakes_rear))}
   </div>`:""}
+  <section class="cs-deep"><button type="button" class="btn" data-cs-deep>${T("ค้นข้อมูลเชิงลึกเพิ่มเติม","Look up deeper details")}</button><div data-cs-deep-result aria-live="polite"></div><p class="cs-hint">${T("แยกค้นจากสเปกเดิม ไม่ลบข้อมูลเดิมเมื่อค้นไม่สำเร็จ ข้อมูลที่ไม่มีเอกสารจะไม่เดา","A separate lookup keeps existing specs intact on failure. Missing evidence is never guessed.")}</p></section>
   ${d.notes?`<div class="cl-grp"><h4>${T("ข้อควรรู้ของรุ่นนี้","Good to know")}</h4><p class="cs-note">${esc(d.notes)}</p></div>`:""}`+foot(s);
+}
+const DETAIL_ROWS=[['engine_code','รหัสเครื่องยนต์','Engine code',''],['cylinders','จำนวนสูบ','Cylinders',''],['valves','จำนวนวาล์ว','Valves',''],['power_ps','กำลังตามเอกสาร (PS)','Documented power (PS)','PS'],['power_kw','กำลังตามเอกสาร (kW)','Documented power (kW)','kW'],['gears','จำนวนเกียร์','Gear count',''],['induction','ระบบอัดอากาศ','Induction',''],['front_suspension','ช่วงล่างหน้า','Front suspension',''],['rear_suspension','ช่วงล่างหลัง','Rear suspension',''],['front_brakes','เบรกหน้า','Front brakes',''],['rear_brakes','เบรกหลัง','Rear brakes',''],['front_tire','ยางหน้า','Front tyres',''],['rear_tire','ยางหลัง','Rear tyres',''],['top_speed_kmh','ความเร็วสูงสุดตามเอกสาร','Documented top speed','km/h'],['zero100_s','อัตราเร่ง 0–100','0–100 km/h','s'],['price_thb','ราคาจำหน่ายเดิมในไทย ไม่ใช่มูลค่าปัจจุบัน','Original Thai list price, not current value','THB']];
+const DEEP_FACTS=[['boot_l','พื้นที่สัมภาระ','Luggage volume','L'],['turning_radius_m','รัศมีวงเลี้ยว','Turning radius','m'],['ground_clearance_mm','ระยะใต้ท้องรถ','Ground clearance','mm'],['towing_braked_kg','ลากจูงแบบมีเบรกตามเอกสาร','Documented braked towing','kg']];
+function deepHTML(c,s){
+  if(!['ready','verified'].includes(s.status))return '<p class="cs-hint">'+T('ยังไม่มีรายละเอียดที่ยืนยันจากเอกสารได้ สเปกเดิมไม่เปลี่ยน','No additional document-backed details yet. Existing specs are unchanged.')+'</p>';
+  const sections=(s.data?.variants||[]).map(v=>{const content=DETAIL_ROWS.map(([k,th,en,u])=>row(T(th,en),val(v[k],u,undefined,s.sources))).join('');return content?'<div class="cl-grp"><h4>'+esc(v.name||v.engine?.v||T('รุ่นย่อย','Variant'))+'</h4>'+content+'</div>':''}).join('');
+  const facts=DEEP_FACTS.map(([k,th,en,u])=>row(T(th,en),val(s.data?.facts?.[k],u,undefined,s.sources))).join('');
+  return head(s)+(sections||facts?sections+facts:'<p class="cs-hint">'+T('ยังไม่พบช่องเพิ่มเติมที่มีหลักฐาน ไม่ได้แปลว่ารถไม่มีอุปกรณ์','No extra fields were supported; this does not mean the car lacks equipment.')+'</p>')+foot(s);
 }
 function foot(s){
   const src=(s.sources||[]).filter(x=>safeURL(x.url));
@@ -281,6 +290,7 @@ document.addEventListener("click",async e=>{
   const car=()=>{try{return (window.garage?window.garage():[]).find(x=>x.id===w.dataset.car)}catch(err){return null}};
   const vb=e.target.closest("[data-cs-var]");
   const P=PANES[w.id]||{kind:"spec",extra:""};
+  const deepButton=e.target.closest("[data-cs-deep]");if(deepButton){const c=car(),out=w.querySelector("[data-cs-deep-result]");if(!c||deepButton.disabled)return;deepButton.disabled=true;out.textContent=T("กำลังอ่านเอกสารเพิ่มเติม…","Reading more documents…");try{const s=await ensure(c,{kind:"details"});if(w.dataset.car===c.id&&out.isConnected){out.innerHTML=deepHTML(c,s);if(['ready','verified'].includes(s.status))window.CendonGarageData?.refreshPolicy?.(c)}}catch{out.textContent=T("ยังอ่านรายละเอียดไม่ได้ สเปกเดิมยังอยู่ ลองใหม่ภายหลัง","Details unavailable. Existing specs are unchanged; try again later.")}finally{deepButton.disabled=false}return}
   if(vb){const v=P.spec?.data?.variants?.[Number(vb.dataset.csVar)];if(!v)return;LS.set("specv_"+w.dataset.car,{key:P.spec.key,variant:variantKey(v)});const c=car();if(c)fill(w.id,c,P.kind,P.extra);return}
   if(e.target.closest("[data-cs-retry]")){const c=car();if(c){w.innerHTML=loadingHTML(c,P.kind);fill(w.id,c,P.kind,P.extra,{retry:true})}return}
   const rp=e.target.closest(".cs-report");if(!rp)return;

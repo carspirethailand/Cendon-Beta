@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 const source=readFileSync(new URL('../feature-ai.js',import.meta.url),'utf8');
-function fixture({user=true,status=200}={}){
+function fixture({user=true,status=200,onRequest,audioVersion=2}={}){
   const calls=[],input={value:'',focus(){},dispatchEvent(){}};
   const context={car:{make:'Test',model:'Fixture'},audioVehicle:{version:1,source:'unknown',vehicle:{}},measurement:{peaks:[{hz:12}],ok:true},parking:{note:'B2 fixture',accuracyMeters:20},cost:{entryCount:1,total:100}};
   const document={body:{dataset:{phase:'thread'}},getElementById:id=>id==='inp'?input:null,querySelectorAll:()=>[]};
-  const window={lang:'en',BACKEND_URL:'https://test.invalid',spireAuth:{currentUser:user?{getIdToken:async()=>'test-only-token'}:null},spireHasFeature:()=>true};
-  const sandbox={window,document,location:{search:''},Event:class{},queueMicrotask,URLSearchParams,AbortController,setTimeout,clearTimeout,fetch:async(url,options)=>{calls.push({url,options});return {ok:status===200,status,json:async()=>status===200?{source:'ai',text:'Test transport response',data:{audioVersion:2}}:{error:'quota'}}}};
+  const window={lang:'en',BACKEND_URL:'https://test.invalid',spireAuth:{currentUser:user?{uid:'fixture-owner',getIdToken:async()=>'test-only-token'}:null},spireHasFeature:()=>true};
+  const sandbox={window,document,location:{search:''},Event:class{},queueMicrotask,URLSearchParams,AbortController,setTimeout,clearTimeout,fetch:async(url,options)=>{calls.push({url,options});onRequest?.();return {ok:status===200,status,json:async()=>status===200?{source:'ai',text:'Test transport response',data:{audioVersion}}:{error:'quota'}}}};
   vm.runInNewContext(source,sandbox);
   const api=window.CendonFeatureAI;
   api.register({current:()=> 'quote',context:()=>context,media:async()=>[],stop(){},open(){}});
@@ -54,4 +54,17 @@ test('default chat appearance stays untouched: tool UI is opt-in and CSS is scop
   assert.match(css,/\.fa-toolbar\{display:none\}/);
   assert.match(css,/\.fa-toolbar\[data-active="true"\]/);
   assert.doesNotMatch(css,/(?:^|\n)body\s*\{/);
+});
+test('listening can describe an explicitly unknown vehicle without requiring a Garage record',async()=>{
+  const f=fixture();f.context.car={};f.api.select('listen');const job=await f.api.prepare([{mime:'audio/wav',b64:'UklGRg=='}],'Describe only');assert.equal(await f.api.analyze(job),'Test transport response');assert.equal(JSON.parse(f.calls[0].options.body).context.audioVehicle.source,'unknown');
+});
+test('listen requires per-recording confirmation and cannot silently reuse old chat audio',async()=>{
+  const f=fixture();f.api.select('listen');f.context.audioVehicle=null;await assert.rejects(f.api.prepare([{mime:'audio/wav',b64:'UklGRg=='}],'Question'),/choose the recording vehicle/);assert.equal(f.calls.length,0);
+  f.context.audioVehicle={version:1,source:'unknown',vehicle:{}};await assert.rejects(f.api.prepare([],'Follow-up',{featureTool:'listen',atts:[{mime:'audio/wav',b64:'UklGRg=='}]}),/audio first/);
+});
+test('account or vehicle change while the audio request is running discards the result',async()=>{
+  for(const mode of ['account','car']){const f=fixture({onRequest:()=>{if(mode==='account')f.window.spireAuth.currentUser={uid:'different-owner'};else f.context.audioVehicle={version:1,source:'other_confirmed',vehicle:{make:'Honda',model:'HR-V'}};}});f.api.select('listen');const job=await f.api.prepare([{mime:'audio/wav',b64:'UklGRg=='}],'Question');await assert.rejects(f.api.analyze(job),/Vehicle or account changed/);}
+});
+test('old audio backend cannot silently return unguarded text to the new client',async()=>{
+  const f=fixture({audioVersion:1});f.api.select('listen');const job=await f.api.prepare([{mime:'audio/wav',b64:'UklGRg=='}],'Question');await assert.rejects(f.api.analyze(job),/audio service must be updated/);
 });

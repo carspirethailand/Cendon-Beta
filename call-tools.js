@@ -159,7 +159,7 @@ async function listenEngine(tool){
     <div class="ct-scope"><canvas id="ctSpec"></canvas><div class="ct-axis"><span>8k</span><span>2k</span><span>500</span><span>100 Hz</span></div>
       <div class="ct-ring" id="ctRing"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="54" class="bg"/><circle cx="60" cy="60" r="54" class="fg" id="ctArc"/></svg><b id="ctSec">3</b><small id="ctRingL">${T('เตรียมตัว','Get ready')}</small></div></div>
     <div class="ct-meter"><i id="ctLvl"></i></div>
-    <ol class="ct-steps" id="ctSteps"><li class="on"><i class="ti ti-device-mobile"></i>${T('ถือมือถือห่างชิ้นส่วนร้อนหรือกำลังหมุน ไม่ยื่นมือเข้าเครื่อง','Keep clear of hot or moving parts; do not reach into the engine')}</li><li><i class="ti ti-engine"></i>${T('หากปลอดภัย ปล่อยเดินเบา ไม่เร่งเครื่อง','If safe, idle only — do not rev')}</li><li><i class="ti ti-volume-off"></i>${T('ไม่พูดหรือเปิดเพลงระหว่างอัด','No talking or music while recording')}</li></ol>
+<ol class="ct-steps" id="ctSteps"><li class="on"><i class="ti ti-device-mobile"></i>${T('ถือมือถือห่างชิ้นส่วนร้อนหรือกำลังหมุน ไม่ยื่นมือเข้าเครื่อง','Keep clear of hot or moving parts; do not reach into the engine')}</li><li><i class="ti ti-engine"></i>${T('หากปลอดภัย ปล่อยเดินเบา ไม่เร่งเครื่อง','If safe, idle only — do not rev')}</li><li><i class="ti ti-volume-3"></i>${T('ไม่พูดหรือเปิดเพลงระหว่างอัด','No talking or music while recording')}</li></ol>
     <div class="ct-out" id="ctOut" hidden></div>`;
   $('ctClose').onclick=()=>{finishEar(null,T('ยกเลิกการฟังเสียง','Listening cancelled'));};
   /* หยุดเสียง AI ที่ค้างอยู่ ไม่ให้เสียงพูดของ AI ถูกอัดปนไปด้วย */
@@ -219,15 +219,17 @@ async function listenEngine(tool){
     if(!isCurrent()){finishEar(null,T('รถหรือบัญชีเปลี่ยนแล้ว ผลเก่าถูกยกเลิก','Vehicle or account changed; the old analysis was discarded'));return}
     if(maxLv<0.004){showEar({quality:'too_quiet',hear:'',causes:[],urgency:'soon',next:[T('ขยับมือถือเข้าใกล้จุดที่มีเสียงมากขึ้น แล้วลองใหม่','Move the phone closer to the sound and try again')],speak:''},true);return}
     S.abort=new AbortController();
+    const requestAbort=S.abort,requestTimer=setTimeout(()=>requestAbort.abort(),26000);
     const area=args.area||'',when=args.when||'';
-    const data=await analyze('ear',[{mime:'audio/wav',b64:wav.b64}],{car:selected.vehicle,audioVehicle:VA.payload(selected),phoneAt:area,soundWhen:when},
-      T('ฟังเสียงจากรถคันนี้ระหว่างโทร','Listening to this car during a call')+(area?' · '+area:'')+(when?' · '+when:''),S.abort.signal);
+    let data;
+    try{data=await analyze('ear',[{mime:'audio/wav',b64:wav.b64}],{car:selected.vehicle,audioVehicle:VA.payload(selected),phoneAt:area,soundWhen:when},
+      T('ฟังเสียงจากรถคันนี้ระหว่างโทร','Listening to this car during a call')+(area?' · '+area:'')+(when?' · '+when:''),requestAbort.signal)}finally{clearTimeout(requestTimer)}
     if(!isCurrent()){if(run===S.run)finishEar(null,T('ข้อมูลรถเปลี่ยนแล้ว กรุณาเริ่มใหม่','Vehicle context changed. Please start again'));return;}
     showEar(data);
   }catch(e){
     await cleanup();
     if(run!==S.run)return;
-    const msg=e&&e.name==='NotAllowedError'?T('ต้องอนุญาตไมค์ก่อนนะครับ','Microphone permission is needed'):(e&&e.message)||T('ฟังเสียงไม่สำเร็จ','Listening failed');
+    const msg=e&&e.name==='NotAllowedError'?T('ต้องอนุญาตไมค์ก่อนนะครับ','Microphone permission is needed'):e?.name==='AbortError'?T('วิเคราะห์เสียงใช้เวลานานเกินไป ลองใหม่ภายหลังครับ','Audio analysis timed out. Please try again later'):(e&&e.message)||T('ฟังเสียงไม่สำเร็จ','Listening failed');
     finishEar(null,msg);toast(msg,'ti-alert-triangle');
   }
 }

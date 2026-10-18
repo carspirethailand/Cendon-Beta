@@ -23,10 +23,15 @@
   }
   function bind(prefix,saved,onChange){
     const D=document,scope=D.getElementById(prefix+'Scope');if(!scope)return;
+    const labelNode=scope.closest?.('label');let summary=D.getElementById(prefix+'Summary');
+    if(!summary&&labelNode){summary=D.createElement('p');summary.id=prefix+'Summary';summary.className='va-summary';labelNode.after(summary);}
+    if(summary)summary.textContent=scope.value==='garage_confirmed'?label(saved):'';
     const read=()=>{
       const other={};for(const k of ['make','model','year','engine','fuel'])other[k]=D.getElementById(prefix+'_'+k)?.value||'';
       const box=D.getElementById(prefix+'Other');if(box)box.hidden=scope.value!=='other_confirmed';
-      onChange(scope.value?choice(scope.value,saved,other):null);
+      const v=scope.value?choice(scope.value,saved,other):null;
+      if(summary)summary.textContent=v?label(v.vehicle):'';
+      onChange(v);
     };
     scope.onchange=read;
     for(const k of ['make','model','year','engine','fuel']){const input=D.getElementById(prefix+'_'+k);if(input)input.oninput=read;}

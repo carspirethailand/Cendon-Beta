@@ -9481,22 +9481,6 @@ async function askListen(q){
   const qi=$("lgQ"); if(qi)qi.value="";
   lChat.push({role:"me",text:q}); lAsk=true; renderTool();
 
-  const cp=lRes.identity?.vehicle||{};
-  const brief=[
-    `รถ: ${[cp.year,cp.make,cp.model].filter(Boolean).join(" ")}${cp.mileage?` เลขไมล์ ${cp.mileage} กม.`:""}`,
-    `อัดเสียง: ${(TAKES.find(x=>x.k===lRes.take)||{}).th||"ระหว่างใช้งาน"}`,
-    `สิ่งที่ได้ยิน: ${lRes.heard}`,
-    lRes.causes.length?`สาเหตุที่ประเมินไว้: ${lRes.causes.map(x=>
-      `${x.what} (ยังไม่ยืนยัน / unconfirmed)`).join(", ")}`:""
-  ].filter(Boolean).join("\n");
-
-  const contents=[{role:"user",parts:[{text:
-    `นี่คือผลวิเคราะห์เสียงรถของฉันที่ระบบทำไว้แล้ว ใช้เป็นบริบทในการตอบ\n\n${brief}\n\n`+
-    `ตอบสั้น ตรงประเด็น เป็นภาษา${EN()?"อังกฤษ":"ไทย"} ไม่ต้องทวนบริบท\n\nคำถาม: ${q}`}]}];
-  lChat.slice(0,-1).forEach(m=>{ /* เทิร์นก่อนหน้าใส่ต่อท้ายให้บทสนทนาต่อเนื่อง */ });
-  const hist=lChat.slice(0,-1).map(m=>({role:m.role==="me"?"user":"model",parts:[{text:m.text}]}));
-  const payload=[contents[0],...hist.slice(-6)];
-  if(hist.length)payload.push({role:"user",parts:[{text:q}]});
 
   try{
     const context=listenContext(),owner=window.spireAuth?.currentUser?.uid;

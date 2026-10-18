@@ -31,12 +31,20 @@ async function call(method,path){
 
 /* สถานะร่วมของทั้งหน้า: ถามเซิร์ฟเวอร์ครั้งเดียว ทุกกล่องใช้ร่วมกัน */
 /* pending = เวลาที่เลิกรอ หลังผู้ใช้กดเปิด LINE (รอทำต่อใน LINE ไม่เกิน 20 นาที) */
-let st=null,stAt=0,pending=0,poll=0;
+let st=null,stAt=0,stUid=null,pending=0,poll=0;
 const CONNECT="เชื่อมต่อบัญชี";
 const boxes=new Set();
+/* จำสถานะล่าสุดของแต่ละบัญชีไว้ในเครื่อง: เปิดหน้าครั้งหน้าวาดการ์ดได้ทันที ไม่ต้องรอล็อกอิน + เซิร์ฟเวอร์ (เดิมช้าหลายวินาที)
+   เก็บแค่ เชื่อมแล้ว/ยัง/รอเพิ่มเพื่อน + ชื่อบัญชี OA — ไม่มีข้อมูลส่วนตัว */
+const KEY=uid=>"cendon_line_st:"+uid;
+function guessUid(){try{const c=JSON.parse(localStorage.getItem("spire_cachedUser")||"null");return c&&typeof c.uid==="string"?c.uid:null}catch(e){return null}}
+function remembered(uid){try{const v=JSON.parse(localStorage.getItem(KEY(uid))||"null");return v&&v.st&&typeof v.st==="object"?v.st:null}catch(e){return null}}
 async function status(force){
   if(!force&&st&&Date.now()-stAt<60000)return st;
-  st=await call("GET","/api/line/link");stAt=Date.now();return st;
+  const u=user(),d=await call("GET","/api/line/link");
+  st={linked:!!d.linked,paused:!!d.paused,oa:d.oa==null?null:String(d.oa)};stAt=Date.now();stUid=u&&u.uid;
+  if(stUid)try{localStorage.setItem(KEY(stUid),JSON.stringify({st,at:stAt}))}catch(e){}
+  return st;
 }
 function paintAll(){boxes.forEach(el=>{if(el.isConnected)paint(el);else boxes.delete(el)})}
 
@@ -119,8 +127,12 @@ function watch(){
   };
   poll=setTimeout(tick,3000);
 }
-/* กลับมาจาก LINE: ถามสถานะใหม่ทันที */
-document.addEventListener("visibilitychange",()=>{if(document.hidden)return;if(pending)watch();else if(st&&st.paused)status(true).then(paintAll).catch(()=>{})});
+/* กลับมาจาก LINE (เชื่อมจากเมนูใน LINE ก็ได้): ถามสถานะใหม่ทันทีถ้ายังไม่ได้เชื่อม — การ์ดชวนเชื่อมหายเองเมื่อเชื่อมแล้ว */
+document.addEventListener("visibilitychange",()=>{if(document.hidden)return;if(pending)watch();else if(st&&!st.linked)status(true).then(paintAll).catch(()=>{})});
+/* เชื่อมสำเร็จในแท็บอื่น → แท็บนี้เปลี่ยนตาม */
+addEventListener("storage",e=>{if(!e.key||!stUid||e.key!==KEY(stUid))return;const v=remembered(stUid);if(v){st=v;stAt=Date.now();paintAll()}});
+/* หน้าอื่นในแอปบอกได้ว่าเพิ่งเชื่อม/ยกเลิก (เช่น หน้าเชื่อมต่อ /line ในหน้าแรก) */
+window.CendonLine={refresh:()=>status(true).then(paintAll).catch(()=>{})};
 document.addEventListener("click",async e=>{
   const b=e.target.closest&&e.target.closest("[data-cl]");if(!b)return;
   const el=b.closest("[data-line-connect]");if(!el)return;
@@ -135,8 +147,13 @@ document.addEventListener("click",async e=>{
 
 async function mount(el){
   if(boxes.has(el))return;boxes.add(el);
-  const u=await whenUser();if(!u){el.innerHTML="";paint(el);return}
-  try{await status()}catch(e){st=st||null}
+  /* วาดทันทีจากสถานะที่จำไว้ของบัญชีนี้ แล้วค่อยเช็กของจริงตามหลัง */
+  if(!st){const g=(user()||{}).uid||guessUid(),v=g&&remembered(g);if(v){st=v;stAt=0;stUid=g}}
+  if(st)paint(el);
+  const u=await whenUser();if(!u){st=null;el.innerHTML="";paint(el);return}
+  if(stUid&&stUid!==u.uid){st=null;stAt=0}
+  /* ยังไม่ได้เชื่อม = ถามใหม่ทุกครั้งที่การ์ดโผล่ (เบามาก) — เพิ่งเชื่อมเสร็จ การ์ดชวนเชื่อมในใบงานต้องไม่ขึ้นอีก */
+  try{await status(!st||!st.linked)}catch(e){}
   paintAll();
 }
 function scan(root){(root||document).querySelectorAll("[data-line-connect]").forEach(mount)}

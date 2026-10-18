@@ -34,3 +34,19 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   @view-transition{navigation:none}
   ::view-transition-new(root){animation:none!important}
 }
+/* ช่องติ๊กทั้งแอป = วงกลมสีขาว (ทุกหน้า ทุกธีม) · ติ๊กแล้ว = เครื่องหมายถูกสีดำ ขอบเข้ม — ขาวดำนิ่ง ดูน่าเชื่อถือ
+   ไม่แตะสวิตช์เปิด/ปิด (.switch / .lx-sw) ที่ใช้ช่องติ๊กซ่อนอยู่ข้างใน */
+input[type=checkbox]:not(.switch input):not(.lx-sw input){
+  -webkit-appearance:none!important;appearance:none!important;box-sizing:border-box;
+  width:22px!important;height:22px!important;min-width:22px;min-height:22px;flex:none;margin:0;padding:0;
+  border-radius:50%!important;border:1.5px solid rgba(9,9,11,.24)!important;
+  background:#fff center/15px 15px no-repeat!important;box-shadow:0 1px 2px rgba(9,9,11,.1);
+  cursor:pointer;vertical-align:middle;transition:border-color .15s ease,box-shadow .15s ease,transform .15s ease}
+input[type=checkbox]:not(.switch input):not(.lx-sw input):checked{
+  border:2px solid #09090B!important;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2309090B' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5.5 12.5l4.2 4.2 8.8-9.4'/%3E%3C/svg%3E")!important}
+html[data-theme="dark"] input[type=checkbox]:not(.switch input):not(.lx-sw input){border-color:rgba(255,255,255,.35)!important;box-shadow:none}
+html[data-theme="dark"] input[type=checkbox]:not(.switch input):not(.lx-sw input):checked{border-color:#fff!important;box-shadow:0 0 0 3px rgba(255,255,255,.14)}
+input[type=checkbox]:not(.switch input):not(.lx-sw input):active{transform:scale(.92)}
+input[type=checkbox]:not(.switch input):not(.lx-sw input):focus-visible{outline:none;box-shadow:0 0 0 3px rgba(233,104,42,.38)}
+input[type=checkbox]:not(.switch input):not(.lx-sw input):disabled{opacity:.45;cursor:not-allowed}

@@ -2,6 +2,10 @@
 <html lang="th">
 <head>
 <script>/* ธีมตั้งแต่เฟรมแรก (ก่อน CSS วาด) — เดิมหน้าเปิดด้วยธีมตั้งต้นแวบหนึ่งแล้วค่อยสลับ (แชตขึ้นจอดำ) ดูเหมือนกระพริบ/กระตุก */(function(){try{var O={warm:"light",pearl:"light",emerald:"light",plant:"light",moss:"light",carbon:"dark",night:"dark",midnight:"dark",cyber:"dark",aurora:"dark",ocean:"dark",sunset:"dark",magma:"dark"},v=null;try{v=JSON.parse(localStorage.getItem("spire_theme"))}catch(e){}if(typeof v!=="string")try{v=JSON.parse(localStorage.getItem("spire_chatTheme"))}catch(e){}v=v==="light"||v==="dark"?v:(O[v]||"light");var e=document.documentElement;e.setAttribute("data-theme",v);e.setAttribute("data-ctheme",v)}catch(x){}})();</script>
+<script>/* เปิด /messages (กดแท็บแชตจากหน้าอื่น หรือลิงก์แจ้งเตือน): ซ่อนหน้าแรกไว้จนกล่องข้อความขึ้น — ไม่ให้หน้าแรกโผล่ก่อนแล้วแชตค่อยตามมา
+   กันค้าง: ถ้ากล่องข้อความไม่ขึ้นใน 4 วิ เปิดหน้าตามปกติ */
+if(/^\/messages(\/|$)/.test(location.pathname)){document.documentElement.classList.add("ib-boot");setTimeout(function(){document.documentElement.classList.remove("ib-boot")},4000)}</script>
+<style>html.ib-boot #top,html.ib-boot .view,html.ib-boot #ibFab{visibility:hidden!important}</style>
 <script src="/auth-gate.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
@@ -21,7 +25,7 @@
 (function(){try{if(/^\/(work|studio)(\/|$)/.test(location.pathname)){var p=JSON.parse(localStorage.getItem("spire_partner")||"null");if(p&&p.s==="shop")document.documentElement.dataset.boot="tech"}}catch(e){}})();</script>
 <script>(function(){try{var A=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt"],l=null;try{l=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
 if(A.indexOf(l)<0){l="en";var n=navigator.languages||[navigator.language||"en"];for(var i=0;i<n.length;i++){var b=String(n[i]).toLowerCase().split("-")[0];if(A.indexOf(b)>=0){l=b;break}}}
-if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=7"><\/script>')}catch(e){}})();</script>
+if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=8"><\/script>')}catch(e){}})();</script>
 <title>Cendon</title>
 <meta name="description" content="ถามอาการรถ ส่งรูปหรือเสียงให้ AI ช่วยดู เช็กใบเสนอราคา และหาช่างที่ผ่านการตรวจใกล้คุณ">
 <!-- การ์ดตอนแชร์ลิงก์ (LINE / Facebook / X) — รูปต้องเป็นที่อยู่เต็ม -->
@@ -2004,7 +2008,23 @@ html[data-theme="dark"] .so-vi{box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
 .stu-cap{display:flex;gap:8px;align-items:flex-start;margin:0 0 12px;padding:9px 12px;border-radius:12px;font-size:13px;line-height:1.5;color:var(--muted);background:var(--surface-2)}
 .stu-cap .ti{font-size:17px;margin-top:1px}.stu-cap.full{color:var(--ink);background:color-mix(in srgb,#d97706 14%,transparent)}.stu-cap.full .ti{color:#b45309}
 /* ประกาศหาช่าง: งบ + อะไหล่มือสอง */
-.pb-row{align-items:end}.pb-used{margin:0 0 12px}
+/* ฟอร์มยาวจัดเป็นหมวด: เลขลำดับ + หัวข้อ · เส้นคั่นบาง ๆ · ระยะห่างเท่ากันทุกหมวด */
+.fsec{padding:18px 0 6px;border-top:1px solid var(--line)}
+.pf-lead+.fsec,.fsec:first-child{border-top:0;padding-top:6px}
+.fsec-h{display:flex;align-items:center;gap:10px;margin:0 0 14px;font-size:16px;font-weight:600;letter-spacing:-.01em;color:var(--ink)}
+.fsec-n{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--ink);color:var(--bg);font-size:12.5px;font-weight:600;line-height:1}
+.fsec .fld{margin-bottom:16px}
+.fsec .seg button{min-height:44px;border-radius:13px}
+.fsec .morebtn{margin:-6px 0 10px}
+.pf-lead{margin:0 0 4px;font-size:13px}
+.pk-gps{position:absolute;right:10px;bottom:10px;z-index:600;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--surface);color:var(--ink);font-size:21px;box-shadow:0 4px 14px rgba(0,0,0,.18),0 0 0 1px var(--line);transition:transform .15s ease}
+.pk-gps:active{transform:scale(.92)}
+.pk-gps .spin{width:18px;height:18px}
+.locbar.bad{background:rgba(220,38,38,.08);box-shadow:inset 0 0 0 1.5px rgba(220,38,38,.4)}
+.locbar.bad b{color:#dc2626}.pk2.bad .cross{color:#dc2626;animation:none}
+.pb-in{position:relative;display:block}.pb-in>b{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:500;pointer-events:none}.pb-in .inp{padding-left:32px;width:100%}
+.chk[hidden]{display:none}.chk>span{display:flex;flex-direction:column;gap:2px;min-width:0}.chk>span small{font-size:12.5px;color:var(--muted);line-height:1.55}
+.pb-used{margin:-4px 0 14px;align-items:center}
 .pb-ai{display:flex;gap:8px;align-items:flex-start}.pb-ai.ok .ti{color:var(--ok,#16a34a)}.pb-ai.tight .ti,.pb-ai.low .ti{color:#d97706}
 /* ผลงานที่มีคลิปหลักฐาน (เจ้าของรถอนุญาตแล้ว) */
 .so-pf{display:inline-flex;align-items:center;gap:4px;color:var(--ok,#16a34a)}.so-pf .ti{font-size:15px}
@@ -3251,6 +3271,9 @@ function back(fromNav){
 }
 function closeSheet(fromNav){
   const bs=$("bs");if(!bs.classList.contains("on"))return;
+  /* ลิงก์ลึก /messages: Nav สร้างประวัติ [หน้าก่อน, หน้าแรก, /messages] — ถอย 2 ขั้นกลับหน้าที่กดมา (เร็ว ใช้หน้าที่ค้างไว้) */
+  if(fromNav!==true&&IB_FROM&&SH.cur&&SH.cur.inbox){const to=IB_FROM,st=history.state;IB_FROM=null;
+    if(st&&st.nav&&st.k!=="root")history.go(-2);else location.replace(to);return}
   bs.classList.remove("on","store");bs.setAttribute("aria-hidden","true");document.body.style.overflow="";
   SH.stack=[];stopJob();
   const l=SH.layers[0];SH.layers=[];SH.cur=null;
@@ -3357,7 +3380,7 @@ function locate(btn){
     if(!navigator.geolocation){toast("เครื่องนี้หาตำแหน่งไม่ได้","ti-map-pin-off");return res(null)}
     navigator.geolocation.getCurrentPosition(p=>{
       HERE={lat:+p.coords.latitude.toFixed(5),lng:+p.coords.longitude.toFixed(5)};ls.set("spire_tech_here",HERE);
-      drawMe();if(MAP&&VIEW==="map")MAP.flyTo([HERE.lat,HERE.lng],13,{duration:.8});render();res(HERE);
+      drawMe();if(MAP&&VIEW==="map")MAP.flyTo([HERE.lat,HERE.lng],13,{duration:.8});render();res({...HERE,acc:Math.round(p.coords.accuracy||0)});
     },()=>{toast("ไม่ได้รับอนุญาตให้ใช้ตำแหน่ง","ti-map-pin-off");res(null)},{enableHighAccuracy:true,timeout:10000,maximumAge:60000});
   });
 }
@@ -3695,12 +3718,13 @@ function lineConnect(t){
     ${oa?`<a class="btn s w" href="${esc(lineChat(oa))}" target="_blank" rel="noopener">${LNI}เปิด LINE ของ Cendon</a>`:""}`;
   const fail=(icon,h,p,oa)=>sheet({title:"เชื่อม LINE",url,body:`<div class="state"><div class="big" style="background:var(--surface-2);color:var(--muted)"><i class="ti ${icon}"></i></div><h2>${h}</h2><p>${p}</p></div>${again(oa)}`,
     foot:'<button class="btn s w" id="lcHome">ไปหน้าแรก</button>',mount(){$("lcHome").onclick=()=>closeSheet()}});
-  const done=r=>sheet({title:"เชื่อม LINE",url:"/line",body:r.paused
+  /* เชื่อมแล้ว: การ์ด/แถบชวนเชื่อม LINE ทุกที่ในหน้านี้เปลี่ยนตามทันที (ไม่ค้างสถานะเก่า) */
+  const done=r=>{if(window.CendonLine)CendonLine.refresh();return sheet({title:"เชื่อม LINE",url:"/line",body:r.paused
       ?`<div class="state"><div class="big" style="background:rgba(6,199,85,.12);color:#06C755"><i class="ti ti-user-plus"></i></div><h2>อีกขั้นเดียว</h2><p>เชื่อมบัญชีแล้ว แต่ LINE ส่งแจ้งเตือนได้เฉพาะคนที่เพิ่ม Cendon เป็นเพื่อน — เพิ่มแล้วการแจ้งเตือนจะเปิดเองทันที</p></div>
         ${r.oa?`<a class="btn p w" href="${esc(lineAdd(r.oa))}" target="_blank" rel="noopener">${LNI}เพิ่มเพื่อน ${esc(r.oa)}</a>`:""}`
       :`<div class="state"><div class="big" style="background:rgba(6,199,85,.12);color:#06C755"><i class="ti ti-circle-check"></i></div><h2>เชื่อม LINE สำเร็จ</h2><p>เราส่งข้อความยืนยันไปที่ LINE${r.name?" "+esc(r.name):""} แล้ว · จากนี้งานช่าง ราคา ข้อความ และเตือนดูแลรถจะแจ้งใน LINE</p></div>
         ${r.oa?`<a class="btn p w" href="${esc(lineChat(r.oa))}" target="_blank" rel="noopener">${LNI}กลับไปที่ LINE</a>`:""}`,
-    foot:'<button class="btn s w" id="lcHome">ไปหน้าแรก</button>',mount(){$("lcHome").onclick=()=>closeSheet()}});
+    foot:'<button class="btn s w" id="lcHome">ไปหน้าแรก</button>',mount(){$("lcHome").onclick=()=>closeSheet()}})};
   if(!/^[A-Za-z0-9_-]{30,64}$/.test(t))return fail("ti-link-off","ลิงก์ไม่ครบ","ลิงก์เชื่อมบัญชีต้องเปิดจากปุ่มที่บอท Cendon ส่งให้ใน LINE");
   api("/api/line/connect?t="+encodeURIComponent(t)).then(d=>{
     if(d.state==="expired")return fail("ti-clock-x","ลิงก์หมดอายุแล้ว","ลิงก์เชื่อมบัญชีใช้ได้ 15 นาที",d.oa);
@@ -4303,7 +4327,6 @@ function openGig(id){
     }});
 }
 /* ฟอร์มโพสต์บริการ: รูป · หัวข้อ · ราคา · รายละเอียด · หมวด · ยี่ห้อรถ (ร้านละไม่เกิน GIG_MAX รายการ) */
-const asData=f=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f)});
 const GIG_MAX=2,GIG_CATS=6;   /* หมวดต่อบริการสูงสุด — ตรงกับหลังบ้าน (cats.slice(0,6)) */
 /* ลงบริการได้เฉพาะหมวดที่ผ่านการตรวจทักษะ (backend บังคับเหมือนกัน) — ร้านทดสอบลงได้ทุกหมวด */
 const gigAllowed=top=>{const t=ME&&ME.technician;if(!t||t.test)return true;return top==="mobile"?!!t.mobile:(t.cats||[]).includes(top)};
@@ -4344,7 +4367,8 @@ function gigForm(g,opt){
         $("gPh").querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{F2.add.splice(+b.dataset.a,1);draw()});
         if($("gAdd"))$("gAdd").onclick=()=>{$("gFile").value="";$("gFile").click()}};draw();
       /* ทุกรูปเป็น 16:9 — crop.js ให้ครอปทีละรูปก่อนถึงตรงนี้ (data-crop บน input) */
-      $("gFile").onchange=async()=>{for(const f of [...$("gFile").files]){try{F2.add.push({data:await asData(f)})}catch(e){}}draw()};
+      /* ย่อ/บีบเป็น JPEG ก่อนส่ง (ไม่เกิน ~0.9 MB ต่อรูป) — รูปครอปจากภาพหน้าจอเป็น PNG ใหญ่หลาย MB เดิมส่งไม่ผ่าน ลงบริการไม่ได้ */
+      $("gFile").onchange=async()=>{for(const f of [...$("gFile").files]){try{F2.add.push({data:await shrink(f,1920)})}catch(e){toast(e.message,"ti-alert-triangle")}}draw()};
       $("gSave").onclick=e=>busy(e.currentTarget,async()=>{
         try{
           if(!F2.cats.length)throw new Error("เลือกหมวดหมู่บริการอย่างน้อย 1 หมวด — ลูกค้าจะหาบริการนี้เจอในทุกหมวดที่เลือก");
@@ -4862,11 +4886,19 @@ function bossMenu(t){
     ${row("oEdit","ti-pencil","var(--accent)",T("แก้ไขร้าน","Edit shop"),T("ชื่อ ความถนัด หมวดงาน ตำแหน่ง รูป เวลาทำการ — แก้ได้ทุกช่อง","Name, expertise, categories, location, photos, hours"))}
     ${row("oGig","ti-square-plus","#22a06b",T("ลงบริการให้ร้านนี้","Add a service for this shop"),T("บริการจะเป็นของร้านนี้","The service belongs to this shop"))}
     ${row("oBays","ti-stack-2","#6366f1",T("จำนวนช่องซ่อม","Repair bays"),T("งานค้างพร้อมกันได้กี่งาน (ช่างเคลื่อนที่ 1 · อู่เริ่มต้น 3)","How many open jobs at once (mobile 1 · shops start at 3)"))}
+    ${t.test?row("oMode","ti-rosette-discount-check","#16a34a",T("เปลี่ยนเป็นร้านจริง","Make this a real shop"),T("ลูกค้าเห็นร้านและบริการทันที · ไม่ได้ป้ายตรวจตัวตน/ทักษะ เพราะไม่ได้ผ่านด่านตรวจ","Customers see it right away · no ID/skill badges, since it skipped the checks"))
+      :row("oMode","ti-flask","#64748b",T("เปลี่ยนเป็นร้านทดสอบ","Switch to a test shop"),T("ลูกค้าทั่วไปไม่เห็นร้านนี้ จนกว่าจะเปลี่ยนกลับ","Hidden from customers until you switch back"))}
     ${t.test?"":row("oHide","ti-eye-off","#c0392b",T("ซ่อนร้าน","Hide shop"),T("เอาออกจากรายชื่อที่ลูกค้าเห็น","Remove from what customers see"))}`,
     mount(){
       $("oEdit").onclick=()=>openShopEdit(t);
       $("oGig").onclick=()=>gigForm(null,{tech:t.id});
       $("oBays").onclick=e=>{const n=prompt(T("จำนวนช่องซ่อมของร้านนี้ (1–30)","Repair bays for this shop (1–30)"));if(!n)return;busy(e.currentTarget,async()=>{const r=await api("/api/tech/bays",{body:{id:t.id,bays:+n}});toast(T(`ตั้งเป็น ${r.bays} ช่องแล้ว`,`Set to ${r.bays} bays`),"ti-check")})};
+      /* สลับร้านทดสอบ ⇄ ร้านจริง (เจ้าของระบบเท่านั้น — หลังบ้านบังคับซ้ำ และบันทึกทุกครั้ง) */
+      $("oMode").onclick=e=>{const real=!!t.test;
+        if(!confirm(real?T(`เปิด "${t.shop||t.name||""}" เป็นร้านจริงให้ลูกค้าเห็น?`,`Make "${t.shop||t.name||""}" a real shop customers can see?`):T(`เปลี่ยน "${t.shop||t.name||""}" เป็นร้านทดสอบ? ลูกค้าจะไม่เห็นร้านนี้`,`Switch "${t.shop||t.name||""}" to a test shop? Customers won't see it`)))return;
+        const note=real?(prompt(T("เหตุผล (บันทึกในระบบ เช่น รู้จักช่างคนนี้ ดูงานจริงแล้ว)","Reason (logged, e.g. I know this mechanic)"))||""):"";
+        busy(e.currentTarget,async()=>{await api("/api/tech/shop-mode",{body:{id:t.id,test:!real,note}});closeSheet();
+          toast(real?T("เปิดเป็นร้านจริงแล้ว — ลูกค้าเห็นแล้ว","Now a real shop — customers can see it"):T("เปลี่ยนเป็นร้านทดสอบแล้ว","Switched to a test shop"),"ti-check");load()})};
       if($("oHide"))$("oHide").onclick=e=>busy(e.currentTarget,async()=>{if(!confirm(T("ซ่อนร้านนี้จากลูกค้า?","Hide this shop from customers?")))return;await api("/api/tech/moderate",{body:{id:t.id,suspend:true}});closeSheet();toast(T("ซ่อนแล้ว","Hidden"));load()});
     }});
 }
@@ -4997,6 +5029,22 @@ const garageCars=()=>ls.get("spire_garage",[]).map(c=>[c.name,c.year].filter(Boo
 /* ═══ ฟอร์มคำขอชุดเดียว (ร้านเดียว / หลายร้าน / ด่วน / ประกาศ) ═══
    ทำให้สบายที่สุด: รถมาจากโรงรถเอง ตำแหน่งปักหมุดเองจาก GPS แล้วล็อกไว้ ไม่ต้องพิมพ์ที่อยู่
    อยากบอกเพิ่ม ("จอดใต้ต้นไม้") หรือแนบรูป ค่อยกดเปิดเพิ่มเอง */
+/* หมุดตำแหน่งรถต้องอยู่บนบก: อ่านสีแผ่นแผนที่ OSM ซูม 17 ใต้หมุด (น้ำทุกชนิดเป็นฟ้า #aad3df) ตรวจ 5×5 จุด
+   สะพานวาดเป็นถนนทับน้ำ = บก · โหลดแผ่นไม่ได้ = null (ไม่บล็อก — หลังบ้านตรวจซ้ำด้วยวิธีเดียวกัน) */
+const PIN_KM={urgent:1.5,normal:20},WET={};
+async function waterAt(p){
+  const z=17,n=2**z,la=p.lat*Math.PI/180,x=(p.lng+180)/360*n,y=(1-Math.log(Math.tan(la)+1/Math.cos(la))/Math.PI)/2*n;
+  const tx=Math.floor(x),ty=Math.floor(y),px=Math.floor((x-tx)*256),py=Math.floor((y-ty)*256),k=tx+"/"+ty+"/"+px+"/"+py;
+  if(k in WET)return WET[k];
+  try{const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),4000);
+    const r=await fetch(`https://tile.openstreetmap.org/${z}/${tx}/${ty}.png`,{signal:ac.signal,mode:"cors",credentials:"omit"});clearTimeout(tm);if(!r.ok)return null;
+    const bm=await createImageBitmap(await r.blob()),c=document.createElement("canvas");c.width=bm.width;c.height=bm.height;
+    const g=c.getContext("2d",{willReadFrequently:true});g.drawImage(bm,0,0);
+    const d=g.getImageData(Math.max(0,Math.min(bm.width-5,px-2)),Math.max(0,Math.min(bm.height-5,py-2)),5,5).data;let wet=0;
+    for(let i=0;i<d.length;i+=4)if(Math.abs(d[i]-170)<=8&&Math.abs(d[i+1]-211)<=8&&Math.abs(d[i+2]-223)<=8)wet++;
+    return WET[k]=wet/25>=.6;
+  }catch(e){return null}
+}
 const RG={};
 async function revgeo(p){
   const k=p.lat.toFixed(4)+","+p.lng.toFixed(4);if(RG[k])return RG[k];
@@ -5015,22 +5063,30 @@ function contactForm(o){
   const prev=ls.get("spire_tech_contact",{});
   const L={pos:null,locked:false,line:"",area:"",photos:(o.photos||[]).slice(0,3),map:null};
   const carCard=()=>{const c=G[ci];return `<span class="sq" style="--c1:var(--accent)"><i class="ti ti-car"></i></span><div><b class="nt">${esc(lab(c))}</b><small>${c.mileage?money(c.mileage)+" "+T("กม.","km")+" · ":""}${T("จากโรงรถของคุณ","From your garage")}</small></div><button type="button" class="lnk" id="bCarChg">${T("เปลี่ยน","Change")}</button>`};
-  const api2={
-    html:`${G.length?`<div class="fld"><span>${T("รถ","Car")}</span><div class="carc" id="bCarC">${carCard()}</div>
+  /* ชิ้นส่วนของฟอร์ม · ฟอร์มยาว (ประกาศหาช่าง/ขอราคา) จัดเป็น 3 หมวดมีหัวข้อ อ่านทีละก้อน · ฟอร์มด่วนเรียงต่อกันให้สั้นที่สุด */
+  const P={
+    car:G.length?`<div class="fld"><span>${T("รถ","Car")}</span><div class="carc" id="bCarC">${carCard()}</div>
         <div id="bCarPick" hidden>${segs("bCar",G.map((c,i)=>[String(i),lab(c),"ti-car"]).concat([["__",T("คันอื่น","Other car")]]),String(ci))}</div><input class="inp" id="bCarX" placeholder="${T("ยี่ห้อ รุ่น ปี","Make, model, year")}" hidden style="margin-top:8px"/></div>`
-        :`<label class="fld"><span>${T("รถ","Car")}</span><input class="inp" id="bCarX" placeholder="${T("ยี่ห้อ รุ่น ปี","Make, model, year")}"/></label>`}
-      ${o.noSym?"":`<label class="fld"><span>${T("อาการ","Symptom")}</span><textarea class="inp" id="bSym" placeholder="${T("เช่น แอร์ไม่เย็นตอนรถติด","e.g. air-con not cold in traffic")}">${esc(o.sym||"")}</textarea></label>`}
-      ${o.urgent?"":`<div class="fld"><span>${T("ให้ซ่อมที่ไหน","Where to repair")}</span>${segs("bMode",(o.mobile?[["mobile",T("ให้ช่างมาหา","Come to me"),"ti-truck"]]:[]).concat([["shop",T("เอารถเข้าอู่","At the garage"),"ti-building-warehouse"]]),o.mobile?"mobile":"shop")}</div>
-      <div class="fld"><span>${T("เมื่อไร","When")}</span>${segs("bWhen",[["วันนี้",T("วันนี้","Today")],["พรุ่งนี้",T("พรุ่งนี้","Tomorrow")],["__",T("เลือกเอง","Pick a time")]],"วันนี้")}<input class="inp" id="bWhenX" placeholder="${T("เช่น เสาร์นี้ 10 โมง","e.g. Saturday 10am")}" hidden/></div>`}
-      <div class="fld"><span>${T("ตำแหน่งรถ","Car location")}</span>
-        <div class="picker pk2" id="bMap"><div class="lm"></div><i class="ti ti-map-pin-filled cross"></i></div>
-        <div class="locbar e3"><span class="sq lk" id="bLockI" style="--c1:#64748b"><i class="ti ti-loader-2"></i></span><div><b id="bLocL">${T("กำลังหาตำแหน่งของคุณ…","Finding your location…")}</b><small id="bLocS"></small></div>
-          <button type="button" class="lnk" id="bLockB" hidden></button></div>
-        <button type="button" class="btn s w" id="bGps" style="margin-top:8px;min-height:44px"><i class="ti ti-current-location"></i> ${T("ใช้ตำแหน่งปัจจุบัน","Use my location")}</button></div>
-      <button type="button" class="morebtn" id="bMoreB"><i class="ti ti-plus"></i>${T("เพิ่มรายละเอียด หรือแนบรูป","Add details or photos")} <small>${T("ไม่บังคับ","optional")}</small></button>
+        :`<label class="fld"><span>${T("รถ","Car")}</span><input class="inp" id="bCarX" placeholder="${T("ยี่ห้อ รุ่น ปี","Make, model, year")}"/></label>`,
+    sym:o.noSym?"":`<label class="fld"><span>${T("อาการ","Symptom")}</span><textarea class="inp" id="bSym" placeholder="${T("เช่น แอร์ไม่เย็นตอนรถติด","e.g. air-con not cold in traffic")}">${esc(o.sym||"")}</textarea></label>`,
+    mode:o.urgent?"":`<div class="fld"><span>${T("ให้ซ่อมที่ไหน","Where to repair")}</span>${segs("bMode",(o.mobile?[["mobile",T("ให้ช่างมาหา","Come to me"),"ti-truck"]]:[]).concat([["shop",T("เอารถเข้าอู่","At the garage"),"ti-building-warehouse"]]),o.mobile?"mobile":"shop")}</div>`,
+    when:o.urgent?"":`<div class="fld"><span>${T("เมื่อไร","When")}</span>${segs("bWhen",[["วันนี้",T("วันนี้","Today")],["พรุ่งนี้",T("พรุ่งนี้","Tomorrow")],["__",T("เลือกเอง","Pick a time")]],"วันนี้")}<input class="inp" id="bWhenX" placeholder="${T("เช่น เสาร์นี้ 10 โมง","e.g. Saturday 10am")}" hidden/></div>`,
+    /* ปุ่ม "ตำแหน่งปัจจุบัน" อยู่ในแผนที่ (มุมขวาล่าง) แบบแอปแผนที่ทั่วไป — ไม่ต้องมีปุ่มเต็มแถวอีกอัน */
+    loc:`<div class="fld"><span>${T("ตำแหน่งรถ","Car location")}</span>
+        <div class="picker pk2" id="bMap"><div class="lm"></div><i class="ti ti-map-pin-filled cross"></i>
+          <button type="button" class="pk-gps" id="bGps" aria-label="${T("ใช้ตำแหน่งปัจจุบัน","Use my location")}" title="${T("ใช้ตำแหน่งปัจจุบัน","Use my location")}"><i class="ti ti-current-location"></i></button></div>
+        <div class="locbar e3" id="bLocBar"><span class="sq lk" id="bLockI" style="--c1:#64748b"><i class="ti ti-loader-2"></i></span><div><b id="bLocL">${T("กำลังหาตำแหน่งของคุณ…","Finding your location…")}</b><small id="bLocS"></small></div>
+          <button type="button" class="lnk" id="bLockB" hidden></button></div></div>`,
+    more:`<button type="button" class="morebtn" id="bMoreB"><i class="ti ti-plus"></i>${T("เพิ่มรายละเอียด หรือแนบรูป","Add details or photos")} <small>${T("ไม่บังคับ","optional")}</small></button>
       <div id="bMore" hidden><label class="fld"><span>${T("รายละเอียดเพิ่มเติม","More details")}</span><input class="inp" id="bNote" maxlength="300" placeholder="${T("เช่น รถจอดอยู่ใต้ต้นไม้ ประตูบ้านสีเขียว","e.g. parked under the tree, green gate")}"/></label>
-        <div class="fld"><span>${T("รูปถ่าย (สูงสุด 3)","Photos (up to 3)")}</span><div class="docs" id="bPh"></div><input type="file" id="bFile" accept="image/*" hidden/></div></div>
-      <label class="fld"><span>${T("เบอร์โทร","Phone")} <small>(${T("ช่างเห็นหลังคุณยืนยันราคา","shown to the mechanic after you accept a quote")})</small></span><input class="inp" id="bPhone" type="tel" inputmode="tel" value="${esc(prev.phone||"")}" placeholder="08xxxxxxxx"/></label>`,
+        <div class="fld"><span>${T("รูปถ่าย (สูงสุด 3)","Photos (up to 3)")}</span><div class="docs" id="bPh"></div><input type="file" id="bFile" accept="image/*" hidden/></div></div>`,
+    phone:`<label class="fld"><span>${T("เบอร์โทร","Phone")} <small>(${T("ช่างเห็นหลังคุณยืนยันราคา","shown to the mechanic after you accept a quote")})</small></span><input class="inp" id="bPhone" type="tel" inputmode="tel" value="${esc(prev.phone||"")}" placeholder="08xxxxxxxx"/></label>`};
+  const sec=(n,title,body)=>`<section class="fsec"><h3 class="fsec-h"><span class="fsec-n">${n}</span>${title}</h3>${body}</section>`;
+  const api2={
+    html:o.sections?sec(1,T("รถและอาการ","Car & problem"),P.car+P.sym+(o.mid||"")+P.more)
+        +sec(2,T("ที่ไหน เมื่อไร","Where & when"),P.mode+P.when+P.loc)
+        +sec(3,o.tail?T("งบและเบอร์ติดต่อ","Budget & phone"):T("เบอร์ติดต่อ","Phone"),(o.tail||"")+P.phone)
+      :P.car+P.sym+P.mode+P.when+P.loc+P.more+P.phone,
     pos:()=>L.pos,
     mount(){
       if(G.length){
@@ -5045,28 +5101,45 @@ function contactForm(o){
         $("bPh").querySelectorAll(".rm").forEach(b=>b.onclick=()=>{L.photos.splice(+b.dataset.i,1);drawPh()});if($("bAddPh"))$("bAddPh").onclick=()=>{$("bFile").value="";$("bFile").click()}};
       drawPh();
       $("bFile").onchange=async()=>{const f=$("bFile").files[0];if(!f)return;try{L.photos.push(await shrink(f,1100));drawPh()}catch(e){$("err").textContent=e.message}};
-      /* ── หมุด: GPS → ล็อกทันที ── ล็อกแล้วแผนที่ลากไม่ได้ กันหมุดเลื่อนเพราะนิ้วโดนตอนเลื่อนหน้า */
+      /* ── หมุด: GPS → ล็อกทันที ── ล็อกแล้วแผนที่ลากไม่ได้ กันหมุดเลื่อนเพราะนิ้วโดนตอนเลื่อนหน้า
+         กติกาหมุด (กันคนกวน): ต้องอยู่บนบก และห่างตำแหน่งเครื่องไม่เกินรัศมี (ด่วน 1.5 กม. · ปกติ 20 กม.)
+         แผนที่ลากเลยวงไม่ได้ · หมุดในน้ำหรือนอกวง = ล็อกไม่ได้ ส่งไม่ได้ (หลังบ้านตรวจซ้ำอีกชั้น) */
+      const R=o.urgent?PIN_KM.urgent:PIN_KM.normal,slack=()=>Math.min(L.gps&&L.gps.acc||0,3000)/1000;
+      const why=()=>!L.pos?"":L.water?"water":L.gps&&km(L.gps,L.pos)>R+slack()?"far":"";
       const show=async()=>{
         const p=L.pos;if(!p)return;
-        $("bLockI").innerHTML=`<i class="ti ${L.locked?"ti-lock":"ti-lock-open"}"></i>`;$("bLockI").style.setProperty("--c1",L.locked?"#16a34a":"#f59e0b");
+        const w=why();$("bLocBar").classList.toggle("bad",!!w);$("bMap").classList.toggle("bad",!!w);
+        $("bLockI").innerHTML=`<i class="ti ${w?"ti-alert-triangle":L.locked?"ti-lock":"ti-lock-open"}"></i>`;$("bLockI").style.setProperty("--c1",w?"#dc2626":L.locked?"#16a34a":"#f59e0b");
         $("bMap").classList.toggle("locked",L.locked);
-        $("bLockB").hidden=false;$("bLockB").textContent=L.locked?T("ย้ายหมุด","Move pin"):T("ล็อกตรงนี้","Lock here");
+        $("bLockB").hidden=!!w;$("bLockB").textContent=L.locked?T("ย้ายหมุด","Move pin"):T("ล็อกตรงนี้","Lock here");
+        if(w){$("bLocL").textContent=w==="water"?T("หมุดอยู่ในน้ำ","The pin is in the water"):T(`ไกลจากตำแหน่งของคุณเกิน ${R} กม.`,`More than ${R} km from you`);
+          $("bLocS").textContent=w==="water"?T("เลื่อนแผนที่ให้หมุดอยู่บนถนนหรือที่จอดรถ","Drag the map so the pin sits on a road or parking spot"):T("เลื่อนหมุดให้ตรงที่รถจอด หรือกดปุ่มตำแหน่งในแผนที่","Move the pin to where the car is, or tap the location button");return}
         $("bLocS").textContent=(L.locked?T("ล็อกตำแหน่งจริงแล้ว · ","Exact location locked · "):T("เลื่อนแผนที่ให้หมุดตรงรถ · ","Drag the map under the pin · "))+p.lat.toFixed(5)+", "+p.lng.toFixed(5);
         if(!L.line){$("bLocL").textContent=T("ตำแหน่งที่ปักไว้","Pinned location")}
-        const g=await revgeo(p);if(L.pos!==p)return;L.line=g.line;L.area=g.area;
+        const g=await revgeo(p);if(L.pos!==p||why())return;L.line=g.line;L.area=g.area;
         $("bLocL").textContent=g.line||g.area||T("ตำแหน่งที่ปักไว้","Pinned location");
       };
-      const lock=on=>{L.locked=on;const m=L.map;if(m){["dragging","touchZoom","doubleClickZoom","scrollWheelZoom"].forEach(h=>m[h]&&(on?m[h].disable():m[h].enable()))}show()};
-      const setPos=(p,lk)=>{L.pos={lat:+p.lat.toFixed(6),lng:+p.lng.toFixed(6)};L.line="";if(L.map)L.map.setView([p.lat,p.lng],17);lock(!!lk)};
+      const lock=on=>{if(on&&why())on=false;L.locked=on;const m=L.map;if(m){["dragging","touchZoom","doubleClickZoom","scrollWheelZoom"].forEach(h=>m[h]&&(on?m[h].disable():m[h].enable()))}show()};
+      /* น้ำ: อ่านสีแผนที่ใต้หมุดหลังหยุดลาก — ตรวจไม่ได้ (เน็ต/แผนที่ล่ม) = ไม่บล็อก */
+      const wet=async()=>{const p=L.pos;if(!p)return;const w=await waterAt(p);if(L.pos!==p)return;L.water=w===true;if(L.water&&L.locked)lock(false);else show()};
+      const setPos=(p,lk)=>{L.pos={lat:+p.lat.toFixed(6),lng:+p.lng.toFixed(6)};L.line="";L.water=false;if(L.map)L.map.setView([p.lat,p.lng],17);lock(!!lk);wet()};
+      /* วงรัศมีรอบตำแหน่งเครื่อง: เห็นขอบเขตชัด และแผนที่ลากออกนอกวงไม่ได้ */
+      let ring=null;
+      const fence=()=>{if(!L.map||!L.gps)return;if(ring)ring.remove();
+        ring=window.L.circle([L.gps.lat,L.gps.lng],{radius:(R+slack())*1000,color:"#E8590C",weight:1.5,opacity:.75,dashArray:"5 7",fillColor:"#E8590C",fillOpacity:.04,interactive:false}).addTo(L.map);
+        L.map.setMaxBounds(ring.getBounds().pad(.02))};
       if(window.L){
         const c=HERE||{lat:13.7563,lng:100.5018};
         L.map=oneWorld(window.L.map($("bMap").querySelector(".lm"),{zoomControl:false,attributionControl:false})).setView([c.lat,c.lng],HERE?16:11);
         window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,noWrap:true,bounds:[[-85,-180],[85,180]]}).addTo(L.map);
-        L.map.on("moveend",()=>{if(L.locked)return;const q=L.map.getCenter();L.pos={lat:+q.lat.toFixed(6),lng:+q.lng.toFixed(6)};L.line="";show()});
+        L.map.on("moveend",()=>{if(L.locked)return;const q=L.map.getCenter();L.pos={lat:+q.lat.toFixed(6),lng:+q.lng.toFixed(6)};L.line="";L.water=false;show();wet()});
         setTimeout(()=>L.map.invalidateSize(),420);
-      }else $("bMap").querySelector(".lm").innerHTML=`<div class="noleaf">${T("กดใช้ตำแหน่งปัจจุบัน","Tap “Use my location”")}</div>`;
+      }else $("bMap").querySelector(".lm").innerHTML=`<div class="noleaf">${T("กดปุ่มตำแหน่งที่มุมแผนที่","Tap the location button")}</div>`;
       $("bLockB").onclick=()=>lock(!L.locked);
-      const gps=async()=>{const p=await locate();if(p)setPos(p,true);else if(!L.pos){$("bLocL").textContent=T("ไม่ได้ตำแหน่ง — เลื่อนแผนที่แล้วกดล็อก","No GPS — drag the map and lock");if(L.map){const q=L.map.getCenter();L.pos={lat:q.lat,lng:q.lng};lock(false)}}};
+      const gps=async()=>{const p=await locate();
+        if(p){L.gps={lat:p.lat,lng:p.lng,acc:p.acc||0};fence();setPos(p,true)}
+        else if(!L.pos){$("bLocL").textContent=o.needGps?T("เปิดตำแหน่งของเครื่องก่อน แล้วกดปุ่มตำแหน่งในแผนที่","Turn on location, then tap the location button"):T("ไม่ได้ตำแหน่ง — เลื่อนแผนที่แล้วกดล็อก","No GPS — drag the map and lock");
+          if(L.map&&!o.needGps){const q=L.map.getCenter();L.pos={lat:q.lat,lng:q.lng};lock(false);wet()}}};
       $("bGps").onclick=e=>busy(e.currentTarget,gps);
       gps();
     },
@@ -5078,7 +5151,11 @@ function contactForm(o){
       if(car.length<2)bad.push({id:"bCarX",msg:T("ใส่รถของคุณ: ยี่ห้อ รุ่น และปี","Enter your car: make, model and year")});
       const symEl=$("bSym"),sym=symEl?symEl.value.trim():"",smin=x.sym!=null?x.sym:symEl?10:0;
       if(symEl&&sym.length<smin)bad.push({id:"bSym",msg:sym?T(`เล่าอาการเพิ่มอีกนิด (อย่างน้อย ${smin} ตัวอักษร) ร้านจะได้ประเมินราคาได้ตรง`,`Describe the problem a bit more (at least ${smin} characters)`):T("ยังไม่ได้บอกอาการรถ","Tell us what's wrong with the car")});
-      if(!L.pos)bad.push({id:"bMap",msg:T("ปักหมุดตำแหน่งรถก่อน","Pin your car's location first")});
+      /* ประกาศหาช่าง/งานด่วนกระจายถึงช่างหลายร้าน — ต้องมีตำแหน่งจริงของเครื่องเป็นหลักยึด */
+      if(o.needGps&&!L.gps)bad.push({id:"bGps",msg:T("เปิดตำแหน่ง (GPS) ของเครื่องก่อน — ช่างต้องรู้ว่ารถอยู่ตรงไหนจริง","Turn on your phone's location first — mechanics need to know where the car really is")});
+      else if(!L.pos)bad.push({id:"bMap",msg:T("ปักหมุดตำแหน่งรถก่อน","Pin your car's location first")});
+      else if(L.water)bad.push({id:"bMap",msg:T("หมุดอยู่ในน้ำ — เลื่อนให้อยู่บนถนนหรือที่จอดรถ","The pin is in the water — move it onto a road or parking spot")});
+      else if(L.gps&&km(L.gps,L.pos)>(o.urgent?PIN_KM.urgent:PIN_KM.normal)+Math.min(L.gps.acc||0,3000)/1000)bad.push({id:"bMap",msg:T(`หมุดอยู่ไกลจากตำแหน่งของคุณเกิน ${o.urgent?PIN_KM.urgent:PIN_KM.normal} กม. — เลื่อนให้ตรงที่รถจอด`,`The pin is more than ${o.urgent?PIN_KM.urgent:PIN_KM.normal} km from you — move it to where the car is`)});
       else if(!L.locked)bad.push({id:"bLockB",msg:T("กด “ล็อกตรงนี้” เพื่อยืนยันตำแหน่ง","Tap “Lock here” to confirm the location")});
       if(!o.urgent&&segVal("bWhen")==="__"&&$("bWhenX").value.trim().length<4)bad.push({id:"bWhenX",msg:T("บอกวันและเวลาที่สะดวก เช่น เสาร์นี้ 10 โมง","Say when suits you, e.g. Saturday 10am")});
       /* +66 812345678 → 0812345678 */
@@ -5091,7 +5168,9 @@ function contactForm(o){
       const area=(L.area||(T("พิกัด ","Coords ")+coord)).slice(0,160);
       const address=[L.line,"แผนที่ https://maps.google.com/?q="+p.lat+","+p.lng].filter(Boolean).join(" · ");
       const v={car,symptom:$("bSym")?$("bSym").value.trim():"",mode:o.urgent?"mobile":segVal("bMode"),requestedTime:when,
-        area,address,lat:p.lat,lng:p.lng,note:$("bNote").value.trim(),photos:L.photos.slice(),phone:ph};
+        area,address,lat:p.lat,lng:p.lng,note:$("bNote").value.trim(),photos:L.photos.slice(),phone:ph,
+        /* ตำแหน่งเครื่องตอนกรอก: หลังบ้านใช้ตรวจระยะหมุดเท่านั้น ไม่เก็บ */
+        ...(L.gps?{gps:{lat:L.gps.lat,lng:L.gps.lng,acc:Math.round(L.gps.acc||0)}}:{})};
       ls.set("spire_tech_contact",{phone:v.phone});
       return v;
     }};
@@ -5101,7 +5180,7 @@ function book(t,sym){
   if(!U)return needLogin();
   if(isMine(t))return toast("นี่คือร้านของคุณ — ขอราคาร้านตัวเองไม่ได้");
   const reqId=crypto.randomUUID();
-  const cf=contactForm({sym:sym??F.q,mobile:t.mobile});
+  const cf=contactForm({sym:sym??F.q,mobile:t.mobile,sections:true});
   sheet({push:true,slug:"quote",title:"ขอราคา · "+(t.shop||t.name),body:cf.html,
     foot:'<button class="btn p w" id="bSend">ส่งขอราคา <i class="ti ti-arrow-right"></i></button>',
     mount(){cf.mount();
@@ -5149,7 +5228,7 @@ function openMulti(sym,cat){
         const s=$("mSym").value.trim();
         /* ข้ามอาการในขั้นแรกได้ — แต่ร้านต้องรู้ว่าจะซ่อมอะไร จึงถามต่อในหน้านี้เลย ไม่ต้องย้อนกลับไปขั้นก่อน */
         const ask=s.length<10;
-        const cf=contactForm({sym:s,noSym:!ask,mobile:list.some(t=>t.mobile)});
+        const cf=contactForm({sym:s,noSym:!ask,mobile:list.some(t=>t.mobile),sections:true});
         sheet({push:true,slug:"send",title:`ขอราคา ${list.length} ร้าน`,body:`<p class="note"><i class="ti ti-info-circle"></i>ส่งถึง ${list.map(t=>esc(t.shop||t.name)).join(", ")}</p>`+cf.html,
           foot:'<button class="btn p w" id="mGo">ส่งขอราคาทุกร้าน</button>',
           mount(){cf.mount();
@@ -5184,7 +5263,7 @@ async function urgentCall(pre){
   if(!await userReady())return needLogin();
   pre=pre&&pre.symptom?pre:null;
   const QK=pre?["ต้องการรถยก","รถขับต่อได้ ขอช่างมาดู","ยางแตก","แบตหมด"]:["สตาร์ทไม่ติด","แบตหมด","ยางแตก","เครื่องร้อนจัด","รถดับกลางทาง","กุญแจติดในรถ"];
-  const cf=contactForm({urgent:true,noSym:true,photos:pre&&pre.photos});
+  const cf=contactForm({urgent:true,noSym:true,needGps:true,photos:pre&&pre.photos});
   const pickList=()=>{
     /* ร้านที่งานค้างเต็ม (full) รับงานใหม่ไม่ได้ตอนนี้ — ไม่ส่งงานด่วนไปให้รอเก้อ */
     const TS=TECHS.filter(t=>!isMine(t)&&!t.full);let l=TS.filter(t=>t.mobile&&t.urgent);if(!l.length)l=TS.filter(t=>t.mobile);
@@ -6091,8 +6170,10 @@ function wireInbox(b){
   if($("ibStudio"))$("ibStudio").onclick=()=>{closeSheet();openStudio();setTimeout(()=>setTab2("messages"),0)};
   if($("ibRetry"))$("ibRetry").onclick=()=>inbox();
 }
+/* กล่องข้อความที่เปิดมาจากหน้าอื่นของแอป (แท็บแชตในการาจ/นิตยสาร/ร้านค้า/บัญชี) — ปิดแล้วกลับหน้าเดิม ไม่ตกมาหน้าแรก */
+var IB_FROM=(()=>{try{const r=new URL(document.referrer);return r.origin===location.origin&&/^\/(garage|news|spares|profile|chat)(\/|$)/.test(r.pathname)&&/^\/messages(\/|$)/.test(location.pathname)?r.pathname:null}catch(e){return null}})();
 async function inbox(){
-  const paint=(list,state)=>sheet({title:T("ข้อความ","Messages"),url:"/messages",full:true,inbox:true,body:inboxBody(list,state),mount:wireInbox});
+  const paint=(list,state)=>{sheet({title:T("ข้อความ","Messages"),url:"/messages",full:true,inbox:true,body:inboxBody(list,state),mount:wireInbox});document.documentElement.classList.remove("ib-boot")};
   const read=uid=>{try{return JSON.parse(localStorage.getItem(IBK(uid))||"null")}catch(e){return null}};
   /* วาดทันทีที่กด — เดิมรอหน้าแรกโหลดข้อมูลทั้งหมด (หลายวินาที) ผู้ใช้เลยเห็นแต่หน้าแรกเหมือนกดแล้วไม่ไปไหน */
   const guess=U?U.uid:lastUid();let cached=guess&&read(guess);
@@ -6246,7 +6327,7 @@ function shrink(file,max){
     if(!/^image\//.test(file.type))return rej(new Error("ต้องเป็นไฟล์รูปภาพ"));
     const img=new Image(),u=URL.createObjectURL(file);
     img.onload=()=>{const s=Math.min(1,(max||1280)/Math.max(img.width,img.height));const c=document.createElement("canvas");c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);
-      c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);let q=.72,d=c.toDataURL("image/jpeg",q);while(d.length>900000&&q>.35){q-=.1;d=c.toDataURL("image/jpeg",q)}res(d)};
+      const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);let q=.72,d=c.toDataURL("image/jpeg",q);while(d.length>900000&&q>.35){q-=.1;d=c.toDataURL("image/jpeg",q)}res(d)};
     img.onerror=()=>{URL.revokeObjectURL(u);rej(new Error("เปิดรูปนี้ไม่ได้"))};img.src=u;
   });
 }
@@ -7200,13 +7281,14 @@ function stopAlerts(){clearTimeout(alertT)}
 function openPostForm(sym,cat,d){
   if(!U)return needLogin();
   d=d||{};cat=cat||catsOf(sym||"")[0]||"";
-  const cf=contactForm({sym:sym??$("q").value.trim(),mobile:true,carId:d.carId,photos:d.photos});
+  /* 3 หมวด: รถและอาการ → ที่ไหน เมื่อไร → งบและเบอร์ · ช่อง "รับอะไหล่มือสอง" โผล่เมื่อใส่งบเป็นตัวเลขแล้วเท่านั้น */
+  const cf=contactForm({sym:sym??$("q").value.trim(),mobile:true,carId:d.carId,photos:d.photos,sections:true,needGps:true,
+    mid:`<div class="fld"><span>${T("หมวดงาน","Category")}</span>${segs("pCat",[["",T("ไม่แน่ใจ","Not sure")],...["air","eng","tyre","ev","body"].map(k=>[k,CAT[k].th])],cat)}</div>`,
+    tail:`<label class="fld"><span>${T("งบที่ตั้งไว้","Your budget")} <small>(${T("ไม่บังคับ","optional")})</small></span><div class="pb-in"><b>฿</b><input class="inp" id="pBud" type="number" inputmode="numeric" min="100" max="1000000" placeholder="${T("เช่น 1500","e.g. 1500")}"/></div></label>
+      <label class="chk pb-used" id="pUsedRow" hidden><input type="checkbox" id="pUsed"/><span><b>${T("รับอะไหล่มือสองได้","Used parts are OK")}</b><small>${T("ช่วยให้อยู่ในงบได้ง่ายขึ้น ช่างต้องบอกในใบเสนอราคา","Helps fit the budget — the mechanic must say so in the quote")}</small></span></label>
+      <p class="note pb-ai" id="pBudAi" hidden></p>`});
   sheet({title:T("ประกาศหาช่าง","Post a job"),url:"/post",body:`
-    <p class="note"><i class="ti ti-speakerphone"></i>${T("ช่างรอบตัวจะเห็นหมุดของคุณบนแผนที่ แล้วเสนอราคาแข่งกัน คุณเลือกเองว่าจะใช้ใคร","Nearby mechanics see your pin and send competing quotes — you choose")}</p>
-    <div class="fld"><span>${T("หมวดงาน","Category")}</span>${segs("pCat",[["",T("ไม่แน่ใจ","Not sure")],...["air","eng","tyre","ev","body"].map(k=>[k,CAT[k].th])],cat)}</div>`+cf.html+`
-    <div class="two pb-row"><label class="fld"><span>${T("งบที่ตั้งไว้ (ไม่บังคับ)","Your budget (optional)")}</span><input class="inp" id="pBud" type="number" inputmode="numeric" min="100" max="1000000" placeholder="${T("เช่น 1500","e.g. 1500")}"/></label>
-      <label class="chk pb-used"><input type="checkbox" id="pUsed"/> ${T("รับอะไหล่มือสองได้","Used parts are OK")}</label></div>
-    <p class="note pb-ai" id="pBudAi" hidden></p>`,
+    <p class="note pf-lead"><i class="ti ti-speakerphone"></i>${T("ช่างรอบตัวเห็นประกาศแล้วเสนอราคาแข่งกัน คุณเลือกเอง","Nearby mechanics quote — you choose")}</p>`+cf.html,
     foot:`<button class="btn p w" id="pGo"><i class="ti ti-speakerphone"></i> ${T("ประกาศเลย","Post now")}</button>`,
     mount(){cf.mount();wireSeg("pCat");budgetCheck();
       /* ร่างจาก Cendon Valet: เติมช่องที่รู้แล้ว เหลือให้ผู้ใช้ยืนยันตำแหน่งกับเบอร์ */
@@ -7218,7 +7300,7 @@ function openPostForm(sym,cat,d){
       $("pGo").onclick=e=>busy(e.currentTarget,async()=>{
         const id=crypto.randomUUID(),v=cf.read();
         const bud=+$("pBud").value||0;
-        const r=await api("/api/tech/posts",{body:{id,...v,cat:segVal("pCat"),...(bud?{budget:Math.round(bud)}:{}),usedOk:$("pUsed").checked}});
+        const r=await api("/api/tech/posts",{body:{id,...v,cat:segVal("pCat"),...(bud?{budget:Math.round(bud)}:{}),usedOk:bud>0&&$("pUsed").checked}});
         toast(r&&typeof r.reach==="number"?(r.reach?T(`ประกาศแล้ว ช่าง ${r.reach} ร้านใกล้คุณเห็นแล้ว`,`Posted — ${r.reach} nearby shop${r.reach>1?"s":""} can see it`):T("ประกาศแล้ว แต่ยังไม่มีช่างหมวดนี้ในรัศมี — ร้านที่เข้ามาใหม่จะเห็นทันที","Posted, but no shop in this category is in range yet")):T("ประกาศแล้ว รอช่างเสนอราคา","Posted — waiting for quotes"));await refreshJobs();openPostView(id);
       });
     }});
@@ -7243,7 +7325,9 @@ function budgetCheck(){
     }catch(e){out.hidden=true;last=""}
   };
   const soon=()=>{clearTimeout(t);t=setTimeout(run,900)};
-  inp.addEventListener("input",soon);$("pUsed").addEventListener("change",soon);if($("bSym"))$("bSym").addEventListener("change",soon);
+  /* มีตัวเลขงบแล้วค่อยถามเรื่องอะไหล่มือสอง — ไม่มีงบ = ซ่อนและไม่ส่งค่านี้ */
+  const used=()=>{const on=(+inp.value||0)>0;$("pUsedRow").hidden=!on;if(!on)$("pUsed").checked=false};
+  inp.addEventListener("input",()=>{used();soon()});$("pUsed").addEventListener("change",soon);if($("bSym"))$("bSym").addEventListener("change",soon);used();
 }
 let POSTS=[],postT=0;
 async function openPostView(id,push){
@@ -7348,7 +7432,7 @@ async function pullCars(){
 <script src="cendon-admin.js" defer></script>
 <script src="fluid.js" defer></script>
 <script src="crop.js" defer></script>
-<script src="cendon-line.js?v=2" defer></script>
+<script src="cendon-line.js?v=3" defer></script>
 <script>
 /* ต่อ navbar เดิมเข้ากับหน้านี้: ตัวชี้แท็บ · เมนูโปรไฟล์ · ปุ่มเข้าสู่ระบบ · รูป/ตัวอักษรผู้ใช้ */
 (function(){

@@ -100,8 +100,17 @@ function foot(active){
 </div></footer>`;
 }
 
-/* หน้าเต็ม: page = {key, path, title:[th,en], desc:[th,en], body, doc:true|false} */
-export function page({key,path,title,desc,body,doc=false}){
+/* ── ข้อมูลโครงสร้าง (schema.org JSON-LD) ให้ Google เข้าใจว่าเว็บนี้คือใคร ทำอะไร ──
+   ใส่เฉพาะข้อเท็จจริง: ไม่มีคะแนนรีวิว/ยอดดาวน์โหลดที่แต่งขึ้น */
+export const ORG={'@type':'Organization','@id':SITE+'/#org',name:'Cendon',legalName:'Car Spire Thailand',url:SITE+'/about',
+  logo:{'@type':'ImageObject',url:SITE+'/icon512.png',width:512,height:512},email:EMAIL,sameAs:[LINE_ADD],
+  contactPoint:{'@type':'ContactPoint',contactType:'customer support',email:EMAIL,availableLanguage:['th','en']}};
+export const crumbs=(name,path)=>({'@type':'BreadcrumbList',itemListElement:[
+  {'@type':'ListItem',position:1,name:'Cendon',item:SITE+'/about'},{'@type':'ListItem',position:2,name,item:SITE+path}]});
+const ldTag=g=>g&&g.length?`<script type="application/ld+json">${JSON.stringify({'@context':'https://schema.org','@graph':g}).replace(/</g,'\\u003c')}</script>\n`:'';
+
+/* หน้าเต็ม: page = {key, path, title:[th,en], desc:[th,en], body, doc:true|false, ld:[schema…], index:false = ไม่ให้ค้นหาเจอ (เช่น หน้า 404)} */
+export function page({key,path,title,desc,body,doc=false,ld=[],index=true}){
   const url=SITE+path;
   return `<!doctype html>
 <html lang="th" data-lang="th">
@@ -113,7 +122,7 @@ export function page({key,path,title,desc,body,doc=false}){
 <meta name="x-title-th" content="${esc(title[0])}">
 <meta name="x-title-en" content="${esc(title[1])}">
 <meta name="description" content="${esc(desc[0])}">
-<link rel="canonical" href="${url}">
+${index?`<link rel="canonical" href="${url}">\n<meta name="robots" content="index,follow,max-image-preview:large">`:'<meta name="robots" content="noindex">'}
 <meta name="theme-color" content="#FBFAF7">
 <meta name="color-scheme" content="light">
 <meta property="og:type" content="website">
@@ -124,18 +133,18 @@ export function page({key,path,title,desc,body,doc=false}){
 <meta property="og:image" content="${SITE}/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Cendon — ผู้ช่วยดูแลรถ">
 <meta property="og:locale" content="th_TH">
 <meta property="og:locale:alternate" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/favicon.png">
 <link rel="apple-touch-icon" href="/icon192.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap">
-<link rel="stylesheet" href="stability.css">
+<link rel="preload" as="font" type="font/woff2" href="/fonts/kanit-400-thai.woff2" crossorigin>
+<link rel="stylesheet" href="/fonts/kanit.css?v=1">
+<link rel="stylesheet" href="/stability.css">
 <link rel="stylesheet" href="/site/static/spire09.css?v=${V.font}">
 <link rel="stylesheet" href="/site/static/site.css?v=${V.css}">
-</head>
+${ldTag(ld)}</head>
 <body class="pg-${key}">
 ${doc?'<div class="readbar" aria-hidden="true"></div>':''}
 ${top()}

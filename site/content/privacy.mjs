@@ -1,7 +1,7 @@
 /* นโยบายความเป็นส่วนตัว — ต้องตรงกับที่ระบบทำจริงเสมอ
    เปลี่ยนวิธีเก็บ/ใช้ข้อมูล หรือเพิ่มผู้ให้บริการภายนอก → แก้ไฟล์นี้ + เลื่อนเวอร์ชัน (ให้ตรงกับ ONBOARDING_VERSIONS ในหลังบ้าน) แล้วรัน node site/build.mjs
    เทสต์ test/site.test.mjs ตรวจว่ามีชื่อผู้ให้บริการครบทุกตัว */
-import {L,P,UL,TABLE,NOTE,I,docBody,EMAIL} from '../layout.mjs';
+import {L,P,UL,TABLE,NOTE,I,docBody,EMAIL,crumbs} from '../layout.mjs';
 
 export const VERSION='1.15';
 export const EFFECTIVE=['17 ตุลาคม 2569','17 October 2026'];
@@ -250,6 +250,7 @@ const sections=[
 
 export default {
   key:'privacy',path:'/privacy',file:'privacy.html',
+  ld:[crumbs('นโยบายความเป็นส่วนตัว','/privacy')],
   title:['นโยบายความเป็นส่วนตัว · Cendon','Privacy Policy · Cendon'],
   desc:['Cendon เก็บข้อมูลอะไร ใช้ทำอะไร ส่งให้ใคร เก็บนานแค่ไหน และคุณดาวน์โหลดหรือลบข้อมูลได้เองอย่างไร','What Cendon collects, why, who receives it, how long we keep it, and how to download or delete your data yourself.'],
   doc:true,

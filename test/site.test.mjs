@@ -44,11 +44,13 @@ test('site: ทุกบริการภายนอกที่แอปใ�
 
 test('site: ทุกข้อความมีทั้งไทยและอังกฤษ และไม่มีชื่อแบรนด์เก่า',()=>{
   for(const [file,html] of Object.entries(built)){
+    /* sitemap.xml robots.txt ไม่ใช่หน้าเว็บ · หน้า 404 สั้นและไม่อยู่ในเมนูส่วนท้าย */
+    if(!file.endsWith('.html'))continue;const nf=file==='404.html';
     const th=(html.match(/data-l="th"/g)||[]).length,en=(html.match(/data-l="en"/g)||[]).length;
-    assert.ok(th>20&&th===en,`${file}: ไทย ${th} อังกฤษ ${en}`);
+    assert.ok((nf?th>5:th>20)&&th===en,`${file}: ไทย ${th} อังกฤษ ${en}`);
     assert.doesNotMatch(html,/phasmion|github\.io|cendon[- ]?one/i,file);
     assert.match(html,/<html lang="th" data-lang="th">/);
-    assert.match(html,/aria-current="page"/,file);
+    if(!nf)assert.match(html,/aria-current="page"/,file);
     /* แถบบนแบบเมฆจาง: แค่โลโก้ + ปุ่มภาษา ไม่มีเมนูลิงก์ (เจ้าของขอให้หน้าโล่ง) — ทางไปหน้าอื่นอยู่ส่วนท้าย และทางลัดในแอป */
     assert.doesNotMatch(html,/class="(navwrap|nav|nav-links)"/,file);
     assert.match(html,/<footer class="foot">[\s\S]*class="lang"/,file+': ปุ่มภาษาต้องอยู่ส่วนท้าย');

@@ -1,6 +1,6 @@
 /* ข้อกำหนดการใช้งาน — ต้องตรงกับที่แอปทำจริง (เช่น ตอนนี้ไม่มีค่าธรรมเนียม ลูกค้าจ่ายช่างโดยตรง)
    เปิดระบบรับเงิน/เปลี่ยนค่าธรรมเนียม/เปลี่ยนกติกาสปอนเซอร์ → แก้หัวข้อ "ค่าบริการ" และเลื่อนเวอร์ชันก่อนเปิดใช้ แล้วรัน node site/build.mjs */
-import {L,P,UL,NOTE,I,docBody,EMAIL} from '../layout.mjs';
+import {L,P,UL,NOTE,I,docBody,EMAIL,crumbs} from '../layout.mjs';
 import {VERSION,EFFECTIVE} from './privacy.mjs';
 
 const sections=[
@@ -157,6 +157,7 @@ const sections=[
 
 export default {
   key:'terms',path:'/terms',file:'terms.html',
+  ld:[crumbs('ข้อกำหนดการใช้งาน','/terms')],
   title:['ข้อกำหนดการใช้งาน · Cendon','Terms of Service · Cendon'],
   desc:['ข้อตกลงระหว่างคุณกับ Car Spire Thailand เมื่อใช้ Cendon: ผู้ช่วย AI ตลาดช่าง ความปลอดภัย และสิทธิของคุณ','The agreement between you and Car Spire Thailand when you use Cendon: the AI assistant, the mechanic marketplace, safety and your rights.'],
   doc:true,

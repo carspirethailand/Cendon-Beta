@@ -1,21 +1,35 @@
 /* สร้างหน้าเว็บ Cendon แบบไฟล์นิ่ง (SSG): node site/build.mjs
-   ผลลัพธ์ about.html privacy.html terms.html help.html อยู่ที่รากเว็บ (Cloudflare Pages เสิร์ฟเป็น /about /privacy /terms /help)
+   ผลลัพธ์ about.html privacy.html terms.html help.html 404.html sitemap.xml robots.txt อยู่ที่รากเว็บ (Cloudflare Pages เสิร์ฟเป็น /about /privacy /terms /help)
    แก้เนื้อหาที่ site/content/*.mjs แล้วรันใหม่ — ห้ามแก้ไฟล์ html ที่สร้างออกมาตรง ๆ
    node site/build.mjs --check = ตรวจว่าไฟล์ในรีโปตรงกับที่ควรสร้าง (ใช้ในเทสต์) ไม่เขียนไฟล์ */
 import {readFileSync,writeFileSync,existsSync} from 'node:fs';
 import {pathToFileURL} from 'node:url';
 import {resolve} from 'node:path';
-import {page} from './layout.mjs';
+import {page,SITE} from './layout.mjs';
 import about from './content/about.mjs';
 import privacy from './content/privacy.mjs';
 import terms from './content/terms.mjs';
 import help from './content/help.mjs';
+import notfound from './content/notfound.mjs';
 
-export const PAGES=[about,help,terms,privacy];
+export const PAGES=[about,help,terms,privacy,notfound];
 const root=new URL('../',import.meta.url);
 
+/* แผนผังเว็บให้เครื่องมือค้นหา: เฉพาะหน้าสาธารณะที่อยากให้ค้นเจอ (หน้าในแอปต้องล็อกอิน และกันด้วย X-Robots-Tag ใน _headers) */
+function sitemap(){
+  const urls=PAGES.filter(p=>p.index!==false).map(p=>`  <url><loc>${SITE}${p.path}</loc><priority>${p.key==='about'?'1.0':'0.6'}</priority></url>`);
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>\n`;
+}
+const robots=()=>`# Cendon — เปิดให้เก็บทุกหน้าได้ หน้าในแอป/ลิงก์ส่วนตัวกันด้วย noindex (_headers) ไม่ใช่ Disallow
+# (Disallow ทำให้เครื่องมือค้นหามองไม่เห็นคำสั่ง noindex แล้วอาจเก็บแค่ที่อยู่ไปขึ้นผลค้นหาแทน)
+User-agent: *
+Allow: /
+
+Sitemap: ${SITE}/sitemap.xml
+`;
+
 export function render(){
-  return PAGES.map(p=>({file:p.file,html:page(p)}));
+  return [...PAGES.map(p=>({file:p.file,html:page(p)})),{file:'sitemap.xml',html:sitemap()},{file:'robots.txt',html:robots()}];
 }
 
 if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href){

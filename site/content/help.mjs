@@ -1,6 +1,6 @@
 /* ศูนย์ช่วยเหลือ — วิธีใช้ทุกฟีเจอร์หลัก เขียนตามปุ่ม/ชื่อเมนูที่มีในแอปจริง
    เปลี่ยนชื่อปุ่มหรือขั้นตอนในแอปเมื่อไร แก้ที่นี่ด้วย แล้วรัน node site/build.mjs */
-import {L,P,UL,NOTE,I,docBody,EMAIL,LINE_OA,LINE_ADD} from '../layout.mjs';
+import {L,P,UL,NOTE,I,docBody,EMAIL,LINE_OA,LINE_ADD,crumbs} from '../layout.mjs';
 
 const Q=(th,en,a)=>`<details class="faq"><summary>${L(th,en)}</summary><div class="a">${a}</div></details>`;
 const OL=items=>UL(items,'ol');
@@ -288,6 +288,7 @@ const sections=[
 
 export default {
   key:'help',path:'/help',file:'help.html',
+  ld:[crumbs('ศูนย์ช่วยเหลือ','/help')],
   title:['ศูนย์ช่วยเหลือ · Cendon','Help Centre · Cendon'],
   desc:['วิธีใช้ Cendon: ล็อกอิน รถ ผู้ช่วย AI หาและจ้างช่าง LINE บัญชีและข้อมูลของคุณ','How to use Cendon: signing in, cars, the AI assistant, hiring mechanics, LINE, and your account and data.'],
   doc:true,

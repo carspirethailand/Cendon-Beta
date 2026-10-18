@@ -1,7 +1,7 @@
 /* หน้าแรกของเว็บ (/about): เล่าเรื่องด้วยการเลื่อน — ภาพเคลื่อนไหวทั้งหมดผูกกับการเลื่อน (CSS scroll-driven)
    หน้าจอในโทรศัพท์เป็น "ภาพตัวอย่าง" (มีป้ายบอก) ไม่มีตัวเลขสถิติหรือรีวิวปลอม
    ทุกคำสัญญาในหน้านี้ต้องเป็นสิ่งที่ระบบทำจริง — ดูหน้า /privacy และ /terms ประกอบ */
-import {L,P,I,MARK} from '../layout.mjs';
+import {L,P,I,MARK,SITE,ORG} from '../layout.mjs';
 
 const LANGS=['ไทย','English','中文','日本語','한국어','Bahasa Indonesia','Tiếng Việt','Bahasa Melayu','Deutsch','Français','Español','Português'];
 const top=(th,en)=>`<div class="top">${MARK.replace('class="mark"','class="mk"')}${L(th,en)}</div>`;
@@ -142,9 +142,16 @@ const body=`
 </div></section>
 `;
 
+/* คำค้นที่คนไทยใช้จริง (ถามอาการรถ ราคาซ่อม ช่างใกล้ฉัน) อยู่ในหัวข้อและคำอธิบาย — ยาวไม่เกินที่ Google แสดง */
+const TITLE=['Cendon — ถามอาการรถกับ AI เช็กราคาซ่อม หาช่างใกล้คุณ','Cendon — ask AI about your car, check repair quotes, find mechanics nearby'];
+const DESC=['ผู้ช่วยดูแลรถ: ถามอาการรถกับ AI ส่งรูปหรือเสียงเครื่องยนต์ให้ช่วยดู เช็กว่าใบเสนอราคาอู่แพงไปไหม จดประวัติซ่อม และเรียกช่างที่ผ่านการตรวจใกล้คุณ ใช้ฟรี ไม่มีโฆษณา',
+  'A car companion: ask AI about symptoms, send a photo or engine sound, check whether a garage quote is fair, keep service records, and call checked mechanics near you. Free, no ads.'];
 export default {
   key:'about',path:'/about',file:'about.html',
-  title:['Cendon — ดูแลรถแบบสบายใจ','Cendon — car care, minus the worry'],
-  desc:['ถามอาการรถ ส่งรูปหรือเสียงให้ AI ช่วยดู เช็กใบเสนอราคา และหาช่างที่ผ่านการตรวจใกล้คุณ ใช้ฟรี ไม่มีโฆษณา','Ask about your car, show the AI a photo or sound, check quotes, and find checked mechanics near you. Free, no ads.'],
+  title:TITLE,desc:DESC,
+  ld:[ORG,
+    {'@type':'WebSite','@id':SITE+'/#site',name:'Cendon',url:SITE+'/',inLanguage:['th','en'],publisher:{'@id':ORG['@id']}},
+    {'@type':'WebApplication',name:'Cendon',url:SITE+'/',description:DESC[0],applicationCategory:'LifestyleApplication',operatingSystem:'Web browser (Android, iOS, desktop)',
+      inLanguage:['th','en'],isAccessibleForFree:true,offers:{'@type':'Offer',price:'0',priceCurrency:'THB'},publisher:{'@id':ORG['@id']}}],
   body,
 };

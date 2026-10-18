@@ -16,6 +16,12 @@
 - คำแปลหน้าแรก/หน้าช่าง 11 ภาษาอยู่ที่ `i18n/home-<lang>.js` · เพิ่มข้อความใหม่ในหน้า → เพิ่มคำแปลทุกภาษา (เทสต์ `i18n-home` บอกว่าขาดตรงไหน)
 - เทสต์: `node --test test/*.test.mjs`
 
+### SEO (ให้ Google ค้นเจอ)
+- หน้าที่ให้ค้นเจอ: `/about` (หน้าแรกของเว็บ) `/help` `/privacy` `/terms` — อยู่ใน `sitemap.xml` · `robots.txt` `sitemap.xml` `404.html` สร้างจาก `node site/build.mjs` พร้อมกัน
+- หน้าในแอป (ต้องล็อกอิน) หน้าเข้าสู่ระบบ และลิงก์ส่วนตัว (`/trip` `/passport`) ห้ามขึ้นผลค้นหา → `X-Robots-Tag: noindex` ใน `_headers` · **เพิ่มที่อยู่ใหม่ใน `_redirects` เมื่อไร เพิ่มใน `_headers` ด้วย** (ไม่เพิ่มใน `_redirects` = ที่อยู่นั้นได้หน้า 404)
+- การ์ดแชร์ลิงก์ร้าน/บริการ (`/tech/<id>` `/service/<id>`): Cloudflare Pages Functions ใน `functions/` + `lib/share-meta.mjs` deploy ไปพร้อมหน้าเว็บอัตโนมัติ ไม่ต้องตั้งค่า (ถ้าเปลี่ยนที่อยู่หลังบ้าน ตั้งตัวแปร `TECH_API_URL` ในโปรเจกต์ Pages)
+- เจ้าของทำครั้งเดียว: เพิ่มเว็บใน **Google Search Console** (ยืนยันด้วยไฟล์ HTML ที่ Google ให้ วางไว้รากเว็บ หรือ DNS เมื่อมีโดเมนจริง) → ส่ง `https://<โดเมน>/sitemap.xml` · ย้ายไปโดเมนของตัวเองเมื่อพร้อม แล้วแก้ `SITE` ใน `site/layout.mjs` + `APP_URL` ในหลังบ้าน
+
 ## 2. หลังบ้าน (repo `SpireONE-backend`) — Cloudflare Worker + D1
 
 ```bash

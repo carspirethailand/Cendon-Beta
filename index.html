@@ -31,7 +31,7 @@ if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=5"><\/s
 <meta property="og:locale" content="th_TH"><meta name="twitter:card" content="summary_large_image">
 <script src="nav.js"></script>
 <script src="media-store.js"></script>
-<script src="bell.js?v=11"></script>
+<script src="bell.js?v=12"></script>
 <script src="drop.js?v=4" defer></script>
 <script src="car-menu.js?v=1" defer></script>
 <meta name="theme-color" content="#131316"/>
@@ -216,10 +216,17 @@ window.spireThemeSync=sync;
 
 </script>
 
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css"></noscript>
+<!-- ฟอนต์และไอคอนจากเว็บเราเอง โหลดก่อนวาดเฟรมแรก: เปลี่ยนหน้าแล้วไอคอนไม่หายแวบ ตัวหนังสือ/เมนูไม่ขยับ (เดิมโหลดจาก CDN แบบไม่รอ) -->
+<link rel="preload" href="/icons/ti.woff2?v=26c330ba" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/kanit-400-thai.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/kanit-500-thai.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/kanit-600-thai.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/fonts/kanit.css?v=1">
+<link rel="stylesheet" href="/icons/ti.css?v=19a20a43">
+<link rel="stylesheet" href="/motion.css?v=1">
+<script>/* Motion v2: ระหว่างหน้ากำลังเปิดไม่เล่นทรานซิชัน (สีไม่ค่อย ๆ เปลี่ยนให้เห็นตอนสคริปต์ตั้งค่าเริ่มต้น) — ปลดหลังหน้าพร้อม */(function(){var e=document.documentElement;e.classList.add("m-boot");var off=function(){setTimeout(function(){requestAnimationFrame(function(){e.classList.remove("m-boot")})},250)};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",off);else off()})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Mali:wght@500;600&family=Gaegu:wght@700&family=Yomogi&display=swap" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Mali:wght@500;600&family=Gaegu:wght@700&family=Yomogi&display=swap"></noscript>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mali:wght@500;600&family=Gaegu:wght@700&family=Yomogi&display=swap" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mali:wght@500;600&family=Gaegu:wght@700&family=Yomogi&display=swap"></noscript>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"></noscript>
 <style>
 @font-face{font-family:'Salmon';font-display:swap;src:url(fonts/Salmon.woff2) format('woff2'),url(fonts/Salmon.ttf) format('truetype'),url(fonts/Salmon.otf) format('opentype')}
@@ -4016,7 +4023,7 @@ const RAIL=[
   {id:"air",th:"แอร์รถยนต์",ic:"ti-air-conditioning",c:"#2f9bd8",c2:"#7cc8ee"},
   {id:"air-clean",base:"air",th:"ล้างแอร์ เติมน้ำยา",ic:"ti-droplet",c:"#38bdf8",c2:"#a5e3fb"},
   {id:"eng",th:"เครื่องยนต์",ic:"ti-engine",c:"#e0673a",c2:"#f2a161"},
-  {id:"oil",base:"eng",th:"เปลี่ยนน้ำมันเครื่อง",ic:"ti-oil",c:"#d97706",c2:"#fbbf24"},
+  {id:"oil",base:"eng",th:"เปลี่ยนน้ำมันเครื่อง",ic:"ti-droplet-half-2",c:"#d97706",c2:"#fbbf24"},
   {id:"service",base:"eng",th:"เช็กระยะ",ic:"ti-clipboard-check",c:"#16a34a",c2:"#6ee7a0"},
   {id:"gear",base:"eng",th:"เกียร์ คลัตช์",ic:"ti-manual-gearbox",c:"#64748b",c2:"#a3b1c6"},
   {id:"cool",base:"eng",th:"หม้อน้ำ ระบบหล่อเย็น",ic:"ti-temperature",c:"#0ea5e9",c2:"#7dd3fc"},
@@ -4327,8 +4334,10 @@ function drawHome(){
   $("hRail").querySelectorAll("button").forEach(b=>b.onclick=()=>b.dataset.k==="map"?setView("map"):openCat(b.dataset.k));
   railNav();
   const host=$("sugList");
-  if(!LOADED){host.innerHTML='<div class="skel"></div><div class="skel"></div><div class="skel"></div>';return}
-  if(GIGS===null){host.innerHTML='<div class="skel"></div><div class="skel"></div><div class="skel"></div>';if(!loadGigs.started){loadGigs.started=1;loadGigs()}return}
+  /* ระหว่างโหลด: กล่องเท่าแถวบริการจริงหนึ่งแถว (หัว 32 + การ์ด 297) — เดิมสูง 112 พอการ์ดมาแล้วส่วนด้านล่างถูกดันลง */
+  const SK='<div class="skel" style="height:341px;grid-column:1/-1"></div>';
+  if(!LOADED){host.innerHTML=SK;return}
+  if(GIGS===null){host.innerHTML=SK;if(!loadGigs.started){loadGigs.started=1;loadGigs()}return}
   const l=rankGigs(GIGS);
   $("sugN").textContent=l.length?" · "+T(`${l.length} รายการ`,`${l.length} ${l.length===1?"item":"items"}`):"";
   host.className="lx-gsecs";
@@ -7183,7 +7192,7 @@ async function pullCars(){
 <script src="cendon-admin.js" defer></script>
 <script src="fluid.js" defer></script>
 <script src="crop.js" defer></script>
-<script src="cendon-line.js" defer></script>
+<script src="cendon-line.js?v=2" defer></script>
 <script>
 /* ต่อ navbar เดิมเข้ากับหน้านี้: ตัวชี้แท็บ · เมนูโปรไฟล์ · ปุ่มเข้าสู่ระบบ · รูป/ตัวอักษรผู้ใช้ */
 (function(){

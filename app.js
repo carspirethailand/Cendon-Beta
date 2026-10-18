@@ -5357,7 +5357,7 @@ function listenBody(){
         ${lRec?`<button class="btn danger" id="lgStop"><i class="ti ti-player-stop"></i>${T("หยุดอัด","Stop")}</button>`
           :`<button class="btn" id="lgRec"><i class="ti ti-microphone"></i>${
             lUrl?T("อัดใหม่","Record again"):T("เริ่มอัด","Start recording")}</button>`}
-        ${lUrl&&!lRec?`<button class="btn primary" id="lgSend"><i class="ti ti-waveform"></i>${
+        ${lUrl&&!lRec?`<button class="btn primary" id="lgSend"><i class="ti ti-wave-sine"></i>${
           T("ให้ระบบฟัง","Analyse it")}</button>`:""}
         ${!lRec&&!lUrl?`<button class="btn" id="lgUpBtn"><i class="ti ti-upload"></i>${
           T("ใช้ไฟล์เสียงที่มีอยู่","Use a file")}</button>`:""}

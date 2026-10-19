@@ -264,6 +264,9 @@ const sections=[
     Q('ดาวน์โหลดข้อมูลของฉัน','Download my data',
       P('กด <b>ดาวน์โหลดข้อมูลของฉัน</b> ได้ไฟล์ JSON ของทุกอย่างที่ผูกกับบัญชี (รถ ประวัติซ่อม ใบงาน ข้อความกับช่าง ฯลฯ) ประวัติแชต AI อยู่ในเครื่องของคุณอยู่แล้ว',
         'Tap <b>Download my data</b> for a JSON file of everything linked to your account (cars, service history, jobs, mechanic messages and more). AI chat history is already on your device.'))+
+    Q('ออกจากระบบหรือสลับบัญชี ข้อมูลในเครื่องเป็นอย่างไร','What happens to data on this device when I sign out or switch accounts?',
+      P('ออกจากระบบ = ล้างรถ แชต ชื่อ รูป และการตั้งค่าของบัญชีออกจากเครื่องทันที เหลือแค่ภาษาและธีม · เข้าอีกบัญชีในเครื่องเดียวกันจะไม่เห็นของบัญชีก่อนหน้าเลย และไม่มีอะไรถูกส่งข้ามบัญชี · เข้าบัญชีเดิมอีกครั้ง รถ สมุดรถ และการตั้งค่าที่ซิงก์ไว้จะโหลดกลับมาก่อนหน้าแรกเปิด · ถ้าเพิ่งแก้อะไรตอนออฟไลน์ ต่อเน็ตให้ซิงก์ก่อนค่อยออกจากระบบ',
+        'Signing out clears that account’s cars, chats, name, photo and settings from the device right away, keeping only language and theme. · Another account on the same device never sees the previous account’s data, and nothing is sent across accounts. · Sign back in and your synced cars, car log and settings load before the first page opens. · If you just changed something while offline, reconnect so it syncs before you sign out.'))+
     Q('รีเซ็ต ปิดใช้งาน และลบบัญชี ต่างกันอย่างไร','Reset, deactivate, delete — what’s the difference?',
       UL([['<b>รีเซ็ตบัญชี</b> — ล้างรถ แชต AI และการตั้งค่า แต่คงบัญชี ร้านช่าง และใบงานไว้','<b>Reset account</b> — clears cars, AI chats and settings but keeps your account, shop and jobs'],
           ['<b>ปิดใช้งานบัญชี</b> — ล็อกบัญชีไว้ ข้อมูลยังอยู่ เข้าใช้ไม่ได้จนกว่าจะติดต่อให้เปิดคืน','<b>Deactivate</b> — locks the account; data stays; you can’t sign in until you ask us to restore it'],

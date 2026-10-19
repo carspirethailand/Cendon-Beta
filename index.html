@@ -8,11 +8,12 @@ if(/^\/messages(\/|$)/.test(location.pathname)){document.documentElement.classLi
 <style>html.ib-boot #top,html.ib-boot .view,html.ib-boot #ibFab{visibility:hidden!important}</style>
 <script src="/launch-gate.js?v=1"></script>
 <script src="/auth-gate.js?v=2"></script>
+<script src="/account-scope.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
 <script src="/cendon-tour.js" defer></script>
-<script src="/account-actions.js" defer></script>
-<script src="/account.js?v=2026-10-18-seo1" defer></script>
+<script src="/account-actions.js?v=2" defer></script>
+<script src="/account.js?v=2026-10-19-scope1" defer></script>
 <script src="/garage-rules.js?v=2" defer></script>
 <script src="/garage-data.js?v=2" defer></script>
 <script src="/input-guard.js?v=4" defer></script>
@@ -7901,7 +7902,7 @@ async function pullCars(){
   dd.querySelector('[data-view="profile"]').onclick=()=>{if(window.CendonPaint)CendonPaint.prepare('/profile');location.href="/profile"};
   $("ddJobs").onclick=()=>{dd.classList.remove("show");try{jobs()}catch(e){}};
   $("ddStudio").onclick=()=>{dd.classList.remove("show");openStudio()};
-  $("logoutBtn").onclick=()=>{try{firebase.auth().signOut().then(()=>location.reload())}catch(e){location.reload()}};
+  $("logoutBtn").onclick=()=>{try{(window.CendonScope?CendonScope.signOut():firebase.auth().signOut()).then(()=>location.reload(),()=>location.reload())}catch(e){location.reload()}};
   /* วาดสถานะผู้ใช้: ใช้ cachedUser ทันที (ไม่ต้องรอ Firebase) แล้ววาดซ้ำเมื่อรู้ผลจริง */
   window.navPaint=u=>{
     let c=null;try{c=JSON.parse(localStorage.getItem("spire_cachedUser"))}catch(e){}

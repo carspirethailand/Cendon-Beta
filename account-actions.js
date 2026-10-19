@@ -72,7 +72,7 @@
     const say=text=>{const el=D.getElementById('suDangerMsg');if(el)el.textContent=text};
     if(action==='export'){say(T('กำลังเตรียมไฟล์…','Preparing your file…'));try{await exportData();say(T('ดาวน์โหลดแล้ว — ไฟล์มีข้อมูลส่วนตัว เก็บไว้ในที่ปลอดภัย','Downloaded — the file contains personal data, keep it safe'))}catch(e){say(T('ดาวน์โหลดไม่สำเร็จ กรุณาลองใหม่','Download failed. Please retry.'))}return}
     if(action==='delete'){await deleteAccount(say);return}
-    if(action==='logout'){try{const a=auth();if(a)await a.signOut();location.reload()}catch(e){say(T('ออกจากระบบไม่สำเร็จ กรุณาลองใหม่','Could not sign out. Please retry.'))}return}
+    if(action==='logout'){try{if(W.CendonScope)await W.CendonScope.signOut();else{const a=auth();if(a)await a.signOut()}location.reload()}catch(e){say(T('ออกจากระบบไม่สำเร็จ กรุณาลองใหม่','Could not sign out. Please retry.'))}return}
     if(action==='reset'){
       if(!W.confirm(T('ล้างข้อมูลทั้งหมดของบัญชีนี้บนเซิร์ฟเวอร์ แล้วเริ่มตั้งค่าใหม่? การกระทำนี้ย้อนกลับไม่ได้','Erase this account data from the server and start setup again? This cannot be undone.')))return;
       const result=await resetAccount();
@@ -81,7 +81,7 @@
     }
     if(action==='deactivate'){
       if(!W.confirm(T('ปิดใช้งานบัญชีนี้? คุณจะเข้าใช้งานไม่ได้จนกว่าผู้ดูแลจะเปิดคืนให้','Deactivate this account? You cannot sign in again until an administrator restores it.')))return;
-      try{await call('/api/account/deactivate');if(auth())await auth().signOut();location.reload()}
+      try{await call('/api/account/deactivate');if(W.CendonScope)await W.CendonScope.signOut();else if(auth())await auth().signOut();location.reload()}
       catch(e){say(T('ปิดใช้งานไม่สำเร็จ กรุณาลองใหม่หรือติดต่อผู้ดูแล','Could not deactivate the account. Please retry or contact support.'))}
     }
   }

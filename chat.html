@@ -4,12 +4,13 @@
 <script>/* ธีมตั้งแต่เฟรมแรก (ก่อน CSS วาด) — เดิมหน้าเปิดด้วยธีมตั้งต้นแวบหนึ่งแล้วค่อยสลับ (แชตขึ้นจอดำ) ดูเหมือนกระพริบ/กระตุก */(function(){try{var O={warm:"light",pearl:"light",emerald:"light",plant:"light",moss:"light",carbon:"dark",night:"dark",midnight:"dark",cyber:"dark",aurora:"dark",ocean:"dark",sunset:"dark",magma:"dark"},v=null;try{v=JSON.parse(localStorage.getItem("spire_theme"))}catch(e){}if(typeof v!=="string")try{v=JSON.parse(localStorage.getItem("spire_chatTheme"))}catch(e){}v=v==="light"||v==="dark"?v:(O[v]||"light");var e=document.documentElement;e.setAttribute("data-theme",v);e.setAttribute("data-ctheme",v)}catch(x){}})();</script>
 <script src="/launch-gate.js?v=1"></script>
 <script src="/auth-gate.js?v=2"></script>
+<script src="/account-scope.js?v=1"></script>
 <script src="/console-entry.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
 <script src="/cendon-tour.js" defer></script>
-<script src="/account-actions.js" defer></script>
-<script src="/account.js?v=2026-10-18-seo1" defer></script>
+<script src="/account-actions.js?v=2" defer></script>
+<script src="/account.js?v=2026-10-19-scope1" defer></script>
 <script src="/garage-rules.js?v=2" defer></script>
 <script src="/garage-data.js?v=2" defer></script>
 <script src="/mileage-session.js?v=1" defer></script>
@@ -5547,6 +5548,8 @@ async function pushCar(c,tok){
 }
 async function syncCars(){
   if(!carsAreRemote())return;
+  /* รถในเครื่องยังเป็นของบัญชีอื่น → ห้ามส่งขึ้นในนามบัญชีนี้ (account-scope.js ล้างแล้วโหลดหน้าใหม่) */
+  if(window.CendonScope&&!CendonScope.mine(auth.currentUser.uid))return;
   const carOwner=CendonCars.owner();
   try{
     const tok=await auth.currentUser.getIdToken();
@@ -5575,6 +5578,7 @@ async function syncCars(){
 
     /* คันที่มีแต่ในเครื่อง ต้องดันขึ้นเซิร์ฟเวอร์ ไม่ใช่โดนลบทิ้ง */
     const remoteIds=new Set(arr.map(c=>c.id));
+    let foreign=0;
     for(const c of local){
       if(CendonCars.owner()!==carOwner)return;
       if(!c||!c.id||remoteIds.has(c.id))continue;
@@ -5596,16 +5600,18 @@ async function syncCars(){
             if(LS.get("selCar","")===c.id)LS.set("selCar",saved.id);
           }catch(e){}
         }
-      }catch(e){if(e.status===410){CendonCars.acceptDeleted([c.id],carOwner);delete byId[c.id]}else console.warn("pushCar",c.id,e)}
+      }catch(e){if(e.status===410){CendonCars.acceptDeleted([c.id],carOwner);delete byId[c.id]}
+        /* 409 = รหัสรถนี้เป็นของบัญชีอื่น (ค้างมาจากบัญชีที่เคยใช้เครื่องนี้) → ไม่ใช่รถของบัญชีนี้ เอาออก */
+        else if(e.status===409){delete byId[c.id];foreign++}else console.warn("pushCar",c.id,e)}
     }
 
     if(CendonCars.owner()!==carOwner)return;
     const merged=CendonCars.filter(Object.keys(byId).map(k=>byId[k]));
-    if(!merged.length&&CendonCars.filter(local).length)return;   /* Keep unsynced additions, not deleted cars. */
+    if(!merged.length&&CendonCars.filter(local).length&&!foreign)return;   /* Keep unsynced additions, not deleted or foreign cars. */
     saveGarage(merged);
     /* รถที่เลือกไว้ต้องยังมีอยู่จริง ไม่งั้นหน้าแชตจะกลายเป็น "ยังไม่เลือกรถ" */
     const sel=LS.get("selCar","");
-    if(merged.length&&!merged.some(c=>c.id===sel))LS.set("selCar",merged[0].id);
+    if(sel&&!merged.some(c=>c.id===sel)||!sel&&merged.length)LS.set("selCar",merged.length?merged[0].id:"");
     renderCarUI();
   }catch(e){console.warn("syncCars",e)}
 }
@@ -7197,9 +7203,10 @@ function acctMenu(){
     const b=e.target.closest("[data-a]"); if(!b)return;
     const a=b.dataset.a; d.remove();
     try{ window.spireCloseSideIfDrawer&&window.spireCloseSideIfDrawer() }catch(err){}
-    if(a==="out"){ try{window.firebase&&firebase.auth().signOut()}catch(err){}
-      try{localStorage.removeItem("spire_cachedUser")}catch(err){}
-      location.href="/"; return }
+    /* ออกจากระบบให้เสร็จก่อนค่อยเปลี่ยนหน้า (เดิมเปลี่ยนหน้าทันที บางครั้งตัดการออกจากระบบกลางคัน) */
+    if(a==="out"){ const out=()=>{location.href="/"};
+      try{Promise.resolve(window.CendonScope?CendonScope.signOut():window.firebase&&firebase.auth().signOut()).then(out,out)}catch(err){out()}
+      return }
     /* แพ็กเกจเป็นหน้าแยกแล้ว ส่ง from มาด้วยเพื่อให้ปุ่มกลับพากลับมาที่เดิม */
     if(a==="plan"){ location.href="/plan?from=/chat"; return }
     if(a.indexOf("go:")===0){ window.goNav(a.slice(3)); return }
@@ -12037,6 +12044,8 @@ function collect(){
 async function req(path,opt){
   const A=window.auth||window.spireAuth; const u=A&&A.currentUser;
   if(!u||!window.BACKEND_URL)throw new Error("offline");
+  /* ข้อมูลในเครื่องยังเป็นของบัญชีอื่น → ห้ามรับ/ส่ง (account-scope.js ล้างแล้วโหลดหน้าใหม่ให้) */
+  if(window.CendonScope&&!CendonScope.mine(u.uid))throw new Error("account changed");
   const tok=await u.getIdToken();
   const r=await fetch(window.BACKEND_URL+path,Object.assign({},opt,{
     headers:Object.assign({"Content-Type":"application/json","Authorization":"Bearer "+tok},
@@ -12217,6 +12226,8 @@ async function boot(){
   await push();
 }
 window.cloudSync=()=>{ pulled=false; return boot() };
+/* ส่งของที่ยังค้างขึ้นเดี๋ยวนี้ — ปุ่มออกจากระบบเรียกก่อนล้างข้อมูลในเครื่อง (account-scope.js) */
+window.cloudFlush=()=>push();
 /* ดึงจากคลาวด์เดี๋ยวนี้แล้วรอผล ใช้ตอนตัดสินใจว่าต้องให้ผู้ใช้ตั้งค่าใหม่ไหม
    คืนค่า true ถ้าได้ข้อมูลลงมาจริง ไม่ว่าจะสำเร็จหรือไม่ก็ไม่ค้างเกินเวลาที่กำหนด */
 window.cloudPullNow=async function(ms){

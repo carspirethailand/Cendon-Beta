@@ -339,9 +339,16 @@
     const next=S.next||safeNext(new URLSearchParams(location.search).get('next'));
     if(S.status?.tutorial?.status==='pending'&&(LOGIN||!/^\/(?:index(?:\.html)?)?\/?$/.test(location.pathname))){
       const returnTo=LOGIN?next:safeNext(location.pathname+location.search+location.hash);
-      location.replace('/?tourReturn='+encodeURIComponent(returnTo));return;
+      go('/?tourReturn='+encodeURIComponent(returnTo));return;
     }
-    if(LOGIN){location.replace(next);return}tutorial().catch(()=>{})
+    if(LOGIN){go(next);return}tutorial().catch(()=>{})
+  }
+  /* ออกจากหน้าเข้าสู่ระบบ: รอรถ/แชตของบัญชีนี้ลงเครื่องก่อน (ไม่เกิน 2.5 วิ) แล้วส่งต่อการวาดหน้าแรก
+     หน้าแอปที่เปิดจึงขึ้นชื่อ รูป และรถของบัญชีนี้ทันที ไม่มีของบัญชีก่อนหน้าแวบขึ้นมา */
+  function go(to){
+    if(!LOGIN||!W.CendonScope){location.replace(to);return}
+    const leave=()=>{try{if(W.CendonPaint)W.CendonPaint.prepare(to)}catch(e){}location.replace(to)};
+    W.CendonScope.ready(2500).then(leave,leave);
   }
   async function load(u){if(W.CendonTour)CendonTour.stop();
     const confirmed=S.uid===u.uid&&canonical(S.status,u.uid)?S.status:null;
@@ -352,12 +359,14 @@
     const quiet=!LOGIN&&(confirmed||canonical(cache,u.uid)&&old?.uid===u.uid&&old.v===3&&['basic','advance','enthusiast'].includes(old.level));
     const serial=++S.serial;S.uid=u.uid;S.status=confirmed;S.phase='loading';S.error='';S.busy=false;
     if(!old||old.uid!==u.uid)try{localStorage.removeItem('spire_setup')}catch(e){}
+    /* หน้าเข้าสู่ระบบ: ดึงรถ แชต สมุดรถ ของบัญชีนี้ลงเครื่องไปพร้อมกับตรวจบัญชี (ไม่ต้องรอกันทีละอย่าง) */
+    if(LOGIN&&W.CendonScope)W.CendonScope.prime(u);
     S.draft={};
     if(quiet){close();D.documentElement.dataset.level='enthusiast'}else render();
     try{
       // Ordinary application pages already run their own authenticated login
       // hook. A known completed account needs only the current status check.
-      if(!quiet)await request('/api/login',{name:u.displayName||'',photo:u.photoURL||''},'POST',u.uid);
+      if(!quiet){const me=await request('/api/login',{name:u.displayName||'',photo:u.photoURL||''},'POST',u.uid);if(W.CendonScope&&uidIs(u.uid))W.CendonScope.me(u,me)}
       const data=await request('/api/onboarding',undefined,'GET',u.uid);if(serial!==S.serial||!uidIs(u.uid))return;
       S.status=data;
       if(canonical(data,u.uid)){publish(data);enter();return}
@@ -376,15 +385,19 @@
     }
   }
   function changed(u){if(!u){S.serial++;S.uid=null;S.status=null;S.draft={};S.busy=false;S.password='';S.notice='';S.code='';S.mode=startMode();if(W.CendonTour)CendonTour.stop();
+      /* ไม่มีใครล็อกอิน = ไม่มีข้อมูลส่วนตัวของใครเหลือในเครื่อง (รถ แชต ชื่อ รูป) */
+      if(W.CendonScope)W.CendonScope.release();
       if(W.CendonPaint)W.CendonPaint.observed(null);
       signedHint(false);
       /* ยังไม่ได้เข้าสู่ระบบ → เห็นได้แค่หน้าเข้าสู่ระบบ (หน้าแอปทุกหน้าพาไป /login แล้วกลับมาที่เดิมหลังล็อกอิน) */
-      if(!LOGIN&&!openPath()){toLogin();return}
+      if(!LOGIN&&!openPath()){if(W.CendonScope)W.CendonScope.freeze();toLogin();return}
       signedOut=true;
       if(LOGIN){S.phase='auth';
         /* กลับมาจากลิงก์เข้าสู่ระบบในอีเมล → เข้าสู่ระบบให้เลย */
         if(linkInUrl()&&!linkHref){linkHref=location.href;let saved='';try{saved=localStorage.getItem(LINK_EMAIL)||''}catch(e){}finishLink(saved);return}
         restoreEmail();render()}else close();return}
+    /* ข้อมูลในเครื่องเป็นของบัญชีอื่น → ล้างก่อน · หน้าแอปที่วาดของเก่าไปแล้วโหลดใหม่ (ปกติล้างตั้งแต่หน้าเข้าสู่ระบบ) */
+    if(W.CendonScope&&W.CendonScope.claim(u.uid)&&!LOGIN){W.CendonScope.freeze();location.reload();return}
     if(W.CendonPaint)W.CendonPaint.observed(u.uid);
     signedHint(true);S.password='';S.code='';emailSession(null);if(u.uid!==S.uid)load(u);
   }
@@ -417,7 +430,7 @@
   });
   D.addEventListener('click',e=>{const root=D.getElementById('accountFlow');if(!root||root.hidden||!root.contains(e.target))return;
     const b=e.target.closest('button');if(!b||b.disabled)return;
-    if(b.hasAttribute('data-switch-account')){busy(async()=>{if(W.CendonTour)CendonTour.stop();await auth().signOut()});return}
+    if(b.hasAttribute('data-switch-account')){busy(async()=>{if(W.CendonTour)CendonTour.stop();if(W.CendonScope)await W.CendonScope.signOut();else await auth().signOut()});return}
     if(b.dataset.provider){provider(b.dataset.provider);return}
     if(b.dataset.mode){collect(root);S.mode=b.dataset.mode;S.error='';S.notice='';S.showPw=false;render();return}
     if(b.hasAttribute('data-resend')){if(S.mode==='linksent'){if(Date.now()>=S.resendAt)emailLink(S.email)}else emailRequest();return}

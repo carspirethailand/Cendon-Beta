@@ -21,7 +21,7 @@ test('picker escapes untrusted names, has no pre-selected Garage option and rema
   const s=A.picker('test',{name:'<img src=x> "Honda"'},null);assert.ok(!s.includes('<img'));assert.ok(!s.includes('garage_confirmed" selected'));assert.match(s,/other_confirmed/);assert.match(s,/unknown/);assert.ok(!A.picker('test',null,null).includes('value="garage_confirmed"'));
 });
 test('Home, Chat and SW load paired helper, styles and updated tools',()=>{
-  for(const f of ['index.html','chat.html']){const s=readFileSync(new URL('../'+f,import.meta.url),'utf8');const helper=s.indexOf('<script src="vehicle-audio.js?v=3"');assert.ok(helper>=0&&helper<s.indexOf('<script src="call-tools.js?'));assert.match(s,/vehicle-audio\.css\?v=2/);assert.match(s,/call-session\.js\?v=2026-10-18-audio2/);assert.match(s,/call-surface\.js\?v=2026-10-18-web2/);}
+  for(const f of ['index.html','chat.html']){const s=readFileSync(new URL('../'+f,import.meta.url),'utf8');const helper=s.indexOf('<script src="vehicle-audio.js?v=3"');assert.ok(helper>=0&&helper<s.indexOf('<script src="call-tools.js?'));assert.match(s,/vehicle-audio\.css\?v=2/);assert.match(s,/call-session\.js\?v=2026-10-19-loud1/);assert.match(s,/call-surface\.js\?v=2026-10-18-web2/);}
   assert.ok(+(readFileSync(new URL('../sw.js',import.meta.url),'utf8').match(/cendon-v(\d+)/)||[])[1]>=319);
 });
 test('curated manufacturer sources are separate from live results, scoped by market and safely escaped',()=>{

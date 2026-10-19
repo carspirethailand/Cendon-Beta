@@ -139,13 +139,14 @@ for(;this.p<c.length;this.p+=this.r){const s=Math.max(-1,Math.min(1,c[this.p|0])
 if(this.n===640){this.port.postMessage({pcm:this.b.slice(0).buffer,lv:this.e},[]);this.n=0;this.e=0}}this.p-=c.length;return true}}
 registerProcessor("cendon-mic",P);`;
 /* กันเสียง AI สะท้อนเข้าไมค์ (ลำโพงมือถือ): ระหว่าง AI พูด ส่งเฉพาะเสียงที่ดังกว่าเสียงสะท้อนชัด ๆ (คนพูดแทรกจริง)
-   ที่เบากว่าส่งเป็นความเงียบแทน — ไม่งั้น AI ได้ยินเสียงตัวเองแล้วหยุดพูดกลางคันเอง (ต้นเหตุ "อยู่ ๆ AI เงียบ") */
+   ที่เบากว่าส่งเป็นความเงียบแทน — ไม่งั้น AI ได้ยินเสียงตัวเองแล้วหยุดพูดกลางคันเอง (ต้นเหตุ "อยู่ ๆ AI เงียบ")
+   เกณฑ์ขั้นต่ำ 0.06 (เดิม 0.045) เพราะเสียง AI ดังขึ้นแล้ว (loudChain) เสียงสะท้อนที่หลุดตัวกรองของเครื่องก็ดังตาม */
 let echoLv=0;
 function sendPcm(buf,lv){
   /* ระหว่างฟังเสียงเครื่อง (call-tools.js) ไม่ส่งไมค์ปกติเข้าสาย — เสียงเครื่องยนต์จะไปปลุกให้ AI พูดแทรก */
   if(!callActive||callMuted||!callWS||callWS.readyState!==1||getTools()?.holdMic)return;
   if(lv!=null&&(playSrcs.length>0||aiLevel>0.02)){
-    const th=Math.max(0.045,echoLv*2.4);
+    const th=Math.max(0.06,echoLv*2.4);
     if(lv<th){echoLv=echoLv*0.92+lv*0.08;buf=new ArrayBuffer(buf.byteLength)}
   }else if(lv!=null)echoLv*=0.98;
   if(lv>.025)garageCare?.activity();
@@ -207,7 +208,7 @@ async function startCall(){
   catch(e){endCall();toast(e.message,"ti-phone-off");return;}
   playCtx.resume().catch(()=>{});
   playGain=playCtx.createGain();playAnalyser=playCtx.createAnalyser();playAnalyser.fftSize=512;
-  playGain.connect(playAnalyser);playAnalyser.connect(playCtx.destination);
+  playGain.connect(playAnalyser);loudChain(playCtx,playAnalyser).connect(playCtx.destination);
   playTime=0;
   /* ธีมของหน้า: แชตมี spireTheme() · หน้าอื่นอ่านจาก <html data-theme> */
   $("callUI").classList.toggle("light",((window.spireTheme&&window.spireTheme())||document.documentElement.getAttribute("data-theme")||"dark")==="light");
@@ -413,6 +414,24 @@ async function handleTools(calls){
   }
 }
 
+/* เสียง AI ดังชัดบนลำโพงมือถือ
+ * เปิดไมค์ปุ๊บ มือถือเข้าโหมดโทรเอง (iPhone = วิดีโอคอล · Android = โหมดสื่อสาร) แล้วลดระดับเสียงลง ทั้งที่เสียงออกลำโพงใหญ่อยู่แล้ว
+ * (iPhone ตั้งออกลำโพงเป็นค่าเริ่มต้น · Android เลือกลำโพงเมื่อไม่มีหูฟัง/บลูทูธ — ไม่มีเบราว์เซอร์ไหนเลือกหูฟังสนทนาเองถ้าหน้าเว็บไม่ขอ)
+ * → บีบช่วงเสียง (ท่อนเบายกขึ้น ท่อนดังไม่พุ่ง) + ขยายอีกชั้น + กันเสียงแตกแบบนุ่ม
+ *   ต้นทางเบา -30/-24/-20 dBFS ออกมาราว -16/-14/-13 dBFS (ดังขึ้น ~14/10/7 dB) ต้นทางดังอยู่แล้วก็ไม่แตก
+ * มิเตอร์วงกลม (playAnalyser) อยู่ก่อนขยาย ภาพกับตัวกันเสียงสะท้อนอ่านระดับเดิม · เครื่องที่สร้างโหนดไม่ได้ = ต่อตรงแบบเดิม */
+const AI_BOOST=2.7,CLIP_RANGE=2;
+let softClip=null;
+function loudChain(ctx,input){
+  try{
+    const comp=ctx.createDynamicsCompressor(),boost=ctx.createGain(),clip=ctx.createWaveShaper();
+    comp.threshold.value=-38;comp.knee.value=10;comp.ratio.value=6;comp.attack.value=.003;comp.release.value=.15;
+    /* เส้นกันแตก: ตรงเป๊ะจนถึง 0.8 แล้วโค้งนุ่มเข้าหา 0.98 (ช่วงขาเข้า ±2 จึงย่อด้วย boost/2 ก่อนเข้า) */
+    if(!softClip){softClip=new Float32Array(4097);for(let i=0;i<softClip.length;i++){const r=(i/2048-1)*CLIP_RANGE,a=Math.abs(r);softClip[i]=Math.sign(r)*(a<=.8?a:.8+.18*Math.tanh((a-.8)/.18))}}
+    boost.gain.value=AI_BOOST/CLIP_RANGE;clip.curve=softClip;clip.oversample="2x";
+    input.connect(comp);comp.connect(boost);boost.connect(clip);return clip;
+  }catch(e){return input}
+}
 /* เสียง AI 24kHz เล่นต่อกันใน playback context แยกจากไมค์และเสียงปุ่ม */
 function queuePcm(b64){
   /* กำลังอัดเสียงเครื่อง: ไม่เล่นเสียง AI ไม่งั้นเสียงพูดถูกอัดปนเข้าไป */
@@ -497,6 +516,8 @@ function endCall(){
   livePendingAt=liveGeneratingAt=0;liveTurnAudio=false;liveRecovering=false;camOpening=false;waveSamples=null;
   try{callAbort&&callAbort.abort()}catch(e){}callAbort=null;
   if(hadCall)callChime(null,false);
+  /* iPhone: คืนโหมดเสียงปกติหลังเสียงวางสายเล่นจบ — ไม่งั้นเสียงอื่นในหน้ายังเบาแบบโหมดโทรต่อ */
+  try{if(hadCall&&navigator.audioSession&&navigator.audioSession.type==="play-and-record")setTimeout(()=>{try{if(!callActive&&!callConnecting)navigator.audioSession.type="auto"}catch(e){}},1200)}catch(e){}
   try{getTools()?.reset()}catch(e){}
   callActive=false;
   clearInterval(callTimerInt);callTimerInt=null;

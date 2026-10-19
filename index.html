@@ -2081,6 +2081,81 @@ button.lx-car[aria-expanded="true"]{border-color:var(--ink)}
 .lp-when{display:flex;flex-wrap:wrap;gap:7px}
 .lp-when button{padding:8px 13px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:500 13.5px var(--kb);cursor:pointer}
 .lp-when button.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+/* ฟังเสียงรถ โฉมใหม่: หน้าปัดเสียง + ปุ่มอัดใหญ่ → แผนผังรถมองจากด้านบน (แตะจุด) */
+.lp2{gap:16px}
+.lp2-hd h2{margin:0;font:600 28px/1.15 var(--kd);color:var(--ink)}.lp2-hd p{margin:6px 0 0;font-size:14.5px;color:var(--muted)}
+.lp2-car{position:relative;align-self:flex-start;display:inline-flex;align-items:center;gap:8px;max-width:100%;min-height:44px;padding:0 14px 0 6px;border-radius:22px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:500 14px/1.2 var(--kb);box-sizing:border-box}
+.lp2-car b{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lp2-ci{flex:none;width:32px;height:32px;border-radius:16px;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 13%,transparent);color:var(--accent)}
+.lp2-ci .ti{font-size:17px}
+.lp2-ch{flex:none;font-size:13px;color:var(--accent)}
+.lp2-car select{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:16px}
+.lp2-car:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.lp2-nocar{display:flex;gap:8px;align-items:center;margin:0;font-size:13.5px;color:var(--muted)}
+.lp2-rec{display:grid;justify-items:center;gap:12px}
+.lp2-lens{position:relative;width:min(80vw,330px,46dvh);aspect-ratio:1}
+.lp2-lens canvas{position:absolute;inset:0;width:100%;height:100%}
+.lp2-go{position:absolute;left:50%;top:50%;width:34%;aspect-ratio:1;transform:translate(-50%,-50%);border:0;border-radius:50%;cursor:pointer;color:#fff;display:grid;place-items:center;
+  background:radial-gradient(circle at 35% 30%,#FFB37E,#E9682A 55%,#B8470F);box-shadow:0 18px 50px color-mix(in srgb,#E9682A 45%,transparent),inset 0 1px 0 rgba(255,255,255,.35);transition:transform .2s}
+.lp2-go:active{transform:translate(-50%,-50%) scale(.95)}.lp2-go .ti{font-size:38px}
+.lp2-go:focus-visible{outline:3px solid var(--ink);outline-offset:4px}
+.lp2-hand{position:absolute;left:calc(50% - 1.3px);top:2.8%;width:2.6px;height:47.2%;border-radius:2px;transform-origin:50% 100%;background:linear-gradient(var(--accent),color-mix(in srgb,var(--accent) 30%,transparent));box-shadow:0 0 14px var(--accent)}
+.lp2-hand::before{content:"";position:absolute;left:50%;top:-6px;width:12px;height:12px;margin-left:-6px;border-radius:6px;background:var(--accent);box-shadow:0 0 0 7px color-mix(in srgb,var(--accent) 16%,transparent)}
+.lp2-core{position:absolute;inset:32%;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.lp2-core b{font:500 clamp(30px,10vw,44px)/1 ui-monospace,"SF Mono",Menlo,monospace;font-variant-numeric:tabular-nums;color:var(--ink)}
+.lp2-core b .ti{font-size:32px;color:var(--accent);animation:ctSpinL 1.6s linear infinite}
+.lp2-core small{margin-top:6px;font-size:12px;color:var(--muted)}
+.lp2-core small::before{content:"";display:inline-block;width:6px;height:6px;margin-right:6px;border-radius:3px;background:#e5484d;vertical-align:1px;animation:lpb 1s infinite}
+.lp2-lens.busy canvas{animation:lpBreath 1.6s ease-in-out infinite}
+@keyframes lpBreath{50%{opacity:.6}}@keyframes ctSpinL{to{transform:rotate(360deg)}}
+.lp2-cap{margin:0;font-size:13.5px;color:var(--muted);text-align:center}
+.lp2-file{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:52px;border-radius:26px;border:1px solid var(--line);background:transparent;color:var(--ink);font:500 15px var(--kb);cursor:pointer}
+.lp2-file .ti{font-size:20px}
+.lp2-tips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%}
+.lp2-tips>div{display:flex;flex-direction:column;gap:4px;padding:12px;border-radius:18px;border:1px solid var(--line);background:var(--surface);min-height:84px;box-sizing:border-box}
+.lp2-tips b{font:600 15px/1.25 var(--kd);color:var(--ink)}.lp2-tips b.m{font:500 18px/1.2 ui-monospace,"SF Mono",Menlo,monospace}
+.lp2-tips small{font-size:12px;line-height:1.4;color:var(--muted)}
+.lp2-tips .warn{background:color-mix(in srgb,#F5B445 12%,var(--surface))}.lp2-tips .warn b{color:#B45309}
+html[data-theme="dark"] .lp2-tips .warn b{color:#F5B445}
+.lp2-meter{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;width:100%;font-size:12px;color:var(--muted)}
+.lp2-meter .bar{height:4px;border-radius:2px;background:color-mix(in srgb,var(--ink) 12%,transparent);overflow:hidden}.lp2-meter .bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .08s}
+.lp2-meter em{font-style:normal}
+.lp2-btns{display:grid;grid-template-columns:1fr 1.4fr;gap:8px;width:100%}
+.lp2-clip{display:grid;gap:10px;padding:14px;border-radius:22px;border:1px solid var(--line);background:var(--surface)}
+.lp2-cl{display:flex;align-items:center;gap:12px}
+.lp2-sig{flex:none;width:56px;height:56px}
+.lp2-ct{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.lp2-ct b{font:500 15px/1.3 var(--kb);color:var(--ink)}.lp2-ct .m{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-weight:400}
+.lp2-ct small{font-size:12.5px;color:var(--muted)}
+.lp2-redo{flex:none;min-height:40px;padding:0 6px;border:0;background:transparent;color:var(--accent);font:500 14px var(--kb);cursor:pointer}
+.lp2-clip audio{width:100%;height:40px}
+.lp2-where{display:grid;gap:12px;scroll-margin-top:12px}
+.lp2-where[hidden]{display:none}
+.lp2-h h3{margin:0;font:600 20px/1.3 var(--kd);color:var(--ink)}.lp2-h h3 small{font:400 12.5px var(--kb);color:var(--muted);margin-left:6px}
+.lp2-h p{margin:4px 0 0;font-size:13.5px;color:var(--muted)}
+.lp2-map{display:grid;grid-template-columns:150px minmax(0,1fr);gap:14px;align-items:start}
+.lp2-carbox{position:relative;width:150px;height:300px}
+.lp2-svg{position:absolute;inset:0;width:150px;height:300px}
+.lp2-svg .b{fill:var(--surface);stroke:color-mix(in srgb,var(--ink) 24%,transparent);stroke-width:1.5}
+.lp2-svg .k{fill:none;stroke:color-mix(in srgb,var(--ink) 18%,transparent);stroke-width:1.2}
+.lp2-svg .g{fill:color-mix(in srgb,var(--ink) 12%,var(--surface))}
+.lp2-svg .r{fill:var(--surface-2);stroke:color-mix(in srgb,var(--ink) 16%,transparent)}
+.lp2-svg .w{fill:color-mix(in srgb,var(--ink) 78%,transparent)}
+.lp2-svg .l{fill:color-mix(in srgb,var(--ink) 30%,transparent)}
+#lpHl i{position:absolute;background:color-mix(in srgb,var(--accent) 18%,transparent);border:1.5px solid var(--accent);box-sizing:border-box;pointer-events:none}
+.lp2-dot{position:absolute;width:26px;height:26px;padding:0;border-radius:13px;border:1.5px solid color-mix(in srgb,var(--ink) 30%,transparent);background:var(--surface);color:var(--ink);font:500 11px/1 ui-monospace,"SF Mono",Menlo,monospace;cursor:pointer;display:grid;place-items:center}
+.lp2-dot::after{content:"";position:absolute;inset:-9px}
+.lp2-dot.on{border-color:var(--accent);background:var(--accent);color:#09090B}
+.lp2-zones{display:flex;flex-direction:column;gap:4px}
+.lp2-zones button{display:flex;align-items:center;gap:10px;min-height:40px;padding:0 10px;border-radius:14px;border:1px solid transparent;background:transparent;color:var(--ink);font:400 13.5px/1.3 var(--kb);text-align:left;cursor:pointer}
+.lp2-zones button span{flex:none;width:22px;height:22px;border-radius:11px;display:grid;place-items:center;border:1px solid color-mix(in srgb,var(--ink) 22%,transparent);font:500 10.5px/1 ui-monospace,"SF Mono",Menlo,monospace}
+.lp2-zones button.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 11%,transparent)}
+.lp2-zones button.on span{background:var(--accent);border-color:var(--accent);color:#09090B}
+.lp2-zones .lp2-unsure{justify-content:center;margin-top:4px;border:1px dashed color-mix(in srgb,var(--ink) 22%,transparent);color:var(--muted)}
+.lp2-note summary{display:inline-flex;align-items:center;min-height:40px;color:var(--accent);font:500 14px var(--kb);cursor:pointer;list-style:none}
+.lp2-note summary::-webkit-details-marker{display:none}
+.lp2-note textarea{margin-top:6px}
+@media(max-width:360px){.lp2-map{grid-template-columns:120px minmax(0,1fr)}.lp2-carbox{transform:scale(.8);transform-origin:0 0;height:240px}}
+@media(prefers-reduced-motion:reduce){.lp2-lens.busy canvas,.lp2-core b .ti,.lp2-core small::before{animation:none}}
 .lp-pick{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .lp-big{display:grid;justify-items:center;align-content:center;gap:6px;min-height:150px;padding:16px 12px;border-radius:18px;border:2px dashed color-mix(in srgb,var(--accent) 45%,var(--line));background:color-mix(in srgb,var(--accent) 5%,var(--surface));color:var(--ink);text-align:center;cursor:pointer;font:inherit}
 .lp-big .ti{font-size:36px;color:var(--accent)}.lp-big b{font:700 15px/1.35 var(--kd)}.lp-big small{font-size:12px;color:var(--muted);line-height:1.4}
@@ -2615,16 +2690,17 @@ a.mtab{text-decoration:none}
 <script src="category-pages.js" defer></script>
 <script src="car-sync.js"></script>
 <script src="stability.js" defer></script>
-<link rel="stylesheet" href="call-ui.css?v=2026-10-18-r11">
+<link rel="stylesheet" href="call-ui.css?v=2026-10-19-inst1">
 <script src="call-sounds.js?v=1" defer></script>
 <script src="call-composer.js?v=2026-10-17-r4" defer></script>
 <script src="valet-core.js?v=7" defer></script>
 <script src="call-agent.js?v=2026-10-18-web1" defer></script>
 <script src="call-surface.js?v=2026-10-18-web2" defer></script>
 <script src="engine-scan.js?v=2026-10-17-r4" defer></script>
-<link rel="stylesheet" href="vehicle-audio.css?v=2">
-<script src="vehicle-audio.js?v=3" defer></script>
-<script src="call-tools.js?v=2026-10-18-audio2" defer></script>
+<link rel="stylesheet" href="vehicle-audio.css?v=3">
+<script src="vehicle-audio.js?v=4" defer></script>
+<script src="sound-lens.js?v=1" defer></script>
+<script src="call-tools.js?v=2026-10-19-inst1" defer></script>
 <script src="call-shell.js?v=1" defer></script>
 <script src="garage-care.js?v=1" defer></script>
 <script src="call-session.js?v=2026-10-19-loud1" defer></script>
@@ -3938,42 +4014,67 @@ function lineConnect(t){
         $("lcGo").onclick=e=>busy(e.currentTarget,async()=>{const r=await api("/api/line/connect",{body:{t}});done(r)})}});
   }).catch(e=>fail("ti-cloud-off","เปิดลิงก์ไม่สำเร็จ",esc(e.message)));
 }
+/* แผนผังรถมองจากด้านบน: แตะจุดตัวเลขบนรถ หรือเลือกในรายการ (เลขตรงกัน) */
+const LP_NUM={engine:"1",ac:"2",front:"3",cabin:"4",under:"5",rear:"6",exhaust:"7"};
+const LP_DOT=[["engine",100,74],["ac",100,138],["front",22,95],["front",178,95],["cabin",100,206],["under",100,262],["rear",22,317],["rear",178,317],["exhaust",129,392]];
+const LP_HL={engine:[[30,22,90,70,"26px 26px 10px 10px"]],ac:[[36,90,78,18,"9px"]],front:[[5,46,21,52,"8px"],[125,46,21,52,"8px"]],cabin:[[38,106,74,120,"14px"]],under:[[14,10,122,286,"40px","dashed"]],rear:[[5,212,21,52,"8px"],[125,212,21,52,"8px"]],exhaust:[[84,280,28,28,"50%"]]};
+const LP_CAR=`<svg class="lp2-svg" viewBox="0 0 200 400" aria-hidden="true"><rect class="w" x="10" y="64" width="22" height="62" rx="7"/><rect class="w" x="168" y="64" width="22" height="62" rx="7"/><rect class="w" x="10" y="286" width="22" height="62" rx="7"/><rect class="w" x="168" y="286" width="22" height="62" rx="7"/><ellipse class="b" cx="14" cy="150" rx="9" ry="5"/><ellipse class="b" cx="186" cy="150" rx="9" ry="5"/><path class="b" d="M100 18C140 18 166 30 172 70L178 140L178 300C178 360 162 388 100 390C38 388 22 360 22 300L22 140L28 70C34 30 60 18 100 18Z"/><path class="k" d="M66 40C78 92 82 110 82 122M134 40C122 92 118 110 118 122"/><path class="l" d="M40 46L62 36L64 46L44 56ZM160 46L138 36L136 46L156 56Z"/><path class="g" d="M48 132C80 118 120 118 152 132L144 178C116 170 84 170 56 178Z"/><rect class="r" x="56" y="180" width="88" height="104" rx="14"/><path class="g" d="M56 288C84 296 116 296 144 288L150 322C118 334 82 334 50 322Z"/><path class="k" d="M44 354C80 364 120 364 156 354"/><path class="l" d="M36 370L58 378L56 384L38 378ZM164 370L142 378L144 384L162 378Z"/><rect class="w" x="120" y="388" width="18" height="8" rx="4"/></svg>`;
+const LP_REV=30;
+/* หน้าฟังเสียงรถ: กดอัดได้ทันที (หน้าปัดเสียง วิ่งรอบละ 30 วิ) → อัดเสร็จค่อยถามว่าได้ยินตรงไหน (แตะจุดบนรูปรถ · ไม่แน่ใจก็ข้ามได้)
+   AI รู้รุ่น ปี เลขไมล์ของรถคันนี้อยู่แล้ว — ผู้ใช้ไม่ต้องเล่าซ้ำ */
 function listenPage(){
-  let [cars,car]=myCars(),area="",when=[],clip=null,rec=null,busyClip=false;
+  let [cars,car]=myCars(),area="",when=[],clip=null,rec=null,busyClip=false,sig="";
   const fmt=s=>{s=Math.round(s);return Math.floor(s/60)+":"+String(s%60).padStart(2,"0")};
-  sheet({title:T("ฟังเสียงรถ","Engine sound check"),url:"/listen",full:true,body:`<div class="qp lp">
-    <div class="qp-hd"><h2>${T("ให้ AI ฟังเสียงรถ","Let the AI listen to your car")}</h2><p>${T("อัดเสียง หรือส่งไฟล์เสียง/วิดีโอที่มีเสียง แล้วบอกว่าได้ยินตรงไหน","Record it, or send any audio or video with the sound, and say where you hear it.")}</p></div>
-    <section class="lp-s" id="lpS1"><h3>1 · ${T("เสียง","The sound")} <em>*</em></h3><div id="lpClip"></div>
-      <input type="file" id="lpFile" accept="audio/*,video/*" hidden data-nocrop></section>
-    <section class="lp-s" id="lpS2"><h3>2 · ${T("เสียงมาจากตรงไหน","Where is the sound coming from?")} <em>*</em></h3>
-      <div class="lp-area" id="lpArea">${LP_AREA.map(([k,i,th,en])=>`<button type="button" data-k="${k}"><i class="ti ${i}"></i>${T(th,en)}</button>`).join("")}</div></section>
-    <section class="lp-s"><h3>3 · ${T("ได้ยินตอนไหน","When do you hear it?")} <small>${T("เลือกได้หลายข้อ","pick any")}</small></h3>
-      <div class="lp-when" id="lpWhen">${LP_WHEN.map(([k,th,en])=>`<button type="button" data-k="${k}">${T(th,en)}</button>`).join("")}</div></section>
-    <label class="fld lp-note"><span>${T("อยากบอกอะไรเพิ่ม","Anything else")} <small>${T("ไม่บังคับ","optional")}</small></span><textarea class="inp" id="lpNote" rows="2" maxlength="500" placeholder="${T("เช่น เพิ่งเปลี่ยนผ้าเบรกเมื่อเดือนก่อน","e.g. brake pads were changed last month")}"></textarea></label>
+  const nm=c=>[c.name,c.year].filter(Boolean).join(" ");
+  const light=()=>document.documentElement.getAttribute("data-theme")==="light";
+  const carPill=()=>{const c=cars.find(x=>x.id===car)||cars[0];
+    return !c?`<p class="lp2-nocar"><i class="ti ti-car"></i>${T("ยังไม่มีรถในการาจ — ห้องแชตจะให้เลือกรถก่อน","No car in your garage yet — the chat asks you to pick one first")}</p>`
+      :`<label class="lp2-car"><span class="lp2-ci"><i class="ti ti-car"></i></span><b id="lpCarT">${esc(nm(c))}</b>${cars.length>1?`<span class="lp2-ch">${T("เปลี่ยน","Change")}</span><select data-car aria-label="${T("รถคันไหน","Which car")}">${cars.map(x=>`<option value="${esc(x.id)}"${x.id===car?" selected":""}>${esc(nm(x))}</option>`).join("")}</select>`:""}</label>`};
+  const zl=k=>{const a=LP_AREA.find(x=>x[0]===k);return a?T(a[2],a[3]):""};
+  sheet({title:T("ฟังเสียงรถ","Engine sound check"),url:"/listen",full:true,body:`<div class="qp lp2">
+    <div class="lp2-hd"><h2>${T("ให้ AI ฟังเสียงรถ","Let the AI listen to your car")}</h2><p>${T("อัดเสียง 10–30 วินาที หรือส่งคลิปที่มีเสียง","Record 10–30 seconds, or send any clip with the sound")}</p></div>
+    ${carPill()}
+    <div id="lpClip"></div>
+    <input type="file" id="lpFile" accept="audio/*,video/*" hidden data-nocrop>
+    <section class="lp2-where" id="lpWhere" hidden>
+      <div class="lp2-h"><h3>${T("เสียงมาจากตรงไหน","Where is the sound coming from?")}</h3><p>${T("แตะจุดบนรถ หรือเลือกในรายการ · ไม่แน่ใจก็ข้ามได้","Tap the car or pick from the list · skip it if unsure")}</p></div>
+      <div class="lp2-map">
+        <div class="lp2-carbox">${LP_CAR}<div id="lpHl"></div>${LP_DOT.map(([k,x,y])=>`<button type="button" class="lp2-dot" data-k="${k}" style="left:${(x*.75-13).toFixed(1)}px;top:${(y*.75-13).toFixed(1)}px" aria-label="${LP_NUM[k]} ${esc(zl(k))}">${LP_NUM[k]}</button>`).join("")}</div>
+        <div class="lp2-zones" role="radiogroup" aria-label="${T("ตำแหน่งเสียง","Where the sound is")}">${Object.keys(LP_NUM).map(k=>`<button type="button" role="radio" aria-checked="false" data-k="${k}"><span>${LP_NUM[k]}</span>${esc(zl(k))}</button>`).join("")}
+          <button type="button" class="lp2-unsure" role="radio" aria-checked="false" data-k="unsure">${T("ไม่แน่ใจ","Not sure")}</button></div>
+      </div>
+      <div class="lp2-h"><h3>${T("ได้ยินตอนไหน","When do you hear it?")} <small>${T("เลือกได้หลายข้อ","pick any")}</small></h3></div>
+      <div class="lp-when" id="lpWhen">${LP_WHEN.map(([k,th,en])=>`<button type="button" data-k="${k}" aria-pressed="false">${T(th,en)}</button>`).join("")}</div>
+      <details class="lp2-note"><summary>+ ${T("เพิ่มหมายเหตุ","Add a note")}</summary><textarea class="inp" id="lpNote" rows="2" maxlength="500" placeholder="${T("เช่น เพิ่งเปลี่ยนผ้าเบรกเมื่อเดือนก่อน","e.g. brake pads were changed last month")}"></textarea></details>
+    </section>
     <p class="qp-err" id="lpErr"></p>
-    ${carRow(cars,car)}
   </div>`,
-    foot:`<button class="lx-cta" type="button" id="lpGo" style="width:100%"><i class="ti ti-ear"></i><span id="lpGoT">${T("ให้ AI ฟังเสียงนี้","Let the AI listen")}</span></button>`,
+    foot:`<button class="lx-cta" type="button" id="lpGo" style="width:100%"><i class="ti ti-ear"></i><span id="lpGoT">${T("อัดเสียงหรือเลือกไฟล์ก่อน","Record or pick a file first")}</span></button>`,
     mount(b,f,o){
       const err=t=>{$("lpErr").textContent=t||""};
-      const ready=()=>{$("lpGo").disabled=busyClip||!!rec;$("lpGo").classList.toggle("dim",!(area&&clip));$("lpGoT").textContent=!clip?T("อัดเสียงหรือเลือกไฟล์ก่อน","Record or pick a file first"):!area?T("เลือกว่าเสียงมาจากตรงไหน","Say where the sound is"):T("ให้ AI ฟังเสียงนี้","Let the AI listen")};
-      const tips=`<ul class="qp-tips lp-tips"><li><i class="ti ti-circle-check"></i>${T("วางมือถือห่างจุดที่ดังประมาณ 20–50 ซม.","Hold the phone 20–50 cm from the noise")}</li>
-        <li><i class="ti ti-circle-check"></i>${T("ปิดเพลง ไม่พูดระหว่างอัด · อัด 15–30 วินาที","Music off, no talking · 15–30 seconds")}</li>
-        <li><i class="ti ti-circle-check"></i>${T("ดังตอนเร่ง: จอดในเกียร์ P/N แล้วเร่งเครื่องเบา ๆ","Only when revving? Park in P/N and rev gently")}</li>
-        <li><i class="ti ti-alert-triangle"></i>${T("อย่าอัดขณะขับเอง ให้คนนั่งข้าง ๆ ช่วยอัด","Never record while you drive — ask a passenger")}</li></ul>`;
+      const ready=()=>{$("lpGo").disabled=busyClip||!!rec||!clip;$("lpGo").classList.toggle("dim",!clip);
+        $("lpGoT").textContent=!clip?T("อัดเสียงหรือเลือกไฟล์ก่อน","Record or pick a file first"):area&&area!=="unsure"?T("ให้ AI ฟังเสียงนี้","Let the AI listen"):T("ส่งโดยไม่ระบุตำแหน่ง","Send without a location")};
+      /* sound-lens.js โหลดแบบ defer — เปิด /listen ตรงจากลิงก์อาจมาก่อน: รอแล้ววาดให้เอง */
+      const lensDraw=(n=0)=>{const cv=$("lpLens");if(!cv)return null;if(!window.CendonLens){if(n<20)setTimeout(()=>{const G=lensDraw(n+1);if(G&&rec&&!rec.G)rec.G=G},150);return null}return CendonLens.base(cv,{light:light()})};
+      const tips=`<div class="lp2-tips"><div><b class="m">20–50</b><small>${T("ซม. จากจุดที่ดัง","cm from the noise")}</small></div><div><b>${T("ปิดเพลง","Music off")}</b><small>${T("ไม่พูดระหว่างอัด","no talking")}</small></div><div class="warn"><b>${T("ห้ามอัดขณะขับ","Never while driving")}</b><small>${T("ให้คนข้าง ๆ ช่วยอัด","ask a passenger")}</small></div></div>`;
       const draw=()=>{
         const h=$("lpClip");if(!h)return;
-        if(rec){h.innerHTML=`<div class="lp-rec"><span class="lp-dot"></span><b id="lpT">0:00</b><span class="lp-meter"><i id="lpLv"></i></span><small>${T(`สูงสุด ${LP_MAX} วินาที`,`Up to ${LP_MAX} seconds`)}</small>
-          <div class="lp-recb"><button type="button" class="lx-gh" id="lpCancel">${T("ยกเลิก","Cancel")}</button><button type="button" class="lx-cta" id="lpStop"><i class="ti ti-player-stop-filled"></i>${T("หยุดอัด","Stop")}</button></div></div>`;
-          $("lpCancel").onclick=()=>stopRec(true);$("lpStop").onclick=()=>stopRec(false);return}
-        if(busyClip){h.innerHTML=`<div class="lp-busy"><span class="lp-spin"></span>${T("กำลังเตรียมเสียงให้ AI ฟังชัดที่สุด…","Preparing the sound so the AI hears it clearly…")}</div>`;return}
-        if(clip){h.innerHTML=`<div class="lp-ok"><audio controls src="${clip.url}"></audio>
-          <p><i class="ti ti-${clip.src==="video"?"video":clip.src==="rec"?"microphone":"file-music"}"></i>${clip.src==="video"?T("เสียงจากวิดีโอ","Sound from your video"):clip.src==="rec"?T("เสียงที่อัด","Your recording"):T("ไฟล์เสียง","Audio file")} · ${fmt(clip.sec)}${clip.full>LP_MAX+1?` · ${T(`ใช้ ${LP_MAX} วินาทีแรก`,`first ${LP_MAX} seconds used`)}`:""}</p>
-          ${clip.frames.length?`<div class="lp-fr">${clip.frames.map(d=>`<img src="${d}" alt="">`).join("")}<small>${T("ภาพจากวิดีโอส่งไปด้วย","Video stills go along too")}</small></div>`:""}
-          <button type="button" class="lx-gh" id="lpRedo"><i class="ti ti-refresh"></i>${T("อัดใหม่ / เปลี่ยนไฟล์","Record again / change file")}</button></div>`;
-          $("lpRedo").onclick=()=>{URL.revokeObjectURL(clip.url);clip=null;draw();ready()};return}
-        h.innerHTML=`<div class="lp-pick"><button type="button" class="lp-big" id="lpRec"><i class="ti ti-microphone"></i><b>${T("อัดเสียงตอนนี้","Record now")}</b><small>${T("ไมค์แบบไม่ตัดเสียงรบกวน ได้ยินเสียงเครื่องครบ","Raw mic — keeps every engine sound")}</small></button>
-          <button type="button" class="lp-big alt" id="lpPick"><i class="ti ti-file-music"></i><b>${T("เลือกไฟล์เสียงหรือวิดีโอ","Pick an audio or video file")}</b><small>${T("ไฟล์ไหนก็ได้ที่มีเสียง","Any file with sound")}</small></button></div>${tips}`;
+        $("lpWhere").hidden=!clip;
+        if(rec){h.innerHTML=`<div class="lp2-rec on"><div class="lp2-lens"><canvas id="lpLens" aria-hidden="true"></canvas><i class="lp2-hand" id="lpHand" aria-hidden="true"></i><div class="lp2-core" role="status" aria-live="polite"><b id="lpT">0:00</b><small>${T("กำลังอัด","Recording")}</small></div></div>
+          <div class="lp2-meter"><span>${T("ระดับเสียง","Level")}</span><span class="bar"><i id="lpLv"></i></span><em>${T(`สูงสุด ${LP_MAX} วิ`,`max ${LP_MAX}s`)}</em></div>
+          <div class="lp2-btns"><button type="button" class="lx-gh" id="lpCancel">${T("ยกเลิก","Cancel")}</button><button type="button" class="lx-cta" id="lpStop"><i class="ti ti-player-stop-filled"></i>${T("หยุดอัด","Stop")}</button></div></div>`;
+          rec.G=lensDraw();$("lpCancel").onclick=()=>stopRec(true);$("lpStop").onclick=()=>stopRec(false);return}
+        if(busyClip){h.innerHTML=`<div class="lp2-rec"><div class="lp2-lens busy"><canvas id="lpLens" aria-hidden="true"></canvas><div class="lp2-core"><b><i class="ti ti-sparkles"></i></b></div></div><p class="lp2-cap">${T("กำลังเตรียมเสียงให้ AI ฟังชัดที่สุด…","Preparing the sound so the AI hears it clearly…")}</p></div>`;lensDraw();return}
+        if(clip){h.innerHTML=`<div class="lp2-clip"><div class="lp2-cl">${sig?`<img class="lp2-sig" src="${sig}" alt="">`:`<span class="lp2-ci"><i class="ti ti-${clip.src==="video"?"video":"file-music"}"></i></span>`}
+            <span class="lp2-ct"><b>${clip.src==="video"?T("เสียงจากวิดีโอ","Sound from your video"):clip.src==="rec"?T("เสียงที่อัด","Your recording"):T("ไฟล์เสียง","Audio file")} · <span class="m">${fmt(clip.sec)}</span></b><small>${clip.full>LP_MAX+1?T(`ใช้ ${LP_MAX} วินาทีแรก`,`first ${LP_MAX}s used`):T("พร้อมส่งให้ AI","Ready for the AI")}</small></span>
+            <button type="button" class="lp2-redo" id="lpRedo">${T("อัดใหม่","Redo")}</button></div>
+          <audio controls src="${clip.url}"></audio>
+          ${clip.frames.length?`<div class="lp-fr">${clip.frames.map(d=>`<img src="${d}" alt="">`).join("")}<small>${T("ภาพจากวิดีโอส่งไปด้วย","Video stills go along too")}</small></div>`:""}</div>`;
+          $("lpRedo").onclick=()=>{URL.revokeObjectURL(clip.url);clip=null;sig="";area="";draw();paintZone();ready()};return}
+        h.innerHTML=`<div class="lp2-rec"><div class="lp2-lens"><canvas id="lpLens" aria-hidden="true"></canvas><button type="button" class="lp2-go" id="lpRec" aria-label="${T("เริ่มอัดเสียง","Start recording")}"><i class="ti ti-microphone"></i></button></div>
+          <p class="lp2-cap">${T(`แตะเพื่อเริ่มอัด · สูงสุด ${LP_MAX} วินาที`,`Tap to record · up to ${LP_MAX} seconds`)}</p>
+          <button type="button" class="lp2-file" id="lpPick"><i class="ti ti-file-music"></i>${T("เลือกไฟล์เสียงหรือวิดีโอ","Pick an audio or video file")}</button>${tips}</div>`;
+        lensDraw();
         $("lpRec").onclick=startRec;$("lpPick").onclick=()=>{const i=$("lpFile");i.value="";i.click()};
       };
       async function useClip(file,src){
@@ -3984,11 +4085,12 @@ function listenPage(){
           const vid=src!=="rec"&&isVideo(file),w=await toWav(file),fr=vid?await grabFrames(file,w.full):[];
           if(w.sec<3)throw Object.assign(new Error("short"),{short:true});
           clip={wav:w.blob,url:URL.createObjectURL(w.blob),sec:w.sec,full:w.full,src:vid?"video":src,frames:fr};
-        }catch(e){
+          if(src!=="rec")sig="";
+        }catch(e){sig="";
           err(e.silent?T("ไม่ได้ยินเสียงในคลิปนี้ ลองอัดใกล้จุดที่ดังขึ้น","No sound in this clip — try recording closer to the noise")
             :e.short?T("คลิปสั้นไปหน่อย อัดอย่างน้อย 5 วินาที","That's a bit short — record at least 5 seconds")
             :T("อ่านเสียงจากไฟล์นี้ไม่ได้ ลองไฟล์อื่น หรือกดอัดในแอปแทน","Couldn't read the sound in this file — try another, or record in the app"));
-        }finally{busyClip=false;draw();ready()}
+        }finally{busyClip=false;draw();ready();if(clip)setTimeout(()=>{const w=$("lpWhere");if(w&&!w.hidden)try{w.scrollIntoView({behavior:"smooth",block:"start"})}catch(e){}},120)}
       }
       async function startRec(){
         err();
@@ -3999,35 +4101,43 @@ function listenPage(){
         catch(e){err(T("เปิดไมค์ไม่ได้ — อนุญาตให้ใช้ไมโครโฟนในเบราว์เซอร์ หรือกดเลือกไฟล์แทน","Couldn't open the mic — allow microphone access, or pick a file instead"));return}
         const mime=["audio/webm;codecs=opus","audio/mp4","audio/webm"].find(m=>MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(m))||"";
         const mr=new MediaRecorder(stream,mime?{mimeType:mime,audioBitsPerSecond:128000}:undefined),chunks=[];
-        const AC=window.AudioContext||window.webkitAudioContext,ac=new AC(),an=ac.createAnalyser(),buf=new Uint8Array(512);an.fftSize=512;ac.createMediaStreamSource(stream).connect(an);
-        const t0=Date.now();rec={mr,stream,ac,cancel:false,raf:0,iv:0};ready();
+        const AC=window.AudioContext||window.webkitAudioContext,ac=new AC(),an=ac.createAnalyser();an.fftSize=2048;an.smoothingTimeConstant=.2;ac.createMediaStreamSource(stream).connect(an);
+        const td=new Uint8Array(an.fftSize),fq=new Uint8Array(an.frequencyBinCount),hz=ac.sampleRate/an.fftSize;
+        const t0=Date.now();rec={mr,stream,ac,cancel:false,raf:0,iv:0,G:null,p:0};ready();
         mr.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
         mr.onstop=()=>{const r=rec;rec=null;cancelAnimationFrame(r.raf);clearInterval(r.iv);r.stream.getTracks().forEach(t=>t.stop());try{r.ac.close()}catch(e){}
+          if(!r.cancel){try{sig=$("lpLens").toDataURL("image/png")}catch(e){sig=""}}
           if(r.cancel||!$("lpClip")){draw();if($("lpGo"))ready();return}
           useClip(new Blob(chunks,{type:mr.mimeType||mime||"audio/webm"}),"rec")};
         draw();
-        const lv=()=>{if(!rec)return;an.getByteTimeDomainData(buf);let pk=0;for(const x of buf)pk=Math.max(pk,Math.abs(x-128));const el=$("lpLv");if(el)el.style.width=Math.min(100,pk/1.1)+"%";rec.raf=requestAnimationFrame(lv)};lv();
+        const tick=()=>{if(!rec)return;an.getByteTimeDomainData(td);an.getByteFrequencyData(fq);let pk=0;for(const x of td)pk=Math.max(pk,Math.abs(x-128));const el=$("lpLv");if(el)el.style.width=Math.min(100,pk/1.1)+"%";
+          const p=Math.min(1,(Date.now()-t0)/1000/LP_REV);if(rec.G&&window.CendonLens){CendonLens.slice(rec.G,fq,hz,rec.p,p)}rec.p=p;const hd=$("lpHand");if(hd)hd.style.transform=`rotate(${(p*360).toFixed(2)}deg)`;
+          rec.raf=requestAnimationFrame(tick)};tick();
         rec.iv=setInterval(()=>{const s=(Date.now()-t0)/1000;const el=$("lpT");if(el)el.textContent=fmt(s);if(s>=LP_MAX)stopRec(false)},250);
         mr.start(250);
       }
       function stopRec(cancel){if(!rec)return;rec.cancel=cancel;try{rec.mr.stop()}catch(e){}}
       /* ปิดหน้านี้ระหว่างอัด: ปิดไมค์ด้วย */
       SH.onClose=()=>{if(rec)stopRec(true)};
-      $("lpArea").querySelectorAll("button").forEach(x=>x.onclick=()=>{area=x.dataset.k;$("lpArea").querySelectorAll("button").forEach(y=>y.classList.toggle("on",y===x));ready()});
-      $("lpWhen").querySelectorAll("button").forEach(x=>x.onclick=()=>{x.classList.toggle("on");when=[...$("lpWhen").querySelectorAll(".on")].map(y=>y.dataset.k)});
+      /* ตำแหน่งเสียง: แตะจุดบนรถ = แตะรายการ (เลขเดียวกัน) · แตะซ้ำ = ยกเลิก */
+      const paintZone=()=>{
+        b.querySelectorAll(".lp2-dot").forEach(x=>x.classList.toggle("on",x.dataset.k===area));
+        b.querySelectorAll(".lp2-zones [data-k]").forEach(x=>{x.setAttribute("aria-checked",String(x.dataset.k===area));x.classList.toggle("on",x.dataset.k===area)});
+        $("lpHl").innerHTML=(LP_HL[area]||[]).map(([x,y,w,h,r,st])=>`<i style="left:${x}px;top:${y}px;width:${w}px;height:${h}px;border-radius:${r};border-style:${st||"solid"}"></i>`).join("");
+      };
+      b.querySelectorAll(".lp2-dot,.lp2-zones [data-k]").forEach(x=>x.onclick=()=>{area=area===x.dataset.k?"":x.dataset.k;paintZone();ready()});
+      $("lpWhen").querySelectorAll("button").forEach(x=>x.onclick=()=>{x.classList.toggle("on");x.setAttribute("aria-pressed",String(x.classList.contains("on")));when=[...$("lpWhen").querySelectorAll(".on")].map(y=>y.dataset.k)});
       $("lpFile").onchange=()=>{const fl=$("lpFile").files[0];if(fl)useClip(fl,"file")};
-      const cs=b.querySelector("[data-car]");if(cs)cs.onchange=e=>car=e.target.value;
-      /* ขาดอะไร พาไปตรงนั้นแล้วกะพริบให้เห็น (ปุ่มที่กดไม่ได้เฉย ๆ ไม่บอกว่าต้องทำอะไรต่อ) */
-      const need=id=>{const el=$(id);if(!el)return;el.scrollIntoView({behavior:"smooth",block:"center"});el.classList.remove("need");void el.offsetWidth;el.classList.add("need")};
-      $("lpGo").onclick=e=>{if(!clip)return need("lpS1");if(!area)return need("lpS2");send(e)};
+      const cs=b.querySelector("[data-car]");if(cs)cs.onchange=e=>{car=e.target.value;const c=cars.find(x=>x.id===car);if(c&&$("lpCarT"))$("lpCarT").textContent=nm(c)};
+      $("lpGo").onclick=e=>{if(!clip)return;send(e)};
       const send=e=>busy(e.currentTarget,async()=>{
-        const A=LP_AREA.find(x=>x[0]===area),W=LP_WHEN.filter(x=>when.includes(x[0])),note=$("lpNote").value.trim(),sec=Math.round(clip.sec);
+        const A=LP_AREA.find(x=>x[0]===(area||"unsure")),W=LP_WHEN.filter(x=>when.includes(x[0])),note=$("lpNote").value.trim(),sec=Math.round(clip.sec);
         const text=T(["ช่วยฟังเสียงรถหน่อย","เสียงมาจาก: "+A[2],W.length?"ได้ยินตอน: "+W.map(x=>x[1]).join(", "):"",note?"เพิ่มเติม: "+note:"",`(${clip.src==="video"?"เสียงจากวิดีโอ":"เสียงที่อัด"} ${sec} วินาที)`].filter(Boolean).join(" · "),
           ["Please listen to my car","Sound from: "+A[3],W.length?"When: "+W.map(x=>x[2]).join(", "):"",note?"Note: "+note:"",`(${clip.src==="video"?"sound from a video":"recording"}, ${sec}s)`].filter(Boolean).join(" · "));
         const files=[{blob:clip.wav,kind:"audio",mime:"audio/wav",name:T("เสียงรถ","Car sound")},...clip.frames.map((d,i)=>({blob:dataBlob(d),kind:"image",mime:"image/jpeg",name:T("ภาพจากวิดีโอ","Video still")+" "+(i+1)}))];
         try{await featureHandoff({tool:"listen",files,text,car})}catch(x){err(x.message)}
       });
-      draw();ready();
+      draw();paintZone();ready();
     }});
 }
 
@@ -4318,7 +4428,7 @@ function startHomeCall(){
     let tools;
     const agent=window.CendonCallAgent.create({api,getCar:car,getLocation:()=>HERE,showResearch:view.showResearch,showResults:view.showResults,showDraft:view.showDraft,showValet:view.showValet,minimize:view.minimize,openMechanic:openFound,prepareUrgent:async(symptom,ctx)=>{if(!ctx.isCurrent())return;await urgentCall();if(ctx.isCurrent()&&$("uSym"))$("uSym").value=symptom;}});
     homeVoice=window.CendonCallSession.create({byId:view.byId,backendUrl:API,language:LANG,getUser:()=>U,getCar:car,view,agent,getTools:()=>tools,toast,getMessages:()=>notes,appendMessage:m=>{notes.push(m);if(notes.length>30)notes.shift();saveCallNotes(notes);},systemPrompt:()=>"Cendon ช่วยคนใช้รถประจำวัน คุยเรื่องทั่วไปได้ หาช่างผ่านเครื่องมือจากข้อมูลจริง เรียกช่างหรือขอราคาผ่าน Cendon Valet ได้เมื่อผู้ใช้ยืนยันเท่านั้น ไม่ชำระเงินแทนผู้ใช้",storage:{get:(k,d)=>ls.get("spire_"+k,d),set:(k,v)=>ls.set("spire_"+k,v),del:k=>{try{localStorage.removeItem("spire_"+k)}catch(e){}}}});
-    tools=window.CallTools?.create({voice:homeVoice.bridge,language:LANG,backendUrl:API,getUser:()=>U,getCar:car,getMessages:()=>notes,appendMessage:m=>{notes.push(m);if(notes.length>30)notes.shift();},toast});
+    tools=window.CallTools?.create({voice:homeVoice.bridge,language:LANG,backendUrl:API,getUser:()=>U,getCar:car,getCars:()=>{try{const g=JSON.parse(localStorage.getItem('spire_garage')||'[]')||[];return (window.CendonCars?CendonCars.filter(g):g).filter(c=>c&&c.name)}catch(e){return []}},getMessages:()=>notes,appendMessage:m=>{notes.push(m);if(notes.length>30)notes.shift();},toast});
     view.bind(homeVoice);
   }
   return homeVoice.start();

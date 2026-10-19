@@ -16,7 +16,7 @@ const D=document,$=id=>D.getElementById(id);
 const T=(th,en)=>lang!=='th'?en:th;
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const REC_SEC=10;
-const S={mode:'',holdMic:false,muteAi:false,tool:null,abort:null,raf:0,run:0,chooseCancel:null};
+const S={mode:'',holdMic:false,muteAi:false,tool:null,abort:null,raf:0,run:0};
 
 /* ── ส่งผลกลับเข้าไปในสาย ── ถ้า AI เป็นคนเรียกเครื่องมือ ตอบเป็น toolResponse · ถ้าผู้ใช้กดเอง ส่งเป็นข้อมูลจากระบบให้ AI สรุปให้ฟัง */
 /* quiet = แค่ให้ AI รู้ (เช่น กรอบเปลี่ยนตอนขยับกล้อง) ไม่ต้องพูดแทรก */
@@ -64,7 +64,6 @@ function layer(){
   el.hidden=false;el.className='ct-layer';$('callUI').classList.add('ct-on');return el;
 }
 function closeLayer(){
-  if(S.chooseCancel){const cancel=S.chooseCancel;S.chooseCancel=null;cancel();}
   if(S.mode==='bay')stopLive();
   if(S.tool){const t=S.tool;S.tool=null;tellLive(T('ผู้ใช้เปลี่ยนไปทำอย่างอื่นแล้ว','The user switched to something else'),t)}
   S.run++;cancelAnimationFrame(S.raf);S.raf=0;
@@ -128,11 +127,20 @@ async function toWav(chunks,rate){
   for(let i=0;i<data.length;i++){const s=Math.max(-1,Math.min(1,data[i]*g));v.setInt16(44+i*2,s<0?s*32768:s*32767,true)}
   return {b64:b64FromBytes(new Uint8Array(b)),peak,gain:g,sampleRate:out,durationSeconds:n/rate};
 }
-/* สีคลื่นความถี่: ดำ → แดงเข้ม → ส้ม Cendon → ครีม */
-const EMBER=(()=>{const st=[[0,[14,9,8]],[.3,[92,22,18]],[.55,[214,72,40]],[.78,[255,150,70]],[1,[255,240,214]]],o=new Uint8ClampedArray(256*3);
-  for(let i=0;i<256;i++){const x=i/255;let k=0;while(k<st.length-2&&x>st[k+1][0])k++;const [a,ca]=st[k],[b,cb]=st[k+1],f=(x-a)/(b-a||1);
-    for(let j=0;j<3;j++)o[i*3+j]=ca[j]+(cb[j]-ca[j])*f}return o})();
+/* หน้าปัดเสียง (sound-lens.js ใช้ร่วมกับหน้าฟังเสียงรถ) */
+const LENS=window.CendonLens;
+const isLight=()=>!!$('callUI')?.classList.contains('light');
+const EAR_TIPS=[
+  ['ti-device-mobile',T('ถือมือถือห่างชิ้นส่วนร้อนหรือกำลังหมุน','Keep clear of hot or moving parts'),T('ไม่ยื่นมือเข้าไปในห้องเครื่อง','Never reach into the engine bay')],
+  ['ti-engine',T('ปล่อยเดินเบา ไม่ต้องเร่งเครื่อง','Let it idle — no need to rev'),T('มีไฟเตือนแรงดันน้ำมันหรือความร้อน ให้ดับเครื่องแล้วเรียกช่าง','Oil-pressure or overheat light on? Switch off and call a mechanic')],
+  ['ti-volume-3',T('ไม่พูดหรือเปิดเพลงระหว่างอัด','No talking or music while recording'),T('เสียงอื่นปนทำให้ AI ฟังยากขึ้น','Other sounds make it harder to hear')]];
+function earTip(i){
+  const el=$('ctTip');if(!el||el.dataset.i===String(i))return;el.dataset.i=i;const [ic,b,s]=EAR_TIPS[i];
+  el.innerHTML=`<span class="ct-tip-ic"><i class="ti ${ic}"></i></span><span class="ct-tip-tx"><b>${esc(b)}</b><small>${esc(s)}</small><span class="ct-dots3">${EAR_TIPS.map((x,j)=>`<i class="${j===i?'on':''}"></i>`).join('')}</span></span>`;
+}
+function earPhase(i){const ol=$('ctPhase');if(ol)[...ol.children].forEach((li,j)=>{li.classList.toggle('on',j===i);li.classList.toggle('done',j<i)})}
 
+/* ไม่ถามก่อนฟัง: ใช้รถที่เลือกอยู่ในการาจ (ป้ายบนจอ แตะเปลี่ยนได้ระหว่างนับถอยหลัง — นับหยุดรอ) */
 async function listenEngine(tool){
   if(!voice.callActive)return;
   if(S.mode)closeLayer();
@@ -140,33 +148,29 @@ async function listenEngine(tool){
   S.mode='ear';S.tool=tool||null;
   const VA=window.CendonVehicleAudio,owner=auth.currentUser,session=voice.callSession,saved=selCar();
   if(!VA){finishEar(null,T('ระบบฟังเสียงยังโหลดไม่ครบ ลองเปิดหน้าใหม่','Audio tools have not loaded. Reload and try again'));return}
-  const selected=await new Promise(resolve=>{
-    const el=layer();el.classList.add('ct-choose');let chosen=null;
-    el.innerHTML=`<header class="ct-hd"><b>${T('ก่อนฟังเสียงรถ','Before listening')}</b><button type="button" class="ct-x" id="ctClose" aria-label="${T('ยกเลิก','Cancel')}">×</button></header>${VA.picker('ctVehicle',saved,null,lang)}<p>${T('จอดกลางแจ้งในที่ปลอดภัย เข้า P/N และดึงเบรกมือ ถ้ามีไฟแรงดันน้ำมันเครื่อง ความร้อนสูง หรือเสียงเคาะหนัก ให้ดับเครื่องและเรียกช่าง ไม่ต้องเร่งเครื่องหรืออัดซ้ำ','Park safely outdoors, select P/N and apply the parking brake. Oil-pressure warning, overheating or heavy knocking: switch off and get professional help. Do not rev or repeat the test.')}</p><p id="ctChooseError" role="status"></p><button type="button" class="ct-b p" id="ctStartEar">${T('ยืนยันรถและเริ่มฟัง','Confirm vehicle and start')}</button>`;
-    S.chooseCancel=()=>resolve(null);
-    VA.bind('ctVehicle',saved,v=>{chosen=v});
-    $('ctClose').onclick=()=>finishEar(null,T('ยกเลิกการฟังเสียง','Listening cancelled'));
-    $('ctStartEar').onclick=()=>{
-      if(!VA.current(chosen,selCar())){$('ctChooseError').textContent=T('เลือกรถในคลิปก่อนครับ หากเปลี่ยนรถใน Garage ให้เปิดฟังเสียงใหม่','Choose the recording vehicle. Reopen this tool if the Garage selection changed.');return}
-      S.chooseCancel=null;resolve(chosen);
-    };
-  });
-  const isCurrent=()=>run===S.run&&voice.callActive&&session===voice.callSession&&auth.currentUser?.uid===owner?.uid&&VA.current(selected,selCar());
-  if(!selected||run!==S.run)return;
-  if(!isCurrent()){finishEar(null,T('รถหรือบัญชีเปลี่ยนแล้ว กรุณายืนยันใหม่','Vehicle or account changed. Please confirm again'));return}
+  let selected=null,paused=false;
   const el=layer();el.classList.add('ct-ear');
-  el.innerHTML=`<header class="ct-hd"><div><b>${T('ฟังเสียงเครื่อง','Engine listening')}</b><small>${esc(VA.label(selected.vehicle)||T('ยังไม่ทราบรุ่น','Unknown vehicle'))} · ${T('ขอใช้ไมค์ไม่กรองเสียง','Requesting unfiltered microphone audio')}</small></div><button type="button" class="ct-x" id="ctClose" aria-label="${T('ปิด','Close')}"><i class="ti ti-x"></i></button></header>
-    <div class="ct-scope"><canvas id="ctSpec"></canvas><div class="ct-axis"><span>8k</span><span>2k</span><span>500</span><span>100 Hz</span></div>
-      <div class="ct-ring" id="ctRing"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="54" class="bg"/><circle cx="60" cy="60" r="54" class="fg" id="ctArc"/></svg><b id="ctSec">3</b><small id="ctRingL">${T('เตรียมตัว','Get ready')}</small></div></div>
-    <div class="ct-meter"><i id="ctLvl"></i></div>
-<ol class="ct-steps" id="ctSteps"><li class="on"><i class="ti ti-device-mobile"></i>${T('ถือมือถือห่างชิ้นส่วนร้อนหรือกำลังหมุน ไม่ยื่นมือเข้าเครื่อง','Keep clear of hot or moving parts; do not reach into the engine')}</li><li><i class="ti ti-engine"></i>${T('หากปลอดภัย ปล่อยเดินเบา ไม่เร่งเครื่อง','If safe, idle only — do not rev')}</li><li><i class="ti ti-volume-3"></i>${T('ไม่พูดหรือเปิดเพลงระหว่างอัด','No talking or music while recording')}</li></ol>
+  el.innerHTML=`<header class="ct-hd ct-ehd" id="ctWho">${VA.picker('ctVehicle',saved,null,lang)}<button type="button" class="ct-x" id="ctClose" aria-label="${T('ปิด','Close')}"><i class="ti ti-x"></i></button></header>
+    <div class="ct-run" id="ctRun">
+      <div class="ct-ttl"><b>${T('ฟังเสียงเครื่อง','Engine listening')}</b><small>${T('ไมค์แบบไม่กรองเสียง · ได้ยินเสียงเครื่องครบ','Unfiltered microphone · keeps every engine sound')}</small></div>
+      <div class="ct-lens" id="ctLens"><canvas id="ctSpec" aria-hidden="true"></canvas><i class="ct-hand" id="ctHand" aria-hidden="true"></i>
+        <div class="ct-core" role="status" aria-live="polite"><b id="ctSec">3</b><small id="ctRingL">${T('เตรียมตัว','Get ready')}</small></div></div>
+      <div class="ct-meter"><span>${T('ระดับเสียง','Level')}</span><span class="ct-mbar"><i id="ctLvl"></i></span><em id="ctLvlT"></em></div>
+      <ol class="ct-phase" id="ctPhase"><li class="on">${T('เตรียม','Ready')}</li><li>${T(`ฟัง ${REC_SEC} วิ`,`Listen ${REC_SEC}s`)}</li><li>${T('AI วิเคราะห์','AI analysis')}</li></ol>
+      <div class="ct-tip" id="ctTip"></div>
+      <button type="button" class="ct-cancel" id="ctCancel">${T('ยกเลิก','Cancel')}</button>
+    </div>
     <div class="ct-out" id="ctOut" hidden></div>`;
-  $('ctClose').onclick=()=>{finishEar(null,T('ยกเลิกการฟังเสียง','Listening cancelled'));};
+  earTip(0);
+  VA.bind('ctVehicle',saved,v=>{selected=v},{cars:host.getCars?.()||[],lang,host:el,onOpen:()=>{paused=true},onClose:()=>{paused=false}});
+  const cancel=()=>finishEar(null,T('ยกเลิกการฟังเสียง','Listening cancelled'));
+  $('ctClose').onclick=cancel;$('ctCancel').onclick=cancel;
+  const isCurrent=()=>run===S.run&&voice.callActive&&session===voice.callSession&&auth.currentUser?.uid===owner?.uid&&VA.current(selected,selCar());
   /* หยุดเสียง AI ที่ค้างอยู่ ไม่ให้เสียงพูดของ AI ถูกอัดปนไปด้วย */
   S.holdMic=true;S.muteAi=true;
   try{voice.callWS&&voice.callWS.readyState===1&&voice.callWS.send(JSON.stringify({realtimeInput:{audioStreamEnd:true}}))}catch(e){}
-  const wait=Date.now();while(voice.playSrcs.length&&Date.now()-wait<5000){await new Promise(r=>setTimeout(r,120));if(run!==S.run)return}
-  voice.flushPlayback();
+  const wait=Date.now();while((voice.playSrcs||[]).length&&Date.now()-wait<5000){await new Promise(r=>setTimeout(r,120));if(run!==S.run)return}
+  voice.flushPlayback?.();
   let mic=null,recording={},src=null,an=null,node=null;const chunks=[];let rate=voice.callCtx?voice.callCtx.sampleRate:48000,maxLv=0;
   const cleanup=async()=>{try{src&&src.disconnect();an&&an.disconnect();node&&node.disconnect()}catch(e){}if(mic){const m=mic;mic=null;await m.restore()}};
   try{
@@ -179,45 +183,42 @@ async function listenEngine(tool){
     catch(e){node=ctx.createScriptProcessor(4096,1,1);node.onaudioprocess=ev=>{if(S.rec)chunks.push(new Float32Array(ev.inputBuffer.getChannelData(0)))}}
     if(node.port)node.port.onmessage=ev=>{if(S.rec)chunks.push(ev.data)};
     src.connect(node);node.connect(sink);
-    /* วาดคลื่นความถี่สด (แกนตั้งแบบลอการิทึม 60Hz–8kHz) */
-    const cv=$('ctSpec'),g=cv.getContext('2d'),dpr=Math.min(2,devicePixelRatio||1);
-    const fit=()=>{cv.width=Math.round(cv.clientWidth*dpr)||600;cv.height=Math.round(cv.clientHeight*dpr)||300;g.fillStyle='rgb(14,9,8)';g.fillRect(0,0,cv.width,cv.height)};fit();
-    const bins=new Uint8Array(an.frequencyBinCount),td=new Float32Array(an.fftSize),hz=rate/an.fftSize;
-    const map=[];const H=()=>cv.height;
-    const buildMap=()=>{map.length=0;for(let y=0;y<H();y++){const f=Math.exp(Math.log(60)+(1-y/H())*(Math.log(8000)-Math.log(60)));map.push(Math.min(bins.length-1,Math.round(f/hz)))}};buildMap();
-    const col=g.createImageData(1,H());
-    const t0=performance.now(),PRE=3000,REC=REC_SEC*1000;
+    const G=LENS?LENS.base($('ctSpec'),{light:isLight()}):null,bins=new Uint8Array(an.frequencyBinCount),td=new Float32Array(an.fftSize),hz=rate/an.fftSize;
+    const PRE=3000,REC=REC_SEC*1000;let pre=0,last=performance.now(),recAt=0,lastP=0;
     S.rec=false;
     await new Promise(resolve=>{
       const loop=()=>{
         if(run!==S.run){resolve();return}
-        const el2=performance.now()-t0;
+        const now=performance.now(),dt=now-last;last=now;
         an.getByteFrequencyData(bins);an.getFloatTimeDomainData(td);
         let s=0;for(let i=0;i<td.length;i++)s+=td[i]*td[i];const lv=Math.sqrt(s/td.length);
         if(S.rec)maxLv=Math.max(maxLv,lv);
         $('ctLvl').style.transform=`scaleX(${Math.min(1,lv*9).toFixed(3)})`;
-        const step=Math.max(1,Math.round(dpr*1.5));
-        g.drawImage(cv,-step,0);
-        for(let y=0;y<H();y++){const v=bins[map[y]],k=v*3;col.data[y*4]=EMBER[k];col.data[y*4+1]=EMBER[k+1];col.data[y*4+2]=EMBER[k+2];col.data[y*4+3]=255}
-        for(let x=0;x<step;x++)g.putImageData(col,cv.width-step+x,0);
-        if(el2<PRE){$('ctSec').textContent=Math.ceil((PRE-el2)/1000);$('ctRingL').textContent=T('เตรียมตัว','Get ready');$('ctArc').style.strokeDashoffset=339}
-        else{
-          if(!S.rec){S.rec=true;$('ctRing').classList.add('rec');try{navigator.vibrate&&navigator.vibrate(30)}catch(e){}}
-          const r=el2-PRE;if(r>=REC){S.rec=false;resolve();return}
-          $('ctSec').textContent=Math.ceil((REC-r)/1000);$('ctRingL').textContent=T('กำลังอัด','Recording');
-          $('ctArc').style.strokeDashoffset=(339*(1-r/REC)).toFixed(1);
-          const steps=$('ctSteps').children,idx=r<4500?1:2;[...steps].forEach((li,i)=>li.classList.toggle('on',i===idx));
+        $('ctLvlT').textContent=lv<.004?T('เบาไป','Too quiet'):lv>.09?T('ดังมาก','Very loud'):T('ดังพอ','Good');
+        if(!S.rec){
+          if(!paused)pre+=dt;
+          $('ctSec').textContent=Math.max(1,Math.ceil((PRE-pre)/1000));$('ctRingL').textContent=paused?T('พักไว้ก่อน','Paused'):T('เตรียมตัว','Get ready');
+          if(pre>=PRE){S.rec=true;recAt=now;earPhase(1);earTip(1);$('ctLens').classList.add('rec');try{navigator.vibrate&&navigator.vibrate(30)}catch(e){}}
+        }else{
+          const r=now-recAt,p=Math.min(1,r/REC);
+          if(G)LENS.slice(G,bins,hz,lastP,p);lastP=p;
+          $('ctHand').style.transform=`rotate(${(p*360).toFixed(2)}deg)`;
+          $('ctSec').textContent=String(Math.max(0,Math.ceil((REC-r)/1000))).padStart(2,'0');$('ctRingL').textContent=T('กำลังฟัง','Listening');
+          earTip(r<4500?1:2);
+          if(r>=REC){S.rec=false;resolve();return}
         }
         S.raf=requestAnimationFrame(loop);
       };loop();
     });
     if(run!==S.run){await cleanup();return}
     await cleanup();
-    $('ctRing').classList.remove('rec');$('ctRing').classList.add('busy');$('ctSec').innerHTML='<i class="ti ti-sparkles"></i>';$('ctRingL').textContent=T('AI กำลังฟัง','AI listening');
-    $('ctSteps').hidden=true;el.classList.add('thinking');
+    const pick=$('ctVehiclePicker');if(pick)pick.disabled=true;
+    earPhase(2);$('ctLens').classList.remove('rec');$('ctLens').classList.add('busy');$('ctSec').innerHTML='<i class="ti ti-sparkles"></i>';$('ctRingL').textContent=T('AI กำลังฟัง','AI listening');
+    const tip=$('ctTip');if(tip){tip.dataset.i='';tip.innerHTML=`<span class="ct-tip-ic"><span class="ct-dots"><i></i><i></i><i></i></span></span><span class="ct-tip-tx"><b>${T('กำลังวิเคราะห์เสียง','Analysing the sound')}</b><small>${T('ไม่เกินครึ่งนาที คุยต่อได้หลังจากนี้','Under half a minute — then back to the call')}</small></span>`}
+    el.classList.add('thinking');
     const wav=await toWav(chunks,rate);
     if(!isCurrent()){finishEar(null,T('รถหรือบัญชีเปลี่ยนแล้ว ผลเก่าถูกยกเลิก','Vehicle or account changed; the old analysis was discarded'));return}
-    if(maxLv<0.004){showEar({quality:'too_quiet',hear:'',causes:[],urgency:'soon',next:[T('ขยับมือถือเข้าใกล้จุดที่มีเสียงมากขึ้น แล้วลองใหม่','Move the phone closer to the sound and try again')],speak:''},true);return}
+    if(maxLv<0.004){showEar({quality:'too_quiet',hear:'',causes:[],urgency:'soon',next:[T('ขยับมือถือเข้าใกล้จุดที่มีเสียงมากขึ้น แล้วลองใหม่','Move the phone closer to the sound and try again')],speak:''},true,selected);return}
     S.abort=new AbortController();
     const requestAbort=S.abort,requestTimer=setTimeout(()=>requestAbort.abort(),38000);
     const area=args.area||'',when=args.when||'';
@@ -225,7 +226,7 @@ async function listenEngine(tool){
     try{data=await analyze('ear',[{mime:'audio/wav',b64:wav.b64}],{car:selected.vehicle,audioVehicle:VA.payload(selected),recording:{...recording,durationSeconds:wav.durationSeconds,sampleRate:wav.sampleRate,gain:wav.gain},phoneAt:area,soundWhen:when},
       T('ฟังเสียงจากรถคันนี้ระหว่างโทร','Listening to this car during a call')+(area?' · '+area:'')+(when?' · '+when:''),requestAbort.signal)}finally{clearTimeout(requestTimer)}
     if(!isCurrent()){if(run===S.run)finishEar(null,T('ข้อมูลรถเปลี่ยนแล้ว กรุณาเริ่มใหม่','Vehicle context changed. Please start again'));return;}
-    showEar(data);
+    showEar(data,false,selected);
   }catch(e){
     await cleanup();
     if(run!==S.run)return;
@@ -233,27 +234,32 @@ async function listenEngine(tool){
     finishEar(null,msg);toast(msg,'ti-alert-triangle');
   }
 }
-const URG={ok:['#d6a13a',T('ยังยืนยันความปลอดภัยไม่ได้','Safety is not established')],unassessed:['#d6a13a',T('ยังสรุปความผิดปกติไม่ได้','Not enough evidence for a verdict')],soon:['#d6a13a',T('ควรให้ช่างดูเร็ว ๆ นี้','Get it checked soon')],stop:['#dc2626',T('หยุดขับ เรียกช่าง','Stop driving — get help')]};
+const URG={ok:['warn',T('ยังยืนยันความปลอดภัยไม่ได้','Safety is not established')],unassessed:['warn',T('ยังสรุปความผิดปกติไม่ได้','Not enough evidence for a verdict')],soon:['soon',T('ควรให้ช่างดูเร็ว ๆ นี้','Get it checked soon')],stop:['stop',T('หยุดขับ เรียกช่าง','Stop driving — get help')]};
 const QUAL={good:T('เสียงชัด','Clear recording'),noisy:T('มีเสียงอื่นปน','Noisy recording'),too_quiet:T('เสียงเบาเกินไป','Too quiet'),no_engine:T('ไม่ได้ยินเสียงรถ','No engine sound')};
-const LIKE={likely:[88,T('น่าจะใช่','Likely')],possible:[55,T('เป็นไปได้','Possible')],'less likely':[25,T('น้อยกว่า','Less likely')]};
-function showEar(d,local){
-  const el=$('ctLayer');if(!el)return;el.classList.remove('thinking');
-  const u=URG[d.urgency]||URG.soon,good=d.quality==='good';
-  $('ctRing').classList.remove('busy');$('ctRing').classList.add('done');
-  $('ctSec').innerHTML=`<i class="ti ti-${good?'ear':'ear-off'}"></i>`;$('ctRingL').textContent=QUAL[d.quality]||'';
+const LIKE={likely:[84,T('น่าจะใช่','Likely'),'hi'],possible:[54,T('เป็นไปได้','Possible'),'mid'],'less likely':[24,T('น้อยกว่า','Less likely'),'lo']};
+/* ผลฟังเสียง: ลายเซ็นเสียง (ภาพหน้าปัดที่อัด) + ความด่วน + สิ่งที่ได้ยิน → น่าจะเป็นอะไร → ทำต่อ → คุยต่อ */
+function showEar(d,local,sel){
+  const el=$('ctLayer');if(!el)return;el.classList.remove('thinking');el.classList.add('done');
+  const VA=window.CendonVehicleAudio,u=URG[d.urgency]||URG.soon,good=d.quality==='good';
+  let sig='';try{sig=$('ctSpec').toDataURL('image/png')}catch(e){}
+  const who=$('ctWho'),nm=(d.identity&&d.identity.label)||(sel&&VA?.label(sel.vehicle))||T('ไม่ระบุรุ่น','Vehicle not specified');
+  if(who)who.innerHTML=`<div class="ct-who"><i class="ti ti-car"></i><b>${esc(nm)}</b><small>· ${T('ตามที่เลือก ไม่ได้ระบุจากเสียง','as selected, not identified from sound')}</small></div><button type="button" class="ct-x" id="ctClose" aria-label="${T('ปิด','Close')}"><i class="ti ti-x"></i></button>`;
+  $('ctRun').hidden=true;
   const out=$('ctOut');out.hidden=false;
-  out.innerHTML=`${d.identity?`<p class="ct-note">${esc(d.identity.label||T('ยังไม่ยืนยันรุ่นรถ','Unconfirmed vehicle'))} · ${T('ตามที่ผู้ใช้เลือก ไม่ใช่ระบุจากเสียง','User-selected, not identified from sound')}</p>`:''}${good?`<span class="ct-badge" style="--c:${u[0]}"><i class="ti ti-${d.urgency==='stop'?'urgent':'alert-circle'}"></i>${esc(u[1])}</span>`:`<span class="ct-badge" style="--c:#d6a13a"><i class="ti ti-microphone-2"></i>${esc(QUAL[d.quality]||'')}</span>`}
-    ${d.assessment?`<p class="ct-note"><b>${esc(window.CendonVehicleAudio.assessmentLabel(d.assessment,lang))}</b></p>`:''}
-    ${d.hear?`<p class="ct-lead">${esc(d.hear)}</p>`:''}${d.normal?`<p class="ct-note">${esc(d.normal)}</p>`:''}
-    ${(d.causes||[]).length?`<div class="ct-causes">${d.causes.map(c=>`<div class="ct-cause"><b>${esc(c.name)}<small>${T('ข้อสันนิษฐาน ต้องตรวจยืนยัน','Hypothesis — needs confirmation')}</small></b>${c.clue?`<small>${esc(c.clue)}</small>`:''}</div>`).join('')}</div>`:''}
-    ${(d.next||[]).length?`<ul class="ct-next">${d.next.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
-    ${window.CendonVehicleAudio?.researchMarkup(d.research,lang)||''}
-    <p class="ct-fine">${T('ประเมินจากเสียงเท่านั้น ไม่ใช่การวินิจฉัยแน่นอน — ให้ช่างตรวจจริงก่อนซ่อม','Based on sound only, not a definite diagnosis — have a mechanic confirm it')}</p>
-    <div class="ct-acts"><button type="button" class="ct-b" id="ctAgain"><i class="ti ti-refresh"></i>${T('ฟังอีกครั้ง','Listen again')}</button>
-      ${d.urgency!=='ok'&&good?`<a class="ct-b" href="/${d.urgency==='stop'?'urgent':'post'}" id="ctHelp"><i class="ti ti-${d.urgency==='stop'?'urgent':'tool'}"></i>${d.urgency==='stop'?T('เรียกช่างด่วน','Call help now'):T('หาช่าง','Find a mechanic')}</a>`:''}
-      <button type="button" class="ct-b p" id="ctBack"><i class="ti cd-wv"></i>${T('คุยต่อ','Back to call')}</button></div>`;
+  out.innerHTML=`<div class="ct-rhero">${sig?`<img class="ct-sig" src="${sig}" alt="${T('ลายเซ็นเสียงของการอัดครั้งนี้','Sound signature of this recording')}">`:''}<div class="ct-rh">
+      ${good?`<span class="ct-badge ${u[0]}"><i></i>${esc(u[1])}</span>`:`<span class="ct-badge warn"><i></i>${esc(QUAL[d.quality]||'')}</span>`}
+      ${d.hear?`<p class="ct-lead">${esc(d.hear)}</p>`:`<p class="ct-lead">${esc(QUAL[d.quality]||'')}</p>`}
+      ${d.normal?`<p class="ct-note">${esc(d.normal)}</p>`:''}</div></div>
+    ${d.assessment&&VA?`<p class="ct-note ct-assess">${esc(VA.assessmentLabel(d.assessment,lang))}</p>`:''}
+    ${(d.causes||[]).length?`<div class="ct-sec">${T('น่าจะเป็นอะไร','What it might be')}</div><div class="ct-causes">${d.causes.map(c=>{const L=LIKE[c.likelihood]||LIKE.possible;return `<div class="ct-cause"><b><span>${esc(c.name)}</span><em class="${L[2]}">${esc(L[1])}</em></b><span class="ct-bar ${L[2]}"><i style="--w:${L[0]}%"></i></span>${c.clue?`<small>${esc(c.clue)}</small>`:''}</div>`}).join('')}</div>`:''}
+    <p class="ct-fine"><i class="ti ti-info-circle"></i>${T('ประเมินจากเสียงอย่างเดียว เป็นข้อสันนิษฐาน — ให้ช่างตรวจยืนยันก่อนซ่อม','Based on sound only, a hypothesis — have a mechanic confirm before any repair')}</p>
+    ${(d.next||[]).length?`<div class="ct-sec">${T('ทำต่อ','Next')}</div><ol class="ct-todo">${d.next.map((x,i)=>`<li><span>${String(i+1).padStart(2,'0')}</span>${esc(x)}</li>`).join('')}</ol>`:''}
+    ${VA?.researchMarkup(d.research,lang)||''}
+    <div class="ct-acts"><button type="button" class="ct-b p" id="ctBack"><i class="ti cd-wv"></i>${T('คุยต่อกับ Cendon','Back to the call')}</button>
+      <div class="ct-acts2">${d.urgency!=='ok'&&good?`<a class="ct-b" href="/${d.urgency==='stop'?'urgent':'post'}" id="ctHelp">${d.urgency==='stop'?T('เรียกช่างด่วน','Call help now'):T('หาช่างใกล้ฉัน','Find a mechanic')}</a>`:''}<button type="button" class="ct-b" id="ctAgain">${T('ฟังใหม่','Listen again')}</button></div></div>`;
   $('ctAgain').onclick=()=>listenEngine(null);
   $('ctBack').onclick=()=>finishEar(d);
+  $('ctClose').onclick=()=>finishEar(d);
   const help=$('ctHelp');if(help)help.onclick=()=>{try{endCall()}catch(e){}};
   /* ส่งผลให้ AI พูดสรุปทันที (ผู้ใช้ไม่ต้องกดกลับก่อน) */
   const summary=local?T('อัดเสียงได้เบามากจนฟังไม่ออก ให้ผู้ใช้ขยับมือถือเข้าใกล้แล้วลองใหม่','The recording was too quiet to hear — ask the user to move closer and try again')
@@ -268,9 +274,9 @@ function finishEar(d,why){
   if(tool&&!d)tellLive(why||T('ผู้ใช้ยกเลิกการฟังเสียง','The user cancelled the recording'),tool);
 }
 
-/* ═════════ 2) สแกนห้องเครื่องแบบสด (กรอบบนภาพกล้อง) ═════════
-   เปิดกล้องหลัง → ส่งเฟรมที่ "เห็นบนจอจริง" ให้ AI ตีกรอบชิ้นส่วน → วาดกรอบสี+ป้ายชื่อทับภาพสด ไม่ต้องหยุดภาพ
-   ขยับมือถือ กรอบเลื่อนตาม (เทียบภาพย่อ 96px ระหว่างเฟรมในเครื่อง ไม่ส่งอะไรเพิ่ม) · ภาพเปลี่ยนไปมากค่อยส่งเฟรมใหม่ให้ AI
+/* ═════════ 2) สแกนห้องเครื่องแบบสด (หมุดบนภาพกล้อง) ═════════
+   เปิดกล้องหลัง → ส่งเฟรมที่ "เห็นบนจอจริง" ให้ AI ระบุตำแหน่งชิ้นส่วน → ปักหมุดตัวเลข+ป้ายชื่อทับภาพสด ไม่ต้องหยุดภาพ
+   ขยับมือถือ หมุดเลื่อนตาม (เทียบภาพย่อ 96px ระหว่างเฟรมในเครื่อง ไม่ส่งอะไรเพิ่ม) · ภาพเปลี่ยนไปมากค่อยส่งเฟรมใหม่ให้ AI
    AI ในสายรู้ว่ากรอบไหนคืออะไร อยู่ตรงไหนบนจอ และแตะกรอบไหน AI อธิบายชิ้นนั้นให้ฟัง */
 const scan=window.CendonEngineScan;
 const LV={on:false,run:0,items:[],tr:null,pend:null,bw:96,bh:0,busy:false,lastAt:0,timer:0,frozen:false,told:'',toldAt:0,pick:-1,frames:0,noMore:false,scene:'',notes:[],quality:'',uncertain:0,frame:'',fails:0,vehicleKind:'unknown',guide:null};
@@ -319,37 +325,46 @@ function setStat(kind,msg){
   const el=$('lvStat');if(!el)return;
   const n=LV.items.length;
   const txt={scan:n?T('ภาพเปลี่ยน กำลังสแกนใหม่…','View changed — rescanning…'):T('AI กำลังมองหาชิ้นส่วน…','Finding parts…'),
-    found:T(`ระบุได้ ${n} จุด${LV.uncertain?' · จุดไม่ชัดยังไม่ตีกรอบ':''} · แตะเพื่อฟัง`,`${n} identified${LV.uncertain?' · unclear parts omitted':''} · tap to hear`),
+    found:T(`เจอ ${n} ชิ้น${LV.uncertain?' · จุดไม่ชัดยังไม่ปักหมุด':''}`,`${n} found${LV.uncertain?' · unclear parts omitted':''}`),
     none:LV.quality==='dark'?T('ภาพมืดเกินไป — เพิ่มแสงแล้วสแกนใหม่','Too dark — improve lighting and rescan'):LV.quality==='blurred'?T('ภาพไม่คม — ถือกล้องให้นิ่งแล้วสแกนใหม่','Blurred — hold steady and rescan'):LV.quality==='blocked'?T('ภาพถูกบัง — ขยับกล้องแล้วสแกนใหม่','View blocked — reposition and rescan'):T('ยังระบุไม่ได้ชัด — จอดให้ปลอดภัยแล้วเล็งภาพใหม่','No clear identification — park safely and reframe'),
-    moved:T('ภาพเปลี่ยน — ซ่อนกรอบเดิมจนกว่าจะตรวจใหม่','View changed — hiding old boxes until checked'),
-    frozen:T('หยุดภาพไว้ · แตะกรอบเพื่อดูรายละเอียด','Paused · tap a box for details'),err:msg||''}[kind]||'';
+    moved:T('ภาพเปลี่ยน — ซ่อนหมุดเดิมจนกว่าจะตรวจใหม่','View changed — hiding old pins until checked'),
+    frozen:T('หยุดภาพไว้ · แตะหมุดเพื่อดูรายละเอียด','Paused · tap a pin for details'),err:msg||''}[kind]||'';
   el.className='lv-stat '+kind;el.innerHTML=(kind==='scan'?'<span class="ct-dots"><i></i><i></i><i></i></span>':kind==='err'?'<i class="ti ti-alert-triangle"></i>':kind==='frozen'?'<i class="ti ti-player-pause"></i>':'<i class="ti ti-scan"></i>')+esc(txt);
   const L2=$('ctLayer');if(L2)L2.classList.toggle('lv-searching',kind==='scan'&&!n);
 }
+/* หมุดตัวเลขกลางชิ้นส่วน + ป้ายชื่อเล็ก (ไม่มีกล่องทึบบังภาพ) · ชิ้นที่ต้องระวัง = หมุดสีอำพัน · เลือกอยู่ = มุมกรอบบาง ๆ */
+const HZ={high_voltage:T('ไฟฟ้าแรงสูง ห้ามแตะ','High voltage — do not touch'),keep_clear:T('ร้อนหรือหมุนได้ อย่าเข้าใกล้','Hot or moving — keep clear')};
+const num=i=>String(i+1).padStart(2,'0');
 function paintBoxes(){
   const box=$('lvBoxes'),chips=$('lvChips');if(!box)return;
   const keep={};box.querySelectorAll('.lv-box').forEach(b=>keep[b.dataset.k]=b);
   LV.items.forEach((x,i)=>{
     const [y0,x0,y1,x1]=x.box,c=colorOf(),k=x.key;
     let el=keep[k];delete keep[k];
-    if(!el){el=D.createElement('button');el.type='button';el.className='lv-box new';el.dataset.k=k;el.innerHTML='<span class="lv-tag"><b></b><em></em></span>';box.appendChild(el);setTimeout(()=>el.classList.remove('new'),500)}
+    if(!el){el=D.createElement('button');el.type='button';el.className='lv-box new';el.dataset.k=k;el.innerHTML='<span class="lv-pin"><b></b></span><span class="lv-tag"><em></em></span>';box.appendChild(el);setTimeout(()=>el.classList.remove('new'),500)}
     el.dataset.i=i;el.style.setProperty('--c',c);
     Object.assign(el.style,{left:x0/10+'%',top:y0/10+'%',width:(x1-x0)/10+'%',height:(y1-y0)/10+'%'});
-    el.classList.toggle('low',y0<90);el.classList.toggle('right',x0>500);el.classList.toggle('on',LV.pick===i);
-    el.querySelector('b').textContent=i+1;el.querySelector('em').textContent=x.name;el.setAttribute('aria-label',x.name);
+    el.classList.toggle('right',(x0+x1)/2>560);el.classList.toggle('on',LV.pick===i);el.classList.toggle('warn',x.hazard!=='observe');el.classList.toggle('dim',LV.pick>=0&&LV.pick!==i);
+    el.querySelector('b').textContent=num(i);el.querySelector('em').textContent=x.name;el.setAttribute('aria-label',num(i)+' '+x.name+(HZ[x.hazard]?' — '+HZ[x.hazard]:''));
     el.onclick=()=>pickPart(i);
   });
   Object.values(keep).forEach(b=>{b.classList.add('gone');setTimeout(()=>b.remove(),300)});
-  if(chips)chips.innerHTML=LV.items.map((x,i)=>`<button type="button" class="lv-chip${LV.pick===i?' on':''}" data-i="${i}" style="--c:${colorOf(x.name)}"><b>${i+1}</b>${esc(x.name)}${x.look?'<i class="ti ti-alert-circle"></i>':''}</button>`).join('');
+  if(chips)chips.innerHTML=LV.items.map((x,i)=>`<button type="button" class="lv-chip${LV.pick===i?' on':''}${x.hazard!=='observe'?' warn':''}" data-i="${i}"><b>${num(i)}</b><span><em>${esc(x.name)}</em><small>${esc(HZ[x.hazard]||x.what||x.evidence)}</small></span><i class="ti ti-chevron-right"></i></button>`).join('');
   if(chips)chips.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>pickPart(+b.dataset.i));
 }
+function closeDet(){LV.pick=-1;const det=$('lvDet');if(det)det.hidden=true;const ch=$('lvChips');if(ch)ch.hidden=false;paintBoxes()}
 function pickPart(i){
   const x=LV.items[i],R=view();if(!x||!R||!scan.fresh({frame:LV.frame,current:scan.frameKey(R),track:LV.tr,hidden:D.hidden}))return;LV.pick=i;paintBoxes();
-  const det=$('lvDet');det.hidden=false;det.style.setProperty('--c',colorOf(x.name));
-  det.innerHTML=`<div class="lv-dh"><b><span>${i+1}</span>${esc(x.name)}</b><button type="button" class="ct-x" id="lvDetX" aria-label="${T('ปิด','Close')}"><i class="ti ti-x"></i></button></div>${x.what?`<p><em>${T('คืออะไร','What it is')}</em>${esc(x.what)}</p>`:''}<p><em>${T('สิ่งที่ AI ใช้ระบุ','Visual identifying clue')}</em>${esc(x.evidence)}</p>${x.check?`<p class="warn"><em>${T('ความปลอดภัย','Safety')}</em>${esc(x.check)}</p>`:''}<small>${T('AI อาจระบุผิด กรอบแดงไม่ได้แปลว่าชำรุด','AI identification can be wrong. Red does not mean damaged.')}</small>`;
-  $('lvDetX').onclick=()=>{LV.pick=-1;det.hidden=true;paintBoxes()};
-  /* แตะกรอบ = ให้ AI ในสายอธิบายชิ้นนี้ด้วยเสียง */
-  tellLive(`ผู้ใช้แตะกรอบแดงหมายเลข ${i+1} "${x.name}" (${where(x.box)}) · สิ่งที่ใช้ระบุ: ${x.evidence} · หน้าที่: ${x.what} · ข้อควรระวัง: ${x.check} · เป็นการระบุจากภาพที่อาจผิด ไม่ใช่ผลวินิจฉัย ห้ามเพิ่มคำแนะนำให้สัมผัส เปิดฝา ถอดสาย หรือซ่อม อธิบายสั้น ๆ เท่านั้น`);
+  const det=$('lvDet'),n=LV.items.length;det.hidden=false;det.style.setProperty('--c',colorOf(x.name));
+  const ch=$('lvChips');if(ch)ch.hidden=true;
+  det.innerHTML=`<div class="lv-dh"><span class="lv-n">${num(i)} / ${String(n).padStart(2,'0')}</span><span class="lv-nav">${n>1?`<button type="button" class="lv-nb" id="lvPrev" aria-label="${T('ชิ้นก่อนหน้า','Previous part')}"><i class="ti ti-chevron-left"></i></button><button type="button" class="lv-nb" id="lvNext" aria-label="${T('ชิ้นถัดไป','Next part')}"><i class="ti ti-chevron-right"></i></button>`:''}<button type="button" class="ct-x" id="lvDetX" aria-label="${T('ปิด','Close')}"><i class="ti ti-x"></i></button></span></div>
+    <h3 class="lv-dt">${esc(x.name)}</h3>${HZ[x.hazard]?`<span class="lv-hz"><i class="ti ti-alert-triangle"></i>${esc(HZ[x.hazard])}</span>`:''}
+    <dl class="lv-dl">${x.what?`<div><dt>${T('คืออะไร','What it is')}</dt><dd>${esc(x.what)}</dd></div>`:''}<div><dt>${T('AI ดูจาก','Identified by')}</dt><dd>${esc(x.evidence)}</dd></div>${x.check?`<div class="warn"><dt>${T('ความปลอดภัย','Safety')}</dt><dd>${esc(x.check)}</dd></div>`:''}</dl>
+    <small>${T('AI อาจระบุผิด หมุดไม่ได้แปลว่าชำรุด · Cendon กำลังอธิบายชิ้นนี้ในสาย','AI may be wrong; a pin does not mean damage · Cendon is explaining this part on the call')}</small>`;
+  $('lvDetX').onclick=closeDet;
+  if(n>1){$('lvPrev').onclick=()=>pickPart((i-1+n)%n);$('lvNext').onclick=()=>pickPart((i+1)%n)}
+  /* แตะหมุด = ให้ AI ในสายอธิบายชิ้นนี้ด้วยเสียง */
+  tellLive(`ผู้ใช้แตะหมุดหมายเลข ${i+1} "${x.name}" (${where(x.box)}) · สิ่งที่ใช้ระบุ: ${x.evidence} · หน้าที่: ${x.what} · ข้อควรระวัง: ${x.check} · เป็นการระบุจากภาพที่อาจผิด ไม่ใช่ผลวินิจฉัย ห้ามเพิ่มคำแนะนำให้สัมผัส เปิดฝา ถอดสาย หรือซ่อม อธิบายสั้น ๆ เท่านั้น`);
 }
 function tellScan(force){
   const names=LV.items.map(x=>x.name+':'+where(x.box)).join('|');
@@ -357,8 +372,8 @@ function tellScan(force){
   /* ครั้งแรกให้ AI พูดสรุป · ครั้งต่อ ๆ ไป (ขยับกล้องแล้วกรอบเปลี่ยน) แค่อัปเดตให้ AI รู้ ไม่พูดแทรกทุกครั้ง */
   const quiet=!force&&!!LV.told;
   LV.told=names;LV.toldAt=Date.now();
-  const msg=LV.items.length?`ผลสแกนชิ้นส่วนรถ (${LV.vehicleKind==='motorcycle'?'ภาพมอเตอร์ไซค์':LV.vehicleKind==='car'?'ภาพรถยนต์':'ยังไม่ยืนยันประเภทพาหนะ'} อาจไม่ใช่รถที่เลือกไว้ใน garage): กรอบแดงบอกตำแหน่ง ไม่ได้แปลว่าชำรุด AI อาจระบุผิด พบ ${LV.items.map((x,i)=>`${i+1}. ${x.name} (${where(x.box)}) — ${x.evidence}`).join(' · ')} · ยังไม่ยืนยัน ${LV.uncertain} จุด ห้ามเดาจุดที่ไม่เห็น ห้ามสอนให้แตะ เปิดฝา หรือถอดสาย จอด ดับเครื่องและปล่อยให้เย็นก่อนดูใกล้ ๆ`
-    :`ผลสแกน: ยังระบุไม่ได้ชัด (${LV.scene||'unclear'}, ${LV.quality||'unclear'}) ไม่มีกรอบที่ยืนยันได้ ห้ามเดาจากรุ่นรถ ให้ผู้ใช้จอดให้ปลอดภัยแล้วถ่ายให้ชัดขึ้น`;
+  const msg=LV.items.length?`ผลสแกนชิ้นส่วนรถ (${LV.vehicleKind==='motorcycle'?'ภาพมอเตอร์ไซค์':LV.vehicleKind==='car'?'ภาพรถยนต์':'ยังไม่ยืนยันประเภทพาหนะ'} อาจไม่ใช่รถที่เลือกไว้ใน garage): หมุดหมายเลขบอกตำแหน่ง ไม่ได้แปลว่าชำรุด AI อาจระบุผิด พบ ${LV.items.map((x,i)=>`${i+1}. ${x.name} (${where(x.box)}) — ${x.evidence}`).join(' · ')} · ยังไม่ยืนยัน ${LV.uncertain} จุด ห้ามเดาจุดที่ไม่เห็น ห้ามสอนให้แตะ เปิดฝา หรือถอดสาย จอด ดับเครื่องและปล่อยให้เย็นก่อนดูใกล้ ๆ`
+    :`ผลสแกน: ยังระบุไม่ได้ชัด (${LV.scene||'unclear'}, ${LV.quality||'unclear'}) ไม่มีหมุดที่ยืนยันได้ ห้ามเดาจากรุ่นรถ ให้ผู้ใช้จอดให้ปลอดภัยแล้วถ่ายให้ชัดขึ้น`;
   tellLive(msg+(LV.guide?' · ข้อจำกัดภาพจากระบบ: '+LV.guide.message+' · ห้ามให้ถอดฝา แฟริ่ง เบาะ หรือถังเพื่อสแกนให้ครบ':''),S.tool,quiet);S.tool=null;
 }
 async function detect(){
@@ -377,7 +392,7 @@ async function detect(){
     const current=view();if(!current||!scan.fresh({frame,current:scan.frameKey(current),track:LV.pend,hidden:D.hidden})){LV.tr=null;LV.lastAt=Date.now();setStat('moved');return;}
     LV.frames++;LV.lastAt=Date.now();LV.tr=LV.pend;LV.pend=null;LV.frame=frame;LV.fails=0;
     LV.scene=d.scene;LV.quality=d.quality;LV.uncertain=d.uncertain;LV.notes=[];LV.items=d.items;LV.vehicleKind=d.vehicleKind;LV.guide=d.coverGuidance;
-    const title=$('lvTitle');if(title)title.textContent=LV.vehicleKind==='motorcycle'?T('รู้จักชิ้นส่วนมอเตอร์ไซค์','Know your motorcycle'):T('รู้จักชิ้นส่วนรถ','Know your vehicle');
+    const title=$('lvTitle');if(title)title.textContent=LV.vehicleKind==='motorcycle'?T('รู้จักชิ้นส่วนมอเตอร์ไซค์','Know your motorcycle'):T('สแกนห้องเครื่อง','Engine-bay scan');
     const guide=$('lvCover');if(guide){guide.hidden=!LV.guide?.coverVisible;guide.textContent=LV.guide?.message||'';}
     const bx=$('lvBoxes');if(bx){bx.style.transition='none';bx.style.transform=`translate(${(LV.tr.dx*R.W/LV.bw).toFixed(1)}px,${(LV.tr.dy*R.H/LV.bh).toFixed(1)}px)`;bx.classList.remove('stale')}
     paintBoxes();$('lvChips').hidden=false;setStat(LV.items.length?'found':'none');
@@ -405,7 +420,7 @@ function track(){
   if(ok&&bx){bx.style.transition='transform .12s linear';bx.style.transform=`translate(${(tr.dx*R.W/LV.bw).toFixed(1)}px,${(tr.dy*R.H/LV.bh).toFixed(1)}px)`}
   if(bx)bx.classList.toggle('stale',tr.lost>0||LV.busy);
   if(tr.lost>0){$('lvChips').hidden=true;$('lvDet').hidden=true;LV.pick=-1;setStat('moved');}
-  else if(!LV.busy){$('lvChips').hidden=false;}
+  else if(!LV.busy&&LV.pick<0){$('lvChips').hidden=false;}
   /* ภาพเปลี่ยนไปมาก หรือเลื่อนไปไกลจนกรอบเริ่มหลุดขอบ → ให้ AI ดูเฟรมใหม่ (ไม่ถี่กว่า 2.5 วิ) */
   const moved=Math.hypot(tr.dx,tr.dy)>LV.bw*.18&&Date.now()-LV.lastAt>3000;
   if((tr.lost>2||moved||Date.now()-LV.lastAt>15000)&&!LV.busy&&!LV.noMore&&Date.now()-LV.lastAt>2500)detect();
@@ -430,10 +445,11 @@ async function scanBay(tool){
   if(run!==S.run)return;
   if(!voice.camOn){const why=T('เปิดกล้องไม่ได้ — ต้องอนุญาตกล้องก่อน','Camera unavailable — allow camera access');toast(why,'ti-video-off');finishBay(why);return}
   const el=layer();el.classList.add('ct-live');
-  el.innerHTML=`<div class="lv-boxes" id="lvBoxes"></div><div class="lv-sweep"></div>
-    <header class="ct-hd lv-hd"><div><b id="lvTitle">${T('รู้จักชิ้นส่วนรถ','Know your vehicle')}</b><small>${T('รถยนต์ · มอเตอร์ไซค์ · AI อาจระบุผิด ไม่ใช่การตรวจสภาพ','Cars · motorcycles · AI may be wrong, not an inspection')}</small></div><button type="button" class="ct-x" id="ctClose" aria-label="${T('ปิด','Close')}"><i class="ti ti-x"></i></button></header>
-    <div class="lv-dock"><p class="lv-safety">${T('จอด · ดับเครื่อง · รอให้เย็น · มองเท่านั้น ไม่สัมผัส','Park · engine off · let it cool · look, do not touch')}</p><p class="lv-stat" id="lvStat" role="status" aria-live="polite"></p><p class="lv-cover" id="lvCover" hidden></p><div class="lv-det" id="lvDet" hidden></div><div class="lv-chips" id="lvChips" aria-label="${T('ชิ้นส่วนที่ระบุได้','Identified components')}"></div><small class="lv-legend"><i></i>${T('กรอบแดง = ตำแหน่ง ไม่ได้แปลว่าชำรุด','Red = location, not damage')}</small>
-      <div class="lv-acts"><button type="button" class="lv-b" id="lvRe"><i class="ti ti-refresh"></i>${T('สแกนใหม่','Rescan')}</button><button type="button" class="lv-b" id="lvFreeze"><i class="ti ti-player-pause"></i>${T('หยุดภาพ','Pause')}</button><button type="button" class="lv-b p" id="lvDone"><i class="ti ti-check"></i>${T('เสร็จ','Done')}</button></div></div>`;
+  el.innerHTML=`<div class="lv-boxes" id="lvBoxes"></div><div class="lv-sweep"></div><div class="lv-frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <header class="ct-hd lv-hd"><div><b id="lvTitle">${T('สแกนห้องเครื่อง','Engine-bay scan')}</b><small>${T('ชี้กล้องไปที่ห้องเครื่อง · AI ปักหมุดชิ้นส่วนให้เอง','Point at the engine bay · AI pins the parts')}</small></div><button type="button" class="ct-x" id="ctClose" aria-label="${T('ปิด','Close')}"><i class="ti ti-x"></i></button></header>
+    <div class="lv-top"><p class="lv-stat" id="lvStat" role="status" aria-live="polite"></p><p class="lv-safety"><i class="ti ti-alert-triangle"></i>${T('จอด · ดับเครื่อง · มองอย่างเดียว','Park · engine off · look only')}</p></div>
+    <div class="lv-dock"><p class="lv-cover" id="lvCover" hidden></p><div class="lv-det" id="lvDet" hidden></div><div class="lv-chips" id="lvChips" aria-label="${T('ชิ้นส่วนที่ระบุได้','Identified components')}"></div><small class="lv-legend">${T('หมุด = ตำแหน่งที่ AI เห็น ไม่ได้แปลว่าชำรุด · AI อาจระบุผิด','A pin marks what the AI sees, not damage · AI may be wrong')}</small>
+      <div class="lv-acts"><button type="button" class="lv-b" id="lvRe"><i class="ti ti-refresh"></i>${T('สแกนใหม่','Rescan')}</button><button type="button" class="lv-b" id="lvFreeze"><i class="ti ti-player-pause"></i>${T('หยุดภาพ','Pause')}</button><button type="button" class="lv-b p" id="lvDone">${T('เสร็จ','Done')}</button></div></div>`;
   Object.assign(LV,{on:true,run:LV.run+1,items:[],tr:null,pend:null,busy:false,lastAt:0,frozen:false,told:'',toldAt:0,pick:-1,frames:0,noMore:false,scene:'',notes:[],quality:'',uncertain:0,frame:'',fails:0,vehicleKind:'unknown',guide:null});
   setStat('scan');
   $('ctClose').onclick=()=>finishBay();
@@ -474,7 +490,7 @@ function onCancel(ids){ if(S.tool&&(!ids||ids.includes(S.tool.id))){S.tool=null;
 function mountButtons(){
   const ui=$('callUI');if(!ui||$('ctTools'))return;
   const bar=D.createElement('div');bar.id='ctTools';bar.className='ct-tools';
-  bar.innerHTML=`<button type="button" id="ctEarBtn"><i class="ti ti-ear"></i><span>${T('ฟังเสียงเครื่อง','Listen to engine')}</span></button><button type="button" id="ctBayBtn"><i class="ti ti-scan"></i><span>${T('สแกนชิ้นส่วน','Scan vehicle parts')}</span></button>`;
+  bar.innerHTML=`<button type="button" id="ctEarBtn"><span class="ct-tic"><i class="ti ti-wave-sine"></i></span><span class="ct-tt"><b>${T('ฟังเสียงเครื่อง','Listen to engine')}</b><small>${T(`${REC_SEC} วินาที`,`${REC_SEC} seconds`)}</small></span></button><button type="button" id="ctBayBtn"><span class="ct-tic"><i class="ti ti-scan"></i></span><span class="ct-tt"><b>${T('สแกนห้องเครื่อง','Scan the engine bay')}</b><small>${T('ชี้กล้อง','Point the camera')}</small></span></button>`;
   ui.querySelector('.hh-top').after(bar);
   $('ctEarBtn').onclick=()=>{if(!voice.callActive)return toast(T('รอต่อสายให้ติดก่อนนะครับ','Wait for the call to connect'),'ti-phone');listenEngine(null)};
   $('ctBayBtn').onclick=()=>{if(!voice.callActive)return toast(T('รอต่อสายให้ติดก่อนนะครับ','Wait for the call to connect'),'ti-phone');scanBay(null)};
@@ -487,7 +503,7 @@ return Object.freeze({
   get holdMic(){return S.holdMic},get muteAi(){return S.muteAi},get busy(){return !!S.mode},
   onToolCall,onCancel,reset:closeLayer,listen:listenEngine,scan:scanBay,dispose(){closeLayer();$('ctTools')?.remove();D.removeEventListener?.('visibilitychange',invalidateFrame);window.removeEventListener?.('resize',invalidateFrame);},
   /* บอกผู้ช่วยเสียงว่ามีเครื่องมืออะไร (ต่อท้าย system prompt ของการโทร) */
-  prompt:()=>'\nเครื่องมือระหว่างโทร: เสียงเครื่องให้เรียก listen_engine · หากผู้ใช้ให้ดู ระบุ สแกน หรืออธิบายห้องเครื่อง ชิ้นส่วนรถยนต์ มอเตอร์ไซค์ หรือสกู๊ตเตอร์ ให้เรียก scan_engine_bay ซึ่งระบุชิ้นส่วนจากภาพจริงพร้อมกรอบแดง ชื่อและหมายเลข แตะกรอบเพื่อฟังคำอธิบาย กรอบแดงไม่ได้แปลว่าชำรุด เป็นเพียงการระบุที่อาจผิด ไม่ใช่การตรวจสภาพ ห้ามอ้างว่ารู้ทุกจุดหรือเห็นชิ้นส่วนที่ถูกบัง ห้ามแนะนำให้สัมผัส เปิดฝา ถอดสาย ซ่อมเอง หรือเข้าใกล้สายไฟแรงดันสูง ให้จอด ดับเครื่องและรอให้เย็นก่อนดูใกล้ ๆ ห้ามให้ถอดฝาครอบ แฟริ่ง เบาะ หรือถังน้ำมันเพื่อสแกนให้ครบ อธิบายเฉพาะผลเครื่องมือล่าสุด'
+  prompt:()=>'\nเครื่องมือระหว่างโทร: เสียงเครื่องให้เรียก listen_engine · หากผู้ใช้ให้ดู ระบุ สแกน หรืออธิบายห้องเครื่อง ชิ้นส่วนรถยนต์ มอเตอร์ไซค์ หรือสกู๊ตเตอร์ ให้เรียก scan_engine_bay ซึ่งระบุชิ้นส่วนจากภาพจริงพร้อมหมุดหมายเลขและชื่อบนภาพ แตะหมุดเพื่อฟังคำอธิบาย หมุดไม่ได้แปลว่าชำรุด เป็นเพียงการระบุที่อาจผิด ไม่ใช่การตรวจสภาพ ห้ามอ้างว่ารู้ทุกจุดหรือเห็นชิ้นส่วนที่ถูกบัง ห้ามแนะนำให้สัมผัส เปิดฝา ถอดสาย ซ่อมเอง หรือเข้าใกล้สายไฟแรงดันสูง ให้จอด ดับเครื่องและรอให้เย็นก่อนดูใกล้ ๆ ห้ามให้ถอดฝาครอบ แฟริ่ง เบาะ หรือถังน้ำมันเพื่อสแกนให้ครบ อธิบายเฉพาะผลเครื่องมือล่าสุด'
 });
 }
 window.CallTools=Object.freeze({create});

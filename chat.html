@@ -3033,9 +3033,10 @@ html[data-idle="1"] *{animation-play-state:paused!important}
      โหลดตรงนี้เพื่อให้ AI หยิบข้อมูลช่างชุดเดียวกับที่ผู้ใช้เห็นบนหน้าเว็บ -->
 <script src="call-sounds.js?v=1" defer></script>
 <script src="engine-scan.js?v=2026-10-17-r4" defer></script>
-<link rel="stylesheet" href="vehicle-audio.css?v=2">
-<script src="vehicle-audio.js?v=3" defer></script>
-<script src="call-tools.js?v=2026-10-18-audio2" defer></script>
+<link rel="stylesheet" href="vehicle-audio.css?v=3">
+<script src="vehicle-audio.js?v=4" defer></script>
+<script src="sound-lens.js?v=1" defer></script>
+<script src="call-tools.js?v=2026-10-19-inst1" defer></script>
 <script src="call-composer.js?v=2026-10-17-r4" defer></script>
 <script src="call-agent.js?v=2026-10-18-web1" defer></script>
 <script src="call-surface.js?v=2026-10-18-web2" defer></script>
@@ -3059,7 +3060,7 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 @media(prefers-reduced-motion:reduce){@view-transition{navigation:none}}
 </style>
 <link rel="stylesheet" href="stability.css">
-<link rel="stylesheet" href="call-ui.css?v=2026-10-18-r11">
+<link rel="stylesheet" href="call-ui.css?v=2026-10-19-inst1">
 <script src="car-sync.js"></script>
 <script src="stability.js" defer></script>
 <!-- หน้าตาชุดเดียวกับหน้าหลัก (สี การ์ด ปุ่ม พื้นหลัง) — โหลดท้ายสุดให้ชนะสไตล์เดิม -->
@@ -6827,7 +6828,7 @@ function getCallSession(){
   const agent=window.CendonCallAgent.create({api:voiceApi,getCar:selCar,getLocation:()=>LS.get("tech_here",null),showResearch:view.showResearch,showResults:view.showResults,showDraft:view.showDraft,showValet:view.showValet,minimize:view.minimize});
   let tools;
   cendonCall=window.CendonCallSession.create({byId:view.byId,backendUrl:BACKEND_URL,language:lang,getUser:()=>auth?.currentUser,getCar:selCar,view,agent,getTools:()=>tools,toast,storage:LS,systemPrompt:sysPrompt,getMessages:()=>messages,appendMessage:m=>messages.push(m),save:saveSession,onEnd:()=>{renderMessages();updateHint();renderChips();setPhase("thread");}});
-  tools=window.CallTools?.create({voice:cendonCall.bridge,language:lang,backendUrl:BACKEND_URL,getUser:()=>auth?.currentUser,getCar:selCar,getMessages:()=>messages,appendMessage:m=>messages.push(m),save:saveSession,toast});
+  tools=window.CallTools?.create({voice:cendonCall.bridge,language:lang,backendUrl:BACKEND_URL,getUser:()=>auth?.currentUser,getCar:selCar,getCars:()=>{try{return window.garage()||[]}catch(e){return []}},getMessages:()=>messages,appendMessage:m=>messages.push(m),save:saveSession,toast});
   view.bind(cendonCall);return cendonCall;
 }
 function startCall(){return getCallSession()?.start();}
@@ -9500,7 +9501,7 @@ async function askListen(q){
 }
 
 function wireListen(){
-  window.CendonVehicleAudio?.bind('lgVehicle',car(),v=>{lVehicle=v;lCapture=null;lCaptureUid='';lBlob=null;lRes=null;if(lUrl)URL.revokeObjectURL(lUrl);lUrl='';});
+  window.CendonVehicleAudio?.bind('lgVehicle',car(),v=>{const was=lVehicle;lVehicle=v;if(!was)return;lCapture=null;lCaptureUid='';lBlob=null;lRes=null;if(lUrl)URL.revokeObjectURL(lUrl);lUrl='';renderTool();},{value:lVehicle,cars:(()=>{try{return window.garage()||[]}catch(e){return []}})(),lang:window.lang||'th'});
   if($('lgVehiclePicker'))$('lgVehiclePicker').disabled=!!lRec;
   const t=D.getElementById("lgTakeWrap");
   D.querySelectorAll("[data-take]").forEach(b=>b.onclick=()=>{lTake=b.dataset.take;renderTool()});

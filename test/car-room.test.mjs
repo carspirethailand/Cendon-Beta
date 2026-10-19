@@ -1,20 +1,40 @@
-/* หน้ารถโฉมใหม่ (การาจ): หัวเดียว + 4 ห้อง + ปุ่มบันทึกปุ่มเดียว · ฟอร์มและตัวตรวจข้อมูลชุดเดิม · ลิงก์เก่ายังพามาถูกห้อง */
+/* หน้ารถ (การาจ): หน้าเดียวเลื่อนอ่านจบ ไม่มีแท็บ · รายละเอียดเต็มเปิดเป็นแผ่น · ปุ่มบันทึกปุ่มเดียว · ฟอร์มและตัวตรวจข้อมูลชุดเดิม · ลิงก์เก่ายังพามาถูกแผ่น */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const r=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8');
 const g=r('garage.html'),room=g.slice(g.indexOf('/* ═══════════ หน้ารถ (โฉมใหม่) ═══════════'),g.indexOf('/* ─── การกระทำในโมดัล ─── */'));
 
-test('four rooms replace the ten scrolling tabs, and old tab links land in the right room',()=>{
-  const tabs=[...room.matchAll(/\{k:"(\w+)",th:"([^"]+)"/g)].map(m=>m[1]);
-  assert.deepEqual(tabs.slice(0,4),['over','care','hist','about']);
+test('one scroll page, no tabs: three blocks, full details open as sheets, old tab links land on the right sheet',()=>{
+  assert.doesNotMatch(room,/id="clTabs"|role="tablist"/,'no tab rail');
+  assert.match(room,/return `<div class="crm-stack">\$\{start\}\$\{care\}\$\{hist\}\$\{about\}<\/div>`;/);
+  assert.match(room,/const LISTS=\["care","hist","about"\];/);
   assert.match(room,/const OLD_TAB=\{info:"about",odo:"about",spec:"about",equip:"about",parts:"about",health:"care",plan:"care",cal:"care",cost:"hist",trip:"hist",pass:"hist"\}/);
+  assert.match(room,/window\.clGo=k=>\{k=OLD_TAB\[k\]\|\|k;if\(curCar&&LISTS\.includes\(k\)\)openSheet\("list:"\+k\)\};/);
+  /* ป้ายชนิดแผ่นต้องไม่ใช้ data-kind (ชนกับปุ่มเลือกชนิดบันทึก → กดปิดแล้วไปเปิดฟอร์มแทน) */
+  assert.match(room,/sh\.dataset\.sheet=kind;/);assert.doesNotMatch(room,/sh\.dataset\.kind=/);
   const nav=r('nav-pages.js');
-  assert.match(nav,/const CLTABS=\["over","care","hist","about"\]/);
-  assert.match(nav,/open:p=>clClick\(CLOLD\[p\.tab\]\|\|p\.tab\)/);
-  /* "info" ยังเป็นหน้าต่างข้อมูลเพิ่มเติมของรถ (/garage/<รถ>/info) ห้องข้อมูลรถจึงใช้ชื่อ about */
+  assert.match(nav,/const CLTABS=\["care","hist","about"\]/);
+  assert.match(nav,/Nav\.watch\(\{sel:"#clSh",cls:"on",tag:"clsheet",url:el=>\{const k=el\.dataset\.sheet/);
+  assert.match(nav,/const k=CLOLD\[p\.tab\]\?\?p\.tab;if\(k&&window\.clGo\)window\.clGo\(k\)/);
+  assert.doesNotMatch(nav,/#clTabs/);
+  /* "info" ยังเป็นหน้าต่างข้อมูลเพิ่มเติมของรถ (/garage/<รถ>/info) แผ่นข้อมูลรถจึงใช้ชื่อ about */
   assert.match(nav,/path:":car\/info"/);
-  for(const f of ['garage.html','news.html','profile.html','spares.html'])assert.match(r(f),/nav-pages\.js\?v=2/,f);
+  for(const f of ['garage.html','news.html','profile.html','spares.html'])assert.match(r(f),/nav-pages\.js\?v=3/,f);
+});
+
+test('a new car gets a 2-step start card instead of 13 empty items; Car Passport is explained in plain words',()=>{
+  const main=room.slice(room.indexOf('function paneMain('),room.indexOf('\n}\n',room.indexOf('function paneMain(')));
+  assert.match(main,/const start=!logged\.length\?`<section class="crm-card crm-start">/);
+  assert.match(main,/data-log="odo"/);
+  assert.match(main,/class="crm-share" data-goto="hist" data-pass="1"/);
+  assert.match(main,/แชร์ประวัติให้คนซื้อรถ/);
+  assert.doesNotMatch(main,/ราคาดีขึ้น/,'no promise about resale price');
+  const hist=room.slice(room.indexOf('function paneHist('),room.indexOf('\n}\n',room.indexOf('function paneHist(')));
+  assert.match(hist,/Car Passport คือ/);
+  assert.match(hist,/<section id="clPass"/);
+  /* หัวรถไม่ซ้ำการ์ดเริ่มใช้: ป้ายถึงกำหนดขึ้นเฉพาะเมื่อมีรายการที่บันทึกแล้ว */
+  assert.match(room,/\$\{n\?`<button type="button" class="crm-due/);
 });
 
 test('one + Log button opens every form; the forms keep their ids and checks, and a failed check keeps the sheet open',()=>{
@@ -24,7 +44,7 @@ test('one + Log button opens every form; the forms keep their ids and checks, an
   assert.match(room,/if\(e\.target\.closest\("#clFuelAdd,#clSvcAdd,#clTripAdd,#symAdd,#tdAdd,\[data-rsave\],\[data-saveiv\],\[data-resetiv\],\[data-done\]"\)\)\{saving=true;/);
   assert.match(room,/if\(saving\)\{saving=false;closeSheet\(\)\}/);
   /* ไม่มีช่องกรอกกางค้างในห้องอีก */
-  for(const pane of ['paneOver','paneCare','paneHist','paneInfo']){const s=room.slice(room.indexOf('function '+pane+'('),room.indexOf('\n}\n',room.indexOf('function '+pane+'(')));assert.doesNotMatch(s,/<input|<select|<textarea/,pane)}
+  for(const pane of ['paneMain','paneCare','paneHist','paneInfo']){const s=room.slice(room.indexOf('function '+pane+'('),room.indexOf('\n}\n',room.indexOf('function '+pane+'(')));assert.doesNotMatch(s,/<input|<select|<textarea/,pane)}
   /* ตัวตรวจข้อมูลเดิมยังอยู่ครบ */
   assert.match(g,/if\(!okKm\(km,c\)\|\|!okMoney\(amt,c,\{job:k,what:jobName\(c,k\)\}\)\)return;/);
   assert.match(g,/data-del="trips" data-i="\$\{l\.trips\.indexOf\(t\)\}"/);

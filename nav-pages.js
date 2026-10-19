@@ -3,7 +3,7 @@
    (สี่หน้านี้ใช้ป๊อปอัปชุดเดียวกัน: หน้ารถ · หน้าตั้งค่า · แผ่นเครื่องมือ ฯลฯ)
 
    ทุกป๊อปอัปที่เปิด = หนึ่งขั้นในประวัติ ปุ่มย้อนของเครื่องปิดทีละชั้น ไม่เด้งออกจากหน้า
-     /garage/add · /garage/<รถ> · /garage/<รถ>/<แท็บ> · /garage/<รถ>/info · /garage/<รถ>/color
+     /garage/add · /garage/<รถ> · /garage/<รถ>/<แผ่น> · /garage/<รถ>/info · /garage/<รถ>/color
      /news/<ข่าว> · /news/section/<หมวด> · /spares/apps
      /<หน้า>/settings/<แท็บ> · /profile/<แท็บ> (หน้าบัญชีคือหน้าตั้งค่าทั้งหน้า)
    ══════════════════════════════════════════════════════════════════ */
@@ -28,15 +28,10 @@ let lastCar=null;
   const f=function(id){lastCar=id;return o.apply(this,arguments)};f.__nav=true;window.openCarDetail=f;
 })();
 Nav.watch({sel:"#clModal",cls:"show",tag:"car",url:()=>carUrl(lastCar),close:el=>el.classList.remove("show")});
-/* แท็บในหน้ารถ (สเปก อุปกรณ์ บำรุงรักษา …) — จำแท็บเดิมก่อนกด แล้วซ้อนขั้นใหม่หลังเปลี่ยน */
-const clTab=()=>{const x=D.querySelector('#clTabs [aria-selected="true"]');return x&&x.dataset.tab};
-const clClick=k=>{const x=D.querySelector('#clTabs [data-tab="'+k+'"]');if(x)x.click()};
-D.addEventListener("click",e=>{
-  const b=e.target.closest&&e.target.closest("#clTabs [data-tab]");if(!b||Nav.closing)return;
-  const was=clTab();
-  setTimeout(()=>{const now=clTab(),car=Nav.find("car");if(!car||!now||now===was)return;
-    Nav.push({url:car.url+"/"+now,tag:"cltab",close:()=>clClick(was)})},0);
-},true);
+/* แผ่นในหน้ารถ (ฟอร์มบันทึก · รายการ · เมนู) = หนึ่งขั้นในประวัติ กดย้อนแล้วแผ่นปิด ไม่หลุดออกจากหน้ารถ
+   แผ่นรายการ (ดูแล · ประวัติ · ข้อมูลรถ) มีที่อยู่ของตัวเอง /garage/<รถ>/<แผ่น> เปิดซ้ำจากลิงก์ได้ */
+Nav.watch({sel:"#clSh",cls:"on",tag:"clsheet",url:el=>{const k=el.dataset.sheet||"",car=Nav.find("car");
+  return car&&k.startsWith("list:")?car.url+"/"+k.slice(5):undefined},close:()=>window.clCloseSheet&&window.clCloseSheet()});
 
 /* ── หน้าตั้งค่า (เปิดทับหน้าอื่น) + แท็บในหน้าตั้งค่า ── */
 const setTab=()=>{const x=D.querySelector("#v-settings .set-l.on");return x&&x.dataset.tab};
@@ -72,9 +67,9 @@ if(PAGE==="garage"){
 }else{
   Nav.route({path:"car/:car",name:"car",test:p=>hasCar(p.car),open:p=>window.openCarDetail&&window.openCarDetail(p.car)});
 }
-/* ห้องในหน้ารถ (โฉมใหม่ 4 ห้อง) · ลิงก์แท็บเก่า (/garage/<รถ>/cost ฯลฯ) พามาห้องที่ของนั้นย้ายไปอยู่ */
-const CLTABS=["over","care","hist","about"],CLOLD={odo:"about",spec:"about",equip:"about",parts:"about",health:"care",plan:"care",cal:"care",cost:"hist",trip:"hist",pass:"hist"};
-Nav.route({path:":tab",parent:"car",test:p=>CLTABS.includes(p.tab)||!!CLOLD[p.tab],open:p=>clClick(CLOLD[p.tab]||p.tab)});
+/* แผ่นรายการในหน้ารถ · ลิงก์แท็บเก่า (/garage/<รถ>/cost ฯลฯ) พามาแผ่นที่ของนั้นย้ายไปอยู่ */
+const CLTABS=["care","hist","about"],CLOLD={over:"",odo:"about",spec:"about",equip:"about",parts:"about",health:"care",plan:"care",cal:"care",cost:"hist",trip:"hist",pass:"hist"};
+Nav.route({path:":tab",parent:"car",test:p=>CLTABS.includes(p.tab)||Object.prototype.hasOwnProperty.call(CLOLD,p.tab),open:p=>{const k=CLOLD[p.tab]??p.tab;if(k&&window.clGo)window.clGo(k)}});
 
 /* ── ตั้งค่า ── */
 const SETS=["general","acct","usage","fb","learn"];

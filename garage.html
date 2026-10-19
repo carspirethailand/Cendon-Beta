@@ -7345,7 +7345,9 @@ const setTodos=(id,v)=>LSt("carlab_todo_"+id,v);
 
 /* บันทึกของผู้ใช้ต่อคัน */
 const logKey=id=>"carlab_log_"+id;
-const getLog=id=>LG(logKey(id),{services:[],fuel:[],trips:[]});
+/* ข้อมูลที่เก็บไว้อาจมีไม่ครบทุกหมวด (เวอร์ชันเก่า / AI กรอกให้บางส่วน) — เติมหมวดที่ขาดเป็นรายการว่าง */
+const getLog=id=>{const l=LG(logKey(id),null),o=l&&typeof l==="object"?l:{};
+  for(const k of ["services","fuel","trips"])if(!Array.isArray(o[k]))o[k]=[];return o};
 const setLog=(id,v)=>LSt(logKey(id),v);
 
 /* เลขไมล์ที่ใช้คำนวณ — ถ้า ODO engine พร้อมใช้ค่าประมาณล่าสุด */
@@ -7451,7 +7453,6 @@ function costOf(c){
 .carx .crm-due b{font-weight:600}
 .carx .crm-due .dot{width:8px;height:8px;flex:0 0 8px;border-radius:4px;background:var(--cx-acc)}
 .carx .crm-due.over .dot{background:var(--danger)}
-.carx .crm-due.none .dot{background:var(--faint)}
 .carx .crm-due i.ti{color:var(--muted)}
 .carx .crm-cap{text-align:center;font-size:11.5px;color:var(--muted);margin:6px 0 0}
 .carx .crm-card{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:18px;box-sizing:border-box}
@@ -7468,10 +7469,7 @@ function costOf(c){
 .carx .cl-a.cl-urg{background:var(--danger);border-color:var(--danger);color:#fff}
 .carx .cl-a.cl-urg i{color:#fff}
 .carx .cl-a.x{grid-column:1/-1;height:44px;font-weight:500;color:var(--muted)}
-.carx .crm-r{padding:0 16px 120px}
-.carx #clTabs{display:flex;gap:4px;padding:4px;background:var(--surface-2);border-radius:16px;margin:18px 0 14px;position:sticky;top:69px;z-index:4;border:1px solid var(--line-2)}
-.carx #clTabs .cl-tab{flex:1;height:40px;border:0;border-radius:12px;background:transparent;color:var(--muted);font:inherit;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;padding:0 4px;box-shadow:none}
-.carx #clTabs .cl-tab[aria-selected="true"]{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08),0 0 0 1px var(--line-2)}
+.carx .crm-r{padding:18px 16px 120px}
 .carx .crm-stack{display:flex;flex-direction:column;gap:12px}
 .carx .crm-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
 .carx .crm-h h3{margin:0;font-size:15px!important;line-height:1.4!important;font-weight:600}
@@ -7511,6 +7509,23 @@ function costOf(c){
 .carx .crm-dark b{display:block;font-size:17px;font-weight:600;margin-top:8px}
 .carx .crm-dark small{display:block;font-size:12.5px;color:#A1A1AA;margin-top:2px;line-height:1.5}
 .carx .crm-dark .go{display:inline-flex;align-items:center;gap:6px;margin-top:14px;height:40px;padding:0 16px;border-radius:20px;background:#FAFAFA;color:#09090B;font-size:13.5px;font-weight:600}
+.carx .crm-more{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-height:44px;margin-top:14px;border:0;border-top:1px solid var(--line-2);background:none;color:var(--cx-acc-t);font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;padding:12px 0 0}
+.carx .crm-start h3{margin:0;font-size:16px!important;line-height:1.4!important;font-weight:600}
+.carx .crm-start .crm-s{margin:2px 0 12px;font-size:12.5px}
+.carx .crm-step{display:flex;align-items:center;gap:12px;width:100%;min-height:60px;padding:10px 12px;margin-top:8px;border-radius:16px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.carx .crm-step .n{width:32px;height:32px;flex:0 0 32px;border-radius:16px;background:var(--cx-acc);color:#fff;display:grid;place-items:center;font-weight:700;font-size:14px}
+.carx .crm-step.done .n{background:var(--ok)}
+.carx .crm-step .t{flex:1;min-width:0}.carx .crm-step b{display:block;font-size:14.5px;font-weight:600}.carx .crm-step small{display:block;font-size:12px;color:var(--muted)}
+.carx .crm-step>i{color:var(--muted)}
+.carx .crm-alert .crm-nm{font-weight:500}
+.carx .crm-share{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;margin-top:14px;padding:10px 12px;border-radius:16px;border:1px dashed var(--line);background:none;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.carx .crm-share>i:first-child{font-size:20px;color:var(--cx-acc-t)}
+.carx .crm-share span{flex:1;min-width:0}.carx .crm-share b{display:block;font-size:14px;font-weight:600}.carx .crm-share small{display:block;font-size:12px;color:var(--muted)}
+.carx .crm-share>i:last-child{color:var(--muted)}
+.carx .crm-rowcard{display:flex;align-items:center;gap:12px;width:100%;text-align:left;font:inherit;color:var(--ink);cursor:pointer;padding:16px 18px}
+.carx .crm-rowcard b{display:block;font-size:15px;font-weight:600}.carx .crm-rowcard small{display:block;font-size:12.5px;color:var(--muted)}
+.carx .crm-rowcard>i{color:var(--muted)}
+.carx .crm-sh.big{height:92%;max-height:92%}
 .carx .crm-x{width:40px;height:40px;flex:0 0 40px;border-radius:20px;border:0;background:none;color:var(--muted);display:grid;place-items:center;cursor:pointer;font-size:17px;padding:0}
 .carx .crm-ask{height:36px;padding:0 12px;border-radius:18px;border:0;background:var(--cx-soft);color:var(--cx-acc-t);font:inherit;font-size:13px;font-weight:600;cursor:pointer;flex:0 0 auto;white-space:nowrap}
 .carx .crm-empty{font-size:13px;color:var(--muted);line-height:1.6;margin:0}
@@ -7577,10 +7592,10 @@ function costOf(c){
   .carx .crm-grid{display:grid;grid-template-columns:400px minmax(0,1fr);gap:32px;padding:0 28px}
   .carx .crm-l{padding:0;position:sticky;top:69px;align-self:start;padding-bottom:24px}
   .carx .crm-r{padding:0 0 110px}
-  .carx #clTabs{margin-top:6px}
   .carx .crm-top .crm-mini{display:none}
   .carx .crm-chips{margin:2px 0 0;padding:0 0 2px}
   .carx .crm-sh{left:auto;right:24px;bottom:24px;width:440px;border-radius:24px;max-height:calc(100% - 48px)}
+  .carx .crm-sh.big{width:520px;height:calc(100% - 48px);max-height:calc(100% - 48px)}
 }
 @media(max-width:640px){
   .carx-bd{padding:0;align-items:stretch}
@@ -7588,7 +7603,7 @@ function costOf(c){
 }
 @media(prefers-reduced-motion:reduce){.carx .crm-sh,.carx .crm-shbg,.carx .crm-arc,.carx .crm-mini{transition:none!important}}
 `;document.head.appendChild(st)})();
-let modal=null, curCar=null, curTab="over", careF="all", histF="all", sheetKind="", saving=false;
+let modal=null, curCar=null, careF="all", histF="all", sheetKind="", saving=false;
 const infoOpen=new Set(["spec"]);
 const TODAY=()=>new Date().toISOString().slice(0,10);
 const LOC=()=>EN()?"en-GB":"th-TH";
@@ -7614,7 +7629,6 @@ function ensureModal(){
           <div class="carx-act" id="clAct"></div>
         </div>
         <div class="crm-r">
-          <div role="tablist" id="clTabs" aria-label="${T("ส่วนของหน้ารถ","Car sections")}"></div>
           <div class="carx-body" id="clBody"></div>
         </div>
       </div>
@@ -7639,31 +7653,27 @@ function ensureModal(){
   return modal;
 }
 function closeCL(){if(modal){closeSheet(true);modal.classList.remove("show")}}
-const TABS=[
- {k:"over",th:"ภาพรวม",en:"Overview"},
- {k:"care",th:"ดูแลรักษา",en:"Care"},
- {k:"hist",th:"ประวัติ",en:"History"},
- {k:"about",th:"ข้อมูลรถ",en:"Car info"}
-];
-/* ลิงก์เก่า (/garage/<รถ>/cost ฯลฯ) และปุ่มจากที่อื่น ยังพามาถูกห้อง */
+/* หน้าเดียวเลื่อนอ่านจบ: ต้องดูแล · ประวัติรถ · ข้อมูลรถ — รายละเอียดเต็มเปิดเป็นแผ่น (ไม่มีแท็บให้งง)
+   ลิงก์เก่า (/garage/<รถ>/cost ฯลฯ) และปุ่มจากที่อื่น ยังพามาแผ่นที่ของนั้นอยู่ */
+const LISTS=["care","hist","about"];
 const OLD_TAB={info:"about",odo:"about",spec:"about",equip:"about",parts:"about",health:"care",plan:"care",cal:"care",cost:"hist",trip:"hist",pass:"hist"};
 window.openCarDetail=function(id,go){
   const c=cars().find(x=>x.id===id); if(!c)return;
   curCar=c; ensureModal();
   const was=modal.classList.contains("show");
-  if(!was){curTab="over";careF="all";histF="all"}
-  if(go&&TABS.some(t=>t.k===go))curTab=go;else if(go&&OLD_TAB[go])curTab=OLD_TAB[go];
+  if(!was){careF="all";histF="all"}
   window.clRerender=()=>{try{renderAll()}catch(e){}};
   closeSheet(true);
   renderAll();
   modal.classList.add("show");
   if(!was)$("clScroll").scrollTop=0;
   if(go==="odo")setTimeout(()=>{openSheet("log:odo");setTimeout(()=>{const i=$("crmOdoIn");if(i)try{i.focus({preventScroll:true})}catch(e){}},300)},60);
+  else if(go&&LISTS.includes(OLD_TAB[go]||go))setTimeout(()=>openSheet("list:"+(OLD_TAB[go]||go)),60);
 };
-function renderAll(){const c=curCar;if(!c)return;renderHead(c);renderTabs();renderTab()}
-function renderTabs(){
-  $("clTabs").innerHTML=TABS.map(t=>`<button type="button" class="cl-tab" role="tab" data-tab="${t.k}" aria-selected="${t.k===curTab}">${T(t.th,t.en)}</button>`).join("");
-}
+/* ที่อยู่ /garage/<รถ>/<แผ่น> (nav-pages.js) · ปุ่มย้อนของเครื่องปิดแผ่น */
+window.clGo=k=>{k=OLD_TAB[k]||k;if(curCar&&LISTS.includes(k))openSheet("list:"+k)};
+window.clCloseSheet=()=>closeSheet(true);
+function renderAll(){renderTab()}
 
 /* ── หัวรถ ── */
 function nextDue(c){
@@ -7693,10 +7703,9 @@ function renderHead(c){
   const n=nextDue(c), over=n&&n.d.left<=0;
   const due=n?(over?T(`<b>เลยกำหนด</b> · ${esc(T(n.p.th,n.p.en))} ${num(-n.d.left)} กม.`,`<b>Overdue</b> · ${esc(n.p.en)} by ${num(-n.d.left)} km`)
     :`${esc(T(n.p.th,n.p.en))} · <b>${T(`อีก ${num(n.d.left)} กม.`,`${num(n.d.left)} km left`)}</b>`)
-    :T("ยังไม่มีบันทึกการดูแล · แตะเพื่อกรอกครั้งล่าสุด","No care logged yet · tap to add the last one");
+    :"";
   $("clHero").innerHTML=`<div class="crm-stage">${dial(n?n.d.left/n.p.km:0,over)}${artOf(c)}</div>
-    <button type="button" class="crm-due${over?" over":n?"":" none"}" ${n?`data-item="${esc(n.p.k)}"`:`data-goto="care"`}><span class="dot"></span><span>${due}</span><i class="ti ti-chevron-right"></i></button>
-    <p class="crm-cap">${T("หน้าปัดสีส้ม = ระยะที่เหลือก่อนถึงรายการดูแลถัดไป","The orange dial = distance left before the next care item")}</p>`;
+    ${n?`<button type="button" class="crm-due${over?" over":""}" data-item="${esc(n.p.k)}"><span class="dot"></span><span>${due}</span><i class="ti ti-chevron-right"></i></button>`:""}`;
   let e=null;try{e=window.SpireODO?SpireODO.km(c):null}catch(err){}
   const km=e&&e.value?e.value:KM(c);
   const ago=e&&e.anchor?(e.dayGap<1?T("วันนี้","today"):T(`${Math.round(e.dayGap)} วันก่อน`,`${Math.round(e.dayGap)} days ago`)):"";
@@ -7717,13 +7726,9 @@ function actButtons(){
 /* ── ห้องต่าง ๆ ── */
 function renderTab(){
   const c=curCar; if(!c)return;
-  const f={over:paneOver,care:paneCare,hist:paneHist,about:paneInfo}[curTab]||paneOver;
-  ($("clBody")||{}).innerHTML=`<div class="cl-pane on">${f(c)}</div>`;
-  if(curTab==="care")try{window.CarExtras&&CarExtras.after("cal",c)}catch(e){}
-  if(curTab==="hist")try{window.CarExtras&&CarExtras.after("pass",c)}catch(e){}
-  if(curTab==="about"&&infoOpen.has("odo")){try{window.CarExtras&&CarExtras.after("odo",c)}catch(e){}if(window.odoNotifRow)window.odoNotifRow()}
+  ($("clBody")||{}).innerHTML=`<div class="cl-pane on">${paneMain(c)}</div>`;
   renderHead(c);
-  if(sheetKind.startsWith("item:"))openSheet(sheetKind);
+  if(sheetKind.startsWith("item:")||sheetKind.startsWith("list:"))openSheet(sheetKind,null,true);
   if(saving){saving=false;closeSheet()}
 }
 const sysOf=p=>SYS[p.sys]||SYS.engine;
@@ -7734,39 +7739,53 @@ function itemState(c,x){
 function leftTxt(x,s){
   return s.logged?(s.over?T(`เลย ${num(-x.d.left)} กม.`,`${num(-x.d.left)} km over`):T(`อีก ${num(x.d.left)} กม.`,`${num(x.d.left)} km left`)):T("ยังไม่เคยบันทึก","Not recorded");
 }
-function paneOver(c){
+/* หน้าหลักของรถ: (คนใหม่) เริ่มใช้ 2 ขั้น · ต้องดูแล · ประวัติรถ · ข้อมูลรถ */
+function paneMain(c){
+  const L=getLog(c.id),sym=getSymptoms(c.id),plan=planFor(c);
   const items=status(c).items.map(x=>({...x,s:itemState(c,x)}));
-  const logged=items.filter(x=>x.s.logged).sort((a,b)=>a.d.left-b.d.left),todo=items.filter(x=>!x.s.logged);
-  const next=logged.slice(0,3).concat(todo.slice(0,Math.max(0,3-Math.min(3,logged.length))));
-  const rows=next.map(x=>{const last=lastDone(c,x.p.k),s=x.s;
+  const logged=items.filter(x=>x.s.logged).sort((a,b)=>a.d.left-b.d.left);
+  let e=null;try{e=window.SpireODO?SpireODO.km(c):null}catch(err){}
+  const odoOk=!!(e&&e.anchor),firstK=plan.some(p=>p.k==="oil")?"oil":(plan[0]&&plan[0].k);
+  const firstP=plan.find(p=>p.k===firstK);
+  const more=(k,txt)=>`<button type="button" class="crm-more" data-goto="${k}">${txt}<i class="ti ti-chevron-right"></i></button>`;
+  const row=x=>{const last=lastDone(c,x.p.k),s=x.s;
     return `<button type="button" class="crm-row" data-item="${x.p.k}">
       <span class="crm-ico${s.over?" over":s.hot?" hot":""}"><i class="ti ${sysOf(x.p).ic}"></i></span>
-      <span style="flex:1;min-width:0"><span class="crm-nm"><span>${esc(T(x.p.th,x.p.en))}</span><span class="crm-left ${s.over?"over":s.hot?"hot":s.logged?"":"none"}">${leftTxt(x,s)}</span></span>
-      ${s.logged?`<span class="crm-bar"><i class="${s.over?"over":s.hot?"hot":""}" style="width:${s.over?100:s.used}%"></i></span>
-        <span class="crm-s">${T("ล่าสุด","Last")} ${last.date?esc(fmtD(last.date))+" · ":""}${num(last.km)} ${T("กม.","km")}</span>`
-       :`<span class="crm-s" style="margin-top:3px">${T("จำได้ว่าเปลี่ยนเมื่อไร แตะเพื่อกรอก — ระบบไม่เดาให้","Remember when? Tap to add it — we won't guess")}</span>`}</span></button>`}).join("");
-  const sym=getSymptoms(c.id);
-  const k=costOf(c);let cal=null;try{cal=window.CarExtras&&CarExtras._cal?CarExtras._cal(c):null}catch(e){}
-  const L=getLog(c.id);
-  return `<div class="crm-stack">
-    <section class="crm-card"><div class="crm-h"><h3>${T("ถัดไป","Up next")}</h3><button type="button" class="crm-link" data-goto="care">${T(`ดูทั้งหมด ${items.length} รายการ`,`See all ${items.length}`)}</button></div>
-      <div class="crm-rows">${rows||`<p class="crm-empty">${T("ยังไม่มีตารางดูแลสำหรับรถคันนี้","No care plan for this car yet")}</p>`}</div></section>
-    <section class="crm-card"><div class="crm-h"><h3>${T("อาการที่จดไว้","Noted symptoms")}</h3><button type="button" class="crm-link" data-log="sym">+ ${T("จดอาการ","Note one")}</button></div>
-      ${sym.length?`<div class="crm-rows">${sym.slice(0,3).map((x,i)=>`<div class="crm-row" style="cursor:default">
-        <span class="crm-ico"><i class="ti ti-clipboard-text"></i></span>
-        <span style="flex:1;min-width:0"><span class="crm-nm"><span>${esc(x.t)}</span></span><span class="crm-s">${esc(fmtD(x.date))}${x.km?` · ${num(x.km)} ${T("กม.","km")}`:""}</span></span>
-        <button type="button" class="crm-ask" data-symask="${i}">${T("ถาม AI","Ask AI")}</button></div>`).join("")}</div>
-        ${sym.length>3?`<button type="button" class="crm-link" data-goto="hist" style="margin-top:6px">${T(`ดูอีก ${sym.length-3} อาการในประวัติ`,`${sym.length-3} more in History`)}</button>`:""}`
-       :`<p class="crm-empty">${T("เจออะไรแปลก ๆ จดไว้ตอนนั้นเลย เข้าอู่หรือคุยกับ AI จะเล่าได้ครบ","Note odd noises or warnings when they happen — it makes the garage visit or AI chat far more accurate")}</p>`}</section>
-    <div class="crm-tiles">
-      <button type="button" class="crm-card crm-tile" data-goto="hist"><small>${T("ใช้ไปเดือนนี้","Spent this month")}</small><b>฿${num(Math.round(k.thisMonth))}</b><small>${T(`รวมทั้งหมด ฿${num(Math.round(k.totalAll))}`,`฿${num(Math.round(k.totalAll))} all time`)}</small></button>
-      <button type="button" class="crm-card crm-tile" data-goto="care"><small>${T("12 เดือนข้างหน้า","Next 12 months")}</small><b>${cal?"≈ ฿"+num(cal.total):"—"}</b><small>${cal&&cal.perMonth?T(`เก็บไว้เดือนละ ฿${num(cal.perMonth)}`,`Set aside ฿${num(cal.perMonth)}/mo`):T("ดูแผนดูแลรักษา","See the care plan")}</small></button>
-    </div>
-    <button type="button" class="crm-dark" data-goto="hist" data-pass="1"><span class="k"><i class="ti ti-id-badge-2"></i>CAR PASSPORT</span>
-      <b>${T("ประวัติที่คนซื้อรถต่อเชื่อถือ","A history buyers can trust")}</b>
-      <small>${L.services.length?T(`มี ${L.services.length} บันทึกพร้อมใช้ · แชร์เป็นลิงก์ได้เมื่อจะขายรถ`,`${L.services.length} records ready · share a link when you sell`):T("บันทึกการดูแลไว้ แล้วแชร์เป็นลิงก์ตอนขายรถ","Log your care, then share a link when you sell")}</small>
-      <span class="go">${T("ดู Passport","Open Passport")}<i class="ti ti-chevron-right"></i></span></button>
-  </div>`;
+      <span style="flex:1;min-width:0"><span class="crm-nm"><span>${esc(T(x.p.th,x.p.en))}</span><span class="crm-left ${s.over?"over":s.hot?"hot":""}">${leftTxt(x,s)}</span></span>
+        <span class="crm-bar"><i class="${s.over?"over":s.hot?"hot":""}" style="width:${s.over?100:s.used}%"></i></span>
+        <span class="crm-s">${T("ล่าสุด","Last")} ${last.date?esc(fmtD(last.date))+" · ":""}${num(last.km)} ${T("กม.","km")}</span></span></button>`};
+  const symRows=sym.slice(0,2).map((x,i)=>`<div class="crm-row crm-alert" style="cursor:default">
+      <span class="crm-ico hot"><i class="ti ti-alert-circle"></i></span>
+      <span style="flex:1;min-width:0"><span class="crm-nm"><span>${esc(x.t)}</span></span><span class="crm-s">${T("อาการที่จดไว้","Noted")} · ${esc(fmtD(x.date))}</span></span>
+      <button type="button" class="crm-ask" data-symask="${i}">${T("ถาม AI","Ask AI")}</button></div>`).join("");
+  /* คนเพิ่งเพิ่มรถ: บอกแค่ 2 อย่าง แอปคำนวณที่เหลือเอง (ไม่ต้องเจอ 13 รายการที่ว่างเปล่า) */
+  const start=!logged.length?`<section class="crm-card crm-start"><h3>${T("เริ่มใช้ 2 ขั้น","Get started in 2 steps")}</h3>
+      <p class="crm-s">${T("บอกแอปแค่นี้ แล้วแอปจะคำนวณและเตือนให้เองว่าต้องดูแลอะไรเมื่อไร","Tell us these two things and we'll work out and remind you what's due when")}</p>
+      <button type="button" class="crm-step${odoOk?" done":""}" data-log="odo"><span class="n">${odoOk?'<i class="ti ti-check"></i>':"1"}</span>
+        <span class="t"><b>${T("ยืนยันเลขไมล์จากหน้าปัด","Confirm the odometer reading")}</b><small>${odoOk?T(`ล่าสุด ${num(e.value)} กม. · แตะเพื่ออัปเดต`,`Last ${num(e.value)} km · tap to update`):T("ใช้เวลาไม่ถึงนาที","Takes under a minute")}</small></span><i class="ti ti-chevron-right"></i></button>
+      ${firstP?`<button type="button" class="crm-step" data-item="${firstK}"><span class="n">2</span>
+        <span class="t"><b>${T(`${firstP.th}ครั้งล่าสุดเมื่อไร`,`When was the last ${firstP.en.toLowerCase()}?`)}</b><small>${T("จำได้คร่าว ๆ ก็พอ","A rough guess is fine")}</small></span><i class="ti ti-chevron-right"></i></button>`:""}
+      ${more("care",T(`ดูรายการดูแลทั้งหมด (${items.length})`,`All care items (${items.length})`))}</section>`:"";
+  const care=logged.length||sym.length?`<section class="crm-card"><div class="crm-h"><h3>${T("ต้องดูแล","Needs attention")}</h3></div>
+      <div class="crm-rows">${symRows}${logged.slice(0,sym.length?2:3).map(row).join("")}</div>
+      ${logged.length?more("care",T(`ดูรายการดูแลทั้งหมด (${items.length})`,`All care items (${items.length})`)):""}</section>`:"";
+  /* ประวัติล่าสุด 3 รายการ (ทุกชนิดรวมกัน) */
+  const nm=x=>{const p=PLAN.find(p=>p.k===x.k);return p?T(p.th,p.en):T("รายการดูแล","Service")};
+  const ev=[...L.services.map(x=>({d:x.date,ic:"ti-tool",t:nm(x),r:+x.amount?"฿"+num(x.amount):"",s:x.km?num(x.km)+" "+T("กม.","km"):""})),
+    ...L.fuel.map(x=>({d:x.date,ic:"ti-gas-station",t:T("เติมน้ำมัน","Fill-up")+(x.litres?` · ${x.litres} ${T("ลิตร","L")}`:""),r:"฿"+num(x.amount||0),s:x.km?num(x.km)+" "+T("กม.","km"):""})),
+    ...L.trips.map(x=>({d:x.date,ic:"ti-route",t:T("ทริป","Trip")+" · "+(x.title||""),r:num(x.km)+" "+T("กม.","km"),s:""}))]
+    .sort((a,b)=>String(b.d||"").localeCompare(String(a.d||""))).slice(0,3);
+  const k=costOf(c);
+  const hist=`<section class="crm-card"><div class="crm-h"><h3>${T("ประวัติรถ","Car history")}</h3>${k.totalAll?`<span class="crm-s">${T(`ใช้ไปแล้ว ฿${num(Math.round(k.totalAll))}`,`฿${num(Math.round(k.totalAll))} spent`)}</span>`:""}</div>
+      ${ev.length?`<div class="crm-rows">${ev.map(x=>`<div class="crm-row" style="cursor:default"><span class="crm-ico"><i class="ti ${x.ic}"></i></span>
+        <span style="flex:1;min-width:0"><span class="crm-nm"><span>${esc(x.t)}</span><span class="crm-left" style="font-weight:600">${esc(x.r)}</span></span><span class="crm-s">${esc(fmtD(x.d))}${x.s?" · "+esc(x.s):""}</span></span></div>`).join("")}</div>`
+      :`<p class="crm-empty">${T("ยังไม่มีประวัติ — เติมน้ำมัน เข้าศูนย์ หรือซ่อมเมื่อไร กดปุ่ม + บันทึก แล้วจะขึ้นที่นี่","No history yet — whenever you refuel, service or repair, tap + Log and it shows here")}</p>`}
+      <button type="button" class="crm-share" data-goto="hist" data-pass="1"><i class="ti ti-share"></i>
+        <span><b>${T("แชร์ประวัติให้คนซื้อรถ","Share the history with a buyer")}</b><small>${T("Car Passport · ลิงก์ประวัติดูแลรถ คนซื้อเปิดดูเองได้","Car Passport · a care-history link the buyer can open")}</small></span><i class="ti ti-chevron-right"></i></button>
+      ${ev.length?more("hist",T("ดูประวัติทั้งหมด","See full history")):""}</section>`;
+  const about=`<button type="button" class="crm-card crm-rowcard" data-goto="about"><span class="crm-ico"><i class="ti ti-list-details"></i></span>
+      <span style="flex:1;min-width:0"><b>${T("ข้อมูลรถ","Car info")}</b><small>${T("สเปก · อุปกรณ์ · อะไหล่ · การนับเลขไมล์","Specs · equipment · parts · mileage tracking")}</small></span><i class="ti ti-chevron-right"></i></button>`;
+  return `<div class="crm-stack">${start}${care}${hist}${about}</div>`;
 }
 function paneCare(c){
   const items=status(c).items.map(x=>({...x,s:itemState(c,x)}));
@@ -7775,8 +7794,9 @@ function paneCare(c){
   const groups=Object.keys(SYS).map(k=>({k,list:show.filter(x=>(x.p.sys||"engine")===k)})).filter(g=>g.list.length);
   const todos=getTodos(c.id),km=KM(c);
   const cal=window.CarExtras?CarExtras.cal(c):"";
+  let cx=null;try{cx=window.CarExtras&&CarExtras._cal?CarExtras._cal(c):null}catch(e){}
   return `<div class="crm-stack">
-    ${cal}
+    ${cal?`<details class="crm-acc" style="margin:0"><summary><b>${T("เงินที่ควรเตรียม 12 เดือน","Money to set aside, 12 months")}</b><small>${cx?"≈ ฿"+num(cx.total):""}</small><i class="ti ti-chevron-down"></i></summary><div class="crm-in">${cal}</div></details>`:""}
     <div class="crm-chips" role="group" aria-label="${T("กรองรายการ","Filter")}">
       <button type="button" class="crm-chip" data-caref="all" aria-pressed="${careF==="all"}">${T("ทั้งหมด","All")} ${items.length}</button>
       <button type="button" class="crm-chip" data-caref="soon" aria-pressed="${careF==="soon"}">${T("ใกล้ถึง","Due soon")} ${soon.length}</button>
@@ -7834,7 +7854,8 @@ function paneHist(c){
     <div class="crm-chips" role="group" aria-label="${T("กรองประวัติ","Filter history")}">${F.map(([k2,t])=>`<button type="button" class="crm-chip" data-histf="${k2}" aria-pressed="${histF===k2}">${t}</button>`).join("")}</div>
     <div>${months.length?months.map(m=>`<div class="crm-grp">${esc(mLabel(m.key))}</div><div class="crm-list">${m.list.join("")}</div>`).join("")
       :`<p class="crm-empty" style="margin:12px 4px">${T("ยังไม่มีบันทึก — กดปุ่ม + บันทึก ด้านล่างได้เลย","Nothing logged yet — use the + Log button below")}</p>`}</div>
-    ${pass?`<section id="clPass">${pass}</section>`:""}
+    ${pass?`<section id="clPass"><div class="crm-grp" style="margin-top:6px">${T("แชร์ประวัติให้คนซื้อรถ (Car Passport)","Share with a buyer (Car Passport)")}</div>
+      <p class="crm-s" style="margin:0 4px 12px">${T("Car Passport คือหน้าเว็บประวัติของรถคันนี้ (เลขไมล์ การดูแล งานซ่อม) ที่คุณส่งเป็นลิงก์หรือ QR ให้คนซื้อรถต่อเปิดดู — ไม่มีชื่อ เบอร์ หรือทะเบียนของคุณ · งานซ่อมที่จ้างช่างผ่าน Cendon เลือกใส่ได้ ติดป้าย “ยืนยันโดยร้าน” · ยังไม่ขายรถก็ไม่ต้องสร้าง","Car Passport is a web page with this car's history (mileage, care, repairs) you send as a link or QR to a buyer — no name, phone or plate · repairs done through Cendon can be added, marked “Shop-verified” · no need to create one until you sell")}</p>${pass}</section>`:""}
   </div>`;
 }
 function paneInfo(c){
@@ -7924,27 +7945,39 @@ function menuSheet(c){
       <div class="crm-sw" role="radiogroup" aria-label="${T("สีรถ","Car colour")}">${CAR_COLORS.map(x=>`<button type="button" role="radio" aria-checked="${x.c===cur}" aria-label="${esc(T(x.th,x.en))}" data-cmcolor="${x.c}" style="background:${x.c}"></button>`).join("")}</div></div>`:""}
     <div class="crm-list" style="margin-bottom:12px">
       ${window.openInfo?`<button type="button" class="crm-mi" data-cm="info"><i class="ti ti-pencil"></i>${T("ข้อมูลรถเพิ่มเติม (VIN รุ่นย่อย ทะเบียน)","More details (VIN, trim, plate)")}</button>`:""}
-      <button type="button" class="crm-mi" data-cm="pass"><i class="ti ti-id-badge-2"></i>${T("แชร์ Car Passport","Share Car Passport")}</button>
+      <button type="button" class="crm-mi" data-cm="pass"><i class="ti ti-share"></i>${T("แชร์ประวัติให้คนซื้อรถ (Car Passport)","Share history with a buyer (Car Passport)")}</button>
       <button type="button" class="crm-mi" data-cm="main"><i class="ti ti-star"></i>${T("ตั้งเป็นรถหลัก (AI ถามถึงคันนี้ก่อน)","Make it my main car")}</button></div>
     <div class="crm-list"><button type="button" class="crm-mi bad" data-cm="del"><i class="ti ti-trash"></i>${T("ลบรถคันนี้ออกจากการาจ","Remove this car")}</button></div>
     <p class="crm-note"><span>${T("ลบแล้วประวัติของคันนี้หายไปด้วย — ระบบถามยืนยันอีกครั้ง","Removing deletes this car's history too — you'll be asked to confirm")}</span></p>`;
 }
-function openSheet(kind,pre){
+let sheetBack="";
+function openSheet(kind,pre,keep){
   const c=curCar;if(!c||!modal)return;
   const sh=$("clSh"),bg=$("clShBg");let html="";
+  /* เปิดรายการ/ฟอร์มจากแผ่นรายการ → ปิดแล้วกลับมาแผ่นเดิม */
+  if(!keep&&sheetKind.startsWith("list:")&&!kind.startsWith("list:"))sheetBack=sheetKind;
+  else if(kind.startsWith("list:"))sheetBack="";
   if(kind==="menu")html=menuSheet(c);
+  else if(kind.startsWith("list:")){const k=kind.slice(5),f={care:[T("รายการดูแลทั้งหมด","All care items"),paneCare],hist:[T("ประวัติรถ","Car history"),paneHist],about:[T("ข้อมูลรถ","Car info"),paneInfo]}[k];
+    if(f)html=`<div class="crm-shh"><h3 id="clShT">${f[0]}</h3><button type="button" class="crm-ib" data-shx aria-label="${T("ปิด","Close")}"><i class="ti ti-x"></i></button></div>${f[1](c)}`}
   else if(kind.startsWith("item:"))html=itemSheet(c,kind.slice(5));
   else{const k=kind.slice(4)||"fuel";
     html=`<div class="crm-shh"><h3 id="clShT">${T("บันทึกอะไร?","What to log?")}</h3><button type="button" class="crm-ib" data-shx aria-label="${T("ปิด","Close")}"><i class="ti ti-x"></i></button></div>
       <div class="crm-kinds" role="group" aria-label="${T("ประเภทบันทึก","Log type")}">${KINDS.map(([x,ic,[th,en]])=>`<button type="button" class="crm-kind" data-kind="${x}" aria-pressed="${x===k}"><i class="ti ${ic}"></i>${T(th,en)}</button>`).join("")}</div>
       <div class="crm-f">${logForm(c,k,pre)}</div>`}
   if(!html)return;
-  const first=!sheetKind;sheetKind=kind;sh.innerHTML=`<div class="crm-grab"></div>`+html;
+  const first=!sheetKind,top=keep&&sheetKind===kind?sh.scrollTop:0;sheetKind=kind;sh.dataset.sheet=kind;sh.classList.toggle("big",kind.startsWith("list:"));
+  sh.innerHTML=`<div class="crm-grab"></div>`+html;sh.scrollTop=top;
   sh.classList.add("on");bg.classList.add("on");$("clFab").style.visibility="hidden";
+  if(kind==="list:care")try{window.CarExtras&&CarExtras.after("cal",c)}catch(e){}
+  if(kind==="list:hist")try{window.CarExtras&&CarExtras.after("pass",c)}catch(e){}
+  if(kind==="list:about"&&infoOpen.has("odo")){try{window.CarExtras&&CarExtras.after("odo",c)}catch(e){}if(window.odoNotifRow)window.odoNotifRow()}
   if(first&&!kind.startsWith("item:")&&kind!=="menu"){const f=sh.querySelector(".crm-f input,.crm-f textarea");if(f&&matchMedia("(hover:hover)").matches)setTimeout(()=>{try{f.focus({preventScroll:true})}catch(e){}},280)}
 }
 function closeSheet(now){
-  if(!modal)return;sheetKind="";const sh=$("clSh");sh.classList.remove("on");$("clShBg").classList.remove("on");$("clFab").style.visibility="";
+  if(!modal)return;
+  if(!now&&sheetBack&&!sheetKind.startsWith("list:")){const b=sheetBack;sheetBack="";openSheet(b,null,true);return}
+  sheetBack="";sheetKind="";const sh=$("clSh");sh.classList.remove("on");$("clShBg").classList.remove("on");$("clFab").style.visibility="";
   if(now)sh.innerHTML="";
 }
 function askAI(c,q){
@@ -7954,11 +7987,9 @@ function askAI(c,q){
 D.addEventListener("click",async e=>{
   if(!modal||!modal.contains(e.target)||!curCar)return;
   const c=curCar,t=e.target;
-  const tab=t.closest("#clTabs [data-tab]");
-  if(tab){curTab=tab.dataset.tab;renderTabs();renderTab();$("clScroll").scrollTop=Math.min($("clScroll").scrollTop,$("clTabs").offsetTop-70);return}
   const gt=t.closest("[data-goto]");
-  if(gt){const k=gt.dataset.goto;curTab=k;renderTabs();renderTab();
-    const target=gt.dataset.pass?$("clPass"):$("clTabs");if(target)setTimeout(()=>target.scrollIntoView({behavior:"smooth",block:"start"}),30);return}
+  if(gt){openSheet("list:"+gt.dataset.goto);
+    if(gt.dataset.pass)setTimeout(()=>{const p=$("clPass");if(p)p.scrollIntoView({behavior:"smooth",block:"start"})},60);return}
   const it=t.closest("[data-item]");if(it){openSheet("item:"+it.dataset.item);return}
   const lg=t.closest("[data-log]");if(lg){openSheet("log:"+lg.dataset.log,lg.dataset.pre);return}
   const kd=t.closest("[data-kind]");if(kd){openSheet("log:"+kd.dataset.kind);return}
@@ -7990,7 +8021,7 @@ D.addEventListener("click",async e=>{
   const cm=t.closest("[data-cm]");
   if(cm){const k=cm.dataset.cm;
     if(k==="info"){closeSheet();try{window.openInfo(c.id)}catch(err){}return}
-    if(k==="pass"){closeSheet();curTab="hist";renderTabs();renderTab();setTimeout(()=>{const p=$("clPass");p&&p.scrollIntoView({behavior:"smooth",block:"start"})},40);return}
+    if(k==="pass"){openSheet("list:hist");setTimeout(()=>{const p=$("clPass");p&&p.scrollIntoView({behavior:"smooth",block:"start"})},60);return}
     if(k==="main"){LS_SEL(c);try{renderGarage()}catch(err){}refreshWidgets();closeSheet();toastx(T("ตั้งเป็นรถหลักแล้ว","Main car set"),"ti-star");return}
     if(k==="del"){
       if(!confirm(T("ลบรถคันนี้ออกจากการาจ? ประวัติของคันนี้จะหายไปด้วย","Remove this car? Its history goes with it.")))return;
@@ -8006,7 +8037,7 @@ D.addEventListener("toggle",e=>{
   const d=e.target;if(!(d instanceof HTMLDetailsElement)||!d.dataset.acc||!modal||!modal.contains(d))return;
   const k=d.dataset.acc,was=infoOpen.has(k);
   if(d.open)infoOpen.add(k);else infoOpen.delete(k);
-  if(d.open&&!was&&curCar){renderTab();const n=D.querySelector(`#clBody [data-acc="${k}"]`);if(n)n.scrollIntoView({block:"nearest"})}
+  if(d.open&&!was&&curCar&&sheetKind==="list:about"){openSheet(sheetKind,null,true);const n=D.querySelector(`#clSh [data-acc="${k}"]`);if(n)n.scrollIntoView({block:"nearest"})}
 },true);
 /* เปลี่ยนสี/ข้อมูลรถจากหน้าต่างของการาจ → หัวรถอัปเดตตาม */
 D.addEventListener("click",e=>{if(e.target.closest("#gxPSave,#gxISave")&&modal&&modal.classList.contains("show"))setTimeout(()=>{const x=cars().find(y=>curCar&&y.id===curCar.id);if(x){curCar=x;renderAll()}},120)});
@@ -14531,7 +14562,7 @@ if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",start); else s
 })();
 </script>
 <script src="mobile-ui.js" defer></script>
-<script src="nav-pages.js?v=2" defer></script>
+<script src="nav-pages.js?v=3" defer></script>
 <script>
 window.__SPIRE_PAGE__="garage";
 window.__SPIRE_FILES__={"home": "/", "garage": "/garage", "magazine": "/news", "shop": "/spares", "profile": "/profile"};

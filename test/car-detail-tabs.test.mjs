@@ -57,5 +57,6 @@ test('desktop tabs: repeated opens do not duplicate wrappers, controls or observ
   const f=fixture(),observers=f.observers.length;f.W.lang='th';for(let i=0;i<6;i++)f.W.CendonDetailTabs.mount(f.rail);f.flush();assert.equal(f.rail.parentNode,f.shell);assert.equal(f.shell.children.length,3);assert.equal(f.observers.length,observers);assert.match(f.next.attrs['aria-label'],/ขวา/);
 });
 test('desktop tabs: all existing car-detail entry pages load styles before paint and mount only after showing their modal',()=>{
-  for(const name of ['garage','news','profile','spares']){const html=readFileSync(new URL('../'+name+'.html',import.meta.url),'utf8');assert.ok(html.indexOf('href="car-detail-tabs.css?v=2026-10-12-r1"')<html.indexOf('</head>'),name);assert.match(html,/modal\.classList\.add\("show"\);\s+window\.CendonDetailTabs\?\.mount\(\$\("clTabs"\)\)/,name);assert.match(html,/src="car-detail-tabs.js\?v=2026-10-12-r2" defer/,name)}
+  /* การาจใช้หน้ารถโฉมใหม่ 4 ห้อง (แท็บพอดีจอ ไม่มีรางเลื่อน) — หน้าอื่นพามาหน้ารถของการาจ */
+  for(const name of ['news','profile','spares']){const html=readFileSync(new URL('../'+name+'.html',import.meta.url),'utf8');assert.ok(html.indexOf('href="car-detail-tabs.css?v=2026-10-12-r1"')<html.indexOf('</head>'),name);assert.match(html,/modal\.classList\.add\("show"\);\s+window\.CendonDetailTabs\?\.mount\(\$\("clTabs"\)\)/,name);assert.match(html,/src="car-detail-tabs.js\?v=2026-10-12-r2" defer/,name)}
 });

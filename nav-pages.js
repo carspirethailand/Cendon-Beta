@@ -72,8 +72,9 @@ if(PAGE==="garage"){
 }else{
   Nav.route({path:"car/:car",name:"car",test:p=>hasCar(p.car),open:p=>window.openCarDetail&&window.openCarDetail(p.car)});
 }
-const CLTABS=["odo","spec","equip","health","plan","parts","cost","trip","cal","pass"];
-Nav.route({path:":tab",parent:"car",test:p=>CLTABS.includes(p.tab),open:p=>clClick(p.tab)});
+/* ห้องในหน้ารถ (โฉมใหม่ 4 ห้อง) · ลิงก์แท็บเก่า (/garage/<รถ>/cost ฯลฯ) พามาห้องที่ของนั้นย้ายไปอยู่ */
+const CLTABS=["over","care","hist","about"],CLOLD={odo:"about",spec:"about",equip:"about",parts:"about",health:"care",plan:"care",cal:"care",cost:"hist",trip:"hist",pass:"hist"};
+Nav.route({path:":tab",parent:"car",test:p=>CLTABS.includes(p.tab)||!!CLOLD[p.tab],open:p=>clClick(CLOLD[p.tab]||p.tab)});
 
 /* ── ตั้งค่า ── */
 const SETS=["general","acct","usage","fb","learn"];

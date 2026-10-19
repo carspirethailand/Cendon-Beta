@@ -1585,5 +1585,8 @@ window.CENDON_L10N={lang:"es",t:{
 "Studio: run your shop in one place":"Studio: gestiona tu taller en un solo lugar",
 "Jobs, chats, services, reviews and stats":"Trabajos, chats, servicios, reseñas y estadísticas",
 "Reserve · start the application":"Reservar · empezar la solicitud",
-"Start the application":"Empezar la solicitud"
+"Start the application":"Empezar la solicitud",
+"Your application result is in":"Ya tienes el resultado de tu solicitud",
+"Scratch the card to see it":"Rasca la tarjeta para verlo",
+"See result":"Ver resultado"
 }};

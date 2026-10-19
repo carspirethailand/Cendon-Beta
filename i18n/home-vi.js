@@ -1585,5 +1585,8 @@ window.CENDON_L10N={lang:"vi",t:{
 "Studio: run your shop in one place":"Studio: quản lý cửa hàng ở một nơi",
 "Jobs, chats, services, reviews and stats":"Công việc, tin nhắn, dịch vụ, đánh giá và thống kê",
 "Reserve · start the application":"Đặt chỗ · bắt đầu đơn đăng ký",
-"Start the application":"Bắt đầu đơn đăng ký"
+"Start the application":"Bắt đầu đơn đăng ký",
+"Your application result is in":"Đã có kết quả đơn đăng ký của bạn",
+"Scratch the card to see it":"Cào thẻ để xem kết quả",
+"See result":"Xem kết quả"
 }};

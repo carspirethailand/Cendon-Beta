@@ -1585,5 +1585,8 @@ window.CENDON_L10N={lang:"ko",t:{
 "Studio: run your shop in one place":"Studio: 매장 관리를 한곳에서",
 "Jobs, chats, services, reviews and stats":"작업, 채팅, 서비스, 리뷰, 통계",
 "Reserve · start the application":"예약 · 신청서 작성 시작",
-"Start the application":"신청서 작성 시작"
+"Start the application":"신청서 작성 시작",
+"Your application result is in":"신청 결과가 나왔어요",
+"Scratch the card to see it":"카드를 긁어서 결과를 확인하세요",
+"See result":"결과 보기"
 }};

@@ -1585,5 +1585,8 @@ window.CENDON_L10N={lang:"zh",t:{
 "Studio: run your shop in one place":"Studio：一处管理你的店铺",
 "Jobs, chats, services, reviews and stats":"工单、聊天、服务、评价和统计",
 "Reserve · start the application":"预约 · 开始填写申请",
-"Start the application":"开始填写申请"
+"Start the application":"开始填写申请",
+"Your application result is in":"你的申请结果出来了",
+"Scratch the card to see it":"刮开卡片查看结果",
+"See result":"查看结果"
 }};

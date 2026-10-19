@@ -1585,5 +1585,8 @@ window.CENDON_L10N={lang:"id",t:{
 "Studio: run your shop in one place":"Studio: kelola bengkel di satu tempat",
 "Jobs, chats, services, reviews and stats":"Pekerjaan, chat, layanan, ulasan, dan statistik",
 "Reserve · start the application":"Pesan · mulai lamaran",
-"Start the application":"Mulai lamaran"
+"Start the application":"Mulai lamaran",
+"Your application result is in":"Hasil lamaran Anda sudah keluar",
+"Scratch the card to see it":"Gosok kartunya untuk melihat hasil",
+"See result":"Lihat hasil"
 }};

@@ -26,7 +26,7 @@ if(/^\/messages(\/|$)/.test(location.pathname)){document.documentElement.classLi
 (function(){try{if(/^\/(work|studio)(\/|$)/.test(location.pathname)){var p=JSON.parse(localStorage.getItem("spire_partner")||"null");if(p&&p.s==="shop")document.documentElement.dataset.boot="tech"}}catch(e){}})();</script>
 <script>(function(){try{var A=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt"],l=null;try{l=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
 if(A.indexOf(l)<0){l="en";var n=navigator.languages||[navigator.language||"en"];for(var i=0;i<n.length;i++){var b=String(n[i]).toLowerCase().split("-")[0];if(A.indexOf(b)>=0){l=b;break}}}
-if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=9"><\/script>')}catch(e){}})();</script>
+if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=10"><\/script>')}catch(e){}})();</script>
 <title>Cendon</title>
 <meta name="description" content="ถามอาการรถ ส่งรูปหรือเสียงให้ AI ช่วยดู เช็กใบเสนอราคา และหาช่างที่ผ่านการตรวจใกล้คุณ">
 <!-- การ์ดตอนแชร์ลิงก์ (LINE / Facebook / X) — รูปต้องเป็นที่อยู่เต็ม -->
@@ -223,12 +223,12 @@ window.spireThemeSync=sync;
 </script>
 
 <!-- ฟอนต์และไอคอนจากเว็บเราเอง โหลดก่อนวาดเฟรมแรก: เปลี่ยนหน้าแล้วไอคอนไม่หายแวบ ตัวหนังสือ/เมนูไม่ขยับ (เดิมโหลดจาก CDN แบบไม่รอ) -->
-<link rel="preload" href="/icons/ti.woff2?v=87caf03b" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/icons/ti.woff2?v=051f14df" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/kanit-400-thai.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/kanit-500-thai.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/kanit-600-thai.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/fonts/kanit.css?v=1">
-<link rel="stylesheet" href="/icons/ti.css?v=2429cae5">
+<link rel="stylesheet" href="/icons/ti.css?v=9f6eaf7b">
 <link rel="stylesheet" href="/motion.css?v=1">
 <script>/* Motion v2: ระหว่างหน้ากำลังเปิดไม่เล่นทรานซิชัน (สีไม่ค่อย ๆ เปลี่ยนให้เห็นตอนสคริปต์ตั้งค่าเริ่มต้น) — ปลดหลังหน้าพร้อม */(function(){var e=document.documentElement;e.classList.add("m-boot");var off=function(){setTimeout(function(){requestAnimationFrame(function(){e.classList.remove("m-boot")})},250)};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",off);else off()})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -707,6 +707,142 @@ html[data-theme="dark"] .ch-rec #chRecOk{box-shadow:inset 0 0 0 1px rgba(255,255
 html.prejoin body{background:#06070b}
 html.prejoin body>:not(#bs):not(#toast):not(script):not(style){visibility:hidden}
 html.prejoin #bs .bg{background:#06070b}
+/* ═══ ใบสมัครช่างทุกหน้า (.bs.jx): ถนนความคืบหน้า + การ์ดหมวด + ตั๋วสรุป + บัตรพาร์ทเนอร์ + การ์ดขูดผล ═══ */
+.bs.jx .bd{padding-top:8px}
+.pj-hd{position:relative;overflow:hidden;isolation:isolate;margin:0 0 16px;padding:16px 18px 18px;border-radius:24px;color:#fff;
+  background:radial-gradient(120% 90% at 100% 0%,rgba(232,148,60,.32),transparent 60%),linear-gradient(155deg,#1b1c22,#08090c 75%);box-shadow:0 22px 44px -30px rgba(0,0,0,.6)}
+.pj-road{position:relative;height:50px;margin:0 14px 10px}
+.pj-lane,.pj-done{position:absolute;left:0;top:36px;height:6px;border-radius:3px}
+.pj-lane{right:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.2) 0 10px,transparent 10px 18px)}
+.pj-done{width:calc(var(--p)*100%);background:linear-gradient(90deg,#c96d1f,#f6c48d);box-shadow:0 0 14px rgba(232,148,60,.55);animation:pjGrow 1s cubic-bezier(.2,.7,.2,1) both}
+.pj-ms{position:absolute;top:28px;left:calc(var(--i)*100%);transform:translateX(-50%);width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font:600 11px var(--kd);background:#2a2b33;color:rgba(255,255,255,.62);box-shadow:0 0 0 3px #111217}
+.pj-ms .ti{font-size:13px}
+.pj-ms.ok{background:#E8943C;color:#1a0f05}
+.pj-ms.on{background:#fff;color:#16171b;box-shadow:0 0 0 3px #111217,0 0 0 6px rgba(232,148,60,.55)}
+.pj-car{position:absolute;top:0;left:calc(var(--p)*100%);width:48px;transform:translateX(-50%);animation:pjDrive 1.1s cubic-bezier(.2,.7,.2,1) both;filter:drop-shadow(0 6px 8px rgba(0,0,0,.5))}
+.pj-car svg{display:block;width:100%;height:auto;animation:pjBob 1.2s ease-in-out 1.1s infinite}
+@keyframes pjDrive{from{transform:translateX(calc(-50% - 70px));opacity:0}to{transform:translateX(-50%);opacity:1}}
+@keyframes pjBob{50%{transform:translateY(-1.6px)}}
+@keyframes pjGrow{from{width:calc(max(var(--p) - .3334,0)*100%)}}
+.pj-k{font:600 11px var(--kd);letter-spacing:.18em;color:#f6c48d}
+.pj-t{margin:4px 0 2px;font-family:var(--kd);font-size:25px;font-weight:600;line-height:1.2;background:linear-gradient(180deg,#fff 40%,#f3d8bb);-webkit-background-clip:text;background-clip:text;color:transparent}
+.pj-s{font-size:13.5px;color:rgba(255,255,255,.72);line-height:1.5}
+.pj-card{position:relative;margin:0 0 14px;padding:16px 16px 4px;border-radius:22px;background:var(--surface);box-shadow:0 0 0 1px var(--line-2),0 18px 40px -32px rgba(0,0,0,.4)}
+.pj-ct{display:flex;align-items:center;gap:10px;margin:0 0 14px;font-family:var(--kd);font-size:16px;font-weight:600}
+.pj-ct>i{flex:none;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-size:18px;color:#E8943C;background:radial-gradient(circle at 30% 25%,rgba(246,196,141,.38),rgba(232,148,60,.08));box-shadow:inset 0 0 0 1px rgba(232,148,60,.42)}
+.pj-ct small{margin-left:auto;font-family:inherit;font-size:11.5px;font-weight:400;color:var(--muted);text-align:right}
+.bs.jx .fld>span{font-size:12.5px;font-weight:600;color:var(--muted)}
+.bs.jx .inp{background:var(--surface-2);border-color:transparent;border-radius:14px}
+.bs.jx .inp:focus{background:var(--surface);border-color:#E8943C!important;box-shadow:0 0 0 4px rgba(232,148,60,.18)!important}
+.bs.jx textarea.inp{min-height:104px;line-height:1.55}
+.bs.jx .seg button{background:var(--surface-2);transition:background .2s,box-shadow .2s,transform .15s}
+.bs.jx .seg button.on{background:linear-gradient(135deg,rgba(240,164,87,.22),rgba(232,148,60,.08));color:var(--ink);box-shadow:inset 0 0 0 1.5px #E8943C}
+.bs.jx .seg button.on .ti{color:#E8943C}
+.bs.jx .pj-cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:8px}
+.bs.jx .pj-cats button{position:relative;flex-direction:column;min-height:80px;gap:6px;border-radius:16px;font-size:13px;padding:10px 6px;text-align:center;line-height:1.25}
+.bs.jx .pj-cats button .ti{font-size:24px}
+.bs.jx .pj-cats button.on::after{content:"";position:absolute;top:7px;right:7px;width:16px;height:16px;border-radius:50%;background:#E8943C url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8.2l2.6 2.6L12 5.4' fill='none' stroke='%231a0f05' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/12px no-repeat}
+.bs.jx .pj-tog button{border-radius:999px}
+.pj-mapw{position:relative;margin-bottom:8px}
+.bs.jx .picker{height:300px;margin:0;border-radius:18px;box-shadow:inset 0 0 0 1px var(--line-2)}
+.pj-gps{position:absolute;right:10px;bottom:10px;z-index:2;display:flex;align-items:center;gap:6px;padding:10px 15px;border:0;border-radius:999px;background:#16171b;color:#fff;font:600 13px var(--kb,inherit);box-shadow:0 10px 24px rgba(0,0,0,.35);cursor:pointer}
+html[data-theme="dark"] .pj-gps{background:#f4f1ec;color:#16171b}
+.bs.jx .coord{margin:0 0 12px}
+.bs.jx .dgrp{padding:14px 14px 8px}
+.bs.jx .dgrp h4{gap:10px;margin-bottom:12px;font-size:14.5px}
+.bs.jx .dgrp h4>span:not(.pj-di){display:flex;flex-direction:column;line-height:1.3}
+.bs.jx .dgrp h4 small{font-size:12px}
+.pj-di{flex:none;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-size:18px;color:#E8943C;background:rgba(232,148,60,.12)}
+.bs.jx .docs{grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.bs.jx .doc{border-radius:16px;border:1.5px dashed rgba(232,148,60,.6);background:linear-gradient(180deg,rgba(232,148,60,.07),transparent);color:#c96d1f;font-weight:600;transition:transform .15s,background .2s}
+.bs.jx .doc:active{transform:scale(.96)}
+.bs.jx .doc:has(img){border:0;box-shadow:0 8px 18px -12px rgba(0,0,0,.5)}
+.pj-ticket{position:relative;margin:0 0 14px;border-radius:24px;overflow:hidden;background:var(--surface);box-shadow:0 0 0 1px var(--line-2),0 24px 50px -36px rgba(0,0,0,.5)}
+.pj-tk-hd{display:flex;align-items:center;gap:12px;padding:16px 18px;color:#fff;background:radial-gradient(120% 120% at 100% 0%,rgba(232,148,60,.3),transparent 60%),linear-gradient(150deg,#1b1c22,#08090c)}
+.pj-tk-hd svg{flex:none;width:28px;height:34px;color:#E8943C}
+.pj-tk-hd div{min-width:0}.pj-tk-hd small{display:block;font:600 10px var(--kd);letter-spacing:.2em;color:#f6c48d}
+.pj-tk-hd b{display:block;font-family:var(--kd);font-size:17px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pj-tk-st{flex:none;margin-left:auto;padding:5px 10px;border-radius:999px;background:rgba(232,148,60,.18);border:1px solid rgba(232,148,60,.45);color:#ffd9b0;font-size:12px}
+.pj-ticket .sect{position:relative;margin:0;padding:14px 18px;border-radius:0;background:none}
+.pj-ticket .sect+.sect{border-top:1.5px dashed var(--line-2)}
+.pj-ticket .sect+.sect::before,.pj-ticket .sect+.sect::after{content:"";position:absolute;top:-10px;width:18px;height:18px;border-radius:50%;background:var(--bg);box-shadow:inset 0 0 0 1px var(--line-2)}
+.pj-ticket .sect+.sect::before{left:-10px}.pj-ticket .sect+.sect::after{right:-10px}
+.bs.jx .sect h5 button{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;background:rgba(232,148,60,.12);color:#c96d1f}
+.bs.jx .pj-cons{padding-bottom:6px}
+.bs.jx .chk{background:var(--surface-2);border-radius:14px;line-height:1.55}
+.bs.jx .chk>span{display:block}
+.bs.jx .ft .pj-bk{flex:0 0 auto;gap:6px;padding:0 18px}
+.bs.jx .ft .jx-go .ti,.bs.jx .ft .btn .ti{font-size:18px}
+.bs.jx .rule{background:var(--surface);box-shadow:0 0 0 1px var(--line-2)}
+.bs.jx .rule .sq{background:radial-gradient(circle at 30% 25%,rgba(246,196,141,.38),rgba(232,148,60,.08))!important;color:#E8943C!important;box-shadow:inset 0 0 0 1px rgba(232,148,60,.45)!important}
+.bs.jx .rule .sq::after{display:none}
+.bs.jx .tl div::before{background:var(--surface);box-shadow:inset 0 0 0 1px var(--line-2)}
+.bs.jx .tl div.on::before{background:linear-gradient(135deg,#f0a457,#c96d1f);color:#1a0f05;box-shadow:none}
+.bs.jx .tl div.ok::before{background:#16171b;color:#f6c48d;box-shadow:none}
+html[data-theme="dark"] .bs.jx .tl div.ok::before{background:#f6c48d;color:#16171b}
+/* บัตรพาร์ทเนอร์ (หน้าสถานะ) */
+.pj-pass{position:relative;overflow:hidden;isolation:isolate;margin:0 0 16px;padding:18px 18px 16px;border-radius:22px;color:#fff;
+  background:radial-gradient(110% 90% at 100% 0%,rgba(232,148,60,.32),transparent 60%),linear-gradient(150deg,#1b1c22,#08090c 75%);box-shadow:0 26px 52px -32px rgba(0,0,0,.65)}
+.pj-pass::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.07) 50%,transparent 65%)}
+.pj-pl{position:absolute;right:-12px;bottom:-24px;width:118px;height:140px;color:rgba(232,148,60,.14);z-index:-1}
+.pj-pt{padding-right:110px}.pj-pt small{display:block;font:600 10.5px var(--kd);letter-spacing:.22em;color:#f6c48d}
+.pj-pt b{display:block;margin-top:4px;font-family:var(--kd);font-size:21px;font-weight:600;line-height:1.25}
+.pj-ps{position:absolute;top:16px;right:16px;padding:5px 11px;border-radius:999px;font-size:12px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08)}
+.pj-p-pending .pj-ps,.pj-p-rejected .pj-ps{color:#ffd9b0;border-color:rgba(232,148,60,.5)}
+.pj-p-approved{background:radial-gradient(110% 90% at 100% 0%,rgba(246,196,141,.5),transparent 60%),linear-gradient(150deg,#2b2117,#0b0907 75%);box-shadow:0 0 0 1px rgba(246,196,141,.5),0 26px 52px -30px rgba(201,109,31,.7)}
+.pj-p-approved .pj-ps{background:linear-gradient(135deg,#f0a457,#c96d1f);color:#1a0f05;border:0;font-weight:600}
+.pj-pn{display:flex;justify-content:space-between;gap:12px;margin-top:18px;padding-top:14px;border-top:1px dashed rgba(255,255,255,.18)}
+.pj-pn small{display:block;font-size:11px;color:rgba(255,255,255,.55)}
+.pj-pn b{font-family:var(--kd);font-size:16px;font-weight:600;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.pj-pn div+div{text-align:right}
+.pj-res{padding:2px 2px 8px}
+.pj-res h2{margin-bottom:8px;font-family:var(--kd);font-size:23px;font-weight:600;line-height:1.3}
+.pj-res>p{font-size:14.5px;line-height:1.7;color:var(--muted)}
+.pj-r-ok h2{background:linear-gradient(90deg,#c96d1f,#E8943C 60%,#d9a066);-webkit-background-clip:text;background-clip:text;color:transparent}
+.pj-quote{margin:14px 0 4px;padding:14px 16px;border-radius:16px;background:var(--surface);box-shadow:inset 3px 0 0 #E8943C,0 0 0 1px var(--line-2)}
+.pj-quote small{display:block;margin-bottom:4px;font-size:11.5px;letter-spacing:.06em;color:var(--muted)}
+.pj-quote p{font-size:14.5px;line-height:1.65;white-space:pre-wrap}
+.pj-res .fixl{border-color:rgba(232,148,60,.45);background:rgba(232,148,60,.07)}.pj-res .fixl b .ti{color:#E8943C}
+.pj-next{display:grid;gap:8px;margin:14px 0 4px;padding:0;list-style:none}
+.pj-next li{display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:16px;background:var(--surface);box-shadow:0 0 0 1px var(--line-2)}
+.pj-next li>i{flex:none;width:36px;height:36px;border-radius:12px;display:grid;place-items:center;font-size:18px;color:#E8943C;background:rgba(232,148,60,.12)}
+.pj-next b{display:block;font-size:14px;font-weight:600}.pj-next small{font-size:12.5px;color:var(--muted)}
+.pj-r-sent{text-align:center;padding-top:6px}
+.pj-plane{width:84px;height:84px;margin:0 auto 12px;border-radius:28px;display:grid;place-items:center;font-size:40px;color:#1a0f05;background:linear-gradient(135deg,#f0a457,#c96d1f);box-shadow:0 18px 36px -16px rgba(201,109,31,.8);animation:pjFly 1.1s cubic-bezier(.2,.7,.2,1) both}
+@keyframes pjFly{from{transform:translate(-50px,40px) rotate(-24deg) scale(.6);opacity:0}to{transform:none;opacity:1}}
+.pj-just .pj-pass,.pj-just .pj-res{animation:pjRise .7s cubic-bezier(.2,.7,.2,1) both}
+.pj-just .pj-res{animation-delay:.12s}
+@keyframes pjRise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+/* การ์ดขูด: ฟอยล์ (canvas) ทับหน้าผล · เหรียญตามนิ้ว · เศษฟอยล์ร่วง */
+.pj-hd-s{padding-top:18px}
+.pj-scratch{position:relative;isolation:isolate;width:100%;max-width:520px;aspect-ratio:1.6;margin:0 auto 16px;border-radius:24px;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;
+  box-shadow:0 30px 60px -32px rgba(0,0,0,.6),0 0 0 1px rgba(232,148,60,.35)}
+.pj-face{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:20px;text-align:center}
+.pj-face .ti{font-size:48px;margin-bottom:4px}
+.pj-face b{font-family:var(--kd);font-size:clamp(28px,8vw,38px);font-weight:600;line-height:1.1}
+.pj-face small{font-size:14px;opacity:.82}
+.pj-f-approved{color:#ffd9b0;background:radial-gradient(circle at 50% 38%,rgba(232,148,60,.5),transparent 62%),linear-gradient(150deg,#1b1c22,#08090c)}
+.pj-f-approved b{background:linear-gradient(180deg,#fff,#f6c48d);-webkit-background-clip:text;background-clip:text;color:transparent}
+.pj-f-rejected{color:#7a4a12;background:radial-gradient(circle at 50% 34%,#fff4e2,#f6d9ae)}
+.pj-f-declined{color:#6d4a3c;background:radial-gradient(circle at 50% 34%,#fff8f2,#f2e1d4)}
+.pj-foil{position:absolute;inset:0;z-index:1;width:100%;height:100%;cursor:grab;transition:opacity .55s ease,transform .6s cubic-bezier(.2,.7,.2,1)}
+@media(hover:hover) and (pointer:fine){.pj-foil{cursor:none}}
+.pj-scratch.open .pj-foil{opacity:0;transform:scale(1.08);pointer-events:none}
+.pj-scratch.open .pj-face{animation:pjPop .75s cubic-bezier(.2,1.5,.4,1)}
+@keyframes pjPop{from{transform:scale(.88)}to{transform:none}}
+.pj-coin{position:absolute;left:0;top:0;z-index:3;width:60px;height:60px;border-radius:50%;display:grid;place-items:center;color:#7d5c28;pointer-events:none;opacity:0;transition:opacity .2s;
+  background:radial-gradient(circle at 34% 28%,#fff7de,#ebcb8d 42%,#b88b46 78%,#8c672d);box-shadow:inset 0 0 0 3px rgba(255,255,255,.35),inset 0 -5px 7px rgba(0,0,0,.25),0 10px 18px rgba(0,0,0,.35)}
+.pj-coin svg{width:22px;height:27px}
+.pj-scratch.on .pj-coin,.pj-scratch.hov .pj-coin{opacity:1}
+.pj-scratch.open .pj-coin{opacity:0}
+.pj-flake{position:absolute;z-index:2;border-radius:1px;pointer-events:none;background:linear-gradient(135deg,#f6e7c6,#a98b5c);animation:pjFlake .9s ease-in forwards}
+@keyframes pjFlake{to{transform:translate(var(--dx),72px) rotate(var(--r));opacity:0}}
+.pj-promise{display:flex;gap:8px;align-items:center;justify-content:center;margin:0 0 4px;font-size:13px;color:var(--muted);text-align:center}
+.pj-promise .ti{flex:none;font-size:18px;color:#E8943C}
+.pj-confetti{position:fixed;inset:0;z-index:9800;width:100vw;height:100vh;pointer-events:none}
+.lx-partner.news .lp-card{box-shadow:0 0 0 1.5px rgba(246,196,141,.85),0 0 32px rgba(232,148,60,.35);animation:lpNews 2.6s ease-in-out infinite}
+@keyframes lpNews{50%{box-shadow:0 0 0 1.5px rgba(246,196,141,.5),0 0 14px rgba(232,148,60,.18)}}
+@media(prefers-reduced-motion:reduce){.pj-car,.pj-car svg,.pj-done,.pj-plane,.pj-just .pj-pass,.pj-just .pj-res,.lx-partner.news .lp-card,.pj-scratch.open .pj-face{animation:none}}
 /* ═══ การ์ดชวนเป็นช่างพาร์ทเนอร์บนหน้าแรก ═══ */
 .lx-partner{max-width:880px;margin:18px auto 0}
 .lp-card{position:relative;overflow:hidden;isolation:isolate;display:flex;align-items:center;gap:14px;width:100%;min-height:118px;padding:18px 18px 18px 20px;border:0;border-radius:22px;text-align:left;color:#fff;cursor:pointer;
@@ -3936,14 +4072,16 @@ function fx3d(cv,o){
 function drawPartner(){
   const box=$("hPartner");if(!box)return;
   const p=ls.get("spire_partner",null),mine=p&&U&&p.uid===U.uid?p.s:"none";
-  const k=mine==="shop"?"shop":mine&&mine!=="none"&&mine!=="withdrawn"?"app":"join";
+  /* ผลใบสมัครออกแล้วแต่ยังไม่ขูดดู = การ์ดชวนไปขูด (ไม่บอกผลก่อน) */
+  const k=p&&U&&p.uid===U.uid&&p.r?"news":mine==="shop"?"shop":mine&&mine!=="none"&&mine!=="withdrawn"?"app":"join";
   if(box.dataset.k===k&&box.childNodes.length)return;box.dataset.k=k;
   const st={pending:T("รอทีมงานตรวจ","Waiting for review"),approved:T("อนุมัติแล้ว","Approved"),rejected:T("ทีมงานขอให้แก้ไข","Changes requested"),declined:T("ยังไม่ผ่านการพิจารณา","Not approved")}[mine]||T("ดูความคืบหน้า","See progress");
-  const [eye,b,em,cta]=k==="shop"?["STUDIO",T("หน้าร้านของฉัน","My shop"),T("งาน แชต บริการ และรีวิว ในที่เดียว","Jobs, chats, services and reviews in one place"),T("เปิด Studio","Open Studio")]
+  const [eye,b,em,cta]=k==="news"?["CENDON PARTNER",T("ผลการพิจารณาใบสมัครมาแล้ว","Your application result is in"),T("ขูดการ์ดเพื่อเปิดดูผล","Scratch the card to see it"),T("เปิดดูผล","See result")]:k==="shop"?["STUDIO",T("หน้าร้านของฉัน","My shop"),T("งาน แชต บริการ และรีวิว ในที่เดียว","Jobs, chats, services and reviews in one place"),T("เปิด Studio","Open Studio")]
     :k==="app"?["CENDON PARTNER",T("ใบสมัครช่างของคุณ","Your mechanic application"),st,T("ดูสถานะ","View status")]
     :["CENDON PARTNER",T("เป็นช่างพาร์ทเนอร์กับ Cendon","Become a Cendon partner mechanic"),T("รับงานใกล้ร้าน · ไม่มีค่าสมัคร · ตั้งราคาเอง","Jobs near you · no sign-up fee · set your own prices"),T("สมัครเลย","Apply now")];
   box.innerHTML=`<button type="button" class="lp-card" id="lpGo"><canvas class="lp-gl" aria-hidden="true"></canvas><svg class="lp-mark" viewBox="-6.0 -6.0 94.8 112.0" aria-hidden="true"><path fill="currentColor" d="${LOGO}"/></svg>
     <span class="lp-tx"><small>${eye}</small><b>${b}</b><em>${em}</em></span><span class="lp-cta">${cta}<i class="ti ti-arrow-right"></i></span></button>`;
+  box.classList.toggle("news",k==="news");
   $("lpGo").onclick=()=>{if(!U)return needLogin();k==="shop"?openStudio():openJoin()};
   fx3d(box.querySelector(".lp-gl"),{particles:420,dist:12.5});
 }
@@ -6478,6 +6616,7 @@ async function openJoin(){
     <button class="jl" id="jStat"><span class="av sq" style="--c1:#8b5cf6"><i class="ti ti-timeline"></i></span><span class="jb"><b>ดูหน้าสถานะใบสมัคร</b><small>ตัวอย่างทุกสถานะ: รอตรวจ · ต้องแก้ไข · อนุมัติ</small></span><i class="ti ti-chevron-right"></i></button>`,
     mount(){$("jStaff").onclick=testTech;$("jReal").onclick=()=>landing(true);$("jSkip").onclick=e=>busy(e.currentTarget,quickTech);$("jStat").onclick=()=>previewStatus("pending",true)}});
   /* ผ่านการอนุมัติแล้ว มีร้านจริง = เข้า Studio ตรง ๆ (หน้าสถานะใบสมัครมีไว้ตอนยังรอตรวจ/ต้องแก้ไขเท่านั้น) */
+  if(a&&decided(a)&&!revealed(a))return statusPage(a);
   if(t&&(!t.test||!(ME&&ME.staff)))return openStudio();
   if(a&&!a.test)return statusPage(a);
   landing();
@@ -6519,28 +6658,33 @@ function terms(){
     <h5>5. การระงับบัญชี</h5>Cendon อาจระงับการแสดงผลของพาร์ทเนอร์ที่ได้รับการร้องเรียนซ้ำ ให้ข้อมูลเท็จ หรือกระทำการที่เป็นอันตรายต่อลูกค้า
     <h5>6. ค่าธรรมเนียม</h5>ปัจจุบัน Cendon ไม่เรียกเก็บค่าสมัครและค่าธรรมเนียมใด ๆ ลูกค้าชำระเงินกับพาร์ทเนอร์โดยตรง หากมีการเปลี่ยนแปลงจะแจ้งล่วงหน้าและต้องได้รับความยินยอมใหม่</div>`});
 }
-function stepHd(n){return `<div class="stp">${STEPS.map((l,i)=>`<div class="${i+1<n?"ok":i+1===n?"on":""}"><i></i>${i+1}. ${l}</div>`).join("")}</div>`}
+/* หัวแต่ละขั้น = ถนนสี่หลัก รถช่างคันเล็ก (แบบเดียวกับแผนที่ช่างกำลังมา) ขับมาจอดที่ขั้นปัจจุบัน */
+const STEP_SUB=["บอกเราเล็กน้อยเกี่ยวกับตัวคุณและงานที่ถนัด","ปักหมุดอู่ หรือจุดที่คุณออกรับงาน","รูปอู่และผลงานจริง ช่วยให้ลูกค้ามั่นใจในตัวคุณ","ตรวจความเรียบร้อยครั้งสุดท้ายก่อนยื่น"];
+const PJ_CAR=`<svg viewBox="0 0 64 34" aria-hidden="true"><path d="M7 21c0-4.6 3.2-7.4 7.4-8.2l5.8-6C22.3 4.6 24.7 3.5 27.6 3.5h9.6c3 0 5.3 1.1 7.4 3.3l5.8 6c4.6.8 7.6 3.8 7.6 8.2v4.2c0 1.2-1 2.2-2.2 2.2H9.2C8 27.4 7 26.4 7 25.2z" fill="#E8943C"/><path d="M22 12.5l4.2-4.4c.8-.8 1.8-1.2 2.9-1.2h3.4v5.6zM35.5 6.9h2.1c1.1 0 2.1.4 2.9 1.2l4.3 4.4H35.5z" fill="#34557c"/><rect x="29" y=".8" width="6" height="3" rx="1.5" fill="#ffb020"/><circle cx="18" cy="27.5" r="5.2" fill="#16171b"/><circle cx="18" cy="27.5" r="2.2" fill="#fff4e6"/><circle cx="46" cy="27.5" r="5.2" fill="#16171b"/><circle cx="46" cy="27.5" r="2.2" fill="#fff4e6"/><circle cx="56" cy="18.5" r="1.9" fill="#fffbea"/></svg>`;
+function stepHd(n){return `<div class="pj-hd"><div class="pj-road" style="--p:${(n-1)/(STEPS.length-1)}" role="img" aria-label="ขั้นที่ ${n} จาก ${STEPS.length}"><i class="pj-lane"></i><i class="pj-done"></i>
+  ${STEPS.map((l,i)=>`<span class="pj-ms ${i+1<n?"ok":i+1===n?"on":""}" style="--i:${i/(STEPS.length-1)}">${i+1<n?'<i class="ti ti-check"></i>':i+1}</span>`).join("")}<span class="pj-car">${PJ_CAR}</span></div>
+  <p class="pj-k">ขั้นที่ ${n} จาก ${STEPS.length}</p><h2 class="pj-t">${STEPS[n-1]}</h2><p class="pj-s">${STEP_SUB[n-1]}</p></div>`}
 function keep(){const g=id=>$(id)?$(id).value.trim():undefined;[["name","aN"],["shop","aS"],["phone","aP"],["birth","aD"],["years","aY"],["from","aF"],["warranty","aW"],["area","aR"],["radius","aK"],["about","aB"],["idNo","aI"]].forEach(([k,id])=>{const v=g(id);if(v!==undefined)APP[k]=v})}
 /* ขั้นถัดไป = ซ้อนขั้นใหม่ · กลับไปขั้นที่อยู่ข้างใต้ = ถอยหนึ่งขั้น · กระโดดไปขั้นอื่น (แก้ไขจากหน้าสรุป) = ซ้อนเหมือนกัน */
-const wiz=n=>({wiz:n,redo:()=>step(n),url:"/join/"+n,push:!!(SH.cur&&SH.cur.wiz!=null&&SH.cur.wiz!==n)});
+const wiz=n=>({wiz:n,cls:"jx",redo:()=>step(n),url:"/join/"+n,push:!!(SH.cur&&SH.cur.wiz!=null&&SH.cur.wiz!==n)});
 function step(n){
   if(wizBack(n))return;
   if(n===1)return sheet({...wiz(n),full:true,title:"ใบสมัครพาร์ทเนอร์",body:stepHd(1)+`
-    <p class="h4" style="margin-top:0">ข้อมูลส่วนบุคคล</p>
+    <section class="pj-card"><h3 class="pj-ct"><i class="ti ti-user-circle"></i>ข้อมูลส่วนบุคคล<small>ตรงตามบัตรประชาชน</small></h3>
     <div class="fld"><span>คำนำหน้า <em>*</em></span>${segs("aT",[["นาย","นาย"],["นาง","นาง"],["นางสาว","นางสาว"]],APP.title||"")}</div>
     <label class="fld"><span>ชื่อ-นามสกุล (ตามบัตรประชาชน) <em>*</em></span><input class="inp" id="aN" value="${esc(APP.name||"")}" autocomplete="name"/></label>
     ${DIDIT()?"":`<label class="fld"><span>เลขประจำตัวประชาชน 13 หลัก <em>*</em></span><input class="inp" id="aI" inputmode="numeric" value="${esc(fmtId(APP.idNo))}" placeholder="x-xxxx-xxxxx-xx-x" maxlength="17" autocomplete="off"/><small class="idh" id="aIh"></small></label>`}
     <div class="two"><label class="fld"><span>วันเกิด <em>*</em></span><input class="inp" id="aD" type="date" value="${esc(APP.birth||"")}"/></label>
-    <label class="fld"><span>เบอร์โทรศัพท์ <em>*</em></span><input class="inp" id="aP" type="tel" inputmode="tel" value="${esc(APP.phone||"")}" placeholder="08xxxxxxxx"/></label></div>
-    <p class="h4">ข้อมูลการให้บริการ</p>
+    <label class="fld"><span>เบอร์โทรศัพท์ <em>*</em></span><input class="inp" id="aP" type="tel" inputmode="tel" value="${esc(APP.phone||"")}" placeholder="08xxxxxxxx"/></label></div></section>
+    <section class="pj-card"><h3 class="pj-ct"><i class="ti ti-tool"></i>ข้อมูลการให้บริการ</h3>
     <label class="fld"><span>ชื่อสถานประกอบการ / ชื่อร้าน</span><input class="inp" id="aS" value="${esc(APP.shop||"")}" placeholder="ไม่มีร้าน เว้นว่างได้"/></label>
     <label class="fld"><span>ประสบการณ์ (ปี) <em>*</em></span><input class="inp" id="aY" type="number" min="2" max="60" step="1" inputmode="numeric" value="${esc(APP.years||"")}"/></label>
-    <div class="fld"><span>ประเภทงานที่รับ <em>*</em></span><div class="seg" id="aC">${["air","eng","tyre","ev","body"].map(k=>`<button type="button" data-v="${k}" class="${APP.cats.includes(k)?"on":""}"><i class="ti ${CAT[k].ic}"></i>${CAT[k].th}</button>`).join("")}</div></div>
-    <div class="fld"><span>บริการเสริม</span><div class="seg" id="aM"><button type="button" data-v="mobile" class="${APP.mobile?"on":""}"><i class="ti ti-truck"></i>ออกหน้างาน</button><button type="button" data-v="urgent" class="${APP.urgent?"on":""}"><i class="ti ti-urgent"></i>รับงานด่วน</button></div></div>
+    <div class="fld"><span>ประเภทงานที่รับ <em>*</em></span><div class="seg pj-cats" id="aC">${["air","eng","tyre","ev","body"].map(k=>`<button type="button" data-v="${k}" class="${APP.cats.includes(k)?"on":""}"><i class="ti ${CAT[k].ic}"></i>${CAT[k].th}</button>`).join("")}</div></div>
+    <div class="fld"><span>บริการเสริม</span><div class="seg pj-tog" id="aM"><button type="button" data-v="mobile" class="${APP.mobile?"on":""}"><i class="ti ti-truck"></i>ออกหน้างาน</button><button type="button" data-v="urgent" class="${APP.urgent?"on":""}"><i class="ti ti-urgent"></i>รับงานด่วน</button></div></div>
     <div class="two"><label class="fld"><span>ราคาเริ่มต้น (บาท) <em>*</em></span><input class="inp" id="aF" type="number" inputmode="numeric" value="${esc(APP.from||"")}"/></label>
     <label class="fld"><span>รับประกันงาน (วัน) <em>*</em></span><input class="inp" id="aW" type="number" inputmode="numeric" value="${esc(APP.warranty||30)}"/></label></div>
-    <label class="fld"><span>ความชำนาญ / เครื่องมือ <em>*</em> <small style="font-weight:400;color:var(--muted)">อย่างน้อย 30 ตัวอักษร</small></span><textarea class="inp" id="aB" placeholder="เช่น ระบบแอร์ญี่ปุ่นทุกรุ่น มีเครื่องแวคคั่มและเครื่องเติมน้ำยา">${esc(APP.about||"")}</textarea></label>`,
-    foot:'<button class="btn s" id="aBk">ย้อนกลับ</button><button class="btn p" id="aNx">ถัดไป</button>',
+    <label class="fld"><span>ความชำนาญ / เครื่องมือ <em>*</em> <small style="font-weight:400;color:var(--muted)">อย่างน้อย 30 ตัวอักษร</small></span><textarea class="inp" id="aB" placeholder="เช่น ระบบแอร์ญี่ปุ่นทุกรุ่น มีเครื่องแวคคั่มและเครื่องเติมน้ำยา">${esc(APP.about||"")}</textarea></label></section>`,
+    foot:PJ_FOOT(),
     mount(){
       wireSeg("aT",v=>APP.title=v);
       /* ตรวจเลขบัตรระหว่างพิมพ์: ครบ 13 หลักแล้วบอกทันทีว่าถูกตามสูตรหลักสุดท้ายไหม */
@@ -6559,26 +6703,26 @@ function step(n){
         if(e.length){$("err").textContent="กรุณาตรวจสอบ: "+e.join(", ");$("err").scrollIntoView({block:"nearest"});return}step(2)};
     }});
   if(n===2)return sheet({...wiz(n),full:true,title:"ใบสมัครพาร์ทเนอร์",body:stepHd(2)+`
-    <p class="note"><i class="ti ti-info-circle"></i>เลื่อนแผนที่ให้หมุดอยู่ที่อู่ หรือจุดที่คุณออกรับงาน</p>
-    <div class="picker" id="aMap"></div><p class="coord" id="aXY"></p>
-    <button class="btn s w" id="aGps" style="margin-bottom:14px"><i class="ti ti-current-location"></i> ใช้ตำแหน่งปัจจุบัน</button>
+    <section class="pj-card"><h3 class="pj-ct"><i class="ti ti-map-pin"></i>ตำแหน่งอู่<small>เลื่อนแผนที่ให้หมุดตรงจุด</small></h3>
+    <div class="pj-mapw"><div class="picker" id="aMap"></div><button class="pj-gps" id="aGps" type="button"><i class="ti ti-current-location"></i> ใช้ตำแหน่งปัจจุบัน</button></div><p class="coord" id="aXY"></p></section>
+    <section class="pj-card"><h3 class="pj-ct"><i class="ti ti-radar-2"></i>พื้นที่รับงาน</h3>
     <label class="fld"><span>เขต / อำเภอ / จังหวัด <em>*</em></span><input class="inp" id="aR" value="${esc(APP.area||"")}" placeholder="เช่น ลาดพร้าว กรุงเทพฯ"/></label>
-    <label class="fld"><span>รัศมีรับงาน (กม.)</span><input class="inp" id="aK" type="number" inputmode="numeric" value="${esc(APP.radius??20)}"/></label>`,
-    foot:'<button class="btn s" id="aBk">ย้อนกลับ</button><button class="btn p" id="aNx">ถัดไป</button>',
+    <label class="fld"><span>รัศมีรับงาน (กม.)</span><input class="inp" id="aK" type="number" inputmode="numeric" value="${esc(APP.radius??20)}"/></label></section>`,
+    foot:PJ_FOOT(),
     mount(){
       const pk=picker($("aMap"),APP.lat?{lat:APP.lat,lng:APP.lng}:null,p=>{APP.lat=p.lat;APP.lng=p.lng;$("aXY").textContent=p.lat.toFixed(5)+", "+p.lng.toFixed(5)});
       $("aGps").onclick=e=>busy(e.currentTarget,async()=>{const p=await locate();if(p){pk.set(p);APP.gps=true}});
       $("aBk").onclick=()=>{keep();step(1)};
       $("aNx").onclick=()=>{keep();if(!window.L&&!APP.gps){$("err").textContent="กดใช้ตำแหน่งปัจจุบันก่อน";return}if((APP.area||"").length<3){$("err").textContent="กรุณาระบุเขต / อำเภอ / จังหวัด";return}step(3)};
     }});
-  if(n===3)return sheet({...wiz(n),full:true,title:"ใบสมัครพาร์ทเนอร์",body:stepHd(3)+(DIDIT()?`<p class="note"><i class="ti ti-camera"></i>รูปอู่และรูปผลงานจริง ถ่ายให้เห็นชัด · บัตรประชาชนไม่ต้องแนบ — ยืนยันกับ Didit หลังยื่นใบสมัคร</p>`:`<p class="note"><i class="ti ti-camera"></i>ถ่ายให้เห็นข้อความชัด ไม่มีแสงสะท้อน · บัตรประชาชนให้ทีมงานดูเพื่อยืนยันตัวตนเท่านั้น และถูกลบหลังพิจารณา</p>
-    <p class="note"><i class="ti ti-id"></i>บัตรประชาชน: ถ่าย<b>ด้านหน้าบัตรจริง</b> (ไม่ถ่ายจากจอหรือสำเนา) ให้เห็นเลข 13 หลักชัดทุกหลัก — ทีมงานจะเทียบกับเลขที่คุณกรอก</p>`)+dk().map(([k,l,min,max,ic])=>`<div class="dgrp"><h4>${l} <small>${min?(min===max?min+" รูป":min+"–"+max+" รูป"):"ไม่บังคับ"}</small><i class="ti ti-circle-check-filled okk" ${(APP.docs[k]||[]).length>=min&&min?"":"hidden"}></i></h4><div class="docs" data-k="${k}"></div></div>`).join("")
+  if(n===3)return sheet({...wiz(n),full:true,title:"ใบสมัครพาร์ทเนอร์",body:stepHd(3)+(DIDIT()?`<p class="note"><i class="ti ti-camera"></i><span>รูปอู่และรูปผลงานจริง ถ่ายให้เห็นชัด · บัตรประชาชนไม่ต้องแนบ — ยืนยันกับ Didit หลังยื่นใบสมัคร</span></p>`:`<p class="note"><i class="ti ti-camera"></i><span>ถ่ายให้เห็นข้อความชัด ไม่มีแสงสะท้อน · บัตรประชาชนให้ทีมงานดูเพื่อยืนยันตัวตนเท่านั้น และถูกลบหลังพิจารณา</span></p>
+    <p class="note"><i class="ti ti-id"></i><span>บัตรประชาชน: ถ่าย<b>ด้านหน้าบัตรจริง</b> (ไม่ถ่ายจากจอหรือสำเนา) ให้เห็นเลข 13 หลักชัดทุกหลัก — ทีมงานจะเทียบกับเลขที่คุณกรอก</span></p>`)+dk().map(([k,l,min,max,ic])=>`<section class="pj-card dgrp"><h4><span class="pj-di"><i class="ti ${ic}"></i></span><span>${l}<small>${min?(min===max?min+" รูป":min+"–"+max+" รูป"):"ไม่บังคับ"}</small></span><i class="ti ti-circle-check-filled okk" ${(APP.docs[k]||[]).length>=min&&min?"":"hidden"}></i></h4><div class="docs" data-k="${k}"></div></section>`).join("")
     +'<input type="file" id="aFile" accept="image/*" hidden/>',
-    foot:'<button class="btn s" id="aBk">ย้อนกลับ</button><button class="btn p" id="aNx">ถัดไป</button>',
+    foot:PJ_FOOT(),
     mount(){
       let cur=null;
       const draw=k=>{const [,, ,max,ic]=DK.find(d=>d[0]===k);const L=APP.docs[k]||[];const host=$("bsB").querySelector(`[data-k="${k}"]`);
-        host.innerHTML=L.map((d,i)=>`<div class="doc"><img src="${d}" alt=""/><button class="rm" data-i="${i}" aria-label="ลบ"><i class="ti ti-x"></i></button></div>`).join("")+(L.length<max?`<button class="doc" data-add="${k}"><i class="ti ${ic}"></i>เพิ่มรูป</button>`:"");
+        host.innerHTML=L.map((d,i)=>`<div class="doc"><img src="${d}" alt=""/><button class="rm" data-i="${i}" aria-label="ลบ"><i class="ti ti-x"></i></button></div>`).join("")+(L.length<max?`<button class="doc" data-add="${k}"><i class="ti ti-camera-plus"></i>เพิ่มรูป</button>`:"");
         host.querySelectorAll(".rm").forEach(b=>b.onclick=()=>{L.splice(+b.dataset.i,1);draw(k)});
         host.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{cur=k;const f=$("aFile");f.value="";
           /* บัตรประชาชนครอปตามสัดส่วนบัตรจริง (85.6×54 มม.) ให้เลขบัตรเต็มกรอบ อ่านได้แม่นขึ้น */
@@ -6591,22 +6735,24 @@ function step(n){
       $("aNx").onclick=()=>{const miss=dk().filter(([k,,min])=>(APP.docs[k]||[]).length<min).map(d=>d[1]);if(miss.length){$("err").textContent="ยังขาดเอกสาร: "+miss.join(", ");return}step(4)};
     }});
   if(n===4){const nd=dk().reduce((a,[k])=>a+(APP.docs[k]||[]).length,0);
-    const sec=(t,to,rows)=>`<div class="sect"><h5>${t}<button data-to="${to}">แก้ไข</button></h5>${rows.map(([k,v])=>`<p><span>${k}</span><b>${v}</b></p>`).join("")}</div>`;
+    const sec=(t,to,rows)=>`<div class="sect"><h5>${t}<button data-to="${to}"><i class="ti ti-pencil"></i>แก้ไข</button></h5>${rows.map(([k,v])=>`<p><span>${k}</span><b>${v}</b></p>`).join("")}</div>`;
     return sheet({...wiz(n),full:true,title:"ใบสมัครพาร์ทเนอร์",body:stepHd(4)+
+    `<div class="pj-ticket"><div class="pj-tk-hd"><svg viewBox="-6.0 -6.0 94.8 112.0" aria-hidden="true"><path fill="currentColor" d="${LOGO}"/></svg><div><small>CENDON PARTNER · ใบสมัคร</small><b>${esc(APP.title+" "+APP.name)}</b></div><span class="pj-tk-st">พร้อมยื่น</span></div>`+
     sec("ข้อมูลผู้สมัคร",1,[["ชื่อ-นามสกุล",esc(APP.title+" "+APP.name)],...(DIDIT()?[["ยืนยันตัวตน","กับ Didit หลังยื่นใบสมัคร"]]:[["เลขประจำตัวประชาชน",esc(fmtId(APP.idNo))]]),["อายุ",ageOf(APP.birth)+" ปี"],["เบอร์โทรศัพท์",esc(APP.phone)]])+
     sec("การให้บริการ",1,[["ชื่อร้าน",esc(APP.shop||"–")],["ประสบการณ์",esc(APP.years)+" ปี"],["ประเภทงาน",APP.cats.map(c=>CAT[c].th).join(", ")],["บริการเสริม",[APP.mobile&&"ออกหน้างาน",APP.urgent&&"รับงานด่วน"].filter(Boolean).join(", ")||"–"],["ราคาเริ่มต้น","฿"+money(APP.from)],["รับประกัน",esc(APP.warranty)+" วัน"]])+
     sec("สถานที่ให้บริการ",2,[["พื้นที่",esc(APP.area)],["รัศมี",esc(APP.radius||0)+" กม."]])+
-    sec("เอกสาร",3,[["แนบแล้ว",nd+" รูป"],["ใบรับรองฝีมือ",(APP.docs.cert||[]).length?"มี":"ไม่มี (สัมภาษณ์แทน)"]])+`
-    <p class="h4">คำรับรอง</p>
+    sec("เอกสาร",3,[["แนบแล้ว",nd+" รูป"],["ใบรับรองฝีมือ",(APP.docs.cert||[]).length?"มี":"ไม่มี (สัมภาษณ์แทน)"]])+`</div>
+    <section class="pj-card pj-cons"><h3 class="pj-ct"><i class="ti ti-signature"></i>คำรับรองและความยินยอม<small>ติ๊กครบทุกข้อ</small></h3>
     <label class="chk"><input type="checkbox" class="dec"/> ข้าพเจ้าขอรับรองว่าข้อมูลและเอกสารทั้งหมดเป็นความจริง</label>
     <label class="chk"><input type="checkbox" class="dec"/><span>ข้าพเจ้าได้อ่านและยอมรับ <button type="button" class="lnk" id="dTerms">ข้อตกลงพาร์ทเนอร์</button></span></label>
     <label class="chk"><input type="checkbox" class="dec"/> <span>ยินยอมให้ Cendon เก็บและใช้ข้อมูลเพื่อพิจารณาใบสมัคร และโทรติดต่อยืนยันตัวตน ตาม<a class="lnk" href="/privacy" target="_blank" rel="noopener">นโยบายความเป็นส่วนตัว</a></span></label>
     ${DIDIT()?`<label class="chk"><input type="checkbox" class="dec"/> <span>ยินยอมให้ <b>Didit</b> (ผู้ให้บริการยืนยันตัวตน) ตรวจบัตรประชาชนจริง, selfie/liveness และเทียบใบหน้ากับภาพบนบัตร ซึ่งอาจประมวลผลนอกประเทศไทย — Cendon ได้รับเฉพาะผลตรวจและข้อมูลขั้นต่ำสำหรับพิจารณา ไม่ได้รับรูปบัตรหรือรูปใบหน้า การยินยอมนี้จำเป็นต่อการสมัคร</span></label>`
       :`<label class="chk"><input type="checkbox" class="dec"/> <span>ยินยอมให้<b>ทีมงาน Cendon</b> ดูรูปบัตรประชาชนและรูปคู่บัตรเพื่อยืนยันตัวตน — ไม่ส่งให้ AI และลบทันทีหลังพิจารณาเสร็จ</span></label>`}
-    ${TP&&TP.ai?`<p class="h4">ไม่บังคับ</p>
-    <label class="chk"><input type="checkbox" id="dAI"/> <span>ให้ AI (Cloudflare Workers AI) ช่วยดูรูปอู่ รูปผลงาน และคำอธิบายงาน เพื่อให้ตรวจได้เร็วขึ้น — ไม่รวมรูปบัตรหรือรูปหน้า · ไม่ติ๊กก็สมัครได้ ทีมงานจะดูรูปเองทั้งหมด</span></label>`:""}
-    <p class="note">AI ไม่ได้อนุมัติแทนคน ทีมงานยังต้องตรวจตัวตน โทรยืนยัน และตรวจทักษะก่อนอนุมัติ</p>`,
-    foot:'<button class="btn s" id="aBk">ย้อนกลับ</button><button class="btn p" id="aGo" disabled>ยื่นใบสมัครจริง</button>',
+    </section>
+    ${TP&&TP.ai?`<section class="pj-card pj-cons"><h3 class="pj-ct"><i class="ti ti-sparkles"></i>ไม่บังคับ</h3>
+    <label class="chk"><input type="checkbox" id="dAI"/> <span>ให้ AI (Cloudflare Workers AI) ช่วยดูรูปอู่ รูปผลงาน และคำอธิบายงาน เพื่อให้ตรวจได้เร็วขึ้น — ไม่รวมรูปบัตรหรือรูปหน้า · ไม่ติ๊กก็สมัครได้ ทีมงานจะดูรูปเองทั้งหมด</span></label></section>`:""}
+    <p class="note"><i class="ti ti-shield-check"></i>AI ไม่ได้อนุมัติแทนคน ทีมงานยังต้องตรวจตัวตน โทรยืนยัน และตรวจทักษะก่อนอนุมัติ</p>`,
+    foot:PJ_FOOT('<button class="btn p jx-go" id="aGo" disabled>ยื่นใบสมัคร<i class="ti ti-send"></i></button>'),
     mount(b){
       b.querySelectorAll("[data-to]").forEach(x=>x.onclick=()=>step(+x.dataset.to));
       $("dTerms").onclick=e=>{e.preventDefault();terms()};
@@ -6623,6 +6769,8 @@ function step(n){
         APP=null;await refreshMe();sheetFresh();statusPage(ME.application,true);
       })}});}
 }
+/* ปุ่มล่างของใบสมัคร: ย้อนกลับ (เงียบ) · ถัดไป/ยื่น (ทองส้ม) — id เดิม aBk aNx */
+function PJ_FOOT(go){return '<button class="btn s pj-bk" id="aBk"><i class="ti ti-arrow-left"></i>ย้อนกลับ</button>'+(go||'<button class="btn p jx-go" id="aNx">ถัดไป<i class="ti ti-arrow-right"></i></button>')}
 /* สถานะใบสมัคร — มีเลขที่ใบสมัครอ้างอิง และเห็นว่าอยู่ขั้นไหนของการพิจารณา */
 /* ยกเลิกการสมัครช่าง (รอตรวจ / ต้องแก้ / ร้านทดลอง) — หลังบ้านลบใบสมัคร เอกสาร และปล่อยเลขบัตรคืน */
 function withdrawApp(btn){
@@ -6630,25 +6778,46 @@ function withdrawApp(btn){
   busy(btn,async()=>{await api("/api/tech/apply/withdraw",{body:{}});await refreshMe();await load();closeSheet();if(MODE==="tech")setMode("customer");
     toast(T("ยกเลิกการสมัครแล้ว","Application cancelled"),"ti-door-exit")});
 }
-function statusPage(a,fresh,pv){
-  const st=a.status,d=a.submittedAt||a.createdAt;
+function statusPage(a,fresh,pv,just){
+  const st=a.status,d=a.submittedAt||a.createdAt,auto=!!(a.review&&a.review.auto);
   const kyc=!pv&&st==="pending"&&a.identity&&a.identity.mode==="didit"?a.identity:null,kycTodo=!!(kyc&&kyc.status!=="approved");
   const kycAt=a.identity&&a.identity.mode==="didit"&&st==="pending"&&!pv?(a.identity.status==="approved"?3:2):2;
   const n=st==="approved"?5:st==="rejected"||st==="declined"?2:kycAt;
-  sheet({push:pv&&pv.push,url:"/join",full:true,title:"ใบสมัครพาร์ทเนอร์",body:(pv?`<div class="seg pvs" id="pvS">${[["pending","รอตรวจ"],["rejected","ต้องแก้ไข"],["declined","ไม่ผ่าน"],["approved","อนุมัติ"]].map(([k,l])=>`<button type="button" data-v="${k}" class="${k===pv.st?"on":""}">${l}</button>`).join("")}</div>`:"")+`
-    ${pv?'<p class="note"><b>โหมดตัวอย่าง UI เท่านั้น</b> · ไม่ส่งใบสมัคร ไม่ตรวจ AI และไม่อนุมัติร้านจริง</p>':st==='pending'&&!kycTodo&&!fresh?`<p class="note">ใบสมัครอยู่ในคิว ทีมงานจะตรวจตัวตน เบอร์โทร ผลงาน และทักษะ</p>`:''}
-    ${fresh&&st==='pending'?`<div class="state"><div class="big" style="background:rgba(62,158,110,.14);color:var(--ok)"><i class="ti ti-send"></i></div><h2>ยื่นใบสมัครเรียบร้อย</h2><p>${kycTodo?"เหลืออีก 1 ขั้น: ยืนยันตัวตนกับ Didit":"ทีมงานจะติดต่อกลับภายใน 3 วันทำการ"}</p></div>`:""}
-    ${fresh&&kycTodo?`<div class="note"><b><i class="ti ti-id-badge-2"></i> ก่อนเริ่ม</b><br>เตรียมบัตรประชาชนตัวจริง อยู่ในที่แสงเพียงพอ และอนุญาตให้ใช้กล้องหน้าได้ ใช้เวลาประมาณ 2 นาที ปิดหน้านี้ได้ แต่ต้องกลับมายืนยันให้เสร็จก่อนทีมงานจะเริ่มพิจารณา</div>`:""}
+  /* ผลที่เพิ่งออกและยังไม่เคยเปิดดู = การ์ดขูด (ผลอัตโนมัติตอนยื่นไม่ต้องขูด — รู้ทันทีพร้อมสิ่งที่ต้องแก้) */
+  const scratch=decided(a)&&!auto&&(pv?pv.scratch!==false:!revealed(a));
+  const pvBar=pv?`<div class="seg pvs" id="pvS">${[["pending","รอตรวจ"],["rejected","ต้องแก้ไข"],["declined","ไม่ผ่าน"],["approved","อนุมัติ"]].map(([k,l])=>`<button type="button" data-v="${k}" class="${k===pv.st?"on":""}">${l}</button>`).join("")}</div><p class="note"><b>โหมดตัวอย่าง UI เท่านั้น</b> · ไม่ส่งใบสมัคร ไม่ตรวจ AI และไม่อนุมัติร้านจริง</p>`:"";
+  if(scratch)return sheet({push:pv&&pv.push,url:"/join",full:true,cls:"jx",title:"ใบสมัครพาร์ทเนอร์",body:pvBar+`
+    <div class="pj-hd pj-hd-s"><p class="pj-k">ใบสมัคร ${esc(a.appNo||"")}</p><h2 class="pj-t">ผลการพิจารณามาแล้ว</h2><p class="pj-s">ขูดการ์ดด้วยนิ้ว เหมือนขูดด้วยเหรียญ เพื่อเปิดผล</p></div>
+    <div class="pj-scratch" id="pjSc"><div class="pj-face pj-f-${st}">${PJ_FACE[st]}</div><canvas class="pj-foil" aria-hidden="true"></canvas><span class="pj-coin" aria-hidden="true"><svg viewBox="-6.0 -6.0 94.8 112.0"><path fill="currentColor" d="${LOGO}"/></svg></span></div>
+    <p class="pj-promise"><i class="ti ti-heart-handshake"></i>ไม่ว่าผลจะเป็นแบบไหน เรามีทางไปต่อให้คุณเสมอ</p>`,
+    foot:'<button class="btn s w" id="pjOpen">เปิดผลเลย ไม่ต้องขูด</button>',
+    mount(){
+      if(pv)$("pvS").querySelectorAll("button").forEach(b=>b.onclick=()=>previewStatus(b.dataset.v,false));
+      const done=()=>{if(!pv)markRevealed(a);if(st==="approved")confetti();
+        setTimeout(()=>statusPage(a,false,pv?{...pv,scratch:false,push:false}:undefined,true),st==="approved"?900:650)};
+      const sc=scratchCard($("pjSc"),done);$("pjOpen").onclick=()=>sc.open();
+    }});
+  const pass=`<div class="pj-pass pj-p-${st}"><svg class="pj-pl" viewBox="-6.0 -6.0 94.8 112.0" aria-hidden="true"><path fill="currentColor" d="${LOGO}"/></svg>
+    <div class="pj-pt"><small>CENDON PARTNER</small><b>${esc(a.name||"")}</b></div><span class="pj-ps">${{pending:"กำลังพิจารณา",approved:"พาร์ทเนอร์",rejected:"รอแก้ไขอีกนิด",declined:"ปิดรอบนี้"}[st]||""}</span>
+    <div class="pj-pn"><div><small>เลขที่ใบสมัคร</small><b>${esc(a.appNo||"—")}</b></div><div><small>วันที่ยื่น</small><b>${d?new Date(d).toLocaleDateString(LOC,{day:"numeric",month:"short",year:"numeric"}):"—"}</b></div></div></div>`;
+  const note=a.review&&a.review.note?`<div class="pj-quote"><small>ข้อความจากทีมงาน</small><p>${esc(a.review.note)}</p></div>`:"";
+  const res=st==="approved"?`<div class="pj-res pj-r-ok"><h2>ยินดีด้วย คุณคือพาร์ทเนอร์ Cendon แล้ว</h2><p>ร้านของคุณเปิดให้ลูกค้าเห็นในแอปแล้ว เริ่มต้นสามอย่างนี้ ลูกค้าจะเจอคุณง่ายขึ้น</p>
+      <ol class="pj-next"><li><i class="ti ti-photo"></i><span><b>แต่งหน้าร้าน</b><small>รูปอู่ รูปผลงาน และเวลาเปิด</small></span></li><li><i class="ti ti-tag"></i><span><b>ลงบริการพร้อมราคา</b><small>ลูกค้าเทียบแล้วกดจองได้ทันที</small></span></li><li><i class="ti ti-brand-line"></i><span><b>เชื่อม LINE</b><small>รู้ทันทีเมื่อมีงานใหม่</small></span></li></ol></div>`
+    :st==="rejected"?`<div class="pj-res pj-r-fix"><h2>อีกนิดเดียวเท่านั้น</h2><p>ใบสมัครของคุณใกล้ผ่านแล้ว ทีมงานขอให้ปรับเพิ่มอีกนิด — ไม่ต้องเริ่มใหม่ ข้อมูลที่กรอกไว้ยังอยู่ครบ (รูปเอกสารแนบใหม่อีกครั้ง) แก้แล้วยื่นใหม่ได้ทันที</p>
+      ${auto?`<div class="fixl"><b><i class="ti ti-list-check"></i> สิ่งที่ต้องปรับ</b><ul>${(a.review.reasons||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:note}</div>`
+    :st==="declined"?`<div class="pj-res pj-r-thanks"><h2>ขอบคุณที่อยากร่วมทางกับเรา</h2><p>รอบนี้เรายังรับใบสมัครของคุณไม่ได้ ผลนี้มาจากการตรวจตามเงื่อนไขของโปรแกรมพาร์ทเนอร์ ไม่ได้วัดคุณค่าของฝีมือและประสบการณ์ที่คุณสั่งสมมา</p>${note}
+      <ol class="pj-next"><li><i class="ti ti-car"></i><span><b>ดูแลรถของคุณกับ Cendon ได้ตามปกติ</b><small>ทุกฟีเจอร์ของเจ้าของรถยังใช้ได้เหมือนเดิม</small></span></li><li><i class="ti ti-message-heart"></i><span><b>คิดว่าเราพลาดอะไรไป?</b><small>คุยกับทีมงานได้เสมอ เรายินดีฟังและตรวจให้อีกครั้ง</small></span></li></ol></div>`
+    :fresh?`<div class="pj-res pj-r-sent"><div class="pj-plane"><i class="ti ti-send"></i></div><h2>ยื่นใบสมัครเรียบร้อย</h2><p>${kycTodo?"เหลืออีก 1 ขั้น: ยืนยันตัวตนกับ Didit":"ทีมงานจะติดต่อกลับภายใน 3 วันทำการ"}</p></div>`
+    :`<div class="pj-res pj-r-wait"><h2>กำลังพิจารณาใบสมัคร</h2><p>${kycTodo?"ยืนยันตัวตนให้เสร็จ แล้วทีมงานจะเริ่มพิจารณาทันที":"ทีมงานกำลังตรวจตัวตน เบอร์โทร ผลงาน และทักษะ ผลออกเมื่อไรเราจะแจ้งในแอปและ LINE"}</p></div>`;
+  sheet({push:pv&&pv.push,url:"/join",full:true,cls:"jx",title:"ใบสมัครพาร์ทเนอร์",body:pvBar+`
+    <div class="pj-st${just?" pj-just":""}">${pass}${res}
+    ${fresh&&kycTodo?`<div class="note"><i class="ti ti-id-badge-2"></i><span><b>ก่อนเริ่ม</b> เตรียมบัตรประชาชนตัวจริง อยู่ในที่แสงเพียงพอ และอนุญาตให้ใช้กล้องหน้าได้ ใช้เวลาประมาณ 2 นาที ปิดหน้านี้ได้ แต่ต้องกลับมายืนยันให้เสร็จก่อนทีมงานจะเริ่มพิจารณา</span></div>`:""}
     ${st==='pending'&&kyc?kycCard(kyc):""}
-    ${st==='rejected'&&a.review&&a.review.auto?`<div class="fixl"><b><i class="ti ti-alert-triangle"></i> ใบสมัครยังไม่ผ่าน — แก้ข้อต่อไปนี้แล้วยื่นใหม่ได้ทันที</b><ul>${(a.review.reasons||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:""}
-    <div class="appno"><div><small>เลขที่ใบสมัคร</small><b>${esc(a.appNo||"—")}</b></div><div style="text-align:right"><small>วันที่ยื่น</small><b style="font-size:14px">${d?new Date(d).toLocaleDateString(LOC,{day:"numeric",month:"short",year:"numeric"}):"—"}</b></div></div>
-    <p class="h4">สถานะการพิจารณา</p>
-    <div class="tl">${(kyc?[["ยื่นใบสมัครออนไลน์",esc(a.name)],["ยืนยันตัวตนกับ Didit",kycTodo?"รอคุณยืนยันตัวตน":"ผ่านแล้ว"],["ทีมงานตรวจและโทรยืนยัน","ทีมงานโทรหา "+esc(a.phone||"")],["อนุมัติ เริ่มรับงาน",""]]
-      :[["ยื่นใบสมัครออนไลน์",esc(a.name)],["ตรวจสอบเอกสาร",st==="rejected"?"ต้องแก้ไขเพิ่มเติม":st==="declined"?"ไม่ผ่านการคัดเลือก":"1–3 วันทำการ"],["โทรยืนยันตัวตนและทักษะ","ทีมงานโทรหา "+esc(a.phone||"")],["อนุมัติ เริ่มรับงาน",st==="approved"?"ร้านของคุณแสดงในแอปแล้ว":""]]).map(([b,s],i)=>`<div data-n="${i+1}" class="${i+1<n?"ok":i+1===n&&st!=="approved"?"on":""}"><b>${b}</b><small>${s}</small></div>`).join("")}</div>
-    ${st==="rejected"&&!(a.review&&a.review.auto)?`<div class="err" style="animation:none"><b>หมายเหตุจากทีมงาน:</b> ${esc(a.review&&a.review.note||"")}</div>`:""}
-    ${!pv&&(st==="pending"||st==="rejected")?`<button class="lx-gh ss-wd" id="sWd" type="button" style="width:100%;margin-top:14px"><i class="ti ti-door-exit"></i>${T("ยกเลิกการสมัคร","Cancel application")}</button>`:""}
-    ${st==="declined"?`<div class="err" style="animation:none"><b>ใบสมัครไม่ผ่านการคัดเลือก</b> — ส่งใบสมัครใหม่ไม่ได้${a.review&&a.review.note?`<br>หมายเหตุจากทีมงาน: ${esc(a.review.note)}`:""}<br><small>ถ้าคิดว่าผิดพลาด ติดต่อทีมงานได้ทางหน้าช่วยเหลือ</small></div>`:""}`,
-    foot:st==="rejected"?'<button class="btn p w" id="sFix">แก้ไขและยื่นใหม่</button>':st==="approved"?'<button class="btn p w" id="sJobs">เปิดงานของฉัน</button>':'<button class="btn s w" id="sOk">ปิด</button>',
+    ${st!=="declined"?`<p class="h4">เส้นทางใบสมัคร</p>
+    <div class="tl pj-tl">${(kyc?[["ยื่นใบสมัครออนไลน์",esc(a.name)],["ยืนยันตัวตนกับ Didit",kycTodo?"รอคุณยืนยันตัวตน":"ผ่านแล้ว"],["ทีมงานตรวจและโทรยืนยัน","ทีมงานโทรหา "+esc(a.phone||"")],["อนุมัติ เริ่มรับงาน",""]]
+      :[["ยื่นใบสมัครออนไลน์",esc(a.name)],["ตรวจสอบเอกสาร",st==="rejected"?"ขอปรับเพิ่มอีกนิด":"1–3 วันทำการ"],["โทรยืนยันตัวตนและทักษะ","ทีมงานโทรหา "+esc(a.phone||"")],["อนุมัติ เริ่มรับงาน",st==="approved"?"ร้านของคุณแสดงในแอปแล้ว":""]]).map(([b,s],i)=>`<div data-n="${i+1}" class="${i+1<n?"ok":i+1===n&&st!=="approved"?"on":""}"><b>${b}</b><small>${s}</small></div>`).join("")}</div>`:""}
+    ${!pv&&(st==="pending"||st==="rejected")?`<button class="lx-gh ss-wd" id="sWd" type="button" style="width:100%;margin-top:14px"><i class="ti ti-door-exit"></i>${T("ยกเลิกการสมัคร","Cancel application")}</button>`:""}</div>`,
+    foot:st==="rejected"?'<button class="btn p w jx-go" id="sFix">แก้ไขและยื่นใหม่<i class="ti ti-arrow-right"></i></button>':st==="approved"?'<button class="btn p w jx-go" id="sJobs">เข้า Studio<i class="ti ti-arrow-right"></i></button>':st==="declined"?`<a class="btn s" id="sTalk" href="${esc(lineChat("@988omovg"))}" target="_blank" rel="noopener"><i class="ti ti-message-heart"></i>คุยกับทีมงาน</a><button class="btn p" id="sOk">กลับหน้าแรก</button>`:'<button class="btn s w" id="sOk">ปิด</button>',
     mount(){if(pv){$("pvS").querySelectorAll("button").forEach(b=>b.onclick=()=>previewStatus(b.dataset.v,false));if($("sFix"))$("sFix").onclick=()=>landing(true);if($("sJobs"))$("sJobs").onclick=()=>{closeSheet();setMode("tech")};if($("sOk"))$("sOk").onclick=()=>closeSheet();return}
       if($("sFix"))$("sFix").onclick=()=>landing(true);if($("sJobs"))$("sJobs").onclick=()=>{closeSheet();openStudio()};if($("sOk"))$("sOk").onclick=()=>closeSheet();
       if($("sWd"))$("sWd").onclick=e=>withdrawApp(e.currentTarget);
@@ -6668,6 +6837,68 @@ const KYC={not_started:["next","ti-id","ขั้นต่อไป: ยืน�
   approved:["ok","ti-circle-check","ยืนยันตัวตนแล้ว","Didit ตรวจบัตรและใบหน้าผ่านแล้ว ทีมงานจะตรวจส่วนที่เหลือต่อ",""]};
 function kycCard(k){const [c,ic,t,s,go]=KYC[k.status]||KYC.none;
   return`<div class="kyc ${c}"><b><i class="ti ${ic}"></i>${t}</b><small>${s}</small>${go||["pending","review","service_unavailable"].includes(k.status)?`<div class="row">${go?`<button class="btn p" id="kGo">${go}</button>`:""}${["pending","review","service_unavailable"].includes(k.status)?'<button class="btn s" id="kChk">ตรวจผล</button>':""}</div>`:""}</div>`}
+/* ═══ การ์ดขูดผลใบสมัคร ═══
+   ผลที่ตัดสินแล้ว (อนุมัติ · ขอแก้ · ไม่ผ่าน) เปิดครั้งแรกเป็นการ์ดขูด — ฟอยล์ทองลายโลโก้เหมือนกันทุกผล ไม่มีใบ้ล่วงหน้า
+   จำว่าเปิดดูผลนั้นแล้วในเครื่องนี้ (ต่อผู้สมัคร × เวลาตัดสิน) · ผลใหม่รอบหน้า = ขูดใหม่ */
+function decided(a){return !!(a&&!a.test&&["approved","rejected","declined"].includes(a.status))}
+const revealKey=a=>"cendon_reveal:"+(a.uid||(U&&U.uid)||"me"),revealStamp=a=>String((a.review&&a.review.at)||a.revision||a.status);
+function revealed(a){if(!decided(a)||(a.review&&a.review.auto))return true;try{return localStorage.getItem(revealKey(a))===revealStamp(a)}catch(e){return true}}
+function markRevealed(a){try{localStorage.setItem(revealKey(a),revealStamp(a))}catch(e){}}
+/* ใต้ฟอยล์: ผ่าน = ทองบนหมึก · ขอแก้ = อุ่นและให้กำลังใจ · ไม่ผ่าน = ขอบคุณ ไม่มีคำว่า "ไม่ผ่าน" ตัวโต ๆ ให้เจ็บ */
+const PJ_FACE={approved:'<i class="ti ti-rosette-discount-check"></i><b>ผ่านแล้ว!</b><small>ยินดีต้อนรับสู่ครอบครัว Cendon</small>',
+  rejected:'<i class="ti ti-pencil-check"></i><b>อีกนิดเดียว</b><small>ปรับเพิ่มอีกนิด แล้วยื่นใหม่ได้ทันที</small>',
+  declined:'<i class="ti ti-heart-handshake"></i><b>ขอบคุณจากใจ</b><small>ที่อยากร่วมทางไปกับเรา</small>'};
+/* ฟอยล์วาดบน canvas · ถูด้วยนิ้ว/เมาส์ = ลบฟอยล์ (destination-out) มีเศษฟอยล์ร่วง และสั่นเบา ๆ บนมือถือ
+   ขูดเกินครึ่ง = เปิดเอง · ปุ่ม "เปิดผลเลย" สำหรับคนที่ขูดไม่สะดวกหรือใช้โปรแกรมอ่านจอ */
+function scratchCard(box,onOpen){
+  const cv=box.querySelector(".pj-foil"),coin=box.querySelector(".pj-coin"),g=cv.getContext("2d",{willReadFrequently:true});
+  let W=0,H=0,dpr=Math.min(devicePixelRatio||1,2),done=false,down=false,last=null,buzz=0,chk=0,touched=false;
+  const paint=()=>{
+    const r=box.getBoundingClientRect();W=r.width;H=r.height;if(!W||!H)return;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);g.setTransform(dpr,0,0,dpr,0,0);
+    let gr=g.createLinearGradient(0,0,W,H);[[0,"#a88a5a"],[.22,"#f1e3c2"],[.45,"#b39466"],[.7,"#f6ead0"],[1,"#9a7c4e"]].forEach(([o,c])=>gr.addColorStop(o,c));g.fillStyle=gr;g.fillRect(0,0,W,H);
+    for(let i=0;i<W*H/55;i++){g.fillStyle=`rgba(255,255,255,${Math.random()*.14})`;g.fillRect(Math.random()*W,Math.random()*H,1+Math.random()*3,.7)}
+    const P=new Path2D(LOGO);g.save();g.globalAlpha=.12;g.fillStyle="#4a3417";
+    for(let y=-8,row=0;y<H+40;y+=44,row++)for(let x=row%2?18:-8;x<W+40;x+=50){g.save();g.translate(x,y);g.rotate(-.32);g.scale(.2,.2);g.fill(P);g.restore()}g.restore();
+    gr=g.createLinearGradient(0,0,W,0);gr.addColorStop(.3,"rgba(255,255,255,0)");gr.addColorStop(.5,"rgba(255,255,255,.35)");gr.addColorStop(.7,"rgba(255,255,255,0)");g.fillStyle=gr;g.fillRect(0,0,W,H);
+    g.strokeStyle="rgba(74,52,23,.28)";g.lineWidth=1.5;g.setLineDash([5,5]);g.strokeRect(12.5,12.5,W-25,H-25);g.setLineDash([]);
+    g.textAlign="center";g.textBaseline="middle";g.fillStyle="rgba(58,40,16,.86)";g.font=`600 ${Math.round(Math.min(30,Math.max(20,W*.06)))}px Kanit, system-ui, sans-serif`;g.fillText("ขูดตรงนี้",W/2,H/2-14);
+    g.fillStyle="rgba(58,40,16,.62)";g.font=`400 ${Math.round(Math.min(16,Math.max(12.5,W*.033)))}px Kanit, system-ui, sans-serif`;g.fillText("ถูไปมาด้วยนิ้ว เหมือนขูดด้วยเหรียญ",W/2,H/2+20);
+  };
+  paint();
+  /* ฟอนต์ไทยโหลดเสร็จทีหลัง/หมุนจอ = วาดฟอยล์ใหม่ (เฉพาะตอนยังไม่เริ่มขูด) */
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(!touched&&!done)paint()});
+  const ro=new ResizeObserver(()=>{if(!touched&&!done)paint()});ro.observe(box);
+  const at=e=>{const r=cv.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top}};
+  const flake=p=>{if(box.querySelectorAll(".pj-flake").length>26)return;const f=document.createElement("i");f.className="pj-flake";
+    f.style.cssText=`left:${p.x}px;top:${p.y}px;--dx:${(Math.random()-.5)*60}px;--r:${Math.random()*360}deg;width:${3+Math.random()*4}px;height:${2+Math.random()*3}px`;box.appendChild(f);setTimeout(()=>f.remove(),900)};
+  const scrape=(a,b)=>{touched=true;g.globalCompositeOperation="destination-out";g.lineCap=g.lineJoin="round";g.lineWidth=Math.max(34,W*.1);
+    g.beginPath();g.moveTo(a.x,a.y);g.lineTo(b.x,b.y);g.stroke();g.globalCompositeOperation="source-over";
+    if(Math.random()<.5)flake(b);const t=performance.now();if(t-buzz>110&&navigator.vibrate){buzz=t;try{navigator.vibrate(6)}catch(e){}}
+    if(t-chk>220){chk=t;check()}};
+  const check=()=>{if(done||!cv.width)return;const d=g.getImageData(0,0,cv.width,cv.height).data;let c=0,n=0;for(let i=3;i<d.length;i+=4*29){n++;if(d[i]<60)c++}if(n&&c/n>.5)open()};
+  const moveCoin=p=>{coin.style.transform=`translate(${p.x}px,${p.y}px) translate(-50%,-50%) rotate(${(p.x+p.y)%60-30}deg)`};
+  cv.addEventListener("pointerdown",e=>{if(done)return;down=true;try{cv.setPointerCapture(e.pointerId)}catch(x){}last=at(e);moveCoin(last);box.classList.add("on");scrape(last,{x:last.x+.5,y:last.y+.5})});
+  cv.addEventListener("pointermove",e=>{const p=at(e);moveCoin(p);if(!down||done)return;scrape(last,p);last=p});
+  const up=()=>{if(!down)return;down=false;box.classList.remove("on");check()};
+  cv.addEventListener("pointerup",up);cv.addEventListener("pointercancel",up);cv.addEventListener("pointerleave",()=>{if(!down)box.classList.remove("hov")});
+  cv.addEventListener("pointerenter",e=>{if(e.pointerType==="mouse")box.classList.add("hov")});
+  function open(){if(done)return;done=true;ro.disconnect();box.classList.add("open");setTimeout(onOpen,560)}
+  return {open};
+}
+/* พลุกระดาษตอนผ่าน — สีแบรนด์ หมึก ทอง ขาว · ตั้งให้ลดการเคลื่อนไหว = ไม่มี */
+function confetti(){
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  const cv=document.createElement("canvas"),g=cv.getContext("2d"),dpr=Math.min(devicePixelRatio||1,2),W=innerWidth,H=innerHeight;
+  cv.className="pj-confetti";cv.width=W*dpr;cv.height=H*dpr;g.scale(dpr,dpr);document.body.appendChild(cv);
+  const C=["#E8943C","#f6c48d","#ffffff","#16171b","#ffd166","#c96d1f"],P=[];
+  for(let i=0;i<170;i++){const side=i%3,x=side===0?W*.5:side===1?-10:W+10,a=side===0?-Math.PI/2+(Math.random()-.5)*1.4:side===1?-Math.PI/3-Math.random()*.5:-Math.PI*2/3+Math.random()*.5,v=7+Math.random()*9;
+    P.push({x,y:side===0?H*.42:H*.75,vx:Math.cos(a)*v,vy:Math.sin(a)*v,r:Math.random()*6.3,vr:(Math.random()-.5)*.4,w:5+Math.random()*7,h:3+Math.random()*5,c:C[i%C.length],o:1})}
+  const t0=performance.now();
+  (function f(t){const k=(t-t0)/1000;g.clearRect(0,0,W,H);
+    for(const p of P){p.vy+=.28;p.vx*=.985;p.vy*=.985;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;if(k>2.2)p.o=Math.max(0,p.o-.03);
+      g.save();g.globalAlpha=p.o;g.translate(p.x,p.y);g.rotate(p.r);g.fillStyle=p.c;g.fillRect(-p.w/2,-p.h/2,p.w,p.h*Math.abs(Math.cos(p.r*1.7)));g.restore()}
+    if(k<3.4)requestAnimationFrame(f);else cv.remove()})(t0);
+}
 $("bJoin").onclick=()=>openJoin();
 
 /* ═══ ทีมงาน ═══ */
@@ -6685,7 +6916,7 @@ async function quickTech(){
 /* หน้าสถานะใบสมัครแบบตัวอย่าง — ไม่ยื่นจริง ไม่สร้างข้อมูล สลับดูได้ทุกสถานะ */
 function previewStatus(st,push){
   const nm=(APP&&APP.name)||"ตัวอย่าง ผู้สมัคร";
-  statusPage({appNo:"CP-PREVIEW",status:st,name:nm,submittedAt:Date.now(),review:st==="rejected"||st==="declined"?{note:"ตัวอย่างหมายเหตุจากทีมงาน: รูปบัตรไม่ชัด กรุณาถ่ายใหม่"}:null},false,{st,push});
+  statusPage({appNo:"CP-PREVIEW",status:st,name:nm,submittedAt:Date.now(),review:st==="rejected"||st==="declined"?{note:"ตัวอย่างหมายเหตุจากทีมงาน: รูปบัตรไม่ชัด กรุณาถ่ายใหม่",at:Date.now()}:st==="approved"?{at:Date.now()}:null},false,{st,push});
 }
 
 function staffBar(){
@@ -6838,8 +7069,8 @@ $("bMe").onclick=()=>{
   const t=ME&&ME.technician,a=ME&&ME.application;
   sheet({title:"บัญชี",body:`<div class="who"><span class="av sq" style="--c1:var(--accent)">${initial(U.email)}</span><div><b>${esc(U.displayName||U.email)}</b><small>${esc(U.email)}${ME&&ME.staff?" · ทีมงาน":""}</small></div></div>
     <button class="jl" id="mJobs"><span class="av sq" style="--c1:#2f9bd8"><i class="ti ti-clipboard-list"></i></span><span class="jb"><b>งานของฉัน</b></span><i class="ti ti-chevron-right"></i></button>
-    <button class="jl" id="mJoin"><span class="av sq" style="--c1:#22a06b"><i class="ti ti-tool"></i></span><span class="jb"><b>${t&&(!t.test||!(ME&&ME.staff))?"Studio — หน้าร้านของฉัน":a&&!a.test?"ใบสมัครพาร์ทเนอร์ ("+({pending:"กำลังพิจารณา",rejected:"ต้องแก้ไข",declined:"ไม่ผ่าน",approved:"อนุมัติแล้ว"}[a.status]||a.status)+")":"สมัครเป็นช่าง"}</b></span><i class="ti ti-chevron-right"></i></button>${ME&&ME.staff?`<button class="jl" id="mStaff"><span class="av sq" style="--c1:#7c5cff"><i class="ti ti-shield-check"></i></span><span class="jb"><b>มุมทีมงาน</b></span><i class="ti ti-chevron-right"></i></button>`:""}`,
-    mount(){$("mJobs").onclick=()=>jobs();$("mJoin").onclick=()=>{if(t){closeSheet();openStudio()}else openJoin()};
+    <button class="jl" id="mJoin"><span class="av sq" style="--c1:#22a06b"><i class="ti ti-tool"></i></span><span class="jb"><b>${a&&decided(a)&&!revealed(a)?"ผลใบสมัครช่างมาแล้ว — แตะเพื่อขูดดู":t&&(!t.test||!(ME&&ME.staff))?"Studio — หน้าร้านของฉัน":a&&!a.test?"ใบสมัครพาร์ทเนอร์ ("+({pending:"กำลังพิจารณา",rejected:"ขอปรับเพิ่มอีกนิด",declined:"ปิดรอบนี้",approved:"อนุมัติแล้ว"}[a.status]||a.status)+")":"สมัครเป็นช่าง"}</b></span><i class="ti ti-chevron-right"></i></button>${ME&&ME.staff?`<button class="jl" id="mStaff"><span class="av sq" style="--c1:#7c5cff"><i class="ti ti-shield-check"></i></span><span class="jb"><b>มุมทีมงาน</b></span><i class="ti ti-chevron-right"></i></button>`:""}`,
+    mount(){$("mJobs").onclick=()=>jobs();$("mJoin").onclick=()=>{if(t&&!(a&&decided(a)&&!revealed(a))){closeSheet();openStudio()}else openJoin()};
       if($("mStaff"))$("mStaff").onclick=()=>{closeSheet();setMode("staff")}}});
 };
 
@@ -7477,7 +7708,7 @@ async function refreshMe(){
    /* เจ้าของระบบเปิดลิงก์ร้าน/บริการของคนอื่นตรง ๆ: วาดใหม่ให้มีเครื่องมือเจ้าของระบบ */
    else if(oc&&!oc.owner&&!oc.boss&&ME&&ME.owner){if(oc.shop)openTech(oc.shop);else if(oc.gig)openGig(oc.gig)}}
   /* หน้าบัญชี (มือถือ) อ่านค่านี้เพื่อเขียนปุ่มว่า "สมัครเป็นช่าง" หรือ "Studio" — เก็บแค่สถานะ ไม่มีข้อมูลส่วนตัว */
-  if(ME)try{localStorage.setItem("spire_partner",JSON.stringify({uid:U.uid,s:t&&(!t.test||ME.staff)?"shop":a&&!a.test?a.status:"none"}))}catch(e){}
+  if(ME)try{localStorage.setItem("spire_partner",JSON.stringify({uid:U.uid,s:t&&(!t.test||ME.staff)?"shop":a&&!a.test?a.status:"none",r:a&&decided(a)&&!revealed(a)?1:0}))}catch(e){}
   try{drawPartner()}catch(e){}
   $("joinT").textContent=t&&!t.test?"พื้นที่พาร์ทเนอร์":a&&!a.test&&a.status==="pending"?"ใบสมัครกำลังพิจารณา":"ร่วมเป็นพาร์ทเนอร์ช่าง";
   $("joinS").textContent=t&&!t.test?"ดูงานที่ลูกค้าส่งมา":a&&!a.test?"เลขที่ "+(a.appNo||"")+(a.status==="rejected"?" · ต้องแก้ไข":""):ME&&ME.staff?"ทีมงานเป็นช่างได้ทันที":"รับงานจากลูกค้าในพื้นที่";

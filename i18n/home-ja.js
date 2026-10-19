@@ -1585,5 +1585,8 @@ window.CENDON_L10N={lang:"ja",t:{
 "Studio: run your shop in one place":"Studio：お店の管理をひとつに",
 "Jobs, chats, services, reviews and stats":"依頼、チャット、サービス、レビュー、統計",
 "Reserve · start the application":"予約 · 申請を始める",
-"Start the application":"申請を始める"
+"Start the application":"申請を始める",
+"Your application result is in":"申請の結果が届きました",
+"Scratch the card to see it":"カードを削って結果を見る",
+"See result":"結果を見る"
 }};

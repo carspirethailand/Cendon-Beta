@@ -1585,5 +1585,8 @@ window.CENDON_L10N={lang:"ms",t:{
 "Studio: run your shop in one place":"Studio: urus kedai di satu tempat",
 "Jobs, chats, services, reviews and stats":"Kerja, sembang, perkhidmatan, ulasan dan statistik",
 "Reserve · start the application":"Tempah · mula permohonan",
-"Start the application":"Mula permohonan"
+"Start the application":"Mula permohonan",
+"Your application result is in":"Keputusan permohonan anda sudah keluar",
+"Scratch the card to see it":"Gores kad untuk melihat keputusan",
+"See result":"Lihat keputusan"
 }};

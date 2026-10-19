@@ -15,11 +15,13 @@ test('review sheet: ไม่ผ่าน · ให้แก้ · อนุม�
   assert.match(home,/decision:"approve_test"/);
 });
 
-test('applicant status page knows ไม่ผ่าน (declined): no resubmit button, shows the reason',()=>{
-  const sp=part(home,'function statusPage(a,fresh,pv){','function previewStatus');
-  assert.match(sp,/st==="declined"\?`<div class="err"/);
-  assert.match(sp,/foot:st==="rejected"\?'<button class="btn p w" id="sFix">/,'only ให้แก้ offers resubmission');
-  assert.match(home,/declined:"ไม่ผ่าน"/);
+test('applicant status page knows ไม่ผ่าน (declined): no resubmit button, shows the reason kindly',()=>{
+  const sp=part(home,'function statusPage(a,fresh,pv,just){','function previewStatus');
+  assert.match(sp,/:st==="declined"\?`<div class="pj-res pj-r-thanks"><h2>ขอบคุณที่อยากร่วมทางกับเรา<\/h2>/);
+  assert.match(sp,/const note=a\.review&&a\.review\.note\?`<div class="pj-quote">/,'the team note is shown');
+  assert.match(sp,/foot:st==="rejected"\?'<button class="btn p w jx-go" id="sFix">/,'only ให้แก้ offers resubmission');
+  assert.doesNotMatch(sp,/declined[^\n]{0,200}id="sFix"/);
+  assert.match(home,/declined:"ปิดรอบนี้"/);
 });
 
 test('a trial shop (test approval) lets a non-staff applicant into Studio',()=>{
@@ -49,7 +51,7 @@ test('Cendon Experience: the owner role sees every page and skips the NDA',()=>{
 });
 
 test('applicants can cancel: status page (รอตรวจ/ให้แก้) and a non-staff trial shop in Studio settings',()=>{
-  const sp=part(home,'function statusPage(a,fresh,pv){','function previewStatus');
+  const sp=part(home,'function statusPage(a,fresh,pv,just){','function previewStatus');
   assert.match(sp,/!pv&&\(st==="pending"\|\|st==="rejected"\)\?`<button class="lx-gh ss-wd" id="sWd"/,'never offered for declined or in staff previews');
   assert.match(home,/t\.test&&!\(ME&&ME\.staff\)\?`<section class="ss-g">[\s\S]{0,200}id="ssWd"/);
   const wd=part(home,'function withdrawApp(btn){','function statusPage');

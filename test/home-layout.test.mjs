@@ -71,3 +71,7 @@ test('tidy pass: one 880px column under the search box, quick tiles are icon + n
   assert.match(page,/T\("ปัดเพื่อคุยกับ","Swipe to talk to"\)/);
   assert.match(page,/T\("ให้ AI และช่างรู้จักรถคุณ","So the AI and mechanics know your car"\)/);
 });
+test('map page: shop cards and the locate button sit above the floating mobile nav',()=>{
+  assert.match(page,/@media\(max-width:760px\)\{\n  body\.onmap \.carousel\{bottom:calc\(var\(--m-nav,64px\) \+ var\(--m-nav-gap,10px\) \+ 10px \+ env\(safe-area-inset-bottom\)\)\}/);
+  assert.match(page,/body\.onmap \.locate\{bottom:calc\(var\(--m-nav,64px\) \+ var\(--m-nav-gap,10px\) \+ 133px \+ env\(safe-area-inset-bottom\)\)\}/);
+});

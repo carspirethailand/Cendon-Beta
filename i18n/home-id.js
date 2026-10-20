@@ -1613,5 +1613,10 @@ window.CENDON_L10N={lang:"id",t:{
 "One more step: add Cendon as a friend on LINE":"Satu langkah lagi: tambahkan Cendon sebagai teman di LINE",
 "Continue in LINE: send \"{0}\"":"Lanjutkan di LINE: kirim \"{0}\"",
 "Open LINE":"Buka LINE",
-"New jobs, messages and car reminders":"Pekerjaan baru, pesan, dan pengingat perawatan mobil"
+"New jobs, messages and car reminders":"Pekerjaan baru, pesan, dan pengingat perawatan mobil",
+"So the AI and mechanics know your car":"Agar AI dan montir mengenal mobil Anda",
+"Swipe to talk to":"Geser untuk bicara dengan",
+"Double-click to talk to":"Klik dua kali untuk bicara dengan",
+"No mechanic services yet":"Belum ada layanan montir",
+"Mechanic services show up here":"Layanan montir akan muncul di sini"
 }};

@@ -1613,5 +1613,10 @@ window.CENDON_L10N={lang:"zh",t:{
 "One more step: add Cendon as a friend on LINE":"还差一步：在 LINE 上加 Cendon 为好友",
 "Continue in LINE: send \"{0}\"":"请在 LINE 中继续：发送“{0}”",
 "Open LINE":"打开 LINE",
-"New jobs, messages and car reminders":"新工单、消息和养车提醒"
+"New jobs, messages and car reminders":"新工单、消息和养车提醒",
+"So the AI and mechanics know your car":"让 AI 和技师了解你的车",
+"Swipe to talk to":"滑动对话：",
+"Double-click to talk to":"双击对话：",
+"No mechanic services yet":"还没有技师服务",
+"Mechanic services show up here":"技师发布的服务会显示在这里"
 }};

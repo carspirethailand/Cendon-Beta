@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 const css=readFileSync(new URL('../home-layout.css',import.meta.url),'utf8');
 const page=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 test('home uses a scoped CSS-only spacing pass before first paint',()=>{
-  assert.ok(page.indexOf('href="home-layout.css"')<page.indexOf('</head>'));
+  const at=page.indexOf('href="home-layout.css?v=');assert.ok(at>0&&at<page.indexOf('</head>'));
   assert.ok(!css.includes('@font-face')&&!css.includes('font-family:')&&!css.includes('data-theme'));
   for(const block of css.split('}')){
     const selector=block.slice(block.lastIndexOf('}')+1,block.indexOf('{'));
@@ -32,7 +32,7 @@ test('touch controls and quick action layout stay usable without new motion',()=
   assert.match(css,/focus-visible/);assert.ok(!css.includes('animation:')&&!css.includes('backdrop-filter:'));
 });
 test('new stylesheet is available in the service worker core',()=>{
-  const sw=readFileSync(new URL('../sw.js',import.meta.url),'utf8');assert.ok(sw.includes("'./home-layout.css'"));
+  const sw=readFileSync(new URL('../sw.js',import.meta.url),'utf8');assert.match(sw,/'\.\/home-layout\.css\?v=\d+'/);
 });
 test('category rail has mandatory column snapping and no faded edge in any theme',()=>{
   assert.match(css,/#vMenu \.lx-rail\{-webkit-mask:none;mask:none;scroll-snap-type:x mandatory\}/);
@@ -60,4 +60,14 @@ test('page indicator is vertically compact with nearby services and usable tap a
   assert.match(css,/width:44px;height:28px/);
   assert.match(css,/width:4px;height:4px/);
   assert.match(css,/\.lx-pages:not\(\[hidden\]\) \+ \.lx-sec\{margin-top:12px\}/);
+});
+test('tidy pass: one 880px column under the search box, quick tiles are icon + name only',()=>{
+  assert.match(css,/#vMenu\{--hw:880px\}/);
+  assert.match(css,/#vMenu \.lx-mycar,#vMenu \.lx-top,#vMenu \.lx-quick,#vMenu \.lx-partner,#vMenu \.lx-sec\{max-width:var\(--hw\)/);
+  assert.match(css,/#vMenu \.lx-railw\{max-width:var\(--hw\)\}/);
+  const quick=page.slice(page.indexOf('function drawQuick'),page.indexOf('function qFlipWire'));
+  assert.doesNotMatch(quick,/<small>/,'no second line on the quick tiles');
+  assert.match(quick,/data-q="\$\{k\}" title="\$\{d\}"/,'the short description stays as a tooltip');
+  assert.match(page,/T\("ปัดเพื่อคุยกับ","Swipe to talk to"\)/);
+  assert.match(page,/T\("ให้ AI และช่างรู้จักรถคุณ","So the AI and mechanics know your car"\)/);
 });

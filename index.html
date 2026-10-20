@@ -2687,7 +2687,7 @@ a.mtab{text-decoration:none}
 <!-- ห้ามวาดเฟรมแรกก่อนแถบล่างพร้อม — เดิมหน้าใหม่ขึ้นมาก่อนแล้วแถบตามมาทีหลัง (Chrome 124+, ที่อื่นข้าม) -->
 <link rel="expect" href="/#mnav0" blocking="render">
 <link rel="stylesheet" href="stability.css">
-<link rel="stylesheet" href="home-layout.css">
+<link rel="stylesheet" href="home-layout.css?v=2">
 <script src="category-pages.js" defer></script>
 <script src="car-sync.js"></script>
 <script src="stability.js" defer></script>
@@ -2818,7 +2818,7 @@ a.mtab{text-decoration:none}
   <!-- ชวนเป็นช่างพาร์ทเนอร์ (มือถือหาเจอง่าย ไม่ต้องเข้าเมนูบัญชี) · ช่างแล้ว = ทางลัดเข้า Studio · สมัครแล้ว = ดูสถานะ -->
   <div class="lx-partner" id="hPartner"></div>
   <section class="lx-sec">
-    <div class="lx-sh"><h2>บริการจากช่าง<span id="sugN"></span></h2><button class="lx-link lx-maplink" id="sugMap" type="button" aria-label="แผนที่ช่าง"><i class="ti ti-map-2"></i><span data-t="แผนที่|Map">แผนที่</span></button><button class="lx-link" id="sugAll" type="button">ดูร้านทั้งหมด <i class="ti ti-arrow-right"></i></button></div>
+    <div class="lx-sh"><h2>บริการจากช่าง</h2><button class="lx-link lx-maplink" id="sugMap" type="button" aria-label="แผนที่ช่าง"><i class="ti ti-map-2"></i><span data-t="แผนที่|Map">แผนที่</span></button><button class="lx-link" id="sugAll" type="button">ดูร้านทั้งหมด <i class="ti ti-arrow-right"></i></button></div>
     <div class="lx-cards" id="sugList"></div>
   </section>
   <div class="left">
@@ -3075,6 +3075,7 @@ Object.assign(EN,{"หน้าหลัก": "Home",
 "บริการจากช่าง": "Mechanic services",
 "ดูร้านทั้งหมด": "See all shops",
 "ดูทั้งหมด": "See all",
+"ค้นหา": "Search",
 "งานที่กำลังดำเนินการ": "Jobs in progress",
 "เล่าอาการรถ": "Describe the problem",
 "ถ่ายรูปให้ดู": "Send a photo",
@@ -3843,8 +3844,8 @@ $("resBack").onclick=()=>viewBack("res",closeRes);
 function drawMyCar(){
   const cars=ls.get("spire_garage",[]),c=cars.find(x=>x.id===ls.get("spire_selCar",""))||cars[0];
   const el=$("myCar");
-  /* ยังไม่มีรถ: ชวนเพิ่มรถทุกครั้ง พร้อมบอกว่าได้อะไร — ข้อมูลรถคือหัวใจที่ทำให้ AI และช่างแม่นขึ้น */
-  if(!c){el.hidden=false;el.innerHTML=`<a href="/garage?add=1" class="lx-car lx-addcar"><span class="lx-cari"><i class="ti ti-car-garage"></i></span><span class="lx-cart"><b>${T("เพิ่มรถของคุณ","Add your car")}</b><small>${T("AI วิเคราะห์แม่นขึ้นตามรุ่นรถ · ช่างรู้รุ่นก่อนเสนอราคา · เตือนเช็กระยะให้","Sharper AI answers for your model · mechanics know your car before quoting · service reminders")}</small></span><span class="lx-plus"><i class="ti ti-plus"></i></span></a>`;return}
+  /* ยังไม่มีรถ: ชวนเพิ่มรถทุกครั้ง พร้อมบอกสั้น ๆ ว่าได้อะไร — ข้อมูลรถคือหัวใจที่ทำให้ AI และช่างแม่นขึ้น */
+  if(!c){el.hidden=false;el.innerHTML=`<a href="/garage?add=1" class="lx-car lx-addcar"><span class="lx-cari"><i class="ti ti-car-garage"></i></span><span class="lx-cart"><b>${T("เพิ่มรถของคุณ","Add your car")}</b><small>${T("ให้ AI และช่างรู้จักรถคุณ","So the AI and mechanics know your car")}</small></span><span class="lx-plus"><i class="ti ti-plus"></i></span></a>`;return}
   el.hidden=false;
   /* แตะการ์ดรถ = เมนูเปลี่ยนรถ (หลายคันสลับได้ทันที) + เปิดสมุดรถ/เพิ่มรถ — AI และช่างใช้คันที่เลือกนี้ */
   el.innerHTML=`<button type="button" class="lx-car" id="myCarB" aria-haspopup="menu" aria-expanded="false"><span class="lx-cari"><i class="ti ti-car"></i></span><span class="lx-cart"><small>${T("รถของฉัน","My car")}</small><b class="nt">${esc([c.name,c.year].filter(Boolean).join(" "))}</b></span><span class="lx-carm">${c.mileage&&+c.mileage>0?money(c.mileage)+" "+T("กม.","km"):""} <i class="ti ti-chevron-down"></i></span></button>`;
@@ -4188,15 +4189,15 @@ function drawPartner(){
   if(box.dataset.k===k&&box.childNodes.length)return;box.dataset.k=k;
   const st={pending:T("รอทีมงานตรวจ","Waiting for review"),approved:T("อนุมัติแล้ว","Approved"),rejected:T("ทีมงานขอให้แก้ไข","Changes requested"),declined:T("ยังไม่ผ่านการพิจารณา","Not approved")}[mine]||T("ดูความคืบหน้า","See progress");
   const [eye,b,em,cta]=k==="news"?["CENDON PARTNER",T("ผลการพิจารณาใบสมัครมาแล้ว","Your application result is in"),T("ขูดการ์ดเพื่อเปิดดูผล","Scratch the card to see it"),T("เปิดดูผล","See result")]:k==="shop"?["STUDIO",T("หน้าร้านของฉัน","My shop"),T("งาน แชต บริการ และรีวิว ในที่เดียว","Jobs, chats, services and reviews in one place"),T("เปิด Studio","Open Studio")]
-    :k==="app"?["CENDON PARTNER",T("ใบสมัครช่างของคุณ","Your mechanic application"),st,T("ดูสถานะ","View status")]
-    :["CENDON PARTNER",T("เป็นช่างพาร์ทเนอร์กับ Cendon","Become a Cendon partner mechanic"),T("รับงานใกล้ร้าน · ไม่มีค่าสมัคร · ตั้งราคาเอง","Jobs near you · no sign-up fee · set your own prices"),T("สมัครเลย","Apply now")];
+    :k==="app"?["",T("ใบสมัครช่างของคุณ","Your mechanic application"),st,T("ดูสถานะ","View status")]
+    :["",T("เป็นช่างพาร์ทเนอร์กับ Cendon","Become a Cendon partner mechanic"),T("รับงานใกล้ร้าน · ไม่มีค่าสมัคร · ตั้งราคาเอง","Jobs near you · no sign-up fee · set your own prices"),T("สมัครเลย","Apply now")];
   box.innerHTML=`<button type="button" class="lp-card" id="lpGo"><canvas class="lp-gl" aria-hidden="true"></canvas><svg class="lp-mark" viewBox="-6.0 -6.0 94.8 112.0" aria-hidden="true"><path fill="currentColor" d="${LOGO}"/></svg>
-    <span class="lp-tx"><small>${eye}</small><b>${b}</b><em>${em}</em></span><span class="lp-cta">${cta}<i class="ti ti-arrow-right"></i></span></button>`;
+    <span class="lp-tx">${eye?`<small>${eye}</small>`:""}<b>${b}</b><em>${em}</em></span><span class="lp-cta">${cta}<i class="ti ti-arrow-right"></i></span></button>`;
   box.classList.toggle("news",k==="news");
   $("lpGo").onclick=()=>{if(!U)return needLogin();k==="shop"?openStudio():openJoin()};
   fx3d(box.querySelector(".lp-gl"),{particles:420,dist:12.5});
 }
-/* การ์ดลัด 4 ช่อง · ช่องแรก "เรียกช่าง" รวมด่วน/ไม่ด่วนไว้ในการ์ดเดียว (ไม่เพิ่มการ์ด)
+/* การ์ดลัด 4 ช่อง: ไอคอน + ชื่อสั้น ๆ อย่างเดียว (คำอธิบายอยู่ใน title) · ช่องแรก "เรียกช่าง" รวมด่วน/ไม่ด่วนไว้ในการ์ดเดียว (ไม่เพิ่มการ์ด)
    ด่วน = โหมดฉุกเฉิน (3 ร้านใกล้สุด / ประกาศงานด่วน) · ไม่ด่วน = ประกาศหาช่าง ให้ช่างรอบตัวเสนอราคา */
 function drawQuick(){
   const Q=[["quote","ti-file-invoice",T("เช็กใบเสนอราคา","Check a quote"),T("แพงไปไหม AI บอก","AI tells you if it's too pricey")],
@@ -4205,10 +4206,10 @@ function drawQuick(){
      สลับด้าน: ลากการ์ดไปซ้าย/ขวา (หมุนตามนิ้ว) หรือแตะ ⇄ ที่อยู่บนการ์ดแต่ละหน้า (หมุนไปพร้อมการ์ด) */
   const SW=`<span class="qf-sw" aria-hidden="true"><i class="ti ti-arrows-exchange"></i></span>`;
   $("hQuick").innerHTML=`<div class="lx-qflip" id="qFlip" role="group" aria-label="${T("เรียกช่าง","Call a mechanic")}"><div class="qf-in">
-      <button type="button" class="qf-face qf-f" data-q="urgent"><i class="ti ti-urgent"></i><b>${T("เรียกช่างด่วน","Urgent mechanic")}</b>${SW}<small><em class="qf-dot"></em>${T("รถเสีย / อุบัติเหตุ ตอนนี้","Breakdown or accident, now")}</small></button>
-      <button type="button" class="qf-face qf-b" data-q="post" tabindex="-1" aria-hidden="true"><i class="ti ti-speakerphone"></i><b>${T("เรียกช่าง (ไม่ด่วน)","Find a mechanic")}</b>${SW}<small>${T("ช่างรอบตัวเสนอราคา","Nearby shops send quotes")}</small></button></div>
+      <button type="button" class="qf-face qf-f" data-q="urgent" title="${T("รถเสีย / อุบัติเหตุ ตอนนี้","Breakdown or accident, now")}"><i class="ti ti-urgent"></i><b>${T("เรียกช่างด่วน","Urgent mechanic")}</b>${SW}</button>
+      <button type="button" class="qf-face qf-b" data-q="post" tabindex="-1" aria-hidden="true" title="${T("ช่างรอบตัวเสนอราคา","Nearby shops send quotes")}"><i class="ti ti-speakerphone"></i><b>${T("เรียกช่าง (ไม่ด่วน)","Find a mechanic")}</b>${SW}</button></div>
       <button type="button" class="qf-tg">${T("สลับเป็น เรียกช่างไม่ด่วน","Switch to not urgent")}</button></div>`
-    +Q.map(([k,i,t,d])=>`<button type="button" data-q="${k}"><i class="ti ${i}"></i><b>${t}</b><small>${d}</small></button>`).join("");
+    +Q.map(([k,i,t,d])=>`<button type="button" data-q="${k}" title="${d}"><i class="ti ${i}"></i><b>${t}</b></button>`).join("");
   const go=k=>{
     if(k==="urgent")return emergency();if(k==="post")return openPostForm("","");if(k==="multi")return openMulti("","");
     if(k==="quote")return quotePage();
@@ -4342,8 +4343,8 @@ const HERO=(function(){
   const seen=()=>{try{return +localStorage.getItem("spire_flipSeen")||0}catch(e){return 0}};
   /* คำแนะนำใต้ช่อง: หายไปเลยหลังพลิกครั้งแรก */
   function hint(){const h=$("hHint");
-    h.innerHTML=seen()?"":coarse?`${T("ปัดช่องค้นหาไปด้านข้าง เพื่อคุยกับ","Swipe the search bar sideways to talk to")} <b><i class="ti ti-sparkles"></i> AI</b>`
-      :`${T("ดับเบิลคลิกที่ช่องค้นหา เพื่อคุยกับ","Double-click the search bar to talk to")} <b><i class="ti ti-sparkles"></i> AI</b>`;
+    h.innerHTML=seen()?"":coarse?`${T("ปัดเพื่อคุยกับ","Swipe to talk to")} <b><i class="ti ti-sparkles"></i> AI</b>`
+      :`${T("ดับเบิลคลิกเพื่อคุยกับ","Double-click to talk to")} <b><i class="ti ti-sparkles"></i> AI</b>`;
     h.hidden=!!seen();$("hToggle").textContent=ai?T("สลับเป็นค้นหา","Switch to search"):T("สลับเป็นคุยกับ AI","Switch to AI chat")}
   function set(on,focus,dir){
     if(homeVoice?.active)return;
@@ -4757,9 +4758,8 @@ function drawHome(){
   if(!LOADED){host.innerHTML=SK;return}
   if(GIGS===null){host.innerHTML=SK;if(!loadGigs.started){loadGigs.started=1;loadGigs()}return}
   const l=rankGigs(GIGS);
-  $("sugN").textContent=l.length?" · "+T(`${l.length} รายการ`,`${l.length} ${l.length===1?"item":"items"}`):"";
   host.className="lx-gsecs";
-  if(!l.length){host.innerHTML=`<div class="empty"><b>ยังไม่มีบริการจากช่าง</b>เมื่อช่างโพสต์บริการพร้อมราคา จะขึ้นที่นี่</div>`;return}
+  if(!l.length){host.innerHTML=`<div class="empty"><b>${T("ยังไม่มีบริการจากช่าง","No mechanic services yet")}</b>${T("ช่างโพสต์บริการเมื่อไร จะขึ้นที่นี่","Mechanic services show up here")}</div>`;return}
   /* แบ่งตามหมวดหลัก เรียงตามแถวหมวดด้านบน — ในแต่ละหมวดยังเรียงตามรถของคุณ/ระยะทางเหมือนเดิม */
   const G=new Map();for(const g of l)for(const k of new Set(gigCats(g).map(c=>topOf(c)||"other"))){if(!G.has(k))G.set(k,[]);G.get(k).push(g)}
   const order=[...RAIL.filter(c=>!c.base&&G.has(c.id)).map(c=>c.id),...(G.has("other")?["other"]:[])];

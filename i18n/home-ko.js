@@ -1613,5 +1613,10 @@ window.CENDON_L10N={lang:"ko",t:{
 "One more step: add Cendon as a friend on LINE":"한 단계 남았어요: LINE에서 Cendon을 친구로 추가하세요",
 "Continue in LINE: send \"{0}\"":"LINE에서 계속하세요: \"{0}\" 보내기",
 "Open LINE":"LINE 열기",
-"New jobs, messages and car reminders":"새 작업, 메시지, 차량 관리 알림"
+"New jobs, messages and car reminders":"새 작업, 메시지, 차량 관리 알림",
+"So the AI and mechanics know your car":"AI와 정비사가 내 차를 알 수 있어요",
+"Swipe to talk to":"밀어서 대화:",
+"Double-click to talk to":"더블클릭으로 대화:",
+"No mechanic services yet":"아직 정비사 서비스가 없어요",
+"Mechanic services show up here":"정비사 서비스가 여기에 표시돼요"
 }};

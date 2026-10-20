@@ -1613,5 +1613,10 @@ window.CENDON_L10N={lang:"fr",t:{
 "One more step: add Cendon as a friend on LINE":"Encore une étape : ajoutez Cendon en ami sur LINE",
 "Continue in LINE: send \"{0}\"":"Continuez dans LINE : envoyez « {0} »",
 "Open LINE":"Ouvrir LINE",
-"New jobs, messages and car reminders":"Nouvelles missions, messages et rappels d’entretien"
+"New jobs, messages and car reminders":"Nouvelles missions, messages et rappels d’entretien",
+"So the AI and mechanics know your car":"Pour que l'IA et les mécaniciens connaissent votre voiture",
+"Swipe to talk to":"Balayez pour parler à",
+"Double-click to talk to":"Double-cliquez pour parler à",
+"No mechanic services yet":"Aucun service de mécanicien pour l'instant",
+"Mechanic services show up here":"Les services des mécaniciens s'affichent ici"
 }};

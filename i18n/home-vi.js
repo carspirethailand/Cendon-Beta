@@ -1613,5 +1613,10 @@ window.CENDON_L10N={lang:"vi",t:{
 "One more step: add Cendon as a friend on LINE":"Còn một bước: kết bạn với Cendon trên LINE",
 "Continue in LINE: send \"{0}\"":"Tiếp tục trong LINE: gửi \"{0}\"",
 "Open LINE":"Mở LINE",
-"New jobs, messages and car reminders":"Việc mới, tin nhắn và nhắc bảo dưỡng xe"
+"New jobs, messages and car reminders":"Việc mới, tin nhắn và nhắc bảo dưỡng xe",
+"So the AI and mechanics know your car":"Để AI và thợ hiểu xe của bạn",
+"Swipe to talk to":"Vuốt để trò chuyện với",
+"Double-click to talk to":"Nhấp đúp để trò chuyện với",
+"No mechanic services yet":"Chưa có dịch vụ của thợ",
+"Mechanic services show up here":"Dịch vụ của thợ sẽ hiện ở đây"
 }};

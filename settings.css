@@ -9,6 +9,7 @@
   --st-danger:#B91C1C;--st-dsoft:#FEF2F2;--st-dline:#FECACA;--st-dfill:#B91C1C;
   --st-pbg:#09090B;--st-pline:#09090B;--st-scrim:rgba(9,9,11,.45);--st-sheet:#FFFFFF;--st-field:#FFFFFF;--st-grab:#E4E4E7;
   --st-off:#F4F4F5;--st-offink:#A1A1AA;--st-hover:rgba(9,9,11,.035);
+  --st-surf2:#FBFAF8;--st-glow1:rgba(233,104,42,.13);--st-glow2:rgba(248,184,132,.18);--st-card-sh:0 1px 2px rgba(9,9,11,.04),0 8px 24px -18px rgba(9,9,11,.18);
   font-family:Kanit,system-ui,sans-serif;color:var(--st-ink)
 }
 html[data-theme="dark"] #v-settings,html[data-theme="dark"] #stSheet{
@@ -17,12 +18,15 @@ html[data-theme="dark"] #v-settings,html[data-theme="dark"] #stSheet{
   --st-acc:#F07A36;--st-track:#1C1C20;--st-chip:#2C2C31;--st-chip-sh:none;
   --st-danger:#F87171;--st-dsoft:rgba(248,113,113,.10);--st-dline:rgba(248,113,113,.32);--st-dfill:#DC2626;
   --st-pbg:#1A120C;--st-pline:rgba(240,122,54,.38);--st-scrim:rgba(0,0,0,.6);--st-sheet:#111113;--st-field:#18181B;--st-grab:#3F3F46;
-  --st-off:#232326;--st-offink:#71717A;--st-hover:rgba(255,255,255,.04)
+  --st-off:#232326;--st-offink:#71717A;--st-hover:rgba(255,255,255,.04);
+  --st-surf2:#0D0D0F;--st-glow1:rgba(240,122,54,.17);--st-glow2:rgba(240,122,54,.07);--st-card-sh:inset 0 1px 0 rgba(255,255,255,.035)
 }
 /* หน้าตั้งค่าที่เปิดทับหน้าอื่น (การาจ นิตยสาร ร้านค้า โปรไฟล์) — แชตวางในคอลัมน์ของตัวเอง */
 #v-settings.st-float{position:fixed;inset:0;z-index:120;overflow-y:auto;display:none;-webkit-overflow-scrolling:touch}
 #v-settings.st-float.on{display:block}
-#v-settings{background:var(--st-bg)}
+/* พื้นหน้า: แสงอุ่นจาง ๆ ที่มุมบน แล้วจางลงเป็นสีพื้น (เลื่อนตามเนื้อหา ไม่ค้างกลางจอ) */
+#v-settings{background-color:var(--st-bg);background-repeat:no-repeat;background-attachment:local;
+  background-image:radial-gradient(110% 420px at 100% -90px,var(--st-glow1),transparent 70%),radial-gradient(80% 340px at -12% -70px,var(--st-glow2),transparent 72%)}
 #v-settings *,#stSheet *{box-sizing:border-box}
 .st-pg{width:100%;max-width:640px;margin:0 auto;padding:12px 16px 48px}
 .st-sub{display:none}
@@ -38,7 +42,8 @@ html[data-theme="dark"] #v-settings,html[data-theme="dark"] #stSheet{
 .st-back:active{transform:scale(.96)}
 
 .st-me{display:flex;align-items:center;gap:14px;margin-top:14px}
-.st-av{width:60px;height:60px;flex:none;border-radius:50%;background:var(--st-acc);color:#09090B;display:grid;place-items:center;font-size:26px;font-weight:600;overflow:hidden}
+.st-av{width:60px;height:60px;flex:none;border-radius:50%;color:#1A0E07;display:grid;place-items:center;font-size:26px;font-weight:600;overflow:hidden;
+  background:radial-gradient(circle at 32% 26%,#FFBE8C 0%,#EE7A3A 50%,#C9501A 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 10px 22px -10px rgba(233,104,42,.65)}
 .st-av img{width:100%;height:100%;object-fit:cover}
 .st-me-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .st-me-tx b{font-size:20px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -46,20 +51,59 @@ html[data-theme="dark"] #v-settings,html[data-theme="dark"] #stSheet{
 .st-pill{height:40px;padding:0 16px;flex:none;border-radius:999px;border:1px solid var(--st-line);background:var(--st-surf);color:var(--st-ink);font-size:14px;font-weight:500;cursor:pointer}
 
 /* การ์ดสมัครช่าง — สีตรงข้ามกับทั้งหน้า สะดุดตาทันทีที่เปิด */
-.st-partner{margin-top:18px;border-radius:22px;background:var(--st-pbg);border:1px solid var(--st-pline);padding:18px;display:flex;flex-direction:column;gap:14px;text-decoration:none;color:#FAFAFA!important}
-.st-partner .st-p-top{display:flex;align-items:center;gap:14px}
-.st-partner .st-p-ic{width:48px;height:48px;flex:none;border-radius:14px;background:#E9682A;color:#09090B;display:grid;place-items:center;font-size:24px}
-.st-partner.st-p-pending .st-p-ic,.st-partner.st-p-rejected .st-p-ic{background:#27272A;color:#FAFAFA}
-.st-partner.st-p-rejected .st-p-ic{color:#F07A36}
-.st-partner .st-p-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-.st-partner .st-p-tx b{font-size:18px;font-weight:600}
-.st-partner .st-p-tx small{font-size:14px;color:#A1A1AA}
-.st-partner .st-p-go{align-self:flex-start;margin-left:62px;height:40px;padding:0 18px;border-radius:999px;background:#E9682A;color:#09090B;display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600}
-.st-partner.st-p-pending .st-p-go{background:transparent;border:1px solid #3F3F46;color:#FAFAFA;font-weight:500}
-.st-partner:active{transform:scale(.99)}
+/* ── การ์ดสมัครช่าง: เด่นที่สุดในหน้า มีมิติหลายชั้น ──
+   พื้นไล่เข้ม→อุ่น · ขอบไล่แสง · แสงส้มลอยมุมขวาบน · ลายจุด · วงแหวนแบบหน้าปัด · แสงกวาดเป็นระยะ
+   คอม: การ์ดเอียงตามเมาส์ ไอคอน/ข้อความ/ปุ่มลอยขึ้นคนละระดับ (settings.js) · ตั้งลดการเคลื่อนไหว = นิ่ง */
+.st-partner{position:relative;margin-top:18px;border-radius:24px;padding:20px 18px 18px;display:flex;flex-direction:column;gap:16px;text-decoration:none;color:#FAFAFA!important;
+  border:1px solid transparent;
+  background:radial-gradient(120% 140% at 100% 0%,rgba(240,122,54,.28) 0%,rgba(240,122,54,0) 52%) padding-box,
+    linear-gradient(155deg,#221A15 0%,#0E0E10 50%,#160F0B 100%) padding-box,
+    linear-gradient(140deg,rgba(255,200,160,.7),rgba(255,255,255,.1) 34%,rgba(255,255,255,.04) 62%,rgba(240,122,54,.5)) border-box;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.09),0 28px 52px -26px rgba(233,104,42,.62),0 12px 26px -16px rgba(9,9,11,.55);
+  transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) scale(var(--press,1));transform-style:preserve-3d;
+  transition:transform .55s cubic-bezier(.2,.8,.2,1),box-shadow .4s ease;-webkit-tap-highlight-color:transparent}
+.st-partner.tilt{transition:transform .1s linear,box-shadow .4s ease;box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 34px 60px -26px rgba(233,104,42,.7),0 16px 30px -16px rgba(9,9,11,.6)}
+.st-partner:active{--press:.985}
+html[data-theme="dark"] .st-partner{box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 30px 64px -30px rgba(240,122,54,.5),0 0 0 1px rgba(0,0,0,.35)}
+.st-p-fx{position:absolute;inset:0;border-radius:inherit;overflow:hidden;z-index:-1;pointer-events:none}
+.st-p-fx i{position:absolute;display:block}
+.st-p-glow{width:300px;height:300px;right:-100px;top:-170px;border-radius:50%;background:radial-gradient(circle,rgba(255,146,84,.78) 0%,rgba(233,104,42,.32) 38%,rgba(233,104,42,0) 70%);animation:stGlow 9s ease-in-out infinite alternate}
+.st-p-dots{inset:0;background-image:radial-gradient(rgba(255,255,255,.11) 1px,transparent 1.3px);background-size:13px 13px;opacity:.75;
+  -webkit-mask-image:linear-gradient(105deg,transparent 32%,#000 80%);mask-image:linear-gradient(105deg,transparent 32%,#000 80%)}
+.st-p-ring{width:340px;height:340px;right:-129px;bottom:-183px;border-radius:50%;
+  background:radial-gradient(circle,transparent 0 114.5px,rgba(255,255,255,.09) 115px 116px,transparent 116.5px 137.5px,rgba(240,122,54,.38) 138px 139px,transparent 139.5px 168.5px,rgba(255,255,255,.06) 169px 170px,transparent 170.5px)}
+.st-p-spot{inset:0;background:radial-gradient(260px circle at var(--mx,72%) var(--my,0%),rgba(255,255,255,.12),transparent 62%);opacity:0;transition:opacity .35s ease}
+.st-partner.tilt .st-p-spot{opacity:1}
+.st-p-sheen{top:-40%;bottom:-40%;width:36%;left:-60%;transform:skewX(-18deg);
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.07) 40%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.07) 60%,transparent);animation:stSheen 7.5s ease-in-out 1.4s infinite}
+@keyframes stSheen{0%{left:-60%}24%,100%{left:135%}}
+@keyframes stGlow{to{transform:translate(-28px,16px) scale(1.08)}}
+.st-partner .st-p-top{display:flex;align-items:center;gap:14px;transform-style:preserve-3d}
+.st-partner .st-p-ic{position:relative;width:52px;height:52px;flex:none;border-radius:16px;color:#1A0E07;display:grid;place-items:center;font-size:26px;
+  background:linear-gradient(160deg,#FFC594 0%,#F2874A 44%,#D2531A 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7),inset 0 -3px 8px rgba(120,40,0,.35),0 12px 24px -8px rgba(233,104,42,.8),0 2px 4px rgba(0,0,0,.35);
+  transition:transform .55s cubic-bezier(.2,.8,.2,1)}
+.st-partner .st-p-ic::after{content:"";position:absolute;left:2px;right:2px;top:2px;height:46%;border-radius:14px 14px 10px 10px;background:linear-gradient(180deg,rgba(255,255,255,.42),rgba(255,255,255,0));pointer-events:none}
+.st-partner.st-p-pending .st-p-ic,.st-partner.st-p-rejected .st-p-ic{color:#FAFAFA;background:linear-gradient(160deg,#55555E 0%,#2C2C31 50%,#18181B 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.28),inset 0 -3px 8px rgba(0,0,0,.4),0 12px 24px -10px rgba(0,0,0,.7)}
+.st-partner.st-p-rejected .st-p-ic{color:#FF9A5C}
+.st-partner .st-p-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;transition:transform .55s cubic-bezier(.2,.8,.2,1)}
+.st-partner .st-p-tx b{font-size:19px;font-weight:600;letter-spacing:-.01em;background:linear-gradient(180deg,#FFFFFF 30%,#F2DCCB);-webkit-background-clip:text;background-clip:text;color:transparent}
+.st-partner .st-p-tx small{font-size:14px;color:#B4B4BC}
+.st-partner .st-p-go{align-self:flex-start;margin-left:66px;height:42px;padding:0 18px 0 20px;border-radius:999px;color:#1A0E07;display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;
+  background:linear-gradient(180deg,#FFA96A 0%,#EE7230 58%,#D9581B 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 -2px 4px rgba(120,40,0,.25),0 10px 20px -8px rgba(233,104,42,.75);
+  transition:transform .55s cubic-bezier(.2,.8,.2,1)}
+.st-partner .st-p-go .ti{transition:transform .3s ease}
+.st-partner:hover .st-p-go .ti{transform:translateX(3px)}
+.st-partner.st-p-pending .st-p-go{color:#FAFAFA;font-weight:500;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.st-partner.tilt .st-p-ic{transform:translateZ(38px)}
+.st-partner.tilt .st-p-tx{transform:translateZ(20px)}
+.st-partner.tilt .st-p-go{transform:translateZ(28px)}
+@media (prefers-reduced-motion:reduce){.st-p-glow{animation:none}.st-p-sheen{display:none}.st-partner,.st-partner.tilt{transform:none}.st-partner.tilt .st-p-ic,.st-partner.tilt .st-p-tx,.st-partner.tilt .st-p-go{transform:none}}
 
 .st-lbl{margin:26px 4px 10px;font-size:13px;font-weight:500;color:var(--st-mut)}
-.st-card{border-radius:20px;background:var(--st-surf);border:1px solid var(--st-line);overflow:hidden}
+.st-card{border-radius:20px;background:linear-gradient(180deg,var(--st-surf) 0%,var(--st-surf2) 100%);border:1px solid var(--st-line);overflow:hidden;box-shadow:var(--st-card-sh)}
 .st-row{display:flex;align-items:center;gap:14px;width:100%;min-height:60px;padding:0 16px;border:0;background:none;color:var(--st-ink);text-decoration:none;text-align:left;font-size:16px;cursor:pointer}
 button.st-row:hover,a.st-row:hover{background:var(--st-hover)}
 .st-row+.st-row,.st-row+.st-x{box-shadow:inset 0 1px 0 var(--st-line)}
@@ -95,7 +139,7 @@ button.st-row:hover,a.st-row:hover{background:var(--st-hover)}
 .st-ai-top span{font-size:15px;color:var(--st-mut)}
 .st-ai-top span b{color:var(--st-ink);font-weight:600}
 .st-bar{height:6px;border-radius:999px;background:var(--st-track);overflow:hidden}
-.st-bar i{display:block;height:100%;border-radius:999px;background:var(--st-acc);transition:width .5s ease}
+.st-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#FFB27A,var(--st-acc));box-shadow:0 0 10px rgba(233,104,42,.35);transition:width .5s ease}
 .st-note{font-size:13px;color:var(--st-mut);line-height:1.5}
 .st-msg{margin:10px 4px 0;font-size:13px;color:var(--st-mut);line-height:1.5;min-height:0}
 .st-msg:empty{display:none}

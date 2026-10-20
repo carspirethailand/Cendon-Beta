@@ -41,6 +41,7 @@ function partnerHTML(){
     shop:['ti-building-store',t('Studio · ร้านของฉัน','Studio · My shop'),t('งาน ข้อความ บริการ และหน้าร้าน','Jobs, messages, services and your shop page'),t('เปิด Studio','Open Studio')]}[s];
   const href=fbUser()||u.uid?'/studio':'/login?next=%2Fjoin';
   return `<a class="st-partner st-p-${s}" href="${href}" data-partner data-nav-full>
+    <span class="st-p-fx" aria-hidden="true"><i class="st-p-glow"></i><i class="st-p-dots"></i><i class="st-p-ring"></i><i class="st-p-spot"></i><i class="st-p-sheen"></i></span>
     <span class="st-p-top"><span class="st-p-ic"><i class="ti ${C[0]}" aria-hidden="true"></i></span>
       <span class="st-p-tx"><b>${C[1]}</b><small>${C[2]}</small></span></span>
     <span class="st-p-go">${C[3]}<i class="ti ti-arrow-right" aria-hidden="true"></i></span></a>`;
@@ -118,6 +119,17 @@ function manageHTML(){
       <button type="button" class="st-del" data-st="delete"><i class="ti ti-trash" aria-hidden="true"></i>${t('ลบบัญชีถาวร','Delete account permanently')}</button></div>`;
 }
 
+/* การ์ดสมัครช่างเอียงตามเมาส์เล็กน้อย (ชั้นในลอยคนละระดับ) — เฉพาะเครื่องที่มีเมาส์ และไม่ได้ตั้งลดการเคลื่อนไหว */
+function tilt(v){
+  let ok=false;try{ok=matchMedia('(hover:hover) and (pointer:fine)').matches&&!matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){}
+  if(!ok)return;
+  v.addEventListener('pointermove',e=>{const c=e.target.closest&&e.target.closest('.st-partner');if(!c)return;
+    const r=c.getBoundingClientRect(),x=Math.min(1,Math.max(0,(e.clientX-r.left)/r.width)),y=Math.min(1,Math.max(0,(e.clientY-r.top)/r.height));
+    c.style.setProperty('--rx',((.5-y)*9).toFixed(2)+'deg');c.style.setProperty('--ry',((x-.5)*11).toFixed(2)+'deg');
+    c.style.setProperty('--mx',(x*100).toFixed(1)+'%');c.style.setProperty('--my',(y*100).toFixed(1)+'%');c.classList.add('tilt')});
+  v.addEventListener('pointerout',e=>{const c=e.target.closest&&e.target.closest('.st-partner');if(!c||c.contains(e.relatedTarget))return;
+    c.classList.remove('tilt');c.style.removeProperty('--rx');c.style.removeProperty('--ry')});
+}
 /* ── ที่วางหน้าตั้งค่า ── */
 function ensure(){
   let v=host.root||$('v-settings');
@@ -129,7 +141,7 @@ function ensure(){
     main=D.createElement('div');main.className='st-pg st-main';main.id='stMain';
     manage=D.createElement('div');manage.className='st-pg st-sub';manage.id='stManage';
     v.append(main,manage);if(keep)v.appendChild(keep);
-    v.addEventListener('click',onClick);
+    v.addEventListener('click',onClick);tilt(v);
   }
   /* กระดิ่งมือถือ: วางไว้ตั้งแต่เปิด (bell.js รับช่วง) — หน้าแชตมีกระดิ่งของตัวเองแล้ว */
   if(!host.root&&!v.querySelector(':scope>.cb-bell')){const b=D.createElement('button');b.type='button';b.className='cb-bell cb-m cb-sh cb-pre';b.setAttribute('aria-label',t('การแจ้งเตือน','Notifications'));

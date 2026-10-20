@@ -13,9 +13,9 @@ test('cloud-swap: ทุกหน้าที่มีหน้าตั้ง�
 test('cloud-swap: ดักปุ่มภาษา/ธีม/สีหลักที่หน้าตั้งค่าใช้จริง และปล่อยให้ปุ่มทำงานตอนหมอกทึบเต็มที่',()=>{
   const js=read('cloud-swap.js');
   /* ปุ่มในหน้าตั้งค่าแต่ละหน้า ต้องยังใช้ชื่อแอตทริบิวต์เดียวกับที่ตัวดักรู้จัก */
-  for(const f of ['garage.html','news.html','profile.html','spares.html'])
-    {const s=read(f);assert.match(s,/data-lang="\$\{x\.c\}"/,f);assert.match(s,/data-sitetheme="\$\{x\.k\}"/,f);}
-  assert.match(read('chat.html'),/v\.querySelectorAll\("\[data-theme\]"\)/);
+  /* หน้าตั้งค่าตัวเดียว (settings.js) ใช้ทุกหน้า รวมหน้าแชต */
+  for(const f of ['garage.html','news.html','profile.html','spares.html','chat.html'])assert.match(read(f),/<script src="\/settings\.js\?v=\d+" defer><\/script>/,f);
+  const st=read('settings.js');assert.match(st,/data-lang="\$\{esc\(x\.c\)\}"/);assert.match(st,/seg\(t\('ธีม','Theme'\),'data-sitetheme'/);
   assert.match(js,/button\[data-lang\]/);assert.match(js,/button\[data-sitetheme\]/);assert.match(js,/#v-settings button\[data-theme\]/);assert.match(js,/button\[data-pri\]/);
   /* ปุ่มทำงานจริงหลังหมอกฟุ้งจนทึบ และหมอกเริ่มจางหลังเปลี่ยนเสร็จเท่านั้น (เครื่องหน่วงก็ไม่เห็นตัวหนังสือ/สีกระโดด) */
   assert.match(js,/vin\.onfinish=function\(\)\{\s*doApply\(\);\s*var vout=veil\.animate\(/);

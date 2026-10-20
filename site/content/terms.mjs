@@ -99,8 +99,8 @@ const sections=[
   {id:'content',title:['เนื้อหาและข้อมูลของคุณ','Your content and data'],body:
     P('สิ่งที่คุณใส่เข้ามา — ข้อมูลรถ รูป เสียง เอกสาร ข้อความ — ยังเป็นของคุณ คุณให้สิทธิเราแบบจำกัดในการจัดเก็บ ประมวลผล และแสดงผล เพื่อให้บริการแก่คุณเท่านั้น (รวมถึงส่งให้ผู้ให้บริการ AI และส่งให้ช่างที่คุณเลือก ตามนโยบายความเป็นส่วนตัว) สิทธินี้สิ้นสุดเมื่อคุณลบเนื้อหาหรือลบบัญชี ยกเว้นส่วนที่ต้องเก็บเป็นหลักฐานของงานที่ทำกับอีกฝ่าย ตามที่อธิบายใน<a href="/privacy#retention">นโยบาย</a>',
       'What you put in — car records, photos, audio, documents, messages — stays yours. You give us a limited licence to store, process and display it only to provide the Service to you (including sending it to AI providers and to mechanics you choose, as the Privacy Policy describes). The licence ends when you delete the content or your account, except for what must be kept as a record of a job with someone else, as explained in the <a href="/privacy#retention">policy</a>.')+
-    P('ดาวน์โหลดข้อมูลทั้งหมด หรือลบบัญชีถาวร ได้เองที่ โปรไฟล์ → บัญชีและความปลอดภัย · เราไม่ขายเนื้อหาของคุณ และไม่ใช้ยิงโฆษณา',
-      'Download everything, or delete your account for good, at Profile → Account and safety. · We don’t sell your content or use it for advertising.')+
+    P('ดาวน์โหลดข้อมูลทั้งหมด หรือลบบัญชีถาวร ได้เองที่ ตั้งค่า → บัญชีของฉัน · เราไม่ขายเนื้อหาของคุณ และไม่ใช้ยิงโฆษณา',
+      'Download everything, or delete your account for good, at Settings → My account. · We don’t sell your content or use it for advertising.')+
     P('<b>Car Passport:</b> ข้อมูลที่คุณบันทึกเองและเปิดให้คนอื่นดูต้องเป็นความจริง ห้ามแก้เลขไมล์หรือใส่ประวัติซ่อมปลอมเพื่อหลอกผู้ซื้อ — เราอาจปิดลิงก์และระงับบัญชีที่ทำเช่นนั้น · ป้าย “ยืนยันโดยร้าน” ยืนยันว่างานนั้นทำผ่าน Cendon เท่านั้น ไม่ใช่การรับรองสภาพรถ',
       '<b>Car Passport:</b> anything you record yourself and choose to share must be true. Don’t alter mileage or add fake service history to mislead buyers — we may turn off the link and suspend accounts that do. · A “Shop-verified” badge only confirms the job was done through Cendon; it is not a certification of the car’s condition.')},
 

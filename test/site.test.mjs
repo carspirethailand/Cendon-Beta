@@ -87,8 +87,9 @@ test('site: นโยบายตรงกับระบบ — AI ไม่ไ
   assert.match(t,/191/);assert.match(t,/1669/);
   /* ปุ่มในหน้าบัญชีต้องชี้มาที่นโยบายใหม่ในเว็บเดียวกัน */
   assert.match(read('account-actions.js'),/href="\/privacy"/);
-  /* ทางลัดในแอป (ตั้งค่า → อ่านเพิ่มเติม) ไปครบทั้ง 4 หน้า */
-  for(const f of ['garage.html','news.html','profile.html','spares.html'])for(const pg of ['/about','/help','/terms','/privacy'])assert.ok(read(f).includes(`extLink("${pg}"`),`${f} ${pg}`);
+  /* ทางลัดในแอป (หน้าตั้งค่า → ช่วยเหลือ) ไปครบ — หน้าตั้งค่าตัวเดียวกันทุกหน้า */
+  const st=read('settings.js');for(const pg of ['/help','/terms','/privacy'])assert.ok(st.includes(`href:'${pg}'`),pg);assert.ok(st.includes('href="/about"'),'/about');
+  for(const f of ['garage.html','news.html','profile.html','spares.html'])assert.ok(read(f).includes('<script src="/settings.js?v=1" defer></script>'),f);
 });
 
 test('site: service worker รู้จักหน้าเว็บ ให้เปิดได้ตอนออฟไลน์',()=>{

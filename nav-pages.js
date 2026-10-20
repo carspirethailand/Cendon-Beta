@@ -33,17 +33,8 @@ Nav.watch({sel:"#clModal",cls:"show",tag:"car",url:()=>carUrl(lastCar),close:el=
 Nav.watch({sel:"#clSh",cls:"on",tag:"clsheet",url:el=>{const k=el.dataset.sheet||"",car=Nav.find("car");
   return car&&k.startsWith("list:")?car.url+"/"+k.slice(5):undefined},close:()=>window.clCloseSheet&&window.clCloseSheet()});
 
-/* ── หน้าตั้งค่า (เปิดทับหน้าอื่น) + แท็บในหน้าตั้งค่า ── */
-const setTab=()=>{const x=D.querySelector("#v-settings .set-l.on");return x&&x.dataset.tab};
-const setClick=k=>{const x=D.querySelector('#v-settings .set-l[data-tab="'+k+'"]');if(x)x.click()};
+/* ── หน้าตั้งค่า (เปิดทับหน้าอื่น) — หน้าย่อย "รีเซ็ต/ปิดใช้งาน" กับแผ่นยืนยัน settings.js เฝ้าประวัติเอง ── */
 if(PAGE!=="profile")Nav.watch({sel:"#v-settings",cls:"on",tag:"settings",url:()=>BASE+"/settings",close:el=>el.classList.remove("on")});
-D.addEventListener("click",e=>{
-  const b=e.target.closest&&e.target.closest("#v-settings .set-l[data-tab]");if(!b||Nav.closing)return;
-  const was=setTab();
-  setTimeout(()=>{const now=setTab();if(!now||now===was)return;
-    const under=PAGE==="profile"?BASE:(Nav.find("settings")||{}).url;if(!under)return;
-    Nav.push({url:under+"/"+now,tag:"settab",close:()=>setClick(was)})},0);
-},true);
 
 /* ── ป๊อปอัปอื่น ๆ: กดย้อนแล้วปิด (ไม่มีที่อยู่ของตัวเอง เปิดซ้ำจากลิงก์ไม่ได้) ── */
 const clickIn=sel=>()=>{const x=D.querySelector(sel);if(x)x.click()};
@@ -71,13 +62,14 @@ if(PAGE==="garage"){
 const CLTABS=["care","hist","about"],CLOLD={over:"",odo:"about",spec:"about",equip:"about",parts:"about",health:"care",plan:"care",cal:"care",cost:"hist",trip:"hist",pass:"hist"};
 Nav.route({path:":tab",parent:"car",test:p=>CLTABS.includes(p.tab)||Object.prototype.hasOwnProperty.call(CLOLD,p.tab),open:p=>{const k=CLOLD[p.tab]??p.tab;if(k&&window.clGo)window.clGo(k)}});
 
-/* ── ตั้งค่า ── */
-const SETS=["general","acct","usage","fb","learn"];
+/* ── ตั้งค่า: หน้าเดียวเลื่อนจบ · /manage = หน้าย่อยรีเซ็ต/ปิดใช้งาน · ลิงก์แท็บเก่า (general acct usage fb learn) ยังเปิดได้ ── */
+const SETS=["general","acct","usage","fb","learn","manage"];
+const setGo=async k=>{await wait(()=>window.CendonSettings&&D.querySelector("#v-settings.on #stMain"));if(window.CendonSettings)window.CendonSettings.go(k)};
 if(PAGE==="profile"){
-  Nav.route({path:":tab",test:p=>SETS.includes(p.tab),open:async p=>{await wait(()=>D.querySelector("#v-settings.on .set-l"));setClick(p.tab)}});
+  Nav.route({path:":tab",test:p=>SETS.includes(p.tab),open:p=>setGo(p.tab)});
 }else{
-  Nav.route({path:"settings",name:"settings",open:()=>{try{window.spireOpenSettings("general")}catch(e){}}});
-  Nav.route({path:":tab",parent:"settings",test:p=>SETS.includes(p.tab),open:p=>setClick(p.tab)});
+  Nav.route({path:"settings",name:"settings",open:()=>{try{window.spireOpenSettings()}catch(e){}}});
+  Nav.route({path:":tab",parent:"settings",test:p=>SETS.includes(p.tab),open:p=>setGo(p.tab)});
 }
 
 /* ── นิตยสาร ── */

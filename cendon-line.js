@@ -1,7 +1,8 @@
 /* ══════════════════════════════════════════════════════════════════
    Cendon — เชื่อม LINE เพื่อรับแจ้งเตือน
 
-   วางที่ไหนก็ได้: <div data-line-connect></div>          → การ์ดเต็ม (หน้าบัญชี, Studio)
+   วางที่ไหนก็ได้: <div data-line-connect></div>          → การ์ดเต็ม (Studio)
+                   <div data-line-connect="row"></div>    → แถวเดียวในหน้าตั้งค่า (settings.js · หน้าตาจาก settings.css)
                    <div data-line-connect="nudge"></div>  → แถบเล็ก โผล่เฉพาะคนที่ยังไม่เชื่อม (ในใบงาน)
    ตัวนี้หาเองทุกครั้งที่มีกล่องแบบนี้โผล่ในหน้า ไม่ต้องเรียกอะไร
 
@@ -66,12 +67,30 @@ function paint(el){
   draw(el);
   const card=el.querySelector(".cl");if(card&&!card.querySelector(".cl-fx"))card.insertAdjacentHTML("afterbegin",FX);
   const empty=!el.innerHTML.trim(),host=el.closest("[data-line-card]");
+  /* แถวในหน้าตั้งค่า: ยังไม่รู้สถานะ = เว้นที่ไว้ (ไม่กระโดด) · ซ่อนทั้งหมวดเฉพาะตอนรู้แน่แล้วว่าไม่มี LINE */
+  if(el.dataset.lineConnect==="row"){const gone=!!st&&st.oa==="";if(host){host.hidden=gone;host.style.display=""}
+    try{localStorage.setItem("cendon_line_card",gone?"0":"1")}catch(e){}return}
   el.style.display=empty?"none":"";if(host)host.style.display=empty?"none":"";
   /* จำว่าการ์ดโชว์ไหม สูงเท่าไร — หน้าตั้งค่าครั้งหน้าจองที่ไว้ก่อน ส่วนด้านล่างจะได้ไม่กระโดด */
   el.style.minHeight="";
   if(host)try{localStorage.setItem("cendon_line_card",empty?"0":"1");if(!empty&&el.offsetHeight)localStorage.setItem("cendon_line_h",String(el.offsetHeight))}catch(e){}
 }
+/* แถวเดียวในหน้าตั้งค่า: ชื่อเดิมเสมอ เปลี่ยนแค่บรรทัดสถานะกับปุ่มด้านขวา */
+function rowHTML(){
+  if(!st||st.oa==="")return "";
+  const oa=st.oa||"",head=T("แจ้งเตือนทาง LINE","LINE notifications");
+  const one=(sub,right)=>`<div class="cl-row">${ICON}<div class="cl-tx"><b>${head}</b><small>${sub}</small></div>${right}</div>`;
+  if(st.linked)return one(`<span class="cl-ok">●</span> ${T("เชื่อมแล้ว · งานใหม่และข้อความส่งเข้า LINE","Connected · jobs and messages go to LINE")}`,
+    `<button type="button" class="cl-off" data-cl="off">${T("ยกเลิก","Disconnect")}</button>`);
+  if(st.paused)return one(T("อีกขั้นเดียว: เพิ่ม Cendon เป็นเพื่อนใน LINE","One more step: add Cendon as a friend on LINE"),
+    oa?`<a class="cl-go" href="${esc(addUrl(oa))}" target="_blank" rel="noopener">${T("เพิ่มเพื่อน","Add friend")}</a>`:"");
+  if(!oa)return "";
+  const go=label=>`<a class="cl-go" data-cl="go" href="${esc(oaUrl(oa,CONNECT))}" target="_blank" rel="noopener">${label}</a>`;
+  if(pending>Date.now())return one(T(`ทำต่อใน LINE: กดส่ง "${CONNECT}"`,`Continue in LINE: send "${CONNECT}"`),go(T("เปิด LINE","Open LINE")));
+  return one(T("งานใหม่ ข้อความ และเตือนดูแลรถ","New jobs, messages and car reminders"),go(T("เชื่อม","Connect")));
+}
 function draw(el){
+  if(el.dataset.lineConnect==="row"){el.innerHTML=rowHTML();return}
   const nudge=el.dataset.lineConnect==="nudge";
   if(!st){el.innerHTML="";return}
   /* หลังบ้านยังไม่ได้ตั้ง LINE (ไม่มีชื่อบัญชี OA) — ไม่โชว์ปุ่มที่กดแล้วไปไม่ถึงไหน */

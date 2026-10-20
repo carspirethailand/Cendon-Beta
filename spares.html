@@ -8,8 +8,8 @@
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
 <script src="/cendon-tour.js" defer></script>
-<script src="/account-actions.js?v=2" defer></script>
-<script src="/account.js?v=2026-10-19-scope1" defer></script>
+<script src="/account-actions.js?v=3" defer></script>
+<script src="/account.js?v=2026-10-20-set1" defer></script>
 <script src="/garage-rules.js?v=2" defer></script>
 <script src="/garage-data.js?v=2" defer></script>
 <script src="/input-guard.js?v=4" defer></script>
@@ -27,12 +27,12 @@
 <meta property="og:image" content="https://cendon-beta.pages.dev/og.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta property="og:locale" content="th_TH"><meta name="twitter:card" content="summary_large_image">
 <!-- ฟอนต์และไอคอนจากเว็บเราเอง โหลดก่อนวาดเฟรมแรก: เปลี่ยนหน้าแล้วไอคอนไม่หายแวบ ตัวหนังสือ/เมนูไม่ขยับ (เดิมโหลดจาก CDN แบบไม่รอ) -->
-<link rel="preload" href="/icons/ti.woff2?v=051f14df" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/icons/ti.woff2?v=3ea894cc" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/kanit-400-thai.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/kanit-500-thai.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/kanit-600-thai.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/fonts/kanit.css?v=1">
-<link rel="stylesheet" href="/icons/ti.css?v=9f6eaf7b">
+<link rel="stylesheet" href="/icons/ti.css?v=2ef93532">
 <link rel="stylesheet" href="/motion.css?v=1">
 <script>/* Motion v2: ระหว่างหน้ากำลังเปิดไม่เล่นทรานซิชัน (สีไม่ค่อย ๆ เปลี่ยนให้เห็นตอนสคริปต์ตั้งค่าเริ่มต้น) — ปลดหลังหน้าพร้อม */(function(){var e=document.documentElement;e.classList.add("m-boot");var off=function(){setTimeout(function(){requestAnimationFrame(function(){e.classList.remove("m-boot")})},250)};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",off);else off()})();</script>
 <style>
@@ -2734,112 +2734,7 @@ html[data-level="basic"] .hfree{
   .hf-w{font-size:10.5px}
 }
 </style>
-<style id="settingscss">
-/* ══════════════════════════════════════════════════════════════════
-   หน้าตั้งค่าของเว็บหลัก — ยกโครงมาจาก /chat ให้เหมือนกันทั้งสองที่
-   ตัวแปรสีของห้องแชต (--c-*) ไม่มีในหน้าหลัก จึงแมปเข้ากับตัวแปรธีมของ
-   หน้าหลักแทน หน้าตาจึงเหมือนกันแต่ยังเป็นสีของธีมที่ผู้ใช้เลือกไว้
-   ══════════════════════════════════════════════════════════════════ */
-#v-settings{
-  --c-ink:var(--ink); --c-mut:var(--muted); --c-line:var(--line);
-  --c-acc:var(--accent); --c-bg:var(--bg); --c-surf:var(--surface);
-  --kd:var(--kd,"Kanit",sans-serif);
-}
-/* หน้าตั้งค่าเป็นหน้าเต็มของตัวเอง ไม่ใช่ป๊อปอัปทับหน้าอื่น */
-#v-settings.setpane{position:fixed;inset:0;z-index:120;overflow-y:auto;
-  background:var(--bg);display:none}
-#v-settings.setpane.on{display:block}
-.setpane{overflow-y:auto}
-.set-wrap{width:100%;max-width:940px;margin:0 auto;padding:22px 20px 60px}
-.set-head{display:flex;align-items:center;gap:12px;margin-bottom:22px}
-.set-head h1{font-family:var(--kd);font-size:26px;font-weight:700;margin:0}
-.set-body{display:grid;grid-template-columns:210px minmax(0,1fr);gap:26px;align-items:start}
-.set-rail{display:flex;flex-direction:column;gap:1px;position:sticky;top:10px}
-.set-l{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;border:0;
-  background:transparent;color:var(--c-mut);font-family:inherit;font-size:13.5px;font-weight:600;
-  cursor:pointer;text-align:left;transition:.15s}
-.set-l:hover{background:rgba(255,255,255,.05);color:var(--c-ink)}
-.set-l.on{background:rgba(255,138,107,.13);color:var(--c-acc)}
-.set-l i{font-size:17px;width:18px;text-align:center;flex-shrink:0}
-.set-main h2{font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--c-mut);margin:26px 0 11px}
-.set-main h2:first-child{margin-top:0}
-.set-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:8px}
-.set-opt{padding:12px 14px;border-radius:12px;border:1px solid var(--c-line);
-  background:rgba(255,255,255,.03);color:var(--c-ink);font-family:inherit;font-size:13.5px;
-  font-weight:600;cursor:pointer;transition:.18s;display:flex;align-items:center;gap:9px}
-.set-opt:hover{border-color:var(--c-acc)}
-.set-opt.on{border-color:var(--c-acc);background:rgba(255,138,107,.12);color:var(--c-acc)}
-.set-opt.th{flex-direction:column;gap:8px;padding:14px 10px}
-.set-opt .sw{width:34px;height:34px;border-radius:50%;display:block}
-.set-opt .sw.midnight{background:linear-gradient(135deg,#10182B,#2B3A5C)}
-.set-opt .sw.aurora{background:linear-gradient(135deg,#0B2B2B,#28C9A6)}
-.set-opt .sw.sunset{background:linear-gradient(135deg,#2A1410,#FF8A6B)}
-.set-opt .sw.pearl{background:linear-gradient(135deg,#EFE7DC,#FFFFFF)}
-.set-opt.fb{flex-direction:column;gap:7px;padding:14px 10px;font-size:12.5px;text-align:center}
-.set-opt.fb i{font-size:21px;color:var(--c-acc)}
-.set-row{display:flex;align-items:center;gap:12px;padding:14px 15px;border-radius:14px;
-  border:1px solid var(--c-line);background:rgba(255,255,255,.025);margin-bottom:8px}
-.set-row>i{font-size:19px;color:var(--c-acc);flex-shrink:0}
-.set-row .tx{flex:1;min-width:0}
-.set-row .tx b{display:block;font-size:13.5px;font-weight:700}
-.set-row .tx small{font-size:12px;color:var(--c-mut);line-height:1.6}
-.set-num{font-family:var(--kd);font-size:19px;color:var(--c-acc)}
-.set-btn{padding:8px 14px;border-radius:10px;border:1px solid var(--c-line);flex-shrink:0;
-  background:rgba(255,255,255,.05);color:var(--c-ink);font-family:inherit;font-size:12.5px;
-  font-weight:700;cursor:pointer;transition:.18s}
-.set-btn:hover{border-color:var(--c-acc);color:var(--c-acc)}
-.set-btn.primary{background:var(--c-grad);border-color:transparent;color:#fff;margin-top:12px}
-.set-btn.danger:hover{border-color:#FF6B6B;color:#FF6B6B}
-.set-btn:disabled{opacity:.5;cursor:default}
-.set-note{font-size:12px;color:var(--c-faint);line-height:1.8;margin-top:12px}
-.set-me{display:flex;align-items:center;gap:14px;padding:18px;border-radius:16px;
-  border:1px solid var(--c-line);background:rgba(255,255,255,.03);margin-bottom:14px}
-.set-me .av{width:52px;height:52px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;
-  background:var(--c-grad);color:#fff;font-family:var(--kd);font-size:21px;font-weight:700;overflow:hidden}
-.set-me .av img{width:100%;height:100%;object-fit:cover}
-.set-me .tx b{display:block;font-size:16px;font-weight:700}
-.set-me .tx small{font-size:12.5px;color:var(--c-mut)}
-.set-meter{height:10px;border-radius:20px;background:rgba(255,255,255,.07);overflow:hidden}
-.set-meter i{display:block;height:100%;border-radius:20px;background:var(--c-grad)}
-.set-plan{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:11px}
-.pl{padding:18px;border-radius:16px;border:1px solid var(--c-line);background:rgba(255,255,255,.03)}
-.pl.now{border-color:var(--c-acc);background:rgba(255,138,107,.08)}
-.pl small{font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--c-mut)}
-.pl b{display:block;font-family:var(--kd);font-size:24px;font-weight:700;margin:4px 0 8px}
-.pl p{font-size:12.5px;color:var(--c-mut);line-height:1.75;margin:0}
-.set-fbk{display:grid;grid-template-columns:repeat(auto-fit,minmax(124px,1fr));gap:8px;margin-bottom:12px}
-#fbTxt{width:100%;padding:13px 15px;border-radius:14px;border:1px solid var(--c-line);
-  background:rgba(255,255,255,.03);color:var(--c-ink);font-family:inherit;font-size:14px;
-  line-height:1.7;resize:vertical;outline:none}
-#fbTxt:focus{border-color:var(--c-acc)}
-@media(max-width:760px){
-  .set-wrap{padding:16px 14px 50px}
-  .set-body{grid-template-columns:1fr;gap:16px}
-  .set-rail{position:static;flex-direction:row;overflow-x:auto;gap:5px;
-    padding-bottom:5px;scrollbar-width:none}
-  .set-rail::-webkit-scrollbar{display:none}
-  .set-l{flex-shrink:0;padding:9px 13px;border:1px solid var(--c-line);border-radius:20px}
-  .set-l span{white-space:nowrap}
-  .set-head h1{font-size:21px}
-}
-
-
-/* ── ปุ่มลิงก์ไปหน้าบริษัทที่อยู่นอกตัวแอป ── */
-.set-exts{display:grid;gap:9px}
-.set-ext{display:flex;align-items:center;gap:13px;padding:14px 16px;border-radius:14px;
-  text-decoration:none;color:inherit;transition:.15s;
-  background:var(--card,rgba(127,127,127,.06));
-  border:1px solid var(--line,rgba(127,127,127,.22))}
-.set-ext:hover{transform:translateY(-1px);border-color:var(--brand,#D95E3C)}
-.set-ext>.ti:first-child{font-size:21px;flex-shrink:0;color:var(--brand,#D95E3C)}
-.set-ext span{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
-.set-ext b{font-size:14.5px;font-weight:700}
-.set-ext small{font-size:12.5px;line-height:1.5;opacity:.66}
-/* ลูกศรบอกว่ากดแล้วออกจากแอปไปหน้าอื่น ไม่ใช่เปิดแผงย่อยในที่เดิม */
-.set-ext>.ti:last-child{font-size:16px;flex-shrink:0;opacity:.4}
-.set-ext:hover>.ti:last-child{opacity:.9}
-</style>
+<link rel="stylesheet" href="/settings.css?v=1">
 <style id="skillscss">
 /* ══════════════════════════════════════════════════════════════════
    SKILLS — คำสั่งสำเร็จรูปที่ผู้ใช้เขียนเอง แล้วเรียกด้วย /ชื่อ
@@ -5510,297 +5405,7 @@ window.spireApplySetup=()=>{ const k=level();
   try{ mountProfilePicker() }catch(e){} };
 })();
 </script>
-<script id="settingsjs">
-/* ══════════════════════════════════════════════════════════════════
-   หน้าตั้งค่าของเว็บหลัก — โครงเดียวกับ /chat ทุกอย่าง
-   ต่างกันแค่หัวข้อ "ธีม" ที่เป็นธีมของเว็บหลัก ไม่ใช่ธีมห้องแชต
-   ══════════════════════════════════════════════════════════════════ */
-(function(){
-"use strict";
-const D=document,$=id=>D.getElementById(id);
-const EN=()=>(window.lang||"th")==="en";
-const t=(th,en)=>(window.spireT?window.spireT(th,en):((window.lang||"th")==="en"?en:th));
-const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>
-  ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-
-const SETS=[
-  {k:"general", ic:"ti-adjustments", th:"ทั่วไป",       en:"General"},
-  {k:"acct",    ic:"ti-user",        th:"บัญชี",        en:"Account"},
-  {k:"usage",   ic:"ti-gauge",       th:"โควตา",        en:"Usage & credits"},
-  /* {k:"plan", …} แพ็กเกจ — ซ่อนไว้ก่อนใน 1.0 */
-  {k:"fb",      ic:"ti-message-report",th:"ส่งความเห็น",en:"Feedback"},
-  {k:"learn",   ic:"ti-help-circle", th:"เรียนรู้เพิ่มเติม",en:"Learn more"}
-];
-/* ธีมชุดเดียวใช้ทั้งเว็บหลักและห้องแชต ตั้งที่ไหนก็เปลี่ยนทั้งแอป */
-const themes=()=>(window.spireThemes&&window.spireThemes())||[];
-let tab="general";
-
-const user=()=>{ try{ return window.currentUser||null }catch(e){ return null } };
-const cars=()=>{ try{ return (window.garage&&window.garage())||[] }catch(e){ return [] } };
-const curTheme=()=>{ try{ return (window.spireTheme&&window.spireTheme())||"light" }
-                     catch(e){ return "light" } };
-
-function row(ic,title,sub,right){
-  return `<div class="set-row"><i class="ti ${ic}"></i>
-    <span class="tx"><b>${title}</b>${sub?`<small>${sub}</small>`:""}</span>
-    ${right||""}</div>`;
-}
-
-function body(){
-  const u=user()||{};
-  if(tab==="general"){
-    const lv=(window.spireLevel&&window.spireLevel())||"enthusiast";
-    const lvs=(window.spireLevels&&window.spireLevels())||[];
-    return `<h2>${t("ภาษา","Language")}</h2>
-      <div class="set-grid">${((window.spireLocales&&window.spireLocales())||[]).map(x=>
-        `<button class="set-opt${((window.spireLang&&window.spireLang())===x.c)?" on":""}"
-          data-lang="${x.c}"><span style="margin-right:6px">${x.flag}</span>${x.name}</button>`
-        ).join("")}</div>
-      <p class="set-note">${t(
-        "ภาษาที่ยังแปลไม่ครบจะแสดงเป็นภาษาอังกฤษแทน ไม่ใช่ภาษาไทย",
-        "Anything not yet translated falls back to English, never Thai.")}</p>
-
-      <h2>${t("ธีม","Theme")}</h2>
-      <div class="set-grid th">${themes().map(x=>
-        `<button class="set-opt th${curTheme()===x.k?" on":""}" data-sitetheme="${x.k}">
-          <span class="thsw" data-t="${x.k}"></span>${t(x.th,x.en)}</button>`).join("")}</div>
-      <p class="set-note">${t(
-        "ธีมเดียวใช้ทั้งหน้าหลักและห้องแชต เปลี่ยนที่ไหนก็เปลี่ยนพร้อมกัน",
-        "One theme for both the dashboard and the chat — change it anywhere.")}</p>`;
-  }
-  if(tab==="acct"){
-    return `<div class="set-me">
-        <span class="av">${u.photo?`<img src="${esc(u.photo)}" alt="">`:esc((u.name||"?")[0])}</span>
-        <span class="tx"><b>${esc(u.name||t("ยังไม่ได้เข้าสู่ระบบ","Not signed in"))}</b>
-          <small>${esc(u.email||"")}</small></span>
-      </div>
-      ${row("ti-shield-lock",t("การเข้าสู่ระบบ","How you sign in"),
-        t("รหัสผ่านอยู่กับผู้ให้บริการ เราไม่เคยเห็น","Your password stays with the provider — we never see it"))}
-      ${row("ti-car",t("รถในการาจ","Cars in your garage"),"",
-        `<b class="set-num">${cars().length}</b>`)}
-      ${u.uid||u.email?"":row("ti-login",t("ยังไม่ได้เข้าสู่ระบบ","Not signed in"),
-        t("เข้าสู่ระบบเพื่อเก็บรถ ใบงาน และรับแจ้งเตือน","Sign in to keep your cars, jobs and alerts"),
-        `<a class="set-btn primary" style="margin-top:0" href="./login?next=${encodeURIComponent(location.pathname+location.search)}">${t("เข้าสู่ระบบ","Sign in")}</a>`)}
-      ${/* การ์ด LINE: จองที่ไว้ตั้งแต่แรก (ความสูงที่เคยวัดได้ในเครื่องนี้ หรือค่าปกติ) ไม่ให้ส่วนด้านล่างกระโดดลงตอนการ์ดโหลดเสร็จ · เคยรู้ว่าไม่มีการ์ด = ไม่จอง */(h=>`<section data-line-card style="${h?"":"display:none;"}margin-top:26px">
-        <h2>${t("แจ้งเตือนทาง LINE","LINE notifications")}</h2><div data-line-connect${h?` style="min-height:${h}px"`:""}></div></section>`)((()=>{try{const f=localStorage.getItem("cendon_line_card");return f==="0"?0:Math.min(400,+localStorage.getItem("cendon_line_h")||(innerWidth>760?134:146))}catch(e){return 0}})())}
-      ${["owner","admin","moderator"].includes(u.role)?`<a class="set-ext" href="./admin" style="margin-top:14px">
-        <i class="ti ti-shield-lock"></i><span><b>${t("แผงควบคุมแอดมิน","Admin panel")}</b>
-        <small>${t("จัดการผู้ใช้ ช่าง และตั้งค่าเว็บ","Users, mechanics and site settings")}</small></span>
-        <i class="ti ti-arrow-up-right"></i></a>`:""}
-      <h2>${t("บัญชีและความปลอดภัย","Account and safety")}</h2>
-      ${(window.spireDangerHTML&&window.spireDangerHTML())||""}`;
-  }
-  if(tab==="usage"){
-    let used=0; try{ used=JSON.parse(localStorage.getItem("spire_aiUsedToday"))||0 }catch(e){}
-    return `<h2>${t("โควตาวันนี้","Today's usage")}</h2>
-      <div class="set-meter"><i style="width:${Math.min(100,used/60*100)}%"></i></div>
-      <p class="set-note">${t(`ใช้ไปแล้ว ${used} จาก 60 ครั้งต่อวัน · รีเซ็ตเที่ยงคืน`,
-        `${used} of 60 calls today · resets at midnight`)}</p>
-      ${row("ti-message-2",t("คุยกับ AI","Chat message"),t("1 ครั้งต่อข้อความ","1 call each"))}
-      ${row("ti-receipt-2",t("อ่านใบเสนอราคา","Reading a quote"),t("3 ครั้งต่อใบ","3 calls each"))}
-      ${row("ti-ear",t("วิเคราะห์เสียง","Listening to the car"),t("3 ครั้งต่อคลิป","3 calls each"))}
-      ${row("ti-package",t("ค้นอะไหล่","Finding parts"),t("2 ครั้งต่อการค้น","2 calls each"))}
-      <p class="set-note">${t(
-        "โควตามีไว้กันค่าใช้จ่ายพุ่ง ไม่ได้มีไว้กันคุณใช้งาน ถ้าชนบ่อยบอกเราได้",
-        "The cap exists to control cost, not to limit you. Tell us if you keep hitting it.")}</p>`;
-  }
-  if(tab==="plan"){
-    let plan="free"; try{ plan=(JSON.parse(localStorage.getItem("spire_setup"))||{}).plan||"free" }catch(e){}
-    const NAME={free:"Free",light:"Light",exclusive:"Exclusive"}[plan]||"Free";
-    return `<div class="set-plan">
-        <div class="pl now"><small>${t("แพ็กเกจปัจจุบัน","Current")}</small><b>${NAME}</b>
-          <p>${t("ช่วงเบต้ายังใช้ได้ทุกฟีเจอร์ ไม่มีการเก็บเงิน",
-                 "Everything is open during the beta — nothing is charged")}</p></div>
-        <div class="pl soon"><small>${t("กำลังจะมา","Coming")}</small><b>${t("ระบบชำระเงิน","Billing")}</b>
-          <p>${t("เราจะบอกล่วงหน้าก่อนเสมอถ้าจะเริ่มเก็บเงิน",
-                 "We'll tell you well before anything starts costing money")}</p>
-          <button class="set-btn" data-do="notify">${t("แจ้งฉันเมื่อเปิด","Notify me")}</button></div>
-      </div>
-      <p class="set-note">${t(
-        "เปลี่ยนแพ็กเกจได้ในหน้าตั้งค่าครั้งแรก หรือกดรีเซ็ตบัญชีเพื่อตั้งใหม่ทั้งหมด",
-        "Change your plan in first-time setup, or reset the account to start over.")}</p>`;
-  }
-  if(tab==="fb"){
-    return `<h2>${t("บอกเราหน่อย","Tell us")}</h2>
-      <p class="set-note" style="margin-top:0">${t(
-        "อะไรที่ใช้แล้วติดขัด อะไรที่อยากให้มี พิมพ์มาได้เลย เราอ่านทุกอัน",
-        "What got in your way, what you wish existed — we read all of it")}</p>
-      <div class="set-fbk">${[["bug","ti-bug",t("เจอบั๊ก","Something's broken")],
-        ["idea","ti-bulb",t("อยากให้มี","I want a feature")],
-        ["ux","ti-mood-confuzed",t("ใช้แล้วงง","This confused me")],
-        ["good","ti-heart",t("ชอบมาก","I like this")]].map(([k,ic,n])=>
-        `<button class="set-opt fb" data-fbk="${k}"><i class="ti ${ic}"></i>${n}</button>`).join("")}</div>
-      <textarea id="stFbTxt" rows="5" placeholder="${t("เล่าให้ฟังหน่อย…","Tell us more…")}"></textarea>
-      <button class="set-btn primary" id="stFbSend">${t("ส่งความเห็น","Send feedback")}</button>
-      <div id="stFbMsg" class="set-note"></div>
-      <div class="set-exts" style="margin-top:22px">
-      ${extLink("/help","ti-lifebuoy",t("ศูนย์ช่วยเหลือ","Get help"),
-        t("ติดขัดตรงไหน ลองดูคำตอบที่พบบ่อยก่อนได้","Stuck? Try the common answers first"))}
-      </div>`;
-  }
-  return `<h2>${t("Cendon ทำอะไรได้บ้าง","What Cendon does")}</h2>
-    ${row("ti-receipt-2",t("ตรวจใบเสนอราคาจากอู่","Check a garage quote"),
-      t("ถ่ายรูปใบ แล้วดูว่ารายการไหนควรจ่ายจริง","Photograph it and see what's actually needed"))}
-    ${row("ti-ear",t("ฟังเสียงรถ","Listen to the car"),
-      t("อัดเสียงจริงแทนการเลียนเสียงให้ช่างฟัง","Record it instead of imitating the noise"))}
-    ${row("ti-activity",t("วัดอาการสั่น","Measure the shake"),
-      t("ใช้เซ็นเซอร์ในมือถือหาว่าสั่นจากล้อหรือเครื่อง","Phone sensors tell wheels from engine"))}
-    ${row("ti-map-pin",t("จำที่จอด","Remember where you parked"),
-      t("บันทึกให้เองเมื่อรถจอด","Saved automatically when the car stops"))}
-    ${row("ti-bell",t("เตือนก่อนภาษีขาด","Before your tax lapses"),
-      t("เตือนล่วงหน้า 30, 7 และ 1 วัน","30, 7 and 1 days ahead"))}
-    <p class="set-note">${t(
-      "ทุกอย่างอิงข้อมูลรถของคุณจริง ๆ ไม่ใช่คำตอบทั่วไปที่ถามที่ไหนก็ได้",
-      "All of it runs on your actual car, not generic answers you could get anywhere.")}</p>
-    <h2 style="margin-top:26px">${t("อ่านเพิ่มเติม","Read more")}</h2>
-    <div class="set-exts">
-      ${extLink("/about","ti-building-arch",t("เกี่ยวกับ Cendon","About Cendon"),
-        t("เราคือใคร และทำไมถึงสร้าง Cendon","Who we are and why we built Cendon"))}
-      ${extLink("/help","ti-lifebuoy",t("ศูนย์ช่วยเหลือ","Get help"),
-        t("คำตอบที่พบบ่อย และช่องทางติดต่อ","Common answers and how to reach us"))}
-      ${extLink("/terms","ti-file-text",t("ข้อกำหนดการใช้งาน","Terms of Service"),
-        t("ข้อตกลงระหว่างคุณกับเรา","The agreement between you and us"))}
-      ${extLink("/privacy","ti-shield-lock",t("นโยบายความเป็นส่วนตัว","Privacy Policy"),
-        t("เราเก็บอะไร และเก็บไปทำไม","What we collect, and why"))}
-    </div>`;
-}
-
-/* ลิงก์ไปหน้าบริษัทที่อยู่นอกตัวแอป — เขียนเป็น <a> จริงไม่ใช่ปุ่มที่ผูก onclick
-   ผู้ใช้จะได้คลิกขวาเปิดแท็บใหม่ หรือกดค้างเพื่อคัดลอกลิงก์ได้ตามปกติ */
-function extLink(href,ic,title,sub){
-  return `<a class="set-ext" href="./${href}">
-    <i class="ti ${ic}"></i>
-    <span><b>${title}</b><small>${sub}</small></span>
-    <i class="ti ti-arrow-up-right"></i></a>`;
-}
-
-function render(){
-  const v=$("v-settings"); if(!v)return;
-  /* กระดิ่งของหน้าตั้งค่าอยู่ต่อข้ามการวาดใหม่ — เดิมสลับแท็บแล้วกระดิ่งถูกลบแล้วโผล่ใหม่ (กระพริบ) */
-  const bell=v.querySelector(":scope>.cb-bell");
-  v.innerHTML=`<div class="set-wrap">
-    <div class="set-head">
-      <button class="set-btn" id="stBack" aria-label="${t("กลับ","Back")}">
-        <i class="ti ti-arrow-left"></i></button>
-      <h1>${t("ตั้งค่า","Settings")}</h1>
-    </div>
-    <div class="set-body">
-      <nav class="set-rail">${SETS.map(x=>`<button class="set-l${x.k===tab?" on":""}"
-        data-tab="${x.k}"><i class="ti ${x.ic}"></i><span>${t(x.th,x.en)}</span></button>`).join("")}</nav>
-      <div class="set-main" id="stMain">${body()}</div>
-    </div>
-  </div>`;
-  if(bell)v.appendChild(bell);
-  wire();
-}
-
-
-function wire(){
-  const v=$("v-settings"); if(!v)return;
-  const back=$("stBack"); if(back)back.onclick=close;
-  v.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{
-    tab=b.dataset.tab; render();
-    const m=$("stMain"); if(m)m.scrollTop=0 });
-  v.querySelectorAll("[data-lang]").forEach(b=>b.onclick=()=>{
-    try{ window.spireSetLang&&window.spireSetLang(b.dataset.lang) }catch(e){} render() });
-  v.querySelectorAll("[data-sitetheme]").forEach(b=>b.onclick=()=>{
-    try{ window.spireSetTheme&&window.spireSetTheme(b.dataset.sitetheme) }catch(e){} render() });
-  v.querySelectorAll("[data-level]").forEach(b=>b.onclick=()=>{
-    try{ window.spireSetLevel&&window.spireSetLevel(b.dataset.level) }catch(e){} render() });
-  try{ window.spireWireDanger&&window.spireWireDanger(v) }catch(e){}
-  v.querySelectorAll("[data-do]").forEach(b=>b.onclick=()=>{
-    const a=b.dataset.do;
-    if(a==="notify"){ b.disabled=true; b.textContent=t("จะแจ้งให้ทราบ","We'll let you know") }
-  });
-  let kind="idea";
-  v.querySelectorAll("[data-fbk]").forEach(b=>b.onclick=()=>{
-    kind=b.dataset.fbk;
-    v.querySelectorAll("[data-fbk]").forEach(x=>x.classList.toggle("on",x===b)) });
-  const send=$("stFbSend");
-  if(send)send.onclick=()=>{
-    const ta=$("stFbTxt"), msg=$("stFbMsg");
-    const txt=(ta&&ta.value.trim())||"";
-    if(!txt){ msg.textContent=t("พิมพ์อะไรสักหน่อยก่อนส่ง","Write something first"); return }
-    /* ยังไม่มีปลายทางเก็บความเห็นบนเซิร์ฟเวอร์ เก็บในเครื่องไว้ก่อน
-       และบอกตามจริงว่ายังไม่ได้ส่งออกไป ดีกว่าแกล้งบอกว่าส่งแล้ว */
-    try{
-      const all=JSON.parse(localStorage.getItem("spire_feedback")||"[]");
-      all.unshift({kind,text:txt.slice(0,2000),at:Date.now(),
-        ua:navigator.userAgent.slice(0,120)});
-      localStorage.setItem("spire_feedback",JSON.stringify(all.slice(0,50)));
-    }catch(e){}
-    ta.value="";
-    msg.textContent=t("บันทึกไว้ในเครื่องแล้ว — ระบบส่งขึ้นเซิร์ฟเวอร์ยังไม่เปิด เราจะส่งให้อัตโนมัติเมื่อเปิดใช้",
-      "Saved on this device — server delivery isn't live yet; it'll be sent automatically once it is");
-  };
-}
-
-function open(which){
-  tab=SETS.some(x=>x.k===which)?which:"general";
-  let v=$("v-settings");
-  if(!v){
-    v=D.createElement("section"); v.className="pane setpane"; v.id="v-settings";
-    D.body.appendChild(v);
-  }
-  v.classList.add("on");
-  /* กระดิ่งมือถือวางไว้ตั้งแต่เปิดหน้าตั้งค่า — bell.js รับช่วง ไม่ให้โผล่ตามมาทีหลัง */
-  if(!v.querySelector(":scope>.cb-bell")){const b=D.createElement("button");b.type="button";b.className="cb-bell cb-m cb-sh cb-pre";b.setAttribute("aria-label",t("การแจ้งเตือน","Notifications"));
-    b.innerHTML='<i class="ti ti-bell"></i><em hidden></em>';try{if(localStorage.getItem("cendon_signed")!=="1")b.hidden=true}catch(e){}v.appendChild(b)}
-  render();
-}
-function close(){ const v=$("v-settings"); if(v)v.classList.remove("on") }
-
-/* เมนูบัญชี: เพิ่มรายการ "ตั้งค่า" ที่พาเข้าหน้านี้ และให้ Skills เข้าถึงได้
-   จากเว็บหลักด้วย ไม่ต้องเข้าห้องแชตก่อน */
-function mountMenu(){
-  const dd=$("dd"); if(!dd||$("ddSettings"))return;
-  /* เลิกมีหน้าโปรไฟล์แยก — มันซ้ำกับหน้าตั้งค่าทั้งหน้า (ชื่อ อีเมล ภาษา ธีม
-     ระดับ โซนอันตราย อยู่ครบทั้งสองที่) เหลือทางเดียวจะได้ไม่ต้องเดาว่าอยู่ไหน
-     ปุ่มเดิมยังอยู่แต่พาไปแท็บ "บัญชี" ของหน้าตั้งค่าแทน */
-  const oldProfile=dd.querySelector('[data-view="profile"]');
-  if(oldProfile){
-    oldProfile.removeAttribute("data-view");
-    const lbl=oldProfile.querySelector("span");
-    if(lbl)lbl.textContent=t("บัญชีของฉัน","My account");
-    oldProfile.onclick=e=>{ e.preventDefault(); e.stopPropagation();
-      dd.classList.remove("show"); open("acct") };
-  }
-  const first=dd.firstElementChild;
-  const b=D.createElement("button"); b.id="ddSettings";
-  b.innerHTML='<i class="ti ti-settings"></i> <span>'+t("ตั้งค่า","Settings")+'</span>';
-  b.onclick=()=>{ dd.classList.remove("show"); open("general") };
-  dd.insertBefore(b,first?first.nextSibling:null);
-
-  /* Skills เป็นของสำหรับคนที่เล่นกับ AI จริงจัง คนมีรถทั่วไปยังไม่ต้องเจอ
-     จึงเปิดเฉพาะระดับ "ตัวจริง" — โค้ดยังอยู่ครบ เปิดให้ทุกคนได้ทันที
-     ด้วยการย้าย skills ใน MIN_LEVEL ของ level.js เมื่อมีคนใช้จริงแล้ว */
-  /* ซ่อน Skills ไว้ก่อนใน 1.0 — เปิดใหม่: เปลี่ยน false เป็นเงื่อนไขเดิม (spireHasFeature("skills")) */
-  let showSkills=false;
-  if(showSkills){
-    const sk=D.createElement("button"); sk.id="ddSkills";
-    sk.innerHTML='<i class="ti ti-sparkles"></i> <span>Skills</span>';
-    sk.onclick=()=>{ dd.classList.remove("show");
-      if(window.spireSkillsOpen)window.spireSkillsOpen(); };
-    dd.insertBefore(sk,b.nextSibling);
-  }
-}
-if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",mountMenu); else mountMenu();
-setTimeout(mountMenu,800); setTimeout(mountMenu,2200);
-
-/* ใครเปิด /profile ตรง ๆ จากลิงก์เก่าหรือบุ๊กมาร์ก ให้เข้าหน้าตั้งค่าเลย
-   ไฟล์ยังอยู่เพื่อไม่ให้ลิงก์เดิมพัง แต่ไม่มีหน้าโปรไฟล์แยกอีกแล้ว */
-function autoOpenOnProfilePage(){
-  if(window.__SPIRE_PAGE__!=="profile")return;
-  open("acct");
-}
-if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",autoOpenOnProfilePage);
-else autoOpenOnProfilePage();
-setTimeout(autoOpenOnProfilePage,900);
-
-window.spireOpenSettings=open;
-window.spireCloseSettings=close;
-})();
-</script>
+<script src="/settings.js?v=1" defer></script>
 <script id="skillsjs">
 /* ══════════════════════════════════════════════════════════════════
    SKILLS — คำสั่งสำเร็จรูปที่ผู้ใช้เขียนเอง เรียกด้วย /ชื่อ ในห้องแชต
@@ -13523,7 +13128,7 @@ if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",start); else s
 })();
 </script>
 <script src="mobile-ui.js" defer></script>
-<script src="nav-pages.js?v=3" defer></script>
+<script src="nav-pages.js?v=4" defer></script>
 <script>
 window.__SPIRE_PAGE__="shop";
 window.__SPIRE_FILES__={"home": "/", "garage": "/garage", "magazine": "/news", "shop": "/spares", "profile": "/profile"};
@@ -13629,6 +13234,6 @@ window.switchView=function(v){
 <script src="feature-ai.js?v=5"></script>
 <script src="fluid.js" defer></script>
 <script src="crop.js" defer></script>
-<script src="cendon-line.js?v=3" defer></script>
+<script src="cendon-line.js?v=4" defer></script>
 </body>
 </html>

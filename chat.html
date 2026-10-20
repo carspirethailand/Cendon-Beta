@@ -9,8 +9,10 @@
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
 <script src="/cendon-tour.js" defer></script>
-<script src="/account-actions.js?v=2" defer></script>
-<script src="/account.js?v=2026-10-19-scope1" defer></script>
+<script src="/account-actions.js?v=3" defer></script>
+<script src="/account.js?v=2026-10-20-set1" defer></script>
+<link rel="stylesheet" href="/settings.css?v=1">
+<script src="/settings.js?v=1" defer></script>
 <script src="/garage-rules.js?v=2" defer></script>
 <script src="/garage-data.js?v=2" defer></script>
 <script src="/mileage-session.js?v=1" defer></script>
@@ -32,12 +34,12 @@
 <meta property="og:image" content="https://cendon-beta.pages.dev/og.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta property="og:locale" content="th_TH"><meta name="twitter:card" content="summary_large_image">
 <!-- ฟอนต์และไอคอนจากเว็บเราเอง โหลดก่อนวาดเฟรมแรก: เปลี่ยนหน้าแล้วไอคอนไม่หายแวบ ตัวหนังสือ/เมนูไม่ขยับ (เดิมโหลดจาก CDN แบบไม่รอ) -->
-<link rel="preload" href="/icons/ti.woff2?v=051f14df" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/icons/ti.woff2?v=3ea894cc" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/kanit-400-thai.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/kanit-500-thai.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/kanit-600-thai.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/fonts/kanit.css?v=1">
-<link rel="stylesheet" href="/icons/ti.css?v=9f6eaf7b">
+<link rel="stylesheet" href="/icons/ti.css?v=2ef93532">
 <link rel="stylesheet" href="/motion.css?v=1">
 <script>/* Motion v2: ระหว่างหน้ากำลังเปิดไม่เล่นทรานซิชัน (สีไม่ค่อย ๆ เปลี่ยนให้เห็นตอนสคริปต์ตั้งค่าเริ่มต้น) — ปลดหลังหน้าพร้อม */(function(){var e=document.documentElement;e.classList.add("m-boot");var off=function(){setTimeout(function(){requestAnimationFrame(function(){e.classList.remove("m-boot")})},250)};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",off);else off()})();</script>
 <!-- วาดเฟรมแรกหลังจัดโครงหน้าแชตเสร็จ (คอลัมน์ + แถบข้าง) ไม่ให้เห็นโครงเก่าแวบแล้วกระโดด -->
@@ -7219,27 +7221,34 @@ function acctMenu(){
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   หน้าตั้งค่า — เป็นหน้าเต็มของตัวเอง ไม่ใช่ป็อปอัป
-   ป็อปอัปเดิมใส่ได้แค่สามเรื่องก็เต็มแล้ว พอจะเพิ่มบัญชี โควตา แพ็กเกจ
-   ก็ไม่มีที่ลง และบนมือถือมันบังทั้งจอจนไม่รู้ว่าอยู่ตรงไหนของแอป
+   หน้าตั้งค่า — ตัวเดียวกับทุกหน้า (settings.js) วางในคอลัมน์ของแชต
+   ของที่เป็นของแชตโดยเฉพาะ (สไตล์การพูด เริ่มแชตใหม่ ล้างบทสนทนา) อยู่ในหมวด "ผู้ช่วยแชต"
    ══════════════════════════════════════════════════════════════════ */
-const SETS=[
-  {k:"general", ic:"ti-adjustments", th:"ทั่วไป",       en:"General"},
-  /* ตั้งค่าที่เป็นของแชตโดยเฉพาะ แยกจาก "ทั่วไป" ซึ่งเป็นของทั้งแอป
-     เดิมมีแต่บนแผ่นเลื่อนของมือถือ บนจอคอมจึงเลือกสไตล์การพูดไม่ได้เลย */
-  {k:"chat",    ic:"ti-message-2-cog",th:"แชตบอท",      en:"Chat assistant"},
-  {k:"acct",    ic:"ti-user",        th:"บัญชี",        en:"Account"},
-  {k:"usage",   ic:"ti-gauge",       th:"โควตา",        en:"Usage & credits"},
-  /* แพ็กเกจย้ายไปเป็นหน้าของตัวเอง (/plan) แล้ว
-     หน้าขายของควรมีที่ทางของมันเอง ไม่ใช่ซ่อนอยู่ในแท็บของหน้าตั้งค่า
-     ทางเข้าอยู่ที่เมนูบัญชี และปุ่มในแท็บโควตา */
-  {k:"fb",      ic:"ti-message-report",th:"ส่งความเห็น",en:"Feedback"},
-  {k:"learn",   ic:"ti-help-circle", th:"เรียนรู้เพิ่มเติม",en:"Learn more"}
-];
-let setTab="general";
-
+const chatExtra={
+  get title(){return t("ผู้ช่วยแชต","Chat assistant")},
+  html:()=>`<div class="st-row nohover"><i class="ti ti-message-chatbot" aria-hidden="true"></i><span class="st-t"><b>${t("สไตล์การพูด","How it talks")}</b>
+      <small>${t("เปลี่ยนน้ำเสียง ไม่ได้เปลี่ยนความถูกต้องของคำตอบ","Changes the tone, not the accuracy")}</small></span></div>
+    <div class="style-row st-style"></div>
+    <button type="button" class="st-row" data-chat="new"><i class="ti ti-plus" aria-hidden="true"></i><span class="st-t"><b>${t("เริ่มแชตใหม่","Start a new chat")}</b>
+      <small>${t("เก็บบทสนทนาเดิมไว้","Keeps the current one")}</small></span><i class="ti ti-chevron-right st-ch" aria-hidden="true"></i></button>
+    <button type="button" class="st-row" data-chat="clear"><i class="ti ti-eraser" aria-hidden="true"></i><span class="st-t"><b>${t("ล้างบทสนทนานี้","Clear this conversation")}</b>
+      <small>${t("ลบข้อความทั้งหมดในห้องนี้ ย้อนกลับไม่ได้","Deletes every message here — can't be undone")}</small></span><i class="ti ti-chevron-right st-ch" aria-hidden="true"></i></button>`,
+  wire:root=>{
+    try{ window.renderChatPrefs&&window.renderChatPrefs(); window.loadChatPrefs&&window.loadChatPrefs() }catch(e){}
+    root.querySelectorAll("[data-chat]").forEach(b=>b.onclick=()=>{
+      if(b.dataset.chat==="new"&&window.newSession){window.newSession();setPhase("welcome")}
+      else if(b.dataset.chat==="clear"&&window.clearCurrent&&confirm(t("ล้างบทสนทนานี้ทั้งหมด?","Clear this whole conversation?"))){window.clearCurrent();setPhase("welcome")}
+    });
+  }
+};
+/* ปุ่มกลับ = ถอยหนึ่งขั้นในประวัติ (กลับไปหน้าที่เปิดตั้งค่ามา) */
+function settingsBack(){
+  const top=window.Nav&&Nav.top();if(top&&top.tag==="phase"){Nav.back(top);return}
+  let has=false;
+  try{ has=!!(messages&&messages.filter(m=>!m.typing).length) }catch(e){}
+  setPhase(has?"thread":"welcome");
+}
 function openSettings(tab){
-  setTab=SETS.some(x=>x.k===tab)?tab:"general";
   let v=$("v-settings");
   if(!v){
     v=D.createElement("section");
@@ -7250,327 +7259,12 @@ function openSettings(tab){
     const host=$("colwrap")||D.querySelector("main.wrap")||D.body;
     host.appendChild(v);
   }
-  renderSettings();
   setPhase("settings");
+  if(window.CendonSettings)CendonSettings.open(tab,{root:v,back:settingsBack,extra:chatExtra});
 }
 /* เมนูเครื่องมือเรียกหน้านี้เมื่อระดับปัจจุบันยังไม่ปลดล็อกเครื่องมือใด ๆ */
 window.openSettings=openSettings;
-function renderSettings(){
-  const v=$("v-settings"); if(!v)return;
-  v.innerHTML=`<div class="set-wrap">
-    <div class="set-head">
-      <button class="tbar-ic" id="setBack" aria-label="${t("กลับ","Back")}"><i class="ti ti-arrow-left"></i></button>
-      <h1>${t("ตั้งค่า","Settings")}</h1>
-    </div>
-    <div class="set-body">
-      <nav class="set-rail">${SETS.map(x=>`<button class="set-l${x.k===setTab?" on":""}"
-        data-set="${x.k}"><i class="ti ${x.ic}"></i><span>${t(x.th,x.en)}</span></button>`).join("")}</nav>
-      <div class="set-main" id="setMain">${setBody()}</div>
-    </div>
-  </div>`;
-  /* msgs() อยู่ในสโคปของ Chat Flow ไม่ใช่ตัวแปรกลาง — เช็กจากเซสชันที่บันทึกไว้แทน */
-  $("setBack").onclick=()=>{
-    /* ปุ่มกลับ = ถอยหนึ่งขั้นในประวัติ (กลับไปหน้าที่เปิดตั้งค่ามา) */
-    const t=window.Nav&&Nav.top();if(t&&t.tag==="phase"){Nav.back(t);return}
-    let has=false;
-    try{ has=!!(messages&&messages.filter(m=>!m.typing).length) }catch(e){}
-    setPhase(has?"thread":"welcome");
-  };
-  v.querySelectorAll("[data-set]").forEach(b=>b.onclick=()=>{
-    setTab=b.dataset.set; renderSettings();
-    const m=$("setMain"); if(m)m.scrollTop=0;
-  });
-  wireSettings();
-}
-/* สถานะการซิงก์ต้องดูได้จากในแอป ไม่ใช่ให้ผู้ใช้ไปเปิด console พิมพ์คำสั่งเอง
-   ถ้ามันพัง ต้องบอกให้ชัดว่าพังเพราะอะไร และจะแก้ยังไง */
-function paintSync(){
-  const box=document.getElementById("syncBox"); if(!box)return;
-  const st=(window.cloudStatus&&window.cloudStatus())||{};
-  const signed=st.user&&st.user!=="NOT SIGNED IN";
-  const err=String(st.error||"");
-  let ic="ti-cloud-check",tone="ok",head,sub;
-  if(!signed){
-    ic="ti-cloud-off"; tone="warn";
-    head=t("ยังไม่ได้เข้าสู่ระบบ","Not signed in");
-    sub=t("เข้าสู่ระบบก่อน ข้อมูลถึงจะตามไปทุกเครื่อง",
-          "Sign in and your data follows you to every device");
-  }else if(/404/.test(err)){
-    ic="ti-cloud-x"; tone="bad";
-    head=t("เซิร์ฟเวอร์ยังเป็นเวอร์ชันเก่า","Server is running an old version");
-    sub=t("ต้องอัปเดตเซิร์ฟเวอร์ก่อน (wrangler deploy) ระหว่างนี้ข้อมูลยังอยู่ในเครื่องครบ",
-          "The backend needs redeploying. Your data is still safe on this device.");
-  }else if(/401|403/.test(err)){
-    ic="ti-cloud-x"; tone="bad";
-    head=t("เซิร์ฟเวอร์ไม่รับสิทธิ์","Server rejected the sign-in");
-    sub=t("ลองออกจากระบบแล้วเข้าใหม่อีกครั้ง","Try signing out and back in");
-  }else if(/Failed to fetch|NetworkError|CORS|offline/i.test(err)){
-    ic="ti-cloud-off"; tone="bad";
-    head=t("ต่อเซิร์ฟเวอร์ไม่ได้","Can't reach the server");
-    sub=t("เช็กอินเทอร์เน็ต หรือโดเมนของเว็บยังไม่ได้รับอนุญาตที่เซิร์ฟเวอร์",
-          "Check your connection, or the site's domain isn't allowed by the server yet");
-  }else if(err){
-    ic="ti-cloud-x"; tone="bad";
-    head=t("ซิงก์ไม่สำเร็จ","Sync failed"); sub=err.slice(0,120);
-  }else if(st.pushed||st.pulled){
-    const d=new Date(st.pushed||st.pulled);
-    head=t("ซิงก์เรียบร้อย","Synced");
-    sub=t("ล่าสุด ","Last synced ")+d.toLocaleString(lang==="en"?"en-US":"th-TH",
-      {day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})+
-      " · "+(st.user||"");
-  }else{
-    ic="ti-cloud"; tone="warn";
-    head=t("ยังไม่ได้ซิงก์","Not synced yet");
-    sub=t("กดปุ่มซิงก์เดี๋ยวนี้เพื่อลองเลย","Tap Sync now to try it");
-  }
-  box.innerHTML=setRow(ic,esc(head),esc(sub),
-    tone==="ok"?`<span class="sync-dot" aria-hidden="true"></span>`:"")
-    .replace('class="set-row"','class="set-row sync-'+tone+'"');
-}
-window.paintSync=paintSync;
-
-function setRow(ic,title,sub,right){
-  return `<div class="set-row"><i class="ti ${ic}"></i>
-    <span class="tx"><b>${title}</b>${sub?`<small>${sub}</small>`:""}</span>
-    ${right||""}</div>`;
-}
-function setBody(){
-  const u=currentUser||{};
-  if(setTab==="general"){
-    /* ระดับการใช้งานเปลี่ยนได้ตลอด ไม่ใช่เลือกครั้งเดียวแล้วติดอยู่กับมัน
-       คนที่เริ่มจากพื้นฐานแล้วเริ่มสนใจรถมากขึ้นควรเลื่อนขึ้นได้เอง */
-    const lv=(window.spireLevel&&window.spireLevel())||"enthusiast";
-    const lvs=(window.spireLevels&&window.spireLevels())||[];
-    return `<h2>${t("ภาษา","Language")}</h2>
-      <div class="set-grid">${((window.spireLocales&&window.spireLocales())||[]).map(x=>
-        `<button class="set-opt${((window.spireLang&&window.spireLang())===x.c)?" on":""}"
-          data-lang="${x.c}"><span style="margin-right:6px">${x.flag}</span>${x.name}</button>`
-        ).join("")}</div>
-      <p class="set-note">${t("ภาษาที่ยังแปลไม่ครบจะแสดงเป็นภาษาอังกฤษแทน ไม่ใช่ภาษาไทย",
-        "Anything not yet translated falls back to English, never Thai.")}</p>
-
-      <h2>${t("ธีม","Theme")}</h2>
-      <div class="set-grid th">${((window.spireThemes&&window.spireThemes())||[]).map(x=>
-        `<button class="set-opt th${((window.spireTheme&&window.spireTheme())===x.k)?" on":""}"
-          data-theme="${x.k}"><span class="thsw" data-t="${x.k}"></span>${t(x.th,x.en)}</button>`
-        ).join("")}</div>
-      <p class="set-note">${t(
-        "ธีมคุมพื้นหลังกับตัวหนังสือ ส่วนสีปุ่มเลือกแยกได้ข้างล่าง",
-        "The theme sets the background and text. Pick your button colour below.")}</p>
-
-      <h2>${t("สีหลัก","Accent colour")}</h2>
-      <div class="pri-wrap">${((window.spirePrimaryPresets&&window.spirePrimaryPresets())||[]).map(x=>
-        `<button class="pri-sw" data-pri="${x.k}" style="background:${x.k}"
-          title="${t(x.th,x.en)}" aria-label="${t(x.th,x.en)}"></button>`).join("")}
-      </div>
-      <div class="pri-now"><span class="pri-dot" style="background:var(--c-acc)"></span>
-        ${t("สีที่ใช้อยู่","Current")} <b id="priHex">${(window.spirePrimary&&window.spirePrimary())||"#E8943C"}</b></div>
-      <p class="set-note">${t(
-        "ทุกสีในชุดนี้คัดมาให้เข้ากับพื้นหลังทั้งธีมสว่างและธีมมืด แสงเรืองด้านหลังจะเปลี่ยนตามสีที่เลือกด้วย",
-        "Every colour here is tuned to work on both light and dark backgrounds. The background glow follows your pick.")}</p>
-
-      <h2>${t("การซิงก์ข้อมูล","Sync")}</h2>
-      <div id="syncBox"></div>
-      <p class="set-note">${t(
-        "ธีม ภาษา รถ และบทสนทนาทั้งหมดเก็บไว้กับบัญชี เข้าจากเครื่องไหนก็เห็นเหมือนกัน",
-        "Theme, language, cars and every conversation live with your account — same on every device.")}</p>
-
-      <h2>${t("บทสนทนา","Conversations")}</h2>
-      ${setRow("ti-plus",t("เริ่มแชตใหม่","Start a new chat"),
-        t("เก็บบทสนทนาเดิมไว้","Keeps the current one"),
-        `<button class="set-btn" data-do="new">${t("เริ่ม","Start")}</button>`)}
-      ${setRow("ti-trash",t("ล้างบทสนทนานี้","Clear this conversation"),
-        t("ลบข้อความทั้งหมดในห้องนี้ ย้อนกลับไม่ได้","Deletes every message here — can't be undone"),
-        `<button class="set-btn danger" data-do="clear">${t("ล้าง","Clear")}</button>`)}`;
-  }
-  if(setTab==="chat"){
-    /* ช่องสองช่องนี้ใช้คลาสเดียวกับแผ่นบนมือถือ renderChatPrefs จึงเติมให้ทั้งคู่
-       ค่าที่เลือกถูกส่งขึ้นเซิร์ฟเวอร์ทันที ไม่ต้องกดบันทึก */
-    return `<h2>${t("สไตล์การพูด","How it talks")}</h2>
-      <p class="set-note">${t(
-        "เปลี่ยนน้ำเสียงของผู้ช่วย ไม่ได้เปลี่ยนความถูกต้องของคำตอบ ใช้กับทุกบทสนทนา",
-        "Changes the assistant's tone, not the accuracy of its answers. Applies to every conversation.")}</p>
-      <div class="style-row"></div>
-
-      <h2>${t("โควตาการใช้งานวันนี้","Today's usage")}</h2>
-      <p class="set-note">${t(
-        "นับตามจำนวนโทเคนที่ใช้จริง ไม่ได้นับจำนวนครั้งที่พิมพ์ ข้อความยาวหรือแนบรูปจะใช้มากกว่า",
-        "Counted by tokens actually used, not by how many times you type. Long messages and images cost more.")}</p>
-      <div class="tok-box">
-        <div class="tok-bar"><span class="tok-fill"></span></div>
-        <div class="tok-txt">…</div>
-      </div>`;
-  }
-  if(setTab==="acct"){
-    return `<div class="set-me">
-        <span class="av">${u.photo?`<img src="${u.photo}" alt="">`:esc((u.name||"?")[0])}</span>
-        <span class="tx"><b>${esc(u.name||t("ยังไม่ได้เข้าสู่ระบบ","Not signed in"))}</b>
-          <small>${esc(u.email||"")}</small></span>
-      </div>
-      ${setRow("ti-shield-lock",t("บัญชี Cendon","Cendon account"),
-        t("รหัสผ่านอยู่กับ Google เราไม่เคยเห็น","Your password stays with Google — we never see it"))}
-      ${setRow("ti-car",t("รถในการาจ","Cars in your garage"),"",
-        `<b class="set-num">${(window.garage?window.garage():[]).length||0}</b>`)}
-      ${/* การ์ด LINE: จองที่ไว้ตั้งแต่แรก (ความสูงที่เคยวัดได้ในเครื่องนี้ หรือค่าปกติ) ไม่ให้ส่วนด้านล่างกระโดดลงตอนการ์ดโหลดเสร็จ · เคยรู้ว่าไม่มีการ์ด = ไม่จอง */(h=>`<section data-line-card style="${h?"":"display:none;"}margin-top:26px;border-top:1px solid var(--c-line2);padding-top:22px">
-        <h2>${t("แจ้งเตือนทาง LINE","LINE notifications")}</h2><div data-line-connect${h?` style="min-height:${h}px"`:""}></div></section>`)((()=>{try{const f=localStorage.getItem("cendon_line_card");return f==="0"?0:Math.min(400,+localStorage.getItem("cendon_line_h")||(innerWidth>760?134:146))}catch(e){return 0}})())}
-      <h2>${t("บัญชีและความปลอดภัย","Account and safety")}</h2>
-      ${(window.spireDangerHTML&&window.spireDangerHTML())||""}`;
-  }
-  if(setTab==="usage"){
-    /* ตัวเลขจริงมาจากเซิร์ฟเวอร์ ไม่ใช่ตัวนับในเครื่องแบบเดิม
-       เพราะโควตาผูกกับบัญชี ใช้จากเครื่องไหนก็หักก้อนเดียวกัน */
-    const q=window.__quota||{};
-    const n=x=>Number(x||0).toLocaleString(lang==="en"?"en-US":"th-TH");
-    const pct=q.limit?Math.min(100,Math.round(q.used/q.limit*100)):0;
-    const mins=q.resetAt?Math.max(0,Math.round((q.resetAt-Date.now())/60000)):0;
-    const hh=Math.floor(mins/60), mm=mins%60;
-    const when=hh?t(`${hh} ชม. ${mm} นาที`,`${hh}h ${mm}m`):t(`${mm} นาที`,`${mm}m`);
-    return `<h2>${t("โควตาของคุณ","Your quota")}</h2>
-      <div class="set-meter"><i style="width:${q.unlimited?100:pct}%"></i></div>
-      <p class="set-note">${q.unlimited
-        ? t("ไม่จำกัด (ผู้ดูแลระบบ)","Unlimited (admin)")
-        : (q.limit
-          ? t(`ใช้ไปแล้ว ${n(q.used)} จาก ${n(q.limit)} โทเคน (${pct}%) · เติมใหม่อัตโนมัติในอีก ${when}`,
-              `${n(q.used)} of ${n(q.limit)} tokens (${pct}%) · refills automatically in ${when}`)
-          : t("คุยกับ AI สักครั้งแล้วตัวเลขจะขึ้นที่นี่",
-              "Chat with the AI once and your numbers will show up here"))}</p>
-      <p class="set-note">${t(
-        "โควตาเติมใหม่เองทุก 5 ชั่วโมง ไม่ต้องรอข้ามวัน และนับตามบัญชี ไม่ใช่ตามเครื่อง",
-        "Quota refills every 5 hours — no waiting for midnight — and follows your account, not this device.")}</p>
-      ${setRow("ti-message-2",t("ข้อความสั้น","Short message"),t("ราว 300-800 โทเคน","~300-800 tokens"))}
-      ${setRow("ti-messages",t("คุยยาวหลายรอบ","Long back-and-forth"),t("ยิ่งคุยยาว ยิ่งใช้มากขึ้น","Grows as the thread grows"))}
-      ${setRow("ti-photo",t("แนบรูปหรือวิดีโอ","Photo or video"),t("ราว 1,500-4,000 โทเคน","~1,500-4,000 tokens"))}
-      ${setRow("ti-search",t("ค้นข้อมูลจากเว็บ","Web lookup"),t("บวกเพิ่มอีกเล็กน้อย","A little extra on top"))}
-      <p class="set-note">${t(
-        "หักตามความยาวจริงของบทสนทนา ถามสั้นก็หักน้อย ไม่ได้นับเป็นครั้ง โควตามีไว้กันค่าใช้จ่ายพุ่ง ไม่ได้มีไว้กันคุณใช้งาน ถ้าชนบ่อยบอกเราได้",
-        "Charged by the real length of the conversation, not per message — short questions cost little. The cap exists to control cost, not to limit you. Tell us if you keep hitting it.")}</p>
-      <!-- แท็บแพ็กเกจถูกย้ายออกไปเป็นหน้าของตัวเองแล้ว
-           แต่คนที่มาดูโควตาคือคนที่กำลังคิดเรื่องอัปเกรดพอดี ทางเข้าจึงควรอยู่ตรงนี้ -->
-      `;
-  }
-  if(setTab==="fb"){
-    return `<h2>${t("บอกเราหน่อย","Tell us")}</h2>
-      <p class="set-note" style="margin-top:0">${t(
-        "อะไรที่ใช้แล้วติดขัด อะไรที่อยากให้มี พิมพ์มาได้เลย เราอ่านทุกอัน",
-        "What got in your way, what you wish existed — we read all of it")}</p>
-      <div class="set-fbk">${[["bug","ti-bug",t("เจอบั๊ก","Something's broken")],
-        ["idea","ti-bulb",t("อยากให้มี","I want a feature")],
-        ["ux","ti-mood-confuzed",t("ใช้แล้วงง","This confused me")],
-        ["good","ti-heart",t("ชอบมาก","I like this")]].map(([k,ic,n])=>
-        `<button class="set-opt fb" data-fbk="${k}"><i class="ti ${ic}"></i>${n}</button>`).join("")}</div>
-      <textarea id="fbTxt" rows="5" placeholder="${t("เล่าให้ฟังหน่อย…","Tell us more…")}"></textarea>
-      <button class="set-btn primary" id="fbSend">${t("ส่งความเห็น","Send feedback")}</button>
-      <div id="fbMsg" class="set-note"></div>`;
-  }
-  return `<h2>${t("Cendon ทำอะไรได้บ้าง","What Cendon does")}</h2>
-    ${setRow("ti-receipt-2",t("ตรวจใบเสนอราคาจากอู่","Check a garage quote"),
-      t("ถ่ายรูปใบ แล้วดูว่ารายการไหนควรจ่ายจริง","Photograph it and see what's actually needed"))}
-    ${setRow("ti-ear",t("ฟังเสียงรถ","Listen to the car"),
-      t("อัดเสียงจริงแทนการเลียนเสียงให้ช่างฟัง","Record it instead of imitating the noise"))}
-    ${setRow("ti-activity",t("วัดอาการสั่น","Measure the shake"),
-      t("ใช้เซ็นเซอร์ในมือถือหาว่าสั่นจากล้อหรือเครื่อง","Phone sensors tell wheels from engine"))}
-    ${setRow("ti-map-pin",t("จำที่จอด","Remember where you parked"),
-      t("บันทึกให้เองเมื่อรถจอด","Saved automatically when the car stops"))}
-    ${setRow("ti-bell",t("เตือนก่อนภาษีขาด","Before your tax lapses"),
-      t("เตือนล่วงหน้า 30, 7 และ 1 วัน","30, 7 and 1 days ahead"))}
-    <p class="set-note">${t(
-      "ทุกอย่างอิงข้อมูลรถของคุณจริง ๆ ไม่ใช่คำตอบทั่วไปที่ถามที่ไหนก็ได้",
-      "All of it runs on your actual car, not generic answers you could get anywhere.")}</p>`;
-}
-function wireSettings(){
-  const v=$("v-settings"); if(!v)return;
-  /* แท็บแชตบอทเพิ่งถูกวาด ช่องยังว่างอยู่ ต้องเติมค่าที่โหลดไว้แล้วลงไป
-     แล้วขอค่าล่าสุดจากเซิร์ฟเวอร์อีกรอบ เผื่อโควตาขยับหลังคุยไปแล้ว */
-  if(setTab==="chat"){
-    try{ window.renderChatPrefs&&window.renderChatPrefs();
-         window.loadChatPrefs&&window.loadChatPrefs(); }catch(e){}
-  }
-  v.querySelectorAll("[data-lang]").forEach(b=>b.onclick=()=>{
-    if(window.spireSetLang)window.spireSetLang(b.dataset.lang); renderSettings() });
-  /* เปลี่ยนระดับแล้วโหลดหน้าใหม่ เพราะเมนูข้างกับเครื่องมือถูกประกอบไปแล้ว
-     การซ่อนย้อนหลังทีละชิ้นเสี่ยงตกหล่นกว่าการเริ่มประกอบใหม่ทั้งหน้า */
-  v.querySelectorAll("[data-level]").forEach(b=>b.onclick=()=>{
-    if(window.spireSetLevel)window.spireSetLevel(b.dataset.level) });
-  try{ window.spireWireDanger&&window.spireWireDanger(v) }catch(e){}
-  v.querySelectorAll("[data-theme]").forEach(b=>b.onclick=()=>{
-    if(window.spireSetTheme)window.spireSetTheme(b.dataset.theme); renderSettings() });
-  /* สีหลัก — กดสีสำเร็จรูป หรือเลือกเองจากจานสีของเครื่อง */
-  const markPri=()=>{
-    const cur=((window.spirePrimary&&window.spirePrimary())||"").toLowerCase();
-    v.querySelectorAll("[data-pri]").forEach(b=>
-      b.classList.toggle("on",b.dataset.pri.toLowerCase()===cur));
-    const hx=$("priHex"); if(hx)hx.textContent=cur.toUpperCase();
-  };
-  markPri();
-  try{ if(!renderSettings.__pri){ renderSettings.__pri=true;
-    window.spireOnPrimary&&window.spireOnPrimary(()=>{ try{ markPri() }catch(e){} }) } }catch(e){}
-  v.querySelectorAll("[data-pri]").forEach(b=>b.onclick=()=>{
-    if(window.spireSetPrimary)window.spireSetPrimary(b.dataset.pri); markPri() });
-  v.querySelectorAll("[data-do]").forEach(b=>b.onclick=()=>{
-    const a=b.dataset.do;
-    if(a==="new"&&window.newSession){window.newSession();setPhase("welcome")}
-    else if(a==="clear"&&window.clearCurrent){
-      if(confirm(t("ล้างบทสนทนานี้ทั้งหมด?","Clear this whole conversation?")))
-        {window.clearCurrent();setPhase("welcome")}}
-    else if(a==="notify"){
-      /* ของเดิมเปลี่ยนแค่ตัวหนังสือแล้วเงียบ กดแล้วไม่แน่ใจว่าระบบรับรู้หรือเปล่า
-         เพิ่มเครื่องหมายถูกกับจังหวะเด้งสั้น ๆ ให้รู้ทันทีว่าบันทึกความสนใจแล้ว */
-      b.disabled=true;
-      b.classList.add("done");
-      b.innerHTML='<i class="ti ti-check"></i> '+t("จะแจ้งให้ทราบ","We'll let you know");
-      try{ window.toast&&window.toast(
-        t("บันทึกไว้แล้ว เปิดขายเมื่อไหร่เราจะบอกก่อนใคร","Noted — we'll tell you the moment it opens"),
-        "ti-bell-check") }catch(e){}
-    }
-  });
-  /* วาดสถานะทันทีที่เปิดหน้า แล้วอัปเดตตามจนกว่าจะออกจากหน้านี้ */
-  if(setTab==="general"){
-    paintSync();
-    /* เปิดหน้านี้ = จังหวะที่ผู้ใช้อยากรู้ว่าซิงก์หรือยัง กระตุ้นให้ลองเลยหนึ่งรอบ */
-    try{ window.cloudSync&&window.cloudSync(); window.syncCars&&window.syncCars() }catch(e){}
-    clearInterval(renderSettings._sy);
-    renderSettings._sy=setInterval(()=>{
-      if(!document.getElementById("syncBox")){clearInterval(renderSettings._sy);return}
-      paintSync();
-    },2500);
-  }
-  let fbk="idea";
-  v.querySelectorAll("[data-fbk]").forEach(b=>b.onclick=()=>{
-    fbk=b.dataset.fbk;
-    v.querySelectorAll("[data-fbk]").forEach(x=>x.classList.toggle("on",x===b));
-  });
-  const send=$("fbSend");
-  if(send)send.onclick=async()=>{
-    const ta=$("fbTxt"), msg=$("fbMsg");
-    const txt=(ta&&ta.value.trim())||"";
-    if(!txt){ msg.textContent=t("พิมพ์อะไรสักหน่อยก่อนส่ง","Write something first"); return }
-    send.disabled=true; send.textContent=t("กำลังส่ง…","Sending…");
-    /* ยังไม่มีปลายทางเก็บ feedback บนเซิร์ฟเวอร์ จึงเก็บไว้ในเครื่องก่อน
-       และบอกผู้ใช้ตรง ๆ ว่ายังไม่ได้ส่งออกไป ดีกว่าแกล้งบอกว่าส่งแล้ว */
-    /* ส่งขึ้นเซิร์ฟเวอร์จริง เข้าหน้าแอดมินทันที
-       ถ้าส่งไม่ผ่าน (ออฟไลน์/ยังไม่ล็อกอิน) เก็บเข้าคิวในเครื่อง
-       แล้วตัวซิงก์จะลองส่งซ้ำให้เองรอบหน้า ผู้ใช้ไม่ต้องพิมพ์ใหม่ */
-    const item={kind:fbk,message:txt.slice(0,2000),page:location.pathname,at:Date.now()};
-    let sent=false;
-    try{
-      const A=window.auth||window.spireAuth; const u=A&&A.currentUser;
-      if(u&&window.BACKEND_URL){
-        const tok=await u.getIdToken();
-        const r=await fetch(window.BACKEND_URL+"/api/feedback",{method:"POST",
-          headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok},
-          body:JSON.stringify(item)});
-        sent=r.ok;
-      }
-    }catch(e){}
-    if(!sent){ try{ const q=LS.get("fbQueue",[])||[]; q.unshift(item);
-                    LS.set("fbQueue",q.slice(0,50)) }catch(e){} }
-    ta.value=""; send.disabled=false; send.textContent=t("ส่งความเห็น","Send feedback");
-    msg.textContent=sent
-      ? t("ส่งถึงทีมงานแล้ว ขอบคุณมากครับ","Sent to the team — thank you!")
-      : t("ยังส่งไม่ได้ตอนนี้ เก็บไว้ให้แล้ว จะส่งให้อัตโนมัติเมื่อออนไลน์",
-          "Couldn't send right now — saved, and we'll deliver it automatically when you're back online");
-  };
-}
+function renderSettings(){ if(window.CendonSettings&&$("v-settings"))CendonSettings.render() }
 /* ── เลือกรถ: เมนูลอยใต้ปุ่มชื่อรถบนแถบบน (คอมและมือถือใช้ตัวเดียวกัน) ── */
 function carMenu(anchor){
   let d=$("carPop");
@@ -12927,6 +12621,6 @@ setTimeout(mount,800); setTimeout(mount,2500);
 <script src="feature-ai.js?v=2026-10-18-audio1"></script>
 <script src="fluid.js" defer></script>
 <script src="crop.js" defer></script>
-<script src="cendon-line.js?v=3" defer></script>
+<script src="cendon-line.js?v=4" defer></script>
 </body>
 </html>

@@ -1607,5 +1607,11 @@ window.CENDON_L10N={lang:"id",t:{
 "Ready for the AI":"Siap untuk AI",
 "Redo":"Ulangi",
 "Start recording":"Mulai merekam",
-"Tap to record · up to {0} seconds":"Ketuk untuk merekam · maks. {0} detik"
+"Tap to record · up to {0} seconds":"Ketuk untuk merekam · maks. {0} detik",
+"LINE notifications":"Notifikasi LINE",
+"Connected · jobs and messages go to LINE":"Terhubung · pekerjaan dan pesan dikirim ke LINE",
+"One more step: add Cendon as a friend on LINE":"Satu langkah lagi: tambahkan Cendon sebagai teman di LINE",
+"Continue in LINE: send \"{0}\"":"Lanjutkan di LINE: kirim \"{0}\"",
+"Open LINE":"Buka LINE",
+"New jobs, messages and car reminders":"Pekerjaan baru, pesan, dan pengingat perawatan mobil"
 }};

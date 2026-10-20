@@ -1607,5 +1607,11 @@ window.CENDON_L10N={lang:"zh",t:{
 "Ready for the AI":"可以交给 AI 了",
 "Redo":"重录",
 "Start recording":"开始录音",
-"Tap to record · up to {0} seconds":"点一下开始录音 · 最长 {0} 秒"
+"Tap to record · up to {0} seconds":"点一下开始录音 · 最长 {0} 秒",
+"LINE notifications":"LINE 通知",
+"Connected · jobs and messages go to LINE":"已连接 · 工单和消息会发到 LINE",
+"One more step: add Cendon as a friend on LINE":"还差一步：在 LINE 上加 Cendon 为好友",
+"Continue in LINE: send \"{0}\"":"请在 LINE 中继续：发送“{0}”",
+"Open LINE":"打开 LINE",
+"New jobs, messages and car reminders":"新工单、消息和养车提醒"
 }};

@@ -1607,5 +1607,11 @@ window.CENDON_L10N={lang:"ko",t:{
 "Ready for the AI":"AI에게 보낼 준비 완료",
 "Redo":"다시 녹음",
 "Start recording":"녹음 시작",
-"Tap to record · up to {0} seconds":"눌러서 녹음 · 최대 {0}초"
+"Tap to record · up to {0} seconds":"눌러서 녹음 · 최대 {0}초",
+"LINE notifications":"LINE 알림",
+"Connected · jobs and messages go to LINE":"연결됨 · 작업과 메시지가 LINE으로 와요",
+"One more step: add Cendon as a friend on LINE":"한 단계 남았어요: LINE에서 Cendon을 친구로 추가하세요",
+"Continue in LINE: send \"{0}\"":"LINE에서 계속하세요: \"{0}\" 보내기",
+"Open LINE":"LINE 열기",
+"New jobs, messages and car reminders":"새 작업, 메시지, 차량 관리 알림"
 }};

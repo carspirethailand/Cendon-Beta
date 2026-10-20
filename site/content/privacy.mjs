@@ -190,10 +190,10 @@ const sections=[
     `<div class="contact">
 <div>${I.download}<b>${L('ดาวน์โหลดข้อมูลของฉัน','Download my data')}</b><span>${L('ไฟล์ JSON ทุกอย่างที่ผูกกับบัญชี เปิดอ่านหรือย้ายไปที่อื่นได้','A JSON file of everything linked to your account, readable and portable')}</span></div>
 <div>${I.refresh}<b>${L('รีเซ็ตบัญชี','Reset account')}</b><span>${L('ล้างรถ แชต AI และการตั้งค่า แต่คงบัญชีไว้','Clears cars, AI chats and settings but keeps the account')}</span></div>
-<div>${I.trash}<b>${L('ลบบัญชีถาวร','Delete account')}</b><span>${L('ลบทุกอย่างรวมถึงบัญชีล็อกอิน พิมพ์ DELETE เพื่อยืนยัน','Erases everything including your sign-in. Type DELETE to confirm')}</span></div>
+<div>${I.trash}<b>${L('ลบบัญชีถาวร','Delete account')}</b><span>${L('ลบทุกอย่างรวมถึงบัญชีล็อกอิน ต้องพิมพ์คำว่า ลบบัญชี เพื่อยืนยัน','Erases everything including your sign-in. Type DELETE to confirm')}</span></div>
 </div>`+
-    P('ทั้งหมดอยู่ที่ <b>โปรไฟล์ → บัญชีและความปลอดภัย</b> · ถ้ามีงานซ่อมที่ยังไม่จบ ต้องปิดงานหรือยกเลิกก่อนลบบัญชี เพื่อไม่ให้อีกฝ่ายเสียหาย · ปิดการแจ้งเตือนและยกเลิกการเชื่อม LINE ได้เองในแอป',
-      'All of these are in <b>Profile → Account and safety</b>. · If a repair is still in progress, finish or cancel it before deleting, so the other side isn’t left stranded. · You can switch off notifications and unlink LINE yourself in the app.')+
+    P('ทั้งหมดอยู่ในหน้า <b>ตั้งค่า → บัญชีของฉัน</b> (ลบบัญชีถาวรอยู่ล่างสุดของหน้า) · ถ้ามีงานซ่อมที่ยังไม่จบ ต้องปิดงานหรือยกเลิกก่อนลบบัญชี เพื่อไม่ให้อีกฝ่ายเสียหาย · ปิดการแจ้งเตือนและยกเลิกการเชื่อม LINE ได้เองในแอป',
+      'All of these are in <b>Settings → My account</b> (Delete account is at the very bottom). · If a repair is still in progress, finish or cancel it before deleting, so the other side isn’t left stranded. · You can switch off notifications and unlink LINE yourself in the app.')+
     P(`เรื่องอื่น (เช่น คัดค้าน ขอระงับ หรือถอนความยินยอมการตรวจรูปด้วย AI) อีเมลมาที่ <a href="mailto:${EMAIL}">${EMAIL}</a> เราอาจขอยืนยันตัวตนก่อน และจะตอบภายใน 30 วัน · หากไม่พอใจ ร้องเรียนต่อสำนักงานคณะกรรมการคุ้มครองข้อมูลส่วนบุคคล (สคส.) ได้ที่ <a href="https://www.pdpc.or.th" rel="noopener">pdpc.or.th</a>`,
       `For anything else (objecting, restricting, or withdrawing consent to AI photo review) email <a href="mailto:${EMAIL}">${EMAIL}</a>. We may ask you to confirm your identity and will reply within 30 days. · If you’re not satisfied, you can complain to Thailand’s Personal Data Protection Committee (PDPC) at <a href="https://www.pdpc.or.th" rel="noopener">pdpc.or.th</a>.`)},
 
@@ -274,7 +274,7 @@ export default {
       ['AI ได้รับคำถามและข้อมูลรถ แต่ไม่ได้รับอีเมล เบอร์ หรือที่อยู่ของคุณ','The AI gets your question and car details, never your email, phone or address'],
       ['ช่างเห็นเบอร์และที่อยู่ของคุณ เฉพาะหลังคุณยืนยันราคาแล้ว','Mechanics see your phone and address only after you accept their price'],
       ['ประวัติแชต AI อยู่ในเครื่องของคุณ','Your AI chat history lives on your device'],
-      ['ดาวน์โหลดหรือลบบัญชีได้เองที่ โปรไฟล์ → บัญชีและความปลอดภัย','Download or delete everything at Profile → Account and safety'],
+      ['ดาวน์โหลดหรือลบบัญชีได้เองที่ ตั้งค่า → บัญชีของฉัน','Download or delete everything at Settings → My account'],
     ]},
     sections,
   }),

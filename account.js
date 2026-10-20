@@ -126,6 +126,7 @@
     langHook();
     D.documentElement.dataset.level='enthusiast';
     for(const name of ['renderAuthUI','renderProfile','updateGreeting'])try{if(W[name])W[name]()}catch(e){}
+    try{if(W.CendonSettings)W.CendonSettings.refresh()}catch(e){}
   }
   function option(value,label,selected){return `<option value="${esc(value)}"${value===String(selected)?' selected':''}>${esc(label)}</option>`}
   function providerIcon(kind){
@@ -406,6 +407,12 @@
     S.error='';if(current()){load(current());return}S.phase='auth';S.mode=startMode();render()}
   function setupRead(){const data=read('spire_setup',{}),u=current();return u&&data&&data.uid===u.uid?data:{}}
   function setupDone(){return !!(current()&&S.uid===current().uid&&canonical(S.status,S.uid))}
+  /* หน้าตั้งค่า: บันทึกชื่อ ภาษา ระยะทาง สกุลเงิน ลงโปรไฟล์บนเซิร์ฟเวอร์ แล้วรอผล (สำเร็จ = เขียนลงเครื่อง + วาดชื่อใหม่ทุกที่) */
+  function savePrefs(patch){const u=current();if(!u||!setupDone())return Promise.reject(new Error('not_ready'));
+    const prefs={};for(const k of ['name','lang','currency','distance'])if(Object.hasOwn(patch||{},k))prefs[k]=patch[k];
+    if(!Object.keys(prefs).length)return Promise.resolve(setupRead());
+    return request('/api/onboarding/preferences',prefs,'PATCH',u.uid).then(data=>{if(!uidIs(u.uid))throw new Error('account_changed');
+      if(!canonical(data,u.uid))throw new Error('onboarding_unavailable');publish(data);if(W.cloudMark)W.cloudMark('setup');return setupRead()})}
   function setupSave(patch){const u=current();if(!u||!setupDone())return setupRead();
     const allowed={};for(const k of ['name','lang','units','distance','currency','theme','level','plan','photo','notify'])if(Object.hasOwn(patch,k))allowed[k]=patch[k];
     const next={...setupRead(),...allowed,v:3,uid:u.uid};delete next.birthDate;
@@ -448,6 +455,7 @@
   D.addEventListener('focusin',e=>{const root=D.getElementById('accountFlow');if(root&&!root.hidden&&!root.contains(e.target)){const title=root.querySelector('#acTitle');if(title&&typeof title.focus==='function')title.focus({preventScroll:true})}});
   D.addEventListener('cendon:auth-error',e=>{if(LOGIN&&!current()){S.error=errorText({message:e.detail&&e.detail.code||'auth/redirect-error'});S.phase='auth';render()}});
   W.spireSetupRead=setupRead;W.spireSetupDone=setupDone;W.spireSetupSave=setupSave;W.spireSetupVersion=3;
+  W.spireSavePrefs=savePrefs;W.spireMoney=()=>MONEY.slice();
   W.spireOpenSetup=()=>{if(current())load(current());else openLogin()};
   W.CendonAccount={openLogin,reload:()=>{if(current())load(current());else changed(null)},safeNext,validBirth,validName,ready:setupDone,completed:()=>!!canonical(S.status,S.uid)};
   const boundAuth=new WeakSet();

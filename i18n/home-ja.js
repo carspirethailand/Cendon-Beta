@@ -1607,5 +1607,11 @@ window.CENDON_L10N={lang:"ja",t:{
 "Ready for the AI":"AI に送る準備完了",
 "Redo":"撮り直す",
 "Start recording":"録音を開始",
-"Tap to record · up to {0} seconds":"タップして録音 · 最大 {0} 秒"
+"Tap to record · up to {0} seconds":"タップして録音 · 最大 {0} 秒",
+"LINE notifications":"LINE 通知",
+"Connected · jobs and messages go to LINE":"連携済み · 依頼とメッセージが LINE に届きます",
+"One more step: add Cendon as a friend on LINE":"あと一歩：LINE で Cendon を友だち追加してください",
+"Continue in LINE: send \"{0}\"":"LINE で続けてください：「{0}」を送信",
+"Open LINE":"LINE を開く",
+"New jobs, messages and car reminders":"新しい依頼、メッセージ、メンテナンスのお知らせ"
 }};

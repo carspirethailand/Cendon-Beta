@@ -49,16 +49,19 @@ test('bells are in place on the first frame everywhere (mobile pages, chat bar, 
   assert.match(bell,/if\(own\)\{if\(!BTNS\.includes\(own\)\)\{wire\(own\);paint\(\)\}\}else\{host\.appendChild\(mkBtn\(cls\)\);paint\(\)\}/);
   assert.match(bell,/\.pill \.cb-bell\{order:99;margin-left:auto\}/);
   assert.match(r('chat.html'),/b\.className="cb-bell p-btn cb-pre"/);
-  for(const f of ['profile.html','garage.html','news.html','spares.html']){const s=r(f);
-    assert.match(s,/const bell=v\.querySelector\(":scope>\.cb-bell"\);\n  v\.innerHTML=`<div class="set-wrap">/,f);
-    assert.match(s,/  <\/div>`;\n  if\(bell\)v\.appendChild\(bell\);\n  wire\(\);/,f);
-    assert.match(s,/b\.className="cb-bell cb-m cb-sh cb-pre"/,f);}
+  /* หน้าตั้งค่า (settings.js): กระดิ่งวางตั้งแต่เปิด และอยู่ต่อข้ามการวาดใหม่ (วาดใหม่แค่ #stMain/#stManage ไม่แตะกระดิ่ง) */
+  const st=r('settings.js');
+  assert.match(st,/const keep=v\.querySelector\(':scope>\.cb-bell'\);/);
+  assert.match(st,/b\.className='cb-bell cb-m cb-sh cb-pre'/);
+  assert.match(st,/main\.innerHTML=mainHTML\(\);/);
   for(const f of PAGES)assert.match(r(f),/bell\.js\?v=12/,f);
 });
 
 test('content does not push the page around while loading', () => {
   assert.match(r('index.html'),/const SK='<div class="skel" style="height:341px;grid-column:1\/-1"><\/div>';/,'home suggestions keep the real row height');
-  for(const f of ['profile.html','garage.html','news.html','spares.html','chat.html'])
-    assert.match(r(f),/const f=localStorage\.getItem\("cendon_line_card"\);return f==="0"\?0:Math\.min\(400,\+localStorage\.getItem\("cendon_line_h"\)\|\|\(innerWidth>760\?134:146\)\)/,f);
+  /* แถว LINE ในหน้าตั้งค่า: จองความสูงแถวไว้ตั้งแต่แรก · ซ่อนทั้งหมวดเฉพาะเมื่อรู้แน่ว่าไม่มี LINE */
+  assert.match(r('settings.css'),/\.st-line\{min-height:76px/);
+  assert.match(r('settings.js'),/localStorage\.getItem\('cendon_line_card'\)==='0'\?' hidden':''/);
+  assert.match(r('cendon-line.js'),/if\(el\.dataset\.lineConnect==="row"\)\{const gone=!!st&&st\.oa==="";/);
   assert.match(r('cendon-line.js'),/localStorage\.setItem\("cendon_line_card",empty\?"0":"1"\);if\(!empty&&el\.offsetHeight\)localStorage\.setItem\("cendon_line_h",String\(el\.offsetHeight\)\)/);
 });

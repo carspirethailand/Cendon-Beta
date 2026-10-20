@@ -1607,5 +1607,11 @@ window.CENDON_L10N={lang:"de",t:{
 "Ready for the AI":"Bereit für die KI",
 "Redo":"Neu aufnehmen",
 "Start recording":"Aufnahme starten",
-"Tap to record · up to {0} seconds":"Tippen zum Aufnehmen · bis zu {0} Sekunden"
+"Tap to record · up to {0} seconds":"Tippen zum Aufnehmen · bis zu {0} Sekunden",
+"LINE notifications":"LINE-Benachrichtigungen",
+"Connected · jobs and messages go to LINE":"Verbunden · Aufträge und Nachrichten kommen per LINE",
+"One more step: add Cendon as a friend on LINE":"Noch ein Schritt: Füge Cendon in LINE als Freund hinzu",
+"Continue in LINE: send \"{0}\"":"Weiter in LINE: sende „{0}“",
+"Open LINE":"LINE öffnen",
+"New jobs, messages and car reminders":"Neue Aufträge, Nachrichten und Wartungserinnerungen"
 }};

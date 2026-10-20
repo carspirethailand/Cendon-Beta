@@ -44,21 +44,23 @@
       return false;
     }
   }
-  async function deleteAccount(say){
-    const typed=W.prompt(T('ลบบัญชีถาวร: ข้อมูลทั้งหมด (รถ แชต AI ไฟล์ การเชื่อม LINE ร้านช่าง) จะถูกลบและกู้คืนไม่ได้\nแนะนำให้กด "ดาวน์โหลดข้อมูลของฉัน" ก่อน\n\nพิมพ์ DELETE เพื่อยืนยัน','Delete account permanently: all data (cars, AI chats, files, LINE link, mechanic shop) will be erased and cannot be recovered.\nConsider "Download my data" first.\n\nType DELETE to confirm'));
-    if(typed==null)return;
-    if(String(typed).trim().toUpperCase()!=='DELETE'){say(T('ยังไม่ได้ลบ — ต้องพิมพ์ DELETE ให้ตรง','Not deleted — you must type DELETE exactly'));return}
+  /* confirmed = หน้าตั้งค่าให้ผู้ใช้พิมพ์ยืนยันในแผ่นของมันเองแล้ว (ไม่ต้องถามซ้ำด้วยกล่องของเบราว์เซอร์) · คืน true เมื่อลบสำเร็จ */
+  async function deleteAccount(say,confirmed){
+    if(!confirmed){const typed=W.prompt(T('ลบบัญชีถาวร: ข้อมูลทั้งหมด (รถ แชต AI ไฟล์ การเชื่อม LINE ร้านช่าง) จะถูกลบและกู้คืนไม่ได้\nแนะนำให้กด "ดาวน์โหลดข้อมูลของฉัน" ก่อน\n\nพิมพ์ DELETE เพื่อยืนยัน','Delete account permanently: all data (cars, AI chats, files, LINE link, mechanic shop) will be erased and cannot be recovered.\nConsider "Download my data" first.\n\nType DELETE to confirm'));
+    if(typed==null)return false;
+    if(String(typed).trim().toUpperCase()!=='DELETE'){say(T('ยังไม่ได้ลบ — ต้องพิมพ์ DELETE ให้ตรง','Not deleted — you must type DELETE exactly'));return false}}
     say(T('กำลังลบข้อมูล…','Deleting your data…'));
     let r;try{r=await call('/api/account/delete',{body:{confirm:'DELETE'},keep:true,timeout:45000})}
-    catch(e){say(T('ลบไม่สำเร็จ ยังไม่มีอะไรถูกลบ กรุณาลองใหม่','Could not delete. Nothing was removed. Please retry.'));return}
-    if(r.status===409&&r.error==='active_jobs'){say(T('ยังมีงานซ่อมที่ทำค้างอยู่ '+(r.jobs||[]).length+' งาน — ปิดงานให้จบก่อน แล้วค่อยลบบัญชี','You still have '+(r.jobs||[]).length+' repair job(s) in progress — finish them before deleting your account'));return}
-    if(r.ok!==true){say(T('ลบไม่สำเร็จ กรุณาลองใหม่หรือติดต่อทีมงาน','Could not delete. Please retry or contact support.'));return}
+    catch(e){say(T('ลบไม่สำเร็จ ยังไม่มีอะไรถูกลบ กรุณาลองใหม่','Could not delete. Nothing was removed. Please retry.'));return false}
+    if(r.status===409&&r.error==='active_jobs'){say(T('ยังมีงานซ่อมที่ทำค้างอยู่ '+(r.jobs||[]).length+' งาน — ปิดงานให้จบก่อน แล้วค่อยลบบัญชี','You still have '+(r.jobs||[]).length+' repair job(s) in progress — finish them before deleting your account'));return false}
+    if(r.ok!==true){say(T('ลบไม่สำเร็จ กรุณาลองใหม่หรือติดต่อทีมงาน','Could not delete. Please retry or contact support.'));return false}
     const signIn=r.firebaseDeleted||await deleteSignIn();
     clearLocal(true);
     try{if(auth())await auth().signOut()}catch(e){}
     W.alert(signIn?T('ลบบัญชีและข้อมูลทั้งหมดเรียบร้อยแล้ว ขอบคุณที่ใช้ Cendon','Your account and all data have been deleted. Thank you for using Cendon.')
       :T('ลบข้อมูลทั้งหมดแล้ว แต่ยังลบบัญชีล็อกอินไม่สำเร็จ — เข้าสู่ระบบอีกครั้งแล้วกด "ลบบัญชีถาวร" ซ้ำเพื่อลบให้ครบ','All data was deleted, but the sign-in account could not be removed — sign in again and press "Delete account" once more to finish.'));
     location.replace('/');
+    return true;
   }
   async function resetAccount(){
     try{const result=await call('/api/account/reset');
@@ -81,10 +83,18 @@
     }
     if(action==='deactivate'){
       if(!W.confirm(T('ปิดใช้งานบัญชีนี้? คุณจะเข้าใช้งานไม่ได้จนกว่าผู้ดูแลจะเปิดคืนให้','Deactivate this account? You cannot sign in again until an administrator restores it.')))return;
-      try{await call('/api/account/deactivate');if(W.CendonScope)await W.CendonScope.signOut();else if(auth())await auth().signOut();location.reload()}
+      try{await deactivateAccount();location.reload()}
       catch(e){say(T('ปิดใช้งานไม่สำเร็จ กรุณาลองใหม่หรือติดต่อผู้ดูแล','Could not deactivate the account. Please retry or contact support.'))}
     }
   }
+  /* ปิดใช้งาน: บอกเซิร์ฟเวอร์ก่อน แล้วออกจากระบบ (ล้างข้อมูลในเครื่องด้วย) */
+  async function deactivateAccount(){
+    await call('/api/account/deactivate');
+    if(W.CendonScope)await W.CendonScope.signOut();else if(auth())await auth().signOut();
+    return true;
+  }
   W.spireResetAccount=resetAccount;W.spireExportData=exportData;W.spireDangerHTML=dangerHTML;
+  /* หน้าตั้งค่า (settings.js) เรียกชุดนี้ — ยืนยันในแผ่นของหน้าตั้งค่าเองแล้ว */
+  W.CendonAccountActions=Object.freeze({exportData,reset:resetAccount,deactivate:deactivateAccount,remove:say=>deleteAccount(say,true)});
   W.spireWireDanger=root=>{(root||D).querySelectorAll('[data-danger]').forEach(b=>{b.onclick=async()=>{if(b.disabled)return;b.disabled=true;try{await danger(b.dataset.danger)}finally{b.disabled=false}}})};
 })(window,document);

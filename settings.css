@@ -1,0 +1,185 @@
+/* ══════════════════════════════════════════════════════════════════
+   หน้าตั้งค่า (settings.js) — หน้าเดียวเลื่อนจบ · สีตามธีมสว่าง/มืดของทั้งแอป
+   ทุกอย่างขึ้นต้นด้วย st- ไม่ชนกับของหน้าอื่น
+   ══════════════════════════════════════════════════════════════════ */
+#v-settings,#stSheet{
+  --st-bg:#FAFAF9;--st-surf:#FFFFFF;--st-line:#E7E5E4;--st-line2:#D6D3D1;
+  --st-ink:#09090B;--st-ink2:#3F3F46;--st-mut:#71717A;--st-faint:#A8A29E;
+  --st-acc:#E9682A;--st-track:#F4F4F5;--st-chip:#FFFFFF;--st-chip-sh:0 1px 2px rgba(9,9,11,.12);
+  --st-danger:#B91C1C;--st-dsoft:#FEF2F2;--st-dline:#FECACA;--st-dfill:#B91C1C;
+  --st-pbg:#09090B;--st-pline:#09090B;--st-scrim:rgba(9,9,11,.45);--st-sheet:#FFFFFF;--st-field:#FFFFFF;--st-grab:#E4E4E7;
+  --st-off:#F4F4F5;--st-offink:#A1A1AA;--st-hover:rgba(9,9,11,.035);
+  font-family:Kanit,system-ui,sans-serif;color:var(--st-ink)
+}
+html[data-theme="dark"] #v-settings,html[data-theme="dark"] #stSheet{
+  --st-bg:#09090B;--st-surf:#111113;--st-line:#232326;--st-line2:#3F3F46;
+  --st-ink:#FAFAFA;--st-ink2:#D4D4D8;--st-mut:#A1A1AA;--st-faint:#52525B;
+  --st-acc:#F07A36;--st-track:#1C1C20;--st-chip:#2C2C31;--st-chip-sh:none;
+  --st-danger:#F87171;--st-dsoft:rgba(248,113,113,.10);--st-dline:rgba(248,113,113,.32);--st-dfill:#DC2626;
+  --st-pbg:#1A120C;--st-pline:rgba(240,122,54,.38);--st-scrim:rgba(0,0,0,.6);--st-sheet:#111113;--st-field:#18181B;--st-grab:#3F3F46;
+  --st-off:#232326;--st-offink:#71717A;--st-hover:rgba(255,255,255,.04)
+}
+/* หน้าตั้งค่าที่เปิดทับหน้าอื่น (การาจ นิตยสาร ร้านค้า โปรไฟล์) — แชตวางในคอลัมน์ของตัวเอง */
+#v-settings.st-float{position:fixed;inset:0;z-index:120;overflow-y:auto;display:none;-webkit-overflow-scrolling:touch}
+#v-settings.st-float.on{display:block}
+#v-settings{background:var(--st-bg)}
+#v-settings *,#stSheet *{box-sizing:border-box}
+.st-pg{width:100%;max-width:640px;margin:0 auto;padding:12px 16px 48px}
+.st-sub{display:none}
+#v-settings.st-m .st-main{display:none}
+#v-settings.st-m .st-sub.on{display:block}
+#v-settings a{color:inherit}
+#v-settings button,#stSheet button,#stSheet input,#stSheet textarea{font-family:inherit}
+
+.st-head{display:flex;align-items:center;gap:12px;min-height:56px}
+.st-head h1{margin:0;font-size:26px;font-weight:600;letter-spacing:-.01em;color:var(--st-ink)}
+.st-sub .st-head h1{font-size:21px}
+.st-back{width:44px;height:44px;flex:none;border-radius:50%;border:1px solid var(--st-line);background:var(--st-surf);color:var(--st-ink);display:grid;place-items:center;cursor:pointer;font-size:20px;padding:0}
+.st-back:active{transform:scale(.96)}
+
+.st-me{display:flex;align-items:center;gap:14px;margin-top:14px}
+.st-av{width:60px;height:60px;flex:none;border-radius:50%;background:var(--st-acc);color:#09090B;display:grid;place-items:center;font-size:26px;font-weight:600;overflow:hidden}
+.st-av img{width:100%;height:100%;object-fit:cover}
+.st-me-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.st-me-tx b{font-size:20px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st-me-tx small{font-size:14px;color:var(--st-mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st-pill{height:40px;padding:0 16px;flex:none;border-radius:999px;border:1px solid var(--st-line);background:var(--st-surf);color:var(--st-ink);font-size:14px;font-weight:500;cursor:pointer}
+
+/* การ์ดสมัครช่าง — สีตรงข้ามกับทั้งหน้า สะดุดตาทันทีที่เปิด */
+.st-partner{margin-top:18px;border-radius:22px;background:var(--st-pbg);border:1px solid var(--st-pline);padding:18px;display:flex;flex-direction:column;gap:14px;text-decoration:none;color:#FAFAFA!important}
+.st-partner .st-p-top{display:flex;align-items:center;gap:14px}
+.st-partner .st-p-ic{width:48px;height:48px;flex:none;border-radius:14px;background:#E9682A;color:#09090B;display:grid;place-items:center;font-size:24px}
+.st-partner.st-p-pending .st-p-ic,.st-partner.st-p-rejected .st-p-ic{background:#27272A;color:#FAFAFA}
+.st-partner.st-p-rejected .st-p-ic{color:#F07A36}
+.st-partner .st-p-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.st-partner .st-p-tx b{font-size:18px;font-weight:600}
+.st-partner .st-p-tx small{font-size:14px;color:#A1A1AA}
+.st-partner .st-p-go{align-self:flex-start;margin-left:62px;height:40px;padding:0 18px;border-radius:999px;background:#E9682A;color:#09090B;display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600}
+.st-partner.st-p-pending .st-p-go{background:transparent;border:1px solid #3F3F46;color:#FAFAFA;font-weight:500}
+.st-partner:active{transform:scale(.99)}
+
+.st-lbl{margin:26px 4px 10px;font-size:13px;font-weight:500;color:var(--st-mut)}
+.st-card{border-radius:20px;background:var(--st-surf);border:1px solid var(--st-line);overflow:hidden}
+.st-row{display:flex;align-items:center;gap:14px;width:100%;min-height:60px;padding:0 16px;border:0;background:none;color:var(--st-ink);text-decoration:none;text-align:left;font-size:16px;cursor:pointer}
+button.st-row:hover,a.st-row:hover{background:var(--st-hover)}
+.st-row+.st-row,.st-row+.st-x{box-shadow:inset 0 1px 0 var(--st-line)}
+.st-row.tall{min-height:68px}
+.st-row>.ti:first-child{font-size:22px;flex:none;opacity:.85}
+.st-row .st-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.st-row .st-t b{font-size:16px;font-weight:500}
+.st-row .st-t small{font-size:13px;color:var(--st-mut);line-height:1.4}
+.st-row .st-v{font-size:15px;color:var(--st-mut);white-space:nowrap}
+.st-row .st-ch{font-size:18px;color:var(--st-faint);flex:none}
+.st-row.nohover{cursor:default;padding-right:12px}
+
+.st-seg{display:flex;gap:2px;padding:3px;border-radius:12px;background:var(--st-track);flex:none}
+.st-seg button{height:34px;min-width:52px;padding:0 14px;border-radius:9px;border:0;background:transparent;color:var(--st-mut);font-size:14px;font-weight:500;cursor:pointer}
+.st-seg button[aria-pressed="true"]{background:var(--st-chip);color:var(--st-ink);box-shadow:var(--st-chip-sh)}
+
+/* LINE: แถวเดียว (cendon-line.js วาดให้ ตามสถานะการเชื่อม) */
+.st-line{min-height:76px;display:flex;align-items:center}
+.cl-row{display:flex;align-items:center;gap:14px;width:100%;min-height:76px;padding:0 14px 0 16px}
+.cl-row .cl-ic{width:36px;height:36px;flex:none;border-radius:10px;overflow:hidden;display:block;box-shadow:none}
+.cl-row .cl-ic svg{width:100%;height:100%;display:block}
+.cl-row .cl-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.cl-row .cl-tx{gap:1px}
+.cl-row .cl-tx b{font-size:16px;font-weight:500;color:var(--st-ink);text-shadow:none}
+.cl-row .cl-tx small{font-size:13px;color:var(--st-mut);line-height:1.4}
+#v-settings .cl-row .cl-go{height:38px;padding:0 16px;flex:none;border-radius:999px;border:0;background:var(--st-ink);color:var(--st-bg);display:flex;align-items:center;font-size:14px;font-weight:500;text-decoration:none;cursor:pointer}
+.cl-row .cl-off{height:38px;padding:0 6px;flex:none;border:0;background:none;color:var(--st-mut);font-size:13px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.cl-row .cl-ok{color:#06C755}
+
+.st-ai{padding:16px;display:flex;flex-direction:column;gap:10px}
+.st-ai-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.st-ai-top b{font-size:16px;font-weight:500}
+.st-ai-top span{font-size:15px;color:var(--st-mut)}
+.st-ai-top span b{color:var(--st-ink);font-weight:600}
+.st-bar{height:6px;border-radius:999px;background:var(--st-track);overflow:hidden}
+.st-bar i{display:block;height:100%;border-radius:999px;background:var(--st-acc);transition:width .5s ease}
+.st-note{font-size:13px;color:var(--st-mut);line-height:1.5}
+.st-msg{margin:10px 4px 0;font-size:13px;color:var(--st-mut);line-height:1.5;min-height:0}
+.st-msg:empty{display:none}
+
+.st-out{margin-top:28px;width:100%;height:54px;border-radius:16px;border:1px solid var(--st-line2);background:var(--st-surf);color:var(--st-ink);display:flex;align-items:center;justify-content:center;gap:10px;font-size:16px;font-weight:500;cursor:pointer}
+.st-out .ti{font-size:20px}
+.st-out:active{transform:scale(.99)}
+.st-cap{display:block;margin-top:10px;text-align:center;font-size:13px;color:var(--st-mut)}
+.st-del{display:flex;align-items:center;gap:8px;margin:44px auto 0;height:44px;padding:0 16px;border:0;background:none;color:var(--st-danger);font-size:15px;font-weight:500;cursor:pointer}
+.st-del .ti{font-size:18px}
+.st-foot{display:block;width:max-content;margin:18px auto 0;font-size:13px;color:var(--st-mut)!important;text-decoration:none}
+
+/* หน้าย่อย: รีเซ็ต / ปิดใช้งาน */
+.st-tip{margin-top:16px;border-radius:18px;background:var(--st-track);padding:12px 12px 12px 16px;display:flex;align-items:center;gap:12px}
+.st-tip>.ti{font-size:22px;flex:none}
+.st-tip span{flex:1;font-size:14px;line-height:1.45;color:var(--st-ink2)}
+.st-tip .st-pill{height:38px;padding:0 14px;border-color:var(--st-line2)}
+.st-act{margin-top:14px;border-radius:20px;background:var(--st-surf);border:1px solid var(--st-line);padding:18px;display:flex;flex-direction:column;gap:12px}
+.st-act-h{display:flex;align-items:center;gap:12px}
+.st-act-h .st-ic{width:40px;height:40px;flex:none;border-radius:12px;background:var(--st-track);display:grid;place-items:center;font-size:22px}
+.st-act-h b{font-size:18px;font-weight:600}
+.st-act p{margin:0;font-size:14px;line-height:1.5;color:var(--st-ink2)}
+.st-act p b{font-weight:600;color:var(--st-ink);display:inline-block;min-width:52px}
+.st-btn{height:48px;border-radius:14px;border:1px solid var(--st-line2);background:var(--st-surf);color:var(--st-ink);font-size:15px;font-weight:500;cursor:pointer;width:100%}
+.st-btn:disabled{opacity:.55;cursor:default}
+.st-manage-end{margin-top:40px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.st-manage-end small{font-size:13px;color:var(--st-mut)}
+.st-manage-end .st-del{margin:0}
+
+/* แผ่นยืนยัน / แผ่นเลือก (ล่างจอบนมือถือ · กลางจอบนคอม) */
+#stSheet{position:fixed;inset:0;z-index:2000;display:none}
+#stSheet.on{display:block}
+#stSheet .st-scrim{position:absolute;inset:0;background:var(--st-scrim);opacity:0;transition:opacity .22s ease}
+#stSheet.in .st-scrim{opacity:1}
+#stSheet .st-sh{position:absolute;left:0;right:0;bottom:0;max-height:92vh;overflow-y:auto;border-radius:28px 28px 0 0;background:var(--st-sheet);color:var(--st-ink);
+  padding:10px 20px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;transform:translateY(100%);transition:transform .28s cubic-bezier(.2,.8,.2,1)}
+#stSheet.in .st-sh{transform:none}
+@media (min-width:760px){
+  #stSheet .st-sh{left:50%;right:auto;bottom:auto;top:50%;width:min(440px,calc(100vw - 32px));border-radius:24px;padding:22px 24px 24px;
+    transform:translate(-50%,-46%);opacity:0;transition:transform .24s ease,opacity .2s ease}
+  #stSheet.in .st-sh{transform:translate(-50%,-50%);opacity:1}
+  #stSheet .st-grab{display:none}
+}
+@media (prefers-reduced-motion:reduce){#stSheet .st-sh,#stSheet .st-scrim{transition:none}}
+.st-grab{align-self:center;width:40px;height:5px;border-radius:999px;background:var(--st-grab);flex:none}
+.st-sh-c{display:flex;flex-direction:column;align-items:center;text-align:center}
+.st-sh-ic{margin-top:22px;width:56px;height:56px;border-radius:50%;background:var(--st-track);display:grid;place-items:center;font-size:26px}
+.st-sh h2{margin:16px 0 0;font-size:22px;font-weight:600}
+.st-sh-who{margin-top:6px;height:30px;padding:0 12px;border-radius:999px;background:var(--st-track);display:flex;align-items:center;font-size:14px;color:var(--st-ink2);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st-sh p{margin:14px 4px 0;font-size:15px;line-height:1.55;color:var(--st-ink2)}
+.st-sh-btns{margin-top:24px;width:100%;display:flex;flex-direction:column;gap:10px}
+.st-b1,.st-b2,.st-bd{height:54px;border-radius:16px;font-size:16px;font-weight:500;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:8px}
+.st-b1{border:0;background:var(--st-ink);color:var(--st-bg)}
+.st-b2{border:1px solid var(--st-line);background:transparent;color:var(--st-ink)}
+.st-bd{border:0;background:var(--st-dfill);color:#FFFFFF}
+.st-bd:disabled{background:var(--st-off);color:var(--st-offink);cursor:not-allowed}
+.st-b1:disabled,.st-b2:disabled{opacity:.6;cursor:default}
+.st-sh-h{margin-top:16px;display:flex;align-items:center;gap:12px;text-align:left}
+.st-sh-h h2{margin:0;font-size:22px}
+.st-sh-h small{font-size:14px;color:var(--st-mut)}
+.st-sh-h .st-dic{width:48px;height:48px;flex:none;border-radius:50%;background:var(--st-dsoft);color:var(--st-danger);display:grid;place-items:center;font-size:24px}
+.st-loss{margin-top:16px;border-radius:16px;border:1px solid var(--st-dline);background:var(--st-dsoft);padding:14px 16px;display:flex;flex-direction:column;gap:8px;font-size:14px;line-height:1.4;color:var(--st-ink2);text-align:left}
+.st-loss b{color:var(--st-ink);font-weight:600}
+.st-dl{margin-top:12px;height:46px;border-radius:14px;border:1px solid var(--st-line);background:transparent;color:var(--st-ink);display:flex;align-items:center;justify-content:center;gap:8px;font-size:15px;font-weight:500;cursor:pointer;width:100%}
+.st-lab{margin-top:18px;font-size:14px;color:var(--st-ink2);text-align:left}
+.st-lab b{color:var(--st-ink);font-weight:600}
+.st-in{margin-top:8px;width:100%;height:52px;border-radius:14px;border:1px solid var(--st-line2);background:var(--st-field);color:var(--st-ink);padding:0 16px;font-size:16px;outline:none}
+.st-in:focus,.st-ta:focus{border-color:var(--st-acc)}
+.st-ta{margin-top:12px;width:100%;min-height:120px;border-radius:14px;border:1px solid var(--st-line2);background:var(--st-field);color:var(--st-ink);padding:12px 14px;font-size:15px;line-height:1.6;resize:vertical;outline:none}
+.st-sh .st-msg{margin:12px 0 0;text-align:center}
+.st-sh-t{margin:14px 0 6px;font-size:20px;font-weight:600;text-align:left}
+.st-list{margin-top:8px;display:flex;flex-direction:column;border-radius:16px;border:1px solid var(--st-line);overflow:hidden}
+.st-list button{display:flex;align-items:center;gap:12px;min-height:54px;padding:0 16px;border:0;background:transparent;color:var(--st-ink);font-size:16px;text-align:left;cursor:pointer}
+.st-list button+button{box-shadow:inset 0 1px 0 var(--st-line)}
+.st-list button .st-t{flex:1}
+.st-list button small{color:var(--st-mut);font-size:13px}
+.st-list button .ti-check{color:var(--st-acc);font-size:20px;visibility:hidden}
+.st-list button[aria-pressed="true"] .ti-check{visibility:visible}
+.st-list button[aria-pressed="true"]{font-weight:500}
+.st-chips{margin-top:8px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.st-chips button{min-height:48px;border-radius:14px;border:1px solid var(--st-line);background:transparent;color:var(--st-ink);font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+.st-chips button[aria-pressed="true"]{border-color:var(--st-ink);background:var(--st-track);font-weight:500}
+
+/* หมวดของหน้าแชต (สไตล์การพูด เริ่มแชตใหม่ ล้างบทสนทนา) */
+.st-x .style-row{display:flex;flex-wrap:wrap;gap:8px;padding:0 16px 14px 52px}
+.st-x .style-row+.st-row{box-shadow:inset 0 1px 0 var(--st-line)}
+.st-x .st-row.nohover+.style-row{margin-top:-6px}

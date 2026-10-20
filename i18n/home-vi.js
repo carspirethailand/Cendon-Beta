@@ -1607,5 +1607,11 @@ window.CENDON_L10N={lang:"vi",t:{
 "Ready for the AI":"Sẵn sàng gửi AI",
 "Redo":"Ghi lại",
 "Start recording":"Bắt đầu ghi âm",
-"Tap to record · up to {0} seconds":"Chạm để ghi · tối đa {0} giây"
+"Tap to record · up to {0} seconds":"Chạm để ghi · tối đa {0} giây",
+"LINE notifications":"Thông báo LINE",
+"Connected · jobs and messages go to LINE":"Đã kết nối · việc và tin nhắn được gửi qua LINE",
+"One more step: add Cendon as a friend on LINE":"Còn một bước: kết bạn với Cendon trên LINE",
+"Continue in LINE: send \"{0}\"":"Tiếp tục trong LINE: gửi \"{0}\"",
+"Open LINE":"Mở LINE",
+"New jobs, messages and car reminders":"Việc mới, tin nhắn và nhắc bảo dưỡng xe"
 }};

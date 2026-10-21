@@ -88,7 +88,11 @@
     /* ศูนย์กลางวงกลมเต็มจอ = จุดวางเป้า = จุดที่จุดดำแผ่ออก (ตรงกันทั้งสามอย่าง) */
     function orbCenter(){const r=canvas.getBoundingClientRect();return r.width&&r.height?{x:r.left+r.width/2,y:r.top+r.height/2}:{x:innerWidth/2,y:innerHeight*.46};}
     /* การ์ดผลลัพธ์/Valet: เต็มจอ = ในจอโทร · คลื่นในแถบ = ใต้แถบ · เม็ดยาลอย = ลอยเหนือหน้า */
-    function placeResults(){if(!results)return;const fl=mode!=='full'&&(floating()||!anchor);(mode==='full'?root:fl?document.body:anchor.parentNode).append(results);results.classList.toggle('cv-float',fl);}
+    function placeResults(){if(!results)return;const fl=mode!=='full'&&(floating()||!anchor);
+      // Results are not a face of the rotating search/AI card. Keep readable
+      // content outside its preserve-3d subtree (also while the card flips).
+      const inlineHost=slideEl&&slideEl!==anchor?slideEl:anchor?.parentNode;
+      (mode==='full'?root:fl?document.body:inlineHost||document.body).append(results);results.classList.toggle('cv-float',fl);}
     function resetRootStyle(){root.style.transform='';root.style.opacity='';root.style.borderRadius='';root.style.transition='';root.style.clipPath='';}
     const pillCenter=()=>({x:innerWidth/2,y:innerHeight-118});
     const center=el=>{const r=el.getBoundingClientRect();return{x:r.left+r.width/2,y:r.top+r.height/2,w:r.width,h:r.height};};

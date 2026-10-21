@@ -4,21 +4,21 @@
 <script>/* ธีมตั้งแต่เฟรมแรก (ก่อน CSS วาด) — เดิมหน้าเปิดด้วยธีมตั้งต้นแวบหนึ่งแล้วค่อยสลับ (แชตขึ้นจอดำ) ดูเหมือนกระพริบ/กระตุก */(function(){try{var O={warm:"light",pearl:"light",emerald:"light",plant:"light",moss:"light",carbon:"dark",night:"dark",midnight:"dark",cyber:"dark",aurora:"dark",ocean:"dark",sunset:"dark",magma:"dark"},v=null;try{v=JSON.parse(localStorage.getItem("spire_theme"))}catch(e){}if(typeof v!=="string")try{v=JSON.parse(localStorage.getItem("spire_chatTheme"))}catch(e){}v=v==="light"||v==="dark"?v:(O[v]||"light");var e=document.documentElement;e.setAttribute("data-theme",v);e.setAttribute("data-ctheme",v)}catch(x){}})();</script>
 <script src="/launch-gate.js?v=1"></script>
 <script src="/auth-gate.js?v=2"></script>
-<script src="/account-scope.js?v=1"></script>
+<script src="/account-scope.js?v=2"></script>
 <script src="/console-entry.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
 <script src="/cendon-tour.js" defer></script>
 <script src="/account-actions.js?v=3" defer></script>
-<script src="/account.js?v=2026-10-20-set1" defer></script>
+<script src="/account.js?v=2026-10-21-r1" defer></script>
 <link rel="stylesheet" href="/settings.css?v=3">
-<script src="/settings.js?v=2" defer></script>
+<script src="/settings.js?v=3" defer></script>
 <script src="/sheet-drag.js?v=1" defer></script>
-<script src="/garage-rules.js?v=2" defer></script>
+<script src="/garage-rules.js?v=3" defer></script>
 <script src="/garage-data.js?v=2" defer></script>
 <script src="/mileage-session.js?v=1" defer></script>
 <script src="/mileage-review.js?v=1" defer></script>
-<script src="/input-guard.js?v=4" defer></script>
+<script src="/input-guard.js?v=5" defer></script>
 <script src="/cloud-swap.js?v=3" defer></script>
 <meta charset="UTF-8"/>
 <!-- ที่อยู่แบบลึก (/chat/…) — ไฟล์ประกอบทุกตัวอ้างจากรากเว็บเสมอ -->
@@ -3043,7 +3043,7 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 <script src="call-tools.js?v=2026-10-19-inst1" defer></script>
 <script src="call-composer.js?v=2026-10-17-r4" defer></script>
 <script src="call-agent.js?v=2026-10-18-web1" defer></script>
-<script src="call-surface.js?v=2026-10-18-web2" defer></script>
+<script src="call-surface.js?v=2026-10-21-r1" defer></script>
 <script src="call-shell.js?v=1" defer></script>
 <script src="garage-care.js?v=1" defer></script>
 <script src="call-session.js?v=2026-10-19-loud1" defer></script>
@@ -3051,7 +3051,7 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 <script src="valet-core.js?v=7" defer></script>
 <script src="chat-garage.js?v=1" defer></script>
 <script src="chat-render.js?v=1" defer></script>
-<script src="valet.js?v=7" defer></script>
+<script src="valet.js?v=8" defer></script>
 <script src="bell.js?v=12" defer></script>
 <script src="drop.js?v=4" defer></script>
 <script src="./techs.js"></script>
@@ -11692,7 +11692,7 @@ window.cloudMark=function(k){
   const m=meta(); m[k]=Date.now(); setMeta(m);
   dirty.add(k);
   clearTimeout(timer);
-  timer=setTimeout(push,1500);            /* หน่วงไว้ พิมพ์รัว ๆ จะได้ไม่ยิงทุกตัวอักษร */
+  timer=setTimeout(push,400);             /* รวมการแก้ไขติดกันสั้น ๆ แล้วส่ง ไม่รอหลายวินาที */
 };
 
 /* คีย์ที่ต้องส่งขึ้น = ทุกคีย์ที่ยัง "ส่งไม่ถึง" เวลาแก้ล่าสุดของมัน
@@ -11761,16 +11761,20 @@ async function push(){
   try{
     const state=collect();
     if(Object.keys(state).length){
-      await req("/api/state",{method:"PUT",body:JSON.stringify({state})});
-      dirty.clear();
+      const ack=await req("/api/state",{method:"PUT",body:JSON.stringify({state})});
       /* จดไว้ว่าคีย์ไหนไปถึงเซิร์ฟเวอร์แล้ว รอบหน้าจะได้ไม่ส่งซ้ำ
          และถ้ารอบนี้พลาด รอบหน้ามันจะถูกหยิบมาส่งใหม่เองอัตโนมัติ */
       const sy=synced();
+      const saved=new Set(Array.isArray(ack.saved)?ack.saved:[]);
       Object.keys(state).forEach(k=>{
-        const v=localStorage.getItem("spire_"+k);
+        if(!saved.has(k))return;
+        // A later local edit is NOT part of this acknowledgement.
+        const v=state[k].v===null?null:JSON.stringify(state[k].v);
         sy[k]={t:state[k].t,h:v===null?null:sig(v)};
+        if(localStorage.getItem("spire_"+k)===v)dirty.delete(k);
       });
       setSynced(sy);
+      if((ack.skipped||[]).length)throw Error(Object.values(ack.errors||{})[0]||"บางรายการยังไม่ซิงก์ กรุณาตรวจข้อมูล / Some records were not synced; check their values");
       St.pushed=new Date().toISOString(); St.keys=Object.keys(state).length;
     }
     St.error=null; fails=0;
@@ -12622,6 +12626,6 @@ setTimeout(mount,800); setTimeout(mount,2500);
 <script src="feature-ai.js?v=2026-10-18-audio1"></script>
 <script src="fluid.js" defer></script>
 <script src="crop.js" defer></script>
-<script src="cendon-line.js?v=4" defer></script>
+<script src="cendon-line.js?v=5" defer></script>
 </body>
 </html>

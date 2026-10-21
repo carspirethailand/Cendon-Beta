@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const css=readFileSync(new URL('../home-layout.css',import.meta.url),'utf8');
-const page=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+const page=readFileSync(new URL('../index.html',import.meta.url),'utf8').replace(/\r\n/g,'\n');
 test('home uses a scoped CSS-only spacing pass before first paint',()=>{
   const at=page.indexOf('href="home-layout.css?v=');assert.ok(at>0&&at<page.indexOf('</head>'));
   assert.ok(!css.includes('@font-face')&&!css.includes('font-family:')&&!css.includes('data-theme'));

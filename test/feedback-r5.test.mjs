@@ -60,5 +60,5 @@ test('LINE card paints at once from the last known state and never keeps asking 
   assert.match(line,/try\{await status\(!st\|\|!st\.linked\)\}catch\(e\)\{\}/);
   assert.match(line,/window\.CendonLine=\{refresh:/);
   assert.match(home,/const done=r=>\{if\(window\.CendonLine\)CendonLine\.refresh\(\);return sheet\(/);
-  for(const f of ['index.html','garage.html','news.html','spares.html','profile.html','chat.html','sw.js'])assert.match(r(f),/cendon-line\.js\?v=4/,f);
+  for(const f of ['index.html','garage.html','news.html','spares.html','profile.html','chat.html','sw.js'])assert.match(r(f),/cendon-line\.js\?v=5/,f);
 });

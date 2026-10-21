@@ -302,6 +302,7 @@ test('account flow: pending tutorial starts on home only and skip persists once 
   f.switchAccount('user-A'); await settle(); assert.equal(f.tours.length, 1);
   const privatePage = fixture({ uid: 'user-A', server: complete('user-A', { tutorial: { status: 'pending' } }) }); await settle();
   assert.equal(privatePage.tours.length, 0);
+  assert.equal(privatePage.navigations.length,0,'pending Home tour must not redirect a private page');
 });
 
 test('account flow: a wrong password shows one neutral message and keeps the typed email', async () => {

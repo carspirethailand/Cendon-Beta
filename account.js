@@ -338,7 +338,9 @@
   }
   function enter(){close();
     const next=S.next||safeNext(new URLSearchParams(location.search).get('next'));
-    if(S.status?.tutorial?.status==='pending'&&(LOGIN||!/^\/(?:index(?:\.html)?)?\/?$/.test(location.pathname))){
+    // Only the first sign-in may introduce the Home tour. A pending optional
+    // tour must never detour Chat/Garage/LINE navigation through Home.
+    if(LOGIN&&S.status?.tutorial?.status==='pending'){
       const returnTo=LOGIN?next:safeNext(location.pathname+location.search+location.hash);
       go('/?tourReturn='+encodeURIComponent(returnTo));return;
     }

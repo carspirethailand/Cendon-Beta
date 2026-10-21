@@ -4,19 +4,19 @@
 <script>/* ธีมตั้งแต่เฟรมแรก (ก่อน CSS วาด) — เดิมหน้าเปิดด้วยธีมตั้งต้นแวบหนึ่งแล้วค่อยสลับ (แชตขึ้นจอดำ) ดูเหมือนกระพริบ/กระตุก */(function(){try{var O={warm:"light",pearl:"light",emerald:"light",plant:"light",moss:"light",carbon:"dark",night:"dark",midnight:"dark",cyber:"dark",aurora:"dark",ocean:"dark",sunset:"dark",magma:"dark"},v=null;try{v=JSON.parse(localStorage.getItem("spire_theme"))}catch(e){}if(typeof v!=="string")try{v=JSON.parse(localStorage.getItem("spire_chatTheme"))}catch(e){}v=v==="light"||v==="dark"?v:(O[v]||"light");var e=document.documentElement;e.setAttribute("data-theme",v);e.setAttribute("data-ctheme",v)}catch(x){}})();</script>
 <script src="/launch-gate.js?v=1"></script>
 <script src="/auth-gate.js?v=2"></script>
-<script src="/account-scope.js?v=1"></script>
+<script src="/account-scope.js?v=2"></script>
 <script src="/console-entry.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
 <script src="/cendon-tour.js" defer></script>
 <script src="/account-actions.js?v=3" defer></script>
-<script src="/account.js?v=2026-10-20-set1" defer></script>
-<script src="/garage-rules.js?v=2" defer></script>
+<script src="/account.js?v=2026-10-21-r1" defer></script>
+<script src="/garage-rules.js?v=3" defer></script>
 <script src="/garage-data.js?v=2" defer></script>
 <script src="/mileage-session.js?v=1" defer></script>
 <script src="/mileage-review.js?v=1" defer></script>
 <script src="/valet-core.js?v=7" defer></script>
-<script src="/input-guard.js?v=4" defer></script>
+<script src="/input-guard.js?v=5" defer></script>
 <script src="/cloud-swap.js?v=3" defer></script>
 <meta charset="UTF-8"/>
 <!-- ที่อยู่แบบลึก (/garage/…) — ไฟล์ประกอบทุกตัวอ้างจากรากเว็บเสมอ -->
@@ -6011,7 +6011,7 @@ window.spireApplySetup=()=>{ const k=level();
   try{ mountProfilePicker() }catch(e){} };
 })();
 </script>
-<script src="/settings.js?v=2" defer></script>
+<script src="/settings.js?v=3" defer></script>
 <script src="/sheet-drag.js?v=1" defer></script>
 <script id="skillsjs">
 /* ══════════════════════════════════════════════════════════════════
@@ -7761,9 +7761,9 @@ function toastx(m,ic){try{if(typeof window.toast==="function")return window.toas
 /* ตรวจก่อนบันทึก (input-guard.js): ข้อความต้องอ่านได้ ตัวเลขต้องสมจริงตามรุ่นรถ — ไม่ผ่านบอกเหตุผลและไม่บันทึก
    ยอดที่สูงผิดปกติแต่เป็นไปได้ (เช่น รถหรู) ถามยืนยันก่อน ไม่ปัดตัวเลขเอง */
 const GD=()=>window.spireGuard;
-function okText(v,o){const g=GD();if(!g)return String(v||"").trim().slice(0,(o&&o.max)||80);
+function okText(v,o){const g=GD();if(!g){toastx(T("ระบบตรวจข้อมูลยังไม่พร้อม กรุณาโหลดหน้าใหม่","Validation is not ready; reload this page"),"ti-alert-triangle");return null}
   const r=g.text(v,o);if(!r.ok){toastx(r.msg,"ti-alert-triangle");return null}return r.v}
-function okMoney(n,c,o){const g=GD();if(!g||!(+n>0))return true;const r=g.money(n,c,o);
+function okMoney(n,c,o){const g=GD();if(!g){toastx(T("ระบบตรวจข้อมูลยังไม่พร้อม กรุณาโหลดหน้าใหม่","Validation is not ready; reload this page"),"ti-alert-triangle");return false}const r=g.money(n||0,c,o);
   if(!r.ok){toastx(r.msg,"ti-alert-triangle");return false}return !r.ask||confirm(r.ask)}
 /* เลขไมล์ของงานที่ทำไปแล้ว: เกิน 1 ล้าน กม. ไม่รับ · มากกว่าเลขไมล์ปัจจุบันเกิน 30,000 กม. ถามก่อน */
 function okKm(km,c){km=+km||0;
@@ -8059,7 +8059,7 @@ D.addEventListener("click",e=>{
     /* แก้ของเดิมถ้าเคยบันทึกไว้แล้ว ไม่ใช่ยัดแถวใหม่ทุกครั้งจนประวัติซ้ำ */
     const idx=l.services.map((x,i)=>({x,i})).filter(o=>o.x.k===k)
       .sort((a,b)=>new Date(b.x.date)-new Date(a.x.date))[0];
-    const rec={k,km:parseInt(kmv)||0,amount:parseInt(amt)||0,
+    const rec={k,km:parseInt(kmv)||0,amount:Number(amt)||0,
       date:date||new Date().toISOString().slice(0,10),note:nt||""};
     if(idx)l.services[idx.i]=rec; else l.services.push(rec);
     setLog(c.id,l);
@@ -11357,6 +11357,8 @@ function wireBulk(){
     const c=car(); if(!c)return;
     const picked=bulk.entries.filter(x=>x.on);
     if(!picked.length)return;
+    try{if(!window.CendonGarageRules)throw Error(T("ระบบตรวจข้อมูลยังไม่พร้อม","Validation is not ready"));picked.forEach(e=>CendonGarageRules.record('services',{...e,date:e.date||new Date().toISOString().slice(0,10)},c));}
+    catch(e){bulk.err=e.message;renderTool();return}
     const l=LG("carlab_log_"+c.id,{services:[],fuel:[],trips:[]});
     l.services=l.services||[];
     picked.forEach(e=>{
@@ -11529,6 +11531,8 @@ function wireQuote(){
     const picked=new Set();
     D.querySelectorAll("[data-svc]").forEach(i=>{ if(i.checked)picked.add(+i.dataset.svc) });
     if(!picked.size){ qSaved.svc=false; return }
+    try{if(!window.CendonGarageRules)throw Error(T("ระบบตรวจข้อมูลยังไม่พร้อม","Validation is not ready"));qRes.items.forEach((x,i)=>{const k=svcKey(x.name);if(k&&picked.has(i))CendonGarageRules.record('services',{k,km:+km||0,amount:x.price||0,date},c)});}
+    catch(e){qErr=e.message;renderQuote();return}
     qRes.items.forEach((x,i)=>{
       const k=svcKey(x.name); if(!k||!picked.has(i))return;
       l.services.push({k,km:+km||0,amount:+x.price||0,date});
@@ -14331,7 +14335,7 @@ window.cloudMark=function(k){
   const m=meta(); m[k]=Date.now(); setMeta(m);
   dirty.add(k);
   clearTimeout(timer);
-  timer=setTimeout(push,1500);            /* หน่วงไว้ พิมพ์รัว ๆ จะได้ไม่ยิงทุกตัวอักษร */
+  timer=setTimeout(push,400);             /* รวมการแก้ไขติดกันสั้น ๆ แล้วส่ง ไม่รอหลายวินาที */
 };
 
 /* คีย์ที่ต้องส่งขึ้น = ทุกคีย์ที่ยัง "ส่งไม่ถึง" เวลาแก้ล่าสุดของมัน
@@ -14400,16 +14404,20 @@ async function push(){
   try{
     const state=collect();
     if(Object.keys(state).length){
-      await req("/api/state",{method:"PUT",body:JSON.stringify({state})});
-      dirty.clear();
+      const ack=await req("/api/state",{method:"PUT",body:JSON.stringify({state})});
       /* จดไว้ว่าคีย์ไหนไปถึงเซิร์ฟเวอร์แล้ว รอบหน้าจะได้ไม่ส่งซ้ำ
          และถ้ารอบนี้พลาด รอบหน้ามันจะถูกหยิบมาส่งใหม่เองอัตโนมัติ */
       const sy=synced();
+      const saved=new Set(Array.isArray(ack.saved)?ack.saved:[]);
       Object.keys(state).forEach(k=>{
-        const v=localStorage.getItem("spire_"+k);
+        if(!saved.has(k))return;
+        // A later local edit is NOT part of this acknowledgement.
+        const v=state[k].v===null?null:JSON.stringify(state[k].v);
         sy[k]={t:state[k].t,h:v===null?null:sig(v)};
+        if(localStorage.getItem("spire_"+k)===v)dirty.delete(k);
       });
       setSynced(sy);
+      if((ack.skipped||[]).length)throw Error(Object.values(ack.errors||{})[0]||"บางรายการยังไม่ซิงก์ กรุณาตรวจข้อมูล / Some records were not synced; check their values");
       St.pushed=new Date().toISOString(); St.keys=Object.keys(state).length;
     }
     St.error=null; fails=0;
@@ -14793,6 +14801,6 @@ window.spireApplyPrimary=()=>apply(read());
 <script src="feature-ai.js?v=5"></script>
 <script src="fluid.js" defer></script>
 <script src="crop.js" defer></script>
-<script src="cendon-line.js?v=4" defer></script>
+<script src="cendon-line.js?v=5" defer></script>
 </body>
 </html>

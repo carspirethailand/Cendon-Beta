@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {readFileSync,existsSync} from 'node:fs';
 import vm from 'node:vm';
 const root=new URL('../',import.meta.url);
-const read=f=>readFileSync(new URL(f,root),'utf8');
+const read=f=>readFileSync(new URL(f,root),'utf8').replace(/\r\n/g,'\n');
 const html=read('index.html'),admin=read('admin.html'),gate=read('launch-gate.js');
 
 /* รันประตูเปิดตัวในเครื่องจำลอง: คืนว่าถูกส่งไปไหน + คลาสบนหน้า */

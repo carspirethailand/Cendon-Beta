@@ -122,18 +122,22 @@
     try{localStorage.setItem('spire___meta',JSON.stringify(meta));localStorage.setItem('spire___synced',JSON.stringify(synced));localStorage.setItem('spire___seen',JSON.stringify(seen))}catch(e){}
     return true;
   }
-  let priming=null;
+  let priming=null,primeUid=null;
   function prime(u){
     if(!u||typeof u.getIdToken!=='function'||typeof W.fetch!=='function')return Promise.resolve(false);
     const uid=u.uid,api=String(W.BACKEND_URL||'https://spireonebackend.carspirethailand.workers.dev').replace(/\/+$/,'');
+    if(priming&&primeUid===uid)return priming;
+    primeUid=uid;
     priming=(async()=>{
       const tok=await u.getIdToken();
-      const get=p=>W.fetch(api+p,{headers:{Authorization:'Bearer '+tok},cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null);
+      if(auth()?.currentUser?.uid!==uid||owner()!==uid)return false;
+      const get=p=>W.fetch(api+p,{headers:{Authorization:'Bearer '+tok},cache:'no-store',...(W.AbortSignal?.timeout?{signal:W.AbortSignal.timeout(10000)}:{})}).then(r=>r.ok?r.json():null).catch(()=>null);
       const [st,cr]=await Promise.all([get('/api/state'),get('/api/cars?sync=1')]);
       const cur=auth()&&auth().currentUser;if(!cur||cur.uid!==uid)return false;
       const rows=Array.isArray(cr)?cr:cr&&Array.isArray(cr.cars)?cr.cars:null;
       return adopt(uid,st&&st.state,rows);
     })().catch(()=>false);
+    const task=priming;task.finally(()=>{if(priming===task)primeUid=null});
     return priming;
   }
   /* รอข้อมูลที่กำลังโหลด ไม่เกิน ms (เน็ตช้าก็ยังเข้าแอปได้ หน้าแอปดึงต่อเอง) */

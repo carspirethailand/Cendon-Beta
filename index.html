@@ -8,15 +8,15 @@ if(/^\/messages(\/|$)/.test(location.pathname)){document.documentElement.classLi
 <style>html.ib-boot #top,html.ib-boot .view,html.ib-boot #ibFab{visibility:hidden!important}</style>
 <script src="/launch-gate.js?v=1"></script>
 <script src="/auth-gate.js?v=2"></script>
-<script src="/account-scope.js?v=1"></script>
+<script src="/account-scope.js?v=2"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
 <script src="/cendon-tour.js" defer></script>
 <script src="/account-actions.js?v=3" defer></script>
-<script src="/account.js?v=2026-10-20-set1" defer></script>
-<script src="/garage-rules.js?v=2" defer></script>
+<script src="/account.js?v=2026-10-21-r1" defer></script>
+<script src="/garage-rules.js?v=3" defer></script>
 <script src="/garage-data.js?v=2" defer></script>
-<script src="/input-guard.js?v=4" defer></script>
+<script src="/input-guard.js?v=5" defer></script>
 <meta charset="UTF-8"/>
 <!-- ที่อยู่แบบลึก (/tech/<ร้าน>/reviews) — ไฟล์ประกอบทุกตัวอ้างจากรากเว็บเสมอ -->
 <base href="/">
@@ -2702,7 +2702,7 @@ a.mtab{text-decoration:none}
 <script src="call-composer.js?v=2026-10-17-r4" defer></script>
 <script src="valet-core.js?v=7" defer></script>
 <script src="call-agent.js?v=2026-10-18-web1" defer></script>
-<script src="call-surface.js?v=2026-10-18-web2" defer></script>
+<script src="call-surface.js?v=2026-10-21-r1" defer></script>
 <script src="engine-scan.js?v=2026-10-17-r4" defer></script>
 <link rel="stylesheet" href="vehicle-audio.css?v=3">
 <script src="vehicle-audio.js?v=4" defer></script>
@@ -3455,7 +3455,7 @@ async function busy(btn,fn){
   if(btn&&btn.disabled)return;
   const html=btn&&btn.innerHTML;
   if(btn){btn.disabled=true;btn.innerHTML='<span class="spin"></span>'}
-  try{return await fn()}
+  try{return await fn(btn)}
   catch(e){
     /* ลืมกรอกหรือกรอกผิด (เช็กในเครื่อง หรือเซิร์ฟเวอร์ตอบ 400) → ขึ้นกล่องบอกกลางจอ ไม่ใช่ตัวหนังสือเล็ก ๆ ท้ายฟอร์มที่มองไม่เห็น */
     if(e&&(e.form||e.status===400)&&$("bs").classList.contains("on")){const er=$("err");if(er)er.textContent=e.message;formPop(e.form||[{id:fieldOf(e.message),msg:e.message}]);return}
@@ -4954,12 +4954,12 @@ Nav.route({path:"staff/review/:uid",test:p=>/^[\w-]{6,128}$/.test(p.uid),open:as
 /* ลิงก์จากการ์ด LINE ของทีมงาน "มีใบสมัครช่างใหม่" — เปิดหน้าตรวจใบสมัครทันที */
 Nav.route({path:"staff/review",open:async()=>{if(await needU()&&modesAvail().includes("staff")){setMode("staff");await reviewList()}}});
 Nav.route({path:"staff",open:async()=>{if(await needU()&&modesAvail().includes("staff"))setMode("staff")}});
-Nav.route({path:"join",open:async()=>{if(await needU())return openJoin()}});
+Nav.route({path:"join",open:async()=>{if(!U)sheet({title:"สมัครเป็นช่าง",url:location.pathname+location.search,body:'<p role="status"><span class="spin"></span> กำลังตรวจบัญชี…</p>'});await READY.user;if(U)return openJoin();needLogin()}});
 Nav.route({path:"quote",name:"qcheck",open:()=>quotePage()});
 Nav.route({path:"listen",name:"listen",open:()=>listenPage()});
 Nav.route({path:"photo",name:"photo",open:()=>photoPage()});
 /* หน้าเชื่อมต่อ LINE — มาจากลิงก์ที่บอท Cendon ส่งให้ (/line?t=…) · ยังไม่ล็อกอิน → ไปล็อกอินแล้วกลับมาที่นี่ */
-Nav.route({path:"line",name:"lineConnect",open:async(p,q)=>{if(await needU())lineConnect(q.get("t")||"")}});
+Nav.route({path:"line",name:"lineConnect",open:async(p,q)=>{if(!U)sheet({title:"เชื่อม LINE",url:"/line",body:'<p role="status"><span class="spin"></span> กำลังตรวจบัญชี…</p>'});await READY.user;if(U)lineConnect(q.get("t")||"");else needLogin()}});
 Nav.route({path:"quotes",open:async()=>{await READY.techs;if(await needU())openMulti("","")}});
 Nav.route({path:"compare/:g",open:async p=>{if(await needU())return openGroup(p.g)}});
 Nav.route({path:"urgent",open:async()=>{await READY.techs;if(await needU())return emergency()}});
@@ -6701,12 +6701,14 @@ const DK=[["id","บัตรประชาชน (ด้านหน้า)",1
 const STEPS=["ข้อมูลผู้สมัคร","สถานที่ให้บริการ","เอกสาร","ตรวจสอบและยื่น"];
 /* วิธียืนยันตัวตนและรุ่นข้อความยินยอม มาจาก backend (/api/tech/ping)
    Didit เปิดอยู่ = ไม่ขอเลขบัตร รูปบัตร หรือเซลฟี่ในฟอร์ม (ไปถ่ายกับ Didit หลังยื่น) · ปิด = ทีมงานดูรูปบัตรเองแล้วลบหลังตรวจ */
-let TP=null;
+let TP=null,tpPending=null;
 async function techPolicy(){
   if(TP&&TP.ok&&Date.now()-TP.at<6e4)return TP;
-  try{const r=await fetch(API+"/api/tech/ping",{cache:"no-store"});const d=await r.json();TP={ok:r.ok&&!!d.ok&&(d.version||0)>=12,didit:d.identity==="didit",ver:d.consentVer||"",ai:!!d.photoAI,at:Date.now()}}
+  if(tpPending)return tpPending;
+  tpPending=(async()=>{try{const r=await fetch(API+"/api/tech/ping",{cache:"no-store",signal:AbortSignal.timeout(10000)});const d=await r.json();TP={ok:r.ok&&!!d.ok&&(d.version||0)>=12,didit:d.identity==="didit",ver:d.consentVer||"",ai:!!d.photoAI,at:Date.now()}}
   catch(e){TP={ok:false,didit:false,ver:"",ai:false,at:Date.now()}}
-  return TP;
+  return TP;})().finally(()=>{tpPending=null});
+  return tpPending;
 }
 const DIDIT=()=>!!(TP&&TP.didit);
 const dk=()=>DIDIT()?DK.filter(d=>d[0]!=="id"&&d[0]!=="selfie"):DK;
@@ -6717,13 +6719,17 @@ const ageOf=b=>{if(!b)return 0;const d=new Date(b),n=new Date();let a=n.getFullY
 
 async function openJoin(){
   if(!U)return needLogin();
-  /* กลับมาจาก Didit (/join?verificationSessionId=…) — ดึงผลทันที ไม่ต้องรอ webhook */
   const kyc=new URLSearchParams(location.search).get("verificationSessionId");
+  const owner=U.uid,loading={title:"สมัครเป็นช่าง",url:"/join",body:'<p role="status" aria-live="polite"><span class="spin"></span> กำลังตรวจสถานะใบสมัคร…</p>'};
+  sheet(loading);
+  /* กลับมาจาก Didit (/join?verificationSessionId=…) — ดึงผลทันที ไม่ต้องรอ webhook */
   if(kyc){try{await api("/api/tech/apply/identity/refresh",{body:{}})}catch(e){}
     /* The session is selected server-side from the signed-in account. Do not
        keep a provider identifier in the address bar or refresh it on reload. */
     const u=new URL(location.href);u.searchParams.delete("verificationSessionId");history.replaceState(history.state,"",u.pathname+(u.search||"")+(u.hash||""));}
   await Promise.all([refreshMe(),techPolicy()]);
+  if(U?.uid!==owner||SH.cur!==loading||!$("bs").classList.contains("on"))return;
+  if(!ME)return sheet({push:false,title:"สมัครเป็นช่าง",body:'<p>ยังตรวจสถานะไม่ได้ กรุณาลองใหม่ ไม่ต้องกรอกใบสมัครซ้ำ</p><button class="btn p" id="jRetry">ลองอีกครั้ง</button>',mount(){$("jRetry").onclick=openJoin}});
   const a=ME&&ME.application,t=ME&&ME.technician;
   /* ทีมงานเลือกได้ว่าจะเป็นช่างทีมงาน (ไม่ต้องใช้อะไร เห็นเฉพาะทีมงาน) หรือลองยื่นแบบพาร์ทเนอร์จริง */
   if(ME&&ME.admin&&!(a&&!a.test))return sheet({title:"สมัครเป็นช่าง",url:"/join",body:`
@@ -6875,15 +6881,21 @@ function step(n){
       $("dTerms").onclick=e=>{e.preventDefault();terms()};
       const decs=[...b.querySelectorAll(".dec")];decs.forEach(x=>x.onchange=()=>$("aGo").disabled=!decs.every(y=>y.checked));
       $("aBk").onclick=()=>step(3);
-      $("aGo").onclick=e=>busy(e.currentTarget,async()=>{
+      const consentPolicy={didit:DIDIT(),ver:TP&&TP.ver};
+      $("aGo").onclick=e=>busy(e.currentTarget,async button=>{
+        const owner=U?.uid,draft=APP,ai=!!($("dAI")&&$("dAI").checked);
         /* ข้อความยินยอมต้องตรงกับที่เซิร์ฟเวอร์ใช้จริง — เซิร์ฟเวอร์ยังไม่อัปเดต = ยังไม่ส่ง (กันยินยอมกับผู้ให้บริการคนละราย) */
-        const tp=await techPolicy();if(!tp.ok||tp.didit!==DIDIT())throw Error("ระบบสมัครช่างกำลังอัปเดต กรุณาลองใหม่อีกครั้งภายหลัง");
-        const ai=!!($("dAI")&&$("dAI").checked);
-        e.currentTarget.textContent=ai?"กำลังส่งและให้ AI ดูรูป…":"กำลังส่ง…";
+        const tp=await techPolicy();if(!tp.ok||tp.didit!==consentPolicy.didit||tp.ver!==consentPolicy.ver)throw Error("ข้อความยินยอมมีการอัปเดต กรุณาเปิดขั้นตรวจสอบอีกครั้งก่อนส่ง");
+        if(!owner||U?.uid!==owner||APP!==draft||!button.isConnected)return;
+        button.textContent=ai?"กำลังส่งและให้ AI ดูรูป…":"กำลังส่ง…";
         const docs=[];dk().forEach(([k])=>(APP.docs[k]||[]).forEach(d=>docs.push({kind:k,data:d})));
         await api("/api/tech/apply",{body:{title:APP.title,name:APP.name,...(DIDIT()?{diditConsent:true}:{idNo:String(APP.idNo).replace(/\D/g,""),idConsent:true}),birth:APP.birth,age:ageOf(APP.birth),shop:APP.shop,phone:(APP.phone||"").replace(/[\s-]/g,""),years:+APP.years,area:APP.area,
           from:+APP.from,warranty:+APP.warranty,radius:+APP.radius||0,cats:APP.cats,mobile:!!APP.mobile,urgent:!!APP.urgent,about:APP.about||"",lat:APP.lat,lng:APP.lng,docs,consent:true,aiConsent:ai,consentVer:tp.ver}});
-        APP=null;await refreshMe();sheetFresh();statusPage(ME.application,true);
+        APP=null;await refreshMe();
+        if(U?.uid!==owner||!button.isConnected)return;
+        sheetFresh();
+        if(ME?.application)return statusPage(ME.application,true);
+        sheet({title:"ส่งใบสมัครแล้ว",url:"/join",body:'<p>ระบบรับใบสมัครแล้ว ไม่ต้องส่งซ้ำ กดดูสถานะเพื่อตรวจผลล่าสุด</p><button class="btn p" id="jReceipt">ดูสถานะใบสมัคร</button>',mount(){$("jReceipt").onclick=openJoin}});
       })}});}
 }
 /* ปุ่มล่างของใบสมัคร: ย้อนกลับ (เงียบ) · ถัดไป/ยื่น (ทองส้ม) — id เดิม aBk aNx */
@@ -7810,10 +7822,18 @@ async function openPostView(id,push){
 $("fPost").onclick=()=>openPostForm($("q").value.trim(),F.cat!=="all"&&CAT[F.cat]&&CAT[F.cat].c?F.cat:"");
 
 /* ═══ ข้อมูลของฉัน ═══ */
-let meTimer=0;
-async function refreshMe(){
+let meTimer=0,mePending=null,meOwner=null;
+function refreshMe(){
+  const uid=U?.uid;
+  if(mePending&&mePending.uid===uid)return mePending.task;
+  const request={uid};request.task=loadMe().finally(()=>{if(mePending===request)mePending=null});
+  mePending=request;return request.task;
+}
+async function loadMe(){
   if(!U){ME=null;return}
-  try{ME=await api("/api/tech/me")}catch(e){ME=null}
+  const owner=U.uid;
+  try{const fresh=await api("/api/tech/me");if(U?.uid!==owner)return;ME=fresh;meOwner=owner}
+  catch(e){if(U?.uid!==owner)return;if(meOwner!==owner)ME=null}
   /* ช่วงนับถอยหลังเปิดตัว: ทีมงานเข้าแอปได้ คนอื่นกลับไปหน้านับถอยหลัง (launch-gate.js) */
   if(ME&&window.CendonLaunch)CendonLaunch.staff(!!(ME.staff||ME.owner));
   const n=ME&&ME.attention||0;$("jobDot").hidden=!n;$("jobDot").textContent=n;
@@ -7892,7 +7912,7 @@ async function pullCars(){
 <script src="cendon-admin.js" defer></script>
 <script src="fluid.js" defer></script>
 <script src="crop.js" defer></script>
-<script src="cendon-line.js?v=4" defer></script>
+<script src="cendon-line.js?v=5" defer></script>
 <script>
 /* ต่อ navbar เดิมเข้ากับหน้านี้: ตัวชี้แท็บ · เมนูโปรไฟล์ · ปุ่มเข้าสู่ระบบ · รูป/ตัวอักษรผู้ใช้ */
 (function(){

@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-const r=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8');
+const r=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8').replace(/\r\n/g,'\n');
 const g=r('garage.html'),room=g.slice(g.indexOf('/* ═══════════ หน้ารถ (โฉมใหม่) ═══════════'),g.indexOf('/* ─── การกระทำในโมดัล ─── */'));
 
 test('one scroll page, no tabs: three blocks, full details open as sheets, old tab links land on the right sheet',()=>{

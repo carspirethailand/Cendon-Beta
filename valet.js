@@ -20,7 +20,7 @@ const carName=c=>c?(c.name||[c.make,c.model].filter(Boolean).join(" ")):"";
 const curCar=()=>{try{return typeof selCar==="function"?selCar():null}catch(e){return null}};
 const uidNow=()=>{try{const a=W.spireAuth||W.auth;return a&&a.currentUser&&a.currentUser.uid||""}catch(e){return ""}};
 /* เป็นช่างไหม: หน้าแรกจำไว้ตอนโหลดร้าน (ของบัญชีนี้เท่านั้น) */
-const isMech=()=>{try{const p=JSON.parse(localStorage.getItem("spire_partner")||"null");return !!(p&&p.s==="shop"&&(!p.uid||p.uid===uidNow()))}catch(e){return false}};
+const isMech=()=>{try{const p=JSON.parse(localStorage.getItem("spire_partner")||"null");return !!(p&&p.s==="shop"&&p.uid===uidNow())}catch(e){return false}};
 
 /* ── เรียกหลังบ้านด้วยโทเคนของผู้ใช้ ── */
 async function vapi(path,body,method){
@@ -64,7 +64,7 @@ const denied=t=>/^(?:ช่วย\s*)?(?:อย่า|ห้าม|ไม่ต�
 function intent(text){
   const t=String(text||'').trim();if(t.length>1000||denied(t))return null;
   // A narrow, explicit command grammar. No inferred recipient, symptom or send.
-  const th=t.match(/^(?:(?:ช่วย|รบกวน|ฝาก)\s*)?(?:ทัก|ส่งข้อความ|ส่งแชท|ส่งแชต|แชท|แชต)\s*(?:ไป\s*)?(?:หา|ถึง|กับ)\s*(?:ร้าน|ช่าง|อู่)?\s*(.{2,80}?)\s*(?:และ\s*)?(?:บอก|แจ้ง)(?:เขา|ช่าง|ร้าน)?\s*ว่า\s*([\s\S]{1,600})$/i);
+  const th=t.match(/^(?:(?:ช่วย|รบกวน|ฝาก)\s*)?(?:ทัก|ส่งข้อความ|ส่งแชท|ส่งแชต|แชท|แชต)\s*(?:ไป\s*)?(?:(?:หา|ถึง|กับ)\s*(?:ร้าน|ช่าง|อู่)?|(?:ร้าน|ช่าง|อู่))\s*(.{2,80}?)\s*(?:ให้หน่อย\s*)?(?:และ\s*)?(?:(?:บอก|แจ้ง)(?:เขา|ช่าง|ร้าน)?\s*)?ว่า\s*([\s\S]{1,600})$/i);
   const en=t.match(/^(?:please\s+)?(?:message|text)\s+(?:(?:the\s+)?(?:shop|mechanic|garage)\s+)?(.{2,80}?)\s+(?:and\s+)?(?:say|saying|tell them)\s*[:,-]?\s+([\s\S]{1,600})$/i);
   const m=th||en;if(!m)return null;
   const shop=one(m[1],80),message=one(m[2],600);
@@ -505,7 +505,7 @@ function inject(){
   [["#composer .crow","#sendBtn"],["#v-welcome .w-row","#wSend"]].forEach(([r,b])=>{const row=D.querySelector(r),before=D.querySelector(b);
     if(!row||!before||row.querySelector(".vl-btn"))return;
     const x=D.createElement("button");x.type="button";x.className="vl-btn";x.setAttribute("aria-haspopup","dialog");x.innerHTML='<i class="ti ti-heart-handshake"></i>';
-    const dp=row.querySelector(".dp-btn");row.insertBefore(x,dp||before);x.onclick=e=>{e.stopPropagation();sheet()}});
+    const dp=row.querySelector(".dp-btn");const ref=dp||before;row.insertBefore(x,ref.parentNode===row?ref:null);x.onclick=e=>{e.stopPropagation();sheet()}});
   /* มือถือ: ช่องพิมพ์แคบ — ปุ่มโหมด AI กับ Valet ย้ายไปอยู่ในปุ่ม ⋮ มุมขวาบน (แทนปุ่มแชตใหม่ ซึ่งย้ายเข้าไปในเมนูเดียวกัน) · คอมเหมือนเดิม */
   const pill=D.querySelector("header.pill"),nw=D.getElementById("pNew");
   if(pill&&nw&&!D.getElementById("pMore")){

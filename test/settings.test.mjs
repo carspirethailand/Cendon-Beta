@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-const r = f => readFileSync(new URL('../' + f, import.meta.url), 'utf8');
+const r = f => readFileSync(new URL('../' + f, import.meta.url), 'utf8').replace(/\r\n/g,'\n');
 const st = r('settings.js'), css = r('settings.css'), acts = r('account-actions.js'), acc = r('account.js');
 
 test('settings: one shared page on every app page — the old per-page copies are gone', () => {
@@ -21,7 +21,8 @@ test('settings: become-a-mechanic card sits right under the profile, with the ri
   assert.ok(html.indexOf('class="st-me"') < html.indexOf('${partnerHTML()}'), 'profile first');
   assert.ok(html.indexOf('${partnerHTML()}') < html.indexOf("t('การตั้งค่าแอป','App settings')"), 'partner card before the settings groups');
   for (const s of ['none', 'pending', 'rejected', 'shop']) assert.match(st, new RegExp(`${s}:\\['ti-`), s);
-  assert.match(st, /const href=fbUser\(\)\|\|u\.uid\?'\/studio':'\/login\?next=%2Fjoin';/);
+  assert.match(st, /const href=fbUser\(\)\|\|u\.uid\?\(s==='shop'\?'\/studio':'\/join'\):'\/login\?next=%2Fjoin';/);
+  assert.doesNotMatch(st.slice(st.indexOf('function partnerHTML'),st.indexOf('const chev=')),/data-nav-full/,'same-page partner routes must not force a full reload');
 });
 
 test('settings: download, sign out and delete look different, live apart and each asks before acting', () => {

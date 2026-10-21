@@ -16,7 +16,11 @@
   function past(el){return el.getAttribute('data-past')==='1'||el.hasAttribute('data-rd')||PAST_IDS.test(el.id||'')}
   /* ตั้งขอบเขตให้ปฏิทินของเครื่องเลือกได้เฉพาะวันที่เป็นไปได้ (ปีที่เกินไปกดไม่ได้เลย) */
   function bounds(el){
-    if(isNum(el)){if(!el.hasAttribute('min'))el.setAttribute('min','0');return}
+    if(isNum(el)){if(!el.hasAttribute('min'))el.setAttribute('min','0');
+      var job=el.getAttribute('data-ra')||(el.id==='clSvcAmt'?(D.getElementById('clSvcK')||{}).value:null);
+      if(job){var car=window.SpireCarLab&&window.SpireCarLab.cur(),p=window.CendonGarageData&&car&&window.CendonGarageData.policy(car),t=tier(car),j=JOB[job];
+        el.setAttribute('max',String(Math.min(p?p.cap:t.ceil,p&&p.maxByJob&&p.maxByJob[job]||(j?j[0]:500000)*(p?p.factor:t.f))));el.setAttribute('step','0.01');el.dataset.money='1';}
+      return}
     if(!isDate(el))return;
     var now=new Date();
     if(!el.hasAttribute('min'))el.setAttribute('min','1990-01-01');
@@ -39,7 +43,7 @@
     var lo=el.hasAttribute('min')?Number(el.getAttribute('min')):0,hi=el.hasAttribute('max')?Number(el.getAttribute('max')):Infinity;
     if(n<0){el.value=String(Math.abs(n));n=Math.abs(n);tip(el,th()?'ตัวเลขติดลบไม่ได้':'Negative numbers aren’t allowed')}
     if(final&&n<lo){el.value=String(lo);tip(el,th()?'ต้องไม่น้อยกว่า '+lo:'Must be at least '+lo)}
-    else if(final&&n>hi){el.value=String(hi);tip(el,th()?'ต้องไม่เกิน '+hi:'Must be at most '+hi)}
+    else if(final&&n>hi){if(el.dataset.money==='1'){tip(el,th()?'ยอดเกินเกณฑ์ กรุณาตรวจตัวเลขก่อนบันทึก':'Amount exceeds the limit; check it before saving');return}el.value=String(hi);tip(el,th()?'ต้องไม่เกิน '+hi:'Must be at most '+hi)}
   }
   function fixDate(el){
     bounds(el);var v=el.value;if(!v)return;
@@ -106,13 +110,13 @@
     tire:[8e4,8000,20000],align:[6e3,400,900],batt:[3e4,2500,5000],coolant:[1e4,600,1500],gearoil:[2e4,1200,3500],belt:[25e3,800,2500],shock:[8e4,6000,16000]};
   /* money(ยอด,รถ,{job,what}) → {ok,msg} หรือ {ok:true,ask} (ให้หน้าเรียก confirm) */
   function money(n,c,o){
-    o=o||{};n=Number(n);if(!Number.isFinite(n)||n<0)return {ok:false,msg:th()?'จำนวนเงินไม่ถูกต้อง':'Invalid amount'};if(n===0)return {ok:true};
+    o=o||{};n=Number(n);if(!Number.isFinite(n)||n<0||Math.abs(n*100-Math.round(n*100))>0.00001)return {ok:false,msg:th()?'จำนวนเงินไม่ถูกต้อง ใช้ทศนิยมไม่เกิน 2 ตำแหน่ง':'Invalid amount; use at most 2 decimal places'};if(n===0)return {ok:true};
     var policy=window.CendonGarageData&&window.CendonGarageData.policy(c||{});
     if(policy&&policy.basis!=='heuristic'){
-      var cap=Math.min(policy.cap,(policy.maxByJob||{})[o.job]||(JOB[o.job]?JOB[o.job][0]*(policy.factor||1):policy.cap));
+      var cap=Math.min(policy.cap,(policy.maxByJob||{})[o.job]||(JOB[o.job]?JOB[o.job][0]:500000)*(policy.factor||1));
       return n<=cap?{ok:true}:{ok:false,msg:th()?'ยอดสูงกว่าเกณฑ์อ้างอิงของรถรุ่นและปีนี้ กรุณาตรวจตัวเลข':'Above this model-year reference limit; check the amount'};
     }
-    var t=tier(c),j=JOB[o.job],hard=j?Math.min(j[0]*t.f,t.ceil):t.ceil,what=o.what||(th()?'รายการนี้':'this item');
+    var t=tier(c),j=JOB[o.job],hard=Math.min((j?j[0]:500000)*t.f,t.ceil),what=o.what||(th()?'รายการนี้':'this item');
     if(n>hard)return {ok:false,msg:th()?'฿'+fmt(n)+' เกินเกณฑ์ตรวจสอบเบื้องต้น (ไม่เกิน ฿'+fmt(hard)+') — ยังไม่มีราคาอ้างอิงตรงรุ่น/ปี กรุณาตรวจเลข':'฿'+fmt(n)+' exceeds the preliminary limit (฿'+fmt(hard)+'); no exact model-year price reference is available'};
     if(j&&n>j[2]*4*t.f)return {ok:true,ask:th()?'฿'+fmt(n)+' สูงกว่าปกติของ'+what+'มาก (รถทั่วไปราว ฿'+fmt(j[1])+'–'+fmt(j[2])+') ตัวเลขถูกต้องไหม?':'฿'+fmt(n)+' is far above the usual '+what+' cost (about ฿'+fmt(j[1])+'–'+fmt(j[2])+' for most cars). Is that right?'};
     return {ok:true};

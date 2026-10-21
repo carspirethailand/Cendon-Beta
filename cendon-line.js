@@ -19,20 +19,22 @@ const EN=()=>{try{if(window.spireLang)return window.spireLang()!=="th";const v=J
 const T=(th,en)=>EN()?en:th;
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
-function user(){try{const a=window.firebase&&firebase.apps&&firebase.apps.length&&firebase.auth();return a&&a.currentUser||null}catch(e){return null}}
+function user(){try{const a=window.spireAuth||window.auth||(window.firebase&&firebase.apps&&firebase.apps.length&&firebase.auth());return a&&a.currentUser||null}catch(e){return null}}
 /* รอ Firebase บอกว่าใครล็อกอินอยู่ (หน้าเพิ่งเปิด) ไม่เกิน 15 วินาที */
 function whenUser(){return new Promise(res=>{let n=0;(function w(){const u=user();if(u||++n>75)return res(u);setTimeout(w,200)})()})}
 async function call(method,path){
   const u=user();if(!u)throw new Error(T("กรุณาเข้าสู่ระบบก่อน","Please sign in first"));
-  const r=await fetch(API()+path,{method,headers:{Authorization:"Bearer "+await u.getIdToken()},cache:"no-store"});
+  const token=await u.getIdToken();if(user()?.uid!==u.uid)throw Error('Account changed');
+  const r=await fetch(API()+path,{method,headers:{Authorization:"Bearer "+token},cache:"no-store",signal:AbortSignal.timeout(10000)});
   let d={};try{d=await r.json()}catch(e){}
+  if(user()?.uid!==u.uid)throw Error('Account changed');
   if(!r.ok)throw new Error(d.error||T("เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง","Couldn't connect. Please try again"));
   return d;
 }
 
 /* สถานะร่วมของทั้งหน้า: ถามเซิร์ฟเวอร์ครั้งเดียว ทุกกล่องใช้ร่วมกัน */
 /* pending = เวลาที่เลิกรอ หลังผู้ใช้กดเปิด LINE (รอทำต่อใน LINE ไม่เกิน 20 นาที) */
-let st=null,stAt=0,stUid=null,pending=0,poll=0;
+let st=null,stAt=0,stUid=null,pending=0,poll=0,inflight=null,linkEpoch=0;
 const CONNECT="เชื่อมต่อบัญชี";
 const boxes=new Set();
 /* จำสถานะล่าสุดของแต่ละบัญชีไว้ในเครื่อง: เปิดหน้าครั้งหน้าวาดการ์ดได้ทันที ไม่ต้องรอล็อกอิน + เซิร์ฟเวอร์ (เดิมช้าหลายวินาที)
@@ -41,11 +43,15 @@ const KEY=uid=>"cendon_line_st:"+uid;
 function guessUid(){try{const c=JSON.parse(localStorage.getItem("spire_cachedUser")||"null");return c&&typeof c.uid==="string"?c.uid:null}catch(e){return null}}
 function remembered(uid){try{const v=JSON.parse(localStorage.getItem(KEY(uid))||"null");return v&&v.st&&typeof v.st==="object"?v.st:null}catch(e){return null}}
 async function status(force){
+  const u=user();if(!u)throw Error('Sign in first');
+  if(stUid!==u.uid){st=remembered(u.uid);stUid=u.uid;stAt=0;pending=0}
   if(!force&&st&&Date.now()-stAt<60000)return st;
-  const u=user(),d=await call("GET","/api/line/link");
+  if(inflight?.uid===u.uid)return inflight.task;
+  const request={uid:u.uid,epoch:linkEpoch};request.task=(async()=>{const d=await call("GET","/api/line/link");
+  if(user()?.uid!==u.uid||request.epoch!==linkEpoch)throw Error('Connection state changed');
   st={linked:!!d.linked,paused:!!d.paused,oa:d.oa==null?null:String(d.oa)};stAt=Date.now();stUid=u&&u.uid;
   if(stUid)try{localStorage.setItem(KEY(stUid),JSON.stringify({st,at:stAt}))}catch(e){}
-  return st;
+  return st;})().finally(()=>{if(inflight===request)inflight=null});inflight=request;return request.task;
 }
 function paintAll(){boxes.forEach(el=>{if(el.isConnected)paint(el);else boxes.delete(el)})}
 
@@ -77,7 +83,8 @@ function paint(el){
 }
 /* แถวเดียวในหน้าตั้งค่า: ชื่อเดิมเสมอ เปลี่ยนแค่บรรทัดสถานะกับปุ่มด้านขวา */
 function rowHTML(){
-  if(!st||st.oa==="")return "";
+  if(!st)return `<div class="cl-row">${ICON}<div class="cl-tx"><b>${T('แจ้งเตือนทาง LINE','LINE notifications')}</b><small role="status">${T('กำลังตรวจการเชื่อมต่อ…','Checking…')}</small></div><button type="button" class="cl-go" data-cl="retry">${T('ตรวจอีกครั้ง','Retry')}</button></div>`;
+  if(st.oa==="")return "";
   const oa=st.oa||"",head=T("แจ้งเตือนทาง LINE","LINE notifications");
   const one=(sub,right)=>`<div class="cl-row">${ICON}<div class="cl-tx"><b>${head}</b><small>${sub}</small></div>${right}</div>`;
   if(st.linked)return one(`<span class="cl-ok">●</span> ${T("เชื่อมแล้ว · งานใหม่และข้อความส่งเข้า LINE","Connected · jobs and messages go to LINE")}`,
@@ -92,7 +99,7 @@ function rowHTML(){
 function draw(el){
   if(el.dataset.lineConnect==="row"){el.innerHTML=rowHTML();return}
   const nudge=el.dataset.lineConnect==="nudge";
-  if(!st){el.innerHTML="";return}
+  if(!st){el.innerHTML=rowHTML();return}
   /* หลังบ้านยังไม่ได้ตั้ง LINE (ไม่มีชื่อบัญชี OA) — ไม่โชว์ปุ่มที่กดแล้วไปไม่ถึงไหน */
   if(st.oa===""){el.innerHTML="";return}
   if(st.linked){
@@ -144,22 +151,24 @@ function watch(){
     try{const was=st&&st.paused;await status(true);if(st.linked){pending=0;paintAll();return}if(st.paused!==was)paintAll()}catch(e){}
     poll=setTimeout(tick,document.hidden?6000:3000);
   };
-  poll=setTimeout(tick,3000);
+  tick();
 }
 /* กลับมาจาก LINE (เชื่อมจากเมนูใน LINE ก็ได้): ถามสถานะใหม่ทันทีถ้ายังไม่ได้เชื่อม — การ์ดชวนเชื่อมหายเองเมื่อเชื่อมแล้ว */
-document.addEventListener("visibilitychange",()=>{if(document.hidden)return;if(pending)watch();else if(st&&!st.linked)status(true).then(paintAll).catch(()=>{})});
+function resume(){if(document.hidden||!user())return;if(pending)watch();else status(true).then(paintAll).catch(()=>{})}
+document.addEventListener("visibilitychange",resume);addEventListener('focus',resume);
 /* เชื่อมสำเร็จในแท็บอื่น → แท็บนี้เปลี่ยนตาม */
 addEventListener("storage",e=>{if(!e.key||!stUid||e.key!==KEY(stUid))return;const v=remembered(stUid);if(v){st=v;stAt=Date.now();paintAll()}});
 /* หน้าอื่นในแอปบอกได้ว่าเพิ่งเชื่อม/ยกเลิก (เช่น หน้าเชื่อมต่อ /line ในหน้าแรก) */
-window.CendonLine={refresh:()=>status(true).then(paintAll).catch(()=>{})};
+window.CendonLine={refresh:()=>{linkEpoch++;inflight=null;return status(true).then(paintAll).catch(()=>{})}};
 document.addEventListener("click",async e=>{
   const b=e.target.closest&&e.target.closest("[data-cl]");if(!b)return;
   const el=b.closest("[data-line-connect]");if(!el)return;
   if(b.dataset.cl==="go")return start();
   e.preventDefault();
+  if(b.dataset.cl==="retry"){b.disabled=true;try{await status(true)}catch(err){alert(err.message)}finally{b.disabled=false;paintAll()}return}
   if(b.dataset.cl==="off"){
     if(!confirm(T("เลิกรับแจ้งเตือนทาง LINE?","Stop LINE notifications?")))return;
-    try{await call("DELETE","/api/line/link");await status(true)}catch(err){alert(err.message)}
+    b.disabled=true;try{await call("DELETE","/api/line/link");linkEpoch++;inflight=null;pending=0;await status(true)}catch(err){alert(err.message)}finally{b.disabled=false}
     paintAll();
   }
 });
@@ -167,8 +176,8 @@ document.addEventListener("click",async e=>{
 async function mount(el){
   if(boxes.has(el))return;boxes.add(el);
   /* วาดทันทีจากสถานะที่จำไว้ของบัญชีนี้ แล้วค่อยเช็กของจริงตามหลัง */
-  if(!st){const g=(user()||{}).uid||guessUid(),v=g&&remembered(g);if(v){st=v;stAt=0;stUid=g}}
-  if(st)paint(el);
+  const g=(user()||{}).uid||guessUid();if(g!==stUid){st=g?remembered(g):null;stAt=0;stUid=g;pending=0}
+  paint(el);
   const u=await whenUser();if(!u){st=null;el.innerHTML="";paint(el);return}
   if(stUid&&stUid!==u.uid){st=null;stAt=0}
   /* ยังไม่ได้เชื่อม = ถามใหม่ทุกครั้งที่การ์ดโผล่ (เบามาก) — เพิ่งเชื่อมเสร็จ การ์ดชวนเชื่อมในใบงานต้องไม่ขึ้นอีก */

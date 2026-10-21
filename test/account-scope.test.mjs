@@ -142,13 +142,13 @@ test('another tab switching or signing out reloads this tab; first stamp of the 
 });
 
 test('pages load the scope guard before their own scripts, and sign-in/out paths use it', () => {
-  const read = f => readFileSync(new URL('../' + f, import.meta.url), 'utf8');
+  const read = f => readFileSync(new URL('../' + f, import.meta.url), 'utf8').replace(/\r\n/g,'\n');
   for (const f of ['index.html', 'garage.html', 'chat.html', 'news.html', 'profile.html', 'spares.html', 'admin.html', 'handbook.html', 'plan.html']) {
     const html = read(f);
-    assert.ok(html.indexOf('<script src="/account-scope.js?v=1"></script>') > 0, f);
+    assert.match(html,/<script src="\/account-scope\.js\?v=\d+"><\/script>/,f);
     assert.ok(html.indexOf('account-scope.js') < html.indexOf('account.js?v='), f);
   }
-  assert.match(read('login.html'), /<script src="\/account-scope\.js\?v=1"><\/script>\n<script src="\/account-paint\.js/);
+  assert.match(read('login.html'), /<script src="\/account-scope\.js\?v=\d+"><\/script>\n<script src="\/account-paint\.js/);
   const acc = read('account.js');
   assert.match(acc, /W\.CendonScope\.claim\(u\.uid\)&&!LOGIN\)\{W\.CendonScope\.freeze\(\);location\.reload\(\);return\}/);
   assert.match(acc, /if\(W\.CendonScope\)W\.CendonScope\.release\(\);/);
@@ -160,5 +160,5 @@ test('pages load the scope guard before their own scripts, and sign-in/out paths
     assert.match(html, /else if\(e\.status===409\)\{delete byId\[c\.id\];foreign\+\+\}/, f + ' foreign cars dropped');
     assert.match(html, /window\.cloudFlush=\(\)=>push\(\);/, f);
   }
-  assert.match(read('sw.js'), /'\.\/account-scope\.js\?v=1'/);
+  assert.match(read('sw.js'), /'\.\/account-scope\.js\?v=\d+'/);
 });

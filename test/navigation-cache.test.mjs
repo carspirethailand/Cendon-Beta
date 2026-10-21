@@ -78,7 +78,7 @@ test('activate removes only old Cendon assets, keeping page history and unrelate
   const pending=[];f.listeners.activate({waitUntil:p=>pending.push(p)});await Promise.all(pending);
   assert.deepEqual((await f.caches.keys()).sort(),[BUILD,'cendon-pages','another-app'].sort());
 });
-test('offline uncached navigation preserves the existing saved-home fallback',async()=>{
+test('offline uncached navigation never renders Home under another page URL',async()=>{
   const f=fixture({fetcher:async()=>{throw Error('offline')}});await f.seed('/',{text:'saved-home'});
-  const e=f.dispatch('/garage');assert.equal(await (await e.response).text(),'saved-home');await Promise.all(e.pending);
+  const e=f.dispatch('/garage'),response=await e.response;assert.equal(response.status,503);assert.doesNotMatch(await response.text(),/saved-home/);await Promise.all(e.pending);
 });

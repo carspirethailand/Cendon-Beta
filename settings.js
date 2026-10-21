@@ -32,11 +32,17 @@ let host={},main=null,manage=null,sheetEl=null,lastFocus=null;
 
 /* ── ประกอบหน้าหลัก ── */
 function partnerHTML(){
-  const u=me();let s='none';
-  try{const p=JSON.parse(localStorage.getItem('spire_partner')||'null');if(p&&u.uid&&p.uid===u.uid&&['pending','rejected','shop'].includes(p.s))s=p.s==='shop'&&p.registered!==true?'none':p.s}catch(e){}
+  const u=fbUser()||me();let s=u.uid?'checking':'none',phase='checking';
+  if(W.CendonPartnerState){const p=W.CendonPartnerState.peek(u.uid);s=p.s;phase=p.phase}
+  else try{const p=JSON.parse(localStorage.getItem('spire_partner')||'null');if(p&&u.uid&&p.uid===u.uid&&['none','pending','approved','rejected','declined','withdrawn','shop'].includes(p.s))s=p.s}catch(e){}
+  if(s==='none'&&phase==='offline')s='checking';
+  if(s==='withdrawn')s='none';
   const C={
+    checking:['ti-refresh',t('บัญชีช่างของคุณ','Your mechanic account'),t(phase==='offline'?'ยังเชื่อมต่อไม่ได้ · ไม่ต้องสมัครซ้ำ':'กำลังตรวจสถานะจากระบบ…',phase==='offline'?'Could not connect · do not apply again':'Checking your account…'),t('ตรวจสถานะ','Check status')],
     none:['ti-tool',t('สมัครเป็นช่าง','Become a mechanic'),t('รับงานซ่อมจากลูกค้าใกล้คุณ','Get repair jobs from customers near you'),t('เริ่มสมัคร','Apply now')],
     pending:['ti-clock',t('ใบสมัครช่างของคุณ','Your mechanic application'),t('กำลังพิจารณา','Under review'),t('ดูสถานะ','See status')],
+    approved:['ti-check',t('ใบสมัครช่างของคุณ','Your mechanic application'),t('อนุมัติแล้ว · ดูสถานะร้าน','Approved · check shop status'),t('ดูสถานะ','See status')],
+    declined:['ti-file-description',t('ใบสมัครช่างของคุณ','Your mechanic application'),t('ดูผลการพิจารณา','See the review result'),t('ดูสถานะ','See status')],
     rejected:['ti-pencil',t('ใบสมัครช่างของคุณ','Your mechanic application'),t('ต้องแก้ไขบางอย่าง','Needs a few changes'),t('ดูว่าต้องแก้อะไร','See what to fix')],
     shop:['ti-building-store',t('Studio · ร้านของฉัน','Studio · My shop'),t('งาน ข้อความ บริการ และหน้าร้าน','Jobs, messages, services and your shop page'),t('เปิด Studio','Open Studio')]}[s];
   const href=fbUser()||u.uid?(s==='shop'?'/studio':'/join'):'/login?next=%2Fjoin';
@@ -152,7 +158,8 @@ function ensure(){
 /* ชื่อ รูป บทบาท สถานะช่าง ค่าที่ตั้งไว้ — ข้อมูลบัญชีมาถึงทีหลังตอนเพิ่งเปิดหน้า: เปลี่ยนเมื่อไรวาดหน้าหลักใหม่ (เฉพาะตอนเปิดอยู่) */
 let lastSig='',watchT=0;
 function sig(){const u=me(),su=setup();let pt='';try{pt=localStorage.getItem('spire_partner')||''}catch(e){}
-  return [u.uid,u.name,u.email,u.photo,u.role,su.name,su.distance,su.currency,curLang(),curTheme(),pt].join('|')}
+  const p=W.CendonPartnerState?.peek(fbUser()?.uid||u.uid);
+  return [u.uid,u.name,u.email,u.photo,u.role,su.name,su.distance,su.currency,curLang(),curTheme(),pt,p?.s,p?.phase].join('|')}
 function shown(){const v=$('v-settings');return !!(v&&main&&v.contains(main)&&(host.root?v.offsetParent!==null:v.classList.contains('on')))}
 function refresh(){if(!shown()){clearInterval(watchT);watchT=0;return}if(sig()!==lastSig)render()}
 function render(){
@@ -172,6 +179,7 @@ function open(which,opts){
   try{v.scrollTop=0}catch(e){}
   go(which);
   quota(true);
+  W.CendonPartnerState?.refresh().catch(()=>{});
   clearInterval(watchT);watchT=setInterval(refresh,1500);
 }
 function go(which){
@@ -411,6 +419,7 @@ async function sendFeedback(b){
 try{W.spireOnLang&&W.spireOnLang(()=>{const v=$('v-settings');if(v&&main&&v.contains(main))setTimeout(render,0)})}catch(e){}
 
 W.CendonSettings=Object.freeze({open,render,refresh,go,close,openManage,closeManage,sheet,closeSheet,quota});
+W.addEventListener('cendon:partner-state',refresh);
 
 /* ── หน้าเว็บหลัก (โปรไฟล์ การาจ นิตยสาร ร้านค้า) — หน้าแชตมีตัวเปิดของตัวเอง ── */
 if(/^\/chat(\/|$)/.test(location.pathname))return;

@@ -2,6 +2,9 @@
    กุญแจคือข้อความอังกฤษใน T("ไทย","English") และพจนานุกรม EN ของหน้า · {0} {1} = ค่าที่แทนตอนแสดงผล
    เพิ่มข้อความใหม่ในหน้า → เพิ่มคำแปลที่นี่ทุกภาษา (เทสต์ i18n-home ตรวจความครบ) */
 window.CENDON_L10N={lang:"vi",t:{
+"Your mechanic account":"Tài khoản thợ của bạn",
+"Checking your shop · do not apply again":"Đang kiểm tra cửa hàng · không cần đăng ký lại",
+"Check status":"Kiểm tra trạng thái",
 "Rainy season — are {0}'s tyres and wipers ready?":"Mùa mưa rồi — lốp và cần gạt nước của {0} đã sẵn sàng chưa?",
 "{0} is at {1} km — what's due?":"{0} đã chạy {1} km — đến hạn bảo dưỡng gì?",
 "Call a mechanic":"Gọi thợ",

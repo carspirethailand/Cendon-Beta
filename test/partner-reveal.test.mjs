@@ -34,7 +34,7 @@ test('while the card is unscratched nothing shows the result: sheet, home card, 
   assert.match(home,/r:a&&decided\(a\)&&!revealed\(a\)\?1:0/);
   assert.match(home,/\$\{a&&decided\(a\)&&!revealed\(a\)\?"ผลใบสมัครช่างมาแล้ว — แตะเพื่อขูดดู":/);
   const oj=part('async function openJoin(){','function wizBack');
-  assert.ok(oj.indexOf('if(a&&decided(a)&&!revealed(a))return statusPage(a);')<oj.indexOf('return openStudio();'),'an approved applicant scratches before landing in Studio');
+  assert.ok(oj.indexOf('if(a&&decided(a)&&!revealed(a))return statusPage(a);')<oj.indexOf('return openStudio()'),'an approved applicant scratches before landing in Studio');
 });
 
 test('scratch card: real foil you rub off, auto-opens past half, a button for anyone who cannot scratch, confetti only on approval',()=>{

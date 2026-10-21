@@ -10,6 +10,7 @@ if(/^\/messages(\/|$)/.test(location.pathname)){document.documentElement.classLi
 <script src="/auth-gate.js?v=2"></script>
 <script src="/account-scope.js?v=2"></script>
 <link rel="stylesheet" href="/partner-entry.css?v=1">
+<script src="/partner-state.js?v=1"></script>
 <script src="/partner-entry.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
@@ -29,7 +30,7 @@ if(/^\/messages(\/|$)/.test(location.pathname)){document.documentElement.classLi
 (function(){try{if(/^\/(work|studio)(\/|$)/.test(location.pathname)){var p=JSON.parse(localStorage.getItem("spire_partner")||"null");if(p&&p.s==="shop")document.documentElement.dataset.boot="tech"}}catch(e){}})();</script>
 <script>(function(){try{var A=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt"],l=null;try{l=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
 if(A.indexOf(l)<0){l="en";var n=navigator.languages||[navigator.language||"en"];for(var i=0;i<n.length;i++){var b=String(n[i]).toLowerCase().split("-")[0];if(A.indexOf(b)>=0){l=b;break}}}
-if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=10"><\/script>')}catch(e){}})();</script>
+if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=11"><\/script>')}catch(e){}})();</script>
 <title>Cendon</title>
 <meta name="description" content="ถามอาการรถ ส่งรูปหรือเสียงให้ AI ช่วยดู เช็กใบเสนอราคา และหาช่างที่ผ่านการตรวจใกล้คุณ">
 <!-- การ์ดตอนแชร์ลิงก์ (LINE / Facebook / X) — รูปต้องเป็นที่อยู่เต็ม -->
@@ -4191,12 +4192,13 @@ function fx3d(cv,o){
 /* การ์ดพาร์ทเนอร์บนหน้าแรก — สถานะจาก spire_partner (refreshMe เขียนไว้) จึงวาดได้ทันทีไม่ต้องรอหลังบ้าน */
 function drawPartner(){
   const box=$("hPartner");if(!box)return;
-  const p=ls.get("spire_partner",null),mine=p&&U&&p.uid===U.uid?(p.s==="shop"&&p.registered!==true?"none":p.s):"none";
+  const p=window.CendonPartnerState?.peek(U?.uid)||ls.get("spire_partner",null),mine=p&&U&&p.uid===U.uid?p.s:U?"checking":"none";
   /* ผลใบสมัครออกแล้วแต่ยังไม่ขูดดู = การ์ดชวนไปขูด (ไม่บอกผลก่อน) */
-  const k=p&&U&&p.uid===U.uid&&p.r?"news":mine==="shop"?"shop":mine&&mine!=="none"&&mine!=="withdrawn"?"app":"join";
+  const k=p&&U&&p.uid===U.uid&&p.r?"news":mine==="shop"?"shop":mine==="checking"||p?.phase==="offline"&&mine==="none"?"checking":mine&&mine!=="none"&&mine!=="withdrawn"?"app":"join";
   if(box.dataset.k===k&&box.childNodes.length)return;box.dataset.k=k;
   const st={pending:T("รอทีมงานตรวจ","Waiting for review"),approved:T("อนุมัติแล้ว","Approved"),rejected:T("ทีมงานขอให้แก้ไข","Changes requested"),declined:T("ยังไม่ผ่านการพิจารณา","Not approved")}[mine]||T("ดูความคืบหน้า","See progress");
   const [eye,b,em,cta]=k==="news"?["CENDON PARTNER",T("ผลการพิจารณาใบสมัครมาแล้ว","Your application result is in"),T("ขูดการ์ดเพื่อเปิดดูผล","Scratch the card to see it"),T("เปิดดูผล","See result")]:k==="shop"?["STUDIO",T("หน้าร้านของฉัน","My shop"),T("งาน แชต บริการ และรีวิว ในที่เดียว","Jobs, chats, services and reviews in one place"),T("เปิด Studio","Open Studio")]
+    :k==="checking"?["",T("บัญชีช่างของคุณ","Your mechanic account"),T("กำลังตรวจสถานะร้าน · ไม่ต้องสมัครซ้ำ","Checking your shop · do not apply again"),T("ตรวจสถานะ","Check status")]
     :k==="app"?["",T("ใบสมัครช่างของคุณ","Your mechanic application"),st,T("ดูสถานะ","View status")]
     :["",T("เป็นช่างพาร์ทเนอร์กับ Cendon","Become a Cendon partner mechanic"),T("รับงานใกล้ร้าน · ไม่มีค่าสมัคร · ตั้งราคาเอง","Jobs near you · no sign-up fee · set your own prices"),T("สมัครเลย","Apply now")];
   box.innerHTML=`<button type="button" class="lp-card" id="lpGo"><canvas class="lp-gl" aria-hidden="true"></canvas><svg class="lp-mark" viewBox="-6.0 -6.0 94.8 112.0" aria-hidden="true"><path fill="currentColor" d="${LOGO}"/></svg>
@@ -4205,6 +4207,7 @@ function drawPartner(){
   $("lpGo").onclick=()=>{if(!U)return needLogin();k==="shop"?openStudio():openJoin()};
   fx3d(box.querySelector(".lp-gl"),{particles:420,dist:12.5});
 }
+window.addEventListener('cendon:partner-state',()=>{try{drawPartner()}catch(e){}});
 /* การ์ดลัด 4 ช่อง: ไอคอน + ชื่อสั้น ๆ อย่างเดียว (คำอธิบายอยู่ใน title) · ช่องแรก "เรียกช่าง" รวมด่วน/ไม่ด่วนไว้ในการ์ดเดียว (ไม่เพิ่มการ์ด)
    ด่วน = โหมดฉุกเฉิน (3 ร้านใกล้สุด / ประกาศงานด่วน) · ไม่ด่วน = ประกาศหาช่าง ให้ช่างรอบตัวเสนอราคา */
 function drawQuick(){
@@ -6726,27 +6729,31 @@ async function openJoin(){
   // The actual public application introduction is ready before any request.
   // /join never boots a Studio snapshot, even when an old entry used /studio.
   BOOT_TECH=false;delete document.documentElement.dataset.boot;
-  landing(false,true);const loading=SH.cur;
+  const hint=window.CendonPartnerState?.peek(U.uid)||ls.get("spire_partner",null);
+  if(ME?.technician||hint?.uid===owner&&hint.s==="shop")sheet({title:"ร้านของฉัน",url:"/join",body:'<p role="status"><span class="spin"></span> กำลังเปิดร้านเดิมของคุณ…</p>'});
+  else landing(false,true);
+  window.CendonPartnerEntry?.hide();
+  const loading=SH.cur;
   /* กลับมาจาก Didit (/join?verificationSessionId=…) — ดึงผลทันที ไม่ต้องรอ webhook */
   if(kyc){try{await api("/api/tech/apply/identity/refresh",{body:{}})}catch(e){}
     /* The session is selected server-side from the signed-in account. Do not
        keep a provider identifier in the address bar or refresh it on reload. */
     const u=new URL(location.href);u.searchParams.delete("verificationSessionId");history.replaceState(history.state,"",u.pathname+(u.search||"")+(u.hash||""));}
-  await Promise.all([refreshMe(),techPolicy()]);
+  const [statusOK]=await Promise.all([refreshMe(),techPolicy()]);
   if(U?.uid!==owner||SH.cur!==loading||!$("bs").classList.contains("on"))return;
-  if(!ME){const er=$("err"),go=$("lGo");if(er)er.textContent=T("ยังตรวจสถานะไม่ได้ กรุณาลองใหม่ ไม่ต้องกรอกใบสมัครซ้ำ","Couldn't connect. Please try again");if(go){go.disabled=false;go.onclick=openJoin}return}
+  if(!statusOK||!ME)return sheet({push:false,title:"บัญชีช่างของคุณ",body:'<p role="status">ยังเชื่อมต่อเพื่อตรวจสถานะร้านไม่ได้ กรุณาลองใหม่ ไม่ต้องกรอกใบสมัครซ้ำ</p><button class="btn p" id="jRetry">ลองเชื่อมต่ออีกครั้ง</button>',mount(){$("jRetry").onclick=openJoin}});
   const a=ME&&ME.application,t=ME&&ME.technician;
   /* ทีมงานเลือกได้ว่าจะเป็นช่างทีมงาน (ไม่ต้องใช้อะไร เห็นเฉพาะทีมงาน) หรือลองยื่นแบบพาร์ทเนอร์จริง */
-  if(ME&&ME.admin&&!(a&&!a.test))return sheet({title:"สมัครเป็นช่าง",url:"/join",body:`
+  if(ME&&ME.admin&&!t&&!(a&&!a.test))return sheet({title:"สมัครเป็นช่าง",url:"/join",body:`
     <button class="jl" id="jStaff"><span class="av sq" style="--c1:var(--accent)"><i class="ti ti-shield-check"></i></span><span class="jb"><b>${t&&t.test?"ช่างทีมงานของฉัน":"เป็นช่างทีมงานทันที"}</b><small>ใช้แค่ตำแหน่งอู่ · เห็นเฉพาะทีมงาน Cendon</small></span><i class="ti ti-chevron-right"></i></button>
     <button class="jl" id="jReal"><span class="av sq" style="--c1:#334155"><i class="ti ti-file-certificate"></i></span><span class="jb"><b>ใบสมัครพาร์ทเนอร์</b><small>ขั้นตอนเต็มแบบที่ช่างทั่วไปเห็น</small></span><i class="ti ti-chevron-right"></i></button>
     <button class="jl" id="jSkip"><span class="av sq" style="--c1:#0ea5e9"><i class="ti ti-player-skip-forward"></i></span><span class="jb"><b>ข้ามไปแดชบอร์ดช่าง</b><small>ไม่ต้องกรอกอะไร · เข้าไปดูความเรียบร้อยได้เลย</small></span><i class="ti ti-chevron-right"></i></button>
     <button class="jl" id="jStat"><span class="av sq" style="--c1:#8b5cf6"><i class="ti ti-timeline"></i></span><span class="jb"><b>ดูหน้าสถานะใบสมัคร</b><small>ตัวอย่างทุกสถานะ: รอตรวจ · ต้องแก้ไข · อนุมัติ</small></span><i class="ti ti-chevron-right"></i></button>`,
     mount(){$("jStaff").onclick=testTech;$("jReal").onclick=()=>landing(true);$("jSkip").onclick=e=>busy(e.currentTarget,quickTech);$("jStat").onclick=()=>previewStatus("pending",true)}});
-  /* ผ่านการอนุมัติแล้ว มีร้านจริง = เข้า Studio ตรง ๆ (หน้าสถานะใบสมัครมีไว้ตอนยังรอตรวจ/ต้องแก้ไขเท่านั้น) */
+  /* การมีร้านยึดจากบัญชีบนเซิร์ฟเวอร์ ไม่ใช่ป้าย verified/test หรือแคชในเครื่อง */
   if(a&&decided(a)&&!revealed(a))return statusPage(a);
-  if(t&&t.verified&&!t.test)return openStudio();
-  if(a&&!a.test)return statusPage(a);
+  if(t){window.CendonPartnerEntry?.hide();return openStudio()}
+  if(a)return statusPage(a);
   landing();
 }
 window.cendonOpenJoin=openJoin;
@@ -7203,10 +7210,11 @@ async function reviewOne(a){
 $("bMe").onclick=()=>{
   if(!U)return needLogin();
   const t=ME&&ME.technician,a=ME&&ME.application;
-  const canStudio=!!(t&&t.verified&&!t.test);
+  const canStudio=!!t;
+  const uncertain=!ME||window.CendonPartnerState?.peek(U.uid).phase==='offline';
   sheet({title:"บัญชี",body:`<div class="who"><span class="av sq" style="--c1:var(--accent)">${initial(U.email)}</span><div><b>${esc(U.displayName||U.email)}</b><small>${esc(U.email)}${ME&&ME.staff?" · ทีมงาน":""}</small></div></div>
     <button class="jl" id="mJobs"><span class="av sq" style="--c1:#2f9bd8"><i class="ti ti-clipboard-list"></i></span><span class="jb"><b>งานของฉัน</b></span><i class="ti ti-chevron-right"></i></button>
-    <button class="jl" id="mJoin"><span class="av sq" style="--c1:#22a06b"><i class="ti ti-tool"></i></span><span class="jb"><b>${a&&decided(a)&&!revealed(a)?"ผลใบสมัครช่างมาแล้ว — แตะเพื่อขูดดู":canStudio?"Studio — หน้าร้านของฉัน":a&&!a.test?"ใบสมัครพาร์ทเนอร์ ("+({pending:"กำลังพิจารณา",rejected:"ขอปรับเพิ่มอีกนิด",declined:"ปิดรอบนี้",approved:"อนุมัติแล้ว"}[a.status]||a.status)+")":"สมัครเป็นช่าง"}</b></span><i class="ti ti-chevron-right"></i></button>${ME&&ME.staff?`<button class="jl" id="mStaff"><span class="av sq" style="--c1:#7c5cff"><i class="ti ti-shield-check"></i></span><span class="jb"><b>มุมทีมงาน</b></span><i class="ti ti-chevron-right"></i></button>`:""}`,
+    <button class="jl" id="mJoin"><span class="av sq" style="--c1:#22a06b"><i class="ti ti-tool"></i></span><span class="jb"><b>${a&&decided(a)&&!revealed(a)?"ผลใบสมัครช่างมาแล้ว — แตะเพื่อขูดดู":canStudio?"Studio — หน้าร้านของฉัน":a?"ใบสมัครพาร์ทเนอร์ ("+({pending:"กำลังพิจารณา",rejected:"ขอปรับเพิ่มอีกนิด",declined:"ปิดรอบนี้",approved:"อนุมัติแล้ว"}[a.status]||a.status)+")":uncertain?"ตรวจสถานะบัญชีช่าง":"สมัครเป็นช่าง"}</b></span><i class="ti ti-chevron-right"></i></button>${ME&&ME.staff?`<button class="jl" id="mStaff"><span class="av sq" style="--c1:#7c5cff"><i class="ti ti-shield-check"></i></span><span class="jb"><b>มุมทีมงาน</b></span><i class="ti ti-chevron-right"></i></button>`:""}`,
     mount(){$("mJobs").onclick=()=>jobs();$("mJoin").onclick=()=>{if(canStudio&&!(a&&decided(a)&&!revealed(a))){closeSheet();openStudio()}else openJoin()};
       if($("mStaff"))$("mStaff").onclick=()=>{closeSheet();setMode("staff")}}});
 };
@@ -7838,10 +7846,10 @@ function refreshMe(){
   mePending=request;return request.task;
 }
 async function loadMe(){
-  if(!U){ME=null;return}
-  const owner=U.uid;
-  try{const fresh=await api("/api/tech/me");if(U?.uid!==owner)return;ME=fresh;meOwner=owner}
-  catch(e){if(U?.uid!==owner)return;if(meOwner!==owner)ME=null}
+  if(!U){ME=null;return false}
+  const owner=U.uid;let loaded=false;
+  try{const fresh=window.CendonPartnerState?await window.CendonPartnerState.refresh(true):await api("/api/tech/me");if(U?.uid!==owner)return false;ME=fresh;meOwner=owner;loaded=true}
+  catch(e){if(U?.uid!==owner)return false;if(meOwner!==owner)ME=null}
   /* ช่วงนับถอยหลังเปิดตัว: ทีมงานเข้าแอปได้ คนอื่นกลับไปหน้านับถอยหลัง (launch-gate.js) */
   if(ME&&window.CendonLaunch)CendonLaunch.staff(!!(ME.staff||ME.owner));
   const n=ME&&ME.attention||0;$("jobDot").hidden=!n;$("jobDot").textContent=n;
@@ -7853,12 +7861,13 @@ async function loadMe(){
    /* เจ้าของระบบเปิดลิงก์ร้าน/บริการของคนอื่นตรง ๆ: วาดใหม่ให้มีเครื่องมือเจ้าของระบบ */
    else if(oc&&!oc.owner&&!oc.boss&&ME&&ME.owner){if(oc.shop)openTech(oc.shop);else if(oc.gig)openGig(oc.gig)}}
   /* หน้าบัญชี (มือถือ) อ่านค่านี้เพื่อเขียนปุ่มว่า "สมัครเป็นช่าง" หรือ "Studio" — เก็บแค่สถานะ ไม่มีข้อมูลส่วนตัว */
-  if(ME)try{localStorage.setItem("spire_partner",JSON.stringify({uid:U.uid,s:t&&(!t.test||ME.staff)?"shop":a&&!a.test?a.status:"none",registered:!!(t&&t.verified&&!t.test),r:a&&decided(a)&&!revealed(a)?1:0}))}catch(e){}
+  if(loaded&&ME)try{localStorage.setItem("spire_partner",JSON.stringify({uid:U.uid,s:t?"shop":a?a.status:"none",r:a&&decided(a)&&!revealed(a)?1:0}))}catch(e){}
   try{drawPartner()}catch(e){}
   $("joinT").textContent=t&&!t.test?"พื้นที่พาร์ทเนอร์":a&&!a.test&&a.status==="pending"?"ใบสมัครกำลังพิจารณา":"ร่วมเป็นพาร์ทเนอร์ช่าง";
   $("joinS").textContent=t&&!t.test?"ดูงานที่ลูกค้าส่งมา":a&&!a.test?"เลขที่ "+(a.appNo||"")+(a.status==="rejected"?" · ต้องแก้ไข":""):ME&&ME.staff?"ทีมงานเป็นช่างได้ทันที":"รับงานจากลูกค้าในพื้นที่";
   staffBar();drawModes();refreshJobs().then(()=>{greet();if(MODE==="tech")dash()});
   clearTimeout(meTimer);meTimer=setTimeout(()=>{if(!document.hidden)refreshMe()},60000);
+  return loaded;
 }
 
 /* ═══ คำทักทาย — แบบเดียวกับหน้าหลัก ═══ */

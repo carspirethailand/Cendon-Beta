@@ -9,7 +9,7 @@ const settle=async()=>{for(let n=0;n<25;n++)await Promise.resolve()};
 test('mechanic menu paints before delayed account/policy requests; closing it prevents a late reopen',async()=>{
   const source=index.slice(index.indexOf('async function openJoin(){'),index.indexOf('/* ใบสมัครช่างเป็นขั้น',index.indexOf('async function openJoin(){')));
   let release;const wait=new Promise(r=>release=r),draws=[],SH={cur:null};
-  const context={U:{uid:'one'},ME:null,SH,window:{},document:{documentElement:{dataset:{}}},BOOT_TECH:true,location:{search:''},URLSearchParams,
+  const context={U:{uid:'one'},ME:null,SH,window:{},ls:{get:()=>null},document:{documentElement:{dataset:{}}},BOOT_TECH:true,location:{search:''},URLSearchParams,
     sheet:o=>{SH.cur=o;draws.push(o)},$:()=>({classList:{contains:()=>true}}),
     landing:(_push,pending)=>{const o={pending};SH.cur=o;draws.push(o)},
     refreshMe:()=>wait,techPolicy:()=>wait,needLogin:()=>assert.fail('unexpected login')};

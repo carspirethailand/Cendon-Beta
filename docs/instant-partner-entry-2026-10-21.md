@@ -1,5 +1,10 @@
 # Direct, immediate mechanic-application entry
 
+Historical release note for bc2d489. The trial/legacy-shop classification below
+was incorrect and caused existing shops to appear unregistered. Superseded by
+`cloud-partner-state-2026-10-21.md`: server-backed shops retain Studio regardless
+of test/verification flags, and missing local hints are not registration evidence.
+
 - Apply-labelled cards always target `/join`, not `/studio`, including stale
   settings markup and cached trial-shop records. A cached `shop` status alone
   does not establish a registered, verified real shop.

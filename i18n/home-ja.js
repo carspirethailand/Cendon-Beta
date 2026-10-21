@@ -2,6 +2,9 @@
    กุญแจคือข้อความอังกฤษใน T("ไทย","English") และพจนานุกรม EN ของหน้า · {0} {1} = ค่าที่แทนตอนแสดงผล
    เพิ่มข้อความใหม่ในหน้า → เพิ่มคำแปลที่นี่ทุกภาษา (เทสต์ i18n-home ตรวจความครบ) */
 window.CENDON_L10N={lang:"ja",t:{
+"Your mechanic account":"整備士アカウント",
+"Checking your shop · do not apply again":"店舗を確認中 · 再申請は不要です",
+"Check status":"状況を確認",
 "Rainy season — are {0}'s tyres and wipers ready?":"雨季です。{0}のタイヤとワイパーは大丈夫？",
 "{0} is at {1} km — what's due?":"{0}は{1}km — 何の点検時期？",
 "Call a mechanic":"整備士を呼ぶ",

@@ -9,6 +9,8 @@ if(/^\/messages(\/|$)/.test(location.pathname)){document.documentElement.classLi
 <script src="/launch-gate.js?v=1"></script>
 <script src="/auth-gate.js?v=2"></script>
 <script src="/account-scope.js?v=2"></script>
+<link rel="stylesheet" href="/partner-entry.css?v=1">
+<script src="/partner-entry.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
 <script src="/cendon-tour.js" defer></script>
@@ -4189,7 +4191,7 @@ function fx3d(cv,o){
 /* การ์ดพาร์ทเนอร์บนหน้าแรก — สถานะจาก spire_partner (refreshMe เขียนไว้) จึงวาดได้ทันทีไม่ต้องรอหลังบ้าน */
 function drawPartner(){
   const box=$("hPartner");if(!box)return;
-  const p=ls.get("spire_partner",null),mine=p&&U&&p.uid===U.uid?p.s:"none";
+  const p=ls.get("spire_partner",null),mine=p&&U&&p.uid===U.uid?(p.s==="shop"&&p.registered!==true?"none":p.s):"none";
   /* ผลใบสมัครออกแล้วแต่ยังไม่ขูดดู = การ์ดชวนไปขูด (ไม่บอกผลก่อน) */
   const k=p&&U&&p.uid===U.uid&&p.r?"news":mine==="shop"?"shop":mine&&mine!=="none"&&mine!=="withdrawn"?"app":"join";
   if(box.dataset.k===k&&box.childNodes.length)return;box.dataset.k=k;
@@ -4954,7 +4956,7 @@ Nav.route({path:"staff/review/:uid",test:p=>/^[\w-]{6,128}$/.test(p.uid),open:as
 /* ลิงก์จากการ์ด LINE ของทีมงาน "มีใบสมัครช่างใหม่" — เปิดหน้าตรวจใบสมัครทันที */
 Nav.route({path:"staff/review",open:async()=>{if(await needU()&&modesAvail().includes("staff")){setMode("staff");await reviewList()}}});
 Nav.route({path:"staff",open:async()=>{if(await needU()&&modesAvail().includes("staff"))setMode("staff")}});
-Nav.route({path:"join",open:async()=>{if(!U)sheet({title:"สมัครเป็นช่าง",url:location.pathname+location.search,body:'<p role="status"><span class="spin"></span> กำลังตรวจบัญชี…</p>'});await READY.user;if(U)return openJoin();needLogin()}});
+Nav.route({path:"join",open:async()=>{if(!U)window.CendonPartnerEntry?.show();await READY.user;if(U)return openJoin();needLogin()}});
 Nav.route({path:"quote",name:"qcheck",open:()=>quotePage()});
 Nav.route({path:"listen",name:"listen",open:()=>listenPage()});
 Nav.route({path:"photo",name:"photo",open:()=>photoPage()});
@@ -6720,8 +6722,11 @@ const ageOf=b=>{if(!b)return 0;const d=new Date(b),n=new Date();let a=n.getFullY
 async function openJoin(){
   if(!U)return needLogin();
   const kyc=new URLSearchParams(location.search).get("verificationSessionId");
-  const owner=U.uid,loading={title:"สมัครเป็นช่าง",url:"/join",body:'<p role="status" aria-live="polite"><span class="spin"></span> กำลังตรวจสถานะใบสมัคร…</p>'};
-  sheet(loading);
+  const owner=U.uid;
+  // The actual public application introduction is ready before any request.
+  // /join never boots a Studio snapshot, even when an old entry used /studio.
+  BOOT_TECH=false;delete document.documentElement.dataset.boot;
+  landing(false,true);const loading=SH.cur;
   /* กลับมาจาก Didit (/join?verificationSessionId=…) — ดึงผลทันที ไม่ต้องรอ webhook */
   if(kyc){try{await api("/api/tech/apply/identity/refresh",{body:{}})}catch(e){}
     /* The session is selected server-side from the signed-in account. Do not
@@ -6729,7 +6734,7 @@ async function openJoin(){
     const u=new URL(location.href);u.searchParams.delete("verificationSessionId");history.replaceState(history.state,"",u.pathname+(u.search||"")+(u.hash||""));}
   await Promise.all([refreshMe(),techPolicy()]);
   if(U?.uid!==owner||SH.cur!==loading||!$("bs").classList.contains("on"))return;
-  if(!ME)return sheet({push:false,title:"สมัครเป็นช่าง",body:'<p>ยังตรวจสถานะไม่ได้ กรุณาลองใหม่ ไม่ต้องกรอกใบสมัครซ้ำ</p><button class="btn p" id="jRetry">ลองอีกครั้ง</button>',mount(){$("jRetry").onclick=openJoin}});
+  if(!ME){const er=$("err"),go=$("lGo");if(er)er.textContent=T("ยังตรวจสถานะไม่ได้ กรุณาลองใหม่ ไม่ต้องกรอกใบสมัครซ้ำ","Couldn't connect. Please try again");if(go){go.disabled=false;go.onclick=openJoin}return}
   const a=ME&&ME.application,t=ME&&ME.technician;
   /* ทีมงานเลือกได้ว่าจะเป็นช่างทีมงาน (ไม่ต้องใช้อะไร เห็นเฉพาะทีมงาน) หรือลองยื่นแบบพาร์ทเนอร์จริง */
   if(ME&&ME.admin&&!(a&&!a.test))return sheet({title:"สมัครเป็นช่าง",url:"/join",body:`
@@ -6740,18 +6745,19 @@ async function openJoin(){
     mount(){$("jStaff").onclick=testTech;$("jReal").onclick=()=>landing(true);$("jSkip").onclick=e=>busy(e.currentTarget,quickTech);$("jStat").onclick=()=>previewStatus("pending",true)}});
   /* ผ่านการอนุมัติแล้ว มีร้านจริง = เข้า Studio ตรง ๆ (หน้าสถานะใบสมัครมีไว้ตอนยังรอตรวจ/ต้องแก้ไขเท่านั้น) */
   if(a&&decided(a)&&!revealed(a))return statusPage(a);
-  if(t&&(!t.test||!(ME&&ME.staff)))return openStudio();
+  if(t&&t.verified&&!t.test)return openStudio();
   if(a&&!a.test)return statusPage(a);
   landing();
 }
+window.cendonOpenJoin=openJoin;
 /* ใบสมัครช่างเป็นขั้น ๆ: /join (หน้าแนะนำ) → /join/1 … /join/4 · ปุ่ม "ย้อนกลับ" ในฟอร์ม = ปุ่มย้อนของเครื่อง
    กลับไปขั้นก่อนแล้ววาดใหม่จากข้อมูลที่กรอกไว้ (APP) ไม่ใช่ภาพเก่าตอนเปิดครั้งแรก */
 function wizBack(n){const p=SH.stack[SH.stack.length-1];if(SH.cur&&SH.cur.wiz>n&&p&&p.wiz===n){back();return true}return false}
-function landing(push){
-  if(wizBack(0))return;
+function landing(push,pending=false){
+  if(!pending&&wizBack(0))return;
   /* ช่วงนับถอยหลังเปิดตัว: บอกวันเปิดตัวบนหัวหน้า (จองสิทธิ์ล่วงหน้า) */
   const lc=window.CendonLaunch&&CendonLaunch.pre()&&CendonLaunch.cfg().launch,pre=lc?new Date(lc.at).toLocaleDateString(TH?"th-TH":"en-GB",{day:"numeric",month:"short",year:"numeric"}):"";
-  sheet({push,full:true,wiz:0,redo:()=>landing(false),url:SH.cur&&SH.cur.wiz>=0?undefined:"/join",title:"",cls:"jx",body:`
+  sheet({push,full:true,wiz:0,redo:()=>openJoin(),url:pending?"/join":SH.cur&&SH.cur.wiz>=0?undefined:"/join",title:"",cls:"jx",body:`
     <div class="jx-hero"><canvas class="jx-gl" id="jxGl" aria-hidden="true"></canvas><svg class="jx-mark" viewBox="-6.0 -6.0 94.8 112.0" aria-hidden="true"><path fill="currentColor" d="${LOGO}"/></svg>
       <div class="jx-tx"><small class="jx-eye">CENDON PARTNER PROGRAM</small>${pre?`<span class="jx-pre"><i></i>${T("จองสิทธิ์ก่อนเปิดตัว","Reserve before launch")} · ${esc(pre)}</span>`:""}
         <h2>${T("ร่วมเป็นพาร์ทเนอร์ช่าง","Become a partner mechanic")}<em>${T("กับ Cendon","with Cendon")}</em></h2>
@@ -6762,15 +6768,16 @@ function landing(push){
     <p class="h4">คุณสมบัติผู้สมัคร</p>
     <div class="rules">${[["ti-user-check","อายุ 18 ปีขึ้นไป มีบัตรประชาชนไทย"],["ti-calendar-stats","ประสบการณ์ซ่อมรถ 2 ปีขึ้นไป"],["ti-phone-check","มีเบอร์โทรที่ติดต่อได้จริง"],["ti-building-warehouse","มีอู่ หรือเครื่องมือพร้อมออกหน้างาน"]].map(([ic,t])=>`<div class="rule"><span class="sq"><i class="ti ${ic}"></i></span><div><b>${t}</b></div></div>`).join("")}</div>
     <p class="h4">เอกสารที่ต้องเตรียม</p>
-    <div class="rules">${DIDIT()?`<div class="rule"><span class="sq"><i class="ti ti-id"></i></span><div><b>บัตรประชาชนตัวจริง</b><small>ใช้ยืนยันตัวตนกับ Didit หลังยื่นใบสมัคร — ไม่ต้องอัปโหลดในฟอร์ม</small></div></div>`:""}${dk().map(([k,l,min,max,ic])=>`<div class="rule"><span class="sq"><i class="ti ${ic}"></i></span><div><b>${l}</b><small>${min?(min===max?min+" รูป":min+"–"+max+" รูป"):"ถ้ามี — ถ้าไม่มี ทีมงานสัมภาษณ์ทักษะแทน"}</small></div>${min?"":'<span class="opt">ไม่บังคับ</span>'}</div>`).join("")}</div>
+    <div class="rules">${pending?'<p role="status">กำลังตรวจขั้นตอนยืนยันตัวตนล่าสุด · เตรียมบัตรประชาชน รูปผลงาน และข้อมูลอู่ไว้ได้เลย ยังไม่ต้องส่งเอกสาร</p>':(DIDIT()?`<div class="rule"><span class="sq"><i class="ti ti-id"></i></span><div><b>บัตรประชาชนตัวจริง</b><small>ใช้ยืนยันตัวตนกับ Didit หลังยื่นใบสมัคร — ไม่ต้องอัปโหลดในฟอร์ม</small></div></div>`:"")+dk().map(([k,l,min,max,ic])=>`<div class="rule"><span class="sq"><i class="ti ${ic}"></i></span><div><b>${l}</b><small>${min?(min===max?min+" รูป":min+"–"+max+" รูป"):"ถ้ามี — ถ้าไม่มี ทีมงานสัมภาษณ์ทักษะแทน"}</small></div>${min?"":'<span class="opt">ไม่บังคับ</span>'}</div>`).join("")}</div>
     <p class="h4">ขั้นตอนการพิจารณา</p>
     <div class="tl">${(DIDIT()?[["ยื่นใบสมัครออนไลน์","กรอกข้อมูลและแนบรูปผลงาน"],["ยืนยันตัวตนกับ Didit","ถ่ายบัตรประชาชนและใบหน้า ประมาณ 2 นาที"],["ทีมงานตรวจและโทรยืนยัน","1–3 วันทำการ"],["อนุมัติ เริ่มรับงาน","ร้านของคุณแสดงในแอปทันที"]]:[["ยื่นใบสมัครออนไลน์","กรอกข้อมูลและแนบเอกสาร"],["ตรวจสอบเอกสาร","1–3 วันทำการ"],["โทรยืนยันตัวตนและทักษะ","ทีมงานติดต่อตามเบอร์ที่ให้ไว้"],["อนุมัติ เริ่มรับงาน","ร้านของคุณแสดงในแอปทันที"]]).map(([b,t],i)=>`<div data-n="${i+1}"><b>${b}</b><small>${t}</small></div>`).join("")}</div>
-    <p class="note"><i class="ti ti-shield-lock"></i>${DIDIT()?T("บัตรประชาชนและใบหน้าตรวจที่ Didit โดยตรง Cendon ไม่เก็บรูปบัตรหรือรูปหน้า","Your ID card and face are checked directly by Didit — Cendon never stores ID or face photos"):T("รูปบัตรประชาชนและรูปถ่ายคู่บัตร ทีมงานดูเพื่อยืนยันตัวตนเท่านั้น และถูกลบทันทีหลังพิจารณาเสร็จ","Your ID card photo and selfie with the card are seen by our team only to verify you, and are deleted as soon as the review is done")} · <button class="lnk" id="lTerms">ข้อตกลงพาร์ทเนอร์</button> · <a class="lnk" href="/privacy" target="_blank" rel="noopener">นโยบายความเป็นส่วนตัว</a></p>`,
+    <p class="note"><i class="ti ti-shield-lock"></i>${pending?'ยังไม่ส่งข้อมูลหรือเอกสารใด ๆ จนกว่าคุณตรวจแบบฟอร์มและยืนยัน':DIDIT()?T("บัตรประชาชนและใบหน้าตรวจที่ Didit โดยตรง Cendon ไม่เก็บรูปบัตรหรือรูปหน้า","Your ID card and face are checked directly by Didit — Cendon never stores ID or face photos"):T("รูปบัตรประชาชนและรูปถ่ายคู่บัตร ทีมงานดูเพื่อยืนยันตัวตนเท่านั้น และถูกลบทันทีหลังพิจารณาเสร็จ","Your ID card photo and selfie with the card are seen by our team only to verify you, and are deleted as soon as the review is done")} · <button class="lnk" id="lTerms">ข้อตกลงพาร์ทเนอร์</button> · <a class="lnk" href="/privacy" target="_blank" rel="noopener">นโยบายความเป็นส่วนตัว</a></p>`,
     foot:`<button class="btn p w jx-go" id="lGo">${pre?T("จองสิทธิ์ · เริ่มกรอกใบสมัคร","Reserve · start the application"):T("เริ่มกรอกใบสมัคร","Start the application")}<i class="ti ti-arrow-right"></i></button>`,
-    mount(){$("lTerms").onclick=terms;fx3d($("jxGl"));$("lGo").onclick=e=>busy(e.currentTarget,async()=>{const a=ME&&ME.application;const rej=a&&!a.test&&a.status==="rejected";
+    mount(){$("lTerms").onclick=terms;$("lGo").disabled=pending;if(!pending)fx3d($("jxGl"));$("lGo").onclick=e=>busy(e.currentTarget,async()=>{const a=ME&&ME.application;const rej=a&&!a.test&&a.status==="rejected";
       /* เซิร์ฟเวอร์ยังไม่รองรับข้อความยินยอมรุ่นนี้ = บอกตั้งแต่ต้น ไม่ให้กรอกจนจบแล้วส่งไม่ได้ */
       if(!(await techPolicy()).ok)throw Error("ระบบสมัครช่างกำลังอัปเดต กรุณาลองใหม่อีกครั้งภายหลัง");
       APP=APP||{cats:[],mobile:false,urgent:false,docs:{},...(rej?{title:a.title,name:a.name,shop:a.shop,phone:a.phone,birth:a.birth,years:a.years,area:a.area,from:a.from,warranty:a.warranty,radius:a.radius,cats:a.cats||[],mobile:a.mobile,urgent:a.urgent,lat:a.lat,lng:a.lng,about:a.about}:{})};step(1)})}});
+  window.CendonPartnerEntry?.hide();
 }
 function terms(){
   sheet({push:true,slug:"terms",title:"ข้อตกลงพาร์ทเนอร์ช่าง",body:`<div class="terms">
@@ -7196,10 +7203,11 @@ async function reviewOne(a){
 $("bMe").onclick=()=>{
   if(!U)return needLogin();
   const t=ME&&ME.technician,a=ME&&ME.application;
+  const canStudio=!!(t&&t.verified&&!t.test);
   sheet({title:"บัญชี",body:`<div class="who"><span class="av sq" style="--c1:var(--accent)">${initial(U.email)}</span><div><b>${esc(U.displayName||U.email)}</b><small>${esc(U.email)}${ME&&ME.staff?" · ทีมงาน":""}</small></div></div>
     <button class="jl" id="mJobs"><span class="av sq" style="--c1:#2f9bd8"><i class="ti ti-clipboard-list"></i></span><span class="jb"><b>งานของฉัน</b></span><i class="ti ti-chevron-right"></i></button>
-    <button class="jl" id="mJoin"><span class="av sq" style="--c1:#22a06b"><i class="ti ti-tool"></i></span><span class="jb"><b>${a&&decided(a)&&!revealed(a)?"ผลใบสมัครช่างมาแล้ว — แตะเพื่อขูดดู":t&&(!t.test||!(ME&&ME.staff))?"Studio — หน้าร้านของฉัน":a&&!a.test?"ใบสมัครพาร์ทเนอร์ ("+({pending:"กำลังพิจารณา",rejected:"ขอปรับเพิ่มอีกนิด",declined:"ปิดรอบนี้",approved:"อนุมัติแล้ว"}[a.status]||a.status)+")":"สมัครเป็นช่าง"}</b></span><i class="ti ti-chevron-right"></i></button>${ME&&ME.staff?`<button class="jl" id="mStaff"><span class="av sq" style="--c1:#7c5cff"><i class="ti ti-shield-check"></i></span><span class="jb"><b>มุมทีมงาน</b></span><i class="ti ti-chevron-right"></i></button>`:""}`,
-    mount(){$("mJobs").onclick=()=>jobs();$("mJoin").onclick=()=>{if(t&&!(a&&decided(a)&&!revealed(a))){closeSheet();openStudio()}else openJoin()};
+    <button class="jl" id="mJoin"><span class="av sq" style="--c1:#22a06b"><i class="ti ti-tool"></i></span><span class="jb"><b>${a&&decided(a)&&!revealed(a)?"ผลใบสมัครช่างมาแล้ว — แตะเพื่อขูดดู":canStudio?"Studio — หน้าร้านของฉัน":a&&!a.test?"ใบสมัครพาร์ทเนอร์ ("+({pending:"กำลังพิจารณา",rejected:"ขอปรับเพิ่มอีกนิด",declined:"ปิดรอบนี้",approved:"อนุมัติแล้ว"}[a.status]||a.status)+")":"สมัครเป็นช่าง"}</b></span><i class="ti ti-chevron-right"></i></button>${ME&&ME.staff?`<button class="jl" id="mStaff"><span class="av sq" style="--c1:#7c5cff"><i class="ti ti-shield-check"></i></span><span class="jb"><b>มุมทีมงาน</b></span><i class="ti ti-chevron-right"></i></button>`:""}`,
+    mount(){$("mJobs").onclick=()=>jobs();$("mJoin").onclick=()=>{if(canStudio&&!(a&&decided(a)&&!revealed(a))){closeSheet();openStudio()}else openJoin()};
       if($("mStaff"))$("mStaff").onclick=()=>{closeSheet();setMode("staff")}}});
 };
 
@@ -7845,7 +7853,7 @@ async function loadMe(){
    /* เจ้าของระบบเปิดลิงก์ร้าน/บริการของคนอื่นตรง ๆ: วาดใหม่ให้มีเครื่องมือเจ้าของระบบ */
    else if(oc&&!oc.owner&&!oc.boss&&ME&&ME.owner){if(oc.shop)openTech(oc.shop);else if(oc.gig)openGig(oc.gig)}}
   /* หน้าบัญชี (มือถือ) อ่านค่านี้เพื่อเขียนปุ่มว่า "สมัครเป็นช่าง" หรือ "Studio" — เก็บแค่สถานะ ไม่มีข้อมูลส่วนตัว */
-  if(ME)try{localStorage.setItem("spire_partner",JSON.stringify({uid:U.uid,s:t&&(!t.test||ME.staff)?"shop":a&&!a.test?a.status:"none",r:a&&decided(a)&&!revealed(a)?1:0}))}catch(e){}
+  if(ME)try{localStorage.setItem("spire_partner",JSON.stringify({uid:U.uid,s:t&&(!t.test||ME.staff)?"shop":a&&!a.test?a.status:"none",registered:!!(t&&t.verified&&!t.test),r:a&&decided(a)&&!revealed(a)?1:0}))}catch(e){}
   try{drawPartner()}catch(e){}
   $("joinT").textContent=t&&!t.test?"พื้นที่พาร์ทเนอร์":a&&!a.test&&a.status==="pending"?"ใบสมัครกำลังพิจารณา":"ร่วมเป็นพาร์ทเนอร์ช่าง";
   $("joinS").textContent=t&&!t.test?"ดูงานที่ลูกค้าส่งมา":a&&!a.test?"เลขที่ "+(a.appNo||"")+(a.status==="rejected"?" · ต้องแก้ไข":""):ME&&ME.staff?"ทีมงานเป็นช่างได้ทันที":"รับงานจากลูกค้าในพื้นที่";

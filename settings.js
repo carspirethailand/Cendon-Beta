@@ -33,7 +33,7 @@ let host={},main=null,manage=null,sheetEl=null,lastFocus=null;
 /* ── ประกอบหน้าหลัก ── */
 function partnerHTML(){
   const u=me();let s='none';
-  try{const p=JSON.parse(localStorage.getItem('spire_partner')||'null');if(p&&u.uid&&p.uid===u.uid&&['pending','rejected','shop'].includes(p.s))s=p.s}catch(e){}
+  try{const p=JSON.parse(localStorage.getItem('spire_partner')||'null');if(p&&u.uid&&p.uid===u.uid&&['pending','rejected','shop'].includes(p.s))s=p.s==='shop'&&p.registered!==true?'none':p.s}catch(e){}
   const C={
     none:['ti-tool',t('สมัครเป็นช่าง','Become a mechanic'),t('รับงานซ่อมจากลูกค้าใกล้คุณ','Get repair jobs from customers near you'),t('เริ่มสมัคร','Apply now')],
     pending:['ti-clock',t('ใบสมัครช่างของคุณ','Your mechanic application'),t('กำลังพิจารณา','Under review'),t('ดูสถานะ','See status')],

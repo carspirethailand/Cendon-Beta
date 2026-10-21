@@ -9,11 +9,12 @@ const settle=async()=>{for(let n=0;n<25;n++)await Promise.resolve()};
 test('mechanic menu paints before delayed account/policy requests; closing it prevents a late reopen',async()=>{
   const source=index.slice(index.indexOf('async function openJoin(){'),index.indexOf('/* ใบสมัครช่างเป็นขั้น',index.indexOf('async function openJoin(){')));
   let release;const wait=new Promise(r=>release=r),draws=[],SH={cur:null};
-  const context={U:{uid:'one'},ME:null,SH,location:{search:''},URLSearchParams,
+  const context={U:{uid:'one'},ME:null,SH,window:{},document:{documentElement:{dataset:{}}},BOOT_TECH:true,location:{search:''},URLSearchParams,
     sheet:o=>{SH.cur=o;draws.push(o)},$:()=>({classList:{contains:()=>true}}),
+    landing:(_push,pending)=>{const o={pending};SH.cur=o;draws.push(o)},
     refreshMe:()=>wait,techPolicy:()=>wait,needLogin:()=>assert.fail('unexpected login')};
   vm.createContext(context);vm.runInContext(source,context);
-  const task=vm.runInContext('openJoin()',context);assert.equal(draws.length,1);assert.match(draws[0].body,/role="status"/);
+  const task=vm.runInContext('openJoin()',context);assert.equal(draws.length,1);assert.equal(draws[0].pending,true);assert.equal(context.BOOT_TECH,false);
   SH.cur={title:'different menu'};release();await task;assert.equal(draws.length,1,'late result must not replace another screen');
 });
 

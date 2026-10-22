@@ -2,6 +2,12 @@
    กุญแจคือข้อความอังกฤษใน T("ไทย","English") และพจนานุกรม EN ของหน้า · {0} {1} = ค่าที่แทนตอนแสดงผล
    เพิ่มข้อความใหม่ในหน้า → เพิ่มคำแปลที่นี่ทุกภาษา (เทสต์ i18n-home ตรวจความครบ) */
 window.CENDON_L10N={lang:"zh",t:{
+"Shop suspended · you can still open Studio":"店铺已暂停 · 你仍可打开 Studio",
+"Trial shop · not public yet":"试用店铺 · 尚未公开",
+"Verify with a six-digit email code":"使用电子邮件中的六位数验证码验证",
+"Create an account with email and password · verification uses a link, not an OTP":"使用电子邮件和密码注册 · 通过链接验证，不是一次性验证码",
+"Verification link sent, not an OTP — check your inbox and spam.":"验证链接已发送，不是一次性验证码 · 请检查收件箱和垃圾邮件",
+"Account created, but the verification email could not be sent. Please resend it later.":"账户已创建，但验证邮件发送失败。请稍后重新发送。",
 "Your mechanic account":"你的技师账户",
 "Checking your shop · do not apply again":"正在检查店铺 · 无需重新申请",
 "Check status":"查看状态",

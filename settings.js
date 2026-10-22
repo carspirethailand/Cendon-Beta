@@ -32,8 +32,8 @@ let host={},main=null,manage=null,sheetEl=null,lastFocus=null;
 
 /* ── ประกอบหน้าหลัก ── */
 function partnerHTML(){
-  const u=fbUser()||me();let s=u.uid?'checking':'none',phase='checking';
-  if(W.CendonPartnerState){const p=W.CendonPartnerState.peek(u.uid);s=p.s;phase=p.phase}
+  const u=fbUser()||me();let s=u.uid?'checking':'none',phase='checking',paused=false;
+  if(W.CendonPartnerState){const p=W.CendonPartnerState.peek(u.uid);s=p.s;phase=p.phase;paused=!!p.suspended}
   else try{const p=JSON.parse(localStorage.getItem('spire_partner')||'null');if(p&&u.uid&&p.uid===u.uid&&['none','pending','approved','rejected','declined','withdrawn','shop'].includes(p.s))s=p.s}catch(e){}
   if(s==='none'&&phase==='offline')s='checking';
   if(s==='withdrawn')s='none';
@@ -46,6 +46,7 @@ function partnerHTML(){
     rejected:['ti-pencil',t('ใบสมัครช่างของคุณ','Your mechanic application'),t('ต้องแก้ไขบางอย่าง','Needs a few changes'),t('ดูว่าต้องแก้อะไร','See what to fix')],
     shop:['ti-building-store',t('Studio · ร้านของฉัน','Studio · My shop'),t('งาน ข้อความ บริการ และหน้าร้าน','Jobs, messages, services and your shop page'),t('เปิด Studio','Open Studio')]}[s];
   const href=fbUser()||u.uid?(s==='shop'?'/studio':'/join'):'/login?next=%2Fjoin';
+  if(s==='shop'&&paused)C[2]=t('ร้านถูกพักใช้งาน · ดูสถานะใน Studio ไม่ต้องสมัครใหม่','Shop suspended · check Studio, do not apply again');
   return `<a class="st-partner st-p-${s}" href="${href}" data-partner>
     <span class="st-p-fx" aria-hidden="true"><i class="st-p-glow"></i><i class="st-p-dots"></i><i class="st-p-ring"></i><i class="st-p-spot"></i><i class="st-p-sheen"></i></span>
     <span class="st-p-top"><span class="st-p-ic"><i class="ti ${C[0]}" aria-hidden="true"></i></span>
@@ -342,8 +343,10 @@ async function onClick(e){
     catch(x){group.querySelectorAll('button').forEach(y=>y.setAttribute('aria-pressed',String(y===was)));toast(t('บันทึกไม่สำเร็จ กรุณาลองใหม่','Could not save. Please retry'),'ti-alert-triangle')}
     return}
   if(b.hasAttribute('data-lang')){
-    const v=b.dataset.lang;try{W.spireSetLang&&W.spireSetLang(v)}catch(x){}
-    closeThen(render);return}
+    const v=b.dataset.lang;b.disabled=true;
+    try{if(!W.spireSavePrefs)throw Error('not_ready');await W.spireSavePrefs({lang:v});W.spireSetLang&&W.spireSetLang(v);
+      closeThen(()=>{render();if(!W.CendonCallShell?.active())W.location.reload();else toast(t('เปลี่ยนภาษาแล้ว บางหน้าจะเปลี่ยนครบเมื่อวางสาย','Language saved. Some screens update fully after the call.'))})}
+    catch(x){b.disabled=false;toast(t('บันทึกไม่สำเร็จ กรุณาลองใหม่','Could not save. Please retry'),'ti-alert-triangle')}return}
   if(b.hasAttribute('data-cur')){
     const v=b.dataset.cur;sheetEl.querySelectorAll('[data-cur]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
     try{if(!W.spireSavePrefs)throw new Error('not_ready');await W.spireSavePrefs({currency:v});closeThen(render)}

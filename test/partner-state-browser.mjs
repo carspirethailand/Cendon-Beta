@@ -58,7 +58,17 @@ try{
   await page.goto(base+'/profile');await page.evaluate(()=>localStorage.setItem('spire_partner',JSON.stringify({uid:'one',s:'shop',registered:false})));await page.reload();
   assert.equal(await page.locator('[data-partner]').getAttribute('href'),'/studio');results.push('legacy/trial cache');
 
-  offline=true;await page.reload();await page.waitForFunction(()=>CendonPartnerState.peek('one').phase==='offline');
+  technician={id:'existing-shop',test:true,verified:false,suspended:true,identityHold:false};
+  await page.goto(base+'/profile');await page.evaluate(()=>localStorage.clear());await page.reload();
+  await page.waitForFunction(()=>CendonPartnerState.peek('one').suspended===true);
+  assert.equal(await page.locator('[data-partner]').getAttribute('href'),'/studio');
+  assert.match(await page.locator('[data-partner]').innerText(),/ร้านถูกพักใช้งาน/);
+  assert.equal(await page.evaluate(()=>cardStates.some(s=>s.includes('st-p-none'))),false);
+  await page.locator('[data-partner]').click();await page.locator('#existingShop').waitFor();
+  assert.equal(await page.locator('#lGo').count(),0);results.push('suspended trial shop keeps Studio after cache clear');
+  technician={id:'existing-shop',test:true,verified:false};
+
+  offline=true;await page.goto(base+'/profile');await page.waitForFunction(()=>CendonPartnerState.peek('one').phase==='offline');
   assert.equal(await page.locator('[data-partner]').getAttribute('href'),'/studio');await page.locator('[data-partner]').click();
   await page.locator('#jRetry').waitFor();assert.equal(await page.locator('#lGo').count(),0);results.push('offline existing shop');
   await page.goto(base+'/profile');await page.evaluate(()=>localStorage.clear());await page.reload();await page.waitForFunction(()=>CendonPartnerState.peek('one').phase==='offline');

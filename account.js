@@ -127,6 +127,7 @@
     D.documentElement.dataset.level='enthusiast';
     for(const name of ['renderAuthUI','renderProfile','updateGreeting'])try{if(W[name])W[name]()}catch(e){}
     try{if(W.CendonSettings)W.CendonSettings.refresh()}catch(e){}
+    try{W.dispatchEvent(new CustomEvent('cendon:preferences',{detail:{uid:S.uid,distance:p.distance,currency:p.currency,lang}}))}catch(e){}
   }
   function option(value,label,selected){return `<option value="${esc(value)}"${value===String(selected)?' selected':''}>${esc(label)}</option>`}
   function providerIcon(kind){
@@ -155,14 +156,14 @@
     let title,copy='',form='',actions='';
     if(phase==='auth'){const m=S.mode,up=m==='up',reset=m==='reset',otp=m==='otp',sent=m==='code',linked=m==='linksent',confirm=m==='linkemail',viaCode=otpReady();
       title=up?T('สร้างบัญชี Cendon','Create your Cendon account'):reset?T('ตั้งรหัสผ่านใหม่','Reset your password'):otp?(viaCode?T('รับรหัสทางอีเมล','Get a code by email'):T('รับลิงก์ทางอีเมล','Get a sign-in link by email')):sent||linked?T('เช็กกล่องจดหมาย','Check your inbox'):confirm?T('ยืนยันอีเมลของคุณ','Confirm your email'):T('เข้าสู่ระบบ Cendon','Sign in to Cendon');
-      copy=up?T('เริ่มดูแลรถของคุณในที่เดียว','Everything for your car, in one place'):reset?T('ใส่อีเมลที่ใช้สมัคร เราจะส่งลิงก์ตั้งรหัสผ่านใหม่ไปให้','Enter the email you signed up with and we’ll send you a reset link.'):otp?(viaCode?T('ใส่อีเมล เราจะส่งรหัส 6 หลักให้ ไม่ต้องใช้รหัสผ่าน','Enter your email and we’ll send a six-digit code — no password needed.'):T('ใส่อีเมล เราจะส่งลิงก์ให้ กดลิงก์ในอีเมลก็เข้าสู่ระบบได้เลย ไม่ต้องใช้รหัสผ่าน','Enter your email and we’ll send a link — tap it to sign in, no password needed.')):sent?T('ส่งรหัสไปที่ ','Code sent to ')+S.email
+      copy=up?(viaCode?T('ยืนยันด้วยรหัส 6 หลักทางอีเมล','Verify with a six-digit email code'):T('สมัครด้วยอีเมลและรหัสผ่าน · ส่งลิงก์ยืนยัน ไม่ใช่ OTP','Create an account with email and password · verification uses a link, not an OTP')):reset?T('ใส่อีเมลที่ใช้สมัคร เราจะส่งลิงก์ตั้งรหัสผ่านใหม่ไปให้','Enter the email you signed up with and we’ll send you a reset link.'):otp?(viaCode?T('ใส่อีเมล เราจะส่งรหัส 6 หลักให้ ไม่ต้องใช้รหัสผ่าน','Enter your email and we’ll send a six-digit code — no password needed.'):T('ใส่อีเมล เราจะส่งลิงก์ให้ กดลิงก์ในอีเมลก็เข้าสู่ระบบได้เลย ไม่ต้องใช้รหัสผ่าน','Enter your email and we’ll send a link — tap it to sign in, no password needed.')):sent?T('ส่งรหัสไปที่ ','Code sent to ')+S.email
         :linked?T('ส่งลิงก์เข้าสู่ระบบไปที่ ','We sent a sign-in link to ')+S.email+T(' — เปิดอีเมลบนเครื่องนี้แล้วกดลิงก์ (เช็กจดหมายขยะด้วย)',' — open the email on this device and tap the link (check spam too).')
         :confirm?T('เพื่อความปลอดภัย ใส่อีเมลที่ใช้ขอลิงก์อีกครั้ง','For your security, enter the email you requested the link with.'):T('ยินดีต้อนรับกลับมา','Welcome back');
       /* Google / Apple ใช้ได้ทั้งเข้าสู่ระบบและสมัครใหม่ · ปุ่ม Apple ขึ้นเมื่อหลังบ้านบอกว่าเปิดแล้ว (AUTH_APPLE_ENABLED=1) */
       const apple=!!(S.config&&S.config.appleAuthReady===true);
       const prov=reset||otp||sent||linked||confirm?'':`<button class="ac-provider" type="button" data-provider="google"><span class="ac-icon" aria-hidden="true">${providerIcon('Google')}</span><span>${up?T('สมัครด้วย Google','Sign up with Google'):T('เข้าสู่ระบบด้วย Google','Continue with Google')}</span></button>${apple?`<button class="ac-provider" type="button" data-provider="apple"><span class="ac-icon" aria-hidden="true">${providerIcon('Apple')}</span><span>${T('ใช้บัญชี Apple','Continue with Apple')}</span></button>`:''}<div class="ac-or" role="separator"><span>${T('หรือใช้อีเมล','or use email')}</span></div>`;
       /* รหัสผ่านไม่ถูกเขียนลง HTML — ใส่กลับเข้าช่องหลังวาดเสร็จ (ดูท้าย render) */
-      const pw=reset||otp||sent||linked||confirm?'':`<div class="ac-pass"><input class="ac-input" id="acPass" name="password" type="${S.showPw?'text':'password'}" autocomplete="${up?'new-password':'current-password'}" placeholder="${T('รหัสผ่าน','Password')}" aria-label="${T('รหัสผ่าน','Password')}"${up?' minlength="8" aria-describedby="acPwHint"':''} required><button class="ac-eye" type="button" data-eye aria-pressed="${S.showPw}" aria-label="${S.showPw?T('ซ่อนรหัสผ่าน','Hide password'):T('แสดงรหัสผ่าน','Show password')}">${EYE(S.showPw)}</button></div>${up?`<p class="ac-hint" id="acPwHint">${T('อย่างน้อย 8 ตัวอักษร','At least 8 characters')}</p>`:''}`;
+      const pw=reset||otp||sent||linked||confirm||(up&&viaCode)?'':`<div class="ac-pass"><input class="ac-input" id="acPass" name="password" type="${S.showPw?'text':'password'}" autocomplete="${up?'new-password':'current-password'}" placeholder="${T('รหัสผ่าน','Password')}" aria-label="${T('รหัสผ่าน','Password')}"${up?' minlength="8" aria-describedby="acPwHint"':''} required><button class="ac-eye" type="button" data-eye aria-pressed="${S.showPw}" aria-label="${S.showPw?T('ซ่อนรหัสผ่าน','Hide password'):T('แสดงรหัสผ่าน','Show password')}">${EYE(S.showPw)}</button></div>${up?`<p class="ac-hint" id="acPwHint">${T('อย่างน้อย 8 ตัวอักษร','At least 8 characters')}</p>`:''}`;
       /* รหัส OTP ก็ไม่ถูกเขียนลง HTML เหมือนรหัสผ่าน */
       const box=sent?`<input class="ac-input ac-code" id="acCode" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="••••••" aria-label="${T('รหัส 6 หลัก','Six-digit code')}" aria-describedby="acCodeNote" required><p class="ac-hint" id="acCodeNote">${T('รหัสใช้ได้ 10 นาที และใช้ได้ครั้งเดียว','The code expires in ten minutes and can be used once.')}</p>`
         :linked?''
@@ -189,7 +190,7 @@
       :`<a href="/terms" target="_blank" rel="noopener">${T('ข้อกำหนด','Terms')}</a>${privacyUrl()?` · <a href="${esc(privacyUrl())}" target="_blank" rel="noopener">${T('ความเป็นส่วนตัว','Privacy')}</a>`:''}`;
     /* ซ้าย = ฟอร์ม · ขวา = ภาพแบรนด์ (มือถือ: ภาพเป็นแถบบนเฉพาะหน้าเข้าสู่ระบบ) */
     root.dataset.phase=phase;
-    root.innerHTML=`<div class="ac-split"><section class="ac-sheet"><header class="ac-brand"><span class="ac-badge">${MARK}</span>${wizard?`<span class="ac-progress" aria-label="${step}/7"><span style="width:${step/7*100}%"></span></span>`:''}${current()&&phase!=='loading'?`<button class="ac-link" type="button" data-switch-account>${T('ออกจากระบบ','Sign out')}</button>`:phase==='auth'?`<a class="ac-link" href="/help" target="_blank" rel="noopener">${T('ช่วยเหลือ','Help')}</a>`:''}</header>${wizard?`<p class="ac-kicker">${step} / 7 · ${T('ครั้งแรก ครั้งเดียว','Once, for your account')}</p>`:''}<h1 class="ac-title" id="acTitle" tabindex="-1">${esc(title)}</h1>${copy?`<p class="ac-copy">${esc(copy)}</p>`:''}<form class="ac-form" novalidate>${form}<p class="ac-error" role="alert"${S.error?'':' hidden'}>${esc(S.error)}</p><div class="ac-actions">${actions}</div></form><footer class="ac-legal">${legal}</footer></section>${ART}</div>`;
+    root.innerHTML=`<div class="ac-split"><section class="ac-sheet"><header class="ac-brand"><span class="ac-badge">${MARK}</span>${wizard?`<span class="ac-progress" aria-label="${step}/7"><span style="width:${step/7*100}%"></span></span>`:''}${current()&&phase!=='loading'?`<button class="ac-link" type="button" data-switch-account>${T('ออกจากระบบ','Sign out')}</button>`:phase==='auth'?`<a class="ac-link" href="/help" target="_blank" rel="noopener">${T('ช่วยเหลือ','Help')}</a>`:''}</header>${wizard?`<p class="ac-kicker">${step} / 7 · ${T('ครั้งแรก ครั้งเดียว','Once, for your account')}</p>`:''}<h1 class="ac-title" id="acTitle" tabindex="-1">${esc(title)}</h1>${copy?`<p class="ac-copy">${esc(copy)}</p>`:''}<form class="ac-form" novalidate>${form}${S.notice&&phase!=='auth'?`<p class="ac-note" role="status">${esc(S.notice)}</p>`:''}<p class="ac-error" role="alert"${S.error?'':' hidden'}>${esc(S.error)}</p><div class="ac-actions">${actions}</div></form><footer class="ac-legal">${legal}</footer></section>${ART}</div>`;
     if(phase==='auth'){const pass=root.querySelector('[name="password"]');if(pass)pass.value=S.password;const c=root.querySelector('[name="code"]');if(c)c.value=S.code}
     if(S.busy)root.querySelectorAll('input,select,button').forEach(el=>{el.disabled=true});
     D.documentElement.dataset.gate='1';
@@ -211,6 +212,7 @@
     if(!LOGIN){location.href='/login?next='+encodeURIComponent(location.pathname+location.search+location.hash);return false}
     S.error=T('ระบบล็อกอินกำลังโหลด กรุณาลองอีกครั้ง','Sign-in is still loading. Please try again.');render();return false}
   async function emailAuth(){
+    if(S.mode==='up'&&otpReady())return emailRequest();
     const email=S.email.trim(),pw=S.password,up=S.mode==='up';
     if(!EMAIL_RE.test(email)||email.length>254){S.error=T('กรุณาใส่อีเมลให้ถูกต้อง','Enter a valid email address.');render();return}
     if(up&&Array.from(pw).length<8){S.error=T('รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร','Use at least 8 characters for your password.');render();return}
@@ -221,7 +223,12 @@
     await busy(async()=>{
       if(up){const cred=await a.createUserWithEmailAndPassword(email,pw);
         /* ส่งลิงก์ยืนยันอีเมล — ไม่บังคับก่อนใช้งาน ส่งไม่สำเร็จก็ไม่ขวางการสมัคร */
-        const u=cred&&cred.user;if(u&&typeof u.sendEmailVerification==='function')try{await mailLink(o=>u.sendEmailVerification(o))}catch(e){}}
+        const u=cred&&cred.user;
+        if(u&&typeof u.sendEmailVerification==='function'){
+          try{await mailLink(o=>u.sendEmailVerification(o));S.notice=T('ส่งลิงก์ยืนยันอีเมลแล้ว ไม่ใช่รหัส OTP — เช็กกล่องจดหมายและจดหมายขยะ','Verification link sent, not an OTP — check your inbox and spam.')}
+          catch(e){S.notice=T('สร้างบัญชีแล้ว แต่ส่งลิงก์ยืนยันไม่สำเร็จ กรุณาลองส่งใหม่ภายหลัง','Account created, but the verification email could not be sent. Please resend it later.')}
+          if(current()?.uid===u.uid)render();
+        }}
       else await a.signInWithEmailAndPassword(email,pw);
       if(serial===S.serial)S.password='';
     });

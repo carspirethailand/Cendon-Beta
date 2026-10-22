@@ -314,7 +314,7 @@ test('account flow: a wrong password shows one neutral message and keeps the typ
   assert.equal(f.emails.length, 1, 'an invalid email never reaches Firebase'); assert.match(f.root().innerHTML, /กรุณาใส่อีเมลให้ถูกต้อง/);
 });
 test('account flow: create account needs 8+ characters, sends a verification link back to /login, then opens first-use setup', async () => {
-  const f = fixture({ pathname: '/login' }); await settle();
+  const f = fixture({ pathname: '/login',transport:c=>c.path==='/api/auth/config'?response({emailOtpReady:false}):undefined }); await settle();
   f.click('data-mode=up'); await settle();
   assert.match(f.root().innerHTML, /สร้างบัญชี Cendon/);
   assert.equal(f.root().querySelector('[name="password"]').getAttribute('autocomplete'), 'new-password');
@@ -337,6 +337,15 @@ test('account flow: forgot password always answers the same way, whether or not 
     assert.match(f.root().innerHTML, /ถ้ามีบัญชีที่ใช้อีเมลนี้/); assert.doesNotMatch(f.root().innerHTML, /ไม่พบ|not found/i);
     f.click('data-mode=in'); await settle(); assert.ok(f.root().querySelector('[name="password"]'));
   }
+});
+
+test('account flow: verification delivery failure stays visible after password signup enters setup',async()=>{
+  const f=fixture({pathname:'/login',transport:c=>c.path==='/api/auth/config'?response({emailOtpReady:false}):undefined});await settle();
+  const create=f.auth.createUserWithEmailAndPassword.bind(f.auth);
+  f.auth.createUserWithEmailAndPassword=async(...args)=>{const cred=await create(...args);cred.user.sendEmailVerification=async()=>{throw Error('delivery unavailable')};return cred};
+  f.click('data-mode=up');await settle();f.fill({email:'new@unit.test',password:'long enough'});f.submit();await settle();
+  assert.ok(f.root().querySelector('[name="terms"]'));assert.match(f.root().innerHTML,/สร้างบัญชีแล้ว แต่ส่งลิงก์ยืนยันไม่สำเร็จ/);
+  assert.doesNotMatch(f.root().innerHTML,/delivery unavailable/);
 });
 test('account flow: safe destinations reject external URLs and backslashes while retaining LINE job queries', () => {
   const { api } = fixture();
@@ -417,6 +426,14 @@ test('account flow: a shared trip link stays viewable without signing in; the si
   }
   for (const file of ['privacy', 'terms', 'help', 'about', 'passport', 'login'])
     assert.doesNotMatch(readFileSync(new URL('../' + file + '.html', import.meta.url), 'utf8'), /auth-gate\.js/, file + ' stays public');
+});
+
+test('account flow: signup uses a real six-digit challenge without creating a password account when OTP is configured', async () => {
+  const f=fixture({pathname:'/login'});await settle();f.click('data-mode=up');await settle();
+  assert.equal(f.root().querySelector('[name="password"]'),null);
+  f.fill({email:'new@unit.test'});f.submit();await settle();
+  assert.equal(f.calls.find(c=>c.path==='/api/auth/email/request').body.email,'new@unit.test');
+  assert.ok(f.root().querySelector('[name="code"]'));assert.equal(f.emails.length,0);
 });
 
 test('account flow: email code option — send, enter six digits, sign in; the code is never written into the page or storage', async () => {

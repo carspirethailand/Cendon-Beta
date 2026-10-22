@@ -2,6 +2,12 @@
    กุญแจคือข้อความอังกฤษใน T("ไทย","English") และพจนานุกรม EN ของหน้า · {0} {1} = ค่าที่แทนตอนแสดงผล
    เพิ่มข้อความใหม่ในหน้า → เพิ่มคำแปลที่นี่ทุกภาษา (เทสต์ i18n-home ตรวจความครบ) */
 window.CENDON_L10N={lang:"ko",t:{
+"Shop suspended · you can still open Studio":"업체 이용 정지 · Studio는 계속 열 수 있습니다",
+"Trial shop · not public yet":"시험 업체 · 아직 공개되지 않았습니다",
+"Verify with a six-digit email code":"이메일의 6자리 코드로 인증",
+"Create an account with email and password · verification uses a link, not an OTP":"이메일과 비밀번호로 가입 · OTP가 아닌 링크로 인증합니다",
+"Verification link sent, not an OTP — check your inbox and spam.":"OTP가 아닌 인증 링크를 보냈습니다. 받은편지함과 스팸함을 확인하세요.",
+"Account created, but the verification email could not be sent. Please resend it later.":"계정은 생성되었지만 인증 메일을 보내지 못했습니다. 나중에 다시 보내세요.",
 "Your mechanic account":"정비사 계정",
 "Checking your shop · do not apply again":"업체 확인 중 · 다시 신청하지 마세요",
 "Check status":"상태 확인",

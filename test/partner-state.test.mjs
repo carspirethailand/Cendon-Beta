@@ -47,6 +47,15 @@ test('local result-reveal hints can change without overriding authoritative memb
   assert.equal(f.api.peek('one').s,'shop');assert.equal(f.api.peek('one').r,0);
 });
 
+test('server-suspended and trial shops retain their membership and Studio link without lifting the suspension',async()=>{
+  const f=fixture();f.w.fetch=async()=>response(me('one',{id:'existing',test:true,verified:false,suspended:true,identityHold:false}));
+  await f.api.refresh();const state=f.api.peek('one');assert.equal(state.s,'shop');assert.equal(state.suspended,true);assert.equal(state.test,true);
+  const fragment=settings.slice(settings.indexOf('function partnerHTML(){'),settings.indexOf('const chev='));
+  const c={W:{CendonPartnerState:{peek:()=>state}},me:()=>({uid:'one'}),fbUser:()=>({uid:'one'}),t:a=>a};vm.createContext(c);vm.runInContext(fragment+'result=partnerHTML()',c);
+  assert.match(c.result,/href="\/studio"/);assert.match(c.result,/ร้านถูกพักใช้งาน/);assert.doesNotMatch(c.result,/สมัครเป็นช่าง/);
+  assert.equal(JSON.parse(f.store.get('spire_partner')).s,'shop');
+});
+
 test('only a complete successful response can confirm no shop; existing application statuses survive',async()=>{
   for(const status of ['pending','approved','rejected','declined']){
     const f=fixture();f.w.fetch=async()=>response(me('one',null,{status}));await f.api.refresh();assert.equal(f.api.peek('one').s,status);

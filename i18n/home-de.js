@@ -2,6 +2,12 @@
    กุญแจคือข้อความอังกฤษใน T("ไทย","English") และพจนานุกรม EN ของหน้า · {0} {1} = ค่าที่แทนตอนแสดงผล
    เพิ่มข้อความใหม่ในหน้า → เพิ่มคำแปลที่นี่ทุกภาษา (เทสต์ i18n-home ตรวจความครบ) */
 window.CENDON_L10N={lang:"de",t:{
+"Shop suspended · you can still open Studio":"Werkstatt gesperrt · Studio bleibt zugänglich",
+"Trial shop · not public yet":"Testwerkstatt · noch nicht öffentlich",
+"Verify with a six-digit email code":"Mit einem sechsstelligen E-Mail-Code bestätigen",
+"Create an account with email and password · verification uses a link, not an OTP":"Mit E-Mail und Passwort registrieren · Bestätigung per Link, nicht per OTP",
+"Verification link sent, not an OTP — check your inbox and spam.":"Bestätigungslink gesendet, kein OTP — prüfe Posteingang und Spam.",
+"Account created, but the verification email could not be sent. Please resend it later.":"Konto erstellt, aber die Bestätigungsmail konnte nicht gesendet werden. Bitte später erneut senden.",
 "Your mechanic account":"Dein Mechanikerkonto",
 "Checking your shop · do not apply again":"Werkstatt wird geprüft · kein neuer Antrag nötig",
 "Check status":"Status prüfen",

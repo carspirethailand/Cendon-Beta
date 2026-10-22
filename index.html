@@ -11,12 +11,13 @@ if(/^\/messages(\/|$)/.test(location.pathname)){document.documentElement.classLi
 <script src="/account-scope.js?v=2"></script>
 <link rel="stylesheet" href="/partner-entry.css?v=1">
 <script src="/partner-state.js?v=1"></script>
+<script src="/display-prefs.js?v=1" defer></script>
 <script src="/partner-entry.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
 <script src="/cendon-tour.js" defer></script>
 <script src="/account-actions.js?v=3" defer></script>
-<script src="/account.js?v=2026-10-21-r1" defer></script>
+<script src="/account.js?v=2026-10-21-r2" defer></script>
 <script src="/garage-rules.js?v=3" defer></script>
 <script src="/garage-data.js?v=2" defer></script>
 <script src="/input-guard.js?v=5" defer></script>
@@ -30,7 +31,7 @@ if(/^\/messages(\/|$)/.test(location.pathname)){document.documentElement.classLi
 (function(){try{if(/^\/(work|studio)(\/|$)/.test(location.pathname)){var p=JSON.parse(localStorage.getItem("spire_partner")||"null");if(p&&p.s==="shop")document.documentElement.dataset.boot="tech"}}catch(e){}})();</script>
 <script>(function(){try{var A=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt"],l=null;try{l=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
 if(A.indexOf(l)<0){l="en";var n=navigator.languages||[navigator.language||"en"];for(var i=0;i<n.length;i++){var b=String(n[i]).toLowerCase().split("-")[0];if(A.indexOf(b)>=0){l=b;break}}}
-if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=11"><\/script>')}catch(e){}})();</script>
+if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=12"><\/script>')}catch(e){}})();</script>
 <title>Cendon</title>
 <meta name="description" content="ถามอาการรถ ส่งรูปหรือเสียงให้ AI ช่วยดู เช็กใบเสนอราคา และหาช่างที่ผ่านการตรวจใกล้คุณ">
 <!-- การ์ดตอนแชร์ลิงก์ (LINE / Facebook / X) — รูปต้องเป็นที่อยู่เต็ม -->
@@ -4197,7 +4198,7 @@ function drawPartner(){
   const k=p&&U&&p.uid===U.uid&&p.r?"news":mine==="shop"?"shop":mine==="checking"||p?.phase==="offline"&&mine==="none"?"checking":mine&&mine!=="none"&&mine!=="withdrawn"?"app":"join";
   if(box.dataset.k===k&&box.childNodes.length)return;box.dataset.k=k;
   const st={pending:T("รอทีมงานตรวจ","Waiting for review"),approved:T("อนุมัติแล้ว","Approved"),rejected:T("ทีมงานขอให้แก้ไข","Changes requested"),declined:T("ยังไม่ผ่านการพิจารณา","Not approved")}[mine]||T("ดูความคืบหน้า","See progress");
-  const [eye,b,em,cta]=k==="news"?["CENDON PARTNER",T("ผลการพิจารณาใบสมัครมาแล้ว","Your application result is in"),T("ขูดการ์ดเพื่อเปิดดูผล","Scratch the card to see it"),T("เปิดดูผล","See result")]:k==="shop"?["STUDIO",T("หน้าร้านของฉัน","My shop"),T("งาน แชต บริการ และรีวิว ในที่เดียว","Jobs, chats, services and reviews in one place"),T("เปิด Studio","Open Studio")]
+  const [eye,b,em,cta]=k==="news"?["CENDON PARTNER",T("ผลการพิจารณาใบสมัครมาแล้ว","Your application result is in"),T("ขูดการ์ดเพื่อเปิดดูผล","Scratch the card to see it"),T("เปิดดูผล","See result")]:k==="shop"?["STUDIO",T("หน้าร้านของฉัน","My shop"),p?.suspended?T("ร้านพักใช้งาน · คุณยังเข้า Studio ได้","Shop suspended · you can still open Studio"):p?.test?T("ร้านทดลอง · ยังไม่แสดงต่อลูกค้าทั่วไป","Trial shop · not public yet"):T("งาน แชต บริการ และรีวิว ในที่เดียว","Jobs, chats, services and reviews in one place"),T("เปิด Studio","Open Studio")]
     :k==="checking"?["",T("บัญชีช่างของคุณ","Your mechanic account"),T("กำลังตรวจสถานะร้าน · ไม่ต้องสมัครซ้ำ","Checking your shop · do not apply again"),T("ตรวจสถานะ","Check status")]
     :k==="app"?["",T("ใบสมัครช่างของคุณ","Your mechanic application"),st,T("ดูสถานะ","View status")]
     :["",T("เป็นช่างพาร์ทเนอร์กับ Cendon","Become a Cendon partner mechanic"),T("รับงานใกล้ร้าน · ไม่มีค่าสมัคร · ตั้งราคาเอง","Jobs near you · no sign-up fee · set your own prices"),T("สมัครเลย","Apply now")];

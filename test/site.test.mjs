@@ -89,7 +89,7 @@ test('site: นโยบายตรงกับระบบ — AI ไม่ไ
   assert.match(read('account-actions.js'),/href="\/privacy"/);
   /* ทางลัดในแอป (หน้าตั้งค่า → ช่วยเหลือ) ไปครบ — หน้าตั้งค่าตัวเดียวกันทุกหน้า */
   const st=read('settings.js');for(const pg of ['/help','/terms','/privacy'])assert.ok(st.includes(`href:'${pg}'`),pg);assert.ok(st.includes('href="/about"'),'/about');
-  for(const f of ['garage.html','news.html','profile.html','spares.html'])assert.ok(read(f).includes('<script src="/settings.js?v=5" defer></script>'),f);
+  for(const f of ['garage.html','news.html','profile.html','spares.html'])assert.ok(read(f).includes('<script src="/settings.js?v=6" defer></script>'),f);
 });
 
 test('site: service worker รู้จักหน้าเว็บ ให้เปิดได้ตอนออฟไลน์',()=>{

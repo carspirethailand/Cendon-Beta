@@ -19,7 +19,7 @@
     // Negative paint hints may predate approval on another device. Only a
     // successful response in this page can establish a new applicant.
     if(!(uid&&owner===uid&&record)&&p&&['none','withdrawn'].includes(p.s))return {uid,s:'checking',phase:owner===uid&&failed?'offline':'checking'};
-    return {...(p||{uid,s:'checking'}),phase:owner===uid&&failed?'offline':owner===uid&&record?'ready':'checking'};
+    return {...(p||{uid,s:'checking'}),...(owner===uid&&record&&data?.technician?{suspended:!!data.technician.suspended,identityHold:!!data.technician.identityHold,test:!!data.technician.test}:{}),phase:owner===uid&&failed?'offline':owner===uid&&record?'ready':'checking'};
   }
   function emit(){try{W.dispatchEvent(new CustomEvent('cendon:partner-state',{detail:peek(owner)}))}catch{}}
   function select(uid){

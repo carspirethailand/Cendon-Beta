@@ -43,7 +43,7 @@ test('new-service preflight checks the private quota; quota failure is not a mal
   assert.match(form,/await loadOwnGigs\(true\)/);assert.match(form,/quota\.used>=quota\.limit/);
   const tab=home.slice(home.indexOf('async function tabPosts(){'),home.indexOf('function railNav(){'));
   assert.match(tab,/mine=await loadOwnGigs\(true\)/);assert.doesNotMatch(tab,/GIGS\s*=/);assert.match(tab,/catch\(e\).*errBar/);
-  assert.match(home,/if\(U\?\.uid!==u\?\.uid\)resetOwnGigs\(\)/);assert.match(home,/myGigs\(\).*GIGS/);
+  assert.match(home,/if\(U\?\.uid!==u\?\.uid\)\{resetOwnGigs\(\);resetPublicDirectory\(\)\}/);assert.match(home,/myGigs\(\).*GIGS/);
 });
 
 test('owner-only images stay off public image URLs, storage and logs; document kinds remain backend-controlled',()=>{

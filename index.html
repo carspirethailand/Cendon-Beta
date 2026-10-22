@@ -32,7 +32,7 @@ if(/^\/messages(\/|$)/.test(location.pathname)){document.documentElement.classLi
 (function(){try{if(/^\/(work|studio)(\/|$)/.test(location.pathname)){var p=JSON.parse(localStorage.getItem("spire_partner")||"null");if(p&&p.s==="shop")document.documentElement.dataset.boot="tech"}}catch(e){}})();</script>
 <script>(function(){try{var A=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt"],l=null;try{l=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
 if(A.indexOf(l)<0){l="en";var n=navigator.languages||[navigator.language||"en"];for(var i=0;i<n.length;i++){var b=String(n[i]).toLowerCase().split("-")[0];if(A.indexOf(b)>=0){l=b;break}}}
-if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=13"><\/script>')}catch(e){}})();</script>
+if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=14"><\/script>')}catch(e){}})();</script>
 <title>Cendon</title>
 <meta name="description" content="ถามอาการรถ ส่งรูปหรือเสียงให้ AI ช่วยดู เช็กใบเสนอราคา และหาช่างที่ผ่านการตรวจใกล้คุณ">
 <!-- การ์ดตอนแชร์ลิงก์ (LINE / Facebook / X) — รูปต้องเป็นที่อยู่เต็ม -->
@@ -4197,7 +4197,8 @@ function drawPartner(){
   const p=window.CendonPartnerState?.peek(U?.uid)||ls.get("spire_partner",null),mine=p&&U&&p.uid===U.uid?p.s:U?"checking":"none";
   /* ผลใบสมัครออกแล้วแต่ยังไม่ขูดดู = การ์ดชวนไปขูด (ไม่บอกผลก่อน) */
   const k=p&&U&&p.uid===U.uid&&p.r?"news":mine==="shop"?"shop":mine==="checking"||p?.phase==="offline"&&mine==="none"?"checking":mine&&mine!=="none"&&mine!=="withdrawn"?"app":"join";
-  if(box.dataset.k===k&&box.childNodes.length)return;box.dataset.k=k;
+  const paintKey=JSON.stringify([k,!!p?.suspended,!!p?.test,mine]);
+  if(box.dataset.k===paintKey&&box.childNodes.length)return;box.dataset.k=paintKey;
   const st={pending:T("รอทีมงานตรวจ","Waiting for review"),approved:T("อนุมัติแล้ว","Approved"),rejected:T("ทีมงานขอให้แก้ไข","Changes requested"),declined:T("ยังไม่ผ่านการพิจารณา","Not approved")}[mine]||T("ดูความคืบหน้า","See progress");
   const [eye,b,em,cta]=k==="news"?["CENDON PARTNER",T("ผลการพิจารณาใบสมัครมาแล้ว","Your application result is in"),T("ขูดการ์ดเพื่อเปิดดูผล","Scratch the card to see it"),T("เปิดดูผล","See result")]:k==="shop"?["STUDIO",T("หน้าร้านของฉัน","My shop"),p?.suspended?T("ร้านพักใช้งาน · คุณยังเข้า Studio ได้","Shop suspended · you can still open Studio"):p?.test?T("ร้านทดลอง · ยังไม่แสดงต่อลูกค้าทั่วไป","Trial shop · not public yet"):T("งาน แชต บริการ และรีวิว ในที่เดียว","Jobs, chats, services and reviews in one place"),T("เปิด Studio","Open Studio")]
     :k==="checking"?["",T("บัญชีช่างของคุณ","Your mechanic account"),T("กำลังตรวจสถานะร้าน · ไม่ต้องสมัครซ้ำ","Checking your shop · do not apply again"),T("ตรวจสถานะ","Check status")]
@@ -4528,6 +4529,9 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden&&U&&MODE!=
 bellPoll();
 /* ═══ โพสต์บริการของช่าง (ร้านละไม่เกิน 2 รายการ) ═══ */
 let GIGS=null;
+let GIG_ERR="",GIG_REQ=null,DIRECTORY_EPOCH=0,DIRECTORY_REQ=null,DIRECTORY_AT=0;
+const directoryScope=()=>U?.uid||"";
+function resetPublicDirectory(){DIRECTORY_EPOCH++;DIRECTORY_REQ=null;GIG_REQ=null;GIGS=null;GIG_ERR="";TECHS=[];LOADED=false;SERVER=null;DIRECTORY_AT=0;loadGigs.started=0}
 /* Owner inventory is never inferred from the public feed or stored in localStorage. */
 let OWN_GIGS=null,OWN_GIG_REQ=null,OWN_GIG_EPOCH=0;
 const ownGigScope=()=>U&&ME&&ME.uid===U.uid&&!ME.__snap&&ME.technician?JSON.stringify([U.uid,ME.technician.id]):"";
@@ -4545,13 +4549,31 @@ async function loadOwnGigs(force=false){
     if(!r||!Array.isArray(r.gigs)||r.gigs.some(g=>!g||!Number.isSafeInteger(g.id)||g.id<1))throw new Error(T("โหลดบริการไม่สำเร็จ กรุณาลองใหม่","Could not load services. Please retry."));
     const used=Number(r.quota?.used??r.gigs.length),limit=Number(r.quota?.limit??GIG_MAX);
     if(!Number.isSafeInteger(used)||used<r.gigs.length||!Number.isSafeInteger(limit)||limit<1)throw new Error("Invalid service quota");
-    OWN_GIGS={scope,rows:r.gigs,quota:{used,limit},at:Date.now(),visibility:r.visibility||""};configureOwnerImages();return r.gigs;
+    OWN_GIGS={scope,rows:r.gigs,quota:{used,limit},at:Date.now(),visibility:r.visibility||"",listing:r.listing||null};configureOwnerImages();return r.gigs;
   })().finally(()=>{if(OWN_GIG_REQ===q)OWN_GIG_REQ=null});
   OWN_GIG_REQ=q;return q.task;
 }
 const findGig=id=>myGigs().find(x=>x.id==id)||(GIGS||[]).find(x=>x.id==id);
-const ownServiceNotice=()=>ownGigState()?.visibility&&ownGigState().visibility!=="public"?`<p class="so-fine" role="status">${T("บริการเดิมยังอยู่ จัดการได้เฉพาะเจ้าของ ลูกค้าจะเห็นเมื่อร้านเปิดให้บริการ","Your services are saved and manageable here. Customers see them when the shop is public.")}</p>`:"";
-async function loadGigs(){try{GIGS=(await api("/api/tech/gigs")).gigs||[]}catch(e){GIGS=GIGS||[]}drawHome();drawCat();READY.gigs.done()}
+function shopListing(){
+  const t=ME?.technician;if(!t)return {public:false,blockers:['unlinked']};
+  return t.listing||{public:!t.suspended&&!t.test&&!!t.verified,blockers:[t.suspended&&'suspended',t.test&&'trial',!t.test&&!t.verified&&'review'].filter(Boolean)};
+}
+function ownServiceNotice(){
+  const listing=shopListing();if(listing.public)return "";
+  const reasons={suspended:T("ร้านถูกระงับอยู่ ต้องให้ทีมงานตรวจและปลดระงับก่อน","The shop is suspended. The team must review and lift the suspension."),trial:T("เป็นร้านทดลอง ลูกค้าทั่วไปยังไม่เห็น ต้องผ่านการตรวจเพื่อเปิดเป็นร้านจริง","This is a trial shop, hidden from ordinary customers until the full shop review."),review:T("ร้านยังไม่ผ่านการตรวจเผยแพร่ ต้องรอทีมงานอนุมัติ","Publication review is still required."),unlinked:T("ยังยืนยันการเชื่อมบัญชีร้านไม่ได้ กรุณาลองโหลดสถานะอีกครั้ง","The shop link has not been confirmed. Please retry the account check.")};
+  return `<aside class="note" role="status" data-shop-listing="hidden"><b>${T("ร้านและบริการยังไม่แสดงบนหน้าแรก / หมวดหมู่","Shop and services are not public on Home / categories")}</b><p>${(listing.blockers||[]).map(k=>reasons[k]||reasons.unlinked).join("<br>")}</p><small>${T("ข้อมูลร้านและบริการเดิมยังอยู่ คุณยังจัดการใน Studio ได้ การแก้ไขหรือเปิดรับงานไม่เปลี่ยนสถานะอนุมัติ","Your shop and services are saved and manageable in Studio. Editing or taking jobs does not change publication approval.")}</small></aside>`;
+}
+function feedError(id){return GIG_ERR?`<div role="status">${errBar(T("โหลดบริการไม่สำเร็จ ข้อมูลอาจยังไม่ล่าสุด กรุณาลองใหม่","Services could not refresh. Please retry."),id)}</div>`:""}
+function wireFeedRetry(id){const b=$(id);if(b)b.onclick=()=>busy(b,loadGigs)}
+async function loadGigs(){
+  const scope=directoryScope(),epoch=DIRECTORY_EPOCH;if(GIG_REQ&&GIG_REQ.epoch===epoch)return GIG_REQ.task;
+  const q={epoch};loadGigs.started=1;
+  q.task=(async()=>{try{const d=await api("/api/tech/gigs");if(scope!==directoryScope()||epoch!==DIRECTORY_EPOCH)return;
+    if(!d||!Array.isArray(d.gigs))throw Error("Invalid services response");GIGS=d.gigs;GIG_ERR="";
+  }catch(e){if(scope!==directoryScope()||epoch!==DIRECTORY_EPOCH)return;GIG_ERR="retry"}
+  finally{if(GIG_REQ===q)GIG_REQ=null;if(scope===directoryScope()&&epoch===DIRECTORY_EPOCH){drawHome();drawCat();READY.gigs.done()}}})();
+  GIG_REQ=q;return q.task;
+}
 function myCarText(){const cars=ls.get("spire_garage",[]),c=cars.find(x=>x.id===ls.get("spire_selCar",""))||cars[0];return c?[c.make,c.name,c.model].filter(Boolean).join(" ").toLowerCase():""}
 /* เรียง: ตรงกับรถของผู้ใช้ (ยี่ห้อที่ถนัด/ในข้อความ) ก่อน แล้วใกล้ แล้วใหม่ */
 function rankGigs(list){
@@ -4795,15 +4817,15 @@ function drawHome(){
   /* ระหว่างโหลด: กล่องเท่าแถวบริการจริงหนึ่งแถว (หัว 32 + การ์ด 297) — เดิมสูง 112 พอการ์ดมาแล้วส่วนด้านล่างถูกดันลง */
   const SK='<div class="skel" style="height:341px;grid-column:1/-1"></div>';
   if(!LOADED){host.innerHTML=SK;return}
-  if(GIGS===null){host.innerHTML=SK;if(!loadGigs.started){loadGigs.started=1;loadGigs()}return}
-  const l=rankGigs(GIGS);
+  if(GIGS===null&&!GIG_ERR){host.innerHTML=SK;if(!loadGigs.started)loadGigs();return}
+  const l=rankGigs(GIGS||[]),failure=feedError("homeGigRetry");
   host.className="lx-gsecs";
-  if(!l.length){host.innerHTML=`<div class="empty"><b>${T("ยังไม่มีบริการจากช่าง","No mechanic services yet")}</b>${T("ช่างโพสต์บริการเมื่อไร จะขึ้นที่นี่","Mechanic services show up here")}</div>`;return}
+  if(!l.length){host.innerHTML=failure||`<div class="empty"><b>${T("ยังไม่มีบริการจากช่าง","No mechanic services yet")}</b>${T("บริการจากร้านที่ผ่านการตรวจและเปิดเผยแพร่จะแสดงที่นี่","Published services from approved shops appear here")}</div>`;wireFeedRetry("homeGigRetry");return}
   /* แบ่งตามหมวดหลัก เรียงตามแถวหมวดด้านบน — ในแต่ละหมวดยังเรียงตามรถของคุณ/ระยะทางเหมือนเดิม */
   const G=new Map();for(const g of l)for(const k of new Set(gigCats(g).map(c=>topOf(c)||"other"))){if(!G.has(k))G.set(k,[]);G.get(k).push(g)}
   const order=[...RAIL.filter(c=>!c.base&&G.has(c.id)).map(c=>c.id),...(G.has("other")?["other"]:[])];
-  host.innerHTML=order.map(k=>gigRow(RAIL.find(x=>x.id===k)||OTHER_CAT,G.get(k),k!=="other")).join("");
-  wireGigRows(host);
+  host.innerHTML=failure+order.map(k=>gigRow(RAIL.find(x=>x.id===k)||OTHER_CAT,G.get(k),k!=="other")).join("");
+  wireGigRows(host);wireFeedRetry("homeGigRetry");
 }
 /* หนึ่งแถวหมวด: หัว (ไอคอน ชื่อ จำนวน · ดูทั้งหมด) + การ์ด — มือถือเลื่อนข้าง คอมเป็นตาราง */
 /* all = หน้าหมวด: แสดงครบทุกใบเป็นตาราง (หน้าแรกแสดงแถวเดียว แล้วกดดูทั้งหมด) */
@@ -4887,7 +4909,7 @@ function drawCat(){
   $("catSym").querySelectorAll("button").forEach(b=>b.onclick=()=>openRes(b.dataset.q||b.textContent));
   /* บริการพร้อมราคา: หมวดหลักรวมหมวดย่อยทั้งหมด · หมวดย่อยเอาเฉพาะของหมวดนั้น · ยอดนิยมเอาทุกหมวด */
   const gl=GIGS?rankGigs(GIGS).filter(g=>CATK==="all"||gigCats(g).some(gc=>rc&&rc.base?gc===CATK:topOf(gc)===CATK||gc===CATK)):[];
-  $("catGigs").innerHTML=gl.length?gigRow({...(rc||OTHER_CAT),th:"บริการพร้อมราคา"},gl,false,true):"";
+  $("catGigs").innerHTML=feedError("catGigRetry")+(gl.length?gigRow({...(rc||OTHER_CAT),th:"บริการพร้อมราคา"},gl,false,true):"");wireFeedRetry("catGigRetry");
   if(gl.length)wireGigRows($("catGigs"));
   $("catShopsH").hidden=!gl.length;
   $("catShopsH").innerHTML=`<span class="lx-gst">${railIc(rc||OTHER_CAT)}<b>ร้านช่างในหมวดนี้</b><small>${LOADED?l.length+" ร้าน":""}</small></span>`;
@@ -4903,8 +4925,9 @@ function drawCat(){
   if(CATSORT==="best"&&l.length>1&&l[0]._m&&l[0]._m.why.length)l[0]={...l[0],_best:l[0]._m.why};
   const host=$("catList");host.hidden=CATMAP;$("catMap").hidden=!CATMAP;
   if(CATMAP&&LOADED)drawCatMap(l);
-  host.innerHTML=!LOADED?'<div class="skel"></div><div class="skel"></div>':l.length?l.map(profCard).join(""):`<div class="empty"><b>ยังไม่มีช่างในหมวดนี้</b>ลองหมวดอื่น หรือให้ AI ช่วยดูอาการ</div>`;
-  wireCards(host);
+  const failed=SERVER===false?errBar(T("โหลดร้านไม่สำเร็จ กรุณาลองใหม่","Shops could not refresh. Please retry."),"catShopRetry"):"";
+  host.innerHTML=!LOADED?'<div class="skel"></div><div class="skel"></div>':failed+(l.length?l.map(profCard).join(""):failed?"":`<div class="empty"><b>ยังไม่มีช่างในหมวดนี้</b>ลองหมวดอื่น หรือให้ AI ช่วยดูอาการ</div>`);
+  wireCards(host);if($("catShopRetry"))$("catShopRetry").onclick=e=>busy(e.currentTarget,load);
 }
 function closeCat(){if($("vCat").hidden)return;$("vCat").hidden=true;$("vMenu").hidden=false;window.scrollTo(0,0)}
 $("catBack").onclick=()=>viewBack("cat",closeCat);
@@ -4915,13 +4938,21 @@ $("qx").onclick=e=>{e.preventDefault();clearFilter()};
 $("qAi").onclick=e=>{e.preventDefault();aiDiag($("q").value.trim())};
 
 async function load(){
+  const scope=directoryScope(),epoch=DIRECTORY_EPOCH;if(DIRECTORY_REQ&&DIRECTORY_REQ.epoch===epoch)return DIRECTORY_REQ.task;
+  const q={epoch};DIRECTORY_AT=Date.now();
+  q.task=(async()=>{const services=loadGigs();
   /* พลาดครั้งแรก (เน็ตสะดุด / เซิร์ฟเวอร์เพิ่งตื่น) ลองให้เองอีกรอบก่อนขึ้นปุ่มลองใหม่ */
   for(let i=0;i<2;i++){
-    try{const d=await api("/api/tech");TECHS=Array.isArray(d.techs)?d.techs:[];SERVER=true;break}
-    catch(e){SERVER=false;TECHS=[];if(!i)await new Promise(r=>setTimeout(r,1500))}
+    try{const d=await api("/api/tech");if(scope!==directoryScope()||epoch!==DIRECTORY_EPOCH)return;if(!d||!Array.isArray(d.techs))throw Error("Invalid shops response");TECHS=d.techs;SERVER=true;break}
+    catch(e){if(scope!==directoryScope()||epoch!==DIRECTORY_EPOCH)return;SERVER=false;if(!i)await new Promise(r=>setTimeout(r,1500))}
   }
-  LOADED=true;render();renderUsed();diag();ccDone();READY.techs.done();
+  if(scope!==directoryScope()||epoch!==DIRECTORY_EPOCH)return;
+  LOADED=true;render();drawCat();renderUsed();diag();ccDone();READY.techs.done();await services;
+  })().finally(()=>{if(DIRECTORY_REQ===q)DIRECTORY_REQ=null});DIRECTORY_REQ=q;return q.task;
 }
+function resumeDirectory(){if(!document.hidden&&LOADED&&Date.now()-DIRECTORY_AT>=30000)load()}
+addEventListener("focus",resumeDirectory);addEventListener("online",resumeDirectory);
+document.addEventListener("visibilitychange",resumeDirectory);setInterval(resumeDirectory,60000);
 /* ปิดหน้าโหลด: รอให้แอนิเมชันชื่อเล่นจบ (~2.9 วิ) และรายชื่อช่างพร้อม แล้วเติมแถบเต็ม → จางหายแบบเบลอ */
 const CC_T0=performance.now();let ccGone=false;
 /* Cendon + "ซ่อม" ในหลายภาษา สลับทุก ~1.8 วิ — เขียนด้วยลายมือ ทุกขีดงอกพร้อมกัน แล้วหดหายก่อนคำถัดไป */
@@ -7429,6 +7460,7 @@ function stuHead(){
       ${t.identityHold?`<div class="note" style="margin:0 0 12px"><b><i class="ti ti-shield-exclamation"></i> ${T("บัญชีอยู่ระหว่างตรวจสอบตัวตน","Your identity is under review")}</b><br>${T("ร้านถูกซ่อนและหยุดรับงานใหม่ชั่วคราว คุณยังดูงานเก่าและข้อความได้","Your storefront is hidden and new work is paused. You can still view existing jobs and messages.")}</div>`:""}
       <div class="stu-seg" role="tablist"><button type="button" role="tab" data-t2="queue" class="${DT==="queue"?"on":""}" aria-selected="${DT==="queue"}">${T("ต้องทำต่อ","To do")}${n?`<em>${n}</em>`:""}</button>
       <button type="button" role="tab" data-t2="find" class="${DT==="find"?"on":""}" aria-selected="${DT==="find"}">${T("หางานใกล้ฉัน","Find work nearby")}<i class="new"${FIND_NEW?"":" hidden"}></i></button></div>`;
+    H.insertAdjacentHTML("afterbegin",ownServiceNotice());
     $("stuStore").onclick=()=>openTech(t.id);
     $("stuStat").onclick=e=>statusMenu(e.currentTarget);
     H.querySelectorAll("[data-t2]").forEach(b=>b.onclick=()=>setTab2(b.dataset.t2));
@@ -7616,7 +7648,7 @@ function tabShop(){
     </span></button>
     <div class="stu-acts"><button class="lx-cta" type="button" id="sView" style="height:44px;padding:0 18px"><i class="ti ti-eye"></i>${T("ดูหน้าร้าน","View storefront")}</button>
       <button class="lx-gh" type="button" id="sShare" style="height:44px"><i class="ti ti-share-2"></i>${T("แชร์ลิงก์ร้าน","Share link")}</button></div>
-    <div class="stu-vet" style="margin-top:14px">${vet[0]}<span><b>${vet[1]}</b><small>${vet[2]}</small></span></div>
+    ${ownServiceNotice()}<div class="stu-vet" style="margin-top:14px">${vet[0]}<span><b>${vet[1]}</b><small>${vet[2]}</small></span></div>
     <section class="stu-sec stu-list" style="margin-top:6px">
       ${row("sEdit","ti-pencil",T("แก้ไขข้อมูลร้าน","Edit shop details"),T("รูป ชื่อ เวลาทำการ พื้นที่ เบอร์โทร","Photos, name, hours, area, phone"))}
       ${row("sStats","ti-chart-bar",T("สถิติร้าน","Shop stats"),T("รายได้ คนเข้าดู และเส้นทางงาน","Earnings, views and job funnel"))}
@@ -7945,7 +7977,7 @@ async function pullCars(){
     try{
       if(!firebase.apps||!firebase.apps.length)firebase.initializeApp(fbConfig);
       auth=firebase.auth();
-      auth.onAuthStateChanged(async u=>{if(U?.uid!==u?.uid)resetOwnGigs();if(homeVoice&&U?.uid!==u?.uid){homeVoice.dispose();homeVoice=null;}U=u||null;if(!U)purgeChatCache();{const sn=ls.get(SNAP,null);if(sn&&(!U||sn.uid!==U.uid)){dropSnap();if(ME&&ME.__snap)ME=null}}READY.user.done();try{navPaint(U)}catch(e){}greet();if(U)pullCars();await refreshMe();READY.me.done();if(U)await load();else diag();READY.auth.done()});
+      auth.onAuthStateChanged(async u=>{if(U?.uid!==u?.uid){resetOwnGigs();resetPublicDirectory()}if(homeVoice&&U?.uid!==u?.uid){homeVoice.dispose();homeVoice=null;}U=u||null;if(!U)purgeChatCache();{const sn=ls.get(SNAP,null);if(sn&&(!U||sn.uid!==U.uid)){dropSnap();if(ME&&ME.__snap)ME=null}}READY.user.done();try{navPaint(U)}catch(e){}greet();if(U)pullCars();await refreshMe();READY.me.done();await load();READY.auth.done()});
     }catch(e){}
   })();
   /* ลงทะเบียน service worker หลังหน้าขึ้นแล้ว — แอปที่ติดตั้งบนมือถือจะเปิดจากหน้าที่เก็บไว้ได้ทันทีตอนเน็ตช้า

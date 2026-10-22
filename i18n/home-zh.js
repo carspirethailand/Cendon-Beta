@@ -2,6 +2,10 @@
    กุญแจคือข้อความอังกฤษใน T("ไทย","English") และพจนานุกรม EN ของหน้า · {0} {1} = ค่าที่แทนตอนแสดงผล
    เพิ่มข้อความใหม่ในหน้า → เพิ่มคำแปลที่นี่ทุกภาษา (เทสต์ i18n-home ตรวจความครบ) */
 window.CENDON_L10N={lang:"zh",t:{
+"Checking your shop account. Please retry.":"正在核对您的店铺账号，请重试。",
+"Could not load services. Please retry.":"服务加载失败，请重试。",
+"Service saved. Customers see it when your shop is public.":"服务已保存，店铺公开后顾客即可看到。",
+"Your services are saved and manageable here. Customers see them when the shop is public.":"原有服务已保存，可在此管理；店铺公开后顾客才能看到。",
 "Shop suspended · you can still open Studio":"店铺已暂停 · 你仍可打开 Studio",
 "Trial shop · not public yet":"试用店铺 · 尚未公开",
 "Verify with a six-digit email code":"使用电子邮件中的六位数验证码验证",

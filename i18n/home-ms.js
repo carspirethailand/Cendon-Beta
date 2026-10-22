@@ -2,6 +2,10 @@
    กุญแจคือข้อความอังกฤษใน T("ไทย","English") และพจนานุกรม EN ของหน้า · {0} {1} = ค่าที่แทนตอนแสดงผล
    เพิ่มข้อความใหม่ในหน้า → เพิ่มคำแปลที่นี่ทุกภาษา (เทสต์ i18n-home ตรวจความครบ) */
 window.CENDON_L10N={lang:"ms",t:{
+"Checking your shop account. Please retry.":"Sedang menyemak akaun bengkel anda. Sila cuba lagi.",
+"Could not load services. Please retry.":"Perkhidmatan tidak dapat dimuatkan. Sila cuba lagi.",
+"Service saved. Customers see it when your shop is public.":"Perkhidmatan disimpan. Pelanggan melihatnya apabila bengkel dipaparkan kepada umum.",
+"Your services are saved and manageable here. Customers see them when the shop is public.":"Perkhidmatan lama anda masih disimpan dan boleh diurus di sini. Pelanggan melihatnya apabila bengkel dipaparkan kepada umum.",
 "Shop suspended · you can still open Studio":"Bengkel digantung · Studio masih boleh dibuka",
 "Trial shop · not public yet":"Bengkel percubaan · belum dipaparkan kepada umum",
 "Verify with a six-digit email code":"Sahkan dengan kod e-mel enam digit",

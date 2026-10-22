@@ -11,6 +11,7 @@ if(/^\/messages(\/|$)/.test(location.pathname)){document.documentElement.classLi
 <script src="/account-scope.js?v=2"></script>
 <link rel="stylesheet" href="/partner-entry.css?v=1">
 <script src="/partner-state.js?v=1"></script>
+<script src="/shop-images.js?v=1"></script>
 <script src="/display-prefs.js?v=1" defer></script>
 <script src="/partner-entry.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
@@ -31,7 +32,7 @@ if(/^\/messages(\/|$)/.test(location.pathname)){document.documentElement.classLi
 (function(){try{if(/^\/(work|studio)(\/|$)/.test(location.pathname)){var p=JSON.parse(localStorage.getItem("spire_partner")||"null");if(p&&p.s==="shop")document.documentElement.dataset.boot="tech"}}catch(e){}})();</script>
 <script>(function(){try{var A=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt"],l=null;try{l=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
 if(A.indexOf(l)<0){l="en";var n=navigator.languages||[navigator.language||"en"];for(var i=0;i<n.length;i++){var b=String(n[i]).toLowerCase().split("-")[0];if(A.indexOf(b)>=0){l=b;break}}}
-if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=12"><\/script>')}catch(e){}})();</script>
+if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=13"><\/script>')}catch(e){}})();</script>
 <title>Cendon</title>
 <meta name="description" content="ถามอาการรถ ส่งรูปหรือเสียงให้ AI ช่วยดู เช็กใบเสนอราคา และหาช่างที่ผ่านการตรวจใกล้คุณ">
 <!-- การ์ดตอนแชร์ลิงก์ (LINE / Facebook / X) — รูปต้องเป็นที่อยู่เต็ม -->
@@ -4527,6 +4528,29 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden&&U&&MODE!=
 bellPoll();
 /* ═══ โพสต์บริการของช่าง (ร้านละไม่เกิน 2 รายการ) ═══ */
 let GIGS=null;
+/* Owner inventory is never inferred from the public feed or stored in localStorage. */
+let OWN_GIGS=null,OWN_GIG_REQ=null,OWN_GIG_EPOCH=0;
+const ownGigScope=()=>U&&ME&&ME.uid===U.uid&&!ME.__snap&&ME.technician?JSON.stringify([U.uid,ME.technician.id]):"";
+const ownGigState=()=>OWN_GIGS&&OWN_GIGS.scope===ownGigScope()?OWN_GIGS:null;
+function configureOwnerImages(){const t=ME?.technician;window.CendonShopImages?.setScope(U?.uid,[t?.avatar,t?.cover,...(t?.photos||[]),...myGigs().flatMap(g=>g.photos||[])])}
+function resetOwnGigs(){OWN_GIG_EPOCH++;OWN_GIGS=null;OWN_GIG_REQ=null;window.CendonShopImages?.clear()}
+async function loadOwnGigs(force=false){
+  const scope=ownGigScope(),epoch=OWN_GIG_EPOCH;
+  if(!scope)throw new Error(T("กำลังตรวจสอบบัญชีร้าน กรุณาลองอีกครั้ง","Checking your shop account. Please retry."));
+  if(OWN_GIG_REQ&&OWN_GIG_REQ.scope===scope)return OWN_GIG_REQ.task;
+  const cached=ownGigState();if(!force&&cached&&Date.now()-cached.at<30000)return cached.rows;
+  const q={scope};
+  q.task=(async()=>{const r=await api("/api/tech/gigs?mine=1");
+    if(scope!==ownGigScope()||epoch!==OWN_GIG_EPOCH)throw new Error("Account changed");
+    if(!r||!Array.isArray(r.gigs)||r.gigs.some(g=>!g||!Number.isSafeInteger(g.id)||g.id<1))throw new Error(T("โหลดบริการไม่สำเร็จ กรุณาลองใหม่","Could not load services. Please retry."));
+    const used=Number(r.quota?.used??r.gigs.length),limit=Number(r.quota?.limit??GIG_MAX);
+    if(!Number.isSafeInteger(used)||used<r.gigs.length||!Number.isSafeInteger(limit)||limit<1)throw new Error("Invalid service quota");
+    OWN_GIGS={scope,rows:r.gigs,quota:{used,limit},at:Date.now(),visibility:r.visibility||""};configureOwnerImages();return r.gigs;
+  })().finally(()=>{if(OWN_GIG_REQ===q)OWN_GIG_REQ=null});
+  OWN_GIG_REQ=q;return q.task;
+}
+const findGig=id=>myGigs().find(x=>x.id==id)||(GIGS||[]).find(x=>x.id==id);
+const ownServiceNotice=()=>ownGigState()?.visibility&&ownGigState().visibility!=="public"?`<p class="so-fine" role="status">${T("บริการเดิมยังอยู่ จัดการได้เฉพาะเจ้าของ ลูกค้าจะเห็นเมื่อร้านเปิดให้บริการ","Your services are saved and manageable here. Customers see them when the shop is public.")}</p>`:"";
 async function loadGigs(){try{GIGS=(await api("/api/tech/gigs")).gigs||[]}catch(e){GIGS=GIGS||[]}drawHome();drawCat();READY.gigs.done()}
 function myCarText(){const cars=ls.get("spire_garage",[]),c=cars.find(x=>x.id===ls.get("spire_selCar",""))||cars[0];return c?[c.make,c.name,c.model].filter(Boolean).join(" ").toLowerCase():""}
 /* เรียง: ตรงกับรถของผู้ใช้ (ยี่ห้อที่ถนัด/ในข้อความ) ก่อน แล้วใกล้ แล้วใหม่ */
@@ -4559,12 +4583,12 @@ const spOn=g=>!!(g&&g.sponsor&&g.sponsor.until>Date.now());
 const spDate=(d,y)=>new Date(d).toLocaleDateString(LOC,{day:"numeric",month:"short",...(y?{year:"numeric"}:{})});
 /* การ์ดบริการของตัวเอง (หน้าร้านตัวเอง · Studio): ใต้การ์ดมีปุ่มสปอนเซอร์ */
 function ownCard(g,i){
-  return `<div class="sp-it">${gigCard(g,i,{fit:true})}<button class="sp-btn${spOn(g)?" on":""}" type="button" data-spon="${g.id}"><i class="ti ti-rocket"></i>${spOn(g)
+  return `<div class="sp-it">${gigCard(g,i,{fit:true})}<button class="sp-btn${spOn(g)?" on":""}" type="button" data-spon="${g.id}"${myShop()?.suspended||g.visibility==='unlinked'?' disabled':''}><i class="ti ti-rocket"></i>${spOn(g)
     ?`<span>${T("สปอนเซอร์อยู่","Sponsored")} <small>· ${T("ถึง","until")} ${spDate(g.sponsor.until)}</small></span>`:T("สปอนเซอร์บริการนี้","Sponsor this service")}</button></div>`;
 }
-function wireSp(host){host.querySelectorAll("[data-spon]").forEach(b=>b.onclick=e=>{e.stopPropagation();const g=(GIGS||[]).find(x=>x.id==b.dataset.spon);if(g)sponsorSheet(g)})}
+function wireSp(host){host.querySelectorAll("[data-spon]").forEach(b=>b.onclick=e=>{e.stopPropagation();const g=findGig(b.dataset.spon);if(g)sponsorSheet(g)})}
 function sponsorSheet(g){
-  const t={...(g.tech||{}),...(TECHS.find(x=>x.id===(g.tech||{}).id)||{}),...(myShop()||{})},on=spOn(g),can=!!(t.verified||t.test);
+  const t={...(g.tech||{}),...(TECHS.find(x=>x.id===(g.tech||{}).id)||{}),...(myShop()||{})},on=spOn(g),can=!!((t.verified||t.test)&&!t.suspended&&g.visibility!=='unlinked');
   const c=RAIL.find(x=>x.id===gigCat(g)),top=c&&c.base?RAIL.find(x=>x.id===c.base):c,cat=esc(tr((top||OTHER_CAT).th)),R=Math.max(+t.radius||0,30);
   const left=on?Math.ceil((g.sponsor.until-Date.now())/864e5):0,room=d=>!on||left+d<=30;
   const DAYS=[[3,"ลองดู","Try it"],[7,"แนะนำ","Popular"],[14,"ยาวสุด","Longest"]];
@@ -4598,8 +4622,8 @@ function sponsorSheet(g){
    มือถือ: รูป → หัวข้อ/ร้าน/ราคา → รายละเอียด → ข้อมูลบริการ → รีวิว · ปุ่มจองและทักอยู่แถบล่าง
    "ทักช่าง" = คุยถามเฉย ๆ ยังไม่ใช่การจ้าง · "จองบริการนี้" = ขอราคา/จ้างจริง */
 function openGig(id){
-  const g=(GIGS||[]).find(x=>x.id==id);if(!g)return;if(g.tech)track(g.tech.id,"gig");
-  const t0=g.tech||{},t={...t0,...(TECHS.find(x=>x.id===t0.id)||{})},mine=isMine(t),P=g.photos||[];
+  const g=findGig(id);if(!g)return;if(g.tech)track(g.tech.id,"gig");
+  const managed=myGigs().some(x=>x.id==g.id),t0=g.tech||(managed?myShop():null)||{},t={...t0,...(TECHS.find(x=>x.id===t0.id)||{})},mine=managed||isMine(t),P=g.photos||[];
   const c=RAIL.find(x=>x.id===gigCat(g)),top=c&&c.base?RAIL.find(x=>x.id===c.base):null,path=[top,c].filter(Boolean);
   const d=mine?null:km(HERE,t),av=t.avatar,boss=!mine&&!!(ME&&ME.owner);
   const facts=[
@@ -4671,16 +4695,20 @@ const gigAllowed=top=>{const t=ME&&ME.technician;if(!t||t.test)return true;retur
 /* หลังโพสต์/แก้/ลบ: ถอยกลับหน้าก่อน แล้ววาดหน้าร้านหรือรายละเอียดโพสต์ใหม่ด้วยข้อมูลล่าสุด */
 async function afterGig(){
   if(SH.stack.length)back();else closeSheet();
-  await loadGigs();if(DT==="posts")tabPosts();
+  await loadGigs();if(ownGigScope())try{await loadOwnGigs(true)}catch(e){toast(e.message,"ti-alert-triangle")}if(DT==="posts")tabPosts();
   const c=$("bs").classList.contains("on")&&SH.cur;
   if(c&&c.shop)openTech(c.shop);
-  else if(c&&c.gig){if((GIGS||[]).some(x=>x.id==c.gig))openGig(c.gig);else back()}
+  else if(c&&c.gig){if(findGig(c.gig))openGig(c.gig);else back()}
 }
-const myGigs=()=>(GIGS||[]).filter(g=>isMine(g.tech));
-function gigForm(g,opt){
+const myGigs=()=>ownGigState()?.rows||[];
+async function gigForm(g,opt){
   /* opt.tech = เจ้าของระบบลง/แก้บริการให้ร้านอื่น: เลือกได้ทุกหมวด ไม่ติดเพดานจำนวน */
   const boss=!!(opt&&opt.tech&&ME&&ME.owner);
-  if(!boss&&!(g&&g.id)&&myGigs().length>=GIG_MAX)return toast(T(`โพสต์บริการได้ร้านละ ${GIG_MAX} รายการ — แก้หรือลบรายการเดิมแทน`,`Up to ${GIG_MAX} services per shop — edit or delete one instead`),"ti-info-circle");
+  if(!boss&&!(g&&g.id)){
+    try{await loadOwnGigs(true)}catch(e){toast(e.message,"ti-alert-triangle");return}
+    const quota=ownGigState()?.quota;
+    if(quota&&quota.used>=quota.limit){if(MODE==="tech")setTab2("posts");return toast(T(`โพสต์บริการได้ร้านละ ${GIG_MAX} รายการ — แก้หรือลบรายการเดิมแทน`,`Up to ${GIG_MAX} services per shop — edit or delete one instead`),"ti-info-circle")}
+  }
   g=g||{photos:[],cats:[],brands:[]};
   const F2={keep:[...(g.photos||[])],add:[],cats:[...(g.cats||[])]};
   sheet({push:true,url:g.id?undefined:stuUrl("post"),slug:g.id?"edit":"post",full:true,title:g.id?"แก้ไขโพสต์":"โพสต์ใหม่",body:`
@@ -4719,7 +4747,7 @@ function gigForm(g,opt){
             if(rest.length){if(r.photos)keep=r.photos;else{const cur=(await api("/api/tech/gigs?mine=1")).gigs.find(x=>x.id===id);keep=cur?cur.photos:keep}}
           }while(rest.length);
         }catch(err){$("gErr").textContent=err.message;throw err}
-        toast(g.id?"บันทึกแล้ว":"โพสต์แล้ว — ขึ้นหน้าแรกให้ลูกค้าเห็นแล้ว");
+        toast(g.id?"บันทึกแล้ว":(myShop()?.suspended||myShop()?.test||!myShop()?.verified)?T("บันทึกบริการแล้ว ลูกค้าจะเห็นเมื่อร้านเปิดให้บริการ","Service saved. Customers see it when your shop is public."):"โพสต์แล้ว — ขึ้นหน้าแรกให้ลูกค้าเห็นแล้ว");
         if(boss&&!g.id){closeSheet();await loadGigs();openTech(opt.tech)}else await afterGig();
       });
     }});
@@ -4727,16 +4755,15 @@ function gigForm(g,opt){
 /* ── บริการ: รายการบริการพร้อมราคาของร้าน (แถวเดียวกับที่ลูกค้าเห็นบนหน้าร้าน) ── แตะเพื่อดู/แก้ไข/ลบ */
 async function tabPosts(){
   const B=$("dBody");B.innerHTML='<div class="skel"></div><div class="skel" style="margin-top:10px"></div>';
-  let mine;try{mine=(await api("/api/tech/gigs?mine=1")).gigs||[]}
+  let mine;try{mine=await loadOwnGigs(true)}
   catch(e){if(DT!=="posts")return;B.innerHTML=errBar(e.message,"pRetry");$("pRetry").onclick=()=>tabPosts();return}
   if(DT!=="posts"||MODE!=="tech")return;
-  GIGS=[...(GIGS||[]).filter(g=>!mine.some(m=>m.id===g.id)),...mine];
-  const t=myShop();mine=mine.filter(g=>!g.tech||!t||g.tech.id===t.id);
-  const add=mine.length<GIG_MAX?`<button class="lx-cta" type="button" id="pNew" style="height:46px;padding:0 20px"><i class="ti ti-plus"></i>${T(`เพิ่มบริการ (${mine.length}/${GIG_MAX})`,`Add a service (${mine.length}/${GIG_MAX})`)}</button>`:"";
-  B.innerHTML=mine.length?`<div class="lx-gigs ch-svc so-gigs">${mine.map((g,i)=>ownCard(g,i)).join("")}</div>
+  const quota=ownGigState()?.quota||{used:mine.length,limit:GIG_MAX};
+  const add=quota.used<quota.limit?`<button class="lx-cta" type="button" id="pNew" style="height:46px;padding:0 20px"><i class="ti ti-plus"></i>${T(`เพิ่มบริการ (${quota.used}/${quota.limit})`,`Add a service (${quota.used}/${quota.limit})`)}</button>`:"";
+  B.innerHTML=ownServiceNotice()+(mine.length?`<div class="lx-gigs ch-svc so-gigs">${mine.map((g,i)=>ownCard(g,i)).join("")}</div>
       <div style="margin-top:14px">${add}</div>
-      ${mine.length>=GIG_MAX?`<p class="so-fine">${T(`ลงครบ ${GIG_MAX} บริการแล้ว — ลบหรือแก้ไขบริการเดิมเพื่อเปลี่ยน`,`You've listed ${GIG_MAX} services — edit or delete one to change`)}</p>`:""}`
-    :`<div class="stu-empty"><i class="ti ti-tool"></i><b>${T("ยังไม่มีบริการ","No services yet")}</b><p>${T("ลงบริการพร้อมราคาเริ่มต้น แล้วจะขึ้นหน้าแรกและหน้าร้านให้ลูกค้าเห็น","List a service with a starting price — it shows on the home page and your storefront")}</p>${add}</div>`;
+      ${quota.used>=quota.limit?`<p class="so-fine">${T(`ลงครบ ${GIG_MAX} บริการแล้ว — ลบหรือแก้ไขบริการเดิมเพื่อเปลี่ยน`,`You've listed ${GIG_MAX} services — edit or delete one to change`)}</p>`:""}`
+    :`<div class="stu-empty"><i class="ti ti-tool"></i><b>${T("ยังไม่มีบริการ","No services yet")}</b><p>${T("ลงบริการพร้อมราคาเริ่มต้น แล้วจะขึ้นหน้าแรกและหน้าร้านให้ลูกค้าเห็น","List a service with a starting price — it shows on the home page and your storefront")}</p>${add}</div>`);
   B.querySelectorAll(".lx-gc[data-g]").forEach(x=>x.onclick=()=>openGig(x.dataset.g));wireSp(B);
   if($("pNew"))$("pNew").onclick=()=>gigForm();
 }
@@ -5078,7 +5105,7 @@ function storeHTML(t,mine){
   const pics=(t.photos||[]).filter(p=>p!==t.avatar&&p!==cover);
   const v=t.vacation,on=openNow(t),facts=vetFacts(t);
   const cats=(t.cats||[]).map(c=>CAT[c]&&CAT[c].th).filter(Boolean);
-  const svc=(GIGS||[]).filter(g=>g.tech&&g.tech.id===t.id).sort((a,b)=>b.createdAt-a.createdAt).slice(0,GIG_MAX);
+  const svc=(mine?myGigs():(GIGS||[]).filter(g=>g.tech&&g.tech.id===t.id)).slice().sort((a,b)=>b.createdAt-a.createdAt).slice(0,GIG_MAX);
   const avHTML=`<span class="so-av${av?" img":""}"${av?` style="background-image:url('${img(av)}')" data-z="${img(av)}"`:""}>${av?"":esc(initial(t.shop||t.name))}</span>`;
   const rate=t.reviewCount?`<span class="so-rt"><i class="ti ti-star-filled"></i><b>${Number(t.rating).toFixed(1)}</b> · ${T(t.reviewCount+" รีวิว",t.reviewCount+" reviews")}</span>`:`<span class="so-rt">${T("ร้านใหม่ · ยังไม่มีรีวิว","New shop · no reviews yet")}</span>`;
   const where=[t.area,d!=null?T(`ห่างจากคุณ ${distTxt(d)}`,`${distTxt(d)} away`):""].filter(Boolean);
@@ -5118,7 +5145,7 @@ function storeHTML(t,mine){
     :t.verified?`<p class="so-vet static"><i class="ti ti-shield so-vi"></i><span><b>${T("ผ่านการตรวจโดยทีมงาน Cendon","Approved by the Cendon team")}</b></span></p>`
     :!t.test?`<p class="so-vet static"><i class="ti ti-hourglass so-vi"></i><span><b>${T("ยังรอทีมงานตรวจ","Awaiting review")}</b><small>${T("ลูกค้าจะเห็นร้านเมื่อผ่านการตรวจแล้ว","Customers see the shop once approved")}</small></span></p>`:""}
     ${t.greet||t.about?`<p class="so-about nt">${esc(t.greet||t.about)}</p>`:""}
-    <section class="so-sec" id="soSvc"><h2>${T("บริการ","Services")}</h2>
+    <section class="so-sec" id="soSvc"><h2>${T("บริการ","Services")}</h2>${mine?ownServiceNotice():""}
       ${svc.length?`<div class="lx-gigs ch-svc so-gigs">${svc.map((g,i)=>mine?ownCard(g,i):gigCard(g,i,{fit:true})).join("")}</div>
         <p class="so-fine">${T("ราคาเริ่มต้น ช่างยืนยันราคาจริงในใบเสนอราคาก่อนเริ่มงาน","Starting prices — the mechanic confirms the real price in a quote before starting")}</p>`
       :`<p class="so-empty">${T("ร้านนี้ยังไม่ได้ลงบริการพร้อมราคา — กดขอราคาเพื่อให้ช่างประเมินให้","No priced services yet — ask for a quote and the mechanic will estimate")}</p>`}
@@ -5179,9 +5206,10 @@ function loadReviews(b,t){
     .catch(()=>{h.innerHTML=`<p class="so-err"><i class="ti ti-cloud-off"></i>${T("โหลดรีวิวไม่สำเร็จ","Couldn't load reviews")}<button class="lx-gh" type="button">${T("ลองใหม่","Retry")}</button></p>`;
       h.querySelector("button").onclick=()=>loadReviews(b,t)});
 }
-function openTech(id,opt){
+async function openTech(id,opt){
   let t=TECHS.find(x=>x.id===id);
   const mine=ME&&ME.technician&&ME.technician.id===id;
+  if(mine)try{await loadOwnGigs()}catch(e){toast(e.message,"ti-alert-triangle");return}
   if(mine)t={...(t||{}),...ME.technician};
   /* ลิงก์ร้านที่แชร์มา แต่ร้านยังไม่เปิดให้ลูกค้าเห็น (รอตรวจสอบ/ปิดร้าน) หรือไม่มีแล้ว — บอกตรง ๆ แทนที่จะเงียบแล้วค้างหน้าแรก */
   if(!t){const url=(opt&&opt.url)||"/tech/"+encodeURIComponent(id);
@@ -7849,7 +7877,7 @@ function refreshMe(){
 async function loadMe(){
   if(!U){ME=null;return false}
   const owner=U.uid;let loaded=false;
-  try{const fresh=window.CendonPartnerState?await window.CendonPartnerState.refresh(true):await api("/api/tech/me");if(U?.uid!==owner)return false;ME=fresh;meOwner=owner;loaded=true}
+  try{const fresh=window.CendonPartnerState?await window.CendonPartnerState.refresh(true):await api("/api/tech/me");if(U?.uid!==owner)return false;ME=fresh;meOwner=owner;loaded=true;configureOwnerImages()}
   catch(e){if(U?.uid!==owner)return false;if(meOwner!==owner)ME=null}
   /* ช่วงนับถอยหลังเปิดตัว: ทีมงานเข้าแอปได้ คนอื่นกลับไปหน้านับถอยหลัง (launch-gate.js) */
   if(ME&&window.CendonLaunch)CendonLaunch.staff(!!(ME.staff||ME.owner));
@@ -7917,7 +7945,7 @@ async function pullCars(){
     try{
       if(!firebase.apps||!firebase.apps.length)firebase.initializeApp(fbConfig);
       auth=firebase.auth();
-      auth.onAuthStateChanged(async u=>{if(homeVoice&&U?.uid!==u?.uid){homeVoice.dispose();homeVoice=null;}U=u||null;if(!U)purgeChatCache();{const sn=ls.get(SNAP,null);if(sn&&(!U||sn.uid!==U.uid)){dropSnap();if(ME&&ME.__snap)ME=null}}READY.user.done();try{navPaint(U)}catch(e){}greet();if(U)pullCars();await refreshMe();READY.me.done();if(U)await load();else diag();READY.auth.done()});
+      auth.onAuthStateChanged(async u=>{if(U?.uid!==u?.uid)resetOwnGigs();if(homeVoice&&U?.uid!==u?.uid){homeVoice.dispose();homeVoice=null;}U=u||null;if(!U)purgeChatCache();{const sn=ls.get(SNAP,null);if(sn&&(!U||sn.uid!==U.uid)){dropSnap();if(ME&&ME.__snap)ME=null}}READY.user.done();try{navPaint(U)}catch(e){}greet();if(U)pullCars();await refreshMe();READY.me.done();if(U)await load();else diag();READY.auth.done()});
     }catch(e){}
   })();
   /* ลงทะเบียน service worker หลังหน้าขึ้นแล้ว — แอปที่ติดตั้งบนมือถือจะเปิดจากหน้าที่เก็บไว้ได้ทันทีตอนเน็ตช้า

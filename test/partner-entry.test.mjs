@@ -19,7 +19,7 @@ test('all app entry points load the public entry before page code and pair the s
   for(const f of ['index','garage','chat','news','profile','spares','admin','handbook','plan']){
     const html=read(f+'.html');assert.match(html,/href="\/partner-entry\.css\?v=1"/);assert.match(html,/src="\/partner-entry\.js\?v=1"/);assert.match(html,/src="\/partner-state\.js\?v=1"/);assert.ok(html.indexOf('/partner-entry.js')<html.indexOf('</head>'));
   }
-  assert.match(read('sw.js'),/CORE\.unshift\('\.\/display-prefs\.js\?v=1','\.\/partner-state\.js\?v=1','\.\/partner-entry\.js\?v=1','\.\/partner-entry\.css\?v=1'\)/);
+  assert.match(read('sw.js'),/CORE\.unshift\('\.\/shop-images\.js\?v=1','\.\/display-prefs\.js\?v=1','\.\/partner-state\.js\?v=1','\.\/partner-entry\.js\?v=1','\.\/partner-entry\.css\?v=1'\)/);
 });
 test('the Home account menu preserves every server-backed shop, including staff trial shops',()=>{
   const begin=home.indexOf('$("bMe").onclick=()=>{'),end=home.indexOf('/* ═══ มุมมอง',begin),source=home.slice(begin,end);

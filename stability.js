@@ -7,6 +7,18 @@
   var deep=new Set(['tech','service','category','search','map','jobs','messages','quote','listen','photo','line','studio','work','staff','join','trip','quotes','compare','urgent','diagnose','post']);
   function path(p){p=p.replace(/\.html$/,'').replace(/\/index$/,'/');var s=p.split('/')[1]||'';
     return paths.has(p)?p:paths.has('/'+s)?'/'+s:deep.has(s)?'/':p}
+  function paintActive(){
+    var here=path(location.pathname);
+    D.querySelectorAll('.nav-links a[href],#mnav a[href]').forEach(function(a){
+      try{var u=new URL(a.href,location.href),on=u.origin===location.origin&&path(u.pathname)===here;
+        a.classList.toggle('active',on);if(a.closest('#mnav'))a.classList.toggle('on',on);
+        if(on)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');
+      }catch(_){}
+    });
+  }
+  addEventListener('pageshow',paintActive);addEventListener('popstate',paintActive);
+  D.addEventListener('visibilitychange',function(){if(!D.hidden)paintActive()});
+  if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',paintActive,{once:true});else paintActive();
   /* ลิงก์ที่หน้านี้เปิดเองได้ (nav.js) ไม่ต้องโหลดหน้าใหม่ */
   function own(u){try{return !!(window.Nav&&Nav.started&&Nav.owns(u.pathname+u.search))}catch(_){return false}}
   function target(e){

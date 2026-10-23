@@ -8,7 +8,7 @@ test('every rendered app page loads shared scrollbar styling before first paint'
     const html=readFileSync(new URL(file,root),'utf8');
     if(/location\.replace\(/.test(html)&&html.length<1000)continue;
     /* หน้าเว็บไซต์ใช้ที่อยู่เต็ม /stability.css (หน้า 404 ต้องโหลดได้จากทุกระดับที่อยู่) */
-    const link=Math.max(html.indexOf('href="stability.css"'),html.indexOf('href="/stability.css"'));
+    const link=html.search(/href="\/?stability\.css(?:\?[^" ]*)?"/);
     assert.ok(link>=0&&link<html.indexOf('</head>'),file);
   }
 });

@@ -1,4 +1,7 @@
 /* Shared geometry and motion only. The existing theme and page features stay intact. */
+/* Active tabs own their surface. No measured moving layer can collapse on Back/BFCache. */
+html .nav-ind{display:none!important}
+html .nav-links a.active{background-color:var(--accent,#d9733c);background-image:linear-gradient(180deg,rgba(255,255,255,.2),rgba(0,0,0,.12)),var(--grad,linear-gradient(140deg,#ef8a3d,#d35b2e));color:#fff!important;border-radius:999px;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 1px 3px rgba(0,0,0,.15)}
 /* Hide only scrollbar chrome. Keep native overflow, touch, wheel and keyboard scrolling. */
 html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 *::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}
@@ -22,7 +25,8 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   .mnav .mt-i img,.mnav .mt-i .fb{width:21px!important;height:21px!important;flex:none}
 }
 /* Keep the whole bar fixed, not an animated width/position morph between documents. */
-@view-transition{navigation:auto}
+/* Native cross-document snapshots can retain an old active tab on Back. */
+@view-transition{navigation:none}
 .mnav{view-transition-name:mnav}
 #navInd,.fab-dock{view-transition-name:none!important}
 ::view-transition-group(root),::view-transition-group(mnav){animation:none!important}

@@ -12,7 +12,7 @@ if(/^\/messages(\/|$)/.test(location.pathname)){document.documentElement.classLi
 <link rel="stylesheet" href="/partner-entry.css?v=1">
 <script src="/partner-state.js?v=1"></script>
 <script src="/shop-images.js?v=1"></script>
-<script src="/display-prefs.js?v=1" defer></script>
+<script src="/display-prefs.js?v=2" defer></script>
 <script src="/partner-entry.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
@@ -2696,12 +2696,13 @@ a.mtab{text-decoration:none}
 </style>
 <!-- ห้ามวาดเฟรมแรกก่อนแถบล่างพร้อม — เดิมหน้าใหม่ขึ้นมาก่อนแล้วแถบตามมาทีหลัง (Chrome 124+, ที่อื่นข้าม) -->
 <link rel="expect" href="/#mnav0" blocking="render">
-<link rel="stylesheet" href="stability.css">
+<link rel="stylesheet" href="stability.css?v=2026-10-23-r1">
+<link rel="stylesheet" href="/primary-material.css?v=1">
 <link rel="stylesheet" href="home-layout.css?v=2">
 <script src="category-pages.js" defer></script>
 <script src="/sheet-drag.js?v=1" defer></script>
 <script src="car-sync.js"></script>
-<script src="stability.js" defer></script>
+<script src="stability.js?v=2026-10-23-r1" defer></script>
 <link rel="stylesheet" href="call-ui.css?v=2026-10-19-inst1">
 <script src="call-sounds.js?v=1" defer></script>
 <script src="call-composer.js?v=2026-10-17-r4" defer></script>
@@ -3693,7 +3694,8 @@ function thumb(t){
   const ph=t.avatar||t.cover||(t.photos||[])[0];
   return `<div class="thumb sq" style="--c1:${colorOf(t)};${ph?`background-image:url('${API}/api/tech/img/${ph}')`:""}">${ph?"":initial(t.shop||t.name)}${t.test?'<span class="tag">ทีมงาน</span>':""}</div>`;
 }
-const distTxt=d=>d==null?"":d<1?Math.round(d*1000)+" ม.":d+" กม.";
+const distTxt=d=>d==null?"":window.CendonDisplayPrefs?CendonDisplayPrefs.distance(d):d<1?Math.round(d*1000)+" ม.":d+" กม.";
+const distHTML=d=>d==null?"":`<span data-distance-km="${Number(d)}">${distTxt(d)}</span>`;
 function card(t,i){
   const stars=t.reviewCount?`<span class="st"><i class="ti ti-star-filled"></i> ${Number(t.rating).toFixed(1)}</span><span>(${t.reviewCount})</span>`:'<span class="new">ใหม่</span>';
   return `<button class="card e3" data-id="${esc(t.id)}" style="animation-delay:${Math.min(i*25,150)}ms">${WF}${thumb(t)}
@@ -7501,10 +7503,10 @@ async function tabFind(){
   try{NEAR=await api("/api/tech/posts/near")}catch(e){$("fList").innerHTML=`<div class="empty"><i class="ti ti-map-pin-off"></i><b>${esc(e.message)}</b></div>`;return}
   NEAR.posts.forEach(p=>SEEN.add(p.id));ls.set("spire_seen_posts",[...SEEN].slice(-300));
   const t0=Date.now(),LP=NEAR.posts.filter(p=>p.urgent?t0-(p.createdAt||0)<URGENT_MS:!p.expiresAt||p.expiresAt>t0).sort((a,b)=>(!!b.urgent-!!a.urgent)||((b.createdAt||0)-(a.createdAt||0)));
-  $("fList").innerHTML=LP.length?`<div class="sec" style="margin-top:4px"><h2><i class="ti ti-radar-2" style="color:var(--accent)"></i>${T("รถเสียรอบตัวคุณ","Breakdowns near you")}</h2><span>${LP.length}${NEAR.radius||(myShop()||{}).radius?` · ${NEAR.radius||myShop().radius} ${T("กม.","km")}`:""}</span></div>`+LP.map((p,i)=>`<button class="pc e3${p.urgent?" urg":""}" data-p="${p.id}" style="animation-delay:${i*40}ms">
+  $("fList").innerHTML=LP.length?`<div class="sec" style="margin-top:4px"><h2><i class="ti ti-radar-2" style="color:var(--accent)"></i>${T("รถเสียรอบตัวคุณ","Breakdowns near you")}</h2><span>${LP.length}${NEAR.radius||(myShop()||{}).radius?` · ${distHTML(NEAR.radius||myShop().radius)}`:""}</span></div>`+LP.map((p,i)=>`<button class="pc e3${p.urgent?" urg":""}" data-p="${p.id}" style="animation-delay:${i*40}ms">
       <span class="sq" style="--c1:${p.urgent?"#dc2626":p.cat&&CAT[p.cat]?CAT[p.cat].c:"#f97316"}"><i class="ti ${p.urgent?"ti-urgent":p.cat&&CAT[p.cat]?CAT[p.cat].ic:"ti-car-crash"}"></i></span>
       <div><b class="nt">${esc(p.symptom)}</b><small><span class="nt">${esc(p.car)}</span> · ${ago(p.createdAt)}${p.urgent?' · <span class="pill bad">'+T("ด่วน","Urgent")+'</span>':""}</small>${p.mine?`<small><span class="pill ${p.mine.status==="quoted"?"act":"bad"}">${p.mine.status==="quoted"?T("เสนอแล้ว ฿","Quoted ฿")+money(p.mine.total):STATUS[p.mine.status]}</span></small>`:""}</div>
-      <span class="r"><b>${p.dist}</b><br>${T("กม.","km")}</span></button>`).join("")
+      <span class="r"><b>${distHTML(p.dist)}</b></span></button>`).join("")
     :`<div class="empty"><i class="ti ti-radar-2"></i><b>${T("ยังไม่มีรถเสียในรัศมี","No breakdowns in your radius yet")}</b>${T("เปิดรับงานไว้ มีงานใหม่จะแจ้งเตือนทันที","Stay online — you'll be alerted instantly")}</div>`;
   $("fList").querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>openPost(LP.find(p=>p.id===b.dataset.p)));
   if(!window.L)return;
@@ -7526,7 +7528,7 @@ function openPost(p){
   sheet({title:p.urgent?T("งานด่วน","Urgent job"):T("ประกาศหาช่าง","Job post"),body:`
     <div class="kv"><p><span>${T("อาการ","Symptom")}</span><b class="nt">${esc(p.symptom)}</b></p><p><span>${T("รถ","Car")}</span><b class="nt">${esc(p.car)}</b></p>
       <p><span>${T("ต้องการ","When")}</span><b class="nt">${esc(p.requestedTime)}</b></p><p><span>${T("ซ่อมที่","Where")}</span><b>${p.mode==="mobile"?T("ช่างไปหา","At the car"):T("เอาเข้าอู่","At the garage")}</b></p>
-      <p><span>${T("ระยะทาง","Distance")}</span><b>${p.approxKm?T("ประมาณ ","about "):""}${p.dist} ${T("กม.","km")} · ${esc(p.area||"")}</b></p>
+      <p><span>${T("ระยะทาง","Distance")}</span><b>${p.approxKm?T("ประมาณ ","about "):""}${distHTML(p.dist)} · ${esc(p.area||"")}</b></p>
       ${p.approxKm?`<p class="note" style="margin:6px 0 0"><i class="ti ti-lock"></i>${T("แสดงพื้นที่โดยประมาณ — ที่อยู่ เบอร์ และหมุดจริงจะเปิดให้เมื่อลูกค้าเลือกคุณและยืนยันราคาแล้ว","Approximate area only — exact address, phone and pin unlock after the customer picks you and confirms the price")}</p>`:""}
       ${p.budget?`<p><span>${T("งบลูกค้า","Customer's budget")}</span><b>฿${money(p.budget)}${p.usedOk?` · ${T("รับอะไหล่มือสองได้","used parts OK")}`:""}</b></p>`:p.usedOk?`<p><span>${T("อะไหล่","Parts")}</span><b>${T("รับอะไหล่มือสองได้","used parts OK")}</b></p>`:""}
       <p><span>${T("ประกาศเมื่อ","Posted")}</span><b>${ago(p.createdAt)}</b></p></div>
@@ -7590,7 +7592,7 @@ function tabQueue(){
   const urgRow=p=>`<button class="stu-row urg" type="button" data-up="${esc(p.id)}"><span class="stu-ri"><i class="ti ti-urgent"></i></span>
     <span class="stu-rb"><span class="urg-tag"><i class="ti ti-map-pin"></i>${T("ใกล้คุณ · ยังไม่มีใครรับ","Near you · nobody has taken it")}</span>
       <span class="stu-rt"><b class="nt">${esc(p.car||"")}</b><time>${agoS(p.createdAt)}</time></span>${p.symptom?`<small class="nt">${esc(p.symptom)}</small>`:""}
-      <span class="stu-rf"><span class="stu-rs me">${T("เสนอราคาเลย","Send a quote")} · ${p.dist} ${T("กม.","km")}</span></span></span></button>`;
+      <span class="stu-rf"><span class="stu-rs me">${T("เสนอราคาเลย","Send a quote")} · ${distHTML(p.dist)}</span></span></span></button>`;
   const any=urg.length||mine.length||wait.length;
   /* งานค้าง (ยืนยันราคาแล้ว ลูกค้ายังไม่กดว่างานเสร็จ) — เต็มแล้วเสนอราคางานใหม่ไม่ได้ บอกก่อนช่างเสียเวลากรอกราคา */
   const capN=(ME&&ME.technician&&ME.technician.capacity&&ME.technician.capacity.cap)||0,openN=live.filter(j=>["accepted","enroute","working","done"].includes(j.status)).length;

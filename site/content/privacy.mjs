@@ -3,8 +3,8 @@
    เทสต์ test/site.test.mjs ตรวจว่ามีชื่อผู้ให้บริการครบทุกตัว */
 import {L,P,UL,TABLE,NOTE,I,docBody,EMAIL,crumbs} from '../layout.mjs';
 
-export const VERSION='1.15';
-export const EFFECTIVE=['17 ตุลาคม 2569','17 October 2026'];
+export const VERSION='1.16';
+export const EFFECTIVE=['23 ตุลาคม 2569','23 October 2026'];
 
 /* ผู้ให้บริการภายนอกทุกตัวที่ได้รับข้อมูล — ชื่อในคอลัมน์แรกต้องตรงกับรายการใน test/site.test.mjs */
 const PROCESSORS=[
@@ -166,6 +166,7 @@ const sections=[
       [['บัญชีและโปรไฟล์','Account and profile'],['จนกว่าคุณจะลบบัญชี','Until you delete your account']],
       [['รถ เลขไมล์ รายการซ่อมบำรุง ความจำของ AI','Cars, mileage, maintenance, AI memory'],['จนกว่าคุณจะลบเอง รีเซ็ตบัญชี หรือลบบัญชี','Until you delete them, reset or delete your account']],
       [['ประวัติแชต AI','AI chat history'],['อยู่ในเครื่องของคุณ (ลบได้ในแอป) · ไฟล์แนบเก็บบนเซิร์ฟเวอร์ให้เปิดดูซ้ำได้ ไม่เกิน 500 MB ต่อบัญชี จนกว่าคุณจะรีเซ็ตหรือลบบัญชี','On your device (delete it in the app) · attachments are stored so you can reopen them, up to 500 MB per account, until you reset or delete your account']],
+      [['งาน AI เบื้องหลัง','Background AI jobs'],['คำถามและไฟล์แนบในคำขอเข้ารหัสบน Cloudflare ระหว่างรอประมวลผล ลบคำขอเมื่อจบงาน ผลคำตอบเข้ารหัสเก็บไม่เกิน 24 ชั่วโมง สูงสุด 20 งานล่าสุด เฉพาะเจ้าของบัญชีอ่านได้ ดาวน์โหลดผลหรือล้างได้ในตั้งค่าบัญชี สำเนากู้คืนของ Cloudflare อาจอยู่ประมาณ 30 วัน','Requests and attachments are encrypted on Cloudflare while pending; request payloads are removed when work ends. Encrypted answers remain for up to 24 hours, at most 20 recent jobs, readable only by the owning account. Export or clear them in account settings. Cloudflare recovery backups may remain for about 30 days']],
       [['บันทึกการใช้ AI','AI usage logs'],['เก็บเฉพาะจำนวนการใช้ (ไม่มีข้อความแชต) · บันทึกข้อผิดพลาดเก็บแค่ราว 300 รายการล่าสุดของทั้งระบบ คำถามตัดเหลือ 80 ตัวอักษร','Usage counts only (no chat text) · error logs keep only the latest ~300 entries system-wide, questions cut to 80 characters']],
       [['แชตกับบอท LINE','LINE bot chat'],['8 ข้อความล่าสุด เริ่มบทสนทนาใหม่เมื่อเงียบเกิน 2 ชั่วโมง ลบเมื่อรีเซ็ตหรือลบบัญชี','Last 8 messages; a new conversation starts after 2 hours of quiet; erased on reset or account deletion']],
       [['ลิงก์เชื่อม LINE','LINE link tokens'],['15 นาที ใช้ได้ครั้งเดียว','15 minutes, single use']],
@@ -273,7 +274,7 @@ export default {
       ['เก็บเท่าที่ต้องใช้ ไม่มีโฆษณา ไม่มีตัวติดตาม ไม่ขายข้อมูล','We keep only what we need — no ads, no trackers, no selling data'],
       ['AI ได้รับคำถามและข้อมูลรถ แต่ไม่ได้รับอีเมล เบอร์ หรือที่อยู่ของคุณ','The AI gets your question and car details, never your email, phone or address'],
       ['ช่างเห็นเบอร์และที่อยู่ของคุณ เฉพาะหลังคุณยืนยันราคาแล้ว','Mechanics see your phone and address only after you accept their price'],
-      ['ประวัติแชต AI อยู่ในเครื่องของคุณ','Your AI chat history lives on your device'],
+      ['ประวัติแชต AI อยู่ในเครื่องของคุณ งาน AI เบื้องหลังและคำตอบเก็บเข้ารหัสบน Cloudflare ไม่เกิน 24 ชั่วโมง (สูงสุด 20 งานล่าสุด)','Your AI chat history lives on your device. Background AI jobs and answers are encrypted on Cloudflare for up to 24 hours (at most 20 recent jobs).'],
       ['ดาวน์โหลดหรือลบบัญชีได้เองที่ ตั้งค่า → บัญชีของฉัน','Download or delete everything at Settings → My account'],
     ]},
     sections,

@@ -48,7 +48,7 @@ test('Home and Shop use the same car menu (big rows, no re-render while open)',(
   const cm=r('car-menu.js');
   assert.match(cm,/min-height:48px/);assert.match(cm,/W\.CendonCarMenu=\{show,close\}/);
   assert.match(r('index.html'),/CendonCarMenu\.show\(btn,\{cur,/);
-  assert.match(r('spares.html'),/CendonCarMenu\.show\(sw,\{cur:cur&&cur\.id,/);
+  assert.match(r('shop-search.js'),/CendonCarMenu\?\.show\(\$\('ssCar'\),\{cur:cur&&cur\.id,/);
   for(const f of ['index.html','spares.html'])assert.match(r(f),/<script src="car-menu\.js\?v=1" defer><\/script>/,f);
   assert.match(r('sw.js'),/'\.\/car-menu\.js\?v=1'/);
 });

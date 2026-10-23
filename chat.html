@@ -7,7 +7,7 @@
 <script src="/account-scope.js?v=2"></script>
 <link rel="stylesheet" href="/partner-entry.css?v=1">
 <script src="/partner-state.js?v=1"></script>
-<script src="/display-prefs.js?v=1" defer></script>
+<script src="/display-prefs.js?v=2" defer></script>
 <script src="/partner-entry.js?v=1"></script>
 <script src="/console-entry.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
@@ -3054,7 +3054,8 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 <link rel="stylesheet" href="valet.css?v=2">
 <script src="valet-core.js?v=7" defer></script>
 <script src="chat-garage.js?v=1" defer></script>
-<script src="chat-render.js?v=1" defer></script>
+<script src="chat-render.js?v=2" defer></script>
+<script src="chat-jobs.js?v=1" defer></script>
 <script src="valet.js?v=8" defer></script>
 <script src="bell.js?v=12" defer></script>
 <script src="drop.js?v=4" defer></script>
@@ -3067,10 +3068,11 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 ::view-transition-new(root){animation-duration:.26s}
 @media(prefers-reduced-motion:reduce){@view-transition{navigation:none}}
 </style>
-<link rel="stylesheet" href="stability.css">
+<link rel="stylesheet" href="stability.css?v=2026-10-23-r1">
+<link rel="stylesheet" href="/primary-material.css?v=1">
 <link rel="stylesheet" href="call-ui.css?v=2026-10-19-inst1">
 <script src="car-sync.js"></script>
-<script src="stability.js" defer></script>
+<script src="stability.js?v=2026-10-23-r1" defer></script>
 <!-- หน้าตาชุดเดียวกับหน้าหลัก (สี การ์ด ปุ่ม พื้นหลัง) — โหลดท้ายสุดให้ชนะสไตล์เดิม -->
 <link rel="stylesheet" href="lux.css">
 <link rel="stylesheet" href="calm-ui.css?v=1">
@@ -5133,7 +5135,39 @@ function noTools(t){
     .replace(/^\s*\[?\s*(google|google_search|web_search|search)\s*\([^)]*\)[\s,\]]*$/gim,"")
     .trim();
 }
+async function streamJobAnswer(contents,opts){
+  const au=useFb?await aiUser():null;if(!au)throw Error('Sign in required');const uid=au.uid,car=selCar()||{};
+  const jobId=crypto.randomUUID(),sessionId=currentSessionId();
+  const payload={contents,
+      /* ทางสตรีมคือทางที่ถูกใช้จริงเกือบทุกครั้ง แต่ของเดิมไม่เคยส่งสองอย่างนี้ไปเลย
+         system  = คำสั่งตัวตนและข้อมูลรถ  ไม่ส่ง โมเดลก็ไม่รู้ว่าตัวเองเป็นใคร
+         search  = อนุญาตให้เปิดค้นเว็บ    ไม่ส่ง โมเดลจึงตอบว่า "ค้นหาไม่ได้"
+         นี่คือสาเหตุที่ถามอะไรที่ต้องค้นแล้วมันบอกว่าทำไม่ได้ */
+      system:opts.system||sysPrompt(),
+      search:opts.search!==false,
+      temp:opts.temp!=null?opts.temp:0.5,
+      carId:car.id||null,make:car.make||car.name||"",model:car.model||"",
+      year:car.year||"",mileage:car.mileage||"",
+      skillIds:opts.skillIds||[],
+      ...(window.CendonValet?CendonValet.body():{}),
+      depth:(()=>{ try{ const r=localStorage.getItem("spire_depth"); const v=r==null?1:+JSON.parse(r); return v===0||v===2?v:1 }catch(e){ return 1 } })(),
+      userName:(()=>{ try{ const su=JSON.parse(localStorage.getItem("spire_setup")||"null");
+        return (su&&su.name)||"" }catch(e){ return "" } })()};
+  Object.assign(payload,{jobId,sessionId,carId:String(car.id||'')});
+  dropTyping();messages.push({role:'ai',text:'',jobId,jobExpiresAt:Date.now()+86400000,streaming:true,status:'กำลังคิด'});renderMessages();saveSession();
+  try{await CendonChatJobs.run(payload,uid,applyChatJob)}catch(e){
+    if(e.accountChanged)return {background:true};
+    const m=messages.find(x=>x.jobId===jobId);if(m){
+      if(e.status){m.streaming=false;m.text=e.userQuota?(lang==='en'?'Usage limit reached. Try again later.':'ใช้งานครบโควตาแล้ว กรุณาลองภายหลัง'):lang==='en'?'Could not queue the answer. Please retry.':'เริ่มประมวลผลไม่ได้ กรุณาลองใหม่';m.jobApplied=true}
+      else m.status=lang==='en'?'Reconnecting — your answer can continue on the server':'กำลังเชื่อมต่อใหม่ งานที่รับแล้วทำต่ออยู่บนเซิร์ฟเวอร์';
+      renderMessages();saveSession();
+    }
+  }
+  if(au.uid===(auth?.currentUser||window.spireAuth?.currentUser)?.uid){sending=messages.some(m=>m.streaming||m.typing);updateSend();renderChips();try{window.slideRelease&&window.slideRelease()}catch{}}
+  return {background:true};
+}
 async function streamAnswer(contents,opts){
+  if(window.CendonChatJobs)return streamJobAnswer(contents,opts||{});
   opts=opts||{};
   const au=useFb?await aiUser():null;
   if(!au)throw new Error(lang==="en"?"Please sign in first":"กรุณาเข้าสู่ระบบก่อนใช้งาน");
@@ -5694,6 +5728,7 @@ const parkBtns=m=>`<div class="pk-ans">${m.nav?`<a class="pk-a p" href="https://
 document.addEventListener("click",e=>{if(e.target.closest&&e.target.closest("[data-park-open]")){try{window.openTool&&window.openTool("park")}catch(x){}}});
 function stripForSave(msgs){return msgs.filter(m=>!m.typing).slice(-40).map(m=>{
   const o={role:m.role,text:m.text||""};
+  if(m.jobId){o.jobId=m.jobId;o.streaming=!!m.streaming;if(m.jobExpiresAt)o.jobExpiresAt=m.jobExpiresAt;if(m.jobApplied)o.jobApplied=true;if(m.cancelledLocally)o.cancelledLocally=true}
   if(m.featureTool)o.featureTool=m.featureTool;
   if(m.local)o.local=1;   /* คำตอบจากเครื่อง (เช่น ที่จอดรถ) ไม่ส่งให้ AI ในรอบถัดไป */
   if(m.data)o.data=m.data;
@@ -5705,6 +5740,25 @@ function stripForSave(msgs){return msgs.filter(m=>!m.typing).slice(-40).map(m=>{
 const mediaIdsOf=list=>{const out=new Set();(list||[]).forEach(s=>(s.msgs||[]).forEach(m=>(m.atts||[]).forEach(a=>{if(a.id)out.add(a.id)})));return out};
 function dropMedia(before,after){if(!window.CendonMedia)return;before.forEach(id=>{if(!after.has(id))CendonMedia.del(id)})}
 function currentSessionId(){const k=curKey();return k?LS.get(k,null):null}
+function chatJobTarget(job){
+  if(!job||!/^[\w-]{1,100}$/.test(job.carId||'')||!/^s[a-z0-9]{8,60}$/i.test(job.sessionId||''))return null;
+  const key='sess_'+job.carId,list=LS.get(key,[]),session=Array.isArray(list)&&list.find(s=>s.id===job.sessionId);if(!session)return null;
+  const current=sessKey()===key&&currentSessionId()===job.sessionId,rows=current?messages:session.msgs;
+  const message=(rows||[]).find(m=>m.role==='ai'&&m.jobId===job.id);return message?{key,list,session,current,message}:null;
+}
+function applyChatJob(job,uid){
+  if((auth?.currentUser||window.spireAuth?.currentUser)?.uid!==uid)return;
+  const t=chatJobTarget(job);if(!t||t.message.jobApplied||t.message.cancelledLocally)return;
+  const m=t.message,pending=['queued','running'].includes(job.status);m.streaming=pending;m.status=pending?(job.statusText||TT('กำลังคิด','Thinking')):'';
+  if(job.text)m.text=noTools(job.text);if(job.research)m.research=job.research;
+  if(!pending){const p=parseAsk(m.text||TT('หยุดแล้วครับ','Stopped.'));m.text=p.text;if(p.ask)m.ask=p.ask;if(p.next)m.next=p.next;if(p.acts)m.acts=p.acts;m.jobApplied=true}
+  if(t.current){renderMessages();if(!pending){saveSession();sending=messages.some(x=>x.streaming||x.typing);updateSend();renderChips();if(job.usage)window.quotaUpdate?.(job.usage);if(job.status==='complete')bellAi()}}
+  else if(!pending){t.session.t=Date.now();LS.set(t.key,t.list)}
+}
+function resumeChatJobs(){
+  if(!window.CendonChatJobs)return;CendonChatJobs.configure({user:()=>auth?.currentUser||window.spireAuth?.currentUser,apply:applyChatJob,needs:job=>{const t=chatJobTarget(job);return !!t&&!t.message.jobApplied&&!t.message.cancelledLocally}});
+}
+document.addEventListener('DOMContentLoaded',resumeChatJobs);window.addEventListener('cendon:auth-ready',resumeChatJobs);
 function loadSession(){
   migrateLegacy();
   const list=getSessions();
@@ -5712,6 +5766,8 @@ function loadSession(){
   let s=list.find(x=>x.id===id);
   if(!s&&list.length){s=list[0];if(curKey())LS.set(curKey(),s.id)}
   messages=s?JSON.parse(JSON.stringify(s.msgs||[])):[];
+  for(const m of messages)if(m.jobId&&m.streaming&&m.jobExpiresAt&&m.jobExpiresAt<=Date.now()){m.streaming=false;m.jobApplied=true;m.text=m.text||TT('คำตอบหมดอายุบนเซิร์ฟเวอร์ กรุณาส่งคำถามใหม่','This answer expired on the server. Please send the question again.')}
+  sending=messages.some(m=>m.jobId&&m.streaming&&!m.cancelledLocally);window.CendonChatJobs?.resume();
 }
 function saveSession(){
   const k=sessKey();if(!k)return;
@@ -5735,7 +5791,7 @@ function newSession(){
   const id="s"+Date.now();
   const list=getSessions();list.unshift({id,t:Date.now(),title:tr("h.new"),msgs:[]});
   setSessions(list);LS.set(k,id);
-  messages=[];renderMessages();updateHint();renderChips();
+  messages=[];sending=false;renderMessages();updateSend();updateHint();renderChips();
   /* แชตใหม่กลับไปหน้าเริ่มต้น ไม่ใช่ห้องเปล่า — ห้องเปล่าไม่มีอะไรให้กดต่อ
      ส่วนหน้าเริ่มต้นมีช่องพิมพ์กลางจอและทางเข้าเครื่องมือครบ */
   setPhase("welcome");
@@ -6514,6 +6570,8 @@ $("sendBtn").onclick=()=>{
    ยกเลิกคำขอที่ยิงไปหลังบ้านจริง ๆ ด้วย AbortController
    แล้วเก็บกวาดหน้าจอให้เรียบร้อย ไม่ทิ้งตัวหมุนค้างไว้ */
 function stopGen(){
+  const durable=messages.findLast(m=>m.jobId&&m.streaming);
+  if(durable&&window.CendonChatJobs){durable.streaming=false;durable.cancelledLocally=true;durable.text=durable.text||TT('หยุดแล้วครับ','Stopped.');sending=false;renderMessages();saveSession();updateSend();renderChips();CendonChatJobs.cancel(durable.jobId).catch(()=>toast(TT('ยังยืนยันการหยุดบนเซิร์ฟเวอร์ไม่ได้ กรุณาลองเมื่อออนไลน์','Server cancellation is not confirmed. Please retry when online.'),'ti-wifi-off'));return}
   try{ if(window.__aiAbort) window.__aiAbort.abort() }catch(e){}
   window.__stopped=true;
   /* เอาตัวยึดที่กำลังพิมพ์ออก แล้วบอกให้รู้ว่าหยุดเพราะผู้ใช้สั่ง */
@@ -6654,6 +6712,7 @@ async function sendMsg(){
       if(e&&e.userQuota)throw e;     /* โควตาของผู้ใช้เองเท่านั้น — โควตาผู้ให้บริการเต็มให้ลองทางอื่นต่อ */
       streamed=null;
     }
+    if(streamed&&streamed.background)return;
     if(streamed!==null){
       attachSvc(svc);
       saveSession();
@@ -6739,7 +6798,7 @@ function duplicateSession(id){
            t:Date.now(),
            title:(s.title||tr("h.new"))+(lang==="en"?" (copy)":" (สำเนา)"),
            lock:true,
-           msgs:JSON.parse(JSON.stringify(s.msgs||[]))};
+           msgs:JSON.parse(JSON.stringify(s.msgs||[])).map(m=>{if(m.jobId){if(m.streaming&&!m.text)m.text=TT('คำตอบกำลังประมวลผลในห้องต้นฉบับ','The answer is processing in the original conversation.');delete m.jobId;delete m.jobExpiresAt;delete m.jobApplied;delete m.cancelledLocally;m.streaming=false}return m})};
   list.unshift(c); setSessions(list); renderHist();
   try{ if(window.paintSide)window.paintSide() }catch(e){}
   toast(lang==="en"?"Duplicated":"ทำสำเนาแล้ว","ti-copy");

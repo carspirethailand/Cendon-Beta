@@ -22,7 +22,7 @@ async function rates(){if(prefs().currency==='THB')return;if(pending)return pend
   if(valid(fx)){paint();if(Date.now()-Number(fx.fetchedAt||0)<DAY)return}
   pending=(async()=>{try{const api=String(W.BACKEND_URL||'https://spireonebackend.carspirethailand.workers.dev').replace(/\/+$/,'');const r=await fetch(api+'/api/display-rates',{credentials:'omit',referrerPolicy:'no-referrer',signal:AbortSignal.timeout(10000)});if(!r.ok)throw Error('rates');const d=await r.json();if(!valid(d))throw Error('rates');fx={...d,fetchedAt:Date.now()};try{localStorage.setItem(KEY,JSON.stringify(fx))}catch{}paint()}catch{paint()}finally{pending=null}})();return pending;
 }
-const excluded='script,style,noscript,textarea,input,select,option,[contenteditable],form,label,h1,h2,h3,h4,h5,#accountFlow,#stSheet,[data-no-prefs],.st-me,.who,.av,[data-user-name],.shop-name,.tech-name,.car-name,.msg,.bubble,.chat-message,[data-msg],.markdown,.chat-log';
+const excluded='script,style,noscript,textarea,input,select,option,[contenteditable],form,label,h1,h2,h3,h4,h5,#accountFlow,#stSheet,[data-no-prefs],[data-distance-km],.st-me,.who,.av,[data-user-name],.shop-name,.tech-name,.car-name,.msg,.bubble,.chat-message,[data-msg],.markdown,.chat-log';
 function convert(text){let out=text;
   if(prefs().distance==='mi')out=out.replace(/(?<![\d.,])(\d[\d,]*(?:\.\d+)?)(?:\s*([–-])\s*(\d[\d,]*(?:\.\d+)?))?\s*(?:กิโลเมตร|กม\.?|km\b)/g,(_,n,dash,end)=>end?distance(Number(n.replace(/,/g,''))).replace(/ mi$/,'')+dash+distance(Number(end.replace(/,/g,''))):distance(Number(n.replace(/,/g,''))));
   if(prefs().currency!=='THB'&&rate(prefs().currency)){
@@ -31,6 +31,7 @@ function convert(text){let out=text;
   }return out;
 }
 function paint(){scheduled=false;if(!D.body)return;
+  D.querySelectorAll('[data-distance-km]').forEach(el=>{const km=Number(el.dataset.distanceKm);if(!Number.isFinite(km)||km<0)return;const text=distance(km);if(el.textContent!==text)el.textContent=text});
   const walker=D.createTreeWalker(D.body,NodeFilter.SHOW_TEXT);let node;
   while(node=walker.nextNode()){
     const el=node.parentElement;if(!el||el.closest(excluded))continue;

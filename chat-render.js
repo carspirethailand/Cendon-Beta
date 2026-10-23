@@ -7,7 +7,7 @@ function paint(host,messages,htmlOf,signature){
   const html=messages.map(htmlOf);html.push(signature||'');
   for(let i=0;i<html.length;i++){
     let part=previous[i];
-    if(!part||part.html!==html[i]||part.nodes.some(n=>n.parentNode!==host||n.nodeType===1&&n.matches('.editing,[data-render-dirty]'))){
+    if(!part||part.html!==html[i]||part.nodes.some(n=>n.parentNode!==host||n.nodeType===1&&n.matches('[data-render-dirty]'))){
       const template=D.createElement('template');template.innerHTML=html[i];
       part={html:html[i],nodes:Array.from(template.content.childNodes)};
     }

@@ -51,7 +51,9 @@ try{
   delay=true;await page.locator('#ssQuery').fill('filter');await page.locator('#ssGo').click();await page.locator('[data-provider="amazon"]').click();await page.waitForTimeout(650);assert.equal(await page.locator('.ss-product').count(),0,'old eBay response cannot overwrite Amazon');delay=false;
   for(const width of [320,390,1280]){await page.setViewportSize({width,height:900});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),String(width))}
   await mkdir(resolve(root,'.qa/feedback'),{recursive:true});await page.screenshot({path:resolve(root,'.qa/feedback/shop-desktop.png'),fullPage:true});
-  await page.goto(base+'/chat-fixture');await page.evaluate(()=>seed());await page.evaluate(()=>editFirst());await page.locator('.m-edit').fill('discard me');await page.locator('.m-cancel').click();assert.equal(await page.locator('.m-edit').count(),0);assert.match(await page.locator('.bubble').innerText(),/Original question/);
+  await page.goto(base+'/chat-fixture');await page.evaluate(()=>seed());await page.evaluate(()=>editFirst());await page.locator('.m-edit').fill('discard me');
+  await page.evaluate(()=>{messages.push({role:'ai',text:'Another message updates'});renderMessages();messages.pop();renderMessages()});assert.equal(await page.locator('.m-edit').inputValue(),'discard me','unrelated updates preserve the editing draft');
+  await page.locator('.m-cancel').click();assert.equal(await page.locator('.m-edit').count(),0);assert.match(await page.locator('.bubble').innerText(),/Original question/);
   await page.evaluate(()=>editFirst());await page.locator('.m-edit').fill('discard Escape');await page.locator('.m-edit').press('Escape');assert.equal(await page.locator('.m-edit').count(),0);
   const id=await page.evaluate(()=>start());await page.waitForFunction(()=>document.querySelectorAll('.msg.ai').length===1);while(!jobRows.has(id))await new Promise(r=>setTimeout(r,20));
   await page.goto(base+'/garage');await new Promise(r=>setTimeout(r,1250));await page.goto(base+'/chat-fixture');await page.waitForFunction(()=>document.getElementById('messages').textContent.includes('Completed while page was away'));

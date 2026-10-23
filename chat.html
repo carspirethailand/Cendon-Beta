@@ -3054,7 +3054,7 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 <link rel="stylesheet" href="valet.css?v=2">
 <script src="valet-core.js?v=7" defer></script>
 <script src="chat-garage.js?v=1" defer></script>
-<script src="chat-render.js?v=2" defer></script>
+<script src="chat-render.js?v=3" defer></script>
 <script src="chat-jobs.js?v=1" defer></script>
 <script src="valet.js?v=8" defer></script>
 <script src="bell.js?v=12" defer></script>
@@ -6162,8 +6162,9 @@ function editMsg(i,el){
     <div class="m-edit-b"><button type="button" class="m-cancel">${en?"Cancel":"ยกเลิก"}</button><button type="button" class="m-save">${en?"Send":"ส่ง"}</button></div>`;
   const ta=bub.querySelector("textarea"),fit=()=>{ta.style.height="auto";ta.style.height=Math.min(ta.scrollHeight,220)+"px"};
   fit();ta.addEventListener("input",fit);ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);
-  ta.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&matchMedia("(pointer:fine)").matches){e.preventDefault();bub.querySelector(".m-save").click()}if(e.key==="Escape")renderMessages()});
-  bub.querySelector(".m-cancel").onclick=()=>renderMessages();
+  const cancelEdit=()=>{el.dataset.renderDirty='';renderMessages()};
+  ta.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&matchMedia("(pointer:fine)").matches){e.preventDefault();bub.querySelector(".m-save").click()}if(e.key==="Escape")cancelEdit()});
+  bub.querySelector(".m-cancel").onclick=cancelEdit;
   bub.querySelector(".m-save").onclick=async()=>{
     const text=ta.value.trim(),atts=(m.atts||[]).map(a=>({...a}));
     if(!text&&!atts.length)return;

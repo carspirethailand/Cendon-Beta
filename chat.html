@@ -3046,17 +3046,17 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 <script src="sound-lens.js?v=1" defer></script>
 <script src="call-tools.js?v=2026-10-19-inst1" defer></script>
 <script src="call-composer.js?v=2026-10-17-r4" defer></script>
-<script src="call-agent.js?v=2026-10-18-web1" defer></script>
+<script src="call-agent.js?v=2026-10-23-valet2" defer></script>
 <script src="call-surface.js?v=2026-10-21-r1" defer></script>
 <script src="call-shell.js?v=1" defer></script>
 <script src="garage-care.js?v=1" defer></script>
 <script src="call-session.js?v=2026-10-19-loud1" defer></script>
 <link rel="stylesheet" href="valet.css?v=2">
-<script src="valet-core.js?v=7" defer></script>
+<script src="valet-core.js?v=8" defer></script>
 <script src="chat-garage.js?v=1" defer></script>
 <script src="chat-render.js?v=3" defer></script>
 <script src="chat-jobs.js?v=1" defer></script>
-<script src="valet.js?v=8" defer></script>
+<script src="valet.js?v=9" defer></script>
 <script src="bell.js?v=12" defer></script>
 <script src="drop.js?v=4" defer></script>
 <script src="./techs.js"></script>
@@ -5249,12 +5249,13 @@ async function streamAnswer(contents,opts){
   if(!m.text.trim()){ dropMsg(m); renderMessages(); return null }   /* ไม่ได้อะไรเลย ลองทางเดิม */
 
   /* แกะฟอร์มที่ AI ขอ ออกจากข้อความก่อนแสดงผลจริง */
-  const parsed=parseAsk(m.text);
+  const request=messages.filter(x=>x.role==='user').at(-1)?.text||'';
+  let parsed=parseAsk(m.text);if(window.CendonValet?.guard)parsed=CendonValet.guard(parsed,request);
   m.text=parsed.text; if(parsed.ask)m.ask=parsed.ask; if(parsed.next&&parsed.next.length)m.next=parsed.next;
   if(parsed.acts&&parsed.acts.length)m.acts=parsed.acts;
   try{ if(usage)window.quotaUpdate&&window.quotaUpdate(usage) }catch(e){}
   renderMessages();
-  if(m.acts&&window.CendonValet)CendonValet.run(m);
+  if(m.acts&&window.CendonValet?.wantsAct(request))CendonValet.run(m);
   return m.text;
 }
 
@@ -5751,9 +5752,17 @@ function applyChatJob(job,uid){
   if((auth?.currentUser||window.spireAuth?.currentUser)?.uid!==uid)return;
   const t=chatJobTarget(job);if(!t||t.message.jobApplied||t.message.cancelledLocally)return;
   const m=t.message,pending=['queued','running'].includes(job.status);m.streaming=pending;m.status=pending?(job.statusText||TT('กำลังคิด','Thinking')):'';
+  const rows=t.current?messages:t.session.msgs,index=rows.indexOf(m),request=rows.slice(0,index).filter(x=>x.role==='user').at(-1)?.text||'';
   if(job.text)m.text=noTools(job.text);if(job.research)m.research=job.research;
-  if(!pending){const p=parseAsk(m.text||TT('หยุดแล้วครับ','Stopped.'));m.text=p.text;if(p.ask)m.ask=p.ask;if(p.next)m.next=p.next;if(p.acts)m.acts=p.acts;m.jobApplied=true}
-  if(t.current){renderMessages();if(!pending){saveSession();sending=messages.some(x=>x.streaming||x.typing);updateSend();renderChips();if(job.usage)window.quotaUpdate?.(job.usage);if(job.status==='complete')bellAi()}}
+  if(pending&&window.CendonValet?.wantsAct(request))m.text=TT('กำลังเตรียมคำสั่ง Valet ยังไม่ได้ทำรายการครับ','Preparing the Valet action; nothing has been done yet.');
+  if(!pending){
+    let p=parseAsk(m.text||TT('หยุดแล้วครับ','Stopped.'));
+    if(job.status==='complete'&&window.CendonValet?.guard)p=CendonValet.guard(p,request);
+    m.text=p.text;if(p.ask)m.ask=p.ask;if(p.next)m.next=p.next;if(p.acts)m.acts=p.acts;m.jobApplied=true;
+  }
+  if(t.current){renderMessages();if(!pending){saveSession();sending=messages.some(x=>x.streaming||x.typing);updateSend();renderChips();if(job.usage)window.quotaUpdate?.(job.usage);if(job.status==='complete'){
+    if(window.CendonValet?.wantsAct(request))CendonValet.run(m,{isCurrent:()=>chatJobTarget(job)?.current===true&&(auth?.currentUser||window.spireAuth?.currentUser)?.uid===uid});bellAi();
+  }}}
   else if(!pending){t.session.t=Date.now();LS.set(t.key,t.list)}
 }
 function resumeChatJobs(){
@@ -6647,8 +6656,11 @@ async function sendMsg(){
   // Explicit message requests become reviewable drafts, never search queries.
   const directValet=!featureJob&&!atts.length&&window.CendonValet?.on()&&CendonValet.intent?.(text);
   if(directValet){
-    messages.push({role:'ai',text:lang==='en'?'Review the shop and message in the card, then confirm to send. Nothing has been sent yet.':'ตรวจชื่อร้านและข้อความในการ์ด แล้วกดยืนยันเพื่อส่งครับ ตอนนี้ยังไม่ได้ส่งอะไร',acts:[directValet]});
-    renderMessages();saveSession();sending=false;updateSend();renderChips();return;
+    const m={role:'ai',text:directValet.do==='msg_shop'?(lang==='en'?'Review the shop and message in the card, then confirm to send. Nothing has been sent yet.':'ตรวจชื่อร้านและข้อความในการ์ด แล้วกดยืนยันเพื่อส่งครับ ตอนนี้ยังไม่ได้ส่งอะไร'):(lang==='en'?'Review the result or confirmation in the Valet card below.':'ตรวจผลหรือยืนยันการทำงานในการ์ด Valet ด้านล่างครับ'),acts:[directValet]};
+    messages.push(m);renderMessages();saveSession();
+    const session=currentSessionId(),owner=(auth?.currentUser||window.spireAuth?.currentUser)?.uid;
+    await CendonValet.run(m,{isCurrent:()=>currentSessionId()===session&&(auth?.currentUser||window.spireAuth?.currentUser)?.uid===owner});
+    sending=false;updateSend();renderChips();return;
   }
   messages.push({role:"ai",typing:true});renderMessages();
   try{
@@ -6729,7 +6741,7 @@ async function sendMsg(){
       fresh:window.__freshOnce===true});
     window.__freshOnce=false;
     const raw=noTools(raw0);
-    const parsed=parseAsk(raw);
+    let parsed=parseAsk(raw);if(window.CendonValet?.guard)parsed=CendonValet.guard(parsed,text);
     const ans=parsed.text;
     /* ผูกฟอร์มที่ AI ขอ กับสถานะว่าคำตอบนี้มาจากคลังคำตอบเก่าหรือไม่
        ไว้กับข้อความล่าสุด เพื่อให้ตัววาดหยิบไปแสดงได้ */
@@ -6737,6 +6749,7 @@ async function sendMsg(){
     typewrite(ans||"(ไม่มีคำตอบ)",()=>{
       attachSvc(svc);
       saveSession();
+      const m=messages.filter(x=>x.role==='ai').at(-1);if(m?.acts&&window.CendonValet?.wantsAct(text))CendonValet.run(m);
       if(selCar())addHistory(selCar().id,text||(lang==="en"?"media":"แนบสื่อ"),SV?SV.strip(ans):ans);
       try{ window.slideRelease&&window.slideRelease() }catch(e){}
       sending=false;updateSend();renderChips();bellAi();

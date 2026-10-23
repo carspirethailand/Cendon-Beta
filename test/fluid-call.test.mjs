@@ -102,7 +102,7 @@ test('voice agent: own-account actions, fixed page list, nothing for other peopl
   const window={},calls=[];vm.runInNewContext(agent,{window,setTimeout:(f)=>f(),location:{assign:u=>calls.push(['nav',u])},encodeURIComponent});
   const cars=[{id:'c1',name:'City',year:'2019',mileage:'85000',vin:'SECRET',plate:'SECRET'}];
   window.CendonValetCore={on:()=>true,T:(th)=>th,PAGES:{garage:1,news:1},pageOf:k=>k==='garage'?{label:'การาจ',url:'/garage'}:null,cars:()=>cars,curCar:()=>cars[0],carName:c=>c.name,findCar:r=>cars.find(c=>c.id===r||c.name===r)||null,
-    pickCar:id=>(calls.push(['pick',id]),{label:'City 2019'}),setTheme:v=>(calls.push(['theme',v]),{theme:v}),threads:async()=>({threads:[{shop:'A',last:'hi'}],shopUnread:2})};
+    pickCar:id=>(calls.push(['pick',id]),{label:'City 2019'}),setSetting:async(key,value)=>(calls.push([key,value]),{done:true,applied:true,key,value,theme:key==='theme'?value:undefined}),threads:async()=>({threads:[{shop:'A',last:'hi'}],shopUnread:2})};
   const a=window.CendonCallAgent.create({minimize:()=>calls.push(['min'])}),ctx={signal:new AbortController().signal,isCurrent:()=>true};
   const go=await a.execute('valet',{do:'go',to:'garage'},ctx);assert.equal(go.done,true);assert.deepEqual(calls.slice(0,2),[['min'],['nav','/garage']]);
   assert.match((await a.execute('valet',{do:'go',to:'admin'},ctx)).error,/Unknown page/);

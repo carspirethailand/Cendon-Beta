@@ -14,7 +14,7 @@ const enc=encodeURIComponent;
 const KEY="spire_valet";
 const NAME="Cendon Valet";
 const read=()=>{try{return JSON.parse(localStorage.getItem(KEY)||"null")||{}}catch(e){return {}}};
-const isOn=()=>{const p=read(),uid=uidNow();return!!uid&&p.on===true&&p.uid===uid};
+const isOn=()=>{const p=read(),uid=uidNow();return!!uid&&p.on===true&&p.uid===uid&&(!W.CendonScope||W.CendonScope.mine(uid))};
 const cars=()=>{try{return typeof garage==="function"?garage():[]}catch(e){return []}};
 const carName=c=>c?(c.name||[c.make,c.model].filter(Boolean).join(" ")):"";
 const curCar=()=>{try{return typeof selCar==="function"?selCar():null}catch(e){return null}};
@@ -27,10 +27,13 @@ async function vapi(path,body,method){
   const a=W.spireAuth||W.auth;let u=a&&a.currentUser;
   if(!u&&W.spireAwaitUser)u=await W.spireAwaitUser();
   if(!u)throw new Error(T("กรุณาเข้าสู่ระบบก่อน","Please sign in first"));
+  const owner=u.uid,stillOwner=()=>uidNow()===owner&&(!W.CendonScope||W.CendonScope.mine(owner));
+  const token=await u.getIdToken();if(!stillOwner())throw Error('Account changed');
   const r=await fetch(W.BACKEND_URL+path,{method:method||(body?"POST":"GET"),
-    headers:Object.assign({Authorization:"Bearer "+await u.getIdToken()},body?{"Content-Type":"application/json"}:{}),
+    headers:Object.assign({Authorization:"Bearer "+token},body?{"Content-Type":"application/json"}:{}),cache:'no-store',
     body:body?JSON.stringify(body):undefined});
   let d=null;try{d=await r.json()}catch(e){}
+  if(!stillOwner())throw Error('Account changed');
   if(!r.ok)throw new Error((d&&d.error)||("HTTP "+r.status));
   return d||{};
 }
@@ -42,7 +45,7 @@ function body(){
 }
 
 /* ═══ แกะบล็อกคำสั่งออกจากคำตอบ ═══ */
-const ACTS=["enable","go","search","setting","add_car","car_km","car_info","pick_car","post_job","urgent","book","msg_shop","job","send_photos","jobs","log","due","shop_status"];
+const ACTS=["enable","go","search","setting","add_car","car_km","car_info","pick_car","post_job","urgent","book","msg_shop","job","send_photos","jobs","cars","threads","capabilities","log","due","shop_status"];
 const one=(v,n)=>String(v==null?"":v).replace(/[\r\n\t]+/g," ").trim().slice(0,n);
 const LEN={symptom:600,text:600,note:300,q:120,shop:80,title:60,phone:20};
 function clean(o){
@@ -60,9 +63,43 @@ const INFO_LBL={trim:["รุ่นย่อย / เกรด","Trim"],engine:[
   gear:["เกียร์","Gearbox"],fuel:["เชื้อเพลิง","Fuel"],drive:["ระบบขับเคลื่อน","Drivetrain"],tire:["ขนาดยาง","Tyre size"],vin:["เลขตัวถัง (VIN)","VIN"],plate:["ทะเบียนรถ","Plate"],province:["จังหวัด","Province"]};
 /* ประโยคสั่งให้ทำในแอป (ไม่ใช่แค่ถาม) — ใช้ตัดสินว่าไม่ต้องค้นร้านล่วงหน้า และ Valet ปิดอยู่ให้ขึ้นการ์ดขออนุญาตแทน */
 const ACT_RE=/(ทัก|ส่งข้อความ|แชท|แจ้ง|บอก)\s*(ไป)?\s*(หา|ถึง|กับ)?\s*(ร้าน|ช่าง|อู่)|ขอ\s*(ใบ)?ราคา\s*(จาก|กับ)?\s*(ร้าน|ช่าง|อู่)|(เรียก|ตาม)\s*ช่าง|ช่างด่วน|(ประกาศ|โพสต์)\s*หาช่าง|ยกเลิก\s*(งาน|ใบงาน|นัด)|รับราคา|ปิดงาน|งานเสร็จแล้ว|เพิ่มรถ|(อัปเดต|อัพเดท|แก้|เปลี่ยน)\s*(เลข)?ไมล์|พาไป(หน้า)?|เปิดหน้า|เปลี่ยน\s*(เป็น)?\s*ธีม|ธีม(มืด|สว่าง)|จด\s*(เติม)?\s*น้ำมัน|ตั้งวัน|ส่งรูปให้ช่าง|\b(message|text|tell)\s+(the\s+)?(shop|mechanic|garage)|\bbook\b|\bcancel\s+(the\s+|my\s+)?(job|booking)|\bdark mode\b|\badd\s+(a|my)\s+car\b/i;
-const denied=t=>/^(?:ช่วย\s*)?(?:อย่า|ห้าม|ไม่ต้อง|ยังไม่ต้อง|do not|don't|never)\s*(?:ทัก|ส่งข้อความ|แจ้ง|บอก|message|text|tell)/i.test(t);
+const denied=t=>/^(?:(?:ช่วย|รบกวน|please)\s*)?(?:อย่า|ห้าม|ไม่ต้อง|ยังไม่ต้อง|do not|don't|never)/i.test(t);
+/* Exact user commands only — never parse quoted instructions, links or text
+   inside an image/result. These reversible actions do not need model inference. */
+function localIntent(text){
+  let t=String(text||'').normalize('NFKC').toLowerCase().trim();
+  if(denied(t)||/^(?:ถ้า|สมมติ|ตัวอย่าง|เขาบอก|คำว่า|if\b|example\b|what\b|why\b|how\b)/i.test(t))return null;
+  t=t.replace(/^(?:ช่วย|รบกวน|ฝาก|please\s+|can you\s+|could you\s+)\s*/i,'').replace(/(?:ให้หน่อย|หน่อย|ด้วย|ครับ|ค่ะ|คะ|please|thanks|[.!])\s*$/gi,'').trim();
+  t=t.replace(/(?:ให้หน่อย|หน่อย|ด้วย|ครับ|ค่ะ|คะ|please|thanks|[.!])\s*$/gi,'').trim();
+  if(/^(?:สลับ(?:ธีม|ตีม)|toggle theme)$/.test(t))return {do:'setting',key:'theme',value:W.CendonValetCore?.getSetting('theme')==='dark'?'light':'dark'};
+  if(/^(?:(?:เปลี่ยน|ปรับ|ตั้ง)\s*(?:ธีม|ตีม)|change theme)$/.test(t))return {do:'setting',key:'theme'};
+  let m=t.match(/^(?:(?:เปลี่ยน|ปรับ|ตั้ง|สลับ)\s*(?:เป็น\s*)?)?(?:ธีม|ตีม|โหมด)\s*(?:ให้เป็น|เป็น|แบบ)?\s*(?:สี)?\s*(มืด|ดำ|เข้ม|สว่าง|ขาว|dark|light)$/i)
+    ||t.match(/^(?:(?:change|switch|set)\s+(?:(?:the|my)\s+)?)?(?:theme|appearance)\s*(?:to\s*)?(dark|light)$/i)
+    ||t.match(/^(?:(?:enable|turn on|switch to)\s+)?(dark|light)\s+mode$/i);
+  if(m)return {do:'setting',key:'theme',value:/^(?:มืด|ดำ|เข้ม|dark)$/.test(m[1])?'dark':'light'};
+  m=t.match(/^(?:เปลี่ยน|ตั้ง|ปรับ)\s*ภาษา\s*(?:ให้เป็น|เป็น)?\s*(.+)$/i)||t.match(/^(?:change|set|switch)\s+(?:the\s+)?language\s+(?:to\s+)?(.+)$/i);
+  if(m){const names={ไทย:'th',thai:'th',อังกฤษ:'en',english:'en',ญี่ปุ่น:'ja',japanese:'ja',จีน:'zh',chinese:'zh',เกาหลี:'ko',korean:'ko',indonesian:'id',vietnamese:'vi',malay:'ms',german:'de',french:'fr',spanish:'es',portuguese:'pt'};
+    const value=LANGS[m[1]]?m[1]:names[m[1]];if(value)return {do:'setting',key:'lang',value};}
+  m=t.match(/^(?:เปลี่ยน|ตั้ง|ปรับ)\s*(?:หน่วยระยะทาง|หน่วย)\s*(?:เป็น)?\s*(กิโลเมตร|กม\.?|ไมล์|km|mi)$/i)||t.match(/^(?:change|set)\s+(?:distance\s+)?units?\s+(?:to\s+)?(kilometers|kilometres|miles|km|mi)$/i);
+  if(m)return {do:'setting',key:'distance',value:/^(?:ไมล์|miles|mi)$/.test(m[1])?'mi':'km'};
+  m=t.match(/^(?:เปลี่ยน|ตั้ง|ปรับ)\s*(?:สกุลเงิน|หน่วยเงิน)\s*(?:เป็น)?\s*(.+)$/i)||t.match(/^(?:change|set)\s+currency\s+(?:to\s+)?(.+)$/i);
+  if(m){const names={บาท:'THB',เงินบาท:'THB',ดอลลาร์:'USD',ดอลลาร์สหรัฐ:'USD',ยูโร:'EUR',เยน:'JPY'};const value=names[m[1]]||m[1].toUpperCase();if(/^[A-Z]{3}$/.test(value))return {do:'setting',key:'currency',value};}
+  m=t.match(/^(?:เปลี่ยน|ตั้ง|ปรับ)\s*(?:โหมด\s*(?:ai)?|ความละเอียด)\s*(?:เป็น)?\s*(sprint|grand tour|atelier|สั้น|ปกติ|ละเอียด)$/i)||t.match(/^(?:change|set)\s+(?:ai\s+)?mode\s+(?:to\s+)?(sprint|grand tour|atelier)$/i);
+  if(m)return {do:'setting',key:'depth',value:({sprint:'0',สั้น:'0','grand tour':'1',ปกติ:'1',atelier:'2',ละเอียด:'2'})[m[1]]};
+  m=t.match(/^(?:เปลี่ยน|ตั้ง|ปรับ)\s*(?:สีหลัก|สีปุ่ม)\s*(?:เป็น)?\s*(#[0-9a-f]{6}|แดง|ส้ม|ฟ้า|น้ำเงิน|เขียว|ม่วง|ชมพู)$/i)||t.match(/^(?:change|set)\s+primary\s+colou?r\s+(?:to\s+)?(#[0-9a-f]{6})$/i);
+  if(m)return {do:'setting',key:'primary',value:({แดง:'#e35d6a',ส้ม:'#ff8b3d',ฟ้า:'#4f8fd9',น้ำเงิน:'#4f8fd9',เขียว:'#45a88d',ม่วง:'#9473d8',ชมพู:'#df78a2'})[m[1]]||m[1]};
+  if(/^(?:ดู|แสดง)\s*(?:รถของฉัน|รถทั้งหมด|รถในการาจ)$|^(?:show|list)\s+my\s+cars$/.test(t))return {do:'cars'};
+  if(/^(?:ดู|แสดง)\s*(?:ใบงาน|งานซ่อม)(?:ของฉัน|ล่าสุด)?$|^(?:show|list)\s+my\s+jobs$/.test(t))return {do:'jobs'};
+  if(/^(?:ดู|แสดง)\s*(?:ข้อความ|แชตกับร้าน)(?:ของฉัน|ล่าสุด)?$|^(?:show|list)\s+my\s+chats$/.test(t))return {do:'threads'};
+  if(/^(?:valet|วาเลต|วาเล็ท)\s*(?:ทำอะไรได้บ้าง|ทำอะไรได้)|^(?:what can valet do|show valet tools)\??$/.test(t))return {do:'capabilities'};
+  m=t.match(/^(?:พาไป(?:หน้า)?|เปิด(?:หน้า)?|ไปหน้า|open\s+|go to\s+)\s*(.+)$/i);
+  if(m){const aliases={หน้าหลัก:'home',การาจ:'garage',โรงรถ:'garage',นิตยสาร:'news',ร้านค้า:'shop',โปรไฟล์:'profile',ตั้งค่า:'profile',ใบงาน:'jobs',แผนที่:'map',ข้อความ:'messages',แชต:'chat',วิธีใช้:'help',เครื่องมือ:'tools',ฟังเสียงเครื่อง:'listen',สแกนห้องเครื่อง:'engine_scan',ที่จอดรถ:'parking',ค่าใช้จ่าย:'car_cost',บำรุงรักษา:'car_maintenance',สมุดเดินทาง:'car_trip'};
+    const to=aliases[m[1]]||m[1];if(Object.hasOwn(W.CendonValetCore?.PAGES||PAGES,to))return {do:'go',to};}
+  return null;
+}
 function intent(text){
   const t=String(text||'').trim();if(t.length>1000||denied(t))return null;
+  const local=localIntent(t);if(local)return local;
   // A narrow, explicit command grammar. No inferred recipient, symptom or send.
   const th=t.match(/^(?:(?:ช่วย|รบกวน|ฝาก)\s*)?(?:ทัก|ส่งข้อความ|ส่งแชท|ส่งแชต|แชท|แชต)\s*(?:ไป\s*)?(?:(?:หา|ถึง|กับ)\s*(?:ร้าน|ช่าง|อู่)?|(?:ร้าน|ช่าง|อู่))\s*(.{2,80}?)\s*(?:ให้หน่อย\s*)?(?:และ\s*)?(?:(?:บอก|แจ้ง)(?:เขา|ช่าง|ร้าน)?\s*)?ว่า\s*([\s\S]{1,600})$/i);
   const en=t.match(/^(?:please\s+)?(?:message|text)\s+(?:(?:the\s+)?(?:shop|mechanic|garage)\s+)?(.{2,80}?)\s+(?:and\s+)?(?:say|saying|tell them)\s*[:,-]?\s+([\s\S]{1,600})$/i);
@@ -71,7 +108,17 @@ function intent(text){
   if(!shop||message.length<2||/^(?:anyone|someone|ใครก็ได้)$/i.test(shop))return null;
   return{do:'msg_shop',shop,text:message};
 }
-const wantsAct=t=>!denied(String(t||'').trim())&&(!!intent(t)||ACT_RE.test(String(t||"")));
+const wantsAct=t=>!denied(String(t||'').trim())&&!/^(?:["“'`]|ถ้า|สมมติ|ตัวอย่าง|เขาบอก|คำว่า|if\b|example\b|what\b|why\b|how\b)/i.test(String(t||'').trim())&&(!!intent(t)||ACT_RE.test(String(t||""))||/^(?:(?:ช่วย|รบกวน)\s*)?(?:เปลี่ยน|ปรับ|ตั้ง|สลับ)\s*(?:ธีม|ตีม|ภาษา|หน่วย|สกุลเงิน|สีหลัก|สีปุ่ม|โหมด)/i.test(String(t||'').trim()));
+function guard(parsed,request){
+  if(!wantsAct(request))return parsed;
+  const direct=intent(request);
+  if(isOn()&&direct)return {...parsed,text:T('ตรวจผลหรือยืนยันการทำงานของ Valet ในการ์ดด้านล่างครับ','Review the result or confirm the Valet action in the card below.'),acts:[direct]};
+  if(!(parsed.acts||[]).length){
+    return {...parsed,text:T('คำขอนี้ยังไม่ได้ดำเนินการครับ ตรวจการ์ด Valet หรือระบุเครื่องมือและค่าที่ต้องการอีกครั้ง','Nothing has been done yet. Review the Valet card or specify the tool and value again.'),
+      acts:isOn()&&direct?[direct]:!isOn()?[{do:'enable',text:String(request||'').slice(0,1000)}]:[]};
+  }
+  return {...parsed,text:T('ตรวจผลหรือยืนยันการทำงานของ Valet ในการ์ดด้านล่างครับ','Review the result or confirm the Valet action in the card below.')};
+}
 function cut(txt){
   const acts=[],on=isOn();
   let text=String(txt||"").replace(/\[\[ACT\]\]([\s\S]*?)(\[\[\/ACT\]\]|$)/g,(m,j)=>{
@@ -97,7 +144,8 @@ const PAGES={
   studio_settings:["ตั้งค่า Studio","Studio settings","/studio/settings"],studio_stats:["สถิติร้าน","Shop stats","/studio/stats"]};
 function dest(a){
   if(a.do==="search")return {label:T("หาช่าง: ","Find: ")+a.q,url:"/search?q="+enc(a.q||"")};
-  let k=PAGES[a.to]?a.to:null;if(!k)return null;
+  if(W.CendonValetCore)return W.CendonValetCore.pageOf(a.to);
+  let k=Object.hasOwn(PAGES,a.to)?a.to:null;if(!k)return null;
   if(/^studio/.test(k)&&!isMech())k="join";
   const p=PAGES[k],c=curCar(),url=typeof p[2]==="function"?p[2](c&&c.id):p[2];
   return {label:T(p[0],p[1]),url};
@@ -108,12 +156,11 @@ function go(url){try{W.CendonPaint&&W.CendonPaint.prepare(url)}catch(e){}locatio
 const LANGS={th:"ไทย",en:"English",ja:"日本語",zh:"中文",ko:"한국어",id:"Indonesia",vi:"Tiếng Việt",ms:"Melayu",de:"Deutsch",fr:"Français",es:"Español",pt:"Português"};
 const DEPTH=[["Sprint (ตอบสั้น)","Sprint (short)"],["Grand Tour (ปกติ)","Grand Tour (balanced)"],["Atelier (ละเอียด)","Atelier (in depth)"]];
 function setting(a){
-  if(a.key==="theme"&&/^(light|dark)$/.test(a.value))return {label:T("ธีม","Theme")+": "+(a.value==="dark"?T("มืด","Dark"):T("สว่าง","Light")),
-    get:()=>(W.spireTheme&&W.spireTheme())||"dark",set:v=>{if(typeof setChatTheme==="function")setChatTheme(v);else if(W.spireSetTheme)W.spireSetTheme(v)},v:a.value};
-  if(a.key==="lang"&&LANGS[a.value])return {label:T("ภาษา","Language")+": "+LANGS[a.value],get:()=>W.lang||"th",set:v=>{if(typeof setLang==="function")setLang(v)},v:a.value};
-  if(a.key==="depth"&&/^[012]$/.test(a.value))return {label:T("โหมด AI","AI mode")+": "+T(...DEPTH[+a.value]),
-    get:()=>W.CendonDepth?W.CendonDepth.get():1,set:v=>{if(W.CendonDepth)W.CendonDepth.set(+v)},v:+a.value};
-  return null;
+  const V=W.CendonValetCore;if(!V)return null;
+  let v;try{v=V.settingValue(a.key,a.value)}catch{return null}
+  const names={theme:T('ธีม','Theme'),lang:T('ภาษา','Language'),depth:T('โหมด AI','AI mode'),distance:T('หน่วยระยะทาง','Distance unit'),currency:T('สกุลเงิน','Currency'),primary:T('สีหลัก','Primary color')};
+  const label=a.key==='theme'?(v==='dark'?T('มืด','Dark'):T('สว่าง','Light')):a.key==='lang'?LANGS[v]:a.key==='depth'?T(...DEPTH[+v]):v;
+  return {label:names[a.key]+': '+label,get:()=>V.getSetting(a.key),set:value=>V.setSetting(a.key,value),v};
 }
 
 /* ═══ ย่อรูปในเครื่องก่อนส่ง (ยาวสุด 1600px JPEG) ═══ */
@@ -168,9 +215,10 @@ function card(m,i){
     return `<div class="vl" ${id}>${head(a.do==="search"?"ti-search":"ti-route",(a.do==="search"?"":T("พาไป ","Go to "))+esc(d.label))}
       ${a._cd&&!done?`<div class="vl-cd"><span class="vl-bar"><i style="animation-duration:${a._cd}ms"></i></span><button type="button" class="vl-b gh" data-va="stop">${T("ยกเลิก","Cancel")}</button></div>`
         :`${stLine(a)}<div class="vl-acts"><button type="button" class="vl-b" data-va="go"><i class="ti ti-arrow-right"></i>${T("ไปเลย","Go")}</button></div>`}</div>`}
-  if(a.do==="setting"){const s=setting(a);if(!s)return "";
+  if(a.do==='setting'&&a.key==='theme'&&!a.value)return `<div class="vl" ${id}>${head('ti-adjustments',T('เลือกธีมที่ต้องการ','Choose a theme'))}<p class="vl-note">${T('ต้องการแบบสว่างหรือมืดครับ? ยังไม่ได้เปลี่ยนจนกว่าคุณจะเลือก','Light or dark? Nothing changes until you choose.')}</p><div class="vl-acts"><button type="button" class="vl-b" data-va="theme-choice" data-value="light">${T('สว่าง','Light')}</button><button type="button" class="vl-b" data-va="theme-choice" data-value="dark">${T('มืด','Dark')}</button></div></div>`;
+  if(a.do==="setting"){const s=setting(a);if(!s)return `<div class="vl" ${id}>${head('ti-adjustments',T('ยังเปลี่ยนการตั้งค่านี้ไม่ได้','Setting unavailable'))}<p class="vl-st err">${T('คำสั่งหรือค่าที่ขอไม่อยู่ในรายการที่อนุญาต ยังไม่ได้เปลี่ยนอะไรครับ','The requested setting or value is not allowed. Nothing changed.')}</p></div>`;
     return `<div class="vl" ${id}>${head("ti-adjustments",esc(s.label))}${stLine(a)}<div class="vl-acts">${a.s==="done"&&a._prev!=null?`<button type="button" class="vl-b gh" data-va="undo"><i class="ti ti-arrow-back-up"></i>${T("ย้อนกลับ","Undo")}</button>`
-      :a.s?"":`<button type="button" class="vl-b" data-va="apply"><i class="ti ti-check"></i>${T("เปลี่ยนเลย","Apply")}</button>`}</div></div>`}
+      :a.s&&a.s!=='err'?"":`<button type="button" class="vl-b" data-va="apply"><i class="ti ti-check"></i>${T("เปลี่ยนเลย","Apply")}</button>`}</div></div>`}
   if(a.do==="add_car"){const y=new Date().getFullYear()+1;
     return `<div class="vl" ${id}>${head("ti-car-garage",T("เพิ่มรถเข้าการาจ","Add a car to your garage"))}
       ${done?stLine(a)+(a.s==="done"&&a._id?`<div class="vl-acts"><button type="button" class="vl-b gh" data-va="pick" data-car="${esc(a._id)}"><i class="ti ti-messages"></i>${T("คุยเรื่องคันนี้","Chat about this car")}</button></div>`:""):`
@@ -256,6 +304,9 @@ function card(m,i){
       <div class="vl-ph" data-ph></div><input type="file" accept="image/*" multiple hidden data-file data-nocrop>
       <p class="vl-err" hidden></p><div class="vl-acts"><button type="button" class="vl-b gh" data-va="addph"><i class="ti ti-camera-plus"></i>${T("เลือกรูป","Pick photos")}</button><button type="button" class="vl-b" data-va="send" disabled><i class="ti ti-send"></i>${T("ส่งให้ช่าง","Send")}</button></div>`}</div>`;
   if(a.do==="jobs")return `<div class="vl" ${id}>${head("ti-clipboard-list",T("ใบงานล่าสุด","Your latest jobs"))}<div class="vl-list" data-jobs><p class="vl-note">${T("กำลังโหลด…","Loading…")}</p></div></div>`;
+  if(a.do==='cars')return `<div class="vl" ${id}>${head('ti-car',T('รถของฉัน','My cars'))}<div class="vl-list">${cars().map(c=>`<p><b>${esc([carName(c),c.year].filter(Boolean).join(' '))}</b> · ${esc(c.mileage||'—')} km</p>`).join('')||T('ยังไม่มีรถในการาจ','No saved cars yet')}</div></div>`;
+  if(a.do==='threads')return `<div class="vl" ${id}>${head('ti-messages',T('แชตของฉันกับร้าน','My chats with shops'))}<div class="vl-list" data-threads>${T('กำลังโหลด…','Loading…')}</div></div>`;
+  if(a.do==='capabilities')return `<div class="vl" ${id}>${head('ti-key',T('เครื่องมือ Valet','Valet tools'))}<p class="vl-note">${T('เปลี่ยนธีม ภาษา สีหลัก หน่วยระยะทาง สกุลเงิน และโหมด AI · เปิดเครื่องมือและหน้าสมุดรถ · ดูรถ ใบงาน และแชตของคุณ','Change theme, language, accent, distance units, currency and AI mode; open tools and car records; read your cars, jobs and chats.')}</p><p class="vl-note">${T('เพิ่มรถ บันทึกเลขไมล์ ข้อมูลรถ ค่าใช้จ่าย วันครบกำหนด และงานถึงช่าง ต้องตรวจยืนยันก่อน · ไม่เปิดสิทธิ์แอดมิน ไม่เข้าบัญชีคนอื่น ไม่จ่ายเงินหรือลบข้อมูล','Adding cars, saving mileage/details/logs/due dates and contacting mechanics require review and confirmation. No admin, other accounts, payments or deletion.')}</p></div>`;
   if(a.do==="shop_status"){const L={on:["เปิดรับงาน (แจ้งเตือนทันที)","Taking jobs (alerts on)"],quiet:["รับงาน ไม่แจ้งเตือน","Taking jobs, no alerts"],pause:["พักร้านชั่วคราว","Paused"]}[a.state];
     if(!L||!isMech())return "";
     return `<div class="vl" ${id}>${head("ti-building-store",T("สถานะร้าน: ","Shop status: ")+T(...L))}${stLine(a)}${done?"":`<div class="vl-acts"><button type="button" class="vl-b" data-va="shop"><i class="ti ti-check"></i>${T("ยืนยัน","Confirm")}</button><button type="button" class="vl-b gh" data-va="no">${T("ไม่ใช่ตอนนี้","Not now")}</button></div>`}</div>`}
@@ -271,7 +322,7 @@ function html(m){
 
 /* ═══ การกระทำ ═══ */
 const msgOf=id=>(typeof messages!=="undefined"?messages:[]).find(m=>m._vid===id);
-function finish(m,a,s,r){a.s=s;a.r=r;a._cd=0;try{saveSession()}catch(e){}repaint(m)}
+function finish(m,a,s,r){if(m.valetUid&&m.valetUid!==uidNow())return;a.s=s;a.r=r;a._cd=0;try{saveSession()}catch(e){}repaint(m)}
 function repaint(m){
   const el=D.querySelector(`.vl-wrap [data-vm="${m._vid}"]`);const wrap=el&&el.closest(".vl-wrap");
   if(wrap){const t=D.createElement("div");t.innerHTML=html(m);const n=t.firstElementChild;if(n){n.dataset.h=1;wrap.replaceWith(n);hydrate(n,m)}}
@@ -320,12 +371,20 @@ const MSG=el=>msgOf(el.dataset.vm);
 
 async function act(btn){
   const el=btn.closest(".vl"),m=msgOf(el.dataset.vm),i=+el.dataset.vi,a=m&&m.acts[i],k=btn.dataset.va;if(!a)return;
+  if(!['enable','no','stop'].includes(k)&&(!isOn()||m.valetUid&&m.valetUid!==uidNow())){finish(m,a,'err',T('Valet ปิดอยู่หรือบัญชีเปลี่ยนไปแล้ว ยังไม่ได้ทำรายการ','Valet is off or the account changed. Nothing was done.'));return}
+  m.valetUid=uidNow();
   const v=f=>{const x=el.querySelector(`[data-f="${f}"]`);return x?x.value.trim():""};
   if(k==="stop"){clearTimeout(a._t);finish(m,a,"no",T("ยกเลิกแล้ว","Cancelled"));return}
   if(k==="go"){const d=dest(a);if(d)go(d.url);return}
   if(k==="no"){finish(m,a,"no",T("ไม่ได้ทำ","Skipped"));return}
+  if(k==='theme-choice'){
+    if(a.do!=='setting'||a.key!=='theme'||!['light','dark'].includes(btn.dataset.value))return;
+    await busyBtn(btn,async()=>{a.value=btn.dataset.value;const s=setting(a);if(!s)return;a._prev=s.get();
+      try{await s.set(s.v);finish(m,a,'done',T('เปลี่ยนแล้ว','Done'))}catch(e){finish(m,a,'err',vErr(e))}});return;
+  }
   if(k==="apply"||k==="undo"){const s=setting(a);if(!s)return;
-    if(k==="apply"){a._prev=s.get();s.set(s.v);finish(m,a,"done",T("เปลี่ยนแล้ว","Done"))}else{s.set(a._prev);a._prev=null;finish(m,a,"no",T("ย้อนกลับแล้ว","Undone"))}return}
+    await busyBtn(btn,async()=>{try{if(k==="apply"){a._prev=s.get();await s.set(s.v);finish(m,a,"done",T("เปลี่ยนแล้ว","Done"))}else{await s.set(a._prev);a._prev=null;finish(m,a,"no",T("ย้อนกลับแล้ว","Undone"))}}
+    catch(e){finish(m,a,'err',vErr(e))}});return}
   if(k==="pick"){try{pickCar(btn.dataset.car)}catch(e){}return}
   if(k==="open"){go("/jobs/"+enc(btn.dataset.job)+"/chat");return}
   /* อนุญาต Valet แล้วทำคำขอเดิมต่อทันที (ไม่ต้องพิมพ์ใหม่) */
@@ -433,6 +492,7 @@ async function act(btn){
 
 /* ═══ หลังวาดการ์ด: ใบงาน รูป และการพาไปอัตโนมัติ ═══ */
 function hydrate(wrap,m){
+  if(!isOn())return;
   wrap.querySelectorAll(".vl").forEach(el=>{
     const a=m.acts[+el.dataset.vi];if(!a)return;
     const f=el.querySelector("[data-file]");
@@ -445,6 +505,11 @@ function hydrate(wrap,m){
       if(!L.length){sel.innerHTML=`<option value="">${T("ยังไม่มีใบงานที่คุยกับช่างอยู่","No active jobs with a mechanic")}</option>`;return}
       sel.innerHTML=L.map(j=>`<option value="${esc(j.id)}">${esc(j.side==="technician"?T("ลูกค้า","Customer"):j.techName||"")} · ${esc(j.car||"")}</option>`).join("");sel.disabled=false;sel.onchange=()=>drawPh(el,a);drawPh(el,a);
     }).catch(e=>errOn(el,e.message));
+    if(a.do==='threads'&&VC()){
+      const owner=uidNow();VC().threads().then(d=>{if(uidNow()!==owner||!isOn())return;const box=el.querySelector('[data-threads]');if(!box)return;
+        box.innerHTML=(d.threads||[]).map(t=>`<p><a href="/messages/${enc(t.id)}">${esc(t.shop||T('ร้าน','Shop'))}</a><br>${esc(t.last||T('ยังไม่มีข้อความ','No messages'))}</p>`).join('')||T('ยังไม่มีแชตกับร้าน','No chats with shops yet');
+      }).catch(e=>{if(uidNow()!==owner)return;const box=el.querySelector('[data-threads]');if(box)box.textContent=vErr(e)});
+    }
     if(a.do==="jobs")vapi("/api/tech/jobs").then(d=>{const box=el.querySelector("[data-jobs]");if(!box)return;
       const L=(d.jobs||[]).filter(j=>j.side!=="admin").sort((x,y)=>(liveJob(y)-liveJob(x))||((y.updatedAt||0)-(x.updatedAt||0))).slice(0,5);
       box.innerHTML=L.length?L.map(j=>`<button type="button" class="vl-row" data-va="open" data-job="${esc(j.id)}"><span><b class="nt">${esc(j.car||"")}</b><small>${esc(j.side==="technician"?T("งานของร้านคุณ","Your shop's job"):j.techName||"")}</small></span><em class="${liveJob(j)?"on":""}">${esc(jobSt(j))}</em></button>`).join("")
@@ -479,15 +544,26 @@ function hydrate(wrap,m){
   });
 }
 /* คำตอบใหม่สด ๆ เท่านั้น (ไม่ใช่ตอนเปิดประวัติ): พาไปหน้า = นับถอยหลังสั้น ๆ ยกเลิกได้ · เปลี่ยนธีม/ภาษา = ทำเลย ย้อนได้ */
-function run(m){
-  if(!m||!m.acts||!m.acts.length||m._ran)return;m._ran=true;
-  m.acts.forEach(a=>{
-    if(a.s)return;
-    if(a.do==="setting"){const s=setting(a);if(!s)return;a._prev=s.get();if(String(a._prev)===String(s.v)){a.s="done";a.r=T("ตั้งไว้แบบนี้อยู่แล้ว","Already set");a._prev=null;return}
-      s.set(s.v);a.s="done";a.r=T("เปลี่ยนแล้ว","Done")}
-    if(a.do==="urgent")setTimeout(()=>{const el=D.querySelector(`.vl[data-vm="${m._vid}"][data-vi="${m.acts.indexOf(a)}"]`);if(el&&!a._pos&&!a.s)getLoc(el,a)},400);
-    if((a.do==="go"||a.do==="search")&&dest(a)&&m.acts.filter(x=>x.do==="go"||x.do==="search").length===1){a._cd=2200;a._t=setTimeout(()=>{if(!a.s){a.s="done";a.r=T("พาไปแล้ว","Opened");try{saveSession()}catch(e){}go(dest(a).url)}},2200)}
-  });
+async function run(m,{isCurrent=()=>true}={}){
+  if(!m||!m.acts||!m.acts.length||m._ran||D.hidden||!isOn()||!isCurrent())return;m._ran=true;m.valetUid=uidNow();
+  const live=()=>isOn()&&m.valetUid===uidNow()&&!D.hidden&&isCurrent();
+  for(const a of m.acts){
+    if(a.s||!live())continue;
+    if(a.do==="setting"){
+      if(a.key==='theme'&&!a.value)continue;
+      const s=setting(a);if(!s){a.s='err';a.r=T('การตั้งค่านี้ยังไม่พร้อมหรือไม่อนุญาต ยังไม่ได้เปลี่ยน','This setting is unavailable or not allowed. Nothing changed.');continue}
+      a._prev=s.get();a.s='working';a.r=T('กำลังเปลี่ยนและตรวจผล…','Applying and checking…');repaint(m);
+      try{await s.set(s.v);if(!live())continue;a.s='done';a.r=T('เปลี่ยนแล้ว','Done')}
+      catch(e){if(!live())continue;a.s='err';a.r=vErr(e)}
+    }
+    if(a.do==='pick_car'){
+      try{const c=VC()?.findCar(a.car);if(!c||!a.car)throw Error(T('กรุณาระบุรถในการาจให้ชัดเจน','Specify a saved car'));const r=VC().pickCar(c.id);a.s='done';a.r=T('เลือกรถแล้ว: ','Selected: ')+r.label}
+      catch(e){a.s='err';a.r=vErr(e)}
+    }
+    if(a.do==="urgent")setTimeout(()=>{if(!live())return;const el=D.querySelector(`.vl[data-vm="${m._vid}"][data-vi="${m.acts.indexOf(a)}"]`);if(el&&!a._pos&&!a.s)getLoc(el,a)},400);
+    if((a.do==="go"||a.do==="search")&&dest(a)&&m.acts.filter(x=>x.do==="go"||x.do==="search").length===1){a._cd=2200;a._t=setTimeout(()=>{if(!a.s&&live()){try{go(dest(a).url)}catch(e){finish(m,a,'err',vErr(e))}}},2200)}
+  }
+  if(m.valetUid!==uidNow()||!isCurrent())return;
   try{saveSession()}catch(e){}
   repaint(m);
 }
@@ -571,5 +647,5 @@ function sheet(){
 if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",inject);else inject();
 setTimeout(inject,800);
 
-W.CendonValet={on:isOn,body,cut,save,html,run,open:sheet,inject,wantsAct,intent};
+W.CendonValet={on:isOn,body,cut,save,html,run,open:sheet,inject,wantsAct,intent,guard};
 })(window,document);

@@ -9,7 +9,7 @@ function rig(on=false){
   const store={spire_valet:JSON.stringify({on,uid:'owner'})},input={value:''},sent=[];
   const window={localStorage:{getItem:k=>store[k]??null,setItem:(k,v)=>{store[k]=v}},spireAuth:{currentUser:{uid:'owner'}}};
   const document={readyState:'complete',addEventListener(){},querySelector:()=>null,querySelectorAll:()=>[],getElementById:id=>id==='inp'?input:null};
-  const sandbox={window,document,localStorage:window.localStorage,MutationObserver:class{observe(){}},setTimeout:()=>0,JSON,encodeURIComponent,messages:[],sending:false,featureJob:null,atts:[],text:request,lang:'th',renderMessages(){},saveSession(){},updateSend(){},renderChips(){},sendMsg(){sent.push(input.value);},toast(){}};
+  const sandbox={window,document,auth:window.spireAuth,currentSessionId:()=> 'sfixture',localStorage:window.localStorage,MutationObserver:class{observe(){}},setTimeout:()=>0,JSON,encodeURIComponent,messages:[],sending:false,featureJob:null,atts:[],text:request,lang:'th',renderMessages(){},saveSession(){},updateSend(){},renderChips(){},sendMsg(){sent.push(input.value);},toast(){}};
   vm.createContext(sandbox);vm.runInContext(source,sandbox);sandbox.CendonValet=window.CendonValet;
   return{...sandbox,sandbox,input,sent,store,V:window.CendonValet,run:code=>vm.runInContext(code,sandbox)};
 }
@@ -23,11 +23,11 @@ test('explicit supported Thai/English variants work, but questions, negation and
   for(const text of ['รบกวนส่งข้อความถึงร้านนนท์แอร์และบอกว่า พรุ่งนี้เปิดไหม','please message Nont Garage saying My Porsche 911 will not start'])assert.equal(f.V.intent(text)?.do,'msg_shop');
   for(const text of ['อย่าทักไปหาช่างนนทการช่างและบอกว่า รถเสีย','ไม่ต้องส่งข้อความหาอู่ A และบอกว่า รถเสีย','ช่วยหาช่างซ่อม Porsche 911','ร้านไหนชื่อ นนทการช่าง','ช่วยทักไปหาใครก็ได้และบอกว่า รถเสีย'])assert.equal(f.V.intent(text),null,text);
 });
-test('actual chat routing: Valet-off shows allow-and-continue; Valet-on shows a draft before any AI/search call',()=>{
+test('actual chat routing: Valet-off shows allow-and-continue; Valet-on shows a draft before any AI/search call',async()=>{
   const begin=chat.indexOf('  if(!featureJob&&!atts.length&&window.CendonValet&&!CendonValet.on()&&CendonValet.wantsAct(text))');
   const end=chat.indexOf('  messages.push({role:"ai",typing:true});',begin);
-  assert.ok(begin>0&&end>begin);const block='function route(){'+chat.slice(begin,end)+'}route();';
-  for(const on of [false,true]){const f=rig(on);f.sandbox.messages.push({role:'user',text:request});f.run(block);
+  assert.ok(begin>0&&end>begin);const block='async function route(){'+chat.slice(begin,end)+'}route();';
+  for(const on of [false,true]){const f=rig(on);f.sandbox.messages.push({role:'user',text:request});await f.run(block);
     const ai=f.sandbox.messages.at(-1);assert.equal(ai.acts[0].do,on?'msg_shop':'enable');assert.equal(f.sent.length,0);
     if(on){assert.equal(ai.acts[0].shop,'นนทการช่าง');assert.match(ai.text,/ยังไม่ได้ส่ง/);}else assert.equal(ai.acts[0].text,request);
   }

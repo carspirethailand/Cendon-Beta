@@ -21,7 +21,8 @@ async function user(){
 }
 async function api(path,body,method,owner){
   const u=await user();
-  const stillOwner=()=>owner===undefined||(u.uid===owner&&(!(W.spireAuth||W.auth)||(W.spireAuth||W.auth).currentUser?.uid===owner));
+  const expected=owner===undefined?u.uid:owner;
+  const stillOwner=()=>u.uid===expected&&(W.spireAuth||W.auth)?.currentUser?.uid===expected&&(!W.CendonScope||W.CendonScope.mine(expected));
   if(!stillOwner())throw Error(T('บัญชีเปลี่ยนไปแล้ว กรุณาทำรายการใหม่','Account changed; please start again'));
   const token=await u.getIdToken();
   if(!stillOwner())throw Error(T('บัญชีเปลี่ยนไปแล้ว กรุณาทำรายการใหม่','Account changed; please start again'));
@@ -225,11 +226,69 @@ function pickCar(carId){
 /* ธีมสว่าง/มืด (ทุกหน้าใช้คีย์เดียวกัน) */
 function setTheme(v){
   if(v!=="light"&&v!=="dark")need([T("ธีม (สว่างหรือมืด)","Theme (light or dark)")]);
-  LS("theme",v);LS("chatTheme",v);
-  try{if(typeof W.setChatTheme==="function")W.setChatTheme(v);else W.spireThemeSync&&W.spireThemeSync()}catch(e){}
-  try{W.cloudMark&&W.cloudMark("theme")}catch(e){}
-  return {theme:v};
+  // Do not turn a missing UI hook or failed write into a successful tool result.
+  localStorage.setItem('spire_theme',JSON.stringify(v));localStorage.setItem('spire_chatTheme',JSON.stringify(v));
+  if(typeof W.spireSetTheme==='function')W.spireSetTheme(v);
+  else if(typeof W.setChatTheme==='function')W.setChatTheme(v);
+  const root=W.document?.documentElement||(typeof document!=='undefined'?document.documentElement:null);
+  if(!root)throw Error(T('ยังเปลี่ยนธีมบนหน้านี้ไม่ได้','Theme controls are unavailable on this screen'));
+  root.setAttribute('data-theme',v);root.setAttribute('data-ctheme',v);
+  if(LG('theme',null)!==v||LG('chatTheme',null)!==v||root.getAttribute('data-theme')!==v||root.getAttribute('data-ctheme')!==v)throw Error('Theme was not applied');
+  W.cloudMark?.('theme');W.cloudMark?.('chatTheme');
+  return {theme:v,applied:true};
 }
+
+/* Private, reversible settings only. No arbitrary storage key, URL, script,
+   account role, billing option or notification/location permission is accepted. */
+const SETTING_VALUES=Object.freeze({theme:['light','dark'],lang:['th','en','ja','zh','ko','id','vi','ms','de','fr','es','pt'],depth:['0','1','2'],distance:['km','mi'],
+  currency:['THB','USD','EUR','GBP','JPY','CNY','SGD','AUD','CAD','CHF','NZD','HKD','MYR','IDR','KRW','VND','INR','TWD','AED']});
+function settingValue(key,value){
+  const v=String(value??'');
+  if(key==='primary'&&/^#[a-f0-9]{6}$/i.test(v))return v.toLowerCase();
+  if(!Object.hasOwn(SETTING_VALUES,key)||!SETTING_VALUES[key].includes(v))throw Error(T('การตั้งค่านี้ไม่อยู่ในรายการที่อนุญาต','This setting is not allowed'));
+  return v;
+}
+function getSetting(key){
+  if(key==='theme')return W.spireTheme?.()||LG('theme','dark');
+  if(key==='primary')return W.spirePrimary?.()||LG('primary','#ff8b3d');
+  if(key==='depth')return String(W.CendonDepth?.get()??LG('depth',1));
+  const u=(W.spireAuth||W.auth)?.currentUser,p=W.spireSetupRead?.()||LG('setup',{});
+  if(key==='lang')return W.spireLang?.()||LG('lang','th');
+  if(p?.uid===u?.uid&&p[key])return p[key];
+  return key==='distance'?'km':key==='currency'?'THB':null;
+}
+async function setSetting(key,value){
+  const v=settingValue(key,value),owner=(await user()).uid;
+  if(!on()||W.CendonScope&&!W.CendonScope.mine(owner))throw Error(T('กรุณาอนุญาต Valet สำหรับบัญชีนี้ก่อน','Allow Valet for this account first'));
+  if(key==='theme'){const r=setTheme(v);return {...r,key,value:v,done:true}}
+  if(key==='primary'){
+    if(typeof W.spireSetPrimary!=='function')throw Error(T('ยังเปลี่ยนสีหลักบนหน้านี้ไม่ได้','Primary color controls are unavailable'));
+    W.spireSetPrimary(v);
+  }else if(key==='depth'){
+    if(typeof W.CendonDepth?.set!=='function')throw Error(T('ยังเปลี่ยนโหมด AI บนหน้านี้ไม่ได้','AI mode controls are unavailable'));
+    W.CendonDepth.set(Number(v));
+  }else{
+    if(typeof W.spireSavePrefs!=='function')throw Error(T('การตั้งค่าบัญชียังไม่พร้อม ลองอีกครั้ง','Account settings are not ready; retry'));
+    const saved=await W.spireSavePrefs({[key]:v});
+    if((W.spireAuth||W.auth)?.currentUser?.uid!==owner||!on())throw Error('Account or permission changed');
+    if(String(saved?.[key])!==v)throw Error(T('ยังยืนยันผลการบันทึกไม่ได้','Could not verify the saved setting'));
+    if(key==='lang'){
+      if(typeof W.spireSetLang==='function')W.spireSetLang(v);
+      else if(typeof W.setLang==='function')W.setLang(v);
+      const root=W.document?.documentElement||(typeof document!=='undefined'?document.documentElement:null);
+      if(root)root.lang=v;
+    }
+  }
+  if((W.spireAuth||W.auth)?.currentUser?.uid!==owner||String(getSetting(key)).toLowerCase()!==v.toLowerCase())throw Error(T('ยังยืนยันผลการเปลี่ยนไม่ได้','Could not verify the change'));
+  W.cloudMark?.(key==='distance'||key==='currency'||key==='lang'?'setup':key);
+  return {done:true,key,value:v,applied:true};
+}
+const capabilities=()=>({
+  immediate:['go','search','setting','pick_car'],read:['capabilities','cars','jobs','threads','parking'],
+  confirm:['add_car','car_km','car_info','log','due','urgent','post_job','book','msg_shop','job','send_photos',...(isMech()?['shop_status']:[])],
+  settings:{...SETTING_VALUES,primary:'hex color #RRGGBB'},pages:Object.keys(PAGES).filter(k=>isMech()||!/^studio/.test(k)),
+  unavailable:['admin','staff','other_accounts','arbitrary_api','run_code','payments','delete_account','delete_data','password','email','publish_without_confirmation']
+});
 /* แชตกับร้านของฉัน (ฝั่งลูกค้าเท่านั้น — ข้อความของลูกค้าคนอื่นในร้านไม่อ่านออกเสียง) */
 async function threads(){
   const L=((await api("/api/tech/threads")).threads||[]);
@@ -238,7 +297,7 @@ async function threads(){
   return {threads:mine,shopUnread};
 }
 /* ช่างเท่านั้น: เปิดรับงาน / เงียบ / พักร้าน */
-const isMech=()=>{try{const p=LG("partner",null),u=(W.spireAuth||W.auth||{}).currentUser;return !!(p&&p.s==="shop"&&(!p.uid||!u||p.uid===u.uid))}catch(e){return false}};
+const isMech=()=>{try{const p=LG("partner",null),u=(W.spireAuth||W.auth||{}).currentUser;return !!(u&&p&&p.s==="shop"&&p.uid===u.uid)}catch(e){return false}};
 async function shopStatus(state){
   if(!["on","quiet","pause"].includes(state))need([T("สถานะร้าน","Shop status")]);
   const me=await api("/api/tech/me"),t=me&&me.technician;if(!t)throw new Error(T("บัญชีนี้ยังไม่มีร้าน","This account has no shop"));
@@ -254,9 +313,13 @@ const PAGES={home:["หน้าหลัก","Home","/"],garage:["การา�
   passport:["Car Passport","Car Passport",c=>c?"/garage/"+enc(c)+"/pass":"/garage"],calendar:["ปฏิทินค่าใช้จ่าย","Cost calendar",c=>c?"/garage/"+enc(c)+"/cal":"/garage"],
   wrapped:["สรุปปีของรถ","Car Wrapped","/garage/wrapped"],join:["สมัครเป็นช่าง","Become a mechanic","/join"],
   studio:["Studio","Studio","/studio"],studio_find:["หางานใกล้ฉัน","Find work nearby","/work/find"],studio_messages:["ข้อความใน Studio","Studio messages","/work/messages"],
-  studio_services:["บริการของร้าน","Shop services","/work/posts"],studio_shop:["ร้านของฉัน","My shop","/work/shop"],studio_settings:["ตั้งค่า Studio","Studio settings","/studio/settings"],studio_stats:["สถิติร้าน","Shop stats","/studio/stats"]};
+  studio_services:["บริการของร้าน","Shop services","/work/posts"],studio_shop:["ร้านของฉัน","My shop","/work/shop"],studio_settings:["ตั้งค่า Studio","Studio settings","/studio/settings"],studio_stats:["สถิติร้าน","Shop stats","/studio/stats"],
+  tools:['เครื่องมือทั้งหมด','All tools','/console'],listen:['ฟังเสียงเครื่อง','Engine sound','/chat?consoleTool=listen'],engine_scan:['สแกนห้องเครื่อง','Engine scan','/chat?consoleAction=scan'],
+  quote_check:['ตรวจใบเสนอราคา','Check a quote','/chat?consoleTool=quote'],shake:['วัดอาการสั่น','Vibration check','/chat?consoleTool=shake'],parking:['ที่จอดรถ','Parking','/chat?consoleTool=park'],
+  ownership:['ต้นทุนสมุดรถ','Ownership costs','/chat?consoleTool=own'],car_log:['บันทึกของรถ','Car log','/garage?consoleTab=health'],car_maintenance:['บำรุงรักษา','Maintenance','/garage?consoleTab=plan'],
+  car_cost:['ค่าใช้จ่ายรถ','Car costs','/garage?consoleTab=cost'],car_trip:['สมุดเดินทาง','Trips','/garage?consoleTab=trip'],car_specs:['สเปครถ','Specifications','/garage?consoleTab=spec']};
 function pageOf(key){
-  let k=PAGES[key]?key:null;if(!k)return null;if(/^studio/.test(k)&&!isMech())k="join";
+  let k=Object.hasOwn(PAGES,key)?key:null;if(!k)return null;if(/^studio/.test(k)&&!isMech())k="join";
   const p=PAGES[k],c=curCar();return {key:k,label:T(p[0],p[1]),url:typeof p[2]==="function"?p[2](c&&c.id):p[2]};
 }
 
@@ -300,11 +363,11 @@ function parkingText(p){
     (p.savedAt?T(' · บันทึกไว้เมื่อ ',' · Saved ')+new Date(p.savedAt).toLocaleString():'');
 }
 /* สิทธิ์ Valet ("ฝากกุญแจ") ตัวเดียวกับปุ่มจับมือในแชต — เปิดได้ด้วยการกดของผู้ใช้เท่านั้น */
-const on=()=>{const p=LG('valet',{})||{},uid=(W.spireAuth||W.auth)?.currentUser?.uid;return!!uid&&p.on===true&&p.uid===uid};
+const on=()=>{const p=LG('valet',{})||{},uid=(W.spireAuth||W.auth)?.currentUser?.uid;return!!uid&&p.on===true&&p.uid===uid&&(!W.CendonScope||W.CendonScope.mine(uid))};
 const allow=()=>{const uid=(W.spireAuth||W.auth)?.currentUser?.uid;if(!uid)return false;LS('valet',{on:true,uid,at:Date.now()});return true};
 /* เบอร์แบบปิดกลาง สำหรับสรุปบนจอ/ให้ AI อ่านทวน */
 const maskPhone=v=>{const p=cleanPhone(v);return p.length>=9?p.slice(0,3)+"-xxx-"+p.slice(-4):""};
 
 W.CendonValetCore=Object.freeze({on,allow,maskPhone,addCar,setKm,setInfo,infoDraft,PUBLIC_INFO,parking,parkingQuestion,parkingText,pickCar,setTheme,threads,isMech,shopStatus,PAGES,pageOf,api,cars,carName,carLabel,curCar,findCar,here,lastHere,revgeo,savedPhone,cleanPhone,okPhone,
-  post,shops,shopName,quote,message,jobs,job,jobDo,JOB_OPS,logAdd,dueSet,SVC,DUE,today,okDate,T});
+  setSetting,getSetting,settingValue,SETTING_VALUES,capabilities,post,shops,shopName,quote,message,jobs,job,jobDo,JOB_OPS,logAdd,dueSet,SVC,DUE,today,okDate,T});
 })(window);

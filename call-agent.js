@@ -57,7 +57,7 @@
     /* ══ Cendon Valet ในสาย: เตรียม → การ์ดบนจอ + สรุปให้ AI อ่านทวน → ทำจริงเมื่อผู้ใช้พูดยืนยัน (หรือกดยืนยันบนจอ)
        ตำแหน่งมาจาก GPS ของเครื่องเท่านั้น · AI เห็นแค่ย่านกับเบอร์แบบปิดกลาง · ทำผ่าน API เดิมด้วยบัญชีผู้ใช้ (CendonValetCore) ══ */
     const VC=()=>window.CendonValetCore||null;
-    const DOS=['urgent','post_job','book','msg_shop','job','jobs','log','due','go','search','setting','pick_car','cars','threads','add_car','car_km','car_info','shop_status'],OPS=['accept','cancel','complete','message'];
+    const DOS=['urgent','post_job','book','msg_shop','job','jobs','log','due','go','search','setting','pick_car','cars','threads','capabilities','add_car','car_km','car_info','shop_status'],OPS=['accept','cancel','complete','message'];
     let pend=null,seq=0,heardAt=0,heardText='',session=null,waiting=null;
     const garageYes=text=>{
       const t=String(text||'').toLowerCase().replace(/[\s.,!?。ๆ]/g,'');
@@ -87,10 +87,18 @@
       if(d==='go'||d==='search'){
         const pg=d==='go'?V.pageOf(String(args.to||'')):(clean(args.q,120).length>1?{label:T('ค้นหา: ','Search: ')+clean(args.q,120),url:'/search?q='+encodeURIComponent(clean(args.q,120))}:null);
         if(!pg)return{error:d==='go'?'Unknown page. Allowed: '+Object.keys(V.PAGES).join(', '):'Say what to search for'};
-        current(ctx);host.minimize?.();setTimeout(()=>{try{host.navigate?host.navigate(pg.url):location.assign(pg.url)}catch(e){}},260);
+        current(ctx);host.minimize?.();await new Promise(resolve=>setTimeout(resolve,260));current(ctx);
+        try{const opened=await (host.navigate?host.navigate(pg.url):location.assign(pg.url));if(opened===false)return{done:false,error:'Navigation was not accepted. Nothing was opened.'}}catch{return{done:false,error:'Could not open that page. Do not claim it opened.'}}
         return{done:true,opened:pg.label,note:'The page is opening behind the minimized call; the call continues. Tell the user briefly.'};
       }
-      if(d==='setting'){if(args.key!=='theme')return{error:'Only key=theme is supported (value light or dark)'};const r=V.setTheme(String(args.value||''));return{done:true,theme:r.theme};}
+      if(d==='setting'){
+        const key=String(args.key||''),value=String(args.value||'');
+        try{const r=typeof V.setSetting==='function'?await V.setSetting(key,value):null;current(ctx);
+          if(!r||r.done!==true||r.applied!==true)return{done:false,error:'This setting is unavailable or not verified. Update the app and retry; do not claim it changed.'};
+          const result={done:true,...r};host.showValet?.({id:'setting-'+(++seq),title:T('เปลี่ยนการตั้งค่าแล้ว','Setting changed'),lines:[key+': '+value],state:'done'});return result;
+        }catch(e){current(ctx);host.showValet?.({id:'setting-'+(++seq),title:T('เปลี่ยนการตั้งค่าไม่สำเร็จ','Setting not changed'),lines:[clean(e.message,160)],state:'error'});return {done:false,error:clean(e.message,200),note:'Not confirmed. Do not claim the setting was changed.'};}
+      }
+      if(d==='capabilities')return V.capabilities?.()||{note:'Only explicitly listed tools are supported; admin, other accounts, payments and deletion are not available.'};
       if(d==='pick_car'){const c=V.findCar(args.car);if(!c||!args.car)return{error:'Which car? Use a name or id from get_my_car / valet do=cars'};const r=V.pickCar(c.id);return{done:true,selected:r.label};}
       if(d==='cars'){const cur=V.curCar();return{cars:V.cars().slice(0,8).map(c=>({id:String(c.id),name:clean(V.carName(c),60),year:clean(c.year,4),km:+String(c.mileage||'').replace(/[^\d]/g,'')||null,selected:!!cur&&cur.id===c.id})),note:'User-saved data. No plates or VINs are shared.'};}
       if(d==='threads'){const r=await V.threads();current(ctx);return{...r,note:'Your own chats with shops (latest message only). Shop-side customer chats are never read out.'};}

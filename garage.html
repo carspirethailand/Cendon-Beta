@@ -3894,6 +3894,7 @@ a.mtab{text-decoration:none}
 <link rel="stylesheet" href="garage-extras.css?v=6">
 <script src="garage-extras.js?v=7" defer></script>
 <script src="car-sync.js"></script>
+<script src="mileage-sync.js?v=1" defer></script>
 <script src="stability.js?v=2026-10-23-r1" defer></script>
 <!-- หน้าตาชุดเดียวกับหน้าหลัก (สี การ์ด ปุ่ม พื้นหลัง) — โหลดท้ายสุดให้ชนะสไตล์เดิม -->
 <style id="garage-v2">
@@ -8199,6 +8200,8 @@ const SRC={
 };
 /* จุดยืนยันล่าสุด = readings ที่มาจากคนจริง (manual/service) */
 function lastAnchor(c){
+  const verified=window.CendonMileageSync?.forCar(c.id);
+  if(verified)return {value:verified.km,source:"manual",at:verified.observedAt,confidence:1,server:true};
   const rs=get(c.id).readings.filter(r=>r.source==="manual"||r.source==="service");
   if(rs.length)return rs.slice().sort((a,b)=>b.at-a.at)[0];
   const km=parseInt(c.mileage)||0;
@@ -13901,7 +13904,7 @@ async function api(path,body,owner){
     method:body?"POST":"GET",
     headers:Object.assign({Authorization:"Bearer "+tok},
       body?{"Content-Type":"application/json"}:{}),
-    body:body?JSON.stringify(body):undefined});
+    body:body?JSON.stringify(body):undefined,cache:'no-store'});
   let d=null; try{ d=await r.json() }catch(e){}
   if(auth.currentUser?.uid!==expected)throw new Error("account_changed");
   if(!r.ok)throw Object.assign(new Error((d&&d.error)||("Error "+r.status)),{status:r.status,code:d?.code});
@@ -13938,6 +13941,7 @@ async function flush(){
         await api("/api/odo/anchor",{carId:it.carId,km:it.km,source:it.source,
           observedAt:it.observedAt},owner);
         setQ(queue().filter(x=>x.sig!==it.sig));
+        window.dispatchEvent(new Event('cendon:mileage-saved'));
       }catch(e){
         const m=String(e&&e.message||"");
         /* ยังไม่ล็อกอินหรือเน็ตล่ม — เก็บไว้ก่อน เดี๋ยวรอบหน้าค่อยส่ง
@@ -13979,27 +13983,35 @@ window.spireOdoAnchor=function(car,km,source,dateStr){
 /* ─────────── ดึงสถานะจากเซิร์ฟเวอร์ ───────────
    เซิร์ฟเวอร์คือแหล่งความจริง เพราะมันคือตัวที่ตัดสินใจส่งแจ้งเตือน
    ถ้าหน้าเว็บโชว์เลขคนละอันกับที่ระบบใช้เตือน ผู้ใช้จะไม่เชื่อทั้งสองอัน */
-let state=null,pulling=false;
-window.spireOdoState=()=>state;
+let state=null,stateOwner=null,pulling=null,readNo=0;
+const liveOwner=()=>window.spireAuth?.currentUser?.uid||null;
+window.spireOdoState=()=>stateOwner===liveOwner()?state:null;
 
-async function pull(){
-  if(pulling)return null;
-  pulling=true;
-  try{
-    const d=await api("/api/odo/state");
-    state=d; LS("odo_state_cache",{d,t:Date.now()});
-    paint();
-    return d;
-  }catch(e){
-    if(!state){ const c=LG("odo_state_cache",null);
-      if(c&&Date.now()-c.t<7*864e5){ state=c.d; paint() } }
-    return null;
-  }finally{ pulling=false }
+function pull(fresh=false){
+  const owner=liveOwner();if(!owner)return Promise.resolve(null);
+  if(pulling?.owner===owner&&!fresh)return pulling.promise;
+  const number=++readNo,job={owner,promise:null};pulling=job;
+  job.promise=(async()=>{
+    try{
+      const d=await api("/api/odo/state",undefined,owner);
+      if(owner!==liveOwner()||number!==readNo)return null;
+      state=d;stateOwner=owner; LS("odo_state_cache",{uid:owner,d,t:Date.now()});
+      paint();return d;
+    }catch(e){
+      if(owner!==liveOwner()||number!==readNo)return null;
+      if(stateOwner!==owner){state=null;stateOwner=owner}
+      if(!state){const c=LG("odo_state_cache",null);
+        if(c?.uid===owner&&Date.now()-c.t<7*864e5){state=c.d;paint()}}
+      return null;
+    }finally{if(pulling===job)pulling=null}
+  })();
+  return job.promise;
 }
 window.spireOdoRefresh=pull;
+window.addEventListener('cendon:mileage-updated',()=>pull(true));
 
 function forCar(id){
-  if(!state||!state.cars)return null;
+  if(stateOwner!==liveOwner()||!state||!state.cars)return null;
   return state.cars.find(x=>x.carId===id&&x.known)||null;
 }
 window.spireOdoFor=forCar;

@@ -2702,6 +2702,7 @@ a.mtab{text-decoration:none}
 <script src="category-pages.js" defer></script>
 <script src="/sheet-drag.js?v=1" defer></script>
 <script src="car-sync.js"></script>
+<script src="mileage-sync.js?v=1" defer></script>
 <script src="stability.js?v=2026-10-23-r1" defer></script>
 <link rel="stylesheet" href="call-ui.css?v=2026-10-19-inst1">
 <script src="call-sounds.js?v=1" defer></script>
@@ -3865,6 +3866,7 @@ function drawMyCar(){
   $("myCarB").onclick=e=>carMenu(e.currentTarget,c.id);
 }
 /* เมนูเลือกรถ (car-menu.js ใช้ร่วมกับหน้าร้านค้า) — แถวใหญ่แตะง่าย ไม่โฟกัสบนมือถือ (เดิมหน้าเลื่อน/กระตุกตอนเปิด) */
+addEventListener('cendon:mileage-updated',drawMyCar);
 function carMenu(btn,cur){
   const cars=(ls.get("spire_garage",[])||[]).filter(x=>x&&x.id&&x.name);
   if(!window.CendonCarMenu)return;

@@ -338,5 +338,7 @@ function ai(text,valet){
     body:t.slice(0,140),url:location.pathname+location.search,tag:"cendon-ai"},{system:true});
 }
 W.CendonBell={add,list,unread,read,clear,enable,disable,perm,pushOn,pushSub,on,setApi,ai,sys,jobEvents,panel,style,paint,ding,buttons:()=>BTNS.slice()};
+/* Completion collection follows the user across every app page, not just Chat. */
+if(!W.CendonChatJobs&&!document.querySelector('script[src*="chat-jobs.js"]')){const script=document.createElement('script');script.src='/chat-jobs.js?v=2';script.defer=true;document.head.append(script)}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount);else mount();
 })(window);

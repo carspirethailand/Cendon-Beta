@@ -3055,9 +3055,9 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 <script src="valet-core.js?v=8" defer></script>
 <script src="chat-garage.js?v=1" defer></script>
 <script src="chat-render.js?v=3" defer></script>
-<script src="chat-jobs.js?v=1" defer></script>
+<script src="chat-jobs.js?v=2" defer></script>
 <script src="valet.js?v=9" defer></script>
-<script src="bell.js?v=12" defer></script>
+<script src="bell.js?v=13" defer></script>
 <script src="drop.js?v=4" defer></script>
 <script src="./techs.js"></script>
 <script src="./cendon-search.js"></script>
@@ -5154,8 +5154,8 @@ async function streamJobAnswer(contents,opts){
       depth:(()=>{ try{ const r=localStorage.getItem("spire_depth"); const v=r==null?1:+JSON.parse(r); return v===0||v===2?v:1 }catch(e){ return 1 } })(),
       userName:(()=>{ try{ const su=JSON.parse(localStorage.getItem("spire_setup")||"null");
         return (su&&su.name)||"" }catch(e){ return "" } })()};
-  Object.assign(payload,{jobId,sessionId,carId:String(car.id||'')});
-  dropTyping();messages.push({role:'ai',text:'',jobId,jobExpiresAt:Date.now()+86400000,streaming:true,status:'กำลังคิด'});renderMessages();saveSession();
+  Object.assign(payload,{jobId,sessionId,carId:String(car.id||''),...(opts.feature?{kind:'feature',feature:opts.feature}:{})});
+  dropTyping();messages.push({role:'ai',text:'',jobId,featureTool:opts.feature?.tool||null,jobExpiresAt:Date.now()+86400000,streaming:true,status:TT('กำลังส่งคำถาม','Sending your request')});renderMessages();saveSession();
   try{await CendonChatJobs.run(payload,uid,applyChatJob)}catch(e){
     if(e.accountChanged)return {background:true};
     const m=messages.find(x=>x.jobId===jobId);if(m){
@@ -5756,17 +5756,17 @@ function applyChatJob(job,uid){
   if(job.text)m.text=noTools(job.text);if(job.research)m.research=job.research;
   if(pending&&window.CendonValet?.wantsAct(request))m.text=TT('กำลังเตรียมคำสั่ง Valet ยังไม่ได้ทำรายการครับ','Preparing the Valet action; nothing has been done yet.');
   if(!pending){
-    let p=parseAsk(m.text||TT('หยุดแล้วครับ','Stopped.'));
-    if(job.status==='complete'&&window.CendonValet?.guard)p=CendonValet.guard(p,request);
+    let p=m.featureTool?{text:m.text||TT('หยุดแล้วครับ','Stopped.')} : parseAsk(m.text||TT('หยุดแล้วครับ','Stopped.'));
+    if(job.status==='complete'&&!m.featureTool&&window.CendonValet?.guard)p=CendonValet.guard(p,request);
     m.text=p.text;if(p.ask)m.ask=p.ask;if(p.next)m.next=p.next;if(p.acts)m.acts=p.acts;m.jobApplied=true;
   }
   if(t.current){renderMessages();if(!pending){saveSession();sending=messages.some(x=>x.streaming||x.typing);updateSend();renderChips();if(job.usage)window.quotaUpdate?.(job.usage);if(job.status==='complete'){
-    if(window.CendonValet?.wantsAct(request))CendonValet.run(m,{isCurrent:()=>chatJobTarget(job)?.current===true&&(auth?.currentUser||window.spireAuth?.currentUser)?.uid===uid});bellAi();
+    if(!m.featureTool&&window.CendonValet?.wantsAct(request))CendonValet.run(m,{isCurrent:()=>chatJobTarget(job)?.current===true&&(auth?.currentUser||window.spireAuth?.currentUser)?.uid===uid});
   }}}
   else if(!pending){t.session.t=Date.now();LS.set(t.key,t.list)}
 }
 function resumeChatJobs(){
-  if(!window.CendonChatJobs)return;CendonChatJobs.configure({user:()=>auth?.currentUser||window.spireAuth?.currentUser,apply:applyChatJob,needs:job=>{const t=chatJobTarget(job);return !!t&&!t.message.jobApplied&&!t.message.cancelledLocally}});
+  if(!window.CendonChatJobs)return;CendonChatJobs.configure({user:()=>auth?.currentUser||window.spireAuth?.currentUser,apply:applyChatJob,viewing:job=>chatJobTarget(job)?.current===true,needs:job=>{const t=chatJobTarget(job);return !!t&&!t.message.jobApplied&&!t.message.cancelledLocally}});
 }
 document.addEventListener('DOMContentLoaded',resumeChatJobs);window.addEventListener('cendon:auth-ready',resumeChatJobs);
 function loadSession(){
@@ -6665,21 +6665,9 @@ async function sendMsg(){
   messages.push({role:"ai",typing:true});renderMessages();
   try{
     if(featureJob){
-      const controller=new AbortController();window.__aiAbort=controller;
-      const timeout=setTimeout(()=>controller.abort(),90000);
-      try{
-        const answer=await window.CendonFeatureAI.analyze(featureJob,controller.signal);
-        if(window.__stopped||controller.signal.aborted)return;
-        dropTyping();
-        messages.push({role:"ai",text:answer});renderMessages();saveSession();
-        if(selCar())addHistory(selCar().id,text,answer);
-        sending=false;updateSend();renderChips();
-        try{window.slideRelease&&window.slideRelease()}catch(e){}
-        return;
-      }catch(e){
-        if(controller.signal.aborted&&!window.__stopped){const timeoutError=Error(lang==="en"?"Analysis timed out. Please try again.":"การวิเคราะห์ใช้เวลานานเกินไป กรุณาลองใหม่ครับ");timeoutError.featureError=true;throw timeoutError;}
-        e.featureError=true;throw e;
-      }finally{clearTimeout(timeout);if(window.__aiAbort===controller)window.__aiAbort=null;}
+      const feature=await CendonFeatureAI.payload(featureJob);
+      await streamJobAnswer([{role:'user',parts:[{text:text||feature.question||'Analyze this data'}]}],{feature});
+      return;
     }
     /* เปิดแอปใหม่แล้วคุยต่อ: รูป/เสียงของ 2 ข้อความล่าสุดยังไม่อยู่ในหน่วยความจำ — โหลดจากที่เก็บกลับมา
        AI จะยังเห็นรูปที่คุยค้างไว้ ไม่ต้องแนบใหม่ */
@@ -12701,7 +12689,7 @@ setTimeout(mount,800); setTimeout(mount,2500);
 <!-- แผงผู้ดูแลแบบลอย: โหลดทุกหน้า แต่แสดงเฉพาะผู้ดูแลที่เปิดไว้ในตั้งค่า -->
 <script src="cendon-admin.js" defer></script>
 <link rel="stylesheet" href="feature-ai.css?v=1">
-<script src="feature-ai.js?v=2026-10-18-audio1"></script>
+<script src="feature-ai.js?v=2026-10-23-background1"></script>
 <script src="fluid.js" defer></script>
 <script src="crop.js" defer></script>
 <script src="cendon-line.js?v=5" defer></script>

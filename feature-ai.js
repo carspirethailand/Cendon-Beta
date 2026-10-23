@@ -159,6 +159,14 @@
       validate(key,media,context,question);
       return {key,context,question,attachments:media};
     },
+    async payload(job){
+      const owner=window.spireAuth?.currentUser?.uid;
+      const attachments=job.attachments.length?job.attachments:await bridge.media(job.key);
+      validate(job.key,attachments,job.context,job.question);
+      if(!owner||window.spireAuth?.currentUser?.uid!==owner)throw Error(t(['บัญชีเปลี่ยนแล้ว กรุณาเริ่มใหม่','Account changed. Start again.']));
+      if(job.key==='listen'&&JSON.stringify(bridge.context('listen').audioVehicle)!==JSON.stringify(job.context.audioVehicle))throw Error(t(['รถในคลิปเปลี่ยนแล้ว กรุณาเริ่มใหม่','Recording vehicle changed. Start again.']));
+      return {tool:job.key,attachments:attachments.map(a=>({mime:a.mime,b64:a.b64})),context:job.context,question:job.question,lang:en()?'en':'th'};
+    },
     async analyze(job,signal){
       const attachments=job.attachments.length?job.attachments:await bridge.media(job.key);
       return request(job.key,attachments,job.context,job.question,signal);

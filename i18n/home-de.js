@@ -2,6 +2,12 @@
    กุญแจคือข้อความอังกฤษใน T("ไทย","English") และพจนานุกรม EN ของหน้า · {0} {1} = ค่าที่แทนตอนแสดงผล
    เพิ่มข้อความใหม่ในหน้า → เพิ่มคำแปลที่นี่ทุกภาษา (เทสต์ i18n-home ตรวจความครบ) */
 window.CENDON_L10N={lang:"de",t:{
+"Enter every amount in Thai baht (THB). Your display currency only changes estimates, not the quote currency.":"Alle Beträge in thailändischen Baht (THB) eingeben. Die Anzeigewährung gilt nur für Schätzwerte und ändert die Angebotswährung nicht.",
+"Customer cancelled":"Kunde hat storniert",
+"Mechanic cancelled":"Mechaniker hat storniert",
+"Staff cancelled":"Team hat storniert",
+"Request closed by the system":"Anfrage vom System geschlossen",
+"Job cancelled":"Auftrag storniert",
 "Checking your shop account. Please retry.":"Ihr Werkstattkonto wird geprüft. Bitte erneut versuchen.",
 "Could not load services. Please retry.":"Dienste konnten nicht geladen werden. Bitte erneut versuchen.",
 "Service saved. Customers see it when your shop is public.":"Dienst gespeichert. Kunden sehen ihn, sobald Ihre Werkstatt öffentlich ist.",

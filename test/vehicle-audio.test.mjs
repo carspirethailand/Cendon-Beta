@@ -30,7 +30,7 @@ test('another car is one free-text line: make, model and year (Buddhist years co
   assert.equal(A.choice('other_confirmed',saved,A.parseOther('Isuzu D-Max')).vehicle.model,'D-Max');
 });
 test('Home, Chat and SW load paired helper, styles and updated tools',()=>{
-  for(const f of ['index.html','chat.html']){const s=readFileSync(new URL('../'+f,import.meta.url),'utf8');const helper=s.indexOf('<script src="vehicle-audio.js?v=4"'),lens=s.indexOf('<script src="sound-lens.js?v=1"');assert.ok(helper>=0&&helper<s.indexOf('<script src="call-tools.js?'));assert.ok(lens>=0&&lens<s.indexOf('<script src="call-tools.js?'));assert.match(s,/vehicle-audio\.css\?v=3/);assert.match(s,/call-session\.js\?v=2026-10-19-loud1/);assert.match(s,/call-surface\.js\?v=2026-10-21-r1/);}
+  for(const f of ['index.html','chat.html']){const s=readFileSync(new URL('../'+f,import.meta.url),'utf8');const helper=s.indexOf('<script src="vehicle-audio.js?v=4"'),lens=s.indexOf('<script src="sound-lens.js?v=1"');assert.ok(helper>=0&&helper<s.indexOf('<script src="call-tools.js?'));assert.ok(lens>=0&&lens<s.indexOf('<script src="call-tools.js?'));assert.match(s,/vehicle-audio\.css\?v=3/);assert.match(s,/call-session\.js\?v=2026-10-23-language1/);assert.match(s,/call-surface\.js\?v=2026-10-21-r1/);}
   assert.ok(+(readFileSync(new URL('../sw.js',import.meta.url),'utf8').match(/cendon-v(\d+)/)||[])[1]>=319);
 });
 test('curated manufacturer sources are separate from live results, scoped by market and safely escaped',()=>{

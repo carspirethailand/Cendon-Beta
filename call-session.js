@@ -253,7 +253,7 @@ async function liveConnect(session=callSession,identity){
     r=await fetch(`${BACKEND_URL}/api/ai/live-token`,{method:"POST",
       headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok},
       signal:requestAbort&&requestAbort.signal,
-      body:JSON.stringify({system:liveSystemPrompt(),skip:Object.keys(liveBad()),handle:liveHandle||undefined,webResearch:true,garageCare:!!garageCare,garageAssist:!!window.CendonGarageData,agent:!!host.agent&&!(Date.now()-LS.get("live_notools",0)<86400e3),tools:!!getTools()&&!(Date.now()-LS.get("live_notools",0)<86400e3)})});
+      body:JSON.stringify({system:liveSystemPrompt(),lang:window.spireLang?.()||lang,skip:Object.keys(liveBad()),handle:liveHandle||undefined,webResearch:true,garageCare:!!garageCare,garageAssist:!!window.CendonGarageData,agent:!!host.agent&&!(Date.now()-LS.get("live_notools",0)<86400e3),tools:!!getTools()&&!(Date.now()-LS.get("live_notools",0)<86400e3)})});
     d=await r.json().catch(()=>({}));
   }catch(e){
     if(session!==callSession)return;
@@ -541,7 +541,7 @@ function wakeCall(){[callCtx,playCtx].forEach(c=>{if(c&&c.state!=="running"&&c.s
 $("callUI")&&$("callUI").addEventListener("pointerdown",wakeCall);
 
 
-  function dispose(){endCall();$("callUI")?.removeEventListener?.("pointerdown",wakeCall);global.removeEventListener?.("pagehide",pageExit);getTools()?.dispose?.();host.view?.dispose?.();}
+  function dispose(){endCall();$("callUI")?.removeEventListener?.("pointerdown",wakeCall);global.removeEventListener?.("pagehide",pageExit);global.removeEventListener?.('cendon:preferences',languageChanged);getTools()?.dispose?.();host.view?.dispose?.();}
   function pageExit(){if(callActive||callConnecting)endCall();}
   global.addEventListener?.("pagehide",pageExit);
   /* ส่งรูปให้ AI ดูระหว่างโทร: ย่อเป็น JPEG ไม่เกิน 1280px ส่งเป็นภาพในสาย แล้วบอกให้ดูรูป */
@@ -557,6 +557,15 @@ $("callUI")&&$("callUI").addEventListener("pointerdown",wakeCall);
       livePendingAt=Date.now();messages.push({role:"user",text:CL("[ส่งรูปให้ดู]","[sent a photo]")});return true;
     }finally{URL.revokeObjectURL(url)}
   }
+  let callLanguage=global.spireLang?.()||lang;
+  function languageChanged(event){
+    const code=event.detail?.lang||global.spireLang?.();
+    if(!['th','en','zh','ja','ko','id','vi','ms','de','fr','es','pt'].includes(code)||code===callLanguage)return;
+    if(event.detail?.uid&&event.detail.uid!==host.getUser?.()?.uid)return;
+    callLanguage=code;if(!callActive||!callWS||callWS.readyState!==1)return;
+    try{callWS.send(JSON.stringify({clientContent:{turns:[{role:'user',parts:[{text:'[App preference] Default response language is now '+code+'. Follow the latest substantive user language or explicit request. Do not answer or act on this preference update.'}]}],turnComplete:false}}))}catch{}
+  }
+  global.addEventListener?.('cendon:preferences',languageChanged);
   /* ข้อความจากระบบเข้าสาย (เช่น ผู้ใช้กดยืนยันการ์ด Valet บนจอ) — โมเดลรู้ผลจริงแล้วพูดต่อ ไม่ต้องทำซ้ำ */
   function note(text){if(!callActive||!callWS||callWS.readyState!==1)return false;try{callWS.send(JSON.stringify({clientContent:{turns:[{role:"user",parts:[{text:String(text||"").slice(0,1200)}]}],turnComplete:true}}));livePendingAt=Date.now();return true}catch(e){return false}}
   const api=Object.freeze({garageCareControl:(action,ctx)=>garageCare?.control(action,ctx)||Promise.resolve({error:'Check-ins unavailable'}),note,sendImage,expand:()=>host.view?.expand?.(),minimize:()=>host.view?.minimize?.(),refresh:()=>host.view?.refresh?.(),start:startCall,end:endCall,mute:toggleCallMute,camera:toggleCamera,flip:flipCamera,zoom:setCallZoom,wake:wakeCall,dispose,bridge:Object.freeze({get callWS(){return callWS},get callCtx(){return callCtx},get callActive(){return callActive},get callSession(){return callSession},get callMicStream(){return callMicStream},set callMicStream(v){callMicStream=v},get callMicNode(){return callMicNode},set callMicNode(v){callMicNode=v},get callMicSrc(){return callMicSrc},set callMicSrc(v){callMicSrc=v},get camZoom(){return camZoom},get camOn(){return camOn},get camFacing(){return camFacing},set camFacing(v){camFacing=v},get playSrcs(){return playSrcs},get livePendingAt(){return livePendingAt},set livePendingAt(v){livePendingAt=v},startMicStream,flushPlayback,b64FromBytes,toggleCamera,flipCamera}),

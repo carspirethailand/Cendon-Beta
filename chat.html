@@ -7,7 +7,9 @@
 <script src="/account-scope.js?v=2"></script>
 <link rel="stylesheet" href="/partner-entry.css?v=1">
 <script src="/partner-state.js?v=1"></script>
-<script src="/display-prefs.js?v=2" defer></script>
+<script src="/display-prefs.js?v=3" defer></script>
+<script src="/i18n/ui-en.js?v=1" defer></script>
+<script src="/ui-language.js?v=1" defer></script>
 <script src="/partner-entry.js?v=1"></script>
 <script src="/console-entry.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
@@ -3044,20 +3046,20 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 <link rel="stylesheet" href="vehicle-audio.css?v=3">
 <script src="vehicle-audio.js?v=4" defer></script>
 <script src="sound-lens.js?v=1" defer></script>
-<script src="call-tools.js?v=2026-10-19-inst1" defer></script>
+<script src="call-tools.js?v=2026-10-23-language1" defer></script>
 <script src="call-composer.js?v=2026-10-17-r4" defer></script>
 <script src="call-agent.js?v=2026-10-23-valet2" defer></script>
 <script src="call-surface.js?v=2026-10-21-r1" defer></script>
 <script src="call-shell.js?v=1" defer></script>
 <script src="garage-care.js?v=1" defer></script>
-<script src="call-session.js?v=2026-10-19-loud1" defer></script>
+<script src="call-session.js?v=2026-10-23-language1" defer></script>
 <link rel="stylesheet" href="valet.css?v=2">
 <script src="valet-core.js?v=8" defer></script>
 <script src="chat-garage.js?v=1" defer></script>
 <script src="chat-render.js?v=3" defer></script>
 <script src="chat-jobs.js?v=2" defer></script>
 <script src="valet.js?v=9" defer></script>
-<script src="bell.js?v=13" defer></script>
+<script src="bell.js?v=14" defer></script>
 <script src="drop.js?v=4" defer></script>
 <script src="./techs.js"></script>
 <script src="./cendon-search.js"></script>
@@ -5154,7 +5156,7 @@ async function streamJobAnswer(contents,opts){
       depth:(()=>{ try{ const r=localStorage.getItem("spire_depth"); const v=r==null?1:+JSON.parse(r); return v===0||v===2?v:1 }catch(e){ return 1 } })(),
       userName:(()=>{ try{ const su=JSON.parse(localStorage.getItem("spire_setup")||"null");
         return (su&&su.name)||"" }catch(e){ return "" } })()};
-  Object.assign(payload,{jobId,sessionId,carId:String(car.id||''),...(opts.feature?{kind:'feature',feature:opts.feature}:{})});
+  Object.assign(payload,{jobId,sessionId,carId:String(car.id||''),lang:window.spireLang?.()||lang||'th',...(opts.feature?{kind:'feature',feature:opts.feature}:{})});
   dropTyping();messages.push({role:'ai',text:'',jobId,featureTool:opts.feature?.tool||null,jobExpiresAt:Date.now()+86400000,streaming:true,status:TT('กำลังส่งคำถาม','Sending your request')});renderMessages();saveSession();
   try{await CendonChatJobs.run(payload,uid,applyChatJob)}catch(e){
     if(e.accountChanged)return {background:true};
@@ -12689,7 +12691,7 @@ setTimeout(mount,800); setTimeout(mount,2500);
 <!-- แผงผู้ดูแลแบบลอย: โหลดทุกหน้า แต่แสดงเฉพาะผู้ดูแลที่เปิดไว้ในตั้งค่า -->
 <script src="cendon-admin.js" defer></script>
 <link rel="stylesheet" href="feature-ai.css?v=1">
-<script src="feature-ai.js?v=2026-10-23-background1"></script>
+<script src="feature-ai.js?v=2026-10-23-language1"></script>
 <script src="fluid.js" defer></script>
 <script src="crop.js" defer></script>
 <script src="cendon-line.js?v=5" defer></script>

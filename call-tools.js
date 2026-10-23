@@ -43,7 +43,7 @@ async function analyze(tool,attachments,context,question,signal){
   if(!u)throw Error(T('กรุณาเข้าสู่ระบบก่อน','Please sign in first'));
   const tok=await u.getIdToken();
   const r=await fetch(BACKEND_URL+'/api/features/analyze',{method:'POST',signal,headers:{'Content-Type':'application/json',Authorization:'Bearer '+tok},
-    body:JSON.stringify({tool,attachments,context,question,lang:T('th','en'),...(['bay','baylive'].includes(tool)?{scanVersion:2}:{})})});
+    body:JSON.stringify({tool,attachments,context,question,lang:window.spireLang?.()||lang,...(['bay','baylive'].includes(tool)?{scanVersion:2}:{})})});
   const d=await r.json().catch(()=>null);
   if(!r.ok){
     const tag=e=>Object.assign(e,{status:r.status,code:d&&d.error});

@@ -40,7 +40,7 @@
     if(key==='listen'&&(window.spireAuth?.currentUser?.uid!==user.uid||audioKey()!==expected))throw Error(t(['รถหรือบัญชีเปลี่ยนแล้ว กรุณาเริ่มใหม่','Vehicle or account changed. Start again.']));
     const response = await fetch(window.BACKEND_URL + '/api/features/analyze', {
       method:'POST', signal, headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},
-      body:JSON.stringify({tool:key,attachments:attachments.map(a=>({mime:a.mime,b64:a.b64})),context,question,lang:en()?'en':'th'})
+      body:JSON.stringify({tool:key,attachments:attachments.map(a=>({mime:a.mime,b64:a.b64})),context,question,lang:window.spireLang?.()||window.lang||'th'})
     });
     const data = await response.json().catch(()=>null);
     if(key==='listen'&&(window.spireAuth?.currentUser?.uid!==user.uid||audioKey()!==expected))throw Error(t(['รถหรือบัญชีเปลี่ยนแล้ว ผลเก่าถูกยกเลิก','Vehicle or account changed. The old result was discarded.']));
@@ -165,7 +165,7 @@
       validate(job.key,attachments,job.context,job.question);
       if(!owner||window.spireAuth?.currentUser?.uid!==owner)throw Error(t(['บัญชีเปลี่ยนแล้ว กรุณาเริ่มใหม่','Account changed. Start again.']));
       if(job.key==='listen'&&JSON.stringify(bridge.context('listen').audioVehicle)!==JSON.stringify(job.context.audioVehicle))throw Error(t(['รถในคลิปเปลี่ยนแล้ว กรุณาเริ่มใหม่','Recording vehicle changed. Start again.']));
-      return {tool:job.key,attachments:attachments.map(a=>({mime:a.mime,b64:a.b64})),context:job.context,question:job.question,lang:en()?'en':'th'};
+      return {tool:job.key,attachments:attachments.map(a=>({mime:a.mime,b64:a.b64})),context:job.context,question:job.question,lang:window.spireLang?.()||window.lang||'th'};
     },
     async analyze(job,signal){
       const attachments=job.attachments.length?job.attachments:await bridge.media(job.key);

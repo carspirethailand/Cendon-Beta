@@ -12,7 +12,9 @@ if(/^\/messages(\/|$)/.test(location.pathname)){document.documentElement.classLi
 <link rel="stylesheet" href="/partner-entry.css?v=1">
 <script src="/partner-state.js?v=1"></script>
 <script src="/shop-images.js?v=1"></script>
-<script src="/display-prefs.js?v=2" defer></script>
+<script src="/display-prefs.js?v=3" defer></script>
+<script src="/i18n/ui-en.js?v=1" defer></script>
+<script src="/ui-language.js?v=1" defer></script>
 <script src="/partner-entry.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
@@ -32,7 +34,7 @@ if(/^\/messages(\/|$)/.test(location.pathname)){document.documentElement.classLi
 (function(){try{if(/^\/(work|studio)(\/|$)/.test(location.pathname)){var p=JSON.parse(localStorage.getItem("spire_partner")||"null");if(p&&p.s==="shop")document.documentElement.dataset.boot="tech"}}catch(e){}})();</script>
 <script>(function(){try{var A=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt"],l=null;try{l=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
 if(A.indexOf(l)<0){l="en";var n=navigator.languages||[navigator.language||"en"];for(var i=0;i<n.length;i++){var b=String(n[i]).toLowerCase().split("-")[0];if(A.indexOf(b)>=0){l=b;break}}}
-if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=14"><\/script>')}catch(e){}})();</script>
+if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=15"><\/script>')}catch(e){}})();</script>
 <title>Cendon</title>
 <meta name="description" content="ถามอาการรถ ส่งรูปหรือเสียงให้ AI ช่วยดู เช็กใบเสนอราคา และหาช่างที่ผ่านการตรวจใกล้คุณ">
 <!-- การ์ดตอนแชร์ลิงก์ (LINE / Facebook / X) — รูปต้องเป็นที่อยู่เต็ม -->
@@ -43,7 +45,7 @@ if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=14"><\/
 <script src="nav.js"></script>
 <script src="media-store.js"></script>
 <script src="repair-proof.js?v=1" defer></script>
-<script src="bell.js?v=13"></script>
+<script src="bell.js?v=14"></script>
 <script src="drop.js?v=4" defer></script>
 <script src="car-menu.js?v=1" defer></script>
 <meta name="theme-color" content="#131316"/>
@@ -1421,6 +1423,9 @@ html[data-theme="dark"] .stu-grp.hot .stu-gh{color:#f87171}
   /* หน้าย่อยของ Studio (ตั้งค่า สถิติ แก้ไขร้าน ดูหน้าร้าน) เปิดในกรอบเดิม แถบซ้ายยังอยู่ */
   body[data-mode="tech"] .bs.full .pn,body[data-mode="tech"] .bs.store .pn{left:var(--stu-w,216px);width:auto}
   body[data-mode="tech"] .bs .bg{left:var(--stu-w,216px)}
+  /* The shared full-screen sheet wrapper must not intercept the Studio rail. */
+  body[data-mode="tech"] .bs{pointer-events:none}
+  body[data-mode="tech"] .bs.on .pn,body[data-mode="tech"] .bs.on .bg{pointer-events:auto}
 }
 /* Studio บนมือถือ: แถบล่าง 4 ช่องเท่ากัน เต็มความกว้าง (ไม่ใช่แคปซูลลอย) */
 @media(max-width:899px){
@@ -2714,10 +2719,10 @@ a.mtab{text-decoration:none}
 <link rel="stylesheet" href="vehicle-audio.css?v=3">
 <script src="vehicle-audio.js?v=4" defer></script>
 <script src="sound-lens.js?v=1" defer></script>
-<script src="call-tools.js?v=2026-10-19-inst1" defer></script>
+<script src="call-tools.js?v=2026-10-23-language1" defer></script>
 <script src="call-shell.js?v=1" defer></script>
 <script src="garage-care.js?v=1" defer></script>
-<script src="call-session.js?v=2026-10-19-loud1" defer></script>
+<script src="call-session.js?v=2026-10-23-language1" defer></script>
 <link rel="stylesheet" href="calm-ui.css?v=1">
 </head>
 <body>
@@ -3332,23 +3337,24 @@ const OWNERS=["anapatmaliwong@gmail.com","carspirethailand@gmail.com"];
    แล้วผู้ใช้ต่างชาติเห็นภาษาไทยโผล่กลางจอ — แปลตอนข้อความลง DOM จึงไม่มีจุดตกหล่น
    ข้อความไทยทุกท่อนถูกค้นในพจนานุกรม EN ท้ายไฟล์ ท่อนไหนไม่มีก็คงไว้ตามเดิม */
 const LANGS=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt"];
-const LANG=(()=>{let v=null;try{v=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
+let LANG=(()=>{let v=null;try{v=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
   if(typeof v==="string"&&LANGS.includes(v))return v;
   try{for(const l of (navigator.languages||[navigator.language||"en"])){const b=String(l).toLowerCase().split("-")[0];if(LANGS.includes(b))return b}}catch(e){}
   return "en"})();
-const TH=LANG==="th";
-const LOC=TH?"th-TH":LANG==="en"?"en-GB":LANG;
+let TH=LANG==="th";
+let LOC=TH?"th-TH":LANG==="en"?"en-GB":LANG;
 document.documentElement.lang=LANG;
 /* เปลี่ยนภาษาจากหน้าอื่น (อีกแท็บ) — โหลดหน้าใหม่ให้ทุกข้อความเปลี่ยนพร้อมกัน */
 addEventListener("storage",e=>{if(e.key==="spire_lang")location.reload()});
 const THRUN=/[\u0E00-\u0E7F]+(?:[ \u00A0]+[\u0E00-\u0E7F]+)*/g;
 /* ภาษาอื่นนอกจากไทย/อังกฤษ: พจนานุกรม อังกฤษ → ภาษานั้น (/i18n/home-<lang>.js โหลดก่อนสคริปต์นี้ ดูหัวไฟล์)
    ไม่มีไฟล์/โหลดไม่ทัน = เห็นภาษาอังกฤษ ซึ่งยังดีกว่าภาษาไทยที่อ่านไม่ออก */
-const L10N=(!TH&&LANG!=="en"&&window.CENDON_L10N&&window.CENDON_L10N.lang===LANG)?window.CENDON_L10N.t:null;
+let L10N=(!TH&&LANG!=="en"&&window.CENDON_L10N&&window.CENDON_L10N.lang===LANG)?window.CENDON_L10N.t:null;
 /* ข้อความที่มีค่าแทน ({0} {1}) จับคู่แบบรูปแบบ — เฉพาะที่มีตัวอักษรจริงพอ กันรูปแบบกว้างเกินไปจับข้อความอื่น */
-const L10P=L10N?Object.keys(L10N).filter(k=>/\{\d\}/.test(k)&&k.replace(/\{\d\}/g,"").replace(/[^A-Za-z]/g,"").length>=3).map(k=>{
+const homePatterns=table=>table?Object.keys(table).filter(k=>/\{\d\}/.test(k)&&k.replace(/\{\d\}/g,"").replace(/[^A-Za-z]/g,"").length>=3).map(k=>{
   const order=[];const src=k.split(/(\{\d\})/).map(p=>{const m=/^\{(\d)\}$/.exec(p);if(m){order.push(+m[1]);return "(.*?)"}return p.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")}).join("");
-  return [new RegExp("^"+src+"$"),order,L10N[k]]}):[];
+  return [new RegExp("^"+src+"$"),order,table[k]]}):[];
+const L10P=homePatterns(L10N);
 /* อังกฤษ → ภาษาที่เลือก · ไม่เจอ = คืนอังกฤษเดิม
    ลำดับ: ตรงทั้งข้อความ → แยกตัวเลขออกแล้วแปลส่วนที่เหลือ ("31 jobs done") → รูปแบบ {0} (เฉพาะข้อความจาก T() ที่เป็นเทมเพลต) */
 const PUNCT=/^[\s\p{P}\p{S}\d]*$/u;
@@ -3394,6 +3400,17 @@ if(!TH)new MutationObserver(ms=>ms.forEach(m=>{if(m.type==="characterData")trNod
 const T=(th,en)=>TH?th:(en!=null?xl(en,true):tr(th));
 /* สคริปต์ร่วม (แถบล่างมือถือ เชื่อม LINE ครอปรูป ฯลฯ) ถามภาษาจากตรงนี้ — ให้ตรงกับหน้านี้เสมอ */
 window.spireLang=()=>LANG;window.spireT=T;
+const homeLanguageListeners=new Set();
+window.spireOnLang=fn=>{if(typeof fn==='function')homeLanguageListeners.add(fn)};
+window.spireSetLang=code=>{
+  if(!LANGS.includes(code)||code===LANG)return;
+  LANG=code;TH=code==='th';LOC=TH?'th-TH':code==='en'?'en-GB':code;
+  localStorage.setItem('spire_lang',JSON.stringify(code));document.documentElement.lang=code;
+  L10N=window.CENDON_L10N?.lang===code?window.CENDON_L10N.t:null;L10P.splice(0,L10P.length,...homePatterns(L10N));
+  paintStatic();window.CendonLocale?.paint();for(const fn of homeLanguageListeners)try{fn(code)}catch{}
+  window.dispatchEvent(new CustomEvent('cendon:language',{detail:{lang:code}}));
+};
+window.addEventListener('cendon:language-ready',event=>{if(event.detail?.lang===LANG&&window.CENDON_L10N?.lang===LANG){L10N=window.CENDON_L10N.t;L10P.splice(0,L10P.length,...homePatterns(L10N))}});
 
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -6201,6 +6218,7 @@ function drawJob(j,push){
 }
 /* ให้ repair-proof.js เรียก API/วาดใบงานใหม่/แจ้งเตือน ด้วยเครื่องมือเดียวกับใบงาน */
 function proofCtx(j){return {api,toast,busy,refresh:async()=>{try{const nj=(await api("/api/tech/jobs/"+j.id)).job;if(JOB&&JOB.id===j.id){const st=SH.stack;drawJob(nj,false);SH.stack=st;$("bsBack").hidden=!st.length}}catch(e){}}}}
+const quoteCurrencyNote=()=>`<p class="note" data-no-prefs><i class="ti ti-cash"></i>${T("กรอกราคาเป็นเงินบาท (THB) ทุกช่อง · สกุลเงินในการตั้งค่าใช้แสดงยอดประมาณการเท่านั้น ไม่เปลี่ยนหน่วยของใบเสนอราคา","Enter every amount in Thai baht (THB). Your display currency only changes estimates, not the quote currency.")}</p>`;
 /* อะไหล่ในใบเสนอราคา: มีค่าอะไหล่ต้องบอกว่าอะไหล่อะไร — ลูกค้าเห็นก่อนยืนยัน · ใช้เทียบเลขกับคลิปหลักฐาน · ขึ้น Passport ตามจริง */
 const partsFields=(px,q)=>`<div id="${px}PN" ${q&&q.parts>0?"":"hidden"}><label class="fld"><span>${T("อะไหล่ที่ใช้ (ชื่อ ยี่ห้อ หรือเลขอะไหล่)","Parts used (name, brand or part number)")}</span><input class="inp" id="${px}N" maxlength="300" value="${esc(q&&q.partsNote||"")}" placeholder="${T("เช่น ผ้าเบรก Bendix DB1234","e.g. Bendix DB1234 brake pads")}"/></label>
   <label class="chk"><input type="checkbox" id="${px}U" ${q&&q.partsUsed?"checked":""}/> ${T("เป็นอะไหล่มือสอง","These are used parts")}</label>
@@ -6209,7 +6227,7 @@ const partsWire=(px,inp)=>{const t=()=>{$(px+"PN").hidden=!(+$(inp).value>0)};$(
 const partsRead=px=>({partsNote:$(px+"N")?$(px+"N").value.trim():"",partsUsed:!!($(px+"U")&&$(px+"U").checked)});
 async function change(j,action,extra,btn){
   await busy(btn,async()=>{
-    await api("/api/tech/jobs/"+j.id,{body:{action,revision:j.revision,...(extra||{})}});
+    await api("/api/tech/jobs/"+j.id,{body:{action,revision:j.revision,...(j.role==='both'?{as:MODE==='tech'?'technician':'customer'}:{}),...(extra||{})}});
     const nj=(await api("/api/tech/jobs/"+j.id)).job;
     while(SH.stack.length&&SH.stack[SH.stack.length-1].job)SH.stack.pop();drawJob(nj,false);refreshMe();
   });
@@ -6245,17 +6263,17 @@ function act(j,a,btn){
     foot:'<button class="btn p w" id="nGo">แจ้งลูกค้าว่าซ่อมเสร็จ</button>',mount(){stagePics("dP",P);$("nGo").onclick=e=>change(j,"done",{note:$("nT").value.trim(),photos:P},e.currentTarget)}})}
   if(a==="extra")return sheet({push:true,slug:a,title:"เสนองานเพิ่ม",body:`<p class="note"><i class="ti ti-info-circle"></i>ราคาที่ลูกค้ายืนยันแล้วแก้ไม่ได้ งานที่เจอเพิ่มต้องให้ลูกค้ากดยอมรับก่อนทำ</p>
       <label class="fld"><span>ต้องทำอะไรเพิ่ม และทำไม</span><textarea class="inp" id="xD" placeholder="เช่น วาล์วแอร์รั่ว ต้องเปลี่ยนใหม่"></textarea></label>
-      <div class="two"><label class="fld"><span>ค่าแรง</span><input class="inp" id="xL" type="number" inputmode="decimal" placeholder="0"/></label><label class="fld"><span>อะไหล่</span><input class="inp" id="xP" type="number" inputmode="decimal" placeholder="0"/></label></div>`,
+      <div class="two"><label class="fld"><span>ค่าแรง (THB)</span><input class="inp" id="xL" type="number" inputmode="decimal" placeholder="0"/></label><label class="fld"><span>อะไหล่ (THB)</span><input class="inp" id="xP" type="number" inputmode="decimal" placeholder="0"/></label></div>`,
     foot:'<button class="btn p w" id="xGo">ส่งให้ลูกค้าตัดสินใจ</button>',mount(){$("xGo").onclick=e=>change(j,"extra",{desc:$("xD").value.trim(),labor:+$("xL").value||0,parts:+$("xP").value||0},e.currentTarget)}});
-  if(a==="quote"){const q=j.quote||{};return sheet({push:true,slug:a,title:"เสนอราคา",body:`
-      <div class="two"><label class="fld"><span>ค่าแรง</span><input class="inp" id="qL" type="number" inputmode="decimal" value="${q.labor||""}" placeholder="0"/></label>
-      <label class="fld"><span>อะไหล่</span><input class="inp" id="qP" type="number" inputmode="decimal" value="${q.parts||""}" placeholder="0"/></label></div>
+  if(a==="quote"){const q=j.quote||{};return sheet({push:true,slug:a,title:T("เสนอราคา","Send a quote"),body:`${quoteCurrencyNote()}
+      <div class="two"><label class="fld"><span>ค่าแรง (THB)</span><input class="inp" id="qL" type="number" inputmode="decimal" value="${q.labor||""}" placeholder="0"/></label>
+      <label class="fld"><span>อะไหล่ (THB)</span><input class="inp" id="qP" type="number" inputmode="decimal" value="${q.parts||""}" placeholder="0"/></label></div>
       ${partsFields("q",q)}
-      <label class="fld"><span>ค่าเดินทาง</span><input class="inp" id="qT" type="number" inputmode="decimal" value="${q.travel||""}" placeholder="0"/></label>
+      <label class="fld"><span>ค่าเดินทาง (THB)</span><input class="inp" id="qT" type="number" inputmode="decimal" value="${q.travel||""}" placeholder="0"/></label>
       <label class="fld"><span>ทำอะไรบ้าง</span><textarea class="inp" id="qS" placeholder="เช่น ตรวจรั่ว เติมน้ำยา เปลี่ยนโอริง">${esc(q.scope||"")}</textarea></label>
       <label class="fld"><span>นัดวันเวลา</span><input class="inp" id="qA" value="${esc(q.appointment||j.requestedTime||"")}"/></label>
       <label class="fld"><span>รับประกัน (วัน)</span><input class="inp" id="qW" type="number" inputmode="numeric" value="${q.warranty??30}"/></label>`,
-    foot:'<button class="btn p w" id="qGo">ส่งราคา <b id="qSum"></b></button>',
+    foot:'<button class="btn p w" id="qGo">ส่งราคา <b id="qSum" data-no-prefs></b></button>',
     mount(){const sum=()=>{$("qSum").textContent=" ฿"+money((+$("qL").value||0)+(+$("qP").value||0)+(+$("qT").value||0))};["qL","qP","qT"].forEach(k=>$(k).oninput=sum);sum();partsWire("q","qP");
       $("qGo").onclick=e=>change(j,"quote",{labor:+$("qL").value||0,parts:+$("qP").value||0,travel:+$("qT").value||0,...partsRead("q"),scope:$("qS").value.trim(),appointment:$("qA").value.trim(),warranty:+$("qW").value||0},e.currentTarget)}});}
   if(a==="accept")return sheet({push:true,slug:a,title:"ยืนยันราคา",body:`<div class="quote"><div class="tot">฿${money(j.quote.total)}</div><p>${esc(j.quote.scope)}</p><p class="note" style="margin:8px 0 0"><i class="ti ti-calendar"></i>${esc(j.quote.appointment)}</p></div>
@@ -6273,9 +6291,9 @@ function act(j,a,btn){
         if($("rAdd"))$("rAdd").onclick=()=>{$("rFile").value="";$("rFile").dataset.cropMax=4-RP.length;$("rFile").click()}};draw();
       $("rFile").onchange=async()=>{for(const f of [...$("rFile").files].slice(0,4-RP.length)){try{RP.push(await shrink(f,1600))}catch(e){$("rErr").textContent=e.message}}draw()};
       $("rGo").onclick=e=>change(j,"review",{rating:r,note:$("rT").value.trim(),photos:RP.map(d=>({data:d}))},e.currentTarget)}});}
-  const T={done:["สรุปงานที่ทำ","เช่น เปลี่ยนโอริง เติมน้ำยา 600 กรัม"],cancel:["เหตุผลที่ยกเลิก","เช่น ติดธุระ ขอเลื่อน"],dispute:["เกิดปัญหาอะไร","เล่าสิ่งที่เกิดขึ้น ทีมงานจะติดต่อกลับ"],resolve:["ผลการช่วยเหลือ","สรุปว่าแก้อย่างไร"]}[a];
-  if(!T)return;
-  sheet({push:true,slug:a,title:T[0],body:`<label class="fld"><textarea class="inp" id="nT" placeholder="${T[1]}"></textarea></label>${a==="resolve"?segs("nO",[["completed","ปิดงานสำเร็จ"],["cancelled","ยกเลิกงาน"]],"completed"):""}`,
+  const fields={done:["สรุปงานที่ทำ","เช่น เปลี่ยนโอริง เติมน้ำยา 600 กรัม"],cancel:["เหตุผลที่ยกเลิก","เช่น ติดธุระ ขอเลื่อน"],dispute:["เกิดปัญหาอะไร","เล่าสิ่งที่เกิดขึ้น ทีมงานจะติดต่อกลับ"],resolve:["ผลการช่วยเหลือ","สรุปว่าแก้อย่างไร"]}[a];
+  if(!fields)return;
+  sheet({push:true,slug:a,title:fields[0],body:`<label class="fld"><textarea class="inp" id="nT" placeholder="${fields[1]}"></textarea></label>${a==="resolve"?segs("nO",[["completed","ปิดงานสำเร็จ"],["cancelled","ยกเลิกงาน"]],"completed"):""}`,
     foot:`<button class="btn ${a==="cancel"||a==="dispute"?"s":"p"} w" id="nGo">${a==="cancel"?"ยกเลิกงาน":a==="dispute"?"ส่งเรื่อง":"บันทึก"}</button>`,
     mount(){if(a==="resolve")wireSeg("nO");$("nT").focus();$("nGo").onclick=e=>change(j,a,{note:$("nT").value.trim(),outcome:a==="resolve"?segVal("nO"):undefined},e.currentTarget)}});
 }
@@ -7481,8 +7499,8 @@ function stuHead(){
 }
 $("stuNav").querySelectorAll("[data-sp]").forEach(b=>b.onclick=()=>{
   const want=SFIRST[b.dataset.sp];
-  if(SPAGE[DT]===b.dataset.sp&&DT===want){window.scrollTo({top:0,behavior:"smooth"});return}
   if($("bs").classList.contains("on"))closeSheet();
+  if(SPAGE[DT]===b.dataset.sp&&DT===want){window.scrollTo({top:0,behavior:"smooth"});return}
   setTab2(want);window.scrollTo(0,0);
 });
 document.querySelector(".stu-side .stu-brand").onclick=e=>{e.preventDefault();$("stuNav").querySelector('[data-sp="jobs"]').click()};
@@ -7537,14 +7555,14 @@ function openPost(p){
     ${p.note?`<div class="kv"><p><span>${T("ลูกค้าบอกเพิ่ม","Customer's note")}</span><b class="nt">${esc(p.note)}</b></p></div>`:""}
     ${p.photos?`<div class="gal" id="oGal"><div class="ph skel" style="height:190px"></div></div>`:""}
     ${p.mine?`<p class="note"><i class="ti ti-info-circle"></i>${T("คุณเสนอไปแล้ว ฿","You quoted ฿")}${money(p.mine.total)} — ${T("ส่งใหม่เพื่อแก้ราคา","send again to update")}</p>`:""}
-    <p class="h4" style="margin-top:6px">${T("เสนอราคา","Your quote")}</p>
-    <div class="two"><label class="fld"><span>${T("ค่าแรง","Labour")}</span><input class="inp" id="oL" type="number" inputmode="decimal" placeholder="0"/></label><label class="fld"><span>${T("อะไหล่","Parts")}</span><input class="inp" id="oP" type="number" inputmode="decimal" placeholder="0"/></label></div>
+    <p class="h4" style="margin-top:6px">${T("เสนอราคา","Your quote")}</p>${quoteCurrencyNote()}
+    <div class="two"><label class="fld"><span>${T("ค่าแรง","Labour")} (THB)</span><input class="inp" id="oL" type="number" inputmode="decimal" placeholder="0"/></label><label class="fld"><span>${T("อะไหล่","Parts")} (THB)</span><input class="inp" id="oP" type="number" inputmode="decimal" placeholder="0"/></label></div>
     ${partsFields("o",null)}
-    <label class="fld"><span>${T("ค่าเดินทาง","Travel")}</span><input class="inp" id="oT" type="number" inputmode="decimal" placeholder="0"/></label>
+    <label class="fld"><span>${T("ค่าเดินทาง","Travel")} (THB)</span><input class="inp" id="oT" type="number" inputmode="decimal" placeholder="0"/></label>
     <label class="fld"><span>${T("ทำอะไรบ้าง","What's included")}</span><textarea class="inp" id="oS" placeholder="${T("เช่น ตรวจรั่ว เติมน้ำยา เปลี่ยนโอริง","e.g. leak test, refill gas, replace O-ring")}"></textarea></label>
     <div class="two"><label class="fld"><span>${T("ไปถึง / นัด","Arrival / appointment")}</span><input class="inp" id="oA" placeholder="${T("เช่น 30 นาที","e.g. 30 min")}"/></label><label class="fld"><span>${T("รับประกัน (วัน)","Warranty (days)")}</span><input class="inp" id="oW" type="number" value="30"/></label></div>
     <p class="note"><i class="ti ti-lock"></i>${T("เบอร์และที่อยู่ลูกค้าเปิดเมื่อลูกค้าเลือกคุณ","Customer's phone and address unlock when they pick you")}</p>`,
-    foot:`<button class="btn p w" id="oGo">${T("ส่งราคา","Send quote")} <b id="oSum"></b></button>`,
+    foot:`<button class="btn p w" id="oGo">${T("ส่งราคา","Send quote")} <b id="oSum" data-no-prefs></b></button>`,
     mount(){
       if(p.photos)api("/api/tech/posts/"+p.id).then(d=>{const g=$("oGal");if(!g)return;g.innerHTML=(d.post.photos||[]).map(u=>`<img src="${u}" data-z="${u}" alt=""/>`).join("");g.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z))}).catch(()=>{});
       const sum=()=>{$("oSum").textContent=" ฿"+money((+$("oL").value||0)+(+$("oP").value||0)+(+$("oT").value||0))};["oL","oP","oT"].forEach(k=>$(k).oninput=sum);sum();partsWire("o","oP");

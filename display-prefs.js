@@ -5,7 +5,9 @@
 'use strict';if(W.CendonDisplayPrefs)return;
 const KEY='cendon_fx_thb_v2',DAY=86400000,raw=new WeakMap();let fx=null,pending=null,scheduled=false;
 const read=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch{return null}};
-function prefs(){const p=W.spireSetupRead?.()||read('spire_setup')||{},u=W.spireAuth?.currentUser||W.auth?.currentUser;
+function prefs(){const u=W.spireAuth?.currentUser||W.auth?.currentUser,projected=W.spireSetupRead?.(),stored=read('spire_setup');
+  if(typeof u?.uid!=='string'||!u.uid)return {distance:'km',currency:'THB'};
+  const p=projected?.uid===u?.uid?projected:stored?.uid===u?.uid?stored:{};
   if(!u||p.uid!==u.uid)return {distance:'km',currency:'THB'};
   return {distance:p.distance==='mi'?'mi':'km',currency:/^[A-Z]{3}$/.test(p.currency||'')?p.currency:'THB'};
 }
@@ -61,6 +63,7 @@ function boot(){new MutationObserver(changes=>{
 }).observe(D.body,{childList:true,characterData:true,subtree:true});paint();rates()}
 W.CendonDisplayPrefs=Object.freeze({prefs,distance,money,paint,transform:convert,sync:()=>{schedule();return rates()}});
 W.addEventListener('cendon:preferences',()=>{schedule();rates()});W.addEventListener('cendon:auth-ready',()=>{schedule();rates()});
+D.addEventListener('cendon:auth-ready',()=>{schedule();rates()});
 W.addEventListener('storage',e=>{if(['spire_setup','spire_lang'].includes(e.key)){schedule();rates()}});
 if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })(window,document);

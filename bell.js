@@ -129,11 +129,11 @@ function jobEvents(jobs,me){
         else if(j.status==="enroute")ev("enroute",T(`${shop} กำลังมาหาคุณ`,`${shop} is on the way`));
         else if(j.status==="working")ev("working",T(`${shop} เริ่มซ่อมแล้ว`,`${shop} started the repair`));
         else if(j.status==="done")ev("done",T(`${shop} ซ่อมเสร็จ — ตรวจแล้วยืนยันงาน`,`${shop} finished — check and confirm`));
-        else if(j.status==="cancelled")ev("cancel",j.expired?T("คำขอหมดอายุ","A request expired"):T(`${shop} ยกเลิกงาน`,`${shop} cancelled`));
+        else if(j.status==="cancelled")ev("cancel",cancelTitle(j,car));
       }else{
         if(j.status==="accepted")ev("accept",T(`ลูกค้ายืนยันราคา: ${car}`,`Customer accepted: ${car}`));
         else if(j.status==="completed")ev("complete",T(`ลูกค้ายืนยันงานเสร็จ: ${car}`,`Customer confirmed: ${car}`));
-        else if(j.status==="cancelled"&&!j.expired)ev("cancel",T(`ลูกค้ายกเลิก: ${car}`,`Customer cancelled: ${car}`));
+        else if(j.status==="cancelled"&&!j.expired)ev("cancel",cancelTitle(j,car));
         else if(j.status==="disputed")ev("dispute",T(`มีการแจ้งปัญหา: ${car}`,`Problem reported: ${car}`));
       }
     }
@@ -142,6 +142,11 @@ function jobEvents(jobs,me){
   put();return evs;
 }
 
+function cancelTitle(j,car){
+  if(j.expired)return T('คำขอหมดอายุ','A request expired');
+  const who={customer:T('ลูกค้ายกเลิก','Customer cancelled'),technician:T('ช่างยกเลิก','Mechanic cancelled'),admin:T('ทีมงานยกเลิก','Staff cancelled'),system:T('ระบบปิดคำขอ','Request closed by the system')}[j.cancelledBy];
+  return (who||T('งานถูกยกเลิก','Job cancelled'))+(car?': '+car:'');
+}
 /* ── หน้าตา: ปุ่มกระดิ่ง + แผงรายการ (ใช้ตัวแปรสีชุดเดียวกับ lux.css ทุกหน้า) ── */
 const CSS=`
 .cb-bell{position:relative;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;cursor:pointer;flex:none;padding:0;

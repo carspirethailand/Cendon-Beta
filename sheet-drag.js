@@ -32,6 +32,9 @@
   ];
   /* นิ้วเริ่มบนของพวกนี้ = ใช้งานของชิ้นนั้น ไม่ลากแผ่น (พิมพ์ เลือกข้อความ แผนที่ การ์ดขูด ฯลฯ) */
   const SKIP='input,textarea,select,[contenteditable="true"],canvas,video,.leaflet-container,.picker,[data-nodrag]';
+  /* ตั้งสไตล์บนแผ่นแบบ !important — motion.css กำหนดทรานซิชันของแผ่นแบบ !important ไว้ ค่าธรรมดาจะแพ้
+     (แผ่นจะไหลตามนิ้วช้า ๆ แทนที่จะติดนิ้ว) · ค่าว่าง = เอาออก กลับไปใช้ของหน้าเว็บ */
+  const css=(el,k,v)=>{if(v==='')el.style.removeProperty(k);else el.style.setProperty(k,v,'important')};
   const reduce=()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){return false}};
   const EASE='cubic-bezier(.2,.8,.2,1)';
 
@@ -73,8 +76,8 @@
   /* คืน true = นิ้วนี้เป็นของแผ่นแล้ว (ให้กันหน้าเลื่อน) */
   function grab(y,t){
     g.mode='drag';g.y0=y;g.pts=[[y,t]];
-    g.p.style.transition='none';g.p.style.animation='none';
-    if(g.bg)g.bg.style.transition='none';
+    css(g.p,'transition','none');css(g.p,'animation','none');
+    if(g.bg)css(g.bg,'transition','none');
   }
   function move(x,y,t){
     if(!g)return false;
@@ -91,8 +94,8 @@
       grab(y,t);
     }
     g.y=rubber(y-g.y0);
-    g.p.style.transform=`translate3d(0,${g.y}px,0)`;
-    if(g.bg)g.bg.style.opacity=String(Math.max(0,1-Math.max(0,g.y)/g.h));
+    css(g.p,'transform',`translate3d(0,${g.y}px,0)`);
+    if(g.bg)css(g.bg,'opacity',String(Math.max(0,1-Math.max(0,g.y)/g.h)));
     g.pts.push([y,t]);if(g.pts.length>6)g.pts.shift();
     return true;
   }
@@ -105,14 +108,14 @@
     const v=b[1]>a[1]?(b[0]-a[0])/(b[1]-a[1]):0;
     const shut=s.y>Math.min(s.h*.25,180)||(v>.5&&s.y>16);
     const ms=reduce()?0:shut?200:280;
-    s.p.style.transition=ms?`transform ${ms}ms ${EASE}`:'none';
-    if(s.bg)s.bg.style.transition=ms?`opacity ${ms}ms ease`:'none';
+    css(s.p,'transition',ms?`transform ${ms}ms ${EASE}`:'none');
+    if(s.bg)css(s.bg,'transition',ms?`opacity ${ms}ms ease`:'none');
     if(!shut){
-      s.p.style.transform='translate3d(0,0,0)';if(s.bg)s.bg.style.opacity='';
-      setTimeout(()=>{if(g&&g.p===s.p)return;s.p.style.transform='';s.p.style.transition='';if(s.bg)s.bg.style.transition=''},ms+30);
+      css(s.p,'transform','translate3d(0,0,0)');if(s.bg)css(s.bg,'opacity','');
+      setTimeout(()=>{if(g&&g.p===s.p)return;css(s.p,'transform','');css(s.p,'transition','');if(s.bg)css(s.bg,'transition','')},ms+30);
       return;
     }
-    s.p.style.transform=`translate3d(0,${s.h+24}px,0)`;if(s.bg)s.bg.style.opacity='0';
+    css(s.p,'transform',`translate3d(0,${s.h+24}px,0)`);if(s.bg)css(s.bg,'opacity','0');
     setTimeout(()=>{
       const before=s.k.key?s.k.key(s.p):null;
       if(!s.k.close(s.p)){back(s);return}
@@ -124,9 +127,9 @@
   /* เลื่อนแผ่นกลับขึ้นมาที่เดิม */
   function back(s){
     const ms=reduce()?0:280;
-    s.p.style.transition=ms?`transform ${ms}ms ${EASE}`:'none';s.p.style.transform='translate3d(0,0,0)';
-    if(s.bg){s.bg.style.transition=ms?`opacity ${ms}ms ease`:'none';s.bg.style.opacity=''}
-    setTimeout(()=>{s.p.style.transform='';s.p.style.transition='';if(s.bg)s.bg.style.transition=''},ms+30);
+    css(s.p,'transition',ms?`transform ${ms}ms ${EASE}`:'none');css(s.p,'transform','translate3d(0,0,0)');
+    if(s.bg){css(s.bg,'transition',ms?`opacity ${ms}ms ease`:'none');css(s.bg,'opacity','')}
+    setTimeout(()=>{css(s.p,'transform','');css(s.p,'transition','');if(s.bg)css(s.bg,'transition','')},ms+30);
   }
   /* รอแผ่นปิดจริง (บางแผ่นปิดผ่านประวัติย้อนกลับ ใช้เวลาเล็กน้อย) แล้วคืนสไตล์ให้แผ่นเปิดครั้งหน้าได้ตามปกติ */
   function settle(s,t0){
@@ -134,9 +137,9 @@
       if(performance.now()-t0<700){requestAnimationFrame(()=>settle(s,t0));return}
       back(s);return;
     }
-    s.p.style.transition='none';s.p.style.transform='';s.p.style.animation='';
-    if(s.bg){s.bg.style.transition='none';s.bg.style.opacity=''}
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{s.p.style.transition='';if(s.bg)s.bg.style.transition=''}));
+    css(s.p,'transition','none');css(s.p,'transform','');css(s.p,'animation','');
+    if(s.bg){css(s.bg,'transition','none');css(s.bg,'opacity','')}
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{css(s.p,'transition','');if(s.bg)css(s.bg,'transition','')}));
   }
 
   /* นิ้ว (มือถือ) — touchmove ต้องกันหน้าเลื่อนได้ จึงไม่ใช่ passive */

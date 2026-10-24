@@ -15,8 +15,8 @@ html.ib-boot .bs .pn,html.ib-boot .bs .bg{transition:none!important}</style>
 <script src="/partner-state.js?v=1"></script>
 <script src="/shop-images.js?v=1"></script>
 <script src="/display-prefs.js?v=3" defer></script>
-<script src="/i18n/ui-en.js?v=3" defer></script>
-<script src="/ui-language.js?v=4" defer></script>
+<script src="/i18n/ui-en.js?v=4" defer></script>
+<script src="/ui-language.js?v=5" defer></script>
 <script src="/partner-entry.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
@@ -36,7 +36,7 @@ html.ib-boot .bs .pn,html.ib-boot .bs .bg{transition:none!important}</style>
 (function(){try{if(/^\/(work|studio)(\/|$)/.test(location.pathname)){var p=JSON.parse(localStorage.getItem("spire_partner")||"null");if(p&&p.s==="shop")document.documentElement.dataset.boot="tech"}}catch(e){}})();</script>
 <script>(function(){try{var A=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt"],l=null;try{l=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
 if(A.indexOf(l)<0){l="en";var n=navigator.languages||[navigator.language||"en"];for(var i=0;i<n.length;i++){var b=String(n[i]).toLowerCase().split("-")[0];if(A.indexOf(b)>=0){l=b;break}}}
-if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=18"><\/script>')}catch(e){}})();</script>
+if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=19"><\/script>')}catch(e){}})();</script>
 <title>Cendon</title>
 <meta name="description" content="ถามอาการรถ ส่งรูปหรือเสียงให้ AI ช่วยดู เช็กใบเสนอราคา และหาช่างที่ผ่านการตรวจใกล้คุณ">
 <!-- การ์ดตอนแชร์ลิงก์ (LINE / Facebook / X) — รูปต้องเป็นที่อยู่เต็ม -->
@@ -47,7 +47,7 @@ if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=18"><\/
 <script src="nav.js"></script>
 <script src="media-store.js"></script>
 <script src="repair-proof.js?v=1" defer></script>
-<script src="bell.js?v=16"></script>
+<script src="bell.js?v=17"></script>
 <script src="drop.js?v=4" defer></script>
 <script src="car-menu.js?v=1" defer></script>
 <meta name="theme-color" content="#131316"/>
@@ -5365,9 +5365,9 @@ function studioSettings(){
         <label class="fld"><span>ข้อความถึงลูกค้า</span><input class="inp" id="ssVacN" maxlength="200" value="${esc(v.note||"")}" placeholder="เช่น ไปงานบวช กลับ 10 ต.ค."/></label></div></div></section>
     <section class="ss-g" data-line-card style="display:none"><h3><img src="./img/line-logo.svg" alt="" width="19" height="19">แจ้งเตือนทาง LINE</h3><div data-line-connect></div></section>
     <section class="ss-g"><h3><i class="ti ti-message-2-bolt"></i>ข้อความ</h3>
-      ${swRow("ssAr","ตอบกลับอัตโนมัติ","ส่งให้ลูกค้าทันทีที่ขอราคาเข้ามา",!!ar.on)}
+      ${swRow("ssAr","ตอบกลับอัตโนมัติ","ส่งให้ลูกค้าทันทีที่ทักหรือขอราคาเข้ามา ถ้าร้านยังไม่ได้ตอบใน 12 ชั่วโมง",!!ar.on)}
       <div class="ss-sub" id="ssArF"><textarea class="inp" id="ssArT" maxlength="500" placeholder="สวัสดีครับ ได้รับคำขอแล้ว จะส่งราคาให้ภายใน 30 นาทีครับ">${esc(ar.text||"")}</textarea></div>
-      <label class="fld"><span>คำทักทายบนหน้าร้าน</span><input class="inp" id="ssGr" maxlength="200" value="${esc(t.greet||"")}" placeholder="เช่น ยินดีต้อนรับ ซ่อมแอร์ทุกยี่ห้อ เย็นจริง รับประกันงาน"/></label></section>
+      <label class="fld"><span>คำทักทาย — ขึ้นบนหน้าร้าน และเป็นข้อความแรกเมื่อลูกค้ากดแชต</span><input class="inp" id="ssGr" maxlength="200" value="${esc(t.greet||"")}" placeholder="เช่น ยินดีต้อนรับ ซ่อมแอร์ทุกยี่ห้อ เย็นจริง รับประกันงาน"/></label></section>
     <section class="ss-g"><h3><i class="ti ti-bell-ringing"></i>งานที่รับและการแจ้งเตือน</h3>
       ${swRow("ssSnd","เสียงแจ้งเตือนงานใหม่","ดังและสั่นเมื่อมีประกาศงานใกล้คุณ",sound)}
       <div class="two"><label class="fld"><span>รัศมีรับงาน (กม.)</span><input class="inp" type="number" id="ssRad" min="0" max="200" value="${t.radius||""}"/></label>
@@ -6152,7 +6152,13 @@ async function openJob(id,push){
 function drawJob(j,push){
   const cust=j.role==="customer"||j.role==="both",tech=j.role==="technician"||j.role==="both",s=j.status,q=j.quote;
   const rk=RANK[s];
-  const track=s==="cancelled"?'<p class="pill bad" style="margin-bottom:14px">ยกเลิกแล้ว</p>':`<div class="track">${FLOW.map(([k,l,ic],i)=>`<div class="s ${i<=rk?"done":""} ${i===rk&&s!=="completed"?"now":""}"><i class="ti ${ic}"></i>${l}</div>`).join("")}</div>`;
+  /* ยกเลิกแล้ว: บอกว่าใครยกเลิก (จากหลังบ้าน cancelledBy ไม่เดาจากบทบาทของคนที่ดู) และเหตุผล */
+  const byWho=s!=="cancelled"?"":j.expired?T("คำขอหมดเวลา ระบบปิดให้","The request expired and was closed")
+    :{customer:cust?T("คุณยกเลิกงานนี้","You cancelled this job"):T("ลูกค้ายกเลิกงานนี้","The customer cancelled this job"),
+      technician:tech?T("คุณยกเลิกงานนี้","You cancelled this job"):T("ร้านยกเลิกงานนี้","The shop cancelled this job"),
+      admin:T("ทีมงาน Cendon ยกเลิกงานนี้","Cendon staff cancelled this job"),system:T("ระบบปิดคำขอนี้","The system closed this request")}[j.cancelledBy]||"";
+  const why=s==="cancelled"?String(j.resolution||"").replace(/^ยกเลิก:\s*/,""):"";
+  const track=s==="cancelled"?`<p class="pill bad" style="margin-bottom:${byWho||why?6:14}px">ยกเลิกแล้ว</p>${byWho||why?`<p class="note" style="margin:0 0 14px">${esc([byWho,why&&T("เหตุผล","Reason")+": "+why].filter(Boolean).join(" · "))}</p>`:""}`:`<div class="track">${FLOW.map(([k,l,ic],i)=>`<div class="s ${i<=rk?"done":""} ${i===rk&&s!=="completed"?"now":""}"><i class="ti ${ic}"></i>${l}</div>`).join("")}</div>`;
   const other=cust&&!tech?j.techName:tech&&!cust?T("ลูกค้า","Customer"):j.techName;
   const unread=(j.messages||[]).length;
   /* ปุ่มหลักตามสถานะ — ในแต่ละขั้นมีสิ่งที่ต้องทำอย่างเดียว คนจะได้ไม่ต้องคิด */
@@ -6360,7 +6366,9 @@ function addMsgs(list){
 function chMsgHTML(m){
   const tag=CH.job.role==="both"||CH.job.role==="admin"?(m.role==="customer"?"ลูกค้า · ":"ช่าง · "):"";
   if(m.deleted)return `<div class="msg gone${mine(m)?" me":""}" data-id="${m.id}"><i class="ti ti-message-off"></i>${mine(m)?T("คุณยกเลิกข้อความแล้ว","You unsent a message"):T("ยกเลิกข้อความแล้ว","Message unsent")}<small>${tag}${fmtT(m.at)}</small></div>`;
-  return `<div class="msg ${mine(m)?"me":""}${m.media&&m.media.length?" has-m":""}" data-id="${m.id}">${mediaHTML(m.media)}${esc(m.text||"")}<small>${tag}${fmtT(m.at)}${m.editedAt?` · ${T("แก้ไขแล้ว","edited")}`:""}</small></div>`;
+  /* ข้อความที่ระบบส่งแทนร้าน (คำทักทาย / ตอบกลับอัตโนมัติ) บอกให้รู้ทั้งสองฝ่าย */
+  const kind=m.kind==="greet"?T("ข้อความต้อนรับ","Welcome message")+" · ":m.kind==="auto"?T("ตอบกลับอัตโนมัติ","Auto-reply")+" · ":"";
+  return `<div class="msg ${mine(m)?"me":""}${m.media&&m.media.length?" has-m":""}" data-id="${m.id}">${mediaHTML(m.media)}${esc(m.text||"")}<small>${tag}${kind}${fmtT(m.at)}${m.editedAt?` · ${T("แก้ไขแล้ว","edited")}`:""}</small></div>`;
 }
 /* ข้อความที่ถูกแก้/ยกเลิก (id เดิม) — เปลี่ยนก้อนเดิมในที่เดิม ไม่ต่อท้าย */
 function applyMsg(m){
@@ -6522,7 +6530,7 @@ async function messageTech(t,gig){
   /* ถามเรื่องบริการอื่นในห้องเดิม — บอกช่างว่าคราวนี้ถามเรื่องอะไร */
   const ask=gig&&!(h&&h.gig&&h.gig.id==gig.id)?{id:gig.id,title:gig.title}:null;
   if(h)return openThread(h.id,ask);
-  showThread({id:null,techId:t.id,techName:t.shop||t.name||"",role:"customer",gig:null},[],ask);
+  showThread({id:null,techId:t.id,techName:t.shop||t.name||"",role:"customer",gig:null,greet:String(t.greet||"").trim()},[],ask);
 }
 async function openThread(id,ask,shown){
   if(!U)return needLogin();
@@ -6543,6 +6551,7 @@ function showThread(h,msgs,ask){
   $("msgs").innerHTML=(cust?safeNote(T("คุยอย่างปลอดภัยผ่าน Cendon","Chat safely on Cendon"),T("เบอร์และไลน์ในข้อความถูกซ่อนไว้ · ยังไม่ใช่การจ้างงาน พร้อมเมื่อไหร่กด ขอราคา","Phone numbers and LINE IDs are hidden · Not a booking yet — tap Get a quote when ready"))
     :h.role==="technician"?safeNote(T("ลูกค้าทักถาม ยังไม่ใช่ใบงาน","A customer is asking — not a job yet"),T("เบอร์และไลน์ในข้อความถูกซ่อนไว้ทั้งสองฝ่าย · ตอบได้เลย","Phone numbers and LINE IDs are hidden for both sides · Reply here"))
     :`<p class="sys">${T("ห้องทักช่าง (ดูอย่างเดียว)","Customer inquiry (read only)")}</p>`)
+    +(cust&&!h.id&&h.greet?`<div class="msg" data-greet>${esc(h.greet)}<small>${T("ข้อความต้อนรับ","Welcome message")}</small></div>`:"")
     +(ask?`<p class="sys ask"><i class="ti ti-tag"></i> ${T("สอบถามเรื่อง","About")}: <b class="nt">${esc(ask.title)}</b></p>`:"");
   addMsgs(msgs);
   const sug=$("chSug");sug.hidden=!(cust&&!msgs.length);

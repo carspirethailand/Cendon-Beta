@@ -1654,6 +1654,15 @@ window.CENDON_L10N={lang:"ko",t:{
 "Swipe to talk to":"밀어서 대화:",
 "Double-click to talk to":"더블클릭으로 대화:",
 "No mechanic services yet":"아직 정비사 서비스가 없어요",
-"Mechanic services show up here":"정비사 서비스가 여기에 표시돼요"
+"Mechanic services show up here":"정비사 서비스가 여기에 표시돼요",
+"Welcome message":"환영 메시지",
+"The request expired and was closed":"요청이 만료되어 종료되었습니다",
+"You cancelled this job":"내가 이 작업을 취소했습니다",
+"The customer cancelled this job":"고객이 이 작업을 취소했습니다",
+"The shop cancelled this job":"정비소가 이 작업을 취소했습니다",
+"Cendon staff cancelled this job":"Cendon 팀이 이 작업을 취소했습니다",
+"The system closed this request":"시스템이 이 요청을 종료했습니다",
+"Sent as soon as a customer messages you or asks for a quote, if you haven’t replied in the last 12 hours":"고객이 메시지나 견적 요청을 보내면 바로 전송 (지난 12시간 동안 답장하지 않은 경우)",
+"Greeting — shown on your shop page and as the first message when a customer opens a chat":"인사말 — 정비소 페이지에 표시되고 고객이 채팅을 열 때 첫 메시지로 전송됩니다"
 }};
 Object.assign(window.CENDON_L10N.t,{"The shop is suspended. The team must review and lift the suspension.":"매장이 정지되었습니다. 팀의 검토와 정지 해제가 필요합니다.","This is a trial shop, hidden from ordinary customers until the full shop review.":"체험 매장입니다. 정식 심사를 마치기 전에는 일반 고객에게 표시되지 않습니다.","Publication review is still required.":"공개 심사가 필요합니다.","The shop link has not been confirmed. Please retry the account check.":"매장 연결이 확인되지 않았습니다. 계정 확인을 다시 시도해 주세요.","Shop and services are not public on Home / categories":"매장과 서비스가 홈 및 카테고리에 공개되지 않았습니다","Your shop and services are saved and manageable in Studio. Editing or taking jobs does not change publication approval.":"매장과 서비스는 저장되어 Studio에서 관리할 수 있습니다. 수정이나 접수 설정은 공개 승인을 변경하지 않습니다.","Services could not refresh. Please retry.":"서비스를 새로고침하지 못했습니다. 다시 시도해 주세요.","Published services from approved shops appear here":"심사를 마치고 공개된 매장의 서비스가 여기에 표시됩니다","Shops could not refresh. Please retry.":"매장을 새로고침하지 못했습니다. 다시 시도해 주세요."});

@@ -2345,5 +2345,8 @@ window.CENDON_UI_EN=Object.freeze({
   "สรุปปีของรถคุณ": "your car's year",
   "พลิกกลับ": "Flip back",
   "ดู Wrap ของคันนี้": "Play this car’s Wrap",
-  "แผนที่ช่าง": "Mechanic map"
+  "แผนที่ช่าง": "Mechanic map",
+  "ตอบกลับอัตโนมัติ": "Auto-reply",
+  "ส่งให้ลูกค้าทันทีที่ทักหรือขอราคาเข้ามา ถ้าร้านยังไม่ได้ตอบใน 12 ชั่วโมง": "Sent as soon as a customer messages you or asks for a quote, if you haven’t replied in the last 12 hours",
+  "คำทักทาย — ขึ้นบนหน้าร้าน และเป็นข้อความแรกเมื่อลูกค้ากดแชต": "Greeting — shown on your shop page and as the first message when a customer opens a chat"
 });

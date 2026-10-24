@@ -149,11 +149,13 @@ function jobEvents(jobs,me){
         else if(j.status==="enroute")ev("enroute",T(`${shop} กำลังมาหาคุณ`,`${shop} is on the way`));
         else if(j.status==="working")ev("working",T(`${shop} เริ่มซ่อมแล้ว`,`${shop} started the repair`));
         else if(j.status==="done")ev("done",T(`${shop} ซ่อมเสร็จ — ตรวจแล้วยืนยันงาน`,`${shop} finished — check and confirm`));
-        else if(j.status==="cancelled")ev("cancel",cancelTitle(j,car));
+        /* ไม่แจ้งเรื่องที่ตัวเองเพิ่งกด (ลูกค้ายกเลิกเอง) */
+        else if(j.status==="cancelled"&&j.cancelledBy!=="customer")ev("cancel",cancelTitle(j,car));
       }else{
         if(j.status==="accepted")ev("accept",T(`ลูกค้ายืนยันราคา: ${car}`,`Customer accepted: ${car}`));
         else if(j.status==="completed")ev("complete",T(`ลูกค้ายืนยันงานเสร็จ: ${car}`,`Customer confirmed: ${car}`));
-        else if(j.status==="cancelled"&&!j.expired)ev("cancel",cancelTitle(j,car));
+        /* ช่างกดยกเลิกเอง ไม่ต้องเด้งแจ้งเตือนกลับมาหาตัวเอง (เดิมเด้ง และรุ่นก่อน 23 ต.ค. ยังเขียนว่า "ลูกค้ายกเลิก") */
+        else if(j.status==="cancelled"&&!j.expired&&j.cancelledBy!=="technician")ev("cancel",cancelTitle(j,car));
         else if(j.status==="disputed")ev("dispute",T(`มีการแจ้งปัญหา: ${car}`,`Problem reported: ${car}`));
       }
     }

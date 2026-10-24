@@ -1654,6 +1654,15 @@ window.CENDON_L10N={lang:"vi",t:{
 "Swipe to talk to":"Vuốt để trò chuyện với",
 "Double-click to talk to":"Nhấp đúp để trò chuyện với",
 "No mechanic services yet":"Chưa có dịch vụ của thợ",
-"Mechanic services show up here":"Dịch vụ của thợ sẽ hiện ở đây"
+"Mechanic services show up here":"Dịch vụ của thợ sẽ hiện ở đây",
+"Welcome message":"Tin nhắn chào mừng",
+"The request expired and was closed":"Yêu cầu đã hết hạn và bị đóng",
+"You cancelled this job":"Bạn đã hủy công việc này",
+"The customer cancelled this job":"Khách hàng đã hủy công việc này",
+"The shop cancelled this job":"Gara đã hủy công việc này",
+"Cendon staff cancelled this job":"Đội ngũ Cendon đã hủy công việc này",
+"The system closed this request":"Hệ thống đã đóng yêu cầu này",
+"Sent as soon as a customer messages you or asks for a quote, if you haven’t replied in the last 12 hours":"Gửi ngay khi khách nhắn tin hoặc xin báo giá, nếu bạn chưa trả lời trong 12 giờ qua",
+"Greeting — shown on your shop page and as the first message when a customer opens a chat":"Lời chào — hiển thị trên trang gara và là tin nhắn đầu tiên khi khách mở trò chuyện"
 }};
 Object.assign(window.CENDON_L10N.t,{"The shop is suspended. The team must review and lift the suspension.":"Cửa hàng đang bị tạm ngưng. Đội ngũ cần kiểm tra và gỡ tạm ngưng.","This is a trial shop, hidden from ordinary customers until the full shop review.":"Đây là cửa hàng dùng thử, chưa hiển thị cho khách hàng thông thường trước khi được xét duyệt đầy đủ.","Publication review is still required.":"Vẫn cần xét duyệt công khai.","The shop link has not been confirmed. Please retry the account check.":"Chưa xác nhận liên kết cửa hàng. Vui lòng kiểm tra lại tài khoản.","Shop and services are not public on Home / categories":"Cửa hàng và dịch vụ chưa công khai trên Trang chủ / danh mục","Your shop and services are saved and manageable in Studio. Editing or taking jobs does not change publication approval.":"Cửa hàng và dịch vụ đã được lưu, có thể quản lý trong Studio. Chỉnh sửa hoặc nhận việc không thay đổi phê duyệt công khai.","Services could not refresh. Please retry.":"Không thể cập nhật dịch vụ. Vui lòng thử lại.","Published services from approved shops appear here":"Dịch vụ đã công khai của cửa hàng được duyệt sẽ xuất hiện tại đây","Shops could not refresh. Please retry.":"Không thể cập nhật cửa hàng. Vui lòng thử lại."});

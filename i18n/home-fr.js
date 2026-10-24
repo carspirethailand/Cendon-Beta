@@ -1654,6 +1654,15 @@ window.CENDON_L10N={lang:"fr",t:{
 "Swipe to talk to":"Balayez pour parler à",
 "Double-click to talk to":"Double-cliquez pour parler à",
 "No mechanic services yet":"Aucun service de mécanicien pour l'instant",
-"Mechanic services show up here":"Les services des mécaniciens s'affichent ici"
+"Mechanic services show up here":"Les services des mécaniciens s'affichent ici",
+"Welcome message":"Message de bienvenue",
+"The request expired and was closed":"La demande a expiré et a été fermée",
+"You cancelled this job":"Vous avez annulé ce travail",
+"The customer cancelled this job":"Le client a annulé ce travail",
+"The shop cancelled this job":"Le garage a annulé ce travail",
+"Cendon staff cancelled this job":"L’équipe Cendon a annulé ce travail",
+"The system closed this request":"Le système a fermé cette demande",
+"Sent as soon as a customer messages you or asks for a quote, if you haven’t replied in the last 12 hours":"Envoyée dès qu’un client écrit ou demande un devis, si vous n’avez pas répondu au cours des 12 dernières heures",
+"Greeting — shown on your shop page and as the first message when a customer opens a chat":"Message d’accueil — affiché sur la page du garage et envoyé en premier quand un client ouvre le chat"
 }};
 Object.assign(window.CENDON_L10N.t,{"The shop is suspended. The team must review and lift the suspension.":"L’atelier est suspendu. L’équipe doit le vérifier et lever la suspension.","This is a trial shop, hidden from ordinary customers until the full shop review.":"Cet atelier d’essai reste masqué aux clients ordinaires jusqu’à sa validation complète.","Publication review is still required.":"La validation de publication reste nécessaire.","The shop link has not been confirmed. Please retry the account check.":"Le lien avec l’atelier n’est pas confirmé. Réessayez la vérification du compte.","Shop and services are not public on Home / categories":"Atelier et services non publics sur l’accueil / les catégories","Your shop and services are saved and manageable in Studio. Editing or taking jobs does not change publication approval.":"Votre atelier et vos services sont enregistrés et gérables dans Studio. Les modifications ou l’acceptation de missions ne changent pas l’autorisation de publication.","Services could not refresh. Please retry.":"Impossible d’actualiser les services. Réessayez.","Published services from approved shops appear here":"Les services publiés des ateliers approuvés apparaissent ici","Shops could not refresh. Please retry.":"Impossible d’actualiser les ateliers. Réessayez."});

@@ -1654,6 +1654,15 @@ window.CENDON_L10N={lang:"zh",t:{
 "Swipe to talk to":"滑动对话：",
 "Double-click to talk to":"双击对话：",
 "No mechanic services yet":"还没有技师服务",
-"Mechanic services show up here":"技师发布的服务会显示在这里"
+"Mechanic services show up here":"技师发布的服务会显示在这里",
+"Welcome message":"欢迎消息",
+"The request expired and was closed":"请求已过期并关闭",
+"You cancelled this job":"你取消了这项工作",
+"The customer cancelled this job":"客户取消了这项工作",
+"The shop cancelled this job":"店铺取消了这项工作",
+"Cendon staff cancelled this job":"Cendon 团队取消了这项工作",
+"The system closed this request":"系统关闭了这个请求",
+"Sent as soon as a customer messages you or asks for a quote, if you haven’t replied in the last 12 hours":"客户发消息或询价时立即发送（如果你在过去 12 小时内还没有回复）",
+"Greeting — shown on your shop page and as the first message when a customer opens a chat":"问候语 — 显示在店铺页面，并在客户打开聊天时作为第一条消息"
 }};
 Object.assign(window.CENDON_L10N.t,{"The shop is suspended. The team must review and lift the suspension.":"店铺已暂停。需由团队审核并解除暂停。","This is a trial shop, hidden from ordinary customers until the full shop review.":"这是试用店铺，完成正式审核前不会向普通客户展示。","Publication review is still required.":"仍需完成公开展示审核。","The shop link has not been confirmed. Please retry the account check.":"尚未确认店铺关联，请重试账户检查。","Shop and services are not public on Home / categories":"店铺和服务尚未在首页及分类中公开","Your shop and services are saved and manageable in Studio. Editing or taking jobs does not change publication approval.":"店铺和服务已保存，可在 Studio 管理。编辑或接单不会改变发布审批状态。","Services could not refresh. Please retry.":"服务刷新失败，请重试。","Published services from approved shops appear here":"已审核并发布的店铺服务将显示在此处","Shops could not refresh. Please retry.":"店铺刷新失败，请重试。"});

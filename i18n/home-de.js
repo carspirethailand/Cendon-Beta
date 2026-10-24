@@ -1654,6 +1654,15 @@ window.CENDON_L10N={lang:"de",t:{
 "Swipe to talk to":"Wischen, um zu sprechen mit",
 "Double-click to talk to":"Doppelklicken, um zu sprechen mit",
 "No mechanic services yet":"Noch keine Werkstatt-Angebote",
-"Mechanic services show up here":"Werkstatt-Angebote erscheinen hier"
+"Mechanic services show up here":"Werkstatt-Angebote erscheinen hier",
+"Welcome message":"Begrüßungsnachricht",
+"The request expired and was closed":"Die Anfrage ist abgelaufen und wurde geschlossen",
+"You cancelled this job":"Sie haben diesen Auftrag storniert",
+"The customer cancelled this job":"Der Kunde hat diesen Auftrag storniert",
+"The shop cancelled this job":"Die Werkstatt hat diesen Auftrag storniert",
+"Cendon staff cancelled this job":"Das Cendon-Team hat diesen Auftrag storniert",
+"The system closed this request":"Das System hat diese Anfrage geschlossen",
+"Sent as soon as a customer messages you or asks for a quote, if you haven’t replied in the last 12 hours":"Wird sofort gesendet, wenn ein Kunde schreibt oder ein Angebot anfragt und Sie in den letzten 12 Stunden nicht geantwortet haben",
+"Greeting — shown on your shop page and as the first message when a customer opens a chat":"Begrüßung — erscheint auf Ihrer Werkstattseite und als erste Nachricht, wenn ein Kunde den Chat öffnet"
 }};
 Object.assign(window.CENDON_L10N.t,{"The shop is suspended. The team must review and lift the suspension.":"Die Werkstatt ist gesperrt. Das Team muss sie prüfen und entsperren.","This is a trial shop, hidden from ordinary customers until the full shop review.":"Dies ist eine Testwerkstatt. Sie bleibt für normale Kunden bis zur vollständigen Prüfung unsichtbar.","Publication review is still required.":"Die Freigabeprüfung steht noch aus.","The shop link has not been confirmed. Please retry the account check.":"Die Werkstattverknüpfung ist nicht bestätigt. Bitte die Kontoprüfung wiederholen.","Shop and services are not public on Home / categories":"Werkstatt und Leistungen sind auf Startseite / Kategorien nicht öffentlich","Your shop and services are saved and manageable in Studio. Editing or taking jobs does not change publication approval.":"Werkstatt und Leistungen sind gespeichert und in Studio verwaltbar. Bearbeiten oder Auftragsannahme ändern keine Veröffentlichungsfreigabe.","Services could not refresh. Please retry.":"Leistungen konnten nicht aktualisiert werden. Bitte erneut versuchen.","Published services from approved shops appear here":"Veröffentlichte Leistungen freigegebener Werkstätten erscheinen hier","Shops could not refresh. Please retry.":"Werkstätten konnten nicht aktualisiert werden. Bitte erneut versuchen."});

@@ -1654,6 +1654,15 @@ window.CENDON_L10N={lang:"id",t:{
 "Swipe to talk to":"Geser untuk bicara dengan",
 "Double-click to talk to":"Klik dua kali untuk bicara dengan",
 "No mechanic services yet":"Belum ada layanan montir",
-"Mechanic services show up here":"Layanan montir akan muncul di sini"
+"Mechanic services show up here":"Layanan montir akan muncul di sini",
+"Welcome message":"Pesan sambutan",
+"The request expired and was closed":"Permintaan kedaluwarsa dan ditutup",
+"You cancelled this job":"Anda membatalkan pekerjaan ini",
+"The customer cancelled this job":"Pelanggan membatalkan pekerjaan ini",
+"The shop cancelled this job":"Bengkel membatalkan pekerjaan ini",
+"Cendon staff cancelled this job":"Staf Cendon membatalkan pekerjaan ini",
+"The system closed this request":"Sistem menutup permintaan ini",
+"Sent as soon as a customer messages you or asks for a quote, if you haven’t replied in the last 12 hours":"Dikirim begitu pelanggan mengirim pesan atau meminta penawaran, jika Anda belum membalas dalam 12 jam terakhir",
+"Greeting — shown on your shop page and as the first message when a customer opens a chat":"Salam — tampil di halaman bengkel dan menjadi pesan pertama saat pelanggan membuka chat"
 }};
 Object.assign(window.CENDON_L10N.t,{"The shop is suspended. The team must review and lift the suspension.":"Bengkel ditangguhkan. Tim perlu meninjau dan mencabut penangguhan.","This is a trial shop, hidden from ordinary customers until the full shop review.":"Ini bengkel uji coba, belum terlihat oleh pelanggan umum sebelum peninjauan penuh.","Publication review is still required.":"Peninjauan publikasi masih diperlukan.","The shop link has not been confirmed. Please retry the account check.":"Tautan bengkel belum terkonfirmasi. Coba periksa akun lagi.","Shop and services are not public on Home / categories":"Bengkel dan layanan belum dipublikasikan di Beranda / kategori","Your shop and services are saved and manageable in Studio. Editing or taking jobs does not change publication approval.":"Bengkel dan layanan tersimpan dan dapat dikelola di Studio. Mengedit atau menerima pekerjaan tidak mengubah persetujuan publikasi.","Services could not refresh. Please retry.":"Layanan gagal diperbarui. Coba lagi.","Published services from approved shops appear here":"Layanan yang dipublikasikan dari bengkel yang disetujui tampil di sini","Shops could not refresh. Please retry.":"Bengkel gagal diperbarui. Coba lagi."});

@@ -8,11 +8,15 @@ test('cancellation notifications use the recorded actor, never infer who cancell
   for(const side of ['customer','technician','both'])for(const [by,label]of Object.entries({customer:'Customer cancelled',technician:'Mechanic cancelled',admin:'Staff cancelled',system:'Request closed by the system',unknown:'Job cancelled'})){
     const storage=new Map(),context={localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},T:(th,en)=>en};vm.createContext(context);vm.runInContext(code+';this.fire=jobEvents',context);
     const j={id:'fixture',status:'accepted',side,car:'Fixture car',updatedAt:1};assert.equal(context.fire([j],'one').length,0);
-    const result=context.fire([{...j,status:'cancelled',cancelledBy:by,updatedAt:2}],'one');assert.equal(result.length,1);assert.equal(result[0].title,label+': Fixture car');
+    const result=context.fire([{...j,status:'cancelled',cancelledBy:by,updatedAt:2}],'one');
+    /* ไม่แจ้งเรื่องที่ตัวเองเพิ่งกด: ช่างยกเลิกเอง/ลูกค้ายกเลิกเอง ไม่เด้งกลับมาหาคนกด */
+    const own=side==='technician'?by==='technician':by==='customer';
+    if(own){assert.equal(result.length,0,side+' '+by);continue}
+    assert.equal(result.length,1);assert.equal(result[0].title,label+': Fixture car');
   }
 });
 test('all main pages use the shared UI dictionary while authored user content is excluded',()=>{
-  for(const file of ['index','garage','chat','news','profile','spares']){const s=read(file+'.html');assert.match(s,/i18n\/ui-en\.js\?v=3/);assert.match(s,/ui-language\.js\?v=4/)}
+  for(const file of ['index','garage','chat','news','profile','spares']){const s=read(file+'.html');assert.match(s,/i18n\/ui-en\.js\?v=4/);assert.match(s,/ui-language\.js\?v=5/)}
   /* นิตยสาร: ภาษาอื่นนอกจากไทย/อังกฤษใช้ตัวแปลกลาง (เดิมตกเป็นไทยทั้งหน้า) และวันที่ตามภาษาที่เลือก */
   const news=read('news.html');assert.match(news,/const MZT=\(th,en\)=>\(window\.spireT\?window\.spireT\(th,en\)/);assert.match(news,/toLocaleDateString\(lang==="th"\?"th-TH":lang==="en"\?"en-GB":lang,/);
   const module=read('ui-language.js');assert.match(module,/\.msg,\.bubble,\.nt,\.nm,\.about/);assert.doesNotMatch(module,/fetch\(/);

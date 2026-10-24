@@ -2344,5 +2344,6 @@ window.CENDON_UI_EN=Object.freeze({
   "ครั้งที่ดูแลรถ": "services",
   "สรุปปีของรถคุณ": "your car's year",
   "พลิกกลับ": "Flip back",
-  "ดู Wrap ของคันนี้": "Play this car’s Wrap"
+  "ดู Wrap ของคันนี้": "Play this car’s Wrap",
+  "แผนที่ช่าง": "Mechanic map"
 });

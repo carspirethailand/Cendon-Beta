@@ -53,6 +53,9 @@ test('chat tab from another page: home stays hidden until the inbox shows, and c
   assert.match(home,/html\.ib-boot #top,html\.ib-boot \.view,html\.ib-boot #ibFab\{visibility:hidden!important\}/);
   assert.match(home,/var IB_FROM=/);
   assert.match(home,/if\(st&&st\.nav&&st\.k!=="root"\)history\.go\(-2\);else location\.replace\(to\);return\}/);
+  /* แผ่นข้อความขึ้นเต็มจอทันที ไม่เลื่อนจากล่าง แล้วค่อยเปิดหน้าข้างหลัง — เดิมหน้าแรกโผล่ระหว่างแผ่นเลื่อนขึ้น */
+  assert.match(home,/html\.ib-boot \.bs \.pn,html\.ib-boot \.bs \.bg\{transition:none!important\}/);
+  assert.match(home,/if\(de\.classList\.contains\("ib-boot"\)\)\{void \$\("bs"\)\.offsetHeight;de\.classList\.remove\("ib-boot"\)\}/);
 });
 
 test('LINE card paints at once from the last known state and never keeps asking to connect after linking',()=>{

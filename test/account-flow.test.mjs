@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import vm from 'node:vm';
 
 const source = readFileSync(new URL('../account.js', import.meta.url), 'utf8');
@@ -664,14 +664,10 @@ test('required or denied server responses revoke consumed paint context and prev
   }
 });
 
-test('login opening clip: plays once per session, never with reduced motion, data saver or a saved sign-in, and always has a way out',()=>{
-  const html=readFileSync(new URL('../login.html',import.meta.url),'utf8'),js=readFileSync(new URL('../login-intro.js',import.meta.url),'utf8');
-  const gate=html.match(/<script>\s*\/\* คลิปเปิดแอป[\s\S]*?<\/script>/)[0];
-  for(const rule of [/sessionStorage\.getItem\('cendon_intro'\)/,/prefers-reduced-motion: reduce/,/saveData/,/nointro/,/cendon_signed/])assert.match(gate,rule);
-  assert.match(js,/sessionStorage\.setItem\('cendon_intro','1'\)/);
-  assert.match(js,/intro-\$\{big\?1080:720\}\.mp4[\s\S]*intro-720\.webm/,'mp4 first, webm fallback');
-  assert.match(js,/ci-skip/);assert.match(js,/Escape/);assert.match(js,/2500/,'a slow or blocked video falls through to the login quickly');
-  assert.match(js,/muted playsinline/);assert.doesNotMatch(js,/\.mp4"[^>]*controls/);
-  for(const f of ['intro-720.mp4','intro-1080.mp4','intro-720.webm','intro-poster.jpg','login-hero.webp','login-hero.jpg'])assert.ok(readFileSync(new URL('../'+f,import.meta.url)).length>1000,f);
-  const sw=readFileSync(new URL('../sw.js',import.meta.url),'utf8');assert.match(sw,/'\.\/login-intro\.js\?v=1'/);assert.doesNotMatch(sw,/intro-\d+\.(mp4|webm)'/,'videos are not precached');
+test('login opens straight to the sign-in form: no opening clip, no video downloads',()=>{
+  const html=readFileSync(new URL('../login.html',import.meta.url),'utf8');
+  assert.doesNotMatch(html,/login-intro|ci-on|ci-reveal|intro-\d+\.(mp4|webm)|<video/);
+  for(const f of ['login-intro.js','intro-720.mp4','intro-1080.mp4','intro-720.webm','intro-poster.jpg'])assert.equal(existsSync(new URL('../'+f,import.meta.url)),false,f);
+  for(const f of ['login-hero.webp','login-hero.jpg'])assert.ok(readFileSync(new URL('../'+f,import.meta.url)).length>1000,f);
+  const sw=readFileSync(new URL('../sw.js',import.meta.url),'utf8');assert.doesNotMatch(sw,/login-intro|intro-\d+\.(mp4|webm)/);
 });

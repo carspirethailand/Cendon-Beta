@@ -3245,7 +3245,7 @@ async function ndaAccept(){
       id:"nda_"+me.uid, title:"รับรองการรักษาความลับ "+(me.name||me.uid),
       body:img.length<=7600?img:"บันทึกการรับรอง (ลายเซ็นใหญ่เกินกว่าที่เก็บได้)",
       keywords:JSON.stringify({v:NDA_VER,at:Date.now(),n:(me.name||"").slice(0,40),
-        e:(me.email||"").slice(0,50),area:ndaWant||""}).slice(0,395),
+        e:(me.email||"").slice(0,50),area:ndaWant||""}),
       make:"__nda__",model:"",enabled:false}});
     NDA_OK=true; $("ndaWall").hidden=true;
     const t=ndaWant; ndaWant=null;
@@ -3515,7 +3515,7 @@ async function lgSubmit(){
       id:"lgl_"+me.uid, title:"ยอมรับกฎการใช้งาน "+(me.name||me.uid),
       body:img.length<=7600?img:"บันทึกการยอมรับกฎ (ลายเซ็นใหญ่เกินกว่าที่เก็บได้)",
       keywords:JSON.stringify({v:LEGAL_VERSION,at:Date.now(),
-        n:(me.name||"").slice(0,40),e:(me.email||"").slice(0,60)}).slice(0,395),
+        n:(me.name||"").slice(0,40),e:(me.email||"").slice(0,60)}),
       make:"__legal__",model:"",enabled:false}});
     $("lgWall").hidden=true;
     LEGAL_OK=true;
@@ -3776,7 +3776,7 @@ async function vcBeatNow(){
       id:vcId(vcRoom,me.uid), title:"อยู่ในห้องเสียง",
       body:"บันทึกว่าผู้ใช้รายนี้อยู่ในห้องเสียงขณะนี้ ระเบียนนี้หมดอายุเองใน 15 วินาที",
       keywords:JSON.stringify({r:vcRoom,u:me.uid,n:(me.name||"").slice(0,30),
-        t:Date.now(),cam:camOn?1:0,mic:micOn?1:0}).slice(0,395),
+        t:Date.now(),cam:camOn?1:0,mic:micOn?1:0}),
       make:"__voice__",model:"",enabled:false}});
   }catch(e){}
 }
@@ -3936,7 +3936,7 @@ function sigSend(to,kind,payload,extra){
     title:"สัญญาณห้องเสียง "+kind,
     body:JSON.stringify(payload||{}),
     keywords:JSON.stringify(Object.assign({k:kind,t:Date.now(),
-      n:(me.name||"").slice(0,30)},extra||{})).slice(0,395),
+      n:(me.name||"").slice(0,30),from:me.uid,to,r:vcRoom},extra||{})),
     make:"__sig__",model:"",enabled:false}}).catch(()=>{});
 }
 let sigFast=0;
@@ -3975,7 +3975,7 @@ async function sigPoll(){
     for(const x of pend){
       seenSig[x.r.id]=1;
       if(Date.now()-x.t>6e4){ sigDel(x.r.id); continue }
-      const from=x.r.id.slice(pre.length).split("_")[0];
+      const from=x.m.from||x.r.id.slice(pre.length).split("_")[0];
       await sigHandle(x.m.k,x.bd,from,x.m);
       sigDel(x.r.id);
     }
@@ -4242,6 +4242,7 @@ function mtRoomName(r){
 /* เห็นนัดหมายเมื่ออยู่ในห้องที่นัดนั้นผูกไว้ — ใช้กติกาเดียวกับการเห็นห้อง
    จะได้ไม่มีกรณีเห็นนัดประชุมของห้องที่ตัวเองเข้าไม่ได้ */
 function mtVisible(m){ return can("*")||myRooms().some(r=>r.id===m.r) }
+function safeMeetingLink(value){try{const u=new URL(String(value||''));return u.protocol==='https:'&&!u.username&&!u.password?u.href:''}catch{return ''}}
 
 async function loadMeet(){
   const box=$("mtList");
@@ -4255,8 +4256,8 @@ async function loadMeet(){
     MEETS=kb.filter(k=>/^mt_/.test(k.id)).map(k=>{
       let m={}; try{ m=JSON.parse(k.keywords||"{}") }catch(e){}
       const sp=mtSplit(k.body);
-      return {id:k.id,title:k.title||"(ไม่มีชื่อ)",t:m.t||0,len:m.len||30,r:m.r||"team",
-        by:m.by||"",byn:m.byn||"",lk:m.lk||"",at:m.at||[],ag:sp.ag,no:sp.no};
+      return {id:k.id,title:k.title||"(ไม่มีชื่อ)",t:Number(m.t)||0,len:Math.max(5,Math.min(1440,Number(m.len)||30)),r:String(m.r||"team"),
+        by:String(m.by||""),byn:String(m.byn||""),lk:safeMeetingLink(m.lk),at:Array.isArray(m.at)?m.at.filter(x=>typeof x==='string'):[],ag:sp.ag,no:sp.no};
     }).filter(mtVisible).sort((a,b)=>a.t-b.t);
     drawMeet();
   }catch(e){ box.innerHTML=`<div class="empty">${denyMsg(e,"ระบบประชุม")}</div>` }
@@ -4366,7 +4367,7 @@ async function mtSave(){
       id:old||("mt_"+Date.now()), title:t.slice(0,120), body,
       keywords:JSON.stringify({t:when.getTime(),len:+$("mtLen").value||30,r:$("mtRoom").value,
         by:me.uid,byn:(me.name||"").slice(0,40),lk:$("mtLink").value.trim().slice(0,200),
-        at:ex?ex.at:[me.uid]}).slice(0,395),
+        at:ex?ex.at:[me.uid]}),
       make:"__meet__",model:"",enabled:false}});
     mtClose(); await loadMeet();
     const nid=old||MEETS.map(x=>x.id).sort().pop();
@@ -4383,7 +4384,7 @@ async function mtWrite(m,patch){
     id:m.id, title:m.title, body:(patch.ag!==undefined?patch.ag:m.ag)+
       ((patch.no!==undefined?patch.no:m.no)?MT_SEP+(patch.no!==undefined?patch.no:m.no):""),
     keywords:JSON.stringify({t:m.t,len:m.len,r:m.r,by:m.by,byn:m.byn,lk:m.lk,
-      at:patch.at!==undefined?patch.at:m.at}).slice(0,395),
+      at:patch.at!==undefined?patch.at:m.at}),
     make:"__meet__",model:"",enabled:false}});
 }
 async function mtRsvp(id){
@@ -4449,7 +4450,7 @@ $("mtTabs").addEventListener("click",e=>{
 function zoomImg(src){
   const d=document.createElement("div");
   d.className="imgzoom"; d.onclick=()=>d.remove();
-  d.innerHTML=`<img src="${src}" alt="">`;
+  const img=document.createElement('img');img.src=String(src||'');img.alt='';d.appendChild(img);
   document.body.appendChild(d);
 }
 window.zoomImg=zoomImg;
@@ -4828,7 +4829,7 @@ async function sendChat(){
       title:(me.name||"ทีมงาน").slice(0,80),
       body:padBody(att?att.data:tx),
       keywords:JSON.stringify({n:me.name||"",p:inf?inf.ab:"",t:Date.now(),u:me.uid||"",
-        r:curRoom,a:att?att.kind:"",cap:att?tx.slice(0,80):""}).slice(0,395),
+        r:curRoom,a:att?att.kind:"",cap:att?tx.slice(0,80):""}),
       make:"__chat__", model:"", enabled:false }});
     await pollChat(true);
   }catch(e){ el.value=keep; PENDING=att; drawPending(); alert("ส่งไม่สำเร็จ: "+e.message) }
@@ -4865,7 +4866,7 @@ async function nrSave(){
   try{
     await api("/api/ws",{method:"POST",body:{id:"ch_"+slug,title:"ห้องงาน "+n,
       body:($("nrDesc").value.trim()||"ห้องคุยของงานนี้")+" — สร้างโดย "+(me.name||""),
-      keywords:JSON.stringify(room).slice(0,395),
+      keywords:JSON.stringify(room),
       make:"__room__",model:"",enabled:false}});
     /* ใส่เข้ารายการเองทันที ไม่รอรอบถามถัดไป — คนกดสร้างห้องเสร็จต้องอยู่ในห้องเลย
        ไม่ใช่ต้องไปหาเองว่าห้องโผล่หรือยัง */

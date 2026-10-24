@@ -62,7 +62,7 @@
     const garageYes=text=>{
       const t=String(text||'').toLowerCase().replace(/[\s.,!?。ๆ]/g,'');
       if(/ไม่|อย่า|ยกเลิก|\b(?:no|not|cancel|stop)\b/.test(String(text||'').toLowerCase()))return false;
-      return /^(?:ใช่|ใช่เลย|ได้|ได้เลย|ตกลง|ยืนยัน|บันทึก|บันทึกเลย|บันทึกได้|ใช่บันทึกเลย|โอเค|ok|okay|yes|yep|confirm|saveit|pleasesave)(?:ครับ|ค่ะ|คะ|นะ|นะครับ|เลย)?$/.test(t);
+      return /^(?:ใช่|ใช่เลย|ได้|ได้เลย|ตกลง|ยืนยัน|ส่งเลย|ส่งได้|ทำเลย|ทำได้|บันทึก|บันทึกเลย|บันทึกได้|ใช่บันทึกเลย|โอเค|ok|okay|yes|yep|confirm|sendit|doit|saveit|pleasesave)(?:ครับ|ค่ะ|คะ|นะ|นะครับ|เลย)?$/.test(t);
     };
     const live=j=>!['completed','cancelled'].includes(j.status);
     const canDo=(j,op)=>op==='message'?live(j):(VC().JOB_OPS[op]||[]).includes(j.status)&&(op==='cancel'?j.side!=='admin':j.side==='customer'||j.side==='both');
@@ -179,7 +179,7 @@
       if(pend.result)return pend.result;
       if(pend.miss.length)return{error:'Still missing: '+pend.miss.join(', ')+'. Ask the user, then call valet again. Nothing was sent.'};
       if(!pend.running&&!(heardAt>pend.at))return{error:'The user has not answered yet. Read the summary back, wait for a clear yes, then call valet_confirm. Nothing was sent.'};
-      if(!pend.running&&['car_km','car_info','due','log'].includes(pend.d)&&!garageYes(heardText))return{error:'No clear explicit confirmation of this Garage change. Ask once for a clear yes or let the user tap Confirm. Silence, an unrelated reply or a refusal cannot save data.'};
+      if(!pend.running&&!garageYes(heardText))return{error:'No clear explicit confirmation of this action. Ask for a clear yes or let the user tap Confirm. Silence, an unrelated reply or a refusal cannot send messages, book, accept, cancel or change data.'};
       current(ctx);return run(pend,'voice');
     }
     function run(p,how){

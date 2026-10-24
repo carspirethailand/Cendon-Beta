@@ -7,8 +7,9 @@
   function car(c={}){
     if(!c||typeof c!=='object')return {};
     c={...c,...Object.fromEntries(Object.entries(c.info||{}).filter(([k])=>['model_year','engine','engine_code','fuel','market'].includes(k)))};
-    const words=clean(c.name).split(/\s+/);
-    return Object.fromEntries(Object.entries({make:clean(c.make||words[0]),model:clean(c.model||words.slice(1).join(' ')),year:clean(c.model_year||c.year,4),engine:clean(c.engine,80),engine_code:clean(c.engine_code,24),fuel:clean(c.fuel||c.fuelType,30),mileage:clean(c.mileage,12),market:clean(c.market||c.country,40),kind:clean(c.kind||c.vehicle_type,20)}).filter(([,v])=>v));
+    const words=clean(c.name).split(/\s+/),validYear=y=>/^(19|20)\d{2}$/.test(String(y||''))&&+y>=1950&&+y<=new Date().getFullYear()+1;
+    const year=validYear(c.model_year)?String(c.model_year):validYear(c.year)?String(c.year):'';
+    return Object.fromEntries(Object.entries({make:clean(c.make||words[0]),model:clean(c.model||words.slice(1).join(' ')),year,engine:clean(c.engine,80),engine_code:clean(c.engine_code,24),fuel:clean(c.fuel||c.fuelType,30),mileage:clean(c.mileage,12),market:clean(c.market||c.country,40),kind:clean(c.kind||c.vehicle_type,20)}).filter(([,v])=>v));
   }
   const label=c=>{const v=car(c);return [v.make,v.model,v.year,v.engine,v.engine_code].filter(Boolean).join(' ')};
   const key=c=>JSON.stringify([clean(c?.id),car(c)]);

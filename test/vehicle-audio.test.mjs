@@ -6,6 +6,10 @@ const source=readFileSync(new URL('../vehicle-audio.js',import.meta.url),'utf8')
 const window={};vm.runInNewContext(source,{window,URL});const A=window.CendonVehicleAudio;
 const saved={id:'car-1',name:'Toyota Fortuner',year:2013,engine:'3.0L D-4D',fuel:'diesel',vin:'private-vin',plate:'private-plate'};
 const json=v=>JSON.parse(JSON.stringify(v));
+test('legacy impossible detail years do not poison a valid recording vehicle or get truncated into another year',()=>{
+  assert.equal(A.car({...saved,info:{model_year:'1234321',engine:'3.0L D-4D',engine_code:'1KD-FTV'}}).year,'2013');
+  assert.equal(A.car({...saved,info:{model_year:'2014'}}).year,'2014');assert.equal(A.car({make:'Toyota',model:'Fortuner',year:'1234321'}).year,undefined);
+});
 test('normalise saved name and explicit metadata without guessing engine, dropping zero mileage or exposing personal fields',()=>{
   const c=A.car({...saved,mileage:0});assert.equal(c.make,'Toyota');assert.equal(c.model,'Fortuner');assert.equal(c.engine,'3.0L D-4D');assert.equal(c.mileage,'0');assert.ok(!JSON.stringify(c).includes('private'));assert.equal(A.car({make:'Honda',model:'City',name:'My nickname'}).make,'Honda');
 });

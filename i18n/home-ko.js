@@ -2,6 +2,9 @@
    กุญแจคือข้อความอังกฤษใน T("ไทย","English") และพจนานุกรม EN ของหน้า · {0} {1} = ค่าที่แทนตอนแสดงผล
    เพิ่มข้อความใหม่ในหน้า → เพิ่มคำแปลที่นี่ทุกภาษา (เทสต์ i18n-home ตรวจความครบ) */
 window.CENDON_L10N={lang:"ko",t:{
+"Clear all":"모두 지우기",
+"Clear notifications only, not jobs or chats":"알림만 지우며 작업이나 채팅은 삭제하지 않습니다",
+"Notifications cleared. Your jobs and chats are unchanged.":"알림을 지웠습니다. 작업과 채팅은 그대로 유지됩니다.",
 "Attach up to 3 files":"최대 3개 파일 첨부",
 "Account changed. Start again.":"계정이 변경되었습니다. 다시 시작하세요.",
 "Cannot preserve this request. Allow site storage and retry.":"요청을 저장할 수 없습니다. 사이트 저장소를 허용하고 다시 시도하세요.",

@@ -2,6 +2,9 @@
    กุญแจคือข้อความอังกฤษใน T("ไทย","English") และพจนานุกรม EN ของหน้า · {0} {1} = ค่าที่แทนตอนแสดงผล
    เพิ่มข้อความใหม่ในหน้า → เพิ่มคำแปลที่นี่ทุกภาษา (เทสต์ i18n-home ตรวจความครบ) */
 window.CENDON_L10N={lang:"ms",t:{
+"Clear all":"Padam semua",
+"Clear notifications only, not jobs or chats":"Padam pemberitahuan sahaja, bukan kerja atau sembang",
+"Notifications cleared. Your jobs and chats are unchanged.":"Pemberitahuan dipadam. Kerja dan sembang anda kekal.",
 "Attach up to 3 files":"Lampirkan sehingga 3 fail",
 "Account changed. Start again.":"Akaun berubah. Mulakan semula.",
 "Cannot preserve this request. Allow site storage and retry.":"Benarkan storan tapak dan cuba lagi.",

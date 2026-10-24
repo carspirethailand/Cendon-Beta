@@ -84,7 +84,7 @@ test('desktop bell is in the navbar markup from the first frame (no blink on pag
     assert.match(nr,/<button type="button" class="cb-bell cb-d" aria-label="การแจ้งเตือน"><i class="ti ti-bell"><\/i><em hidden><\/em><\/button>\n        <button class="avatar" id="avatarBtn">/,f);
     assert.match(nr,/if\(!on\)\{bl\.hidden=true;return\}/,f);
     assert.match(nr,/x\.textContent=String\(u\.name\|\|"\?"\)\.charAt\(0\)\.toUpperCase\(\)/,f+': cached name is text, never HTML');
-    assert.match(s,/bell\.js\?v=15/,f);
+    assert.match(s,/bell\.js\?v=16/,f);
   }
   assert.match(bell,/if\(own\)wire\(own\);else\{const b=mkBtn\("cb-d"\)/);
   assert.match(bell,/if\(W\.__cbMounted\)return;W\.__cbMounted=1;/);

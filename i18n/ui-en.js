@@ -1,5 +1,8 @@
 /* UI source pairs consolidated from the app; never machine-translate user content. */
 window.CENDON_UI_EN=Object.freeze({
+  "ล้างทั้งหมด": "Clear all",
+  "ล้างเฉพาะการแจ้งเตือน ไม่ลบงานหรือแชต": "Clear notifications only, not jobs or chats",
+  "ล้างการแจ้งเตือนแล้ว งานและแชตยังอยู่เหมือนเดิม": "Notifications cleared. Your jobs and chats are unchanged.",
   "นโยบายความเป็นส่วนตัว": "Privacy policy",
   "ข้อกำหนดการใช้งาน": "Terms of use",
   "ทั้งหมด": "All",

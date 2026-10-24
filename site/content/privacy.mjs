@@ -4,7 +4,7 @@
 import {L,P,UL,TABLE,NOTE,I,docBody,EMAIL,crumbs} from '../layout.mjs';
 
 export const VERSION='1.16';
-export const EFFECTIVE=['23 ตุลาคม 2569','23 October 2026'];
+export const EFFECTIVE=['24 ตุลาคม 2569','24 October 2026'];
 
 /* ผู้ให้บริการภายนอกทุกตัวที่ได้รับข้อมูล — ชื่อในคอลัมน์แรกต้องตรงกับรายการใน test/site.test.mjs */
 const PROCESSORS=[
@@ -38,9 +38,9 @@ const PROCESSORS=[
   ['Web Push',
     ['ส่งการแจ้งเตือนถึงเบราว์เซอร์ของคุณ ผ่านบริการของผู้ผลิตเบราว์เซอร์ (เช่น Google Apple Mozilla Microsoft)','Delivering notifications to your browser through its maker’s push service (e.g. Google, Apple, Mozilla, Microsoft)'],
     ['ที่อยู่รับแจ้งเตือนของเบราว์เซอร์ · เนื้อหาถูกเข้ารหัส ผู้ส่งต่ออ่านไม่ได้','Your browser’s push address · contents are encrypted and unreadable in transit']],
-  ['Tavily · Brave Search · DuckDuckGo · Bing · Wikipedia',
+  ['Tavily · Exa · Firecrawl · Brave Search · DuckDuckGo · Bing · Wikipedia',
     ['ค้นเว็บประกอบคำตอบ AI ข่าว และสเปกรถ','Web search for AI answers, news and car specs'],
-    ['คำค้นเท่านั้น (ไม่มีชื่อหรือบัญชีของคุณ)','Search terms only (no name or account)']],
+    ['คำค้นเท่านั้น ตัดเบอร์ อีเมล ลิงก์ เลขตัวถัง ทะเบียน และพิกัดออกก่อนส่ง (ไม่มีชื่อหรือบัญชีของคุณ)','Search terms only, with phone numbers, emails, links, VINs, plates and coordinates removed first (no name or account)']],
   ['NHTSA vPIC',
     ['ถอดรหัสเลขตัวถัง (VIN) เป็นข้อมูลรุ่นรถ — บริการของหน่วยงานรัฐบาลสหรัฐฯ','Decoding a VIN into model details — a US government service'],
     ['เลข VIN เท่านั้น เมื่อคุณกดถอดรหัส','The VIN only, when you ask us to decode it']],
@@ -230,6 +230,7 @@ const sections=[
     P('เมื่อระบบเปลี่ยนวิธีเก็บหรือใช้ข้อมูล เราจะแก้หน้านี้ให้ตรงทันที เปลี่ยนเลขเวอร์ชันและวันที่ด้านบน และถ้าเป็นการเปลี่ยนสาระสำคัญ จะแจ้งในแอปก่อนมีผล การเปลี่ยนที่ต้องได้รับความยินยอมใหม่ เราจะขอความยินยอมใหม่ก่อน',
       'Whenever the way we collect or use data changes, we update this page straight away, with a new version number and date at the top. Material changes are announced in the app before they take effect, and anything that needs fresh consent will ask for it first.')+
     UL([
+      ['<b>1.16 · 24 ต.ค. 2569 (ค้นเว็บของ AI)</b> — เพิ่ม Exa และ Firecrawl เป็นบริการค้นเว็บประกอบคำตอบ AI ข้าง Tavily · ระบบตัดเบอร์ อีเมล ลิงก์ เลขตัวถัง ทะเบียน และพิกัดออกจากคำค้นก่อนส่งทุกครั้ง ส่งไปแค่คำค้น ไม่มีชื่อหรือบัญชีของคุณ','<b>1.16 · 24 Oct 2026 (AI web search)</b> — Exa and Firecrawl join Tavily as web search services for AI answers · phone numbers, emails, links, VINs, plates and coordinates are removed from every search before it is sent; only the search terms go out, never your name or account'],
       ['<b>1.15 · 19 ต.ค. 2569 (ผลใบสมัครช่าง)</b> — ผลใบสมัครเปิดดูในแอปด้วยการ์ดขูด แจ้งเตือนทาง LINE/เครื่องไม่บอกผลล่วงหน้า · ผู้สมัครเห็นเฉพาะผล ข้อความจากทีมงาน และเวลาตัดสิน (ไม่เห็นอีเมลของคนตรวจหรือบันทึกการตรวจภายใน)','<b>1.15 · 19 Oct 2026 (mechanic results)</b> — Application results open in the app as a scratch card; LINE and device notifications don’t give the result away · Applicants see only the outcome, the team’s message and the decision time (not the reviewer’s email or internal review notes)'],
       ['<b>1.15 · 18 ต.ค. 2569 (แผนที่ 3 มิติ · เปิดตัว)</b> — แผนที่ช่างกำลังมาแบบ 3 มิติใช้แผ่นแผนที่จาก OpenFreeMap (ตำแหน่งช่างยังมาจากระบบเดิม เส้นที่ช่างวิ่งผ่านจำไว้บนจอนั้นเท่านั้น) และอัปเดตถี่ขึ้น (ช่างส่งทุก ~4 วินาที) · หน้านับถอยหลังเปิดตัวจำค่าวันเปิดตัวไว้ในเครื่อง · จองสิทธิ์เป็นช่างจากหน้านับถอยหลังใช้ใบสมัครเดิม','<b>1.15 · 18 Oct 2026 (3D map · launch)</b> — The 3D “mechanic on the way” map uses OpenFreeMap tiles (the mechanic’s position still comes from our own system, and the path they drove is remembered on that screen only) and updates more often (every ~4 seconds) · The launch countdown page remembers the launch date on your device · Reserving a mechanic spot from the countdown uses the usual application'],
       ['<b>1.15 · 18 ต.ค. 2569 (หน้าร้านสาธารณะ)</b> — หน้าร้านช่างที่ผ่านการตรวจ บริการ และหมวดช่าง เปิดดูได้โดยไม่ต้องล็อกอินและค้นเจอใน Google (ไม่มีเบอร์ ไลน์ ที่อยู่ละเอียด พิกัด หรือข้อความรีวิวรายคน) · เพิ่มคุกกี้ที่จำเป็น cendon_signed','<b>1.15 · 18 Oct 2026 (public shop pages)</b> — Checked shop pages, services and categories can be viewed without signing in and found on Google (no phone, LINE, full address, coordinates or individual review text) · added the essential cendon_signed cookie'],

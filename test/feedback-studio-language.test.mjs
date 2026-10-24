@@ -12,7 +12,9 @@ test('cancellation notifications use the recorded actor, never infer who cancell
   }
 });
 test('all main pages use the shared UI dictionary while authored user content is excluded',()=>{
-  for(const file of ['index','garage','chat','news','profile','spares']){const s=read(file+'.html');assert.match(s,/i18n\/ui-en\.js\?v=2/);assert.match(s,/ui-language\.js\?v=4/)}
+  for(const file of ['index','garage','chat','news','profile','spares']){const s=read(file+'.html');assert.match(s,/i18n\/ui-en\.js\?v=3/);assert.match(s,/ui-language\.js\?v=4/)}
+  /* นิตยสาร: ภาษาอื่นนอกจากไทย/อังกฤษใช้ตัวแปลกลาง (เดิมตกเป็นไทยทั้งหน้า) และวันที่ตามภาษาที่เลือก */
+  const news=read('news.html');assert.match(news,/const MZT=\(th,en\)=>\(window\.spireT\?window\.spireT\(th,en\)/);assert.match(news,/toLocaleDateString\(lang==="th"\?"th-TH":lang==="en"\?"en-GB":lang,/);
   const module=read('ui-language.js');assert.match(module,/\.msg,\.bubble,\.nt,\.nm,\.about/);assert.doesNotMatch(module,/fetch\(/);
 });
 test('chat, analysis and live calls carry the selected language rather than Thai/English-only guessing',()=>{

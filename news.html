@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="/partner-entry.css?v=1">
 <script src="/partner-state.js?v=1"></script>
 <script src="/display-prefs.js?v=3" defer></script>
-<script src="/i18n/ui-en.js?v=2" defer></script>
+<script src="/i18n/ui-en.js?v=3" defer></script>
 <script src="/ui-language.js?v=4" defer></script>
 <script src="/partner-entry.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
@@ -5089,7 +5089,8 @@ const MAG_ICONS=["ti-car","ti-bolt","ti-engine","ti-news"];
    นิตยสาร v2 — ข้อมูลจาก /api/magazine (หลังบ้านรวมข่าวจากสำนักข่าวจริงทุก 5 ชั่วโมง แบบช่องเลื่อน 20 ข่าว)
    ══════════════════════════════════════════════════════════════════ */
 let mzCat="all",mzCur=-1,mzState="loading";
-const MZT=(th,en)=>(lang==="en"?en:th);
+/* ใช้ตัวแปลกลาง (ภาษาที่ยังไม่มีคำแปลแสดงเป็นอังกฤษ) — เดิมรู้แค่ไทย/อังกฤษ ภาษาอื่นเลยตกเป็นไทยทั้งหน้า */
+const MZT=(th,en)=>(window.spireT?window.spireT(th,en):lang==="en"?en:th);
 /* ปกของข่าวที่ไม่มีรูป: สีตามหมวด + ไอคอน — ดูตั้งใจออกแบบ ไม่ใช่ช่องว่าง */
 const MZ_CV={"ข่าวเด่น":["#27272A","#E8590C"],"รถใหม่":["#18181B","#B4530A"],"EV":["#064E3B","#10B981"],"รีวิว":["#1E1B4B","#6366F1"],
   "เทคโนโลยี":["#0C4A6E","#0EA5E9"],"ราคา":["#422006","#F59E0B"],"ตลาดรถ":["#1F2937","#64748B"],"มอเตอร์สปอร์ต":["#450A0A","#DC2626"],
@@ -5118,7 +5119,7 @@ function mzRow(m,i,d){return `<a class="mz-row mz-in" href="${mzHref(m)}" data-m
 function mzMast(){
   const srcN=new Set(magItems.map(m=>m.source).filter(Boolean)).size;
   const upd=Math.max(0,...magItems.map(m=>m.created||0));
-  const date=new Date().toLocaleDateString(lang==="en"?"en-GB":"th-TH",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  const date=new Date().toLocaleDateString(lang==="th"?"th-TH":lang==="en"?"en-GB":lang,{weekday:"long",day:"numeric",month:"long",year:"numeric"});
   return `<header class="mz-mast"><div class="mz-eye"><span class="mz-live"></span>${esc(date)}${upd?` · ${MZT("อัปเดต","Updated")} ${esc(mzAgo(upd))}`:""}</div>
     <h1 class="mz-title">${MZT("นิตยสาร","Magazine")}</h1>
     <p class="mz-sub">${srcN>1?MZT(`ข่าวรถที่คนใช้รถในไทยควรรู้ คัดจาก ${srcN} สำนักข่าว`,`Car news worth knowing, picked from ${srcN} publishers`):MZT("ข่าวรถที่คนใช้รถในไทยควรรู้","Car news worth knowing")}</p></header>`;

@@ -5,7 +5,9 @@
 <script>/* เปิด /messages (กดแท็บแชตจากหน้าอื่น หรือลิงก์แจ้งเตือน): ซ่อนหน้าแรกไว้จนกล่องข้อความขึ้น — ไม่ให้หน้าแรกโผล่ก่อนแล้วแชตค่อยตามมา
    กันค้าง: ถ้ากล่องข้อความไม่ขึ้นใน 4 วิ เปิดหน้าตามปกติ */
 if(/^\/messages(\/|$)/.test(location.pathname)){document.documentElement.classList.add("ib-boot");setTimeout(function(){document.documentElement.classList.remove("ib-boot")},4000)}</script>
-<style>html.ib-boot #top,html.ib-boot .view,html.ib-boot #ibFab{visibility:hidden!important}</style>
+<style>html.ib-boot #top,html.ib-boot .view,html.ib-boot #ibFab{visibility:hidden!important}
+/* ตอนเปิดเข้ามาที่ /messages กล่องข้อความขึ้นเต็มจอทันที ไม่เลื่อนขึ้นจากล่าง — เดิมเลื่อนขึ้นทับหน้าแรกที่โผล่ออกมาก่อน ดูเหมือนเด้งไปหน้าแรก */
+html.ib-boot .bs .pn,html.ib-boot .bs .bg{transition:none!important}</style>
 <script src="/launch-gate.js?v=1"></script>
 <script src="/auth-gate.js?v=2"></script>
 <script src="/account-scope.js?v=2"></script>
@@ -2720,7 +2722,7 @@ a.mtab{text-decoration:none}
 <script src="call-sounds.js?v=1" defer></script>
 <script src="call-composer.js?v=2026-10-17-r4" defer></script>
 <script src="valet-core.js?v=8" defer></script>
-<script src="call-agent.js?v=2026-10-23-valet2" defer></script>
+<script src="call-agent.js?v=2026-10-24-valet3" defer></script>
 <script src="call-surface.js?v=2026-10-21-r1" defer></script>
 <script src="engine-scan.js?v=2026-10-17-r4" defer></script>
 <link rel="stylesheet" href="vehicle-audio.css?v=3">
@@ -6640,7 +6642,9 @@ function wireInbox(b){
 /* กล่องข้อความที่เปิดมาจากหน้าอื่นของแอป (แท็บแชตในการาจ/นิตยสาร/ร้านค้า/บัญชี) — ปิดแล้วกลับหน้าเดิม ไม่ตกมาหน้าแรก */
 var IB_FROM=(()=>{try{const r=new URL(document.referrer);return r.origin===location.origin&&/^\/(garage|news|spares|profile|chat)(\/|$)/.test(r.pathname)&&/^\/messages(\/|$)/.test(location.pathname)?r.pathname:null}catch(e){return null}})();
 async function inbox(){
-  const paint=(list,state)=>{sheet({title:T("ข้อความ","Messages"),url:"/messages",full:true,inbox:true,body:inboxBody(list,state),mount:wireInbox});document.documentElement.classList.remove("ib-boot")};
+  const paint=(list,state)=>{sheet({title:T("ข้อความ","Messages"),url:"/messages",full:true,inbox:true,body:inboxBody(list,state),mount:wireInbox});
+    /* ให้แผ่นวางเต็มจอก่อน (ตอนยังปิดการเลื่อนอยู่) แล้วค่อยเปิดหน้าข้างหลัง — หน้าแรกจึงไม่โผล่ระหว่างทาง */
+    const de=document.documentElement;if(de.classList.contains("ib-boot")){void $("bs").offsetHeight;de.classList.remove("ib-boot")}};
   const read=uid=>{try{return JSON.parse(localStorage.getItem(IBK(uid))||"null")}catch(e){return null}};
   /* วาดทันทีที่กด — เดิมรอหน้าแรกโหลดข้อมูลทั้งหมด (หลายวินาที) ผู้ใช้เลยเห็นแต่หน้าแรกเหมือนกดแล้วไม่ไปไหน */
   const guess=U?U.uid:lastUid();let cached=guess&&read(guess);

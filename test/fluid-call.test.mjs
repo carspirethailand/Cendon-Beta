@@ -110,6 +110,11 @@ test('voice agent: own-account actions, fixed page list, nothing for other peopl
   assert.equal((await a.execute('valet',{do:'pick_car',car:'City'},ctx)).selected,'City 2019');
   const list=await a.execute('valet',{do:'cars'},ctx);assert.equal(list.cars[0].km,85000);assert.ok(!JSON.stringify(list).includes('SECRET'));
   for(const bad of ['admin','delete_account','users','pay'])assert.match((await a.execute('valet',{do:bad},ctx)).error,/Unsupported/);
+  /* การ์ดบนจอเขียนภาษาคน — ชื่อเครื่องมือภายในไปอยู่ในคำแนะนำถึง AI เท่านั้น */
+  const shown=[];const b2=window.CendonCallAgent.create({showValet:v=>shown.push(v)});
+  const m=await b2.execute('valet',{do:'msg_shop',text:'สวัสดีครับ'},ctx);
+  assert.equal(JSON.stringify(m.missing),'["ร้านที่จะติดต่อ"]');assert.match(m.next,/find_mechanics/);
+  assert.ok(shown.length&&!/find_mechanics|_/.test(JSON.stringify(shown.at(-1).missing)),'no tool names on the card');
   assert.match(core,/role!=="technician"/,'shop-side customer chats are never read out');assert.ok(!/admin|handbook/.test(core.slice(core.indexOf('const PAGES='),core.indexOf('function pageOf'))),'no staff pages');
 });
 const valetJs=await read('valet.js');

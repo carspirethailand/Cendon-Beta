@@ -110,7 +110,8 @@
       for(const k of ['car','symptom','cat','when','mode','shop_id','text','op','job_id','note','phone','kind','item','title','key','date'])if(args[k]!=null&&args[k]!=='')a[k]=clean(args[k],k==='symptom'||k==='text'?600:200);
       for(const k of ['amount','litres','km'])if(Number.isFinite(+args[k])&&+args[k]>0)a[k]=+args[k];
       if(d==='car_km'&&(args.km===0||args.km==='0'))a.km=0;
-      const c=V.findCar(a.car),carL=c?V.carLabel(c):clean(a.car,80),miss=[],lines=[];
+      /* miss = ที่ขึ้นบนการ์ดให้ผู้ใช้อ่าน (ภาษาคน) · hint = คำแนะนำถึง AI เท่านั้น ไม่โชว์บนจอ */
+      const c=V.findCar(a.car),carL=c?V.carLabel(c):clean(a.car,80),miss=[],lines=[],hint=[];
       let title='',red=false,place='';
       if(d==='car_info'){
         if(!c)miss.push(T('รถคันไหน','which car'));
@@ -124,12 +125,12 @@
         a.phone=V.cleanPhone(a.phone||V.savedPhone());
         if(!carL)miss.push(T('รถคันไหน','which car'));
         const min=d==='urgent'?3:10;if(String(a.symptom||'').length<min)miss.push(min>3?T('อาการรถ (เล่าให้ละเอียดขึ้น)','the problem in more detail'):T('เกิดอะไรขึ้น','what happened'));
-        if(!a.pos)miss.push(T('ตำแหน่งรถ — ให้ผู้ใช้อนุญาตตำแหน่งบนเครื่อง','the location — ask the user to allow location on the device'));
+        if(!a.pos){miss.push(T('ตำแหน่งรถ','the location'));hint.push('Location: ask the user to allow location on the device.')}
         if(!V.okPhone(a.phone))miss.push(T('เบอร์โทร','a phone number'));
       }
       if(d==='book'||d==='msg_shop'){
         a.shop=known.get(String(a.shop_id||''))||(a.shop_id?(await V.shops(a.shop_id))[0]:null)||null;current(ctx);
-        if(!a.shop)miss.push(T('ร้าน — ค้นหาด้วย find_mechanics ก่อน','the shop — search with find_mechanics first'));
+        if(!a.shop){miss.push(T('ร้านที่จะติดต่อ','which shop'));hint.push('Shop: search with find_mechanics first, then pass that shop_id.')}
         if(d==='msg_shop'&&String(a.text||'').length<2)miss.push(T('ข้อความถึงร้าน','the message'));
       }
       if(d==='job'){
@@ -170,7 +171,7 @@
       const p={id:'v'+(++seq),d,a,c,at:Date.now(),title,red,miss,lines:lines.filter(Boolean).map(x=>clean(x,200)),running:null,result:null};
       pend=p;current(ctx);card(p,miss.length?'missing':'ready');
       return{pending_id:p.id,summary:title+': '+p.lines.join(' · '),missing:miss,submitted:false,
-        next:miss.length?'Ask the user for the missing items, then call valet again with every field (a new pending_id replaces this one).'
+        next:miss.length?'Ask the user for the missing items, then call valet again with every field (a new pending_id replaces this one).'+(hint.length?' '+hint.join(' '):'')
           :'Read the summary back in one short sentence and ask for a clear yes. Only after the user clearly agrees, call valet_confirm with this pending_id. The user can also tap Confirm on screen.'};
     }
     async function confirm(args,ctx){

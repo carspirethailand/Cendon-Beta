@@ -151,6 +151,7 @@
 
   window.CendonFeatureAI={
     register(value){bridge=value;queueMicrotask(chatToolbar);},mount,select,reset,openEntry,
+    adoptAudio:(choice,recording)=>bridge?.adoptAudio?.(choice,recording),
     async prepare(attachments,question,previous){
       if(!selected)return null;
       const key=selected,context=bridge.context(key);

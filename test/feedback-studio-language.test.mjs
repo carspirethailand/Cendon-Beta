@@ -12,7 +12,7 @@ test('cancellation notifications use the recorded actor, never infer who cancell
   }
 });
 test('all main pages use the shared UI dictionary while authored user content is excluded',()=>{
-  for(const file of ['index','garage','chat','news','profile','spares']){const s=read(file+'.html');assert.match(s,/i18n\/ui-en\.js\?v=1/);assert.match(s,/ui-language\.js\?v=1/)}
+  for(const file of ['index','garage','chat','news','profile','spares']){const s=read(file+'.html');assert.match(s,/i18n\/ui-en\.js\?v=1/);assert.match(s,/ui-language\.js\?v=2/)}
   const module=read('ui-language.js');assert.match(module,/\.msg,\.bubble,\.nt,\.nm,\.about/);assert.doesNotMatch(module,/fetch\(/);
 });
 test('chat, analysis and live calls carry the selected language rather than Thai/English-only guessing',()=>{

@@ -32,10 +32,11 @@ const perm=()=>supported()?Notification.permission:"unsupported";
 /* แจ้งเตือนในเครื่อง "เปิด/ปิด" = ตัวเลือกของผู้ใช้ (เก็บในเครื่อง) แยกจาก "สมัคร Push กับเซิร์ฟเวอร์แล้ว"
    เดิมใช้ค่าเดียวกัน — หลังบ้านไม่มีกุญแจ Push ค่าไม่เคยถูกบันทึก ปุ่ม "เปิด" จึงค้างตลอดแม้เปิดแล้ว
    ยังไม่เคยเลือก + อนุญาตในเบราว์เซอร์แล้ว = ถือว่าเปิด (ผู้ใช้เดิม) */
-const PREF="spire_notifOn",SUB="spire_pushSub";
+const PREF="spire_notifOn",SUB="spire_pushSub",PUSH_OWNER="spire_pushOwner";
 const pref=()=>{try{const v=localStorage.getItem(PREF);return v==null?perm()==="granted":JSON.parse(v)===true}catch(e){return false}};
-const pushOn=()=>perm()==="granted"&&pref();
-const pushSub=()=>{try{return localStorage.getItem(SUB)==="true"}catch(e){return false}};
+const pushOwner=()=>{try{return localStorage.getItem(PUSH_OWNER)===uid()}catch{return false}};
+const pushOn=()=>perm()==="granted"&&pref()&&pushOwner();
+const pushSub=()=>{try{return pushOwner()&&localStorage.getItem(SUB)==="true"}catch(e){return false}};
 
 /* แสดงบนเครื่องผ่าน service worker (มือถือบางรุ่นใช้ new Notification ตรง ๆ ไม่ได้) */
 async function sys(ev){
@@ -73,15 +74,18 @@ const u8=b=>{const p="=".repeat((4-b.length%4)%4),s=atob((b+p).replace(/-/g,"+")
    เดิมรอ ready ตรง ๆ จนค้าง ปุ่มเปิด/ปิดเลยไม่เปลี่ยนตาม → รอไม่เกิน 4 วิ แล้วไปต่อ */
 const swReady=()=>"serviceWorker" in navigator?Promise.race([navigator.serviceWorker.ready,new Promise(r=>setTimeout(()=>r(null),4000))]).catch(()=>null):Promise.resolve(null);
 async function subscribeBg(){
+  const owner=(W.spireAuth||W.auth)?.currentUser?.uid;if(!owner||!pushOwner())return;
+  const current=()=>owner===(W.spireAuth||W.auth)?.currentUser?.uid&&pushOn();
   try{
-    const reg=await swReady();if(!reg||!reg.pushManager||!pref())return;
+    const reg=await swReady();if(!reg||!reg.pushManager||!current())return;
     const kj=await get("/api/push/key").catch(()=>null);
-    if(kj&&kj.enabled&&kj.key){
+    if(kj&&kj.enabled&&kj.key&&current()){
       let sub=await reg.pushManager.getSubscription();
       if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8(kj.key)});
-      if(!pref())return;   // ผู้ใช้กดปิดระหว่างรอ
-      await post("/api/push/subscribe",{sub:sub.toJSON(),cars:pushCars(),lang:W.lang||"th"});
-      localStorage.setItem(SUB,"true");
+      if(!current())return;   // Disabled or account changed while waiting
+      const saved=await post("/api/push/subscribe",{sub:sub.toJSON(),cars:pushCars(),lang:W.lang||"th"});
+      if(!saved?.ok||saved.warnings?.length)throw Error("Push subscription not acknowledged");
+      if(current())localStorage.setItem(SUB,"true");
     }
   }catch(e){}
 }
@@ -91,14 +95,14 @@ async function enable(){
   let p=Notification.permission;
   if(p==="default")p=await Notification.requestPermission();
   if(p!=="granted")return p;
-  try{localStorage.setItem(PREF,"true")}catch(e){}
+  try{localStorage.setItem(PUSH_OWNER,uid());localStorage.setItem(PREF,"true")}catch(e){}
   subscribeBg();
   subs.forEach(f=>{try{f()}catch(e){}});
   return "granted";
 }
 /* ปิดแจ้งเตือนในเครื่อง: ยกเลิก Push ที่เซิร์ฟเวอร์และในเครื่อง · รายการในกระดิ่งยังขึ้นตามปกติ (แค่ไม่เด้งบนเครื่อง) */
 async function disable(){
-  try{localStorage.setItem(PREF,"false");localStorage.removeItem(SUB)}catch(e){}
+  try{localStorage.setItem(PREF,"false");localStorage.removeItem(SUB);localStorage.removeItem(PUSH_OWNER)}catch(e){}
   subs.forEach(f=>{try{f()}catch(e){}});
   try{const reg=await swReady();const sub=reg&&reg.pushManager&&await reg.pushManager.getSubscription();
     if(sub){await post("/api/push/unsubscribe",{endpoint:sub.endpoint}).catch(()=>{});await sub.unsubscribe().catch(()=>{})}}catch(e){}
@@ -114,15 +118,19 @@ const money=n=>Number(n||0).toLocaleString("th-TH");
 function jobEvents(jobs,me){
   const K="spire_jobsnap",cur={};let snap=null;
   try{snap=JSON.parse(localStorage.getItem(K)||"null")}catch(e){}
-  (jobs||[]).forEach(j=>{cur[j.id]=[j.status,j.unread||0]});
+  (jobs||[]).forEach(j=>{cur[j.id]=[j.status,j.unread||0,j.quoteAt||0,j.total??null]});
   const put=()=>{try{localStorage.setItem(K,JSON.stringify({uid:me,j:cur}))}catch(e){}};
-  if(!snap||snap.uid!==me){put();return []}
-  const old=snap.j||{},evs=[];
+  const old=snap?.uid===me?snap.j||{}:{},evs=[];
   for(const j of jobs||[]){
     if(j.side==="admin")continue;
     const o=old[j.id],tech=j.side==="technician",shop=j.techName||T("ช่าง","The mechanic"),car=j.car||"",url="/jobs/"+encodeURIComponent(j.id),tag="cendon-job-"+j.id;
     const ev=(kind,title,body,u)=>evs.push({id:j.id+":"+kind+":"+(j.updatedAt||j.createdAt||0),kind,title,body:body??car,url:u||url,tag});
-    if(!o){if(tech&&j.status==="requested")ev("request",T("คำขอใหม่: ","New request: ")+car,j.symptom);continue}
+    if(!o){
+      if(!tech&&j.status==="quoted")ev("quote",T(`${shop} เสนอราคา`,`${shop} sent a quote`)+(j.total?` ฿${money(j.total)}`:""));
+      else if(tech&&j.status==="requested"&&snap?.uid===me)ev("request",T("คำขอใหม่: ","New request: ")+car,j.symptom);
+      continue;
+    }
+    if(!tech&&j.status==="quoted"&&o[0]==="quoted"&&o.length>=4&&(o[2]!==cur[j.id][2]||o[3]!==cur[j.id][3]))ev("quote",T(`${shop} ปรับราคาเสนอ`,`${shop} updated the quote`)+(j.total?` ฿${money(j.total)}`:""));
     if(o[0]!==j.status){
       if(!tech){
         if(j.status==="quoted")ev("quote",T(`${shop} เสนอราคา`,`${shop} sent a quote`)+(j.total?` ฿${money(j.total)}`:""));
@@ -316,8 +324,18 @@ function mount(){
     if(st&&!st.querySelector(":scope>.cb-bell")){st.insertBefore(mkBtn("cb-st"),st.querySelector(":scope>.stu-me"));paint()}};
   put();new MutationObserver(()=>{if(!q)q=requestAnimationFrame(put)}).observe(document.body,chat?{childList:true,subtree:true}:{childList:true,subtree:true,attributes:true,attributeFilter:["class"]});
   paint();on(paint);
-  poll();
+  poll();if(pushOn())subscribeBg();
 }
+async function accountPush(){
+  if(pushOn()){subscribeBg();return}
+  let owner;try{owner=localStorage.getItem(PUSH_OWNER)}catch{}
+  const live=(W.spireAuth||W.auth)?.currentUser?.uid||"";
+  if(owner&&owner!==live){const reg=await swReady();if(((W.spireAuth||W.auth)?.currentUser?.uid||"")!==live)return;
+    const sub=await reg?.pushManager?.getSubscription();await sub?.unsubscribe().catch(()=>{});
+    try{localStorage.removeItem(SUB)}catch{}
+  }
+}
+W.addEventListener("cendon:auth-ready",accountPush);document.addEventListener("cendon:auth-ready",accountPush);
 /* หน้าอื่นก็ต้องรู้ทันว่าช่างตอบ: ถามหลังบ้านเบา ๆ ทุก 25 วิ (ชีพจร) มีอะไรเปลี่ยนค่อยดึงรายการใบงาน */
 let PV="",PT=0;
 async function tick(){
@@ -325,7 +343,7 @@ async function tick(){
   const me=uid();
   if(me&&!document.hidden&&(W.spireAuth||W.auth)&&(W.spireAuth||W.auth).currentUser){
     try{const r=await get("/api/tech/pulse");
-      if(r&&r.v&&r.v!==PV){PV=r.v;const d=await get("/api/tech/jobs");const evs=jobEvents(d&&d.jobs||[],me);
+      if(r&&r.v&&r.v!==PV){const d=await get("/api/tech/jobs");if(uid()!==me||!Array.isArray(d?.jobs))return;PV=r.v;const evs=jobEvents(d.jobs,me);
         if(evs.length){evs.forEach(e=>add(e,{fallback:true}));ding()}}}catch(e){}
   }
   paint();

@@ -14,14 +14,14 @@ if(/^\/messages(\/|$)/.test(location.pathname)){document.documentElement.classLi
 <script src="/shop-images.js?v=1"></script>
 <script src="/display-prefs.js?v=3" defer></script>
 <script src="/i18n/ui-en.js?v=1" defer></script>
-<script src="/ui-language.js?v=1" defer></script>
+<script src="/ui-language.js?v=2" defer></script>
 <script src="/partner-entry.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
 <script src="/cendon-tour.js" defer></script>
 <script src="/account-actions.js?v=3" defer></script>
 <script src="/account.js?v=2026-10-21-r2" defer></script>
-<script src="/garage-rules.js?v=3" defer></script>
+<script src="/garage-rules.js?v=4" defer></script>
 <script src="/garage-data.js?v=2" defer></script>
 <script src="/input-guard.js?v=5" defer></script>
 <meta charset="UTF-8"/>
@@ -34,7 +34,7 @@ if(/^\/messages(\/|$)/.test(location.pathname)){document.documentElement.classLi
 (function(){try{if(/^\/(work|studio)(\/|$)/.test(location.pathname)){var p=JSON.parse(localStorage.getItem("spire_partner")||"null");if(p&&p.s==="shop")document.documentElement.dataset.boot="tech"}}catch(e){}})();</script>
 <script>(function(){try{var A=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt"],l=null;try{l=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
 if(A.indexOf(l)<0){l="en";var n=navigator.languages||[navigator.language||"en"];for(var i=0;i<n.length;i++){var b=String(n[i]).toLowerCase().split("-")[0];if(A.indexOf(b)>=0){l=b;break}}}
-if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=15"><\/script>')}catch(e){}})();</script>
+if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=16"><\/script>')}catch(e){}})();</script>
 <title>Cendon</title>
 <meta name="description" content="ถามอาการรถ ส่งรูปหรือเสียงให้ AI ช่วยดู เช็กใบเสนอราคา และหาช่างที่ผ่านการตรวจใกล้คุณ">
 <!-- การ์ดตอนแชร์ลิงก์ (LINE / Facebook / X) — รูปต้องเป็นที่อยู่เต็ม -->
@@ -45,7 +45,7 @@ if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=15"><\/
 <script src="nav.js"></script>
 <script src="media-store.js"></script>
 <script src="repair-proof.js?v=1" defer></script>
-<script src="bell.js?v=14"></script>
+<script src="bell.js?v=15"></script>
 <script src="drop.js?v=4" defer></script>
 <script src="car-menu.js?v=1" defer></script>
 <meta name="theme-color" content="#131316"/>
@@ -2717,7 +2717,7 @@ a.mtab{text-decoration:none}
 <script src="call-surface.js?v=2026-10-21-r1" defer></script>
 <script src="engine-scan.js?v=2026-10-17-r4" defer></script>
 <link rel="stylesheet" href="vehicle-audio.css?v=3">
-<script src="vehicle-audio.js?v=4" defer></script>
+<script src="vehicle-audio.js?v=5" defer></script>
 <script src="sound-lens.js?v=1" defer></script>
 <script src="call-tools.js?v=2026-10-23-language1" defer></script>
 <script src="call-shell.js?v=1" defer></script>
@@ -3944,11 +3944,14 @@ function quotePage(){
    ทุกหน้าที่เก็บข้อมูลก่อน (ใบเสนอราคา · ฟังเสียง · รูป) ใช้ทางเดียวกัน: ไฟล์เก็บในเครื่อง (CendonMedia)
    แล้วฝากรหัสไว้ใน sessionStorage → ห้องแชตแนบไฟล์ เลือกเครื่องมือ แล้วส่งให้ AI เอง ผู้ใช้ไม่ต้องทำซ้ำ */
 async function featureHandoff(o){
-  await READY.user;if(!U)return needLogin();
+  if(!U)await READY.user;if(!U)return needLogin();
   if(!window.CendonMedia)throw new Error(T("เครื่องนี้เก็บไฟล์ชั่วคราวไม่ได้ ลองเปิดใหม่อีกครั้ง","This device couldn't hold the files — please reopen and try again"));
+  const owner=U.uid;
+  if(!o.files?.length||o.files.length>3)throw Error(T("แนบได้ไม่เกิน 3 ไฟล์","Attach up to 3 files"));
   const ids=[];
   for(const f of o.files)ids.push(await CendonMedia.put(f.blob,{kind:f.kind,mime:f.mime,name:f.name||"",upload:false}));
-  try{sessionStorage.setItem("spire_featureJob",JSON.stringify({tool:o.tool||null,ids,text:o.text||"",at:Date.now()}))}catch(e){}
+  if(U?.uid!==owner)throw Error(T("บัญชีเปลี่ยนแล้ว กรุณาเริ่มใหม่","Account changed. Start again."));
+  try{sessionStorage.setItem("spire_featureJob",JSON.stringify({tool:o.tool||null,uid:owner,ids,text:o.text||"",audioVehicle:o.audioVehicle,recording:o.recording,at:Date.now()}))}catch(e){throw Error(T("เก็บคำขอไม่สำเร็จ กรุณาเปิดสิทธิ์พื้นที่เก็บข้อมูลของเว็บ","Cannot preserve this request. Allow site storage and retry."))}
   if(o.car)ls.set("spire_selCar",o.car);
   if(window.CendonPaint)CendonPaint.prepare("/chat");
   location.href="/chat"+(o.car?"?car="+encodeURIComponent(o.car):"");
@@ -4057,7 +4060,7 @@ const LP_REV=30;
 /* หน้าฟังเสียงรถ: กดอัดได้ทันที (หน้าปัดเสียง วิ่งรอบละ 30 วิ) → อัดเสร็จค่อยถามว่าได้ยินตรงไหน (แตะจุดบนรูปรถ · ไม่แน่ใจก็ข้ามได้)
    AI รู้รุ่น ปี เลขไมล์ของรถคันนี้อยู่แล้ว — ผู้ใช้ไม่ต้องเล่าซ้ำ */
 function listenPage(){
-  let [cars,car]=myCars(),area="",when=[],clip=null,rec=null,busyClip=false,sig="";
+  let [cars,car]=myCars(),area="",when=[],clip=null,rec=null,busyClip=false,sendingClip=false,closed=false,sig="",recording={source:"uploaded_file",processing:{}};
   const fmt=s=>{s=Math.round(s);return Math.floor(s/60)+":"+String(s%60).padStart(2,"0")};
   const nm=c=>[c.name,c.year].filter(Boolean).join(" ");
   const light=()=>document.documentElement.getAttribute("data-theme")==="light";
@@ -4086,7 +4089,7 @@ function listenPage(){
     foot:`<button class="lx-cta" type="button" id="lpGo" style="width:100%"><i class="ti ti-ear"></i><span id="lpGoT">${T("อัดเสียงหรือเลือกไฟล์ก่อน","Record or pick a file first")}</span></button>`,
     mount(b,f,o){
       const err=t=>{$("lpErr").textContent=t||""};
-      const ready=()=>{$("lpGo").disabled=busyClip||!!rec||!clip;$("lpGo").classList.toggle("dim",!clip);
+      const ready=()=>{if(closed)return;$("lpGo").disabled=busyClip||sendingClip||!!rec||!clip;$("lpGo").classList.toggle("dim",!clip);
         $("lpGoT").textContent=!clip?T("อัดเสียงหรือเลือกไฟล์ก่อน","Record or pick a file first"):area&&area!=="unsure"?T("ให้ AI ฟังเสียงนี้","Let the AI listen"):T("ส่งโดยไม่ระบุตำแหน่ง","Send without a location")};
       /* sound-lens.js โหลดแบบ defer — เปิด /listen ตรงจากลิงก์อาจมาก่อน: รอแล้ววาดให้เอง */
       const lensDraw=(n=0)=>{const cv=$("lpLens");if(!cv)return null;if(!window.CendonLens){if(n<20)setTimeout(()=>{const G=lensDraw(n+1);if(G&&rec&&!rec.G)rec.G=G},150);return null}return CendonLens.base(cv,{light:light()})};
@@ -4114,9 +4117,11 @@ function listenPage(){
       async function useClip(file,src){
         err();
         if(file.size>200*1024*1024){err(T("ไฟล์ใหญ่เกินไป (เกิน 200MB) — ตัดคลิปให้สั้นลง หรืออัดในแอปแทน","That file is over 200MB — trim it, or record in the app"));return}
+        if(src!=="rec")recording={source:"uploaded_file",processing:{}};
         busyClip=true;draw();ready();
         try{
-          const vid=src!=="rec"&&isVideo(file),w=await toWav(file),fr=vid?await grabFrames(file,w.full):[];
+          const vid=src!=="rec"&&isVideo(file),w=await toWav(file),fr=vid?(await grabFrames(file,w.full)).slice(0,2):[];
+          if(closed)return;
           if(w.sec<3)throw Object.assign(new Error("short"),{short:true});
           clip={wav:w.blob,url:URL.createObjectURL(w.blob),sec:w.sec,full:w.full,src:vid?"video":src,frames:fr};
           if(src!=="rec")sig="";
@@ -4124,7 +4129,7 @@ function listenPage(){
           err(e.silent?T("ไม่ได้ยินเสียงในคลิปนี้ ลองอัดใกล้จุดที่ดังขึ้น","No sound in this clip — try recording closer to the noise")
             :e.short?T("คลิปสั้นไปหน่อย อัดอย่างน้อย 5 วินาที","That's a bit short — record at least 5 seconds")
             :T("อ่านเสียงจากไฟล์นี้ไม่ได้ ลองไฟล์อื่น หรือกดอัดในแอปแทน","Couldn't read the sound in this file — try another, or record in the app"));
-        }finally{busyClip=false;draw();ready();if(clip)setTimeout(()=>{const w=$("lpWhere");if(w&&!w.hidden)try{w.scrollIntoView({behavior:"smooth",block:"start"})}catch(e){}},120)}
+        }finally{busyClip=false;if(closed)return;draw();ready();if(clip)setTimeout(()=>{const w=$("lpWhere");if(w&&!w.hidden)try{w.scrollIntoView({behavior:"smooth",block:"start"})}catch(e){}},120)}
       }
       async function startRec(){
         err();
@@ -4138,6 +4143,7 @@ function listenPage(){
         const AC=window.AudioContext||window.webkitAudioContext,ac=new AC(),an=ac.createAnalyser();an.fftSize=2048;an.smoothingTimeConstant=.2;ac.createMediaStreamSource(stream).connect(an);
         const td=new Uint8Array(an.fftSize),fq=new Uint8Array(an.frequencyBinCount),hz=ac.sampleRate/an.fftSize;
         const t0=Date.now();rec={mr,stream,ac,cancel:false,raf:0,iv:0,G:null,p:0};ready();
+        recording=window.CendonVehicleAudio?.recording(stream)||{source:"dedicated_microphone",processing:{}};
         mr.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
         mr.onstop=()=>{const r=rec;rec=null;cancelAnimationFrame(r.raf);clearInterval(r.iv);r.stream.getTracks().forEach(t=>t.stop());try{r.ac.close()}catch(e){}
           if(!r.cancel){try{sig=$("lpLens").toDataURL("image/png")}catch(e){sig=""}}
@@ -4152,7 +4158,7 @@ function listenPage(){
       }
       function stopRec(cancel){if(!rec)return;rec.cancel=cancel;try{rec.mr.stop()}catch(e){}}
       /* ปิดหน้านี้ระหว่างอัด: ปิดไมค์ด้วย */
-      SH.onClose=()=>{if(rec)stopRec(true)};
+      SH.onClose=()=>{closed=true;if(rec)stopRec(true);if(clip)URL.revokeObjectURL(clip.url)};
       /* ตำแหน่งเสียง: แตะจุดบนรถ = แตะรายการ (เลขเดียวกัน) · แตะซ้ำ = ยกเลิก */
       const paintZone=()=>{
         b.querySelectorAll(".lp2-dot").forEach(x=>x.classList.toggle("on",x.dataset.k===area));
@@ -4163,14 +4169,19 @@ function listenPage(){
       $("lpWhen").querySelectorAll("button").forEach(x=>x.onclick=()=>{x.classList.toggle("on");x.setAttribute("aria-pressed",String(x.classList.contains("on")));when=[...$("lpWhen").querySelectorAll(".on")].map(y=>y.dataset.k)});
       $("lpFile").onchange=()=>{const fl=$("lpFile").files[0];if(fl)useClip(fl,"file")};
       const cs=b.querySelector("[data-car]");if(cs)cs.onchange=e=>{car=e.target.value;const c=cars.find(x=>x.id===car);if(c&&$("lpCarT"))$("lpCarT").textContent=nm(c)};
-      $("lpGo").onclick=e=>{if(!clip)return;send(e)};
-      const send=e=>busy(e.currentTarget,async()=>{
+      $("lpGo").onclick=()=>send();
+      const send=async()=>{
+        if(!clip||rec||busyClip||sendingClip||closed)return;
+        sendingClip=true;err();ready();
+        try{
         const A=LP_AREA.find(x=>x[0]===(area||"unsure")),W=LP_WHEN.filter(x=>when.includes(x[0])),note=$("lpNote").value.trim(),sec=Math.round(clip.sec);
         const text=T(["ช่วยฟังเสียงรถหน่อย","เสียงมาจาก: "+A[2],W.length?"ได้ยินตอน: "+W.map(x=>x[1]).join(", "):"",note?"เพิ่มเติม: "+note:"",`(${clip.src==="video"?"เสียงจากวิดีโอ":"เสียงที่อัด"} ${sec} วินาที)`].filter(Boolean).join(" · "),
           ["Please listen to my car","Sound from: "+A[3],W.length?"When: "+W.map(x=>x[2]).join(", "):"",note?"Note: "+note:"",`(${clip.src==="video"?"sound from a video":"recording"}, ${sec}s)`].filter(Boolean).join(" · "));
         const files=[{blob:clip.wav,kind:"audio",mime:"audio/wav",name:T("เสียงรถ","Car sound")},...clip.frames.map((d,i)=>({blob:dataBlob(d),kind:"image",mime:"image/jpeg",name:T("ภาพจากวิดีโอ","Video still")+" "+(i+1)}))];
-        try{await featureHandoff({tool:"listen",files,text,car})}catch(x){err(x.message)}
-      });
+        await featureHandoff({tool:"listen",files,text,car,audioVehicle:window.CendonVehicleAudio?.payload(window.CendonVehicleAudio.defaultChoice(cars.find(x=>x.id===car))),recording:{...recording,durationSeconds:clip.sec,sampleRate:16000}});
+        }catch(x){err(x.message||T("ส่งเสียงไม่สำเร็จ ลองอีกครั้ง","Could not send the recording. Please retry."))}
+        finally{sendingClip=false;ready()}
+      };
       draw();paintZone();ready();
     }});
 }
@@ -4543,7 +4554,7 @@ let BELL_V="",BELL_T=0;
 function bellPoll(){
   clearTimeout(BELL_T);
   BELL_T=setTimeout(async()=>{
-    if(U&&!document.hidden&&MODE!=="tech"){try{const r=await api("/api/tech/pulse");if(r&&r.v&&r.v!==BELL_V){const first=!BELL_V;BELL_V=r.v;if(!first)await refreshJobs()}}catch(e){}}
+    if(U&&!document.hidden&&MODE!=="tech"){try{const r=await api("/api/tech/pulse");if(r&&r.v&&r.v!==BELL_V){await refreshJobs();BELL_V=r.v}}catch(e){}}
     bellPoll()},20000);
 }
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&U&&MODE!=="tech")refreshJobs().catch(()=>{})});
@@ -5955,8 +5966,10 @@ function refreshJobs(){
   RJ=(async()=>{
   if(!U){JOBS=[];THREADS=[];JOBS_OK=false;JOBS_ERR=null;renderActive();renderUsed();return}
   /* ใบงาน ประกาศของฉัน และห้องทัก ดึงพร้อมกัน — รอเท่ากับอันที่ช้าที่สุด ไม่ใช่รวมกันสามรอบ */
+  const uid=U.uid;
   const [j,p,t]=await Promise.allSettled([api("/api/tech/jobs"),api("/api/tech/posts"),api("/api/tech/threads")]);
-  if(j.status==="fulfilled"){JOBS=j.value.jobs||[];JOBS_OK=true;JOBS_ERR=null}else JOBS_ERR=j.reason&&j.reason.message||"error";
+  if(U?.uid!==uid)return;
+  if(j.status==="fulfilled"&&Array.isArray(j.value?.jobs)){JOBS=j.value.jobs;JOBS_OK=true;JOBS_ERR=null}else JOBS_ERR=j.reason&&j.reason.message||"error";
   POSTS=p.status==="fulfilled"?p.value.posts||[]:[];
   THREADS=t.status==="fulfilled"?t.value.threads||[]:[];
   renderActive();renderUsed();syncGarage();queueDot();saveSnap();try{LiveShare.sync()}catch(e){}

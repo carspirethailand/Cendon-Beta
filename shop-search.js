@@ -2,6 +2,7 @@
 'use strict';const $=id=>D.getElementById(id),T=(th,en)=>W.spireT?W.spireT(th,en):(W.lang==='en'?en:th),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const platforms=[['all',T('ทุกแพลตฟอร์ม','All platforms')],['shopee','Shopee'],['amazon','Amazon'],['aliexpress','AliExpress'],['ebay','eBay'],['maps',T('ร้านใกล้ฉัน','Nearby shops')]];
 let provider='all',owner='',sequence=0,controller=null,data=null,status=[],position=null,busy=false,notice='';
+const freshPosition=()=>position&&Date.now()-position.at<60000;
 const user=()=>W.spireAuth?.currentUser||W.auth?.currentUser;
 const cars=()=>{try{return (W.garage?.()||JSON.parse(localStorage.getItem('spire_garage')||'[]')).filter(c=>c&&!c.deleted)}catch{return []}};
 const selected=()=>{try{return JSON.parse(localStorage.getItem('spire_selCar')||'null')}catch{return null}};
@@ -22,18 +23,19 @@ function mount(){const scroll=D.querySelector('#v-shop .scroll');if(!scroll||$('
   <section id="ssResults" class="ss-results" aria-live="polite"></section><footer class="ss-foot">${T('ราคาตามสกุลเงินของร้าน ณ เวลาค้นหา อาจเปลี่ยนเมื่อเปิดหน้าสินค้า · ตรวจรหัสอะไหล่และขนาดก่อนสั่งซื้อ','Prices use the store’s currency at search time and may change. Verify the part number and dimensions before buying.')}</footer>`;
   fillCars();$('ssForm').onsubmit=e=>{e.preventDefault();search()};$('ssCar').onclick=()=>{const list=cars(),cur=list.find(c=>String(c.id)===String(selected()));W.CendonCarMenu?.show($('ssCar'),{cur:cur&&cur.id,cars:list.map(c=>({id:c.id,name:carLabel(c)})),onPick:id=>{localStorage.setItem('spire_selCar',JSON.stringify(id));resetSearch();W.dispatchEvent(new CustomEvent('cendon:car-changed'))},links:[{href:'/garage',icon:'ti-car',label:T('จัดการรถในการาจ','Manage garage')}]})};
   host.querySelectorAll('[data-provider]').forEach(b=>b.onclick=()=>{resetSearch();provider=b.dataset.provider;host.querySelectorAll('[data-provider]').forEach(x=>x.setAttribute('aria-pressed',x===b));$('ssLocation').hidden=provider!=='maps';data=null;paint()});
-  $('ssLocation').onclick=()=>{if(!navigator.geolocation)return;const s=status.find(x=>x.id==='maps');if(s?.state!=='ready'){$('ssStatus').textContent=T('Google Maps ยังไม่ได้เปิด API ไม่ส่งตำแหน่งของคุณ','Google Maps API is not connected. Your location has not been sent.');return}
+  $('ssLocation').onclick=()=>{const s=status.find(x=>x.id==='maps');if(s?.state!=='ready'){$('ssStatus').textContent=T('Google Maps ยังไม่ได้เปิด API ไม่ส่งตำแหน่งของคุณ','Google Maps API is not connected. Your location has not been sent.');return}
     const btn=$('ssLocation');if(btn.disabled)return;btn.disabled=true;btn.lastChild.textContent=T('กำลังหาตำแหน่ง…','Finding your location…');$('ssStatus').textContent=T('ถ้าเบราว์เซอร์ถามสิทธิ์ตำแหน่ง ให้กด "อนุญาต"','If your browser asks for location access, choose "Allow".');
-    locate().then(r=>{btn.disabled=false;btn.lastChild.textContent=T('ใช้ตำแหน่งปัจจุบัน','Use current location');if(r.error===undefined){position=r;$('ssStatus').textContent=$('ssQuery').value.trim().length<2?T('ได้ตำแหน่งแล้ว — พิมพ์ชื่ออะไหล่ แล้วกดค้นหา','Location found — type a part name and press Search.'):'';search()}else $('ssStatus').textContent=noLocation(r)})};
+    const n=sequence,uid=user()?.uid;locate().then(r=>{btn.disabled=false;if(n!==sequence||user()?.uid!==uid||provider!=='maps')return;btn.lastChild.textContent=T('ใช้ตำแหน่งปัจจุบัน','Use current location');if(r.error===undefined){position=r;notice=$('ssStatus').textContent=$('ssQuery').value.trim().length<2?T('ได้ตำแหน่งแล้ว — พิมพ์ชื่ออะไหล่ แล้วกดค้นหา','Location found — type a part name and press Search.'):'';search()}else{position=null;notice=$('ssStatus').textContent=noLocation(r)}})};
   paint();refreshStatus();
 }
 const noLocation=r=>({
-  1:T('เบราว์เซอร์บล็อกตำแหน่งของเว็บนี้ไว้ — กดไอคอนตำแหน่ง/แม่กุญแจข้างช่องที่อยู่เว็บ เลือก "อนุญาต" แล้วกดปุ่มนี้อีกครั้ง ตอนนี้ค้นหาได้แต่ไม่เรียงตามระยะ','Your browser blocks location for this site. Use the location/lock icon next to the address bar, choose "Allow", then try again. Searching still works but is not sorted by distance.'),
+  1:T('เบราว์เซอร์บล็อกตำแหน่งของเว็บนี้ไว้ — กดไอคอนตำแหน่ง/แม่กุญแจข้างช่องที่อยู่เว็บ เลือก "อนุญาต" แล้วกดปุ่มนี้อีกครั้ง ยังไม่ส่งคำค้นร้านใกล้ตัวจนกว่าจะอ่านตำแหน่งได้','Your browser blocks location for this site. Use the location/lock icon next to the address bar, choose "Allow", then try again. Nearby search has not been sent without your location.'),
   2:T('อุปกรณ์หาตำแหน่งไม่ได้ — ตรวจว่าเปิดบริการระบุตำแหน่ง (GPS) แล้ว หรือใส่ชื่อพื้นที่ในคำค้น เช่น "ผ้าเบรก บางนา"','Your device could not find its location. Check that location services are on, or add an area to the query (e.g. "brake pads Bangna").'),
+  4:T('ตำแหน่งที่ได้คลาดเคลื่อนเกินไป เปิด GPS/ตำแหน่งแม่นยำแล้วลองใหม่ — ยังไม่ค้นร้านใกล้ตัว','Location accuracy is too low. Enable precise location/GPS and retry; nearby search has not been sent.'),
   3:T('หาตำแหน่งนานเกินไป ลองกดอีกครั้ง หรือใส่ชื่อพื้นที่ในคำค้น','Finding your location took too long. Try again or add an area to the query.')
 }[r&&r.error]||T('อ่านตำแหน่งไม่ได้ ใส่ชื่อพื้นที่ในคำค้น เช่น "ผ้าเบรก บางนา"','Could not read your location. Add an area to the query (e.g. "brake pads Bangna").'));
 /* ขอตำแหน่งจากเบราว์เซอร์ (เบราว์เซอร์ถามผู้ใช้เอง) · ใช้ในหน่วยความจำเท่านั้น ไม่บันทึกลงเครื่องหรือเซิร์ฟเวอร์ */
-function locate(){return new Promise(done=>{if(!navigator.geolocation)return done({error:2});navigator.geolocation.getCurrentPosition(p=>done({lat:p.coords.latitude,lng:p.coords.longitude}),e=>done({error:e&&e.code||2}),{enableHighAccuracy:false,timeout:15000,maximumAge:300000})})}
+function locate(){return new Promise(done=>{if(!navigator.geolocation||!W.isSecureContext)return done({error:2});if(D.permissionsPolicy?.allowsFeature&&!D.permissionsPolicy.allowsFeature('geolocation'))return done({error:1});navigator.geolocation.getCurrentPosition(p=>{const {latitude:lat,longitude:lng,accuracy}=p.coords;if(!Number.isFinite(lat)||!Number.isFinite(lng)||!Number.isFinite(accuracy)||accuracy>1500)return done({error:4});done({lat,lng,accuracy,at:Date.now()})},e=>done({error:e&&e.code||2}),{enableHighAccuracy:true,timeout:20000,maximumAge:0})})}
 function resetSearch(){sequence++;controller?.abort();controller=null;busy=false;data=null;paint()}
 function fillCars(){const el=$('ssCar');if(!el)return;const list=cars(),cur=list.find(c=>String(c.id)===String(selected()));el.innerHTML=esc(cur?carLabel(cur):T('ค้นหาโดยไม่ระบุรถ','Search without a car'))+' <i class="ti ti-chevron-down"></i>';$('ssUseCar').disabled=!cur}
 function query(){const q=$('ssQuery').value.trim(),c=cars().find(c=>String(c.id)===String(selected())),use=$('ssUseCar').checked&&c;
@@ -49,7 +51,7 @@ function paint(){const host=$('ssResults');if(!host)return;
   if(busy){host.innerHTML='<div class="ss-skeleton"></div><div class="ss-skeleton"></div><div class="ss-skeleton"></div>';return}
   const active=rowsFor(provider),providers=data?.providers||status.filter(p=>active.includes(p.id)),pending=providers.filter(p=>p.state==='setup_required'),failed=providers.filter(p=>p.state==='unavailable');
   $('ssStatus').textContent=failed.length?T('บางแพลตฟอร์มตอบช้า กดค้นหาเพื่อลองใหม่ · ','Some platforms are unavailable. Search again to retry · ')+failed.map(x=>x.name).join(', '):notice;
-  const nearby=provider==='maps';$('ssHint').hidden=!nearby;if(nearby)$('ssHint').textContent=T('ค้นหาร้านอะไหล่ใกล้ตำแหน่งของคุณที่น่าจะมีสินค้านี้ — เบราว์เซอร์จะขอสิทธิ์ตำแหน่งตอนกดค้นหา ส่งให้ Google Maps เฉพาะตอนค้นหา ไม่บันทึกไว้','Finds parts shops near you that are likely to carry this item. Your browser asks for location when you search; it is sent to Google Maps only for that search and is not stored.');
+  const nearby=provider==='maps';$('ssHint').hidden=!nearby;if(nearby)$('ssHint').textContent=T('ค้นหาร้านในระยะไม่เกิน 15 กม. — ค้นหาร้านอะไหล่ใกล้ตำแหน่งของคุณที่น่าจะมีสินค้านี้ — เบราว์เซอร์จะขอสิทธิ์ตำแหน่งตอนกดค้นหา ส่งให้ Google Maps เฉพาะตอนค้นหา ไม่บันทึกไว้','Finds parts shops near you that are likely to carry this item. Your browser asks for location when you search; it is sent to Google Maps only for that search and is not stored.');
   $('ssHeading').textContent=data?(nearby?T('ร้านใกล้คุณที่น่าจะมีสินค้า','Nearby shops likely to have it'):T('ผลค้นหาจาก API','API search results')):T('เริ่มจากอะไหล่ที่คุณกำลังหา','Start with the part you need');
   const items=data?.items||[],places=data?.places||[];$('ssCount').textContent=data?(items.length+places.length)+' '+T('รายการ','results'):'';
   host.innerHTML=(pending.length?setupView(pending):'')+items.map(x=>`<article class="ss-product"><a href="${esc(x.url)}" target="_blank" rel="noopener noreferrer" class="ss-product-image">${x.image?`<img src="${esc(x.image)}" alt="${esc(x.title)}" loading="lazy" referrerpolicy="no-referrer">`:'<i class="ti ti-package"></i>'}</a><div class="ss-product-info"><span>${esc(platforms.find(p=>p[0]===x.provider)?.[1]||x.provider)}</span><h3><a href="${esc(x.url)}" target="_blank" rel="noopener noreferrer">${esc(x.title)}</a></h3><strong>${price(x)}</strong><small>${T('ยังไม่ได้ยืนยันความเข้ากันได้กับรถ','Fitment has not been verified')}</small></div></article>`).join('')+
@@ -59,8 +61,15 @@ function paint(){const host=$('ssResults');if(!host)return;
 async function search(){if(!$('ssQuery')||busy)return;const raw=$('ssQuery')?.value.trim();if(!raw||raw.length<2)return;
   const n=++sequence,uid=user()?.uid;controller?.abort();controller=new AbortController();busy=true;data=null;notice='';paint();
   try{
-    if(provider==='maps'&&!position&&status.find(x=>x.id==='maps')?.state==='ready'){const r=await locate();if(n!==sequence)return;if(r.error===undefined)position=r;else notice=noLocation(r)}
-    const result=await api('/api/shop/search',{query:query(),providers:rowsFor(provider),lang:W.lang,...(position&&provider==='maps'?{...position,locationConsent:true}:{})});if(n===sequence&&user()?.uid===uid)data=result}
+    if(provider==='maps'){
+      if(!status.length)await refreshStatus();if(n!==sequence||user()?.uid!==uid)return;
+      if(status.find(x=>x.id==='maps')?.state==='ready'&&!freshPosition()){
+        notice=T('กำลังหาตำแหน่งปัจจุบัน…','Finding your current location…');$('ssStatus').textContent=notice;
+        const r=await locate();if(n!==sequence||user()?.uid!==uid)return;
+        if(r.error!==undefined){position=null;notice=noLocation(r);return}position=r;notice='';
+      }
+    }
+    const result=await api('/api/shop/search',{query:query(),providers:rowsFor(provider),lang:W.lang,...(freshPosition()&&provider==='maps'?{lat:position.lat,lng:position.lng,locationConsent:true}:{})});if(n===sequence&&user()?.uid===uid)data=result}
   catch(e){if(n===sequence)notice=e.message}
   finally{if(n===sequence){busy=false;paint()}}
 }

@@ -9,7 +9,7 @@
 <script src="/partner-state.js?v=1"></script>
 <script src="/display-prefs.js?v=3" defer></script>
 <script src="/i18n/ui-en.js?v=1" defer></script>
-<script src="/ui-language.js?v=1" defer></script>
+<script src="/ui-language.js?v=2" defer></script>
 <script src="/partner-entry.js?v=1"></script>
 <script src="/console-entry.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
@@ -17,7 +17,7 @@
 <script src="/cendon-tour.js" defer></script>
 <script src="/account-actions.js?v=3" defer></script>
 <script src="/account.js?v=2026-10-21-r2" defer></script>
-<script src="/garage-rules.js?v=3" defer></script>
+<script src="/garage-rules.js?v=4" defer></script>
 <script src="/garage-data.js?v=2" defer></script>
 <script src="/mileage-session.js?v=1" defer></script>
 <script src="/mileage-review.js?v=1" defer></script>
@@ -4067,12 +4067,13 @@ html.gx-lock,html.gx-lock body{overflow:hidden}
 </style>
 <link rel="stylesheet" href="lux.css">
 <!-- กระดิ่งแจ้งเตือน: ปุ่มในแถบเมนู (คอม) / มุมขวาบน (มือถือ) -->
-<script src="bell.js?v=14" defer></script>
+<script src="bell.js?v=15" defer></script>
 <script src="drop.js?v=4" defer></script>
 <style>/* มือถือ: กระดิ่งอยู่มุมขวาบน · ปุ่มเพิ่มรถลงมาแถวที่สอง ชิดขวาตรงกับการ์ดรถพอดี (ไม่ต้องหลบเข้ามาอีก) */
 @media(max-width:760px){.gx-head{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:40px auto;column-gap:12px;align-items:end}
   .gx-head>.gx-hl{grid-row:1/3;grid-column:1;align-self:start}.gx-head>.gx-add{grid-row:2;grid-column:2;margin-top:0}}</style>
 <script src="carspec.js?v=2026-10-18-r1" defer></script>
+<script src="car-info-review.js?v=1" defer></script>
 <link rel="stylesheet" href="calm-ui.css?v=1">
 </head>
 <body>
@@ -5174,7 +5175,7 @@ async function pushCar(c){
     body:JSON.stringify({id:c.id,make:c.make||c.name||"",model:c.model||"",
                          year:c.year||"",mileage:c.mileage||"",
                          color:c.color||undefined,body:c.type||undefined,info:c.info||undefined})});
-  if(!r.ok){const e=new Error("HTTP "+r.status);e.status=r.status;throw e}
+  if(!r.ok){const d=await r.json().catch(()=>({}));const e=new Error(d.error||"HTTP "+r.status);e.status=r.status;throw e}
   return await r.json();
 }
 /* ═══ ซิงก์รถกับ D1 แบบสองทาง ═══
@@ -5420,16 +5421,21 @@ const INFO_F=[
   {k:"tire",th:"ขนาดยาง",en:"Tyre size",ph:"เช่น 265/60 R18",max:30},
   {k:"note",th:"บันทึกถึงช่าง",en:"Notes for mechanics",ph:"เช่น เคยแต่งช่วงล่าง ติดแก๊ส",full:true,area:true,max:300}];
 function infoFormHTML(){
-  return INFO_F.map(f=>`<label class="gx-fld${f.full?" full":""}"><span>${esc(gxT(f.th,f.en))}</span>${
+  return `<div class="gx-fld full"><small>${esc(gxT("ข้อมูลที่กรอกเองยังไม่ยืนยันสเปกจริง ตรวจเทียบเอกสารได้โดยไม่ส่ง VIN ทะเบียน หรือบันทึกส่วนตัวให้ AI","User-entered data is not verified. Compare public references without sending VIN, plate or private notes to AI."))}</small><button class="btn" type="button" data-info-review>${esc(gxT("ตรวจข้อมูลกับ AI และเอกสารอ้างอิง","Check against AI-researched references"))}</button><div data-info-review-result role="status" aria-live="polite"></div></div>`+INFO_F.map(f=>`<label class="gx-fld${f.full?" full":""}"><span>${esc(gxT(f.th,f.en))}</span>${
     f.opts?`<select class="input" data-info="${f.k}">${f.opts.map(([v,t])=>`<option value="${esc(v)}">${esc(t)}</option>`).join("")}</select>`
     :f.area?`<textarea class="input" rows="2" data-info="${f.k}" maxlength="${f.max}" placeholder="${esc(f.ph||"")}"></textarea>`
-    :`<input class="input" data-info="${f.k}" ${f.type?`type="${f.type}"`:""} ${f.max?`maxlength="${f.max}"`:""} placeholder="${esc(f.ph||"")}" ${f.k==="vin"?'autocapitalize="characters" autocomplete="off" spellcheck="false"':""}>`
+    :`<input class="input" data-info="${f.k}" ${f.type?`type="${f.type}"`:""} ${f.k==="model_year"?`min="1950" max="${new Date().getFullYear()+1}" step="1" inputmode="numeric"`:""} ${f.max?`maxlength="${f.max}"`:""} placeholder="${esc(f.ph||"")}" ${f.k==="vin"?'autocapitalize="characters" autocomplete="off" spellcheck="false"':""}>`
   }${f.k==="vin"?'<small class="gx-vin-res" aria-live="polite"></small>':""}</label>${f.k==="vin"?'<div class="gx-fld full"><small>'+esc(gxT("ถ้ากดตรวจ VIN จะส่งเลขนี้ไปตรวจ NHTSA (สหรัฐฯ) ไม่ใช่ Gemini และไม่เก็บในคลังสเปกสาธารณะ ข้อมูลรถไทยอาจไม่ครบ","Check VIN sends it to NHTSA (US), not Gemini or the shared spec library. Thai-market coverage may be incomplete."))+'</small><button type="button" class="btn" data-vin-check>'+esc(gxT("ตรวจ VIN กับ NHTSA","Check VIN with NHTSA"))+'</button></div>':""}`).join("");
 }
 function readInfo(root){if(!root)return null;const o={};
   root.querySelectorAll("[data-info]").forEach(el=>{let v=String(el.value||"").trim();if(el.dataset.info==="vin")v=v.toUpperCase().replace(/[\s-]/g,"");if(v)o[el.dataset.info]=v});
   if(o.vin&&!/^[A-HJ-NPR-Z0-9]{17}$/.test(o.vin))throw new Error(gxT("VIN ต้องเป็นตัวอักษร/ตัวเลข 17 หลัก และไม่มี I, O, Q — แก้หรือเว้นช่องนี้ว่างได้","VIN needs 17 characters without I, O or Q. Correct it or leave it empty."));
   if(o.model_year&&(!/^\d{4}$/.test(o.model_year)||Number(o.model_year)<1950||Number(o.model_year)>new Date().getFullYear()+1))throw new Error(gxT("ตรวจปีรุ่น ใช้ปี ค.ศ. 4 หลัก","Use a valid four-digit model year (Gregorian)."));
+  if(!window.CendonGarageRules)throw Error(gxT("ระบบตรวจข้อมูลยังไม่พร้อม ลองเปิดใหม่","Validation is not ready. Please reopen."));
+  try{window.CendonGarageRules.infoPatch(o)}catch(e){
+    const el=root.querySelector('[data-info="'+e.field+'"]');if(el){el.setAttribute('aria-invalid','true');el.focus()}
+    throw e;
+  }
   return Object.keys(o).length?o:null}
 function fillInfo(root,info){if(!root)return;
   root.querySelectorAll("[data-info]").forEach(el=>{el.value=(info&&info[el.dataset.info])||""});
@@ -5471,11 +5477,44 @@ function openInfo(id){const c=garage().find(x=>x.id===id);if(!c)return;infoId=id
   const P=$("gxInfo"),set=(q,t)=>{const el=P&&P.querySelector(q);if(el)el.textContent=t};
   set("#gxIT",gxT("ข้อมูลรถ","Car details"));set("#gxIName",(c.name||`${c.make||""} ${c.model||""}`.trim())+" · "+gxT("ทุกช่องไม่บังคับ","all optional"));
   set("#gxISave span",gxT("บันทึกข้อมูล","Save"));
-  fillInfo($("gxIForm"),c.info||null);gxOpen("gxInfo")}
-async function saveInfo(){const g=garage(),c=g.find(x=>x.id===infoId);if(!c){gxCloseAll();return}
-  let info;try{info=readInfo($("gxIForm"))}catch(e){toast(e.message,"ti-alert-triangle");return}if(info)c.info=info;else delete c.info;
-  saveGarage(g);renderGarage();gxCloseAll();toast(gxT("บันทึกข้อมูลรถแล้ว","Car details saved"),"ti-check");
-  if(carsAreRemote()){try{await pushCar({...c,info:c.info||{}})}catch(err){console.warn("save car info failed",err)}}}
+  fillInfo($("gxIForm"),c.info||null);gxOpen("gxInfo");reviewInfo($("gxIForm"),c)}
+async function saveInfo(){const c=garage().find(x=>x.id===infoId);if(!c){gxCloseAll();return}
+  const button=$("gxISave");if(button?.disabled)return;
+  let info;try{info=readInfo($("gxIForm"))}catch(e){toast(e.message,"ti-alert-triangle");return}
+  const owner=auth?.currentUser?.uid,id=c.id;if(button)button.disabled=true;
+  try{
+    const next={...c,info:info||{}};
+    if(carsAreRemote())await pushCar(next);
+    if((auth?.currentUser?.uid)!==owner)throw Error(gxT("บัญชีเปลี่ยน กรุณาเริ่มใหม่","Account changed. Start again."));
+    const g=garage(),live=g.find(x=>x.id===id);if(!live)throw Error(gxT("ไม่พบรถ","Car not found"));
+    live.info=info||{};saveGarage(g);renderGarage();gxCloseAll();toast(gxT("บันทึกข้อมูลรถแล้ว · ข้อมูลที่กรอกไม่ใช่การรับรองจากผู้ผลิต","Car details saved · user-entered data is not manufacturer verification"),"ti-check");
+  }catch(e){toast(e.message,"ti-alert-triangle")}finally{if(button)button.disabled=false}
+}
+async function reviewInfo(root,carValue){
+  const button=root?.querySelector("[data-info-review]"),result=root?.querySelector("[data-info-review-result]");
+  if(!button||!result||button.disabled)return;
+  let info;try{info=readInfo(root)||{}}catch(e){result.textContent=e.message;return}
+  const signature=JSON.stringify(info),owner=auth?.currentUser?.uid;button.disabled=true;result.textContent=gxT("กำลังเทียบเอกสารอ้างอิง…","Comparing source documents…");
+  try{
+    const report=await window.CendonCarInfoReview.check(carValue,info);
+    if(!result.isConnected||owner!==auth?.currentUser?.uid||JSON.stringify(readInfo(root)||{})!==signature)return;
+    result.replaceChildren();
+    const label=gxT(report.status==="unconfirmed"?"ยังไม่มีหลักฐานเพียงพอยืนยันข้อมูลรุ่นนี้ ไม่ใช่ผลว่ารถผิด":"เทียบกับรุ่นย่อยที่พบในเอกสาร ไม่ใช่การยืนยันรถคันจริง",report.status==="unconfirmed"?"Not enough evidence to confirm this model; this does not mean the car is invalid.":"Compared with documented variants, not verification of this physical vehicle.");
+    result.append(document.createTextNode(label));
+    for(const w of report.warnings){
+      const p=document.createElement("p"),field=INFO_F.find(f=>f.k===w.field);
+      p.textContent=gxT(field?.th||w.field,field?.en||w.field)+": "+gxT("ยังไม่ตรงกับข้อมูลที่พบ — ","Not matched to the references — ")+w.values.join(" / ");result.append(p);
+    }
+    for(const s of report.sources||[]){const a=document.createElement("a");a.href=s.url;a.target="_blank";a.rel="noopener noreferrer";a.textContent=" · "+(s.title||new URL(s.url).hostname);result.append(a)}
+  }catch(e){if(root.isConnected)result.textContent=gxT("ยังตรวจอ้างอิงไม่ได้ ข้อมูลเดิมไม่เปลี่ยน ลองอีกครั้ง","Reference check unavailable. Existing data is unchanged; retry later.")}
+  finally{button.disabled=false}
+}
+document.addEventListener("click",e=>{
+  const button=e.target.closest("[data-info-review]");if(!button)return;
+  const root=button.closest("[data-info-form]");
+  const carValue=root===$("gxIForm")?garage().find(c=>c.id===infoId):{make:customMode?$("gCustomMake")?.value:selectedMake,model:customMode?$("gCustomModel")?.value:selectedModel?.name||selectedModel?.model||"",year:selectedYear};
+  if(carValue)reviewInfo(root,carValue);
+});
 window.openInfo=openInfo;
 
 /* แท็บสเปกยืนยันประเภทตัวถังจากสองแหล่งตรงกัน → ใช้ภาพรถให้ตรง (เช่นรุ่นที่ฐานข้อมูลในแอปจัดผิดประเภท) */
@@ -5544,7 +5583,7 @@ $("garageList")?.addEventListener("click",async e=>{
       const r=await fetch(`${BACKEND_URL}/api/cars`,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+await carTok()},body:JSON.stringify({make,model,year,mileage,color:gxColor,body:type,info:addInfo||undefined})});
       if(!r.ok)throw new Error(r.status+" "+r.statusText);
       const res=await r.json(); if(res&&res.id)id=res.id;
-    }catch(err){toast(((window.spireT?window.spireT("บันทึกในเครื่องแทน (เซิร์ฟเวอร์ผิดพลาด): ","Saved locally (server error): "):(lang==="en"?"Saved locally (server error): ":"บันทึกในเครื่องแทน (เซิร์ฟเวอร์ผิดพลาด): ")))+err.message,"ti-cloud-off")}
+    }catch(err){toast(err.message,"ti-cloud-off");($("gAdd")||{}).disabled=false;return}
   }
 
   const g = garage();
@@ -14817,7 +14856,7 @@ window.spireApplyPrimary=()=>apply(read());
 <!-- แผงผู้ดูแลแบบลอย: โหลดทุกหน้า แต่แสดงเฉพาะผู้ดูแลที่เปิดไว้ในตั้งค่า -->
 <script src="cendon-admin.js" defer></script>
 <link rel="stylesheet" href="feature-ai.css?v=1">
-<script src="feature-ai.js?v=5"></script>
+<script src="feature-ai.js?v=2026-10-24-feedback1"></script>
 <script src="fluid.js" defer></script>
 <script src="crop.js" defer></script>
 <script src="cendon-line.js?v=5" defer></script>

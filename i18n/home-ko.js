@@ -2,6 +2,10 @@
    กุญแจคือข้อความอังกฤษใน T("ไทย","English") และพจนานุกรม EN ของหน้า · {0} {1} = ค่าที่แทนตอนแสดงผล
    เพิ่มข้อความใหม่ในหน้า → เพิ่มคำแปลที่นี่ทุกภาษา (เทสต์ i18n-home ตรวจความครบ) */
 window.CENDON_L10N={lang:"ko",t:{
+"Attach up to 3 files":"최대 3개 파일 첨부",
+"Account changed. Start again.":"계정이 변경되었습니다. 다시 시작하세요.",
+"Cannot preserve this request. Allow site storage and retry.":"요청을 저장할 수 없습니다. 사이트 저장소를 허용하고 다시 시도하세요.",
+"Could not send the recording. Please retry.":"녹음을 전송하지 못했습니다. 다시 시도하세요.",
 "Enter every amount in Thai baht (THB). Your display currency only changes estimates, not the quote currency.":"모든 금액은 태국 바트(THB)로 입력하세요. 표시 통화는 예상 금액에만 적용되며 견적 통화는 바뀌지 않습니다.",
 "Customer cancelled":"고객이 취소했습니다",
 "Mechanic cancelled":"정비사가 취소했습니다",

@@ -9,7 +9,7 @@
 <script src="/partner-state.js?v=1"></script>
 <script src="/display-prefs.js?v=3" defer></script>
 <script src="/i18n/ui-en.js?v=1" defer></script>
-<script src="/ui-language.js?v=1" defer></script>
+<script src="/ui-language.js?v=2" defer></script>
 <script src="/partner-entry.js?v=1"></script>
 <script src="/console-entry.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
@@ -20,7 +20,7 @@
 <link rel="stylesheet" href="/settings.css?v=3">
 <script src="/settings.js?v=6" defer></script>
 <script src="/sheet-drag.js?v=1" defer></script>
-<script src="/garage-rules.js?v=3" defer></script>
+<script src="/garage-rules.js?v=4" defer></script>
 <script src="/garage-data.js?v=2" defer></script>
 <script src="/mileage-session.js?v=1" defer></script>
 <script src="/mileage-review.js?v=1" defer></script>
@@ -3044,7 +3044,7 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 <script src="call-sounds.js?v=1" defer></script>
 <script src="engine-scan.js?v=2026-10-17-r4" defer></script>
 <link rel="stylesheet" href="vehicle-audio.css?v=3">
-<script src="vehicle-audio.js?v=4" defer></script>
+<script src="vehicle-audio.js?v=5" defer></script>
 <script src="sound-lens.js?v=1" defer></script>
 <script src="call-tools.js?v=2026-10-23-language1" defer></script>
 <script src="call-composer.js?v=2026-10-17-r4" defer></script>
@@ -3059,7 +3059,7 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 <script src="chat-render.js?v=3" defer></script>
 <script src="chat-jobs.js?v=2" defer></script>
 <script src="valet.js?v=9" defer></script>
-<script src="bell.js?v=14" defer></script>
+<script src="bell.js?v=15" defer></script>
 <script src="drop.js?v=4" defer></script>
 <script src="./techs.js"></script>
 <script src="./cendon-search.js"></script>
@@ -5880,9 +5880,8 @@ function featureJob(){
 function dropFeatureJob(){try{sessionStorage.removeItem("spire_featureJob");sessionStorage.removeItem("spire_quoteJob")}catch(e){}}
 async function runFeatureJob(){
   const job=featureJob();if(!job)return false;
-  if(!Array.isArray(job.ids)||!job.ids.length||Date.now()-(job.at||0)>3600000){dropFeatureJob();return false}
+  if((job.uid&&job.uid!==auth?.currentUser?.uid)||!Array.isArray(job.ids)||!job.ids.length||Date.now()-(job.at||0)>3600000){dropFeatureJob();return false}
   if(!selCar()||!window.CendonMedia||sending)return false;
-  dropFeatureJob();
   if(messages.filter(m=>!m.typing).length)newSession();
   enterThread({});
   pending=[];
@@ -5892,6 +5891,11 @@ async function runFeatureJob(){
   if(!pending.length){toast(lang==="en"?"Couldn't find the files — please attach them again":"หาไฟล์ไม่เจอ ลองแนบใหม่อีกครั้ง","ti-alert-triangle");return false}
   if(job.tool&&window.CendonFeatureAI)CendonFeatureAI.select(job.tool,{force:true});
   $("inp").value=job.text||(lang==="en"?"Please take a look at this":"ช่วยดูให้หน่อย");autoSize();updateSend();
+  if(job.tool==="listen"&&window.CendonFeatureAI){
+    CendonFeatureAI.adoptAudio?.(job.audioVehicle,job.recording);
+    try{await CendonFeatureAI.prepare(pending,$("inp").value)}catch(e){toast(e.message,"ti-alert-triangle");return false}
+  }
+  dropFeatureJob();
   await sendMsg();
   return true;
 }
@@ -10745,6 +10749,13 @@ function openQuote(which,inline){
 /* Narrow bridge: keep sensor, parking and accounting logic in the existing tool module. */
 const featureBridge={
   current:()=>tool,
+  adoptAudio:(value,recording)=>{
+    const VA=window.CendonVehicleAudio;if(!VA)return;
+    const v=value?.version===1&&['garage_confirmed','other_confirmed','unknown'].includes(value.source)
+      ?VA.choice(value.source==='garage_confirmed'&&JSON.stringify(VA.car(car()))!==JSON.stringify(VA.car(value.vehicle))?'other_confirmed':value.source,car(),value.vehicle):VA.defaultChoice(car());
+    lVehicle=v;lCapture=structuredClone(v);lCaptureUid=window.spireAuth?.currentUser?.uid||'';
+    lRecording=recording||{source:'uploaded_file',processing:{}};renderTool();
+  },
   open:(key,inline)=>openQuote(key,inline),
   stop:()=>{stopShake();if(sk.stage==="run")sk.stage="idle";try{lRec&&lRec.stop()}catch(e){}lArmed=false;if(!dv.on)stopPkWatch();},
   context:key=>{
@@ -12691,7 +12702,7 @@ setTimeout(mount,800); setTimeout(mount,2500);
 <!-- แผงผู้ดูแลแบบลอย: โหลดทุกหน้า แต่แสดงเฉพาะผู้ดูแลที่เปิดไว้ในตั้งค่า -->
 <script src="cendon-admin.js" defer></script>
 <link rel="stylesheet" href="feature-ai.css?v=1">
-<script src="feature-ai.js?v=2026-10-23-language1"></script>
+<script src="feature-ai.js?v=2026-10-24-feedback1"></script>
 <script src="fluid.js" defer></script>
 <script src="crop.js" defer></script>
 <script src="cendon-line.js?v=5" defer></script>

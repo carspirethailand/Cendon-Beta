@@ -6,6 +6,7 @@
   const esc=v=>clean(v,300).replace(/[&"']/g,c=>({'&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
   function car(c={}){
     if(!c||typeof c!=='object')return {};
+    c={...c,...Object.fromEntries(Object.entries(c.info||{}).filter(([k])=>['model_year','engine','engine_code','fuel','market'].includes(k)))};
     const words=clean(c.name).split(/\s+/);
     return Object.fromEntries(Object.entries({make:clean(c.make||words[0]),model:clean(c.model||words.slice(1).join(' ')),year:clean(c.model_year||c.year,4),engine:clean(c.engine,80),engine_code:clean(c.engine_code,24),fuel:clean(c.fuel||c.fuelType,30),mileage:clean(c.mileage,12),market:clean(c.market||c.country,40),kind:clean(c.kind||c.vehicle_type,20)}).filter(([,v])=>v));
   }

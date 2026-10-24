@@ -2,6 +2,16 @@
    กุญแจคือข้อความอังกฤษใน T("ไทย","English") และพจนานุกรม EN ของหน้า · {0} {1} = ค่าที่แทนตอนแสดงผล
    เพิ่มข้อความใหม่ในหน้า → เพิ่มคำแปลที่นี่ทุกภาษา (เทสต์ i18n-home ตรวจความครบ) */
 window.CENDON_L10N={lang:"ko",t:{
+"Some jobs changed status and remain in the list. Please check the latest details.":"일부 작업의 상태가 변경되어 목록에 남아 있습니다. 최신 내용을 확인하세요.",
+"Clear finished or cancelled jobs from the list? History, chats and evidence are kept, and you can restore the jobs.":"완료되거나 취소된 작업을 목록에서 지울까요? 이력, 채팅, 증빙은 보관되며 작업을 복원할 수 있습니다.",
+"Could not update the job list. Please retry.":"작업 목록을 업데이트하지 못했습니다. 다시 시도하세요.",
+"Cleared from the list. Job history is kept.":"목록에서 지웠습니다. 작업 이력은 보관됩니다.",
+"Jobs restored to the list":"작업을 목록에 복원했습니다",
+"Restore to list":"목록에 복원",
+"Clear":"지우기",
+"History, chats and evidence are kept. The customer's list is unchanged.":"이력, 채팅, 증빙은 보관됩니다. 고객의 목록은 변경되지 않습니다.",
+"Showing the latest 20 jobs in each list":"각 목록에 최근 작업 20개를 표시합니다",
+"Cleared jobs ({0})":"지운 작업 ({0})",
 "Clear all":"모두 지우기",
 "Clear notifications only, not jobs or chats":"알림만 지우며 작업이나 채팅은 삭제하지 않습니다",
 "Notifications cleared. Your jobs and chats are unchanged.":"알림을 지웠습니다. 작업과 채팅은 그대로 유지됩니다.",

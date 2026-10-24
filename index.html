@@ -14,7 +14,7 @@ if(/^\/messages(\/|$)/.test(location.pathname)){document.documentElement.classLi
 <script src="/shop-images.js?v=1"></script>
 <script src="/display-prefs.js?v=3" defer></script>
 <script src="/i18n/ui-en.js?v=2" defer></script>
-<script src="/ui-language.js?v=3" defer></script>
+<script src="/ui-language.js?v=4" defer></script>
 <script src="/partner-entry.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
@@ -34,7 +34,7 @@ if(/^\/messages(\/|$)/.test(location.pathname)){document.documentElement.classLi
 (function(){try{if(/^\/(work|studio)(\/|$)/.test(location.pathname)){var p=JSON.parse(localStorage.getItem("spire_partner")||"null");if(p&&p.s==="shop")document.documentElement.dataset.boot="tech"}}catch(e){}})();</script>
 <script>(function(){try{var A=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt"],l=null;try{l=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
 if(A.indexOf(l)<0){l="en";var n=navigator.languages||[navigator.language||"en"];for(var i=0;i<n.length;i++){var b=String(n[i]).toLowerCase().split("-")[0];if(A.indexOf(b)>=0){l=b;break}}}
-if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=17"><\/script>')}catch(e){}})();</script>
+if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=18"><\/script>')}catch(e){}})();</script>
 <title>Cendon</title>
 <meta name="description" content="ถามอาการรถ ส่งรูปหรือเสียงให้ AI ช่วยดู เช็กใบเสนอราคา และหาช่างที่ผ่านการตรวจใกล้คุณ">
 <!-- การ์ดตอนแชร์ลิงก์ (LINE / Facebook / X) — รูปต้องเป็นที่อยู่เต็ม -->
@@ -1359,6 +1359,13 @@ html[data-theme="dark"] .stu-grp.hot .stu-gh{color:#f87171}
 .stu-grp.hot .stu-gh::before{content:"";width:8px;height:8px;border-radius:50%;background:#dc2626;animation:urgPulse 1.6s ease-in-out infinite}
 .stu-cards{display:grid;gap:10px}
 .stu-past .stu-cards{padding-bottom:6px}
+.stu-history-tools{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px;flex-wrap:wrap}
+.stu-history-tools small{font:400 12px/1.5 var(--kb);color:var(--muted);flex:1;min-width:150px}
+.stu-history-tools button,.stu-history-row>button:last-child{min-height:44px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);padding:8px 12px;font:500 13px var(--kb);cursor:pointer}
+.stu-history-tools button:disabled,.stu-history-row>button:last-child:disabled{opacity:.45;cursor:default}
+.stu-history-row{display:flex;align-items:center;gap:8px;min-width:0}.stu-history-row>.stu-row{flex:1;min-width:0;width:auto}.stu-history-row>button:last-child{flex:none}
+.stu-history-row>button:focus-visible,.stu-history-tools button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media(max-width:380px){.stu-history-row{align-items:stretch;flex-wrap:wrap}.stu-history-row>.stu-row{flex-basis:100%}.stu-history-row>button:last-child{margin:0 0 8px auto}}
 .stu-cards .stu-row{align-items:flex-start;gap:12px;min-height:0;margin:0;padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--surface);transition:border-color .15s}
 .stu-cards .stu-row:last-child{border-bottom:1px solid var(--line)}
 .stu-cards .stu-row:hover{border-color:color-mix(in srgb,var(--ink) 25%,var(--line))}
@@ -5960,15 +5967,15 @@ function syncGarage(){
   });
   if(changed)try{localStorage.setItem("spire_garage",JSON.stringify(g))}catch(e){}
 }
-let RJ=null;
+let RJ=null,JOBS_EPOCH=0;
 function refreshJobs(){
   if(RJ)return RJ;
   RJ=(async()=>{
   if(!U){JOBS=[];THREADS=[];JOBS_OK=false;JOBS_ERR=null;renderActive();renderUsed();return}
   /* ใบงาน ประกาศของฉัน และห้องทัก ดึงพร้อมกัน — รอเท่ากับอันที่ช้าที่สุด ไม่ใช่รวมกันสามรอบ */
-  const uid=U.uid;
+  const uid=U.uid,epoch=JOBS_EPOCH;
   const [j,p,t]=await Promise.allSettled([api("/api/tech/jobs"),api("/api/tech/posts"),api("/api/tech/threads")]);
-  if(U?.uid!==uid)return;
+  if(U?.uid!==uid||epoch!==JOBS_EPOCH)return;
   if(j.status==="fulfilled"&&Array.isArray(j.value?.jobs)){JOBS=j.value.jobs;JOBS_OK=true;JOBS_ERR=null}else JOBS_ERR=j.reason&&j.reason.message||"error";
   POSTS=p.status==="fulfilled"?p.value.posts||[]:[];
   THREADS=t.status==="fulfilled"?t.value.threads||[]:[];
@@ -5991,7 +5998,7 @@ async function jobs(all){
   try{
     /* ห้องทักช่าง (คุยถามก่อนจ้าง) อยู่บนสุด — ล่าสุด 3 ห้อง ที่เหลือกด "ดูข้อความทั้งหมด" */
     const [d,tl]=await Promise.all([api("/api/tech/jobs"+(all?"?all=1":"")),all?null:api("/api/tech/threads").catch(()=>null)]);
-    const L=d.jobs||[],TL=(tl&&tl.threads)||[];
+    const L=(d.jobs||[]).filter(j=>all||!techJobHidden(j)),TL=(tl&&tl.threads)||[];
     if(tl){THREADS=TL;queueDot()}
     const msgs=TL.length?`<p class="h4" style="margin-top:0">ข้อความ</p>${TL.slice(0,3).map(thRow).join("")}${TL.length>3?`<button class="lx-gh w" data-inbox style="margin-bottom:14px">${T("ดูข้อความทั้งหมด","See all messages")} (${TL.length})</button>`:""}<p class="h4">งาน</p>`:"";
     sheet({title:all?"งานทั้งหมด":"งานของฉัน",url,body:msgs+(L.length?L.map((j,i)=>{
@@ -7404,6 +7411,28 @@ const SPAGE={queue:"jobs",find:"jobs",messages:"msgs",posts:"svc",shop:"shop",ai
 const SFIRST={jobs:"queue",msgs:"messages",svc:"posts",shop:"shop"};
 const myShop=()=>ME&&ME.technician;
 const techJobs=()=>JOBS.filter(j=>j.side==="technician"||j.side==="both");
+const techJobClosed=j=>["technician","both"].includes(j.side)&&["completed","cancelled"].includes(j.status);
+const techJobHidden=j=>techJobClosed(j)&&j.archived===true;
+let JOB_ARCHIVE_PENDING=null;
+async function archiveTechJobs(rows,archived,btn){
+  const owner=U?.uid,shop=myShop()?.id;
+  if(!owner||!shop||!rows.length||rows.some(j=>!techJobClosed(j))||JOB_ARCHIVE_PENDING?.owner===owner)return;
+  if(archived&&!confirm(T("ล้างงานที่เสร็จหรือยกเลิกแล้วออกจากรายการ? ประวัติ แชต และหลักฐานยังอยู่ และนำกลับมาแสดงได้","Clear finished or cancelled jobs from the list? History, chats and evidence are kept, and you can restore the jobs.")))return;
+  const current=()=>U?.uid===owner&&myShop()?.id===shop,token={owner};JOB_ARCHIVE_PENDING=token;
+  try{await busy(btn,async()=>{
+    let r;try{r=await api("/api/tech/jobs/archive",{body:{ids:rows.map(j=>j.id),archived}})}catch(e){if(!current())return;throw e}
+    if(!current())return;
+    if(!r?.ok||!Array.isArray(r.jobs))throw new Error(T("บันทึกรายการงานไม่สำเร็จ ลองใหม่อีกครั้ง","Could not update the job list. Please retry."));
+    ++JOBS_EPOCH;
+    const changes=new Map(r.jobs.map(j=>[j.id,j]));
+    JOBS=JOBS.map(j=>{const next=changes.get(j.id);return next&&next.revision===j.revision&&next.status===j.status?{...j,archived:next.archived===true,archiveVersion:next.archiveVersion}:j});
+    queueDot();
+    // Ignore any read started before this write, then fetch authoritative cross-device state.
+    if(RJ)await RJ;if(!current())return;await refreshJobs();if(!current())return;
+    if(r.jobs.length!==rows.length||r.jobs.some(j=>j.archived!==archived)){toast(T("บางงานมีสถานะเปลี่ยน จึงคงไว้ในรายการ กรุณาตรวจข้อมูลล่าสุด","Some jobs changed status and remain in the list. Please check the latest details."),"ti-info-circle");return}
+    toast(archived?T("ล้างออกจากรายการแล้ว ประวัติงานยังอยู่","Cleared from the list. Job history is kept."):T("นำงานกลับมาแสดงแล้ว","Jobs restored to the list"),"ti-circle-check");
+  })}finally{if(JOB_ARCHIVE_PENDING===token)JOB_ARCHIVE_PENDING=null;if(current()&&MODE==="tech"&&DT==="queue")drawTab()}
+}
 /* คำขอ/ข้อเสนอที่ยังไม่ตกลงกันมีอายุ (ตรงกับหลังบ้าน): งานด่วน 3 ชม. · ร้านยังไม่เสนอราคา และข้อเสนอในประกาศ 48 ชม. · ใบเสนอราคา 7 วัน
    หลังบ้านส่ง expiresAt/expired มาเอง — ค่าประมาณข้างล่างใช้ตอนวาดจากภาพล่าสุด หรือหลังบ้านรุ่นก่อน
    หมดอายุ = ไม่อยู่ในรายการเลย (ไม่ขึ้นทั้ง "ต้องทำต่อ" และ "งานที่ผ่านมา") */
@@ -7610,6 +7639,7 @@ const errBar=(msg,id)=>`<p class="stu-err"><i class="ti ti-cloud-off"></i><span>
 let EXP_T=0;
 function tabQueue(){
   const B=$("dBody"),all=techJobs(),t0=Date.now();
+  const pastOpen=B.querySelector('[data-past-list]')?.open,clearedOpen=B.querySelector('[data-cleared-list]')?.open;
   const err=JOBS_ERR?errBar(JOBS_ERR,"stuRetry"):"";
   clearTimeout(EXP_T);
   if(!JOBS_OK&&!JOBS_ERR){B.innerHTML='<div class="skel"></div><div class="skel" style="margin-top:10px"></div>';return}
@@ -7620,7 +7650,11 @@ function tabQueue(){
   const urg=[...urgNear.map(p=>({p,at:p.createdAt||0})),...live.filter(urgJob).map(j=>({j,at:at(j)}))].sort((a,b)=>b.at-a.at);
   const mine=live.filter(j=>!urgJob(j)&&(j.needsMe||j.status==="disputed")).sort(newest);
   const wait=live.filter(j=>!urgJob(j)&&!(j.needsMe||j.status==="disputed")).sort(newest);
-  const past=all.filter(j=>!liveJob(j)&&!goneJob(j)).sort(newest).slice(0,20);
+  const closed=all.filter(j=>techJobClosed(j)&&!goneJob(j)).sort(newest),pastAll=closed.filter(j=>!techJobHidden(j)),clearedAll=closed.filter(techJobHidden);
+  const past=pastAll.slice(0,20),cleared=clearedAll.slice(0,20),archiveDisabled=!JOBS_OK||!!JOBS_ERR||JOB_ARCHIVE_PENDING?.owner===U?.uid;
+  const historyRow=(j,restore)=>`<div class="stu-history-row">${jobRow(j)}<button type="button" data-${restore?"restore":"archive"}="${esc(j.id)}" ${archiveDisabled?"disabled":""}>${restore?T("นำกลับมาแสดง","Restore to list"):T("ล้าง","Clear")}</button></div>`;
+  const historyNote=T("เก็บประวัติ แชต และหลักฐานไว้ ไม่กระทบรายการของลูกค้า","History, chats and evidence are kept. The customer's list is unchanged.");
+  const latestNote=pastAll.length>20||clearedAll.length>20?`<p class="note">${T("แสดง 20 งานล่าสุดในแต่ละรายการ","Showing the latest 20 jobs in each list")}</p>`:"";
   const grp=(cls,title,list)=>`<section class="stu-grp${cls}"><h2 class="stu-gh">${title}<em>${list.length}</em></h2><div class="stu-cards">${list.join("")}</div></section>`;
   const urgRow=p=>`<button class="stu-row urg" type="button" data-up="${esc(p.id)}"><span class="stu-ri"><i class="ti ti-urgent"></i></span>
     <span class="stu-rb"><span class="urg-tag"><i class="ti ti-map-pin"></i>${T("ใกล้คุณ · ยังไม่มีใครรับ","Near you · nobody has taken it")}</span>
@@ -7634,11 +7668,14 @@ function tabQueue(){
     +(mine.length?grp("",T("รอคุณ","Your turn"),mine.map(jobRow)):"")
     +(wait.length?grp("",T("รอลูกค้า","Waiting for the customer"),wait.map(jobRow)):"")
     +(any||JOBS_ERR&&!JOBS_OK?"":`<div class="stu-empty"><i class="ti ti-clipboard-check"></i><b>${T("ยังไม่มีงานที่ต้องดำเนินการ","Nothing to do right now")}</b><p>${T("เมื่อมีคำขอใหม่ รายการจะแสดงที่นี่","New requests will show up here")}</p><button class="lx-cta" type="button" id="stuFind">${T("หางานใกล้ฉัน","Find work nearby")}</button></div>`)
-    +(past.length?`<details class="stu-past"><summary>${T(`งานที่ผ่านมา (${past.length})`,`Past jobs (${past.length})`)}<i class="ti ti-chevron-down"></i></summary><div class="stu-cards">${past.map(jobRow).join("")}</div></details>`:"");
+    +(past.length?`<details class="stu-past" data-past-list ${pastOpen?"open":""}><summary>${T(`งานที่ผ่านมา (${pastAll.length})`,`Past jobs (${pastAll.length})`)}<i class="ti ti-chevron-down"></i></summary><div class="stu-history-tools"><small>${historyNote}</small><button type="button" id="stuClearPast" ${archiveDisabled?"disabled":""}>${T("ล้างทั้งหมด","Clear all")}</button></div>${latestNote}<div class="stu-cards">${past.map(j=>historyRow(j,false)).join("")}</div></details>`:"")
+    +(cleared.length?`<details class="stu-past" data-cleared-list ${clearedOpen?"open":""}><summary>${T(`รายการที่ล้าง (${clearedAll.length})`,`Cleared jobs (${clearedAll.length})`)}<i class="ti ti-chevron-down"></i></summary><div class="stu-history-tools"><small>${historyNote}</small></div>${latestNote}<div class="stu-cards">${cleared.map(j=>historyRow(j,true)).join("")}</div></details>`:"");
   B.querySelectorAll("[data-j]").forEach(x=>x.onclick=()=>openJob(x.dataset.j,true));
   B.querySelectorAll("[data-up]").forEach(x=>x.onclick=()=>openPost(urgNear.find(p=>p.id===x.dataset.up)));
   if($("stuFind"))$("stuFind").onclick=()=>setTab2("find");
   if($("stuRetry"))$("stuRetry").onclick=e=>busy(e.currentTarget,refreshJobs);
+  if($("stuClearPast"))$("stuClearPast").onclick=e=>archiveTechJobs(pastAll,true,e.currentTarget);
+  B.querySelectorAll('[data-archive],[data-restore]').forEach(b=>b.onclick=()=>{const restore=b.hasAttribute('data-restore'),j=all.find(j=>j.id===(restore?b.dataset.restore:b.dataset.archive));if(j)archiveTechJobs([j],!restore,b)});
   /* ใบที่ใกล้หมดอายุ/งานด่วนที่ใกล้ครบ 3 ชม.: วาดใหม่ตอนถึงเวลา ไม่ต้องรอข้อมูลรอบถัดไป */
   const nx=Math.min(...live.map(expAt).filter(e=>e>t0),...live.filter(urgJob).map(j=>(j.createdAt||0)+URGENT_MS),...urgNear.map(p=>(p.createdAt||0)+URGENT_MS));
   if(nx<Infinity)EXP_T=setTimeout(()=>{if(MODE==="tech"&&DT==="queue"&&!$("bs").classList.contains("on"))drawTab()},Math.min(nx-t0+500,2e9));

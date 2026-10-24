@@ -2,6 +2,16 @@
    กุญแจคือข้อความอังกฤษใน T("ไทย","English") และพจนานุกรม EN ของหน้า · {0} {1} = ค่าที่แทนตอนแสดงผล
    เพิ่มข้อความใหม่ในหน้า → เพิ่มคำแปลที่นี่ทุกภาษา (เทสต์ i18n-home ตรวจความครบ) */
 window.CENDON_L10N={lang:"vi",t:{
+"Some jobs changed status and remain in the list. Please check the latest details.":"Một số công việc đã đổi trạng thái và vẫn ở trong danh sách. Vui lòng xem chi tiết mới nhất.",
+"Clear finished or cancelled jobs from the list? History, chats and evidence are kept, and you can restore the jobs.":"Xóa công việc đã hoàn tất hoặc hủy khỏi danh sách? Lịch sử, trò chuyện và bằng chứng vẫn được giữ, và bạn có thể khôi phục công việc.",
+"Could not update the job list. Please retry.":"Không thể cập nhật danh sách công việc. Vui lòng thử lại.",
+"Cleared from the list. Job history is kept.":"Đã xóa khỏi danh sách. Lịch sử công việc vẫn được giữ.",
+"Jobs restored to the list":"Đã khôi phục công việc vào danh sách",
+"Restore to list":"Khôi phục vào danh sách",
+"Clear":"Xóa",
+"History, chats and evidence are kept. The customer's list is unchanged.":"Lịch sử, trò chuyện và bằng chứng vẫn được giữ. Danh sách của khách hàng không đổi.",
+"Showing the latest 20 jobs in each list":"Hiển thị 20 công việc gần nhất trong mỗi danh sách",
+"Cleared jobs ({0})":"Công việc đã xóa ({0})",
 "Clear all":"Xóa tất cả",
 "Clear notifications only, not jobs or chats":"Chỉ xóa thông báo, không xóa công việc hay trò chuyện",
 "Notifications cleared. Your jobs and chats are unchanged.":"Đã xóa thông báo. Công việc và trò chuyện của bạn vẫn còn.",

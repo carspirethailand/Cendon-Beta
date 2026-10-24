@@ -84,6 +84,8 @@ const sections=[
       [['ความคิดเห็นที่ส่งมา','Feedback you send'],['ข้อความ คะแนน หน้าที่ส่ง ชนิดเบราว์เซอร์','Message, rating, page, browser type'],['คุณ','You']],
       [['ข้อมูลทางเทคนิค','Technical data'],['ที่อยู่ IP (ใช้นับโควตา AI ของคนที่ยังไม่ล็อกอิน และกันการเดารหัส) ตัวนับการใช้งาน บันทึกข้อผิดพลาดของ AI แบบสั้น','IP address (for the anonymous AI quota and to stop code guessing), usage counters, short AI error logs'],['ระบบ','Our systems']],
     ])+
+    P('เมื่อช่างกดล้างงานที่เสร็จหรือยกเลิกแล้ว เราเก็บสถานะการซ่อนรายการผูกกับบัญชีบน Cloudflare เพื่อให้รายการตรงกันข้ามเครื่อง โดยไม่ลบใบงาน แชต หรือหลักฐาน ไม่เปลี่ยนรายการของลูกค้า และช่างนำรายการกลับมาแสดงได้ สถานะนี้รวมอยู่ในการดาวน์โหลดข้อมูลของฉัน และลบเมื่อยืนยันลบบัญชี ไม่ส่งให้ AI',
+      'When a mechanic clears finished or cancelled jobs, we store the account-linked list preference on Cloudflare to synchronize devices. This does not delete jobs, chats or evidence, or change the customer’s list. Mechanics can restore the jobs. This preference is included in account exports and removed on confirmed account deletion. It is not sent to AI.')+
     NOTE('ok','check','<b>สิ่งที่เราไม่ทำ:</b> ไม่มีตัววิเคราะห์หรือตัวติดตาม (เช่น Google Analytics หรือพิกเซลโฆษณา) ไม่มีคุกกี้โฆษณา ไม่ขายข้อมูล และตอนนี้ไม่มีการรับชำระเงินในแอป จึงไม่เก็บข้อมูลบัตรหรือบัญชีธนาคาร',
       '<b>What we don’t do:</b> no analytics or trackers (such as Google Analytics or ad pixels), no advertising cookies, no selling data — and there is no payment in the app today, so we hold no card or bank details.')},
 

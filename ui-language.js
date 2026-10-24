@@ -45,7 +45,7 @@ function paint(){
 function schedule(){if(!queued){queued=true;requestAnimationFrame(paint)}}
 function load(){
   const code=lang();if(!['th','en'].includes(code)&&!packs.has(code)&&!loading.has(code)){
-    loading.add(code);const script=D.createElement('script');script.src='/i18n/home-'+code+'.js?v=17';script.dataset.noI18n='';
+    loading.add(code);const script=D.createElement('script');script.src='/i18n/home-'+code+'.js?v=18';script.dataset.noI18n='';
     script.onload=()=>{pack(code);loading.delete(code);W.dispatchEvent(new CustomEvent('cendon:language-ready',{detail:{lang:code}}));schedule()};script.onerror=()=>{loading.delete(code)};D.head.append(script);
   }schedule();
 }

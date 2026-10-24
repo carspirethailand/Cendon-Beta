@@ -2,6 +2,16 @@
    กุญแจคือข้อความอังกฤษใน T("ไทย","English") และพจนานุกรม EN ของหน้า · {0} {1} = ค่าที่แทนตอนแสดงผล
    เพิ่มข้อความใหม่ในหน้า → เพิ่มคำแปลที่นี่ทุกภาษา (เทสต์ i18n-home ตรวจความครบ) */
 window.CENDON_L10N={lang:"ja",t:{
+"Some jobs changed status and remain in the list. Please check the latest details.":"一部の依頼は状態が変わったため一覧に残っています。最新の内容を確認してください。",
+"Clear finished or cancelled jobs from the list? History, chats and evidence are kept, and you can restore the jobs.":"完了またはキャンセル済みの依頼を一覧から消しますか？履歴、チャット、証拠は保存され、依頼を再表示できます。",
+"Could not update the job list. Please retry.":"依頼一覧を更新できませんでした。再試行してください。",
+"Cleared from the list. Job history is kept.":"一覧から消しました。依頼履歴は保存されています。",
+"Jobs restored to the list":"依頼を一覧に再表示しました",
+"Restore to list":"一覧に戻す",
+"Clear":"消去",
+"History, chats and evidence are kept. The customer's list is unchanged.":"履歴、チャット、証拠は保存されます。お客様の一覧は変わりません。",
+"Showing the latest 20 jobs in each list":"各一覧に最新20件の依頼を表示しています",
+"Cleared jobs ({0})":"消去した依頼 ({0})",
 "Clear all":"すべて削除",
 "Clear notifications only, not jobs or chats":"通知のみ削除します。依頼やチャットは削除しません",
 "Notifications cleared. Your jobs and chats are unchanged.":"通知を削除しました。依頼やチャットはそのままです。",

@@ -4091,13 +4091,15 @@ function listenPage(){
       <div class="lp-when" id="lpWhen">${LP_WHEN.map(([k,th,en])=>`<button type="button" data-k="${k}" aria-pressed="false">${T(th,en)}</button>`).join("")}</div>
       <details class="lp2-note"><summary>+ ${T("เพิ่มหมายเหตุ","Add a note")}</summary><textarea class="inp" id="lpNote" rows="2" maxlength="500" placeholder="${T("เช่น เพิ่งเปลี่ยนผ้าเบรกเมื่อเดือนก่อน","e.g. brake pads were changed last month")}"></textarea></details>
     </section>
-    <p class="qp-err" id="lpErr"></p>
+    <p class="qp-err" id="lpErr" role="alert"></p>
   </div>`,
     foot:`<button class="lx-cta" type="button" id="lpGo" style="width:100%"><i class="ti ti-ear"></i><span id="lpGoT">${T("อัดเสียงหรือเลือกไฟล์ก่อน","Record or pick a file first")}</span></button>`,
     mount(b,f,o){
-      const err=t=>{$("lpErr").textContent=t||""};
-      const ready=()=>{if(closed)return;$("lpGo").disabled=busyClip||sendingClip||!!rec||!clip;$("lpGo").classList.toggle("dim",!clip);
-        $("lpGoT").textContent=!clip?T("อัดเสียงหรือเลือกไฟล์ก่อน","Record or pick a file first"):area&&area!=="unsure"?T("ให้ AI ฟังเสียงนี้","Let the AI listen"):T("ส่งโดยไม่ระบุตำแหน่ง","Send without a location")};
+      // Bind to this sound form, never a Home card or another hidden sheet.
+      const $=id=>b.querySelector("#"+id)||f.querySelector("#"+id);
+      const err=t=>{const el=$("lpErr");if(el&&!closed)el.textContent=t||""};
+      const ready=()=>{const go=$("lpGo"),label=$("lpGoT");if(closed||!go||!label)return;go.disabled=busyClip||sendingClip||!!rec||!clip;go.classList.toggle("dim",!clip);go.setAttribute("aria-busy",String(sendingClip));
+        label.textContent=sendingClip?T("กำลังส่ง…","Sending…"):!clip?T("อัดเสียงหรือเลือกไฟล์ก่อน","Record or pick a file first"):area&&area!=="unsure"?T("ให้ AI ฟังเสียงนี้","Let the AI listen"):T("ส่งโดยไม่ระบุตำแหน่ง","Send without a location")};
       /* sound-lens.js โหลดแบบ defer — เปิด /listen ตรงจากลิงก์อาจมาก่อน: รอแล้ววาดให้เอง */
       const lensDraw=(n=0)=>{const cv=$("lpLens");if(!cv)return null;if(!window.CendonLens){if(n<20)setTimeout(()=>{const G=lensDraw(n+1);if(G&&rec&&!rec.G)rec.G=G},150);return null}return CendonLens.base(cv,{light:light()})};
       const tips=`<div class="lp2-tips"><div><b class="m">20–50</b><small>${T("ซม. จากจุดที่ดัง","cm from the noise")}</small></div><div><b>${T("ปิดเพลง","Music off")}</b><small>${T("ไม่พูดระหว่างอัด","no talking")}</small></div><div class="warn"><b>${T("ห้ามอัดขณะขับ","Never while driving")}</b><small>${T("ให้คนข้าง ๆ ช่วยอัด","ask a passenger")}</small></div></div>`;
@@ -4145,6 +4147,7 @@ function listenPage(){
         /* ปิดตัวตัดเสียงรบกวน/ปรับเสียงอัตโนมัติ — ของพวกนี้ทำมาเพื่อเสียงพูด และกลืนเสียงเครื่องยนต์ทิ้ง */
         try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false,channelCount:1}})}
         catch(e){err(T("เปิดไมค์ไม่ได้ — อนุญาตให้ใช้ไมโครโฟนในเบราว์เซอร์ หรือกดเลือกไฟล์แทน","Couldn't open the mic — allow microphone access, or pick a file instead"));return}
+        if(closed||!$("lpClip")){stream.getTracks().forEach(t=>t.stop());return}
         const mime=["audio/webm;codecs=opus","audio/mp4","audio/webm"].find(m=>MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(m))||"";
         const mr=new MediaRecorder(stream,mime?{mimeType:mime,audioBitsPerSecond:128000}:undefined),chunks=[];
         const AC=window.AudioContext||window.webkitAudioContext,ac=new AC(),an=ac.createAnalyser();an.fftSize=2048;an.smoothingTimeConstant=.2;ac.createMediaStreamSource(stream).connect(an);
@@ -4243,10 +4246,10 @@ function drawPartner(){
     :k==="checking"?["",T("บัญชีช่างของคุณ","Your mechanic account"),T("กำลังตรวจสถานะร้าน · ไม่ต้องสมัครซ้ำ","Checking your shop · do not apply again"),T("ตรวจสถานะ","Check status")]
     :k==="app"?["",T("ใบสมัครช่างของคุณ","Your mechanic application"),st,T("ดูสถานะ","View status")]
     :["",T("เป็นช่างพาร์ทเนอร์กับ Cendon","Become a Cendon partner mechanic"),T("รับงานใกล้ร้าน · ไม่มีค่าสมัคร · ตั้งราคาเอง","Jobs near you · no sign-up fee · set your own prices"),T("สมัครเลย","Apply now")];
-  box.innerHTML=`<button type="button" class="lp-card" id="lpGo"><canvas class="lp-gl" aria-hidden="true"></canvas><svg class="lp-mark" viewBox="-6.0 -6.0 94.8 112.0" aria-hidden="true"><path fill="currentColor" d="${LOGO}"/></svg>
+  box.innerHTML=`<button type="button" class="lp-card" id="hPartnerGo"><canvas class="lp-gl" aria-hidden="true"></canvas><svg class="lp-mark" viewBox="-6.0 -6.0 94.8 112.0" aria-hidden="true"><path fill="currentColor" d="${LOGO}"/></svg>
     <span class="lp-tx">${eye?`<small>${eye}</small>`:""}<b>${b}</b><em>${em}</em></span><span class="lp-cta">${cta}<i class="ti ti-arrow-right"></i></span></button>`;
   box.classList.toggle("news",k==="news");
-  $("lpGo").onclick=()=>{if(!U)return needLogin();k==="shop"?openStudio():openJoin()};
+  box.querySelector("#hPartnerGo").onclick=()=>{if(!U)return needLogin();k==="shop"?openStudio():openJoin()};
   fx3d(box.querySelector(".lp-gl"),{particles:420,dist:12.5});
 }
 window.addEventListener('cendon:partner-state',()=>{try{drawPartner()}catch(e){}});

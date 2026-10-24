@@ -39,6 +39,10 @@ test('listen page: record first, where-is-it comes after the clip and can be ski
   assert.match(lp,/const A=LP_AREA\.find\(x=>x\[0\]===\(area\|\|"unsure"\)\)/);
   assert.match(lp,/T\("ส่งโดยไม่ระบุตำแหน่ง","Send without a location"\)/);
   assert.doesNotMatch(lp,/need\("lpS2"\)/,'no forced area step');
+  assert.match(lp,/const \$=id=>b\.querySelector\("#"\+id\)\|\|f\.querySelector\("#"\+id\);/,'sound controls belong to this sheet, never hidden Home buttons');
+  assert.equal((home.match(/id="lpGo"/g)||[]).length,1,'only the sound submit owns lpGo');
+  const partner=home.slice(home.indexOf('function drawPartner(){'),home.indexOf("window.addEventListener('cendon:partner-state'"));
+  assert.match(partner,/id="hPartnerGo"/);assert.match(partner,/box\.querySelector\("#hPartnerGo"\)\.onclick/);assert.doesNotMatch(partner,/\$\("lpGo"\)/);
   /* แตะจุดบนรถกับรายการใช้เลขเดียวกัน */
   for(const k of ['engine','ac','front','cabin','under','rear','exhaust'])assert.match(home,new RegExp(`${k}:"\\d"`));
 });

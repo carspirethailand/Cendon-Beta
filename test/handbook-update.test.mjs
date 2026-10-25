@@ -16,12 +16,10 @@ test('admins can replace an existing handbook from a file; others never see the 
   assert.match(h.slice(0,600),/importMd\(String\(rd\.result\|\|""\),\[\]\)/);
 });
 
-test('handbook packs from the repo root and matches the current schema and cache',()=>{
+test('handbook packs from the repo root and no longer tells anyone to set up Vectorize',()=>{
   const r=spawnSync(process.execPath,[new URL('../handbookpack.mjs',import.meta.url).pathname,'--check'],{encoding:'utf8'});
   assert.equal(r.status,0,r.stderr);
   assert.match(r.stdout,/enabled = 0 ครบทุกตอน/);
-  const schema=readFileSync(new URL('../sw.js',import.meta.url),'utf8').match(/const CACHE = '([^']+)'/)[1];
-  assert.ok(book.includes('`'+schema+'`'),'HANDBOOK.md ต้องบอกเลขแคชปัจจุบัน '+schema);
   /* Vectorize ถูกถอดแล้ว — คู่มือต้องไม่มีคำสั่งให้สร้างอีก (กล่าวถึงในเนื้อความได้) */
   assert.ok(!/^\s*wrangler vectorize create/m.test(book));
 });

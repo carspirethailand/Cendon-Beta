@@ -132,3 +132,16 @@ test('logged-in hint cookie is kept in sync with sign-in (app gets the app, ever
   const h=r('_headers');for(const p of ['/tech/*','/service/*','/category/*'])assert.doesNotMatch(h,new RegExp(`^${p.replace('*','\\*')}\\n  X-Robots-Tag`,'m'),p);
   for(const f of ['about.html','help.html'])assert.match(r(f),/<a href="\/category\/air">/,f+' links to category pages (crawl path)');
 });
+
+test('owner preview (?preview=1) shows the public page even when signed in, never indexed or cached',async()=>{
+  api();
+  const pv=(path,cookie)=>({...ctx('/tech/x',{cookie}),request:new Request(SITE+path,{headers:cookie?{cookie}:{}}),params:{path:[path.split('?')[0].split('/')[2]]}});
+  const res=await handle(pv('/tech/t_abc?preview=1','cendon_signed=1'),'tech'),html=await res.text();
+  assert.equal(res.status,200);assert.match(html,/<h1>นนท์แอร์ แอนด์ เซอร์วิส<\/h1>/,'public page, not the app');
+  assert.equal(res.headers.get('x-robots-tag'),'noindex');assert.equal(res.headers.get('cache-control'),'private, no-store');
+  assert.match(html,new RegExp(`<link rel="canonical" href="${SITE}/tech/t_abc">`),'canonical stays the clean address');
+  for(const x of ['0812345678','@nonair','99/9'])assert.ok(!html.includes(x),x);
+  /* ร้านทดลอง/ไม่มีอยู่: ไม่มีหน้าสาธารณะให้ดู → หน้าแอปเดิม ไม่ใช่หน้าสาธารณะปลอม */
+  const t=await handle(pv('/tech/t_test?preview=1','cendon_signed=1'),'tech');
+  assert.equal(t.headers.get('x-robots-tag'),'noindex');assert.doesNotMatch(await t.text(),/sp-head/);
+});

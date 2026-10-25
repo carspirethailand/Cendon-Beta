@@ -16,7 +16,7 @@ html.ib-boot .bs .pn,html.ib-boot .bs .bg{transition:none!important}</style>
 <script src="/shop-images.js?v=1"></script>
 <script src="/display-prefs.js?v=3" defer></script>
 <script src="/i18n/ui-en.js?v=4" defer></script>
-<script src="/ui-language.js?v=5" defer></script>
+<script src="/ui-language.js?v=6" defer></script>
 <script src="/partner-entry.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
@@ -36,7 +36,7 @@ html.ib-boot .bs .pn,html.ib-boot .bs .bg{transition:none!important}</style>
 (function(){try{if(/^\/(work|studio)(\/|$)/.test(location.pathname)){var p=JSON.parse(localStorage.getItem("spire_partner")||"null");if(p&&p.s==="shop")document.documentElement.dataset.boot="tech"}}catch(e){}})();</script>
 <script>(function(){try{var A=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt"],l=null;try{l=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
 if(A.indexOf(l)<0){l="en";var n=navigator.languages||[navigator.language||"en"];for(var i=0;i<n.length;i++){var b=String(n[i]).toLowerCase().split("-")[0];if(A.indexOf(b)>=0){l=b;break}}}
-if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=19"><\/script>')}catch(e){}})();</script>
+if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=20"><\/script>')}catch(e){}})();</script>
 <title>Cendon</title>
 <meta name="description" content="ถามอาการรถ ส่งรูปหรือเสียงให้ AI ช่วยดู เช็กใบเสนอราคา และหาช่างที่ผ่านการตรวจใกล้คุณ">
 <!-- การ์ดตอนแชร์ลิงก์ (LINE / Facebook / X) — รูปต้องเป็นที่อยู่เต็ม -->
@@ -2282,6 +2282,14 @@ html[data-theme="dark"] .so-vi{box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
 .so-sec{margin-top:26px;padding-top:22px;border-top:1px solid var(--line)}
 .so-sec h2{margin:0 0 12px;font:700 18px/1.3 var(--kd)}
 .so-fine{margin:10px 0 0;font-size:12.5px;line-height:1.55;color:var(--faint)}
+/* Studio › หน้าร้านบน Google: รายการตรวจความครบของหน้าร้านสาธารณะ */
+.gg-score{display:flex;align-items:baseline;gap:8px;margin:2px 0 10px}.gg-score b{font-size:28px;line-height:1}.gg-score span{color:var(--muted);font-size:13px}
+.gg-li{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line-2)}.gg-li:last-child{border-bottom:0}
+.gg-li>i{font-size:20px;margin-top:1px;color:var(--faint)}.gg-li.ok>i{color:#22a06b}
+.gg-li>span{flex:1;min-width:0}.gg-li b{display:block;font-weight:500}.gg-li small{display:block;color:var(--muted);font-size:12.5px;line-height:1.5;margin-top:2px}
+.gg-li .lx-gh{height:34px;padding:0 12px;font-size:13px;flex:none}
+.gg-tips{margin:16px 0 0;padding:14px 16px;border-radius:14px;background:var(--surface)}.gg-tips b{display:block;margin-bottom:6px}
+.gg-tips ul{margin:0;padding-left:18px;color:var(--muted);font-size:13px;line-height:1.6}
 .so-empty{margin:0;padding:6px 0;font-size:14px;line-height:1.6;color:var(--muted)}
 .so-err{display:flex;align-items:center;gap:10px;margin:0;font-size:14px;color:var(--muted)}.so-err .lx-gh{height:36px;margin-left:auto}
 .so-dl{display:grid;margin:0}
@@ -7742,6 +7750,7 @@ function tabShop(){
       ${row("sStats","ti-chart-bar",T("สถิติร้าน","Shop stats"),T("รายได้ คนเข้าดู และเส้นทางงาน","Earnings, views and job funnel"))}
       ${row("sAi","ti-bulb",T("คำแนะนำปรับร้าน","Shop tips"),T("สิ่งที่ช่วยให้ลูกค้าเลือกร้านคุณมากขึ้น","What helps customers pick your shop"))}
       ${row("sQr","ti-qrcode",T("ลิงก์และ QR หน้าร้าน","Shop link & QR"),T("พิมพ์ติดหน้าอู่ ลูกค้าสแกนแล้วเข้าหน้าร้าน","Print it — customers scan to open your shop"))}
+      ${row("sGoogle","ti-brand-google",T("หน้าร้านบน Google","Your shop on Google"),googleHint(t))}
       ${row("sSet","ti-settings",T("ตั้งค่า","Settings"),T("รับงาน พักร้าน ตอบอัตโนมัติ แจ้งเตือน สีร้าน","Availability, pause, auto-reply, alerts, colour"))}
       ${row("sHelp","ti-help-circle",T("วิธีใช้สำหรับช่าง","Help for mechanics"),T("กติกาใบงาน การเสนอราคา และการรับเงิน","Job rules, quoting and getting paid"))}
     </section>`;
@@ -7757,7 +7766,7 @@ function tabShop(){
   $("sView").onclick=()=>openTech(t.id);
   $("sShare").onclick=()=>{try{navigator.share?navigator.share({title:t.shop||t.name,url:link}).catch(()=>{}):navigator.clipboard.writeText(link).then(()=>toast(T("คัดลอกลิงก์ร้านแล้ว","Shop link copied")))}catch(e){}};
   $("sEdit").onclick=()=>openShopEdit();$("sStats").onclick=()=>studioStats();$("sAi").onclick=()=>setTab2("ai");
-  $("sQr").onclick=()=>shopQr();$("sSet").onclick=()=>studioSettings();$("sHelp").onclick=()=>window.open("/help#mechanics","_blank","noopener");
+  $("sQr").onclick=()=>shopQr();$("sGoogle").onclick=()=>googleSheet();$("sSet").onclick=()=>studioSettings();$("sHelp").onclick=()=>window.open("/help#mechanics","_blank","noopener");
 }
 /* ลิงก์และ QR ของร้าน (QR สร้างในเครื่อง โหลดไลบรารีตอนเปิดครั้งแรก) */
 function shopQr(){
@@ -7770,6 +7779,52 @@ function shopQr(){
       const draw=()=>{try{$("qrB").innerHTML="";new QRCode($("qrB"),{text:link,width:180,height:180,colorDark:"#09090B",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M})}catch(e){}};
       if(window.QRCode)draw();else{const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";sc.onload=draw;document.head.appendChild(sc)}
       $("qrDl").onclick=()=>{const c=$("qrB").querySelector("canvas"),im=$("qrB").querySelector("img");const u=c?c.toDataURL("image/png"):im&&im.src;if(!u)return;const a=document.createElement("a");a.href=u;a.download=(t.shop||"cendon")+"-qr.png";a.click()};
+    }});
+}
+/* ── หน้าร้านบน Google ──
+   หน้าร้านสาธารณะ /tech/<id> สร้างที่ฝั่งเซิร์ฟเวอร์จากข้อมูลร้าน (lib/public-pages.mjs) ข้อมูลยิ่งครบ Google ยิ่งเข้าใจว่าร้านทำอะไร อยู่ที่ไหน
+   ตรวจเฉพาะช่องที่หน้าสาธารณะใช้จริง · ร้านทดลอง/ยังไม่ผ่านการตรวจ/พักร้าน ไม่มีหน้าสาธารณะ
+   ช่องที่ทีมงานรับรองแล้ว (รูป ความถนัด) ร้านจริงแก้เองไม่ได้ — บอกให้ติดต่อทีมงาน ไม่พาไปฟอร์มที่บันทึกไม่ผ่าน */
+function googleChecks(t,gigs){
+  const locked=!t.test&&!(ME&&ME.owner),pics=(t.photos||[]).filter(x=>x!==t.avatar).length;
+  return [
+    {ok:!!String(t.shop||"").trim(),a:T("ชื่อร้าน","Shop name"),b:T("ขึ้นเป็นหัวข้อในผลค้นหา","Used as the search result title"),fix:"edit"},
+    {ok:!!t.avatar,a:T("รูปโปรไฟล์หรือโลโก้ร้าน","Profile photo or logo"),b:T("ขึ้นคู่กับชื่อร้านและตอนแชร์ลิงก์","Shown next to your name and in shared links"),fix:"edit"},
+    {ok:pics>=3,a:T("รูปร้านและผลงานอย่างน้อย 3 รูป","At least 3 shop or work photos"),b:T("Google ค้นรูปเจอ และลูกค้าเห็นงานจริงก่อนติดต่อ","Google can find the photos, and customers see real work first"),fix:locked?"team":"edit"},
+    {ok:String(t.about||"").trim().length>=60,a:T("เล่าความถนัดของร้าน (60 ตัวอักษรขึ้นไป)","Describe your expertise (60+ characters)"),b:T("ใช้เป็นคำอธิบายใต้ชื่อร้านในผลค้นหา","Used as the description under your name in results"),fix:locked?"team":"edit"},
+    {ok:Array.isArray(t.week)&&t.week.length===7&&t.week.some(w=>w&&w.on),a:T("เวลาทำการรายวัน","Daily opening hours"),b:T("Google แสดงได้ว่าร้านเปิดอยู่ไหม","Lets Google show when you're open"),fix:"edit"},
+    {ok:gigs==null?null:gigs.some(g=>g&&g.price>0),a:T("บริการพร้อมราคาเริ่มต้น","Services with starting prices"),b:T("แต่ละบริการเป็นอีกหน้าที่ Google ค้นเจอได้","Each service is another page Google can find"),fix:"svc"},
+    {ok:(t.brands2||[]).length>0,a:T("ยี่ห้อรถที่ถนัด","Car brands you specialise in"),b:T("คนค้นชื่อยี่ห้อคู่กับอาการแล้วเจอร้านคุณ","People searching a brand with a problem can find you"),fix:"edit"}];
+}
+function googleLive(t){return !!(t.verified&&!t.test&&!t.suspended)}
+function googleHint(t){
+  if(t.suspended)return T("ร้านพักใช้งาน — ยังไม่ขึ้น Google","Shop paused — not on Google yet");
+  if(t.test)return T("ร้านทดลองยังไม่ขึ้น Google","Trial shops aren't on Google");
+  if(!t.verified)return T("ขึ้น Google หลังผ่านการตรวจ","On Google once approved");
+  const g=ownGigState(),c=googleChecks(t,g&&g.rows);
+  return c.some(x=>x.ok==null)?T("ดูว่าลูกค้าค้นเจอร้านคุณได้แค่ไหน","See how easily customers can find you"):T("ข้อมูลครบ","Complete")+` ${c.filter(x=>x.ok).length}/${c.length} · `+T("ดูว่ายังขาดอะไร","See what's missing");
+}
+function googleSheet(){
+  const t=myShop(),link=location.origin+"/tech/"+encodeURIComponent(t.id),live=googleLive(t);
+  const state=t.suspended?T("ร้านพักใช้งานอยู่ ลูกค้าและ Google ยังไม่เห็นหน้าร้าน กลับมาเปิดร้านแล้วหน้าร้านจะกลับมาเอง","Your shop is paused, so customers and Google can't see it. It comes back when you reopen.")
+    :t.test?T("ร้านทดลองยังไม่มีหน้าสาธารณะ เมื่อเป็นร้านจริงที่ผ่านการตรวจ หน้าร้านจะเปิดให้ Google เก็บเอง","Trial shops have no public page. Once you're an approved shop, Google can index it automatically.")
+    :!t.verified?T("ผ่านการตรวจแล้ว หน้าร้านจะเปิดให้ Google เก็บเอง ระหว่างนี้เตรียมข้อมูลให้ครบไว้ก่อนได้","Once approved, your page opens to Google automatically. You can get your details ready now.")
+    :T("หน้าร้านเปิดให้ Google เก็บแล้ว ปกติใช้เวลาหลายวันถึงหลายสัปดาห์กว่าจะขึ้นผลค้นหา ข้อมูลยิ่งครบ ลูกค้ายิ่งค้นเจอง่าย","Your page is open to Google. It usually takes days to weeks to appear in results — the more complete it is, the easier you are to find.");
+  sheet({push:true,url:stuUrl("google"),slug:"google",title:T("หน้าร้านบน Google","Your shop on Google"),body:`<p class="so-fine" style="margin-top:0">${state}</p><div id="ggList" style="margin-top:12px"><div class="skel"></div></div>
+    <div class="stu-acts" style="margin-top:14px">${live?`<button class="lx-cta" type="button" id="ggView" style="height:44px;padding:0 18px"><i class="ti ti-eye"></i>${T("ดูแบบที่ Google เห็น","See what Google sees")}</button>`:""}<button class="lx-gh" type="button" id="ggCopy" style="height:44px"><i class="ti ti-copy"></i>${T("คัดลอกลิงก์หน้าร้าน","Copy shop link")}</button></div>
+    <div class="gg-tips"><b>${T("ช่วยให้ Google รู้จักร้านเร็วขึ้น","Help Google find you sooner")}</b><ul>
+      <li>${T("มีหน้าร้านบน Google Maps (Google Business Profile) อยู่แล้ว ใส่ลิงก์นี้ในช่อง \"เว็บไซต์\"","If you have a Google Maps listing (Google Business Profile), put this link in its \"Website\" field")}</li>
+      <li>${T("ใส่ลิงก์ในเพจ Facebook, LINE OA หรือโปรไฟล์ TikTok ของร้าน","Add it to your shop's Facebook page, LINE OA or TikTok profile")}</li>
+      <li>${T("โปรโมตบริการไหน แชร์ลิงก์บริการนั้นแทนการส่งรูปอย่างเดียว","When you promote a service, share its link, not just a photo")}</li></ul>
+      <p class="so-fine">${T("เบอร์โทร ไลน์ ที่อยู่ละเอียด และพิกัด ไม่ขึ้นบนหน้าสาธารณะ ลูกค้าต้องเข้าสู่ระบบก่อนติดต่อร้าน","Phone, LINE, exact address and location never appear on the public page — customers sign in before contacting you")}</p></div>`,
+    mount(){
+      if($("ggView"))$("ggView").onclick=()=>window.open(link+"?preview=1","_blank","noopener");
+      $("ggCopy").onclick=async()=>{try{await navigator.clipboard.writeText(link);toast(T("คัดลอกลิงก์ร้านแล้ว","Shop link copied"))}catch(e){}};
+      const paint=gigs=>{const L=$("ggList");if(!L)return;const c=googleChecks(myShop()||t,gigs),n=c.filter(x=>x.ok).length;
+        L.innerHTML=`<div class="gg-score"><b>${n}/${c.length}</b><span>${T("ข้อมูลที่หน้าร้านใช้","details your page uses")}</span></div>`+c.map((x,i)=>`<div class="gg-li${x.ok?" ok":""}"><i class="ti ${x.ok?"ti-circle-check-filled":x.ok==null?"ti-help-circle":"ti-circle-dashed"}"></i><span><b>${x.a}</b><small>${x.ok==null?T("โหลดรายการบริการไม่สำเร็จ ลองเปิดใหม่อีกครั้ง","Couldn't load your services — try again"):x.ok||x.fix!=="team"?x.b:T("ช่องนี้ทีมงานรับรองแล้ว ติดต่อทีมงานเพื่อเพิ่มหรือแก้ไข","Reviewed by the team — contact the team to change it")}</small></span>${!x.ok&&x.ok!=null&&x.fix!=="team"?`<button class="lx-gh" type="button" data-gg="${i}">${x.fix==="svc"?T("เพิ่มบริการ","Add a service"):T("แก้ไข","Edit")}</button>`:""}</div>`).join("")+
+          `<p class="so-fine">${T("รีวิว","Reviews")} ${Number(t.reviewCount)||0} · ${T("หน้าร้านส่งคะแนนรีวิวให้ Google ด้วย (Google เลือกเองว่าจะแสดงดาวหรือไม่) ชวนลูกค้ารีวิวหลังจบงาน","Your page shares the rating with Google (Google decides whether to show stars). Ask customers to review after each job.")}</p>`;
+        L.querySelectorAll("[data-gg]").forEach(b=>b.onclick=()=>{const f=c[+b.dataset.gg].fix;if(f==="svc"){if($("bs").classList.contains("on"))closeSheet();setTab2("posts");window.scrollTo(0,0)}else openShopEdit()});};
+      loadOwnGigs().then(paint,()=>paint(null));
     }});
 }
 function openShopEdit(t0){

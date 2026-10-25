@@ -23,7 +23,7 @@ const SRC  = path.join(ROOT, 'HANDBOOK.md');
 const OUT  = path.join(ROOT, 'handbookparts.json');
 const check = process.argv.includes('--check');
 
-const md = fs.readFileSync(SRC, 'utf8');
+const md = fs.readFileSync(SRC, 'utf8').replace(/\r\n/g,'\n');
 
 /* แบ่งที่หัวข้อระดับหนึ่ง (# ภาค N) ส่วนหัวก่อนภาคแรกเป็นตอนที่ 00
 

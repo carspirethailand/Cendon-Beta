@@ -6,7 +6,7 @@ test('completion collector is loaded on every main app page, not only Chat',()=>
   for(const p of ['index','garage','chat','profile','news','spares'])assert.match(read(p+'.html'),/bell\.js\?v=17/,p);
   assert.match(read('bell.js'),/script\.src='\/chat-jobs\.js\?v=2'/);
   assert.match(read('chat.html'),/src="chat-jobs\.js\?v=2"/);
-  assert.match(read('sw.js'),/cendon-v360-shop-chat-auto/);assert.match(read('sw.js'),/chat-jobs\.js\?v=2/);
+  assert.match(read('sw.js'),/cendon-v361-handbook/);assert.match(read('sw.js'),/chat-jobs\.js\?v=2/);
 });
 test('chat tool analysis uses the durable queue instead of a page-owned timed request',()=>{
   const s=read('chat.html'),a=s.indexOf('    if(featureJob){',s.indexOf('const directValet=')),b=s.indexOf('\n    }',a),branch=s.slice(a,b);

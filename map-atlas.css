@@ -12,7 +12,7 @@ html[data-theme="dark"] .atl-dim{background:rgba(0,0,0,.36)}
 /* ── แถบบน ── */
 /* ขวาบนเว้นที่ให้กระดิ่งของแอป (.cb-bell อยู่ตำแหน่งเดียวกันทุกหน้า) — ปุ่มเลเยอร์จึงย้ายไปอยู่กลุ่มปุ่มขวาล่าง */
 .atl-top,.atl-ubar{position:absolute;left:16px;right:64px;top:calc(env(safe-area-inset-top) + 14px);display:flex;gap:8px;align-items:center;z-index:5}
-.atl-top[hidden],.atl-ubar[hidden],.atl-chips[hidden],.atl-sos[hidden]{display:none}
+.atl-top[hidden],.atl-ubar[hidden],.atl-chips[hidden],.atl-fab[hidden]{display:none}
 .atl-ic{flex:0 0 48px;width:48px;height:48px;border-radius:24px;border:1px solid var(--line);background:var(--glass);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
   box-shadow:var(--sh);display:grid;place-items:center;color:var(--ink);font:inherit;font-size:20px;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .atl-ic:active{transform:scale(.96)}
@@ -51,14 +51,20 @@ html[data-theme="dark"] .atl-dim{background:rgba(0,0,0,.36)}
 .atl-live b{font-weight:600;white-space:nowrap}
 .atl-live span:not(.atl-pulse){color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .atl-pulse{flex:none;width:10px;height:10px;border-radius:5px;background:var(--co);animation:atlPulse 1.6s infinite}
-.atl-sos{position:absolute;left:16px;bottom:calc(var(--sv) + 14px);height:44px;padding:0 16px 0 12px;border-radius:22px;border:0;background:#DC2626;color:#fff;display:flex;align-items:center;gap:7px;
-  font:inherit;font-size:14px;font-weight:600;box-shadow:0 12px 26px -10px rgba(220,38,38,.7);z-index:4;cursor:pointer;transition:bottom .38s cubic-bezier(.2,.8,.2,1)}
-.atl-sos i{font-size:18px}
+/* ปุ่มลอยซ้ายล่าง: เรียกช่างด่วน + จับคู่ช่าง (ขวาเว้นให้กลุ่มปุ่มแผนที่) */
+.atl-fab{position:absolute;left:16px;right:76px;bottom:calc(var(--sv) + 14px);display:flex;gap:8px;z-index:4;pointer-events:none;transition:bottom .38s cubic-bezier(.2,.8,.2,1)}
+.atl-fab>*{pointer-events:auto}
+.atl-sos,.atl-match{height:44px;padding:0 16px 0 12px;border-radius:22px;border:0;display:flex;align-items:center;gap:7px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;min-width:0}
+.atl-sos{flex:none;background:#DC2626;color:#fff;box-shadow:0 12px 26px -10px rgba(220,38,38,.7)}
+.atl-match{background:var(--ink);color:var(--bg);box-shadow:0 12px 26px -12px rgba(9,9,11,.55)}
+.atl-match i{color:var(--co)}
+.atl-sos i,.atl-match i{flex:none;font-size:18px}
+.atl-sos span,.atl-match span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .atl-ctl{position:absolute;right:16px;bottom:calc(var(--sv) + 14px);display:flex;flex-direction:column;gap:8px;z-index:4;transition:bottom .38s cubic-bezier(.2,.8,.2,1)}
 .atl-ctl .atl-ic{flex:none;width:44px;height:44px;border-radius:22px;font-size:13px;font-weight:600;background:var(--surface)}
 .atl-ctl .atl-ic[hidden]{display:none}
 .atl-loc{color:#2563EB!important;font-size:20px!important}
-.atl[data-mode="card"] .atl-sos,.atl[data-mode="urg"] .atl-sos{display:none}
+.atl[data-mode="card"] .atl-fab,.atl[data-mode="urg"] .atl-fab,.atl[data-mode="match"] .atl-fab{display:none}
 .atl .maplibregl-ctrl-bottom-right{bottom:calc(var(--sv) + 2px);transition:bottom .38s cubic-bezier(.2,.8,.2,1)}
 .atl .maplibregl-ctrl-attrib{font-size:10px}
 
@@ -98,6 +104,35 @@ html[data-theme="dark"] .atl-sheet{border-top:1px solid var(--line);box-shadow:0
 .atl-rs{display:flex;gap:6px;align-items:center;font-size:12px;font-weight:500;color:var(--muted);min-width:0}
 .atl-rs .on,.atl-cs.on{color:var(--ok)}
 .atl-tag{font-size:11px;padding:1px 7px;border-radius:8px;background:rgba(13,148,136,.12);color:var(--tealt);white-space:nowrap}
+.atl-tag.live{display:inline-flex;align-items:center;gap:3px}
+.atl-tag.live i{font-size:11px}
+/* ── จับคู่ช่าง ── */
+.atl-mm{display:flex;flex-direction:column;gap:10px;padding-bottom:4px}
+.atl-mm .atl-hd{align-items:center;padding-bottom:0}
+.atl-how{margin:0;display:flex;gap:6px;font-size:12.5px;line-height:1.45;color:var(--muted)}
+.atl-how i{flex:none;font-size:15px;margin-top:1px}
+.atl-picks{display:flex;flex-direction:column;gap:8px}
+.atl-pick{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px 10px;padding:10px 10px 10px 12px;border-radius:18px;background:var(--surface);border:1px solid var(--line);animation:atlIn .3s both}
+.atl-pick:nth-child(2){animation-delay:60ms}.atl-pick:nth-child(3){animation-delay:120ms}
+.atl-pick:first-child{border-color:color-mix(in srgb,var(--co) 55%,var(--line));box-shadow:0 12px 26px -20px var(--co)}
+.atl-pick.on{box-shadow:0 0 0 2px var(--co)}
+.atl-pm{min-width:0;display:flex;align-items:center;gap:10px;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.atl-pav{position:relative;flex:none}
+.atl-pm .atl-rav{width:40px;height:40px;flex-basis:40px;border-radius:13px;font-size:16px}
+.atl-rk{position:absolute;left:-6px;top:-6px;width:21px;height:21px;border-radius:11px;background:var(--surface-2);color:var(--ink);border:2px solid var(--surface);font-size:11.5px;font-weight:700;display:grid;place-items:center}
+.atl-pick:first-child .atl-rk{background:var(--co);color:#fff}
+.atl-pb{min-width:0;display:flex;flex-direction:column;gap:1px}
+.atl-pb b{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.atl-pb small{font-size:12px;color:var(--muted)}
+.atl-why{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:3px 12px;font-size:12px;color:var(--muted)}
+.atl-why span{display:inline-flex;align-items:center;gap:3px;white-space:nowrap}
+.atl-why i{font-size:13px}
+.atl-why .ti-star-filled{color:#F59E0B}
+.atl-btn.sm{height:36px;padding:0 14px;border-radius:18px;font-size:13.5px}
+.atl-empty.sm{padding:8px 4px 10px}
+.atl-roamln{margin:10px 0 0;display:flex;gap:6px;align-items:flex-start;font-size:12.5px;line-height:1.45;color:var(--muted)}
+.atl-roamln i{flex:none;font-size:15px;margin-top:1px}
+.atl-roamln.on{color:var(--tealt)}
 .atl-rp{display:flex;flex-direction:column;align-items:flex-end;flex:none}
 .atl-rp small{font-size:11px;color:var(--muted)}.atl-rp b{font-size:15px;font-weight:600}
 .atl-more{text-align:center;font-size:12.5px;color:var(--muted);margin:8px 0}
@@ -186,6 +221,9 @@ html[data-theme="dark"] .atl-note{color:#FBBF24}
 .atl-mob{position:absolute;left:-4px;top:-4px;width:20px;height:20px;border-radius:10px;background:#0D9488;border:2px solid #fff;color:#fff;display:grid;place-items:center;font-size:11px;box-sizing:border-box}
 .atl-halo{position:absolute;left:-10px;top:-12px;width:68px;height:68px;border-radius:34px;background:rgba(233,104,42,.14);border:1.5px solid rgba(233,104,42,.5);box-sizing:border-box;animation:atlHalo 2.4s ease-out infinite}
 .atl-pin.off .atl-av{filter:saturate(.2);opacity:.85}
+/* เลขอันดับของร้านที่จับคู่ได้ · วงไหลรอบช่างเคลื่อนที่ที่แชร์ตำแหน่งอยู่ */
+.atl-rank{position:absolute;left:-6px;top:-6px;width:24px;height:24px;border-radius:12px;background:#E9682A;color:#fff;border:2.5px solid #fff;box-sizing:border-box;font-size:12.5px;font-weight:700;display:grid;place-items:center;z-index:2}
+.atl-roam{position:absolute;left:-4px;top:-6px;width:56px;height:56px;border-radius:28px;border:2px solid #0D9488;box-sizing:border-box;animation:atlHalo 2.2s ease-out infinite}
 .atl-pin.test .atl-av{outline:2px dashed #fff;outline-offset:2px}
 .atl-pin:hover .atl-av,.atl-pin:focus-visible .atl-av{transform:translateY(-2px)}
 .atl-pin.sel{width:auto;height:auto;display:flex;flex-direction:column;align-items:center}
@@ -213,6 +251,8 @@ html[data-theme="dark"] .atl-av{border-color:#FAFAF9}
 html[data-theme="dark"] .atl-stem{background:#FAFAF9}
 html[data-theme="dark"] .atl-dot{border-color:#101114}
 html[data-theme="dark"] .atl-mob{background:#14B8A6;border-color:#101114;color:#09090B}
+html[data-theme="dark"] .atl-rank{background:#F07A36;border-color:#101114;color:#09090B}
+html[data-theme="dark"] .atl-roam{border-color:#14B8A6}
 html[data-theme="dark"] .atl-halo{background:rgba(240,122,54,.16);border-color:rgba(240,122,54,.55)}
 html[data-theme="dark"] .atl-pin.off .atl-av{filter:saturate(.15) brightness(.75);border-color:#A1A1AA}
 html[data-theme="dark"] .atl-lab{background:#FAFAF9;color:#09090B;box-shadow:0 0 0 2px #F07A36,0 16px 30px -10px rgba(0,0,0,.9)}
@@ -243,7 +283,7 @@ html[data-theme="dark"] .atl-mt3{box-shadow:inset 0 0 0 1px var(--line)}
   .atl-chips{left:0;right:auto;width:400px;top:146px;padding:0 20px 8px;z-index:7;box-sizing:border-box}
   .atl-chip{box-shadow:none}
   .atl-float{left:400px;top:88px}
-  .atl-sos{left:420px;bottom:24px}
+  .atl-fab{left:420px;right:auto;bottom:24px}
   .atl-ctl{right:20px;bottom:24px}
   .atl .maplibregl-ctrl-bottom-right{bottom:0}
   .atl-lay{left:auto;right:76px;bottom:24px;top:auto;width:360px;border-radius:24px;max-height:calc(100% - 100px);box-shadow:0 30px 60px -28px rgba(9,9,11,.5);border:1px solid var(--line)}

@@ -40,7 +40,7 @@ test('owners decide per clip whether a shop may showcase it, and can withdraw',(
 test('customer silence, open-job cap and confirming the job stand in for payment for now',()=>{
   assert.match(home,/if\(cust&&\(s==="done"\|\|s==="disputed"&&j\.noreplyAt\)\)A\.push\(\["complete","ตรวจแล้ว งานเรียบร้อย","p"\]\);/);
   assert.match(home,/if\(tech&&!cust&&s==="done"&&j\.noreplyFrom&&Date\.now\(\)>=j\.noreplyFrom\)more\.unshift\(\["noreply","ลูกค้าไม่ตอบ"\]\);/);
-  assert.match(home,/const TS=TECHS\.filter\(t=>!isMine\(t\)&&!t\.full\);/,'urgent calls skip full shops');
+  assert.match(home,/const TS=TECHS\.filter\(t=>!isMine\(t\)&&!t\.full&&!t\.vacation\);/,'urgent calls skip full and paused shops');
   assert.match(home,/<p class="stu-cap\$\{openN>=capN\?" full":""\}">/);
   assert.match(home,/if\(t\.full\)sc-=40;/);
 });

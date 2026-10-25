@@ -386,7 +386,7 @@ async function ensureSchema(env) {
 | `tech_applications` | ใบสมัครช่าง · `data` เข้ารหัสในตู้เซฟ · pending/approved/rejected · `test` |
 | `tech_identity` · `tech_identity_events` · `tech_identity_claims` | ผลยืนยันตัวตน Didit · ใบรับ webhook (ไม่เก็บ payload ดิบ) · แฮชเลขบัตรกันสมัครซ้ำ |
 | `tech_docs` | เอกสารแนบใบสมัคร (บัตร เซลฟี่ ใบรับรอง = ส่วนตัว) |
-| `tech_profiles` | โปรไฟล์ร้านที่อนุมัติแล้ว · ช่องจอด (`bays`) · คำทักทาย · ออนไลน์ |
+| `tech_profiles` | โปรไฟล์ร้านที่อนุมัติแล้ว · ช่องจอด (`bays`) · คำทักทาย · ออนไลน์ (`online` = สถานะ "รับงาน") · ช่างเคลื่อนที่: `data.roam` + จุดมือถือล่าสุด `live_lat/live_lng/live_at` (จุดเดียว ลบเมื่อเลิกรับงาน/พักร้าน/ปิดโหมด/ปิดบัญชี) |
 | `tech_gigs` · `tech_sponsors` | บริการของร้าน · บริการที่ลงโฆษณา |
 | `tech_jobs` · `tech_job_archives` | ใบงาน · ประวัติการเก็บใบงานที่จบแล้ว |
 | `tech_messages` · `tech_reads` | ข้อความในใบงานและห้องทัก (คอลัมน์ `kind` = greet/auto) · อ่านถึงไหน |
@@ -726,7 +726,7 @@ const guarded = (minRole, handler) => async () => {
 | กลุ่ม | เส้นทาง |
 |------|--------|
 | ร้านและบริการ (สาธารณะ) | `GET /api/tech` · `/api/tech/gigs` · `/api/tech/reviews` · `/api/tech/showcase` · `POST /api/tech/view` · `GET /api/tech/stats` · `/api/tech/pulse` |
-| บัญชีช่างของฉัน | `GET /api/tech/me` · `POST /api/tech/shop` · `/api/tech/online` · `/api/tech/bays` · `/api/tech/shop-mode` · `/api/tech/gig` · `/api/tech/gig/delete` · `/api/tech/gig/sponsor` · `/unsponsor` |
+| บัญชีช่างของฉัน | `GET /api/tech/me` · `POST /api/tech/shop` · `/api/tech/online` · `POST /api/tech/here` (จุดมือถือช่างเคลื่อนที่ เฉพาะตอนรับงาน) · `GET /api/tech/live` (สาธารณะ จุดปัด ~280 ม. ไม่เก่าเกิน 10 นาที) · `/api/tech/bays` · `/api/tech/shop-mode` · `/api/tech/gig` · `/api/tech/gig/delete` · `/api/tech/gig/sponsor` · `/unsponsor` |
 | สมัครช่าง | `POST /api/tech/apply` · `/apply/identity` · `/apply/identity/refresh` · `/apply/withdraw` · `POST /api/tech/didit/webhook` (ตรวจลายเซ็น Didit) |
 | ทีมงานตรวจ | `GET /api/tech/applications` · `/api/tech/docs` · `/api/tech/audit` · `POST /api/tech/review` · `/review/idcheck` · `/rescreen` · `/moderate` · `/reviews/hide` · `GET /api/tech/reports` · `POST /reports/decide` |
 | ใบงาน | `GET/POST /api/tech/jobs` · `GET/POST /api/tech/jobs/:id` · `/jobs/:id/messages` · `/jobs/:id/proof` · `/jobs/:id/live` · `POST /api/tech/jobs/archive` · `/api/tech/messages/:id/edit|delete` · `/api/tech/groups/:id` |
@@ -1057,7 +1057,9 @@ const NEXT = {          // action: [ใครทำได้, สถานะท
 
 - ลูกค้าประกาศอาการ (เลือกได้หลายหมวด · งบประมาณ · รับอะไหล่มือสองได้ไหม — แสดงเมื่อใส่งบแล้ว)
 - **หมุดต้องอยู่บนบกและอยู่ในรัศมีที่กำหนด** (`geo-guard.js` · ปิดได้ด้วย `PIN_WATER_OFF`)
-- งานด่วน (รวมโหมดอุบัติเหตุ) — ร้านในรัศมีเห็นทุกร้าน แจ้ง LINE ร้านใกล้ ๆ และบอกลูกค้าว่าส่งถึงกี่ร้าน
+- งานด่วน (รวมโหมดอุบัติเหตุ) — ร้านในรัศมีเห็นทุกร้าน (`reach`) · แจ้ง LINE เฉพาะร้านที่ตั้งสถานะ "รับงาน" และไม่พักร้าน (`taking`, สูงสุด 25 ร้าน) · บอกลูกค้าทั้งสองตัวเลข
+- เรียกช่างด่วนแบบส่งตรง 3 ร้าน — ไม่ส่งถึงร้านที่พักร้าน/งานเต็ม · ร้านที่ "รับงาน" อยู่ได้ก่อน แล้วเรียงตามระยะ (แผนที่โหมดด่วนใช้กติกาเดียวกัน)
+- ช่างเคลื่อนที่ (`roam`) วัดระยะจากจุดมือถือล่าสุดถ้าไม่เก่าเกิน 10 นาที ทั้งในการแจ้งงานด่วนและ "หางานใกล้ฉัน" · การ์ด LINE เขียนว่า "ห่างจากคุณตอนนี้" แทน "ห่างร้านคุณ"
 - ร้านส่งข้อเสนอ (`/posts/:id/offer`) → ลูกค้าเลือก → กลายเป็นใบงาน · ใบเสนออื่นในกลุ่มเดียวกันถูกปิด
 - Studio ดึงรายการทุก 15 วินาที งานด่วนเป็นสีแดงในคิว "ต้องทำ"
 
@@ -1077,6 +1079,16 @@ const NEXT = {          // action: [ใครทำได้, สถานะท
 
 **Studio** (`/studio` ใน index.html) — สำหรับร้านที่อนุมัติแล้ว: งาน (ต้องทำ | หางาน) · ข้อความ · บริการ · ร้านของฉัน
 คอมเป็นแถบข้าง มือถือเป็นเมนูล่าง · โควตาบริการเต็ม = ขัดแย้งของคลัง ไม่ใช่ฟอร์มไม่ครบ — ให้แก้ของเดิม ไม่ลบให้เอง
+
+**สถานะร้าน** (ปุ่มบนหัว "งานของฉัน" · มาจาก `online` + `vacation` เท่านั้น)
+
+| สถานะ | ค่า | ผลจริง |
+|------|-----|-------|
+| รับงาน | `online=1` | ป้าย "รับงานอยู่ตอนนี้" (ถ้าไม่ได้ตั้งเวลาทำการ) · งานด่วนเตือนในแอปมีเสียง + LINE · ได้งานด่วนแบบส่งตรงก่อน · ช่างเคลื่อนที่ส่งจุดมือถือ |
+| รับงาน ไม่แจ้งเตือน | `online=0` | ลูกค้ายังขอราคา/ทักได้ · งานด่วนไม่ส่ง LINE ไม่มีเสียง · ไม่ส่งจุดมือถือ (หลังบ้านลบจุดเดิม) |
+| ไม่รับงาน | `vacation.on` (+ `online=0`) | หลังบ้านปฏิเสธคำขอราคาใหม่ (409) · ไม่ได้งานด่วน · ไม่ถูกจับคู่บนแผนที่ |
+
+**ช่างเคลื่อนที่** — ตั้งค่า Studio → "ช่างเคลื่อนที่ — ตำแหน่งตามมือถือ" (เฉพาะร้านที่ `mobile`) · `RoamShare` ใน index.html: `watchPosition` แล้วส่ง `POST /api/tech/here` ทุก ~1 นาที หรือเมื่อขยับเกิน ~200 ม. (เร็วสุดทุก 20 วิ) · หลังบ้านตอบ 403/404/409 = หยุดเอง · ป้ายบนหัว Studio บอกว่ากำลังแชร์และอัปเดตเมื่อไร · ลูกค้าเห็นแค่จุดปัดเข้าช่องตาราง 0.0025° (~280 ม.) ผ่าน `live` ในรายชื่อร้านและ `GET /api/tech/live` · จุดลงทะเบียนเดิม (`lat/lng`) ไม่เปลี่ยน — หน้าแก้ร้านจึงไม่โดนจุดมือถือ
 
 **คลังไฟล์ (`media.js`)** — รหัส `m_…` · เก็บใน D1 แบบแบ่งชิ้น (`media_parts`) หรือ R2 ถ้าผูก binding `MEDIA`
 เข้าถึงตามสิทธิ์ของห้อง/ใบงาน · เส้นทาง `/api/tech/media/:id` · หน้าเว็บใช้ `media-store.js`
@@ -1172,7 +1184,7 @@ for f in index garage news profile spares chat; do printf '%-8s %s\n' $f "$(grep
 | `carspec.js` · `car-sync.js` · `garage-*.js` · `mileage-*.js` | สเปกรถ · ซิงก์รถ · กติกาการาจ · เลขไมล์ |
 | `cendon-line.js` · `partner-*.js` · `tech-marketplace.js` | LINE · การ์ดสมัครช่าง · ตลาดช่าง |
 | `cloud-swap.js` · `stability.js` · `input-guard.js` · `mobile-ui.js` | สลับข้อมูลคลาวด์ · กันหน้ากระตุก · กันอินพุตผิด · UI มือถือ |
-| `map-atlas.js` · `map-atlas.css` | หน้าแผนที่ `/map` (MapLibre สีของแอป · หมุด/กลุ่มร้าน · ตัวกรอง · แผ่นล่าง 3 ขั้น · เลเยอร์ · โหมดด่วน · ช่างกำลังมา · จุดจอดรถ) โหลดเมื่อเปิดแผนที่ · ข้อมูลทั้งหมดมาจาก index.html ผ่าน `atlasApi()` ไม่เรียก API เอง · เครื่องไม่มี WebGL → แผนที่ Leaflet เดิม |
+| `map-atlas.js` · `map-atlas.css` | หน้าแผนที่ `/map` (MapLibre สีของแอป · หมุด/กลุ่มร้าน · ตัวกรอง · แผ่นล่าง 3 ขั้น · เลเยอร์ · โหมดด่วน · จับคู่ช่าง 4 แบบ: แนะนำ/ใกล้สุด/คุณภาพดีสุด/ดาวเยอะสุด → 3 ร้านพร้อมเลขอันดับบนหมุด · หมุดช่างเคลื่อนที่ไหลตามจุดมือถือ · ช่างกำลังมา · จุดจอดรถ) โหลดเมื่อเปิดแผนที่ · ข้อมูลทั้งหมดมาจาก index.html ผ่าน `atlasApi()` ไม่เรียก API เอง (index.html ถาม `/api/tech/live` ทุก 30 วิระหว่างเปิดแผนที่) · เครื่องไม่มี WebGL → แผนที่ Leaflet เดิม |
 
 ## 10.4 เส้นทางในเว็บ
 

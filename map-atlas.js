@@ -5,7 +5,7 @@
    ตำแหน่งคุณและจุดจอดรถอยู่ในเครื่องนี้เท่านั้น ไม่ส่งออก
    เครื่องไม่มี WebGL / โหลดไลบรารีไม่ได้ → mount() โยน error ให้ index.html ใช้แผนที่เดิม (Leaflet) */
 
-const ML='/vendor/maplibre-gl-4.7.1',STYLE='https://tiles.openfreemap.org/styles/liberty',CSS_URL='/map-atlas.css?v=1';
+const ML='/vendor/maplibre-gl-4.7.1',STYLE='https://tiles.openfreemap.org/styles/liberty',CSS_URL='/map-atlas.css?v=2';
 /* สีแผนที่สองธีม — ตรงกับบอร์ด "สีแผนที่ใหม่" ในงานออกแบบ */
 const PAL={
   light:{bg:'#F3F1EC',green:'#DDE8D3',water:'#C8DCE7',road:'#FFFFFF',casing:'#E2DCD2',major:'#FDE7D2',majorCase:'#EDC29A',motor:'#F8CFA6',motorCase:'#E3A06A',
@@ -96,11 +96,11 @@ export async function mount(host,A){
   /* เลเยอร์ที่ผู้ใช้เลือกไว้ จำในเครื่อง (ความสะดวกของคนดู ไม่ใช่ข้อมูลสำคัญ) */
   const LAY=Object.assign({rings:true,cover:false,heat:false,car:true,closed:true,d3:false},LS.get('spire_mapLayers',{}));
   if(!A.want3d)LAY.d3=false;
-  const MF={open:false,urgent:false,mobile:false,verified:false,top:false,cat:'',q:'',sort:'near',area:null};
+  const MF={open:false,urgent:false,mobile:false,roam:false,verified:false,top:false,cat:'',q:'',sort:'near',area:null};
   const f0=A.filter()||{};
   if(f0.cat==='mobile')MF.mobile=true;else if(f0.cat==='urgent')MF.urgent=true;else if(f0.cat&&f0.cat!=='all'&&A.cats[f0.cat])MF.cat=f0.cat;
   MF.q=f0.q||'';
-  const st={sel:null,sheet:'peek',urg:false,dark:D.documentElement.getAttribute('data-theme')==='dark',list:[],all:[],markers:new Map(),me:null,car:null,labs:[],
+  const st={sel:null,sheet:'peek',urg:false,match:null,dark:D.documentElement.getAttribute('data-theme')==='dark',list:[],all:[],markers:new Map(),me:null,car:null,labs:[],
     userMoved:false,ready:false,styleOk:false,fitDone:false,layers:false,carOpen:false};
   const isDesk=()=>matchMedia('(min-width:1024px)').matches;
 
@@ -113,7 +113,7 @@ export async function mount(host,A){
     <div class="atl-ubar" hidden><button class="atl-ic" type="button" data-a="unurg"><i class="ti ti-x"></i></button><div><i class="ti ti-flame" aria-hidden="true"></i><b></b><span></span></div></div>
     <div class="atl-chips" role="toolbar"></div>
     <div class="atl-float"><button class="atl-live" type="button" data-a="live" hidden></button><button class="atl-area" type="button" data-a="area" hidden></button></div>
-    <button class="atl-sos" type="button" data-a="urgent"><i class="ti ti-flame" aria-hidden="true"></i><span></span></button>
+    <div class="atl-fab"><button class="atl-sos" type="button" data-a="urgent"><i class="ti ti-flame" aria-hidden="true"></i><span></span></button><button class="atl-match" type="button" data-a="match"><i class="ti ti-target-arrow" aria-hidden="true"></i><span></span></button></div>
     <div class="atl-ctl"><button class="atl-ic" type="button" data-a="layers"><i class="ti ti-stack-2"></i></button><button class="atl-ic" type="button" data-a="tilt"></button><button class="atl-ic atl-loc" type="button" data-a="locate"><i class="ti ti-current-location"></i></button></div>
     <section class="atl-sheet"><div class="atl-grab" data-a="grab"><span></span></div><div class="atl-sb"></div></section>
     <div class="atl-pop" hidden></div>
@@ -171,6 +171,7 @@ export async function mount(host,A){
     if(MF.open)l=l.filter(t=>t.st&&t.st.on);
     if(MF.urgent)l=l.filter(t=>t.urgent);
     if(MF.mobile)l=l.filter(t=>t.mobile);
+    if(MF.roam)l=l.filter(t=>t.roam&&t.live);
     if(MF.verified)l=l.filter(t=>t.verified);
     if(MF.top)l=l.filter(ratingOk);
     if(!LAY.closed)l=l.filter(t=>!t.st||t.st.on);
@@ -179,7 +180,41 @@ export async function mount(host,A){
     st.list=l.slice().sort(S);
     st.view=st.list.filter(inArea);
   }
-  const filtered=()=>MF.open||MF.urgent||MF.mobile||MF.verified||MF.top||!!MF.cat||!!MF.q;
+  const filtered=()=>MF.open||MF.urgent||MF.mobile||MF.roam||MF.verified||MF.top||!!MF.cat||!!MF.q;
+  /* ช่างเคลื่อนที่: ตำแหน่งมาจากมือถือช่าง (หลังบ้านปัดแล้ว ~300 ม.) — บอกเสมอว่าอัปเดตเมื่อไร */
+  const liveAgo=at=>{const m=Math.floor((Date.now()-at)/60000);return m<1?T('เพิ่งอัปเดต','just updated'):T(`อัปเดต ${m} นาทีที่แล้ว`,`updated ${m} min ago`)};
+  const moving=t=>!!(t.roam&&t.live);
+
+  /* ── จับคู่ช่าง: 3 ร้านที่ใช่ จากข้อมูลจริงเท่านั้น (ระยะ · งานซ่อมจบพร้อมหลักฐาน · ทีมงานตรวจ · ดาวรีวิว) ──
+     ดาวใช้ค่าเฉลี่ยถ่วงจำนวนรีวิว: ร้าน 1 รีวิว 5 ดาว ไม่ชนะร้าน 4.9 จาก 127 รีวิว · ไม่จับคู่ร้านตัวเอง ร้านไม่รับงาน และร้านงานเต็ม */
+  const bay=t=>t.reviewCount>0?(Number(t.rating)*t.reviewCount+4*5)/(t.reviewCount+5):0;
+  const qual=t=>Math.min(1,Math.log1p(t.proven||0)/Math.log1p(40))*.75+(t.verified?.25:0);
+  const nearSc=d=>d==null?.3:1/(1+d/4);
+  const onNow=t=>!!(t.st&&t.st.on);
+  const MATCH={
+    best:{key:'',sc:t=>.4*nearSc(t.dist)+.35*qual(t)+.25*(t.reviewCount?Math.max(0,Math.min(1,(bay(t)-3.5)/1.5)):0)+(onNow(t)?.08:0)},
+    near:{key:'dist',cmp:(a,b)=>(a.dist??1e9)-(b.dist??1e9)||onNow(b)-onNow(a)},
+    quality:{key:'proven',cmp:(a,b)=>(b.proven||0)-(a.proven||0)||!!b.verified-!!a.verified||(b.warranty||0)-(a.warranty||0)||bay(b)-bay(a)||(a.dist??1e9)-(b.dist??1e9)},
+    stars:{key:'stars',need:t=>t.reviewCount>0,cmp:(a,b)=>bay(b)-bay(a)||b.reviewCount-a.reviewCount||(a.dist??1e9)-(b.dist??1e9)}};
+  function matchList(){
+    const h=A.here(),m=MATCH[st.match]||MATCH.best;
+    let c=st.list.filter(t=>!A.isMine(t)&&!t.vacation&&!t.full&&(!m.need||m.need(t)));
+    /* มีตำแหน่งคุณ = ดูแค่ร้านในระยะที่ไปถึงจริง (30 กม. · ไม่ถึง 3 ร้านขยายเป็น 80 กม.) */
+    if(h){const w=c.filter(t=>t.dist!=null&&t.dist<=30);c=w.length>=3?w:c.filter(t=>t.dist!=null&&t.dist<=80)}
+    c=m.sc?c.map(t=>({...t,_s:m.sc(t)})).sort((a,b)=>b._s-a._s||(a.dist??1e9)-(b.dist??1e9)):c.slice().sort(m.cmp);
+    return c.slice(0,3).map((t,i)=>({...t,rank:i+1}));
+  }
+  /* เหตุผลที่เลือก — ตัวเลขจริงทุกข้อ เรียงเอาเรื่องที่ใช้จัดอันดับขึ้นก่อน */
+  function why(t){
+    const d=t.dist,out=[];
+    if(d!=null)out.push(['dist','ti-map-pin',moving(t)?T(`ห่างคุณตอนนี้ ${A.distTxt(d)}`,`${A.distTxt(d)} from you now`):T(`ห่าง ${A.distTxt(d)}`,`${A.distTxt(d)} away`)]);
+    if(t.proven)out.push(['proven','ti-shield-check',T(`ซ่อมจบมีหลักฐาน ${t.proven} งาน`,`${t.proven} proven jobs`)]);
+    else if(t.verified)out.push(['proven','ti-rosette-discount-check-filled',T('ทีมงานตรวจแล้ว','Checked by staff')]);
+    out.push(['stars','ti-star-filled',t.reviewCount?T(`${Number(t.rating).toFixed(1)} จาก ${t.reviewCount} รีวิว`,`${Number(t.rating).toFixed(1)} from ${t.reviewCount} reviews`):T('ยังไม่มีรีวิว','No reviews yet')]);
+    if(onNow(t))out.push(['on','ti-circle-check',esc(t.st.txt)]);
+    const k=(MATCH[st.match]||{}).key;
+    return out.sort((a,b)=>(b[0]===k)-(a[0]===k)).slice(0,3);
+  }
 
   /* ── หมุด + กลุ่มร้าน (รวมหมุดที่ทับกันบนจอ) ── */
   const avHTML=(t,cls)=>{const ph=t.avatar||t.cover||(t.photos||[])[0];
@@ -196,7 +231,7 @@ export async function mount(host,A){
     b.setAttribute('aria-pressed',sel?'true':'false');
     b.innerHTML=sel
       ?`<span class="atl-lab">${avHTML(t,'atl-av')}<span class="atl-lt"><b>${esc(t.shop||t.name)}</b><small>${t.from?T('เริ่ม','From')+' ฿'+A.money(t.from):T('ถามราคา','Ask for price')}</small></span></span><span class="atl-tip"></span>`
-      :`${urg?'<span class="atl-halo"></span>':''}<span class="atl-stem"></span>${avHTML(t,'atl-av')}${s?`<span class="atl-dot ${s.on?'on':''}"></span>`:''}${t.mobile?'<span class="atl-mob"><i class="ti ti-truck"></i></span>':''}`;
+      :`${urg?'<span class="atl-halo"></span>':''}${moving(t)?'<span class="atl-roam"></span>':''}<span class="atl-stem"></span>${avHTML(t,'atl-av')}${s?`<span class="atl-dot ${s.on?'on':''}"></span>`:''}${t.rank?`<span class="atl-rank">${t.rank}</span>`:t.mobile?`<span class="atl-mob"><i class="ti ti-${moving(t)?'navigation':'truck'}"></i></span>`:''}`;
   }
   function clusterEl(g){
     const el=D.createElement('div');el.className='atl-mk';
@@ -209,7 +244,7 @@ export async function mount(host,A){
   }
   function layout(){
     if(!st.ready)return;
-    const pts=(st.urg?urgentList().all:st.list),seen=new Set(),out=[],z=map.getZoom(),R=z>=16.5?0:46;
+    const pts=(st.urg?urgentList().all:st.match?matchList():st.list),seen=new Set(),out=[],z=map.getZoom(),R=z>=16.5?0:46;
     const pr=pts.map(t=>({t,p:map.project([t.lng,t.lat])}));
     /* ร้านที่เลือกไม่ถูกรวมเข้ากลุ่ม */
     const order=pr.slice().sort((a,b)=>(b.t.id===st.sel)-(a.t.id===st.sel)||(b.t.urgent-a.t.urgent));
@@ -222,11 +257,11 @@ export async function mount(host,A){
     }
     const keep=new Set();
     for(const o of out){
-      if(o.one){const t=o.one,k='s:'+t.id,sel=t.id===st.sel,sig=[sel,t.st&&t.st.on,t.urgent,t.full,t.avatar,t.from,t.shop].join('|');keep.add(k);
+      if(o.one){const t=o.one,k='s:'+t.id,sel=t.id===st.sel,sig=[sel,t.st&&t.st.on,t.urgent,t.full,t.avatar,t.from,t.shop,t.rank,moving(t)].join('|');keep.add(k);
         let m=st.markers.get(k);
         if(!m){const el=pinEl(t);m={mk:new ml.Marker({element:el,anchor:'bottom'}).setLngLat([t.lng,t.lat]).addTo(map),el,sig:''};st.markers.set(k,m)}
         if(m.sig!==sig){paintPin(m.el,t,sel);m.sig=sig}
-        m.mk.setLngLat([t.lng,t.lat]);m.el.style.zIndex=sel?30:t.urgent?12:10;
+        glide(m.mk,[t.lng,t.lat],t.roam);m.el.style.zIndex=sel?30:t.rank?14:t.urgent?12:10;
       }else{
         const ids=o.g.map(t=>t.id).sort(),k='c:'+ids.join(',');keep.add(k);
         if(!st.markers.has(k)){const b=new ml.LngLatBounds();o.g.forEach(t=>b.extend([t.lng,t.lat]));
@@ -235,6 +270,16 @@ export async function mount(host,A){
     }
     for(const [k,m] of st.markers)if(!keep.has(k)){m.mk.remove();st.markers.delete(k)}
     placePop();
+  }
+
+  /* ช่างเคลื่อนที่ขยับ = หมุดไหลไปจุดใหม่ (ไม่กระโดด) · ระยะไกลเกินหรือผู้ใช้ลดการเคลื่อนไหว = ย้ายทันที */
+  function glide(mk,to,soft){
+    const a=mk.getLngLat();if(a.lng===to[0]&&a.lat===to[1])return;
+    cancelAnimationFrame(mk._g);
+    if(!soft||RM||A.km({lat:a.lat,lng:a.lng},{lat:to[1],lng:to[0]})>5){mk.setLngLat(to);return}
+    const t0=performance.now(),step=n=>{const k=Math.min(1,(n-t0)/900),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+      mk.setLngLat([a.lng+(to[0]-a.lng)*e,a.lat+(to[1]-a.lat)*e]);if(k<1)mk._g=requestAnimationFrame(step)};
+    mk._g=requestAnimationFrame(step);
   }
 
   /* ── คุณ · รถของคุณ · วงระยะ ── */
@@ -258,34 +303,34 @@ export async function mount(host,A){
   }
   function paintOverlays(){
     if(!st.ready)return;
-    const h=A.here(),sel=st.sel&&st.all.find(t=>t.id===st.sel);
+    const h=A.here(),sel=st.sel&&st.all.find(t=>t.id===st.sel),calm=st.urg||!!st.match,to=sel||(st.match&&matchList()[0]);
     setData('atl-rings',FC(LAY.rings&&h&&!st.urg?[poly(h,1),poly(h,3)]:[]));
     st.labs.forEach(m=>m.remove());st.labs=[];
     if(LAY.rings&&h&&!st.urg)[1,3].forEach(k=>{const el=D.createElement('span');el.className='atl-rlab';el.textContent=A.distTxt(k);
       st.labs.push(new ml.Marker({element:el,anchor:'center'}).setLngLat([h.lng,h.lat+k/KM_LAT]).addTo(map))});
-    setData('atl-cover',FC(LAY.cover&&!st.urg?st.list.filter(t=>t.mobile&&t.radius>0).map(t=>poly(t,Math.min(t.radius,60))):[]));
-    setData('atl-pts',FC(LAY.heat&&!st.urg?st.all.map(t=>({type:'Feature',properties:{},geometry:{type:'Point',coordinates:[t.lng,t.lat]}})):[]));
-    map.setLayoutProperty('atl-heat','visibility',LAY.heat&&!st.urg?'visible':'none');
+    setData('atl-cover',FC(LAY.cover&&!calm?st.list.filter(t=>t.mobile&&t.radius>0).map(t=>poly(t,Math.min(t.radius,60))):[]));
+    setData('atl-pts',FC(LAY.heat&&!calm?st.all.map(t=>({type:'Feature',properties:{},geometry:{type:'Point',coordinates:[t.lng,t.lat]}})):[]));
+    map.setLayoutProperty('atl-heat','visibility',LAY.heat&&!calm?'visible':'none');
     setData('atl-sel',FC(sel&&sel.mobile&&sel.radius>0&&!st.urg?[poly(sel,Math.min(sel.radius,60))]:[]));
-    setData('atl-path',FC(sel&&h&&!st.urg?[{type:'Feature',properties:{},geometry:{type:'LineString',coordinates:[[h.lng,h.lat],[sel.lng,sel.lat]]}}]:[]));
+    setData('atl-path',FC(to&&h&&!st.urg?[{type:'Feature',properties:{},geometry:{type:'LineString',coordinates:[[h.lng,h.lat],[to.lng,to.lat]]}}]:[]));
     const u=st.urg&&urgentList();
     setData('atl-reach',FC(u&&h&&u.reach?[poly(h,u.reach)]:[]));
     const ink=P().ink;try{map.setPaintProperty('atl-rings-l','line-color',ink);map.setPaintProperty('atl-path','line-color',ink)}catch(e){}
   }
 
-  /* ── โหมดด่วน: กติกาเดียวกับปุ่มเรียกช่างด่วน (3 ร้านมาหาถึงที่ที่ใกล้สุด ไม่นับร้านงานเต็ม) ── */
+  /* ── โหมดด่วน: กติกาเดียวกับปุ่มเรียกช่างด่วน (3 ร้านมาหาถึงที่ ไม่นับร้านงานเต็ม/ไม่รับงาน · ร้านที่รับงานอยู่ตอนนี้ก่อน แล้วใกล้สุด) ── */
   function urgentList(){
-    const h=A.here(),TS=A.techs().filter(t=>!A.isMine(t)&&!t.full&&t.lat!=null);
+    const h=A.here(),TS=A.techs().filter(t=>!A.isMine(t)&&!t.full&&!t.vacation&&t.lat!=null);
     let l=TS.filter(t=>t.mobile&&t.urgent);if(!l.length)l=TS.filter(t=>t.mobile);
-    l=l.map(t=>({...t,st:status(t),dist:A.km(h,t)})).filter(t=>t.dist==null||t.dist<=Math.max(t.radius||30,30)).sort((a,b)=>(a.dist??1e9)-(b.dist??1e9));
-    const pick=l.slice(0,3),far=pick.length&&pick[pick.length-1].dist;
+    l=l.map(t=>({...t,st:status(t),dist:A.km(h,t)})).filter(t=>t.dist==null||t.dist<=Math.max(t.radius||30,30)).sort((a,b)=>(!!b.online-!!a.online)||(a.dist??1e9)-(b.dist??1e9));
+    const pick=l.slice(0,3),far=Math.max(0,...pick.map(t=>t.dist||0));
     return {all:l,pick,reach:h&&far?Math.max(1,far*1.12):0};
   }
 
   /* ── ตัวกรอง ── */
   function chips(){
     const fl=[['open',`<span class="atl-gd"></span>`,T('เปิดอยู่ตอนนี้','Open now')],['urgent','<i class="ti ti-flame"></i>',T('รับงานด่วน','Urgent jobs')],
-      ['mobile','<i class="ti ti-truck"></i>',T('มาหาถึงที่','Comes to you')],['verified','<i class="ti ti-rosette-discount-check-filled"></i>',T('ทีมงานตรวจแล้ว','Checked by staff')],
+      ['mobile','<i class="ti ti-truck"></i>',T('มาหาถึงที่','Comes to you')],['roam','<i class="ti ti-navigation"></i>',T('ตำแหน่งสด','Live location')],['verified','<i class="ti ti-rosette-discount-check-filled"></i>',T('ทีมงานตรวจแล้ว','Checked by staff')],
       ['top','<i class="ti ti-star-filled"></i>',T('4.5 ขึ้นไป','4.5+')]];
     const cats=Object.values(A.cats).filter(c=>c.c&&c.id!=='mobile'&&c.id!=='urgent');
     $('.atl-chips').innerHTML=fl.map(([k,ic,l])=>`<button type="button" class="atl-chip f-${k}" data-f="${k}" aria-pressed="${!!MF[k]}">${ic}<span>${l}</span></button>`).join('')
@@ -298,7 +343,7 @@ export async function mount(host,A){
     return `<button type="button" class="atl-row${t.id===st.sel?' on':''}" data-id="${esc(t.id)}" style="animation-delay:${Math.min(i*30,180)}ms">${avHTML(t,'atl-rav')}
       <span class="atl-rb"><span class="atl-rn"><b>${esc(t.shop||t.name)}</b>${t.verified?`<i class="ti ti-rosette-discount-check-filled" title="${T('ทีมงานตรวจแล้ว','Checked by staff')}"></i>`:''}${A.isMine(t)?`<em>${T('ร้านของคุณ','Your shop')}</em>`:''}</span>
       <span class="atl-rm">${t.reviewCount?`<i class="ti ti-star-filled"></i>${Number(t.rating).toFixed(1)} (${t.reviewCount})`:T('ร้านใหม่','New shop')}${d!=null?` · ${A.distTxt(d)}`:''}${t.proven?` · ${T(`หลักฐาน ${t.proven} งาน`,`${t.proven} proven jobs`)}`:''}</span>
-      <span class="atl-rs">${s?`<span class="${s.on?'on':''}">${esc(s.txt)}</span>`:''}${t.mobile?`<span class="atl-tag">${T('มาหาถึงที่','Comes to you')}</span>`:''}</span></span>
+      <span class="atl-rs">${s?`<span class="${s.on?'on':''}">${esc(s.txt)}</span>`:''}${moving(t)?`<span class="atl-tag live"><i class="ti ti-navigation"></i>${T('ช่างเคลื่อนที่','Mobile mechanic')} · ${liveAgo(t.live.at)}</span>`:t.mobile?`<span class="atl-tag">${T('มาหาถึงที่','Comes to you')}</span>`:''}</span></span>
       <span class="atl-rp">${t.from?`<small>${T('เริ่ม','From')}</small><b>฿${A.money(t.from)}</b>`:''}</span></button>`};
   function listHTML(){
     const v=st.view,h=A.here(),openN=v.filter(t=>t.st&&t.st.on).length,urgN=v.filter(t=>t.urgent&&(!t.st||t.st.on)).length,mobN=v.filter(t=>t.mobile).length;
@@ -327,9 +372,10 @@ export async function mount(host,A){
       <span class="atl-cr">${t.reviewCount?`<i class="ti ti-star-filled"></i>${Number(t.rating).toFixed(1)} · ${T(`${t.reviewCount} รีวิว`,`${t.reviewCount} reviews`)}`:T('ร้านใหม่ ยังไม่มีรีวิว','New shop, no reviews yet')}</span>
       ${s?`<span class="atl-cs${s.on?' on':''}">${esc(s.txt)}</span>`:''}</div>
       <button type="button" class="atl-x" data-a="close" aria-label="${T('ปิดการ์ดร้าน','Close shop card')}"><i class="ti ti-x"></i></button></div>
+      ${t.roam?`<p class="atl-roamln${moving(t)?' on':''}"><i class="ti ti-navigation"></i><span>${moving(t)?T('ช่างเคลื่อนที่ · ตำแหน่งตามมือถือช่าง (โดยประมาณ)','Mobile mechanic · location follows their phone (approximate)')+' · '+liveAgo(t.live.at):T('ช่างเคลื่อนที่ · ตอนนี้ไม่ได้แชร์ตำแหน่ง แสดงจุดตั้งต้น','Mobile mechanic · not sharing location now, showing their base')}</span></p>`:''}
       ${facts.length?`<div class="atl-vet"><i class="ti ti-shield-check"></i><span>${T('ทีมงานตรวจแล้ว','Checked by staff')}: ${facts.map(esc).join(' · ')}</span></div>`:''}
       <div class="atl-grid">
-        <div><small>${T('ระยะทาง','Distance')}</small><b>${d!=null?A.distTxt(d):'—'}</b><small>${d!=null?(inside?T('คุณอยู่ในวงบริการ','You are in range'):T(`ขับรถราว ${etaMin(d)} นาที`,`About ${etaMin(d)} min drive`)):T('ยังไม่รู้ตำแหน่งคุณ','Location unknown')}</small></div>
+        <div><small>${T('ระยะทาง','Distance')}</small><b>${d!=null?A.distTxt(d):'—'}</b><small>${d!=null?(moving(t)?T(`มาถึงคุณราว ${etaMin(d)} นาที`,`Could reach you in about ${etaMin(d)} min`):inside?T('คุณอยู่ในวงบริการ','You are in range'):T(`ขับรถราว ${etaMin(d)} นาที`,`About ${etaMin(d)} min drive`)):T('ยังไม่รู้ตำแหน่งคุณ','Location unknown')}</small></div>
         <div><small>${T('ราคาเริ่ม','From')}</small><b>${t.from?'฿'+A.money(t.from):'—'}</b><small>${esc((t.skills||[])[0]||'')}</small></div>
         <div><small>${T('ซ่อมจบมีหลักฐาน','Proven jobs')}</small><b>${t.proven?T(`${t.proven} งาน`,`${t.proven}`):'—'}</b><small>${t.mobile?T(`มาหาถึงที่ ${t.radius||0} กม.`,`Mobile ${t.radius||0} km`):T('ที่ร้าน','At the shop')}</small></div>
       </div>
@@ -337,24 +383,49 @@ export async function mount(host,A){
       <div class="atl-acts">${mine?`<button type="button" class="atl-btn p w" data-a="store">${T('ดูหน้าร้านของคุณ','View your shop')}</button>`
         :`<button type="button" class="atl-btn p w" data-a="book"${t.vacation||t.full?' disabled':''}>${T('ขอราคา','Get a quote')}</button>
         <button type="button" class="atl-ib" data-a="msg" aria-label="${T('แชตกับร้าน','Message the shop')}"><i class="ti ti-message-circle"></i></button>
-        <a class="atl-ib" href="https://www.google.com/maps/dir/?api=1&destination=${t.lat},${t.lng}" target="_blank" rel="noopener" aria-label="${T('นำทางไปร้าน','Directions to the shop')}"><i class="ti ti-navigation"></i></a>
+        ${moving(t)?'':`<a class="atl-ib" href="https://www.google.com/maps/dir/?api=1&destination=${t.lat},${t.lng}" target="_blank" rel="noopener" aria-label="${T('นำทางไปร้าน','Directions to the shop')}"><i class="ti ti-navigation"></i></a>`}
         <button type="button" class="atl-ib" data-a="store" aria-label="${T('ดูหน้าร้าน','View shop')}"><i class="ti ti-building-store"></i></button>`}</div></div>`;
   }
   function urgentHTML(){
     const u=urgentList(),h=A.here(),n=u.all.length;
-    const near=u.pick[0]&&u.pick[0].dist!=null?T(`ใกล้สุด ${A.distTxt(u.pick[0].dist)}`,`Closest ${A.distTxt(u.pick[0].dist)}`):'';
+    const c=u.pick.reduce((a,t)=>t.dist!=null&&(a==null||t.dist<a)?t.dist:a,null),near=c!=null?T(`ใกล้สุด ${A.distTxt(c)}`,`Closest ${A.distTxt(c)}`):'';
     return `<div class="atl-urg"><div class="atl-hd"><h2>${n?T(`ช่างรับงานด่วนใกล้คุณ ${n} ร้าน`,`Urgent mechanics near you: ${n}`):T('ยังไม่มีช่างรับงานด่วนใกล้คุณ','No urgent mechanics near you yet')}</h2><span>${near}</span></div>
-      ${u.pick.length?`<div class="atl-ustack">${u.pick.map(t=>avHTML(t,'atl-uav')).join('')}<span>${T(`คำขอจะส่งถึง ${u.pick.length} ร้านที่ใกล้ที่สุด`,`Your request goes to the ${u.pick.length} nearest`)}</span></div>`:''}
+      ${u.pick.length?`<div class="atl-ustack">${u.pick.map(t=>avHTML(t,'atl-uav')).join('')}<span>${T(`คำขอจะส่งถึง ${u.pick.length} ร้าน — ร้านที่รับงานอยู่ตอนนี้ก่อน แล้วใกล้สุด`,`Your request goes to ${u.pick.length} shops — those taking jobs now first, then the closest`)}</span></div>`:''}
       ${!h?`<button type="button" class="atl-btn w" data-a="locate"><i class="ti ti-current-location"></i>${T('ใช้ตำแหน่งของฉัน','Use my location')}</button>`:''}
       <button type="button" class="atl-btn red w" data-a="sos"><i class="ti ti-flame"></i>${T('เรียกช่างด่วนตอนนี้','Call an urgent mechanic now')}</button>
       <p class="atl-priv"><i class="ti ti-lock"></i>${T('ช่างเห็นแค่ย่านคร่าว ๆ ของคุณ พิกัดจริงเปิดให้เฉพาะช่างที่คุณเลือก','Mechanics only see your general area until you choose one')}</p></div>`;
+  }
+  const MODES=()=>[['best',T('แนะนำ','Best match')],['near',T('ใกล้สุด','Nearest')],['quality',T('คุณภาพดีสุด','Best quality')],['stars',T('ดาวเยอะสุด','Most stars')]];
+  function matchHTML(){
+    const h=A.here(),L=matchList(),k=st.match;
+    const how={best:T('ชั่งระยะทาง งานที่ซ่อมจบพร้อมหลักฐาน และดาวรีวิวรวมกัน ร้านที่รับงานอยู่ตอนนี้ได้คะแนนเพิ่ม','Weighs distance, proven jobs and review stars together; shops taking jobs now get a boost'),
+      near:T('ใกล้คุณที่สุดก่อน ช่างเคลื่อนที่วัดจากตำแหน่งมือถือตอนนี้','Closest first; mobile mechanics are measured from their phone right now'),
+      quality:T('งานที่ซ่อมจบพร้อมหลักฐานมากสุดก่อน แล้วดูการตรวจของทีมงานและระยะรับประกัน','Most proven finished jobs first, then staff checks and warranty'),
+      stars:T('ดาวเฉลี่ยถ่วงจำนวนรีวิว ร้านที่รีวิวน้อยไม่ชนะร้านรีวิวเยอะเพราะฟลุก','Average stars weighted by review count, so a few lucky reviews never win')}[k];
+    const pick=t=>`<div class="atl-pick${t.id===st.sel?' on':''}">
+      <button type="button" class="atl-pm" data-id="${esc(t.id)}"><span class="atl-pav">${avHTML(t,'atl-rav')}<span class="atl-rk">${t.rank}</span></span>
+        <span class="atl-pb"><b>${esc(t.shop||t.name)}</b><small>${t.from?`${T('เริ่ม','From')} ฿${A.money(t.from)}`:T('ถามราคา','Ask for price')}</small></span></button>
+      <button type="button" class="atl-btn p sm" data-a="pbook" data-t="${esc(t.id)}">${T('ขอราคา','Get a quote')}</button>
+      <span class="atl-why">${why(t).map(([,ic,x])=>`<span><i class="ti ${ic}"></i>${x}</span>`).join('')}</span></div>`;
+    return `<div class="atl-mm"><div class="atl-hd"><h2>${T('จับคู่ช่างให้คุณ','Your best matches')}</h2><button type="button" class="atl-x" data-a="unmatch" aria-label="${T('ปิดการจับคู่','Close matching')}"><i class="ti ti-x"></i></button></div>
+      <div class="atl-seg" role="group" aria-label="${T('จับคู่แบบ','Match by')}">${MODES().map(([m,l])=>`<button type="button" data-mm="${m}" aria-pressed="${k===m}">${l}</button>`).join('')}</div>
+      <p class="atl-how"><i class="ti ti-info-circle"></i><span>${how}</span></p>
+      ${!h&&(k==='near'||k==='best')?`<button type="button" class="atl-btn w" data-a="locate"><i class="ti ti-current-location"></i>${T('ใช้ตำแหน่งของฉันเพื่อหาร้านใกล้สุด','Use my location to find the closest')}</button>`:''}
+      ${L.length?`<div class="atl-picks">${L.map(pick).join('')}</div>`
+        :`<div class="atl-empty sm"><b>${k==='stars'?T('ยังไม่มีร้านที่มีรีวิวในบริเวณนี้','No reviewed shops around here yet'):T('ยังไม่มีร้านที่จับคู่ได้','No shops to match yet')}</b><p>${T('ลองล้างตัวกรอง หรือเลือกหมวดอื่น','Try clearing filters or another category')}</p></div>`}</div>`;
+  }
+  /* จัดกล้องให้เห็นคุณกับ 3 ร้านที่จับคู่ได้พร้อมกัน */
+  function fitMatch(){
+    const L=matchList(),h=A.here(),b=new ml.LngLatBounds();if(!L.length)return;
+    L.forEach(t=>b.extend([t.lng,t.lat]));if(h)b.extend([h.lng,h.lat]);
+    requestAnimationFrame(()=>map.fitBounds(b,{padding:pad(56),maxZoom:15,duration:RM?0:700}));
   }
   function renderSheet(){
     const t=st.sel&&st.all.find(x=>x.id===st.sel);
     if(st.sel&&!t)st.sel=null;
     const desk=isDesk();
-    sb.innerHTML=`<div class="atl-in">${st.urg?urgentHTML():(t&&!desk)?cardHTML({...t,st:status(t)}):listHTML()}</div>`;
-    R.dataset.mode=st.urg?'urg':(t&&!desk)?'card':A.loaded()&&!st.view.length?'empty':'list';
+    sb.innerHTML=`<div class="atl-in">${st.urg?urgentHTML():(t&&!desk)?cardHTML({...t,st:status(t)}):st.match?matchHTML():listHTML()}</div>`;
+    R.dataset.mode=st.urg?'urg':(t&&!desk)?'card':st.match?'match':A.loaded()&&!st.view.length?'empty':'list';
     placePop();sizeSheet();
   }
 
@@ -363,7 +434,7 @@ export async function mount(host,A){
   function heightOf(s){
     const h=H();
     /* การ์ด/โหมดด่วน/ไม่มีร้าน = สูงเท่าเนื้อหา (ขีดลาก 22 + ขอบล่าง) */
-    if(R.dataset.mode==='card'||R.dataset.mode==='urg'||R.dataset.mode==='empty'){const c=sb.firstElementChild;return Math.min(h*.78,(c?c.offsetHeight:300)+22+parseFloat(getComputedStyle(sb).paddingBottom||16))}
+    if(['card','urg','empty','match'].includes(R.dataset.mode)){const c=sb.firstElementChild;return Math.min(h*.78,(c?c.offsetHeight:300)+22+parseFloat(getComputedStyle(sb).paddingBottom||16))}
     return s==='full'?h-96:s==='half'?Math.round(h*.52):Math.min(232,Math.round(h*.34));
   }
   function sizeSheet(px){
@@ -382,7 +453,7 @@ export async function mount(host,A){
       const v=parseFloat(R.style.getPropertyValue('--sv'))||v0;
       if(!moved){if(e.target.closest&&e.target.closest('.atl-grab')){if(R.dataset.mode==='list')st.sheet=st.sheet==='peek'?'half':st.sheet==='half'?'full':'peek'}sizeSheet();return}
       if(R.dataset.mode==='card'&&v<v0-80){deselect();return}
-      if(R.dataset.mode==='urg'||R.dataset.mode==='empty'){sizeSheet();return}
+      if(['urg','empty','match'].includes(R.dataset.mode)){sizeSheet();return}
       const opts=['peek','half','full'].map(s=>[s,Math.abs(heightOf(s)-v)]).sort((a,b)=>a[1]-b[1]);st.sheet=opts[0][0];sizeSheet()};
     addEventListener('pointerup',end);addEventListener('pointercancel',end);
   })();
@@ -425,7 +496,8 @@ export async function mount(host,A){
   }
   /* จุดกึ่งกลางของส่วนแผนที่ที่มองเห็นจริง (ไม่โดนแผ่นล่าง/แผงซ้ายบัง) เทียบกับกลางจอ */
   const off=()=>isDesk()?[0,0]:[0,Math.round((130-Math.min(heightOf(st.sheet),H()*.6))/2)];
-  const pad=n=>isDesk()?{top:n,bottom:n,left:n,right:n}:{top:n+120,bottom:n+Math.min(heightOf(st.sheet),H()*.5),left:n,right:n};
+  /* คอม: แถบนำทางของแอป (.navwrap 76px) บังขอบบนของแผนที่ — เว้นที่ให้หมุดไม่ไปซ่อนใต้แถบ */
+  const pad=n=>isDesk()?{top:n+80,bottom:n,left:n,right:n}:{top:n+120,bottom:n+Math.min(heightOf(st.sheet),H()*(R.dataset.mode==='match'?.62:.5)),left:n,right:n};
 
   /* ── ส่วนบนและปุ่มลอย ── */
   function chrome(){
@@ -438,7 +510,8 @@ export async function mount(host,A){
     const tilt=$('[data-a=tilt]');tilt.hidden=!A.want3d;tilt.textContent=map.getPitch()>10?'2D':'3D';
     tilt.setAttribute('aria-label',map.getPitch()>10?T('กลับเป็นมุมมอง 2 มิติ','Back to 2D'):T('มุมมอง 3 มิติ','3D view'));
     $('.atl-sos span').textContent=T('เรียกช่างด่วน','Urgent help');
-    const ub=$('.atl-ubar');ub.hidden=!st.urg;$('.atl-top').hidden=st.urg;$('.atl-chips').hidden=st.urg;$('.atl-sos').hidden=st.urg;
+    $('.atl-match span').textContent=T('จับคู่ช่าง','Match me');$('.atl-match').setAttribute('aria-label',T('จับคู่ช่างที่ใกล้ ดี และดาวเยอะ','Match the closest, best and top-rated mechanics'));
+    const ub=$('.atl-ubar');ub.hidden=!st.urg;$('.atl-top').hidden=st.urg;$('.atl-chips').hidden=st.urg;$('.atl-fab').hidden=st.urg||!!st.match;
     ub.querySelector('b').textContent=T('โหมดด่วน','Urgent mode');ub.querySelector('span').textContent=T('แสดงเฉพาะช่างที่รับงานด่วน','Showing urgent mechanics only');
     ub.querySelector('button').setAttribute('aria-label',T('ออกจากโหมดด่วน','Leave urgent mode'));
     R.classList.toggle('urg',st.urg);
@@ -472,10 +545,11 @@ export async function mount(host,A){
   /* ── ปุ่มต่าง ๆ ── */
   const fly=(h,z)=>map.flyTo({center:[h.lng,h.lat],zoom:z||Math.max(map.getZoom(),13.5),offset:off(),duration:RM?0:900});
   R.addEventListener('click',async e=>{
-    const b=e.target.closest('[data-a],[data-f],[data-c],[data-s],[data-id],[data-l],[data-m]');if(!b||!R.contains(b))return;
+    const b=e.target.closest('[data-a],[data-f],[data-c],[data-s],[data-id],[data-l],[data-m],[data-mm]');if(!b||!R.contains(b))return;
     const a=b.dataset.a,cur=st.sel&&st.all.find(t=>t.id===st.sel);
-    if(b.dataset.f){MF[b.dataset.f]=!MF[b.dataset.f];MF.area=null;st.sel=null;refresh();return}
-    if(b.dataset.c){MF.cat=MF.cat===b.dataset.c?'':b.dataset.c;MF.area=null;st.sel=null;refresh();return}
+    if(b.dataset.f){MF[b.dataset.f]=!MF[b.dataset.f];MF.area=null;st.sel=null;refresh();if(st.match)fitMatch();return}
+    if(b.dataset.c){MF.cat=MF.cat===b.dataset.c?'':b.dataset.c;MF.area=null;st.sel=null;refresh();if(st.match)fitMatch();return}
+    if(b.dataset.mm){st.match=b.dataset.mm;st.sel=null;refresh();fitMatch();return}
     if(b.dataset.s){MF.sort=b.dataset.s;refresh();return}
     if(b.dataset.l){LAY[b.dataset.l]=!LAY[b.dataset.l];LS.set('spire_mapLayers',LAY);refresh();return}
     if(b.dataset.m){const on=b.dataset.m==='3d';LAY.d3=on;LS.set('spire_mapLayers',LAY);map.easeTo(on?{pitch:56,bearing:-16,zoom:Math.max(map.getZoom(),15)}:{pitch:0,bearing:0,duration:RM?0:600});setTimeout(()=>{chrome();if(st.layers)$('.atl-lay').innerHTML=layersHTML()},650);return}
@@ -485,15 +559,18 @@ export async function mount(host,A){
       case 'ai':{const q=input.value.trim()||MF.q.trim();if(q)A.ai(q);else input.focus();break}
       case 'layers':openLayers(!st.layers);break;
       case 'unlay':openLayers(false);break;
-      case 'locate':{b.classList.add('busy');const h=await A.locate();b.classList.remove('busy');if(h){MF.area=null;st.userMoved=false;fly(h,14);refresh()}break}
+      case 'locate':{b.classList.add('busy');const h=await A.locate();b.classList.remove('busy');if(h){MF.area=null;st.userMoved=false;refresh();if(st.match)fitMatch();else fly(h,14)}break}
       case 'tilt':{const on=map.getPitch()<=10;LAY.d3=on;LS.set('spire_mapLayers',LAY);map.easeTo(on?{pitch:56,bearing:-16,zoom:Math.max(map.getZoom(),15),duration:RM?0:800}:{pitch:0,bearing:0,duration:RM?0:600});break}
       case 'area':{const bb=map.getBounds();MF.area={s:bb.getSouth(),n:bb.getNorth(),w:bb.getWest(),e:bb.getEast()};st.userMoved=false;st.sel=null;st.sheet=st.sheet==='peek'?'half':st.sheet;refresh();break}
-      case 'clear':MF.open=MF.urgent=MF.mobile=MF.verified=MF.top=false;MF.cat='';MF.q='';MF.area=null;input.value='';refresh();break;
+      case 'clear':MF.open=MF.urgent=MF.mobile=MF.roam=MF.verified=MF.top=false;MF.cat='';MF.q='';MF.area=null;input.value='';refresh();break;
       case 'post':A.post();break;
       case 'live':A.openJob(b.dataset.id);break;
-      case 'urgent':st.urg=true;st.sel=null;openLayers(false);refresh();{const h=A.here(),u=urgentList();
+      case 'urgent':st.urg=true;st.match=null;st.sel=null;openLayers(false);refresh();{const h=A.here(),u=urgentList();
         if(h&&u.reach){const bb=new ml.LngLatBounds();ring(h,u.reach,24).forEach(p=>bb.extend(p));map.fitBounds(bb,{padding:pad(30),duration:RM?0:700})}}break;
       case 'unurg':st.urg=false;refresh();break;
+      case 'match':st.match=st.match||'best';st.urg=false;st.sel=null;MF.area=null;openLayers(false);refresh();fitMatch();break;
+      case 'unmatch':st.match=null;st.sel=null;refresh();break;
+      case 'pbook':{const t=st.all.find(x=>x.id===b.dataset.t);t&&A.book(t);break}
       case 'sos':A.urgent();break;
       case 'close':deselect();break;
       case 'book':cur&&A.book(cur);break;
@@ -504,7 +581,7 @@ export async function mount(host,A){
   let qT=0;
   input.addEventListener('input',()=>{clearTimeout(qT);qT=setTimeout(()=>{MF.q=input.value;MF.area=null;st.sel=null;refresh()},220)});
   input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();input.blur()}});
-  addEventListener('keydown',e=>{if(e.key!=='Escape'||R.closest('[hidden]'))return;if(st.layers)openLayers(false);else if(st.sel)deselect();else if(st.urg){st.urg=false;refresh()}});
+  addEventListener('keydown',e=>{if(e.key!=='Escape'||R.closest('[hidden]'))return;if(st.layers)openLayers(false);else if(st.sel)deselect();else if(st.urg){st.urg=false;refresh()}else if(st.match){st.match=null;refresh()}});
   $('.atl-dim').addEventListener('click',()=>{if(st.layers)openLayers(false)});
   map.on('click',()=>{if(st.carOpen){st.carOpen=false;paintCar()}else if(st.sel&&isDesk())deselect()});
   map.on('moveend',()=>layout());
@@ -524,6 +601,7 @@ export async function mount(host,A){
     refresh,
     show(){requestAnimationFrame(()=>{map.resize();sizeSheet();layout()})},
     focus(id){select(id)},
+    match(m){st.match=MATCH[m]?m:'best';st.urg=false;st.sel=null;refresh();fitMatch()},
     map
   };
 }

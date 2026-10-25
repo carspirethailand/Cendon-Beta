@@ -16,7 +16,7 @@ html.ib-boot .bs .pn,html.ib-boot .bs .bg{transition:none!important}</style>
 <script src="/shop-images.js?v=1"></script>
 <script src="/display-prefs.js?v=3" defer></script>
 <script src="/i18n/ui-en.js?v=4" defer></script>
-<script src="/ui-language.js?v=8" defer></script>
+<script src="/ui-language.js?v=9" defer></script>
 <script src="/partner-entry.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
@@ -36,7 +36,7 @@ html.ib-boot .bs .pn,html.ib-boot .bs .bg{transition:none!important}</style>
 (function(){try{if(/^\/(work|studio)(\/|$)/.test(location.pathname)){var p=JSON.parse(localStorage.getItem("spire_partner")||"null");if(p&&p.s==="shop")document.documentElement.dataset.boot="tech"}}catch(e){}})();</script>
 <script>(function(){try{var A=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt"],l=null;try{l=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
 if(A.indexOf(l)<0){l="en";var n=navigator.languages||[navigator.language||"en"];for(var i=0;i<n.length;i++){var b=String(n[i]).toLowerCase().split("-")[0];if(A.indexOf(b)>=0){l=b;break}}}
-if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=22"><\/script>')}catch(e){}})();</script>
+if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=23"><\/script>')}catch(e){}})();</script>
 <title>Cendon</title>
 <meta name="description" content="ถามอาการรถ ส่งรูปหรือเสียงให้ AI ช่วยดู เช็กใบเสนอราคา และหาช่างที่ผ่านการตรวจใกล้คุณ">
 <!-- การ์ดตอนแชร์ลิงก์ (LINE / Facebook / X) — รูปต้องเป็นที่อยู่เต็ม -->
@@ -975,7 +975,7 @@ html[data-theme="dark"] .lv-map .leaflet-tile-pane{filter:invert(1) hue-rotate(1
 .live-bar span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .live-bar b{flex:none;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.14);font-weight:500}
 @keyframes lvPing{70%{box-shadow:0 0 0 8px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
-@media(prefers-reduced-motion:reduce){.lv-ring,.live-bar .dot{animation:none}}
+@media(prefers-reduced-motion:reduce){.lv-ring,.live-bar .dot,.stu-roam i.dot{animation:none}}
 .emg{display:grid;gap:10px;margin-bottom:14px}
 .emg-c{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;padding:14px;border-radius:18px;background:var(--surface);box-shadow:0 0 0 1px var(--line-2);text-align:left;transition:transform .2s var(--spring)}
 .emg-c:active{transform:scale(.98)}
@@ -1305,6 +1305,11 @@ html[data-boot="tech"] body{padding-top:0!important;padding-bottom:0!important}
 .stu-dot.on{background:#22a06b;box-shadow:0 0 0 3px color-mix(in srgb,#22a06b 22%,transparent)}
 .stu-dot.quiet{background:transparent;box-shadow:inset 0 0 0 2px #22a06b}
 .stu-dot.pause{background:var(--faint)}
+.stu-roam{display:inline-flex;align-items:center;gap:8px;max-width:100%;margin:-4px 0 12px;padding:7px 12px;border:0;border-radius:999px;background:color-mix(in srgb,#22a06b 9%,var(--surface));color:var(--ink);font:500 12.5px var(--kb);box-shadow:inset 0 0 0 1px color-mix(in srgb,#22a06b 28%,transparent);cursor:pointer;text-align:left}
+.stu-roam span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stu-roam i.dot{flex:none;width:8px;height:8px;border-radius:50%;background:#22a06b;box-shadow:0 0 0 0 rgba(34,160,107,.55);animation:lvPing 1.6s infinite}
+.stu-roam.bad{background:color-mix(in srgb,#f59e0b 10%,var(--surface));box-shadow:inset 0 0 0 1px color-mix(in srgb,#f59e0b 35%,transparent)}
+.stu-roam.bad i.dot{background:#f59e0b;animation:none}
 .stu-menu{position:fixed;z-index:1300;width:min(320px,calc(100vw - 32px));padding:6px;border-radius:16px;background:var(--surface);box-shadow:0 0 0 1px var(--line),0 24px 48px -20px rgba(0,0,0,.45)}
 .stu-menu button{display:flex;align-items:flex-start;gap:12px;width:100%;padding:11px 12px;border:0;border-radius:12px;background:none;color:var(--ink);text-align:left;font:inherit;cursor:pointer}
 .stu-menu button:hover,.stu-menu button:focus-visible{background:var(--surface-2)}
@@ -3670,13 +3675,13 @@ addEventListener("resize",()=>{if(VIEW==="map"){document.documentElement.style.s
    แผนที่ใหม่ (map-atlas.js: MapLibre สีของแอป หมุดร้าน ตัวกรอง แผ่นล่าง เลเยอร์ โหมดด่วน) ก่อน
    เครื่องไม่มี WebGL / โหลดไม่ขึ้น → แผนที่เดิม (Leaflet + การ์ดเลื่อนข้าง) ข้างล่างนี้ */
 let ATLAS=null,ATLAS_P=null,ATLAS_OFF=false;
-function showMap(){
+function showMap(){pollLive();
   if(ATLAS){ATLAS.show();ATLAS.refresh();return}
   if(ATLAS_OFF)return oldMap();
   $("vMap").classList.add("atl-on");$("atlas").hidden=false;
   if(!ATLAS_P)ATLAS_P=(async()=>{
     try{
-      const M=await import("/map-atlas.js?v=1");if(!M.supported())throw Error("webgl");
+      const M=await import("/map-atlas.js?v=2");if(!M.supported())throw Error("webgl");
       ATLAS=await M.mount($("atlas"),atlasApi());
       document.body.classList.toggle("atl-map",VIEW==="map");if(VIEW==="map")ATLAS.show();
     }catch(e){console.warn("atlas",e&&e.message);ATLAS_OFF=true;$("vMap").classList.remove("atl-on");$("atlas").hidden=true;$("atlas").innerHTML="";if(VIEW==="map")oldMap()}
@@ -3745,6 +3750,27 @@ function locate(btn){
 $("bLocate").onclick=e=>busy(e.currentTarget,()=>locate());
 
 /* ═══ รายชื่อช่าง ═══ */
+/* ช่างเคลื่อนที่ที่แชร์ตำแหน่งอยู่: ใช้จุดจากมือถือช่าง (หลังบ้านปัดแล้ว ~300 ม.) แทนจุดลงทะเบียน
+   ระยะทาง แผนที่ และเรียกช่างด่วน จึงคิดจากตัวช่างตอนนี้ · หยุดแชร์ = กลับไปจุดตั้งต้นเหมือนที่หลังบ้านทำ */
+function roamPos(t){
+  if(!t)return t;
+  if(t.live&&t.live.lat!=null){if(!t.base)t.base={lat:t.lat,lng:t.lng};t.lat=t.live.lat;t.lng=t.live.lng}
+  else if(t.base){t.lat=t.base.lat;t.lng=t.base.lng}
+  return t;
+}
+/* แผนที่เปิดอยู่: ถามตำแหน่งช่างเคลื่อนที่ทุก 30 วิ (คำตอบเล็ก จุดปัดแล้ว) แล้วขยับหมุดตาม — ออกจากแผนที่ = หยุดถาม */
+let LIVE_T=0;
+async function pollLive(){
+  clearTimeout(LIVE_T);if(VIEW!=="map")return;
+  if(!document.hidden&&TECHS.some(t=>t.roam))try{
+    const d=await api("/api/tech/live"),by=new Map((d&&d.live||[]).map(x=>[x.id,x]));let ch=false;
+    for(const t of TECHS){if(!t.roam)continue;const x=by.get(t.id)||null,o=t.live;
+      if(x?(!o||o.lat!==x.lat||o.lng!==x.lng||o.at!==x.at):o){t.live=x&&{lat:x.lat,lng:x.lng,at:x.at};roamPos(t);ch=true}}
+    if(ch&&ATLAS&&VIEW==="map")ATLAS.refresh();
+  }catch(e){}
+  if(VIEW==="map")LIVE_T=setTimeout(pollLive,30000);
+}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&VIEW==="map")pollLive()});
 function km(a,b){
   if(!a||!b||b.lat==null)return null;
   const R=6371,r=Math.PI/180,dLa=(b.lat-a.lat)*r,dLo=(b.lng-a.lng)*r;
@@ -5037,7 +5063,7 @@ async function load(){
   q.task=(async()=>{const services=loadGigs();
   /* พลาดครั้งแรก (เน็ตสะดุด / เซิร์ฟเวอร์เพิ่งตื่น) ลองให้เองอีกรอบก่อนขึ้นปุ่มลองใหม่ */
   for(let i=0;i<2;i++){
-    try{const d=await api("/api/tech");if(scope!==directoryScope()||epoch!==DIRECTORY_EPOCH)return;if(!d||!Array.isArray(d.techs))throw Error("Invalid shops response");TECHS=d.techs;SERVER=true;break}
+    try{const d=await api("/api/tech");if(scope!==directoryScope()||epoch!==DIRECTORY_EPOCH)return;if(!d||!Array.isArray(d.techs))throw Error("Invalid shops response");TECHS=d.techs.map(roamPos);SERVER=true;break}
     catch(e){if(scope!==directoryScope()||epoch!==DIRECTORY_EPOCH)return;SERVER=false;if(!i)await new Promise(r=>setTimeout(r,1500))}
   }
   if(scope!==directoryScope()||epoch!==DIRECTORY_EPOCH)return;
@@ -5416,8 +5442,9 @@ function studioSettings(){
   const link=location.origin+shopPath(t);
   sheet({push:true,url:stuUrl("settings"),slug:"settings",full:true,store:true,title:"ตั้งค่า Studio",body:`<div class="ss">
     <section class="ss-g"><h3><i class="ti ti-power"></i>สถานะร้าน</h3>
-      ${swRow("ssOn","เปิดรับงาน","รับแจ้งเตือนเมื่อมีคนแถวนี้ประกาศหาช่าง",DSTATS?DSTATS.online:t.online)}
-      ${swRow("ssVac","โหมดพักร้อน","ปิดรับคำขอใหม่ชั่วคราว หน้าร้านจะบอกลูกค้าให้",!!t.vacation)}
+      ${swRow("ssOn","เปิดรับงาน","งานด่วนแถวนี้เตือนทันทีทั้งในแอปและ LINE · ปิด = ลูกค้ายังขอราคาได้ แต่ไม่เตือน",DSTATS?DSTATS.online:t.online)}
+      ${t.mobile?swRow("ssRoam","ช่างเคลื่อนที่ — ตำแหน่งตามมือถือ","ระหว่างเปิดรับงาน ลูกค้าเห็นคุณบนแผนที่ตรงที่คุณอยู่ตอนนี้ (โดยประมาณ ~300 ม.) ไม่ใช่ที่อู่ · ส่งเฉพาะตอนเปิดแอป ปิดรับงานแล้วลบทันที",!!t.roam):""}
+      ${swRow("ssVac","ไม่รับงานชั่วคราว (พักร้าน)","ปิดรับคำขอใหม่ทั้งหมด หน้าร้านจะบอกลูกค้าให้",!!t.vacation)}
       <div class="ss-sub" id="ssVacF"><div class="two"><label class="fld"><span>ถึงวันที่</span><input class="inp" type="date" id="ssUntil" value="${until}"/></label>
         <label class="fld"><span>ข้อความถึงลูกค้า</span><input class="inp" id="ssVacN" maxlength="200" value="${esc(v.note||"")}" placeholder="เช่น ไปงานบวช กลับ 10 ต.ค."/></label></div></div></section>
     <section class="ss-g" data-line-card style="display:none"><h3><img src="./img/line-logo.svg" alt="" width="19" height="19">แจ้งเตือนทาง LINE</h3><div data-line-connect></div></section>
@@ -5455,10 +5482,12 @@ function studioSettings(){
           const body={vacation:{on:$("ssVac").checked,until:u,note:$("ssVacN").value},autoReply:{on:$("ssAr").checked,text:$("ssArT").value},
             greet:$("ssGr").value,minPrice:+$("ssMin").value||0,theme};
           if($("ssRad").value!=="")body.radius=+$("ssRad").value;
+          if($("ssRoam"))body.roam=$("ssRoam").checked;
           await api("/api/tech/shop",{body});
           ls.set("spire_tech_sound",$("ssSnd").checked);
           Object.assign(ME.technician,{online:want,autoReply:body.autoReply,greet:body.greet,minPrice:body.minPrice,theme,radius:body.radius??t.radius,
-            vacationRaw:body.vacation,vacation:body.vacation.on&&(!u||u>Date.now())?{until:u,note:body.vacation.note}:null});
+            vacationRaw:body.vacation,vacation:body.vacation.on&&(!u||u>Date.now())?{until:u,note:body.vacation.note}:null,roam:body.roam??t.roam});
+          RoamShare.sync();
         }catch(err){$("ssErr").textContent=err.message;throw err}
         toast("บันทึกการตั้งค่าแล้ว");back();if(MODE==="tech")drawTab();else openTech(t.id);
       });
@@ -5762,10 +5791,11 @@ async function urgentCall(pre){
   const QK=pre?["ต้องการรถยก","รถขับต่อได้ ขอช่างมาดู","ยางแตก","แบตหมด"]:["สตาร์ทไม่ติด","แบตหมด","ยางแตก","เครื่องร้อนจัด","รถดับกลางทาง","กุญแจติดในรถ"];
   const cf=contactForm({urgent:true,noSym:true,needGps:true,photos:pre&&pre.photos});
   const pickList=()=>{
-    /* ร้านที่งานค้างเต็ม (full) รับงานใหม่ไม่ได้ตอนนี้ — ไม่ส่งงานด่วนไปให้รอเก้อ */
-    const TS=TECHS.filter(t=>!isMine(t)&&!t.full);let l=TS.filter(t=>t.mobile&&t.urgent);if(!l.length)l=TS.filter(t=>t.mobile);
+    /* ร้านที่งานค้างเต็ม (full) หรือไม่รับงาน (พักร้าน) รับงานใหม่ไม่ได้ตอนนี้ — ไม่ส่งงานด่วนไปให้รอเก้อ (หลังบ้านปฏิเสธอยู่แล้ว)
+       ร้านที่เปิด "รับงาน" อยู่ตอนนี้ได้ก่อน แล้วค่อยเรียงตามระยะ · ช่างเคลื่อนที่วัดจากตำแหน่งมือถือตอนนี้ */
+    const TS=TECHS.filter(t=>!isMine(t)&&!t.full&&!t.vacation);let l=TS.filter(t=>t.mobile&&t.urgent);if(!l.length)l=TS.filter(t=>t.mobile);
     const at=cf.pos()||HERE;
-    return l.map(t=>({...t,dist:km(at,t)})).filter(t=>t.dist==null||t.dist<=Math.max(t.radius||30,30)).sort((a,b)=>(a.dist??1e9)-(b.dist??1e9)).slice(0,3);
+    return l.map(t=>({...t,dist:km(at,t)})).filter(t=>t.dist==null||t.dist<=Math.max(t.radius||30,30)).sort((a,b)=>(!!b.online-!!a.online)||(a.dist??1e9)-(b.dist??1e9)).slice(0,3);
   };
   sheet({title:"",push:true,slug:pre?"help":"breakdown",body:`
     <div class="urg">${WF}<h2><i class="ti ti-${pre?"truck-loading":"urgent"}"></i> ${pre?"เรียกรถยก / ช่างด่วน":"เรียกช่างด่วน"}</h2><p>ส่งถึงร้านใกล้คุณที่สุดพร้อมกัน ร้านไหนตอบก่อน เลือกได้เลย</p></div>
@@ -5788,7 +5818,7 @@ async function urgentCall(pre){
         /* ไม่มีร้านที่ออกนอกสถานที่ในรัศมี: ประกาศงานด่วน ช่างทุกร้านรอบตัวเห็นเป็นสีแดงใน Studio แล้วเสนอราคาเข้ามา */
         const id=crypto.randomUUID(),cat=pre&&pre.tow?"tow":catsOf(v.symptom)[0]||"";
         const r=await api("/api/tech/posts",{body:{...v,id,cat,mode:"mobile",symptom:v.symptom.length<10?"งานด่วน: "+v.symptom:v.symptom}});
-        toast(r&&r.reach?`แจ้งช่าง ${r.reach} ร้านใกล้คุณแล้ว — รอข้อเสนอสักครู่`:r&&r.reach===0?"ยังไม่มีช่างในรัศมีตอนนี้ — ประกาศยังเปิดอยู่ ร้านที่เข้ามาใหม่จะเห็นทันที":"ประกาศงานด่วนแล้ว",r&&r.reach===0?"ti-alert-triangle":"ti-check");
+        toast(r&&r.reach?(r.taking?T(`แจ้งเตือนช่างที่รับงานอยู่ตอนนี้ ${r.taking} ร้าน · ช่าง ${r.reach} ร้านในรัศมีเห็นประกาศ`,`Alerted ${r.taking} shops taking jobs now · ${r.reach} nearby can see it`):r.taking===0?T(`ช่าง ${r.reach} ร้านในรัศมีเห็นประกาศแล้ว — ตอนนี้ยังไม่มีร้านเปิดรับงาน รอข้อเสนอสักครู่`,`${r.reach} nearby shops can see it — none is taking jobs right now; wait for offers`):`แจ้งช่าง ${r.reach} ร้านใกล้คุณแล้ว — รอข้อเสนอสักครู่`):r&&r.reach===0?"ยังไม่มีช่างในรัศมีตอนนี้ — ประกาศยังเปิดอยู่ ร้านที่เข้ามาใหม่จะเห็นทันที":"ประกาศงานด่วนแล้ว",r&&r.reach===0?"ti-alert-triangle":"ti-check");
         await refreshJobs();openPostView(id);
       });
     }});
@@ -6033,7 +6063,7 @@ let RJ=null,JOBS_EPOCH=0;
 function refreshJobs(){
   if(RJ)return RJ;
   RJ=(async()=>{
-  if(!U){JOBS=[];THREADS=[];JOBS_OK=false;JOBS_ERR=null;renderActive();renderUsed();return}
+  if(!U){JOBS=[];THREADS=[];JOBS_OK=false;JOBS_ERR=null;renderActive();renderUsed();try{RoamShare.stop()}catch(e){}return}
   /* ใบงาน ประกาศของฉัน และห้องทัก ดึงพร้อมกัน — รอเท่ากับอันที่ช้าที่สุด ไม่ใช่รวมกันสามรอบ */
   const uid=U.uid,epoch=JOBS_EPOCH;
   const [j,p,t]=await Promise.allSettled([api("/api/tech/jobs"),api("/api/tech/posts"),api("/api/tech/threads")]);
@@ -6041,7 +6071,7 @@ function refreshJobs(){
   if(j.status==="fulfilled"&&Array.isArray(j.value?.jobs)){JOBS=j.value.jobs;JOBS_OK=true;JOBS_ERR=null}else JOBS_ERR=j.reason&&j.reason.message||"error";
   POSTS=p.status==="fulfilled"?p.value.posts||[]:[];
   THREADS=t.status==="fulfilled"?t.value.threads||[]:[];
-  renderActive();renderUsed();syncGarage();queueDot();saveSnap();try{LiveShare.sync()}catch(e){}
+  renderActive();renderUsed();syncGarage();queueDot();saveSnap();try{LiveShare.sync()}catch(e){}try{RoamShare.sync()}catch(e){}
   if(ATLAS&&VIEW==="map")ATLAS.refresh();
   try{bellDiff()}catch(e){}
   })().finally(()=>{RJ=null});
@@ -6125,6 +6155,44 @@ const LiveShare={id:null,watch:null,last:0,lock:null,fix:null,err:"",
   }};
 addEventListener("visibilitychange",()=>{if(!document.hidden&&LiveShare.watch!=null&&LiveShare.fix)navigator.geolocation.getCurrentPosition(p=>LiveShare.push(p,true),()=>{},{enableHighAccuracy:true,maximumAge:3000,timeout:8000})});
 setInterval(()=>{if(LiveShare.watch!=null)LiveShare.paint()},5000);
+/* ═══ ช่างเคลื่อนที่: ตำแหน่งตามมือถือช่าง ═══
+   เปิดรับงาน + เปิดโหมดช่างเคลื่อนที่ = ส่งจุดล่าสุดทุก ~1 นาที หรือเมื่อขยับเกิน ~200 ม. (เร็วสุดทุก 20 วิ)
+   ลูกค้าเห็นแค่จุดที่หลังบ้านปัดแล้ว ~300 ม. · ไม่รับงาน/ไม่แจ้งเตือน/ปิดโหมด = หยุดส่ง และหลังบ้านลบจุดทิ้ง
+   เบราว์เซอร์ให้ตำแหน่งได้เฉพาะตอนแอปเปิดอยู่ — ปิดแอปเกิน 10 นาที ลูกค้าเห็นจุดตั้งต้นของร้านแทน */
+const RoamShare={watch:null,last:0,pos:null,sent:0,err:"",
+  want(){const t=myShop();return !!(U&&t&&t.mobile&&t.roam&&!t.vacation&&!t.suspended&&(DSTATS?DSTATS.online:t.online))},
+  sync(){if(this.want())this.start();else this.stop()},
+  start(){
+    if(this.watch!=null)return;
+    if(!navigator.geolocation){this.err=T("เครื่องนี้หาตำแหน่งไม่ได้","Location isn't available on this device");this.paint();return}
+    this.err="";
+    this.watch=navigator.geolocation.watchPosition(p=>this.push(p),e=>{this.err=e.code===1?T("ยังไม่ได้อนุญาตตำแหน่ง — ลูกค้าเห็นจุดตั้งต้นของร้านแทน","Location permission is off — customers see your base instead"):T("ยังหาตำแหน่งไม่ได้","Still finding your location");this.paint()},{enableHighAccuracy:false,maximumAge:30000,timeout:30000});
+    this.paint();
+  },
+  async push(p,force){
+    const c=p.coords,at=Date.now(),here={lat:c.latitude,lng:c.longitude},moved=this.pos?km(this.pos,here):1e9;
+    if(!force&&at-this.last<60000&&!(moved>=0.2&&at-this.last>=20000))return;
+    this.last=at;
+    try{await api("/api/tech/here",{body:{...here,acc:c.accuracy}});this.sent=at;this.pos=here;this.err=""}
+    catch(e){if([403,404,409].includes(e.status)){this.stop();return}this.err=T("ส่งตำแหน่งไม่สำเร็จ จะลองใหม่","Couldn't send your location — will retry")}
+    this.paint();
+  },
+  stop(){
+    if(this.watch!=null)try{navigator.geolocation.clearWatch(this.watch)}catch(e){}
+    this.watch=null;this.pos=null;this.last=0;this.sent=0;this.paint();
+  },
+  /* ป้ายเล็กบนหัว Studio: รู้ตลอดว่าลูกค้าเห็นตำแหน่งตามมือถืออยู่ แตะแล้วไปตั้งค่า */
+  label(){
+    if(this.err)return esc(this.err);
+    const m=this.sent?Math.floor((Date.now()-this.sent)/60000):null;
+    return T("ลูกค้าเห็นคุณบนแผนที่ตามมือถือ","Customers see you on the map, following your phone")+" · "+(m==null?T("กำลังหาตำแหน่ง…","finding your location…"):m<1?T("เพิ่งอัปเดต","just updated"):T(`อัปเดต ${m} นาทีที่แล้ว`,`updated ${m} min ago`));
+  },
+  chip(){return this.want()?`<button class="stu-roam${this.err?" bad":""}" type="button" id="stuRoam"><i class="dot"></i><span>${this.label()}</span></button>`:""},
+  paint(){const b=$("stuRoam");if(!b)return;b.classList.toggle("bad",!!this.err);b.querySelector("span").innerHTML=this.label()}};
+/* หัว Studio อาจวาดจากภาพล่าสุดก่อนสคริปต์ส่วนนี้ทำงาน — ยังไม่พร้อมก็ไม่ต้องมีป้าย */
+function roamChip(){try{return RoamShare.chip()}catch(e){return ""}}
+addEventListener("visibilitychange",()=>{if(!document.hidden&&RoamShare.watch!=null)navigator.geolocation.getCurrentPosition(p=>RoamShare.push(p,true),()=>{},{maximumAge:30000,timeout:10000})});
+setInterval(()=>{if(RoamShare.watch!=null)RoamShare.paint()},30000);
 
 /* เวลาถึงโดยประมาณ — สูตรเดียวกับเซิร์ฟเวอร์ (ระยะเส้นตรง ×1.35 · ในเมืองช้า ทางไกลเร็ว) */
 const etaOf=(a,b)=>{if(!a||!b)return {};const R=6371,r=x=>x*Math.PI/180,dl=r(b.lat-a.lat),dg=r(b.lng-a.lng),h=Math.sin(dl/2)**2+Math.cos(r(a.lat))*Math.cos(r(b.lat))*Math.sin(dg/2)**2;
@@ -7549,11 +7617,13 @@ function stuBadges(){
   set("bdJobs",jobsN);set("bdMsgs",msgN);
   const fd=document.querySelector(".stu-seg i.new");if(fd)fd.hidden=!FIND_NEW;
 }
-/* สถานะร้าน: เปิดรับงาน (แจ้งเตือน) · รับงานไม่แจ้งเตือน · พักร้าน (ลูกค้าขอราคาไม่ได้) — มาจากค่าจริงสองค่า online + vacation */
+/* สถานะร้าน: รับงาน · รับงานไม่แจ้งเตือน · ไม่รับงาน — มาจากค่าจริงสองค่า online + vacation และหลังบ้านทำตามจริงทุกข้อ
+   รับงาน = ป้าย "รับงานอยู่ตอนนี้" + งานด่วนเตือนในแอปและ LINE + ได้งานด่วนก่อน (+ ช่างเคลื่อนที่: ลูกค้าเห็นตำแหน่งตามมือถือ)
+   ไม่แจ้งเตือน = ลูกค้ายังขอราคาได้ แต่งานด่วนไม่ส่ง LINE ไม่มีเสียง · ไม่รับงาน = หลังบ้านปฏิเสธคำขอใหม่ทั้งหมด */
 function shopState(){const t=myShop()||{};return t.vacation?"pause":(DSTATS?DSTATS.online:t.online)?"on":"quiet"}
-const STATE={on:[T("เปิดรับงาน","Taking jobs"),T("แจ้งเตือนทันทีเมื่อมีรถเสียใกล้คุณ","Alerts you right away when a car breaks down nearby")],
-  quiet:[T("รับงาน ไม่แจ้งเตือน","Taking jobs, no alerts"),T("ลูกค้ายังขอราคาได้ แต่ไม่มีเสียงเตือนงานใหม่","Customers can still request quotes; no new-job alerts")],
-  pause:[T("พักร้านชั่วคราว","Paused"),T("ปิดรับคำขอใหม่ทั้งหมด หน้าร้านบอกลูกค้าให้","No new requests — your storefront tells customers")]};
+const STATE={on:[T("รับงาน","Taking jobs"),T("ลูกค้าเห็นว่ารับงานอยู่ตอนนี้ · งานด่วนแถวนี้เตือนทันทีทั้งในแอปและ LINE และส่งถึงคุณก่อน","Customers see you're taking jobs now · nearby urgent jobs alert you in the app and on LINE, and reach you first")],
+  quiet:[T("รับงาน ไม่แจ้งเตือน","Taking jobs, no alerts"),T("ลูกค้ายังขอราคาได้ · งานด่วนไม่ส่ง LINE และไม่มีเสียงเตือน","Customers can still request quotes · no LINE or sound for urgent jobs")],
+  pause:[T("ไม่รับงาน","Not taking jobs"),T("ปิดรับคำขอใหม่ทั้งหมด ไม่ได้งานด่วน หน้าร้านบอกลูกค้าให้","No new requests or urgent jobs — your storefront tells customers")]};
 function statusMenu(btn){
   document.querySelector(".stu-menu")?.remove();
   const cur=shopState();const m=document.createElement("div");m.className="stu-menu";m.setAttribute("role","menu");
@@ -7582,7 +7652,8 @@ async function applyStatus(k,btn){
       await api("/api/tech/online",{body:{online:wantOn}});
       t.online=wantOn;if(DSTATS)DSTATS.online=wantOn;startAlerts();
     }
-    toast(k==="on"?T("เปิดรับงานแล้ว — มีรถเสียใกล้ ๆ จะแจ้งเตือนทันที","You're taking jobs — nearby breakdowns will alert you"):k==="pause"?T("พักร้านแล้ว — ลูกค้าจะเห็นว่าร้านปิดรับงานชั่วคราว","Shop paused — customers will see you're not taking jobs"):T("รับงานต่อ แต่ปิดเสียงเตือนงานใหม่","Still taking jobs, alerts off"),k==="pause"?"ti-beach":k==="on"?"ti-bell-ringing":"ti-bell-off");
+    RoamShare.sync();
+    toast(k==="on"?T("เปิดรับงานแล้ว — มีรถเสียใกล้ ๆ จะแจ้งเตือนทันที","You're taking jobs — nearby breakdowns will alert you"):k==="pause"?T("ไม่รับงานแล้ว — ลูกค้าจะเห็นว่าร้านปิดรับงานชั่วคราว","Shop paused — customers will see you're not taking jobs"):T("รับงานต่อ แต่ปิดเสียงเตือนงานใหม่","Still taking jobs, alerts off"),k==="pause"?"ti-beach":k==="on"?"ti-bell-ringing":"ti-bell-off");
   };
   /* บันทึกสำเร็จจริงก่อนค่อยเปลี่ยนปุ่ม — ระหว่างรอ ปุ่มหมุน */
   await busy(btn,run).catch(()=>{});
@@ -7594,13 +7665,14 @@ function stuHead(){
     const st=shopState(),n=techJobs().filter(liveJob).length;
     H.innerHTML=`<div class="stu-h"><h1>${T("งานของฉัน","My jobs")}</h1>
       <div class="stu-hr"><button class="stu-link" type="button" id="stuStore"><i class="ti ti-external-link"></i>${T("ดูหน้าร้าน","View storefront")}</button>
-      <button class="stu-stat" type="button" id="stuStat" aria-haspopup="menu"><span class="stu-dot ${st}"></span>${STATE[st][0]}<i class="ti ti-chevron-down"></i></button></div></div>
+      <button class="stu-stat" type="button" id="stuStat" aria-haspopup="menu"><span class="stu-dot ${st}"></span>${STATE[st][0]}<i class="ti ti-chevron-down"></i></button></div></div>${roamChip()}
       ${t.identityHold?`<div class="note" style="margin:0 0 12px"><b><i class="ti ti-shield-exclamation"></i> ${T("บัญชีอยู่ระหว่างตรวจสอบตัวตน","Your identity is under review")}</b><br>${T("ร้านถูกซ่อนและหยุดรับงานใหม่ชั่วคราว คุณยังดูงานเก่าและข้อความได้","Your storefront is hidden and new work is paused. You can still view existing jobs and messages.")}</div>`:""}
       <div class="stu-seg" role="tablist"><button type="button" role="tab" data-t2="queue" class="${DT==="queue"?"on":""}" aria-selected="${DT==="queue"}">${T("ต้องทำต่อ","To do")}${n?`<em>${n}</em>`:""}</button>
       <button type="button" role="tab" data-t2="find" class="${DT==="find"?"on":""}" aria-selected="${DT==="find"}">${T("หางานใกล้ฉัน","Find work nearby")}<i class="new"${FIND_NEW?"":" hidden"}></i></button></div>`;
     H.insertAdjacentHTML("afterbegin",ownServiceNotice());
     $("stuStore").onclick=()=>openTech(t.id);
     $("stuStat").onclick=e=>statusMenu(e.currentTarget);
+    $("stuRoam")?.addEventListener("click",()=>studioSettings());
     H.querySelectorAll("[data-t2]").forEach(b=>b.onclick=()=>setTab2(b.dataset.t2));
   }else if(pg==="msgs"){
     H.innerHTML=`<div class="stu-h"><h1>${T("ข้อความ","Messages")}</h1><p>${T("ลูกค้าที่ทักถามก่อนจ้าง และแชตในใบงาน","Customer questions before hiring, and chats in your jobs")}</p></div>`;

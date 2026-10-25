@@ -8,7 +8,7 @@ const home=read('index.html'),atlas=read('map-atlas.js'),css=read('map-atlas.css
 
 test('map page loads the new map first and keeps the old Leaflet map as the fallback',()=>{
   assert.match(home,/<div class="atl-host" id="atlas" hidden><\/div>\n<\/section>/,'host lives inside the map view');
-  assert.match(home,/const M=await import\("\/map-atlas\.js\?v=1"\);if\(!M\.supported\(\)\)throw Error\("webgl"\)/);
+  assert.match(home,/const M=await import\("\/map-atlas\.js\?v=2"\);if\(!M\.supported\(\)\)throw Error\("webgl"\)/);
   assert.match(home,/catch\(e\)\{console\.warn\("atlas",e&&e\.message\);ATLAS_OFF=true;[^\n]*if\(VIEW==="map"\)oldMap\(\)\}/,'failure falls back to the old map');
   assert.match(home,/function oldMap\(\)\{if\(!MAP\)initMap\(\);else\{MAP\.invalidateSize\(\);drawPins\(true\)\}renderCarousel\(\)\}/);
   assert.match(home,/if\(v==="map"\)\{\n    document\.documentElement\.style\.setProperty\("--mtop",\$\("top"\)\.offsetHeight\+"px"\);\n    showMap\(\);/);
@@ -36,15 +36,59 @@ test('privacy: the map module calls no API and never sends location or the parki
   assert.doesNotMatch(atlas,/LS\.set\('spire_park/,'the map never writes the parking spot');
 });
 
-test('urgent mode uses the same rules as the urgent call itself',()=>{
+test('urgent mode uses the same rules as the urgent call itself: no paused or full shops, shops taking jobs now first',()=>{
   const u=atlas.slice(atlas.indexOf('function urgentList(){'),atlas.indexOf('/* ── ตัวกรอง ── */'));
-  assert.match(u,/TS=A\.techs\(\)\.filter\(t=>!A\.isMine\(t\)&&!t\.full&&t\.lat!=null\)/);
+  assert.match(u,/TS=A\.techs\(\)\.filter\(t=>!A\.isMine\(t\)&&!t\.full&&!t\.vacation&&t\.lat!=null\)/);
   assert.match(u,/let l=TS\.filter\(t=>t\.mobile&&t\.urgent\);if\(!l\.length\)l=TS\.filter\(t=>t\.mobile\)/);
   assert.match(u,/t\.dist==null\|\|t\.dist<=Math\.max\(t\.radius\|\|30,30\)/);
+  assert.match(u,/\.sort\(\(a,b\)=>\(!!b\.online-!!a\.online\)\|\|\(a\.dist\?\?1e9\)-\(b\.dist\?\?1e9\)\)/);
   assert.match(u,/const pick=l\.slice\(0,3\)/);
   const call=home.slice(home.indexOf('async function urgentCall(pre){'),home.indexOf('sheet({title:"",push:true,slug:pre?"help":"breakdown"'));
-  assert.match(call,/let l=TS\.filter\(t=>t\.mobile&&t\.urgent\);if\(!l\.length\)l=TS\.filter\(t=>t\.mobile\)/);
-  assert.match(call,/\.slice\(0,3\)/);
+  assert.match(call,/const TS=TECHS\.filter\(t=>!isMine\(t\)&&!t\.full&&!t\.vacation\);let l=TS\.filter\(t=>t\.mobile&&t\.urgent\);if\(!l\.length\)l=TS\.filter\(t=>t\.mobile\)/);
+  assert.match(call,/\.sort\(\(a,b\)=>\(!!b\.online-!!a\.online\)\|\|\(a\.dist\?\?1e9\)-\(b\.dist\?\?1e9\)\)\.slice\(0,3\)/);
+  assert.match(home,/r\.taking\?T\(`แจ้งเตือนช่างที่รับงานอยู่ตอนนี้ \$\{r\.taking\} ร้าน/,'the customer hears how many shops taking jobs were alerted');
+});
+
+test('match: nearest, best quality, most stars and a balanced pick — from real data, never paused, full or own shops',()=>{
+  const m=atlas.slice(atlas.indexOf('const bay=t=>'),atlas.indexOf('/* เหตุผลที่เลือก'));
+  assert.match(m,/const bay=t=>t\.reviewCount>0\?\(Number\(t\.rating\)\*t\.reviewCount\+4\*5\)\/\(t\.reviewCount\+5\):0/,'stars are weighted by review count');
+  for(const k of ['best','near','quality','stars'])assert.match(m,new RegExp(`\\b${k}:\\{key:`),k);
+  assert.match(m,/quality:\{key:'proven',cmp:\(a,b\)=>\(b\.proven\|\|0\)-\(a\.proven\|\|0\)/,'quality = proven finished jobs first');
+  assert.match(m,/stars:\{key:'stars',need:t=>t\.reviewCount>0/,'no-review shops never top "most stars"');
+  assert.match(m,/near:\{key:'dist',cmp:\(a,b\)=>\(a\.dist\?\?1e9\)-\(b\.dist\?\?1e9\)/);
+  assert.match(m,/let c=st\.list\.filter\(t=>!A\.isMine\(t\)&&!t\.vacation&&!t\.full&&\(!m\.need\|\|m\.need\(t\)\)\)/);
+  assert.match(m,/return c\.slice\(0,3\)\.map\(\(t,i\)=>\(\{\.\.\.t,rank:i\+1\}\)\)/);
+  assert.match(atlas,/\$\{t\.rank\?`<span class="atl-rank">\$\{t\.rank\}<\/span>`/,'rank badges on the pins');
+  assert.match(atlas,/const pts=\(st\.urg\?urgentList\(\)\.all:st\.match\?matchList\(\):st\.list\)/,'match mode shows only the three picks');
+  assert.match(atlas,/case 'pbook':\{const t=st\.all\.find\(x=>x\.id===b\.dataset\.t\);t&&A\.book\(t\);break\}/,'quote goes through the real booking flow');
+  assert.match(css,/\.atl\[data-mode="match"\] \.atl-fab\{display:none\}/);
+});
+
+test('roaming mechanic on the map: pins follow the phone point from the server, glide, and never offer directions to a moving mechanic',()=>{
+  assert.match(home,/TECHS=d\.techs\.map\(roamPos\)/);
+  assert.match(home,/function roamPos\(t\)\{\n  if\(!t\)return t;\n  if\(t\.live&&t\.live\.lat!=null\)\{if\(!t\.base\)t\.base=\{lat:t\.lat,lng:t\.lng\};t\.lat=t\.live\.lat;t\.lng=t\.live\.lng\}\n  else if\(t\.base\)\{t\.lat=t\.base\.lat;t\.lng=t\.base\.lng\}/);
+  const poll=home.slice(home.indexOf('async function pollLive(){'),home.indexOf('function km(a,b){'));
+  assert.match(poll,/if\(VIEW!=="map"\)return;/,'only while the map is open');
+  assert.match(poll,/api\("\/api\/tech\/live"\)/);assert.match(poll,/LIVE_T=setTimeout\(pollLive,30000\)/);
+  assert.match(home,/function showMap\(\)\{pollLive\(\);/);
+  assert.match(atlas,/const moving=t=>!!\(t\.roam&&t\.live\)/);
+  assert.match(atlas,/\$\{moving\(t\)\?'':`<a class="atl-ib" href="https:\/\/www\.google\.com\/maps\/dir/,'no directions link to a moving point');
+  assert.match(atlas,/glide\(m\.mk,\[t\.lng,t\.lat\],t\.roam\)/);
+  assert.match(atlas,/if\(!soft\|\|RM\|\|A\.km/,'reduced motion jumps instead of gliding');
+});
+
+test('shop status does what it says: labels, settings, and the phone position sender only runs while taking jobs in roaming mode',()=>{
+  assert.match(home,/const STATE=\{on:\[T\("รับงาน","Taking jobs"\)/);
+  assert.match(home,/pause:\[T\("ไม่รับงาน","Not taking jobs"\)/);
+  assert.match(home,/quiet:\[T\("รับงาน ไม่แจ้งเตือน","Taking jobs, no alerts"\),T\("ลูกค้ายังขอราคาได้ · งานด่วนไม่ส่ง LINE และไม่มีเสียงเตือน"/);
+  const R=home.slice(home.indexOf('const RoamShare={'),home.indexOf('function roamChip(){'));
+  assert.match(R,/want\(\)\{const t=myShop\(\);return !!\(U&&t&&t\.mobile&&t\.roam&&!t\.vacation&&!t\.suspended&&\(DSTATS\?DSTATS\.online:t\.online\)\)\}/);
+  assert.match(R,/api\("\/api\/tech\/here",\{body:\{\.\.\.here,acc:c\.accuracy\}\}\)/);
+  assert.match(R,/if\(\[403,404,409\]\.includes\(e\.status\)\)\{this\.stop\(\);return\}/,'server says no → stop sending');
+  assert.match(R,/if\(!force&&at-this\.last<60000&&!\(moved>=0\.2&&at-this\.last>=20000\)\)return;/,'at most every 20 s, normally once a minute');
+  assert.match(home,/RoamShare\.sync\(\);\n    toast\(k==="on"/,'changing status starts or stops sharing');
+  assert.match(home,/\$\{t\.mobile\?swRow\("ssRoam","ช่างเคลื่อนที่ — ตำแหน่งตามมือถือ"/,'roaming switch only for shops that go to customers');
+  assert.match(home,/if\(\$\("ssRoam"\)\)body\.roam=\$\("ssRoam"\)\.checked;/);
 });
 
 test('honest numbers: travel time is labelled as an estimate and open status comes from real data',()=>{
@@ -56,7 +100,7 @@ test('honest numbers: travel time is labelled as an estimate and open status com
 });
 
 test('styles: light and dark, phone sheet and desktop panel, reduced motion',()=>{
-  assert.match(atlas,/CSS_URL='\/map-atlas\.css\?v=1'/);
+  assert.match(atlas,/CSS_URL='\/map-atlas\.css\?v=2'/);
   assert.ok(existsSync(new URL('../vendor/maplibre-gl-4.7.1.js',import.meta.url)));
   assert.match(css,/\.atl-map\{position:absolute;inset:0;z-index:0;/,'map markers stay under the sheet');
   assert.match(css,/@media\(min-width:1024px\)\{\n  \.atl\{--sv:0px\}\n  \.atl-map\{left:400px\}/);

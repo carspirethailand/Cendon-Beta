@@ -8,7 +8,7 @@ function fixture(){
   let response={techs:[{id:'public'}],gigs:[{id:1,tech:{id:'public'}}]},handler=async()=>response;
   const calls=[],c={window:{},document:{hidden:false,addEventListener(){}},Date,JSON,Number,Set,T:(_th,en)=>en,addEventListener(){},setInterval(){},setTimeout:f=>{queueMicrotask(f);return 1},clearTimeout(){},GIG_MAX:2,
     drawHome(){},drawCat(){},render(){},renderUsed(){},diag(){},ccDone(){},READY:{gigs:{done(){}},techs:{done(){}}},api:path=>{calls.push(path);return handler(path)}};
-  vm.createContext(c);vm.runInContext('let U=null,ME=null,TECHS=[],LOADED=false,SERVER=null;'+part('let GIGS=null;','function myCarText(){')+part('async function load(){','/* ปิดหน้าโหลด:')+
+  vm.createContext(c);vm.runInContext('let U=null,ME=null,TECHS=[],LOADED=false,SERVER=null;'+part('function roamPos(t){','/* แผนที่เปิดอยู่')+part('let GIGS=null;','function myCarText(){')+part('async function load(){','/* ปิดหน้าโหลด:')+
     ';this.manager={load,loadGigs,notice:ownServiceNotice,switch:uid=>{U=uid?{uid}:null;resetPublicDirectory()},shop:t=>ME={technician:t},state:()=>({gigs:GIGS,techs:TECHS,error:GIG_ERR,server:SERVER,loaded:LOADED})}',c);
   return {api:c.manager,calls,reply:r=>response=r,handler:f=>handler=f};
 }

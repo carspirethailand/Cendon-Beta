@@ -16,7 +16,7 @@ html.ib-boot .bs .pn,html.ib-boot .bs .bg{transition:none!important}</style>
 <script src="/shop-images.js?v=1"></script>
 <script src="/display-prefs.js?v=3" defer></script>
 <script src="/i18n/ui-en.js?v=4" defer></script>
-<script src="/ui-language.js?v=6" defer></script>
+<script src="/ui-language.js?v=7" defer></script>
 <script src="/partner-entry.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
@@ -36,7 +36,7 @@ html.ib-boot .bs .pn,html.ib-boot .bs .bg{transition:none!important}</style>
 (function(){try{if(/^\/(work|studio)(\/|$)/.test(location.pathname)){var p=JSON.parse(localStorage.getItem("spire_partner")||"null");if(p&&p.s==="shop")document.documentElement.dataset.boot="tech"}}catch(e){}})();</script>
 <script>(function(){try{var A=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt"],l=null;try{l=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
 if(A.indexOf(l)<0){l="en";var n=navigator.languages||[navigator.language||"en"];for(var i=0;i<n.length;i++){var b=String(n[i]).toLowerCase().split("-")[0];if(A.indexOf(b)>=0){l=b;break}}}
-if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=20"><\/script>')}catch(e){}})();</script>
+if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=21"><\/script>')}catch(e){}})();</script>
 <title>Cendon</title>
 <meta name="description" content="ถามอาการรถ ส่งรูปหรือเสียงให้ AI ช่วยดู เช็กใบเสนอราคา และหาช่างที่ผ่านการตรวจใกล้คุณ">
 <!-- การ์ดตอนแชร์ลิงก์ (LINE / Facebook / X) — รูปต้องเป็นที่อยู่เต็ม -->
@@ -2290,6 +2290,16 @@ html[data-theme="dark"] .so-vi{box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
 .gg-li .lx-gh{height:34px;padding:0 12px;font-size:13px;flex:none}
 .gg-tips{margin:16px 0 0;padding:14px 16px;border-radius:14px;background:var(--surface)}.gg-tips b{display:block;margin-bottom:6px}
 .gg-tips ul{margin:0;padding-left:18px;color:var(--muted);font-size:13px;line-height:1.6}
+/* Studio › ชื่อลิงก์ร้าน */
+.hd-in{display:flex;align-items:center;gap:0;margin-top:14px;border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+.hd-in:focus-within{border-color:var(--accent)}
+.hd-in>span{padding:0 0 0 14px;color:var(--muted);font-size:13.5px;white-space:nowrap;flex:none}
+.hd-in .inp{border:0;background:none;box-shadow:none;padding-left:2px;min-width:0;flex:1;font-weight:500}
+.hd-st{min-height:20px;margin:8px 2px 0;font-size:13px;color:var(--muted)}.hd-st.ok{color:#16a34a}.hd-st.bad{color:#dc2626}
+.hd-ideas{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:6px}.hd-ideas small{color:var(--muted)}.hd-ideas .lx-gh{height:32px;padding:0 12px;font-size:13px}
+.hd-rules{margin:16px 0 0;padding-left:18px;color:var(--muted);font-size:12.5px;line-height:1.6}
+.hd-cta{display:flex;gap:12px;align-items:center;width:100%;margin-top:14px;padding:14px 16px;border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);border-radius:16px;background:color-mix(in srgb,var(--accent) 8%,var(--surface));color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.hd-cta>i{font-size:22px;color:var(--accent)}.hd-cta>span{flex:1;min-width:0}.hd-cta b{display:block;font-weight:600}.hd-cta small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
 .so-empty{margin:0;padding:6px 0;font-size:14px;line-height:1.6;color:var(--muted)}
 .so-err{display:flex;align-items:center;gap:10px;margin:0;font-size:14px;color:var(--muted)}.so-err .lx-gh{height:36px;margin-left:auto}
 .so-dl{display:grid;margin:0}
@@ -5061,7 +5071,7 @@ Nav.route({path:":id",parent:"messages",test:p=>/^[0-9a-f-]{36}$/i.test(p.id),op
 Nav.route({path:"chat",parent:"job",open:()=>{if(JOB&&SH.cur&&SH.cur.job)openChat(JOB)}});
 Nav.route({path:"studio",name:"studio",open:async()=>{if(await needMe())openStudio();else applyMode()}});
 /* /studio/<หน้า> — เปิด Studio แล้วเปิดหน้าย่อยนั้น (ลิงก์เดิมยังใช้ได้) */
-Nav.route({path:":k",parent:"studio",test:p=>["settings","stats","edit","post","qr"].includes(p.k),open:p=>{if(!myShop()||MODE!=="tech")return;({settings:studioSettings,stats:studioStats,edit:openShopEdit,post:()=>gigForm(),qr:shopQr})[p.k]()}});
+Nav.route({path:":k",parent:"studio",test:p=>["settings","stats","edit","post","qr","google","name"].includes(p.k),open:p=>{if(!myShop()||MODE!=="tech")return;({settings:studioSettings,stats:studioStats,edit:openShopEdit,post:()=>gigForm(),qr:shopQr,google:googleSheet,name:handleSheet})[p.k]()}});
 Nav.route({path:"work",name:"work",open:async()=>{if(await needMe()&&modesAvail().includes("tech"))setMode("tech");else applyMode()}});
 Nav.route({path:":t",parent:"work",test:p=>["find","queue","messages","shop","ai","posts"].includes(p.t),open:p=>{if(MODE==="tech")setTab2(p.t)}});
 /* เส้นทางยาวต้องลงทะเบียนก่อนเส้นทางสั้นที่ขึ้นต้นเหมือนกัน — ตัวจับเส้นทางเลือกอันแรกที่ตรง ถ้า "staff" มาก่อน ลิงก์ /staff/review จะเปิดแค่โหมดทีมงาน */
@@ -5132,6 +5142,9 @@ async function diag(){
    ลูกค้า → ขอราคา · เจ้าของร้าน → แก้ไขร้าน (ไม่มีทางสั่งงานตัวเองได้อีก) */
 const isMine=t=>!!(ME&&ME.technician&&t&&ME.technician.id===t.id);
 const img=id=>`${API}/api/tech/img/${id}`;
+/* ที่อยู่หน้าร้าน: ชื่อลิงก์ที่ร้านจองไว้ (/tech/nonair) ถ้ามี ไม่งั้นรหัสร้าน · หาร้านได้ทั้งจากรหัสและชื่อลิงก์ */
+const shopPath=t=>"/tech/"+encodeURIComponent((t&&(t.handle||t.id))||"");
+const techByKey=k=>{k=String(k||"");const l=k.toLowerCase();return TECHS.find(x=>x.id===k)||TECHS.find(x=>x.handle&&x.handle===l)||null};
 const agoTh=at=>{const m=Math.round((Date.now()-at)/6e4);return m<1?"เมื่อกี้":m<60?m+" นาที":m<1440?Math.round(m/60)+" ชม.":m<43200?Math.round(m/1440)+" วัน":new Date(at).toLocaleDateString(LOC,{day:"numeric",month:"short",year:"2-digit"})};
 const starTxt=n=>"★".repeat(Math.round(n))+"☆".repeat(5-Math.round(n));
 /* รีวิวลูกค้า: คะแนน ข้อความ รูปจากลูกค้า — ไม่มีชื่อลูกค้า */
@@ -5290,6 +5303,10 @@ function loadReviews(b,t){
       h.querySelector("button").onclick=()=>loadReviews(b,t)});
 }
 async function openTech(id,opt){
+  /* /tech/<ชื่อลิงก์> → รหัสร้าน · ชื่อเก่าที่ร้านเพิ่งเปลี่ยน ถามหลังบ้านว่าตอนนี้เป็นร้านไหน */
+  {const k=String(id||""),hit=techByKey(k),mt=ME&&ME.technician;
+    if(hit)id=hit.id;else if(mt&&mt.handle&&mt.handle===k.toLowerCase())id=mt.id;
+    else if(/^[a-z0-9-]{3,30}$/i.test(k)){try{const r=await api("/api/tech/handle/"+encodeURIComponent(k.toLowerCase()));if(r&&r.techId)id=r.techId}catch(e){}}}
   let t=TECHS.find(x=>x.id===id);
   const mine=ME&&ME.technician&&ME.technician.id===id;
   if(mine)try{await loadOwnGigs()}catch(e){toast(e.message,"ti-alert-triangle");return}
@@ -5300,7 +5317,7 @@ async function openTech(id,opt){
       mount(b){const x=b.querySelector("#shopMissAll");if(x)x.onclick=()=>{closeSheet();openCat("all")}}});
     return}
   if(!mine)track(id,"shop");
-  const url=(opt&&opt.url)||"/tech/"+encodeURIComponent(id);
+  const url=(opt&&opt.url)||shopPath(t);
   sheet({title:t.shop||t.name||"",full:true,store:true,shop:id,owner:!!mine,boss:!!(ME&&ME.owner),url,body:storeHTML(t,mine),foot:storeFoot(t,mine),
     mount(b,f,o){
       /* /tech/<ร้าน>/reviews ฯลฯ — เลื่อนไปส่วนนั้น */
@@ -5315,7 +5332,7 @@ async function openTech(id,opt){
       const vb=b.querySelector("[data-vet]"),vd=b.querySelector(".so-vetd");
       if(vb&&vd)vb.onclick=()=>{vd.hidden=!vd.hidden;vb.setAttribute("aria-expanded",String(!vd.hidden));vb.classList.toggle("open",!vd.hidden)};
       const sh=b.querySelector("[data-share]");
-      if(sh)sh.onclick=()=>{const u=location.origin+"/tech/"+encodeURIComponent(t.id);try{navigator.share?navigator.share({title:t.shop||t.name,url:u}).catch(()=>{}):navigator.clipboard.writeText(u).then(()=>toast(T("คัดลอกลิงก์ร้านแล้ว","Shop link copied")))}catch(e){}};
+      if(sh)sh.onclick=()=>{const u=location.origin+shopPath(t);try{navigator.share?navigator.share({title:t.shop||t.name,url:u}).catch(()=>{}):navigator.clipboard.writeText(u).then(()=>toast(T("คัดลอกลิงก์ร้านแล้ว","Shop link copied")))}catch(e){}};
       loadReviews(b,t);loadWork(b,t);
       const rp=b.querySelector("[data-report]");if(rp)rp.onclick=()=>reportShop(t.id);
       if(mine)return;
@@ -5364,7 +5381,7 @@ const swRow=(id,title,sub,on)=>`<label class="ss-row"><span><b>${title}</b>${sub
 function studioSettings(){
   const t=ME.technician,v=(t.vacationRaw||t.vacation)||{},ar=t.autoReply||{},sound=ls.get("spire_tech_sound",true);
   const until=v.until?new Date(v.until).toISOString().slice(0,10):"";
-  const link=location.origin+"/tech/"+encodeURIComponent(t.id);
+  const link=location.origin+shopPath(t);
   sheet({push:true,url:stuUrl("settings"),slug:"settings",full:true,store:true,title:"ตั้งค่า Studio",body:`<div class="ss">
     <section class="ss-g"><h3><i class="ti ti-power"></i>สถานะร้าน</h3>
       ${swRow("ssOn","เปิดรับงาน","รับแจ้งเตือนเมื่อมีคนแถวนี้ประกาศหาช่าง",DSTATS?DSTATS.online:t.online)}
@@ -7730,7 +7747,7 @@ function tabMsgs(){
 let SHOPED=null;
 /* แท็บร้านของฉัน: ตัวอย่างหน้าร้านแบบที่ลูกค้าเห็น + ปุ่มแก้ไข (ฟอร์มย้ายไปอยู่ในแผ่นแยก ไม่ปนกับหน้าร้าน) */
 function tabShop(){
-  const t=myShop(),B=$("dBody"),facts=vetFacts(t),link=location.origin+"/tech/"+encodeURIComponent(t.id);
+  const t=myShop(),B=$("dBody"),facts=vetFacts(t),link=location.origin+shopPath(t);
   const vet=t.test?[`<i class="ti ti-flask stu-ri" style="color:var(--ink)"></i>`,ME&&ME.staff?T("ร้านทดสอบของทีมงาน","Staff test shop"):T("ร้านทดลอง","Trial shop"),ME&&ME.staff?T("ลูกค้าทั่วไปไม่เห็นร้านนี้ ใช้ทดลองระบบเท่านั้น","Ordinary customers can't see this shop — for testing only"):T("ลูกค้าทั่วไปยังไม่เห็นร้านนี้ — เปิดให้ลูกค้าเห็นเมื่อผ่านการตรวจจริง","Customers can't see this shop yet — it opens once it passes the full review")]
     :!t.verified?[`<i class="ti ti-hourglass stu-ri"></i>`,T("รอทีมงานตรวจข้อมูล","Waiting for review"),T("ลูกค้าจะเห็นร้านเมื่อผ่านการตรวจแล้ว","Customers see your shop once it's approved")]
     :[`<i class="ti ti-shield so-vi"></i>`,T("ผ่านการตรวจโดยทีมงาน","Approved by the team"),facts.length?facts.map(f=>f[1]).join(" · ")+(t.vetting&&t.vetting.at?T(" · ตรวจเมื่อ "," · checked ")+fmtDay(t.vetting.at):""):T("ลูกค้าเห็นป้ายผ่านการตรวจบนหน้าร้าน","Customers see the approval on your storefront")];
@@ -7744,12 +7761,14 @@ function tabShop(){
     </span></button>
     <div class="stu-acts"><button class="lx-cta" type="button" id="sView" style="height:44px;padding:0 18px"><i class="ti ti-eye"></i>${T("ดูหน้าร้าน","View storefront")}</button>
       <button class="lx-gh" type="button" id="sShare" style="height:44px"><i class="ti ti-share-2"></i>${T("แชร์ลิงก์ร้าน","Share link")}</button></div>
+    ${googleLive(t)&&!t.handle?`<button class="hd-cta" type="button" id="sHdCta"><i class="ti ti-at"></i><span><b>${T("จองชื่อลิงก์ร้านก่อนร้านอื่น","Claim your shop link name first")}</b><small>${esc(location.host)}/tech/${T("ชื่อร้านคุณ","your-shop")}</small></span><i class="ti ti-chevron-right"></i></button>`:""}
     ${ownServiceNotice()}<div class="stu-vet" style="margin-top:14px">${vet[0]}<span><b>${vet[1]}</b><small>${vet[2]}</small></span></div>
     <section class="stu-sec stu-list" style="margin-top:6px">
       ${row("sEdit","ti-pencil",T("แก้ไขข้อมูลร้าน","Edit shop details"),T("รูป ชื่อ เวลาทำการ พื้นที่ เบอร์โทร","Photos, name, hours, area, phone"))}
       ${row("sStats","ti-chart-bar",T("สถิติร้าน","Shop stats"),T("รายได้ คนเข้าดู และเส้นทางงาน","Earnings, views and job funnel"))}
       ${row("sAi","ti-bulb",T("คำแนะนำปรับร้าน","Shop tips"),T("สิ่งที่ช่วยให้ลูกค้าเลือกร้านคุณมากขึ้น","What helps customers pick your shop"))}
       ${row("sQr","ti-qrcode",T("ลิงก์และ QR หน้าร้าน","Shop link & QR"),T("พิมพ์ติดหน้าอู่ ลูกค้าสแกนแล้วเข้าหน้าร้าน","Print it — customers scan to open your shop"))}
+      ${row("sName","ti-at",T("ชื่อลิงก์ร้าน","Shop link name"),handleHint(t))}
       ${row("sGoogle","ti-brand-google",T("หน้าร้านบน Google","Your shop on Google"),googleHint(t))}
       ${row("sSet","ti-settings",T("ตั้งค่า","Settings"),T("รับงาน พักร้าน ตอบอัตโนมัติ แจ้งเตือน สีร้าน","Availability, pause, auto-reply, alerts, colour"))}
       ${row("sHelp","ti-help-circle",T("วิธีใช้สำหรับช่าง","Help for mechanics"),T("กติกาใบงาน การเสนอราคา และการรับเงิน","Job rules, quoting and getting paid"))}
@@ -7766,11 +7785,11 @@ function tabShop(){
   $("sView").onclick=()=>openTech(t.id);
   $("sShare").onclick=()=>{try{navigator.share?navigator.share({title:t.shop||t.name,url:link}).catch(()=>{}):navigator.clipboard.writeText(link).then(()=>toast(T("คัดลอกลิงก์ร้านแล้ว","Shop link copied")))}catch(e){}};
   $("sEdit").onclick=()=>openShopEdit();$("sStats").onclick=()=>studioStats();$("sAi").onclick=()=>setTab2("ai");
-  $("sQr").onclick=()=>shopQr();$("sGoogle").onclick=()=>googleSheet();$("sSet").onclick=()=>studioSettings();$("sHelp").onclick=()=>window.open("/help#mechanics","_blank","noopener");
+  $("sQr").onclick=()=>shopQr();$("sGoogle").onclick=()=>googleSheet();$("sName").onclick=()=>handleSheet();if($("sHdCta"))$("sHdCta").onclick=()=>handleSheet();$("sSet").onclick=()=>studioSettings();$("sHelp").onclick=()=>window.open("/help#mechanics","_blank","noopener");
 }
 /* ลิงก์และ QR ของร้าน (QR สร้างในเครื่อง โหลดไลบรารีตอนเปิดครั้งแรก) */
 function shopQr(){
-  const t=myShop(),link=location.origin+"/tech/"+encodeURIComponent(t.id);
+  const t=myShop(),link=location.origin+shopPath(t);
   sheet({push:true,url:stuUrl("qr"),slug:"qr",title:T("ลิงก์และ QR หน้าร้าน","Shop link & QR"),body:`<div class="ss-qr" style="margin-top:6px"><div id="qrB" class="ss-qrb"></div><div class="ss-qra"><code class="nt">${esc(link)}</code>
       <button class="lx-gh" id="qrCopy" type="button"><i class="ti ti-copy"></i>${T("คัดลอกลิงก์","Copy link")}</button><button class="lx-gh" id="qrDl" type="button"><i class="ti ti-download"></i>${T("บันทึกรูป QR","Save QR image")}</button></div></div>
     <p class="so-fine" style="margin-top:14px">${T("พิมพ์ไปติดหน้าอู่หรือบนรถ ลูกค้าสแกนแล้วเข้าหน้าร้านของคุณบน Cendon ได้ทันที","Print it for your shop or van — customers scan to open your Cendon storefront")}</p>`,
@@ -7805,7 +7824,7 @@ function googleHint(t){
   return c.some(x=>x.ok==null)?T("ดูว่าลูกค้าค้นเจอร้านคุณได้แค่ไหน","See how easily customers can find you"):T("ข้อมูลครบ","Complete")+` ${c.filter(x=>x.ok).length}/${c.length} · `+T("ดูว่ายังขาดอะไร","See what's missing");
 }
 function googleSheet(){
-  const t=myShop(),link=location.origin+"/tech/"+encodeURIComponent(t.id),live=googleLive(t);
+  const t=myShop(),link=location.origin+shopPath(t),live=googleLive(t);
   const state=t.suspended?T("ร้านพักใช้งานอยู่ ลูกค้าและ Google ยังไม่เห็นหน้าร้าน กลับมาเปิดร้านแล้วหน้าร้านจะกลับมาเอง","Your shop is paused, so customers and Google can't see it. It comes back when you reopen.")
     :t.test?T("ร้านทดลองยังไม่มีหน้าสาธารณะ เมื่อเป็นร้านจริงที่ผ่านการตรวจ หน้าร้านจะเปิดให้ Google เก็บเอง","Trial shops have no public page. Once you're an approved shop, Google can index it automatically.")
     :!t.verified?T("ผ่านการตรวจแล้ว หน้าร้านจะเปิดให้ Google เก็บเอง ระหว่างนี้เตรียมข้อมูลให้ครบไว้ก่อนได้","Once approved, your page opens to Google automatically. You can get your details ready now.")
@@ -7825,6 +7844,67 @@ function googleSheet(){
           `<p class="so-fine">${T("รีวิว","Reviews")} ${Number(t.reviewCount)||0} · ${T("หน้าร้านส่งคะแนนรีวิวให้ Google ด้วย (Google เลือกเองว่าจะแสดงดาวหรือไม่) ชวนลูกค้ารีวิวหลังจบงาน","Your page shares the rating with Google (Google decides whether to show stars). Ask customers to review after each job.")}</p>`;
         L.querySelectorAll("[data-gg]").forEach(b=>b.onclick=()=>{const f=c[+b.dataset.gg].fix;if(f==="svc"){if($("bs").classList.contains("on"))closeSheet();setTab2("posts");window.scrollTo(0,0)}else openShopEdit()});};
       loadOwnGigs().then(paint,()=>paint(null));
+    }});
+}
+/* ── ชื่อลิงก์ร้าน (cendon…/tech/<ชื่อ>) ──
+   ร้านละหนึ่งชื่อ ใครจองก่อนได้ก่อน — หลังบ้านตัดสินว่าว่างไหม (ตรวจซ้ำตอนบันทึกเสมอ) ตรงนี้แค่บอกล่วงหน้าระหว่างพิมพ์
+   ตัวอังกฤษเล็ก ตัวเลข ขีด 3–30 ตัว — ภาษาไทยในลิงก์กลายเป็น %E0%B8… เมื่อคัดลอกไปวางใน LINE/Facebook */
+const HANDLE_OK=/^(?=.{3,30}$)[a-z0-9]+(?:-[a-z0-9]+)*$/;
+function handleIdeas(t){
+  const out=[],add=x=>{x=String(x||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,30).replace(/-+$/,"");if(HANDLE_OK.test(x)&&!out.includes(x)&&x!==t.handle)out.push(x)};
+  add(String(t.line||"").replace(/^@/,""));
+  const latin=String(t.shop||t.name||"").match(/[A-Za-z0-9]+/g)||[];
+  if(latin.length){add(latin.join("-"));add(latin.join(""))}
+  return out.slice(0,4);
+}
+function handleHint(t){
+  if(t.handle)return location.host+"/tech/"+t.handle;
+  if(!googleLive(t))return T("จองได้เมื่อร้านผ่านการตรวจ","Available once your shop is approved");
+  return T("ยังไม่ได้จอง — ชื่อหนึ่งชื่อมีได้ร้านเดียว","Not claimed yet — each name goes to one shop");
+}
+function handleSheet(){
+  const t=myShop(),live=googleLive(t),wait=t.handle&&t.handleNext&&t.handleNext>Date.now()?t.handleNext:0,open=live&&!wait;
+  const bad=T("ใช้ตัวอังกฤษเล็ก ตัวเลข และขีด (-) 3–30 ตัว","Use lowercase letters, numbers and hyphens (-), 3–30 characters");
+  sheet({push:true,url:stuUrl("name"),slug:"name",title:T("ชื่อลิงก์ร้าน","Shop link name"),body:`
+    <p class="so-fine" style="margin-top:0">${T("ตั้งชื่อสั้น ๆ ให้ลิงก์หน้าร้าน ลูกค้าจำง่าย พิมพ์ง่าย แชร์แล้วไม่เป็นรหัสยาว ร้านละหนึ่งชื่อ ใครจองก่อนได้ก่อน","Give your shop link a short name that's easy to remember, type and share. One name per shop, first come, first served.")}</p>
+    <label class="hd-in"><span>${esc(location.host)}/tech/</span><input class="inp" id="hdIn" autocomplete="off" autocapitalize="none" spellcheck="false" inputmode="url" maxlength="30" placeholder="nonair-bangna" aria-label="${T("ชื่อลิงก์ร้าน","Shop link name")}" value="${esc(t.handle||"")}" ${open?"":"disabled"}></label>
+    <p class="hd-st" id="hdSt" role="status" aria-live="polite"></p>
+    <div class="hd-ideas" id="hdIdeas"></div>
+    <ul class="hd-rules"><li>${bad}</li>
+      <li>${T("เปลี่ยนได้ทุก 30 วัน ลิงก์ชื่อเก่ายังพาลูกค้ามาที่ร้านคุณอีก 90 วัน","You can change it every 30 days — the old link keeps bringing customers to you for 90 days")}</li>
+      <li>${T("ชื่อยี่ห้อรถ แบรนด์ดัง และชื่อ Cendon สงวนไว้ กันการแอบอ้าง","Car brands, well-known brand names and Cendon are reserved to prevent impersonation")}</li></ul>`,
+    foot:open?`<button class="lx-cta" type="button" id="hdSave" style="height:46px;width:100%" disabled>${t.handle?T("เปลี่ยนเป็นชื่อนี้","Change to this name"):T("จองชื่อนี้","Claim this name")}</button>`:"",
+    mount(){
+      const inp=$("hdIn"),st=$("hdSt"),save=$("hdSave");let seq=0,ok=false,timer=0;
+      const say=(txt,kind)=>{st.textContent=txt;st.className="hd-st"+(kind?" "+kind:"")};
+      if(!live)say(t.test?T("ร้านทดลองยังจองชื่อไม่ได้ เมื่อเป็นร้านจริงที่ผ่านการตรวจแล้วจองได้ทันที","Trial shops can't claim a name yet — you can as soon as you're an approved shop")
+        :t.suspended?T("ร้านพักใช้งานอยู่ เปิดร้านก่อนแล้วค่อยจองชื่อ","Your shop is paused — reopen it to claim a name")
+        :T("จองได้เมื่อร้านผ่านการตรวจแล้ว","You can claim a name once your shop is approved"),"");
+      else if(wait)say(T("เปลี่ยนชื่อได้อีกครั้งวันที่","You can change it again on")+" "+new Date(wait).toLocaleDateString(LOC,{day:"numeric",month:"short",year:"numeric"}),"");
+      const ideas=open?handleIdeas(t):[];
+      if(ideas.length)$("hdIdeas").innerHTML=`<small>${T("ลองชื่อนี้","Try")}</small>`+ideas.map(x=>`<button type="button" class="lx-gh" data-hd="${esc(x)}">${esc(x)}</button>`).join("");
+      async function check(){
+        const h=inp.value.trim().toLowerCase();ok=false;if(save)save.disabled=true;
+        if(!h)return say("","");
+        if(!HANDLE_OK.test(h))return say(bad,"bad");
+        if(h===t.handle)return say(T("ชื่อปัจจุบันของร้านคุณ","This is your current name"),"ok");
+        const n=++seq;say(T("กำลังตรวจ…","Checking…"),"");
+        try{const r=await api("/api/tech/handle?h="+encodeURIComponent(h));if(n!==seq)return;
+          if(r.ok){ok=true;if(save)save.disabled=false;say(T("ว่าง จองได้เลย","Available — claim it now"),"ok")}
+          else say(r.reason==="taken"?T("มีร้านอื่นใช้ชื่อนี้แล้ว","Another shop already has this name"):r.reason==="reserved"?T("ชื่อนี้สงวนไว้ เลือกชื่ออื่น","This name is reserved — pick another"):bad,"bad");
+        }catch(e){if(n===seq)say(e.message,"bad")}
+      }
+      $("hdIdeas").querySelectorAll("[data-hd]").forEach(b=>b.onclick=()=>{inp.value=b.dataset.hd;check()});
+      inp.oninput=()=>{const v=inp.value.toLowerCase().replace(/[^a-z0-9-]/g,"");if(v!==inp.value)inp.value=v;clearTimeout(timer);timer=setTimeout(check,350)};
+      if(save)save.onclick=e=>busy(e.currentTarget,async()=>{
+        const h=inp.value.trim().toLowerCase();if(!ok)return;
+        if(t.handle&&!confirm(T("เปลี่ยนชื่อลิงก์ร้าน? เปลี่ยนอีกครั้งได้ใน 30 วัน","Change your shop link name? You can change it again in 30 days.")+"\n"+location.host+"/tech/"+h))return;
+        const r=await api("/api/tech/handle",{body:{handle:h}});
+        ME.technician={...ME.technician,handle:r.handle,handleNext:Date.now()+30*86400000};
+        const i=TECHS.findIndex(x=>x.id===ME.technician.id);if(i>=0)TECHS[i]={...TECHS[i],handle:r.handle};
+        toast(T("จองชื่อลิงก์ร้านแล้ว","Shop link name claimed"));closeSheet();if(MODE==="tech")drawTab();
+      });
+      if(open)setTimeout(()=>inp.focus(),60);
     }});
 }
 function openShopEdit(t0){

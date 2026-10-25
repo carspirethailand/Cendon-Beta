@@ -16,7 +16,7 @@ html.ib-boot .bs .pn,html.ib-boot .bs .bg{transition:none!important}</style>
 <script src="/shop-images.js?v=1"></script>
 <script src="/display-prefs.js?v=3" defer></script>
 <script src="/i18n/ui-en.js?v=4" defer></script>
-<script src="/ui-language.js?v=9" defer></script>
+<script src="/ui-language.js?v=10" defer></script>
 <script src="/partner-entry.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
@@ -36,7 +36,7 @@ html.ib-boot .bs .pn,html.ib-boot .bs .bg{transition:none!important}</style>
 (function(){try{if(/^\/(work|studio)(\/|$)/.test(location.pathname)){var p=JSON.parse(localStorage.getItem("spire_partner")||"null");if(p&&p.s==="shop")document.documentElement.dataset.boot="tech"}}catch(e){}})();</script>
 <script>(function(){try{var A=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt"],l=null;try{l=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
 if(A.indexOf(l)<0){l="en";var n=navigator.languages||[navigator.language||"en"];for(var i=0;i<n.length;i++){var b=String(n[i]).toLowerCase().split("-")[0];if(A.indexOf(b)>=0){l=b;break}}}
-if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=23"><\/script>')}catch(e){}})();</script>
+if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=24"><\/script>')}catch(e){}})();</script>
 <title>Cendon</title>
 <meta name="description" content="ถามอาการรถ ส่งรูปหรือเสียงให้ AI ช่วยดู เช็กใบเสนอราคา และหาช่างที่ผ่านการตรวจใกล้คุณ">
 <!-- การ์ดตอนแชร์ลิงก์ (LINE / Facebook / X) — รูปต้องเป็นที่อยู่เต็ม -->
@@ -47,7 +47,7 @@ if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=23"><\/
 <script src="nav.js"></script>
 <script src="media-store.js?v=2"></script>
 <script src="repair-proof.js?v=1" defer></script>
-<script src="bell.js?v=17"></script>
+<script src="bell.js?v=18"></script>
 <script src="drop.js?v=4" defer></script>
 <script src="car-menu.js?v=1" defer></script>
 <meta name="theme-color" content="#131316"/>
@@ -546,6 +546,87 @@ textarea.inp{min-height:92px;resize:vertical}
 .track .s.done i{background:var(--grad);color:var(--on-acc,#fff);box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
 .track .s.done::before{background:var(--accent)}
 .track .s.now i{transform:scale(1.15);animation:ring 1.8s infinite}
+/* ══ ใบงาน (กระบวนการทำงานกับช่าง) ══ หัวบอกสถานะ+สิ่งที่ต้องทำต่อ → แผนที่สด (เดิม) → รหัสเริ่มงาน → คน → ราคา → ผลงาน → รายละเอียด → ความปลอดภัย */
+.jw{--jw:var(--accent);padding-bottom:6px}
+.jw-hero{position:relative;margin:2px 0 12px;padding:18px 18px 16px;border-radius:24px;background:var(--surface);box-shadow:0 0 0 1px var(--line-2);overflow:hidden;isolation:isolate}
+.jw-hero::before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(120% 90% at 100% 0,color-mix(in srgb,var(--jw) 15%,transparent),transparent 62%)}
+.jw-hero.s-enroute,.jw-hero.s-working,.jw-hero.s-completed{--jw:#16a34a}.jw-hero.s-requested{--jw:#71717a}.jw-hero.s-cancelled,.jw-hero.s-disputed{--jw:#dc2626}
+.jw-eye{display:flex;align-items:center;gap:8px;margin:0 0 6px;font-size:12.5px;font-weight:600;color:var(--jw)}
+.jw-eye span{margin-left:auto;max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-weight:500}
+.jw-eye b{font-weight:600;color:var(--muted)}
+.jw-dot{flex:none;width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 0 4px color-mix(in srgb,currentColor 18%,transparent)}
+.jw-hero.s-enroute .jw-dot{animation:jwPulse 1.6s infinite}
+@keyframes jwPulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,currentColor 45%,transparent)}100%{box-shadow:0 0 0 9px transparent}}
+.jw-h{margin:0;font-family:var(--kd);font-size:25px;font-weight:700;line-height:1.22;letter-spacing:-.01em}
+.jw-sub{margin:6px 0 0;font-size:13.5px;line-height:1.55;color:var(--muted)}
+.jw-steps{list-style:none;display:flex;margin:16px -4px 0;padding:0}
+.jw-steps li{flex:1;position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:var(--faint);text-align:center}
+.jw-steps li::before{content:"";position:absolute;top:13px;right:50%;width:100%;height:2px;background:var(--line)}
+.jw-steps li:first-child::before{display:none}
+.jw-steps li.done::before,.jw-steps li.now::before{background:var(--jw)}
+.jw-steps li i{position:relative;z-index:1;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:14px;background:var(--surface-2);color:var(--faint)}
+.jw-steps li.done{color:var(--ink)}.jw-steps li.done i{background:var(--jw);color:#fff}
+.jw-steps li.now{color:var(--ink);font-weight:600}
+.jw-steps li.now i{background:var(--surface);color:var(--jw);box-shadow:0 0 0 2px var(--jw),0 0 0 6px color-mix(in srgb,var(--jw) 16%,transparent)}
+.jw-fresh{display:none;align-items:center;gap:6px;margin-top:12px;padding:5px 11px;border-radius:999px;background:color-mix(in srgb,var(--jw) 12%,transparent);color:var(--jw);font-size:12px;font-weight:600}
+.jw-fresh.on{display:inline-flex;animation:jwIn .3s both}
+@keyframes jwIn{from{opacity:0;transform:translateY(4px)}}
+.jw-card{position:relative;margin:0 0 12px;padding:16px;border-radius:22px;background:var(--surface);box-shadow:0 0 0 1px var(--line-2)}
+.jw-card h3{display:flex;align-items:center;gap:7px;margin:0 0 10px;font-size:13px;font-weight:600;color:var(--muted)}
+.jw-card h3 .ti{font-size:16px}
+.jw-who{display:flex;align-items:center;gap:12px;overflow:hidden;isolation:isolate}
+.jw-who .wf{z-index:-1}
+.jw-who .av{flex:none;width:52px;height:52px;border-radius:16px;font-size:20px;font-weight:700}
+.jw-wt{flex:1;min-width:0}.jw-wt small{display:block;font-size:12px;color:var(--muted)}
+.jw-wt b{display:block;font-family:var(--kd);font-size:17px;font-weight:600;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jw-badges{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.jw-badges span{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;background:color-mix(in srgb,#1E40AF 10%,transparent);color:#1E40AF;font-size:11px;font-weight:500}
+html[data-theme="dark"] .jw-badges span{background:color-mix(in srgb,#93C5FD 14%,transparent);color:#93C5FD}
+.jw-wa{display:flex;gap:8px;flex:none}
+.jw-ib{position:relative;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;border:0;background:var(--surface-2);color:var(--ink);font-size:20px;cursor:pointer;text-decoration:none}
+.jw-ib.p{background:var(--ink);color:var(--bg)}
+.jw-ib .dot{position:absolute;top:-3px;right:-3px;min-width:19px;height:19px;padding:0 4px;border-radius:999px;display:grid;place-items:center;background:#dc2626;color:#fff;font-size:10.5px;font-weight:700;border:2px solid var(--surface)}
+.jw-ph{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.jw-ph span{font-size:13px;font-weight:500;color:var(--muted)}
+.jw-ph b{font-family:var(--kd);font-size:30px;font-weight:700;letter-spacing:-.02em}
+.jw-lines{margin:10px 0 0;padding:10px 0 0;border-top:1px dashed var(--line)}
+.jw-lines div{display:flex;justify-content:space-between;gap:12px;padding:4px 0;font-size:13.5px}
+.jw-lines dt{color:var(--muted);min-width:0}.jw-lines dd{margin:0;font-weight:500;white-space:nowrap}
+.jw-scope{margin:10px 0 0;font-size:14px;line-height:1.55;white-space:pre-wrap}
+.jw-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.jw-tags span{display:inline-flex;align-items:center;gap:5px;max-width:100%;padding:6px 11px;border-radius:999px;background:var(--surface-2);font-size:12.5px;color:var(--muted)}
+.jw-tags span b{font-weight:500;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jw-tags .ti{font-size:14px}
+.jw-code{background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 10%,var(--surface)),var(--surface) 60%)}
+.jw-ch{display:flex;align-items:center;gap:8px}.jw-ch .ti{font-size:18px;color:var(--accent)}.jw-ch b{flex:1;font-size:14.5px;font-weight:600}
+.jw-digits{display:flex;justify-content:center;gap:10px;margin:12px 0}
+.jw-digits span{width:56px;height:64px;border-radius:16px;display:grid;place-items:center;background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--line);font-family:var(--kd);font-size:32px;font-weight:700}
+.jw-code p{margin:0;font-size:12.5px;line-height:1.6;color:var(--muted)}.jw-code p b{color:var(--ink)}
+.jw-kv{list-style:none;margin:0;padding:0}
+.jw-kv li{display:grid;grid-template-columns:20px 92px minmax(0,1fr);gap:10px;align-items:start;padding:10px 0;border-top:1px solid var(--line-2);font-size:14px}
+.jw-kv li:first-child{border-top:0;padding-top:2px}
+.jw-kv .ti{margin-top:2px;font-size:17px;color:var(--muted)}.jw-kv span{color:var(--muted)}.jw-kv b{font-weight:500;overflow-wrap:anywhere}
+.jw-stars{color:#f59e0b;letter-spacing:1px}.jw-rv{display:block;margin-top:2px;font-weight:400}
+.jw-gt{margin:14px 0 8px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.jw-lock{display:flex;gap:7px;align-items:flex-start;margin:10px 0 0;font-size:12.5px;color:var(--muted)}
+.jw-note{display:flex;gap:9px;align-items:flex-start;margin:0 0 12px;padding:12px 14px;border-radius:16px;background:var(--surface-2);font-size:13px;line-height:1.5;color:var(--muted)}
+.jw-note .ti{flex:none;font-size:17px;color:var(--accent)}
+.jw-card.ext{border:0;padding:16px}
+.jw-safe .jw-row{display:flex;align-items:center;gap:12px;width:100%;padding:10px 0;border:0;border-top:1px solid var(--line-2);background:none;color:var(--ink);text-align:left;font:inherit;cursor:pointer;text-decoration:none}
+.jw-safe h3+.jw-row{border-top:0;padding-top:2px}
+.jw-row .ri{flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--c);color:#fff;font-size:18px}
+.jw-row .rt{flex:1;min-width:0}.jw-row .rt b{display:block;font-size:14px;font-weight:600}.jw-row .rt small{display:block;font-size:12px;line-height:1.45;color:var(--muted)}
+.jw-row>.ti{color:var(--faint)}
+.jw-safe .safe-x{margin:-2px 0 6px 50px}
+.jw-more{display:flex;flex-wrap:wrap;justify-content:center;gap:2px 16px;margin:4px 0 6px}
+.jw-more button{min-height:40px;padding:6px 4px;border:0;background:none;color:var(--muted);font:inherit;font-size:13.5px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.jw-more button:hover{color:var(--ink)}
+.jw .lv{border-radius:22px}
+/* งานทั้งหมด: ส่วนแบบเดียวกับกระดิ่ง */
+.jw-sec{display:flex;align-items:center;gap:8px;margin:16px 4px 6px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.jw-sec em{min-width:20px;height:20px;padding:0 6px;border-radius:999px;display:grid;place-items:center;background:var(--accent);color:#fff;font-style:normal;font-size:11px}
+.jw-list{padding:4px;border-radius:20px;background:var(--surface);box-shadow:0 0 0 1px var(--line-2)}
+@media(prefers-reduced-motion:reduce){.jw-hero.s-enroute .jw-dot,.jw-fresh.on{animation:none}}
 .who{position:relative;overflow:hidden;isolation:isolate;display:flex;align-items:center;gap:12px;padding:14px;border-radius:20px;background:var(--surface);margin-bottom:12px}
 .who .wf{z-index:-1}
 .who .sq{width:52px;height:52px;font-size:20px;font-weight:700;flex-shrink:0}
@@ -6071,6 +6152,8 @@ function refreshJobs(){
   if(j.status==="fulfilled"&&Array.isArray(j.value?.jobs)){JOBS=j.value.jobs;JOBS_OK=true;JOBS_ERR=null}else JOBS_ERR=j.reason&&j.reason.message||"error";
   POSTS=p.status==="fulfilled"?p.value.posts||[]:[];
   THREADS=t.status==="fulfilled"?t.value.threads||[]:[];
+  /* กระดิ่งรวมงานของฉันไว้แล้ว — ส่งรายการล่าสุดให้ (ต้องทำ/กำลังดำเนินการ + ตัวเลขบนกระดิ่ง) */
+  try{if(window.CendonBell&&CendonBell.setJobs)CendonBell.setJobs(JOBS_OK?JOBS:null,p.status==="fulfilled"?POSTS:null)}catch(e){}
   renderActive();renderUsed();syncGarage();queueDot();saveSnap();try{LiveShare.sync()}catch(e){}try{RoamShare.sync()}catch(e){}
   if(ATLAS&&VIEW==="map")ATLAS.refresh();
   try{bellDiff()}catch(e){}
@@ -6087,13 +6170,29 @@ function queueDot(){
 async function jobs(all){
   if(!U)return needLogin();
   const url=all?"/jobs/all":"/jobs";
-  sheet({title:all?"งานทั้งหมด":"งานของฉัน",url,body:'<div class="skel"></div><div class="skel" style="margin-top:10px"></div>'});
+  sheet({title:T("งานทั้งหมด","All jobs"),url,body:'<div class="skel"></div><div class="skel" style="margin-top:10px"></div>'});
   try{
     /* ห้องทักช่าง (คุยถามก่อนจ้าง) อยู่บนสุด — ล่าสุด 3 ห้อง ที่เหลือกด "ดูข้อความทั้งหมด" */
     const [d,tl]=await Promise.all([api("/api/tech/jobs"+(all?"?all=1":"")),all?null:api("/api/tech/threads").catch(()=>null)]);
     const L=(d.jobs||[]).filter(j=>all||!techJobHidden(j)),TL=(tl&&tl.threads)||[];
     if(tl){THREADS=TL;queueDot()}
     const msgs=TL.length?`<p class="h4" style="margin-top:0">ข้อความ</p>${TL.slice(0,3).map(thRow).join("")}${TL.length>3?`<button class="lx-gh w" data-inbox style="margin-bottom:14px">${T("ดูข้อความทั้งหมด","See all messages")} (${TL.length})</button>`:""}<p class="h4">งาน</p>`:"";
+    if(!all){
+      /* จัดส่วนแบบเดียวกับกระดิ่ง: ต้องทำตอนนี้ (เรื่องราคาก่อน) · กำลังดำเนินการ · จบแล้ว */
+      if(window.CendonBell&&CendonBell.setJobs)CendonBell.setJobs(L,POSTS);
+      const H=window.CendonBell&&CendonBell.hub?CendonBell.hub():{act:[],live:[]};
+      const hist=L.filter(j=>["completed","cancelled"].includes(j.status)||j.expired).slice(0,30);
+      const row=x=>`<button type="button" class="nb-job${x.r===0?" r0":""}${x.hot?" hot":""}" data-u="${esc(x.url)}"><span class="nb-ic"><i class="ti ${x.ic}"></i>${x.live?'<i class="lv"></i>':""}</span>${x.unread&&x.r!==2?`<span class="nb-un">${x.unread>9?"9+":x.unread}</span>`:""}<span class="nb-jt"><b class="nt">${esc(x.title)}</b>${x.sub?`<small class="nt">${esc(x.sub)}</small>`:""}</span>${x.cta?`<span class="nb-go">${esc(x.cta)}</span>`:x.chip?`<span class="nb-chip">${esc(x.chip)}</span>`:""}</button>`;
+      const hRow=j=>`<button type="button" class="nb-job" data-u="/jobs/${esc(j.id)}"><span class="nb-ic"><i class="ti ${j.status==="completed"?"ti-circle-check":"ti-circle-x"}"></i></span><span class="nb-jt"><b class="nt">${esc(j.side==="technician"?j.car:j.techName)}</b><small class="nt">${esc(j.car)} · ${new Date(j.updatedAt||j.createdAt).toLocaleDateString(LOC,{day:"numeric",month:"short"})}</small></span><span class="nb-chip">${j.expired?T("หมดเวลา","Expired"):STATUS[j.status]||j.status}</span></button>`;
+      const sec=(t,n,rows)=>rows.length?`<p class="jw-sec"><span>${t}</span>${n?`<em>${n}</em>`:""}</p><div class="jw-list">${rows.join("")}</div>`:"";
+      const any=H.act.length||H.live.length||hist.length;
+      sheet({title:T("งานทั้งหมด","All jobs"),url,body:msgs+(any?sec(T("ต้องทำตอนนี้","Needs you"),H.act.length,H.act.map(row))+sec(T("กำลังดำเนินการ","In progress"),0,H.live.map(row))+sec(T("จบแล้ว","Finished"),0,hist.map(hRow))
+        :'<div class="empty"><i class="ti ti-clipboard"></i><b>ยังไม่มีงาน</b>เลือกช่างแล้วกดขอราคา</div>'),
+        mount(b){b.querySelectorAll("[data-u]").forEach(x=>x.onclick=()=>Nav.go(x.dataset.u));
+          b.querySelectorAll("[data-th]").forEach(x=>x.onclick=()=>openThread(x.dataset.th));
+          b.querySelector("[data-inbox]")?.addEventListener("click",()=>inbox())}});
+      return;
+    }
     sheet({title:all?"งานทั้งหมด":"งานของฉัน",url,body:msgs+(L.length?L.map((j,i)=>{
       const cls=["completed"].includes(j.status)?"ok":["cancelled","disputed"].includes(j.status)?"bad":j.needsMe?"act":"";
       const role=j.side==="technician"?'<span class="pill">ลูกค้าส่งมา</span> ':"";
@@ -6106,7 +6205,8 @@ async function jobs(all){
         b.querySelector("[data-inbox]")?.addEventListener("click",()=>inbox())}});
   }catch(e){$("bsB").innerHTML=`<div class="empty"><i class="ti ti-cloud-off"></i><b>${esc(e.message)}</b></div>`}
 }
-$("bJobs").onclick=()=>jobs();
+/* งานของฉันอยู่ในกระดิ่งแล้ว — ปุ่มเดิมเปิดแผงกระดิ่ง (ไม่มีกระดิ่งบนจอ = เปิดรายการงานทั้งหมด) */
+$("bJobs").onclick=()=>{const b=window.CendonBell&&CendonBell.buttons().find(x=>x.offsetParent);if(b)CendonBell.panel(b);else jobs()};
 
 /* ═══ ใบงาน ═══ */
 const FLOW=[["requested","ขอราคา","ti-send"],["quoted","ได้ราคา","ti-receipt"],["accepted","นัดแล้ว","ti-calendar-check"],["working","ซ่อม","ti-tool"],["completed","เสร็จ","ti-circle-check"]];
@@ -6284,7 +6384,29 @@ function drawJob(j,push){
       technician:tech?T("คุณยกเลิกงานนี้","You cancelled this job"):T("ร้านยกเลิกงานนี้","The shop cancelled this job"),
       admin:T("ทีมงาน Cendon ยกเลิกงานนี้","Cendon staff cancelled this job"),system:T("ระบบปิดคำขอนี้","The system closed this request")}[j.cancelledBy]||"";
   const why=s==="cancelled"?String(j.resolution||"").replace(/^ยกเลิก:\s*/,""):"";
-  const track=s==="cancelled"?`<p class="pill bad" style="margin-bottom:${byWho||why?6:14}px">ยกเลิกแล้ว</p>${byWho||why?`<p class="note" style="margin:0 0 14px">${esc([byWho,why&&T("เหตุผล","Reason")+": "+why].filter(Boolean).join(" · "))}</p>`:""}`:`<div class="track">${FLOW.map(([k,l,ic],i)=>`<div class="s ${i<=rk?"done":""} ${i===rk&&s!=="completed"?"now":""}"><i class="ti ${ic}"></i>${l}</div>`).join("")}</div>`;
+  /* หัวใบงาน: สถานะนี้แปลว่าอะไร และต่อไปต้องทำอะไร — แยกคำตามฝั่งที่ดู (ลูกค้า / ร้าน) */
+  const asCust=cust&&!tech,appt=q&&q.appointment||j.requestedTime||"",apptTxt=appt?T(`นัด ${appt}`,`Appointment: ${appt}`)+" · ":"";
+  const HERO={
+    requested:asCust?[T("รอร้านส่งราคา","Waiting for a quote"),T("ร้านจะเสนอราคาในแอป เราแจ้งเตือนทันทีที่ได้ราคา · ยังไม่มีค่าใช้จ่ายจนกว่าคุณจะยืนยัน","The shop will quote in the app and we'll notify you · nothing to pay until you accept")]
+      :[T("คำขอราคาใหม่","New quote request"),T("อ่านอาการแล้วเสนอราคา · เบอร์และที่อยู่ลูกค้าเปิดเมื่อลูกค้ายืนยันราคา","Read the problem and send a quote · the customer's phone and address unlock once they accept")],
+    quoted:asCust?[T(`ได้ราคา ฿${money(q&&q.total)}`,`Quote: ฿${money(q&&q.total)}`),T("ตรวจรายละเอียดด้านล่างแล้วกดยืนยันราคา · ร้านจะเห็นที่อยู่และเบอร์ของคุณหลังยืนยันเท่านั้น","Check the details below, then accept · the shop sees your address and phone only after you accept")]
+      :[T(`เสนอราคาแล้ว ฿${money(q&&q.total)}`,`Quote sent: ฿${money(q&&q.total)}`),T("รอลูกค้ายืนยัน · แก้ราคาได้จนกว่าลูกค้าจะยืนยัน","Waiting for the customer · you can edit it until they accept")],
+    accepted:asCust?[T("นัดแล้ว","Booked"),apptTxt+(j.mode==="mobile"?T("ช่างออกเดินทางเมื่อไร คุณจะเห็นช่างบนแผนที่ทันที","You'll see the mechanic on the map once they set off"):T("นำรถเข้าร้านตามนัด","Bring the car to the shop at the appointment"))]
+      :[T("ลูกค้ายืนยันราคาแล้ว","Customer accepted"),apptTxt+(j.mode==="mobile"?T("กด \"กำลังไป\" เมื่อออกเดินทาง ลูกค้าจะเห็นตำแหน่งคุณ","Tap \"On my way\" when you set off — the customer will see you"):T("รอลูกค้านำรถเข้าร้าน","Waiting for the customer to bring the car"))],
+    enroute:asCust?[T("ช่างกำลังมา","The mechanic is on the way"),T("พบกันแล้วตรวจว่าเป็นคนเดียวกับรูปโปรไฟล์ ก่อนบอกรหัสเริ่มงาน","When you meet, check it's the person in the profile photo before giving the start code")]
+      :[T("กำลังไปหาลูกค้า","Driving to the customer"),T("ถึงแล้วขอรหัสเริ่มงาน 4 หลักจากลูกค้า แล้วกดเริ่มซ่อม","On arrival, ask the customer for the 4-digit start code, then tap Start repair")],
+    working:asCust?[T("กำลังซ่อม","Repair in progress"),T("ถ้ามีงานเพิ่ม ช่างต้องเสนอราคาให้คุณยอมรับก่อนเสมอ","Any extra work needs your approval first")]
+      :[T("กำลังซ่อม","Repair in progress"),T("ทำครบแล้วกด \"ซ่อมเสร็จแล้ว\" · งานเปลี่ยนอะไหล่ต้องมีคลิปหลักฐาน 3 ช็อต","Tap Finished when done · parts jobs need the 3 proof clips")],
+    done:asCust?[T("ซ่อมเสร็จแล้ว — รอคุณตรวจ","Finished — please check"),T("ตรวจงานกับรถจริงก่อน แล้วกดยืนยันงาน · มีปัญหากดแจ้งปัญหาได้","Check the work on the car, then confirm · report a problem if something's wrong")]
+      :[T("ส่งงานแล้ว — รอลูกค้าตรวจ","Handed over — awaiting the customer"),T("ลูกค้าจะตรวจงานแล้วกดยืนยัน","The customer will check the work and confirm")],
+    completed:asCust?[T("งานเสร็จเรียบร้อย","Job complete"),j.review?T("ขอบคุณที่ให้คะแนน","Thanks for your review"):T("ให้คะแนนช่วยให้คนอื่นเลือกร้านได้ง่ายขึ้น","A rating helps others choose a shop")]
+      :[T("ลูกค้ายืนยันงานแล้ว","Customer confirmed the job"),T("งานนี้ปิดเรียบร้อย","This job is closed")],
+    cancelled:[T("ยกเลิกแล้ว","Cancelled"),[byWho,why&&T("เหตุผล","Reason")+": "+why].filter(Boolean).join(" · ")],
+    disputed:[T("แจ้งปัญหาแล้ว","Problem reported"),T("ทีมงาน Cendon กำลังดูเรื่องนี้และจะติดต่อกลับ","Cendon staff are reviewing this and will get back to you")]}[s]||[STATUS[s]||s,""];
+  const steps=s==="cancelled"?"":`<ol class="jw-steps" aria-label="${T("ขั้นตอนงาน","Job progress")}">${FLOW.map(([k,l,ic],i)=>{const at=s==="done"?4:rk,done=i<at||s==="completed",now=i===at&&s!=="completed";
+    return `<li class="${done?"done":now?"now":""}"${now?' aria-current="step"':""}><i class="ti ${done?"ti-check":ic}"></i><span>${l}</span></li>`}).join("")}</ol>`;
+  const hero=`<section class="jw-hero s-${s}"><p class="jw-eye"><i class="jw-dot"></i>${j.test?T("ทดสอบ","Test")+" · ":""}${HERO[0]===(STATUS[s]||s)?`<b class="nt">${esc(j.car)}</b>`:`${esc(STATUS[s]||s)}<span class="nt">${esc(j.car)}</span>`}</p>
+    <h2 class="jw-h">${esc(HERO[0])}</h2>${HERO[1]?`<p class="jw-sub">${esc(HERO[1])}</p>`:""}${steps}<span class="jw-fresh" id="jFresh" role="status" aria-live="polite"></span></section>`;
   const other=cust&&!tech?j.techName:tech&&!cust?T("ลูกค้า","Customer"):j.techName;
   const unread=(j.messages||[]).length;
   /* ปุ่มหลักตามสถานะ — ในแต่ละขั้นมีสิ่งที่ต้องทำอย่างเดียว คนจะได้ไม่ต้องคิด */
@@ -6309,37 +6431,53 @@ function drawJob(j,push){
   if(cust&&!tech&&s==="completed")more.push(["report","แจ้งร้านนี้ให้ทีมงานตรวจ"]);
   const phone=cust&&!tech?j.technicianPhone:j.customerPhone;
   const liveCard=s==="enroute"&&j.mode==="mobile"?`<div class="lv wait" id="jLive"><div class="lv-map"></div><div class="lv-info"><span class="lv-ic"><i class="ti ti-truck"></i></span><div><p class="lv-eta"><b>${T("รอตำแหน่งช่าง","Waiting for location")}</b></p><small class="lv-sub"></small></div></div>${tech&&!cust?`<p class="lv-note"><i class="ti ti-shield-lock"></i>${T("ลูกค้าเห็นตำแหน่งคุณเฉพาะตอนกำลังไป · หยุดเองเมื่อเริ่มซ่อม · เปิดแอปค้างไว้ระหว่างเดินทาง","The customer sees you only while you're on the way · stops when you start the repair · keep the app open while driving")}</p>`:`<p class="lv-note"><i class="ti ti-info-circle"></i>${T("เวลาถึงเป็นค่าประมาณจากระยะทาง","Arrival time is estimated from distance")}</p>`}</div>`:"";
-  sheet({push,job:true,full:true,url:"/jobs/"+encodeURIComponent(j.id),title:(j.test?"ทดสอบ · ":"")+(STATUS[s]||s),body:`
-    ${track}${liveCard}
-    <div class="who e3">${WF}<span class="av sq" style="--c1:${PALETTE[j.id.charCodeAt(0)%PALETTE.length]}${cust&&!tech&&j.techAvatar?`;background-image:url('${img(j.techAvatar)}')`:""}">${cust&&!tech&&j.techAvatar?"":initial(other)}</span><div><b>${esc(other)}</b><small>${esc(j.car)}${cust&&!tech&&j.techVetting?` · ยืนยันตัวตนแล้ว${(j.techVetting.cats||[]).length?" · ตรวจทักษะ "+esc(j.techVetting.cats.map(c=>CAT[c]?CAT[c].th:c).join(", ")):""}`:""}</small></div>
-      ${phone&&/^0\d{8,9}$/.test(phone)?`<a class="ic" href="tel:${esc(phone)}" aria-label="โทร"><i class="ti ti-phone"></i></a>`:""}
-      <button class="ic" id="jChat" aria-label="แชต"><i class="ti ti-message-circle"></i>${unread?`<span class="dot">${unread}</span>`:""}</button></div>
-    ${q?`<div class="quote"><span class="pill act">ราคา</span><div class="tot">฿${money(q.total)}</div><div class="ln"><span>ค่าแรง ${money(q.labor)}</span><span>อะไหล่ ${money(q.parts)}</span><span>เดินทาง ${money(q.travel)}</span></div><p>${esc(q.scope)}</p>${q.partsNote?`<p class="note" style="margin:8px 0 0"><i class="ti ti-package"></i>อะไหล่: ${esc(q.partsNote)}${q.partsUsed?" · <b>มือสอง</b>":""}</p>`:""}<p class="note" style="margin:8px 0 0"><i class="ti ti-calendar"></i>${esc(q.appointment)} · รับประกัน ${q.warranty} วัน</p></div>${window.CendonProof?CendonProof.plainCard(j):""}`:""}
-    ${cust&&j.startCode?`<div class="sc"><small>รหัสเริ่มงาน</small><b class="nt">${esc(j.startCode)}</b>
-      <p>บอกรหัสนี้กับช่าง<b>หลังพบกันแล้ว</b> — ตรวจว่าเป็นคนเดียวกับรูปโปรไฟล์ และตรวจรายละเอียดงานกับราคาก่อน · ใช้ได้ครั้งเดียว · หมดอายุ ${new Date(j.startCodeExp).toLocaleDateString(LOC,{day:"numeric",month:"short"})}</p>
-      <button class="lnk" data-a="newcode">ขอรหัสใหม่</button></div>`:""}
-    ${tech&&!cust&&j.startCodeRequired?'<p class="note"><i class="ti ti-key"></i>เมื่อพบลูกค้า ขอ "รหัสเริ่มงาน" 4 หลักจากลูกค้า แล้วกดเริ่มซ่อม</p>':""}
-    ${(j.extras||[]).length?`<div class="ext"><p class="h4" style="margin-top:0">งานเพิ่ม</p>${j.extras.map(x=>`<div class="ext-i ${x.status}"><div><b class="nt">${esc(x.desc)}</b><small>ค่าแรง ${money(x.labor)} · อะไหล่ ${money(x.parts)}</small></div><span>฿${money(x.total)}</span>
-      ${x.status==="pending"?(cust?`<div class="ext-a"><button class="btn s" data-a="extra_no:${esc(x.id)}">ไม่ทำเพิ่ม</button><button class="btn p" data-a="extra_ok:${esc(x.id)}">ยอมรับ +฿${money(x.total)}</button></div>`:'<em>รอลูกค้าตอบ</em>'):`<em>${x.status==="accepted"?"ลูกค้ายอมรับแล้ว":"ลูกค้าไม่ทำเพิ่ม"}</em>`}</div>`).join("")}
-      <p class="ext-t"><span>ยอดที่ตกลงแล้ว</span><b>฿${money(j.agreedTotal)}</b></p></div>`:""}
+  const dt=(v,o)=>new Date(v).toLocaleString(LOC,o||{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
+  const ok=(j.extras||[]).filter(x=>x.status==="accepted"),agreed=j.agreedTotal||(q?q.total+ok.reduce((a,x)=>a+(x.total||0),0):0);
+  const gal=(list,t)=>(list||[]).length?`<p class="jw-gt">${t}</p><div class="gal">${list.map(u=>`<img src="${u}" data-z="${u}" alt=""/>`).join("")}</div>`:"";
+  const vet=cust&&!tech&&j.techVetting?`<span class="jw-badges"><span><i class="ti ti-rosette-discount-check-filled"></i>ยืนยันตัวตนแล้ว</span>${(j.techVetting.cats||[]).length?`<span>ตรวจทักษะ ${esc(j.techVetting.cats.map(c=>CAT[c]?CAT[c].th:c).join(", "))}</span>`:""}</span>`:"";
+  sheet({push,job:true,full:true,url:"/jobs/"+encodeURIComponent(j.id),title:(j.test?"ทดสอบ · ":"")+T("ใบงาน","Job"),body:`<div class="jw">
+    ${hero}${liveCard}
+    ${cust&&j.startCode?`<section class="jw-card jw-code"><div class="jw-ch"><i class="ti ti-key"></i><b>รหัสเริ่มงาน</b><button class="lnk" data-a="newcode">ขอรหัสใหม่</button></div>
+      <div class="jw-digits nt" aria-label="${esc(j.startCode.split("").join(" "))}">${j.startCode.split("").map(d=>`<span>${esc(d)}</span>`).join("")}</div>
+      <p>บอกรหัสนี้กับช่าง<b>หลังพบกันแล้ว</b> — ตรวจว่าเป็นคนเดียวกับรูปโปรไฟล์ และตรวจรายละเอียดงานกับราคาก่อน · ใช้ได้ครั้งเดียว${j.startCodeExp?` · หมดอายุ ${new Date(j.startCodeExp).toLocaleDateString(LOC,{day:"numeric",month:"short"})}`:""}</p></section>`:""}
+    ${tech&&!cust&&j.startCodeRequired?'<p class="jw-note"><i class="ti ti-key"></i><span>เมื่อพบลูกค้า ขอ "รหัสเริ่มงาน" 4 หลักจากลูกค้า แล้วกดเริ่มซ่อม</span></p>':""}
+    <section class="jw-card jw-who">${WF}<span class="av sq nt" style="--c1:${PALETTE[j.id.charCodeAt(0)%PALETTE.length]}${cust&&!tech&&j.techAvatar?`;background-image:url('${img(j.techAvatar)}')`:""}">${cust&&!tech&&j.techAvatar?"":initial(other)}</span>
+      <span class="jw-wt"><small>${asCust?(["requested","quoted"].includes(s)?T("ร้านที่เสนอราคา","Quoting shop"):T("ร้านที่รับงาน","Your mechanic")):T("ลูกค้า","Customer")}</small><b class="nt">${esc(other)}</b>${vet}</span>
+      <span class="jw-wa">${phone&&/^0\d{8,9}$/.test(phone)?`<a class="jw-ib" href="tel:${esc(phone)}" aria-label="โทร"><i class="ti ti-phone"></i></a>`:""}
+      <button class="jw-ib p" id="jChat" type="button" aria-label="แชต"><i class="ti ti-message-circle"></i>${unread?`<span class="dot">${unread}</span>`:""}</button></span></section>
+    ${q?`<section class="jw-card jw-price"><div class="jw-ph"><span>${s==="quoted"?T("ราคาที่เสนอ","Quoted price"):T("ราคาที่ตกลงแล้ว","Agreed price")}</span><b>฿${money(ok.length?agreed:q.total)}</b></div>
+      <dl class="jw-lines"><div><dt>ค่าแรง</dt><dd>฿${money(q.labor)}</dd></div><div><dt>อะไหล่</dt><dd>฿${money(q.parts)}</dd></div><div><dt>เดินทาง</dt><dd>฿${money(q.travel)}</dd></div>
+        ${ok.map(x=>`<div><dt>${T("งานเพิ่ม","Extra")}: <span class="nt">${esc(x.desc)}</span></dt><dd>฿${money(x.total)}</dd></div>`).join("")}</dl>
+      ${q.scope?`<p class="jw-scope nt">${esc(q.scope)}</p>`:""}
+      <div class="jw-tags">${q.partsNote?`<span><i class="ti ti-package"></i>อะไหล่: <b class="nt">${esc(q.partsNote)}</b>${q.partsUsed?" · มือสอง":""}</span>`:""}${q.appointment?`<span><i class="ti ti-calendar"></i><b class="nt">${esc(q.appointment)}</b></span>`:""}<span><i class="ti ti-shield-check"></i>รับประกัน ${q.warranty} วัน</span></div></section>
+      ${window.CendonProof?CendonProof.plainCard(j):""}`:""}
+    ${(j.extras||[]).some(x=>x.status!=="accepted")?`<section class="jw-card ext"><h3><i class="ti ti-square-plus"></i>${T("งานเพิ่มที่ช่างเสนอ","Extra work proposed")}</h3>${j.extras.filter(x=>x.status!=="accepted").map(x=>`<div class="ext-i ${x.status}"><div><b class="nt">${esc(x.desc)}</b><small>ค่าแรง ${money(x.labor)} · อะไหล่ ${money(x.parts)}</small></div><span>฿${money(x.total)}</span>
+      ${x.status==="pending"?(cust?`<div class="ext-a"><button class="btn s" data-a="extra_no:${esc(x.id)}">ไม่ทำเพิ่ม</button><button class="btn p" data-a="extra_ok:${esc(x.id)}">ยอมรับ +฿${money(x.total)}</button></div>`:'<em>รอลูกค้าตอบ</em>'):`<em>ลูกค้าไม่ทำเพิ่ม</em>`}</div>`).join("")}
+      <p class="ext-t"><span>ยอดที่ตกลงแล้ว</span><b>฿${money(agreed)}</b></p></section>`:""}
     ${window.CendonProof?CendonProof.card(j):""}
-    ${tech&&!cust&&s==="done"&&j.noreplyFrom&&Date.now()<j.noreplyFrom?`<p class="note"><i class="ti ti-clock"></i>ถ้าลูกค้ายังไม่ยืนยันงาน กด "ลูกค้าไม่ตอบ" ได้ตั้งแต่ ${new Date(j.noreplyFrom).toLocaleString(LOC,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})} ทีมงานจะช่วยดูแล และงานนี้จะไม่นับเป็นงานค้าง</p>`:""}
-    ${(j.photosBefore||[]).length?`<p class="h4">รูปก่อนเริ่มซ่อม</p><div class="gal">${j.photosBefore.map(u=>`<img src="${u}" data-z="${u}" alt=""/>`).join("")}</div>`:""}
-    ${(j.photosAfter||[]).length?`<p class="h4">รูปหลังซ่อมเสร็จ</p><div class="gal">${j.photosAfter.map(u=>`<img src="${u}" data-z="${u}" alt=""/>`).join("")}</div>`:""}
-    <div class="kv"><p><span>อาการ</span><b>${esc(j.symptom)}</b></p><p><span>ซ่อมที่</span><b>${j.mode==="mobile"?"ช่างมาหา":"ที่อู่"}</b></p><p><span>เวลา</span><b>${esc(j.requestedTime)}</b></p><p><span>พื้นที่</span><b>${esc(j.area)}</b></p>${j.address?`<p><span>ที่อยู่</span><b>${esc(j.address)}</b></p>`:""}</div>
-    ${j.note?`<div class="kv"><p><span>${T("ลูกค้าบอกเพิ่ม","Customer's note")}</span><b class="nt">${esc(j.note)}</b></p></div>`:""}
-    ${(j.photos||[]).length?`<div class="gal">${j.photos.map(u=>`<img src="${u}" data-z="${u}" alt=""/>`).join("")}</div>`:""}
-    ${j.completion?`<div class="kv"><p><span>สรุปงาน</span><b>${esc(j.completion)}</b></p></div>`:""}
-    ${j.dispute?`<div class="kv"><p><span>ปัญหา</span><b style="color:var(--danger)">${esc(j.dispute)}</b></p>${j.resolution?`<p><span>ผล</span><b>${esc(j.resolution)}</b></p>`:""}</div>`:""}
-    ${j.review?`<div class="kv"><p><span>คะแนน</span><b>${"★".repeat(j.review.rating)}${"☆".repeat(5-j.review.rating)}</b></p><p><span>รีวิว</span><b>${esc(j.review.text)}</b></p></div>`:""}
-    ${!j.acceptedAt&&tech&&!cust?'<p class="note"><i class="ti ti-lock"></i>เบอร์และที่อยู่ลูกค้าจะเปิดเมื่อลูกค้ายืนยันราคา</p>':""}
-    ${!["completed","cancelled"].includes(s)?'<div data-line-connect="nudge" style="display:none;margin:12px 0"></div>':""}
-    ${safe?`<div class="safe"><p class="h4" style="margin-top:0"><i class="ti ti-shield-heart"></i> ความปลอดภัย</p>
-      <button class="jl" data-a="share"><span class="av sq" style="--c1:#0d9488"><i class="ti ti-share"></i></span><span class="jb"><b>แชร์ใบงานให้คนที่ไว้ใจ</b><small>${j.share?`ลิงก์ใช้งานอยู่ ถึง ${new Date(j.share.expiresAt).toLocaleString(LOC,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})} · กดเพื่อส่งอีกครั้ง`:"เห็นชื่อช่าง รูป รถ เวลานัด และสถานะ (ไม่มีที่อยู่/เบอร์) · ลิงก์อายุ 24 ชม."}</small></span><i class="ti ti-chevron-right"></i></button>
-      ${j.share?'<button class="lnk safe-x" data-a="unshare">ยกเลิกลิงก์ที่แชร์</button>':""}
-      <button class="jl" data-a="dispute"><span class="av sq" style="--c1:#b45309"><i class="ti ti-flag"></i></span><span class="jb"><b>แจ้งปัญหาให้ทีมงาน</b><small>เปิดเรื่องพร้อมรายละเอียด ทีมงานติดต่อกลับ (ไม่ได้เฝ้าระวังตลอด 24 ชม.)</small></span><i class="ti ti-chevron-right"></i></button>
-      <a class="jl" href="tel:191"><span class="av sq" style="--c1:#b91c1c"><i class="ti ti-phone-call"></i></span><span class="jb"><b>โทร 191 · เหตุด่วนเหตุร้าย</b><small>โทรออกจริงถึงตำรวจ ใช้เมื่อไม่ปลอดภัย</small></span></a></div>`:""}
-    ${more.length?`<div class="seg" style="margin-top:6px">${more.map(([k,l])=>`<button data-a="${k}" style="color:var(--muted)">${l}</button>`).join("")}</div>`:""}`,
+    ${tech&&!cust&&s==="done"&&j.noreplyFrom&&Date.now()<j.noreplyFrom?`<p class="jw-note"><i class="ti ti-clock"></i><span>ถ้าลูกค้ายังไม่ยืนยันงาน กด "ลูกค้าไม่ตอบ" ได้ตั้งแต่ ${dt(j.noreplyFrom)} ทีมงานจะช่วยดูแล และงานนี้จะไม่นับเป็นงานค้าง</span></p>`:""}
+    ${j.completion||j.dispute||j.review||(j.photosBefore||[]).length||(j.photosAfter||[]).length?`<section class="jw-card"><h3><i class="ti ti-clipboard-check"></i>${T("ผลงาน","Work result")}</h3>
+      <ul class="jw-kv">${j.completion?`<li><i class="ti ti-tool"></i><span>สรุปงาน</span><b class="nt">${esc(j.completion)}</b></li>`:""}
+        ${j.dispute?`<li><i class="ti ti-flag"></i><span>ปัญหา</span><b class="nt" style="color:var(--danger)">${esc(j.dispute)}</b></li>${j.resolution?`<li><i class="ti ti-gavel"></i><span>ผล</span><b class="nt">${esc(j.resolution)}</b></li>`:""}`:""}
+        ${j.review?`<li><i class="ti ti-star"></i><span>คะแนน</span><b><span class="jw-stars">${"★".repeat(j.review.rating)}${"☆".repeat(5-j.review.rating)}</span>${j.review.text?`<span class="jw-rv nt">${esc(j.review.text)}</span>`:""}</b></li>`:""}</ul>
+      ${gal(j.photosBefore,"รูปก่อนเริ่มซ่อม")}${gal(j.photosAfter,"รูปหลังซ่อมเสร็จ")}</section>`:""}
+    <section class="jw-card"><h3><i class="ti ti-file-description"></i>${T("รายละเอียดงาน","Job details")}</h3>
+      <ul class="jw-kv"><li><i class="ti ti-car"></i><span>${T("รถ","Car")}</span><b class="nt">${esc(j.car)}</b></li>
+        <li><i class="ti ti-stethoscope"></i><span>อาการ</span><b class="nt">${esc(j.symptom)}</b></li>
+        <li><i class="ti ti-${j.mode==="mobile"?"truck":"building-store"}"></i><span>ซ่อมที่</span><b>${j.mode==="mobile"?"ช่างมาหา":"ที่อู่"}</b></li>
+        <li><i class="ti ti-clock"></i><span>เวลา</span><b class="nt">${esc(j.requestedTime)}</b></li>
+        <li><i class="ti ti-map-pin"></i><span>พื้นที่</span><b class="nt">${esc(j.area)}</b></li>
+        ${j.address?`<li><i class="ti ti-home"></i><span>ที่อยู่</span><b class="nt">${esc(j.address)}</b></li>`:""}
+        ${j.note?`<li><i class="ti ti-notes"></i><span>${T("ลูกค้าบอกเพิ่ม","Customer's note")}</span><b class="nt">${esc(j.note)}</b></li>`:""}</ul>
+      ${(j.photos||[]).length?`<div class="gal" style="margin-top:10px">${j.photos.map(u=>`<img src="${u}" data-z="${u}" alt=""/>`).join("")}</div>`:""}
+      ${!j.acceptedAt&&tech&&!cust?`<p class="jw-lock"><i class="ti ti-lock"></i>เบอร์และที่อยู่ลูกค้าจะเปิดเมื่อลูกค้ายืนยันราคา</p>`:""}</section>
+    ${!["completed","cancelled"].includes(s)?'<div data-line-connect="nudge" style="display:none;margin:0 0 12px"></div>':""}
+    ${safe?`<section class="jw-card jw-safe"><h3><i class="ti ti-shield-heart"></i>ความปลอดภัย</h3>
+      <button class="jw-row" data-a="share" type="button"><span class="ri" style="--c:#0d9488"><i class="ti ti-share"></i></span><span class="rt"><b>แชร์ใบงานให้คนที่ไว้ใจ</b><small>${j.share?`ลิงก์ใช้งานอยู่ ถึง ${dt(j.share.expiresAt)} · กดเพื่อส่งอีกครั้ง`:"เห็นชื่อช่าง รูป รถ เวลานัด และสถานะ (ไม่มีที่อยู่/เบอร์) · ลิงก์อายุ 24 ชม."}</small></span><i class="ti ti-chevron-right"></i></button>
+      ${j.share?'<button class="lnk safe-x" data-a="unshare" type="button">ยกเลิกลิงก์ที่แชร์</button>':""}
+      <button class="jw-row" data-a="dispute" type="button"><span class="ri" style="--c:#b45309"><i class="ti ti-flag"></i></span><span class="rt"><b>แจ้งปัญหาให้ทีมงาน</b><small>เปิดเรื่องพร้อมรายละเอียด ทีมงานติดต่อกลับ (ไม่ได้เฝ้าระวังตลอด 24 ชม.)</small></span><i class="ti ti-chevron-right"></i></button>
+      <a class="jw-row" href="tel:191"><span class="ri" style="--c:#b91c1c"><i class="ti ti-phone-call"></i></span><span class="rt"><b>โทร 191 · เหตุด่วนเหตุร้าย</b><small>โทรออกจริงถึงตำรวจ ใช้เมื่อไม่ปลอดภัย</small></span></a></section>`:""}
+    ${more.length?`<div class="jw-more">${more.map(([k,l])=>`<button type="button" data-a="${k}">${l}</button>`).join("")}</div>`:""}</div>`,
     foot:A.map(([k,l,c])=>`<button class="btn ${c}" data-a="${k}">${esc(l)}</button>`).join(""),
     mount(b,f){
       $("jChat").onclick=()=>openChat(j);
@@ -6369,10 +6507,12 @@ function drawJob(j,push){
   const watch=()=>{jobTimer=setTimeout(async()=>{
     if(!JOB||JOB.id!==j.id||$("chat").classList.contains("on")||!(SH.cur&&SH.cur.job)){if(JOB&&JOB.id===j.id)watch();return}
     try{const d=await api(`/api/tech/jobs/${j.id}/messages?after=${1e12}`);
-      if(d.revision!==JOB.rev){const nj=(await api("/api/tech/jobs/"+j.id)).job;if(JOB&&JOB.id===j.id){const st=SH.stack;drawJob(nj,false);SH.stack=st;$("bsBack").hidden=!st.length;toast("ใบงานอัปเดตแล้ว","ti-bell")}return}}catch(e){}
+      if(d.revision!==JOB.rev){const nj=(await api("/api/tech/jobs/"+j.id)).job;if(JOB&&JOB.id===j.id){const st=SH.stack;drawJob(nj,false);SH.stack=st;$("bsBack").hidden=!st.length;jobFresh()}return}}catch(e){}
     watch()},document.hidden?15000:4000)};
   watch();
 }
+/* อีกฝ่ายเปลี่ยนใบงาน → บอกในหัวใบงานสั้น ๆ (เดิมเด้งข้อความลอยทับรายละเอียดด้านล่าง) */
+function jobFresh(){const f=$("jFresh");if(!f)return;f.innerHTML=`<i class="ti ti-refresh"></i>${T("ใบงานอัปเดตเมื่อสักครู่","Job just updated")}`;f.classList.add("on");clearTimeout(jobFresh.t);jobFresh.t=setTimeout(()=>f.classList.remove("on"),5000)}
 /* ให้ repair-proof.js เรียก API/วาดใบงานใหม่/แจ้งเตือน ด้วยเครื่องมือเดียวกับใบงาน */
 function proofCtx(j){return {api,toast,busy,refresh:async()=>{try{const nj=(await api("/api/tech/jobs/"+j.id)).job;if(JOB&&JOB.id===j.id){const st=SH.stack;drawJob(nj,false);SH.stack=st;$("bsBack").hidden=!st.length}}catch(e){}}}}
 const quoteCurrencyNote=()=>`<p class="note" data-no-prefs><i class="ti ti-cash"></i>${T("กรอกราคาเป็นเงินบาท (THB) ทุกช่อง · สกุลเงินในการตั้งค่าใช้แสดงยอดประมาณการเท่านั้น ไม่เปลี่ยนหน่วยของใบเสนอราคา","Enter every amount in Thai baht (THB). Your display currency only changes estimates, not the quote currency.")}</p>`;

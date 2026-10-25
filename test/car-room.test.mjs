@@ -20,7 +20,7 @@ test('one scroll page, no tabs: three blocks, full details open as sheets, old t
   assert.doesNotMatch(nav,/#clTabs/);
   /* "info" ยังเป็นหน้าต่างข้อมูลเพิ่มเติมของรถ (/garage/<รถ>/info) แผ่นข้อมูลรถจึงใช้ชื่อ about */
   assert.match(nav,/path:":car\/info"/);
-  for(const f of ['garage.html','news.html','profile.html','spares.html'])assert.match(r(f),/nav-pages\.js\?v=4/,f);
+  for(const f of ['garage.html','news.html','profile.html','spares.html'])assert.match(r(f),/nav-pages\.js\?v=5/,f);
 });
 
 test('a new car gets a 2-step start card instead of 13 empty items; Car Passport is explained in plain words',()=>{

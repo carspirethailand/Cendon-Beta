@@ -6,6 +6,7 @@ let config=null,polling=false;const fetching=new Map();
 const terminal=j=>['complete','error','cancelled'].includes(j?.status);
 const valid=j=>j&&/^[a-f0-9-]{36}$/.test(j.id||'')&&/^[\w-]{1,100}$/.test(j.carId||'')&&/^s[a-z0-9]{8,60}$/i.test(j.sessionId||'');
 function user(){return config?.user?.()||(W.spireAuth||W.auth)?.currentUser||null}
+const onChat=()=>/^\/chat(?:\.html)?\/?$/.test(location.pathname);
 function mine(uid){return user()?.uid===uid&&(!W.CendonScope||W.CendonScope.mine(uid))}
 function cached(uid){try{if(!mine(uid))return [];const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d?.uid!==uid||!Array.isArray(d.jobs))return [];const rows=d.jobs.filter(j=>valid(j)&&j.savedAt>Date.now()-7*DAY);if(rows.length!==d.jobs.length)save(uid,rows);return rows}catch{return []}}
 function save(uid,jobs){if(!mine(uid))return;const rows=jobs.slice(0,20);do{try{localStorage.setItem(KEY,JSON.stringify({uid,jobs:rows}));return}catch{rows.pop()}}while(rows.length)}
@@ -19,7 +20,8 @@ async function call(uid,path,body){const u=user();if(!mine(uid))throw Object.ass
 }
 function accept(job,uid,onUpdate){
   if(!valid(job)||!mine(uid))return;
-  const view=!!config?.viewing?.(job)&&!D.hidden,rows=cached(uid),old=rows.find(j=>j.id===job.id);
+  /* อยู่ในหน้าแชต AI และจอเปิดอยู่ = ผู้ใช้เห็นคำตอบเอง ไม่ต้องแจ้งว่า "AI ตอบแล้ว" (ไม่ว่าจะเปิดบทสนทนาไหนอยู่) */
+  const view=!D.hidden&&(!!config?.viewing?.(job)||onChat()),rows=cached(uid),old=rows.find(j=>j.id===job.id);
   if(terminal(job)){
     // Keep a bounded result, not the original request, attachments or credentials.
     const row={id:job.id,carId:job.carId,sessionId:job.sessionId,status:job.status,text:String(job.text||'').slice(0,160000),research:(job.research||[]).slice(0,12),usage:job.usage,expiresAt:job.expiresAt,savedAt:Date.now(),notice:old?.notice||view||job.status==='cancelled'};

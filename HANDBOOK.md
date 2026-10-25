@@ -1172,6 +1172,7 @@ for f in index garage news profile spares chat; do printf '%-8s %s\n' $f "$(grep
 | `carspec.js` · `car-sync.js` · `garage-*.js` · `mileage-*.js` | สเปกรถ · ซิงก์รถ · กติกาการาจ · เลขไมล์ |
 | `cendon-line.js` · `partner-*.js` · `tech-marketplace.js` | LINE · การ์ดสมัครช่าง · ตลาดช่าง |
 | `cloud-swap.js` · `stability.js` · `input-guard.js` · `mobile-ui.js` | สลับข้อมูลคลาวด์ · กันหน้ากระตุก · กันอินพุตผิด · UI มือถือ |
+| `map-atlas.js` · `map-atlas.css` | หน้าแผนที่ `/map` (MapLibre สีของแอป · หมุด/กลุ่มร้าน · ตัวกรอง · แผ่นล่าง 3 ขั้น · เลเยอร์ · โหมดด่วน · ช่างกำลังมา · จุดจอดรถ) โหลดเมื่อเปิดแผนที่ · ข้อมูลทั้งหมดมาจาก index.html ผ่าน `atlasApi()` ไม่เรียก API เอง · เครื่องไม่มี WebGL → แผนที่ Leaflet เดิม |
 
 ## 10.4 เส้นทางในเว็บ
 

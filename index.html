@@ -16,7 +16,7 @@ html.ib-boot .bs .pn,html.ib-boot .bs .bg{transition:none!important}</style>
 <script src="/shop-images.js?v=1"></script>
 <script src="/display-prefs.js?v=3" defer></script>
 <script src="/i18n/ui-en.js?v=4" defer></script>
-<script src="/ui-language.js?v=7" defer></script>
+<script src="/ui-language.js?v=8" defer></script>
 <script src="/partner-entry.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
@@ -36,7 +36,7 @@ html.ib-boot .bs .pn,html.ib-boot .bs .bg{transition:none!important}</style>
 (function(){try{if(/^\/(work|studio)(\/|$)/.test(location.pathname)){var p=JSON.parse(localStorage.getItem("spire_partner")||"null");if(p&&p.s==="shop")document.documentElement.dataset.boot="tech"}}catch(e){}})();</script>
 <script>(function(){try{var A=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt"],l=null;try{l=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
 if(A.indexOf(l)<0){l="en";var n=navigator.languages||[navigator.language||"en"];for(var i=0;i<n.length;i++){var b=String(n[i]).toLowerCase().split("-")[0];if(A.indexOf(b)>=0){l=b;break}}}
-if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=21"><\/script>')}catch(e){}})();</script>
+if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=22"><\/script>')}catch(e){}})();</script>
 <title>Cendon</title>
 <meta name="description" content="ถามอาการรถ ส่งรูปหรือเสียงให้ AI ช่วยดู เช็กใบเสนอราคา และหาช่างที่ผ่านการตรวจใกล้คุณ">
 <!-- การ์ดตอนแชร์ลิงก์ (LINE / Facebook / X) — รูปต้องเป็นที่อยู่เต็ม -->
@@ -437,6 +437,11 @@ html[data-theme="dark"] .map .leaflet-tile-pane{filter:invert(1) hue-rotate(180d
 .pin b{transform:rotate(45deg);color:#fff;font-size:15px;font-weight:700}
 .pin.test{outline:2px dashed #fff;outline-offset:2px}
 .me-dot{width:18px;height:18px;border-radius:50%;background:#3b82f6;border:3px solid #fff;animation:pulse 2s infinite}
+/* แผนที่ใหม่ (map-atlas.js) วาดใน #atlas · ระหว่างนั้นซ่อนชิ้นของแผนที่เดิม (ยังเก็บไว้ใช้กับเครื่องที่ไม่มี WebGL) */
+.atl-host{position:absolute;inset:0;z-index:2;background:var(--surface-2)}
+.atl-host:empty::after{content:"";position:absolute;left:50%;top:45%;width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--co);animation:spin 1s linear infinite}
+#vMap.atl-on>#map,#vMap.atl-on>.mapback,#vMap.atl-on>.mfilt,#vMap.atl-on>.locate,#vMap.atl-on>.carousel{display:none}
+body.onmap.atl-map #mnav{display:none}
 
 /* ── แผ่นเลื่อนขึ้น ── */
 .bs{position:fixed;inset:0;z-index:1000;visibility:hidden}
@@ -2950,6 +2955,7 @@ a.mtab{text-decoration:none}
   <div class="mfilt" id="mFilt"></div>
   <button class="ic locate" id="bLocate" aria-label="My location"><i class="ti ti-current-location"></i></button>
   <div class="carousel" id="carousel"></div>
+  <div class="atl-host" id="atlas" hidden></div>
 </section>
 
 <div class="bs" id="bs" aria-hidden="true">
@@ -3634,9 +3640,9 @@ function setView(v,noHist){
   window.scrollTo(0,0);
   if(v==="map"){
     document.documentElement.style.setProperty("--mtop",$("top").offsetHeight+"px");
-    if(!MAP)initMap();else{MAP.invalidateSize();drawPins(true)}
-    renderCarousel();
+    showMap();
   }
+  document.body.classList.toggle("atl-map",v==="map"&&!!ATLAS);
   /* แผนที่เต็มจอมีที่อยู่ของตัวเอง (/map) — ปุ่มย้อนของเครื่องกลับมาหน้าเมนู */
   if(noHist)return;
   if(v==="map"&&!MAPL)MAPL=Nav.push({url:"/map",tag:"map",close:()=>{MAPL=null;setView("menu",true)}});
@@ -3660,7 +3666,32 @@ function drawMini(){
 }
 addEventListener("resize",()=>{if(VIEW==="map"){document.documentElement.style.setProperty("--mtop",$("top").offsetHeight+"px");MAP&&MAP.invalidateSize()}});
 
-/* ═══ แผนที่ ═══ */
+/* ═══ แผนที่ ═══
+   แผนที่ใหม่ (map-atlas.js: MapLibre สีของแอป หมุดร้าน ตัวกรอง แผ่นล่าง เลเยอร์ โหมดด่วน) ก่อน
+   เครื่องไม่มี WebGL / โหลดไม่ขึ้น → แผนที่เดิม (Leaflet + การ์ดเลื่อนข้าง) ข้างล่างนี้ */
+let ATLAS=null,ATLAS_P=null,ATLAS_OFF=false;
+function showMap(){
+  if(ATLAS){ATLAS.show();ATLAS.refresh();return}
+  if(ATLAS_OFF)return oldMap();
+  $("vMap").classList.add("atl-on");$("atlas").hidden=false;
+  if(!ATLAS_P)ATLAS_P=(async()=>{
+    try{
+      const M=await import("/map-atlas.js?v=1");if(!M.supported())throw Error("webgl");
+      ATLAS=await M.mount($("atlas"),atlasApi());
+      document.body.classList.toggle("atl-map",VIEW==="map");if(VIEW==="map")ATLAS.show();
+    }catch(e){console.warn("atlas",e&&e.message);ATLAS_OFF=true;$("vMap").classList.remove("atl-on");$("atlas").hidden=true;$("atlas").innerHTML="";if(VIEW==="map")oldMap()}
+  })();
+}
+function oldMap(){if(!MAP)initMap();else{MAP.invalidateSize();drawPins(true)}renderCarousel()}
+/* สิ่งที่แผนที่ใหม่ใช้จากหน้านี้ — ส่งเป็นฟังก์ชัน ไม่ให้ไฟล์แผนที่แตะตัวแปรของหน้าเอง */
+function atlasApi(){
+  return {T,esc,money,km,distTxt,colorOf,initial,openNow,vetFacts,isMine,cats:CAT,img:id=>API+"/api/tech/img/"+id,
+    techs:()=>TECHS,shown:o=>shown(o),here:()=>HERE,loaded:()=>LOADED,filter:()=>({cat:F.cat,q:F.q}),locate:()=>locate(),want3d:want3d(),
+    /* จุดจอดที่จำไว้ในการาจ (ของรถคันที่เลือก) — อ่านในเครื่องเท่านั้น */
+    parked:()=>{const cars=ls.get("spire_garage",[])||[],c=cars.find(x=>x&&x.id===ls.get("spire_selCar",""))||cars[0];return ls.get("spire_park_"+(c&&c.id||"none"),null)},
+    jobs:()=>JOBS_OK?JOBS:[],openJob:id=>openJob(id,true),openTech:id=>openTech(id),book:t=>book(t),message:t=>messageTech(t),
+    urgent:()=>urgentCall(),post:()=>Nav.go("/post"),ai:q=>aiDiag(q),back:()=>setView("menu")};
+}
 let MAP=null,LAYER=null,MELAYER=null,PINS={};
 function initMap(){
   if(MAP)return;
@@ -3785,6 +3816,7 @@ function render(){
 function renderCarousel(){
   try{drawMini()}catch(e){}
   if(VIEW!=="map")return;
+  if(ATLAS||ATLAS_P&&!ATLAS_OFF){ATLAS&&ATLAS.refresh();return}
   const l=shown(),c=$("carousel");
   $("mFilt").innerHTML=filtChip();$("mFilt").querySelector("[data-clear]")?.addEventListener("click",clearFilter);
   c.innerHTML=!LOADED?'<div class="skel" style="flex:0 0 86%"></div>':l.length?l.map(card).join(""):'<div class="empty"><b>ไม่มีช่างในบริเวณนี้</b></div>';
@@ -6010,6 +6042,7 @@ function refreshJobs(){
   POSTS=p.status==="fulfilled"?p.value.posts||[]:[];
   THREADS=t.status==="fulfilled"?t.value.threads||[]:[];
   renderActive();renderUsed();syncGarage();queueDot();saveSnap();try{LiveShare.sync()}catch(e){}
+  if(ATLAS&&VIEW==="map")ATLAS.refresh();
   try{bellDiff()}catch(e){}
   })().finally(()=>{RJ=null});
   return RJ;
@@ -7405,7 +7438,7 @@ function setTab2(t,fromNav){
 function applyMode(){
   const tech=MODE==="tech"||BOOT_TECH;
   if(BOOT_TECH&&MODE!=="tech"&&!$("dBody").dataset.boot){$("dBody").dataset.boot=1;if(!paintSnap())stuSkel()}
-  if(tech&&VIEW==="map"){VIEW="menu";document.body.classList.remove("onmap");$("vMap").hidden=true}
+  if(tech&&VIEW==="map"){VIEW="menu";document.body.classList.remove("onmap","atl-map");$("vMap").hidden=true}
   $("vMenu").hidden=tech||VIEW==="map";$("vTech").hidden=!tech;
   const sb=$("staff");if(sb&&ME&&ME.staff)sb.hidden=MODE!=="staff";
   document.body.dataset.mode=tech?"tech":MODE;

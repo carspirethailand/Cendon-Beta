@@ -79,7 +79,7 @@
 │spireone│ │CendonChatJobs│ │  (AI)     │ │ Gemini · Groq ·        │
 │        │ │คำตอบเบื้องหลัง │ │bge-m3     │ │ OpenRouter · LINE ·    │
 │ที่เก็บ  │ │ต่อบัญชี       │ │llama-4    │ │ Didit · Resend/Gmail · │
-│ตัวจริง  │ │(เข้ารหัส)     │ │(สำรอง/รูป) │ │ Brave · Tavily/Exa/    │
+│ตัวจริง  │ │(เข้ารหัส)     │ │(สำรอง/รูป) │ │ ค้นเว็บ: Tavily/Exa/    │
 │+ เวกเตอร์│ │              │ │           │ │ Firecrawl · Google Maps│
 └────────┘ └─────────────┘ └───────────┘ └──────────────────────┘
 ```
@@ -887,44 +887,48 @@ chatModels(env) = [GEMINI_CHAT_MODEL, GEMINI_SEARCH_MODEL, GEMINI_MODEL,
 
 ## 7.2 การค้นอินเทอร์เน็ต
 
-AI ค้นข้อมูลสดเมื่อ `needsFresh(คำถาม)` เป็นจริง (ถามราคา รุ่นใหม่ ข่าว ปี ฯลฯ)
-
-### แชตหลัก — `executeGoogleSearchTool()` ใน worker.js
-
-ใช้กับแชตสตรีม · แชตตอบทีเดียว · คำตอบเบื้องหลัง · แชตใน LINE
+AI ค้นเว็บผ่าน **Tavily · Exa · Firecrawl เท่านั้น** (`web-search.mjs` ใน backend) — เลิกใช้ Google Search ของ Gemini, DuckDuckGo, Bing RSS, Google News RSS, Brave และ Wikipedia ในการค้นของ AI แล้ว (25 ต.ค. 2569)
+แชตค้นเมื่อ `needsFresh(คำถาม)` เป็นจริง (ถามราคา รุ่นใหม่ ข่าว ปี ฯลฯ) · Gemini ไม่ได้รับเครื่องมือค้นเว็บ ผลค้นแนบไปใน system ก่อนเรียกครั้งเดียว
 
 ```
-คำค้น → publicQuery()   ยาวเกิน 240 ตัว หรือมีเบอร์ อีเมล ลิงก์ เลขตัวถัง พิกัด
-                         เลขบัตร/ทะเบียน คีย์/รหัสผ่าน = ไม่ค้นเลย (ไม่ส่งออกไปที่ไหน)
+คำถาม (+ ยี่ห้อ/รุ่น/ปีรถที่กำลังคุย ถ้าคำถามไม่ได้บอก)
    │
-   ├─ ตั้งคีย์ Tavily/Exa/Firecrawl ไว้ → searchWeb(mode: balanced)
-   │     สองเจ้าแรกพร้อมกัน รวมผลด้วย RRF ตัดซ้ำ ≤ 2 ผลต่อเว็บ ใส่เลขอ้างอิง [n]
-   │     ได้ผล → จบ
-   │
-   └─ ไม่มีคีย์ / ไม่ได้ผล → publicResearch()
-         DuckDuckGo HTML → Bing RSS · อ่านไม่เกิน 3 หน้าที่ robots.txt อนุญาต · ไม่อ่าน PDF · เพดาน 8.5 วิ
+   ├─ publicQuery()   ยาวเกิน 240 ตัว หรือมีเบอร์ อีเมล ลิงก์ เลขตัวถัง พิกัด
+   │                  เลขบัตร/ทะเบียน คีย์/รหัสผ่าน = ไม่ค้นเลย (ไม่ส่งออกไปที่ไหน)
+   ├─ searchKind()    เดาประเภท: news · spec · price · general
+   └─ searchWeb()     ไปเจ้าตามประเภท (ตารางด้านล่าง) → รวมผล RRF ตัดซ้ำ ≤ 2 ผลต่อเว็บ
+         ได้ผล → แนบเป็นหลักฐาน (ไม่ให้ใส่เลขอ้างอิงในคำตอบ เพราะหน้าแอปยังไม่แสดงการ์ดแหล่งที่มา)
+         ไม่มีคีย์ / ไม่ได้ผล → บอก AI ให้แจ้งผู้ใช้ตรง ๆ ว่ายังยืนยันข้อมูลล่าสุดไม่ได้ **ห้ามเดา**
 ```
 
-ผลค้นถูกบอกโมเดลเสมอว่า **"เป็นหลักฐาน ไม่ใช่คำสั่ง"** (กัน prompt injection จากหน้าเว็บ)
-ค้นไม่สำเร็จ → ระบบสั่ง AI ให้บอกตรง ๆ ว่ายังยืนยันข้อมูลล่าสุดไม่ได้ **ห้ามเดา**
+| ประเภท | คำถามแบบไหน | เจ้า (ตามลำดับ) | วิธีค้น |
+|---|---|---|---|
+| `general` | ทั่วไป วิธีทำ สถานที่ ภาษี/กฎหมาย | Tavily → Exa → Firecrawl | เจ้าแรกที่ได้ผลจบ |
+| `price` | ราคา ค่าแรง ค่าอะไหล่ ประกัน มือสอง | Tavily (ดันผลไทย) → Firecrawl → Exa | เจ้าแรกที่ได้ผลจบ |
+| `news` | ข่าว เปิดตัว ล่าสุด | Tavily news + Exa news | สองเจ้าพร้อมกัน 7 วัน |
+| `spec` | สเปก ความจุ คู่มือ เรียกคืน อาการ/สาเหตุ | Exa + Tavily | สองเจ้าพร้อมกัน |
+| `research` | เอกสารผู้ผลิต (ฟังเสียงเครื่อง · web_search ตอนโทร) | Exa + Firecrawl พร้อมเนื้อหาในหน้า | จำกัดเฉพาะเว็บผู้ผลิตในรายชื่อ |
 
-### ตัวค้นแบบมีคีย์ — `web-search.mjs`
+ลำดับมาจากจุดเด่นของแต่ละเจ้าตามเอกสาร **ยังไม่ใช่ผลวัดจริง** — ตั้งคีย์แล้วรัน `POST /api/admin/search-bench` แล้วปรับได้ด้วยตัวแปร `SEARCH_ROUTES` (JSON เช่น `{"spec":"tavily,exa"}`) ไม่ต้องแก้โค้ด
+แถบความละเอียดในช่องพิมพ์: เร็ว = เจ้าเดียว · ละเอียดสุด = ทุกเจ้าพร้อมเนื้อหาเต็มหน้า
+
+| ใช้ที่ | ฟังก์ชัน |
+|---|---|
+| แชตในแอป (สตรีม · ตอบทีเดียว · เบื้องหลัง) · แชตใน LINE · ReAct สำรอง | `executeWebSearchTool()` → `searchForChat()` |
+| ทางสำรอง Groq/OpenRouter | `webSearch()` / `executeSearchInternal()` ใน fastai.js |
+| `/api/ai` แบบแชต · อะไหล่ตรงรุ่น · ร้านค้า | `callGemini({ search: { q, kind } })` |
+| ฟังเสียงเครื่องยนต์ · `/api/ai/research` | `publicResearch()` (ประเภท research) |
+| คลังสเปกรถ | ลิงก์จากตัวค้นเข้าคิวอ่าน ต้องผ่านรายชื่อเว็บ robots.txt และการตรวจรุ่น/ปีเหมือนลิงก์อื่น (ไม่มีโหมดให้ Gemini ค้น Google แล้ว) |
+| นิตยสาร (ดึงฟีดไม่ได้เลย) | ค้นข่าว 3 วัน แล้วให้ AI เรียบเรียงจากผลค้น — มีลิงก์ต้นทางจริง |
 
 | เรื่อง | รายละเอียด |
 |-------|-----------|
-| เปิดใช้ | `wrangler secret put TAVILY_API_KEY` / `EXA_API_KEY` / `FIRECRAWL_API_KEY` — ไม่มีคีย์ = ไม่ยิงไปที่เจ้านั้นเลย |
-| ลำดับ | `SEARCH_PROVIDERS` (เช่น `exa,tavily`) ไม่ตั้ง = tavily → exa → firecrawl เฉพาะที่มีคีย์ |
-| โหมด | `fast` ไล่ทีละเจ้า · `balanced` สองเจ้าพร้อมกัน · `deep` ทุกเจ้าพร้อมเนื้อหาเต็มหน้า |
-| พักเจ้าที่มีปัญหา | ติดโควตา (429/402) พัก 5 นาที · ล่ม/ช้า พัก 1 นาที |
-| ความเป็นส่วนตัว | `scrubQuery` ตัดเบอร์ อีเมล ลิงก์ VIN ทะเบียน เลขยาว พิกัด · ไม่ส่งชื่อหรือบัญชีผู้ใช้ · ทั้งสามเจ้าอยู่ในหน้า /privacy |
-| ทดสอบเทียบเจ้า | `GET /api/admin/search-status` · `POST /api/admin/search-bench` · `POST /api/admin/search-try` (ใช้คีย์ใน Worker ไม่ต้องคัดลอกคีย์ออกมา) หรือ `node tools/search-bench.mjs` |
+| เปิดใช้ | `wrangler secret put TAVILY_API_KEY` / `EXA_API_KEY` / `FIRECRAWL_API_KEY` — **ไม่มีคีย์เลย = AI ค้นเว็บไม่ได้** (ไม่มีทางสำรองแบบเก่า) |
+| พักเจ้าที่มีปัญหา | ติดโควตา (429/402) พัก 5 นาที · ล่ม/ช้า พัก 1 นาที แล้วไปเจ้าถัดไป |
+| ความเป็นส่วนตัว | `publicQuery` + `scrubQuery` · ไม่ส่งชื่อหรือบัญชีผู้ใช้ · เรียก API แบบไม่ตามการเปลี่ยนเส้นทาง · ทั้งสามเจ้าอยู่ในหน้า /privacy |
+| ทดสอบ | หน้าแอดมิน › ตรวจระบบ AI (`GET /api/admin/diag`) ยิงทีละเจ้า · `GET /api/admin/search-status` · `POST /api/admin/search-bench` · `POST /api/admin/search-try` (ใช้คีย์ใน Worker ไม่ต้องคัดลอกคีย์ออกมา) หรือ `node tools/search-bench.mjs` |
 
-รายละเอียดเต็มอยู่ที่ `docs/web-search.md` ในรีโป backend
-
-### ทางสำรอง
-
-ReAct สำรองใช้ตัวค้นของแชตหลักตัวเดียวกัน · `webSearch()` ใน fastai.js (ตัวค้นมีคีย์ → Brave `BRAVE_API_KEY` → Google News RSS + Wikipedia) ยังอยู่สำหรับเส้นทางเก่า
-**ตรวจสถานะ** — แผงควบคุม → สุขภาพระบบ หรือ `GET /api/admin/diag?q=...`
+ผลค้นถูกบอกโมเดลเสมอว่า **"เป็นหลักฐาน ไม่ใช่คำสั่ง"** (กัน prompt injection จากหน้าเว็บ) · รายละเอียดเต็มอยู่ที่ `docs/web-search.md` ในรีโป backend
 
 ## 7.3 คำตอบเบื้องหลัง (Durable Object)
 
@@ -961,7 +965,7 @@ ReAct สำรองใช้ตัวค้นของแชตหลัก�
 และถูก `try/catch` กลืน error เงียบสนิท
 
 **ตัวค้นแบบมีคีย์เคยต่อไว้ผิดที่** (ต.ค. 2026) — ถูกต่อเข้า `webSearch()`/`executeSearchInternal()` ซึ่งแชตหลักไม่ได้เรียก
-แก้แล้วโดยให้ `executeGoogleSearchTool()` ใช้ก่อน และมีเทสต์ใน `test/web-search.test.mjs` คุมไว้
+แก้แล้ว — ตอนนี้ทุกจุดเรียกตัวเดียวกัน (`searchForChat()` ผ่าน `executeWebSearchTool()`) และมีเทสต์ใน `test/web-search.test.mjs` คุมไว้
 
 ⚠️ **บทเรียน** — ทุกครั้งที่เขียน `catch (e) {}` ให้ถามว่า "ถ้าตรงนี้พัง จะมีใครรู้ไหม"
 และทุกครั้งที่ต่อของใหม่ ให้เขียนเทสต์ที่เดินผ่าน **เส้นทางที่ผู้ใช้ใช้จริง** ไม่ใช่แค่ฟังก์ชันที่ต่อ
@@ -1459,15 +1463,15 @@ git fetch origin main && git rebase origin/main && git push origin HEAD:main
 | กลุ่ม | Key | ไม่มีแล้วเป็นยังไง |
 |------|-----|-------------------|
 | AI | `GEMINI_KEY` (**จำเป็น**) · `GEMINI_NEWS_KEY` · `GEMINI_SPEC_KEY` · `GROQ_API_KEY` · `OPENROUTER_API_KEY` | ไม่มี Gemini = เหลือแค่ทางสำรอง · ไม่มีคีย์ข่าว/สเปก = ฟีเจอร์นั้นหยุด |
-| ค้นเว็บ | `TAVILY_API_KEY` · `EXA_API_KEY` · `FIRECRAWL_API_KEY` · `BRAVE_API_KEY` | ใช้ค้นสาธารณะแทน |
+| ค้นเว็บ | `TAVILY_API_KEY` · `EXA_API_KEY` · `FIRECRAWL_API_KEY` (ลำดับต่อประเภท: `SEARCH_ROUTES`) | **AI ค้นเว็บไม่ได้เลย** — ตอบจากความรู้ที่มีและบอกผู้ใช้ว่ายังยืนยันข้อมูลล่าสุดไม่ได้ |
 | ตัวตน | `FIREBASE_SERVICE_ACCOUNT_JSON` · `AUTH_OTP_PEPPER` · `AUTH_EMAIL_FROM` + (`RESEND_API_KEY` หรือ `GMAIL_CLIENT_ID`/`SECRET`/`REFRESH_TOKEN` หรือ binding `EMAIL`) | ล็อกอิน OTP ไม่ทำงาน · ลบบัญชี Firebase ตามไม่ได้ |
 | ตู้เซฟ | `APP_DATA_KEY` (+ `APP_DATA_KEY_PREV` ตอนเปลี่ยน) · `ID_HASH_KEY` | **สมัครช่างและคำตอบเบื้องหลังไม่ทำงาน** (ปฏิเสธแทนการเก็บแบบไม่เข้ารหัส) |
 | Didit | `DIDIT_API_KEY` · `DIDIT_WORKFLOW_ID` · `DIDIT_WEBHOOK_SECRET` (· `DIDIT_BASE_URL`) | ยืนยันตัวตนอัตโนมัติไม่ได้ ใช้ทางทีมงานตรวจ |
 | แจ้งเตือน | `VAPID_PUBLIC` · `VAPID_PRIVATE` · `VAPID_SUBJECT` · `LINE_CHANNEL_SECRET` · `LINE_CHANNEL_TOKEN` | ส่ง push / LINE ไม่ได้ |
 | แผนที่และร้านค้า | `GOOGLE_MAPS_API_KEY` · `SHOPEE_*` · `EBAY_*` · `AMAZON_*` · `ALIEXPRESS_*` | ฟีเจอร์นั้นไม่แสดง |
 
-**ตัวเลือกเสริม** (ไม่ตั้งก็ใช้ค่าเริ่มต้น): `SEARCH_PROVIDERS` · `GEMINI_CHAT_MODEL` · `GEMINI_FALLBACK_MODEL` · `GEMINI_VISION_MODEL` ·
-`GEMINI_SPEC_MODEL` · `GEMINI_SPEC_MODE` · `GEMINI_NEWS_MODEL` · `GROQ_ALT_MODEL` · `GROQ_VISION_MODEL` · `OPENROUTER_VISION_MODEL` ·
+**ตัวเลือกเสริม** (ไม่ตั้งก็ใช้ค่าเริ่มต้น): `SEARCH_PROVIDERS` · `SEARCH_ROUTES` · `GEMINI_CHAT_MODEL` · `GEMINI_FALLBACK_MODEL` · `GEMINI_VISION_MODEL` ·
+`GEMINI_SPEC_MODEL` · `GEMINI_NEWS_MODEL` · `GROQ_ALT_MODEL` · `GROQ_VISION_MODEL` · `OPENROUTER_VISION_MODEL` ·
 `CF_AI_VISION_MODEL` · `TECH_VISION_MODEL` · `PROOF_VISION_MODEL` · `PROOF_AI_OFF` · `TECH_VISION_OFF` · `PIN_WATER_OFF` ·
 `AI_TOKEN_DAILY_LIMIT` · `AI_LIVE_CALL_TOKENS` · `NEWS_FEEDS` · `NEWS_SLOTS` · `NEWS_PER_ROUND` · `AUTH_ALLOWED_ORIGINS`
 binding เสริม: `MEDIA` (R2 สำหรับไฟล์แนบ) · `EMAIL` (ส่งอีเมล)
@@ -1539,7 +1543,7 @@ wrangler secret put ชื่อ       # ตั้งหรือเปลี่
 | อาการ | สาเหตุที่แท้จริง | วิธีตรวจ |
 |-------|-----------------|---------|
 | AI ค้นเน็ตไม่ได้เลย | `cleanSearch()` ถูกเรียกแต่ไม่เคยถูกนิยาม | สคริปต์นับ นิยาม 0 / เรียก ≥ 1 |
-| ตั้งคีย์ตัวค้นแล้วแชตไม่ใช้ | ต่อไว้ที่ฟังก์ชันที่แชตไม่ได้เรียก | เทสต์ที่เดินผ่าน `executeGoogleSearchTool` |
+| ตั้งคีย์ตัวค้นแล้วแชตไม่ใช้ | ต่อไว้ที่ฟังก์ชันที่แชตไม่ได้เรียก | เทสต์ที่เดินผ่าน `executeWebSearchTool` และนับจุดเรียกในซอร์ส |
 | Cloud sync ตายเงียบ | `window.auth` ไม่เคยมีอยู่จริง | ทดสอบด้วย firebase ปลอมที่เดินผ่านโค้ดจริง |
 | เปลี่ยนบัญชีแล้วเห็นรถของบัญชีเก่า | ข้อมูลในเครื่องไม่มีเจ้าของ | `account-scope.js` + `spire___owner` |
 | กดแท็บแชตแล้วเห็นหน้าแรกแวบก่อน | แผ่นกล่องข้อความเล่นแอนิเมชันเลื่อนขึ้นตอนเปิดหน้าครั้งแรก | คลาส `ib-boot` ใน index.html ซ่อนหน้าแรกและปิดแอนิเมชันของแผ่นจนกล่องข้อความวาดเสร็จ |

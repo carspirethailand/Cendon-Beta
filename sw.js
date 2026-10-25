@@ -4,7 +4,7 @@
    หน้าเว็บเป็นไฟล์เดียวที่เปลี่ยนบ่อย จึงถามเน็ตก่อนเสมอ (ไม่งั้นผู้ใช้จะติดอยู่กับเวอร์ชันเก่า)
    แต่รอแค่ครู่เดียว — เน็ตมือถือช้า/ค้าง ต้องไม่ทำให้แอปค้างหน้าจอโหลด
    ══════════════════════════════════════════════════════════════════ */
-const CACHE = 'cendon-v365-security-audit';
+const CACHE = 'cendon-v366-private-handbook';
 /* หน้าเว็บที่โหลดสำเร็จล่าสุด แยกตู้ไว้และ "ไม่ลบตอนอัปเดตเวอร์ชัน"
    เดิมทุกครั้งที่ deploy ตู้เก่าถูกล้างหมด เปิดแอปครั้งแรกหลังอัปเดตจึงไม่มีของสำรอง
    ต้องรอเน็ตอย่างเดียว — เน็ตมือถือช้าเมื่อไรก็ค้างหน้าจอโหลดของมือถือ */
@@ -79,7 +79,7 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;   // API และ CDN ปล่อยผ่าน
-  if (/^\/api(?:\/|$)/.test(url.pathname) || req.headers.has('Authorization')) return;
+  if (/^\/api(?:\/|$)/.test(url.pathname) || req.headers.has('Authorization') || /^\/(?:handbookparts\.json|HANDBOOK\.md)\/?$/i.test(url.pathname)) return;
   const isPage = shellOf(url.pathname) !== null && (req.mode === 'navigate' || /\.html$/.test(url.pathname) || !req.destination);
   if (isPage) return openPage(e, url);
   if (!/\.(?:js|css|png|webp|svg|ico|woff2?|webmanifest|json)$/.test(url.pathname)) return;

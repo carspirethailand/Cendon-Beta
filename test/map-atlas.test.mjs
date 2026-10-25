@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync,existsSync} from 'node:fs';
 import vm from 'node:vm';
 
-const read=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8');
+const read=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8').replace(/\r\n/g,'\n');
 const home=read('index.html'),atlas=read('map-atlas.js'),css=read('map-atlas.css');
 
 test('map page loads the new map first and keeps the old Leaflet map as the fallback',()=>{

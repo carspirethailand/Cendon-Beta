@@ -2,6 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {spawnSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
 
 const page=readFileSync(new URL('../handbook.html',import.meta.url),'utf8');
 const book=readFileSync(new URL('../HANDBOOK.md',import.meta.url),'utf8');
@@ -17,7 +18,7 @@ test('admins can replace an existing handbook from a file; others never see the 
 });
 
 test('handbook packs from the repo root and no longer tells anyone to set up Vectorize',()=>{
-  const r=spawnSync(process.execPath,[new URL('../handbookpack.mjs',import.meta.url).pathname,'--check'],{encoding:'utf8'});
+  const r=spawnSync(process.execPath,[fileURLToPath(new URL('../handbookpack.mjs',import.meta.url)),'--check'],{encoding:'utf8'});
   assert.equal(r.status,0,r.stderr);
   assert.match(r.stdout,/enabled = 0 ครบทุกตอน/);
   /* Vectorize ถูกถอดแล้ว — คู่มือต้องไม่มีคำสั่งให้สร้างอีก (กล่าวถึงในเนื้อความได้) */

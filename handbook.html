@@ -209,10 +209,11 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);
 .nv.on::before{background:var(--acc)}
 .nv[hidden]{display:none}
 .rail-foot{padding:11px 14px;border-top:1px solid var(--rule2);display:flex;gap:7px}
-.rail-foot a,.rail-foot button{flex:1;padding:7px;border-radius:8px;border:1px solid var(--rule);
+.rail-foot a,.rail-foot button,.rail-foot label{flex:1;padding:7px;border-radius:8px;border:1px solid var(--rule);
   background:var(--bg);color:var(--mut);font:inherit;font-size:12px;cursor:pointer;
   text-align:center;text-decoration:none;transition:.15s}
-.rail-foot a:hover,.rail-foot button:hover{border-color:var(--acc);color:var(--acc)}
+.rail-foot a:hover,.rail-foot button:hover,.rail-foot label:hover{border-color:var(--acc);color:var(--acc)}
+.rail-foot label[hidden]{display:none}
 
 .page{padding:0 clamp(20px,4vw,64px) 140px;min-width:0}
 .doc{max-width:74ch;margin:0 auto}
@@ -445,6 +446,8 @@ html{scroll-behavior:smooth}
       <div class="rail-foot">
         <a href="/admin"><i class="ti ti-arrow-left"></i> แผงควบคุม</a>
         <button id="reload">โหลดใหม่</button>
+        <!-- แอดมินเท่านั้น: แทนที่เนื้อหาทั้งเล่มด้วย HANDBOOK.md ฉบับใหม่ (เซิร์ฟเวอร์ตรวจสิทธิ์อีกชั้น) -->
+        <label id="upd" hidden>อัปเดตจากไฟล์<input type="file" accept=".md,text/markdown,text/plain" id="updFile" hidden></label>
       </div>
     </nav>
     <main class="page"><div class="doc" id="doc"></div></main>
@@ -772,8 +775,22 @@ function show(rows){
     "<span>"+esc(me.name||me.email)+"</span>"+
     '<span class="rc">'+esc(ROLE_TH[me.role]||me.role)+"</span>";
   render(PARTS.map(p=>p.body).join("\n\n"));
+  /* ปุ่มนำเข้าด้านบนขึ้นเฉพาะตอนยังไม่มีเนื้อหา — คู่มือที่มีอยู่แล้วอัปเดตจากปุ่มนี้แทน */
+  $("upd").hidden=rank(me.role)<rank("admin");
 }
 $("reload").onclick=()=>load().catch(e=>alert(e.message));
+$("updFile").onchange=e=>{
+  const f=e.target.files[0]; e.target.value=""; if(!f)return;
+  if(!confirm("แทนที่เนื้อหาคู่มือทั้งเล่มด้วยไฟล์ "+f.name+" ?"))return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    $("app").style.display="none";
+    importMd(String(rd.result||""),[]).catch(err=>
+      gate("นำเข้าไม่สำเร็จ: "+esc(err.message),
+        '<button class="btn" onclick="location.reload()">ลองใหม่</button>'));
+  };
+  rd.readAsText(f,"utf-8");
+};
 
 /* ══ นำเข้าเนื้อหา ══════════════════════════════════════════════════════
    แบ่งไฟล์ตามหัวข้อระดับภาค แล้วส่งทีละตอนด้วย POST /api/ws (รหัส hb_00, hb_01, …)

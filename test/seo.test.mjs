@@ -132,3 +132,36 @@ test('logged-in hint cookie is kept in sync with sign-in (app gets the app, ever
   const h=r('_headers');for(const p of ['/tech/*','/service/*','/category/*'])assert.doesNotMatch(h,new RegExp(`^${p.replace('*','\\*')}\\n  X-Robots-Tag`,'m'),p);
   for(const f of ['about.html','help.html'])assert.match(r(f),/<a href="\/category\/air">/,f+' links to category pages (crawl path)');
 });
+
+test('owner preview (?preview=1) shows the public page even when signed in, never indexed or cached',async()=>{
+  api();
+  const pv=(path,cookie)=>({...ctx('/tech/x',{cookie}),request:new Request(SITE+path,{headers:cookie?{cookie}:{}}),params:{path:[path.split('?')[0].split('/')[2]]}});
+  const res=await handle(pv('/tech/t_abc?preview=1','cendon_signed=1'),'tech'),html=await res.text();
+  assert.equal(res.status,200);assert.match(html,/<h1>นนท์แอร์ แอนด์ เซอร์วิส<\/h1>/,'public page, not the app');
+  assert.equal(res.headers.get('x-robots-tag'),'noindex');assert.equal(res.headers.get('cache-control'),'private, no-store');
+  assert.match(html,new RegExp(`<link rel="canonical" href="${SITE}/tech/t_abc">`),'canonical stays the clean address');
+  for(const x of ['0812345678','@nonair','99/9'])assert.ok(!html.includes(x),x);
+  /* ร้านทดลอง/ไม่มีอยู่: ไม่มีหน้าสาธารณะให้ดู → หน้าแอปเดิม ไม่ใช่หน้าสาธารณะปลอม */
+  const t=await handle(pv('/tech/t_test?preview=1','cendon_signed=1'),'tech');
+  assert.equal(t.headers.get('x-robots-tag'),'noindex');assert.doesNotMatch(await t.text(),/sp-head/);
+});
+
+test('shop names: /tech/<name> is the address, ids and capitals move there, old names follow the shop',async()=>{
+  const named={...SHOP,handle:'nonair'};
+  const seen=[];globalThis.fetch=async u=>{u=new URL(u);seen.push(u.pathname);
+    if(u.pathname==='/api/tech/handle/nonair-old')return Response.json({techId:'t_abc',handle:'nonair',current:false});
+    if(u.pathname.startsWith('/api/tech/handle/'))return Response.json({error:'ไม่พบร้าน'},{status:404});
+    return Response.json(/\/gigs$/.test(u.pathname)?{gigs:GIGS.gigs.map(g=>g.tech.id==='t_abc'?{...g,tech:named}:g)}:{techs:[named,TECHS.techs[1]]})};
+  const res=await handle(ctx('/tech/nonair'),'tech'),html=await res.text();
+  assert.equal(res.status,200);assert.match(html,/<h1>นนท์แอร์ แอนด์ เซอร์วิส<\/h1>/);
+  assert.match(html,new RegExp(`<link rel="canonical" href="${SITE}/tech/nonair">`));
+  assert.equal(ldOf(html).find(x=>x['@type']==='AutoRepair')['@id'],SITE+'/tech/nonair#shop');
+  for(const [from,to] of [['/tech/t_abc','/tech/nonair'],['/tech/NonAir','/tech/nonair'],['/tech/nonair-old','/tech/nonair']]){
+    const r=await handle(ctx(from),'tech');assert.equal(r.status,301,from);assert.equal(r.headers.get('location'),to,from);}
+  /* คนที่ล็อกอินอยู่ได้หน้าแอปที่ที่อยู่เดิม (แอปหาร้านจากชื่อหรือรหัสได้เอง) — ไม่ย้ายที่อยู่ */
+  assert.equal((await handle(ctx('/tech/t_abc',{cookie:'cendon_signed=1'}),'tech')).status,200);
+  assert.equal((await handle(ctx('/tech/nobody-here'),'tech')).status,404);
+  const sv=await (await handle(ctx('/service/9'),'service')).text();assert.match(sv,/href="\/tech\/nonair"/);assert.doesNotMatch(sv,/href="\/tech\/t_abc"/);
+  const sm=await (await sitemap({env:{},request:new Request(SITE+'/sitemaps/shops')})).text();
+  assert.match(sm,new RegExp(`<loc>${SITE}/tech/nonair</loc>`));assert.doesNotMatch(sm,/\/tech\/t_abc/);
+});

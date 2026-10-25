@@ -160,7 +160,7 @@ function gigCard(x){
 }
 function shopCard(x){
   const t=x.t,cv=t.cover||(t.photos||[])[0];
-  return `<a class="svc" href="/tech/${encodeURIComponent(t.id)}"${tgt()}>
+  return `<a class="svc" href="/tech/${encodeURIComponent(t.handle||t.id)}"${tgt()}>
     <span class="svc-h"><span class="svc-av"${t.avatar?` style="background-image:url('${img(t.avatar)}')"`:""}>${t.avatar?"":initial(t.shop||t.name)}</span><b>${esc(t.shop||t.name||"")}</b>${t.verified?'<i class="ti ti-rosette-discount-check-filled svc-ok"></i>':""}</span>
     <span class="svc-v"${cv?` style="background-image:url('${img(cv)}')"`:""}>${cv?"":`<img src="img/cat/${esc(((t.cats||[])[0])||"other")}.webp" alt="" onerror="this.remove()">`}</span>
     <span class="svc-f"><b class="svc-t">${esc(t.area||T("ร้านช่าง","Mechanic shop"))}</b>

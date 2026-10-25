@@ -6,20 +6,21 @@
    แบ่งตามภาคทำให้อัปเดตเฉพาะภาคที่เปลี่ยนได้ และถ้าแถวไหนเสียก็เสียแค่ภาคนั้น
 
    วิธีใช้
-     node tools/handbook-pack.mjs                 → เขียน handbook-parts.json
-     node tools/handbook-pack.mjs --check         → ตรวจอย่างเดียว ไม่เขียนไฟล์
+     node handbookpack.mjs                 → เขียน handbookparts.json
+     node handbookpack.mjs --check         → ตรวจอย่างเดียว ไม่เขียนไฟล์
 
-   จากนั้นนำเข้าที่ แผงควบคุม → สอน AI → นำเข้าเป็นชุด
-   หรือ  curl -X POST "$BASE/api/kb/bulk" -H "Authorization: Bearer $TOKEN" \
-           -H "Content-Type: application/json" --data-binary @handbook-parts.json
+   จากนั้นนำเข้าที่หน้า /handbook ด้วยบัญชีแอดมิน (เลือกไฟล์ HANDBOOK.md หรือ "อัปเดตจากไฟล์")
+   หน้านั้นแบ่งตอนแบบเดียวกับไฟล์นี้แล้วส่งเข้าที่ทำงานทีม (POST /api/ws) — ห้ามส่งเข้า /api/kb
+   เพราะ kb คือคลังความรู้ที่ AI หยิบไปตอบผู้ใช้
    ══════════════════════════════════════════════════════════════════════ */
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+/* ไฟล์นี้อยู่ที่รากรีโปคู่กับ HANDBOOK.md (เดิมอยู่ใน tools/ จึงเคยถอยขึ้นหนึ่งชั้น) */
+const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const SRC  = path.join(ROOT, 'HANDBOOK.md');
-const OUT  = path.join(ROOT, 'handbook-parts.json');
+const OUT  = path.join(ROOT, 'handbookparts.json');
 const check = process.argv.includes('--check');
 
 const md = fs.readFileSync(SRC, 'utf8');
@@ -90,4 +91,4 @@ parts.forEach(p => console.log(`     ${p.id}  ${String(Math.round(p.body.length 
 if (check) { console.log('\n(โหมดตรวจอย่างเดียว ไม่ได้เขียนไฟล์)'); process.exit(0); }
 fs.writeFileSync(OUT, JSON.stringify(parts, null, 1));
 console.log(`\nเขียนแล้ว: ${path.relative(ROOT, OUT)}`);
-console.log('นำเข้าที่ แผงควบคุม → สอน AI → นำเข้าเป็นชุด');
+console.log('นำเข้าที่หน้า /handbook ด้วยบัญชีแอดมิน → อัปเดตจากไฟล์ (เลือก HANDBOOK.md)');

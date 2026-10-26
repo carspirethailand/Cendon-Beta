@@ -1953,6 +1953,9 @@ window.CENDON_L10N={lang:"ko",t:{
 "Please continue from where you stopped":"끊긴 부분부터 이어서 써 주세요",
 "Please try my last question again":"이전 질문에 다시 답해 주세요",
 "Thinking":"생각 중",
-"s":"초"
+"s":"초",
+"Comparing with your car":"내 차와 비교",
+"Car being asked about":"질문한 차량",
+"(not your garage car)":"(내 차고의 차가 아님)"
 }};
 Object.assign(window.CENDON_L10N.t,{"The shop is suspended. The team must review and lift the suspension.":"매장이 정지되었습니다. 팀의 검토와 정지 해제가 필요합니다.","This is a trial shop, hidden from ordinary customers until the full shop review.":"체험 매장입니다. 정식 심사를 마치기 전에는 일반 고객에게 표시되지 않습니다.","Publication review is still required.":"공개 심사가 필요합니다.","The shop link has not been confirmed. Please retry the account check.":"매장 연결이 확인되지 않았습니다. 계정 확인을 다시 시도해 주세요.","Shop and services are not public on Home / categories":"매장과 서비스가 홈 및 카테고리에 공개되지 않았습니다","Your shop and services are saved and manageable in Studio. Editing or taking jobs does not change publication approval.":"매장과 서비스는 저장되어 Studio에서 관리할 수 있습니다. 수정이나 접수 설정은 공개 승인을 변경하지 않습니다.","Services could not refresh. Please retry.":"서비스를 새로고침하지 못했습니다. 다시 시도해 주세요.","Published services from approved shops appear here":"심사를 마치고 공개된 매장의 서비스가 여기에 표시됩니다","Shops could not refresh. Please retry.":"매장을 새로고침하지 못했습니다. 다시 시도해 주세요."});

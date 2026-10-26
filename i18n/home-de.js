@@ -1953,6 +1953,9 @@ window.CENDON_L10N={lang:"de",t:{
 "Please continue from where you stopped":"Bitte mach dort weiter, wo du aufgehört hast",
 "Please try my last question again":"Bitte beantworte meine letzte Frage noch einmal",
 "Thinking":"Denke nach",
-"s":"s"
+"s":"s",
+"Comparing with your car":"Vergleich mit deinem Auto",
+"Car being asked about":"Gefragtes Fahrzeug",
+"(not your garage car)":"(nicht dein Auto aus der Garage)"
 }};
 Object.assign(window.CENDON_L10N.t,{"The shop is suspended. The team must review and lift the suspension.":"Die Werkstatt ist gesperrt. Das Team muss sie prüfen und entsperren.","This is a trial shop, hidden from ordinary customers until the full shop review.":"Dies ist eine Testwerkstatt. Sie bleibt für normale Kunden bis zur vollständigen Prüfung unsichtbar.","Publication review is still required.":"Die Freigabeprüfung steht noch aus.","The shop link has not been confirmed. Please retry the account check.":"Die Werkstattverknüpfung ist nicht bestätigt. Bitte die Kontoprüfung wiederholen.","Shop and services are not public on Home / categories":"Werkstatt und Leistungen sind auf Startseite / Kategorien nicht öffentlich","Your shop and services are saved and manageable in Studio. Editing or taking jobs does not change publication approval.":"Werkstatt und Leistungen sind gespeichert und in Studio verwaltbar. Bearbeiten oder Auftragsannahme ändern keine Veröffentlichungsfreigabe.","Services could not refresh. Please retry.":"Leistungen konnten nicht aktualisiert werden. Bitte erneut versuchen.","Published services from approved shops appear here":"Veröffentlichte Leistungen freigegebener Werkstätten erscheinen hier","Shops could not refresh. Please retry.":"Werkstätten konnten nicht aktualisiert werden. Bitte erneut versuchen."});

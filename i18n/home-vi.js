@@ -1953,6 +1953,9 @@ window.CENDON_L10N={lang:"vi",t:{
 "Please continue from where you stopped":"Hãy viết tiếp từ chỗ bị dừng",
 "Please try my last question again":"Hãy trả lời lại câu hỏi trước của tôi",
 "Thinking":"Đang nghĩ",
-"s":"giây"
+"s":"giây",
+"Comparing with your car":"So sánh với xe của bạn",
+"Car being asked about":"Xe được hỏi",
+"(not your garage car)":"(không phải xe trong gara của bạn)"
 }};
 Object.assign(window.CENDON_L10N.t,{"The shop is suspended. The team must review and lift the suspension.":"Cửa hàng đang bị tạm ngưng. Đội ngũ cần kiểm tra và gỡ tạm ngưng.","This is a trial shop, hidden from ordinary customers until the full shop review.":"Đây là cửa hàng dùng thử, chưa hiển thị cho khách hàng thông thường trước khi được xét duyệt đầy đủ.","Publication review is still required.":"Vẫn cần xét duyệt công khai.","The shop link has not been confirmed. Please retry the account check.":"Chưa xác nhận liên kết cửa hàng. Vui lòng kiểm tra lại tài khoản.","Shop and services are not public on Home / categories":"Cửa hàng và dịch vụ chưa công khai trên Trang chủ / danh mục","Your shop and services are saved and manageable in Studio. Editing or taking jobs does not change publication approval.":"Cửa hàng và dịch vụ đã được lưu, có thể quản lý trong Studio. Chỉnh sửa hoặc nhận việc không thay đổi phê duyệt công khai.","Services could not refresh. Please retry.":"Không thể cập nhật dịch vụ. Vui lòng thử lại.","Published services from approved shops appear here":"Dịch vụ đã công khai của cửa hàng được duyệt sẽ xuất hiện tại đây","Shops could not refresh. Please retry.":"Không thể cập nhật cửa hàng. Vui lòng thử lại."});

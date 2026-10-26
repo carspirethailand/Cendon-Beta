@@ -9,7 +9,7 @@
 <script src="/partner-state.js?v=1"></script>
 <script src="/display-prefs.js?v=3" defer></script>
 <script src="/i18n/ui-en.js?v=4" defer></script>
-<script src="/ui-language.js?v=12" defer></script>
+<script src="/ui-language.js?v=13" defer></script>
 <script src="/partner-entry.js?v=1"></script>
 <script src="/console-entry.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
@@ -6353,6 +6353,7 @@ function thinkWord(){
    ชื่อขั้นแปลที่หน้าเว็บ · ผู้ใช้เห็นแค่ภาษาคนและตัวเลข · ชื่อรุ่น (dev) ขึ้นเฉพาะบัญชีแอดมินที่เซิร์ฟเวอร์ส่งมาให้ */
 const STEP_ON=["start","backup","retry","continue"];
 function stepLabel(s){
+  if(s.id==="car"&&s.other)return s.mode==="both"?TT("เทียบกับรถของคุณ","Comparing with your car"):TT("รถที่ถามถึง","Car being asked about");
   return ({car:TT("ข้อมูลรถของคุณ","Your car details"),kb:TT("คลังความรู้ Cendon","Cendon knowledge base"),history:TT("ประวัติและความจำการคุย","Your history and chat memory"),
     spec:TT("สเปกรถและงานซ่อมจริง","Car specs and real repairs"),search:TT("ค้นเว็บ","Searching the web"),think:TT("คิดคำตอบ","Thinking it through"),
     write:TT("เขียนคำตอบ","Writing the answer"),check:TT("ตรวจว่าตอบครบ","Checking it is complete")})[s.id]||s.id;
@@ -6366,7 +6367,7 @@ function stepNote(s){
   if(s.id==="check"&&s.state==="fail")return TT("ถูกตัดกลางทาง","was cut short");
   if(s.id==="search"&&s.state==="start"&&s.q)return "“"+s.q+"”";
   if(s.id==="search"&&s.state==="fail")return TT("ไม่พบแหล่งที่ใช้ได้","no usable sources");
-  if(s.id==="car"&&s.car)return s.car;
+  if(s.id==="car"&&s.car)return s.other&&s.mode!=="both"?s.car+" "+TT("(ไม่ใช่รถในการาจ)","(not your garage car)"):s.car;
   if(s.state==="done"&&s.id==="kb")return n>0?TT("เจอ","Found")+" "+n+" "+TT("เรื่อง","items"):TT("ไม่มีเรื่องที่ตรง","nothing matching");
   if(s.state==="done"&&s.id==="search")return n>0?n+" "+TT("แหล่ง","sources"):"";
   if(s.state==="done"&&s.ms>=300&&s.id!=="write")return (s.ms/1000).toFixed(1)+TT(" วิ","s");
@@ -6388,7 +6389,7 @@ function stepRows(m,live){
 }
 function traceSum(m){
   const st=m.steps||[],get=id=>st.find(s=>s.id===id),parts=[];
-  if(get("car")&&get("car").state==="done")parts.push(TT("ข้อมูลรถ","Car details"));
+  const car=get("car");if(car&&car.state==="done")parts.push(car.other&&car.car?car.car:TT("ข้อมูลรถ","Car details"));
   const kb=get("kb");if(kb&&kb.state==="done"&&+kb.n>0)parts.push(TT("คลังความรู้","Knowledge base")+" "+kb.n+" "+TT("เรื่อง","items"));
   const sr=get("search");if(sr&&sr.state==="done"&&+sr.n>0)parts.push(TT("เว็บ","Web")+" "+sr.n+" "+TT("แหล่ง","sources"));
   const end=Math.max(0,...st.map(s=>+s.at||0));if(end>0)parts.push((end/1000).toFixed(1)+TT(" วิ","s"));

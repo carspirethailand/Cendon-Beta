@@ -1953,6 +1953,9 @@ window.CENDON_L10N={lang:"zh",t:{
 "Please continue from where you stopped":"请从中断处继续",
 "Please try my last question again":"请再次回答我上一个问题",
 "Thinking":"思考中",
-"s":"秒"
+"s":"秒",
+"Comparing with your car":"与您的车比较",
+"Car being asked about":"所问的车辆",
+"(not your garage car)":"（不是您车库里的车）"
 }};
 Object.assign(window.CENDON_L10N.t,{"The shop is suspended. The team must review and lift the suspension.":"店铺已暂停。需由团队审核并解除暂停。","This is a trial shop, hidden from ordinary customers until the full shop review.":"这是试用店铺，完成正式审核前不会向普通客户展示。","Publication review is still required.":"仍需完成公开展示审核。","The shop link has not been confirmed. Please retry the account check.":"尚未确认店铺关联，请重试账户检查。","Shop and services are not public on Home / categories":"店铺和服务尚未在首页及分类中公开","Your shop and services are saved and manageable in Studio. Editing or taking jobs does not change publication approval.":"店铺和服务已保存，可在 Studio 管理。编辑或接单不会改变发布审批状态。","Services could not refresh. Please retry.":"服务刷新失败，请重试。","Published services from approved shops appear here":"已审核并发布的店铺服务将显示在此处","Shops could not refresh. Please retry.":"店铺刷新失败，请重试。"});

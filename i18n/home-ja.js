@@ -1953,6 +1953,9 @@ window.CENDON_L10N={lang:"ja",t:{
 "Please continue from where you stopped":"途中から続けてください",
 "Please try my last question again":"前の質問にもう一度答えてください",
 "Thinking":"考え中",
-"s":"秒"
+"s":"秒",
+"Comparing with your car":"あなたの車と比較",
+"Car being asked about":"質問された車",
+"(not your garage car)":"（ガレージの車ではありません）"
 }};
 Object.assign(window.CENDON_L10N.t,{"The shop is suspended. The team must review and lift the suspension.":"店舗は停止中です。チームによる確認と停止解除が必要です。","This is a trial shop, hidden from ordinary customers until the full shop review.":"試用店舗です。正式な審査が完了するまで一般のお客様には表示されません。","Publication review is still required.":"公開審査が必要です。","The shop link has not been confirmed. Please retry the account check.":"店舗との連携を確認できません。アカウント確認を再試行してください。","Shop and services are not public on Home / categories":"店舗とサービスはホーム・カテゴリに公開されていません","Your shop and services are saved and manageable in Studio. Editing or taking jobs does not change publication approval.":"店舗とサービスは保存され、Studio で管理できます。編集や受付設定では公開承認は変わりません。","Services could not refresh. Please retry.":"サービスを更新できませんでした。再試行してください。","Published services from approved shops appear here":"審査済みで公開された店舗のサービスがここに表示されます","Shops could not refresh. Please retry.":"店舗を更新できませんでした。再試行してください。"});

@@ -1953,6 +1953,9 @@ window.CENDON_L10N={lang:"ms",t:{
 "Please continue from where you stopped":"Sila sambung dari bahagian yang terhenti",
 "Please try my last question again":"Sila jawab semula soalan terakhir saya",
 "Thinking":"Berfikir",
-"s":"saat"
+"s":"saat",
+"Comparing with your car":"Membandingkan dengan kereta anda",
+"Car being asked about":"Kereta yang ditanya",
+"(not your garage car)":"(bukan kereta di garaj anda)"
 }};
 Object.assign(window.CENDON_L10N.t,{"The shop is suspended. The team must review and lift the suspension.":"Bengkel digantung. Pasukan perlu menyemak dan menarik balik penggantungan.","This is a trial shop, hidden from ordinary customers until the full shop review.":"Ini bengkel percubaan, belum dipaparkan kepada pelanggan umum sebelum semakan penuh.","Publication review is still required.":"Semakan penerbitan masih diperlukan.","The shop link has not been confirmed. Please retry the account check.":"Pautan bengkel belum disahkan. Cuba semak akaun semula.","Shop and services are not public on Home / categories":"Bengkel dan perkhidmatan belum dipaparkan pada Utama / kategori","Your shop and services are saved and manageable in Studio. Editing or taking jobs does not change publication approval.":"Bengkel dan perkhidmatan disimpan dan boleh diurus dalam Studio. Mengedit atau menerima kerja tidak mengubah kelulusan penerbitan.","Services could not refresh. Please retry.":"Perkhidmatan tidak dapat dikemas kini. Cuba lagi.","Published services from approved shops appear here":"Perkhidmatan diterbitkan daripada bengkel yang diluluskan dipaparkan di sini","Shops could not refresh. Please retry.":"Bengkel tidak dapat dikemas kini. Cuba lagi."});

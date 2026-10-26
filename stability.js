@@ -10,7 +10,9 @@
   function paintActive(){
     var here=path(location.pathname);
     D.querySelectorAll('.nav-links a[href],#mnav a[href]').forEach(function(a){
-      try{var u=new URL(a.href,location.href),on=u.origin===location.origin&&path(u.pathname)===here;
+      /* ตัวแท็บเองต้องชี้หน้าจริง (ไม่แปลงแบบที่อยู่ลึก) — แท็บแชตชี้ /messages ซึ่งเป็นที่อยู่ลึกของหน้าหลัก
+         ถ้าแปลงด้วย path() จะกลายเป็น "/" แล้วสว่างคู่กับแท็บหน้าหลักทุกครั้งที่กลับเข้าหน้านี้ */
+      try{var u=new URL(a.href,location.href),p=u.pathname.replace(/\.html$/,'').replace(/\/index$/,'/'),on=u.origin===location.origin&&paths.has(p)&&p===here;
         a.classList.toggle('active',on);if(a.closest('#mnav'))a.classList.toggle('on',on);
         if(on)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');
       }catch(_){}

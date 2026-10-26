@@ -45,6 +45,24 @@ for(const options of [{hidden:true},{prerender:true},{connection:{saveData:true}
   const f=routing(options);f.fire('pointerover','/news');assert.equal(f.links.length,0);
 });
 
+/* แท็บที่สว่างหลังกลับเข้าหน้า (pageshow) — แท็บแชตชี้ /messages ซึ่งเป็นที่อยู่ลึกของหน้าหลัก ต้องไม่สว่างคู่กับแท็บบ้าน */
+function activeTabs(pathname){
+  const events=new Map(),tabs=['/','/garage','/messages','/news','/profile','/login?next=%2Fprofile'].map(h=>{
+    const cls=new Set(['mtab']),attrs={};
+    return {href:'https://fixture.test'+h,cls,closest:s=>s==='#mnav'?{}:null,classList:{toggle:(c,on)=>on?cls.add(c):cls.delete(c)},
+      setAttribute:(k,v)=>attrs[k]=v,removeAttribute:k=>delete attrs[k],attrs};
+  });
+  const location={origin:'https://fixture.test',pathname,href:'https://fixture.test'+pathname};
+  const document={hidden:false,readyState:'complete',querySelectorAll:()=>tabs,head:{appendChild(){}},createElement:()=>({}),addEventListener(){}};
+  vm.runInNewContext(router,{document,location,navigator:{},URL,Set,addEventListener:(n,fn)=>events.set(n,fn)});
+  events.get('pageshow')();
+  return tabs.filter(t=>t.cls.has('on')).map(t=>new URL(t.href).pathname);
+}
+for(const [here,want] of [['/','/'],['/map','/'],['/tech/shop-1','/'],['/messages','/'],['/garage','/garage'],['/garage/car-1/spec','/garage'],['/news','/news'],['/profile','/profile'],['/chat',null]])
+  test('only one mobile tab is active after returning to '+here,()=>{
+    assert.deepEqual(activeTabs(here),want?[want]:[]);
+  });
+
 function mobileBoot({nav=false,avatar=false}={}){
   const events={},observations=[],timers=[];
   const avatarNode={id:'avatarBtn'};

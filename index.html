@@ -4453,9 +4453,19 @@ function photoPage(){
     }});
 }
 /* three.js เล็ก ๆ ในแอป (fx3d.js) — โหลดเมื่อจะใช้ · เครื่องไม่รองรับ/ประหยัดเน็ต → เหลือโลโก้นิ่ง (SVG ข้างใต้) */
+/* สร้างฉาก 3 มิติกินเครื่อง ~1 วิบนมือถือ — เดิมเริ่มทันทีตอนเปิดหน้า (การ์ดอยู่ใต้จอ) และการ์ดวาดใหม่อีกรอบเมื่อรู้สถานะช่าง
+   หน้าแรกจึงค้าง กดอะไรไม่ตอบ และการเช็กบัญชี/โหลดข้อมูลเลื่อนออกไป ~2 วิ
+   ตอนนี้: เริ่มเมื่อการ์ดอยู่บนจอ + หน้าโหลดเสร็จแล้ว 2.5 วิ (ข้อมูลบัญชี/รายชื่อมาก่อน) + เครื่องว่าง
+   การ์ดที่ถูกวาดทับไปแล้วไม่สร้างฉาก · เครื่องสเปกต่ำ (≤4 คอร์ หรือแรม ≤3GB) ใช้โลโก้นิ่งตามเดิม */
 function fx3d(cv,o){
   if(!cv||(navigator.connection&&navigator.connection.saveData))return;
-  import("/fx3d.js?v=1").then(M=>{if(!cv.isConnected)return;M.emblem(cv,o);cv.parentElement.classList.add("fx-on")}).catch(()=>{});
+  if((navigator.hardwareConcurrency||8)<=4||(navigator.deviceMemory||8)<=3)return;
+  const go=()=>{if(!cv.isConnected)return;import("/fx3d.js?v=1").then(M=>{if(!cv.isConnected)return;M.emblem(cv,o);cv.parentElement.classList.add("fx-on")}).catch(()=>{})};
+  const idle=()=>window.requestIdleCallback?requestIdleCallback(go,{timeout:1500}):setTimeout(go,300);
+  const settled=()=>{const n=performance.getEntriesByType("navigation")[0],end=n&&n.loadEventEnd||performance.now();setTimeout(idle,Math.max(0,end+2500-performance.now()))};
+  const start=()=>{if(!cv.isConnected)return;if(document.readyState==="complete")settled();else addEventListener("load",settled,{once:true})};
+  if(!window.IntersectionObserver)return start();
+  const io=new IntersectionObserver(es=>{if(!cv.isConnected)return io.disconnect();if(!es.some(e=>e.isIntersecting))return;io.disconnect();start()});io.observe(cv);
 }
 /* การ์ดพาร์ทเนอร์บนหน้าแรก — สถานะจาก spire_partner (refreshMe เขียนไว้) จึงวาดได้ทันทีไม่ต้องรอหลังบ้าน */
 function drawPartner(){
@@ -5258,6 +5268,9 @@ setTimeout(ccDone,7000);
 const READY=(()=>{const mk=()=>{let d;const p=new Promise(r=>d=r);p.done=d;return p};return {techs:mk(),gigs:mk(),auth:mk(),user:mk(),me:mk()}})();
 setTimeout(()=>{READY.auth.done();READY.user.done();READY.me.done()},9000);   /* ล็อกอินไม่ตอบ (เน็ตช้า/บล็อก) ก็ไม่ค้างตลอดไป */
 const needU=async()=>{await READY.auth;if(!U){needLogin();return false}return true};
+/* หน้าที่ต้องรู้แค่ว่า "ใครล็อกอิน" (งานของฉัน กลุ่มเทียบราคา ประกาศ) ไม่ต้องรอข้อมูลช่าง+รายชื่อร้านทั้งตลาดโหลดเสร็จ
+   เดิมเปิด /jobs จากแจ้งเตือนแล้วเห็นหน้าแรกเฉย ๆ จนกว่าทุกอย่างจะโหลดครบ (เน็ตช้า = หลายวินาที ดูเหมือนกดไม่ติด) */
+const needUser=async()=>{await READY.user;if(!U){needLogin();return false}return true};
 /* Studio รอแค่รู้ว่าเป็นใคร (ME) ไม่ต้องรอรายชื่อร้านทั้งตลาดโหลดเสร็จ — รีเฟรชในหน้า Studio แล้วขึ้น Studio ทันที */
 const needMe=async()=>{await READY.me;BOOT_TECH=false;delete document.documentElement.dataset.boot;if(!U){applyMode();needLogin();return false}return true};
 Nav.route({path:"tech/:id",name:"tech",open:async p=>{await READY.techs;await READY.gigs.catch(()=>0);openTech(p.id)}});
@@ -5267,7 +5280,7 @@ Nav.route({path:"service/:id",name:"service",open:async p=>{await READY.gigs;ope
 Nav.route({path:"category/:k",open:async p=>{if(p.k!=="all"&&!RAIL.some(x=>x.id===p.k))return;openCat(p.k)}});
 Nav.route({path:"search",open:(p,q)=>openRes(q.get("q")||"")});
 Nav.route({path:"map",open:()=>new Promise(res=>{let mt=0;(function w(){if(window.L||++mt>60){setView("map");return res()}setTimeout(w,100)})()})});
-Nav.route({path:"jobs",name:"jobs",open:async()=>{if(await needU())return jobs()}});
+Nav.route({path:"jobs",name:"jobs",open:async()=>{if(await needUser())return jobs()}});
 Nav.route({path:"all",parent:"jobs",open:()=>jobs(true)});
 Nav.route({path:":id",name:"job",parent:"jobs",test:p=>/^[0-9a-f-]{36}$/i.test(p.id),open:p=>openJob(p.id,true)});
 Nav.route({path:"messages",name:"messages",open:()=>inbox()});
@@ -5291,7 +5304,7 @@ Nav.route({path:"photo",name:"photo",open:()=>photoPage()});
 /* หน้าเชื่อมต่อ LINE — มาจากลิงก์ที่บอท Cendon ส่งให้ (/line?t=…) · ยังไม่ล็อกอิน → ไปล็อกอินแล้วกลับมาที่นี่ */
 Nav.route({path:"line",name:"lineConnect",open:async(p,q)=>{if(!U)sheet({title:"เชื่อม LINE",url:"/line",body:'<p role="status"><span class="spin"></span> กำลังตรวจบัญชี…</p>'});await READY.user;if(U)lineConnect(q.get("t")||"");else needLogin()}});
 Nav.route({path:"quotes",open:async()=>{await READY.techs;if(await needU())openMulti("","")}});
-Nav.route({path:"compare/:g",open:async p=>{if(await needU())return openGroup(p.g)}});
+Nav.route({path:"compare/:g",open:async p=>{if(await needUser())return openGroup(p.g)}});
 Nav.route({path:"urgent",open:async()=>{await READY.techs;if(await needU())return emergency()}});
 Nav.route({path:"breakdown",parent:"urgent",open:()=>urgentCall()});
 Nav.route({path:"accident",parent:"urgent",open:()=>accident()});
@@ -5301,7 +5314,7 @@ Nav.route({path:"post",name:"post",open:async()=>{if(!await needU())return;
   /* มาจาก Cendon Valet ในห้องแชต: ร่างประกาศรอไว้ใน sessionStorage (ใช้ครั้งเดียว) */
   let d=null;try{d=JSON.parse(sessionStorage.getItem("spire_postDraft")||"null");sessionStorage.removeItem("spire_postDraft")}catch(e){}
   if(d&&Date.now()-(d.at||0)<30*60e3)openPostForm(d.sym||"",d.cat||"",d);else openPostForm("","")}});
-Nav.route({path:"post/:id",open:async p=>{if(await needU())return openPostView(p.id)}});
+Nav.route({path:"post/:id",open:async p=>{if(await needUser())return openPostView(p.id)}});
 Nav.route({path:"trip/:token",open:p=>openTrip(p.token)});
 /* ลิงก์รูปแบบเก่า (?shop= ?gig= จากการ์ดแชร์ · ?job= ?jobs= ?studio= ?join= จากการ์ด LINE · ?trip= · ?view=map) ยังใช้ได้ */
 function legacyLink(u){
@@ -6238,7 +6251,9 @@ async function jobs(all){
   sheet({title:T("งานทั้งหมด","All jobs"),url,body:'<div class="skel"></div><div class="skel" style="margin-top:10px"></div>'});
   try{
     /* ห้องทักช่าง (คุยถามก่อนจ้าง) อยู่บนสุด — ล่าสุด 3 ห้อง ที่เหลือกด "ดูข้อความทั้งหมด" */
-    const [d,tl]=await Promise.all([api("/api/tech/jobs"+(all?"?all=1":"")),all?null:api("/api/tech/threads").catch(()=>null)]);
+    /* ประกาศของฉันดึงมาพร้อมกัน — เปิดจากแจ้งเตือนตอนหน้าเพิ่งโหลด (ยังไม่ได้ดึงรอบแรก) ก็ยังเห็นครบ */
+    const [d,tl,ps]=await Promise.all([api("/api/tech/jobs"+(all?"?all=1":"")),all?null:api("/api/tech/threads").catch(()=>null),all?null:api("/api/tech/posts").catch(()=>null)]);
+    if(ps&&Array.isArray(ps.posts))POSTS=ps.posts;
     const L=(d.jobs||[]).filter(j=>all||!techJobHidden(j)),TL=(tl&&tl.threads)||[];
     if(tl){THREADS=TL;queueDot()}
     const msgs=TL.length?`<p class="h4" style="margin-top:0">ข้อความ</p>${TL.slice(0,3).map(thRow).join("")}${TL.length>3?`<button class="lx-gh w" data-inbox style="margin-bottom:14px">${T("ดูข้อความทั้งหมด","See all messages")} (${TL.length})</button>`:""}<p class="h4">งาน</p>`:"";

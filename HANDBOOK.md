@@ -160,7 +160,7 @@
 | Frontend repo | GitHub `carspirethailand/SpireONE-Beta` · branch `main` · Cloudflare Pages deploy เองทุกครั้งที่ push |
 | เว็บแอป | `https://cendon-beta.pages.dev` (ค่า `APP_URL`) |
 | Backend repo | GitHub `carspirethailand/SpireONE-backend` · branch `main` · **deploy ด้วยมือ** (`wrangler deploy`) |
-| Worker ที่ deploy แล้ว | `https://spireonebackend.carspirethailand.workers.dev` · placement `gcp:us-east4` |
+| Worker ที่ deploy แล้ว | `https://spireonebackend.carspirethailand.workers.dev` · placement `gcp:asia-southeast1` (สิงคโปร์ — ใกล้ฐานข้อมูล D1; เดิมสหรัฐฯ ทำให้อ่านฐานข้อมูลคำสั่งละ ~0.3 วิ) |
 | D1 database | ชื่อ `spireone` · id `bf9b1815-2ef6-4463-8b35-6b97717b5d9a` |
 | Durable Object | binding `CHAT_JOBS` · class `CendonChatJobs` · migration `chat-jobs-v1` |
 | Firebase project | `cendon-1` (ยังรับ token ของ `sp1p-82396` ช่วงย้ายผ่าน `FIREBASE_LEGACY_PROJECT_IDS`) |

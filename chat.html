@@ -206,6 +206,8 @@ body[data-phase="thread"] .meteor{display:none}
 .warp.done .warp-core{transform:scale(1.14);opacity:0}
 /* หน้ารอสถานะล็อกอินเดิม (กล่องโลโก้ + กำลังตรวจสอบ...) ไม่แสดงแล้ว — หน้าโหลดค้างไว้แทนจนรู้ผล */
 #v-login .pane-inner{visibility:hidden}
+/* ดึงรถของบัญชีนานเกิน 0.6 วิ: โชว์บรรทัด "กำลังโหลด" (ไม่ปล่อยจอว่าง) */
+#v-login.wait .pane-inner{visibility:visible}
 html.pre-enter body>*{opacity:0}
 /* ระหว่างรอเช็กล็อกอิน (รีเฟรช/ไม่มีหน้าโหลด) ไม่โชว์แสงฟุ้งของหน้าแรกค้างบนจอเปล่า */
 body[data-phase="login"] .w-aura,body[data-phase="login"] .w-sweep,body[data-phase="login"] .stage{display:none!important}
@@ -5041,6 +5043,7 @@ const T={
  "login.google":["เข้าสู่ระบบ Cendon","Sign in to Cendon","Cendonにログイン","登录Cendon","Bei Cendon anmelden","Iniciar sesión en Cendon"],
  "login.gsub":["ปลอดภัย · ไม่มีรหัสผ่าน","Secure · passwordless","安全・パスワード不要","安全·无需密码","Sicher · ohne Passwort","Seguro · sin contraseña"],
  "login.checking":["กำลังตรวจสอบการเข้าสู่ระบบ...","Checking sign-in...","ログイン確認中...","正在检查登录...","Anmeldung wird geprüft...","Comprobando sesión..."],
+ "login.loading":["กำลังโหลดรถและแชตของคุณ…","Loading your cars and chats…","車とチャットを読み込み中…","正在加载你的车辆和聊天…","Autos und Chats werden geladen…","Cargando tus autos y chats…"],
  "login.banned":["บัญชีนี้ถูกระงับการใช้งาน — ติดต่อผู้ดูแลระบบ","This account is suspended — contact an admin","このアカウントは停止されています","此账户已被停用","Dieses Konto ist gesperrt","Esta cuenta está suspendida"],
  "gate.title":["เลือกรถของคุณ","Choose your car","車を選択","选择您的车","Wählen Sie Ihr Auto","Elija su coche"],
  "gate.sub":["Cendon จะวิเคราะห์ได้แม่นยำขึ้นเมื่อรู้จักรถของคุณ","Cendon analyzes better when it knows your car","車を登録するとより正確に分析できます","了解您的车后分析更精准","Cendon analysiert besser, wenn es Ihr Auto kennt","Cendon analiza mejor conociendo su coche"],
@@ -5734,11 +5737,18 @@ if(useFb)auth.onAuthStateChanged(async u=>{
   LS.set("cachedUser", currentUser);
   updateGreeting();
   if(!u){showLoginGate();return}
-  await backendLogin(u);
-  if(isBanned){showBanned();return}
+  /* แจ้งเซิร์ฟเวอร์ว่าเข้ามา (/api/login) ไปพร้อมกับเปิดหน้า — เดิมรอให้ตอบก่อน หน้าแชตจึงว่างเปล่า 0.5–3 วิทุกครั้งที่เปิด
+     บัญชีที่ถูกระงับ: รู้ผลเมื่อไหร่ก็เปลี่ยนเป็นหน้าแจ้งระงับทันที (เซิร์ฟเวอร์ปฏิเสธทุกคำขออยู่แล้ว) */
+  const login=backendLogin(u).then(()=>{if(isBanned&&currentUser&&currentUser.uid===u.uid)showBanned()});
   /* เครื่องใหม่ยังไม่มีรถในเครื่อง ต้องรอดึงจากเซิร์ฟเวอร์ก่อน ไม่งั้นหน้าแรกขึ้น "ยังไม่มีรถ"
-     ทั้งที่บัญชีมีรถอยู่แล้ว (มีรถในเครื่องแล้วก็ซิงก์เบื้องหลังตามเดิม ไม่ต้องรอ) */
-  if(!garage().length)await syncCars(); else syncCars();
+     ทั้งที่บัญชีมีรถอยู่แล้ว (มีรถในเครื่องแล้วก็ซิงก์เบื้องหลังตามเดิม ไม่ต้องรอ)
+     รอนานเกิน 0.6 วิ → บอกว่ากำลังโหลด (เดิมจอว่างทั้งหน้า ดูเหมือนแอปค้าง) */
+  if(!garage().length){
+    const hint=setTimeout(()=>{if(document.body.dataset.phase==="login"&&currentUser){const s=$("loginStatus");s.style.display="block";s.innerHTML=`<i class="ti ti-loader-2 spin"></i> ${tr("login.loading")}`;$("v-login").classList.add("wait")}},600);
+    await Promise.all([syncCars(),login]);clearTimeout(hint);$("v-login").classList.remove("wait");
+  }else syncCars();
+  if(isBanned){showBanned();return}
+  if(!currentUser||currentUser.uid!==u.uid)return;
   runEntry();
 });
 

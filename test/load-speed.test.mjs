@@ -26,3 +26,10 @@ test('/jobs, /compare, /post/:id open as soon as the user is known (not after th
   assert.match(h,/const needUser=async\(\)=>\{await READY\.user;/);
   for(const r of ['path:"jobs",name:"jobs",open:async()=>{if(await needUser())','path:"compare/:g",open:async p=>{if(await needUser())','path:"post/:id",open:async p=>{if(await needUser())'])assert.ok(h.includes(r),r);
 });
+
+test('mobile chat header: ⋮ sits beside the bell, never over the car name',()=>{
+  const v=read('valet.css'),c=read('chat.html');
+  assert.match(v,/header\.pill #pMore~\.cb-bell\{margin-left:0!important\}/,'only ⋮ pushes right; the bell must not split the free space');
+  assert.match(c,/valet\.css\?v=3/);
+  assert.match(c,/header\.pill \.p-car\{[^}]*max-width:calc\(100vw - 212px\)!important/,'centred car name leaves room for two buttons each side');
+});

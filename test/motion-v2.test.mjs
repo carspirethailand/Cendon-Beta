@@ -54,7 +54,7 @@ test('bells are in place on the first frame everywhere (mobile pages, chat bar, 
   assert.match(st,/const keep=v\.querySelector\(':scope>\.cb-bell'\);/);
   assert.match(st,/b\.className='cb-bell cb-m cb-sh cb-pre'/);
   assert.match(st,/main\.innerHTML=mainHTML\(\);/);
-  for(const f of PAGES)assert.match(r(f),/bell\.js\?v=18/,f);
+  for(const f of PAGES)assert.match(r(f),/bell\.js\?v=19/,f);
 });
 
 test('content does not push the page around while loading', () => {

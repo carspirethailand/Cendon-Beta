@@ -516,6 +516,6 @@ function ai(text,valet){
 W.CendonBell={add,list,unread,read,clear,enable,disable,perm,pushOn,pushSub,on,setApi,ai,sys,jobEvents,panel,style,paint,ding,buttons:()=>BTNS.slice(),
   setJobs,fetchJobs,hub:()=>hub(jobsGet()),km:{get:kmGet,set:kmSet,fetch:()=>get("/api/km/remind").then(r=>{kmPut(r);return r})},hasCar,openSettings};
 /* Completion collection follows the user across every app page, not just Chat. */
-if(!W.CendonChatJobs&&!document.querySelector('script[src*="chat-jobs.js"]')){const script=document.createElement('script');script.src='/chat-jobs.js?v=3';script.defer=true;document.head.append(script)}
+if(!W.CendonChatJobs&&!document.querySelector('script[src*="chat-jobs.js"]')){const script=document.createElement('script');script.src='/chat-jobs.js?v=4';script.defer=true;document.head.append(script)}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount);else mount();
 })(window);

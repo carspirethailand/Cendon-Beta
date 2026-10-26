@@ -16,8 +16,8 @@ test('6 pm mileage reminder: bell only suggests it while off (signed in + has a 
 });
 
 test('every page loads the new bell; the 6 pm notification opens that car\'s mileage box', () => {
-  for(const f of ['index.html','garage.html','chat.html','news.html','profile.html','spares.html'])assert.match(r(f),/bell\.js\?v=18/,f);
-  assert.match(r('sw.js'),/'\.\/bell\.js\?v=18'/);
+  for(const f of ['index.html','garage.html','chat.html','news.html','profile.html','spares.html'])assert.match(r(f),/bell\.js\?v=19/,f);
+  assert.match(r('sw.js'),/'\.\/bell\.js\?v=19'/);
   const g=r('garage.html');
   assert.match(g,/const car=q\.get\("car"\), due=q\.get\("due"\);[\s\S]{0,300}if\(car\)sheet\(car,due\|\|""\);/);
 });

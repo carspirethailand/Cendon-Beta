@@ -872,14 +872,15 @@ const winResetAt = (now) => (winKey(now) + 1) * QUOTA_WINDOW_MS;
 
 ```
 chatModels(env) = [GEMINI_CHAT_MODEL, GEMINI_SEARCH_MODEL, GEMINI_MODEL,
-                   gemini-2.5-flash, gemini-3.1-flash-lite, gemini-3.5-flash-lite,
+                   gemini-3.1-flash-lite, gemini-3.5-flash-lite,
                    gemini-3.6-flash, gemini-3.8-flash]   (ตัดซ้ำ · ข้ามตระกูล gemma)
 ค่าใน wrangler ตอนนี้: GEMINI_MODEL = GEMINI_SEARCH_MODEL = gemini-3.5-flash-lite
+(gemini-2.5-flash ถูก Google ปิดให้ผู้ใช้ใหม่แล้ว ตอบ 404 จึงเอาออก)
 ```
 
 - รุ่นไหนตอบ 404/400 หรือติดโควตา → พักรุ่นนั้น 60 วินาที แล้วไปรุ่นถัดไปเอง
 - Gemini ใช้ไม่ได้ทุกรุ่น → **ReAct สำรอง** (`reactAgent`) เรียง Groq ก่อน แล้ว OpenRouter
-  (Groq: `GROQ_MODEL` → `openai/gpt-oss-20b` → `llama-3.1-8b-instant`)
+  (Groq: `GROQ_MODEL` → `openai/gpt-oss-20b` · `llama-3.1-8b-instant` ถูก Groq ปิดแล้ว 16 ส.ค. 2026)
 - มีรูปแนบในทางสำรอง: Groq vision → Workers AI `llama-4-scout` → OpenRouter vision
 - มีตัวกันไม่ให้คำสั่งเรียกเครื่องมือดิบ ๆ (`<|tool_call|>`, `google(...)`) หลุดถึงผู้ใช้ และทิ้งคำตอบขยะแล้วไปรุ่นถัดไป
 

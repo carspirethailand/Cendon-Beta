@@ -1914,6 +1914,16 @@ window.CENDON_L10N={lang:"vi",t:{
 "A notification every evening — tap it to enter the reading":"Thông báo mỗi tối — nhấn để nhập số km",
 "This device doesn’t support notifications — everything is listed under the bell":"Thiết bị này không hỗ trợ thông báo — mọi thứ có trong chuông",
 "The browser didn’t allow notifications":"Trình duyệt không cho phép thông báo",
-"Device notifications off — still listed under the bell":"Đã tắt thông báo thiết bị — vẫn có trong chuông"
+"Device notifications off — still listed under the bell":"Đã tắt thông báo thiết bị — vẫn có trong chuông",
+"Request":"Yêu cầu",
+"Driving":"Đang đến",
+"In review":"Đang xem xét",
+"Your request":"Yêu cầu của bạn",
+"Safety":"An toàn",
+"Share job · Report a problem · Call 191":"Chia sẻ phiếu · Báo sự cố · Gọi 191",
+"Total":"Tổng",
+"None":"Không",
+"4-digit start code":"Mã bắt đầu 4 số",
+"New request":"Yêu cầu mới"
 }};
 Object.assign(window.CENDON_L10N.t,{"The shop is suspended. The team must review and lift the suspension.":"Cửa hàng đang bị tạm ngưng. Đội ngũ cần kiểm tra và gỡ tạm ngưng.","This is a trial shop, hidden from ordinary customers until the full shop review.":"Đây là cửa hàng dùng thử, chưa hiển thị cho khách hàng thông thường trước khi được xét duyệt đầy đủ.","Publication review is still required.":"Vẫn cần xét duyệt công khai.","The shop link has not been confirmed. Please retry the account check.":"Chưa xác nhận liên kết cửa hàng. Vui lòng kiểm tra lại tài khoản.","Shop and services are not public on Home / categories":"Cửa hàng và dịch vụ chưa công khai trên Trang chủ / danh mục","Your shop and services are saved and manageable in Studio. Editing or taking jobs does not change publication approval.":"Cửa hàng và dịch vụ đã được lưu, có thể quản lý trong Studio. Chỉnh sửa hoặc nhận việc không thay đổi phê duyệt công khai.","Services could not refresh. Please retry.":"Không thể cập nhật dịch vụ. Vui lòng thử lại.","Published services from approved shops appear here":"Dịch vụ đã công khai của cửa hàng được duyệt sẽ xuất hiện tại đây","Shops could not refresh. Please retry.":"Không thể cập nhật cửa hàng. Vui lòng thử lại."});

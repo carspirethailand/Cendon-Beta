@@ -1914,6 +1914,16 @@ window.CENDON_L10N={lang:"pt",t:{
 "A notification every evening — tap it to enter the reading":"Uma notificação toda noite — toque para informar a quilometragem",
 "This device doesn’t support notifications — everything is listed under the bell":"Este aparelho não suporta notificações — tudo fica no sino",
 "The browser didn’t allow notifications":"O navegador não permitiu notificações",
-"Device notifications off — still listed under the bell":"Notificações do aparelho desativadas — continuam no sino"
+"Device notifications off — still listed under the bell":"Notificações do aparelho desativadas — continuam no sino",
+"Request":"Pedido",
+"Driving":"A caminho",
+"In review":"Em análise",
+"Your request":"Seu pedido",
+"Safety":"Segurança",
+"Share job · Report a problem · Call 191":"Compartilhar serviço · Relatar problema · Ligar 191",
+"Total":"Total",
+"None":"Nenhuma",
+"4-digit start code":"Código de início de 4 dígitos",
+"New request":"Novo pedido"
 }};
 Object.assign(window.CENDON_L10N.t,{"The shop is suspended. The team must review and lift the suspension.":"A oficina está suspensa. A equipe precisa analisá-la e remover a suspensão.","This is a trial shop, hidden from ordinary customers until the full shop review.":"Esta é uma oficina de teste, oculta aos clientes comuns até concluir a análise completa.","Publication review is still required.":"A análise para publicação ainda é necessária.","The shop link has not been confirmed. Please retry the account check.":"O vínculo da oficina não foi confirmado. Tente verificar a conta novamente.","Shop and services are not public on Home / categories":"Oficina e serviços não estão públicos no Início / categorias","Your shop and services are saved and manageable in Studio. Editing or taking jobs does not change publication approval.":"A oficina e os serviços estão salvos e podem ser gerenciados no Studio. Editar ou aceitar trabalhos não altera a autorização de publicação.","Services could not refresh. Please retry.":"Não foi possível atualizar os serviços. Tente novamente.","Published services from approved shops appear here":"Os serviços publicados de oficinas aprovadas aparecem aqui","Shops could not refresh. Please retry.":"Não foi possível atualizar as oficinas. Tente novamente."});

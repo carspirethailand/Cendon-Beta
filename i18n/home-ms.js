@@ -1914,6 +1914,16 @@ window.CENDON_L10N={lang:"ms",t:{
 "A notification every evening — tap it to enter the reading":"Pemberitahuan setiap petang — ketik untuk isi bacaan",
 "This device doesn’t support notifications — everything is listed under the bell":"Peranti ini tidak menyokong pemberitahuan — semuanya ada di loceng",
 "The browser didn’t allow notifications":"Pelayar tidak membenarkan pemberitahuan",
-"Device notifications off — still listed under the bell":"Pemberitahuan peranti dimatikan — masih ada di loceng"
+"Device notifications off — still listed under the bell":"Pemberitahuan peranti dimatikan — masih ada di loceng",
+"Request":"Minta harga",
+"Driving":"Dalam perjalanan",
+"In review":"Sedang disemak",
+"Your request":"Permintaan anda",
+"Safety":"Keselamatan",
+"Share job · Report a problem · Call 191":"Kongsi kerja · Lapor masalah · Hubungi 191",
+"Total":"Jumlah",
+"None":"Tiada",
+"4-digit start code":"Kod mula 4 digit",
+"New request":"Permintaan baharu"
 }};
 Object.assign(window.CENDON_L10N.t,{"The shop is suspended. The team must review and lift the suspension.":"Bengkel digantung. Pasukan perlu menyemak dan menarik balik penggantungan.","This is a trial shop, hidden from ordinary customers until the full shop review.":"Ini bengkel percubaan, belum dipaparkan kepada pelanggan umum sebelum semakan penuh.","Publication review is still required.":"Semakan penerbitan masih diperlukan.","The shop link has not been confirmed. Please retry the account check.":"Pautan bengkel belum disahkan. Cuba semak akaun semula.","Shop and services are not public on Home / categories":"Bengkel dan perkhidmatan belum dipaparkan pada Utama / kategori","Your shop and services are saved and manageable in Studio. Editing or taking jobs does not change publication approval.":"Bengkel dan perkhidmatan disimpan dan boleh diurus dalam Studio. Mengedit atau menerima kerja tidak mengubah kelulusan penerbitan.","Services could not refresh. Please retry.":"Perkhidmatan tidak dapat dikemas kini. Cuba lagi.","Published services from approved shops appear here":"Perkhidmatan diterbitkan daripada bengkel yang diluluskan dipaparkan di sini","Shops could not refresh. Please retry.":"Bengkel tidak dapat dikemas kini. Cuba lagi."});

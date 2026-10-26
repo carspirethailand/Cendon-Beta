@@ -70,10 +70,16 @@ test('service worker: an AI-answer push is dropped only while a chat tab is visi
   tabs=[{url:'https://app.unit.test/chat',visibilityState:'hidden'},{url:'https://app.unit.test/',visibilityState:'visible'}];
   await push({title:'Cendon AI ตอบแล้ว',tag:'cendon-ai-2'});assert.deepEqual(shown,['quote-1','cendon-ai-2'],'chat in the background = still notified');
 });
-test('job sheet: status headline + steps, live map kept as is, actions unchanged',()=>{
+test('job sheet: status card with step road + AI-style light while waiting, live map kept as is, actions unchanged',()=>{
   const h=r('index.html');
-  assert.match(h,/const hero=`<section class="jw-hero s-\$\{s\}">/);
-  assert.match(h,/<ol class="jw-steps"/);assert.match(h,/\$\{hero\}\$\{liveCard\}/,'the live map card follows the headline untouched');
-  for(const a of ['newcode','share','unshare','dispute','extra_ok:','extra_no:'])assert.ok(h.includes('data-a="'+a),a);
+  assert.match(h,/const hero=`<section class="jw-hero s-\$\{s\}\$\{waiting\?" wait":""\}"><span class="jw-ring"/,'status card carries the loading ring');
+  assert.match(h,/\.jw-hero\.wait \.jw-ring\{opacity:1;animation-play-state:running\}/,'ring only runs while waiting for the other side');
+  assert.match(h,/#FFB547 34%,#F28C38 42%,#FF4D7A 53%,#8B6BFF 63%/,'same colours as the Cendon AI composer light');
+  assert.match(h,/class="jw-road"[\s\S]{0,800}\$\{CAR_TOY\}/,'the toy car drives along the step road');
+  assert.match(h,/\$\{hero\}\$\{liveCard\}/,'the live map card follows the headline untouched');
+  for(const a of ['newcode','share','unshare','dispute','extra_ok:','extra_no:','accept','quote','start'])assert.ok(h.includes('data-a="'+a)||h.includes('["'+a+'"'),a);
   assert.match(h,/const at=s==="done"\?4:rk/,'repair finished = only the last step is left');
+  assert.match(h,/requested:asCust,quoted:!asCust,accepted:asCust,enroute:asCust,working:asCust,done:!asCust/,'waiting = the other side has the next move');
+  assert.match(h,/id="qSum"/);assert.match(h,/id="qW" value="\$\{w0\}"/,'warranty presets still post one number');
+  assert.match(h,/\.jw-ring,\.jw-hero::after[^}]*\{animation:none;transition:none\}/,'reduced motion stops every moving part');
 });

@@ -16,7 +16,7 @@ html.ib-boot .bs .pn,html.ib-boot .bs .bg{transition:none!important}</style>
 <script src="/shop-images.js?v=1"></script>
 <script src="/display-prefs.js?v=3" defer></script>
 <script src="/i18n/ui-en.js?v=4" defer></script>
-<script src="/ui-language.js?v=10" defer></script>
+<script src="/ui-language.js?v=11" defer></script>
 <script src="/partner-entry.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
@@ -36,7 +36,7 @@ html.ib-boot .bs .pn,html.ib-boot .bs .bg{transition:none!important}</style>
 (function(){try{if(/^\/(work|studio)(\/|$)/.test(location.pathname)){var p=JSON.parse(localStorage.getItem("spire_partner")||"null");if(p&&p.s==="shop")document.documentElement.dataset.boot="tech"}}catch(e){}})();</script>
 <script>(function(){try{var A=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt"],l=null;try{l=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
 if(A.indexOf(l)<0){l="en";var n=navigator.languages||[navigator.language||"en"];for(var i=0;i<n.length;i++){var b=String(n[i]).toLowerCase().split("-")[0];if(A.indexOf(b)>=0){l=b;break}}}
-if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=24"><\/script>')}catch(e){}})();</script>
+if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=25"><\/script>')}catch(e){}})();</script>
 <title>Cendon</title>
 <meta name="description" content="ถามอาการรถ ส่งรูปหรือเสียงให้ AI ช่วยดู เช็กใบเสนอราคา และหาช่างที่ผ่านการตรวจใกล้คุณ">
 <!-- การ์ดตอนแชร์ลิงก์ (LINE / Facebook / X) — รูปต้องเป็นที่อยู่เต็ม -->
@@ -546,62 +546,102 @@ textarea.inp{min-height:92px;resize:vertical}
 .track .s.done i{background:var(--grad);color:var(--on-acc,#fff);box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
 .track .s.done::before{background:var(--accent)}
 .track .s.now i{transform:scale(1.15);animation:ring 1.8s infinite}
-/* ══ ใบงาน (กระบวนการทำงานกับช่าง) ══ หัวบอกสถานะ+สิ่งที่ต้องทำต่อ → แผนที่สด (เดิม) → รหัสเริ่มงาน → คน → ราคา → ผลงาน → รายละเอียด → ความปลอดภัย */
-.jw{--jw:var(--accent);padding-bottom:6px}
-.jw-hero{position:relative;margin:2px 0 12px;padding:18px 18px 16px;border-radius:24px;background:var(--surface);box-shadow:0 0 0 1px var(--line-2);overflow:hidden;isolation:isolate}
-.jw-hero::before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(120% 90% at 100% 0,color-mix(in srgb,var(--jw) 15%,transparent),transparent 62%)}
-.jw-hero.s-enroute,.jw-hero.s-working,.jw-hero.s-completed{--jw:#16a34a}.jw-hero.s-requested{--jw:#71717a}.jw-hero.s-cancelled,.jw-hero.s-disputed{--jw:#dc2626}
-.jw-eye{display:flex;align-items:center;gap:8px;margin:0 0 6px;font-size:12.5px;font-weight:600;color:var(--jw)}
-.jw-eye span{margin-left:auto;max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-weight:500}
-.jw-eye b{font-weight:600;color:var(--muted)}
-.jw-dot{flex:none;width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 0 4px color-mix(in srgb,currentColor 18%,transparent)}
-.jw-hero.s-enroute .jw-dot{animation:jwPulse 1.6s infinite}
-@keyframes jwPulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,currentColor 45%,transparent)}100%{box-shadow:0 0 0 9px transparent}}
-.jw-h{margin:0;font-family:var(--kd);font-size:25px;font-weight:700;line-height:1.22;letter-spacing:-.01em}
-.jw-sub{margin:6px 0 0;font-size:13.5px;line-height:1.55;color:var(--muted)}
-.jw-steps{list-style:none;display:flex;margin:16px -4px 0;padding:0}
-.jw-steps li{flex:1;position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:var(--faint);text-align:center}
-.jw-steps li::before{content:"";position:absolute;top:13px;right:50%;width:100%;height:2px;background:var(--line)}
-.jw-steps li:first-child::before{display:none}
-.jw-steps li.done::before,.jw-steps li.now::before{background:var(--jw)}
-.jw-steps li i{position:relative;z-index:1;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:14px;background:var(--surface-2);color:var(--faint)}
-.jw-steps li.done{color:var(--ink)}.jw-steps li.done i{background:var(--jw);color:#fff}
-.jw-steps li.now{color:var(--ink);font-weight:600}
-.jw-steps li.now i{background:var(--surface);color:var(--jw);box-shadow:0 0 0 2px var(--jw),0 0 0 6px color-mix(in srgb,var(--jw) 16%,transparent)}
-.jw-fresh{display:none;align-items:center;gap:6px;margin-top:12px;padding:5px 11px;border-radius:999px;background:color-mix(in srgb,var(--jw) 12%,transparent);color:var(--jw);font-size:12px;font-weight:600}
-.jw-fresh.on{display:inline-flex;animation:jwIn .3s both}
+/* ══ ใบงาน (กระบวนการทำงานกับช่าง) ══ การ์ดสถานะ (ถนนขั้นตอน + แสงรอบขอบตอนรออีกฝ่าย) → แผนที่สด (เดิม) → สิ่งสำคัญของขั้นนั้น → คน → ราคา/รายละเอียด (พับได้) → ความปลอดภัย */
+.jw{--jw:var(--accent);--jw-bub:#18181B;--jw-bub-ink:#fff;padding:2px 0 8px}
+html[data-theme="dark"] .jw{--jw-bub:#E8913E;--jw-bub-ink:#1A0B03}
+.jw-hero{position:relative;margin:2px 0 18px;padding:16px 18px 14px;border-radius:24px;background:var(--surface);box-shadow:0 0 0 1px var(--line-2),0 18px 40px -30px rgba(0,0,0,.45);isolation:isolate}
+.jw-hero.s-completed{--jw:var(--ok,#16a34a)}.jw-hero.s-cancelled,.jw-hero.s-disputed{--jw:var(--danger,#dc2626)}
+/* แสงรอบขอบแบบช่องพิมพ์ Cendon AI ตอนกำลังตอบ (สีชุดเดียวกัน) — ติดเฉพาะตอนรออีกฝ่าย */
+.jw-ring{position:absolute;inset:-1px;border-radius:inherit;padding:1.5px;pointer-events:none;z-index:2;
+  background:linear-gradient(90deg,transparent 22%,#FFB547 34%,#F28C38 42%,#FF4D7A 53%,#8B6BFF 63%,transparent 76%);background-size:200% 100%;background-repeat:no-repeat;
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);
+  opacity:0;transition:opacity .9s ease;animation:jwRing 3.4s cubic-bezier(.65,0,.35,1) infinite alternate;animation-play-state:paused}
+.jw-hero::after{content:"";position:absolute;left:14%;right:14%;bottom:-14px;height:30px;border-radius:50%;z-index:-1;pointer-events:none;
+  background:linear-gradient(90deg,#FFB547,#F28C38,#FF4D7A,#8B6BFF);filter:blur(22px);opacity:0;transition:opacity 1.2s ease;animation:jwAura 6s ease-in-out infinite alternate;animation-play-state:paused}
+.jw-hero.wait .jw-ring{opacity:1;animation-play-state:running}
+.jw-hero.wait::after{opacity:.22;animation-play-state:running}
+html[data-theme="light"] .jw-hero.wait::after{opacity:.15}
+@keyframes jwRing{from{background-position:76% 0}to{background-position:16% 0}}
+@keyframes jwAura{from{transform:translateX(-8%) scaleX(.9)}to{transform:translateX(8%) scaleX(1.05)}}
+/* สถานะเปลี่ยนขณะเปิดอยู่: แสงกวาดผ่านการ์ดหนึ่งครั้ง */
+.jw-hero.jw-new::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:1;
+  background:linear-gradient(105deg,transparent 30%,color-mix(in srgb,var(--jw) 22%,transparent) 50%,transparent 70%) no-repeat;background-size:250% 100%;animation:jwSweep 1.1s ease-out 1 both}
+@keyframes jwSweep{from{background-position:120% 0}to{background-position:-60% 0}}
+.jw-top{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:28px}
+.jw-chip{display:inline-flex;align-items:center;gap:8px;height:28px;padding:0 12px 0 10px;border-radius:999px;background:color-mix(in srgb,var(--jw) 13%,transparent);color:var(--jw);font-size:12.5px;font-weight:600;white-space:nowrap}
+.jw-dot{position:relative;flex:none;width:8px;height:8px;border-radius:50%;background:currentColor}
+.jw-hero.wait .jw-dot::after{content:"";position:absolute;inset:0;border-radius:50%;background:currentColor;animation:jwPing 1.8s ease-out infinite}
+@keyframes jwPing{from{transform:scale(.7);opacity:.85}to{transform:scale(2.6);opacity:0}}
+.jw-car-n{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px;color:var(--muted)}
+.jw-fresh{display:none;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--jw);white-space:nowrap}
+.jw-fresh.on{display:inline-flex;animation:jwIn .3s both}.jw-fresh.on+.jw-car-n{display:none}
 @keyframes jwIn{from{opacity:0;transform:translateY(4px)}}
+.jw-h{margin:12px 0 0;font-family:var(--kd);font-size:26px;font-weight:700;line-height:1.22;letter-spacing:-.01em}
+.jw-sub{margin:6px 0 0;font-size:14px;line-height:1.55;color:var(--muted)}
+/* ถนนขั้นตอน: รถคันเดียวกับในแผนที่ขับไปตามขั้น ป้ายบนรถบอกว่าถึงตาใคร */
+.jw-road{position:relative;height:70px;margin:12px 2px 0}
+.jw-track,.jw-trail{position:absolute;left:0;bottom:8px;height:6px;border-radius:3px}
+.jw-track{right:0;background-color:var(--surface-2);background-image:repeating-linear-gradient(90deg,transparent 0 5px,color-mix(in srgb,var(--surface) 75%,transparent) 5px 10px);background-size:100% 1.4px;background-position:0 50%;background-repeat:no-repeat}
+.jw-trail{width:var(--p);background:var(--jw);transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+.jw-node{position:absolute;bottom:5.5px;width:11px;height:11px;margin-left:-5.5px;border-radius:50%;background:var(--line);box-shadow:0 0 0 2.5px var(--surface)}
+.jw-node.on,.jw-node.now{background:var(--jw)}
+.jw-car{position:absolute;left:var(--p);bottom:12px;width:110px;margin-left:-55px;display:flex;flex-direction:column;align-items:center;transition:left 1.2s cubic-bezier(.4,0,.2,1)}
+.jw-car em{position:relative;white-space:nowrap;padding:3px 9px;border-radius:9px;background:var(--jw-bub);color:var(--jw-bub-ink);font-style:normal;font-size:11.5px;font-weight:600;line-height:1.4;box-shadow:0 6px 14px -8px rgba(0,0,0,.5)}
+.jw-car em::after{content:"";position:absolute;left:50%;bottom:-3px;width:7px;height:7px;margin-left:-3.5px;border-radius:1px;background:inherit;transform:rotate(45deg)}
+.jw-cb{position:relative;display:block;width:34px;height:22px;margin-top:9px;animation:jwBob 1.2s ease-in-out infinite}
+.jw-cb::before{content:"";position:absolute;left:-6px;right:-6px;bottom:-4px;height:8px;border-radius:50%;background:radial-gradient(closest-side,rgba(240,122,54,.5),transparent)}
+.jw-cb svg{position:relative;display:block}
+.jw-hero:not(.wait) .jw-cb{animation-duration:2.6s}
+@keyframes jwBob{50%{transform:translateY(-1.5px)}}
+.jw-roadl{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));margin:5px 2px 0;font-size:11.5px;text-align:center;color:var(--faint)}
+.jw-roadl .on{color:var(--muted)}.jw-roadl .now{color:var(--ink);font-weight:600}
+/* การ์ดเนื้อหา */
 .jw-card{position:relative;margin:0 0 12px;padding:16px;border-radius:22px;background:var(--surface);box-shadow:0 0 0 1px var(--line-2)}
 .jw-card h3{display:flex;align-items:center;gap:7px;margin:0 0 10px;font-size:13px;font-weight:600;color:var(--muted)}
 .jw-card h3 .ti{font-size:16px}
-.jw-who{display:flex;align-items:center;gap:12px;overflow:hidden;isolation:isolate}
-.jw-who .wf{z-index:-1}
-.jw-who .av{flex:none;width:52px;height:52px;border-radius:16px;font-size:20px;font-weight:700}
-.jw-wt{flex:1;min-width:0}.jw-wt small{display:block;font-size:12px;color:var(--muted)}
-.jw-wt b{display:block;font-family:var(--kd);font-size:17px;font-weight:600;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.jw-badges{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
-.jw-badges span{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;background:color-mix(in srgb,#1E40AF 10%,transparent);color:#1E40AF;font-size:11px;font-weight:500}
-html[data-theme="dark"] .jw-badges span{background:color-mix(in srgb,#93C5FD 14%,transparent);color:#93C5FD}
-.jw-wa{display:flex;gap:8px;flex:none}
-.jw-ib{position:relative;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;border:0;background:var(--surface-2);color:var(--ink);font-size:20px;cursor:pointer;text-decoration:none}
-.jw-ib.p{background:var(--ink);color:var(--bg)}
-.jw-ib .dot{position:absolute;top:-3px;right:-3px;min-width:19px;height:19px;padding:0 4px;border-radius:999px;display:grid;place-items:center;background:#dc2626;color:#fff;font-size:10.5px;font-weight:700;border:2px solid var(--surface)}
-.jw-ph{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
-.jw-ph span{font-size:13px;font-weight:500;color:var(--muted)}
-.jw-ph b{font-family:var(--kd);font-size:30px;font-weight:700;letter-spacing:-.02em}
-.jw-lines{margin:10px 0 0;padding:10px 0 0;border-top:1px dashed var(--line)}
-.jw-lines div{display:flex;justify-content:space-between;gap:12px;padding:4px 0;font-size:13.5px}
-.jw-lines dt{color:var(--muted);min-width:0}.jw-lines dd{margin:0;font-weight:500;white-space:nowrap}
-.jw-scope{margin:10px 0 0;font-size:14px;line-height:1.55;white-space:pre-wrap}
+/* พับได้: ราคาหลังตกลง · รายละเอียด · ความปลอดภัย */
+.jw-fold{padding:0}
+.jw-fold>summary{display:flex;align-items:center;gap:10px;min-height:56px;padding:12px 18px 12px 16px;cursor:pointer;list-style:none;border-radius:inherit}
+.jw-fold>summary::-webkit-details-marker{display:none}
+.jw-fold>summary>span{flex:1;min-width:0}
+.jw-fold>summary small{display:block;font-size:12px;color:var(--muted)}
+.jw-fold>summary b{display:block;font-size:15px;font-weight:600}
+.jw-fold>summary em{font-style:normal;font-size:13px;color:var(--muted)}
+.jw-fold>summary::after{content:"";flex:none;width:8px;height:8px;margin:0 2px 4px;border-right:1.8px solid var(--faint);border-bottom:1.8px solid var(--faint);transform:rotate(45deg);transition:transform .25s ease}
+.jw-fold[open]>summary::after{transform:rotate(-135deg);margin-bottom:-4px}
+.jw-fold>:not(summary){margin-left:16px;margin-right:16px}
+.jw-fold>:last-child{margin-bottom:14px}
+.jw-fold[open]>summary{padding-bottom:4px}
+.jw-fold[open]>:not(summary){animation:jwIn .25s ease both}
+/* ราคา */
+.jw-k{display:block;font-size:13px;color:var(--muted)}
+.jw-total{display:block;margin-top:2px;font-family:var(--kd);font-size:38px;font-weight:700;line-height:1.1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.jw-price.jw-fold>summary b{font-size:19px;font-variant-numeric:tabular-nums}
+.jw-lines{margin:12px 0 0;padding:0}
+.jw-lines div{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line-2);font-size:14.5px}
+.jw-lines dt{color:var(--muted);min-width:0}.jw-lines dd{margin:0;font-weight:500;white-space:nowrap;font-variant-numeric:tabular-nums}
+.jw-scope{margin:6px 0 0;padding:12px 14px;border-radius:14px;background:var(--surface-2);font-size:14px;line-height:1.55;white-space:pre-wrap}
 .jw-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
-.jw-tags span{display:inline-flex;align-items:center;gap:5px;max-width:100%;padding:6px 11px;border-radius:999px;background:var(--surface-2);font-size:12.5px;color:var(--muted)}
+.jw-tags span{display:inline-flex;align-items:center;gap:5px;max-width:100%;padding:5px 11px;border-radius:10px;box-shadow:inset 0 0 0 1px var(--line);font-size:12.5px;color:var(--muted)}
 .jw-tags span b{font-weight:500;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .jw-tags .ti{font-size:14px}
-.jw-code{background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 10%,var(--surface)),var(--surface) 60%)}
-.jw-ch{display:flex;align-items:center;gap:8px}.jw-ch .ti{font-size:18px;color:var(--accent)}.jw-ch b{flex:1;font-size:14.5px;font-weight:600}
-.jw-digits{display:flex;justify-content:center;gap:10px;margin:12px 0}
-.jw-digits span{width:56px;height:64px;border-radius:16px;display:grid;place-items:center;background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--line);font-family:var(--kd);font-size:32px;font-weight:700}
-.jw-code p{margin:0;font-size:12.5px;line-height:1.6;color:var(--muted)}.jw-code p b{color:var(--ink)}
+/* รหัสเริ่มงาน */
+.jw-ch{display:flex;align-items:center;gap:8px}.jw-ch .ti{display:none}.jw-ch b{flex:1;font-size:15px;font-weight:600}
+.jw-digits{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0}
+.jw-digits span{height:62px;border-radius:15px;display:grid;place-items:center;background:var(--surface-2);box-shadow:inset 0 1px 0 rgba(255,255,255,.05),inset 0 -2px 0 rgba(0,0,0,.12);font-family:var(--kd);font-size:30px;font-weight:700}
+.jw-code p{margin:0;font-size:13px;line-height:1.6;color:var(--muted)}.jw-code p b{color:var(--ink)}
+/* ร้าน / ลูกค้า */
+.jw-who{display:flex;align-items:center;gap:12px;padding:14px 16px}
+.jw-who .av{flex:none;width:50px;height:50px;border-radius:16px;font-size:20px;font-weight:700}
+.jw-wt{flex:1;min-width:0}.jw-wt small{display:block;font-size:12px;color:var(--muted)}
+.jw-wt b{display:block;font-family:var(--kd);font-size:16.5px;font-weight:600;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jw-badges{display:flex;flex-wrap:wrap;gap:2px 8px;margin-top:3px}
+.jw-badges span{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--muted)}
+.jw-badges .ti{font-size:14px;color:var(--ok,#16a34a)}
+.jw-wa{display:flex;gap:8px;flex:none}
+.jw-ib{position:relative;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;border:0;background:none;box-shadow:inset 0 0 0 1px var(--line);color:var(--ink);font-size:19px;cursor:pointer;text-decoration:none}
+.jw-ib.p{background:var(--ink);color:var(--bg);box-shadow:none}
+.jw-ib .dot{position:absolute;top:-3px;right:-3px;min-width:19px;height:19px;padding:0 4px;border-radius:999px;display:grid;place-items:center;background:#dc2626;color:#fff;font-size:10.5px;font-weight:700;border:2px solid var(--surface)}
 .jw-kv{list-style:none;margin:0;padding:0}
 .jw-kv li{display:grid;grid-template-columns:20px 92px minmax(0,1fr);gap:10px;align-items:start;padding:10px 0;border-top:1px solid var(--line-2);font-size:14px}
 .jw-kv li:first-child{border-top:0;padding-top:2px}
@@ -613,7 +653,7 @@ html[data-theme="dark"] .jw-badges span{background:color-mix(in srgb,#93C5FD 14%
 .jw-note .ti{flex:none;font-size:17px;color:var(--accent)}
 .jw-card.ext{border:0;padding:16px}
 .jw-safe .jw-row{display:flex;align-items:center;gap:12px;width:100%;padding:10px 0;border:0;border-top:1px solid var(--line-2);background:none;color:var(--ink);text-align:left;font:inherit;cursor:pointer;text-decoration:none}
-.jw-safe h3+.jw-row{border-top:0;padding-top:2px}
+.jw-safe .jw-row:first-child{border-top:0}
 .jw-row .ri{flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--c);color:#fff;font-size:18px}
 .jw-row .rt{flex:1;min-width:0}.jw-row .rt b{display:block;font-size:14px;font-weight:600}.jw-row .rt small{display:block;font-size:12px;line-height:1.45;color:var(--muted)}
 .jw-row>.ti{color:var(--faint)}
@@ -622,11 +662,36 @@ html[data-theme="dark"] .jw-badges span{background:color-mix(in srgb,#93C5FD 14%
 .jw-more button{min-height:40px;padding:6px 4px;border:0;background:none;color:var(--muted);font:inherit;font-size:13.5px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .jw-more button:hover{color:var(--ink)}
 .jw .lv{border-radius:22px}
+/* ถึงตาคุณ: ปุ่มหลักหายใจเบา ๆ (เส้นขอบ ไม่ใช้เงา เพราะธีมปิดเงาปุ่มไว้) */
+.btn.jw-go{outline:2px solid transparent;outline-offset:0;animation:jwGo 2.6s ease-in-out infinite}
+@keyframes jwGo{0%,100%{outline-color:rgba(240,122,54,0);outline-offset:0}50%{outline-color:rgba(240,122,54,.38);outline-offset:4px}}
+/* ฟอร์มเสนอราคา · ยืนยันราคา · รหัสเริ่มงาน */
+.jq-card{margin:12px 0 14px;padding:2px 14px;border-radius:18px;background:var(--surface);box-shadow:0 0 0 1px var(--line-2)}
+.jq-row{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line-2);font-size:15px}
+.jq-row small{font-size:12px;color:var(--muted)}
+.jq-row .inp{flex:none;width:136px;height:46px;margin:0;padding:0 12px 0 30px;text-align:right;font-size:18px;font-weight:600;font-variant-numeric:tabular-nums}
+.jq-row::after{content:"฿";position:absolute;right:118px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--muted);pointer-events:none}
+.jq-sum{display:flex;align-items:center;justify-content:space-between;padding:12px 0 10px;font-size:15px;font-weight:600}
+.jq-sum b{font-family:var(--kd);font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
+.jq-seg{display:grid;grid-template-columns:repeat(auto-fit,minmax(46px,1fr));gap:4px;padding:4px;border-radius:14px;background:var(--surface-2)}
+.jq-seg button{height:40px;border:0;border-radius:10px;background:none;color:var(--muted);font:inherit;font-size:13.5px;font-weight:500;cursor:pointer;transition:background .2s,color .2s}
+.jq-seg button[aria-checked="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.jq-otp{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:6px 0 12px}
+.jq-otp span{height:68px;border-radius:16px;display:grid;place-items:center;background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--line);font-family:var(--kd);font-size:32px;font-weight:700;transition:box-shadow .2s}
+.jq-otp span.at{box-shadow:inset 0 0 0 2px var(--accent)}
+.jq-otp input{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;opacity:0;border:0;font-size:16px;cursor:text}
+.jq-acc{margin:4px 0 14px;padding:16px;border-radius:18px;background:var(--surface);box-shadow:0 0 0 1px var(--line-2)}
+.jq-acc small{display:block;font-size:12.5px;color:var(--muted)}
+.jq-acc b{display:block;font-family:var(--kd);font-size:34px;font-weight:700;line-height:1.15;font-variant-numeric:tabular-nums}
+.jq-acc p{margin:6px 0 0;font-size:14px;line-height:1.5}
+.jq-acc span{display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-size:13px;color:var(--muted)}
+.jq-notes{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:10px;font-size:13.5px;line-height:1.5;color:var(--muted)}
+.jq-notes li{display:flex;gap:10px}.jq-notes .ti{flex:none;margin-top:1px;font-size:18px;color:var(--ink)}.jq-notes b{color:var(--ink)}
 /* งานทั้งหมด: ส่วนแบบเดียวกับกระดิ่ง */
 .jw-sec{display:flex;align-items:center;gap:8px;margin:16px 4px 6px;font-size:12.5px;font-weight:600;color:var(--muted)}
 .jw-sec em{min-width:20px;height:20px;padding:0 6px;border-radius:999px;display:grid;place-items:center;background:var(--accent);color:#fff;font-style:normal;font-size:11px}
 .jw-list{padding:4px;border-radius:20px;background:var(--surface);box-shadow:0 0 0 1px var(--line-2)}
-@media(prefers-reduced-motion:reduce){.jw-hero.s-enroute .jw-dot,.jw-fresh.on{animation:none}}
+@media(prefers-reduced-motion:reduce){.jw-ring,.jw-hero::after,.jw-hero.wait .jw-dot::after,.jw-cb,.jw-car,.jw-trail,.jw-hero.jw-new::before,.btn.jw-go,.jw-fresh.on,.jw-fold[open]>:not(summary){animation:none;transition:none}}
 .who{position:relative;overflow:hidden;isolation:isolate;display:flex;align-items:center;gap:12px;padding:14px;border-radius:20px;background:var(--surface);margin-bottom:12px}
 .who .wf{z-index:-1}
 .who .sq{width:52px;height:52px;font-size:20px;font-weight:700;flex-shrink:0}
@@ -6375,7 +6440,10 @@ async function openJob(id,push){
   try{j=(await api("/api/tech/jobs/"+id)).job}catch(e){return toast(e.message,"ti-alert-triangle")}
   drawJob(j,push);
 }
+/* รถช่างของเล่นบนถนนขั้นตอน — สีและทรงเดียวกับรถในแผนที่ติดตามช่าง */
+const CAR_TOY='<svg width="34" height="22" viewBox="0 0 34 22" aria-hidden="true"><path fill="#F4A340" d="M3 15.4v-4.1c0-1 .6-1.8 1.5-2.1L8.2 8l2.5-3.5c.4-.6 1.1-.9 1.8-.9h9c.7 0 1.3.3 1.7.8L26.2 8l3.5.8c1 .2 1.8 1.1 1.8 2.1v4.5c0 .6-.4 1-1 1H4c-.6 0-1-.4-1-1z"/><path fill="#E08A2C" d="M3 13.4h28.5v2c0 .6-.4 1-1 1H4c-.6 0-1-.4-1-1z"/><path fill="#34404F" d="M11.6 8l1.8-2.5h3.3V8zM18.2 8V5.5h3.2L23.3 8z"/><path fill="#5A7DB5" d="M14.6 3.6a2.4 2.4 0 0 1 4.8 0z"/><path fill="#EAEFF7" d="M16.6 1.2h.8v2.4h-.8z"/><circle cx="9.6" cy="16.4" r="3.3" fill="#1C1C1F"/><circle cx="9.6" cy="16.4" r="1.3" fill="#EDEDED"/><circle cx="24.6" cy="16.4" r="3.3" fill="#1C1C1F"/><circle cx="24.6" cy="16.4" r="1.3" fill="#EDEDED"/></svg>';
 function drawJob(j,push){
+  const prevS=JOB&&JOB.id===j.id?JOB.s:null;
   const cust=j.role==="customer"||j.role==="both",tech=j.role==="technician"||j.role==="both",s=j.status,q=j.quote;
   const rk=RANK[s];
   /* ยกเลิกแล้ว: บอกว่าใครยกเลิก (จากหลังบ้าน cancelledBy ไม่เดาจากบทบาทของคนที่ดู) และเหตุผล */
@@ -6403,10 +6471,23 @@ function drawJob(j,push){
       :[T("ลูกค้ายืนยันงานแล้ว","Customer confirmed the job"),T("งานนี้ปิดเรียบร้อย","This job is closed")],
     cancelled:[T("ยกเลิกแล้ว","Cancelled"),[byWho,why&&T("เหตุผล","Reason")+": "+why].filter(Boolean).join(" · ")],
     disputed:[T("แจ้งปัญหาแล้ว","Problem reported"),T("ทีมงาน Cendon กำลังดูเรื่องนี้และจะติดต่อกลับ","Cendon staff are reviewing this and will get back to you")]}[s]||[STATUS[s]||s,""];
-  const steps=s==="cancelled"?"":`<ol class="jw-steps" aria-label="${T("ขั้นตอนงาน","Job progress")}">${FLOW.map(([k,l,ic],i)=>{const at=s==="done"?4:rk,done=i<at||s==="completed",now=i===at&&s!=="completed";
-    return `<li class="${done?"done":now?"now":""}"${now?' aria-current="step"':""}><i class="ti ${done?"ti-check":ic}"></i><span>${l}</span></li>`}).join("")}</ol>`;
-  const hero=`<section class="jw-hero s-${s}"><p class="jw-eye"><i class="jw-dot"></i>${j.test?T("ทดสอบ","Test")+" · ":""}${HERO[0]===(STATUS[s]||s)?`<b class="nt">${esc(j.car)}</b>`:`${esc(STATUS[s]||s)}<span class="nt">${esc(j.car)}</span>`}</p>
-    <h2 class="jw-h">${esc(HERO[0])}</h2>${HERO[1]?`<p class="jw-sub">${esc(HERO[1])}</p>`:""}${steps}<span class="jw-fresh" id="jFresh" role="status" aria-live="polite"></span></section>`;
+  /* หัวใบงาน: ถนนขั้นตอน — รถช่างคันเดียวกับในแผนที่ขับไปตามขั้น ป้ายบนรถบอกว่าถึงตาใคร
+     ระหว่างรออีกฝ่าย การ์ดมีเส้นแสงวิ่งรอบขอบแบบช่องพิมพ์ของ Cendon AI ตอนกำลังตอบ */
+  const at=s==="done"?4:rk,fin=s==="completed";
+  const waiting=!!{requested:asCust,quoted:!asCust,accepted:asCust,enroute:asCust,working:asCust,done:!asCust,disputed:1}[s];
+  const NODE=[T("ขอราคา","Request"),asCust?T("ได้ราคา","Quote"):T("เสนอราคา","Quote"),T("นัด","Booked"),T("ซ่อม","Repair"),T("เสร็จ","Done")];
+  const BUB={requested:asCust?T("รอร้าน","Waiting"):T("ถึงตาคุณ","Your turn"),quoted:asCust?T("ถึงตาคุณ","Your turn"):T("รอลูกค้า","Waiting"),
+    accepted:asCust?T("นัดแล้ว","Booked"):T("ถึงตาคุณ","Your turn"),enroute:asCust?T("กำลังมา","On the way"):T("กำลังไป","Driving"),
+    working:T("กำลังซ่อม","Repairing"),done:asCust?T("ถึงตาคุณ","Your turn"):T("รอลูกค้า","Waiting"),completed:T("เสร็จแล้ว","Done"),disputed:T("ทีมงานดูอยู่","In review")}[s]||"";
+  const pct=i=>10+20*i,carAt=fin?pct(4):pct(Math.min(at,4))+(waiting&&at<4?8:0);
+  const road=rk<0?"":`<div class="jw-road" style="--p:${carAt}%" role="img" aria-label="${esc(T("ขั้นตอนงาน","Job progress")+": "+NODE[Math.min(at,4)])}"><i class="jw-track"></i><i class="jw-trail"></i>${NODE.map((t,i)=>`<b class="jw-node${fin||i<at?" on":i===at?" now":""}" style="left:${pct(i)}%"></b>`).join("")}
+    <span class="jw-car" aria-hidden="true"><em>${esc(BUB)}</em><span class="jw-cb">${CAR_TOY}</span></span></div>
+    <div class="jw-roadl" aria-hidden="true">${NODE.map((t,i)=>`<span class="${fin||i<at?"on":i===at?"now":""}">${esc(t)}</span>`).join("")}</div>`;
+  /* ป้ายสถานะตามฝั่งที่ดู — ช่างไม่ได้ "ได้ราคา" แต่เป็นคนเสนอ */
+  const chip=(!asCust&&{requested:T("คำขอใหม่","New request"),quoted:T("เสนอราคาแล้ว","Quote sent")}[s])||STATUS[s]||s;
+  const hero=`<section class="jw-hero s-${s}${waiting?" wait":""}"><span class="jw-ring" aria-hidden="true"></span>
+    <div class="jw-top"><span class="jw-chip"><i class="jw-dot"></i>${j.test?T("ทดสอบ","Test")+" · ":""}${esc(chip)}</span><span class="jw-fresh" id="jFresh" role="status" aria-live="polite"></span><span class="jw-car-n nt">${esc(j.car)}</span></div>
+    <h2 class="jw-h">${esc(HERO[0])}</h2>${HERO[1]?`<p class="jw-sub">${esc(HERO[1])}</p>`:""}${road}</section>`;
   const other=cust&&!tech?j.techName:tech&&!cust?T("ลูกค้า","Customer"):j.techName;
   const unread=(j.messages||[]).length;
   /* ปุ่มหลักตามสถานะ — ในแต่ละขั้นมีสิ่งที่ต้องทำอย่างเดียว คนจะได้ไม่ต้องคิด */
@@ -6434,6 +6515,10 @@ function drawJob(j,push){
   const dt=(v,o)=>new Date(v).toLocaleString(LOC,o||{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
   const ok=(j.extras||[]).filter(x=>x.status==="accepted"),agreed=j.agreedTotal||(q?q.total+ok.reduce((a,x)=>a+(x.total||0),0):0);
   const gal=(list,t)=>(list||[]).length?`<p class="jw-gt">${t}</p><div class="gal">${list.map(u=>`<img src="${u}" data-z="${u}" alt=""/>`).join("")}</div>`:"";
+  const priceBody=q?`<dl class="jw-lines"><div><dt>ค่าแรง</dt><dd>฿${money(q.labor)}</dd></div><div><dt>อะไหล่</dt><dd>฿${money(q.parts)}</dd></div><div><dt>เดินทาง</dt><dd>฿${money(q.travel)}</dd></div>
+      ${ok.map(x=>`<div><dt>${T("งานเพิ่ม","Extra")}: <span class="nt">${esc(x.desc)}</span></dt><dd>฿${money(x.total)}</dd></div>`).join("")}</dl>
+    ${q.scope?`<p class="jw-scope nt">${esc(q.scope)}</p>`:""}
+    <div class="jw-tags">${q.partsNote?`<span><i class="ti ti-package"></i>อะไหล่: <b class="nt">${esc(q.partsNote)}</b>${q.partsUsed?" · มือสอง":""}</span>`:""}${q.appointment?`<span><i class="ti ti-calendar"></i><b class="nt">${esc(q.appointment)}</b></span>`:""}<span><i class="ti ti-shield-check"></i>รับประกัน ${q.warranty} วัน</span></div>`:"";
   const vet=cust&&!tech&&j.techVetting?`<span class="jw-badges"><span><i class="ti ti-rosette-discount-check-filled"></i>ยืนยันตัวตนแล้ว</span>${(j.techVetting.cats||[]).length?`<span>ตรวจทักษะ ${esc(j.techVetting.cats.map(c=>CAT[c]?CAT[c].th:c).join(", "))}</span>`:""}</span>`:"";
   sheet({push,job:true,full:true,url:"/jobs/"+encodeURIComponent(j.id),title:(j.test?"ทดสอบ · ":"")+T("ใบงาน","Job"),body:`<div class="jw">
     ${hero}${liveCard}
@@ -6441,16 +6526,13 @@ function drawJob(j,push){
       <div class="jw-digits nt" aria-label="${esc(j.startCode.split("").join(" "))}">${j.startCode.split("").map(d=>`<span>${esc(d)}</span>`).join("")}</div>
       <p>บอกรหัสนี้กับช่าง<b>หลังพบกันแล้ว</b> — ตรวจว่าเป็นคนเดียวกับรูปโปรไฟล์ และตรวจรายละเอียดงานกับราคาก่อน · ใช้ได้ครั้งเดียว${j.startCodeExp?` · หมดอายุ ${new Date(j.startCodeExp).toLocaleDateString(LOC,{day:"numeric",month:"short"})}`:""}</p></section>`:""}
     ${tech&&!cust&&j.startCodeRequired?'<p class="jw-note"><i class="ti ti-key"></i><span>เมื่อพบลูกค้า ขอ "รหัสเริ่มงาน" 4 หลักจากลูกค้า แล้วกดเริ่มซ่อม</span></p>':""}
-    <section class="jw-card jw-who">${WF}<span class="av sq nt" style="--c1:${PALETTE[j.id.charCodeAt(0)%PALETTE.length]}${cust&&!tech&&j.techAvatar?`;background-image:url('${img(j.techAvatar)}')`:""}">${cust&&!tech&&j.techAvatar?"":initial(other)}</span>
+    <section class="jw-card jw-who"><span class="av sq nt" style="--c1:${PALETTE[j.id.charCodeAt(0)%PALETTE.length]}${cust&&!tech&&j.techAvatar?`;background-image:url('${img(j.techAvatar)}')`:""}">${cust&&!tech&&j.techAvatar?"":initial(other)}</span>
       <span class="jw-wt"><small>${asCust?(["requested","quoted"].includes(s)?T("ร้านที่เสนอราคา","Quoting shop"):T("ร้านที่รับงาน","Your mechanic")):T("ลูกค้า","Customer")}</small><b class="nt">${esc(other)}</b>${vet}</span>
       <span class="jw-wa">${phone&&/^0\d{8,9}$/.test(phone)?`<a class="jw-ib" href="tel:${esc(phone)}" aria-label="โทร"><i class="ti ti-phone"></i></a>`:""}
       <button class="jw-ib p" id="jChat" type="button" aria-label="แชต"><i class="ti ti-message-circle"></i>${unread?`<span class="dot">${unread}</span>`:""}</button></span></section>
-    ${q?`<section class="jw-card jw-price"><div class="jw-ph"><span>${s==="quoted"?T("ราคาที่เสนอ","Quoted price"):T("ราคาที่ตกลงแล้ว","Agreed price")}</span><b>฿${money(ok.length?agreed:q.total)}</b></div>
-      <dl class="jw-lines"><div><dt>ค่าแรง</dt><dd>฿${money(q.labor)}</dd></div><div><dt>อะไหล่</dt><dd>฿${money(q.parts)}</dd></div><div><dt>เดินทาง</dt><dd>฿${money(q.travel)}</dd></div>
-        ${ok.map(x=>`<div><dt>${T("งานเพิ่ม","Extra")}: <span class="nt">${esc(x.desc)}</span></dt><dd>฿${money(x.total)}</dd></div>`).join("")}</dl>
-      ${q.scope?`<p class="jw-scope nt">${esc(q.scope)}</p>`:""}
-      <div class="jw-tags">${q.partsNote?`<span><i class="ti ti-package"></i>อะไหล่: <b class="nt">${esc(q.partsNote)}</b>${q.partsUsed?" · มือสอง":""}</span>`:""}${q.appointment?`<span><i class="ti ti-calendar"></i><b class="nt">${esc(q.appointment)}</b></span>`:""}<span><i class="ti ti-shield-check"></i>รับประกัน ${q.warranty} วัน</span></div></section>
-      ${window.CendonProof?CendonProof.plainCard(j):""}`:""}
+    ${q?(s==="quoted"?`<section class="jw-card jw-price"><span class="jw-k">${T("ราคาที่เสนอ","Quoted price")}</span><b class="jw-total" data-count="${ok.length?agreed:q.total}">฿${money(ok.length?agreed:q.total)}</b>${priceBody}</section>`
+      :`<details class="jw-card jw-fold jw-price"><summary><span><small>${T("ราคาที่ตกลงแล้ว","Agreed price")}</small><b>฿${money(ok.length?agreed:q.total)}</b></span><em>${T("ดูรายละเอียด","Details")}</em></summary>${priceBody}</details>`)
+      +(window.CendonProof?CendonProof.plainCard(j):""):""}
     ${(j.extras||[]).some(x=>x.status!=="accepted")?`<section class="jw-card ext"><h3><i class="ti ti-square-plus"></i>${T("งานเพิ่มที่ช่างเสนอ","Extra work proposed")}</h3>${j.extras.filter(x=>x.status!=="accepted").map(x=>`<div class="ext-i ${x.status}"><div><b class="nt">${esc(x.desc)}</b><small>ค่าแรง ${money(x.labor)} · อะไหล่ ${money(x.parts)}</small></div><span>฿${money(x.total)}</span>
       ${x.status==="pending"?(cust?`<div class="ext-a"><button class="btn s" data-a="extra_no:${esc(x.id)}">ไม่ทำเพิ่ม</button><button class="btn p" data-a="extra_ok:${esc(x.id)}">ยอมรับ +฿${money(x.total)}</button></div>`:'<em>รอลูกค้าตอบ</em>'):`<em>ลูกค้าไม่ทำเพิ่ม</em>`}</div>`).join("")}
       <p class="ext-t"><span>ยอดที่ตกลงแล้ว</span><b>฿${money(agreed)}</b></p></section>`:""}
@@ -6461,7 +6543,7 @@ function drawJob(j,push){
         ${j.dispute?`<li><i class="ti ti-flag"></i><span>ปัญหา</span><b class="nt" style="color:var(--danger)">${esc(j.dispute)}</b></li>${j.resolution?`<li><i class="ti ti-gavel"></i><span>ผล</span><b class="nt">${esc(j.resolution)}</b></li>`:""}`:""}
         ${j.review?`<li><i class="ti ti-star"></i><span>คะแนน</span><b><span class="jw-stars">${"★".repeat(j.review.rating)}${"☆".repeat(5-j.review.rating)}</span>${j.review.text?`<span class="jw-rv nt">${esc(j.review.text)}</span>`:""}</b></li>`:""}</ul>
       ${gal(j.photosBefore,"รูปก่อนเริ่มซ่อม")}${gal(j.photosAfter,"รูปหลังซ่อมเสร็จ")}</section>`:""}
-    <section class="jw-card"><h3><i class="ti ti-file-description"></i>${T("รายละเอียดงาน","Job details")}</h3>
+    <details class="jw-card jw-fold"${s==="requested"||(!asCust&&s==="quoted")?" open":""}><summary><span><b>${asCust?T("คำขอของคุณ","Your request"):T("รายละเอียดงาน","Job details")}</b></span></summary>
       <ul class="jw-kv"><li><i class="ti ti-car"></i><span>${T("รถ","Car")}</span><b class="nt">${esc(j.car)}</b></li>
         <li><i class="ti ti-stethoscope"></i><span>อาการ</span><b class="nt">${esc(j.symptom)}</b></li>
         <li><i class="ti ti-${j.mode==="mobile"?"truck":"building-store"}"></i><span>ซ่อมที่</span><b>${j.mode==="mobile"?"ช่างมาหา":"ที่อู่"}</b></li>
@@ -6470,15 +6552,15 @@ function drawJob(j,push){
         ${j.address?`<li><i class="ti ti-home"></i><span>ที่อยู่</span><b class="nt">${esc(j.address)}</b></li>`:""}
         ${j.note?`<li><i class="ti ti-notes"></i><span>${T("ลูกค้าบอกเพิ่ม","Customer's note")}</span><b class="nt">${esc(j.note)}</b></li>`:""}</ul>
       ${(j.photos||[]).length?`<div class="gal" style="margin-top:10px">${j.photos.map(u=>`<img src="${u}" data-z="${u}" alt=""/>`).join("")}</div>`:""}
-      ${!j.acceptedAt&&tech&&!cust?`<p class="jw-lock"><i class="ti ti-lock"></i>เบอร์และที่อยู่ลูกค้าจะเปิดเมื่อลูกค้ายืนยันราคา</p>`:""}</section>
+      ${!j.acceptedAt&&tech&&!cust?`<p class="jw-lock"><i class="ti ti-lock"></i>เบอร์และที่อยู่ลูกค้าจะเปิดเมื่อลูกค้ายืนยันราคา</p>`:""}</details>
     ${!["completed","cancelled"].includes(s)?'<div data-line-connect="nudge" style="display:none;margin:0 0 12px"></div>':""}
-    ${safe?`<section class="jw-card jw-safe"><h3><i class="ti ti-shield-heart"></i>ความปลอดภัย</h3>
+    ${safe?`<details class="jw-card jw-fold jw-safe"><summary><span><b>${T("ความปลอดภัย","Safety")}</b><small>${T("แชร์ใบงาน · แจ้งปัญหา · โทร 191","Share job · Report a problem · Call 191")}</small></span></summary><div>
       <button class="jw-row" data-a="share" type="button"><span class="ri" style="--c:#0d9488"><i class="ti ti-share"></i></span><span class="rt"><b>แชร์ใบงานให้คนที่ไว้ใจ</b><small>${j.share?`ลิงก์ใช้งานอยู่ ถึง ${dt(j.share.expiresAt)} · กดเพื่อส่งอีกครั้ง`:"เห็นชื่อช่าง รูป รถ เวลานัด และสถานะ (ไม่มีที่อยู่/เบอร์) · ลิงก์อายุ 24 ชม."}</small></span><i class="ti ti-chevron-right"></i></button>
       ${j.share?'<button class="lnk safe-x" data-a="unshare" type="button">ยกเลิกลิงก์ที่แชร์</button>':""}
       <button class="jw-row" data-a="dispute" type="button"><span class="ri" style="--c:#b45309"><i class="ti ti-flag"></i></span><span class="rt"><b>แจ้งปัญหาให้ทีมงาน</b><small>เปิดเรื่องพร้อมรายละเอียด ทีมงานติดต่อกลับ (ไม่ได้เฝ้าระวังตลอด 24 ชม.)</small></span><i class="ti ti-chevron-right"></i></button>
-      <a class="jw-row" href="tel:191"><span class="ri" style="--c:#b91c1c"><i class="ti ti-phone-call"></i></span><span class="rt"><b>โทร 191 · เหตุด่วนเหตุร้าย</b><small>โทรออกจริงถึงตำรวจ ใช้เมื่อไม่ปลอดภัย</small></span></a></section>`:""}
+      <a class="jw-row" href="tel:191"><span class="ri" style="--c:#b91c1c"><i class="ti ti-phone-call"></i></span><span class="rt"><b>โทร 191 · เหตุด่วนเหตุร้าย</b><small>โทรออกจริงถึงตำรวจ ใช้เมื่อไม่ปลอดภัย</small></span></a></div></details>`:""}
     ${more.length?`<div class="jw-more">${more.map(([k,l])=>`<button type="button" data-a="${k}">${l}</button>`).join("")}</div>`:""}</div>`,
-    foot:A.map(([k,l,c])=>`<button class="btn ${c}" data-a="${k}">${esc(l)}</button>`).join(""),
+    foot:A.map(([k,l,c])=>`<button class="btn ${c}${c==="p"&&!waiting?" jw-go":""}" data-a="${k}">${esc(l)}</button>`).join(""),
     mount(b,f){
       $("jChat").onclick=()=>openChat(j);
       /* ช่างกำลังมา: แผนที่สด (ลูกค้า) / แชร์ตำแหน่งของตัวเอง (ช่าง) */
@@ -6498,10 +6580,11 @@ function drawJob(j,push){
       }
       b.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z));
       [...b.querySelectorAll("[data-a]"),...f.querySelectorAll("[data-a]")].forEach(x=>x.onclick=()=>act(j,x.dataset.a,x));
+      if(prevS&&prevS!==s)jobMoved(b);
       /* หลักฐานการซ่อม + สรุปภาษาคน (repair-proof.js) */
       if(window.CendonProof){const ctx=proofCtx(j);CendonProof.wire(b.querySelector("#pfBox"),j,ctx);CendonProof.plain(b.querySelector("#plBox"),j,ctx)}
     }});
-  JOB={id:j.id,rev:j.revision,msgs:(j.messages||[]).length};
+  JOB={id:j.id,rev:j.revision,msgs:(j.messages||[]).length,s};
   /* เฝ้าใบงานระหว่างเปิดอยู่ — อีกฝ่ายกดอะไร ใบงานนี้อัปเดตเองภายในไม่กี่วินาที */
   clearTimeout(jobTimer);
   const watch=()=>{jobTimer=setTimeout(async()=>{
@@ -6511,6 +6594,11 @@ function drawJob(j,push){
     watch()},document.hidden?15000:4000)};
   watch();
 }
+/* สถานะเปลี่ยนขณะเปิดใบงานอยู่: แสงกวาดผ่านการ์ดสถานะหนึ่งครั้ง และราคาที่เพิ่งเข้ามานับขึ้นจาก 0 */
+function jobMoved(b){const h=b.querySelector(".jw-hero");if(h)h.classList.add("jw-new");
+  const t=b.querySelector(".jw-total[data-count]");if(!t||matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  const n=+t.dataset.count||0,html=t.innerHTML,t0=performance.now();
+  const step=now=>{const k=Math.min(1,(now-t0)/900);if(k>=1){t.innerHTML=html;return}t.textContent="฿"+money(Math.round(n*(1-Math.pow(1-k,3))));requestAnimationFrame(step)};requestAnimationFrame(step)}
 /* อีกฝ่ายเปลี่ยนใบงาน → บอกในหัวใบงานสั้น ๆ (เดิมเด้งข้อความลอยทับรายละเอียดด้านล่าง) */
 function jobFresh(){const f=$("jFresh");if(!f)return;f.innerHTML=`<i class="ti ti-refresh"></i>${T("ใบงานอัปเดตเมื่อสักครู่","Job just updated")}`;f.classList.add("on");clearTimeout(jobFresh.t);jobFresh.t=setTimeout(()=>f.classList.remove("on"),5000)}
 /* ให้ repair-proof.js เรียก API/วาดใบงานใหม่/แจ้งเตือน ด้วยเครื่องมือเดียวกับใบงาน */
@@ -6543,10 +6631,11 @@ function act(j,a,btn){
     drawJob((await api("/api/tech/jobs/"+j.id)).job,false)});
   if(a==="newcode")return busy(btn,async()=>{await api("/api/tech/jobs/"+j.id,{body:{action:"newcode"}});const nj=(await api("/api/tech/jobs/"+j.id)).job;drawJob(nj,false);toast("ได้รหัสเริ่มงานใหม่แล้ว","ti-key")});
   if(a.startsWith("extra_ok:")||a.startsWith("extra_no:")){const [k,id]=a.split(":");if(k==="extra_no"&&!confirm("ไม่ทำงานเพิ่มรายการนี้?"))return;return change(j,k,{extraId:id},btn)}
-  if(a==="start"){const P=[];return sheet({push:true,slug:a,title:"เริ่มซ่อม",body:`${j.startCodeRequired?`<label class="fld"><span>รหัสเริ่มงานจากลูกค้า (4 หลัก)</span><input class="inp sc-in" id="sC" inputmode="numeric" maxlength="4" autocomplete="one-time-code" placeholder="••••"/></label>
+  if(a==="start"){const P=[];return sheet({push:true,slug:a,title:"เริ่มซ่อม",body:`${j.startCodeRequired?`<p class="h4" style="margin-top:2px">รหัสเริ่มงานจากลูกค้า (4 หลัก)</p><div class="jq-otp"><span></span><span></span><span></span><span></span><input class="sc-in" id="sC" inputmode="numeric" maxlength="4" autocomplete="one-time-code" aria-label="${T("รหัสเริ่มงาน 4 หลัก","4-digit start code")}"/></div>
       <p class="note"><i class="ti ti-info-circle"></i>ขอรหัสจากลูกค้าเมื่อพบกันแล้ว ใส่ผิดได้ไม่เกิน 5 ครั้ง</p>`:""}
       <p class="h4">รูปรถก่อนเริ่มซ่อม <small style="font-weight:400;color:var(--muted)">· ${T("ไม่บังคับ สูงสุด 3 รูป · ช่วยเป็นหลักฐานทั้งสองฝ่าย","optional, up to 3 photos · evidence for both sides")}</small></p><div class="phg" id="sP"></div><input type="file" id="sPF" accept="image/*" multiple hidden/>`,
-    foot:'<button class="btn p w" id="sGo">เริ่มซ่อม</button>',mount(){stagePics("sP",P);$("sGo").onclick=e=>change(j,"start",{code:$("sC")?$("sC").value.trim():"",photos:P},e.currentTarget)}})}
+    foot:'<button class="btn p w" id="sGo">เริ่มซ่อม</button>',mount(){stagePics("sP",P);const sc=$("sC");if(sc){const paint=()=>{sc.value=sc.value.replace(/\D/g,"").slice(0,4);[...sc.parentNode.querySelectorAll("span")].forEach((x,i)=>{x.textContent=sc.value[i]||"";x.classList.toggle("at",i===Math.min(sc.value.length,3)&&document.activeElement===sc)})};["input","focus","blur"].forEach(k=>sc.addEventListener(k,paint));paint()}
+      $("sGo").onclick=e=>change(j,"start",{code:$("sC")?$("sC").value.trim():"",photos:P},e.currentTarget)}})}
   if(a==="done"&&window.CendonProof&&CendonProof.missing(j).length){
     const m=CendonProof.missing(j);toast(`ถ่ายคลิปหลักฐานให้ครบก่อน — ยังขาด ${m.map(CendonProof.name).join(" · ")}`,"ti-video");
     const box=$("pfBox");if(box)box.scrollIntoView({behavior:"smooth",block:"center"});return}
@@ -6562,21 +6651,23 @@ function act(j,a,btn){
       <label class="fld"><span>ต้องทำอะไรเพิ่ม และทำไม</span><textarea class="inp" id="xD" placeholder="เช่น วาล์วแอร์รั่ว ต้องเปลี่ยนใหม่"></textarea></label>
       <div class="two"><label class="fld"><span>ค่าแรง (THB)</span><input class="inp" id="xL" type="number" inputmode="decimal" placeholder="0"/></label><label class="fld"><span>อะไหล่ (THB)</span><input class="inp" id="xP" type="number" inputmode="decimal" placeholder="0"/></label></div>`,
     foot:'<button class="btn p w" id="xGo">ส่งให้ลูกค้าตัดสินใจ</button>',mount(){$("xGo").onclick=e=>change(j,"extra",{desc:$("xD").value.trim(),labor:+$("xL").value||0,parts:+$("xP").value||0},e.currentTarget)}});
-  if(a==="quote"){const q=j.quote||{};return sheet({push:true,slug:a,title:T("เสนอราคา","Send a quote"),body:`${quoteCurrencyNote()}
-      <div class="two"><label class="fld"><span>ค่าแรง (THB)</span><input class="inp" id="qL" type="number" inputmode="decimal" value="${q.labor||""}" placeholder="0"/></label>
-      <label class="fld"><span>อะไหล่ (THB)</span><input class="inp" id="qP" type="number" inputmode="decimal" value="${q.parts||""}" placeholder="0"/></label></div>
+  if(a==="quote"){const q=j.quote||{},w0=+(q.warranty??30)||0,W=[0,7,15,30,60,90];if(!W.includes(w0))W.push(w0);return sheet({push:true,slug:a,title:T("เสนอราคา","Send a quote"),body:`${quoteCurrencyNote()}
+      <div class="jq-card"><label class="jq-row"><span>ค่าแรง <small>(THB)</small></span><input class="inp" id="qL" type="number" inputmode="decimal" value="${q.labor||""}" placeholder="0"/></label>
+        <label class="jq-row"><span>อะไหล่ <small>(THB)</small></span><input class="inp" id="qP" type="number" inputmode="decimal" value="${q.parts||""}" placeholder="0"/></label>
+        <label class="jq-row"><span>ค่าเดินทาง <small>(THB)</small></span><input class="inp" id="qT" type="number" inputmode="decimal" value="${q.travel||""}" placeholder="0"/></label>
+        <div class="jq-sum"><span>${T("รวม","Total")}</span><b id="qTot" data-no-prefs>฿0</b></div></div>
       ${partsFields("q",q)}
-      <label class="fld"><span>ค่าเดินทาง (THB)</span><input class="inp" id="qT" type="number" inputmode="decimal" value="${q.travel||""}" placeholder="0"/></label>
       <label class="fld"><span>ทำอะไรบ้าง</span><textarea class="inp" id="qS" placeholder="เช่น ตรวจรั่ว เติมน้ำยา เปลี่ยนโอริง">${esc(q.scope||"")}</textarea></label>
       <label class="fld"><span>นัดวันเวลา</span><input class="inp" id="qA" value="${esc(q.appointment||j.requestedTime||"")}"/></label>
-      <label class="fld"><span>รับประกัน (วัน)</span><input class="inp" id="qW" type="number" inputmode="numeric" value="${q.warranty??30}"/></label>`,
+      <div class="fld"><span>รับประกัน (วัน)</span><div class="jq-seg" role="radiogroup" aria-label="${T("รับประกัน","Warranty")}">${W.map(w=>`<button type="button" role="radio" aria-checked="${w===w0}" data-w="${w}">${w||T("ไม่มี","None")}</button>`).join("")}</div><input type="hidden" id="qW" value="${w0}"/></div>`,
     foot:'<button class="btn p w" id="qGo">ส่งราคา <b id="qSum" data-no-prefs></b></button>',
-    mount(){const sum=()=>{$("qSum").textContent=" ฿"+money((+$("qL").value||0)+(+$("qP").value||0)+(+$("qT").value||0))};["qL","qP","qT"].forEach(k=>$(k).oninput=sum);sum();partsWire("q","qP");
+    mount(){const sum=()=>{const t=money((+$("qL").value||0)+(+$("qP").value||0)+(+$("qT").value||0));$("qSum").textContent=" ฿"+t;$("qTot").textContent="฿"+t};["qL","qP","qT"].forEach(k=>$(k).oninput=sum);sum();partsWire("q","qP");
+      $("qW").parentNode.querySelectorAll("[data-w]").forEach(x=>x.onclick=()=>{$("qW").value=x.dataset.w;x.parentNode.querySelectorAll("[data-w]").forEach(y=>y.setAttribute("aria-checked",String(y===x)))});
       $("qGo").onclick=e=>change(j,"quote",{labor:+$("qL").value||0,parts:+$("qP").value||0,travel:+$("qT").value||0,...partsRead("q"),scope:$("qS").value.trim(),appointment:$("qA").value.trim(),warranty:+$("qW").value||0},e.currentTarget)}});}
-  if(a==="accept")return sheet({push:true,slug:a,title:"ยืนยันราคา",body:`<div class="quote"><div class="tot">฿${money(j.quote.total)}</div><p>${esc(j.quote.scope)}</p><p class="note" style="margin:8px 0 0"><i class="ti ti-calendar"></i>${esc(j.quote.appointment)}</p></div>
+  if(a==="accept")return sheet({push:true,slug:a,title:"ยืนยันราคา",body:`<div class="jq-acc"><small>${T("ราคาที่เสนอ","Quoted price")}</small><b>฿${money(j.quote.total)}</b>${j.quote.scope?`<p class="nt">${esc(j.quote.scope)}</p>`:""}${j.quote.appointment?`<span class="nt"><i class="ti ti-calendar"></i>${esc(j.quote.appointment)}</span>`:""}</div>
       <label class="chk"><input type="checkbox" id="cOk"/> ตกลงราคานี้ และให้ช่างเห็นเบอร์กับที่อยู่ของฉันเพื่อนัดซ่อม</label>
-      <p class="note"><i class="ti ti-info-circle"></i>จ่ายเงินกับช่างโดยตรงเมื่องานเสร็จ — <b>Cendon ไม่ได้ถือเงิน และยังไม่มีระบบคืนเงิน</b> ถ้ามีปัญหากด "แจ้งปัญหา" ในใบงาน ทีมงานช่วยประสานให้</p>
-      <p class="note"><i class="ti ti-key"></i>หลังยืนยัน คุณจะได้ "รหัสเริ่มงาน" — บอกช่างเมื่อพบกันแล้วเท่านั้น งานเพิ่มทุกรายการต้องให้คุณกดยอมรับก่อน</p>`,
+      <ul class="jq-notes"><li><i class="ti ti-cash"></i><span>จ่ายเงินกับช่างโดยตรงเมื่องานเสร็จ — <b>Cendon ไม่ได้ถือเงิน และยังไม่มีระบบคืนเงิน</b> ถ้ามีปัญหากด "แจ้งปัญหา" ในใบงาน ทีมงานช่วยประสานให้</span></li>
+      <li><i class="ti ti-key"></i><span>หลังยืนยัน คุณจะได้ "รหัสเริ่มงาน" — บอกช่างเมื่อพบกันแล้วเท่านั้น งานเพิ่มทุกรายการต้องให้คุณกดยอมรับก่อน</span></li></ul>`,
     foot:'<button class="btn p w" id="cGo" disabled>ยืนยัน</button>',mount(){$("cOk").onchange=()=>$("cGo").disabled=!$("cOk").checked;$("cGo").onclick=e=>change(j,"accept",{consent:true},e.currentTarget)}});
   if(a==="complete")return sheet({push:true,slug:a,title:"ตรวจรับงาน",body:`<div class="state"><div class="big" style="background:rgba(62,158,110,.14);color:var(--ok)"><i class="ti ti-circle-check"></i></div><h2>งานเรียบร้อยแล้ว?</h2><p>${esc(j.completion||"")}</p></div>`,
     foot:'<button class="btn s" id="cNo">ยังมีปัญหา</button><button class="btn p" id="cGo">เรียบร้อย</button>',mount(){$("cNo").onclick=()=>act(j,"dispute");$("cGo").onclick=e=>change(j,"complete",{},e.currentTarget)}});

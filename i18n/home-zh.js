@@ -1914,6 +1914,16 @@ window.CENDON_L10N={lang:"zh",t:{
 "A notification every evening — tap it to enter the reading":"每晚推送一条通知——点按即可填写里程",
 "This device doesn’t support notifications — everything is listed under the bell":"此设备不支持通知——所有内容都在铃铛中",
 "The browser didn’t allow notifications":"浏览器未允许通知",
-"Device notifications off — still listed under the bell":"已关闭设备通知——仍可在铃铛中查看"
+"Device notifications off — still listed under the bell":"已关闭设备通知——仍可在铃铛中查看",
+"Request":"询价",
+"Driving":"前往中",
+"In review":"审核中",
+"Your request":"你的请求",
+"Safety":"安全",
+"Share job · Report a problem · Call 191":"分享工单 · 报告问题 · 拨打 191",
+"Total":"合计",
+"None":"无",
+"4-digit start code":"4位开工码",
+"New request":"新请求"
 }};
 Object.assign(window.CENDON_L10N.t,{"The shop is suspended. The team must review and lift the suspension.":"店铺已暂停。需由团队审核并解除暂停。","This is a trial shop, hidden from ordinary customers until the full shop review.":"这是试用店铺，完成正式审核前不会向普通客户展示。","Publication review is still required.":"仍需完成公开展示审核。","The shop link has not been confirmed. Please retry the account check.":"尚未确认店铺关联，请重试账户检查。","Shop and services are not public on Home / categories":"店铺和服务尚未在首页及分类中公开","Your shop and services are saved and manageable in Studio. Editing or taking jobs does not change publication approval.":"店铺和服务已保存，可在 Studio 管理。编辑或接单不会改变发布审批状态。","Services could not refresh. Please retry.":"服务刷新失败，请重试。","Published services from approved shops appear here":"已审核并发布的店铺服务将显示在此处","Shops could not refresh. Please retry.":"店铺刷新失败，请重试。"});

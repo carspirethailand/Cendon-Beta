@@ -1914,6 +1914,16 @@ window.CENDON_L10N={lang:"ko",t:{
 "A notification every evening — tap it to enter the reading":"매일 저녁 알림 — 눌러서 주행거리를 입력하세요",
 "This device doesn’t support notifications — everything is listed under the bell":"이 기기는 알림을 지원하지 않아요 — 모든 내용은 종에 있어요",
 "The browser didn’t allow notifications":"브라우저가 알림을 허용하지 않았어요",
-"Device notifications off — still listed under the bell":"기기 알림을 껐어요 — 종에서는 계속 볼 수 있어요"
+"Device notifications off — still listed under the bell":"기기 알림을 껐어요 — 종에서는 계속 볼 수 있어요",
+"Request":"견적 요청",
+"Driving":"이동 중",
+"In review":"검토 중",
+"Your request":"내 요청",
+"Safety":"안전",
+"Share job · Report a problem · Call 191":"작업 공유 · 문제 신고 · 191 전화",
+"Total":"합계",
+"None":"없음",
+"4-digit start code":"4자리 시작 코드",
+"New request":"새 요청"
 }};
 Object.assign(window.CENDON_L10N.t,{"The shop is suspended. The team must review and lift the suspension.":"매장이 정지되었습니다. 팀의 검토와 정지 해제가 필요합니다.","This is a trial shop, hidden from ordinary customers until the full shop review.":"체험 매장입니다. 정식 심사를 마치기 전에는 일반 고객에게 표시되지 않습니다.","Publication review is still required.":"공개 심사가 필요합니다.","The shop link has not been confirmed. Please retry the account check.":"매장 연결이 확인되지 않았습니다. 계정 확인을 다시 시도해 주세요.","Shop and services are not public on Home / categories":"매장과 서비스가 홈 및 카테고리에 공개되지 않았습니다","Your shop and services are saved and manageable in Studio. Editing or taking jobs does not change publication approval.":"매장과 서비스는 저장되어 Studio에서 관리할 수 있습니다. 수정이나 접수 설정은 공개 승인을 변경하지 않습니다.","Services could not refresh. Please retry.":"서비스를 새로고침하지 못했습니다. 다시 시도해 주세요.","Published services from approved shops appear here":"심사를 마치고 공개된 매장의 서비스가 여기에 표시됩니다","Shops could not refresh. Please retry.":"매장을 새로고침하지 못했습니다. 다시 시도해 주세요."});

@@ -1914,6 +1914,16 @@ window.CENDON_L10N={lang:"fr",t:{
 "A notification every evening — tap it to enter the reading":"Une notification chaque soir — touchez pour saisir le kilométrage",
 "This device doesn’t support notifications — everything is listed under the bell":"Cet appareil ne gère pas les notifications — tout est sous la cloche",
 "The browser didn’t allow notifications":"Le navigateur n’a pas autorisé les notifications",
-"Device notifications off — still listed under the bell":"Notifications de l’appareil désactivées — toujours sous la cloche"
+"Device notifications off — still listed under the bell":"Notifications de l’appareil désactivées — toujours sous la cloche",
+"Request":"Demande",
+"Driving":"En route",
+"In review":"En examen",
+"Your request":"Votre demande",
+"Safety":"Sécurité",
+"Share job · Report a problem · Call 191":"Partager · Signaler un problème · Appeler le 191",
+"Total":"Total",
+"None":"Aucune",
+"4-digit start code":"Code de démarrage à 4 chiffres",
+"New request":"Nouvelle demande"
 }};
 Object.assign(window.CENDON_L10N.t,{"The shop is suspended. The team must review and lift the suspension.":"L’atelier est suspendu. L’équipe doit le vérifier et lever la suspension.","This is a trial shop, hidden from ordinary customers until the full shop review.":"Cet atelier d’essai reste masqué aux clients ordinaires jusqu’à sa validation complète.","Publication review is still required.":"La validation de publication reste nécessaire.","The shop link has not been confirmed. Please retry the account check.":"Le lien avec l’atelier n’est pas confirmé. Réessayez la vérification du compte.","Shop and services are not public on Home / categories":"Atelier et services non publics sur l’accueil / les catégories","Your shop and services are saved and manageable in Studio. Editing or taking jobs does not change publication approval.":"Votre atelier et vos services sont enregistrés et gérables dans Studio. Les modifications ou l’acceptation de missions ne changent pas l’autorisation de publication.","Services could not refresh. Please retry.":"Impossible d’actualiser les services. Réessayez.","Published services from approved shops appear here":"Les services publiés des ateliers approuvés apparaissent ici","Shops could not refresh. Please retry.":"Impossible d’actualiser les ateliers. Réessayez."});

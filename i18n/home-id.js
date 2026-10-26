@@ -1914,6 +1914,16 @@ window.CENDON_L10N={lang:"id",t:{
 "A notification every evening — tap it to enter the reading":"Notifikasi tiap malam — ketuk untuk mengisi angka kilometer",
 "This device doesn’t support notifications — everything is listed under the bell":"Perangkat ini tidak mendukung notifikasi — semuanya ada di lonceng",
 "The browser didn’t allow notifications":"Browser tidak mengizinkan notifikasi",
-"Device notifications off — still listed under the bell":"Notifikasi perangkat mati — tetap ada di lonceng"
+"Device notifications off — still listed under the bell":"Notifikasi perangkat mati — tetap ada di lonceng",
+"Request":"Minta harga",
+"Driving":"Menuju",
+"In review":"Ditinjau",
+"Your request":"Permintaan Anda",
+"Safety":"Keamanan",
+"Share job · Report a problem · Call 191":"Bagikan pekerjaan · Laporkan masalah · Telepon 191",
+"Total":"Total",
+"None":"Tidak ada",
+"4-digit start code":"Kode mulai 4 digit",
+"New request":"Permintaan baru"
 }};
 Object.assign(window.CENDON_L10N.t,{"The shop is suspended. The team must review and lift the suspension.":"Bengkel ditangguhkan. Tim perlu meninjau dan mencabut penangguhan.","This is a trial shop, hidden from ordinary customers until the full shop review.":"Ini bengkel uji coba, belum terlihat oleh pelanggan umum sebelum peninjauan penuh.","Publication review is still required.":"Peninjauan publikasi masih diperlukan.","The shop link has not been confirmed. Please retry the account check.":"Tautan bengkel belum terkonfirmasi. Coba periksa akun lagi.","Shop and services are not public on Home / categories":"Bengkel dan layanan belum dipublikasikan di Beranda / kategori","Your shop and services are saved and manageable in Studio. Editing or taking jobs does not change publication approval.":"Bengkel dan layanan tersimpan dan dapat dikelola di Studio. Mengedit atau menerima pekerjaan tidak mengubah persetujuan publikasi.","Services could not refresh. Please retry.":"Layanan gagal diperbarui. Coba lagi.","Published services from approved shops appear here":"Layanan yang dipublikasikan dari bengkel yang disetujui tampil di sini","Shops could not refresh. Please retry.":"Bengkel gagal diperbarui. Coba lagi."});

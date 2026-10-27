@@ -83,7 +83,9 @@
     /* กรอบที่เตรียมไว้: จดข้อมูลที่ใช้วาดตอนวาดเสร็จ (ไม่ใช่ตอนเริ่ม — หน้าเขียนค่าของมันเองระหว่างเปิด ไม่งั้นเปิดดูแล้วโดนโหลดใหม่ทุกครั้ง) */
     let sent=false;const ready=()=>{if(sent)return;sent=true;if(hidden)hiddenSig=sig();try{host&&host.ready(childKey)}catch(e){}};
     const R=D.documentElement,shown=()=>{const b=D.body;return !!(b&&b.childElementCount>3&&D.querySelector('.mnav,#mnav,main,.wrap')&&R.dataset.gate!=='1'&&R.dataset.level!=='pending'&&(childKey==='home'||D.readyState!=='loading'))};
-    (function look(){if(sent)return;if(shown())requestAnimationFrame(()=>requestAnimationFrame(ready));else requestAnimationFrame(look)})();
+    // Transparent retained frames can have animation frames throttled. DOM/auth
+    // readiness must not depend on their ability to paint while still hidden.
+    (function look(){if(sent)return;if(shown())ready();else setTimeout(look,80)})();
     const sync=()=>{try{host&&host.sync(childKey,location.href,D.title)}catch(e){}};
     if(W.navigation&&W.navigation.addEventListener){
       W.navigation.addEventListener('navigate',e=>{
@@ -240,7 +242,12 @@
   function go(u){
     const k=tabOf(u);if(!k||calling())return false;
     const box=inboxUrl(u);
-    if(k===cur){showing++;for(const x in frames)frames[x].go=null;bar(false);if(cur===base)setHidden(false);else tabs(cur)?.setHidden(false);if(box)inbox(k);return true}
+    if(k===cur){
+      const waiting=Object.values(frames).some(f=>f.go);showing++;
+      for(const x in frames){frames[x].go=null;if(x!==cur&&!calls[x])hideFrame(x)}bar(false);
+      if(waiting)try{history.replaceState({cendonTab:cur},'',box?'/messages':URLS[cur])}catch(e){}
+      if(cur===base)setHidden(false);else tabs(cur)?.setHidden(false);if(box)inbox(k);return true;
+    }
     /* แชตของหน้าหลัก: เพิ่มรายการ "หน้าหลัก" ก่อน แล้วกล่องข้อความเพิ่มรายการของมันเอง (nav.js)
        — ปิดกล่องข้อความ (ย้อนหนึ่งขั้น) จะกลับมาที่หน้าหลัก ไม่ใช่แท็บที่อยู่ก่อนหน้า */
     const self=box&&k===base;

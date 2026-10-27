@@ -94,10 +94,10 @@ test('tab keep-alive (test mode): off unless the device opted in, every bottom t
   assert.match(j,/function leaveInbox\(then\)/,'leaving chat closes the inbox so Home shows Home');
   assert.match(j,/e\.stopImmediatePropagation\(\);if\(st\.cendonTab!==cur\)reveal/,'tab history entries are not fed to nav.js');
   for(const f of ['index','garage','news','profile']){const h=read(f+'.html'),head=h.slice(0,h.indexOf('</head>'));
-    assert.equal(head.indexOf('<script src='),head.indexOf('<script src="/tab-shell.js?v=5">'),f+': first external script')}
+    assert.equal(head.indexOf('<script src='),head.indexOf('<script src="/tab-shell.js?v=6">'),f+': first external script')}
   assert.match(read('mobile-ui.js'),/if\(f&&window\.CendonTabs&&CendonTabs\.go\(f\)\)return;/);
   assert.match(read('mobile-ui.js'),/if\(window\.CendonTabs&&CendonTabs\.go\("\/messages"\)\)return;/);
-  assert.match(read('sw.js'),/'\.\/tab-shell\.js\?v=5'/);
+  assert.match(read('sw.js'),/'\.\/tab-shell\.js\?v=6'/);
 });
 
 test('car sync on magazine/account/parts keeps local car fields (paint color was wiped on every visit)',()=>{

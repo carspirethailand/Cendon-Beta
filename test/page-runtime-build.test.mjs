@@ -17,6 +17,7 @@ test('public runtime build reuses identical classic code without altering order,
 });
 test('tab navigation never uses a timer as proof of readiness, and validates stale tabs before showing them',async()=>{
  const s=await readFile(new URL('../tab-shell.js',import.meta.url),'utf8');assert.doesNotMatch(s,/setTimeout\(\(\)=>\{f\.ready=true/);assert.doesNotMatch(s,/setTimeout\(\(\)=>W\.CendonTabs\.ready/);
+ assert.ok(s.includes('setTimeout(look,80)'));assert.ok(!s.includes('requestAnimationFrame(look)'),'transparent tabs must not wait for animation frames');
  const go=s.slice(s.indexOf('const f=fresh?start'),s.indexOf('if(f.ready)go();'));assert.ok(go.indexOf('t.setHidden(false)')<go.indexOf("f.el.classList.add('on')"));assert.ok(go.includes('f.ready=false;f.go=go'));
 });
 test('hidden briefs do not build a canvas on startup, and Profile paints its actual first screen before background tools',async()=>{

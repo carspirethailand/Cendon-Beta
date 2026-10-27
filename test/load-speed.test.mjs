@@ -76,12 +76,18 @@ test('tab keep-alive (test mode): off unless the device opted in, every bottom t
   assert.match(j,/if\(box&&clean\(location\.pathname\)!=='\/messages'\)location\.assign\('\/messages'\)/,'reloading home for chat lands on the inbox, not the old tab URL');
   assert.match(j,/if\(!hidden\|\|method!=='GET'\|\|!api\(url\)\)return nativeFetch\(input,init\)/,'writes are never held');
   assert.match(j,/const calling=\(\)=>/,'an active AI call keeps call-shell in charge');
+  /* แท็บใหม่ต้องไม่โชว์จอว่าง: ส่งบริบทการวาดก่อนสร้างกรอบ และรอจนหน้าแสดงเนื้อหาได้จริง */
+  assert.match(j,/if\(fresh\)handoff\(box\?'\/messages':URLS\[k\]\);\s*const f=frameOf/,'paint handoff is prepared before the frame starts loading');
+  assert.match(j,/w\.CendonPaint\.prepare\(url\)/,'uses the same handoff as a normal link tap');
+  assert.match(j,/R\.dataset\.gate!=='1'&&R\.dataset\.level!=='pending'&&\(childKey==='home'\|\|D\.readyState!=='loading'\)/,'reveal waits until content is no longer hidden and the page has parsed');
+  assert.doesNotMatch(j,/addEventListener\('load',ready/,'load alone is not a ready signal (content can still be hidden)');
+  assert.match(j,/#cdnTabBar\{/,'first open shows a loading bar right away');
   assert.match(j,/e\.stopImmediatePropagation\(\);if\(st\.cendonTab!==cur\)reveal/,'tab history entries are not fed to nav.js');
   for(const f of ['index','garage','news','profile']){const h=read(f+'.html'),head=h.slice(0,h.indexOf('</head>'));
-    assert.equal(head.indexOf('<script src='),head.indexOf('<script src="/tab-shell.js?v=2">'),f+': first external script')}
+    assert.equal(head.indexOf('<script src='),head.indexOf('<script src="/tab-shell.js?v=3">'),f+': first external script')}
   assert.match(read('mobile-ui.js'),/if\(f&&window\.CendonTabs&&CendonTabs\.go\(f\)\)return;/);
   assert.match(read('mobile-ui.js'),/if\(window\.CendonTabs&&CendonTabs\.go\("\/messages"\)\)return;/);
-  assert.match(read('sw.js'),/'\.\/tab-shell\.js\?v=2'/);
+  assert.match(read('sw.js'),/'\.\/tab-shell\.js\?v=3'/);
 });
 
 test('car sync on magazine/account/parts keeps local car fields (paint color was wiped on every visit)',()=>{

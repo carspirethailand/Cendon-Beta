@@ -72,9 +72,12 @@
     if(!host||fileOf(location.pathname)!==childKey){try{W.top.location.replace(location.href)}catch(e){}}
     /* พร้อมโชว์ = หน้าเริ่มมีเนื้อหาให้เห็นแล้ว (เหมือนภาพแรกของการเปิดหน้าปกติ)
        นับจากภาพที่วาดไม่ได้ — กรอบที่ยังซ่อน (โปร่งใส) เบราว์เซอร์ไม่นับว่า "วาดแล้ว" */
+    /* หน้าในแอป (การาจ นิตยสาร บัญชี) ซ่อนเนื้อหาไว้จนรู้ว่าเป็นบัญชีไหน (data-gate / data-level="pending" · account-paint.js)
+       และวาดรายการตอนอ่านหน้าจบ (DOMContentLoaded) — ต้องรอทั้งสองอย่าง ไม่งั้นสลับมาเจอจอว่าง
+       (หน้าแรกไม่ต้องรอ: เนื้อหาอยู่ใน HTML ก่อนสคริปต์ก้อนใหญ่ เห็นได้ตั้งแต่อ่านถึง) */
     let sent=false;const ready=()=>{if(sent)return;sent=true;try{host&&host.ready(childKey)}catch(e){}};
-    (function look(){if(sent)return;const b=D.body;if(b&&b.childElementCount>3&&D.querySelector('.mnav,#mnav,main,.wrap'))requestAnimationFrame(ready);else requestAnimationFrame(look)})();
-    W.addEventListener('load',ready,{once:true});
+    const R=D.documentElement,shown=()=>{const b=D.body;return !!(b&&b.childElementCount>3&&D.querySelector('.mnav,#mnav,main,.wrap')&&R.dataset.gate!=='1'&&R.dataset.level!=='pending'&&(childKey==='home'||D.readyState!=='loading'))};
+    (function look(){if(sent)return;if(shown())requestAnimationFrame(()=>requestAnimationFrame(ready));else requestAnimationFrame(look)})();
     const sync=()=>{try{host&&host.sync(childKey,location.href,D.title)}catch(e){}};
     if(W.navigation&&W.navigation.addEventListener){
       W.navigation.addEventListener('navigate',e=>{
@@ -107,7 +110,9 @@
     'iframe.cdn-tab.on{opacity:1;pointer-events:auto;visibility:visible}iframe.cdn-tab.load{visibility:visible}'+
     'html.cdn-covered>body{visibility:hidden}'+
     '#cdnCallPill{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom));z-index:2147483000;display:flex;align-items:center;gap:8px;padding:10px 16px;border:0;border-radius:999px;background:#E9682A;color:#fff;font:600 14px/1.2 Kanit,system-ui,sans-serif;box-shadow:0 10px 30px -8px rgba(0,0,0,.45)}'+
-    '#cdnCallPill i{width:8px;height:8px;border-radius:50%;background:#fff;animation:cdnPulse 1.2s ease-in-out infinite}@keyframes cdnPulse{50%{opacity:.35}}';
+    '#cdnCallPill i{width:8px;height:8px;border-radius:50%;background:#fff;animation:cdnPulse 1.2s ease-in-out infinite}@keyframes cdnPulse{50%{opacity:.35}}'+
+    /* แถบโหลดบาง ๆ บนสุด ระหว่างเปิดแท็บครั้งแรก — กดแล้วเห็นว่าแอปรับแล้ว (หน้าเดิมยังค้างจนแท็บใหม่พร้อม) */
+    '#cdnTabBar{position:fixed;left:0;top:0;height:3px;width:100%;z-index:2147483001;background:#E9682A;transform-origin:0 50%;transform:scaleX(0);pointer-events:none;animation:cdnBar 2.4s cubic-bezier(.1,.7,.2,1) forwards}@keyframes cdnBar{to{transform:scaleX(.9)}}';
   (D.head||D.documentElement).appendChild(css);
   /* เกินจำนวนที่เก็บได้ → ปล่อยแท็บซ้อนที่ไม่ได้ดูนานสุด (ยกเว้นแท็บที่มีสายโทร) */
   function evict(){
@@ -125,6 +130,10 @@
     D.documentElement.appendChild(el);return f;
   }
   function win(k){try{return frames[k].el.contentWindow}catch(e){return null}}
+  /* ส่ง "บริบทการวาด" ให้แท็บใหม่ แบบเดียวกับการกดลิงก์ไปหน้าอื่นตามปกติ (CendonPaint.prepare ใน account-paint.js)
+     — หน้าปลายทางแสดงเนื้อหาได้ทันทีตอนอ่านหน้า ไม่ต้องรอ Firebase ยืนยันตัวตนอีกรอบ (มือถือ 0.5–2 วิ)
+     ใช้หน้าที่ผู้ใช้กำลังดูก่อน แล้วค่อยหน้าหลัก (ต้องเป็นหน้าที่รู้บัญชีแล้วเท่านั้น ไม่งั้นได้ false) */
+  function handoff(url){for(const w of [cur===base?W:win(cur),W]){try{if(w&&w.CendonPaint&&w.CendonPaint.prepare(url))return}catch(e){}}}
   function tabs(k){try{return k===base?W.CendonTabs:win(k).CendonTabs}catch(e){return null}}
   /* แท็บซ้อนที่มีสายโทร: ไม่พัก · ระหว่างดูแท็บอื่นมีปุ่มกลับไปที่สาย */
   const PILL={th:'กลับไปที่สาย',en:'Back to call',zh:'返回通话',ja:'通話に戻る',ko:'통화로 돌아가기',id:'Kembali ke panggilan',vi:'Quay lại cuộc gọi',ms:'Kembali ke panggilan',de:'Zurück zum Anruf',fr:"Retour à l'appel",es:'Volver a la llamada',pt:'Voltar à chamada'};
@@ -139,20 +148,23 @@
   function hideFrame(x){frames[x].el.classList.remove('on','load');if(!calls[x]&&tabs(x))tabs(x).setHidden(true)}
   /* แชต = กล่องข้อความของหน้าแรก */
   function inbox(k){try{const w=k===base?W:win(k);if(w&&typeof w.openInbox==='function')w.openInbox()}catch(e){}}
+  function bar(on){let b=D.getElementById('cdnTabBar');if(!on){if(b)b.remove();return}if(!b){b=D.createElement('i');b.id='cdnTabBar';D.documentElement.appendChild(b)}}
   let showing=0;
   function reveal(k,opt){
     const n=++showing,box=opt&&opt.inbox;order=order.filter(x=>x!==k).concat(k);
     if(k===base){
       for(const x in frames)hideFrame(x);
-      D.documentElement.classList.remove('cdn-covered');cur=base;if(baseTitle)D.title=baseTitle;
+      D.documentElement.classList.remove('cdn-covered');bar(false);cur=base;if(baseTitle)D.title=baseTitle;
       /* ข้อมูลเปลี่ยนระหว่างซ่อน → โหลดหน้าหลักใหม่ · มาเพื่อเปิดแชต: ที่อยู่ยังเป็นของแท็บก่อน (กล่องข้อความยังไม่ได้เพิ่มรายการประวัติ) → เปิด /messages แทน */
       if(setHidden(false)){if(box&&clean(location.pathname)!=='/messages')location.assign('/messages');else location.reload();return}
       if(box)inbox(k);pill();
       return;
     }
-    const fresh=!frames[k]||!frames[k].el.isConnected,f=frameOf(k,box?'/messages':null),go=()=>{
+    const fresh=!frames[k]||!frames[k].el.isConnected;
+    if(fresh)handoff(box?'/messages':URLS[k]);
+    const f=frameOf(k,box?'/messages':null),go=()=>{
       if(n!==showing)return;
-      f.el.classList.add('on');f.el.classList.remove('load');
+      f.el.classList.add('on');f.el.classList.remove('load');bar(false);
       for(const x in frames)if(x!==k)hideFrame(x);
       if(cur===base){if(!hidden)baseTitle=D.title;setHidden(true);D.documentElement.classList.add('cdn-covered')}
       cur=k;const t=tabs(k);if(t&&t.setHidden(false))win(k).location.reload();else if(box&&!fresh)inbox(k);
@@ -164,7 +176,7 @@
       /* หน้าเดิมกำลังจะถูกบัง — พักการดึงข้อมูลตั้งแต่ตอนนี้ ให้เครื่องมีแรงโหลดแท็บใหม่ */
       if(cur===base){baseTitle=D.title;setHidden(true)}
       /* ครั้งแรก: หน้าเดิมยังอยู่บนจอจนแท็บใหม่วาดเสร็จ (กันจอว่าง) · ช้าเกิน 4 วิ ก็โชว์ไปเลย */
-      f.el.classList.add('load');clearTimeout(f.wait);f.wait=setTimeout(()=>{f.ready=true;go()},4000);f.go=go;
+      f.el.classList.add('load');bar(true);clearTimeout(f.wait);f.wait=setTimeout(()=>{f.ready=true;go()},4000);f.go=go;
     }
   }
   function go(u){

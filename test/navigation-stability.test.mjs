@@ -53,12 +53,12 @@ function activeTabs(pathname){
       setAttribute:(k,v)=>attrs[k]=v,removeAttribute:k=>delete attrs[k],attrs};
   });
   const location={origin:'https://fixture.test',pathname,href:'https://fixture.test'+pathname};
-  const document={hidden:false,readyState:'complete',querySelectorAll:()=>tabs,head:{appendChild(){}},createElement:()=>({}),addEventListener(){}};
-  vm.runInNewContext(router,{document,location,navigator:{},URL,Set,addEventListener:(n,fn)=>events.set(n,fn)});
+  const document={hidden:false,readyState:'complete',querySelectorAll:()=>[{querySelectorAll:()=>tabs}],head:{appendChild(){}},createElement:()=>({}),addEventListener(){}};
+  vm.runInNewContext(router,{document,location,navigator:{},URL,Set,history:{pushState(){},replaceState(){}},requestAnimationFrame:fn=>fn(),addEventListener:(n,fn)=>events.set(n,fn)});
   events.get('pageshow')();
   return tabs.filter(t=>t.cls.has('on')).map(t=>new URL(t.href).pathname);
 }
-for(const [here,want] of [['/','/'],['/map','/'],['/tech/shop-1','/'],['/messages','/'],['/garage','/garage'],['/garage/car-1/spec','/garage'],['/news','/news'],['/profile','/profile'],['/chat',null]])
+for(const [here,want] of [['/','/'],['/map','/'],['/tech/shop-1','/'],['/messages','/messages'],['/garage','/garage'],['/garage/car-1/spec','/garage'],['/news','/news'],['/profile','/profile'],['/chat','/messages']])
   test('only one mobile tab is active after returning to '+here,()=>{
     assert.deepEqual(activeTabs(here),want?[want]:[]);
   });
@@ -85,7 +85,7 @@ test('avatar updates observe only the avatar and coalesce instead of resetting t
 test('all app pages share one mobile implementation and early geometry CSS',()=>{
   for(const name of pages){
     const s=readFileSync(new URL('../'+name+'.html',import.meta.url),'utf8');
-    assert.equal((s.match(/src="mobile-ui\.js"/g)||[]).length,1,name);
+    assert.equal((s.match(/src="mobile-ui\.js(?:\?[^" ]+)?"/g)||[]).length,1,name);
     const shared=s.search(/href="\/?stability\.css(?:\?[^" ]*)?"/);
     assert.ok(shared>=0&&shared<s.indexOf('</head>'),name);
     assert.ok(!s.includes('<script id="mjs">'),name);

@@ -19,13 +19,14 @@ const auth=()=>{try{return W.auth||W.spireAuth||(W.firebase&&W.firebase.apps&&W.
 const fbUser=()=>{try{const a=auth();return a&&a.currentUser||null}catch(e){return null}};
 const me=()=>{try{const u=W.currentUser;if(u&&typeof u==='object')return u;return JSON.parse(localStorage.getItem('spire_cachedUser')||'null')||{}}catch(e){return {}}};
 const setup=()=>{try{return (W.spireSetupRead&&W.spireSetupRead())||{}}catch(e){return {}}};
-const curLang=()=>{try{return (W.spireLang&&W.spireLang())||W.lang||'th'}catch(e){return 'th'}};
+const curLang=()=>{try{return (W.spireLang&&W.spireLang())||W.lang||JSON.parse(localStorage.getItem('spire_lang'))||'th'}catch(e){return 'th'}};
 const DARK=['dark','carbon','night','midnight','cyber','aurora','ocean','sunset','magma'];
 const curTheme=()=>{let v='';try{v=(W.spireTheme&&W.spireTheme())||D.documentElement.getAttribute('data-theme')||''}catch(e){}return DARK.includes(v)?'dark':'light'};
 const toast=(m,ic)=>{try{W.toast&&W.toast(m,ic||'ti-info-circle')}catch(e){}};
 const MONEY=['THB','USD','EUR','GBP','JPY','CNY','SGD','AUD','CAD','CHF','NZD','HKD','MYR','IDR','KRW','VND','INR','TWD','AED'];
 const money=()=>{try{return (W.spireMoney&&W.spireMoney())||MONEY}catch(e){return MONEY}};
-const curName=c=>{try{return new Intl.DisplayNames([curLang()],{type:'currency'}).of(c)}catch(e){return c}};
+const currencyNames=new Map();
+const curName=c=>{try{const lang=curLang();let names=currencyNames.get(lang);if(!names){names=new Intl.DisplayNames([lang],{type:'currency'});currencyNames.set(lang,names)}return names.of(c)}catch(e){return c}};
 const ADMIN=['owner','admin','moderator'];
 
 let host={},main=null,manage=null,sheetEl=null,lastFocus=null;
@@ -355,6 +356,13 @@ function busy(b,label){if(!b)return ()=>{};const old=b.innerHTML;b.disabled=true
 const acts=()=>{const a=W.CendonAccountActions;if(!a)throw new Error('not_ready');return a};
 async function onClick(e){
   const b=e.target.closest&&e.target.closest('[data-st],[data-sitetheme],[data-dist],[data-lang],[data-cur],[data-fbk]');if(!b)return;
+  const dependency=b.hasAttribute('data-sitetheme')?'spireSetTheme':['data-dist','data-lang','data-cur'].some(k=>b.hasAttribute(k))?'spireSavePrefs':null;
+  if(dependency&&!W[dependency]){
+    const restore=busy(b);b.setAttribute('aria-busy','true');
+    try{const until=Date.now()+8000;while(!W[dependency]&&b.isConnected&&Date.now()<until)await new Promise(r=>setTimeout(r,40));}
+    finally{restore();b.removeAttribute('aria-busy')}
+    if(!b.isConnected)return;if(!W[dependency]){toast(t('ระบบตั้งค่ายังไม่พร้อม กรุณาลองอีกครั้ง','Settings are not ready yet. Please retry.'),'ti-alert-triangle');return}
+  }
   if(b.hasAttribute('data-sitetheme')){
     const v=b.dataset.sitetheme;try{W.spireSetTheme&&W.spireSetTheme(v)}catch(x){}
     b.parentNode.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));return}
@@ -476,6 +484,9 @@ function autoOpen(){
   open(tab==='fb'||tab==='usage'||tab==='notif'?tab:undefined);
 }
 const ready=fn=>{if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',fn,{once:true});else fn()};
+// Profile's actual settings are its first screen, not a hidden widget. Paint as
+// soon as that section is parsed when the one-use account handoff permits it.
+if(D.getElementById('v-profile')&&W.CendonPaint?.level())autoOpen();
 ready(mountMenu);setTimeout(mountMenu,800);setTimeout(mountMenu,2200);
 ready(autoOpen);setTimeout(autoOpen,900);
 })(window,document);

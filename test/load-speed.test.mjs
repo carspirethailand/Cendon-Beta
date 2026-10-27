@@ -30,7 +30,7 @@ test('/jobs, /compare, /post/:id open as soon as the user is known (not after th
 test('mobile chat header: ⋮ sits beside the bell, never over the car name',()=>{
   const v=read('valet.css'),c=read('chat.html');
   assert.match(v,/header\.pill #pMore~\.cb-bell\{margin-left:0!important\}/,'only ⋮ pushes right; the bell must not split the free space');
-  assert.match(c,/valet\.css\?v=3/);
+  assert.match(c,/valet\.css\?v=4/);
   assert.match(c,/header\.pill \.p-car\{[^}]*max-width:calc\(100vw - 212px\)!important/,'centred car name leaves room for two buttons each side');
 });
 
@@ -38,7 +38,7 @@ test('units/currency use the device owner\'s saved preferences before Firebase r
   const d=read('display-prefs.js');
   assert.match(d,/function owner\(\)\{try\{return localStorage\.getItem\('cendon_signed'\)==='1'\?localStorage\.getItem\('spire___owner'\):null\}/);
   assert.match(d,/own=cu\?null:owner\(\),u=cu\|\|\(own\?\{uid:own\}:null\)/);
-  for(const f of ['index','chat','garage','news','profile','spares','admin','plan','handbook'])assert.match(read(f+'.html'),/display-prefs\.js\?v=4/,f);
+  for(const f of ['index','chat','garage','news','profile','spares','admin','plan','handbook'])assert.match(read(f+'.html'),/display-prefs\.js\?v=5/,f);
 });
 
 test('chat enters immediately for the signed-in device owner even without a cached chat user',()=>{
@@ -94,10 +94,10 @@ test('tab keep-alive (test mode): off unless the device opted in, every bottom t
   assert.match(j,/function leaveInbox\(then\)/,'leaving chat closes the inbox so Home shows Home');
   assert.match(j,/e\.stopImmediatePropagation\(\);if\(st\.cendonTab!==cur\)reveal/,'tab history entries are not fed to nav.js');
   for(const f of ['index','garage','news','profile']){const h=read(f+'.html'),head=h.slice(0,h.indexOf('</head>'));
-    assert.equal(head.indexOf('<script src='),head.indexOf('<script src="/tab-shell.js?v=4">'),f+': first external script')}
+    assert.equal(head.indexOf('<script src='),head.indexOf('<script src="/tab-shell.js?v=5">'),f+': first external script')}
   assert.match(read('mobile-ui.js'),/if\(f&&window\.CendonTabs&&CendonTabs\.go\(f\)\)return;/);
   assert.match(read('mobile-ui.js'),/if\(window\.CendonTabs&&CendonTabs\.go\("\/messages"\)\)return;/);
-  assert.match(read('sw.js'),/'\.\/tab-shell\.js\?v=4'/);
+  assert.match(read('sw.js'),/'\.\/tab-shell\.js\?v=5'/);
 });
 
 test('car sync on magazine/account/parts keeps local car fields (paint color was wiped on every visit)',()=>{

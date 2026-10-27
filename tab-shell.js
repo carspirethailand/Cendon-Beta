@@ -182,10 +182,17 @@
       if(n!==showing)return;
       /* กรอบที่เตรียมไว้ถูกเปิดดูแล้ว — ถ้าต้องโหลดใหม่ (ข้อมูลเปลี่ยน) ต้องไม่เริ่มแบบซ่อนอีก */
       f.pre=false;delete f.el.dataset.cendonPre;
+      // Validate a retained tab before showing it. Reloading after reveal exposed
+      // an empty document while auth, styles and data were being restored.
+      const t=tabs(k);
+      if(t&&t.setHidden(false)){
+        f.ready=false;f.go=go;f.el.classList.add('load');bar(true);
+        handoff(box?'/messages':URLS[k]);win(k).location.reload();return;
+      }
       f.el.classList.add('on');f.el.classList.remove('load');bar(false);
       for(const x in frames)if(x!==k)hideFrame(x);
       if(cur===base){if(!hidden)baseTitle=D.title;setHidden(true);D.documentElement.classList.add('cdn-covered')}
-      cur=k;const t=tabs(k);if(t&&t.setHidden(false))win(k).location.reload();else if(box&&!fresh)inbox(k);
+      cur=k;if(box&&!fresh)inbox(k);
       try{D.title=win(k).document.title||D.title}catch(e){}
       pill();
     };
@@ -193,8 +200,9 @@
     else{
       /* หน้าเดิมกำลังจะถูกบัง — พักการดึงข้อมูลตั้งแต่ตอนนี้ ให้เครื่องมีแรงโหลดแท็บใหม่ */
       if(cur===base){baseTitle=D.title;setHidden(true)}
-      /* ครั้งแรก: หน้าเดิมยังอยู่บนจอจนแท็บใหม่วาดเสร็จ (กันจอว่าง) · ช้าเกิน 4 วิ ก็โชว์ไปเลย */
-      f.el.classList.add('load');bar(true);clearTimeout(f.wait);f.wait=setTimeout(()=>{f.ready=true;go()},4000);f.go=go;
+      /* Elapsed time is not evidence that a destination is ready. Keep the old
+         screen usable; never force-show an auth-gated or half-parsed page. */
+      f.el.classList.add('load');bar(true);clearTimeout(f.wait);f.go=go;
     }
   }
   /* ── เตรียมแท็บไว้ก่อนผู้ใช้กด (หลักเดียวกับ barba.js prefetch) ──
@@ -210,7 +218,7 @@
   const loading=()=>Object.keys(frames).some(x=>frames[x].el.isConnected&&!frames[x].ready);
   function prime(k){
     if(!k||k===base||k===cur||calling()||frames[k]&&frames[k].el.isConnected)return;
-    const f=start(k,null,true);f.wait=setTimeout(()=>W.CendonTabs.ready(k),8000);
+    const f=start(k,null,true);f.wait=setTimeout(()=>{if(!f.ready&&f.pre){f.el.remove();delete frames[k];idle(6000)}},15000);
   }
   function idle(ms){
     clearTimeout(idleT);if(!PRE||!loaded)return;
@@ -232,7 +240,7 @@
   function go(u){
     const k=tabOf(u);if(!k||calling())return false;
     const box=inboxUrl(u);
-    if(k===cur){if(box)inbox(k);return true}
+    if(k===cur){showing++;for(const x in frames)frames[x].go=null;bar(false);if(cur===base)setHidden(false);else tabs(cur)?.setHidden(false);if(box)inbox(k);return true}
     /* แชตของหน้าหลัก: เพิ่มรายการ "หน้าหลัก" ก่อน แล้วกล่องข้อความเพิ่มรายการของมันเอง (nav.js)
        — ปิดกล่องข้อความ (ย้อนหนึ่งขั้น) จะกลับมาที่หน้าหลัก ไม่ใช่แท็บที่อยู่ก่อนหน้า */
     const self=box&&k===base;

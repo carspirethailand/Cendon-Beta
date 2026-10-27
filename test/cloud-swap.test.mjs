@@ -14,7 +14,7 @@ test('cloud-swap: ดักปุ่มภาษา/ธีม/สีหลัก
   const js=read('cloud-swap.js');
   /* ปุ่มในหน้าตั้งค่าแต่ละหน้า ต้องยังใช้ชื่อแอตทริบิวต์เดียวกับที่ตัวดักรู้จัก */
   /* หน้าตั้งค่าตัวเดียว (settings.js) ใช้ทุกหน้า รวมหน้าแชต */
-  for(const f of ['garage.html','news.html','profile.html','spares.html','chat.html'])assert.match(read(f),/<script src="\/settings\.js\?v=\d+" defer><\/script>/,f);
+  for(const f of ['garage.html','news.html','profile.html','spares.html','chat.html'])assert.match(read(f),/<script src="\/settings\.js\?v=\d+"(?: defer)?><\/script>/,f);
   const st=read('settings.js');assert.match(st,/data-lang="\$\{esc\(x\.c\)\}"/);assert.match(st,/seg\(t\('ธีม','Theme'\),'data-sitetheme'/);
   assert.match(js,/button\[data-lang\]/);assert.match(js,/button\[data-sitetheme\]/);assert.match(js,/#v-settings button\[data-theme\]/);assert.match(js,/button\[data-pri\]/);
   /* ปุ่มทำงานจริงหลังหมอกฟุ้งจนทึบ และหมอกเริ่มจางหลังเปลี่ยนเสร็จเท่านั้น (เครื่องหน่วงก็ไม่เห็นตัวหนังสือ/สีกระโดด) */

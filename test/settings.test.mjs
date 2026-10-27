@@ -9,7 +9,7 @@ test('settings: one shared page on every app page — the old per-page copies ar
   for (const f of ['profile.html', 'garage.html', 'news.html', 'spares.html', 'chat.html']) {
     const s = r(f);
     assert.match(s, /<link rel="stylesheet" href="\/settings\.css\?v=\d+">/, f);
-    assert.match(s, /<script src="\/settings\.js\?v=\d+" defer><\/script>/, f);
+    assert.match(s, /<script src="\/settings\.js\?v=\d+"(?: defer)?><\/script>/, f);
     assert.doesNotMatch(s, /id="settingsjs"|id="settingscss"|class="set-rail"/, f);
   }
   assert.match(r('chat.html'), /CendonSettings\.open\(tab,\{root:v,back:settingsBack,extra:chatExtra\}\)/);

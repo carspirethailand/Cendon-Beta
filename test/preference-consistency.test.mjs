@@ -33,6 +33,6 @@ test('a real reference rate converts scalar and range money consistently, withou
   assert.equal(requests[0].options.credentials,'omit');assert.equal(requests[0].options.referrerPolicy,'no-referrer');
 });
 test('the presentation module is included on every shared-settings page, and public passports stay canonical',()=>{
-  for(const name of ['index','garage','chat','news','profile','spares'])assert.match(read(name+'.html'),/display-prefs\.js\?v=4/);
+  for(const name of ['index','garage','chat','news','profile','spares'])assert.match(read(name+'.html'),/display-prefs\.js\?v=5/);
   assert.doesNotMatch(read('passport.html'),/display-prefs/);assert.doesNotMatch(read('display-prefs.js'),/\.setItem\(['"]spire_(garage|setup)|Authorization:|\/api\/cars/);
 });

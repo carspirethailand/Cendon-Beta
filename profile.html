@@ -1,25 +1,27 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
+<script>window.__SPIRE_PAGE__="profile";</script>
 <script>/* ธีมตั้งแต่เฟรมแรก (ก่อน CSS วาด) — เดิมหน้าเปิดด้วยธีมตั้งต้นแวบหนึ่งแล้วค่อยสลับ (แชตขึ้นจอดำ) ดูเหมือนกระพริบ/กระตุก */(function(){try{var O={warm:"light",pearl:"light",emerald:"light",plant:"light",moss:"light",carbon:"dark",night:"dark",midnight:"dark",cyber:"dark",aurora:"dark",ocean:"dark",sunset:"dark",magma:"dark"},v=null;try{v=JSON.parse(localStorage.getItem("spire_theme"))}catch(e){}if(typeof v!=="string")try{v=JSON.parse(localStorage.getItem("spire_chatTheme"))}catch(e){}v=v==="light"||v==="dark"?v:(O[v]||"light");var e=document.documentElement;e.setAttribute("data-theme",v);e.setAttribute("data-ctheme",v)}catch(x){}})();</script>
-<script src="/tab-shell.js?v=4"></script>
+<script src="/tab-shell.js?v=5"></script>
 <script src="/launch-gate.js?v=1"></script>
 <script src="/auth-gate.js?v=2"></script>
+<link rel="preload" as="script" href="/settings.js?v=8">
 <script src="/account-scope.js?v=2"></script>
 <link rel="stylesheet" href="/partner-entry.css?v=1">
 <script src="/partner-state.js?v=1"></script>
-<script src="/display-prefs.js?v=4" defer></script>
+<script src="/display-prefs.js?v=5" defer></script>
 <script src="/i18n/ui-en.js?v=4" defer></script>
-<script src="/ui-language.js?v=13" defer></script>
+<script src="/ui-language.js?v=14" defer></script>
 <script src="/partner-entry.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
 <script src="/cendon-tour.js" defer></script>
 <script src="/account-actions.js?v=3" defer></script>
 <script src="/account.js?v=2026-10-21-r2" defer></script>
-<script src="/garage-rules.js?v=4" defer></script>
+<script src="/garage-rules.js?v=5" defer></script>
 <script src="/garage-data.js?v=2" defer></script>
-<script src="/input-guard.js?v=5" defer></script>
+<script src="/input-guard.js?v=6" defer></script>
 <script src="/cloud-swap.js?v=3" defer></script>
 <meta charset="UTF-8"/>
 <!-- ที่อยู่แบบลึก (/profile/…) — ไฟล์ประกอบทุกตัวอ้างจากรากเว็บเสมอ -->
@@ -2757,7 +2759,7 @@ html[data-level="basic"] .hfree{
   .hf-w{font-size:10.5px}
 }
 </style>
-<link rel="stylesheet" href="/settings.css?v=4">
+<link rel="stylesheet" href="/settings.css?v=5">
 <style id="skillscss">
 /* ══════════════════════════════════════════════════════════════════
    SKILLS — คำสั่งสำเร็จรูปที่ผู้ใช้เขียนเอง แล้วเรียกด้วย /ชื่อ
@@ -3892,7 +3894,7 @@ a.mtab{text-decoration:none}
 <script src="car-detail-tabs.js?v=2026-10-12-r2" defer></script>
 <script src="car-sync.js"></script>
 <script src="mileage-sync.js?v=1" defer></script>
-<script src="stability.js?v=2026-10-26-tab1" defer></script>
+<script src="stability.js?v=2026-10-27-r1" defer></script>
 <!-- หน้าตาชุดเดียวกับหน้าหลัก (สี การ์ด ปุ่ม พื้นหลัง) — โหลดท้ายสุดให้ชนะสไตล์เดิม -->
 <link rel="stylesheet" href="lux.css">
 <!-- กระดิ่งแจ้งเตือน: ปุ่มในแถบเมนู (คอม) / มุมขวาบน (มือถือ) -->
@@ -4155,6 +4157,7 @@ window.spireI18nCoverage=code=>{
     <!-- หน้าโปรไฟล์แบบเก่า (ธีมเยอะ ภาษา พื้นหลังการาจ) เอาออกแล้ว — /profile เปิดหน้าตั้งค่าแบบใหม่ทับเต็มจอแทน
          section เปล่าเก็บไว้ให้โค้ดที่สลับ view ยังหาเจอ -->
     <section class="view active" id="v-profile"></section>
+    <script src="/settings.js?v=8"></script>
   </div>
 </div>
 
@@ -5400,7 +5403,6 @@ window.spireApplySetup=()=>{ const k=level();
   try{ mountProfilePicker() }catch(e){} };
 })();
 </script>
-<script src="/settings.js?v=7" defer></script>
 <script src="/sheet-drag.js?v=1" defer></script>
 <script id="skillsjs">
 /* ══════════════════════════════════════════════════════════════════
@@ -7963,7 +7965,7 @@ const noCarPage=(ic,title)=>`<div class="bkicker"><i class="ti ${ic}"></i>${titl
   <p class="bsub">${T("เพิ่มรถของคุณแล้วส่วนนี้จะมีข้อมูลขึ้นมาเอง","Add your car and this fills itself in.")}</p>`;
 
 function render(){
-  const wrap=$("briefPages"); if(!wrap)return;
+  const wrap=$("briefPages"); if(!wrap||D.body.dataset.briefOpen!=="1")return;
   const c=activeCar(), s=stats(c);
   const F={wx:()=>pageWx(),one:()=>pageOne(c,s),odo:()=>pageOdo(c,s),todo:()=>pageTodo(c,s),
            health:()=>pageHealth(c,s),cost:()=>pageCost(c,s),trip:()=>pageTrip(c,s),recap:()=>pageRecap(c,s)};
@@ -8450,7 +8452,7 @@ function mount(){
     }
     try{if(typeof window.saveWidgetLayout==="function")window.saveWidgetLayout()}catch(e){}
   }
-  fillWidget(); ensureView(); syncOthers(); garageSummary();
+  fillWidget(); syncOthers(); garageSummary();
   if(!wxFresh()&&wxState==="idle")loadWx(false);
 }
 window.briefRefresh=()=>{fillWidget();if(D.body.dataset.briefOpen==="1")render()};
@@ -13104,7 +13106,7 @@ function start(){
 if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",start); else start();
 })();
 </script>
-<script src="mobile-ui.js" defer></script>
+<script src="mobile-ui.js?v=2" defer></script>
 <script src="nav-pages.js?v=5" defer></script>
 <script>
 window.__SPIRE_PAGE__="profile";

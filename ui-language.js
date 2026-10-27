@@ -2,9 +2,9 @@
 (function(W,D){
 'use strict';if(W.CendonLocale)return;
 const CODES=['th','en','zh','ja','ko','id','vi','ms','de','fr','es','pt'],EN=W.CENDON_UI_EN||{},REV=Object.fromEntries(Object.entries(EN).map(([th,en])=>[en,th])),packs=new Map(),loading=new Set(),raw=new WeakMap(),attrs=new WeakMap();
-let queued=false;
+let queued=false,paintLanguage=null;const dirtyRoots=new Set();
 const excluded='script,style,noscript,input,textarea,option,[contenteditable],[data-no-i18n],[data-user-name],.msg,.bubble,.nt,.nm,.about,.markdown,.chat-message,.st-me,.who,.av,.shop-name,.tech-name,.car-name,#msgs';
-function lang(){let code=W.spireLang?.();if(!CODES.includes(code))try{code=JSON.parse(localStorage.getItem('spire_lang'))}catch{}return CODES.includes(code)?code:'th'}
+function lang(){if(paintLanguage)return paintLanguage;let code=W.spireLang?.();if(!CODES.includes(code))try{code=JSON.parse(localStorage.getItem('spire_lang'))}catch{}return CODES.includes(code)?code:'th'}
 function pack(code){const p=W.CENDON_L10N;if(p?.lang===code)packs.set(code,p.t);return packs.get(code)||{}}
 function translate(th,en,code=lang()){
   if(code==='th')return th;
@@ -29,32 +29,35 @@ function original(node){
 }
 function paint(){
   queued=false;if(!D.body)return;
-  const walker=D.createTreeWalker(D.body,NodeFilter.SHOW_TEXT);let node;
-  while(node=walker.nextNode()){
-    const el=node.parentElement;if(!el||el.closest(excluded))continue;
-    const source=original(node),out=text(source);raw.set(node,{source,out});if(node.nodeValue!==out)node.nodeValue=out;
+  paintLanguage=lang();const roots=[...dirtyRoots];dirtyRoots.clear();
+  try{for(const root of roots){if(!root?.isConnected)continue;
+  const walker=D.createTreeWalker(root,NodeFilter.SHOW_TEXT);let node=root.nodeType===3?root:walker.nextNode();
+  while(node){
+    const el=node.parentElement;if(el&&!el.closest(excluded)){const source=original(node),out=text(source);raw.set(node,{source,out});if(node.nodeValue!==out)node.nodeValue=out;}
+    node=root.nodeType===3?null:walker.nextNode();
   }
-  for(const el of D.querySelectorAll('[placeholder],[title],[aria-label]')){
+  const scope=root.nodeType===1?root:root.parentElement,fields=[...(scope?.matches('[placeholder],[title],[aria-label]')?[scope]:[]),...(scope?.querySelectorAll('[placeholder],[title],[aria-label]')||[])];
+  for(const el of fields){
     if(el.closest('[data-no-i18n],.nt,.nm,.about,.msg,.bubble,[data-user-name]'))continue;
     const old=attrs.get(el)||{};for(const key of ['placeholder','title','aria-label']){
       if(!el.hasAttribute(key))continue;const value=el.getAttribute(key),source=old[key]?.out===value?old[key].source:value,out=text(source);
       old[key]={source,out};if(value!==out)el.setAttribute(key,out);
     }attrs.set(el,old);
-  }
+  }}}finally{paintLanguage=null}
 }
-function schedule(){if(!queued){queued=true;requestAnimationFrame(paint)}}
+function schedule(root){if(!root){dirtyRoots.clear();if(D.body)dirtyRoots.add(D.body)}else if(!dirtyRoots.has(D.body))dirtyRoots.add(root);if(dirtyRoots.size>24){dirtyRoots.clear();dirtyRoots.add(D.body)}if(!queued){queued=true;requestAnimationFrame(paint)}}
 function load(){
   const code=lang();if(!['th','en'].includes(code)&&!packs.has(code)&&!loading.has(code)){
-    loading.add(code);const script=D.createElement('script');script.src='/i18n/home-'+code+'.js?v=27';script.dataset.noI18n='';
+    loading.add(code);const script=D.createElement('script');script.src='/i18n/home-'+code+'.js?v=28';script.dataset.noI18n='';
     script.onload=()=>{pack(code);loading.delete(code);W.dispatchEvent(new CustomEvent('cendon:language-ready',{detail:{lang:code}}));schedule()};script.onerror=()=>{loading.delete(code)};D.head.append(script);
   }schedule();
 }
 function boot(){
-  new MutationObserver(changes=>{if(changes.some(m=>{
-    const el=m.target.nodeType===3?m.target.parentElement:m.target;if(!el||el.closest?.(excluded))return false;
-    if(m.type==='characterData'){const old=raw.get(m.target);return !old||old.out!==m.target.nodeValue}
-    return [...m.addedNodes].some(n=>n.nodeType===3||n.nodeType===1&&!n.matches(excluded));
-  }))schedule()}).observe(D.body,{subtree:true,childList:true,characterData:true});
+  new MutationObserver(changes=>{for(const m of changes){
+    const el=m.target.nodeType===3?m.target.parentElement:m.target;if(!el||el.closest?.(excluded))continue;
+    if(m.type==='characterData'){const old=raw.get(m.target);if(!old||old.out!==m.target.nodeValue)schedule(m.target)}
+    else for(const n of m.addedNodes)if(n.nodeType===3||n.nodeType===1&&!n.matches(excluded))schedule(n);
+  }}).observe(D.body,{subtree:true,childList:true,characterData:true});
   W.spireOnLang?.(load);load();
 }
 W.CendonLocale=Object.freeze({t:translate,text,paint:load,lang});

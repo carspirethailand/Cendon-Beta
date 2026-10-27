@@ -57,11 +57,11 @@ function paint(){scheduled=false;if(!D.body)return;
 }
 function schedule(){if(!scheduled){scheduled=true;requestAnimationFrame(paint)}}
 function boot(){new MutationObserver(changes=>{
-  if(changes.some(m=>{const el=m.target.nodeType===3?m.target.parentElement:m.target;if(!el||el.closest?.(excluded))return false;
+  if(changes.some(m=>{if(m.type==='childList'&&[...m.addedNodes].some(n=>n.nodeType===1&&(n.matches?.('[data-distance-km]')||n.querySelector?.('[data-distance-km]'))))return true;const el=m.target.nodeType===3?m.target.parentElement:m.target;if(!el||el.closest?.(excluded))return false;
     if(m.type==='characterData'){const old=raw.get(m.target);if(old&&m.target.nodeValue===old.out)return false;return /\d|฿/.test(m.target.nodeValue||'')}
     return [...m.addedNodes].some(n=>!(n.nodeType===1&&n.matches(excluded))&&/\d|฿/.test(n.textContent||''));}))schedule();
 }).observe(D.body,{childList:true,characterData:true,subtree:true});paint();rates()}
-W.CendonDisplayPrefs=Object.freeze({prefs,distance,money,paint,transform:convert,sync:()=>{schedule();return rates()}});
+W.CendonDisplayPrefs=Object.freeze({prefs,distance,money,paint,rate:c=>c==='THB'?1:rate(c),transform:convert,sync:()=>{schedule();return rates()}});
 W.addEventListener('cendon:preferences',()=>{schedule();rates()});W.addEventListener('cendon:auth-ready',()=>{schedule();rates()});
 D.addEventListener('cendon:auth-ready',()=>{schedule();rates()});
 W.addEventListener('storage',e=>{if(['spire_setup','spire_lang'].includes(e.key)){schedule();rates()}});

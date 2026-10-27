@@ -14,8 +14,8 @@ test('the job sheet hosts repair proof and the plain-language summary (no new pa
 
 test('parts jobs: the quote says which parts, and "Finished" waits for all three clips',()=>{
   assert.match(home,/const partsRead=px=>\(\{partsNote:/);
-  assert.match(home,/change\(j,"quote",\{labor:\+\$\("qL"\)\.value\|\|0,parts:\+\$\("qP"\)\.value\|\|0,travel:\+\$\("qT"\)\.value\|\|0,\.\.\.partsRead\("q"\)/);
-  assert.match(home,/\/offer`,\{body:\{labor:\+\$\("oL"\)\.value\|\|0,parts:\+\$\("oP"\)\.value\|\|0,travel:\+\$\("oT"\)\.value\|\|0,\.\.\.partsRead\("o"\)/);
+  for(const id of ['qL','qP','qT'])assert.ok(home.includes('window.CendonMoneyFields?.read("'+id+'")'),'quote uses canonical currency read: '+id);
+  for(const id of ['oL','oP','oT'])assert.ok(home.includes('window.CendonMoneyFields?.read("'+id+'")'),'offer uses canonical currency read: '+id);
   assert.match(home,/if\(a==="done"&&window\.CendonProof&&CendonProof\.missing\(j\)\.length\)\{/);
   assert.match(pf,/function missing\(j\)\{const p=j\.proof;if\(!p\|\|!p\.need\)return \[\];/);
 });

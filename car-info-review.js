@@ -11,7 +11,7 @@
     const all=s.data.variants,exact=info.trim?all.filter(v=>norm(v.name)===norm(info.trim)):[];
     const variants=exact.length===1?exact:all,warnings=[],checked=[];
     if(info.trim&&!exact.length)warnings.push({field:'trim',values:all.map(v=>v.name).filter(Boolean).slice(0,8)});
-    for(const field of ['drive','fuel','gear','engine']){
+    for(const field of ['drive','fuel','gear','engine','engine_code']){
       if(!info[field])continue;
       const refs=[...new Set(variants.map(v=>field==='fuel'?v.fuel:field==='gear'?gear(value(v.gearbox)||''):value(v[field])).filter(Boolean))];
       if(!refs.length)continue;

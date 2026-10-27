@@ -15,6 +15,7 @@ html.ib-boot .bs .pn,html.ib-boot .bs .bg{transition:none!important}</style>
 <script src="/partner-state.js?v=1"></script>
 <script src="/shop-images.js?v=1"></script>
 <script src="/display-prefs.js?v=3" defer></script>
+<script src="/money-fields.js?v=1" defer></script>
 <script src="/i18n/ui-en.js?v=4" defer></script>
 <script src="/ui-language.js?v=9" defer></script>
 <script src="/partner-entry.js?v=1"></script>
@@ -3528,11 +3529,13 @@ async function busy(btn,fn){
 /* ═══ กล่องเตือน "ข้อมูลยังไม่ครบ" ═══
    list = [{id: ช่องที่ต้องแก้, msg: บอกว่าต้องทำอะไร}] — กด "กลับไปแก้" แล้วพาไปที่ช่องแรกที่ผิด ช่องที่ผิดมีขอบแดงจนกว่าจะแก้ */
 const formErr=list=>Object.assign(new Error(list.map(x=>x.msg).join(" · ")),{form:list});
+const formAction=fn=>{try{return fn()}catch(e){formPop(e.form||[{id:fieldOf(e.message),msg:e.message}])}};
 /* ข้อความจากเซิร์ฟเวอร์ขึ้นต้นด้วยชื่อช่อง → รู้ว่าต้องพาไปช่องไหน */
 function fieldOf(m){m=String(m||"");
   return /^เบอร์โทร/.test(m)?"bPhone":/^อาการ/.test(m)?($("bSym")?"bSym":"uSym"):/^รถ \//.test(m)?($("bCarX")&&!$("bCarX").hidden?"bCarX":"bCarC"):/^วันและเวลา/.test(m)?"bWhenX":/^(พื้นที่|ที่อยู่)/.test(m)?"bMap":""}
 function formPop(list){
   const old=$("fpop");if(old)old.remove();
+  if(window.CendonFormIssues?.show(list,$("bsB")))return;
   const d=document.createElement("div");d.id="fpop";d.className="fpop";
   d.setAttribute("role","alertdialog");d.setAttribute("aria-modal","true");d.setAttribute("aria-labelledby","fpopT");
   d.innerHTML=`<div class="fpop-c"><span class="fpop-i"><i class="ti ti-alert-circle"></i></span>
@@ -3568,6 +3571,7 @@ function paintSheet(o){
   $("bsBack").hidden=!SH.stack.length;
   bs.classList.toggle("full",!!o.full);bs.classList.toggle("store",!!o.store);bs.classList.toggle("inbox",!!o.inbox);bs.classList.remove("so-up");bs.classList.toggle("jx",o.cls==="jx");
   $("bsB").scrollTop=0;
+  window.CendonMoneyFields?.mount($("bsB"));
   if(o.mount)o.mount($("bsB"),$("bsF"),o);
 }
 function sheet(o){
@@ -4034,7 +4038,7 @@ async function featureHandoff(o){
   const owner=U.uid;
   if(!o.files?.length||o.files.length>3)throw Error(T("แนบได้ไม่เกิน 3 ไฟล์","Attach up to 3 files"));
   const ids=[];
-  for(const f of o.files)ids.push(await CendonMedia.put(f.blob,{kind:f.kind,mime:f.mime,name:f.name||"",upload:false}));
+  for(const f of o.files)ids.push(await CendonMedia.put(f.blob,{kind:f.kind,mime:f.mime,name:f.name||"",upload:false,requirePersistent:true}));
   if(U?.uid!==owner)throw Error(T("บัญชีเปลี่ยนแล้ว กรุณาเริ่มใหม่","Account changed. Start again."));
   try{sessionStorage.setItem("spire_featureJob",JSON.stringify({tool:o.tool||null,uid:owner,ids,text:o.text||"",audioVehicle:o.audioVehicle,recording:o.recording,at:Date.now()}))}catch(e){throw Error(T("เก็บคำขอไม่สำเร็จ กรุณาเปิดสิทธิ์พื้นที่เก็บข้อมูลของเว็บ","Cannot preserve this request. Allow site storage and retry."))}
   if(o.car)ls.set("spire_selCar",o.car);
@@ -4175,7 +4179,7 @@ function listenPage(){
     mount(b,f,o){
       // Bind to this sound form, never a Home card or another hidden sheet.
       const $=id=>b.querySelector("#"+id)||f.querySelector("#"+id);
-      const err=t=>{const el=$("lpErr");if(el&&!closed)el.textContent=t||""};
+      const err=t=>{const el=$("lpErr");if(el&&!closed){el.textContent=t||"";if(t){el.tabIndex=-1;el.scrollIntoView({block:'center',behavior:'smooth'});el.focus({preventScroll:true})}}};
       const ready=()=>{const go=$("lpGo"),label=$("lpGoT");if(closed||!go||!label)return;go.disabled=busyClip||sendingClip||!!rec||!clip;go.classList.toggle("dim",!clip);go.setAttribute("aria-busy",String(sendingClip));
         label.textContent=sendingClip?T("กำลังส่ง…","Sending…"):!clip?T("อัดเสียงหรือเลือกไฟล์ก่อน","Record or pick a file first"):area&&area!=="unsure"?T("ให้ AI ฟังเสียงนี้","Let the AI listen"):T("ส่งโดยไม่ระบุตำแหน่ง","Send without a location")};
       /* sound-lens.js โหลดแบบ defer — เปิด /listen ตรงจากลิงก์อาจมาก่อน: รอแล้ววาดให้เอง */
@@ -4880,7 +4884,7 @@ async function gigForm(g,opt){
       $("gSave").onclick=e=>busy(e.currentTarget,async()=>{
         try{
           if(!F2.cats.length)throw new Error("เลือกหมวดหมู่บริการอย่างน้อย 1 หมวด — ลูกค้าจะหาบริการนี้เจอในทุกหมวดที่เลือก");
-          const base={kind:"package",title:$("gT").value,price:+$("gP").value||0,body:$("gB").value,
+          const base={kind:"package",title:$("gT").value,price:(window.CendonMoneyFields?.read("gP") ?? +$("gP").value)||0,body:$("gB").value,
             cats:[...F2.cats],brands:$("gBr").value.split(",").map(x=>x.trim()).filter(Boolean)};
           /* รูปไม่จำกัด: ส่งทีละ 4 รูป ต่อท้ายโพสต์เดิม */
           let id=g.id,keep=[...F2.keep],rest=[...F2.add];
@@ -5480,7 +5484,7 @@ function studioSettings(){
           if(want!==!!(DSTATS?DSTATS.online:t.online)){await api("/api/tech/online",{body:{online:want}});if(DSTATS)DSTATS.online=want;startAlerts()}
           const u=$("ssUntil").value?new Date($("ssUntil").value+"T23:59:59").getTime():null;
           const body={vacation:{on:$("ssVac").checked,until:u,note:$("ssVacN").value},autoReply:{on:$("ssAr").checked,text:$("ssArT").value},
-            greet:$("ssGr").value,minPrice:+$("ssMin").value||0,theme};
+            greet:$("ssGr").value,minPrice:(window.CendonMoneyFields?.read("ssMin") ?? +$("ssMin").value)||0,theme};
           if($("ssRad").value!=="")body.radius=+$("ssRad").value;
           if($("ssRoam"))body.roam=$("ssRoam").checked;
           await api("/api/tech/shop",{body});
@@ -6375,7 +6379,7 @@ function drawJob(j,push){
 }
 /* ให้ repair-proof.js เรียก API/วาดใบงานใหม่/แจ้งเตือน ด้วยเครื่องมือเดียวกับใบงาน */
 function proofCtx(j){return {api,toast,busy,refresh:async()=>{try{const nj=(await api("/api/tech/jobs/"+j.id)).job;if(JOB&&JOB.id===j.id){const st=SH.stack;drawJob(nj,false);SH.stack=st;$("bsBack").hidden=!st.length}}catch(e){}}}}
-const quoteCurrencyNote=()=>`<p class="note" data-no-prefs><i class="ti ti-cash"></i>${T("กรอกราคาเป็นเงินบาท (THB) ทุกช่อง · สกุลเงินในการตั้งค่าใช้แสดงยอดประมาณการเท่านั้น ไม่เปลี่ยนหน่วยของใบเสนอราคา","Enter every amount in Thai baht (THB). Your display currency only changes estimates, not the quote currency.")}</p>`;
+const quoteCurrencyNote=()=>`<p class="note" data-no-prefs><i class="ti ti-cash"></i>${T("กรอกตามสกุลเงินที่กำกับแต่ละช่อง · ระบบแปลงและบันทึกใบเสนอราคาเป็น THB ด้วยอัตราขณะเปิดฟอร์ม ตรวจยอดก่อนส่ง","Use the currency shown beside each field. Quotes are converted and stored in THB at this form’s rate. Review the total before sending.")}</p>`;
 /* อะไหล่ในใบเสนอราคา: มีค่าอะไหล่ต้องบอกว่าอะไหล่อะไร — ลูกค้าเห็นก่อนยืนยัน · ใช้เทียบเลขกับคลิปหลักฐาน · ขึ้น Passport ตามจริง */
 const partsFields=(px,q)=>`<div id="${px}PN" ${q&&q.parts>0?"":"hidden"}><label class="fld"><span>${T("อะไหล่ที่ใช้ (ชื่อ ยี่ห้อ หรือเลขอะไหล่)","Parts used (name, brand or part number)")}</span><input class="inp" id="${px}N" maxlength="300" value="${esc(q&&q.partsNote||"")}" placeholder="${T("เช่น ผ้าเบรก Bendix DB1234","e.g. Bendix DB1234 brake pads")}"/></label>
   <label class="chk"><input type="checkbox" id="${px}U" ${q&&q.partsUsed?"checked":""}/> ${T("เป็นอะไหล่มือสอง","These are used parts")}</label>
@@ -6421,7 +6425,7 @@ function act(j,a,btn){
   if(a==="extra")return sheet({push:true,slug:a,title:"เสนองานเพิ่ม",body:`<p class="note"><i class="ti ti-info-circle"></i>ราคาที่ลูกค้ายืนยันแล้วแก้ไม่ได้ งานที่เจอเพิ่มต้องให้ลูกค้ากดยอมรับก่อนทำ</p>
       <label class="fld"><span>ต้องทำอะไรเพิ่ม และทำไม</span><textarea class="inp" id="xD" placeholder="เช่น วาล์วแอร์รั่ว ต้องเปลี่ยนใหม่"></textarea></label>
       <div class="two"><label class="fld"><span>ค่าแรง (THB)</span><input class="inp" id="xL" type="number" inputmode="decimal" placeholder="0"/></label><label class="fld"><span>อะไหล่ (THB)</span><input class="inp" id="xP" type="number" inputmode="decimal" placeholder="0"/></label></div>`,
-    foot:'<button class="btn p w" id="xGo">ส่งให้ลูกค้าตัดสินใจ</button>',mount(){$("xGo").onclick=e=>change(j,"extra",{desc:$("xD").value.trim(),labor:+$("xL").value||0,parts:+$("xP").value||0},e.currentTarget)}});
+    foot:'<button class="btn p w" id="xGo">ส่งให้ลูกค้าตัดสินใจ</button>',mount(){$("xGo").onclick=e=>formAction(()=>change(j,"extra",{desc:$("xD").value.trim(),labor:(window.CendonMoneyFields?.read("xL") ?? +$("xL").value)||0,parts:(window.CendonMoneyFields?.read("xP") ?? +$("xP").value)||0},e.currentTarget))}});
   if(a==="quote"){const q=j.quote||{};return sheet({push:true,slug:a,title:T("เสนอราคา","Send a quote"),body:`${quoteCurrencyNote()}
       <div class="two"><label class="fld"><span>ค่าแรง (THB)</span><input class="inp" id="qL" type="number" inputmode="decimal" value="${q.labor||""}" placeholder="0"/></label>
       <label class="fld"><span>อะไหล่ (THB)</span><input class="inp" id="qP" type="number" inputmode="decimal" value="${q.parts||""}" placeholder="0"/></label></div>
@@ -6431,8 +6435,8 @@ function act(j,a,btn){
       <label class="fld"><span>นัดวันเวลา</span><input class="inp" id="qA" value="${esc(q.appointment||j.requestedTime||"")}"/></label>
       <label class="fld"><span>รับประกัน (วัน)</span><input class="inp" id="qW" type="number" inputmode="numeric" value="${q.warranty??30}"/></label>`,
     foot:'<button class="btn p w" id="qGo">ส่งราคา <b id="qSum" data-no-prefs></b></button>',
-    mount(){const sum=()=>{$("qSum").textContent=" ฿"+money((+$("qL").value||0)+(+$("qP").value||0)+(+$("qT").value||0))};["qL","qP","qT"].forEach(k=>$(k).oninput=sum);sum();partsWire("q","qP");
-      $("qGo").onclick=e=>change(j,"quote",{labor:+$("qL").value||0,parts:+$("qP").value||0,travel:+$("qT").value||0,...partsRead("q"),scope:$("qS").value.trim(),appointment:$("qA").value.trim(),warranty:+$("qW").value||0},e.currentTarget)}});}
+    mount(){const sum=()=>{$("qSum").textContent=window.CendonMoneyFields?.total(["qL","qP","qT"])||" ฿"+money(((window.CendonMoneyFields?.read("qL") ?? +$("qL").value)||0)+((window.CendonMoneyFields?.read("qP") ?? +$("qP").value)||0)+((window.CendonMoneyFields?.read("qT") ?? +$("qT").value)||0))};["qL","qP","qT"].forEach(k=>$(k).oninput=sum);sum();partsWire("q","qP");
+      $("qGo").onclick=e=>formAction(()=>change(j,"quote",{labor:(window.CendonMoneyFields?.read("qL") ?? +$("qL").value)||0,parts:(window.CendonMoneyFields?.read("qP") ?? +$("qP").value)||0,travel:(window.CendonMoneyFields?.read("qT") ?? +$("qT").value)||0,...partsRead("q"),scope:$("qS").value.trim(),appointment:$("qA").value.trim(),warranty:+$("qW").value||0},e.currentTarget))}});}
   if(a==="accept")return sheet({push:true,slug:a,title:"ยืนยันราคา",body:`<div class="quote"><div class="tot">฿${money(j.quote.total)}</div><p>${esc(j.quote.scope)}</p><p class="note" style="margin:8px 0 0"><i class="ti ti-calendar"></i>${esc(j.quote.appointment)}</p></div>
       <label class="chk"><input type="checkbox" id="cOk"/> ตกลงราคานี้ และให้ช่างเห็นเบอร์กับที่อยู่ของฉันเพื่อนัดซ่อม</label>
       <p class="note"><i class="ti ti-info-circle"></i>จ่ายเงินกับช่างโดยตรงเมื่องานเสร็จ — <b>Cendon ไม่ได้ถือเงิน และยังไม่มีระบบคืนเงิน</b> ถ้ามีปัญหากด "แจ้งปัญหา" ในใบงาน ทีมงานช่วยประสานให้</p>
@@ -7045,7 +7049,7 @@ const PJ_CAR=`<svg viewBox="0 0 64 34" aria-hidden="true"><path d="M7 21c0-4.6 3
 function stepHd(n){return `<div class="pj-hd"><div class="pj-road" style="--p:${(n-1)/(STEPS.length-1)}" role="img" aria-label="ขั้นที่ ${n} จาก ${STEPS.length}"><i class="pj-lane"></i><i class="pj-done"></i>
   ${STEPS.map((l,i)=>`<span class="pj-ms ${i+1<n?"ok":i+1===n?"on":""}" style="--i:${i/(STEPS.length-1)}">${i+1<n?'<i class="ti ti-check"></i>':i+1}</span>`).join("")}<span class="pj-car">${PJ_CAR}</span></div>
   <p class="pj-k">ขั้นที่ ${n} จาก ${STEPS.length}</p><h2 class="pj-t">${STEPS[n-1]}</h2><p class="pj-s">${STEP_SUB[n-1]}</p></div>`}
-function keep(){const g=id=>$(id)?$(id).value.trim():undefined;[["name","aN"],["shop","aS"],["phone","aP"],["birth","aD"],["years","aY"],["from","aF"],["warranty","aW"],["area","aR"],["radius","aK"],["about","aB"],["idNo","aI"]].forEach(([k,id])=>{const v=g(id);if(v!==undefined)APP[k]=v})}
+function keep(){try{const g=id=>$(id)?$(id).value.trim():undefined;[["name","aN"],["shop","aS"],["phone","aP"],["birth","aD"],["years","aY"],["from","aF"],["warranty","aW"],["area","aR"],["radius","aK"],["about","aB"],["idNo","aI"]].forEach(([k,id])=>{let v=g(id);if(id==='aF'&&v&&window.CendonMoneyFields)v=String(CendonMoneyFields.read(id));if(v!==undefined)APP[k]=v})}catch(e){formPop(e.form||[{msg:e.message}]);return false}}
 /* ขั้นถัดไป = ซ้อนขั้นใหม่ · กลับไปขั้นที่อยู่ข้างใต้ = ถอยหนึ่งขั้น · กระโดดไปขั้นอื่น (แก้ไขจากหน้าสรุป) = ซ้อนเหมือนกัน */
 const wiz=n=>({wiz:n,cls:"jx",redo:()=>step(n),url:"/join/"+n,push:!!(SH.cur&&SH.cur.wiz!=null&&SH.cur.wiz!==n)});
 function step(n){
@@ -7074,14 +7078,14 @@ function step(n){
       if($("aI")){$("aI").addEventListener("input",()=>{const p=$("aI").selectionStart,before=$("aI").value.length;$("aI").value=fmtId($("aI").value);const d=$("aI").value.length-before;try{$("aI").setSelectionRange(p+d,p+d)}catch(e){}idHint()});idHint();}
       $("aC").querySelectorAll("button").forEach(b=>b.onclick=()=>{b.classList.toggle("on");APP.cats=[...$("aC").querySelectorAll(".on")].map(x=>x.dataset.v)});
       $("aM").querySelectorAll("button").forEach(b=>b.onclick=()=>{b.classList.toggle("on");APP[b.dataset.v]=b.classList.contains("on")});
-      $("aBk").onclick=()=>{keep();landing()};
-      $("aNx").onclick=()=>{keep();const e=[];
-        if(!APP.title)e.push("คำนำหน้า");if(!/^\p{L}[\p{L}\p{M}\s.'’-]+$/u.test(APP.name||"")||(APP.name||"").trim().split(/\s+/).length<2)e.push("ชื่อและนามสกุลตามเอกสาร");if(!DIDIT()&&!thaiId(APP.idNo))e.push("เลขประจำตัวประชาชน");
-        if(ageOf(APP.birth)<18)e.push("อายุ 18 ปีขึ้นไป");if(!/^0\d{8,9}$/.test((APP.phone||"").replace(/[\s-]/g,"")))e.push("เบอร์โทรศัพท์");
-        if(!Number.isInteger(+APP.years)||+APP.years<2||+APP.years>60||+APP.years>ageOf(APP.birth)-16)e.push("ประสบการณ์ 2–60 ปี และต้องสอดคล้องกับอายุ");if(!APP.cats.length)e.push("ประเภทงาน");
-        if((APP.about||"").trim().length<30)e.push("ความถนัดและเครื่องมืออย่างน้อย 30 ตัวอักษร");
-        if(!(+APP.from>0))e.push("ราคาเริ่มต้น");if(!(+APP.warranty>=7))e.push("รับประกันอย่างน้อย 7 วัน");
-        if(e.length){$("err").textContent="กรุณาตรวจสอบ: "+e.join(", ");$("err").scrollIntoView({block:"nearest"});return}step(2)};
+      $("aBk").onclick=()=>{if(keep()===false)return;landing()};
+      $("aNx").onclick=()=>{if(keep()===false)return;const e=[],bad=(id,msg)=>e.push({id,msg});
+        if(!APP.title)bad("aT","เลือกคำนำหน้า");if(!/^\p{L}[\p{L}\p{M}\s.'’-]+$/u.test(APP.name||"")||(APP.name||"").trim().split(/\s+/).length<2)bad("aN","กรอกชื่อและนามสกุลตามเอกสาร");if(!DIDIT()&&!thaiId(APP.idNo))bad("aI","ตรวจเลขประจำตัวประชาชน");
+        if(ageOf(APP.birth)<18)bad("aD","ผู้สมัครต้องอายุ 18 ปีขึ้นไป");if(!/^0\d{8,9}$/.test((APP.phone||"").replace(/[\s-]/g,"")))bad("aP","กรอกเบอร์โทรศัพท์ให้ถูกต้อง");
+        if(!Number.isInteger(+APP.years)||+APP.years<2||+APP.years>60||+APP.years>ageOf(APP.birth)-16)bad("aY","ประสบการณ์ 2–60 ปี และต้องสอดคล้องกับอายุ");if(!APP.cats.length)bad("aC","เลือกประเภทงาน");
+        if((APP.about||"").trim().length<30)bad("aB","ความถนัดและเครื่องมืออย่างน้อย 30 ตัวอักษร");
+        if(!(+APP.from>0))bad("aF","ระบุราคาเริ่มต้นมากกว่า 0");if(!(+APP.warranty>=7))bad("aW","รับประกันอย่างน้อย 7 วัน");
+        if(e.length){formPop(e);return}step(2)};
     }});
   if(n===2)return sheet({...wiz(n),full:true,title:"ใบสมัครพาร์ทเนอร์",body:stepHd(2)+`
     <section class="pj-card"><h3 class="pj-ct"><i class="ti ti-map-pin"></i>ตำแหน่งอู่<small>เลื่อนแผนที่ให้หมุดตรงจุด</small></h3>
@@ -7093,8 +7097,8 @@ function step(n){
     mount(){
       const pk=picker($("aMap"),APP.lat?{lat:APP.lat,lng:APP.lng}:null,p=>{APP.lat=p.lat;APP.lng=p.lng;$("aXY").textContent=p.lat.toFixed(5)+", "+p.lng.toFixed(5)});
       $("aGps").onclick=e=>busy(e.currentTarget,async()=>{const p=await locate();if(p){pk.set(p);APP.gps=true}});
-      $("aBk").onclick=()=>{keep();step(1)};
-      $("aNx").onclick=()=>{keep();if(!window.L&&!APP.gps){$("err").textContent="กดใช้ตำแหน่งปัจจุบันก่อน";return}if((APP.area||"").length<3){$("err").textContent="กรุณาระบุเขต / อำเภอ / จังหวัด";return}step(3)};
+      $("aBk").onclick=()=>{if(keep()===false)return;step(1)};
+      $("aNx").onclick=()=>{if(keep()===false)return;if(!window.L&&!APP.gps){formPop([{id:"aGps",msg:"กดใช้ตำแหน่งปัจจุบันก่อน"}]);return}if((APP.area||"").length<3){formPop([{id:"aR",msg:"กรุณาระบุเขต / อำเภอ / จังหวัด"}]);return}step(3)};
     }});
   if(n===3)return sheet({...wiz(n),full:true,title:"ใบสมัครพาร์ทเนอร์",body:stepHd(3)+(DIDIT()?`<p class="note"><i class="ti ti-camera"></i><span>รูปอู่และรูปผลงานจริง ถ่ายให้เห็นชัด · บัตรประชาชนไม่ต้องแนบ — ยืนยันกับ Didit หลังยื่นใบสมัคร</span></p>`:`<p class="note"><i class="ti ti-camera"></i><span>ถ่ายให้เห็นข้อความชัด ไม่มีแสงสะท้อน · บัตรประชาชนให้ทีมงานดูเพื่อยืนยันตัวตนเท่านั้น และถูกลบหลังพิจารณา</span></p>
     <p class="note"><i class="ti ti-id"></i><span>บัตรประชาชน: ถ่าย<b>ด้านหน้าบัตรจริง</b> (ไม่ถ่ายจากจอหรือสำเนา) ให้เห็นเลข 13 หลักชัดทุกหลัก — ทีมงานจะเทียบกับเลขที่คุณกรอก</span></p>`)+dk().map(([k,l,min,max,ic])=>`<section class="pj-card dgrp"><h4><span class="pj-di"><i class="ti ${ic}"></i></span><span>${l}<small>${min?(min===max?min+" รูป":min+"–"+max+" รูป"):"ไม่บังคับ"}</small></span><i class="ti ti-circle-check-filled okk" ${(APP.docs[k]||[]).length>=min&&min?"":"hidden"}></i></h4><div class="docs" data-k="${k}"></div></section>`).join("")
@@ -7113,7 +7117,7 @@ function step(n){
       dk().forEach(([k])=>draw(k));
       $("aFile").onchange=async()=>{const f=$("aFile").files[0];if(!f||!cur)return;try{const d=await shrink(f,cur==="id"||cur==="selfie"?1400:1100);(APP.docs[cur]=APP.docs[cur]||[]).push(d);draw(cur)}catch(e){$("err").textContent=e.message}};
       $("aBk").onclick=()=>step(2);
-      $("aNx").onclick=()=>{const miss=dk().filter(([k,,min])=>(APP.docs[k]||[]).length<min).map(d=>d[1]);if(miss.length){$("err").textContent="ยังขาดเอกสาร: "+miss.join(", ");return}step(4)};
+      $("aNx").onclick=()=>{const miss=dk().filter(([k,,min])=>(APP.docs[k]||[]).length<min).map(d=>d[1]);if(miss.length){$("err").textContent="ยังขาดเอกสาร: "+miss.join(", ");const first=dk().find(([k,,min])=>(APP.docs[k]||[]).length<min);window.CendonFormIssues?.show([{element:$("bsB").querySelector('.docs[data-k="'+first[0]+'"]'),label:first[1],msg:"กรุณาแนบรูปให้ครบ"}]);return}step(4)};
     }});
   if(n===4){const nd=dk().reduce((a,[k])=>a+(APP.docs[k]||[]).length,0);
     const sec=(t,to,rows)=>`<div class="sect"><h5>${t}<button data-to="${to}"><i class="ti ti-pencil"></i>แก้ไข</button></h5>${rows.map(([k,v])=>`<p><span>${k}</span><b>${v}</b></p>`).join("")}</div>`;
@@ -7505,6 +7509,7 @@ function setTab2(t,fromNav){
 }
 function applyMode(){
   const tech=MODE==="tech"||BOOT_TECH;
+  if(tech){$("vCat").hidden=true;$("vRes").hidden=true;}
   if(BOOT_TECH&&MODE!=="tech"&&!$("dBody").dataset.boot){$("dBody").dataset.boot=1;if(!paintSnap())stuSkel()}
   if(tech&&VIEW==="map"){VIEW="menu";document.body.classList.remove("onmap","atl-map");$("vMap").hidden=true}
   $("vMenu").hidden=tech||VIEW==="map";$("vTech").hidden=!tech;
@@ -7753,9 +7758,9 @@ function openPost(p){
     foot:`<button class="btn p w" id="oGo">${T("ส่งราคา","Send quote")} <b id="oSum" data-no-prefs></b></button>`,
     mount(){
       if(p.photos)api("/api/tech/posts/"+p.id).then(d=>{const g=$("oGal");if(!g)return;g.innerHTML=(d.post.photos||[]).map(u=>`<img src="${u}" data-z="${u}" alt=""/>`).join("");g.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z))}).catch(()=>{});
-      const sum=()=>{$("oSum").textContent=" ฿"+money((+$("oL").value||0)+(+$("oP").value||0)+(+$("oT").value||0))};["oL","oP","oT"].forEach(k=>$(k).oninput=sum);sum();partsWire("o","oP");
+      const sum=()=>{$("oSum").textContent=window.CendonMoneyFields?.total(["oL","oP","oT"])||" ฿"+money(((window.CendonMoneyFields?.read("oL") ?? +$("oL").value)||0)+((window.CendonMoneyFields?.read("oP") ?? +$("oP").value)||0)+((window.CendonMoneyFields?.read("oT") ?? +$("oT").value)||0))};["oL","oP","oT"].forEach(k=>$(k).oninput=sum);sum();partsWire("o","oP");
       $("oGo").onclick=e=>busy(e.currentTarget,async()=>{
-        await api(`/api/tech/posts/${p.id}/offer`,{body:{labor:+$("oL").value||0,parts:+$("oP").value||0,travel:+$("oT").value||0,...partsRead("o"),scope:$("oS").value.trim(),appointment:$("oA").value.trim(),warranty:+$("oW").value||0}});
+        await api(`/api/tech/posts/${p.id}/offer`,{body:{labor:(window.CendonMoneyFields?.read("oL") ?? +$("oL").value)||0,parts:(window.CendonMoneyFields?.read("oP") ?? +$("oP").value)||0,travel:(window.CendonMoneyFields?.read("oT") ?? +$("oT").value)||0,...partsRead("o"),scope:$("oS").value.trim(),appointment:$("oA").value.trim(),warranty:+$("oW").value||0}});
         closeSheet();toast(T("ส่งราคาแล้ว รอลูกค้าเลือก","Quote sent — waiting for the customer"));refreshJobs();if(DT==="find")tabFind();
       })}});
 }
@@ -8067,7 +8072,7 @@ function openShopEdit(t0){
     foot:`<button class="btn p w" id="lOk">${T("ใช้ตำแหน่งนี้","Use this location")}</button>`,mount(){const pk=picker($("lMap"),pos.lat?pos:null,p=>{pos=p;$("lXY").textContent=p.lat.toFixed(5)+", "+p.lng.toFixed(5)});
       $("lGps").onclick=e=>busy(e.currentTarget,async()=>{const p=await locate();if(p)pk.set(p)});$("lOk").onclick=()=>{SHOPED.lat=pos.lat;SHOPED.lng=pos.lng;back();toast(T("ย้ายตำแหน่งแล้ว กดบันทึกร้าน","Moved — tap Save shop"))}}})};
   /* เจ้าของระบบแก้ร้านคนอื่น: ฟอร์มเห็นแค่ข้อมูลสาธารณะ — ส่งเฉพาะช่องที่เปลี่ยนจริง กันช่องที่ซ่อนอยู่ (เช่นเบอร์ที่ไม่เปิด) ถูกล้างเป็นค่าว่าง */
-  const collect=()=>({shop:$("sN").value,about:$("sA").value,from:+$("sF").value||0,warranty:+$("sW").value||0,radius:+$("sR").value||0,hours:$("sH").value,
+  const collect=()=>({shop:$("sN").value,about:$("sA").value,from:(window.CendonMoneyFields?.read("sF") ?? +$("sF").value)||0,warranty:+$("sW").value||0,radius:+$("sR").value||0,hours:$("sH").value,
       cats:[...$("sC").querySelectorAll(".on")].map(b=>b.dataset.v),mobile:$("sM").querySelector('[data-v="mobile"]').classList.contains("on"),urgent:$("sM").querySelector('[data-v="urgent"]').classList.contains("on"),
       lat:SHOPED.lat,lng:SHOPED.lng,addPhotos:SHOPED.add,removePhotos:SHOPED.remove,
       phone:$("sTel").value,showPhone:$("sShowTel").checked,
@@ -8173,7 +8178,7 @@ function openPostForm(sym,cat,d){
       if(d.note||(d.photos&&d.photos.length)){if($("bMore").hidden)$("bMoreB").click();if(d.note)$("bNote").value=d.note}
       $("pGo").onclick=e=>busy(e.currentTarget,async()=>{
         const id=crypto.randomUUID(),v=cf.read();
-        const bud=+$("pBud").value||0;
+        const bud=(window.CendonMoneyFields?.read("pBud") ?? +$("pBud").value)||0;
         const r=await api("/api/tech/posts",{body:{id,...v,cat:segVal("pCat"),...(bud?{budget:Math.round(bud)}:{}),usedOk:bud>0&&$("pUsed").checked}});
         toast(r&&typeof r.reach==="number"?(r.reach?T(`ประกาศแล้ว ช่าง ${r.reach} ร้านใกล้คุณเห็นแล้ว`,`Posted — ${r.reach} nearby shop${r.reach>1?"s":""} can see it`):T("ประกาศแล้ว แต่ยังไม่มีช่างหมวดนี้ในรัศมี — ร้านที่เข้ามาใหม่จะเห็นทันที","Posted, but no shop in this category is in range yet")):T("ประกาศแล้ว รอช่างเสนอราคา","Posted — waiting for quotes"));await refreshJobs();openPostView(id);
       });

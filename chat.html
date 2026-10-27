@@ -7,7 +7,7 @@
 <script src="/account-scope.js?v=2"></script>
 <link rel="stylesheet" href="/partner-entry.css?v=1">
 <script src="/partner-state.js?v=1"></script>
-<script src="/display-prefs.js?v=3" defer></script>
+<script src="/display-prefs.js?v=4" defer></script>
 <script src="/i18n/ui-en.js?v=4" defer></script>
 <script src="/ui-language.js?v=9" defer></script>
 <script src="/partner-entry.js?v=1"></script>
@@ -20,18 +20,18 @@
 <link rel="stylesheet" href="/settings.css?v=3">
 <script src="/settings.js?v=6" defer></script>
 <script src="/sheet-drag.js?v=1" defer></script>
-<script src="/garage-rules.js?v=4" defer></script>
+<script src="/garage-rules.js?v=5" defer></script>
 <script src="/garage-data.js?v=2" defer></script>
 <script src="/mileage-session.js?v=1" defer></script>
 <script src="/mileage-review.js?v=1" defer></script>
-<script src="/input-guard.js?v=5" defer></script>
+<script src="/input-guard.js?v=6" defer></script>
 <script src="/cloud-swap.js?v=3" defer></script>
 <meta charset="UTF-8"/>
 <!-- ที่อยู่แบบลึก (/chat/…) — ไฟล์ประกอบทุกตัวอ้างจากรากเว็บเสมอ -->
 <base href="/">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <script src="nav.js"></script>
-<script src="media-store.js?v=2"></script>
+<script src="media-store.js?v=3"></script>
 <meta name="theme-color" content="#05070F"/>
 <title>Cendon — AI Assistant</title>
 <meta name="description" content="ถามเรื่องรถได้ทุกเรื่อง ส่งรูป เสียง หรือใบเสนอราคาให้ผู้ช่วย AI ช่วยดู">
@@ -3053,7 +3053,7 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 <script src="call-shell.js?v=1" defer></script>
 <script src="garage-care.js?v=1" defer></script>
 <script src="call-session.js?v=2026-10-23-language1" defer></script>
-<link rel="stylesheet" href="valet.css?v=2">
+<link rel="stylesheet" href="valet.css?v=3">
 <script src="valet-core.js?v=8" defer></script>
 <script src="chat-garage.js?v=1" defer></script>
 <script src="chat-render.js?v=3" defer></script>
@@ -3075,7 +3075,7 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 <link rel="stylesheet" href="call-ui.css?v=2026-10-19-inst1">
 <script src="car-sync.js"></script>
 <script src="mileage-sync.js?v=1" defer></script>
-<script src="stability.js?v=2026-10-23-r1" defer></script>
+<script src="stability.js?v=2026-10-25-r1" defer></script>
 <!-- หน้าตาชุดเดียวกับหน้าหลัก (สี การ์ด ปุ่ม พื้นหลัง) — โหลดท้ายสุดให้ชนะสไตล์เดิม -->
 <link rel="stylesheet" href="lux.css">
 <link rel="stylesheet" href="calm-ui.css?v=1">
@@ -5878,15 +5878,24 @@ function featureJob(){
   return job;
 }
 function dropFeatureJob(){try{sessionStorage.removeItem("spire_featureJob");sessionStorage.removeItem("spire_quoteJob")}catch(e){}}
+let featureJobRunning=false;
 async function runFeatureJob(){
   const job=featureJob();if(!job)return false;
-  if((job.uid&&job.uid!==auth?.currentUser?.uid)||!Array.isArray(job.ids)||!job.ids.length||Date.now()-(job.at||0)>3600000){dropFeatureJob();return false}
-  if(!selCar()||!window.CendonMedia||sending)return false;
+  // Optimistic paint can run before Firebase restores the real user. Unknown
+  // is not another account: retain the request until auth is actually ready.
+  if(!auth?.currentUser?.uid)return false;
+  if((job.uid&&job.uid!==auth.currentUser.uid)||!Array.isArray(job.ids)||!job.ids.length||Date.now()-(job.at||0)>3600000){dropFeatureJob();return false}
+  if(!selCar()||!window.CendonMedia||sending||featureJobRunning)return false;
+  const owner=auth.currentUser.uid,stillOwner=()=>auth?.currentUser?.uid===owner;
+  featureJobRunning=true;
+  try{
   if(messages.filter(m=>!m.typing).length)newSession();
   enterThread({});
-  pending=[];
+  const loaded=[];
   for(const id of job.ids){try{const blob=await CendonMedia.get(id);if(!blob)continue;const mime=(blob.type||"image/jpeg").split(";")[0];
-    pending.push({kind:CendonMedia.kindOf(mime),mime,b64:await CendonMedia.toB64(blob),name:"",id})}catch(e){}}
+    const b64=await CendonMedia.toB64(blob);if(!stillOwner())return false;
+    loaded.push({kind:CendonMedia.kindOf(mime),mime,b64,name:"",id})}catch(e){}}
+  if(!stillOwner())return false;pending=loaded;
   window.pending=pending;renderAtts();
   if(!pending.length){toast(lang==="en"?"Couldn't find the files — please attach them again":"หาไฟล์ไม่เจอ ลองแนบใหม่อีกครั้ง","ti-alert-triangle");return false}
   if(job.tool&&window.CendonFeatureAI)CendonFeatureAI.select(job.tool,{force:true});
@@ -5895,9 +5904,12 @@ async function runFeatureJob(){
     CendonFeatureAI.adoptAudio?.(job.audioVehicle,job.recording);
     try{await CendonFeatureAI.prepare(pending,$("inp").value)}catch(e){toast(e.message,"ti-alert-triangle");return false}
   }
-  dropFeatureJob();
+  if(!stillOwner())return false;
+  const before=messages.filter(m=>m.role==='user').length;
   await sendMsg();
+  if(messages.filter(m=>m.role==='user').length>before)dropFeatureJob();
   return true;
+  }finally{featureJobRunning=false}
 }
 window.runFeatureJob=runFeatureJob;
 
@@ -7007,7 +7019,7 @@ function runEntry(){
   /* เข้ามาพร้อมงานเฉพาะ (หาสาเหตุกับ AI · คำถามจากหน้าอื่น · แนบไฟล์) แล้วระบบบัญชียืนยันตามมาทีหลัง
      ห้ามพากลับหน้าต้อนรับ — เดิมรอบที่สองล้างหน้าที่เปิดไว้ทิ้ง ผู้ใช้จึงเห็นว่ากดแล้วไม่มีอะไรเกิดขึ้น */
   if(entered){const ph=document.body.dataset.phase;
-    if(entryHeld&&!(useFb&&!currentUser)&&selCar()&&ph!=="login"&&ph!=="gate"){renderCarUI();return}
+    if(entryHeld&&!(useFb&&!currentUser)&&selCar()&&ph!=="login"&&ph!=="gate"){renderCarUI();if(featureJob())runFeatureJob().catch(e=>toast(e.message,"ti-alert-triangle"));return}
     decideStart();return}
   entered=true;
   decideStart();
@@ -11658,7 +11670,7 @@ setInterval(flush,60000);
 setInterval(pull,15*60000);
 })();
 </script>
-<script src="mobile-ui.js" defer></script>
+<script src="mobile-ui.js?v=1" defer></script>
 <script src="nav-chat.js" defer></script>
 <script id="perfjs">
 /* ══════════════════════════════════════════════════════════════════

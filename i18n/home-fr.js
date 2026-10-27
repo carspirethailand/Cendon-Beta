@@ -2,6 +2,7 @@
    กุญแจคือข้อความอังกฤษใน T("ไทย","English") และพจนานุกรม EN ของหน้า · {0} {1} = ค่าที่แทนตอนแสดงผล
    เพิ่มข้อความใหม่ในหน้า → เพิ่มคำแปลที่นี่ทุกภาษา (เทสต์ i18n-home ตรวจความครบ) */
 window.CENDON_L10N={lang:"fr",t:{
+"Use the currency shown beside each field. Quotes are converted and stored in THB at this form’s rate. Review the total before sending.":"Utilisez la devise indiquée à côté de chaque champ. Les devis sont convertis et enregistrés en THB au taux de ce formulaire. Vérifiez le total avant l’envoi.",
 "Some jobs changed status and remain in the list. Please check the latest details.":"Le statut de certaines missions a changé et elles restent dans la liste. Consultez les dernières informations.",
 "Clear finished or cancelled jobs from the list? History, chats and evidence are kept, and you can restore the jobs.":"Effacer de la liste les missions terminées ou annulées ? L’historique, les discussions et les preuves sont conservés, et vous pouvez rétablir les missions.",
 "Could not update the job list. Please retry.":"Impossible de mettre à jour la liste des missions. Réessayez.",

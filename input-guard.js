@@ -37,6 +37,7 @@
     clearTimeout(tipT);tipT=setTimeout(function(){tipEl.style.opacity='0'},2600);
   }
   function fixNum(el,final){
+    if(el.hasAttribute('data-money-input'))return; // Currency form validates explicitly; never silently change a quote.
     var v=el.value;if(v==='')return;
     if(el.type!=='number'){var c=v.replace(/[^\d.,]/g,'');if(c!==v){el.value=c;tip(el,th()?'ใส่ได้เฉพาะตัวเลข ห้ามติดลบ':'Numbers only, no negatives')}return}
     var n=Number(v);if(!isFinite(n))return;
@@ -130,5 +131,29 @@
     if(amt>6000)return {ok:true,ask:th()?'เติมครั้งเดียว ฿'+fmt(amt)+' ถูกต้องไหม?':'฿'+fmt(amt)+' for one fill-up — is that right?'};
     return {ok:true};
   }
+  function showIssues(list,root){
+    root=root||D;var first=null;
+    list.forEach(function(issue){
+      var el=issue.element||(issue.id&&D.getElementById(issue.id));if(!el&&issue.field)el=root.querySelector('[data-info="'+String(issue.field).replace(/[^a-z_]/g,'')+'"]');
+      if(!el)return;if(!first)first=el;
+      var wrap=el.closest('label,.fld,.gx-fld,.gx-field')||el.parentElement;
+      var name=wrap&&wrap.querySelector('label,span,.gx-label');
+      var title=issue.label||(name&&name.textContent.trim())||el.getAttribute('aria-label')||issue.field||'';
+      var note=D.createElement('small');note.className='cdf-error';note.id='cdf-'+(el.id||issue.field||'field')+'-'+Math.random().toString(36).slice(2,7);note.setAttribute('role','alert');note.textContent=(title?title+': ':'')+issue.msg;
+      (wrap||el.parentElement).querySelectorAll('.cdf-error').forEach(function(n){n.remove()});(wrap||el.parentElement).appendChild(note);
+      el.classList.add('bad-f');el.setAttribute('aria-invalid','true');var prior=el.getAttribute('aria-describedby')||'';el.setAttribute('aria-describedby',(prior+' '+note.id).trim());
+      var clear=function(){el.classList.remove('bad-f');el.removeAttribute('aria-invalid');if(prior)el.setAttribute('aria-describedby',prior);else el.removeAttribute('aria-describedby');note.remove();el.removeEventListener('input',clear);el.removeEventListener('change',clear)};el.addEventListener('input',clear);el.addEventListener('change',clear);
+    });
+    if(!first)return false;
+    var details=first.closest('details');if(details)details.open=true;
+    var target=first.hidden?(first.closest('label,.fld')||first.parentElement):first;
+    target.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});
+    if(!target.matches('input,select,textarea,button,[tabindex]'))target.tabIndex=-1;
+    target.focus({preventScroll:true});return true;
+  }
+  var invalid=[],queued=false;
+  D.addEventListener('invalid',function(e){e.preventDefault();invalid.push({element:e.target,msg:e.target.validationMessage});if(!queued){queued=true;queueMicrotask(function(){showIssues(invalid);invalid=[];queued=false})}},true);
+  var style=D.createElement('style');style.textContent='.cdf-error{display:block;color:var(--bad,#c73737);font:12px/1.6 system-ui;margin-top:5px}.bad-f[aria-invalid="true"]{outline:2px solid var(--bad,#c73737);outline-offset:2px;scroll-margin-block:100px}';(D.head||D.documentElement).appendChild(style);
+  window.CendonFormIssues=Object.freeze({show:showIssues});
   window.spireGuard={bounds:bounds,fixDate:fixDate,fixNum:fixNum,junk:junk,text:text,tier:tier,money:money,fuel:fuel,JOB:JOB};
 })();

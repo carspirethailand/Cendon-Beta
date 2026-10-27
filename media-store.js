@@ -47,25 +47,26 @@ function db(){
   if(dbp)return dbp;
   dbp=new Promise((res,rej)=>{
     if(!window.indexedDB)return rej(new Error("no indexedDB"));
-    const r=indexedDB.open("cendon-media",1);
+    const r=indexedDB.open("cendon-media",1);let ended=false;const timer=setTimeout(()=>{ended=true;rej(new Error("media storage timeout"))},5000);
     r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains("files"))d.createObjectStore("files",{keyPath:"id"})};
-    r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);r.onblocked=()=>rej(new Error("blocked"));
+    r.onsuccess=()=>{clearTimeout(timer);if(ended)r.result.close();else res(r.result)};r.onerror=()=>{clearTimeout(timer);rej(r.error)};r.onblocked=()=>{ended=true;clearTimeout(timer);rej(new Error("blocked"))};
   });
   dbp.catch(()=>{dbp=null});
   return dbp;
 }
 function tx(mode,fn){return db().then(d=>new Promise((res,rej)=>{
   const t=d.transaction("files",mode),r=fn(t.objectStore("files"));
-  t.oncomplete=()=>res(r&&r.result);t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error);
+  const timeout=setTimeout(()=>{try{t.abort()}catch{}rej(Error('Local file storage timed out'))},5000);
+  t.oncomplete=()=>{clearTimeout(timeout);res(r&&r.result)};t.onerror=()=>{clearTimeout(timeout);rej(t.error)};t.onabort=()=>{clearTimeout(timeout);rej(t.error)};
 }))}
 const mem=new Map();   /* ใช้แทนเมื่อเบราว์เซอร์ปิด IndexedDB (โหมดส่วนตัวบางตัว) */
 async function save(rec){
   const owner=rec.owner;if(!owner)return;
   if(owner===account())mem.set(rec.id,rec);
   const stored={...rec,id:storageId(owner,rec.id),fileId:rec.id};
-  try{await tx("readwrite",s=>s.put(stored))}
+  try{await tx("readwrite",s=>s.put(stored));return true}
   /* Safari รุ่นเก่าเก็บ Blob ลง IndexedDB ไม่ได้ — เก็บเป็นไบต์แทน */
-  catch(e){try{const buf=await rec.blob.arrayBuffer();await tx("readwrite",s=>s.put({...stored,blob:null,buf}))}catch(x){}}
+  catch(e){try{const buf=await rec.blob.arrayBuffer();await tx("readwrite",s=>s.put({...stored,blob:null,buf}));return true}catch(x){return false}}
 }
 async function rec(id){
   const owner=account();
@@ -90,8 +91,13 @@ async function put(blob,o){
   const owner=account(),r={id:o.id||newId(),owner,blob,mime,kind:o.kind||kindOf(mime),name:o.name||"",t:Date.now(),up:0,scope:o.scope||"ai"};
   persist();
   mem.set(r.id,r);
-  await save(r);
+  const persisted=await save(r);
   if(owner!==account())throw Error('Account changed; please retry');
+  if(o.requirePersistent&&!persisted){
+    // A memory-only file disappears on /chat navigation. Keep the form open
+    // unless an authenticated private upload has made the handoff durable.
+    if(!(await upload(r.id,r.scope)))throw Error(L('เก็บเสียงข้ามหน้าไม่ได้ กรุณาอนุญาตพื้นที่เก็บข้อมูลหรือเชื่อมต่ออินเทอร์เน็ตแล้วลองอีกครั้ง','Cannot preserve the recording between pages. Allow site storage or reconnect and retry.'));
+  }
   if(o.upload!==false)uploadSoon(r.id,r.scope);
   return r.id;
 }
@@ -131,7 +137,7 @@ async function upload(id,scope){
   const owner=account(),tok=await token(true);if(!tok||owner!==account()||r.owner!==owner)return false;
   let res;
   try{res=await fetch(API()+"/api/tech/media/"+encodeURIComponent(id)+"?scope="+encodeURIComponent(scope||r.scope||"ai"),
-    {method:"PUT",headers:{Authorization:"Bearer "+tok,"Content-Type":r.mime},body:r.blob})}
+    {method:"PUT",headers:{Authorization:"Bearer "+tok,"Content-Type":r.mime},body:r.blob,signal:AbortSignal.timeout(20000)})}
   catch(e){return false}
   if(!res.ok){
     let m="";try{m=(await res.json()).error||""}catch(e){}

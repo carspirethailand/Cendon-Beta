@@ -5429,15 +5429,14 @@ function infoFormHTML(){
 }
 function readInfo(root){if(!root)return null;const o={};
   root.querySelectorAll("[data-info]").forEach(el=>{let v=String(el.value||"").trim();if(el.dataset.info==="vin")v=v.toUpperCase().replace(/[\s-]/g,"");if(v)o[el.dataset.info]=v});
-  if(o.vin&&!/^[A-HJ-NPR-Z0-9]{17}$/.test(o.vin))throw new Error(gxT("VIN ต้องเป็นตัวอักษร/ตัวเลข 17 หลัก และไม่มี I, O, Q — แก้หรือเว้นช่องนี้ว่างได้","VIN needs 17 characters without I, O or Q. Correct it or leave it empty."));
-  if(o.model_year&&(!/^\d{4}$/.test(o.model_year)||Number(o.model_year)<1950||Number(o.model_year)>new Date().getFullYear()+1))throw new Error(gxT("ตรวจปีรุ่น ใช้ปี ค.ศ. 4 หลัก","Use a valid four-digit model year (Gregorian)."));
   if(!window.CendonGarageRules)throw Error(gxT("ระบบตรวจข้อมูลยังไม่พร้อม ลองเปิดใหม่","Validation is not ready. Please reopen."));
-  try{window.CendonGarageRules.infoPatch(o)}catch(e){
-    const el=root.querySelector('[data-info="'+e.field+'"]');if(el){el.setAttribute('aria-invalid','true');el.focus()}
+  try{window.CendonGarageRules.infoPatch(o,root.__infoOriginal||{})}catch(e){
+    const el=root.querySelector('[data-info="'+e.field+'"]');if(el){if(!window.CendonFormIssues?.show([{element:el,field:e.field,msg:e.message}],root)){el.setAttribute('aria-invalid','true');el.scrollIntoView({block:'center'});el.focus({preventScroll:true})}}
     throw e;
   }
   return Object.keys(o).length?o:null}
 function fillInfo(root,info){if(!root)return;
+  root.__infoOriginal={...info};
   root.querySelectorAll("[data-info]").forEach(el=>{el.value=(info&&info[el.dataset.info])||""});
   const r=root.querySelector(".gx-vin-res");if(r){r.textContent="";r.className="gx-vin-res"}
   const v=root.querySelector('[data-info="vin"]');if(v&&v.value)vinCheck(v)}

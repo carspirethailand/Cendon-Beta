@@ -8,7 +8,7 @@ const garage=readFileSync(new URL('../garage.html',import.meta.url),'utf8');
 const extras=readFileSync(new URL('../garage-extras.js',import.meta.url),'utf8');
 const valet=readFileSync(new URL('../valet-core.js',import.meta.url),'utf8');
 function guard(lang='th'){
-  const c={window:{},document:{addEventListener(){}},localStorage:{getItem:()=>JSON.stringify(lang)}};vm.createContext(c);
+  const c={window:{},document:{addEventListener(){},createElement:()=>({}),head:{appendChild(){}}},localStorage:{getItem:()=>JSON.stringify(lang)}};vm.createContext(c);
   vm.runInContext(src,c);return c.window.spireGuard;
 }
 const G=guard();

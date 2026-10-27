@@ -13,7 +13,7 @@ const valid=()=>({title:'นาย',name:'สมชาย ใจดี',idNo:'11
 function stepFixture(over={}){
   const nodes=new Map(),$=id=>{if(!nodes.has(id))nodes.set(id,node());return nodes.get(id);},sheets=[];
   const app={...valid(),...over};
-  const c=vm.createContext({APP:app,ME:{admin:true,staff:true},$: $,esc:String,CAT:Object.fromEntries(['eng','air','body','ev','tyre'].map(x=>[x,{ic:'',th:x}])),DK:[['id','id',1,1],['selfie','selfie',1,1],['shop','shop',1,3],['work','work',3,6]],stepHd:()=>'',segs:()=>'',fmtId:String,keep(){},wireSeg(){},thaiId:()=>true,ageOf:()=>30,money:String,landing(){},wizBack:()=>false,wiz:()=>({}),sheet(o){sheets.push(o);if(sheets.length===1)o.mount?.({querySelectorAll:()=>[]});}});
+  const c=vm.createContext({window:{},APP:app,formPop(list){$('err').textContent='กรุณาตรวจสอบ: '+list.map(x=>x.msg).join(', ')},ME:{admin:true,staff:true},$: $,esc:String,CAT:Object.fromEntries(['eng','air','body','ev','tyre'].map(x=>[x,{ic:'',th:x}])),DK:[['id','id',1,1],['selfie','selfie',1,1],['shop','shop',1,3],['work','work',3,6]],stepHd:()=>'',segs:()=>'',fmtId:String,keep(){},wireSeg(){},thaiId:()=>true,ageOf:()=>30,money:String,landing(){},wizBack:()=>false,wiz:()=>({}),sheet(o){sheets.push(o);if(sheets.length===1)o.mount?.({querySelectorAll:()=>[]});}});
   /* โหมดทีมงานตรวจบัตรเอง (ไม่มี Didit) = ฟอร์มขอเลขบัตร รูปบัตร และเซลฟี่ */
   vm.runInContext('const DIDIT=()=>false,dk=()=>DK;',c);vm.runInContext(stepSource,c);return {c,$,app,sheets};
 }

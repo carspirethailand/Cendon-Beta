@@ -32,6 +32,7 @@ const TABS=[
 ];
 
 function page(){
+  if(/^\/(?:chat|messages)(?:\/|$)/.test(location.pathname))return 'chat';
   try{ if(window.__SPIRE_PAGE__)return window.__SPIRE_PAGE__ }catch(e){}
   const f=(location.pathname.split("/").pop()||"/").toLowerCase();
   return ({"garage":"garage","news":"magazine","spares":"shop","profile":"profile","chat":"chat",

@@ -8,7 +8,7 @@ const chat=r('chat.html'),bell=r('bell.js'),garage=r('garage.html');
 
 test('#10 หาสาเหตุกับ AI: opens the symptom picker for that car, and the late sign-in check no longer throws it back to the welcome page', () => {
   const re=chat.slice(chat.indexOf('function runEntry(){'),chat.indexOf('</script>',chat.indexOf('function runEntry(){')));
-  assert.match(re,/if\(entryHeld&&!\(useFb&&!currentUser\)&&selCar\(\)&&ph!=="login"&&ph!=="gate"\)\{renderCarUI\(\);return\}/);
+  assert.match(re,/if\(entryHeld&&!\(useFb&&!currentUser\)&&selCar\(\)&&ph!=="login"&&ph!=="gate"\)\{renderCarUI\(\);if\(featureJob\(\)\)runFeatureJob\(\)\.catch\([\s\S]*?\);return\}/);
   assert.match(re,/entryHeld=!!\(p\.session\|\|p\.pane\|\|p\.attach\|\|p\.q\|\|p\.starter\|\|featureJob\(\)\);/);
   assert.match(re,/\}else if\(p\.starter&&!messages\.length\)\{\n[^\n]*\n    showSymCats\(\);/);
 });

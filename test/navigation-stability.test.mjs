@@ -12,7 +12,7 @@ function routing({pathname='/',connection,hidden=false,prerender=false}={}){
   const location={origin:'https://fixture.test',pathname,href:'https://fixture.test'+pathname,assign:url=>assigned.push(url)};
   const document={hidden,prerendering:prerender,readyState:'complete',querySelectorAll:()=>[],head:{appendChild:l=>links.push(l)},
     createElement:()=>({}),addEventListener:(name,fn)=>events.set(name,fn)};
-  vm.runInNewContext(router,{document,location,navigator:{connection},URL,Set,addEventListener(){}});
+  vm.runInNewContext(router,{document,location,navigator:{connection},URL,Set,history:{pushState(){},replaceState(){}},requestAnimationFrame:fn=>fn(),addEventListener(){}});
   function fire(type,href,extra={}){
     const a={href:new URL(href,location.href).href,target:extra.target||'',hasAttribute:name=>extra.download&&name==='download',getAttribute:name=>name==='aria-disabled'&&extra.disabled?'true':null};
     let prevented=false,stopped=false;

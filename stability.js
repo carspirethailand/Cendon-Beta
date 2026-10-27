@@ -8,14 +8,18 @@
   function path(p){p=p.replace(/\.html$/,'').replace(/\/index$/,'/');var s=p.split('/')[1]||'';
     return paths.has(p)?p:paths.has('/'+s)?'/'+s:deep.has(s)?'/':p}
   function paintActive(){
-    var here=path(location.pathname);
-    D.querySelectorAll('.nav-links a[href],#mnav a[href]').forEach(function(a){
-      try{var u=new URL(a.href,location.href),on=u.origin===location.origin&&path(u.pathname)===here;
-        a.classList.toggle('active',on);if(a.closest('#mnav'))a.classList.toggle('on',on);
+    function key(p){var s=p.replace(/\.html$/,'').split('/')[1]||'';
+      return /^(chat|messages)$/.test(s)?'chat':s==='garage'?'garage':s==='news'?'magazine':/^(profile|login)$/.test(s)?'account':s==='spares'?'shop':'home'}
+    var here=key(location.pathname);
+    D.querySelectorAll('.nav-links,#mnav').forEach(function(nav){
+      var selected=false;
+      nav.querySelectorAll('a[href]').forEach(function(a){try{var u=new URL(a.href,location.href),on=!selected&&u.origin===location.origin&&key(u.pathname)===here;
+        if(on)selected=true;a.classList.toggle('active',on);if(a.closest('#mnav'))a.classList.toggle('on',on);
         if(on)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');
-      }catch(_){}
+      }catch(_){}});
     });
   }
+  ['pushState','replaceState'].forEach(function(name){var original=history[name];history[name]=function(){var result=original.apply(this,arguments);requestAnimationFrame(paintActive);return result}});
   addEventListener('pageshow',paintActive);addEventListener('popstate',paintActive);
   D.addEventListener('visibilitychange',function(){if(!D.hidden)paintActive()});
   if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',paintActive,{once:true});else paintActive();

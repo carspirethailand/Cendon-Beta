@@ -59,6 +59,24 @@ function row(o){
   return `<${tag} class="st-row${o.sub?' tall':''}" ${attr}><i class="ti ${o.ic}" aria-hidden="true"></i>
     <span class="st-t"><b>${o.title}</b>${o.sub?`<small>${o.sub}</small>`:''}</span>${o.val?`<span class="st-v">${o.val}</span>`:''}${o.href?out:chev}</${tag}>`;
 }
+/* การแจ้งเตือน (ย้ายมาจากแผงกระดิ่ง): ในเครื่องนี้ · เตือนเลขไมล์ 18:00 — กระดิ่งแค่แนะนำตอนยังไม่เปิด เปิดแล้วจัดการที่นี่ */
+function swRow(o){
+  return `<div class="st-row tall nohover"><i class="ti ${o.ic}" aria-hidden="true"></i><span class="st-t"><b>${o.title}</b><small>${o.sub}</small></span>
+    <button type="button" class="st-sw" role="switch" aria-checked="${!!o.on}" data-st="${o.act}" aria-label="${o.title}"${o.off?' disabled':''}><i></i></button></div>`;
+}
+function notifHTML(){
+  const B=W.CendonBell;if(!B)return `<span class="st-note" style="display:block;padding:16px">${t('เปิดหน้าใหม่อีกครั้งเพื่อตั้งค่าการแจ้งเตือน','Reload the page to manage notifications')}</span>`;
+  const pm=B.perm(),on=B.pushOn(),rows=[];
+  if(pm!=='unsupported')rows.push(swRow({ic:on?'ti-bell-ringing':'ti-bell-off',act:'notif-dev',on,off:pm==='denied',title:t('แจ้งเตือนในเครื่องนี้','Notifications on this device'),
+    sub:pm==='denied'?t('ถูกปิดไว้ในเบราว์เซอร์ — เปิดได้ที่การตั้งค่าเว็บไซต์ของเบราว์เซอร์','Blocked in the browser — allow it in the browser’s site settings')
+      :on?t('เด้งบนเครื่องเมื่อช่างเสนอราคา รับงาน ส่งข้อความ หรือ AI ตอบตอนคุณไม่ได้ดูแชต','Pops up when a mechanic quotes, takes the job, messages you, or the AI replies while you’re away')
+      :t('ปิดอยู่ — ยังดูทุกเรื่องได้ที่กระดิ่ง','Off — everything is still listed under the bell')}));
+  if(B.hasCar&&B.hasCar()){const k=B.km.get()||{};rows.push(swRow({ic:'ti-gauge',act:'notif-km',on:!!k.on,title:t('เตือนจดเลขไมล์ 18:00','Mileage reminder at 6 pm'),
+    sub:k.on?(k.line?t('ถามทาง LINE และเด้งในเครื่องที่เปิดไว้ทุกเย็น · คันที่จดแล้ววันนั้นไม่ถาม','Asked on LINE and on enabled devices each evening · cars already logged are skipped'):t('เด้งบนเครื่องทุกเย็น แตะแล้วใส่เลขได้เลย','A notification every evening — tap it to enter the reading'))
+      :t('ช่วยให้เตือนเปลี่ยนน้ำมันเครื่องและอะไหล่ได้แม่นขึ้น','Keeps oil-change and parts reminders accurate')}))}
+  return rows.join('')||`<span class="st-note" style="display:block;padding:16px">${t('เครื่องนี้ไม่รองรับการแจ้งเตือน — ดูทุกเรื่องได้ที่กระดิ่ง','This device doesn’t support notifications — everything is listed under the bell')}</span>`;
+}
+function paintNotif(){const c=$('stNotif');if(c)c.innerHTML=notifHTML()}
 function seg(label,attr,items,cur){
   return `<div class="st-seg" role="group" aria-label="${label}">${items.map(([v,n])=>`<button type="button" ${attr}="${v}" aria-pressed="${v===cur}">${n}</button>`).join('')}</div>`;
 }
@@ -87,8 +105,9 @@ function mainHTML(){
       ${row({ic:'ti-cash',title:t('สกุลเงิน','Currency'),act:'currency',val:esc(cur+' · '+curName(cur))})}
     </div>
     ${ex}
-    <section data-line-card${lineH}><div class="st-lbl">${t('การแจ้งเตือน','Notifications')}</div>
-      <div class="st-card st-line" data-line-connect="row"></div></section>
+    <div class="st-lbl" id="stNotifLbl">${t('การแจ้งเตือน','Notifications')}</div>
+    <div class="st-card" id="stNotif">${notifHTML()}</div>
+    <section data-line-card${lineH}><div class="st-card st-line" data-line-connect="row" style="margin-top:10px"></div></section>
     <div class="st-lbl">${t('AI วันนี้','AI today')}</div>
     <div class="st-card st-ai" id="stAi" aria-live="polite"><span class="st-note">${t('กำลังดู…','Checking…')}</span></div>
     <div class="st-lbl">${t('ช่วยเหลือ','Help')}</div>
@@ -170,6 +189,8 @@ function render(){
   try{host.extra&&host.extra.wire&&host.extra.wire(main)}catch(e){}
   try{W.CendonLine&&W.CendonLine.scan&&W.CendonLine.scan(main)}catch(e){}
   paintAi();
+  /* สถานะเตือนเลขไมล์จริงจากหลังบ้าน (อีกเครื่อง/LINE อาจเปิดปิดไว้) */
+  try{if(W.CendonBell&&W.CendonBell.hasCar()&&fbUser())W.CendonBell.km.fetch().then(paintNotif).catch(()=>{})}catch(e){}
 }
 /* เปิดหน้าตั้งค่า · which: manage = หน้าย่อยรีเซ็ต/ปิดใช้งาน · fb = เปิดแผ่นส่งความเห็น · usage = เลื่อนไปที่ AI วันนี้ */
 function open(which,opts){
@@ -187,6 +208,7 @@ function go(which){
   if(which==='manage')openManage();
   else if(which==='fb')setTimeout(()=>sheet('fb'),60);
   else if(which==='usage'){const a=$('stAi');if(a)setTimeout(()=>a.scrollIntoView({block:'center'}),60)}
+  else if(which==='notif'){const a=$('stNotifLbl');if(a)setTimeout(()=>a.scrollIntoView({block:'start',behavior:'smooth'}),80)}
 }
 function close(){
   if(typeof host.back==='function'){host.back();return}
@@ -354,6 +376,13 @@ async function onClick(e){
     return}
   if(b.hasAttribute('data-fbk')){b.parentNode.querySelectorAll('[data-fbk]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));return}
   const a=b.dataset.st;
+  if(a==='notif-dev'||a==='notif-km'){
+    const B=W.CendonBell,want=b.getAttribute('aria-checked')!=='true';if(!B)return;b.disabled=true;
+    if(a==='notif-dev'){if(want){const st=await B.enable();toast(st==='granted'?t('เปิดแจ้งเตือนในเครื่องแล้ว','Device notifications are on'):t('เบราว์เซอร์ยังไม่อนุญาตการแจ้งเตือน','The browser didn’t allow notifications'),st==='granted'?'ti-bell-ringing':'ti-bell-off')}
+      /* ปิด: สวิตช์เปลี่ยนทันที — ยกเลิก Push ที่เซิร์ฟเวอร์ทำต่อเบื้องหลัง (ไม่รอ service worker) */
+      else{B.disable().catch(()=>{});toast(t('ปิดแจ้งเตือนในเครื่องแล้ว — ยังดูได้ที่กระดิ่ง','Device notifications off — still listed under the bell'),'ti-bell-off')}}
+    else{const r=await B.km.set(want);if(r.msg)toast(r.msg,r.ok?'ti-gauge':'ti-alert-triangle')}
+    paintNotif();return}
   if(a==='back')return close();
   if(a==='manage')return openManage();
   if(a==='manage-back')return dismiss('stmanage',closeManage);
@@ -444,7 +473,7 @@ function autoOpen(){
   if(W.__SPIRE_PAGE__!=='profile')return;
   const v=$('v-settings');if(v&&v.classList.contains('on'))return;
   const tab=new URLSearchParams(location.search).get('tab');
-  open(tab==='fb'||tab==='usage'?tab:undefined);
+  open(tab==='fb'||tab==='usage'||tab==='notif'?tab:undefined);
 }
 const ready=fn=>{if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',fn,{once:true});else fn()};
 ready(mountMenu);setTimeout(mountMenu,800);setTimeout(mountMenu,2200);

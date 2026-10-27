@@ -5,7 +5,10 @@
 'use strict';if(W.CendonDisplayPrefs)return;
 const KEY='cendon_fx_thb_v2',DAY=86400000,raw=new WeakMap();let fx=null,pending=null,scheduled=false;
 const read=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch{return null}};
-function prefs(){const u=W.spireAuth?.currentUser||W.auth?.currentUser,projected=W.spireSetupRead?.(),stored=read('spire_setup');
+/* Firebase คืนผู้ใช้ช้า (อ่านสถานะล็อกอินจากเครื่อง ~0.3–1.5 วิ) — ระหว่างนั้นเคยวาดเป็น กม./บาท แล้วค่อยสลับเป็นหน่วยของผู้ใช้
+   ใช้หน่วยที่บันทึกไว้ของเจ้าของข้อมูลในเครื่องได้เลย (account-scope.js ล้างข้อมูลทั้งหมดก่อนเมื่อเปลี่ยน/ออกจากบัญชี) */
+function owner(){try{return localStorage.getItem('cendon_signed')==='1'?localStorage.getItem('spire___owner'):null}catch{return null}}
+function prefs(){const cu=W.spireAuth?.currentUser||W.auth?.currentUser,own=cu?null:owner(),u=cu||(own?{uid:own}:null),projected=W.spireSetupRead?.(),stored=read('spire_setup');
   if(typeof u?.uid!=='string'||!u.uid)return {distance:'km',currency:'THB'};
   const p=projected?.uid===u?.uid?projected:stored?.uid===u?.uid?stored:{};
   if(!u||p.uid!==u.uid)return {distance:'km',currency:'THB'};

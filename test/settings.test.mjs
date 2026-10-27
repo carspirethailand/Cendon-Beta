@@ -61,7 +61,7 @@ test('settings: sub-page and sheets join browser history (back closes them), old
   assert.match(st, /W\.Nav\.watch\(\{sel:'#stManage',cls:'on',tag:'stmanage',/);
   assert.match(st, /W\.Nav\.watch\(\{sel:'#stSheet',cls:'on',tag:'stsheet',close:closeSheet\}\)/);
   const nav = r('nav-pages.js');
-  assert.match(nav, /const SETS=\["general","acct","usage","fb","learn","manage"\];/);
+  assert.match(nav, /const SETS=\["general","acct","usage","fb","learn","manage","notif"\];/);
   assert.match(nav, /if\(window\.CendonSettings\)window\.CendonSettings\.go\(k\)/);
 });
 

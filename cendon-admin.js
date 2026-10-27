@@ -183,7 +183,10 @@ function eventsHTML(){
   return data.events.map(function(e){
     return '<div class="cxa-e"><div class="t"><span class="cxa-dot '+(e.ok?"g":"r")+'"></span><span>'+esc(e.model||"ตอบไม่ได้")+'</span><em>'+(e.ms/1000).toFixed(1)+' วิ · '+ago(e.at)+'ที่แล้ว</em></div>'+
       '<div style="color:#8F877E;font-size:12px;margin-top:2px">“'+esc(e.q||"(ไฟล์แนบ)")+'” · ผู้ใช้ '+esc(e.uid)+(e.depth===0?" · โหมดเร็ว":e.depth===2?" · โหมดละเอียด":"")+(e.cost?" · "+e.cost+" โทเคน":"")+'</div>'+
-      (e.trail&&e.trail.length?'<ol>'+e.trail.map(function(s){return '<li class="'+(s.ok?"ok":"f")+'">'+esc(s.model)+(s.level?" ["+s.level+"]":"")+(s.search?" +ค้น":"")+" — "+(s.ok?"ตอบได้":"พัง")+" "+(s.ms/1000).toFixed(1)+"วิ"+(s.err?": "+esc(s.err):"")+'</li>'}).join("")+'</ol>':"")+
+      (e.trail&&e.trail.length?'<ol>'+e.trail.map(function(s){
+        /* แถวสรุปของข้อความ: เวลาจนตัวอักษรแรก · ความยาว · ใช้ทางสำรอง · ถูกตัด */
+        if(s.kind==="sum")return '<li class="'+(s.fail||s.cut?"f":"ok")+'">สรุป — '+(s.fail?"ไม่ได้คำตอบ":"ตัวอักษรแรก "+(s.ttft!=null?(s.ttft/1000).toFixed(1)+" วิ":"-")+" · ยาว "+(s.len||0)+" ตัว"+(s.fb?" · ทางสำรอง":"")+(s.cut?" · ถูกตัด":""))+'</li>';
+        return '<li class="'+(s.ok?"ok":"f")+'">'+esc(s.model)+(s.level?" ["+s.level+"]":"")+(s.hedge?" (ยิงคู่ขนาน)":"")+(s.search?" +ค้น":"")+" — "+(s.ok?"ตอบได้":"พัง")+" "+((s.ms||0)/1000).toFixed(1)+"วิ"+(s.finish&&s.finish!=="STOP"?" · จบเพราะ "+esc(s.finish):"")+(s.err?": "+esc(s.err):"")+'</li>'}).join("")+'</ol>':"")+
       (e.err?'<div class="cxa-err">'+esc(e.err)+'</div>':"")+'</div>' }).join("");
 }
 /* ── แท็บ Log ── */
@@ -270,6 +273,9 @@ function paint(){
   if(!data){ b.innerHTML='<div class="cxa-r"><span class="n">กำลังโหลด…</span></div>'; return }
   var s=data.stats||{};
   var top='<div class="cxa-s"><div><small>ชั่วโมงนี้</small><b>'+s.hour+'</b></div><div><small>สำเร็จ</small><b style="color:#7ED9A8">'+s.ok+'</b></div><div><small>ล้มเหลว</small><b style="color:#F0877F">'+s.fail+'</b></div><div><small>เฉลี่ย</small><b>'+(s.avgMs/1000).toFixed(1)+'วิ</b></div></div>';
+  var q=data.quality||{};
+  if(q.n)top+='<div class="cxa-s"><div><small>ตัวอักษรแรก (กลาง)</small><b>'+(q.ttftP50!=null?(q.ttftP50/1000).toFixed(1)+'วิ':'-')+'</b></div><div><small>ช้าสุด 5%</small><b>'+(q.ttftP95!=null?(q.ttftP95/1000).toFixed(1)+'วิ':'-')+'</b></div><div><small>ใช้ทางสำรอง</small><b>'+q.fallbackPct+'%</b></div><div><small>ไม่ได้คำตอบ</small><b style="color:'+(q.failPct>1?"#F0877F":"inherit")+'">'+q.failPct+'%</b></div><div><small>ถูกตัด</small><b>'+q.cutPct+'%</b></div></div>'+
+    '<div style="color:#8F877E;font-size:11.5px;margin:-4px 2px 8px">จาก '+q.n+' ข้อความล่าสุด</div>';
   var le=data.lastAiError?'<div class="cxa-h">ข้อผิดพลาดล่าสุด ('+ago(data.lastAiError.at)+'ที่แล้ว)</div><div class="cxa-err">'+esc(data.lastAiError.message)+'</div>':"";
   b.innerHTML=top+(tab==="live"?eventsHTML()+le:chainHTML()+le)+
     '<div class="cxa-btns"><button id="cxa-cp">คัดลอกทั้งหมด (ส่งให้ Claude)</button>'+((data.parked||[]).length?'<button id="cxa-up">ปล่อยตัวที่ถูกพักทั้งหมด</button>':"")+'</div>';

@@ -18,7 +18,9 @@ test('#20 notification on/off never waits forever for the service worker; the bu
   const en=bell.slice(bell.indexOf('async function enable(){'),bell.indexOf('/* ปิดแจ้งเตือนในเครื่อง:'));
   assert.match(en,/localStorage\.setItem\(PREF,"true"\)\}catch\(e\)\{\}\n  subscribeBg\(\);/,'push sign-up happens in the background');
   assert.doesNotMatch(en+bell.slice(bell.indexOf('async function disable(){'),bell.indexOf('function on(f)')),/await navigator\.serviceWorker\.ready/);
-  assert.match(bell,/if\(off_\)off_\.onclick=\(\)=>\{off_\.disabled=true;disable\(\);/);
+  /* สวิตช์ย้ายไปอยู่ในตั้งค่าแล้ว: ปิดแล้วสวิตช์เปลี่ยนทันที ไม่รอยกเลิก Push */
+  const settings=r('settings.js');
+  assert.match(settings,/else\{B\.disable\(\)\.catch\(\(\)=>\{\}\);/);assert.doesNotMatch(settings,/await B\.disable\(\)/);
 });
 
 test('#24 "where is my car / how far": answered instantly on the device, coordinates never go to the AI or chat history', () => {
@@ -84,7 +86,7 @@ test('desktop bell is in the navbar markup from the first frame (no blink on pag
     assert.match(nr,/<button type="button" class="cb-bell cb-d" aria-label="การแจ้งเตือน"><i class="ti ti-bell"><\/i><em hidden><\/em><\/button>\n        <button class="avatar" id="avatarBtn">/,f);
     assert.match(nr,/if\(!on\)\{bl\.hidden=true;return\}/,f);
     assert.match(nr,/x\.textContent=String\(u\.name\|\|"\?"\)\.charAt\(0\)\.toUpperCase\(\)/,f+': cached name is text, never HTML');
-    assert.match(s,/bell\.js\?v=17/,f);
+    assert.match(s,/bell\.js\?v=19/,f);
   }
   assert.match(bell,/if\(own\)wire\(own\);else\{const b=mkBtn\("cb-d"\)/);
   assert.match(bell,/if\(W\.__cbMounted\)return;W\.__cbMounted=1;/);

@@ -164,6 +164,80 @@ function jobEvents(jobs,me){
   put();return evs;
 }
 
+/* ── งานของฉันอยู่ในกระดิ่ง ──
+   แผงเดียวรวม: งานที่ต้องทำตอนนี้ (เรื่องราคามาก่อน: ได้ราคา · เทียบราคาหลายร้าน · ข้อเสนอในประกาศ · คำขอราคาใหม่ของร้าน)
+   → งานที่กำลังดำเนินอยู่ → การแจ้งเตือนล่าสุด · งานที่จบแล้วดูที่ "งานทั้งหมด"
+   จำรายการล่าสุดในเครื่อง (ผูกบัญชี · เปลี่ยนบัญชีล้างเอง) ให้แผงขึ้นทันที แล้วค่อยถามหลังบ้านใหม่
+   เก็บแค่ที่จอนี้ใช้: สถานะ รถ ชื่อร้าน ยอด — ไม่มีที่อยู่ เบอร์ หรืออาการ */
+const JK="spire_bell_jobs";
+let JOBS_MEM=null,JOBS_REQ=null;
+const slimJob=j=>({id:String(j.id),side:j.side,status:j.status,needsMe:!!j.needsMe,unread:j.unread||0,car:String(j.car||"").slice(0,60),
+  techName:String(j.techName||"").slice(0,60),total:j.total||0,group:j.group||null,urgent:!!j.urgent,expired:!!j.expired,at:j.updatedAt||j.createdAt||0});
+const slimPost=p=>({id:String(p.id),status:p.status,car:String(p.car||"").slice(0,60),offers:p.offers||0,lowest:p.lowest||null,urgent:!!p.urgent,at:p.createdAt||0});
+function jobsGet(){
+  const me=uid();if(!me)return null;
+  if(JOBS_MEM&&JOBS_MEM.uid===me)return JOBS_MEM;
+  try{const d=JSON.parse(localStorage.getItem(JK)||"null");if(d&&d.uid===me&&Array.isArray(d.jobs))return JOBS_MEM=d}catch(e){}
+  return null;
+}
+/* หน้าแรกส่งรายการที่ดึงมาแล้วให้ · หน้าอื่นกระดิ่งดึงเอง — null = ไม่เปลี่ยนส่วนนั้น */
+function setJobs(jobs,posts){
+  const me=uid();if(!me)return;const prev=jobsGet();
+  const d={uid:me,at:Date.now(),jobs:Array.isArray(jobs)?jobs.filter(j=>j&&j.id).map(slimJob):prev?prev.jobs:[],posts:Array.isArray(posts)?posts.filter(x=>x&&x.id).map(slimPost):prev?prev.posts:[]};
+  JOBS_MEM=d;try{localStorage.setItem(JK,JSON.stringify(d))}catch(e){}
+  subs.forEach(f=>{try{f()}catch(e){}});
+}
+function fetchJobs(){
+  const me=uid();if(!me)return Promise.resolve();
+  if(JOBS_REQ&&JOBS_REQ.uid===me)return JOBS_REQ.p;
+  const p=Promise.allSettled([get("/api/tech/jobs"),get("/api/tech/posts")]).then(([j,q])=>{if(uid()!==me)return;
+    setJobs(j.status==="fulfilled"&&Array.isArray(j.value?.jobs)?j.value.jobs:null,q.status==="fulfilled"&&Array.isArray(q.value?.posts)?q.value.posts:null)}).finally(()=>{if(JOBS_REQ&&JOBS_REQ.p===p)JOBS_REQ=null});
+  JOBS_REQ={uid:me,p};return p;
+}
+/* จัดกลุ่ม: act = ต้องทำ (r 0 เรื่องราคา · 1 งานที่รอเรา · 2 ข้อความใหม่) · live = กำลังดำเนินอยู่ */
+function hub(d){
+  const act=[],live=[],L=(d&&d.jobs||[]).filter(j=>j.side!=="admin"&&!j.expired&&!["completed","cancelled"].includes(j.status)),url=j=>"/jobs/"+encodeURIComponent(j.id);
+  const shop=j=>j.techName||T("ช่าง","Mechanic"),baht=n=>"฿"+money(n);
+  /* ขอราคาหลายร้านพร้อมกัน → แถวเดียว "เทียบราคา" จนกว่าจะเลือกร้าน */
+  const G={};L.forEach(j=>{if(j.group&&j.side==="customer"&&["requested","quoted"].includes(j.status))(G[j.group]=G[j.group]||[]).push(j)});
+  const grouped=new Set();
+  for(const [g,list] of Object.entries(G)){if(list.length<2)continue;list.forEach(j=>grouped.add(j.id));
+    const q=list.filter(j=>j.status==="quoted"),lo=q.length?Math.min(...q.map(j=>j.total||Infinity)):0,at=Math.max(...list.map(j=>j.at||0));
+    const row={id:"g:"+g,ic:"ti-scale",url:"/compare/"+encodeURIComponent(g),at,car:list[0].car,
+      title:q.length?T(`ได้ราคาแล้ว ${q.length} จาก ${list.length} ร้าน`,`${q.length} of ${list.length} quotes in`):T(`ขอราคา ${list.length} ร้าน`,`Quotes from ${list.length} shops`),
+      sub:[list[0].car,q.length&&lo<Infinity?T(`ต่ำสุด ${baht(lo)}`,`lowest ${baht(lo)}`):T("รอร้านส่งราคา","waiting for quotes")].filter(Boolean).join(" · ")};
+    if(q.length)act.push({...row,r:0,cta:T("เทียบราคา","Compare")});else live.push({...row,chip:T("รอราคา","Waiting")});
+  }
+  for(const j of L){
+    if(grouped.has(j.id))continue;
+    const cust=j.side==="customer"||j.side==="both",tech=j.side==="technician"||j.side==="both",s=j.status;
+    const base={id:j.id,url:url(j),at:j.at,unread:j.unread,car:j.car};
+    if(cust&&s==="quoted"){act.push({...base,r:0,ic:"ti-file-dollar",title:T(`${shop(j)} เสนอราคา`,`${shop(j)} sent a quote`)+(j.total?" "+baht(j.total):""),sub:j.car,cta:T("ดูราคา","Review")});continue}
+    if(tech&&s==="requested"){act.push({...base,r:0,ic:j.urgent?"ti-urgent":"ti-file-plus",hot:j.urgent,title:j.urgent?T("งานด่วน: ลูกค้ารถเสียตอนนี้","Urgent: a customer is broken down"):T("คำขอราคาใหม่","New quote request"),sub:j.car,cta:T("เสนอราคา","Quote")});continue}
+    if(cust&&s==="done"){act.push({...base,r:1,ic:"ti-checklist",title:T(`${shop(j)} ซ่อมเสร็จแล้ว`,`${shop(j)} finished`),sub:T(`${j.car} · ตรวจแล้วยืนยันงาน`,`${j.car} · check and confirm`),cta:T("ตรวจงาน","Check")});continue}
+    if(tech&&s==="accepted"){act.push({...base,r:1,ic:"ti-calendar-check",title:T("ลูกค้ายืนยันราคาแล้ว","Customer accepted"),sub:j.car,cta:T("เปิดงาน","Open")});continue}
+    const LIVE={requested:[T("รอราคา","Waiting"),"ti-hourglass",T(`ขอราคาจาก ${shop(j)}`,`Asked ${shop(j)} for a quote`)],
+      quoted:[T("รอลูกค้า","Awaiting customer"),"ti-file-dollar",T("เสนอราคาแล้ว","Quote sent")+(j.total?" "+baht(j.total):"")],
+      accepted:[T("นัดแล้ว","Booked"),"ti-calendar-check",cust?shop(j):T("นัดกับลูกค้าแล้ว","Booked with the customer")],
+      enroute:[T("กำลังมา","On the way"),"ti-truck",cust?T(`${shop(j)} กำลังมาหาคุณ`,`${shop(j)} is on the way`):T("กำลังไปหาลูกค้า","Driving to the customer")],
+      working:[T("กำลังซ่อม","Repairing"),"ti-tool",cust?T(`${shop(j)} กำลังซ่อม`,`${shop(j)} is repairing`):T("กำลังซ่อม","Repair in progress")],
+      done:[T("รอตรวจ","Awaiting check"),"ti-checklist",T("ส่งงานแล้ว รอลูกค้าตรวจ","Handed over — awaiting the customer")],
+      disputed:[T("แจ้งปัญหา","Reported"),"ti-flag",T("ทีมงานกำลังดูเรื่องนี้","Our team is looking into it")]}[s];
+    if(!LIVE)continue;
+    const row={...base,ic:LIVE[1],title:LIVE[2],sub:j.car,chip:LIVE[0],live:s==="enroute"};
+    if((j.unread||0)>0)act.push({...row,r:2,ic:"ti-message-circle",title:T("ข้อความใหม่ — ","New message — ")+(cust?shop(j):j.car),sub:j.car,cta:T("อ่าน","Read"),url:url(j)+"/chat"});
+    else if(tech&&["enroute","working"].includes(s))act.push({...row,r:1,cta:T("เปิดงาน","Open")});
+    else live.push(row);
+  }
+  /* ประกาศหาช่าง: มีข้อเสนอแล้ว = เรื่องราคา (บนสุด) · ยังไม่มี = รออยู่ */
+  for(const x of (d&&d.posts||[]).filter(x=>x.status==="open")){
+    const row={id:"p:"+x.id,ic:"ti-speakerphone",url:"/post/"+encodeURIComponent(x.id),at:x.at,car:x.car};
+    if(x.offers>0)act.push({...row,r:0,title:T(`ประกาศหาช่าง: ได้ข้อเสนอ ${x.offers} ร้าน`,`Job post offers: ${x.offers}`),sub:[x.car,x.lowest?T(`ต่ำสุด ${baht(x.lowest)}`,`lowest ${baht(x.lowest)}`):""].filter(Boolean).join(" · "),cta:T("ดูข้อเสนอ","View")});
+    else live.push({...row,title:x.urgent?T("ประกาศงานด่วนแล้ว","Urgent post is live"):T("ประกาศหาช่างแล้ว","Job post is live"),sub:x.car,chip:T("รอข้อเสนอ","Waiting")});
+  }
+  act.sort((a,b)=>a.r-b.r||(b.at||0)-(a.at||0));live.sort((a,b)=>(b.live-a.live)||(b.at||0)-(a.at||0));
+  return {act,live};
+}
 function cancelTitle(j,car){
   if(j.expired)return T('คำขอหมดอายุ','A request expired');
   const who={customer:T('ลูกค้ายกเลิก','Customer cancelled'),technician:T('ช่างยกเลิก','Mechanic cancelled'),admin:T('ทีมงานยกเลิก','Staff cancelled'),system:T('ระบบปิดคำขอ','Request closed by the system')}[j.cancelledBy];
@@ -198,7 +272,7 @@ body[data-mode="tech"] .cb-bell.cb-m{display:none!important}
 .cb-d{width:34px;height:34px;font-size:19px}
 @media(max-width:760px){.cb-d{display:none!important}}
 
-.nb-pop{position:absolute;z-index:1400;width:min(380px,calc(100vw - 20px));max-height:min(72vh,560px);display:flex;flex-direction:column;border-radius:20px;background:var(--surface,#fff);color:var(--ink,#09090B);
+.nb-pop{position:absolute;z-index:1400;width:min(400px,calc(100vw - 20px));max-height:min(80vh,640px);display:flex;flex-direction:column;border-radius:20px;background:var(--surface,#fff);color:var(--ink,#09090B);
   font-family:Kanit,system-ui,sans-serif;box-shadow:0 0 0 1px var(--line,rgba(0,0,0,.08)),0 30px 60px -24px rgba(0,0,0,.45);overflow:hidden;animation:nbIn .22s cubic-bezier(.32,.72,0,1);transform-origin:100% 0}
 @keyframes nbIn{from{opacity:0;transform:scale(.96) translateY(-4px)}}
 .nb-h{display:flex;align-items:center;gap:8px;padding:14px 16px 10px}
@@ -211,7 +285,34 @@ body[data-mode="tech"] .cb-bell.cb-m{display:none!important}
 .nb-cta.off{background:none;color:var(--ink,#09090B);border:1px solid var(--line,rgba(0,0,0,.14))}
 .nb-cta{height:34px;padding:0 14px;border:0;border-radius:999px;flex:none;align-self:center;cursor:pointer;background:var(--ink,#09090B);color:var(--bg,#fff);font:600 13px Kanit,system-ui,sans-serif}
 .nb-cta:disabled{opacity:.6}
-.nb-list{overflow:auto;padding:2px 6px 6px}
+.nb-body{overflow:auto;overscroll-behavior:contain;padding:0 6px 8px}
+.nb-list{padding:0}
+.nb-h .nb-gear{width:40px;height:40px;padding:0;border-radius:50%;display:grid;place-items:center;font-size:19px;color:var(--muted,#71717A)}
+.nb-h .nb-gear:hover{background:var(--surface-2,#F4F4F5);color:var(--ink,#09090B)}
+.nb-sec{display:flex;align-items:center;gap:8px;margin:12px 10px 6px;font:600 12px Kanit,system-ui,sans-serif;letter-spacing:.02em;color:var(--muted,#71717A)}
+.nb-sec em{font-style:normal;min-width:20px;height:20px;padding:0 6px;border-radius:999px;display:grid;place-items:center;background:var(--co,#E9682A);color:#fff;font-size:11px}
+.nb-sec button{margin-left:auto;border:0;background:none;color:var(--muted,#71717A);font:500 12.5px Kanit,system-ui,sans-serif;cursor:pointer;min-height:32px;padding:4px 6px;border-radius:8px}
+.nb-sec button:disabled{opacity:.4;cursor:default}
+.nb-job{position:relative;display:flex;gap:11px;align-items:center;width:100%;padding:10px;border:0;border-radius:16px;background:none;color:var(--ink,#09090B);text-align:left;font:inherit;cursor:pointer}
+.nb-job+.nb-job{margin-top:2px}
+.nb-job:hover,.nb-job:focus-visible{background:var(--surface-2,#F4F4F5)}
+.nb-job.r0{background:color-mix(in srgb,var(--co,#E9682A) 9%,transparent)}
+.nb-job.r0:hover,.nb-job.r0:focus-visible{background:color-mix(in srgb,var(--co,#E9682A) 15%,transparent)}
+.nb-job.hot{background:color-mix(in srgb,#DC2626 10%,transparent)}
+.nb-job .nb-ic{position:relative}
+.nb-job.r0 .nb-ic{background:var(--co,#E9682A);color:#fff}
+.nb-job.hot .nb-ic{background:#DC2626;color:#fff}
+.nb-job .nb-ic i.lv{position:absolute;right:-2px;top:-2px;width:10px;height:10px;border-radius:50%;background:#22C55E;border:2px solid var(--surface,#fff)}
+.nb-jt{flex:1;min-width:0}.nb-jt b{display:block;font-size:14px;font-weight:600;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nb-jt small{display:block;margin-top:1px;font-size:12.5px;color:var(--muted,#71717A);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nb-go{flex:none;height:30px;padding:0 12px;border-radius:999px;display:grid;place-items:center;background:var(--ink,#09090B);color:var(--bg,#fff);font:600 12.5px Kanit,system-ui,sans-serif}
+.nb-chip{flex:none;padding:3px 9px;border-radius:999px;background:var(--surface-2,#F4F4F5);color:var(--muted,#71717A);font-size:11.5px;font-weight:500;white-space:nowrap}
+.nb-un{position:absolute;left:34px;top:6px;min-width:17px;height:17px;padding:0 4px;border-radius:999px;display:grid;place-items:center;background:#DC2626;color:#fff;font:700 10px/1 Kanit,system-ui,sans-serif;border:2px solid var(--surface,#fff)}
+.nb-tip{position:relative;display:flex;gap:10px;align-items:center;margin:0 6px 6px;padding:12px 12px 12px 14px;border-radius:16px;background:var(--surface-2,#F4F4F5)}
+.nb-tip>.ti{flex:none;font-size:20px;color:var(--co,#E9682A)}
+.nb-tip span{flex:1;min-width:0;font-size:12.5px;line-height:1.45;color:var(--muted,#71717A)}.nb-tip span b{display:block;color:var(--ink,#09090B);font-size:13.5px;font-weight:600}
+.nb-tip .nb-x{flex:none;width:30px;height:30px;border:0;border-radius:50%;background:none;color:var(--faint,#A1A1AA);display:grid;place-items:center;cursor:pointer;font-size:15px}
+.nb-tip .nb-x:hover{background:color-mix(in srgb,var(--ink,#09090B) 8%,transparent);color:var(--ink,#09090B)}
 .nb-it{display:flex;gap:12px;align-items:flex-start;width:100%;padding:11px 10px;border:0;border-radius:14px;background:none;color:var(--ink,#09090B);text-align:left;font:inherit;cursor:pointer}
 .nb-it:hover,.nb-it:focus-visible{background:var(--surface-2,#F4F4F5)}
 .nb-ic{flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:12px;font-size:18px;background:var(--surface-2,#F4F4F5);color:var(--ink,#09090B)}
@@ -219,8 +320,9 @@ body[data-mode="tech"] .cb-bell.cb-m{display:none!important}
 .nb-it>span+span{flex:1;min-width:0}.nb-it b{display:block;font-size:14px;font-weight:600;line-height:1.35}.nb-it small{display:block;margin-top:2px;font-size:12.5px;line-height:1.45;color:var(--muted,#71717A)}
 .nb-it time{flex:none;font-size:11.5px;color:var(--faint,#A1A1AA);margin-top:2px}
 .nb-it.new b::after{content:"";display:inline-block;width:7px;height:7px;margin-left:6px;border-radius:50%;background:var(--co,#E9682A);vertical-align:2px}
+.nb-quiet{padding:4px 10px 6px;font-size:12.5px;color:var(--faint,#A1A1AA)}
 .nb-empty{padding:26px 16px 30px;text-align:center;color:var(--muted,#71717A);font-size:13.5px}.nb-empty .ti{display:block;font-size:30px;color:var(--faint,#A1A1AA);margin-bottom:6px}
-.nb-f{display:flex;border-top:1px solid var(--line,rgba(0,0,0,.08))}.nb-f button{flex:1;height:46px;border:0;background:none;color:var(--ink,#09090B);font:600 13.5px Kanit,system-ui,sans-serif;cursor:pointer}.nb-f button:hover{background:var(--surface-2,#F4F4F5)}
+.nb-f{display:flex;flex:none;border-top:1px solid var(--line,rgba(0,0,0,.08))}.nb-f button{flex:1;height:46px;border:0;background:none;color:var(--ink,#09090B);font:600 13.5px Kanit,system-ui,sans-serif;cursor:pointer}.nb-f button:hover{background:var(--surface-2,#F4F4F5)}
 @media(prefers-reduced-motion:reduce){.cb-bell.ding .ti,.nb-pop{animation:none}}`;
 function style(){if(document.getElementById("cbCss"))return;const st=document.createElement("style");st.id="cbCss";st.textContent=CSS;(document.head||document.documentElement).appendChild(st)}
 
@@ -233,13 +335,31 @@ const KMK="spire_kmRemind";
 const kmGet=()=>{try{const v=JSON.parse(localStorage.getItem(KMK)||"null");return v&&v.uid===uid()?v:null}catch(e){return null}};
 const kmPut=v=>{try{localStorage.setItem(KMK,JSON.stringify({uid:uid(),on:!!(v&&v.on),line:!!(v&&v.line)}))}catch(e){}};
 const hasCar=()=>{try{return (JSON.parse(localStorage.getItem("spire_garage")||"[]")||[]).length>0}catch(e){return false}};
-function kmRow(){
-  if(!uid()||!hasCar())return "";
-  const k=kmGet(),on=!!(k&&k.on);
-  return `<div class="nb-on${on?" is-on":""}"><i class="ti ti-gauge"></i><span><b>${T("เตือนจดเลขไมล์ 18:00","Mileage reminder at 6 pm")}${on?` <em>${T("เปิดอยู่","On")}</em>`:""}</b>${on
-    ?(k.line?T("ถามทาง LINE และแจ้งเตือนในเครื่องที่เปิดไว้ทุกเย็น · พิมพ์เลขตอบใน LINE ได้ · คันที่จดแล้ววันนั้นไม่ถาม","Asked on LINE and on enabled devices each evening · reply on LINE · cars already logged that day are skipped")
-      :T("เด้งบนเครื่องทุกเย็น แตะแล้วใส่เลขได้เลย · คันที่จดแล้ววันนั้นไม่ถาม","A notification every evening — tap it to enter the reading · cars already logged that day are skipped"))
-    :T("ช่วยจำเลขไมล์ทุกเย็น ระบบจะเตือนเปลี่ยนน้ำมันเครื่องและอะไหล่ได้แม่นขึ้น","A daily nudge so oil-change and parts reminders stay accurate")}</span><button type="button" class="nb-cta${on?" off":""}" data-a="${on?"kmoff":"kmon"}">${on?T("ปิด","Turn off"):T("เปิด","Turn on")}</button></div>`;
+/* เปิด/ปิดเตือนเลขไมล์ — ใช้ทั้งการ์ดแนะนำในกระดิ่งและหน้าตั้งค่า · ไม่มี LINE = ต้องเด้งบนเครื่องได้ ขอสิทธิ์ตอนกดนี้เลย */
+async function kmSet(want){
+  try{
+    if(want){const st=await get("/api/km/remind").catch(()=>null);
+      if(!(st&&st.line)&&!pushOn()&&await enable()!=="granted")return {ok:false,msg:T("เปิดแจ้งเตือนในเครื่องหรือเชื่อม LINE ก่อน แล้วค่อยเปิดเตือนเลขไมล์","Allow device notifications or link LINE first")}}
+    const r=await post("/api/km/remind",{on:want});kmPut(r);subs.forEach(f=>{try{f()}catch(e){}});
+    return {ok:true,r,msg:want?(r.line?T("เปิดแล้ว — ทุก 18:00 จะถามเลขไมล์ทาง LINE","On — we'll ask on LINE at 6 pm"):T("เปิดแล้ว — ทุก 18:00 จะเด้งบนเครื่อง","On — a notification at 6 pm")):T("ปิดเตือนจดเลขไมล์แล้ว","Mileage reminder off")};
+  }catch(e){return {ok:false,msg:T("ตั้งค่าไม่สำเร็จ ลองใหม่อีกครั้ง","Couldn't change that — try again")}}
+}
+/* การ์ดแนะนำในกระดิ่ง: ขึ้นเฉพาะฟีเจอร์ที่ยังไม่ได้เปิด · เปิดแล้วหายไป (ปิด/เปลี่ยนที่หน้าตั้งค่า) · กด × = ไม่ถามอีก 14 วัน */
+const SNZ="spire_bell_snooze";
+const snoozed=k=>{try{const v=JSON.parse(localStorage.getItem(SNZ)||"{}");return v.uid===uid()&&(v[k]||0)>Date.now()}catch(e){return false}};
+function snooze(k){try{let v=JSON.parse(localStorage.getItem(SNZ)||"{}");if(v.uid!==uid())v={uid:uid()};v[k]=Date.now()+14*86400000;localStorage.setItem(SNZ,JSON.stringify(v))}catch(e){}}
+function tips(){
+  const out=[],pm=perm();
+  if((pm==="default"||(pm==="granted"&&!pushOn()))&&!snoozed("dev"))out.push(`<div class="nb-tip"><i class="ti ti-bell-ringing"></i><span><b>${T("เปิดแจ้งเตือนในเครื่อง","Turn on device notifications")}</b>${T("รู้ทันทีเมื่อช่างเสนอราคา รับงาน หรือ AI ตอบ แม้ไม่ได้เปิดแอป","Know right away when a mechanic quotes, takes the job or the AI replies — even with the app closed")}</span><button type="button" class="nb-cta" data-a="on">${T("เปิด","Turn on")}</button><button type="button" class="nb-x" data-x="dev" aria-label="${T("ไม่ใช่ตอนนี้","Not now")}"><i class="ti ti-x"></i></button></div>`);
+  const k=kmGet();
+  if(uid()&&hasCar()&&k&&!k.on&&!snoozed("km"))out.push(`<div class="nb-tip"><i class="ti ti-gauge"></i><span><b>${T("เตือนจดเลขไมล์ 18:00","Mileage reminder at 6 pm")}</b>${T("ช่วยให้เตือนเปลี่ยนน้ำมันเครื่องและอะไหล่ได้แม่นขึ้น","Keeps oil-change and parts reminders accurate")}</span><button type="button" class="nb-cta" data-a="kmon">${T("เปิด","Turn on")}</button><button type="button" class="nb-x" data-x="km" aria-label="${T("ไม่ใช่ตอนนี้","Not now")}"><i class="ti ti-x"></i></button></div>`);
+  return out.join("");
+}
+/* หน้าตั้งค่า → ส่วนการแจ้งเตือน · หน้าที่มีหน้าตั้งค่าในตัวเปิดเลย · หน้าแรกพาไปหน้าโปรไฟล์ */
+function openSettings(){
+  if(W.spireOpenSettings){W.spireOpenSettings("notif");return}
+  if(W.openSettings&&/^\/chat/.test(location.pathname)){W.openSettings("notif");return}
+  location.href="/profile?tab=notif";
 }
 /* แผงรายการ · o.onJobs = ปุ่ม "งานของฉันทั้งหมด" (หน้าแรกเปิดในหน้าเดิม หน้าอื่นไป /jobs) · o.toast = ข้อความเด้งของหน้านั้น */
 function panel(btn,o){
@@ -252,33 +372,30 @@ function panel(btn,o){
   let disposed=false,refreshing=false,unsubscribe=null,focusTimer=0,wasCleared=false;
   const p=document.createElement("div");p.className="nb-pop";p.setAttribute("role","dialog");p.setAttribute("aria-label",T("การแจ้งเตือน","Notifications"));
   const agoT=at=>{const m=Math.round((Date.now()-at)/60000);return m<1?T("เมื่อกี้","now"):m<60?T(`${m} นาที`,`${m}m`):m<1440?T(`${Math.round(m/60)} ชม.`,`${Math.round(m/60)}h`):T(`${Math.round(m/1440)} วัน`,`${Math.round(m/1440)}d`)};
-  const draw=()=>{if(disposed)return;if(!owns()){close();return}const L=list(),pm=perm();
-    const focus=p.contains(document.activeElement)?document.activeElement:null,action=focus?.dataset.a,item=focus?.dataset.id,scroll=p.querySelector('.nb-list')?.scrollTop||0;
-    p.innerHTML=`<div class="nb-h"><b>${T("การแจ้งเตือน","Notifications")}</b><button type="button" data-a="clear" ${L.length?'':'disabled'} title="${T('ล้างเฉพาะการแจ้งเตือน ไม่ลบงานหรือแชต','Clear notifications only, not jobs or chats')}">${T('ล้างทั้งหมด','Clear all')}</button></div>
-      ${pm==="default"||pm==="granted"?(on=>`<div class="nb-on${on?" is-on":""}"><i class="ti ti-bell-${on?"ringing":"off"}"></i><span><b>${T("แจ้งเตือนในเครื่อง","Device notifications")}${on?` <em>${T("เปิดอยู่","On")}</em>`:""}</b>${on?T("เด้งบนเครื่องเมื่อช่างเสนอราคา รับงาน หรือ AI ตอบ แม้ไม่ได้เปิดแอป","Pops up on this device when a mechanic quotes, takes the job or the AI replies"):T("รู้ทันทีเมื่อช่างเสนอราคา รับงาน หรือ AI ตอบ แม้ไม่ได้เปิดแอป","Know right away when a mechanic quotes, takes the job or the AI replies — even with the app closed")}</span><button type="button" class="nb-cta${on?" off":""}" data-a="${on?"off":"on"}">${on?T("ปิด","Turn off"):T("เปิด","Turn on")}</button></div>`)(pushOn())
-        :pm==="denied"?`<div class="nb-on"><i class="ti ti-bell-off"></i><span><b>${T("ปิดแจ้งเตือนไว้ในเบราว์เซอร์","Notifications blocked")}</b>${T("เปิดได้ที่การตั้งค่าเว็บไซต์ของเบราว์เซอร์","Allow them in your browser's site settings")}</span></div>`:""}
-      ${kmRow()}
+  const jobRow=x=>`<button type="button" class="nb-job${x.r===0?" r0":""}${x.hot?" hot":""}" data-u="${escH(x.url)}" data-k="${escH(x.id)}"><span class="nb-ic"><i class="ti ${x.ic}"></i>${x.live?'<i class="lv"></i>':""}</span>${x.unread&&x.r!==2?`<span class="nb-un">${x.unread>9?"9+":x.unread}</span>`:""}
+    <span class="nb-jt"><b class="nt">${escH(x.title)}</b>${x.sub?`<small class="nt">${escH(x.sub)}</small>`:""}</span>${x.cta?`<span class="nb-go">${escH(x.cta)}</span>`:x.chip?`<span class="nb-chip">${escH(x.chip)}</span>`:""}</button>`;
+  const draw=()=>{if(disposed)return;if(!owns()){close();return}const L=list(),H=hub(jobsGet()),known=!!jobsGet();
+    const focus=p.contains(document.activeElement)?document.activeElement:null,action=focus?.dataset.a,item=focus?.dataset.id||focus?.dataset.k,scroll=p.querySelector('.nb-body')?.scrollTop||0;
+    p.innerHTML=`<div class="nb-h"><b>${T("การแจ้งเตือน","Notifications")}</b><button type="button" class="nb-gear" data-a="settings" aria-label="${T("ตั้งค่าการแจ้งเตือน","Notification settings")}" title="${T("ตั้งค่าการแจ้งเตือน","Notification settings")}"><i class="ti ti-settings"></i></button></div>
+      <div class="nb-body">${tips()}
+      ${H.act.length?`<p class="nb-sec"><span>${T("ต้องทำตอนนี้","Needs you")}</span><em>${H.act.length}</em></p>${H.act.map(jobRow).join("")}`:""}
+      ${H.live.length?`<p class="nb-sec"><span>${T("กำลังดำเนินการ","In progress")}</span></p>${H.live.map(jobRow).join("")}`:""}
+      ${known&&!H.act.length&&!H.live.length?`<p class="nb-sec"><span>${T("งานของฉัน","My jobs")}</span></p><p class="nb-quiet">${T("ไม่มีงานค้าง — งานที่จบแล้วดูได้ที่ \"งานทั้งหมด\"","Nothing open — finished jobs are under \"All jobs\"")}</p>`:""}
+      <p class="nb-sec"><span>${T("อัปเดตล่าสุด","Recent updates")}</span><button type="button" data-a="clear" ${L.length?'':'disabled'} title="${T('ล้างเฉพาะการแจ้งเตือน ไม่ลบงานหรือแชต','Clear notifications only, not jobs or chats')}">${T('ล้าง','Clear')}</button></p>
       <div class="nb-list">${L.length?L.map(x=>`<button type="button" class="nb-it${x.read?"":" new"}" data-id="${escH(x.id)}" data-u="${escH(x.url)}"><span class="nb-ic${x.kind==="ai"?" ai":""}"><i class="ti ${ICON[x.kind]||"ti-bell"}"></i></span><span><b class="nt">${escH(x.title)}</b>${x.body?`<small class="nt">${escH(x.body)}</small>`:""}</span><time>${agoT(x.at)}</time></button>`).join("")
-        :`<div class="nb-empty" role="status"><i class="ti ti-bell"></i>${wasCleared?T('ล้างการแจ้งเตือนแล้ว งานและแชตยังอยู่เหมือนเดิม','Notifications cleared. Your jobs and chats are unchanged.'):T("ยังไม่มีการแจ้งเตือน — เมื่อช่างเสนอราคา รับงาน หรือส่งข้อความ จะขึ้นที่นี่","Nothing yet — quotes, accepted jobs and messages show up here")}</div>`}</div>
-      <div class="nb-f"><button type="button" data-a="jobs">${T("งานของฉันทั้งหมด","All my jobs")}</button></div>`;
+        :`<div class="nb-empty" role="status"><i class="ti ti-bell"></i>${wasCleared?T('ล้างการแจ้งเตือนแล้ว งานและแชตยังอยู่เหมือนเดิม','Notifications cleared. Your jobs and chats are unchanged.'):T("ยังไม่มีการแจ้งเตือน — เมื่อช่างเสนอราคา รับงาน หรือส่งข้อความ จะขึ้นที่นี่","Nothing yet — quotes, accepted jobs and messages show up here")}</div>`}</div></div>
+      <div class="nb-f"><button type="button" data-a="jobs">${T("งานทั้งหมด (รวมที่เสร็จแล้ว)","All jobs (including finished)")}</button></div>`;
     p.querySelectorAll("[data-id]").forEach(x=>x.onclick=()=>{if(!owns()){close();return}read(x.dataset.id);close();go(x.dataset.u)});
+    p.querySelectorAll("[data-k]").forEach(x=>x.onclick=()=>{if(!owns()){close();return}close();go(x.dataset.u)});
     p.querySelector('[data-a="clear"]').onclick=()=>{if(!owns()){close();return}wasCleared=true;clear();draw()};
+    p.querySelector('[data-a="settings"]').onclick=()=>{close();openSettings()};
     const on_=p.querySelector('[data-a="on"]');if(on_)on_.onclick=async()=>{on_.disabled=true;const st=await enable();
-      if(st==="granted"&&o.toast)o.toast(T("เปิดแจ้งเตือนในเครื่องแล้ว","Device notifications are on"));draw()};
-    const off_=p.querySelector('[data-a="off"]');if(off_)off_.onclick=()=>{off_.disabled=true;disable();
-      if(o.toast)o.toast(T("ปิดแจ้งเตือนในเครื่องแล้ว — ยังดูรายการได้ที่กระดิ่งนี้","Device notifications off — still listed under this bell"));draw()};
+      if(st==="granted"&&o.toast)o.toast(T("เปิดแจ้งเตือนในเครื่องแล้ว — ปิดหรือเปลี่ยนได้ที่ตั้งค่า","Device notifications are on — change them in Settings"));draw()};
+    const km=p.querySelector('[data-a="kmon"]');if(km)km.onclick=async()=>{km.disabled=true;const r=await kmSet(true);if(o.toast&&r.msg)o.toast(r.msg);draw()};
+    p.querySelectorAll('[data-x]').forEach(x=>x.onclick=()=>{snooze(x.dataset.x);draw()});
     p.querySelector('[data-a="jobs"]').onclick=()=>{if(!owns()){close();return}close();o.onJobs?o.onJobs():go("/jobs")};
-    const km=p.querySelector('[data-a^="km"]');if(km)km.onclick=async()=>{km.disabled=true;const want=km.dataset.a==="kmon";
-      try{
-        /* ไม่มี LINE → ต้องเด้งบนเครื่องได้ ขอสิทธิ์ตอนกดนี้เลย (เบราว์เซอร์ให้ขอได้เฉพาะตอนผู้ใช้กด) */
-        if(want){const s=await get("/api/km/remind").catch(()=>null);
-          if(!(s&&s.line)&&!pushOn()&&await enable()!=="granted"){if(o.toast)o.toast(T("เปิดแจ้งเตือนในเครื่องหรือเชื่อม LINE ก่อน แล้วค่อยเปิดเตือนเลขไมล์","Allow device notifications or link LINE first"));draw();return}}
-        const r=await post("/api/km/remind",{on:want});kmPut(r);
-        if(o.toast)o.toast(want?(r.line?T("เปิดแล้ว — ทุก 18:00 จะถามเลขไมล์ทาง LINE","On — we'll ask on LINE at 6 pm"):T("เปิดแล้ว — ทุก 18:00 จะเด้งบนเครื่อง","On — a notification at 6 pm")):T("ปิดเตือนจดเลขไมล์แล้ว","Mileage reminder off"));
-      }catch(e){if(o.toast)o.toast(T("ตั้งค่าไม่สำเร็จ ลองใหม่อีกครั้ง","Couldn't change that — try again"))}
-      draw()};
-    p.querySelector('.nb-list').scrollTop=scroll;
-    if(action||item){const target=[...p.querySelectorAll('button')].find(b=>item?b.dataset.id===item:b.dataset.a===action);(target&&!target.disabled?target:p.querySelector('[data-a="jobs"]')).focus({preventScroll:true})}
+    p.querySelector('.nb-body').scrollTop=scroll;
+    if(action||item){const target=[...p.querySelectorAll('button')].find(b=>item?(b.dataset.id===item||b.dataset.k===item):b.dataset.a===action);(target&&!target.disabled?target:p.querySelector('[data-a="jobs"]')).focus({preventScroll:true})}
   };
   // Opening the visible inbox acknowledges its current notices, not jobs/messages.
   if(!document.hidden)read();
@@ -286,13 +403,14 @@ function panel(btn,o){
   opened={node:p,owner,close};unsubscribe=on(refresh);document.addEventListener('visibilitychange',refresh);
   /* สถานะจริงจากหลังบ้าน (อีกเครื่อง/LINE อาจเปิดปิดไว้) — ต่างจากที่จำไว้ค่อยวาดใหม่ */
   if(uid()&&hasCar())get("/api/km/remind").then(r=>{if(!owns()||disposed)return;const k=kmGet();kmPut(r);if(p.isConnected&&(!k||k.on!==!!r.on||k.line!==!!r.line))draw()}).catch(()=>{});
+  fetchJobs().catch(()=>{});
   const rc=btn.getBoundingClientRect();p.style.top=(rc.bottom+8+scrollY)+"px";p.style.left=Math.max(10,Math.min(rc.right-p.offsetWidth+scrollX,innerWidth-p.offsetWidth-10))+"px";
   function close(){if(disposed)return;disposed=true;unsubscribe?.();clearTimeout(focusTimer);p.remove();btn.setAttribute("aria-expanded","false");removeEventListener("pointerdown",off,true);document.removeEventListener("keydown",k);document.removeEventListener('visibilitychange',refresh);if(opened?.node===p)opened=null}
   function off(e){if(!p.contains(e.target)&&!btn.contains(e.target))close()}
   function k(e){if(e.key==="Escape"){close();btn.focus()}}
   function refresh(){if(disposed)return;if(!owns()||!p.isConnected){close();return}if(refreshing)return;refreshing=true;try{if(!document.hidden)read();draw()}finally{refreshing=false}}
   addEventListener("pointerdown",off,true);document.addEventListener("keydown",k);
-  focusTimer=setTimeout(()=>{if(disposed||!owns())return;const n=p.querySelector(".nb-it");(n||p.querySelector("button:not(:disabled)"))?.focus()},40);
+  focusTimer=setTimeout(()=>{if(disposed||!owns())return;const n=p.querySelector(".nb-job,.nb-it");(n||p.querySelector("button:not(:disabled)"))?.focus()},40);
 }
 const closeOtherInbox=()=>{if(opened&&opened.owner!==uid())opened.close()};
 W.addEventListener('cendon:auth-ready',closeOtherInbox);document.addEventListener('cendon:auth-ready',closeOtherInbox);
@@ -309,10 +427,15 @@ function wire(b){
 }
 function paint(){
   let hint=false;try{hint=localStorage.getItem("cendon_signed")==="1"}catch(e){}
-  const n=unread(),me=!!uid()||hint;
+  const n=badge(),me=!!uid()||hint;
   for(let i=BTNS.length-1;i>=0;i--)if(!BTNS[i].isConnected)BTNS.splice(i,1);
   BTNS.forEach(b=>{const e=b.querySelector("em");b.hidden=!me;e.hidden=!n;e.textContent=n>9?"9+":n||"";
-    b.setAttribute("aria-label",n?T(`การแจ้งเตือน ยังไม่อ่าน ${n}`,`Notifications, ${n} unread`):T("การแจ้งเตือน","Notifications"))});
+    b.setAttribute("aria-label",n?T(`การแจ้งเตือน ${n} เรื่องรอคุณ`,`Notifications, ${n} waiting for you`):T("การแจ้งเตือน","Notifications"))});
+}
+/* ตัวเลขบนกระดิ่ง = งานที่ต้องทำ + การแจ้งเตือนที่ยังไม่อ่าน (ไม่นับซ้ำถ้าเป็นเรื่องของงานเดียวกัน) */
+function badge(){
+  const act=uid()?hub(jobsGet()).act:[],ids=new Set(act.map(x=>x.id));
+  return act.length+load().filter(x=>!x.read&&!(String(x.tag||"").startsWith("cendon-job-")&&ids.has(String(x.tag).slice(11)))).length;
 }
 function ding(){BTNS.forEach(b=>{b.classList.remove("ding");void b.offsetWidth;b.classList.add("ding")})}
 function mount(){
@@ -373,7 +496,7 @@ async function tick(){
   const me=uid();
   if(me&&!document.hidden&&(W.spireAuth||W.auth)&&(W.spireAuth||W.auth).currentUser){
     try{const r=await get("/api/tech/pulse");
-      if(r&&r.v&&r.v!==PV){const d=await get("/api/tech/jobs");if(uid()!==me||!Array.isArray(d?.jobs))return;PV=r.v;const evs=jobEvents(d.jobs,me);
+      if(r&&r.v&&r.v!==PV){const d=await get("/api/tech/jobs");if(uid()!==me||!Array.isArray(d?.jobs))return;PV=r.v;setJobs(d.jobs,null);get("/api/tech/posts").then(x=>{if(uid()===me&&Array.isArray(x?.posts))setJobs(null,x.posts)}).catch(()=>{});const evs=jobEvents(d.jobs,me);
         if(evs.length){evs.forEach(e=>add(e,{fallback:true}));ding()}}}catch(e){}
   }
   paint();
@@ -390,8 +513,9 @@ function ai(text,valet){
   add({kind:"ai",title:valet?T("Cendon Valet เตรียมการ์ดให้แล้ว — รอคุณยืนยัน","Cendon Valet has a card ready — waiting for you"):T("Cendon AI ตอบแล้ว","Cendon AI replied"),
     body:t.slice(0,140),url:location.pathname+location.search,tag:"cendon-ai"},{system:true});
 }
-W.CendonBell={add,list,unread,read,clear,enable,disable,perm,pushOn,pushSub,on,setApi,ai,sys,jobEvents,panel,style,paint,ding,buttons:()=>BTNS.slice()};
+W.CendonBell={add,list,unread,read,clear,enable,disable,perm,pushOn,pushSub,on,setApi,ai,sys,jobEvents,panel,style,paint,ding,buttons:()=>BTNS.slice(),
+  setJobs,fetchJobs,hub:()=>hub(jobsGet()),km:{get:kmGet,set:kmSet,fetch:()=>get("/api/km/remind").then(r=>{kmPut(r);return r})},hasCar,openSettings};
 /* Completion collection follows the user across every app page, not just Chat. */
-if(!W.CendonChatJobs&&!document.querySelector('script[src*="chat-jobs.js"]')){const script=document.createElement('script');script.src='/chat-jobs.js?v=2';script.defer=true;document.head.append(script)}
+if(!W.CendonChatJobs&&!document.querySelector('script[src*="chat-jobs.js"]')){const script=document.createElement('script');script.src='/chat-jobs.js?v=4';script.defer=true;document.head.append(script)}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount);else mount();
 })(window);

@@ -12,7 +12,8 @@
 <script src="/account-actions.js?v=3" defer></script>
 <script src="/account.js?v=2026-10-21-r2" defer></script>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"/>
+<script>/* แอปไม่ซูม: viewport กันซูมแล้ว แต่ Safari บน iPhone ไม่สนค่านี้ — กันการถ่างสองนิ้วตรงนี้ (แผนที่ยังซูมได้ เพราะใช้ touch event ของมันเอง) */["gesturestart","gesturechange"].forEach(function(t){document.addEventListener(t,function(e){e.preventDefault()},{passive:false})});</script>
 <link rel="icon" type="image/png" href="./favicon.png">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <meta name="robots" content="noindex,nofollow"/>
@@ -1781,7 +1782,7 @@ td .empty::before,td.empty::before{display:none}
   .mobile-top{background:var(--z-1000);border-color:var(--line2)}
 }
 </style>
-<link rel="stylesheet" href="stability.css?v=2026-10-23-r1">
+<link rel="stylesheet" href="stability.css?v=2026-10-27-zoom">
 <link rel="stylesheet" href="/primary-material.css?v=1">
 </head>
 <body>
@@ -3304,7 +3305,7 @@ window.sysBackfill=sysBackfill; window.sysExport=sysExport; window.sysClearAudit
    ซึ่งเป็นจุดที่คนพิมพ์ผิดบ่อยที่สุด */
 const ENV_FIELDS=[
  {k:"GEMINI_MODEL",   th:"โมเดล Gemini",         kind:"var"},
- {k:"GEMINI_SEARCH_MODEL",th:"โมเดลค้นเว็บ",      kind:"var"},
+ {k:"GEMINI_SEARCH_MODEL",th:"โมเดลแชตลำดับรอง",  kind:"var"},
  {k:"GEMINI_LIVE_MODEL",th:"โมเดลสำหรับโทรคุย",   kind:"var"},
  {k:"AI_DAILY_LIMIT", th:"โควตาต่อคนต่อวัน",      kind:"var"},
  {k:"AI_ANON_DAILY_LIMIT",th:"โควตาผู้ที่ไม่ล็อกอิน",kind:"var"},
@@ -3312,6 +3313,9 @@ const ENV_FIELDS=[
   warn:"ถ้าเป็น * แปลว่าเว็บไหนก็เรียก API ของเราได้ ควรตั้งเป็นโดเมนจริง"},
  {k:"GEMINI_KEY",     th:"คีย์ Google Gemini",   kind:"secret"},
  {k:"OPENROUTER_API_KEY",th:"คีย์ OpenRouter",   kind:"secret"},
+ {k:"TAVILY_API_KEY", th:"ค้นเว็บของ AI: คีย์ Tavily",kind:"secret"},
+ {k:"EXA_API_KEY",    th:"ค้นเว็บของ AI: คีย์ Exa",kind:"secret"},
+ {k:"FIRECRAWL_API_KEY",th:"ค้นเว็บของ AI: คีย์ Firecrawl",kind:"secret"},
  {k:"APP_URL",        th:"ที่อยู่เว็บจริง (Didit พากลับมาที่นี่)",kind:"var"},
  {k:"ONBOARDING_PRIVACY_URL",th:"ลิงก์นโยบายความเป็นส่วนตัว",kind:"var"},
  {k:"DIDIT_WORKFLOW_ID",th:"Didit: รหัส workflow",  kind:"secret"},
@@ -5754,7 +5758,8 @@ async function loadHealth(){
       AI_DAILY_LIMIT:en.aiDailyLimit,AI_ANON_DAILY_LIMIT:en.anonDailyLimit,
       ALLOWED_ORIGINS:en.allowedOrigins,GEMINI_KEY:en.aiConfigured,
       OPENROUTER_API_KEY:en.openrouterConfigured,APP_URL:en.appUrl,ONBOARDING_PRIVACY_URL:en.privacyUrl,
-      DIDIT_WORKFLOW_ID:en.diditWorkflow,DIDIT_API_KEY:en.diditKey,DIDIT_WEBHOOK_SECRET:en.diditWebhook,ID_HASH_KEY:en.idHashKey};
+      DIDIT_WORKFLOW_ID:en.diditWorkflow,DIDIT_API_KEY:en.diditKey,DIDIT_WEBHOOK_SECRET:en.diditWebhook,ID_HASH_KEY:en.idHashKey,
+      TAVILY_API_KEY:en.tavilyKey,EXA_API_KEY:en.exaKey,FIRECRAWL_API_KEY:en.firecrawlKey};
     drawEnv(); sysVecStatus();
     const tick=(ok,y,n)=>`<span class="tick ${ok?"ok":"bad"}"><i class="ti ${ok?"ti-circle-check":"ti-alert-triangle"}"></i>${ok?y:n}</span>`;
     const tables=Object.entries(sc.tables||{}).map(([t,v])=>`<div class="schema-row">
@@ -5780,7 +5785,7 @@ async function loadHealth(){
         <div class="hgrid">
           <div class="hcell ${en.aiConfigured?"ok":"bad"}"><small>คีย์ AI</small><b>${en.aiConfigured?"ตั้งค่าแล้ว":"ยังไม่ได้ตั้งค่า"}</b></div>
           <div class="hcell"><small>โมเดลหลัก</small><b>${esc(en.model||"-")}</b></div>
-          <div class="hcell"><small>โมเดลค้นเว็บ</small><b>${esc(en.searchModel||"-")}</b></div>
+          <div class="hcell"><small>โมเดลแชตลำดับรอง</small><b>${esc(en.searchModel||"-")}</b></div>
           <div class="hcell"><small>โมเดลโทรคุย</small><b>${esc(en.liveModel||"-")}</b></div>
           <div class="hcell"><small>โควตา/คน/วัน</small><b>${en.aiDailyLimit??"-"}</b></div>
           <div class="hcell"><small>โควตาผู้ไม่ล็อกอิน</small><b>${en.anonDailyLimit??"-"}</b></div>
@@ -5810,8 +5815,10 @@ async function loadDiag(){
     const d=await api("/api/admin/diag");
     const sc=d.search||{};
     const ok=!!sc.ok;
-    const SRC={gemini:"Gemini + Google Search",openrouter:"OpenRouter (ค้นเว็บ)",
-               duckduckgo:"DuckDuckGo",wikipedia:"Wikipedia"};
+    /* ค้นเว็บของ AI = Tavily · Exa · Firecrawl เท่านั้น (เลิก Google Search ของ Gemini และ DuckDuckGo แล้ว) */
+    const SRC={tavily:"Tavily",exa:"Exa",firecrawl:"Firecrawl"};
+    const KIND={general:"ทั่วไป",price:"ราคา",news:"ข่าว",spec:"สเปก/อาการ",research:"เอกสารผู้ผลิต"};
+    const routes=Object.entries(sc.routes||{}).map(([k,v])=>`${KIND[k]||k} → ${(v||[]).map(p=>SRC[p]||p).join(" · ")||"ยังไม่มีเจ้าที่ตั้งคีย์"}`).join("<br>");
 
     /* ทุกทางที่ระบบลองไป เรียงตามลำดับที่ลองจริง */
     const rows=(d.providers||[]).map(t=>{
@@ -5840,21 +5847,21 @@ async function loadDiag(){
       `<div class="kb-item"><div class="kb-bd"><div class="kb-h">
          <b>สรุปการค้นอินเทอร์เน็ต</b><span class="fb-st ${ok?"done":"spam"}">${ok?"ค้นได้":"ค้นไม่ได้"}</span>
          ${ok?`<span class="kb-tag">${esc(SRC[sc.source]||sc.source||"")}</span>`:""}
-         ${sc.grounded?`<small>ค้นเว็บจริง</small>`:""}
+
        </div>
        <div class="kb-body">
          คำค้นที่ใช้ทดสอบ: <b>${esc(sc.query||"")}</b><br>
-         คำสำคัญที่ดึงออกมา: <b>${esc(sc.keywords||"")}</b> ·
+         ประเภทคำถาม: <b>${esc(KIND[sc.kind]||sc.kind||"-")}</b> ·
          ระบบตัดสินว่าต้องค้นข้อมูลสด: <b>${sc.needsFresh?"ใช่":"ไม่"}</b><br>
-         ใช้เวลา ${sc.ms||0} มิลลิวินาที · ได้เนื้อหา ${sc.length||0} ตัวอักษร
-         ${sc.model?` · โมเดล ${esc(sc.model)}`:""}
+         ใช้เวลา ${sc.ms||0} มิลลิวินาที${sc.model?` · โมเดลตอบ ${esc(sc.model)}`:""}
+         ${routes?`<br><small>ประเภทการค้น → เจ้าที่ใช้ก่อน</small><br>${routes}`:""}
          ${sc.hint?`<br><b>${esc(sc.hint)}</b>`:""}
        </div>
        ${sc.sample?`<div class="kb-body" style="white-space:pre-wrap;opacity:.85;margin-top:6px">${esc(sc.sample)}</div>`:""}
        <div class="kb-keys">GEMINI_KEY: ${d.keys.gemini?"ตั้งแล้ว":"ยังไม่ได้ตั้ง"} ·
          OPENROUTER_API_KEY: ${d.keys.openrouter?"ตั้งแล้ว":"ยังไม่ได้ตั้ง"} ·
          GEMINI_MODEL: ${esc(d.keys.geminiModel)} ·
-         GEMINI_SEARCH_MODEL: ${esc(d.keys.searchModel)}</div>
+         ตัวค้นเว็บที่ตั้งคีย์: ${esc((d.keys.searchProviders||[]).map(p=>SRC[p]||p).join(" · ")||"ยังไม่ได้ตั้ง")}</div>
        </div></div>
        <div class="page-head" style="margin:14px 0 8px"><div>
          <h1 style="font-size:17px">ทางที่ระบบลองไล่ไปทีละทาง</h1>

@@ -4,7 +4,7 @@
    หน้าเว็บเป็นไฟล์เดียวที่เปลี่ยนบ่อย จึงถามเน็ตก่อนเสมอ (ไม่งั้นผู้ใช้จะติดอยู่กับเวอร์ชันเก่า)
    แต่รอแค่ครู่เดียว — เน็ตมือถือช้า/ค้าง ต้องไม่ทำให้แอปค้างหน้าจอโหลด
    ══════════════════════════════════════════════════════════════════ */
-const CACHE = 'cendon-v367-match-roam';
+const CACHE = 'cendon-v382-tabs-prefetch';
 /* หน้าเว็บที่โหลดสำเร็จล่าสุด แยกตู้ไว้และ "ไม่ลบตอนอัปเดตเวอร์ชัน"
    เดิมทุกครั้งที่ deploy ตู้เก่าถูกล้างหมด เปิดแอปครั้งแรกหลังอัปเดตจึงไม่มีของสำรอง
    ต้องรอเน็ตอย่างเดียว — เน็ตมือถือช้าเมื่อไรก็ค้างหน้าจอโหลดของมือถือ */
@@ -14,9 +14,9 @@ const WAIT = 1500;
 /* โหลดล่วงหน้าเฉพาะไฟล์เล็กที่หน้าแรกใช้จริง
    เดิมโหลดทุกหน้า (~7 MB) แย่งเน็ตตอนผู้ใช้กำลังเปิดแอป และในรายการมีไฟล์ที่ไม่มีอยู่จริง
    (cendon-one.css, about, help, privacy) ทำให้ addAll ล้มทั้งชุด = ไม่เคยเก็บอะไรได้เลย */
-const CORE = ['./mileage-session.js?v=1', './mileage-review.js?v=1', './garage-rules.js?v=4', './garage-data.js?v=2', './calm-ui.css?v=1', './chat-garage.js?v=1', './chat-render.js?v=3', './account-paint.js?v=2026-10-16-r2', './account.css?v=2026-10-16-login5', './account.js?v=2026-10-21-r2', './account-actions.js?v=3', './account-scope.js?v=2', './settings.js?v=6', './settings.css?v=3', './sheet-drag.js?v=1', './launch-gate.js?v=1', './auth-gate.js?v=2', './login-hero.webp', './auth-bootstrap.js', './cendon-tour.js', './nav.js', './input-guard.js?v=5', './media-store.js?v=2', './repair-proof.js?v=1', './car-sync.js', './carspec.js?v=2026-10-18-r1', './car-detail-tabs.css?v=2026-10-12-r1', './car-detail-tabs.js?v=2026-10-12-r2', './call-ui.css?v=2026-10-19-inst1', './call-composer.js?v=2026-10-17-r4', './call-agent.js?v=2026-10-24-security2', './call-surface.js?v=2026-10-21-r1', './garage-care.js?v=1', './call-session.js?v=2026-10-23-language1', './lux.css', './category-pages.js', './home-layout.css?v=2', './stability.css?v=2026-10-23-r1', './stability.js?v=2026-10-23-r1', './mobile-ui.js', './fluid.js', './crop.js', './cendon-admin.js', './call-sounds.js?v=1', './call-tools.js?v=2026-10-23-language1', './sound-lens.js?v=1', './engine-scan.js?v=2026-10-17-r4', './vehicle-audio.js?v=5', './vehicle-audio.css?v=3', './valet-core.js?v=8', './call-shell.js?v=1', './valet.js?v=9', './valet.css?v=2', './bell.js?v=17', './drop.js?v=4', './car-menu.js?v=1', './garage-extras.js?v=7', './garage-extras.css?v=7', './cendon-search.js', './cendon-line.js?v=5', './cloud-swap.js?v=3', './manifest.webmanifest', './icon192.png', './img/cars/sedan.webp', './img/cars/coupe.webp', './img/cars/mpv.webp', './img/cars/pickup.webp', './img/cars/van.webp', './fonts/kanit.css?v=1', './fonts/kanit-300-thai.woff2', './fonts/kanit-300-latin.woff2', './fonts/kanit-400-thai.woff2', './fonts/kanit-400-latin.woff2', './fonts/kanit-500-thai.woff2', './fonts/kanit-500-latin.woff2', './fonts/kanit-600-thai.woff2', './fonts/kanit-600-latin.woff2', './fonts/kanit-700-thai.woff2', './fonts/kanit-700-latin.woff2', './fonts/kanit-800-thai.woff2', './fonts/kanit-800-latin.woff2', './motion.css?v=1', './icons/ti.css?v=2ef93532', './icons/ti.woff2?v=3ea894cc'];
-CORE.unshift('./mileage-sync.js?v=1','./chat-jobs.js?v=2','./primary-material.css?v=1','./shop-search.js?v=5','./shop-search.css?v=4','./shop-images.js?v=1','./display-prefs.js?v=3','./partner-state.js?v=1','./partner-entry.js?v=1','./partner-entry.css?v=1');
-CORE.unshift('./i18n/ui-en.js?v=4','./ui-language.js?v=9','./car-info-review.js?v=1');
+const CORE = ['./mileage-session.js?v=1', './mileage-review.js?v=1', './garage-rules.js?v=4', './garage-data.js?v=2', './calm-ui.css?v=1', './chat-garage.js?v=1', './chat-render.js?v=3', './account-paint.js?v=2026-10-16-r2', './account.css?v=2026-10-16-login5', './account.js?v=2026-10-21-r2', './account-actions.js?v=3', './account-scope.js?v=2', './settings.js?v=7', './settings.css?v=4', './sheet-drag.js?v=1', './launch-gate.js?v=1', './auth-gate.js?v=2', './login-hero.webp', './auth-bootstrap.js', './cendon-tour.js', './nav.js', './input-guard.js?v=5', './media-store.js?v=2', './repair-proof.js?v=1', './car-sync.js', './carspec.js?v=2026-10-18-r1', './car-detail-tabs.css?v=2026-10-12-r1', './car-detail-tabs.js?v=2026-10-12-r2', './call-ui.css?v=2026-10-19-inst1', './call-composer.js?v=2026-10-17-r4', './call-agent.js?v=2026-10-24-security2', './call-surface.js?v=2026-10-21-r1', './garage-care.js?v=1', './call-session.js?v=2026-10-23-language1', './lux.css', './category-pages.js', './home-layout.css?v=2', './stability.css?v=2026-10-27-zoom', './stability.js?v=2026-10-26-tab1', './mobile-ui.js', './fluid.js', './crop.js', './cendon-admin.js', './call-sounds.js?v=1', './call-tools.js?v=2026-10-23-language1', './sound-lens.js?v=1', './engine-scan.js?v=2026-10-17-r4', './vehicle-audio.js?v=5', './vehicle-audio.css?v=3', './valet-core.js?v=8', './call-shell.js?v=1', './valet.js?v=9', './valet.css?v=3', './bell.js?v=19', './tab-shell.js?v=4', './drop.js?v=4', './car-menu.js?v=1', './garage-extras.js?v=7', './garage-extras.css?v=7', './cendon-search.js', './cendon-line.js?v=5', './cloud-swap.js?v=3', './manifest.webmanifest', './icon192.png', './img/cars/sedan.webp', './img/cars/coupe.webp', './img/cars/mpv.webp', './img/cars/pickup.webp', './img/cars/van.webp', './fonts/kanit.css?v=1', './fonts/kanit-300-thai.woff2', './fonts/kanit-300-latin.woff2', './fonts/kanit-400-thai.woff2', './fonts/kanit-400-latin.woff2', './fonts/kanit-500-thai.woff2', './fonts/kanit-500-latin.woff2', './fonts/kanit-600-thai.woff2', './fonts/kanit-600-latin.woff2', './fonts/kanit-700-thai.woff2', './fonts/kanit-700-latin.woff2', './fonts/kanit-800-thai.woff2', './fonts/kanit-800-latin.woff2', './motion.css?v=1', './icons/ti.css?v=2ef93532', './icons/ti.woff2?v=3ea894cc'];
+CORE.unshift('./mileage-sync.js?v=1','./chat-jobs.js?v=4','./primary-material.css?v=1','./shop-search.js?v=5','./shop-search.css?v=4','./shop-images.js?v=1','./display-prefs.js?v=4','./partner-state.js?v=1','./partner-entry.js?v=1','./partner-entry.css?v=1');
+CORE.unshift('./i18n/ui-en.js?v=4','./ui-language.js?v=13','./car-info-review.js?v=1');
 const BUILD_HEADER = 'X-Cendon-Shell';
 /* /about /help /privacy /terms = เว็บไซต์ (สร้างจาก site/) เก็บไว้ให้เปิดได้ตอนออฟไลน์ด้วย */
 const SHELL_ROUTES = new Set(['/', '/index', '/garage', '/news', '/spares', '/profile', '/chat', '/plan', '/handbook', '/tech', '/techs', '/terms', '/login', '/about', '/help', '/privacy', '/launch']);
@@ -137,14 +137,21 @@ self.addEventListener('push', (e) => {
   try { if (e.data) d = Object.assign(d, e.data.json()); } catch (err) {
     try { d.body = e.data.text(); } catch (e2) {}
   }
-  e.waitUntil(self.registration.showNotification(d.title, {
-    body: d.body,
-    icon: './icon192.png',
-    badge: './icon192.png',
-    tag: d.tag || 'cendon',
-    renotify: true,
-    data: { url: d.url || '/' },
-  }));
+  e.waitUntil((async () => {
+    /* "AI ตอบแล้ว" — ผู้ใช้เปิดหน้าแชต AI ดูอยู่ (แท็บที่มองเห็นอยู่) เห็นคำตอบเองแล้ว ไม่ต้องเด้งบนเครื่องซ้ำ */
+    if (/^cendon-ai-/.test(d.tag || '')) {
+      const all = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      if (all.some(c => c.visibilityState === 'visible' && /^\/chat(?:\.html)?\/?$/.test(new URL(c.url).pathname))) return;
+    }
+    await self.registration.showNotification(d.title, {
+      body: d.body,
+      icon: './icon192.png',
+      badge: './icon192.png',
+      tag: d.tag || 'cendon',
+      renotify: true,
+      data: { url: d.url || '/' },
+    });
+  })());
 });
 
 self.addEventListener('notificationclick', (e) => {

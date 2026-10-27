@@ -2,14 +2,15 @@
 <html lang="th">
 <head>
 <script>/* ธีมตั้งแต่เฟรมแรก (ก่อน CSS วาด) — เดิมหน้าเปิดด้วยธีมตั้งต้นแวบหนึ่งแล้วค่อยสลับ (แชตขึ้นจอดำ) ดูเหมือนกระพริบ/กระตุก */(function(){try{var O={warm:"light",pearl:"light",emerald:"light",plant:"light",moss:"light",carbon:"dark",night:"dark",midnight:"dark",cyber:"dark",aurora:"dark",ocean:"dark",sunset:"dark",magma:"dark"},v=null;try{v=JSON.parse(localStorage.getItem("spire_theme"))}catch(e){}if(typeof v!=="string")try{v=JSON.parse(localStorage.getItem("spire_chatTheme"))}catch(e){}v=v==="light"||v==="dark"?v:(O[v]||"light");var e=document.documentElement;e.setAttribute("data-theme",v);e.setAttribute("data-ctheme",v)}catch(x){}})();</script>
+<script src="/tab-shell.js?v=4"></script>
 <script src="/launch-gate.js?v=1"></script>
 <script src="/auth-gate.js?v=2"></script>
 <script src="/account-scope.js?v=2"></script>
 <link rel="stylesheet" href="/partner-entry.css?v=1">
 <script src="/partner-state.js?v=1"></script>
-<script src="/display-prefs.js?v=3" defer></script>
+<script src="/display-prefs.js?v=4" defer></script>
 <script src="/i18n/ui-en.js?v=4" defer></script>
-<script src="/ui-language.js?v=9" defer></script>
+<script src="/ui-language.js?v=13" defer></script>
 <script src="/partner-entry.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
@@ -23,7 +24,8 @@
 <meta charset="UTF-8"/>
 <!-- ที่อยู่แบบลึก (/profile/…) — ไฟล์ประกอบทุกตัวอ้างจากรากเว็บเสมอ -->
 <base href="/">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"/>
+<script>/* แอปไม่ซูม: viewport กันซูมแล้ว แต่ Safari บน iPhone ไม่สนค่านี้ — กันการถ่างสองนิ้วตรงนี้ (แผนที่ยังซูมได้ เพราะใช้ touch event ของมันเอง) */["gesturestart","gesturechange"].forEach(function(t){document.addEventListener(t,function(e){e.preventDefault()},{passive:false})});</script>
 <script src="nav.js"></script>
 <title>Cendon — ผู้ช่วย AI ดูแลรถ</title>
 <meta name="description" content="บัญชีและการตั้งค่า Cendon">
@@ -2755,7 +2757,7 @@ html[data-level="basic"] .hfree{
   .hf-w{font-size:10.5px}
 }
 </style>
-<link rel="stylesheet" href="/settings.css?v=3">
+<link rel="stylesheet" href="/settings.css?v=4">
 <style id="skillscss">
 /* ══════════════════════════════════════════════════════════════════
    SKILLS — คำสั่งสำเร็จรูปที่ผู้ใช้เขียนเอง แล้วเรียกด้วย /ชื่อ
@@ -3884,17 +3886,17 @@ a.mtab{text-decoration:none}
 </style>
 <!-- ห้ามวาดเฟรมแรกก่อนแถบล่างพร้อม — เดิมหน้าใหม่ขึ้นมาก่อนแล้วแถบตามมาทีหลัง (Chrome 124+, ที่อื่นข้าม) -->
 <link rel="expect" href="/profile#mnav0" blocking="render">
-<link rel="stylesheet" href="stability.css?v=2026-10-23-r1">
+<link rel="stylesheet" href="stability.css?v=2026-10-27-zoom">
 <link rel="stylesheet" href="/primary-material.css?v=1">
 <link rel="stylesheet" href="car-detail-tabs.css?v=2026-10-12-r1">
 <script src="car-detail-tabs.js?v=2026-10-12-r2" defer></script>
 <script src="car-sync.js"></script>
 <script src="mileage-sync.js?v=1" defer></script>
-<script src="stability.js?v=2026-10-23-r1" defer></script>
+<script src="stability.js?v=2026-10-26-tab1" defer></script>
 <!-- หน้าตาชุดเดียวกับหน้าหลัก (สี การ์ด ปุ่ม พื้นหลัง) — โหลดท้ายสุดให้ชนะสไตล์เดิม -->
 <link rel="stylesheet" href="lux.css">
 <!-- กระดิ่งแจ้งเตือน: ปุ่มในแถบเมนู (คอม) / มุมขวาบน (มือถือ) -->
-<script src="bell.js?v=17" defer></script>
+<script src="bell.js?v=19" defer></script>
 <script src="drop.js?v=4" defer></script>
 <script src="carspec.js?v=2026-10-18-r1" defer></script>
 <link rel="stylesheet" href="calm-ui.css?v=1">
@@ -4870,7 +4872,8 @@ async function syncCars(){
     const merged=arr.map(c=>{
       const name=`${c.make||""} ${c.model||""}`.trim();
       const prev=local.find(x=>x.id===c.id)||{};
-      return {id:c.id,make:c.make||"",model:c.model||"",name,year:(c.year!=null?String(c.year):""),mileage:(c.mileage!=null?String(c.mileage):""),type:prev.type||getBodyStyle(name),history:prev.history||[]};
+      /* เก็บช่องอื่นของรถในเครื่องไว้ (สี ข้อมูลรถ ฯลฯ) — เดิมสร้างใหม่ทั้งก้อน เปิดหน้านี้ทีไรสีรถหายจนกว่าหน้าการาจจะดึงคืน */
+      return Object.assign({},prev,{id:c.id,make:c.make||"",model:c.model||"",name,year:(c.year!=null?String(c.year):""),mileage:(c.mileage!=null?String(c.mileage):""),type:prev.type||getBodyStyle(name),color:c.color||prev.color||"",history:prev.history||[]});
     });
     saveGarage(merged);
     const _act=id=>{const e=$(id);return !!e&&e.classList.contains("active")};
@@ -5397,7 +5400,7 @@ window.spireApplySetup=()=>{ const k=level();
   try{ mountProfilePicker() }catch(e){} };
 })();
 </script>
-<script src="/settings.js?v=6" defer></script>
+<script src="/settings.js?v=7" defer></script>
 <script src="/sheet-drag.js?v=1" defer></script>
 <script id="skillsjs">
 /* ══════════════════════════════════════════════════════════════════
@@ -11030,7 +11033,7 @@ function exportRecord(){
     <td>${esc(x.type==="fuel"?"เติมน้ำมัน":(PARTS[x.k]||x.k||"งานซ่อม"))}</td>
     <td class="r">${x.km?num(x.km):"—"}</td><td class="r">${x.amount?"฿"+num(x.amount):"—"}</td></tr>`;
   const html=`<!doctype html><html lang="th"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+
 <title>สมุดประวัติรถ — ${esc(c.name)}</title>
 <style>
 *{box-sizing:border-box}
@@ -13102,7 +13105,7 @@ if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",start); else s
 })();
 </script>
 <script src="mobile-ui.js" defer></script>
-<script src="nav-pages.js?v=4" defer></script>
+<script src="nav-pages.js?v=5" defer></script>
 <script>
 window.__SPIRE_PAGE__="profile";
 window.__SPIRE_FILES__={"home": "/", "garage": "/garage", "magazine": "/news", "shop": "/spares", "profile": "/profile"};

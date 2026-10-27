@@ -9,24 +9,18 @@
   --cx-card:#FFFFFF;--cx-raise:#FAFAF9;--cx-hair:#E7E5E4;--cx-hair2:#D6D3D1}
 html:root[data-theme="dark"]{--cx-glass:rgba(18,19,24,.66);--cx-glass-line:rgba(255,255,255,.09);--cx-glass-sh:0 12px 30px -16px rgba(0,0,0,.8);
   --cx-card:#101114;--cx-raise:#16171B;--cx-hair:#2A2B30;--cx-hair2:#3A3B41}
-@property --cx-ang{syntax:"<angle>";initial-value:0deg;inherits:false}
 
-/* ── ปุ่ม + (มือถือ หน้าแรกเท่านั้น) — ศูนย์กลางตรงกับกระดิ่ง (ขอบบน 41px) แต่ชิดซ้าย ── */
-.cx-plus{position:absolute;top:calc(19px + env(safe-area-inset-top));left:12px;z-index:31;width:44px;height:44px;border-radius:50%;
-  border:1px solid var(--line);background:var(--surface,#fff);color:var(--ink);display:grid;place-items:center;padding:0;cursor:pointer;
-  box-shadow:0 6px 16px -8px rgba(12,10,9,.4),inset 0 0 0 4px var(--co-soft,rgba(233,104,42,.1));-webkit-tap-highlight-color:transparent;
-  transition:transform .28s cubic-bezier(.2,.9,.25,1),background .25s,box-shadow .25s}
-.cx-plus svg{width:22px;height:22px;stroke:var(--co,#E9682A);transition:transform .38s cubic-bezier(.2,.9,.25,1),stroke .25s}
-.cx-plus:active{transform:scale(.92)}
+/* ── ปุ่ม + (มือถือ หน้าแรกเท่านั้น) — หน้าตาเดียวกับกระดิ่ง (bell.js .cb-m): โปร่ง ไม่มีกรอบ สีเดียวกัน
+   ขนาด 36px ขอบบน 23px · กระดิ่งห่างขอบขวา 16px ปุ่มนี้ห่างขอบซ้าย 16px (ศูนย์กลางแนวเดียวกันพอดี) ── */
+.cx-plus{position:absolute;top:calc(23px + env(safe-area-inset-top));left:16px;z-index:31;width:36px;height:36px;border-radius:50%;
+  border:0;background:none;color:var(--ink,#09090B);font-size:23px;display:grid;place-items:center;padding:0;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;transition:background .2s}
+.cx-plus .ti{transition:transform .38s cubic-bezier(.2,.9,.25,1)}
+.cx-plus:hover,.cx-plus[aria-expanded="true"]{background:var(--surface-2,rgba(127,127,127,.12))}
 .cx-plus[hidden]{display:none!important}
-.cx-plus[aria-expanded="true"]{background:var(--cx-ember);border-color:transparent;box-shadow:0 12px 26px -10px rgba(242,110,40,.85),inset 0 1px 0 rgba(255,255,255,.35)}
-.cx-plus[aria-expanded="true"] svg{transform:rotate(135deg);stroke:#fff}
-/* แสงวิ่งรอบปุ่มหนึ่งรอบตอนเปิดเมนู */
-.cx-plus::after{content:"";position:absolute;inset:-4px;border-radius:50%;padding:2px;pointer-events:none;opacity:0;
-  background:conic-gradient(from var(--cx-ang),transparent 0 55%,var(--cx-c) 70%,var(--cx-a) 80%,var(--cx-b) 90%,transparent);
-  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
-.cx-plus.cx-spark::after{animation:cxOrbit 1s cubic-bezier(.45,0,.2,1) both}
-@keyframes cxOrbit{0%{opacity:0;--cx-ang:0deg}15%{opacity:1}85%{opacity:1}100%{opacity:0;--cx-ang:360deg}}
+.cx-plus[aria-expanded="true"] .ti{transform:rotate(45deg)}
+/* เปิดเมนูแล้ว ✕ อยู่เหนือฉากมัว ชัดเท่ากระดิ่งตอนปกติ */
+.cx-plus[aria-expanded="true"]{z-index:902}
 @media(min-width:761px){.cx-plus{display:none!important}}
 body[data-mode="tech"] .cx-plus,body.onmap .cx-plus{display:none!important}
 
@@ -38,7 +32,7 @@ html:root[data-theme="dark"] .cx-scrim{background:rgba(0,0,0,.58)}
   border-radius:26px;background:var(--cx-card);border:1px solid var(--cx-hair);box-shadow:0 30px 70px -26px rgba(0,0,0,.6);
   transform-origin:22px -10px;transform:translateY(-8px) scale(.94);opacity:0;transition:transform .34s cubic-bezier(.2,.9,.25,1),opacity .2s;font-family:var(--kd,Kanit),Kanit,system-ui,sans-serif;color:var(--ink)}
 .cx-menu.on{transform:none;opacity:1}
-.cx-menu::before{content:"";position:absolute;left:24px;top:-7px;width:14px;height:14px;background:var(--cx-card);border-left:1px solid var(--cx-hair);border-top:1px solid var(--cx-hair);transform:rotate(45deg)}
+.cx-menu::before{content:"";position:absolute;left:15px;top:-7px;width:14px;height:14px;background:var(--cx-card);border-left:1px solid var(--cx-hair);border-top:1px solid var(--cx-hair);transform:rotate(45deg)}
 /* ไฟคอนโซลบาง ๆ ที่ขอบบนของแผง */
 .cx-menu::after{content:"";position:absolute;left:18%;right:18%;top:-1px;height:1px;border-radius:2px;pointer-events:none;
   background:linear-gradient(90deg,transparent,var(--cx-c) 25%,var(--cx-a) 50%,var(--cx-b) 75%,transparent);
@@ -207,7 +201,7 @@ html:root:not([data-theme="dark"]) .cx-sweep i{opacity:.45}
   .bs.cxs.on .pn{transform:translateX(-50%)}
 }
 @media(prefers-reduced-motion:reduce){
-  .cx-plus::after,.cx-me::before,.cx-chip i,.cx-urg .cx-live,.cx-sweep i,.cx-go::after,.cx .fsec.on,.cx-steps li.ln.done::after,.cx-mic.rec{animation:none!important}
+  .cx-me::before,.cx-chip i,.cx-urg .cx-live,.cx-sweep i,.cx-go::after,.cx .fsec.on,.cx-steps li.ln.done::after,.cx-mic.rec{animation:none!important}
   .cx-hero,.cx-menu,.cx-menu>*{transition:none!important}
 }
 /* แผนที่จริงพร้อมแล้ว: ซ่อนภาพแทน · หมุดร้านที่จะส่งถึงใช้สีของโหมด (ส้ม / ด่วน = แดง) */

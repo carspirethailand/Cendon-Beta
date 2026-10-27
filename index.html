@@ -2861,7 +2861,7 @@ a.mtab{text-decoration:none}
 <link rel="stylesheet" href="stability.css?v=2026-10-27-zoom">
 <link rel="stylesheet" href="/primary-material.css?v=1">
 <link rel="stylesheet" href="home-layout.css?v=2">
-<link rel="stylesheet" href="call-x.css?v=1">
+<link rel="stylesheet" href="call-x.css?v=2">
 <script src="category-pages.js" defer></script>
 <script src="/sheet-drag.js?v=1" defer></script>
 <script src="car-sync.js"></script>
@@ -4507,7 +4507,7 @@ function callPlus(){
   if(!b){
     b=document.createElement("button");b.type="button";b.id="cxPlus";b.className="cx-plus";
     b.setAttribute("aria-label",T("เรียกช่าง","Call a mechanic"));b.setAttribute("aria-haspopup","menu");b.setAttribute("aria-expanded","false");
-    b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
+    b.innerHTML='<i class="ti ti-plus" aria-hidden="true"></i>';
     b.onclick=()=>PLUS?plusClose():plusOpen();
     document.body.appendChild(b);
   }
@@ -4527,7 +4527,7 @@ function pastShops(){
 }
 function plusOpen(){
   const b=$("cxPlus");if(!b||PLUS)return;
-  b.setAttribute("aria-expanded","true");b.classList.remove("cx-spark");void b.offsetWidth;b.classList.add("cx-spark");
+  b.setAttribute("aria-expanded","true");
   const shops=pastShops();
   const sc=document.createElement("div");sc.className="cx-scrim";
   const m=document.createElement("div");m.className="cx-menu";m.setAttribute("role","menu");m.setAttribute("aria-label",T("เรียกช่าง","Call a mechanic"));
@@ -4560,7 +4560,7 @@ function plusOpen(){
 }
 function plusClose(fromNav){
   const p=PLUS;if(!p)return;PLUS=null;
-  const b=$("cxPlus");if(b){b.setAttribute("aria-expanded","false");b.classList.remove("cx-spark")}
+  const b=$("cxPlus");if(b)b.setAttribute("aria-expanded","false")
   removeEventListener("keydown",p.onKey,true);
   p.sc.classList.remove("on");p.m.classList.remove("on");setTimeout(()=>{p.sc.remove();p.m.remove()},320);
   if(fromNav!==true&&p.L)Nav.drop(p.L);

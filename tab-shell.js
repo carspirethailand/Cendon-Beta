@@ -36,21 +36,26 @@
   const api=u=>{try{const x=new URL(u,location.href);return /\.workers\.dev$/.test(x.hostname)||x.origin===location.origin&&/^\/api(\/|$)/.test(x.pathname)}catch(e){return false}};
 
   /* ── "ซ่อนอยู่" ของแต่ละหน้า (หน้าหลักที่ถูกกรอบทับ / กรอบที่ถูกซ่อน) ── */
-  let hidden=false,hiddenSig='';
+  /* กรอบที่ตัวคุมเตรียมไว้ล่วงหน้า (data-cendon-pre) เริ่มแบบซ่อนอยู่ — ไม่ดึงข้อมูลจากเซิร์ฟเวอร์จนกว่าผู้ใช้จะเปิดดู */
+  let hidden=!!(childKey&&fe.dataset.cendonPre==='1'),hiddenSig='';
   const P=Document.prototype,dh=Object.getOwnPropertyDescriptor(P,'hidden'),dv=Object.getOwnPropertyDescriptor(P,'visibilityState');
   try{
     Object.defineProperty(D,'hidden',{configurable:true,get(){return hidden||dh.get.call(D)}});
     Object.defineProperty(D,'visibilityState',{configurable:true,get(){return hidden?'hidden':dv.get.call(D)}});
   }catch(e){}
+  /* กรอบที่เตรียมไว้และยังไม่เคยถูกเปิดดู: พักทุกคำขอไป API รวม POST (เช่น /api/login) — ให้เหมือนการเปิดหน้าปกติ
+     ที่ส่งตอนผู้ใช้เปิดหน้านั้นจริง · เปิดดูแล้ว: พักเฉพาะ GET ตอนซ่อน (การเขียนไม่พักเด็ดขาด) */
+  let unseen=hidden;
   const nativeFetch=W.fetch.bind(W),held=[];
   W.fetch=function(input,init){
     const url=typeof input==='string'?input:input&&input.url,method=String(init&&init.method||input&&input.method||'GET').toUpperCase();
-    if(!hidden||method!=='GET'||!api(url))return nativeFetch(input,init);
-    return new Promise((resolve,reject)=>held.push({input,init,url,resolve,reject}));
+    if(!hidden||method!=='GET'&&!unseen||!api(url))return nativeFetch(input,init);
+    return new Promise((resolve,reject)=>held.push({input,init,url,method,resolve,reject}));
   };
   function release(){
     const shared=new Map(),list=held.splice(0);
     for(const q of list){
+      if(q.method!=='GET'){nativeFetch(q.input,q.init).then(q.resolve,q.reject);continue}
       const key=q.url+'\n'+JSON.stringify(q.init&&q.init.headers||null);
       let p=shared.get(key);if(!p){p=nativeFetch(q.input,q.init);shared.set(key,p)}
       p.then(r=>q.resolve(r.clone()),q.reject);
@@ -61,7 +66,7 @@
     if(h===hidden)return false;hidden=h;
     if(h){hiddenSig=sig();try{D.activeElement&&D.activeElement.blur&&D.activeElement.blur()}catch(e){}}
     try{D.dispatchEvent(new Event('visibilitychange'))}catch(e){}
-    if(!h){if(hiddenSig&&hiddenSig!==sig())return true;release()}
+    if(!h){unseen=false;if(hiddenSig&&hiddenSig!==sig())return true;release()}
     return false;
   }
 
@@ -75,7 +80,8 @@
     /* หน้าในแอป (การาจ นิตยสาร บัญชี) ซ่อนเนื้อหาไว้จนรู้ว่าเป็นบัญชีไหน (data-gate / data-level="pending" · account-paint.js)
        และวาดรายการตอนอ่านหน้าจบ (DOMContentLoaded) — ต้องรอทั้งสองอย่าง ไม่งั้นสลับมาเจอจอว่าง
        (หน้าแรกไม่ต้องรอ: เนื้อหาอยู่ใน HTML ก่อนสคริปต์ก้อนใหญ่ เห็นได้ตั้งแต่อ่านถึง) */
-    let sent=false;const ready=()=>{if(sent)return;sent=true;try{host&&host.ready(childKey)}catch(e){}};
+    /* กรอบที่เตรียมไว้: จดข้อมูลที่ใช้วาดตอนวาดเสร็จ (ไม่ใช่ตอนเริ่ม — หน้าเขียนค่าของมันเองระหว่างเปิด ไม่งั้นเปิดดูแล้วโดนโหลดใหม่ทุกครั้ง) */
+    let sent=false;const ready=()=>{if(sent)return;sent=true;if(hidden)hiddenSig=sig();try{host&&host.ready(childKey)}catch(e){}};
     const R=D.documentElement,shown=()=>{const b=D.body;return !!(b&&b.childElementCount>3&&D.querySelector('.mnav,#mnav,main,.wrap')&&R.dataset.gate!=='1'&&R.dataset.level!=='pending'&&(childKey==='home'||D.readyState!=='loading'))};
     (function look(){if(sent)return;if(shown())requestAnimationFrame(()=>requestAnimationFrame(ready));else requestAnimationFrame(look)})();
     const sync=()=>{try{host&&host.sync(childKey,location.href,D.title)}catch(e){}};
@@ -88,6 +94,9 @@
       W.navigation.addEventListener('navigatesuccess',sync);
     }
     W.addEventListener('popstate',sync);
+    /* แตะแถบล่างในกรอบ → บอกตัวคุมให้เริ่มโหลดแท็บนั้นตั้งแต่นิ้วแตะ · การแตะอื่น = ผู้ใช้กำลังใช้งาน (ตัวคุมเลื่อนการเตรียมแท็บ) */
+    D.addEventListener('pointerdown',e=>{try{const b=e.target.closest&&e.target.closest('[data-mnav]');host&&host.touch(b&&b.dataset.mnav,true)}catch(x){}},{capture:true,passive:true});
+    for(const t of ['keydown','wheel','scroll'])D.addEventListener(t,()=>{try{host&&host.touch()}catch(x){}},{capture:true,passive:true});
     /* สายโทรที่เริ่มในแท็บซ้อน: call-shell.js ของหน้านี้ไม่คุม (ไม่ใช่หน้าบนสุด) — แจ้งตัวคุมแท็บแทน
        (ห่อหลัง call-shell.js สร้างตัวเองแล้วเท่านั้น ไม่งั้นมันจะไม่ทำงาน) */
     let inCall=false;
@@ -120,12 +129,13 @@
     while(alive.length>=MAX){const i=alive.findIndex(x=>x!==cur&&!calls[x]);if(i<0)break;const x=alive.splice(i,1)[0];frames[x].el.remove();delete frames[x]}
     order=alive;
   }
-  function frameOf(k,url){
+  function frameOf(k,url,pre){
     let f=frames[k];if(f&&f.el.isConnected)return f;
     evict();
     const el=D.createElement('iframe');el.className='cdn-tab load';el.dataset.cendonTab=k;el.title='Cendon';
     el.setAttribute('allow','camera; microphone; geolocation; clipboard-write; fullscreen');
-    f=frames[k]={el,ready:false,wait:null};el.src=url||URLS[k];
+    if(pre){el.dataset.cendonPre='1';order=[k].concat(order.filter(x=>x!==k))}
+    f=frames[k]={el,ready:false,wait:null,pre:!!pre};el.src=url||URLS[k];
     /* อยู่ใต้ <html> นอก <body> — ซ่อนเนื้อหาหน้าหลักทั้งหน้าได้โดยกรอบยังเห็น */
     D.documentElement.appendChild(el);return f;
   }
@@ -134,6 +144,13 @@
      — หน้าปลายทางแสดงเนื้อหาได้ทันทีตอนอ่านหน้า ไม่ต้องรอ Firebase ยืนยันตัวตนอีกรอบ (มือถือ 0.5–2 วิ)
      ใช้หน้าที่ผู้ใช้กำลังดูก่อน แล้วค่อยหน้าหลัก (ต้องเป็นหน้าที่รู้บัญชีแล้วเท่านั้น ไม่งั้นได้ false) */
   function handoff(url){for(const w of [cur===base?W:win(cur),W]){try{if(w&&w.CendonPaint&&w.CendonPaint.prepare(url))return}catch(e){}}}
+  /* กรอบที่ยังอ่านหัวหน้าไม่ถึง account-paint.js (ยังไม่ได้รับบริบทการวาด) — บริบทมีที่เดียวใน sessionStorage
+     เปิดกรอบใหม่ตอนนี้บริบทจะชนกัน (หน้าที่อ่านทีหลังทิ้งของอีกหน้า) → ยกเลิกกรอบที่เตรียมไว้ก่อน (ค่อยเตรียมใหม่ทีหลัง) */
+  const consuming=x=>{try{const w=win(x);return !(w&&w.CendonPaint)}catch(e){return false}};
+  function start(k,url,pre){
+    for(const x in frames)if(x!==k&&frames[x].pre&&!frames[x].ready&&consuming(x)){clearTimeout(frames[x].wait);frames[x].el.remove();delete frames[x]}
+    handoff(url||URLS[k]);return frameOf(k,url,pre);
+  }
   function tabs(k){try{return k===base?W.CendonTabs:win(k).CendonTabs}catch(e){return null}}
   /* แท็บซ้อนที่มีสายโทร: ไม่พัก · ระหว่างดูแท็บอื่นมีปุ่มกลับไปที่สาย */
   const PILL={th:'กลับไปที่สาย',en:'Back to call',zh:'返回通话',ja:'通話に戻る',ko:'통화로 돌아가기',id:'Kembali ke panggilan',vi:'Quay lại cuộc gọi',ms:'Kembali ke panggilan',de:'Zurück zum Anruf',fr:"Retour à l'appel",es:'Volver a la llamada',pt:'Voltar à chamada'};
@@ -161,9 +178,10 @@
       return;
     }
     const fresh=!frames[k]||!frames[k].el.isConnected;
-    if(fresh)handoff(box?'/messages':URLS[k]);
-    const f=frameOf(k,box?'/messages':null),go=()=>{
+    const f=fresh?start(k,box?'/messages':null):frames[k],go=()=>{
       if(n!==showing)return;
+      /* กรอบที่เตรียมไว้ถูกเปิดดูแล้ว — ถ้าต้องโหลดใหม่ (ข้อมูลเปลี่ยน) ต้องไม่เริ่มแบบซ่อนอีก */
+      f.pre=false;delete f.el.dataset.cendonPre;
       f.el.classList.add('on');f.el.classList.remove('load');bar(false);
       for(const x in frames)if(x!==k)hideFrame(x);
       if(cur===base){if(!hidden)baseTitle=D.title;setHidden(true);D.documentElement.classList.add('cdn-covered')}
@@ -179,6 +197,38 @@
       f.el.classList.add('load');bar(true);clearTimeout(f.wait);f.wait=setTimeout(()=>{f.ready=true;go()},4000);f.go=go;
     }
   }
+  /* ── เตรียมแท็บไว้ก่อนผู้ใช้กด (หลักเดียวกับ barba.js prefetch) ──
+     เปิดแท็บครั้งแรกต้องอ่านหน้า ~1 MB (มือถือ 1–2 วิ) — ทำไว้ล่วงหน้าตอนเครื่องว่าง พอกดก็แค่สลับให้เห็น
+     • ทีละแท็บต่อกัน (เว้น 0.3 วิ) ให้ครบเร็วที่สุดช่วงแรกที่ผู้ใช้ดูหน้าหลัก — ครบแล้วไม่มีงานเบื้องหลังมาแย่งเครื่องอีก
+     • เฉพาะตอนผู้ใช้ไม่ได้แตะ/เลื่อนจอ 1.5 วิ และไม่มีแท็บไหนกำลังโหลด
+     • กรอบที่เตรียมเริ่มแบบซ่อน: ไม่ดึงข้อมูลจากเซิร์ฟเวอร์จนกว่าจะเปิดดู
+     • ไม่ทำบนเครื่องแรมน้อย (เก็บได้แท็บเดียว) / โหมดประหยัดเน็ต / เน็ต 2G / ระหว่างโทร
+     • นิ้วแตะปุ่มแท็บที่ยังไม่ได้เตรียม → เริ่มโหลดทันที ไม่ต้องรอนิ้วปล่อย */
+  const NAV={home:'home',garage:'garage',chat:'home',magazine:'news',account:'profile'},PRE_ORDER=['garage','home','news','profile'];
+  const nc=navigator.connection||{},PRE=MAX>=3&&!nc.saveData&&!/2g$/.test(nc.effectiveType||'');
+  let lastInput=0,idleT=0,loaded=false;
+  const loading=()=>Object.keys(frames).some(x=>frames[x].el.isConnected&&!frames[x].ready);
+  function prime(k){
+    if(!k||k===base||k===cur||calling()||frames[k]&&frames[k].el.isConnected)return;
+    const f=start(k,null,true);f.wait=setTimeout(()=>W.CendonTabs.ready(k),8000);
+  }
+  function idle(ms){
+    clearTimeout(idleT);if(!PRE||!loaded)return;
+    idleT=setTimeout(()=>(W.requestIdleCallback||(f=>setTimeout(f,1)))(()=>{
+      if(calling()||dh.get.call(D)||Date.now()-lastInput<1500||loading())return idle(800);
+      const k=PRE_ORDER.find(x=>x!==base&&!(frames[x]&&frames[x].el.isConnected));if(k)prime(k);
+    },{timeout:2000}),ms||1200);
+  }
+  /* นิ้วแตะจอ: แท็บที่กำลังเตรียมอยู่ (ไม่ใช่แท็บที่จะกด) ยกเลิกทันที — กรอบหน้าเดียวกันใช้เธรดเดียวกัน
+     ปล่อยให้อ่านหน้าต่อ จอจะค้างภาพเดิมจนอ่านเสร็จ (วัดได้ 0.6–0.8 วิ) · เดี๋ยวเครื่องว่างค่อยเตรียมใหม่ */
+  function touch(nav,tap){
+    lastInput=Date.now();const want=nav&&NAV[nav];
+    if(tap)for(const x in frames)if(x!==want&&frames[x].pre&&!frames[x].ready&&!frames[x].go){clearTimeout(frames[x].wait);frames[x].el.remove();delete frames[x]}
+    if(want&&want!==cur)prime(want);if(PRE)idle();
+  }
+  D.addEventListener('pointerdown',e=>{const b=e.target.closest&&e.target.closest('[data-mnav]');touch(b&&b.dataset.mnav,true)},{capture:true,passive:true});
+  for(const t of ['keydown','wheel','scroll'])D.addEventListener(t,()=>touch(),{capture:true,passive:true});
+  const onLoad=()=>{loaded=true;idle(1500)};if(D.readyState==='complete')onLoad();else W.addEventListener('load',onLoad,{once:true});
   function go(u){
     const k=tabOf(u);if(!k||calling())return false;
     const box=inboxUrl(u);
@@ -186,8 +236,21 @@
     /* แชตของหน้าหลัก: เพิ่มรายการ "หน้าหลัก" ก่อน แล้วกล่องข้อความเพิ่มรายการของมันเอง (nav.js)
        — ปิดกล่องข้อความ (ย้อนหนึ่งขั้น) จะกลับมาที่หน้าหลัก ไม่ใช่แท็บที่อยู่ก่อนหน้า */
     const self=box&&k===base;
-    try{history.pushState(box&&!self?{cendonTab:k,inbox:1}:{cendonTab:k},'',box&&!self?'/messages':URLS[k])}catch(e){}
-    reveal(k,{inbox:box});return true;
+    leaveInbox(()=>{
+      try{history.pushState(box&&!self?{cendonTab:k,inbox:1}:{cendonTab:k},'',box&&!self?'/messages':URLS[k])}catch(e){}
+      reveal(k,{inbox:box});
+    });
+    return true;
+  }
+  /* ออกจากแชต (กล่องข้อความของหน้าแรก) ไปแท็บอื่น: ปิดกล่องข้อความก่อน เหมือนการเปิดหน้าใหม่ตามปกติ
+     — ไม่งั้นกดหน้าแรกทีหลังจะเจอกล่องแชตค้างแทนหน้าแรก
+     ปิดผ่าน nav.js = ถอยประวัติหนึ่งขั้น (ไม่ทันที) ต้องรอถอยเสร็จก่อนเพิ่มรายการของแท็บใหม่ ไม่งั้นลำดับย้อนกลับเพี้ยน */
+  function leaveInbox(then){
+    let w=null,bs=null;try{w=cur===base?W:win(cur);bs=w&&fileOf(w.location.pathname)==='home'&&w.document.getElementById('bs')}catch(e){}
+    if(!bs||!bs.classList.contains('on')||!bs.classList.contains('inbox')||typeof w.closeSheet!=='function')return then();
+    let done=false;const fin=()=>{if(done)return;done=true;w.removeEventListener('popstate',fin);setTimeout(then,0)};
+    w.addEventListener('popstate',fin);setTimeout(fin,400);
+    try{w.closeSheet()}catch(e){fin()}
   }
   /* ย้อน/ไปข้างหน้า: รายการของแท็บ → สลับแท็บ (ไม่ให้ nav.js ของหน้าหลักแปลที่อยู่ของแท็บอื่น) */
   W.addEventListener('popstate',e=>{
@@ -207,7 +270,8 @@
     on:true,child:false,setHidden,go,
     top:u=>{location.assign(u)},
     call(k,on){calls[k]=!!on;if(on&&tabs(k))tabs(k).setHidden(false);pill()},
-    ready(k){const f=frames[k];if(!f||f.ready)return;f.ready=true;clearTimeout(f.wait);if(f.go){const g=f.go;f.go=null;g()}},
+    ready(k){const f=frames[k];if(!f||f.ready)return;f.ready=true;clearTimeout(f.wait);if(f.go){const g=f.go;f.go=null;g()}else if(f.pre)f.el.classList.remove('load');idle(300)},
+    touch,
     sync(k,href,title){if(k!==cur)return;try{history.replaceState(history.state&&history.state.cendonTab?history.state:{cendonTab:k},'',href)}catch(e){}if(title)D.title=title},
     current:()=>cur
   });

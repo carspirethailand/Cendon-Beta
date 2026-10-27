@@ -74,20 +74,30 @@ test('tab keep-alive (test mode): off unless the device opted in, every bottom t
   assert.match(j,/const TABS=\{'\/':'home','\/messages':'home','\/garage':'garage','\/news':'news','\/profile':'profile'\}/);
   assert.match(j,/if\(st&&st\.cendonTab===base&&cur===base\)return;/,'closing the home inbox goes back to home, not the previous tab');
   assert.match(j,/if\(box&&clean\(location\.pathname\)!=='\/messages'\)location\.assign\('\/messages'\)/,'reloading home for chat lands on the inbox, not the old tab URL');
-  assert.match(j,/if\(!hidden\|\|method!=='GET'\|\|!api\(url\)\)return nativeFetch\(input,init\)/,'writes are never held');
+  assert.match(j,/if\(!h\)\{unseen=false;/,'once a tab has been shown, writes are never held again (only GETs while hidden)');
   assert.match(j,/const calling=\(\)=>/,'an active AI call keeps call-shell in charge');
   /* แท็บใหม่ต้องไม่โชว์จอว่าง: ส่งบริบทการวาดก่อนสร้างกรอบ และรอจนหน้าแสดงเนื้อหาได้จริง */
-  assert.match(j,/if\(fresh\)handoff\(box\?'\/messages':URLS\[k\]\);\s*const f=frameOf/,'paint handoff is prepared before the frame starts loading');
+  assert.match(j,/handoff\(url\|\|URLS\[k\]\);return frameOf\(k,url,pre\)/,'paint handoff is prepared before the frame starts loading');
+  assert.match(j,/const f=fresh\?start\(k,/,'a tapped tab that is not ready yet goes through the same handoff');
   assert.match(j,/w\.CendonPaint\.prepare\(url\)/,'uses the same handoff as a normal link tap');
   assert.match(j,/R\.dataset\.gate!=='1'&&R\.dataset\.level!=='pending'&&\(childKey==='home'\|\|D\.readyState!=='loading'\)/,'reveal waits until content is no longer hidden and the page has parsed');
   assert.doesNotMatch(j,/addEventListener\('load',ready/,'load alone is not a ready signal (content can still be hidden)');
   assert.match(j,/#cdnTabBar\{/,'first open shows a loading bar right away');
+  /* เตรียมแท็บล่วงหน้า (แบบ barba prefetch): ทีละแท็บตอนว่าง · ไม่ยิง API จนกว่าจะเปิดดู · แตะจอแล้วยกเลิกงานที่แย่งเครื่อง */
+  assert.match(j,/PRE=MAX>=3&&!nc\.saveData&&!\/2g\$\/\.test/,'no prefetch on low-memory, data-saver or 2G');
+  assert.match(j,/Date\.now\(\)-lastInput<1500\|\|loading\(\)\)return idle\(800\)/,'only while the user is idle and nothing else is loading');
+  assert.match(j,/let hidden=!!\(childKey&&fe\.dataset\.cendonPre==='1'\)/,'a prefetched tab starts hidden');
+  assert.match(j,/if\(!hidden\|\|method!=='GET'&&!unseen\|\|!api\(url\)\)return nativeFetch/,'a never-shown prefetched tab sends nothing to the API (not even /api/login)');
+  assert.match(j,/if\(q\.method!=='GET'\)\{nativeFetch\(q\.input,q\.init\)/,'held writes are sent one by one, never merged');
+  assert.match(j,/if\(tap\)for\(const x in frames\)if\(x!==want&&frames\[x\]\.pre&&!frames\[x\]\.ready/,'a tap cancels an unrelated prefetch that would block the screen');
+  assert.match(j,/const consuming=x=>/,'never two frames racing for one paint handoff');
+  assert.match(j,/function leaveInbox\(then\)/,'leaving chat closes the inbox so Home shows Home');
   assert.match(j,/e\.stopImmediatePropagation\(\);if\(st\.cendonTab!==cur\)reveal/,'tab history entries are not fed to nav.js');
   for(const f of ['index','garage','news','profile']){const h=read(f+'.html'),head=h.slice(0,h.indexOf('</head>'));
-    assert.equal(head.indexOf('<script src='),head.indexOf('<script src="/tab-shell.js?v=3">'),f+': first external script')}
+    assert.equal(head.indexOf('<script src='),head.indexOf('<script src="/tab-shell.js?v=4">'),f+': first external script')}
   assert.match(read('mobile-ui.js'),/if\(f&&window\.CendonTabs&&CendonTabs\.go\(f\)\)return;/);
   assert.match(read('mobile-ui.js'),/if\(window\.CendonTabs&&CendonTabs\.go\("\/messages"\)\)return;/);
-  assert.match(read('sw.js'),/'\.\/tab-shell\.js\?v=3'/);
+  assert.match(read('sw.js'),/'\.\/tab-shell\.js\?v=4'/);
 });
 
 test('car sync on magazine/account/parts keeps local car fields (paint color was wiped on every visit)',()=>{

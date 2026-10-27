@@ -66,17 +66,26 @@ test('no prerender of app pages: on real phones it made tabs slower (blank scree
   assert.doesNotMatch(read('sw.js'),/instant-nav/);
 });
 
-test('tab keep-alive (test mode): off unless the device opted in, home ↔ garage only, hidden tab holds GETs',()=>{
+test('tab keep-alive (test mode): off unless the device opted in, every bottom tab, hidden tab holds GETs',()=>{
   const j=read('tab-shell.js');
   assert.match(j,/if\(q==='1'\)localStorage\.setItem\('cendon_tabs','1'\);if\(q==='0'\)localStorage\.removeItem\('cendon_tabs'\)/);
   assert.match(j,/if\(!enabled&&!childKey\)\{W\.CendonTabs=Object\.freeze\(\{on:false,go:\(\)=>false\}\);return\}/,'default: nothing is wrapped or overridden');
   assert.ok(j.indexOf("if(!enabled&&!childKey)")<j.indexOf("W.fetch=function"),'fetch is only wrapped in test mode');
-  assert.match(j,/const TABS=\{'\/':'home','\/garage':'garage'\}/);
+  assert.match(j,/const TABS=\{'\/':'home','\/messages':'home','\/garage':'garage','\/news':'news','\/profile':'profile'\}/);
+  assert.match(j,/if\(st&&st\.cendonTab===base&&cur===base\)return;/,'closing the home inbox goes back to home, not the previous tab');
+  assert.match(j,/if\(box&&clean\(location\.pathname\)!=='\/messages'\)location\.assign\('\/messages'\)/,'reloading home for chat lands on the inbox, not the old tab URL');
   assert.match(j,/if\(!hidden\|\|method!=='GET'\|\|!api\(url\)\)return nativeFetch\(input,init\)/,'writes are never held');
   assert.match(j,/const calling=\(\)=>/,'an active AI call keeps call-shell in charge');
   assert.match(j,/e\.stopImmediatePropagation\(\);if\(st\.cendonTab!==cur\)reveal/,'tab history entries are not fed to nav.js');
-  for(const f of ['index','garage']){const h=read(f+'.html'),head=h.slice(0,h.indexOf('</head>'));
-    assert.equal(head.indexOf('<script src='),head.indexOf('<script src="/tab-shell.js?v=1">'),f+': first external script')}
+  for(const f of ['index','garage','news','profile']){const h=read(f+'.html'),head=h.slice(0,h.indexOf('</head>'));
+    assert.equal(head.indexOf('<script src='),head.indexOf('<script src="/tab-shell.js?v=2">'),f+': first external script')}
   assert.match(read('mobile-ui.js'),/if\(f&&window\.CendonTabs&&CendonTabs\.go\(f\)\)return;/);
-  assert.match(read('sw.js'),/'\.\/tab-shell\.js\?v=1'/);
+  assert.match(read('mobile-ui.js'),/if\(window\.CendonTabs&&CendonTabs\.go\("\/messages"\)\)return;/);
+  assert.match(read('sw.js'),/'\.\/tab-shell\.js\?v=2'/);
+});
+
+test('car sync on magazine/account/parts keeps local car fields (paint color was wiped on every visit)',()=>{
+  for(const f of ['news','profile','spares']){const h=read(f+'.html'),i=h.indexOf('async function syncCars'),body=h.slice(i,h.indexOf('saveGarage(merged)',i));
+    assert.match(body,/return Object\.assign\(\{\},prev,\{id:c\.id,/,f);
+    assert.match(body,/color:c\.color\|\|prev\.color\|\|""/,f)}
 });

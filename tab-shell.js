@@ -1,5 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════════
-   เก็บแท็บที่เคยเปิดไว้ แบบแอปทั่วไป (window.CendonTabs) — ขั้นทดสอบ: หน้าแรก ↔ การาจ
+   เก็บแท็บที่เคยเปิดไว้ แบบแอปทั่วไป (window.CendonTabs) — ทุกแท็บล่าง (ขั้นทดสอบ)
+   หน้าแรก / · การาจ /garage · แชต /messages (= กล่องข้อความของหน้าแรก) · นิตยสาร /news · บัญชี /profile
    ───────────────────────────────────────────────────────────────────
    เดิมกดแท็บ = เปิดหน้าเว็บใหม่ทั้งหน้า (~1 MB) มือถือต้องอ่าน/รันโค้ดใหม่ทุกครั้ง
    ตอนนี้ (เฉพาะเครื่องที่เปิดโหมดทดสอบ ?tabs=1 · ปิด ?tabs=0):
@@ -10,8 +11,10 @@
        กลับมาเห็นจึงส่งคำขอที่พักไว้ (ที่อยู่ซ้ำส่งครั้งเดียว)
      • ข้อมูลที่หน้าใช้วาด (รถ ภาษา ธีม หน่วย ชื่อ) เปลี่ยนระหว่างซ่อน → โหลดแท็บนั้นใหม่ตอนกลับมา
      • ปุ่มย้อน/ไปข้างหน้า ที่อยู่บนแถบเบราว์เซอร์ ตรงกับแท็บที่เห็น · รีเฟรช = เปิดหน้านั้นตามปกติ
-     • มีสายโทรกับ AI อยู่ → ปล่อยให้ call-shell.js จัดการเหมือนเดิม
-   ไปหน้าอื่นที่ไม่ใช่แท็บที่ทดสอบ = เปิดหน้าแบบเดิมทั้งหน้า
+     • มีสายโทรกับ AI ในหน้าหลัก → ปล่อยให้ call-shell.js จัดการเหมือนเดิม
+       สายในแท็บซ้อน → แท็บนั้นไม่ถูกพัก/ไม่ถูกปล่อย และมีปุ่ม "กลับไปที่สาย" ระหว่างดูแท็บอื่น
+     • เก็บแท็บซ้อนไว้สูงสุด 3 แท็บ (แรมน้อยกว่า 4GB: 1 แท็บ) — เกินแล้วปล่อยแท็บที่ไม่ได้ดูนานสุด
+   ไปหน้าอื่นที่ไม่ใช่แท็บล่าง/ลิงก์ลึก = เปิดหน้าแบบเดิมทั้งหน้า
    โหลดแบบไม่ defer ต้นหน้า (ต่อจากสคริปต์ธีม) ก่อนสคริปต์อื่นที่เรียกเซิร์ฟเวอร์
    ═══════════════════════════════════════════════════════════════════ */
 (function(W,D){
@@ -22,12 +25,13 @@
   const fe=(()=>{try{return W.frameElement}catch(e){return null}})(),childKey=fe&&fe.dataset&&fe.dataset.cendonTab||null;
   if(!enabled&&!childKey){W.CendonTabs=Object.freeze({on:false,go:()=>false});return}
 
-  const TABS={'/':'home','/garage':'garage'},URLS={home:'/',garage:'/garage'};
+  const TABS={'/':'home','/messages':'home','/garage':'garage','/news':'news','/profile':'profile'},URLS={home:'/',garage:'/garage',news:'/news',profile:'/profile'};
   const WATCH=['spire_garage','spire_selCar','spire_setup','spire_lang','spire_theme','spire_chatTheme','spire_units','spire_cachedUser','spire___owner','cendon_signed'];
   const clean=p=>{p=String(p||'/').replace(/\.html$/,'').replace(/\/index$/,'/');if(p.length>1)p=p.replace(/\/+$/,'');return p||'/'};
   /* ปุ่มแท็บพาไปที่อยู่แท็บตรง ๆ เท่านั้น (ไม่มี ?query) — ลิงก์ลึก เช่น /garage/<รถ> เปิดหน้าแบบเดิม */
   const tabOf=u=>{try{const x=new URL(u,location.href);return x.origin===location.origin&&!x.search&&!x.hash?TABS[clean(x.pathname)]||null:null}catch(e){return null}};
-  const fileOf=p=>/^\/garage(\/|$)/.test(clean(p))?'garage':'home';
+  const fileOf=p=>{const m=clean(p).match(/^\/(garage|news|profile)(\/|$)/);return m?m[1]:'home'};
+  const inboxUrl=u=>{try{return clean(new URL(u,location.href).pathname)==='/messages'}catch(e){return false}};
   const sig=()=>{let s='';try{for(const k of WATCH)s+=k+'='+(localStorage.getItem(k)||'')+'\n'}catch(e){}return s};
   const api=u=>{try{const x=new URL(u,location.href);return /\.workers\.dev$/.test(x.hostname)||x.origin===location.origin&&/^\/api(\/|$)/.test(x.pathname)}catch(e){return false}};
 
@@ -81,45 +85,79 @@
       W.navigation.addEventListener('navigatesuccess',sync);
     }
     W.addEventListener('popstate',sync);
-    W.CendonTabs=Object.freeze({on:true,child:true,setHidden,go:u=>{try{return !!(host&&host.go(u))}catch(e){return false}}});
+    /* สายโทรที่เริ่มในแท็บซ้อน: call-shell.js ของหน้านี้ไม่คุม (ไม่ใช่หน้าบนสุด) — แจ้งตัวคุมแท็บแทน
+       (ห่อหลัง call-shell.js สร้างตัวเองแล้วเท่านั้น ไม่งั้นมันจะไม่ทำงาน) */
+    let inCall=false;
+    const wrapCall=()=>{const o=W.CendonCallShell;if(!o||o.__tab)return;
+      W.CendonCallShell=Object.freeze({__tab:1,active:()=>inCall||o.active(),expand:()=>o.expand(),open:u=>o.open(u),
+        started(a){o.started(a);inCall=true;try{host&&host.call(childKey,true)}catch(e){}},
+        ended(a){o.ended(a);inCall=false;try{host&&host.call(childKey,false)}catch(e){}}})};
+    D.addEventListener('DOMContentLoaded',wrapCall);W.addEventListener('load',wrapCall);
+    W.CendonTabs=Object.freeze({on:true,child:true,setHidden,inCall:()=>inCall,go:u=>{try{return !!(host&&host.go(u))}catch(e){return false}}});
     return;
   }
 
   /* ════════ หน้าหลัก (ตัวคุมแท็บ) ════════ */
   if(W.parent!==W){W.CendonTabs=Object.freeze({on:false,go:()=>false});return}   // อยู่ในกรอบอื่น (เช่นกรอบสายโทร) — ไม่คุม
-  const base=fileOf(location.pathname),frames={};let cur=base,baseTitle='';
+  const base=fileOf(location.pathname),frames={},calls={};let cur=base,baseTitle='',order=[];
+  const MAX=(navigator.deviceMemory||8)>=4?3:1;
   const calling=()=>{try{return !!(W.CendonCallShell&&W.CendonCallShell.active())}catch(e){return false}};
   const css=D.createElement('style');
   css.textContent='iframe.cdn-tab{position:fixed;inset:0;width:100%;height:100%;border:0;margin:0;padding:0;z-index:2147482000;background:transparent;opacity:0;pointer-events:none;visibility:hidden}'+
     'iframe.cdn-tab.on{opacity:1;pointer-events:auto;visibility:visible}iframe.cdn-tab.load{visibility:visible}'+
-    'html.cdn-covered>body{visibility:hidden}';
+    'html.cdn-covered>body{visibility:hidden}'+
+    '#cdnCallPill{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom));z-index:2147483000;display:flex;align-items:center;gap:8px;padding:10px 16px;border:0;border-radius:999px;background:#E9682A;color:#fff;font:600 14px/1.2 Kanit,system-ui,sans-serif;box-shadow:0 10px 30px -8px rgba(0,0,0,.45)}'+
+    '#cdnCallPill i{width:8px;height:8px;border-radius:50%;background:#fff;animation:cdnPulse 1.2s ease-in-out infinite}@keyframes cdnPulse{50%{opacity:.35}}';
   (D.head||D.documentElement).appendChild(css);
-  function frameOf(k){
+  /* เกินจำนวนที่เก็บได้ → ปล่อยแท็บซ้อนที่ไม่ได้ดูนานสุด (ยกเว้นแท็บที่มีสายโทร) */
+  function evict(){
+    const alive=order.filter(x=>frames[x]&&frames[x].el.isConnected);
+    while(alive.length>=MAX){const i=alive.findIndex(x=>x!==cur&&!calls[x]);if(i<0)break;const x=alive.splice(i,1)[0];frames[x].el.remove();delete frames[x]}
+    order=alive;
+  }
+  function frameOf(k,url){
     let f=frames[k];if(f&&f.el.isConnected)return f;
+    evict();
     const el=D.createElement('iframe');el.className='cdn-tab load';el.dataset.cendonTab=k;el.title='Cendon';
     el.setAttribute('allow','camera; microphone; geolocation; clipboard-write; fullscreen');
-    f=frames[k]={el,ready:false,wait:null};el.src=URLS[k];
+    f=frames[k]={el,ready:false,wait:null};el.src=url||URLS[k];
     /* อยู่ใต้ <html> นอก <body> — ซ่อนเนื้อหาหน้าหลักทั้งหน้าได้โดยกรอบยังเห็น */
     D.documentElement.appendChild(el);return f;
   }
   function win(k){try{return frames[k].el.contentWindow}catch(e){return null}}
   function tabs(k){try{return k===base?W.CendonTabs:win(k).CendonTabs}catch(e){return null}}
+  /* แท็บซ้อนที่มีสายโทร: ไม่พัก · ระหว่างดูแท็บอื่นมีปุ่มกลับไปที่สาย */
+  const PILL={th:'กลับไปที่สาย',en:'Back to call',zh:'返回通话',ja:'通話に戻る',ko:'통화로 돌아가기',id:'Kembali ke panggilan',vi:'Quay lại cuộc gọi',ms:'Kembali ke panggilan',de:'Zurück zum Anruf',fr:"Retour à l'appel",es:'Volver a la llamada',pt:'Voltar à chamada'};
+  function pill(){
+    const k=Object.keys(calls).find(x=>calls[x]&&x!==cur&&frames[x]);let b=D.getElementById('cdnCallPill');
+    if(!k){if(b)b.remove();return}
+    if(!b){b=D.createElement('button');b.type='button';b.id='cdnCallPill';D.documentElement.appendChild(b)}
+    let l='th';try{l=JSON.parse(localStorage.getItem('spire_lang'))||'th'}catch(e){}
+    b.innerHTML='<i></i><span></span>';b.lastChild.textContent=PILL[l]||PILL.en;
+    b.onclick=()=>{try{history.pushState({cendonTab:k},'',URLS[k])}catch(e){}reveal(k)};
+  }
+  function hideFrame(x){frames[x].el.classList.remove('on','load');if(!calls[x]&&tabs(x))tabs(x).setHidden(true)}
+  /* แชต = กล่องข้อความของหน้าแรก */
+  function inbox(k){try{const w=k===base?W:win(k);if(w&&typeof w.openInbox==='function')w.openInbox()}catch(e){}}
   let showing=0;
-  function reveal(k){
-    const n=++showing;
+  function reveal(k,opt){
+    const n=++showing,box=opt&&opt.inbox;order=order.filter(x=>x!==k).concat(k);
     if(k===base){
-      for(const x in frames){frames[x].el.classList.remove('on','load');if(tabs(x))tabs(x).setHidden(true)}
+      for(const x in frames)hideFrame(x);
       D.documentElement.classList.remove('cdn-covered');cur=base;if(baseTitle)D.title=baseTitle;
-      if(setHidden(false))location.reload();
+      /* ข้อมูลเปลี่ยนระหว่างซ่อน → โหลดหน้าหลักใหม่ · มาเพื่อเปิดแชต: ที่อยู่ยังเป็นของแท็บก่อน (กล่องข้อความยังไม่ได้เพิ่มรายการประวัติ) → เปิด /messages แทน */
+      if(setHidden(false)){if(box&&clean(location.pathname)!=='/messages')location.assign('/messages');else location.reload();return}
+      if(box)inbox(k);pill();
       return;
     }
-    const f=frameOf(k),go=()=>{
+    const fresh=!frames[k]||!frames[k].el.isConnected,f=frameOf(k,box?'/messages':null),go=()=>{
       if(n!==showing)return;
       f.el.classList.add('on');f.el.classList.remove('load');
-      for(const x in frames)if(x!==k){frames[x].el.classList.remove('on','load');if(tabs(x))tabs(x).setHidden(true)}
+      for(const x in frames)if(x!==k)hideFrame(x);
       if(cur===base){if(!hidden)baseTitle=D.title;setHidden(true);D.documentElement.classList.add('cdn-covered')}
-      cur=k;const t=tabs(k);if(t&&t.setHidden(false))win(k).location.reload();
+      cur=k;const t=tabs(k);if(t&&t.setHidden(false))win(k).location.reload();else if(box&&!fresh)inbox(k);
       try{D.title=win(k).document.title||D.title}catch(e){}
+      pill();
     };
     if(f.ready)go();
     else{
@@ -131,14 +169,20 @@
   }
   function go(u){
     const k=tabOf(u);if(!k||calling())return false;
-    if(k===cur)return true;
-    try{history.pushState({cendonTab:k},'',URLS[k])}catch(e){}
-    reveal(k);return true;
+    const box=inboxUrl(u);
+    if(k===cur){if(box)inbox(k);return true}
+    /* แชตของหน้าหลัก: เพิ่มรายการ "หน้าหลัก" ก่อน แล้วกล่องข้อความเพิ่มรายการของมันเอง (nav.js)
+       — ปิดกล่องข้อความ (ย้อนหนึ่งขั้น) จะกลับมาที่หน้าหลัก ไม่ใช่แท็บที่อยู่ก่อนหน้า */
+    const self=box&&k===base;
+    try{history.pushState(box&&!self?{cendonTab:k,inbox:1}:{cendonTab:k},'',box&&!self?'/messages':URLS[k])}catch(e){}
+    reveal(k,{inbox:box});return true;
   }
   /* ย้อน/ไปข้างหน้า: รายการของแท็บ → สลับแท็บ (ไม่ให้ nav.js ของหน้าหลักแปลที่อยู่ของแท็บอื่น) */
   W.addEventListener('popstate',e=>{
     const st=e.state;
-    if(st&&st.cendonTab){e.stopImmediatePropagation();if(st.cendonTab!==cur)reveal(st.cendonTab);return}
+    /* รายการ "หน้าหลัก" ขณะอยู่หน้าหลักแล้ว (เช่น ปิดกล่องข้อความ) — ให้ nav.js จัดชั้นของหน้าตามปกติ */
+    if(st&&st.cendonTab===base&&cur===base)return;
+    if(st&&st.cendonTab){e.stopImmediatePropagation();if(st.cendonTab!==cur)reveal(st.cendonTab,{inbox:!!st.inbox});return}
     if(cur!==base)reveal(base);
   });
   if(W.navigation&&W.navigation.addEventListener){
@@ -150,6 +194,7 @@
   W.CendonTabs=Object.freeze({
     on:true,child:false,setHidden,go,
     top:u=>{location.assign(u)},
+    call(k,on){calls[k]=!!on;if(on&&tabs(k))tabs(k).setHidden(false);pill()},
     ready(k){const f=frames[k];if(!f||f.ready)return;f.ready=true;clearTimeout(f.wait);if(f.go){const g=f.go;f.go=null;g()}},
     sync(k,href,title){if(k!==cur)return;try{history.replaceState(history.state&&history.state.cendonTab?history.state:{cendonTab:k},'',href)}catch(e){}if(title)D.title=title},
     current:()=>cur

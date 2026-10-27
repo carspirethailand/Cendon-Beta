@@ -4873,7 +4873,8 @@ async function syncCars(){
     const merged=arr.map(c=>{
       const name=`${c.make||""} ${c.model||""}`.trim();
       const prev=local.find(x=>x.id===c.id)||{};
-      return {id:c.id,make:c.make||"",model:c.model||"",name,year:(c.year!=null?String(c.year):""),mileage:(c.mileage!=null?String(c.mileage):""),type:prev.type||getBodyStyle(name),history:prev.history||[]};
+      /* เก็บช่องอื่นของรถในเครื่องไว้ (สี ข้อมูลรถ ฯลฯ) — เดิมสร้างใหม่ทั้งก้อน เปิดหน้านี้ทีไรสีรถหายจนกว่าหน้าการาจจะดึงคืน */
+      return Object.assign({},prev,{id:c.id,make:c.make||"",model:c.model||"",name,year:(c.year!=null?String(c.year):""),mileage:(c.mileage!=null?String(c.mileage):""),type:prev.type||getBodyStyle(name),color:c.color||prev.color||"",history:prev.history||[]});
     });
     saveGarage(merged);
     const _act=id=>{const e=$(id);return !!e&&e.classList.contains("active")};

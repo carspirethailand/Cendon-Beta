@@ -2,6 +2,7 @@
 <html lang="th">
 <head>
 <script>/* ธีมตั้งแต่เฟรมแรก (ก่อน CSS วาด) — เดิมหน้าเปิดด้วยธีมตั้งต้นแวบหนึ่งแล้วค่อยสลับ (แชตขึ้นจอดำ) ดูเหมือนกระพริบ/กระตุก */(function(){try{var O={warm:"light",pearl:"light",emerald:"light",plant:"light",moss:"light",carbon:"dark",night:"dark",midnight:"dark",cyber:"dark",aurora:"dark",ocean:"dark",sunset:"dark",magma:"dark"},v=null;try{v=JSON.parse(localStorage.getItem("spire_theme"))}catch(e){}if(typeof v!=="string")try{v=JSON.parse(localStorage.getItem("spire_chatTheme"))}catch(e){}v=v==="light"||v==="dark"?v:(O[v]||"light");var e=document.documentElement;e.setAttribute("data-theme",v);e.setAttribute("data-ctheme",v)}catch(x){}})();</script>
+<script src="/tab-shell.js?v=2"></script>
 <script src="/launch-gate.js?v=1"></script>
 <script src="/auth-gate.js?v=2"></script>
 <script src="/account-scope.js?v=2"></script>
@@ -5002,7 +5003,8 @@ async function syncCars(){
     const merged=arr.map(c=>{
       const name=`${c.make||""} ${c.model||""}`.trim();
       const prev=local.find(x=>x.id===c.id)||{};
-      return {id:c.id,make:c.make||"",model:c.model||"",name,year:(c.year!=null?String(c.year):""),mileage:(c.mileage!=null?String(c.mileage):""),type:prev.type||getBodyStyle(name),history:prev.history||[]};
+      /* เก็บช่องอื่นของรถในเครื่องไว้ (สี ข้อมูลรถ ฯลฯ) — เดิมสร้างใหม่ทั้งก้อน เปิดหน้านี้ทีไรสีรถหายจนกว่าหน้าการาจจะดึงคืน */
+      return Object.assign({},prev,{id:c.id,make:c.make||"",model:c.model||"",name,year:(c.year!=null?String(c.year):""),mileage:(c.mileage!=null?String(c.mileage):""),type:prev.type||getBodyStyle(name),color:c.color||prev.color||"",history:prev.history||[]});
     });
     saveGarage(merged);
     const _act=id=>{const e=$(id);return !!e&&e.classList.contains("active")};

@@ -7,7 +7,7 @@
 <script src="/account-scope.js?v=2"></script>
 <link rel="stylesheet" href="/partner-entry.css?v=1">
 <script src="/partner-state.js?v=1"></script>
-<script src="/display-prefs.js?v=3" defer></script>
+<script src="/display-prefs.js?v=4" defer></script>
 <script src="/i18n/ui-en.js?v=4" defer></script>
 <script src="/ui-language.js?v=13" defer></script>
 <script src="/partner-entry.js?v=1"></script>
@@ -27,7 +27,8 @@
 <meta charset="UTF-8"/>
 <!-- ที่อยู่แบบลึก (/garage/…) — ไฟล์ประกอบทุกตัวอ้างจากรากเว็บเสมอ -->
 <base href="/">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"/>
+<script>/* แอปไม่ซูม: viewport กันซูมแล้ว แต่ Safari บน iPhone ไม่สนค่านี้ — กันการถ่างสองนิ้วตรงนี้ (แผนที่ยังซูมได้ เพราะใช้ touch event ของมันเอง) */["gesturestart","gesturechange"].forEach(function(t){document.addEventListener(t,function(e){e.preventDefault()},{passive:false})});</script>
 <script src="nav.js"></script>
 <title>Cendon — ผู้ช่วย AI ดูแลรถ</title>
 <meta name="description" content="สมุดประวัติรถ: เลขไมล์ ประวัติซ่อม ค่าใช้จ่าย และเตือนบำรุงรักษาตามระยะที่ขับจริง">
@@ -3889,7 +3890,7 @@ a.mtab{text-decoration:none}
 </style>
 <!-- ห้ามวาดเฟรมแรกก่อนแถบล่างพร้อม — เดิมหน้าใหม่ขึ้นมาก่อนแล้วแถบตามมาทีหลัง (Chrome 124+, ที่อื่นข้าม) -->
 <link rel="expect" href="/garage#mnav0" blocking="render">
-<link rel="stylesheet" href="stability.css?v=2026-10-23-r1">
+<link rel="stylesheet" href="stability.css?v=2026-10-27-zoom">
 <link rel="stylesheet" href="/primary-material.css?v=1">
 <link rel="stylesheet" href="car-detail-tabs.css?v=2026-10-12-r1">
 <script src="car-detail-tabs.js?v=2026-10-12-r2" defer></script>
@@ -12126,7 +12127,7 @@ function exportRecord(){
     <td>${esc(x.type==="fuel"?"เติมน้ำมัน":(PARTS[x.k]||x.k||"งานซ่อม"))}</td>
     <td class="r">${x.km?num(x.km):"—"}</td><td class="r">${x.amount?"฿"+num(x.amount):"—"}</td></tr>`;
   const html=`<!doctype html><html lang="th"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+
 <title>สมุดประวัติรถ — ${esc(c.name)}</title>
 <style>
 *{box-sizing:border-box}

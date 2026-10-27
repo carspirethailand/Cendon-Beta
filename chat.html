@@ -7,7 +7,7 @@
 <script src="/account-scope.js?v=2"></script>
 <link rel="stylesheet" href="/partner-entry.css?v=1">
 <script src="/partner-state.js?v=1"></script>
-<script src="/display-prefs.js?v=3" defer></script>
+<script src="/display-prefs.js?v=4" defer></script>
 <script src="/i18n/ui-en.js?v=4" defer></script>
 <script src="/ui-language.js?v=13" defer></script>
 <script src="/partner-entry.js?v=1"></script>
@@ -29,7 +29,8 @@
 <meta charset="UTF-8"/>
 <!-- ที่อยู่แบบลึก (/chat/…) — ไฟล์ประกอบทุกตัวอ้างจากรากเว็บเสมอ -->
 <base href="/">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"/>
+<script>/* แอปไม่ซูม: viewport กันซูมแล้ว แต่ Safari บน iPhone ไม่สนค่านี้ — กันการถ่างสองนิ้วตรงนี้ (แผนที่ยังซูมได้ เพราะใช้ touch event ของมันเอง) */["gesturestart","gesturechange"].forEach(function(t){document.addEventListener(t,function(e){e.preventDefault()},{passive:false})});</script>
 <script src="nav.js"></script>
 <script src="media-store.js?v=2"></script>
 <meta name="theme-color" content="#05070F"/>
@@ -3072,7 +3073,7 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 ::view-transition-new(root){animation-duration:.26s}
 @media(prefers-reduced-motion:reduce){@view-transition{navigation:none}}
 </style>
-<link rel="stylesheet" href="stability.css?v=2026-10-23-r1">
+<link rel="stylesheet" href="stability.css?v=2026-10-27-zoom">
 <link rel="stylesheet" href="/primary-material.css?v=1">
 <link rel="stylesheet" href="call-ui.css?v=2026-10-19-inst1">
 <script src="car-sync.js"></script>
@@ -7127,6 +7128,11 @@ let pendingEntry=null,entered=false,entryHeld=false;
                 q:q.get("q"),send:q.get("send")==="1"};
   if(location.search)history.replaceState(null,"",location.pathname);
   if(useFb){setPhase("login")} // onAuthStateChanged will route us onward
+  /* ยังไม่เคยเปิดหน้าแชตบนเครื่องนี้ (ไม่มี cachedUser) แต่เครื่องนี้ล็อกอินอยู่และข้อมูลในเครื่องเป็นของบัญชีนี้ (account-scope.js)
+     → ใช้เจ้าของข้อมูลนั้นเข้าแชตได้เลย ไม่ต้องจอว่างรอ Firebase อ่านสถานะล็อกอิน (~1–2 วิบนมือถือ) */
+  try{const own=localStorage.getItem("spire___owner"),signed=localStorage.getItem("cendon_signed")==="1";
+    if(currentUser&&own&&currentUser.uid!==own)currentUser=null;
+    if(useFb&&!currentUser&&signed&&own){const st=LS.get("setup",{})||{};currentUser={uid:own,name:st.uid===own&&st.name||""}}}catch(e){}
   /* เคยล็อกอินบนเครื่องนี้แล้ว + มีรถในเครื่อง → เข้าหน้าแชทเลยทันที ไม่ต้องรอ Firebase/หลังบ้าน (จอดำตอนรีเฟรช)
      ถ้าตรวจแล้วจริงๆ หลุดล็อกอิน onAuthStateChanged จะพากลับหน้าเข้าสู่ระบบเอง */
   if(useFb&&currentUser&&currentUser.uid&&(garage().length||document.documentElement.dataset.accountPaint==='handoff'&&window.CendonPaint&&CendonPaint.level())){try{runEntry()}catch(e){}}
@@ -9657,7 +9663,7 @@ function exportRecord(){
     <td>${esc(x.type==="fuel"?"เติมน้ำมัน":(PARTS[x.k]||x.k||"งานซ่อม"))}</td>
     <td class="r">${x.km?num(x.km):"—"}</td><td class="r">${x.amount?"฿"+num(x.amount):"—"}</td></tr>`;
   const html=`<!doctype html><html lang="th"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+
 <title>สมุดประวัติรถ — ${esc(c.name)}</title>
 <style>
 *{box-sizing:border-box}

@@ -112,6 +112,8 @@ function go(k){
   /* ผู้ใช้กดเองต้องไปทันที — switchView ของหน้าย่อยไม่รับคำสั่งย้ายหน้าจนโหลดเสร็จแล้ว 1.2 วิ
      (กันหน้าเด้งเองตอนบูต) ช่วงนั้นกดแท็บแล้วเงียบ ผู้ใช้เลยรู้สึกว่าแอปค้าง */
   const f=FILES[k];
+  /* โหมดเก็บแท็บ (tab-shell.js): แท็บที่เคยเปิดแค่สลับให้เห็น ไม่โหลดหน้าใหม่ */
+  if(f&&window.CendonTabs&&CendonTabs.go(f))return;
   if(f){ if(window.CendonPaint)CendonPaint.prepare(f);location.href=f; return }
   try{ if(typeof window.switchView==="function")window.switchView(k) }catch(e){}
 }

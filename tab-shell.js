@@ -1,0 +1,157 @@
+/* ═══════════════════════════════════════════════════════════════════
+   เก็บแท็บที่เคยเปิดไว้ แบบแอปทั่วไป (window.CendonTabs) — ขั้นทดสอบ: หน้าแรก ↔ การาจ
+   ───────────────────────────────────────────────────────────────────
+   เดิมกดแท็บ = เปิดหน้าเว็บใหม่ทั้งหน้า (~1 MB) มือถือต้องอ่าน/รันโค้ดใหม่ทุกครั้ง
+   ตอนนี้ (เฉพาะเครื่องที่เปิดโหมดทดสอบ ?tabs=1 · ปิด ?tabs=0):
+     • แท็บแรกที่เปิด = หน้าหลัก · แท็บอื่นเปิดในกรอบเต็มจอทับ และเก็บค้างไว้
+     • กดกลับไปแท็บที่เคยเปิด = แค่สลับให้เห็น (ตำแหน่งเลื่อน/สิ่งที่พิมพ์ยังอยู่)
+     • เปิดแท็บครั้งแรก: หน้าเดิมยังอยู่บนจอจนแท็บใหม่วาดเสร็จ (ไม่มีจอว่าง)
+     • แท็บที่ซ่อนอยู่: บอกหน้าว่า "ถูกซ่อน" และพักคำขอ GET ไปเซิร์ฟเวอร์ไว้ — ไม่ดึงข้อมูลซ้ำซ้อน
+       กลับมาเห็นจึงส่งคำขอที่พักไว้ (ที่อยู่ซ้ำส่งครั้งเดียว)
+     • ข้อมูลที่หน้าใช้วาด (รถ ภาษา ธีม หน่วย ชื่อ) เปลี่ยนระหว่างซ่อน → โหลดแท็บนั้นใหม่ตอนกลับมา
+     • ปุ่มย้อน/ไปข้างหน้า ที่อยู่บนแถบเบราว์เซอร์ ตรงกับแท็บที่เห็น · รีเฟรช = เปิดหน้านั้นตามปกติ
+     • มีสายโทรกับ AI อยู่ → ปล่อยให้ call-shell.js จัดการเหมือนเดิม
+   ไปหน้าอื่นที่ไม่ใช่แท็บที่ทดสอบ = เปิดหน้าแบบเดิมทั้งหน้า
+   โหลดแบบไม่ defer ต้นหน้า (ต่อจากสคริปต์ธีม) ก่อนสคริปต์อื่นที่เรียกเซิร์ฟเวอร์
+   ═══════════════════════════════════════════════════════════════════ */
+(function(W,D){
+  'use strict';
+  if(W.CendonTabs)return;
+  try{const q=new URLSearchParams(location.search).get('tabs');if(q==='1')localStorage.setItem('cendon_tabs','1');if(q==='0')localStorage.removeItem('cendon_tabs')}catch(e){}
+  let enabled=false;try{enabled=localStorage.getItem('cendon_tabs')==='1'}catch(e){}
+  const fe=(()=>{try{return W.frameElement}catch(e){return null}})(),childKey=fe&&fe.dataset&&fe.dataset.cendonTab||null;
+  if(!enabled&&!childKey){W.CendonTabs=Object.freeze({on:false,go:()=>false});return}
+
+  const TABS={'/':'home','/garage':'garage'},URLS={home:'/',garage:'/garage'};
+  const WATCH=['spire_garage','spire_selCar','spire_setup','spire_lang','spire_theme','spire_chatTheme','spire_units','spire_cachedUser','spire___owner','cendon_signed'];
+  const clean=p=>{p=String(p||'/').replace(/\.html$/,'').replace(/\/index$/,'/');if(p.length>1)p=p.replace(/\/+$/,'');return p||'/'};
+  /* ปุ่มแท็บพาไปที่อยู่แท็บตรง ๆ เท่านั้น (ไม่มี ?query) — ลิงก์ลึก เช่น /garage/<รถ> เปิดหน้าแบบเดิม */
+  const tabOf=u=>{try{const x=new URL(u,location.href);return x.origin===location.origin&&!x.search&&!x.hash?TABS[clean(x.pathname)]||null:null}catch(e){return null}};
+  const fileOf=p=>/^\/garage(\/|$)/.test(clean(p))?'garage':'home';
+  const sig=()=>{let s='';try{for(const k of WATCH)s+=k+'='+(localStorage.getItem(k)||'')+'\n'}catch(e){}return s};
+  const api=u=>{try{const x=new URL(u,location.href);return /\.workers\.dev$/.test(x.hostname)||x.origin===location.origin&&/^\/api(\/|$)/.test(x.pathname)}catch(e){return false}};
+
+  /* ── "ซ่อนอยู่" ของแต่ละหน้า (หน้าหลักที่ถูกกรอบทับ / กรอบที่ถูกซ่อน) ── */
+  let hidden=false,hiddenSig='';
+  const P=Document.prototype,dh=Object.getOwnPropertyDescriptor(P,'hidden'),dv=Object.getOwnPropertyDescriptor(P,'visibilityState');
+  try{
+    Object.defineProperty(D,'hidden',{configurable:true,get(){return hidden||dh.get.call(D)}});
+    Object.defineProperty(D,'visibilityState',{configurable:true,get(){return hidden?'hidden':dv.get.call(D)}});
+  }catch(e){}
+  const nativeFetch=W.fetch.bind(W),held=[];
+  W.fetch=function(input,init){
+    const url=typeof input==='string'?input:input&&input.url,method=String(init&&init.method||input&&input.method||'GET').toUpperCase();
+    if(!hidden||method!=='GET'||!api(url))return nativeFetch(input,init);
+    return new Promise((resolve,reject)=>held.push({input,init,url,resolve,reject}));
+  };
+  function release(){
+    const shared=new Map(),list=held.splice(0);
+    for(const q of list){
+      const key=q.url+'\n'+JSON.stringify(q.init&&q.init.headers||null);
+      let p=shared.get(key);if(!p){p=nativeFetch(q.input,q.init);shared.set(key,p)}
+      p.then(r=>q.resolve(r.clone()),q.reject);
+    }
+  }
+  /* คืน true = ข้อมูลเปลี่ยนระหว่างซ่อน (ต้องโหลดหน้าใหม่) */
+  function setHidden(h){
+    if(h===hidden)return false;hidden=h;
+    if(h){hiddenSig=sig();try{D.activeElement&&D.activeElement.blur&&D.activeElement.blur()}catch(e){}}
+    try{D.dispatchEvent(new Event('visibilitychange'))}catch(e){}
+    if(!h){if(hiddenSig&&hiddenSig!==sig())return true;release()}
+    return false;
+  }
+
+  /* ════════ หน้าในกรอบ (แท็บที่ไม่ใช่หน้าหลัก) ════════ */
+  if(childKey){
+    const host=W.parent&&W.parent.CendonTabs;
+    /* กรอบไปโหลดหน้าที่ไม่ใช่ของแท็บนี้ (เบราว์เซอร์ที่ดักการเปลี่ยนหน้าไม่ได้) → เปิดหน้านั้นแบบเต็มแทน */
+    if(!host||fileOf(location.pathname)!==childKey){try{W.top.location.replace(location.href)}catch(e){}}
+    /* พร้อมโชว์ = หน้าเริ่มมีเนื้อหาให้เห็นแล้ว (เหมือนภาพแรกของการเปิดหน้าปกติ)
+       นับจากภาพที่วาดไม่ได้ — กรอบที่ยังซ่อน (โปร่งใส) เบราว์เซอร์ไม่นับว่า "วาดแล้ว" */
+    let sent=false;const ready=()=>{if(sent)return;sent=true;try{host&&host.ready(childKey)}catch(e){}};
+    (function look(){if(sent)return;const b=D.body;if(b&&b.childElementCount>3&&D.querySelector('.mnav,#mnav,main,.wrap'))requestAnimationFrame(ready);else requestAnimationFrame(look)})();
+    W.addEventListener('load',ready,{once:true});
+    const sync=()=>{try{host&&host.sync(childKey,location.href,D.title)}catch(e){}};
+    if(W.navigation&&W.navigation.addEventListener){
+      W.navigation.addEventListener('navigate',e=>{
+        if(!e.cancelable||e.destination.sameDocument||e.hashChange||e.downloadRequest||e.formData||e.navigationType==='reload'||e.navigationType==='traverse')return;
+        const u=e.destination.url;e.preventDefault();
+        try{if(!(host&&host.go(u)))host.top(u)}catch(x){location.assign(u)}
+      });
+      W.navigation.addEventListener('navigatesuccess',sync);
+    }
+    W.addEventListener('popstate',sync);
+    W.CendonTabs=Object.freeze({on:true,child:true,setHidden,go:u=>{try{return !!(host&&host.go(u))}catch(e){return false}}});
+    return;
+  }
+
+  /* ════════ หน้าหลัก (ตัวคุมแท็บ) ════════ */
+  if(W.parent!==W){W.CendonTabs=Object.freeze({on:false,go:()=>false});return}   // อยู่ในกรอบอื่น (เช่นกรอบสายโทร) — ไม่คุม
+  const base=fileOf(location.pathname),frames={};let cur=base,baseTitle='';
+  const calling=()=>{try{return !!(W.CendonCallShell&&W.CendonCallShell.active())}catch(e){return false}};
+  const css=D.createElement('style');
+  css.textContent='iframe.cdn-tab{position:fixed;inset:0;width:100%;height:100%;border:0;margin:0;padding:0;z-index:2147482000;background:transparent;opacity:0;pointer-events:none;visibility:hidden}'+
+    'iframe.cdn-tab.on{opacity:1;pointer-events:auto;visibility:visible}iframe.cdn-tab.load{visibility:visible}'+
+    'html.cdn-covered>body{visibility:hidden}';
+  (D.head||D.documentElement).appendChild(css);
+  function frameOf(k){
+    let f=frames[k];if(f&&f.el.isConnected)return f;
+    const el=D.createElement('iframe');el.className='cdn-tab load';el.dataset.cendonTab=k;el.title='Cendon';
+    el.setAttribute('allow','camera; microphone; geolocation; clipboard-write; fullscreen');
+    f=frames[k]={el,ready:false,wait:null};el.src=URLS[k];
+    /* อยู่ใต้ <html> นอก <body> — ซ่อนเนื้อหาหน้าหลักทั้งหน้าได้โดยกรอบยังเห็น */
+    D.documentElement.appendChild(el);return f;
+  }
+  function win(k){try{return frames[k].el.contentWindow}catch(e){return null}}
+  function tabs(k){try{return k===base?W.CendonTabs:win(k).CendonTabs}catch(e){return null}}
+  let showing=0;
+  function reveal(k){
+    const n=++showing;
+    if(k===base){
+      for(const x in frames){frames[x].el.classList.remove('on','load');if(tabs(x))tabs(x).setHidden(true)}
+      D.documentElement.classList.remove('cdn-covered');cur=base;if(baseTitle)D.title=baseTitle;
+      if(setHidden(false))location.reload();
+      return;
+    }
+    const f=frameOf(k),go=()=>{
+      if(n!==showing)return;
+      f.el.classList.add('on');f.el.classList.remove('load');
+      for(const x in frames)if(x!==k){frames[x].el.classList.remove('on','load');if(tabs(x))tabs(x).setHidden(true)}
+      if(cur===base){if(!hidden)baseTitle=D.title;setHidden(true);D.documentElement.classList.add('cdn-covered')}
+      cur=k;const t=tabs(k);if(t&&t.setHidden(false))win(k).location.reload();
+      try{D.title=win(k).document.title||D.title}catch(e){}
+    };
+    if(f.ready)go();
+    else{
+      /* หน้าเดิมกำลังจะถูกบัง — พักการดึงข้อมูลตั้งแต่ตอนนี้ ให้เครื่องมีแรงโหลดแท็บใหม่ */
+      if(cur===base){baseTitle=D.title;setHidden(true)}
+      /* ครั้งแรก: หน้าเดิมยังอยู่บนจอจนแท็บใหม่วาดเสร็จ (กันจอว่าง) · ช้าเกิน 4 วิ ก็โชว์ไปเลย */
+      f.el.classList.add('load');clearTimeout(f.wait);f.wait=setTimeout(()=>{f.ready=true;go()},4000);f.go=go;
+    }
+  }
+  function go(u){
+    const k=tabOf(u);if(!k||calling())return false;
+    if(k===cur)return true;
+    try{history.pushState({cendonTab:k},'',URLS[k])}catch(e){}
+    reveal(k);return true;
+  }
+  /* ย้อน/ไปข้างหน้า: รายการของแท็บ → สลับแท็บ (ไม่ให้ nav.js ของหน้าหลักแปลที่อยู่ของแท็บอื่น) */
+  W.addEventListener('popstate',e=>{
+    const st=e.state;
+    if(st&&st.cendonTab){e.stopImmediatePropagation();if(st.cendonTab!==cur)reveal(st.cendonTab);return}
+    if(cur!==base)reveal(base);
+  });
+  if(W.navigation&&W.navigation.addEventListener){
+    W.navigation.addEventListener('navigate',e=>{
+      if(!e.cancelable||e.destination.sameDocument||e.navigationType!=='push'&&e.navigationType!=='replace'||e.formData||e.downloadRequest)return;
+      if(tabOf(e.destination.url)&&!calling()){e.preventDefault();go(e.destination.url)}
+    });
+  }
+  W.CendonTabs=Object.freeze({
+    on:true,child:false,setHidden,go,
+    top:u=>{location.assign(u)},
+    ready(k){const f=frames[k];if(!f||f.ready)return;f.ready=true;clearTimeout(f.wait);if(f.go){const g=f.go;f.go=null;g()}},
+    sync(k,href,title){if(k!==cur)return;try{history.replaceState(history.state&&history.state.cendonTab?history.state:{cendonTab:k},'',href)}catch(e){}if(title)D.title=title},
+    current:()=>cur
+  });
+})(window,document);

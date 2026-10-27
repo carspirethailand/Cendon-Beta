@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-/* ชุด D: บริการหลายหมวด · การ์ดเรียกช่างแบบพลิก · ช่องพิมพ์ 2 แถวบนคอม · การ์ดร้านพลิกเป็น QR */
+/* ชุด D: บริการหลายหมวด · ปุ่มเรียกช่างด่วน (เลิกพลิกแล้ว) · ช่องพิมพ์ 2 แถวบนคอม · การ์ดร้านพลิกเป็น QR */
 const r=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8').replace(/\r\n/g,'\n');
 const home=r('index.html'),chat=r('chat.html');
 
@@ -15,37 +15,21 @@ test('a service can sit in up to 6 categories and shows up under every one of th
   assert.match(home,/CATK==="all"\|\|gigCats\(g\)\.some\(/,'category page matches any of the categories');
 });
 
-test('home call card flips 180° (front urgent, back not urgent); the hidden side is out of the tab order',()=>{
-  assert.match(home,/<div class="lx-qflip" id="qFlip"/);
-  assert.match(home,/class="qf-face qf-f" data-q="urgent"/);assert.match(home,/class="qf-face qf-b" data-q="post" tabindex="-1" aria-hidden="true"/);
-  assert.match(home,/\.lx-qflip\.back \.qf-in\{transform:rotateY\(180deg\)\}/);
-  assert.match(home,/f\.tabIndex=back\?-1:0;bk\.tabIndex=back\?0:-1;/);
-  assert.match(home,/if\(b\.closest\("#qFlip"\)&&\$\("qFlip"\)\.dataset\.swiped\)return;/,'a swipe never doubles as a tap');
+test('home urgent button is plain solid red — no 180° flip, no hidden back side',()=>{
+  assert.doesNotMatch(home,/id="qFlip"|function qFlipWire|\.lx-qflip/,'the flip card is gone');
+  assert.match(home,/<button type="button" class="lx-urg" data-q="urgent" title="\$\{T\("รถเสีย \/ อุบัติเหตุ ตอนนี้","Breakdown or accident, now"\)\}"><i class="ti ti-urgent"><\/i><b>\$\{T\("เรียกช่างด่วน","Urgent mechanic"\)\}<\/b><\/button>/);
+  assert.match(home,/#hQuick \.lx-urg\{background:linear-gradient\(160deg,#e02424,#c81e1e\)!important;/);
 });
 
-test('call card turns with the finger like the search bar, the ⇄ turns with the card, and urgent is solid red',()=>{
-  /* มือถือ: แนวนอนเป็นของการ์ด (ไม่งั้นเบราว์เซอร์แย่งท่าปัดไป) · หมุนตามระยะลาก · ปล่อยเกินหนึ่งในสามหรือปัดเร็ว = พลิก */
-  assert.match(home,/\.lx-qflip\{position:relative;perspective:900px;min-width:0;touch-action:pan-y;/);
-  assert.match(home,/dx=mx;turn\(rot\+Math\.max\(-1,Math\.min\(1,dx\/w\)\)\*180,false\)/);
-  assert.match(home,/go=Math\.abs\(dx\)>w\*\.3\|\|Math\.abs\(v\)>\.5&&Math\.abs\(dx\)>20;\n    if\(go\)set\(!back,dx>0\?1:-1\);else turn\(rot,true\);/);
-  /* ⇄ อยู่ในการ์ดแต่ละหน้า (ไม่ใช่ปุ่มลอยนอกการ์ด) แตะแล้วพลิก ไม่เปิดงาน */
-  assert.match(home,/<b>\$\{T\("เรียกช่างด่วน","Urgent mechanic"\)\}<\/b>\$\{SW\}/);
-  assert.match(home,/<b>\$\{T\("เรียกช่าง \(ไม่ด่วน\)","Find a mechanic"\)\}<\/b>\$\{SW\}/);
-  assert.match(home,/box\.addEventListener\("click",e=>\{if\(!e\.target\.closest\("\.qf-sw"\)\)return;e\.preventDefault\(\);e\.stopPropagation\(\);/);
-  assert.doesNotMatch(home,/<button type="button" class="qf-sw"/);
-  /* ด้านหลังไม่หายตอนเอาเมาส์ชี้ (motion.css ตั้ง transform:none ตอนชี้การ์ด) */
-  assert.match(home,/html #hQuick \.lx-qflip \.qf-b\{transform:rotateY\(180deg\)!important\}/);
-  assert.match(home,/#hQuick \.lx-qflip \.qf-f\{background:linear-gradient\(160deg,#e02424,#c81e1e\)!important;/);
-});
-
-test('the urgent card works like an emergency light: first tap counts, even right after scrolling or before the account loads',()=>{
+test('the urgent button works like an emergency light: first tap counts, even right after scrolling or before the account loads',()=>{
   /* ทำงานตอนยกนิ้ว ไม่รอ click (มือถือกลืน click แรกตอนหน้ายังไหล) · กัน click ที่ตามมาไม่ให้ซ้ำ */
-  assert.match(home,/box\.addEventListener\("touchend",e=>\{\n    if\(tm\|\|e\.touches\.length\|\|box\.dataset\.swiped\|\|performance\.now\(\)-tt>900\)return;tm=true;\n    if\(e\.cancelable\)e\.preventDefault\(\);/);
-  assert.match(home,/go\(back\?"post":"urgent"\)\}\);/);
-  assert.match(home,/\.lx-qflip\.press \.qf-in\{scale:\.97\}/,'instant pressed feedback');
+  assert.match(home,/btn\.addEventListener\("touchend",e=>\{\n    btn\.classList\.remove\("press"\);\n    if\(tm\|\|e\.touches\.length\|\|performance\.now\(\)-tt>900\)return;tm=true;\n    if\(e\.cancelable\)e\.preventDefault\(\);/);
+  assert.match(home,/urgTap\(\$\("hQuick"\)\.querySelector\("\.lx-urg"\),\(\)=>go\("urgent"\)\);/);
+  assert.match(home,/b\.onclick=\(\)=>\{if\(b\.dataset\.tapped\)return;go\(b\.dataset\.q\)\}/,'the click after a touch never fires twice');
+  assert.match(home,/#hQuick \.lx-urg\.press\{scale:\.97\}/,'instant pressed feedback');
   /* เพิ่งเปิดแอป บัญชียังโหลดไม่เสร็จ: เปิดหน้าฉุกเฉินได้เลย ไม่เด้งไปหน้าเข้าสู่ระบบ */
   assert.match(home,/function emergency\(\)\{\n  if\(!U&&!signedHint\(\)\)return needLogin\(\);/);
-  assert.match(home,/async function urgentCall\(pre\)\{\n  if\(!await userReady\(\)\)return needLogin\(\);/);
+  assert.match(home,/async function urgentCall\(pre,o2\)\{\n  if\(!await userReady\(\)\)return needLogin\(\);/);
   assert.match(home,/async function accident\(step\)\{\n  if\(!await userReady\(\)\)return needLogin\(\);/);
 });
 

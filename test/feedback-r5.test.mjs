@@ -8,7 +8,7 @@ const home=r('index.html'),line=r('cendon-line.js'),stab=r('stability.css');
 test('post form is split into 3 numbered sections; the GPS button lives inside the map',()=>{
   assert.match(home,/const sec=\(n,title,body\)=>`<section class="fsec"><h3 class="fsec-h"><span class="fsec-n">\$\{n\}<\/span>\$\{title\}<\/h3>\$\{body\}<\/section>`;/);
   assert.match(home,/sec\(1,T\("รถและอาการ","Car & problem"\)/);assert.match(home,/sec\(2,T\("ที่ไหน เมื่อไร","Where & when"\)/);
-  assert.match(home,/contactForm\(\{sym:sym\?\?\$\("q"\)\.value\.trim\(\),mobile:true,carId:d\.carId,photos:d\.photos,sections:true,needGps:true,/);
+  assert.match(home,/contactForm\(\{sym:sym\?\?\$\("q"\)\.value\.trim\(\),mobile:true,modeDef:home\?"mobile":"shop",carId:d\.carId,photos:d\.photos,sections:true,needGps:true,/);
   assert.match(home,/<button type="button" class="pk-gps" id="bGps"/);
   assert.doesNotMatch(home,/id="bGps" style="margin-top:8px;min-height:44px"/,'no full-width GPS button any more');
 });

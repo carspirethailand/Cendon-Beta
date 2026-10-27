@@ -605,3 +605,6 @@ export async function mount(host,A){
     map
   };
 }
+
+/* ให้หน้าเรียกช่าง (call-x-map.js) ใช้แผนที่ชุดสีเดียวกัน */
+export {loadLib,styleFor};

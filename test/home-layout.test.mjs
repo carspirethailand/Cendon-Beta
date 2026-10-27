@@ -65,7 +65,7 @@ test('tidy pass: one 880px column under the search box, quick tiles are icon + n
   assert.match(css,/#vMenu\{--hw:880px\}/);
   assert.match(css,/#vMenu \.lx-mycar,#vMenu \.lx-top,#vMenu \.lx-quick,#vMenu \.lx-partner,#vMenu \.lx-sec\{max-width:var\(--hw\)/);
   assert.match(css,/#vMenu \.lx-railw\{max-width:var\(--hw\)\}/);
-  const quick=page.slice(page.indexOf('function drawQuick'),page.indexOf('function qFlipWire'));
+  const quick=page.slice(page.indexOf('function drawQuick'),page.indexOf('function urgTap'));
   assert.doesNotMatch(quick,/<small>/,'no second line on the quick tiles');
   assert.match(quick,/data-q="\$\{k\}" title="\$\{d\}"/,'the short description stays as a tooltip');
   assert.match(page,/T\("ปัดเพื่อคุยกับ","Swipe to talk to"\)/);

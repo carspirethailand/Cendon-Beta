@@ -8,7 +8,7 @@ const home=read('index.html'),atlas=read('map-atlas.js'),css=read('map-atlas.css
 
 test('map page loads the new map first and keeps the old Leaflet map as the fallback',()=>{
   assert.match(home,/<div class="atl-host" id="atlas" hidden><\/div>\n<\/section>/,'host lives inside the map view');
-  assert.match(home,/const M=await import\("\/map-atlas\.js\?v=2"\);if\(!M\.supported\(\)\)throw Error\("webgl"\)/);
+  assert.match(home,/const M=await import\("\/map-atlas\.js\?v=3"\);if\(!M\.supported\(\)\)throw Error\("webgl"\)/);
   assert.match(home,/catch\(e\)\{console\.warn\("atlas",e&&e\.message\);ATLAS_OFF=true;[^\n]*if\(VIEW==="map"\)oldMap\(\)\}/,'failure falls back to the old map');
   assert.match(home,/function oldMap\(\)\{if\(!MAP\)initMap\(\);else\{MAP\.invalidateSize\(\);drawPins\(true\)\}renderCarousel\(\)\}/);
   assert.match(home,/if\(v==="map"\)\{\n    document\.documentElement\.style\.setProperty\("--mtop",\$\("top"\)\.offsetHeight\+"px"\);\n    showMap\(\);/);
@@ -43,7 +43,7 @@ test('urgent mode uses the same rules as the urgent call itself: no paused or fu
   assert.match(u,/t\.dist==null\|\|t\.dist<=Math\.max\(t\.radius\|\|30,30\)/);
   assert.match(u,/\.sort\(\(a,b\)=>\(!!b\.online-!!a\.online\)\|\|\(a\.dist\?\?1e9\)-\(b\.dist\?\?1e9\)\)/);
   assert.match(u,/const pick=l\.slice\(0,3\)/);
-  const call=home.slice(home.indexOf('async function urgentCall(pre){'),home.indexOf('sheet({title:"",push:true,slug:pre?"help":"breakdown"'));
+  const call=home.slice(home.indexOf('async function urgentCall(pre,o2){'),home.indexOf('cxSheet({kind:"urgent"'));
   assert.match(call,/const TS=TECHS\.filter\(t=>!isMine\(t\)&&!t\.full&&!t\.vacation\);let l=TS\.filter\(t=>t\.mobile&&t\.urgent\);if\(!l\.length\)l=TS\.filter\(t=>t\.mobile\)/);
   assert.match(call,/\.sort\(\(a,b\)=>\(!!b\.online-!!a\.online\)\|\|\(a\.dist\?\?1e9\)-\(b\.dist\?\?1e9\)\)\.slice\(0,3\)/);
   assert.match(home,/r\.taking\?T\(`แจ้งเตือนช่างที่รับงานอยู่ตอนนี้ \$\{r\.taking\} ร้าน/,'the customer hears how many shops taking jobs were alerted');

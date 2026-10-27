@@ -25,6 +25,7 @@
     if(W.CendonPageEntry){await W.CendonPageEntry(u.href);return;}
     if(W.Nav?.started&&W.Nav.owns(u.href)){
       await W.Nav.visit(u.href);
+      W.CendonView.adoptSingleEntry();
       return;
     }
     if(clean(u.pathname)===clean(W.location.pathname)){
@@ -35,7 +36,12 @@
     // Unknown deep routes do not silently discard a draft or a live call.
     throw Error('route-not-ready');
   }
-  W.CendonView={navigate,setHidden,history:viewHistory,expandCall:()=>callApi?.expand?.(),adoptSingleEntry(){const layers=W.Nav?.stack||[];for(const l of layers)l.w=false;if(layers.length)layers.at(-1).w=true;},get dirty(){return dirty;},get inCall(){return inCall;}};
+  W.CendonView={navigate,setHidden,history:viewHistory,expandCall:()=>callApi?.expand?.(),adoptSingleEntry(){
+    const layers=W.Nav?.stack||[],state=P.history.state;let i=state?.index;
+    // A cross-tab deep link may represent several panels but only ONE parent
+    // history entry. Count only consecutive matching entries when closing them.
+    for(const l of [...layers].reverse()){const entry=state?.states?.[i];l.w=!!entry&&entry.url===new URL(l.url,W.location).href;if(l.w)i--;}
+  },get dirty(){return dirty;},get inCall(){return inCall;}};
   D.addEventListener('input',()=>{dirty=true;},{capture:true});D.addEventListener('change',()=>{dirty=true;},{capture:true});
   W.addEventListener('click',e=>{
     if(e.defaultPrevented||e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;

@@ -56,3 +56,29 @@ test('app pages do not zoom (pinch, double-tap, iOS gesture)',()=>{
   }
   assert.match(read('stability.css'),/html\{touch-action:manipulation\}/);
 });
+
+test('instant tabs: only bottom-tab pages are prerendered, never broad link rules',()=>{
+  const j=read('instant-nav.js');
+  assert.match(j,/const TABS=\['\/','\/garage','\/messages','\/news','\/profile'\]/);
+  assert.match(j,/prerender:\[\{urls:list,eagerness:'immediate'\}\]/);
+  assert.doesNotMatch(j,/href_matches/,'no "every link" prerender (removed before for side effects)');
+  for(const f of ['index','garage','news','profile','spares','chat']){
+    const h=read(f+'.html');
+    assert.match(h,/<script src="\/instant-nav\.js\?v=1"><\/script>/,f);
+    assert.doesNotMatch(h,/"prerender":\[\{"where"/,f+': no broad prerender rules');
+    /* ต้องโหลดก่อนสคริปต์อื่นที่เรียกเซิร์ฟเวอร์ */
+    assert.ok(h.indexOf('/instant-nav.js')<h.indexOf('launch-gate.js')||h.indexOf('launch-gate.js')<0,f+': loads before other scripts');
+  }
+  assert.match(read('sw.js'),/'\.\/instant-nav\.js\?v=1'/);
+});
+
+test('instant tabs: a prerendered page holds Cendon API calls until the user opens it, and reloads if data changed',()=>{
+  const j=read('instant-nav.js');
+  assert.match(j,/if\(D\.prerendering\)\{/);
+  assert.match(j,/W\.fetch=function\(input,init\)\{\s*if\(!D\.prerendering\|\|!api\(/);
+  assert.match(j,/addEventListener\('prerenderingchange',\(\)=>\{\s*W\.fetch=nativeFetch;/);
+  assert.match(j,/if\(sig\(\)!==start\)\{location\.reload\(\);return\}/);
+  assert.match(j,/else if\(rules\)\{drop\(\);soon\(1500\)\}/,'a change on the visible page drops stale prerenders at once');
+  assert.match(j,/mem>=6\?4:mem>=4\?2:0/,'low-memory phones do not prerender');
+  assert.match(j,/saveData/);
+});

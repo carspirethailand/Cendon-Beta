@@ -4,7 +4,7 @@
    หน้าเว็บเป็นไฟล์เดียวที่เปลี่ยนบ่อย จึงถามเน็ตก่อนเสมอ (ไม่งั้นผู้ใช้จะติดอยู่กับเวอร์ชันเก่า)
    แต่รอแค่ครู่เดียว — เน็ตมือถือช้า/ค้าง ต้องไม่ทำให้แอปค้างหน้าจอโหลด
    ══════════════════════════════════════════════════════════════════ */
-const CACHE = 'cendon-v385-call-x';
+const CACHE = 'cendon-v386-barba';
 /* หน้าเว็บที่โหลดสำเร็จล่าสุด แยกตู้ไว้และ "ไม่ลบตอนอัปเดตเวอร์ชัน"
    เดิมทุกครั้งที่ deploy ตู้เก่าถูกล้างหมด เปิดแอปครั้งแรกหลังอัปเดตจึงไม่มีของสำรอง
    ต้องรอเน็ตอย่างเดียว — เน็ตมือถือช้าเมื่อไรก็ค้างหน้าจอโหลดของมือถือ */
@@ -18,7 +18,9 @@ const CORE = ['./mileage-session.js?v=1', './mileage-review.js?v=1', './garage-r
 CORE.unshift('./money-fields.js?v=1','./car-info-review.js?v=2','./mileage-sync.js?v=1','./chat-jobs.js?v=4','./primary-material.css?v=1','./shop-search.js?v=5','./shop-search.css?v=4','./shop-images.js?v=1','./display-prefs.js?v=5','./partner-state.js?v=1','./partner-entry.js?v=1','./partner-entry.css?v=1');
 CORE.unshift('./money-fields.js?v=1','./car-info-review.js?v=2','./i18n/ui-en.js?v=4','./ui-language.js?v=15','./car-info-review.js?v=2');
 const BUILD_HEADER = 'X-Cendon-Shell';
+CORE.unshift('./app-navigation.js?v=1','./app-navigation-bridge.js?v=1','./app-navigation.css?v=1','./app-routes.js','./vendor/barba-core-2.10.3.umd.js');
 const CODE = 'cendon-code-v1'; // Public content-addressed scripts; old cached HTML may still reference them.
+const VIEW_WARM=new Map();
 /* /about /help /privacy /terms = เว็บไซต์ (สร้างจาก site/) เก็บไว้ให้เปิดได้ตอนออฟไลน์ด้วย */
 const SHELL_ROUTES = new Set(['/', '/index', '/garage', '/news', '/spares', '/profile', '/chat', '/plan', '/handbook', '/tech', '/techs', '/terms', '/login', '/about', '/help', '/privacy', '/launch']);
 /* ที่อยู่แบบลึก (แบบ YouTube) ใช้ไฟล์หน้าเดียวกับหน้าแม่ — ตรงกับ _redirects
@@ -60,7 +62,7 @@ self.addEventListener('install', (e) => {
     /* หน้าแรกรุ่นใหม่เก็บไว้ตั้งแต่ติดตั้ง — โหลดไม่สำเร็จก็ยังมีรุ่นก่อนหน้าอยู่ในตู้ */
     const home = new URL('./', self.location).href;
     await fetch(home, {cache:'reload'}).then(plain).then(async r => {
-      if(r.ok)await (await caches.open(PAGES)).put(home,stored(r));
+      if(r.ok&&r.headers.get('X-Cendon-Document')!=='barba-shell-v1')await (await caches.open(PAGES)).put(home,stored(r));
     }).catch(() => {});
   })());
 });
@@ -70,7 +72,7 @@ self.addEventListener('activate', (e) => {
     const keys = await caches.keys();
     await Promise.all(keys.filter((k) => k.startsWith('cendon-') && k !== CACHE && k !== PAGES && k !== CODE).map((k) => caches.delete(k)));
     /* ให้เบราว์เซอร์เริ่มขอหน้าจากเน็ตไปพร้อมกับปลุก service worker (มือถือปลุกช้าได้หลายร้อย ms) */
-    try { if (self.registration.navigationPreload) await self.registration.navigationPreload.enable(); } catch (err) {}
+    try { if (self.registration.navigationPreload) await self.registration.navigationPreload.disable(); } catch (err) {}
     await self.clients.claim();
   })());
 });
@@ -81,10 +83,50 @@ self.addEventListener('fetch', (e) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;   // API และ CDN ปล่อยผ่าน
   if (/^\/api(?:\/|$)/.test(url.pathname) || req.headers.has('Authorization') || /^\/(?:handbookparts\.json|HANDBOOK\.md)\/?$/i.test(url.pathname)) return;
+  const appPart=url.pathname.replace(/\.html$/,'').split('/')[1]||'';
+  if(new Set(['','index','garage','news','spares','profile','chat',...DEEP_HOME]).has(appPart)&&appPart!=='trip')return openAppPage(e,url);
   const isPage = shellOf(url.pathname) !== null && (req.mode === 'navigate' || /\.html$/.test(url.pathname) || !req.destination);
   if (isPage) return openPage(e, url);
   if (!/\.(?:js|css|png|webp|svg|ico|woff2?|webmanifest|json)$/.test(url.pathname)) return;
   e.respondWith(asset(e, req));
+});
+
+/* Barba's tiny host document and the legacy view must NEVER share a cache key.
+   The host is private/no-store (may contain a deep-link query). Only generic
+   app-code views are cached. API responses/tokens remain outside these caches. */
+function openAppPage(e,url){
+  const frame=['iframe','frame'].includes(e.request.destination)||url.searchParams.has('__cendon_document')||url.searchParams.get('classic')==='1';
+  const key=pageKey(url)+'?__cendon_view=legacy-v386';
+  const netUrl=new URL(url);if(frame)netUrl.searchParams.set('__cendon_document','1');
+  const inFlight=frame&&!url.search&&VIEW_WARM.get(url.origin+url.pathname);
+  const net=inFlight?inFlight.then(r=>r.clone()):fetch(netUrl.href,{cache:'no-cache',credentials:'same-origin'}).then(plain);
+  e.respondWith((async()=>{
+    if(!frame)return net.catch(()=>offlinePage());
+    // Anonymous public SSR and query-specific pages are not generic app code.
+    if(/^\/(?:tech|service|category)(?:\/|$)/.test(url.pathname)||url.search)return net.catch(()=>offlinePage());
+    const c=await caches.open(PAGES),cached=await c.match(key);
+    const refresh=net.then(async r=>{if(r.ok&&r.headers.get('X-Cendon-Document')!=='barba-shell-v1')await c.put(key,stored(r.clone()));return r;});
+    e.waitUntil(refresh.catch(()=>{}));
+    if(cached&&cached.headers.get(BUILD_HEADER)===CACHE&&!['reload','no-cache'].includes(e.request.cache))return cached;
+    if(cached){const r=await Promise.race([refresh.catch(()=>null),wait(WAIT)]);return r?.ok?r:cached;}
+    return refresh.catch(()=>offlinePage());
+  })());
+}
+function offlinePage(){return new Response('<!doctype html><meta charset="utf-8"><title>Cendon · Offline</title><body style="background:#101012;color:white;font:18px system-ui;padding:32px"><h1>ยังเปิดหน้านี้ไม่ได้</h1><p>เชื่อมต่ออินเทอร์เน็ตแล้วลองอีกครั้ง · Please reconnect and retry.</p><button onclick="location.reload()">ลองอีกครั้ง · Retry</button>',{status:503,headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'}});}
+
+// Warm only Garage's PUBLIC static app code, not an executing hidden app. No
+// Firebase boot, geolocation, personal API, AI task or account write is triggered.
+self.addEventListener('message',e=>{
+  if(e.data?.type!=='cendon:warm-garage'||!e.source?.url)return;
+  if(new URL(e.source.url).origin!==self.location.origin)return;
+  const url=new URL('/garage',self.location.origin),id=url.href;
+  if(VIEW_WARM.has(id))return;
+  const task=(async()=>{const c=await caches.open(PAGES),key=pageKey(url)+'?__cendon_view=legacy-v386',cached=await c.match(key);
+    if(cached?.headers.get(BUILD_HEADER)===CACHE)return cached;
+    const r=await fetch(id+'?__cendon_document=1',{cache:'no-cache',credentials:'omit'}).then(plain);
+    if(r.ok&&r.headers.get('X-Cendon-Document')!=='barba-shell-v1'&&/text\/html/i.test(r.headers.get('Content-Type')||''))await c.put(key,stored(r.clone()));
+    return r;
+  })();VIEW_WARM.set(id,task);e.waitUntil(task.catch(()=>{}).finally(()=>VIEW_WARM.delete(id)));
 });
 
 /* หน้าเว็บ: ถามเน็ตก่อน (ได้รุ่นล่าสุดเสมอเมื่อเน็ตดี) แต่รอไม่เกิน WAIT ถ้ามีหน้าเก่าในตู้

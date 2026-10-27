@@ -13,7 +13,7 @@
 (function(){
 "use strict";
 if(window.Nav)return;
-const H=history,LOC=location;
+const H=window.CendonView?.history||history,LOC=location;
 
 /* ที่อยู่แบบสะอาด: ตัด .html · /index · / ท้ายสุด */
 function clean(p){
@@ -100,6 +100,7 @@ function back(l,run){
   const n=stack.slice(i).filter(x=>x.w).length;
   /* ชั้นที่ยังรอเขียนลงประวัติ (อยู่ในคิว) ไม่ต้องถอย แค่ไม่ต้องเขียน */
   closeAbove(i-1,run);
+  if(!n&&window.CendonView)stamp();
   travel(n);
   return true;
 }
@@ -295,6 +296,7 @@ addEventListener("click",e=>{
 });
 
 window.Nav={route,start,push,back,drop,go,home,owns,watch,chain,
+  visit(url){url=abs(url);return serial(async()=>{if(pathOf(url)===base)root=url;await apply(url);stamp()})},
   replace(url){const t=top();if(!t)return;t.url=abs(url);if(t.w)stamp()},
   top,find:tag=>[...stack].reverse().find(l=>l.tag===tag)||null,
   get stack(){return stack.slice()},get base(){return base},get started(){return started},

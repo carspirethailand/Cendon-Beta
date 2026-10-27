@@ -2,6 +2,7 @@
 <html lang="th" data-ctheme="midnight">
 <head>
 <script>/* ธีมตั้งแต่เฟรมแรก (ก่อน CSS วาด) — เดิมหน้าเปิดด้วยธีมตั้งต้นแวบหนึ่งแล้วค่อยสลับ (แชตขึ้นจอดำ) ดูเหมือนกระพริบ/กระตุก */(function(){try{var O={warm:"light",pearl:"light",emerald:"light",plant:"light",moss:"light",carbon:"dark",night:"dark",midnight:"dark",cyber:"dark",aurora:"dark",ocean:"dark",sunset:"dark",magma:"dark"},v=null;try{v=JSON.parse(localStorage.getItem("spire_theme"))}catch(e){}if(typeof v!=="string")try{v=JSON.parse(localStorage.getItem("spire_chatTheme"))}catch(e){}v=v==="light"||v==="dark"?v:(O[v]||"light");var e=document.documentElement;e.setAttribute("data-theme",v);e.setAttribute("data-ctheme",v)}catch(x){}})();</script>
+<script src="/app-navigation-bridge.js?v=1"></script>
 <script src="/launch-gate.js?v=1"></script>
 <script src="/auth-gate.js?v=2"></script>
 <script src="/account-scope.js?v=2"></script>
@@ -7188,6 +7189,18 @@ function runEntry(){
     showSymCats();
   }
 }
+/* A retained Barba view can receive a new Home/Console intent without rebooting
+   Firebase, an existing conversation, or the active voice transport. */
+window.CendonPageEntry=async raw=>{
+  const q=new URL(raw,location.href).searchParams;
+  if(!q.size)return;
+  const car=q.get("car");if(car&&garage().some(c=>String(c.id)===car))pickCar(car);
+  pendingEntry={attach:q.get("attach"),starter:q.get("starter"),session:q.get("session"),pane:q.get("pane"),q:q.get("q"),send:q.get("send")==="1"};
+  entered=false;runEntry();
+};
+window.addEventListener("cendon:view-active",()=>{
+  if(featureJob())runFeatureJob().catch(e=>toast(e.message,"ti-alert-triangle"));
+});
 </script>
 <script id="chatsidejs">
 /* ══════════════════════════════════════════════════════════════════

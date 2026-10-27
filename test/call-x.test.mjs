@@ -7,7 +7,10 @@ const home=r('index.html'),css=r('call-x.css'),map=r('call-x-map.js'),sw=r('sw.j
 
 test('+ lives only on the mobile home screen, left of the logo, level with the bell',()=>{
   assert.match(home,/<link rel="stylesheet" href="call-x\.css\?v=\d+">/);
-  assert.match(css,/\.cx-plus\{position:absolute;top:calc\(19px \+ env\(safe-area-inset-top\)\);left:12px;/);
+  /* หน้าตาเดียวกับกระดิ่ง: 36px ขอบบน 23px ห่างขอบ 16px (กระดิ่งขวา ปุ่มนี้ซ้าย) · โปร่ง ไม่มีกรอบ สีเดียวกับกระดิ่ง */
+  assert.match(css,/\.cx-plus\{position:absolute;top:calc\(23px \+ env\(safe-area-inset-top\)\);left:16px;z-index:31;width:36px;height:36px;border-radius:50%;\n  border:0;background:none;color:var\(--ink,#09090B\);/);
+  assert.match(r('bell.js'),/\.cb-m\{position:absolute;top:calc\(23px \+ env\(safe-area-inset-top\) \+ var\(--cb-dy,0px\)\);right:calc\(16px \+ var\(--cb-dx,0px\)\);width:36px;height:36px;/,'bell geometry this mirrors');
+  assert.match(home,/b\.innerHTML='<i class="ti ti-plus" aria-hidden="true"><\/i>';/,'same icon set as the bell');
   assert.match(css,/@media\(min-width:761px\)\{\.cx-plus\{display:none!important\}\}/,'mobile only');
   assert.match(css,/body\[data-mode="tech"\] \.cx-plus,body\.onmap \.cx-plus\{display:none!important\}/,'not in shop mode or on the map');
   assert.match(home,/VIEW=v;if\(\$\("cxPlus"\)\)\{\$\("cxPlus"\)\.hidden=v!=="menu";if\(v!=="menu"\)plusClose\(\)\}/,'other pages hide it and close the menu');
@@ -69,6 +72,6 @@ test('call page: sheet class does not collide with the page root, admin orb neve
 });
 
 test('new call-page files are cached for offline start',()=>{
-  assert.match(sw,/'\.\/call-x\.css\?v=1'/,'render-critical style is precached; the map module loads on demand like the /map page');
-  assert.match(home,/href="call-x\.css\?v=1"/,'same version as the page');
+  assert.match(sw,/'\.\/call-x\.css\?v=2'/,'render-critical style is precached; the map module loads on demand like the /map page');
+  assert.match(home,/href="call-x\.css\?v=2"/,'same version as the page');
 });

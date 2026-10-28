@@ -46,6 +46,11 @@ function stamp(){
   const t=top();
   try{H.replaceState({nav:1,k:t?t.k:"root"},"",t?t.url:root)}catch(e){}
 }
+/* ตั้งที่อยู่ของกรอบเอง โดยไม่แตะประวัติของหน้าแม่ (ใช้ก่อนถอยประวัติของหน้าแม่) */
+function local(){
+  const t=top(),f=window.CendonView&&window.CendonView.history.local;
+  if(f)try{f({nav:1,k:t?t.k:"root"},"",t?t.url:root)}catch(e){}
+}
 function travel(n){
   if(n<=0)return;
   if(waitPop){queue.push(()=>travel(n));return}
@@ -100,7 +105,9 @@ function back(l,run){
   const n=stack.slice(i).filter(x=>x.w).length;
   /* ชั้นที่ยังรอเขียนลงประวัติ (อยู่ในคิว) ไม่ต้องถอย แค่ไม่ต้องเขียน */
   closeAbove(i-1,run);
-  if(!n&&window.CendonView)stamp();
+  /* อยู่ในกรอบของแอป (Barba): ประวัติเป็นของหน้าแม่ ที่อยู่ของกรอบไม่ขยับตามการถอย — ตั้งให้ตรงชั้นที่เหลือเอง
+     ไม่งั้นกรอบค้างที่ /messages ทั้งที่กล่องข้อความปิดแล้ว (แถบล่างไฮไลต์แชต และกดหน้าหลักไม่ไปไหน) */
+  if(window.CendonView){if(n)local();else stamp()}
   travel(n);
   return true;
 }
@@ -242,7 +249,10 @@ function go(url){
   return serial(()=>onTop(url));
 }
 /* กลับหน้าหลักของไฟล์ (ปิดทุกชั้น) — เช่น กดแท็บหน้าเดิมซ้ำ */
-function home(){if(stack.length)back(stack[0]);}
+function home(){if(stack.length)back(stack[0]);else if(here()!==root)stamp();}
+/* กดแท็บของหน้าที่เปิดอยู่ (ในกรอบของแอป): ปิดทุกชั้นแล้วแทนที่รายการปัจจุบันด้วยหน้าหลักของไฟล์
+   ไม่ถอยประวัติ — รายการก่อนหน้าอาจเป็นแท็บอื่น (เช่น เปิดแชตจากการาจ) ถอยแล้วจะไปโผล่การาจแทนหน้าหลัก */
+function reset(){closeAbove(-1);stamp();}
 
 /* ที่อยู่นี้เป็นของไฟล์นี้ไหม (ถ้าใช่ เปิดในหน้าเดิมได้ไม่ต้องโหลดใหม่) */
 function owns(url){
@@ -295,7 +305,7 @@ addEventListener("click",e=>{
   e.preventDefault();go(url);
 });
 
-window.Nav={route,start,push,back,drop,go,home,owns,watch,chain,
+window.Nav={route,start,push,back,drop,go,home,reset,owns,watch,chain,
   visit(url){url=abs(url);return serial(async()=>{if(pathOf(url)===base)root=url;await apply(url);stamp()})},
   replace(url){const t=top();if(!t)return;t.url=abs(url);if(t.w)stamp()},
   top,find:tag=>[...stack].reverse().find(l=>l.tag===tag)||null,

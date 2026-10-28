@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <script>/* ธีมตั้งแต่เฟรมแรก (ก่อน CSS วาด) — เดิมหน้าเปิดด้วยธีมตั้งต้นแวบหนึ่งแล้วค่อยสลับ (แชตขึ้นจอดำ) ดูเหมือนกระพริบ/กระตุก */(function(){try{var O={warm:"light",pearl:"light",emerald:"light",plant:"light",moss:"light",carbon:"dark",night:"dark",midnight:"dark",cyber:"dark",aurora:"dark",ocean:"dark",sunset:"dark",magma:"dark"},v=null;try{v=JSON.parse(localStorage.getItem("spire_theme"))}catch(e){}if(typeof v!=="string")try{v=JSON.parse(localStorage.getItem("spire_chatTheme"))}catch(e){}v=v==="light"||v==="dark"?v:(O[v]||"light");var e=document.documentElement;e.setAttribute("data-theme",v);e.setAttribute("data-ctheme",v)}catch(x){}})();</script>
-<script src="/app-navigation-bridge.js?v=1"></script>
+<script src="/app-navigation-bridge.js?v=2"></script>
 <script src="/tab-shell.js?v=6"></script>
 <script>/* เปิด /messages (กดแท็บแชตจากหน้าอื่น หรือลิงก์แจ้งเตือน): ซ่อนหน้าแรกไว้จนกล่องข้อความขึ้น — ไม่ให้หน้าแรกโผล่ก่อนแล้วแชตค่อยตามมา
    กันค้าง: ถ้ากล่องข้อความไม่ขึ้นใน 4 วิ เปิดหน้าตามปกติ */
@@ -52,7 +52,7 @@ if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=29"><\/
 <script src="media-store.js?v=3"></script>
 <script src="repair-proof.js?v=1" defer></script>
 <script src="bell.js?v=19"></script>
-<script src="drop.js?v=4" defer></script>
+<script src="drop.js?v=5" defer></script>
 <script src="car-menu.js?v=1" defer></script>
 <meta name="theme-color" content="#131316"/>
 <link rel="manifest" href="./manifest.webmanifest"/>
@@ -448,8 +448,9 @@ html[data-theme="dark"] .map .leaflet-tile-pane{filter:invert(1) hue-rotate(180d
 body.onmap.atl-map #mnav{display:none}
 
 /* ── แผ่นเลื่อนขึ้น ── */
-.bs{position:fixed;inset:0;z-index:1000;visibility:hidden}
-.bs.on{visibility:visible}
+.bs{position:fixed;inset:0;z-index:1000;visibility:hidden;pointer-events:none;transition:visibility 0s linear .3s}
+.bs.on{visibility:visible;pointer-events:auto;transition:none}
+/* ปิดแผ่น: เลื่อนลงให้เห็นก่อนแล้วค่อยซ่อน (จังหวะจาก motion.css) — เดิมซ่อนทันทีจนเห็นเป็นภาพตัดฉับ · ระหว่างปิดไม่รับการแตะ */
 .bs .bg{position:absolute;inset:0;background:rgba(10,8,4,.5);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);opacity:0;transition:opacity .3s}
 .bs.on .bg{opacity:1}
 .bs .pn{position:absolute;left:0;right:0;bottom:0;max-height:92vh;display:flex;flex-direction:column;background:var(--bg);border-radius:28px 28px 0 0;transform:translateY(105%);transition:transform .5s var(--ease);box-shadow:0 -20px 50px -20px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,var(--gloss-card))}
@@ -1386,6 +1387,13 @@ html[data-theme="dark"] .ib-av.cen{box-shadow:inset 0 0 0 1px rgba(255,255,255,.
 @media(max-width:760px){
   body:has(.bs.on.inbox) #mnav{z-index:1100}
   .bs.inbox .bd{padding-bottom:calc(var(--m-nav,64px) + var(--m-nav-gap,12px) + 28px + env(safe-area-inset-bottom))}
+  /* แชตเป็นแท็บหนึ่งของแถบล่าง: สลับมาแบบแท็บ (จางเข้า ยกขึ้นนิดเดียว) ไม่ใช่แผ่นเลื่อนขึ้นทับพร้อมพื้นมืดเหมือนป๊อปอัป */
+  .bs.inbox .bg{display:none}
+  .bs.inbox .pn{transform:translateY(8px);opacity:0;box-shadow:none}
+  .bs.on.inbox .pn{transform:none;opacity:1}
+  html .bs.inbox .pn{transition:transform var(--m-base,200ms) var(--m-ease,ease-out),opacity var(--m-base,200ms) var(--m-ease,ease-out)!important}
+  html .bs.inbox:not(.on) .pn{transition-duration:var(--m-fast,140ms)!important}
+  .bs.inbox{transition-delay:.14s}.bs.on.inbox{transition-delay:0s}
   body:has(.bs.on.inbox) #mnav .mtab{color:inherit}
   body:has(.bs.on.inbox) #mnav .mtab.on:not([data-mnav="chat"]){color:inherit;font-weight:inherit}
   body:has(.bs.on.inbox) #mnav .mtab.on:not([data-mnav="chat"]) .mt-i{background:none}
@@ -2867,7 +2875,7 @@ a.mtab{text-decoration:none}
 <script src="/sheet-drag.js?v=1" defer></script>
 <script src="car-sync.js"></script>
 <script src="mileage-sync.js?v=1" defer></script>
-<script src="stability.js?v=2026-10-27-r1" defer></script>
+<script src="stability.js?v=2026-10-28-r1" defer></script>
 <link rel="stylesheet" href="call-ui.css?v=2026-10-19-inst1">
 <script src="call-sounds.js?v=1" defer></script>
 <script src="call-composer.js?v=2026-10-17-r4" defer></script>
@@ -3702,7 +3710,9 @@ function sheet(o){
   if(SH.restore){const r=SH.restore;SH.restore=null;o.url=r.url;const L=SH.layers[SH.layers.length-1];if(L)L.o=o;paintSheet(o);return}
   const bs=$("bs");
   const was=bs.classList.contains("on");
-  if(!was){bs.classList.add("on");bs.setAttribute("aria-hidden","false");document.body.style.overflow="hidden"}
+  /* ตั้งชนิดแผ่นก่อนเปิด: ภาพเคลื่อนไหวเริ่มจากตำแหน่งของชนิดนั้น (กล่องข้อความจางเข้า · แผ่นอื่นเลื่อนขึ้นจากล่าง) */
+  if(!was){if(bs.classList.contains("inbox")!==!!o.inbox){bs.classList.toggle("inbox",!!o.inbox);void bs.offsetWidth}
+    bs.classList.add("on");bs.setAttribute("aria-hidden","false");document.body.style.overflow="hidden"}
   /* เปิดหน้าอื่นในแผ่นเดิม (เช่น จากบริการไปหน้าร้าน) = ซ้อนขั้นใหม่ กดย้อนแล้วกลับมาหน้าเดิม */
   const moved=was&&o.push===undefined&&o.url&&SH.cur&&SH.cur.url!==o.url;
   if(!was||!SH.layers.length){
@@ -8722,7 +8732,7 @@ async function pullCars(){
   document.addEventListener("click",e=>{if(!e.target.closest("#dd"))dd.classList.remove("show")});
   $("signinBtn").onclick=()=>{try{needLogin()}catch(e){location.href="/login?next=/"}};
   /* หน้าหลัก: ถ้ามีอะไรเปิดซ้อนอยู่ ถอยกลับหน้าแรก (ไม่ต้องโหลดใหม่) */
-  document.querySelectorAll('.navwrap [data-view="home"]').forEach(x=>x.addEventListener("click",ev=>{ev.preventDefault();if(window.Nav&&Nav.started&&Nav.top())Nav.home();else location.href="/"}));
+  document.querySelectorAll('.navwrap [data-view="home"]').forEach(x=>x.addEventListener("click",ev=>{ev.preventDefault();if(window.Nav&&Nav.started&&(Nav.top()||Nav.clean(location.pathname)!==Nav.base)){if(window.CendonView&&Nav.reset)Nav.reset();else Nav.home()}else location.href="/"}));
   dd.querySelector('[data-view="profile"]').onclick=()=>{if(window.CendonPaint)CendonPaint.prepare('/profile');location.href="/profile"};
   $("ddJobs").onclick=()=>{dd.classList.remove("show");try{jobs()}catch(e){}};
   $("ddStudio").onclick=()=>{dd.classList.remove("show");openStudio()};

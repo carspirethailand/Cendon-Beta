@@ -44,12 +44,14 @@ function play(e,open){
 function check(e){
   const was=state.get(e)||false,now=openOf(e);
   if(now===was)return;state.set(e,now);
-  if(now){requestAnimationFrame(()=>play(e,true))}
+  if(now)play(e,true);
   else if(e.isConnected)play(e,false);
 }
-let q=new Set(),raf=0;
-const flush=()=>{raf=0;const L=[...q];q.clear();L.forEach(check)};
-const add=e=>{q.add(e);if(!raf)raf=requestAnimationFrame(flush)};
+/* เริ่มภาพเคลื่อนไหวก่อนเบราว์เซอร์วาดเฟรมแรกของเมนู (MutationObserver ทำงานก่อนวาดจอเสมอ)
+   เดิมรอ requestAnimationFrame สองรอบ = เมนูโผล่เต็ม ๆ 1–2 เฟรม แล้วหายไปเริ่มจางเข้าใหม่ — เห็นเป็นกระตุก/กะพริบทุกครั้งที่เปิด */
+let q=new Set(),due=false;
+const flush=()=>{due=false;const L=[...q];q.clear();L.forEach(check)};
+const add=e=>{q.add(e);if(!due){due=true;queueMicrotask(flush)}};
 new MutationObserver(ms=>{for(const m of ms){
   if(m.type==='childList'){m.addedNodes.forEach(n=>{if(n.nodeType!==1)return;if(n.matches(SEL))add(n);n.querySelectorAll&&n.querySelectorAll(SEL).forEach(add)})}
   else{const t=m.target;if(t.nodeType!==1)continue;

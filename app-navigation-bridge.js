@@ -3,12 +3,15 @@
   const frame=W.frameElement;if(!frame?.dataset.cendonView)return;
   const P=W.parent,ns=frame.dataset.cendonView;let hidden=false,inCall=false,callApi=null,dirty=false;
   let initRoot=W.location.href;const initLayers=[];
-  const replace=W.history.replaceState.bind(W.history);
+  // Resolve at call time so page hooks (e.g. the bottom-nav highlight) still observe URL changes.
+  const replace=(...a)=>W.history.replaceState(...a);
   // Nav layers use the parent's Barba history, not the browser's joint iframe
   // history. Otherwise Back can silently traverse a hidden page's old panels.
   const viewHistory={get state(){return W.history.state;},
     pushState(state,title,url){replace(state,title,url);if(W.Nav?.started)P.CendonApp?.layer(ns,W.location.href,'push');else initLayers.push(W.location.href);},
     replaceState(state,title,url){replace(state,title,url);if(W.Nav?.started)P.CendonApp?.layer(ns,W.location.href,'replace');else initRoot=W.location.href;},
+    // Frame-only URL sync before the host traverses its own history.
+    local(state,title,url){replace(state,title,url);P.CendonApp?.track?.(ns,W.location.href);},
     go(n){P.history.go(n);}
   };
   const host=()=>P.CendonApp||P.CendonAppBoot;
@@ -55,7 +58,7 @@
   // Covers legacy location.href buttons as well as links. Same-document Nav
   // layers keep their own history; reload and traversal retain native semantics.
   W.navigation?.addEventListener('navigate',e=>{
-    if(e.destination.sameDocument||['reload','traverse'].includes(e.navigationType)||e.formData||e.downloadRequest!==null||!e.cancelable)return;
+    if(W.__cendonHostNav||e.destination.sameDocument||['reload','traverse'].includes(e.navigationType)||e.formData||e.downloadRequest!==null||!e.cancelable)return;
     const u=new URL(e.destination.url);if(u.origin!==W.location.origin)return;
     if(go(u.href)){e.preventDefault();}
     else{e.preventDefault();P.location.assign(u.href);}

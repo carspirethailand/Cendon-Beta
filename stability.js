@@ -49,7 +49,7 @@
     var t=target(e);if(!t)return;
     /* แท็บของหน้าที่เปิดอยู่: กลับไปชั้นบนสุดของหน้า (ปิดทุกชั้น) แทนการโหลดใหม่ */
     if(path(t.u.pathname)===path(location.pathname)){
-      if(own(t.u)&&t.u.pathname===Nav.base){e.preventDefault();e.stopImmediatePropagation();Nav.home()}
+      if(own(t.u)&&t.u.pathname===Nav.base){e.preventDefault();e.stopImmediatePropagation();if(window.CendonView&&Nav.reset)Nav.reset();else Nav.home()}
       return;
     }
     // Native links should not wait for unrelated images/auth or the legacy 1.2s boot gate.

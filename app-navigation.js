@@ -11,7 +11,13 @@ record(initial,current);
 function native(url){location.assign(url);}
 function callOwner(){return [...calls].find(n=>frames.has(n));}
 function callUI(){callButton.hidden=!callOwner()||calls.has(active);}
-function ready(ns,localHistory){const r=frames.get(ns);if(r){
+// A history traversal can make the browser restore a stale child URL into the
+// initial view by frame position (e.g. Home inside the Garage view). Never reveal it.
+function wrongDocument(r){try{const w=r.el.contentWindow,u=w.location.href;if(u==='about:blank')return false;
+  if(namespace(u,origin)===r.el.dataset.cendonView)return false;w.__cendonHostNav=true;w.location.replace(r===frames.get(initial.dataset.cendonView)&&r.el===initial?routeOf():r.url);return true;}catch{return false;}}
+function routeOf(){return new URL(D.querySelector('[data-barba="container"]')?.dataset.route||location.pathname+location.search,origin).href;}
+initial.addEventListener('load',()=>{const r=[...frames.values()].find(x=>x.el===initial);if(r&&wrongDocument(r))r.ready=false;});
+function ready(ns,localHistory){const r=frames.get(ns);if(r&&wrongDocument(r)){r.ready=false;return;}if(r){
   if(!r.ready&&localHistory?.layers.length){
     if(r.el===initial&&!busy&&barba){barba.history.add(localHistory.root,'barba','replace');for(const u of localHistory.layers)barba.history.add(u,'barba','push');current=localHistory.layers.at(-1);}
     else if(busy)r.el.contentWindow.CendonView?.adoptSingleEntry();
@@ -24,6 +30,7 @@ function layer(ns,url,action){
   barba.data.current.url={href:url,...barba.url.parse(url)};
   const marker=D.querySelector('[data-barba="container"]');if(marker)marker.dataset.route=new URL(url).pathname;
 }
+function track(ns,url){const r=frames.get(ns);if(r)r.url=url;}
 function call(ns,on){if(!frames.has(ns))return;on?calls.add(ns):calls.delete(ns);callUI();}
 function showError(url){failed=url;notice.hidden=false;progress.hidden=true;}
 function go(raw,trigger='barba',event){
@@ -60,11 +67,20 @@ async function prepare(url){
   const ns=namespace(url,origin);let r=frames.get(ns);
   if(!r){frames.get(active)?.el.contentWindow.CendonPaint?.prepare(url);const el=D.createElement('iframe');el.className='app-view is-preparing';el.dataset.cendonView=ns;el.title='Cendon';el.allow='camera; microphone; geolocation; autoplay; clipboard-write; fullscreen';r=record(el,url);el.src=url;D.getElementById('appViews').append(el);}
   await waitReady(r);
-  if(r.url!==url){const bridge=r.el.contentWindow.CendonView;if(!bridge)throw Error('view-not-registered');await bridge.navigate(url);r.url=url;}
+  // Compare the view's real location too: a stale record would reveal it on the wrong layer.
+  let at=r.url;try{at=r.el.contentWindow.location.href;}catch{}
+  if(r.url!==url||at!==url){const bridge=r.el.contentWindow.CendonView;if(!bridge)throw Error('view-not-registered');await bridge.navigate(url);r.url=url;}
   return r;
 }
 function activate(r,url){
-  const ns=r.el.dataset.cendonView;
+  const ns=r.el.dataset.cendonView,was=frames.get(active);
+  // Crossfade: the previous view stays painted underneath while the next fades in.
+  // The bottom bar sits in the same place in both, so it reads as staying put.
+  r.el.classList.remove('is-leaving');
+  if(was&&was!==r&&was.el.isConnected){
+    was.el.classList.add('is-leaving');r.el.classList.remove('is-entering');void r.el.offsetWidth;r.el.classList.add('is-entering');
+    clearTimeout(r.fade);r.fade=setTimeout(()=>{r.el.classList.remove('is-entering');for(const f of frames.values())if(f!==frames.get(active))f.el.classList.remove('is-leaving');},240);
+  }
   // Never move a live iframe to another node: moving it restarts its document.
   for(const [name,f]of frames){const on=name===ns;f.el.classList.toggle('is-active',on);f.el.classList.remove('is-preparing');f.el.inert=!on;f.el.contentWindow.CendonView?.setHidden(!on);}
   active=ns;current=url;r.used=Date.now();D.getElementById('appOpening').hidden=true;
@@ -81,7 +97,7 @@ function evict(){
 }
 function forget(){for(const r of frames.values())r.el.remove();frames.clear();calls.clear();for(const u of cached)barba?.cache.delete(u);cached.clear();native('/login');}
 const boot=W.CendonAppBoot;
-W.CendonApp={go,ready,call,layer,namespace:u=>namespace(u,origin),current:()=>({namespace:active,url:current}),forget};
+W.CendonApp={go,ready,call,layer,track,namespace:u=>namespace(u,origin),current:()=>({namespace:active,url:current}),forget};
 W.CendonCallShell={active:()=>!!callOwner(),expand:()=>{const n=callOwner();if(n){go(ROOTS[n]);frames.get(n)?.el.contentWindow.CendonView?.expandCall();}},open:go};
 callButton.addEventListener('click',()=>W.CendonCallShell.expand());
 D.getElementById('appRetry').addEventListener('click',()=>{if(failed){barba?.cache.delete(failed);const ns=namespace(failed,origin),r=frames.get(ns);if(r&&!r.ready&&!calls.has(ns)){r.el.remove();frames.delete(ns);}go(failed);}});

@@ -48,3 +48,15 @@ test('sheets slide out before hiding; the Chat tab switches like a tab, not a po
 test('chat history ⋯ menu opens under the tapped button',()=>{
   assert.match(chat,/window\.sessMenu\(mn\.dataset\.menu,\{currentTarget:mn,target:mn,stopPropagation\(\)\{\},preventDefault\(\)\{\}\}\)/);
 });
+
+test('Home repairs itself if it is ever left showing with a closed layer\'s URL',()=>{
+  assert.match(home,/function healUrl\(\)\{try\{/);
+  assert.match(home,/if\(Nav\.stack\.some\(l=>l\.tag==="sheet"\|\|l\.tag==="chat"\)\)\{if\(window\.CendonView&&Nav\.reset\)Nav\.reset\(\);else Nav\.home\(\);return\}/);
+  assert.match(home,/if\(!Nav\.top\(\)&&Nav\.clean\(location\.pathname\)!==Nav\.base\)Nav\.home\(\);/);
+  assert.match(home,/addEventListener\("cendon:view-active",\(\)=>healSoon\(300\)\);/);
+});
+
+test('nav.js is versioned everywhere so a fix is never served from an older cache',()=>{
+  for(const f of ['index','garage','chat','news','spares','profile'])assert.match(r(f+'.html'),/<script src="\/?nav\.js\?v=2"><\/script>/,f);
+  assert.match(r('sw.js'),/'\.\/nav\.js\?v=2'/);
+});

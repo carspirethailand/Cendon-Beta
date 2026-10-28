@@ -12,9 +12,9 @@ const code=part('const SH={','$("bsX").onclick=')+tabCode+part('const quoteCurre
 const pageHtml=`<!doctype html><html data-theme="light"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>${styles}</style><style>body{--stu-w:216px;margin:0}#vTech{display:grid!important;min-height:100vh}.stu-side{width:216px}.stu-nav button{width:100%}#testing{padding:24px}.pn{min-height:250px}</style>
 <body data-mode="tech"><section class="stu" id="vTech"><aside class="stu-side"><nav class="stu-nav" id="stuNav"><button data-sp="jobs">Jobs</button><button data-sp="shop">Shop</button></nav></aside><main id="testing">Studio</main></section>
 <div class="bs" id="bs"><div class="bg" id="bsBg"></div><div class="pn"><header class="hd"><button id="bsBack">Back</button><h2 id="bsT"></h2></header><div class="bd" id="bsB"></div><footer class="ft" id="bsF"></footer></div></div><div id="chat"></div>
-<script src="/nav.js"></script><script>window.BACKEND_URL=location.origin;window.spireAuth={currentUser:{uid:'fixture'}};window.spireSetupRead=()=>({});localStorage.setItem('spire_setup',JSON.stringify({uid:'fixture',distance:'mi',currency:'USD'}));window.spireLang=()=> 'en';
+<script src="/nav.js?v=2"></script><script>window.BACKEND_URL=location.origin;window.spireAuth={currentUser:{uid:'fixture'}};window.spireSetupRead=()=>({});localStorage.setItem('spire_setup',JSON.stringify({uid:'fixture',distance:'mi',currency:'USD'}));window.spireLang=()=> 'en';
 const $=id=>document.getElementById(id),T=(th,en)=>en||th,esc=x=>String(x??''),money=n=>String(n),SFIRST={jobs:'queue',shop:'shop'},SPAGE={queue:'jobs',shop:'shop'};let DT='queue';
-const stopJob=()=>{},IB_FROM=null,wireSeg=()=>{},proofCtx=()=>{},toast=()=>{},refreshJobs=()=>{},tabFind=()=>{},shrink=()=>{};
+const stopJob=()=>{},cxStop=()=>{},IB_FROM=null,wireSeg=()=>{},proofCtx=()=>{},toast=()=>{},refreshJobs=()=>{},tabFind=()=>{},shrink=()=>{};
 const busy=async(b,fn)=>fn(),api=async()=>({}),change=()=>{},ago=()=> 'Just now',drawTab=()=>{window.chosen=DT};
 const distTxt=d=>CendonDisplayPrefs.distance(d),distHTML=d=>'<span data-distance-km="'+Number(d)+'">'+distTxt(d)+'</span>';
 ${code}

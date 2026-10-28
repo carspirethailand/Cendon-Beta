@@ -48,7 +48,7 @@ if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=29"><\/
 <meta property="og:title" content="Cendon — ผู้ช่วย AI ดูแลรถ"><meta property="og:description" content="ถามอาการรถ ส่งรูปหรือเสียงให้ AI ช่วยดู เช็กใบเสนอราคา และหาช่างที่ผ่านการตรวจใกล้คุณ">
 <meta property="og:image" content="https://cendon-beta.pages.dev/og.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta property="og:locale" content="th_TH"><meta name="twitter:card" content="summary_large_image">
-<script src="nav.js"></script>
+<script src="nav.js?v=2"></script>
 <script src="media-store.js?v=3"></script>
 <script src="repair-proof.js?v=1" defer></script>
 <script src="bell.js?v=19"></script>
@@ -3756,6 +3756,21 @@ function closeSheet(fromNav){
   if(document.documentElement.classList.contains("prejoin"))location.replace("/launch");
 }
 $("bsX").onclick=()=>closeSheet();
+/* กันค้าง: ไม่มีแผ่น/ห้องคุยเปิดอยู่ แต่ที่อยู่ยังค้างเป็น /messages (หรือชั้นที่ปิดไปแล้ว)
+   = เห็นหน้าหลักแต่แถบล่างไฮไลต์ "แชต" และกดหน้าหลักไม่ไปไหน → ตั้งที่อยู่กลับเป็นหน้าหลักเอง
+   รอให้การถอยประวัติของการปิดชั้นเสร็จก่อน (nav.js รอ popstate ไม่เกิน 0.8 วิ) */
+function healUrl(){try{
+  if(!window.Nav||!Nav.started||Nav.closing||Nav.opening)return;
+  const sheetOn=$("bs").classList.contains("on"),chatOn=$("chat").classList.contains("on");
+  if(sheetOn||chatOn)return;
+  /* ชั้นแผ่น/ห้องคุยที่ปิดไปแล้วแต่ยังค้างในรายการชั้น — ปิดทิ้ง (ในกรอบของแอปไม่ถอยประวัติ) */
+  if(Nav.stack.some(l=>l.tag==="sheet"||l.tag==="chat")){if(window.CendonView&&Nav.reset)Nav.reset();else Nav.home();return}
+  if(!Nav.top()&&Nav.clean(location.pathname)!==Nav.base)Nav.home();
+}catch(e){}}
+let healT=0;const healSoon=ms=>{clearTimeout(healT);healT=setTimeout(healUrl,ms)};
+addEventListener("popstate",()=>healSoon(1000));addEventListener("pageshow",()=>healSoon(300));addEventListener("cendon:view-active",()=>healSoon(300));
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)healSoon(300)});
+new MutationObserver(()=>{if(!$("bs").classList.contains("on"))healSoon(1000)}).observe($("bs"),{attributes:true,attributeFilter:["class"]});
 /* คลิกพื้นมืด: ปิดชั้นบนสุดก่อน — ถ้าห้องแชตเปิดทับอยู่ (คอม: แผงแชตด้านขวา) ให้ปิดแชต ไม่ใช่ปิดแผ่นข้างใต้แล้วทิ้งแชตค้าง */
 $("bsBg").onclick=()=>{if($("chat").classList.contains("on")){closeChat();return}closeSheet()};$("bsBack").onclick=()=>back();
 addEventListener("keydown",e=>{if(e.key==="Escape"){if($("chat").classList.contains("on"))closeChat();else closeSheet()}});

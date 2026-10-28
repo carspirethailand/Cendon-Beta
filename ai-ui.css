@@ -1,0 +1,151 @@
+/* ═══ Cendon AI · Intelligent UI (ai-ui.js) ═══
+   ชิ้นส่วนที่ AI ประกอบเป็นหน้าจอในแชต — ใช้สีของธีมแชต (--c-*) จึงตามธีมสว่าง/มืดเอง
+   ภาษาภาพเดียวกับทั้งแอป: ถ่านอุ่น อำพัน→ส้ม→ชมพู · การ์ดโทน ember มีไฟคอนโซลขอบบน
+   ขยับเฉพาะตอนโผล่ครั้งแรก (จาง+ยกนิดเดียว · แถบเปอร์เซ็นต์วิ่งจากศูนย์) · ตั้งลดภาพเคลื่อนไหว = นิ่ง */
+.aui{--a-ink:var(--c-ink,#E9EDF6);--a-mut:var(--c-mut,#9AA3B5);--a-line:var(--c-line,rgba(255,255,255,.1));--a-bg:var(--c-bg1,#151922);--a-raise:var(--c-glass,rgba(127,127,127,.08));
+  --t-info:#3B82F6;--t-ok:#22A06B;--t-warn:#E8A33D;--t-danger:#E5484D;--t-ember:#F28C38;--t-neutral:var(--a-mut);
+  display:flex;flex-direction:column;gap:10px;margin-top:14px;max-width:600px;font-size:14px;line-height:1.5;color:var(--a-ink)}
+.aui>*{animation:auiIn .4s cubic-bezier(.2,.9,.25,1) both}
+.aui>*:nth-child(2){animation-delay:.05s}.aui>*:nth-child(3){animation-delay:.1s}.aui>*:nth-child(n+4){animation-delay:.14s}
+@keyframes auiIn{from{opacity:0;transform:translateY(6px)}}
+.aui [class*=" t-"],.aui [class^="t-"]{--tone:var(--t-neutral)}
+.aui .t-info{--tone:var(--t-info)}.aui .t-ok{--tone:var(--t-ok)}.aui .t-warn{--tone:var(--t-warn)}.aui .t-danger{--tone:var(--t-danger)}.aui .t-ember{--tone:var(--t-ember)}.aui .t-neutral{--tone:var(--t-neutral)}
+
+/* การ์ด */
+.aui-card{position:relative;border-radius:18px;background:var(--a-bg);border:1px solid var(--a-line);padding:14px;box-shadow:0 12px 30px -22px rgba(0,0,0,.6);overflow:hidden}
+.aui-card[class*=" t-"]{border-color:color-mix(in srgb,var(--tone) 30%,var(--a-line))}
+.aui-card.t-ember::before{content:"";position:absolute;left:14%;right:14%;top:0;height:1.5px;border-radius:2px;
+  background:linear-gradient(90deg,transparent,#FFB547 25%,#F28C38 50%,#FF4D7A 75%,transparent);box-shadow:0 0 12px 1px rgba(242,140,56,.5)}
+.aui-ch{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.aui-ch>span:last-child{min-width:0}.aui-ch b{display:block;font-size:15px;font-weight:600}.aui-ch small{display:block;font-size:12.5px;color:var(--a-mut)}
+.aui-ci{flex:none;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-size:18px;color:var(--tone,var(--t-ember));background:color-mix(in srgb,var(--tone,var(--t-ember)) 14%,transparent)}
+.aui-cb{display:flex;flex-direction:column;gap:10px}
+.aui-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.aui-col{display:flex;flex-direction:column;gap:8px;min-width:0;flex:1}
+.aui-grid{display:grid;grid-template-columns:repeat(var(--cols,2),minmax(0,1fr));gap:8px}
+@media(max-width:380px){.aui-grid{grid-template-columns:repeat(min(var(--cols,2),2),minmax(0,1fr))}}
+.aui-hr{border:0;border-top:1px solid var(--a-line);margin:2px 0}
+.aui-h{font-weight:600;letter-spacing:-.1px}.aui-h.l1{font-size:19px}.aui-h.l2{font-size:16px}.aui-h.l3{font-size:14px;color:var(--a-mut)}
+.aui-p{margin:0}.aui-p.s-sm{font-size:12.5px}.aui-p.s-lg{font-size:16px}.aui-p.muted{color:var(--a-mut)}
+.aui-badge{display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 10px;border-radius:999px;font-size:12.5px;font-weight:600;color:var(--tone,var(--a-ink));background:color-mix(in srgb,var(--tone,var(--a-mut)) 14%,transparent)}
+.aui-badge .ti{font-size:14px}
+
+/* ตัวเลขสรุป */
+.aui-stat{border-radius:14px;background:var(--a-raise);padding:10px 12px;min-width:0}
+.aui-stat small{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--a-mut)}
+.aui-stat b{display:flex;align-items:baseline;gap:4px;font-size:20px;font-weight:600;color:var(--tone,var(--a-ink));margin-top:2px}
+.aui-stat em{font-style:normal;font-size:12.5px;font-weight:500;color:var(--a-mut)}
+.aui-stat .tr-up{color:var(--t-danger)}.aui-stat .tr-down{color:var(--t-ok)}.aui-stat .tr-flat{color:var(--a-mut)}
+
+/* แถบเปอร์เซ็นต์ (ความน่าจะเป็นของสาเหตุ ฯลฯ) */
+.aui-mh{display:flex;justify-content:space-between;gap:10px;font-size:13.5px}
+.aui-mh b{font-weight:600;color:var(--tone,var(--a-ink));white-space:nowrap}
+.aui-track{height:8px;border-radius:99px;background:var(--a-raise);margin-top:6px;overflow:hidden}
+.aui-track i{display:block;height:100%;width:calc(var(--v)*1%);border-radius:inherit;background:var(--tone,linear-gradient(90deg,#FFB547,#F28C38,#E4572E));
+  animation:auiFill .9s cubic-bezier(.2,.8,.2,1) both .1s}
+.aui-meter:not([class*=" t-"]) .aui-track i{background:linear-gradient(90deg,#FFB547,#F28C38,#E4572E)}
+@keyframes auiFill{from{width:0}}
+.aui-meter small,.aui-range small{display:block;margin-top:4px;font-size:12px;color:var(--a-mut)}
+
+/* เกจวงกลม */
+.aui-gauge{position:relative;display:grid;justify-items:center;gap:2px;width:max-content;min-width:96px}
+.aui-gauge svg{width:84px;height:84px;transform:rotate(-90deg)}
+.aui-gauge circle{fill:none;stroke-width:8;stroke-linecap:round}
+.aui-gauge .g0{stroke:var(--a-raise)}
+.aui-gauge .g1{stroke:var(--tone,var(--t-ember));stroke-dasharray:var(--len);stroke-dashoffset:calc(var(--len) - var(--len) * var(--v) / 100);animation:auiDial 1s cubic-bezier(.2,.8,.2,1) both .1s}
+@keyframes auiDial{from{stroke-dashoffset:var(--len)}}
+.aui-gauge b{position:absolute;top:26px;left:0;right:0;text-align:center;font-size:19px;font-weight:600}
+.aui-gauge b em{font-style:normal;font-size:11px;color:var(--a-mut);margin-left:1px}
+.aui-gauge small{font-size:12px;color:var(--a-mut);text-align:center;max-width:120px}
+
+/* ช่วงราคา */
+.aui-rt{position:relative;height:10px;margin:10px 0 4px;border-radius:99px;background:linear-gradient(90deg,color-mix(in srgb,var(--t-ok) 55%,transparent),color-mix(in srgb,var(--t-warn) 65%,transparent),color-mix(in srgb,var(--t-danger) 55%,transparent))}
+.aui-rm{position:absolute;top:50%;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:var(--a-bg);border:3px solid var(--t-ember);box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.aui-rl{display:flex;justify-content:space-between;font-size:12.5px;color:var(--a-mut)}
+
+/* รายการ ขั้นตอน ไทม์ไลน์ */
+.aui-list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+.aui-list li{display:flex;gap:8px;align-items:flex-start}
+.aui-list li>.ti{flex:none;margin-top:2px;font-size:16px;color:var(--tone,var(--t-ember))}
+ul.aui-list li:not(:has(>.ti))::before{content:"";flex:none;width:6px;height:6px;margin-top:8px;border-radius:50%;background:var(--tone,var(--t-ember))}
+ol.aui-list{counter-reset:a}ol.aui-list li::before{counter-increment:a;content:counter(a)".";flex:none;min-width:18px;color:var(--a-mut);font-variant-numeric:tabular-nums}
+.aui-steps{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
+.aui-steps li{display:flex;gap:10px}
+.aui-steps .n{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:600;color:#fff;background:linear-gradient(135deg,#FFB547,#F28C38 45%,#E4572E)}
+.aui-steps b{display:block;font-weight:600}.aui-steps p{margin:2px 0 0;color:var(--a-mut);font-size:13px}
+.aui-tl{margin:0;padding:0 0 0 4px;list-style:none;display:flex;flex-direction:column}
+.aui-tl li{position:relative;display:flex;gap:12px;padding-bottom:14px}
+.aui-tl li:last-child{padding-bottom:0}
+.aui-tl li::before{content:"";position:absolute;left:6px;top:16px;bottom:-2px;width:2px;background:var(--a-line)}
+.aui-tl li:last-child::before{display:none}
+.aui-tl li>i{flex:none;width:14px;height:14px;margin-top:3px;border-radius:50%;border:2px solid var(--a-mut);background:var(--a-bg);z-index:1}
+.aui-tl .s-done>i{border-color:var(--t-ok);background:var(--t-ok)}
+.aui-tl .s-due>i{border-color:var(--t-danger);background:var(--t-danger);box-shadow:0 0 0 4px color-mix(in srgb,var(--t-danger) 22%,transparent)}
+.aui-tl .s-soon>i{border-color:var(--t-warn);background:color-mix(in srgb,var(--t-warn) 30%,var(--a-bg))}
+.aui-tl small{display:block;font-size:12px;color:var(--a-mut)}.aui-tl b{display:block;font-weight:600}.aui-tl p{margin:2px 0 0;font-size:13px;color:var(--a-mut)}
+.aui-tl .s-done b{color:var(--a-mut)}
+
+/* ตาราง */
+.aui-tw{overflow-x:auto;border-radius:14px;border:1px solid var(--a-line);-webkit-overflow-scrolling:touch}
+.aui-table{width:100%;border-collapse:collapse;font-size:13px}
+.aui-table th,.aui-table td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--a-line);vertical-align:top;white-space:nowrap}
+.aui-table td{white-space:normal;min-width:84px}
+.aui-table tr:last-child td{border-bottom:0}
+.aui-table th{font-weight:600;color:var(--a-mut);background:var(--a-raise)}
+.aui-table .best{background:color-mix(in srgb,var(--t-ember) 9%,transparent)}
+.aui-table th.best{color:var(--t-ember)}
+
+/* แจ้งเตือน (เช่น ควรหยุดขับ) */
+.aui-alert{display:flex;gap:10px;align-items:flex-start;border-radius:14px;padding:11px 12px;background:color-mix(in srgb,var(--tone) 12%,transparent);border:1px solid color-mix(in srgb,var(--tone) 35%,transparent)}
+.aui-alert>.ti{flex:none;font-size:20px;color:var(--tone)}
+.aui-alert b{display:block;font-weight:600}.aui-alert p{margin:2px 0 0;font-size:13.5px}
+
+/* เช็กลิสต์ / ตัวเลือก */
+.aui-ck,.aui-ch2{display:flex;flex-direction:column;gap:6px}
+.aui-ckt{font-size:13.5px;font-weight:600;margin-bottom:2px}
+.aui-cki{display:flex;gap:10px;align-items:flex-start;width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--a-line);background:none;color:var(--a-ink);font:inherit;text-align:left;cursor:pointer;transition:border-color .2s,background .2s}
+.aui-cki .bx{flex:none;width:22px;height:22px;border-radius:7px;border:1.5px solid var(--a-mut);display:grid;place-items:center;font-size:14px;color:transparent;transition:all .2s}
+.aui-cki[aria-checked="true"]{border-color:color-mix(in srgb,var(--t-ember) 50%,var(--a-line));background:color-mix(in srgb,var(--t-ember) 7%,transparent)}
+.aui-cki[aria-checked="true"] .bx{border-color:transparent;background:linear-gradient(135deg,#FFB547,#F28C38 45%,#E4572E);color:#fff}
+.aui-cki b{display:block;font-weight:500}.aui-cki small{display:block;font-size:12px;color:var(--a-mut)}
+.aui-cki:disabled{cursor:default;opacity:.75}
+.aui-opts{display:flex;flex-wrap:wrap;gap:6px}
+.aui-opt{height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--a-line);background:none;color:var(--a-ink);font:inherit;font-size:13.5px;cursor:pointer;transition:all .2s}
+.aui-opt[aria-pressed="true"]{border-color:transparent;background:linear-gradient(135deg,#FFB547,#F28C38 45%,#E4572E);color:#fff;font-weight:600}
+.aui-opt:disabled:not([aria-pressed="true"]){opacity:.5;cursor:default}
+.aui-sent{display:flex;align-items:center;gap:6px;margin:2px 0 0;font-size:12.5px;color:var(--t-ok)}
+
+/* ปุ่ม */
+.aui-btns{display:flex;flex-wrap:wrap;gap:8px}
+.aui-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:0 16px;border-radius:13px;border:1px solid var(--a-line);background:none;color:var(--a-ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:transform .12s,background .2s,border-color .2s}
+.aui-btn .ti{font-size:17px}
+.aui-btn:active{transform:scale(.97)}
+.aui-btn.primary{border-color:transparent;color:#fff;background:linear-gradient(135deg,#FFB547 0%,#F28C38 45%,#E4572E 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 10px 22px -12px rgba(242,110,40,.8)}
+.aui-btn.danger{border-color:transparent;color:#fff;background:linear-gradient(135deg,#FF7A6B,#EF4444 45%,#B91C1C)}
+.aui-btn.ghost:hover{border-color:rgba(242,140,56,.5);background:rgba(242,140,56,.06)}
+.aui-ck>.aui-btn,.aui-ch2>.aui-btn{align-self:flex-start;margin-top:4px}
+
+/* ร้านจริง */
+.aui-shops{display:flex;flex-direction:column;gap:6px}
+.aui-shl{display:flex;flex-direction:column;gap:6px}
+.aui-shl>.aui-btn{align-self:flex-start}
+.aui-sk{height:56px;border-radius:14px;background:linear-gradient(90deg,var(--a-raise),color-mix(in srgb,var(--a-mut) 14%,transparent),var(--a-raise));background-size:200% 100%;animation:auiSk 1.2s linear infinite}
+@keyframes auiSk{to{background-position:-200% 0}}
+.aui-shop{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:14px;border:1px solid var(--a-line);background:var(--a-bg);color:var(--a-ink);font:inherit;text-align:left;cursor:pointer;animation:auiIn .35s cubic-bezier(.2,.9,.25,1) both}
+.aui-shop .av{flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-weight:600;color:#fff;background:linear-gradient(135deg,#FFB547,#F28C38 45%,#E4572E)}
+.aui-shop .tx{flex:1;min-width:0}.aui-shop b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.aui-shop small{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--a-mut)}
+.aui-shop .on{color:var(--t-ok)}.aui-shop .vf{color:var(--t-info);font-size:14px}
+.aui-star{display:inline-flex;align-items:center;gap:2px}.aui-star .ti{color:#F5B83D;font-size:13px}
+.aui-shop .go{flex:none;display:inline-flex;align-items:center;gap:2px;font-size:13px;font-weight:600;color:var(--t-ember)}
+
+@media(prefers-reduced-motion:reduce){.aui>*,.aui-track i,.aui-gauge .g1,.aui-shop,.aui-sk{animation:none!important}}
+
+/* กันสไตล์รายการของข้อความแชต (.bubble li มีจุดส้ม + !important) ไม่ให้ทับชิ้นส่วนของ AI */
+.bubble .aui li{padding:0!important}
+.bubble .aui li::before{content:none!important;background:none!important;box-shadow:none!important}
+.bubble .aui ul.aui-list li:not(:has(>.ti))::before{content:""!important;position:static!important;flex:none;width:6px!important;height:6px!important;margin-top:8px;border-radius:50%;background:var(--tone,var(--t-ember))!important}
+.bubble .aui ol.aui-list li::before{content:counter(a)"."!important;position:static!important;flex:none;min-width:18px;color:var(--a-mut)}
+.bubble .aui .aui-tl li::before{content:""!important;position:absolute!important;left:6px!important;top:16px!important;bottom:-2px;width:2px!important;height:auto!important;border-radius:0!important;background:var(--a-line)!important}
+.bubble .aui .aui-tl li:last-child::before{display:none!important}
+.bubble .aui .aui-steps li::before{display:none!important}

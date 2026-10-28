@@ -3058,11 +3058,13 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 <script src="garage-care.js?v=1" defer></script>
 <script src="call-session.js?v=2026-10-23-language1" defer></script>
 <link rel="stylesheet" href="valet.css?v=4">
+<link rel="stylesheet" href="ai-ui.css?v=1">
 <script src="valet-core.js?v=8" defer></script>
 <script src="chat-garage.js?v=1" defer></script>
 <script src="chat-render.js?v=3" defer></script>
 <script src="chat-jobs.js?v=4" defer></script>
 <script src="valet.js?v=9" defer></script>
+<script src="ai-ui.js?v=1" defer></script>
 <script src="bell.js?v=19" defer></script>
 <script src="drop.js?v=5" defer></script>
 <script src="./techs.js"></script>
@@ -5298,6 +5300,7 @@ async function streamAnswer(contents,opts){
   let parsed=parseAsk(m.text);if(window.CendonValet?.guard)parsed=CendonValet.guard(parsed,request);
   m.text=parsed.text; if(parsed.ask)m.ask=parsed.ask; if(parsed.next&&parsed.next.length)m.next=parsed.next;
   if(parsed.acts&&parsed.acts.length)m.acts=parsed.acts;
+  if(parsed.ui)m.ui=parsed.ui;
   try{ if(usage)window.quotaUpdate&&window.quotaUpdate(usage) }catch(e){}
   renderMessages();
   if(m.acts&&window.CendonValet?.wantsAct(request))CendonValet.run(m);
@@ -5319,7 +5322,7 @@ const W_MARK=/[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E\u0300-\u036F\uFE0F\u200D\uDC00-\
 const W_FADE=380;
 function flowNew(body){return{body,target:"",shown:0,acc:0,stamps:[],settled:0,active:null,caret:null,raf:0,last:0,done:false,wait:null,user:false}}
 /* ข้อความที่จะแสดง — ตัดบล็อกฟอร์มถามกลับ [[ASK]] ออก (มันจะกลายเป็นฟอร์มหลังคำตอบจบ ไม่ใช่ขึ้นเป็นโค้ดดิบระหว่างไหล) */
-function flowText(t){return String(t||"").replace(/\[\[(ASK|NEXT|ACT)\]\][\s\S]*$/,"").replace(/\[\[\s*(?:ค้นหา|search)\s*:[^\]\n]*(?:\]\])?/gi,"").replace(/\[\[[^\]\n]{0,70}$/,"").replace(/\[(\[([AN](S(K)?|E(X(T)?)?)?)?)?$/,"")}
+function flowText(t){return String(t||"").replace(/\[\[(ASK|NEXT|ACT|UI)\]\][\s\S]*$/,"").replace(/\[\[\s*(?:ค้นหา|search)\s*:[^\]\n]*(?:\]\])?/gi,"").replace(/\[\[[^\]\n]{0,70}$/,"").replace(/\[(\[([AN](S(K)?|E(X(T)?)?)?)?)?$/,"")}
 function flowSet(f,text){
   if(!f)return;
   f.target=flowText(text);
@@ -5525,6 +5528,9 @@ let lastMeta={cached:false,cacheId:""};
    ตรงนี้แกะออกจากข้อความ แล้วส่งต่อให้หน้าจอวาดเป็นช่องให้กดเลือกหรือพิมพ์
    ถ้าแกะไม่ได้ ก็แค่ทิ้งบล็อกนั้นไป ผู้ใช้จะไม่เห็นโค้ดดิบ ๆ โผล่มาในแชต */
 function parseAsk(txt){
+  /* หน้าจอที่ AI ประกอบเอง [[UI]]{...}[[/UI]] (ai-ui.js ตรวจทุกชิ้นก่อนวาด) — แกะออกก่อน ไม่ให้โผล่เป็นโค้ดดิบ */
+  const uc=window.CendonAIUI?CendonAIUI.cut(txt):{text:String(txt||"").replace(/\[\[UI\]\][\s\S]*?(\[\[\/UI\]\]|$)/g,"").trim(),ui:null};
+  const ui=uc.ui;txt=uc.text;
   /* บล็อกคำสั่งของ Cendon Valet [[ACT]]{...}[[/ACT]] — แกะออกเป็นการ์ด (valet.js) ไม่ให้โผล่เป็นโค้ด */
   const va=window.CendonValet?CendonValet.cut(txt):{text:String(txt||"").replace(/\[\[ACT\]\][\s\S]*?(\[\[\/ACT\]\]|$)/g,"").trim(),acts:[]};
   const acts=va.acts;
@@ -5535,7 +5541,7 @@ function parseAsk(txt){
   if(nx){ try{ next=JSON.parse(nx[1].trim()).filter(x=>typeof x==="string"&&x.trim()).slice(0,3).map(x=>x.slice(0,60)) }catch(e){} }
   const t0=nx?t.replace(nx[0],"").trim():t;
   const m=t0.match(/\[\[ASK\]\]([\s\S]*?)\[\[\/ASK\]\]/);
-  if(!m)return{text:t0,ask:null,next,acts};
+  if(!m)return{text:t0,ask:null,next,acts,ui};
   const clean=t0.replace(m[0],"").trim();
   let ask=null;
   try{
@@ -5550,7 +5556,7 @@ function parseAsk(txt){
     }));
     if(fields.length)ask={title:String(o.title||"").slice(0,90),fields};
   }catch(e){}
-  return{text:clean,ask,next,acts};
+  return{text:clean,ask,next,acts,ui};
 }
 async function gemini(contents,opts){opts=opts||{};
   const au=useFb?await aiUser():null;
@@ -5788,6 +5794,8 @@ function stripForSave(msgs){return msgs.filter(m=>!m.typing).slice(-40).map(m=>{
   if(m.data)o.data=m.data;
   if(m.svc)o.svc=m.svc;
   if(m.acts&&m.acts.length&&window.CendonValet)o.acts=CendonValet.save(m.acts);
+  /* หน้าจอที่ AI ประกอบ + สิ่งที่ผู้ใช้ติ๊กไว้ — เปิดบทสนทนาเก่าแล้วการ์ดยังอยู่ (ไม่เก็บถ้าใหญ่ผิดปกติ) */
+  if(m.ui){try{if(JSON.stringify(m.ui).length<24000){o.ui=m.ui;if(m.uiState)o.uiState=m.uiState}}catch(e){}}
   /* เก็บรหัสไฟล์ (ตัวไฟล์อยู่ใน media-store.js) — เดิมเก็บแค่ชนิด รูปจึงหายหลังปิดแอป */
   if(m.atts&&m.atts.length)o.atts=m.atts.map(a=>a.id?{kind:a.kind,mime:a.mime,name:a.name||"",id:a.id}:{kind:a.kind});
   return o})}
@@ -5811,7 +5819,7 @@ function applyChatJob(job,uid){
   if(!pending){
     let p=m.featureTool?{text:m.text||TT('หยุดแล้วครับ','Stopped.')} : parseAsk(m.text||TT('หยุดแล้วครับ','Stopped.'));
     if(job.status==='complete'&&!m.featureTool&&window.CendonValet?.guard)p=CendonValet.guard(p,request);
-    m.text=p.text;if(p.ask)m.ask=p.ask;if(p.next)m.next=p.next;if(p.acts)m.acts=p.acts;m.jobApplied=true;
+    m.text=p.text;if(p.ask)m.ask=p.ask;if(p.next)m.next=p.next;if(p.acts)m.acts=p.acts;if(p.ui)m.ui=p.ui;m.jobApplied=true;
   }
   if(t.current){renderMessages();if(!pending){saveSession();sending=messages.some(x=>x.streaming||x.typing);updateSend();renderChips();if(job.usage)window.quotaUpdate?.(job.usage);if(job.status==='complete'){
     if(!m.featureTool&&window.CendonValet?.wantsAct(request))CendonValet.run(m,{isCurrent:()=>chatJobTarget(job)?.current===true&&(auth?.currentUser||window.spireAuth?.currentUser)?.uid===uid});
@@ -6267,7 +6275,7 @@ function msgHTML(m){
   if(m.role==="sum")return sumHTML(m.data);
   if(m.typing)return""; /* thinking renders as the spinning mark below (Claude-style) */
   return`<div class="msg ai"><div class="bubble">${!m.streaming&&m.steps&&m.steps.length?traceHTML(m):m.research&&m.research.length?researchHTML(m):""}${
-    mdBlocks(m.text)}${sourcesHTML(m)}${noticeHTML(m)}${m.svc&&window.CendonSearch?CendonSearch.chipHTML(m.svc):""}${m.cached?cachedHTML(m):""}${m.ask?askHTML(m):""}${m.next&&!m.ask?nextHTML(m):""}${m.acts&&window.CendonValet?CendonValet.html(m):""}${m.nav||m.parkOpen?parkBtns(m):""}</div>${actsHTML(m)}</div>`;
+    mdBlocks(m.text)}${sourcesHTML(m)}${noticeHTML(m)}${m.svc&&window.CendonSearch?CendonSearch.chipHTML(m.svc):""}${m.cached?cachedHTML(m):""}${m.ui&&window.CendonAIUI?CendonAIUI.html(m):""}${m.ask?askHTML(m):""}${m.next&&!m.ask?nextHTML(m):""}${m.acts&&window.CendonValet?CendonValet.html(m):""}${m.nav||m.parkOpen?parkBtns(m):""}</div>${actsHTML(m)}</div>`;
 }
 
 /* ── กระบวนการคิดของ AI ──
@@ -6553,7 +6561,7 @@ function scrollBottom(force){
   if(force||sc.scrollHeight-sc.scrollTop-sc.clientHeight<160)sc.scrollTop=sc.scrollHeight;
 }
 
-let pendingAsk=null, pendingMeta=null, pendingActs=null;
+let pendingAsk=null, pendingMeta=null, pendingActs=null, pendingUi=null;
 
 /* AI ตอบเสร็จตอนผู้ใช้สลับไปแอปอื่น → แจ้งบนเครื่อง + เก็บในกระดิ่งหน้าแรก (bell.js เช็กเองว่าหน้านี้ถูกซ่อนอยู่) */
 function bellAi(){
@@ -6565,6 +6573,7 @@ function typewrite(fullText,done){
   dropTyping(); // remove typing placeholder
   const extra={};
   if(pendingAsk){ extra.ask=pendingAsk; pendingAsk=null }
+  if(pendingUi){ extra.ui=pendingUi; pendingUi=null }
   if(pendingActs){ extra.acts=pendingActs; pendingActs=null }
   if(pendingMeta&&pendingMeta.cached){ extra.cached=true; extra.cacheId=pendingMeta.cacheId }
   if(pendingMeta&&pendingMeta.reasoning)extra.reasoning=pendingMeta.reasoning;
@@ -6886,7 +6895,7 @@ async function sendMsg(){
     const ans=parsed.text;
     /* ผูกฟอร์มที่ AI ขอ กับสถานะว่าคำตอบนี้มาจากคลังคำตอบเก่าหรือไม่
        ไว้กับข้อความล่าสุด เพื่อให้ตัววาดหยิบไปแสดงได้ */
-    pendingAsk=parsed.ask; pendingMeta=lastMeta; pendingActs=parsed.acts&&parsed.acts.length?parsed.acts:null;
+    pendingAsk=parsed.ask; pendingMeta=lastMeta; pendingActs=parsed.acts&&parsed.acts.length?parsed.acts:null; pendingUi=parsed.ui||null;
     typewrite(ans||"(ไม่มีคำตอบ)",()=>{
       attachSvc(svc);
       saveSession();
@@ -7002,6 +7011,15 @@ function sessMenu(id,ev){
   },0);
 }
 window.sessMenu=sessMenu; window.renameSession=renameSession;
+/* Intelligent UI (ai-ui.js): ปุ่มในการ์ดส่งข้อความแทนผู้ใช้ · สิ่งที่ติ๊กเก็บกับข้อความนั้น · ร้านจริงดึงด้วยบัญชีของผู้ใช้ */
+addEventListener("DOMContentLoaded",()=>{ if(!window.CendonAIUI)return;
+  CendonAIUI.config({
+    send:text=>{const inp=$("inp");if(!inp||!text)return;if(document.body.dataset.phase!=="thread"&&window.enterThread)window.enterThread();inp.value=text;try{autoSize()}catch(e){}sendMsg()},
+    find:id=>messages.find(m=>m.ui&&m.ui.id===id)||null,
+    save:()=>{try{saveSession()}catch(e){}},
+    token:async()=>{try{const u=typeof aiUser==="function"?await aiUser():null;return u?await u.getIdToken():null}catch(e){return null}},
+  });
+});
 window.sendMsg=sendMsg; window.autoSize=autoSize;
 /* ตัวซิงก์คลาวด์อยู่คนละบล็อกสคริปต์ ต้องเรียกผ่าน window เท่านั้น */
 window.markTheme=markTheme; window.loadSession=loadSession;

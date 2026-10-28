@@ -6,7 +6,7 @@
 import fs from 'fs';
 /* ข้อความอังกฤษที่ประกอบขึ้นตอนแสดงผล ดึงอัตโนมัติไม่ได้ */
 export const EXTRA=['item','items','CENDON PARTNER PROGRAM'];
-export const SHARED=['account.js','account-actions.js','category-pages.js','cendon-line.js','mobile-ui.js'];
+export const SHARED=['account.js','account-actions.js','category-pages.js','cendon-line.js','mobile-ui.js','home-stages.js'];
 const THAI=/[฀-๿]/;
 const val=(q,raw)=>{try{return Function('return '+q+raw+q)()}catch{return raw}};
 export function extract(html,shared=[]){

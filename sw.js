@@ -4,7 +4,7 @@
    หน้าเว็บเป็นไฟล์เดียวที่เปลี่ยนบ่อย จึงถามเน็ตก่อนเสมอ (ไม่งั้นผู้ใช้จะติดอยู่กับเวอร์ชันเก่า)
    แต่รอแค่ครู่เดียว — เน็ตมือถือช้า/ค้าง ต้องไม่ทำให้แอปค้างหน้าจอโหลด
    ══════════════════════════════════════════════════════════════════ */
-const CACHE = 'cendon-v390-first-navigation';
+const CACHE = 'cendon-v391-first-navigation';
 /* หน้าเว็บที่โหลดสำเร็จล่าสุด แยกตู้ไว้และ "ไม่ลบตอนอัปเดตเวอร์ชัน"
    เดิมทุกครั้งที่ deploy ตู้เก่าถูกล้างหมด เปิดแอปครั้งแรกหลังอัปเดตจึงไม่มีของสำรอง
    ต้องรอเน็ตอย่างเดียว — เน็ตมือถือช้าเมื่อไรก็ค้างหน้าจอโหลดของมือถือ */
@@ -18,7 +18,7 @@ const CORE = ['./mileage-session.js?v=1', './mileage-review.js?v=1', './garage-r
 CORE.unshift('./money-fields.js?v=1','./car-info-review.js?v=2','./mileage-sync.js?v=1','./chat-jobs.js?v=4','./primary-material.css?v=1','./shop-search.js?v=5','./shop-search.css?v=4','./shop-images.js?v=1','./display-prefs.js?v=5','./partner-state.js?v=1','./partner-entry.js?v=1','./partner-entry.css?v=1');
 CORE.unshift('./money-fields.js?v=1','./car-info-review.js?v=2','./i18n/ui-en.js?v=4','./ui-language.js?v=15','./car-info-review.js?v=2');
 const BUILD_HEADER = 'X-Cendon-Shell';
-CORE.unshift('./app-navigation.js?v=3','./app-navigation-bridge.js?v=3','./app-navigation.css?v=3','./app-routes.js','./app-pending.js','./app-pending.css?v=1','./page-core.js?v=1','./vendor/barba-core-2.10.3.umd.js');
+CORE.unshift('./app-navigation.js?v=4','./app-navigation-bridge.js?v=3','./app-navigation.css?v=3','./app-routes.js','./app-pending.js','./app-pending.css?v=1','./page-core.js?v=1','./vendor/barba-core-2.10.3.umd.js');
 // An update must not redownload every tool/font/image while the first page boots.
 // Noncritical public code is cached on actual use; hashed runtime survives builds.
 const INSTALL_CORE=[...new Set(CORE)].filter(u=>/^\.\/(?:app-(?:navigation|pending|routes)|page-core|auth-gate|account-scope|account-paint|account\.js|garage-rules|garage-data|input-guard|vendor\/barba|nav\.js|manifest\.|icon192)/.test(u));

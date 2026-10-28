@@ -29,7 +29,9 @@ test('a browser-restored stale document is never shown inside another view',()=>
 test('views crossfade briefly; the view being shown never keeps the leaving state',()=>{
   assert.match(css,/\.app-view\.is-leaving\{visibility:visible;opacity:1;z-index:2;pointer-events:none\}\.app-view\.is-entering\{animation:app-in \.2s /);
   assert.match(css,/@media\(prefers-reduced-motion:reduce\)\{#appProgress,\.app-view\.is-entering\{animation:none\}\}/);
-  assert.match(app,/r\.el\.classList\.remove\('is-leaving'\);\n  if\(was&&was!==r&&was\.el\.isConnected\)\{/);
+  assert.match(app,/r\.el\.classList\.remove\('is-leaving'\);/);
+  assert.match(app,/if\(was&&was!==r&&was\.el\.isConnected&&!immediate\)\{/);
+  assert.ok(app.includes("if(immediate)for(const f of frames.values())f.el.classList.remove('is-leaving','is-entering')"),'a new view replaces its placeholder without bringing the old navbar back');
 });
 
 test('dropdowns start their open animation before the first painted frame (no flash, vanish, fade)',()=>{

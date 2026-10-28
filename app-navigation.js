@@ -80,12 +80,15 @@ async function prepare(url){
   return r;
 }
 function activate(r,url){
-  pending.hide();
+  const immediate=pending.visible;pending.hide();
   const ns=r.el.dataset.cendonView,was=frames.get(active);
   // Crossfade: the previous view stays painted underneath while the next fades in.
   // The bottom bar sits in the same place in both, so it reads as staying put.
   r.el.classList.remove('is-leaving');
-  if(was&&was!==r&&was.el.isConnected){
+  // A cold destination already replaced the previous screen with honest chrome.
+  // Fading from the old document again flashes its differently positioned nav.
+  if(immediate)for(const f of frames.values())f.el.classList.remove('is-leaving','is-entering');
+  if(was&&was!==r&&was.el.isConnected&&!immediate){
     was.el.classList.add('is-leaving');r.el.classList.remove('is-entering');void r.el.offsetWidth;r.el.classList.add('is-entering');
     clearTimeout(r.fade);r.fade=setTimeout(()=>{r.el.classList.remove('is-entering');for(const f of frames.values())if(f!==frames.get(active))f.el.classList.remove('is-leaving');},240);
   }

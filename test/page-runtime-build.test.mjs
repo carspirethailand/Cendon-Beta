@@ -3,17 +3,21 @@ import assert from 'node:assert/strict';
 import {mkdtemp,readFile,writeFile,readdir,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve,relative} from 'node:path';
-import {buildPageRuntime} from '../tools/build-page-runtime.mjs';
+import {buildPageRuntime,cssFromRoot} from '../tools/build-page-runtime.mjs';
 test('public runtime build reuses identical classic code without altering order, attributes or page-specific entry',async()=>{
  const dir=await mkdtemp(join(tmpdir(),'cendon-runtime-test-'));
  try{const shared='window.shared=(window.shared||0)+1;/*'+'public code '.repeat(1100)+'*/',unique='window.page="home";/*'+'unique '.repeat(1600)+'*/';
   const original='<html><head></head><body><div id="before"></div><script id="common">'+shared+'</script><div id="after"></div><script id="own">'+unique+'</script><script type="application/json">'+JSON.stringify({large:'x'.repeat(11000)})+'</script></body></html>';
   for(const name of ['index','garage','profile','news','spares','chat'])await writeFile(join(dir,name+'.html'),name==='index'?original:original.replace(/<script id="own">[\s\S]*?<\/script>/,''));
-  const result=await buildPageRuntime(dir),html=await readFile(join(dir,'index.html'),'utf8');assert.equal(result.assets,1);assert.equal((await readdir(join(dir,'runtime'))).length,1);
+  const result=await buildPageRuntime(dir),html=await readFile(join(dir,'index.html'),'utf8');assert.equal(result.assets,2);assert.equal((await readdir(join(dir,'runtime'))).length,2);
   assert.match(html,/<script id="common" src="\/runtime\/[a-f0-9]{24}\.js"><\/script>/);assert.ok(html.indexOf('id="before"')<html.indexOf('id="common"')&&html.indexOf('id="common"')<html.indexOf('id="after"'));
-  assert.ok(html.includes('<script id="own">'+unique+'</script>'),'unique primary entry remains inline');assert.match(html,/<script type="application\/json">/);assert.match(html,/fetchpriority="low"/);assert.doesNotMatch(html,/\beval\(|data-barba|iframe/);
-  const file=(await readdir(join(dir,'runtime')))[0];assert.equal(await readFile(join(dir,'runtime',file),'utf8'),shared);
+  assert.match(html,/<script id="own" src="\/runtime\/[a-f0-9]{24}\.js"><\/script>/,'unique entry is cacheable but executes at its original position');assert.match(html,/<script type="application\/json">/);assert.match(html,/fetchpriority="low"/);assert.doesNotMatch(html,/\beval\(|data-barba|iframe/);
+  const bodies=await Promise.all((await readdir(join(dir,'runtime'))).map(f=>readFile(join(dir,'runtime',f),'utf8')));assert.ok(bodies.includes(shared));assert.ok(bodies.includes(unique));
  }finally{const rel=relative(resolve(tmpdir()),resolve(dir));assert.ok(rel&&!rel.startsWith('..')&&rel.startsWith('cendon-runtime-test-'));await rm(dir,{recursive:true})}
+});
+test('CSS extraction rebases root images without rewriting embedded SVG URLs or document fragments',()=>{
+ const s=`a{background:url('premium_part.png')}b{background:url("data:image/svg+xml,<svg><path fill='url(%23fade)'/></svg>")}c{filter:url(#local)}/* url(other.png) */`;
+ const r=cssFromRoot(s);assert.equal(r.fragment,true);assert.ok(r.css.includes("url('/premium_part.png')"));assert.ok(r.css.includes("fill='url(%23fade)'"));assert.ok(r.css.includes('url(#local)'));assert.ok(r.css.includes('/* url(other.png) */'));
 });
 test('tab navigation never uses a timer as proof of readiness, and validates stale tabs before showing them',async()=>{
  const s=await readFile(new URL('../tab-shell.js',import.meta.url),'utf8');assert.doesNotMatch(s,/setTimeout\(\(\)=>\{f\.ready=true/);assert.doesNotMatch(s,/setTimeout\(\(\)=>W\.CendonTabs\.ready/);

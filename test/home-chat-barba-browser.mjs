@@ -22,7 +22,7 @@ const server=createServer(async(req,res)=>{try{
 await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
 const pkg=process.env.CENDON_NODE_PACKAGES;if(!pkg)throw Error('Set CENDON_NODE_PACKAGES to a node_modules folder that contains playwright');
 const {chromium}=await import(pathToFileURL(join(pkg,'playwright','index.mjs')).href);
-const browser=await chromium.launch({headless:true}),context=await browser.newContext({viewport:{width:393,height:852},hasTouch:true,isMobile:true,serviceWorkers:'block'});
+const browser=await chromium.launch({headless:true,channel:process.env.CENDON_CHROME_CHANNEL||undefined}),context=await browser.newContext({viewport:{width:393,height:852},hasTouch:true,isMobile:true,serviceWorkers:'block'});
 const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
 await context.route('**/*',async route=>{const u=new URL(route.request().url());if(u.origin===base)return route.continue();
   if(u.hostname==='www.gstatic.com'&&u.pathname.includes('firebase'))return route.fulfill({contentType:'text/javascript',body:firebase});

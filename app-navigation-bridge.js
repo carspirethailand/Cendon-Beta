@@ -1,7 +1,7 @@
 /* Early, same-origin lifecycle adapter for Barba's retained legacy views. */
 (function(W,D){'use strict';
   const frame=W.frameElement;if(!frame?.dataset.cendonView)return;
-  const P=W.parent,ns=frame.dataset.cendonView;let hidden=false,inCall=false,callApi=null,dirty=false;
+  const P=W.parent,ns=frame.dataset.cendonView;let hidden=!frame.classList.contains('is-active'),inCall=false,callApi=null,dirty=false;
   let initRoot=W.location.href;const initLayers=[];
   // Resolve at call time so page hooks (e.g. the bottom-nav highlight) still observe URL changes.
   const replace=(...a)=>W.history.replaceState(...a);
@@ -26,6 +26,11 @@
     const u=new URL(raw,W.location),clean=p=>p.replace(/\.html$/,'').replace(/\/$/,'')||'/';
     if(clean(u.pathname)===clean(W.location.pathname)&&u.search===W.location.search&&u.hash===W.location.hash)return;
     if(W.CendonPageEntry){await W.CendonPageEntry(u.href);return;}
+    // Primary controls may already be usable while Nav's deferred feature
+    // registry is still parsing. Keep a requested deep link, not a false error.
+    if(W.CendonPageCore?.ready()&&!W.Nav?.started&&D.readyState==='loading'){
+      const began=Date.now();while(!W.Nav?.started&&D.readyState==='loading'&&Date.now()-began<18000)await new Promise(r=>setTimeout(r,40));
+    }
     if(W.Nav?.started&&W.Nav.owns(u.href)){
       await W.Nav.visit(u.href);
       W.CendonView.adoptSingleEntry();
@@ -39,7 +44,7 @@
     // Unknown deep routes do not silently discard a draft or a live call.
     throw Error('route-not-ready');
   }
-  W.CendonView={navigate,setHidden,history:viewHistory,expandCall:()=>callApi?.expand?.(),adoptSingleEntry(){
+  W.CendonView={navigate,setHidden,history:viewHistory,get visible(){return !hidden&&!P.document.hidden;},expandCall:()=>callApi?.expand?.(),adoptSingleEntry(){
     const layers=W.Nav?.stack||[],state=P.history.state;let i=state?.index;
     // A cross-tab deep link may represent several panels but only ONE parent
     // history entry. Count only consecutive matching entries when closing them.
@@ -70,7 +75,13 @@
     };
   }
   function check(){wrapCall();const r=D.documentElement;
-    if(D.readyState!=='loading'&&D.body&&r.dataset.gate!=='1'&&r.dataset.level!=='pending'&&(ns!=='home'||!W.Nav||W.Nav.started)){host().ready(ns,{root:initRoot,layers:initLayers});return;}
+    // A page can prove its primary controls ready before unrelated footer tools.
+    // Deep links still wait for their router; neither a timer nor markup alone
+    // can bypass the live UID or existing account presentation gates.
+    const path=W.location.pathname.replace(/\.html$/,'').replace(/\/$/,'')||'/';
+    const base=({home:'/',garage:'/garage',profile:'/profile',news:'/news',spares:'/spares',chat:'/chat'})[ns];
+    const early=path===base&&!W.location.search&&W.CendonPageCore?.ready();
+    if((D.readyState!=='loading'||early)&&D.body&&r.dataset.gate!=='1'&&r.dataset.level!=='pending'&&(ns!=='home'||!W.Nav||W.Nav.started)){host().ready(ns,{root:initRoot,layers:initLayers});return;}
     setTimeout(check,40);
   }
   check();D.addEventListener('DOMContentLoaded',wrapCall,{once:true});W.addEventListener('load',wrapCall,{once:true});

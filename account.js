@@ -485,7 +485,13 @@
     bind();
   }
   D.addEventListener('cendon:auth-ready',boot);
+  // Retained views can finish their real primary handlers before optional
+  // footer tools. Restore identity/onboarding then, not after the whole footer.
+  D.addEventListener('cendon:primary-ready',boot,{once:true});
   /* คนที่เปิดลิงก์ใบงานแบบไม่ล็อกอิน ปิดใบงานแล้วกลับมาหน้าแอป → พาไปหน้าเข้าสู่ระบบ */
   if(typeof W.addEventListener==='function')W.addEventListener('popstate',()=>{if(signedOut&&!LOGIN&&!current()&&!tripPath())setTimeout(()=>{if(!current()&&!tripPath())toLogin()},60)});
-  if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+  if(D.readyState==='loading'){
+    if(W.CendonView&&W.CendonPageCore)boot();
+    D.addEventListener('DOMContentLoaded',boot,{once:true});
+  }else boot();
 })(window,document);

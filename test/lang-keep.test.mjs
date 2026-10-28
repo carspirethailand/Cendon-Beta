@@ -37,5 +37,5 @@ test('changing the language in Settings is saved to the account; reloads never c
 test('cloud sync never pulls an old value over a change made on this device that is not uploaded yet', () => {
   for(const f of ['garage.html','chat.html'])
     assert.match(r(f),/const cur=localStorage\.getItem\("spire_"\+k\);\n    if\(cur!==null&&sn0\[k\]!==undefined&&sig\(cur\)!==sn0\[k\]\)\{m\[k\]=Date\.now\(\);return\}/,f);
-  for(const f of ['index.html','spares.html','news.html','garage.html','profile.html','chat.html'])assert.match(r(f),/account\.js\?v=2026-10-21-r2/,f);
+  for(const f of ['index.html','spares.html','news.html','garage.html','profile.html','chat.html'])assert.match(r(f),/account\.js\?v=2026-10-28-r1/,f);
 });

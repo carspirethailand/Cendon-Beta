@@ -57,14 +57,14 @@ export function emblem(cv,o={}){
   let vis=true,raf=0,dead=false,w=0,ht=0,t0=performance.now(),tx=0,px=0;
   const size=()=>{const r=cv.getBoundingClientRect();if(r.width===w&&r.height===ht)return;w=r.width;ht=r.height;if(!w||!ht)return;R.setSize(w,ht,false);C.aspect=w/ht;C.updateProjectionMatrix()};
   const frame=n=>{
-    if(dead)return;if(!cv.isConnected)return fx.stop();size();const T=(n-t0)/1000;px+=(tx-px)*.05;
+    if(dead)return;if(!cv.isConnected)return fx.stop();if(document.hidden||window.CendonView&&!CendonView.visible)return;size();const T=(n-t0)/1000;px+=(tx-px)*.05;
     rig.position.y=Math.sin(T*.9)*.12;logo.rotation.y=Math.sin(T*.5)*.45+px*.35+(o.spin?T*.4:0);logo.rotation.x=Math.sin(T*.35)*.06;
     if(h)h.userData.U.uT.value=T;
     R.render(S,C);
-    if(!calm&&vis&&!document.hidden)raf=requestAnimationFrame(frame);
+    if(!calm&&vis&&!document.hidden&&(!window.CendonView||CendonView.visible))raf=requestAnimationFrame(frame);
   };
   const io=new IntersectionObserver(([e])=>{vis=e.isIntersecting;cancelAnimationFrame(raf);if(vis)raf=requestAnimationFrame(frame)});io.observe(cv);
-  const onVis=()=>{cancelAnimationFrame(raf);if(!document.hidden&&vis)raf=requestAnimationFrame(frame)};document.addEventListener('visibilitychange',onVis);
+  const onVis=()=>{cancelAnimationFrame(raf);if(!document.hidden&&vis&&(!window.CendonView||CendonView.visible))raf=requestAnimationFrame(frame)};document.addEventListener('visibilitychange',onVis);
   const onMove=e=>{const r=cv.getBoundingClientRect();tx=Math.max(-1,Math.min(1,(e.clientX-(r.left+r.width/2))/Math.max(200,r.width)))};
   addEventListener('pointermove',onMove,{passive:true});
   raf=requestAnimationFrame(frame);

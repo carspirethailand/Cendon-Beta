@@ -15,7 +15,7 @@ function fixture({fetcher=async()=>new Response('fresh')}={}){
   const self={location:new URL('sw.js',BASE),addEventListener:(name,fn)=>listeners[name]=fn,skipWaiting(){},
     registration:{navigationPreload:{async enable(){}},async showNotification(){}},clients:{async claim(){}}};
   class LocalRequest extends Request{constructor(u,options){super(new URL(u,BASE),options)}}
-  vm.runInNewContext(source,{self,caches,URL,Set,Headers,Request:LocalRequest,Response,
+  vm.runInNewContext(source,{self,caches,URL,Set,Headers,Request:LocalRequest,Response,AbortController,
     fetch:async(...args)=>{requests.push(args);return fetcher(...args)},setTimeout:(fn,ms)=>{timers.push({fn,ms});return timers.length;}});
   return {pool,requests,timers,listeners,caches,
     async seed(path,{build=BUILD,text='cached',cache='cendon-pages'}={}){
@@ -84,6 +84,31 @@ test('idle Garage warmup fetches public static markup only, never boots a hidden
  assert.equal(f.requests.length,1);assert.equal(f.requests[0][0],BASE+'garage?__cendon_document=1');assert.equal(f.requests[0][1].credentials,'omit');
  const e=f.dispatch('/garage');assert.equal(await(await e.response).text(),'<html>public app code</html>');await Promise.all(e.pending);
  const before=f.requests.length;f.listeners.message({data:{type:'cendon:warm-garage'},source:{url:'https://evil.test/'},waitUntil:p=>pending.push(p)});assert.equal(f.requests.length,before);
+});
+
+test('a service-worker update installs a small navigation core, not every tool, font and image',async()=>{
+ const fetched=[],f=fixture({fetcher:async req=>{fetched.push(typeof req==='string'?req:req.url);return new Response('public code')}}),pending=[];
+ f.listeners.install({waitUntil:p=>pending.push(p)});await Promise.all(pending);
+ assert.ok(fetched.length<20);assert.ok(fetched.some(x=>x.includes('app-navigation.js')));
+ assert.ok(!fetched.some(x=>/fx3d|three|vehicle-audio|\.woff2|img\/cars/.test(x)));
+});
+
+test('hashed CSS survives builds like hashed JavaScript, without a network revalidation',async()=>{
+ const f=fixture();const p='/runtime/'+'a'.repeat(24)+'.css';await f.seed(p,{cache:'cendon-code-v1'});
+ const e=f.dispatch(p,{mode:'cors',destination:'style'});assert.equal(await(await e.response).text(),'cached');assert.equal(f.requests.length,0);
+});
+
+test('foreground Garage does not wait for optional warmup assets; a tap aborts that warmup only',async()=>{
+ const p='/runtime/'+'b'.repeat(24)+'.js',pending=[],assetStarted=deferred();let assetSignal;
+ const html='<script src="'+p+'"></script><script src="https://other.test/x.js"></script><img src="/api/private">';
+ const f=fixture({fetcher:async (url,options)=>{
+  if(String(url).includes('/runtime/')){assetSignal=options.signal;assetStarted.resolve();return new Promise((_,reject)=>options.signal.addEventListener('abort',()=>reject(Error('aborted')),{once:true}));}
+  return new Response(html,{headers:{'Content-Type':'text/html'}});
+ }});
+ const source={url:BASE,id:'fixture-client'};f.listeners.message({data:{type:'cendon:warm-garage'},source,waitUntil:p=>pending.push(p)});await assetStarted.promise;
+ const e=f.dispatch('/garage');assert.equal(await(await e.response).text(),html,'HTML is ready even while the optional script never completes');
+ f.listeners.message({data:{type:'cendon:stop-warm'},source,waitUntil:p=>pending.push(p)});assert.equal(assetSignal.aborted,true);await Promise.all([...pending,...e.pending]);
+ assert.ok(f.requests.every(([u])=>String(u).startsWith(BASE)));assert.ok(!f.requests.some(([u])=>String(u).includes('/api/')));
 });
 for(const [path,options] of [['/api/tech',{}],['/api/cars',{}],['/garage',{headers:{Authorization:'Bearer fixture-only'}}],['/admin',{}],['/login-submit',{method:'POST'}],['https://other.test/garage',{}]])test('protected/non-shell request is never cached/intercepted: '+path,async()=>{
   const f=fixture();const e=f.dispatch(path,options);assert.equal(e.response,undefined);assert.equal(f.requests.length,0);

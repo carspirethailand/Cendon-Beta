@@ -25,7 +25,7 @@ try{
  await page.addInitScript(()=>{localStorage.setItem('cendon_signed','1');localStorage.setItem('spire___owner','fixture');});
  await page.goto(base+'/');await page.waitForFunction(()=>window.barba?.version==='2.10.3'&&window.CendonApp);await current('home');
  const home=view('home'),boot=await home.evaluate(()=>window.boot);await home.locator('#draft').fill('Do not lose this form');
- delay=850;await page.evaluate(()=>CendonApp.go('/garage'));await page.waitForTimeout(300);assert.equal(await page.locator('iframe.is-active').getAttribute('data-cendon-view'),'home','previous screen stays visible while new data gates settle');
+ delay=850;const pendingAt=Date.now();await page.evaluate(()=>CendonApp.go('/garage'));await page.waitForSelector('#appPending:not([hidden])');assert.ok(Date.now()-pendingAt<500,'destination chrome responds without waiting for the document');assert.equal(await page.locator('#appPending h1').textContent(),'การาจ');assert.equal(await page.locator('iframe.is-active').getAttribute('data-cendon-view'),'home','previous document stays mounted while new data gates settle');
  await current('garage');await page.waitForFunction(()=>!barba.transitions.isRunning);const garage=view('garage'),garageBoot=await garage.evaluate(()=>window.boot);await garage.locator('#draft').fill('garage draft');
  await navigate('/','home');assert.equal(await home.evaluate(()=>window.boot),boot);assert.equal(await home.locator('#draft').inputValue(),'Do not lose this form');
  const start=Date.now();await navigate('/garage','garage');const retainedMs=Date.now()-start;assert.ok(retainedMs<500,'retained tab should not wait for another document load');assert.equal(await garage.evaluate(()=>window.boot),garageBoot);
@@ -37,6 +37,8 @@ try{
  await garage.locator('#program').click();await current('news');await page.waitForFunction(()=>!barba.transitions.isRunning);
  await navigate('/garage/detail/review','garage');assert.equal(await garage.locator('body').getAttribute('data-review'),'1');await garage.evaluate(()=>Nav.home());await current('news');await page.waitForFunction(()=>!barba.transitions.isRunning);assert.equal(new URL(page.url()).pathname,'/news','closing a deep-link panel chain consumes only its actual host entries');
  await navigate('/chat','chat');const chat=view('chat');await chat.evaluate(()=>{startCall();window.callIdentity={id:crypto.randomUUID()};});const callId=await chat.evaluate(()=>callIdentity.id);
+ // Cancel an unready destination without hanging up or flashing it afterwards.
+ await page.evaluate(()=>{CendonApp.go('/profile');CendonApp.go('/chat');});await page.waitForTimeout(300);assert.equal(await page.locator('#appPending').isHidden(),true);await page.waitForFunction(()=>!barba.transitions.isRunning);assert.equal(await page.evaluate(()=>CendonApp.current().namespace),'chat');assert.equal(await chat.evaluate(()=>callIdentity.id),callId);
  await navigate('/','home');assert.equal(await page.evaluate(()=>CendonCallShell.active()),true);assert.equal(await chat.evaluate(()=>callIdentity.id),callId);assert.equal(await chat.evaluate(()=>document.hidden),false);assert.equal(await page.locator('#appCall').isVisible(),true);
  await page.locator('#appCall').click();await current('chat');await page.waitForFunction(()=>!barba.transitions.isRunning);await chat.evaluate(()=>endCall());
  // A failed Barba request must not unload the current page or discard a draft.

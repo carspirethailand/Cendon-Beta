@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <script>/* ธีมตั้งแต่เฟรมแรก (ก่อน CSS วาด) — เดิมหน้าเปิดด้วยธีมตั้งต้นแวบหนึ่งแล้วค่อยสลับ (แชตขึ้นจอดำ) ดูเหมือนกระพริบ/กระตุก */(function(){try{var O={warm:"light",pearl:"light",emerald:"light",plant:"light",moss:"light",carbon:"dark",night:"dark",midnight:"dark",cyber:"dark",aurora:"dark",ocean:"dark",sunset:"dark",magma:"dark"},v=null;try{v=JSON.parse(localStorage.getItem("spire_theme"))}catch(e){}if(typeof v!=="string")try{v=JSON.parse(localStorage.getItem("spire_chatTheme"))}catch(e){}v=v==="light"||v==="dark"?v:(O[v]||"light");var e=document.documentElement;e.setAttribute("data-theme",v);e.setAttribute("data-ctheme",v)}catch(x){}})();</script>
-<script src="/app-navigation-bridge.js?v=2"></script>
+<script src="/app-navigation-bridge.js?v=3"></script>
 <script src="/tab-shell.js?v=6"></script>
 <script>/* เปิด /messages (กดแท็บแชตจากหน้าอื่น หรือลิงก์แจ้งเตือน): ซ่อนหน้าแรกไว้จนกล่องข้อความขึ้น — ไม่ให้หน้าแรกโผล่ก่อนแล้วแชตค่อยตามมา
    กันค้าง: ถ้ากล่องข้อความไม่ขึ้นใน 4 วิ เปิดหน้าตามปกติ */
@@ -25,7 +25,7 @@ html.ib-boot .bs .pn,html.ib-boot .bs .bg{transition:none!important}</style>
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
 <script src="/cendon-tour.js" defer></script>
 <script src="/account-actions.js?v=3" defer></script>
-<script src="/account.js?v=2026-10-21-r2" defer></script>
+<script src="/account.js?v=2026-10-28-r1" defer></script>
 <script src="/garage-rules.js?v=5" defer></script>
 <script src="/garage-data.js?v=2" defer></script>
 <script src="/input-guard.js?v=6" defer></script>
@@ -4466,10 +4466,18 @@ function photoPage(){
 function fx3d(cv,o){
   if(!cv||(navigator.connection&&navigator.connection.saveData))return;
   if((navigator.hardwareConcurrency||8)<=4||(navigator.deviceMemory||8)<=3)return;
-  const go=()=>{if(!cv.isConnected)return;import("/fx3d.js?v=1").then(M=>{if(!cv.isConnected)return;M.emblem(cv,o);cv.parentElement.classList.add("fx-on")}).catch(()=>{})};
-  const idle=()=>window.requestIdleCallback?requestIdleCallback(go,{timeout:1500}):setTimeout(go,300);
-  const settled=()=>{const n=performance.getEntriesByType("navigation")[0],end=n&&n.loadEventEnd||performance.now();setTimeout(idle,Math.max(0,end+2500-performance.now()))};
-  const start=()=>{if(!cv.isConnected)return;if(document.readyState==="complete")settled();else addEventListener("load",settled,{once:true})};
+  let timer=0,idleId=0,started=false,visible=false,loading=false,mod=null;
+  const foreground=()=>!document.hidden&&(!window.CendonView||CendonView.visible);
+  const cancel=()=>{clearTimeout(timer);timer=0;if(idleId&&window.cancelIdleCallback)cancelIdleCallback(idleId);idleId=0};
+  const dispose=()=>{cancel();document.removeEventListener("visibilitychange",changed)};
+  const go=()=>{idleId=0;if(!cv.isConnected)return dispose();if(!foreground()||!visible||started||loading)return;
+    if(mod){started=true;dispose();try{mod.emblem(cv,o);cv.parentElement.classList.add("fx-on")}catch(e){}return}
+    loading=true;import("/fx3d.js?v=2").then(M=>{mod=M;loading=false;if(foreground())go()}).catch(()=>{loading=false;dispose()})};
+  const idle=()=>{if(!foreground()||!visible)return;idleId=window.requestIdleCallback?requestIdleCallback(go,{timeout:1500}):0;if(!idleId)timer=setTimeout(go,300)};
+  const settled=()=>{cancel();if(!cv.isConnected)return dispose();if(!foreground()||!visible||started)return;const n=performance.getEntriesByType("navigation")[0],end=n&&n.loadEventEnd||performance.now();timer=setTimeout(idle,Math.max(0,end+2500-performance.now()))};
+  function changed(){if(!foreground())cancel();else if(visible)settled()}
+  document.addEventListener("visibilitychange",changed);
+  const start=()=>{if(!cv.isConnected)return dispose();visible=true;if(document.readyState==="complete")settled();else addEventListener("load",settled,{once:true})};
   if(!window.IntersectionObserver)return start();
   const io=new IntersectionObserver(es=>{if(!cv.isConnected)return io.disconnect();if(!es.some(e=>e.isIntersecting))return;io.disconnect();start()});io.observe(cv);
 }

@@ -113,7 +113,7 @@ const edge=()=>stage==="ai"?atBottom():atTop();
 const want=dy=>stage==="ai"?dy>0:dy<0;
 /* เพิ่งเลื่อนมาถึงขอบ = ยังไม่นับเป็นการ "ดันต่อ" — ต้องค้างที่ขอบอีกครู่ (กันล้อเมาส์เด้งข้ามช่วงโดยไม่ตั้งใจ) */
 let acc=0,lastWheel=0,gestureEdge=false,edgeAt=0,wasEdge=false;
-const dwell=()=>performance.now()-edgeAt>350;
+const dwell=()=>performance.now()-edgeAt>220;
 addEventListener("scroll",()=>{const e=edge();if(e&&!wasEdge)edgeAt=performance.now();wasEdge=e},{passive:true});
 addEventListener("wheel",e=>{
   if(busy||blocked()||e.ctrlKey||Math.abs(e.deltaX)>Math.abs(e.deltaY))return;
@@ -122,17 +122,29 @@ addEventListener("wheel",e=>{
   lastWheel=now;
   if(now<cool||!gestureEdge||!want(e.deltaY)||typing(e.target)){return}
   acc+=Math.abs(e.deltaY);
-  if(acc>70){acc=0;go(stage==="ai"?"call":"ai")}
+  if(acc>40){acc=0;go(stage==="ai"?"call":"ai")}
 },{passive:true});
-let ty=0,tx=0,tEdge=false,tOn=false;
-addEventListener("touchstart",e=>{tOn=e.touches.length===1&&!busy&&!blocked();if(!tOn)return;ty=e.touches[0].clientY;tx=e.touches[0].clientX;tEdge=edge()},{passive:true});
+/* นิ้ว: ปัดขึ้นที่ท้ายช่วง 1 / ดึงลงที่ต้นช่วง 2 · ง่ายขึ้น: ปัดสั้น ๆ ก็พอ (≥48px) หรือสะบัดเร็ว (≥24px) และขอบนับเมื่อห่างขอบไม่เกิน 24px
+   ช่วงดึงลงที่ต้นหน้า เบราว์เซอร์มือถือจะตีความเป็น "ดึงเพื่อรีเฟรช" — กันไว้ด้วย preventDefault ตอนดึงลงที่ต้นช่วง 2 (และ overscroll-behavior ใน CSS)
+   ระหว่างลากหน้าขยับตามนิ้วเล็กน้อยให้รู้ว่ากำลังจะสลับ */
+let ty=0,tx=0,tt=0,tEdge=false,tOn=false,pulled=false;
+const box=$("hmStages"),near=()=>stage==="ai"?atBottom():W.scrollY<=24;
+function pull(px,anim){box.style.transition=anim?"transform .26s cubic-bezier(.22,1,.36,1)":"none";box.style.transform=px?`translate3d(0,${px}px,0)`:"";pulled=!!px;if(anim)setTimeout(()=>{if(!pulled)box.style.transition=""},300)}
+addEventListener("touchstart",e=>{tOn=e.touches.length===1&&!busy&&!blocked();if(!tOn)return;ty=e.touches[0].clientY;tx=e.touches[0].clientX;tt=performance.now();tEdge=near();if(pulled)pull(0)},{passive:true});
+addEventListener("touchmove",e=>{
+  if(!tOn||!tEdge||busy||typing(e.target))return;
+  const t=e.touches[0],dy=t.clientY-ty,dx=t.clientX-tx;
+  if(Math.abs(dy)<8||Math.abs(dy)<Math.abs(dx)*1.4||!want(-dy)||!near())return;
+  if(e.cancelable)e.preventDefault();
+  pull(Math.max(-46,Math.min(46,dy*.35)));
+},{passive:false});
 addEventListener("touchend",e=>{
   if(!tOn)return;tOn=false;
-  const t=e.changedTouches[0],dy=t.clientY-ty,dx=t.clientX-tx;
-  if(performance.now()<cool||!tEdge||typing(e.target)||Math.abs(dy)<70||Math.abs(dy)<Math.abs(dx)*1.6)return;
-  if(stage==="ai"&&dy<0)go("call");else if(stage==="call"&&dy>0)go("ai");
+  const t=e.changedTouches[0],dy=t.clientY-ty,dx=t.clientX-tx,ms=Math.max(1,performance.now()-tt),fast=Math.abs(dy)/ms>.45;
+  const ok=performance.now()>=cool&&tEdge&&!typing(e.target)&&want(-dy)&&Math.abs(dy)>=(fast?24:48)&&Math.abs(dy)>=Math.abs(dx)*1.4;
+  if(ok){pull(0);go(stage==="ai"?"call":"ai")}else if(pulled)pull(0,true);
 },{passive:true});
-addEventListener("touchcancel",()=>{tOn=false},{passive:true});
+addEventListener("touchcancel",()=>{tOn=false;if(pulled)pull(0,true)},{passive:true});
 addEventListener("keydown",e=>{
   if(busy){if(/^(ArrowUp|ArrowDown|PageUp|PageDown|Home|End| )$/.test(e.key)&&!typing(e.target))e.preventDefault();return}
   if(typing(e.target)||e.altKey||e.ctrlKey||e.metaKey||blocked())return;

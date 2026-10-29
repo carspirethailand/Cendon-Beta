@@ -69,7 +69,9 @@ test('gestures only work at the edge, start there, and cannot be triggered by si
   assert.match(js,/const edge=\(\)=>stage==="ai"\?atBottom\(\):atTop\(\);/);
   assert.match(js,/gestureEdge=edge\(\)&&dwell\(\)/);
   assert.match(js,/Math\.abs\(e\.deltaX\)>Math\.abs\(e\.deltaY\)/);
-  assert.match(js,/Math\.abs\(dy\)<70\|\|Math\.abs\(dy\)<Math\.abs\(dx\)\*1\.6/);
+  assert.match(js,/Math\.abs\(dy\)>=\(fast\?24:48\)&&Math\.abs\(dy\)>=Math\.abs\(dx\)\*1\.4/,'short swipe or quick flick is enough');
+  assert.match(js,/if\(acc>40\)\{acc=0;go\(/);assert.match(js,/const dwell=\(\)=>performance\.now\(\)-edgeAt>220;/);
+  assert.match(js,/near=\(\)=>stage==="ai"\?atBottom\(\):W\.scrollY<=24/,'edge tolerance for touch');
   assert.match(js,/typing\(e\.target\)/);
   assert.ok(!/addEventListener\("wheel",[^)]*\{passive:false\}/.test(js.replace(/sky\.addEventListener[^\n]*/,'')),'page wheel scrolling is never hijacked');
 });
@@ -85,7 +87,7 @@ test('clouds are the settings-page theme clouds (cloud-swap.js), not a private c
   /* ยังเป็นของเดิมทุกอย่าง: หมอกทึบแล้วค่อยสลับ · ดักปุ่มธีม/ภาษา/สี */
   assert.match(cs,/vin\.onfinish=function\(\)\{\s*doApply\(\);\s*var vout=veil\.animate\(/);
   assert.match(cs,/var THEME_SEL='button\[data-sitetheme\],#v-settings button\[data-theme\],\.th-opt\[data-th\]'/);
-  assert.match(page,/<script src="\/cloud-swap\.js\?v=5" defer><\/script>\n<script src="home-stages\.js\?v=3" defer><\/script>/);
+  assert.match(page,/<script src="\/cloud-swap\.js\?v=5" defer><\/script>\n<script src="home-stages\.js\?v=4" defer><\/script>/);
   for(const f of ['chat.html','garage.html','news.html','profile.html','spares.html'])assert.match(r(f),/<script src="\/cloud-swap\.js\?v=5" defer><\/script>/,f);
   assert.match(sw,/'\.\/cloud-swap\.js\?v=5'/);
 });
@@ -110,8 +112,8 @@ test('home tab while on stage 2 goes back to the AI stage; stage is restored on 
 
 test('new strings are routed through the shared translator and the files are cached by the service worker',()=>{
   assert.match(js,/const T=\(th,en\)=>W\.spireT\?W\.spireT\(th,en\):th;/);
-  assert.match(sw,/'\.\/home-stages\.css\?v=3'/);assert.match(sw,/'\.\/home-stages\.js\?v=3'/);
-  assert.match(page,/href="home-stages\.css\?v=3"/);assert.match(page,/<script src="home-stages\.js\?v=3" defer><\/script>/);
+  assert.match(sw,/'\.\/home-stages\.css\?v=4'/);assert.match(sw,/'\.\/home-stages\.js\?v=4'/);
+  assert.match(page,/href="home-stages\.css\?v=4"/);assert.match(page,/<script src="home-stages\.js\?v=4" defer><\/script>/);
   assert.match(r('i18n/extract.mjs'),/'home-stages\.js'\]/);
 });
 
@@ -137,4 +139,18 @@ test('clouds use the desktop cloud size on narrow screens and the exact desktop 
   assert.match(cs,/Math\.max\(3,Math\.round\(n\*s\)\)/);
   assert.ok(!/max-aspect-ratio/.test(cs),'no squeezed portrait override');
   assert.match(cs,/el\.getAttribute\('data-k'\)===key/,'rebuilt when the screen class changes (rotation)');
+});
+
+test('pulling down at the top of stage 2 switches stages instead of refreshing the page',()=>{
+  /* เบราว์เซอร์มือถือตีความดึงลงที่ต้นหน้าเป็น "ดึงเพื่อรีเฟรช" — ต้องกันทั้งใน CSS และตอนดึงจริง */
+  assert.match(css,/html:has\(#vMenu:not\(\[hidden\]\)\),html:has\(#vMenu:not\(\[hidden\]\)\) body\{overscroll-behavior-y:contain\}/);
+  assert.match(js,/addEventListener\("touchmove",e=>\{[\s\S]*?if\(e\.cancelable\)e\.preventDefault\(\);\s*pull\(/);
+  assert.match(js,/\},\{passive:false\}\);\s*addEventListener\("touchend"/);
+  /* ไม่ preventDefault ถ้าไม่ได้อยู่ที่ขอบ/ไม่ใช่ทิศที่สลับ/แนวนอน/พิมพ์อยู่ — การเลื่อนหน้าปกติไม่ถูกขัด */
+  assert.match(js,/if\(!tOn\|\|!tEdge\|\|busy\|\|typing\(e\.target\)\)return;/);
+  assert.match(js,/Math\.abs\(dy\)<8\|\|Math\.abs\(dy\)<Math\.abs\(dx\)\*1\.4\|\|!want\(-dy\)\|\|!near\(\)\)return;/);
+  /* หน้าขยับตามนิ้วเล็กน้อย แล้วคืนตำแหน่งถ้าไม่สลับ */
+  assert.match(js,/pull\(Math\.max\(-46,Math\.min\(46,dy\*\.35\)\)\)/);
+  assert.match(js,/if\(ok\)\{pull\(0\);go\(stage==="ai"\?"call":"ai"\)\}else if\(pulled\)pull\(0,true\)/);
+  assert.match(js,/addEventListener\("touchcancel",\(\)=>\{tOn=false;if\(pulled\)pull\(0,true\)\}/);
 });

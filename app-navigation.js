@@ -1,18 +1,20 @@
 import {namespace,appUrl,ROOTS} from './app-routes.js';
-import {pendingView} from './app-pending.js';
 // Barba owns document navigation/history. Legacy page scripts remain isolated in
 // retained same-origin views: no eval, duplicate globals, or media reparenting.
-const W=window,D=document,frames=new Map(),calls=new Set(),cached=new Set();
+const W=window,D=document,frames=new Map(),calls=new Set(),cached=new Set(),authOwners=new Set(),traversals=new Set();
 const origin=location.origin,initial=D.getElementById('appInitial');
-let active=initial.dataset.cendonView,current=location.href,queued=null,busy=false,failed=null,barba=null;
+let active=initial.dataset.cendonView,current=location.href,queued=null,busy=false,failed=null,barba=null,incoming=null;
 const progress=D.getElementById('appProgress'),notice=D.getElementById('appNotice'),callButton=D.getElementById('appCall');
-const pending=pendingView(D,go,()=>go(current));
 const limit=(navigator.deviceMemory&&navigator.deviceMemory<4)?3:6;
-function record(el,url){const r={el,url,ready:false,used:Date.now()};frames.set(el.dataset.cendonView,r);return r;}
+function record(el,url){const r={el,url,ready:false,waiters:new Set(),used:Date.now()};frames.set(el.dataset.cendonView,r);return r;}
 record(initial,current);
 function native(url){location.assign(url);}
 function callOwner(){return [...calls].find(n=>frames.has(n));}
-function holdActive(hidden){const r=frames.get(active);if(r){r.el.inert=hidden;r.el.contentWindow.CendonView?.setHidden(hidden);}}
+function resume(){frames.get(active)?.el.contentWindow.CendonView?.setHidden(false);}
+function settleTraversals(){
+  if(!traversals.size)return;if(barba?.transitions.isRunning){setTimeout(settleTraversals,16);return;}
+  for(const ns of traversals){traversals.delete(ns);const w=frames.get(ns)?.el.contentWindow;if(w)w.dispatchEvent(new w.PopStateEvent('popstate',{state:w.history.state}));}
+}
 function callUI(){callButton.hidden=!callOwner()||calls.has(active);}
 // A history traversal can make the browser restore a stale child URL into the
 // initial view by frame position (e.g. Home inside the Garage view). Never reveal it.
@@ -25,7 +27,7 @@ function ready(ns,localHistory){const r=frames.get(ns);if(r&&wrongDocument(r)){r
     if(r.el===initial&&!busy&&barba){barba.history.add(localHistory.root,'barba','replace');for(const u of localHistory.layers)barba.history.add(u,'barba','push');current=localHistory.layers.at(-1);}
     else if(busy)r.el.contentWindow.CendonView?.adoptSingleEntry();
   }
-  r.ready=true;r.el.classList.remove('is-preparing');if(ns===active)D.getElementById('appOpening').hidden=true;
+  r.ready=true;r.el.classList.remove('is-preparing');if(ns===active)D.getElementById('appOpening').hidden=true;for(const wake of [...r.waiters])wake();
 }}
 function layer(ns,url,action){
   if(!barba||busy||ns!==active||namespace(url,origin)!==ns)return;
@@ -35,24 +37,48 @@ function layer(ns,url,action){
 }
 function track(ns,url){const r=frames.get(ns);if(r)r.url=url;}
 function call(ns,on){if(!frames.has(ns))return;on?calls.add(ns):calls.delete(ns);callUI();}
+function shareFirebase(project){
+  // One actual SDK/session for this same-origin app, including its in-flight
+  // restoration. A pending SDK is NOT a signed-in user: existing gates still
+  // wait for the real callback. Never copy a cached UID or an auth proxy.
+  if(typeof project!=='string'||!/^[a-z0-9.-]{3,63}$/.test(project))return null;
+  for(const [ns,r]of frames)try{const w=r.el.contentWindow,sdk=w.firebase,a=w.spireAuth||w.auth,u=a?.currentUser;
+    if(!r.ready||!r.el.isConnected||!w.CendonScope||w.CendonScope.frozen?.())continue;
+    if(u&&(typeof u.getIdToken!=='function'||w.CendonScope.owner()!==u.uid))continue;
+    if(!sdk?.apps?.some(x=>x.name==='[DEFAULT]'&&x.options?.projectId===project)||sdk.auth()!==a)continue;
+    authOwners.add(ns);return sdk;
+  }catch{}
+  return null;
+}
 function showError(url){failed=url;notice.hidden=false;progress.hidden=true;}
+function cacheRoute(u){
+  if(barba.cache.has(u.href))return;
+  // This host's Barba container is routing metadata only; the real authenticated
+  // document is prepared separately. Do not download this same empty host again.
+  const doc=D.implementation.createHTMLDocument('Cendon'),wrap=doc.createElement('div'),view=doc.createElement('main');
+  wrap.dataset.barba='wrapper';view.dataset.barba='container';view.dataset.barbaNamespace=namespace(u.href,origin);view.dataset.route=u.pathname+u.search+u.hash;wrap.append(view);doc.body.append(wrap);
+  barba.cache.set(u.href,Promise.resolve({html:doc.documentElement.outerHTML,url:{href:u.href,...barba.url.parse(u.href)}}),'prefetch','fulfilled');cached.add(u.href);
+}
 function go(raw,trigger='barba',event){
   const u=appUrl(raw,origin);if(!u){native(raw);return false;}
   notice.hidden=true;
-  if(busy||!barba||barba.transitions.isRunning){queued={url:u.href,trigger,event};if(u.href===current){pending.hide();holdActive(false);}else if(pending.visible||!frames.get(namespace(u.href,origin))?.ready){pending.show(namespace(u.href,origin));holdActive(true);}drain();return true;}
+  if(busy||!barba||barba.transitions.isRunning){queued={url:u.href,trigger,event};drain();return true;}
   if(u.href===current){frames.get(active)?.el.contentWindow.CendonView?.navigate(u.href);return true;}
   busy=true;progress.hidden=false;
-  if(!frames.get(namespace(u.href,origin))?.ready){pending.show(namespace(u.href,origin));holdActive(true);}
+  // Start the real requested document alongside Barba's metadata request.
+  // Previously they were serial: one full network round trip was wasted.
+  incoming=!frames.get(namespace(u.href,origin))?.ready?{url:u.href,result:prepare(u.href).then(value=>({value}),error=>({error}))}:null;
+  frames.get(active)?.el.contentDocument?.dispatchEvent(new Event('visibilitychange'));
   navigator.serviceWorker?.controller?.postMessage({type:'cendon:stop-warm'});
   // Calling Barba while a transition is running forces a full reload. Serialize
   // rapid taps instead; keep only the user's latest destination.
   (async()=>{
-    // Resolve Barba's cached request before starting its transition. Its default
-    // failed-click path forces a document load; never take that path with a call.
-    if(!barba.cache.has(u.href))barba.prefetch(u.href);
+    // Use Barba's normal cache/history/transition lifecycle, without an extra
+    // network request for an empty metadata wrapper. Real view failures still fail.
+    cacheRoute(u);
     const response=await barba.cache.get(u.href)?.request;
     if(!response?.html||!new DOMParser().parseFromString(response.html,'text/html').querySelector('[data-barba="container"]'))throw Error('shell-unavailable');
-    if(queued&&queued.url!==u.href){busy=false;progress.hidden=true;drain();return;}
+    if(queued&&queued.url!==u.href){busy=false;incoming=null;progress.hidden=true;resume();drain();return;}
     await barba.go(u.href,trigger,event);
   })().catch(()=>recover(current,u.href));
   return true;
@@ -61,18 +87,18 @@ function recover(previous,target){
   barba.history.add(previous,'barba','replace');
   const marker=D.querySelector('[data-barba="container"]');
   if(marker){marker.dataset.barbaNamespace=active;marker.dataset.route=new URL(previous).pathname;}
-  pending.hide();holdActive(false);showError(target);busy=false;drain();
+  incoming=null;showError(target);busy=false;resume();drain();
 }
 function drain(){if(queued&&!busy&&barba){if(barba.transitions.isRunning){setTimeout(drain,16);return;}const q=queued;queued=null;queueMicrotask(()=>go(q.url,q.trigger,q.event));}}
-function waitReady(r,url){return new Promise((resolve,reject)=>{const start=Date.now();function check(){
-  if(queued&&queued.url!==url)return reject(Error('view-superseded'));
-  if(r.ready)return resolve(r);
-  if(!r.el.isConnected||Date.now()-start>18000)return reject(Error('view-unavailable'));
-  setTimeout(check,40);
-}check();});}
+function waitReady(r,url){return new Promise((resolve,reject)=>{const start=Date.now();let timer=0;function done(error){clearTimeout(timer);r.waiters.delete(check);error?reject(error):resolve(r);}function check(){
+  clearTimeout(timer);if(queued&&queued.url!==url)return done(Error('view-superseded'));
+  if(r.ready)return done();
+  if(!r.el.isConnected||r.failed||Date.now()-start>18000)return done(Error('view-unavailable'));
+  timer=setTimeout(check,40);
+}r.waiters.add(check);check();});}
 async function prepare(url){
   const ns=namespace(url,origin);let r=frames.get(ns);
-  if(!r){frames.get(active)?.el.contentWindow.CendonPaint?.prepare(url);const el=D.createElement('iframe');el.className='app-view is-preparing';el.dataset.cendonView=ns;el.title='Cendon';el.allow='camera; microphone; geolocation; autoplay; clipboard-write; fullscreen';r=record(el,url);el.src=url;D.getElementById('appViews').append(el);}
+  if(!r){frames.get(active)?.el.contentWindow.CendonPaint?.prepare(url);const el=D.createElement('iframe');el.className='app-view is-preparing';el.dataset.cendonView=ns;el.title='Cendon';el.allow='camera; microphone; geolocation; autoplay; clipboard-write; fullscreen';r=record(el,url);el.addEventListener('load',()=>{if(!el.isConnected)return;let registered=false;try{registered=!!el.contentWindow?.CendonView;}catch{}if(!registered){r.failed=true;for(const wake of [...r.waiters])wake();}});el.src=url;D.getElementById('appViews').append(el);}
   await waitReady(r,url);
   // Compare the view's real location too: a stale record would reveal it on the wrong layer.
   let at=r.url;try{at=r.el.contentWindow.location.href;}catch{}
@@ -80,13 +106,13 @@ async function prepare(url){
   return r;
 }
 function activate(r,url){
-  const immediate=pending.visible;pending.hide();
+  const immediate=incoming?.url===url;
   const ns=r.el.dataset.cendonView,was=frames.get(active);
   // Crossfade: the previous view stays painted underneath while the next fades in.
   // The bottom bar sits in the same place in both, so it reads as staying put.
   r.el.classList.remove('is-leaving');
-  // A cold destination already replaced the previous screen with honest chrome.
-  // Fading from the old document again flashes its differently positioned nav.
+  // A cold view becomes visible only when its real primary controls are wired.
+  // Keep the original screen until then; never insert an intermediate screen.
   if(immediate)for(const f of frames.values())f.el.classList.remove('is-leaving','is-entering');
   if(was&&was!==r&&was.el.isConnected&&!immediate){
     was.el.classList.add('is-leaving');r.el.classList.remove('is-entering');void r.el.offsetWidth;r.el.classList.add('is-entering');
@@ -100,18 +126,18 @@ function activate(r,url){
 function evict(){
   for(const [name,r]of [...frames].sort((a,b)=>a[1].used-b[1].used)){
     if(frames.size<=limit)break;
-    if(name===active||calls.has(name)||r.el.contentWindow.CendonView?.dirty)continue;
+    if(name===active||calls.has(name)||authOwners.has(name)||r.el.contentWindow.CendonView?.dirty)continue;
     // A background AI response must finish even on memory-constrained devices.
     if(name==='chat')continue;
-    r.el.remove();frames.delete(name);
+    r.el.contentWindow.CendonView?.disposeAuth?.();r.el.remove();frames.delete(name);
   }
 }
-function forget(){for(const r of frames.values())r.el.remove();frames.clear();calls.clear();for(const u of cached)barba?.cache.delete(u);cached.clear();native('/login');}
+function forget(){incoming=null;queued=null;for(const r of frames.values()){r.el.contentWindow.CendonView?.disposeAuth?.();r.el.remove();}frames.clear();calls.clear();authOwners.clear();traversals.clear();for(const u of cached)barba?.cache.delete(u);cached.clear();native('/login');}
 const boot=W.CendonAppBoot;
-W.CendonApp={go,ready,call,layer,track,namespace:u=>namespace(u,origin),current:()=>({namespace:active,url:current}),forget};
+W.CendonApp={go,ready,call,layer,track,shareFirebase,traversal:ns=>traversals.add(ns),get loading(){return busy;},namespace:u=>namespace(u,origin),current:()=>({namespace:active,url:current}),forget};
 W.CendonCallShell={active:()=>!!callOwner(),expand:()=>{const n=callOwner();if(n){go(ROOTS[n]);frames.get(n)?.el.contentWindow.CendonView?.expandCall();}},open:go};
 callButton.addEventListener('click',()=>W.CendonCallShell.expand());
-D.getElementById('appRetry').addEventListener('click',()=>{if(failed){barba?.cache.delete(failed);const ns=namespace(failed,origin),r=frames.get(ns);if(r&&!r.ready&&!calls.has(ns)){r.el.remove();frames.delete(ns);}go(failed);}});
+D.getElementById('appRetry').addEventListener('click',()=>{if(failed){barba?.cache.delete(failed);const ns=namespace(failed,origin),r=frames.get(ns);if(r&&!r.ready&&!calls.has(ns)&&!authOwners.has(ns)){r.el.contentWindow.CendonView?.disposeAuth?.();r.el.remove();frames.delete(ns);}go(failed);}});
 D.getElementById('appStay').addEventListener('click',()=>{notice.hidden=true;failed=null;});
 // Auth changes invalidate every isolated view, not merely the visible page.
 W.addEventListener('storage',e=>{if((e.key==='cendon_signed'&&e.newValue!=='1')||(e.key==='spire___owner'&&e.oldValue&&e.newValue!==e.oldValue))forget();});
@@ -129,20 +155,16 @@ async function start(){
     requestError:()=>false,
     transitions:[{name:'cendon-retained-views',
       async leave(data){busy=true;progress.hidden=false;previous=current;target=data.next.url.href;transitionFailed=false;superseded=false;prepared=null;
-        try{prepared=await prepare(target);}catch{transitionFailed=true;}
+        try{if(incoming?.url===target){const r=await incoming.result;if(r.error)throw r.error;prepared=r.value;}else prepared=await prepare(target);}catch{transitionFailed=true;}
       },
       enter(){superseded=!!queued&&queued.url!==target;if(prepared&&!superseded)activate(prepared,target);},
-      after(){progress.hidden=true;busy=false;if(superseded){barba.history.add(previous,'barba','replace');const marker=D.querySelector('[data-barba="container"]');if(marker){marker.dataset.barbaNamespace=active;marker.dataset.route=new URL(previous).pathname;}if(queued?.url===previous){pending.hide();holdActive(false);}drain();}else if(transitionFailed)recover(previous,target);else{notice.hidden=true;drain();}}
+      after(){progress.hidden=true;busy=false;incoming=null;resume();settleTraversals();if(superseded){barba.history.add(previous,'barba','replace');const marker=D.querySelector('[data-barba="container"]');if(marker){marker.dataset.barbaNamespace=active;marker.dataset.route=new URL(previous).pathname;}drain();}else if(transitionFailed)recover(previous,target);else{notice.hidden=true;drain();}}
     }]
   });
   for(const item of boot.queue.splice(0)){if(item[0]==='go')queued={url:item[1]};else if(item[0]==='ready')ready(item[1],item[2]);else if(item[0]==='call')call(item[1],item[2]);}
-  // Only lightweight HTML shells are prefetched; never instantiate Chat in the
-  // background (opening it may consume a pending user-initiated AI job).
+  // No metadata prefetch loop: each allowed host marker is local. Never boot
+  // Chat in the background (that could consume a pending user-initiated AI job).
   const connection=navigator.connection;
-  if(!connection?.saveData&&!/2g/.test(connection?.effectiveType||'')){
-    const preload=()=>{for(const path of Object.values(ROOTS)){const u=new URL(path,origin).href;if(u!==current){cached.add(u);barba.prefetch(u);}}};
-    if('requestIdleCallback'in W)requestIdleCallback(preload,{timeout:4000});else setTimeout(preload,1600);
-  }
   if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
   // One idle static-code warmup on capable devices. Never load an invisible
   // document or execute its scripts; the worker fetches no personal data.

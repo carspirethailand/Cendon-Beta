@@ -3,12 +3,13 @@
 <head>
 <script>window.__SPIRE_PAGE__="profile";</script>
 <script>/* ธีมตั้งแต่เฟรมแรก (ก่อน CSS วาด) — เดิมหน้าเปิดด้วยธีมตั้งต้นแวบหนึ่งแล้วค่อยสลับ (แชตขึ้นจอดำ) ดูเหมือนกระพริบ/กระตุก */(function(){try{var O={warm:"light",pearl:"light",emerald:"light",plant:"light",moss:"light",carbon:"dark",night:"dark",midnight:"dark",cyber:"dark",aurora:"dark",ocean:"dark",sunset:"dark",magma:"dark"},v=null;try{v=JSON.parse(localStorage.getItem("spire_theme"))}catch(e){}if(typeof v!=="string")try{v=JSON.parse(localStorage.getItem("spire_chatTheme"))}catch(e){}v=v==="light"||v==="dark"?v:(O[v]||"light");var e=document.documentElement;e.setAttribute("data-theme",v);e.setAttribute("data-ctheme",v)}catch(x){}})();</script>
-<script src="/app-navigation-bridge.js?v=3"></script>
+<script src="/app-navigation-bridge.js?v=4"></script>
 <script src="/tab-shell.js?v=6"></script>
 <script src="/launch-gate.js?v=1"></script>
 <script src="/auth-gate.js?v=2"></script>
 <link rel="preload" as="script" href="/settings.js?v=8">
 <script src="/account-scope.js?v=2"></script>
+<script>(function(){if(window.CendonView?.reuseFirebase?.("cendon-1"))return;["https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js","https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"].forEach(function(u){var s=document.createElement("script");s.src=u;s.async=false;s.fetchPriority="high";document.head.appendChild(s)})})();</script>
 <link rel="stylesheet" href="/partner-entry.css?v=1">
 <script src="/partner-state.js?v=1"></script>
 <script src="/display-prefs.js?v=5" defer></script>
@@ -19,7 +20,7 @@
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
 <script src="/cendon-tour.js" defer></script>
 <script src="/account-actions.js?v=3" defer></script>
-<script src="/account.js?v=2026-10-28-r1" async></script>
+<script src="/account.js?v=2026-10-28-r1" async fetchpriority="high"></script>
 <script src="/garage-rules.js?v=5" defer></script>
 <script src="/garage-data.js?v=2" defer></script>
 <script src="/input-guard.js?v=6" defer></script>
@@ -4192,7 +4193,6 @@ window.spireI18nCoverage=code=>{
 /* โหลดระบบล็อกอิน (Firebase) แบบไม่บล็อกหน้า — เดิมใช้ defer ซึ่งทำให้หน้าต้องรอไฟล์จาก gstatic ก่อนเริ่มทำงาน
    เน็ตมือถือช้าหรือ gstatic โดนบล็อก = จอขาว / splash ค้างทั้งแอป · สคริปต์ที่แทรกเองไม่บล็อก DOMContentLoaded
    async=false ให้ไฟล์ auth รันหลังไฟล์ app ตามลำดับ */
-(function(){["https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js","https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"].forEach(function(u){var s=document.createElement("script");s.src=u;s.async=false;document.head.appendChild(s)})})();
 </script>
 <script>
 "use strict";
@@ -4223,9 +4223,9 @@ let auth=null,useFb=false;
   window.spireFbReady=new Promise(function(res){
     function go(){
       try{
-        firebase.initializeApp(fbConfig);
+        if(!firebase.apps||!firebase.apps.length)firebase.initializeApp(fbConfig);
         var real=firebase.auth();
-        real.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(){});
+        if(!window.CendonView?.sharedAuth)real.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(){});
         auth=real; useFb=true;
         q.forEach(function(e){if(e.dead)return;try{e.un=real.onAuthStateChanged(e.cb)}catch(x){}});
       }catch(e){console.warn("fb",e);auth=null;useFb=false}
@@ -5167,7 +5167,7 @@ async function loadShop(){
 
 if(document.fonts)document.fonts.ready.then(moveInd);
 </script>
-<script src="/page-core.js?v=1"></script>
+<script src="/page-core.js?v=2"></script>
 <script id="themejs">
 /* ══════════════════════════════════════════════════════════════════
    ธีมชุดเดียวสำหรับทั้งแอป — เลือกที่ไหนก็เปลี่ยนทั้งเว็บหลักและห้องแชต
@@ -13109,7 +13109,7 @@ if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",start); else s
 })();
 </script>
 <script src="mobile-ui.js?v=2" defer></script>
-<script src="nav-pages.js?v=5" defer></script>
+<script src="nav-pages.js?v=6" defer></script>
 <script>
 window.__SPIRE_PAGE__="profile";
 window.__SPIRE_FILES__={"home": "/", "garage": "/garage", "magazine": "/news", "shop": "/spares", "profile": "/profile"};

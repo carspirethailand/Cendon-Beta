@@ -94,7 +94,7 @@ test('tab keep-alive (test mode): off unless the device opted in, every bottom t
   assert.match(j,/function leaveInbox\(then\)/,'leaving chat closes the inbox so Home shows Home');
   assert.match(j,/e\.stopImmediatePropagation\(\);if\(st\.cendonTab!==cur\)reveal/,'tab history entries are not fed to nav.js');
   for(const f of ['index','garage','news','profile']){const h=read(f+'.html'),head=h.slice(0,h.indexOf('</head>'));
-    assert.equal(head.indexOf('<script src='),head.indexOf('<script src="/app-navigation-bridge.js?v=3">'),f+': Barba bridge runs before the old opt-in router')}
+    assert.equal(head.indexOf('<script src='),head.indexOf('<script src="/app-navigation-bridge.js?v=4">'),f+': Barba bridge runs before the old opt-in router')}
   assert.match(read('mobile-ui.js'),/if\(f&&window\.CendonTabs&&CendonTabs\.go\(f\)\)return;/);
   assert.match(read('mobile-ui.js'),/if\(window\.CendonTabs&&CendonTabs\.go\("\/messages"\)\)return;/);
   assert.match(read('sw.js'),/'\.\/tab-shell\.js\?v=6'/);

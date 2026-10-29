@@ -31,7 +31,7 @@ test('views crossfade briefly; the view being shown never keeps the leaving stat
   assert.match(css,/@media\(prefers-reduced-motion:reduce\)\{#appProgress,\.app-view\.is-entering\{animation:none\}\}/);
   assert.match(app,/r\.el\.classList\.remove\('is-leaving'\);/);
   assert.match(app,/if\(was&&was!==r&&was\.el\.isConnected&&!immediate\)\{/);
-  assert.ok(app.includes("if(immediate)for(const f of frames.values())f.el.classList.remove('is-leaving','is-entering')"),'a new view replaces its placeholder without bringing the old navbar back');
+  assert.ok(app.includes("if(immediate)for(const f of frames.values())f.el.classList.remove('is-leaving','is-entering')"),'a first view has no extra fade delay or overlapping navbars');
 });
 
 test('dropdowns start their open animation before the first painted frame (no flash, vanish, fade)',()=>{

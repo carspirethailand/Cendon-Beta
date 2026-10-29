@@ -94,6 +94,6 @@ function legacy(u){
   if(PAGE==="profile"&&q.get("tab")&&SETS.includes(q.get("tab"))&&q.get("tab")!=="acct")return "/profile/"+q.get("tab");
   return null;
 }
-const go=()=>setTimeout(()=>Nav.start({base:BASE,legacy}),0);
-if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",go);else go();
+const go=()=>setTimeout(()=>Promise.resolve(Nav.start({base:BASE,legacy})).then(()=>D.dispatchEvent(new Event('cendon:primary-routes'))),0);
+if(D.readyState==="loading"&&!(PAGE==="garage"&&window.CendonView&&typeof window.openCarDetail==="function"))D.addEventListener("DOMContentLoaded",go);else go();
 })();

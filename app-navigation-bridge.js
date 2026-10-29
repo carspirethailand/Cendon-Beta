@@ -1,7 +1,27 @@
 /* Early, same-origin lifecycle adapter for Barba's retained legacy views. */
 (function(W,D){'use strict';
   const frame=W.frameElement;if(!frame?.dataset.cendonView)return;
-  const P=W.parent,ns=frame.dataset.cendonView;let hidden=!frame.classList.contains('is-active'),inCall=false,callApi=null,dirty=false;
+  const P=W.parent,ns=frame.dataset.cendonView;let hidden=!frame.classList.contains('is-active'),inCall=false,callApi=null,dirty=false,sharedAuth=false;
+  const authSubscriptions=new Set();let authDisposed=false,authPaused=false;
+  function releaseAuth(permanent){authPaused=true;if(permanent)authDisposed=true;for(const r of authSubscriptions){r.stop?.();r.stop=null;}if(permanent)authSubscriptions.clear();}
+  function reuseFirebase(project){
+    const sdk=P.CendonApp?.shareFirebase?.(project);if(!sdk||authDisposed)return false;
+    const real=sdk.auth(),bound=new Map();
+    const scoped=new Proxy(real,{get(target,key){
+      if(key==='onAuthStateChanged'||key==='onIdTokenChanged')return (...args)=>{
+        if(authDisposed)return ()=>{};const r={stop:null,start:()=>target[key](...args)};authSubscriptions.add(r);if(!authPaused)r.stop=r.start();
+        if(authDisposed){r.stop?.();authSubscriptions.delete(r);return ()=>{};}
+        return ()=>{r.stop?.();r.stop=null;authSubscriptions.delete(r);};
+      };
+      const value=Reflect.get(target,key,target);if(typeof value!=='function')return value;if(!bound.has(key))bound.set(key,value.bind(target));return bound.get(key);
+    }});
+    // Do not mutate the donor SDK or its auth methods. Each document owns its
+    // subscriptions, so evict/retry cannot leave a dead page listening forever.
+    const factory=(...args)=>{const a=sdk.auth(...args);return a===real?scoped:a;};Object.setPrototypeOf(factory,sdk.auth);
+    W.firebase=Object.create(sdk);Object.defineProperty(W.firebase,'auth',{value:factory});sharedAuth=true;return true;
+  }
+  W.addEventListener('pagehide',()=>releaseAuth(false));
+  W.addEventListener('pageshow',e=>{if(!e.persisted||authDisposed)return;authPaused=false;for(const r of authSubscriptions)if(!r.stop)r.stop=r.start();});
   let initRoot=W.location.href;const initLayers=[];
   // Resolve at call time so page hooks (e.g. the bottom-nav highlight) still observe URL changes.
   const replace=(...a)=>W.history.replaceState(...a);
@@ -12,7 +32,7 @@
     replaceState(state,title,url){replace(state,title,url);if(W.Nav?.started)P.CendonApp?.layer(ns,W.location.href,'replace');else initRoot=W.location.href;},
     // Frame-only URL sync before the host traverses its own history.
     local(state,title,url){replace(state,title,url);P.CendonApp?.track?.(ns,W.location.href);},
-    go(n){P.history.go(n);}
+    go(n){P.CendonApp?.traversal?.(ns);P.history.go(n);}
   };
   const host=()=>P.CendonApp||P.CendonAppBoot;
   const isApp=u=>P.CendonApp?.namespace(u)||/^\/(?:$|index(?:\.html)?$|garage(?:[/.?]|$)|chat(?:[/.?]|$)|news(?:[/.?]|$)|spares(?:[/.?]|$)|profile(?:[/.?]|$)|studio(?:[/?]|$)|join(?:[/?]|$)|messages(?:[/?]|$)|jobs(?:[/?]|$))/.test(new URL(u,W.location).pathname);
@@ -44,7 +64,7 @@
     // Unknown deep routes do not silently discard a draft or a live call.
     throw Error('route-not-ready');
   }
-  W.CendonView={navigate,setHidden,history:viewHistory,get visible(){return !hidden&&!P.document.hidden;},expandCall:()=>callApi?.expand?.(),adoptSingleEntry(){
+  W.CendonView={navigate,setHidden,history:viewHistory,reuseFirebase,disposeAuth:()=>releaseAuth(true),get sharedAuth(){return sharedAuth;},get visible(){return !hidden&&!P.document.hidden&&!P.CendonApp?.loading;},expandCall:()=>callApi?.expand?.(),adoptSingleEntry(){
     const layers=W.Nav?.stack||[],state=P.history.state;let i=state?.index;
     // A cross-tab deep link may represent several panels but only ONE parent
     // history entry. Count only consecutive matching entries when closing them.
@@ -74,17 +94,18 @@
       ended(api){o.ended(api);callApi=null;inCall=false;host().call(ns,false);}
     };
   }
-  function check(){wrapCall();const r=D.documentElement;
+  let readySent=false,readyTimer=0;
+  function check(){if(readySent)return;clearTimeout(readyTimer);wrapCall();const r=D.documentElement;
     // A page can prove its primary controls ready before unrelated footer tools.
     // Deep links still wait for their router; neither a timer nor markup alone
     // can bypass the live UID or existing account presentation gates.
     const path=W.location.pathname.replace(/\.html$/,'').replace(/\/$/,'')||'/';
     const base=({home:'/',garage:'/garage',profile:'/profile',news:'/news',spares:'/spares',chat:'/chat'})[ns];
     const early=path===base&&!W.location.search&&W.CendonPageCore?.ready();
-    if((D.readyState!=='loading'||early)&&D.body&&r.dataset.gate!=='1'&&r.dataset.level!=='pending'&&(ns!=='home'||!W.Nav||W.Nav.started)){host().ready(ns,{root:initRoot,layers:initLayers});return;}
-    setTimeout(check,40);
+    if((D.readyState!=='loading'||early)&&D.body&&r.dataset.gate!=='1'&&r.dataset.level!=='pending'&&(ns!=='home'||!W.Nav||W.Nav.started)){readySent=true;host().ready(ns,{root:initRoot,layers:initLayers});return;}
+    readyTimer=setTimeout(check,40);
   }
-  check();D.addEventListener('DOMContentLoaded',wrapCall,{once:true});W.addEventListener('load',wrapCall,{once:true});
+  check();D.addEventListener('cendon:primary-ready',check);D.addEventListener('cendon:primary-routes',check);D.addEventListener('DOMContentLoaded',check,{once:true});D.addEventListener('DOMContentLoaded',wrapCall,{once:true});W.addEventListener('load',wrapCall,{once:true});
   // Auth/session changes must escape the frame, never display Login inside it.
   W.addEventListener('storage',e=>{if(e.key==='cendon_signed'&&e.newValue!=='1')P.CendonApp?.forget();});
 })(window,document);

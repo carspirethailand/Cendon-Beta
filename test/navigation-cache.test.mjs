@@ -98,6 +98,14 @@ test('hashed CSS survives builds like hashed JavaScript, without a network reval
  const e=f.dispatch(p,{mode:'cors',destination:'style'});assert.equal(await(await e.response).text(),'cached');assert.equal(f.requests.length,0);
 });
 
+test('reload does not re-fetch identical build-versioned code; explicit no-store remains a network probe',async()=>{
+ for(const p of ['/account.js?v=release-one','/settings.css?v=5','/runtime/'+'c'.repeat(24)+'.js']){const f=fixture();await f.seed(p,{cache:p.startsWith('/runtime/')?'cendon-code-v1':BUILD});for(const cache of ['default','reload','no-cache']){const e=f.dispatch(p,{mode:'cors',destination:'script',cache});assert.equal(await(await e.response).text(),'cached');assert.equal(f.requests.length,0);}const probe=f.dispatch(p,{mode:'cors',destination:'script',cache:'no-store'});assert.equal(await(await probe.response).text(),'fresh');assert.equal(f.requests.length,1);}
+});
+
+test('first controlled versioned load reuses HTTP cache without forwarding conditional headers',async()=>{
+ const f=fixture(),e=f.dispatch('/nav.js?v=fixture',{mode:'cors',destination:'script',headers:{'If-None-Match':'"fixture"','If-Modified-Since':'Wed, 01 Jan 2025 00:00:00 GMT','Cache-Control':'no-cache',Pragma:'no-cache'}});assert.equal(await(await e.response).text(),'fresh');await Promise.all(e.pending);assert.equal(f.requests.length,1);assert.equal(f.requests[0][1].cache,'force-cache');for(const k of ['If-None-Match','If-Modified-Since','Cache-Control','Pragma'])assert.equal(f.requests[0][1].headers.has(k),false);
+});
+
 test('foreground Garage does not wait for optional warmup assets; a tap aborts that warmup only',async()=>{
  const p='/runtime/'+'b'.repeat(24)+'.js',pending=[],assetStarted=deferred();let assetSignal;
  const html='<script src="'+p+'"></script><script src="https://other.test/x.js"></script><img src="/api/private">';

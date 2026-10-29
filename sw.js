@@ -4,7 +4,7 @@
    หน้าเว็บเป็นไฟล์เดียวที่เปลี่ยนบ่อย จึงถามเน็ตก่อนเสมอ (ไม่งั้นผู้ใช้จะติดอยู่กับเวอร์ชันเก่า)
    แต่รอแค่ครู่เดียว — เน็ตมือถือช้า/ค้าง ต้องไม่ทำให้แอปค้างหน้าจอโหลด
    ══════════════════════════════════════════════════════════════════ */
-const CACHE = 'cendon-v391-first-navigation';
+const CACHE = 'cendon-v392-root-navigation';
 /* หน้าเว็บที่โหลดสำเร็จล่าสุด แยกตู้ไว้และ "ไม่ลบตอนอัปเดตเวอร์ชัน"
    เดิมทุกครั้งที่ deploy ตู้เก่าถูกล้างหมด เปิดแอปครั้งแรกหลังอัปเดตจึงไม่มีของสำรอง
    ต้องรอเน็ตอย่างเดียว — เน็ตมือถือช้าเมื่อไรก็ค้างหน้าจอโหลดของมือถือ */
@@ -18,7 +18,7 @@ const CORE = ['./mileage-session.js?v=1', './mileage-review.js?v=1', './garage-r
 CORE.unshift('./money-fields.js?v=1','./car-info-review.js?v=2','./mileage-sync.js?v=1','./chat-jobs.js?v=4','./primary-material.css?v=1','./shop-search.js?v=5','./shop-search.css?v=4','./shop-images.js?v=1','./display-prefs.js?v=5','./partner-state.js?v=1','./partner-entry.js?v=1','./partner-entry.css?v=1');
 CORE.unshift('./money-fields.js?v=1','./car-info-review.js?v=2','./i18n/ui-en.js?v=4','./ui-language.js?v=15','./car-info-review.js?v=2');
 const BUILD_HEADER = 'X-Cendon-Shell';
-CORE.unshift('./app-navigation.js?v=4','./app-navigation-bridge.js?v=3','./app-navigation.css?v=3','./app-routes.js','./app-pending.js','./app-pending.css?v=1','./page-core.js?v=1','./vendor/barba-core-2.10.3.umd.js');
+CORE.unshift('./app-navigation.js?v=5','./app-navigation-bridge.js?v=4','./app-navigation.css?v=3','./app-routes.js','./page-core.js?v=2','./vendor/barba-core-2.10.3.umd.js');
 // An update must not redownload every tool/font/image while the first page boots.
 // Noncritical public code is cached on actual use; hashed runtime survives builds.
 const INSTALL_CORE=[...new Set(CORE)].filter(u=>/^\.\/(?:app-(?:navigation|pending|routes)|page-core|auth-gate|account-scope|account-paint|account\.js|garage-rules|garage-data|input-guard|vendor\/barba|nav\.js|manifest\.|icon192)/.test(u));
@@ -185,10 +185,22 @@ function openPage(e, url) {
 
 /* ไฟล์ประกอบ (js/css/รูป): ถามเน็ตก่อนเหมือนกัน รอไม่เกิน WAIT ถ้ามีของในตู้ */
 async function asset(e, req) {
-  const immutable=/^\/runtime\/[a-f0-9]{24}\.(?:js|css)$/.test(new URL(req.url).pathname);
+  const url=new URL(req.url),immutable=/^\/runtime\/[a-f0-9]{24}\.(?:js|css)$/.test(url.pathname);
+  const versioned=/\.(?:js|css)$/.test(url.pathname)&&!!url.searchParams.get('v');
   const cache=await caches.open(immutable?CODE:CACHE),cached=await cache.match(req);
-  if(immutable&&cached&&!['reload','no-cache'].includes(req.cache))return cached;
-  const net=fetch(req).then(r=>{if(r.ok)e.waitUntil(cache.put(req,r.clone()).catch(()=>{}));return r});
+  // The URL already identifies this code version; CACHE is also build-scoped.
+  // Revalidating dozens of these on every tab stole bandwidth from a first view.
+  // A navigation reload can propagate reload/no-cache to child resources too.
+  // Their content hash or build-scoped version still identifies the same code.
+  // Honor an explicit no-store probe; HTML and private APIs remain network-led.
+  if(req.cache==='no-store')return fetch(req);
+  if((immutable||versioned)&&cached)return cached;
+  // A first controlled view may already have the same version in HTTP cache
+  // from the initial (not-yet-controlled) document. Reuse its decoded 200 body,
+  // not a forwarded conditional 304 that can never populate CacheStorage.
+  let request=req,options;
+  if(immutable||versioned){const headers=new Headers(req.headers);for(const k of ['If-None-Match','If-Modified-Since','Cache-Control','Pragma'])headers.delete(k);request=req.url;options={headers,cache:'force-cache',credentials:'same-origin'};}
+  const net=fetch(request,options).then(r=>{if(r.ok)e.waitUntil(cache.put(req,r.clone()).catch(()=>{}));return r});
   if(cached && !['reload','no-cache'].includes(req.cache)){
     e.waitUntil(net.catch(()=>{}));return cached;
   }

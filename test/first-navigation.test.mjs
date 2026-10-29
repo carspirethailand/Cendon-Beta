@@ -4,7 +4,7 @@ import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 const source=readFileSync(new URL('../page-core.js',import.meta.url),'utf8');
 function fixture({uid='fixture',owner='fixture',token=true,handlers=true}={}){
- const events=[],listeners={},window={CendonView:{},frameElement:{dataset:{cendonView:'garage'}},CendonScope:{owner:()=>owner},spireAuth:{currentUser:uid?{uid,...token?{getIdToken:async()=>''}:{}}:null},openAddCar:handlers?()=>{}:null,CendonGarageRules:{},CendonGarageData:{},spireGuard:{}},document={getElementById:id=>id==='garageList'?{}:id==='gAdd'?{onclick:handlers?()=>{}:null}:null,dispatchEvent:e=>events.push(e.type),addEventListener:(n,f)=>listeners[n]=f};
+ const events=[],listeners={},window={CendonView:{},frameElement:{dataset:{cendonView:'garage'}},CendonScope:{owner:()=>owner},spireAuth:{currentUser:uid?{uid,...token?{getIdToken:async()=>''}:{}}:null},openAddCar:handlers?()=>{}:null,openCarDetail:()=>{},Nav:{started:true},CendonGarageRules:{},CendonGarageData:{},spireGuard:{}},document={getElementById:id=>id==='garageList'?{}:id==='gAdd'?{onclick:handlers?()=>{}:null}:null,dispatchEvent:e=>events.push(e.type),addEventListener:(n,f)=>listeners[n]=f};
  vm.runInNewContext(source,{window,document,Event:class{constructor(type){this.type=type}},setTimeout});return {window,events};
 }
 test('early foreground readiness requires a real live identity, matching owner and wired primary form',()=>{

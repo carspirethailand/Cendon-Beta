@@ -30,5 +30,5 @@ test('shell escapes deep links, uses real pinned Barba and contains no account p
  assert.equal(p.version,'2.10.3');
 });
 test('all app documents register their lifecycle bridge before auth and old opt-in router',async()=>{
- for(const f of ['index','garage','chat','news','spares','profile']){const s=await readFile(new URL('../'+f+'.html',import.meta.url),'utf8');const i=s.indexOf('/app-navigation-bridge.js?v=3');assert.ok(i>0&&i<s.indexOf('/auth-gate.js'));if(s.includes('/tab-shell.js'))assert.ok(i<s.indexOf('/tab-shell.js'));}
+ for(const f of ['index','garage','chat','news','spares','profile']){const s=await readFile(new URL('../'+f+'.html',import.meta.url),'utf8');const i=s.indexOf('/app-navigation-bridge.js?v=4');assert.ok(i>0&&i<s.indexOf('/auth-gate.js'));if(s.includes('/tab-shell.js'))assert.ok(i<s.indexOf('/tab-shell.js'));}
 });

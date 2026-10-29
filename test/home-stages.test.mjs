@@ -85,9 +85,9 @@ test('clouds are the settings-page theme clouds (cloud-swap.js), not a private c
   /* ยังเป็นของเดิมทุกอย่าง: หมอกทึบแล้วค่อยสลับ · ดักปุ่มธีม/ภาษา/สี */
   assert.match(cs,/vin\.onfinish=function\(\)\{\s*doApply\(\);\s*var vout=veil\.animate\(/);
   assert.match(cs,/var THEME_SEL='button\[data-sitetheme\],#v-settings button\[data-theme\],\.th-opt\[data-th\]'/);
-  assert.match(page,/<script src="\/cloud-swap\.js\?v=4" defer><\/script>\n<script src="home-stages\.js\?v=2" defer><\/script>/);
-  for(const f of ['chat.html','garage.html','news.html','profile.html','spares.html'])assert.match(r(f),/<script src="\/cloud-swap\.js\?v=4" defer><\/script>/,f);
-  assert.match(sw,/'\.\/cloud-swap\.js\?v=4'/);
+  assert.match(page,/<script src="\/cloud-swap\.js\?v=5" defer><\/script>\n<script src="home-stages\.js\?v=3" defer><\/script>/);
+  for(const f of ['chat.html','garage.html','news.html','profile.html','spares.html'])assert.match(r(f),/<script src="\/cloud-swap\.js\?v=5" defer><\/script>/,f);
+  assert.match(sw,/'\.\/cloud-swap\.js\?v=5'/);
 });
 
 test('smooth slide: old stage lifts away while the mist thickens, new stage staggers in; transform/opacity only; none with reduced motion',()=>{
@@ -110,12 +110,31 @@ test('home tab while on stage 2 goes back to the AI stage; stage is restored on 
 
 test('new strings are routed through the shared translator and the files are cached by the service worker',()=>{
   assert.match(js,/const T=\(th,en\)=>W\.spireT\?W\.spireT\(th,en\):th;/);
-  assert.match(sw,/'\.\/home-stages\.css\?v=2'/);assert.match(sw,/'\.\/home-stages\.js\?v=2'/);
-  assert.match(page,/href="home-stages\.css\?v=2"/);assert.match(page,/<script src="home-stages\.js\?v=2" defer><\/script>/);
+  assert.match(sw,/'\.\/home-stages\.css\?v=3'/);assert.match(sw,/'\.\/home-stages\.js\?v=3'/);
+  assert.match(page,/href="home-stages\.css\?v=3"/);assert.match(page,/<script src="home-stages\.js\?v=3" defer><\/script>/);
   assert.match(r('i18n/extract.mjs'),/'home-stages\.js'\]/);
 });
 
 test('no new icon is introduced (the local icon font is a subset)',()=>{
   const ti=r('icons/ti.css');
   for(const m of (js+css+menu).matchAll(/ti-([a-z0-9]+(?:-[a-z0-9]+)*)/g))if(!/^(?:ti)$/.test(m[1]))assert.ok(ti.includes(`.ti-${m[1]}:before`),'ti-'+m[1]);
+});
+
+test('AI stage: logo stays at the top; everything else is centred on the y axis; stage 2 clears the + and bell on phones',()=>{
+  const ai=menu.slice(at(menu,'hmAi'),at(menu,'hmCall'));
+  assert.ok(ai.indexOf('class="lx-logo nt"')>0&&ai.indexOf('class="lx-logo nt"')<ai.indexOf('<header class="lx-hero">'),'logo is outside the hero, above it');
+  assert.equal((page.match(/class="lx-logo nt"/g)||[]).length,1);
+  assert.match(css,/#vMenu \.hm-ai>\.lx-logo\{padding-top:12px;margin:0\}/);
+  assert.match(css,/#vMenu \.hm-ai>\.lx-hero\{[^}]*margin-top:auto\}/);
+  assert.match(css,/\.hm-next\{[^}]*margin-top:0;margin-bottom:auto;/,'equal auto margins above the hero and below the call button centre the group');
+  assert.match(css,/@media\(max-width:760px\)\{[\s\S]*#vMenu \.hm-call\{padding-top:58px\}/);
+});
+
+test('clouds use the desktop cloud size on narrow screens and the exact desktop set on wide ones',()=>{
+  const cs=r('cloud-swap.js');
+  assert.match(cs,/var REF_W=2560,REF_VH=800,NARROW=1000;/);
+  assert.match(cs,/narrow\?l\.map\(function\(p\)\{return \[\(p\[0\]\/s\)\.toFixed\(1\),\(p\[1\]\/hs\)\.toFixed\(1\),p\[2\],p\[3\]\]\}\):l/);
+  assert.match(cs,/Math\.max\(3,Math\.round\(n\*s\)\)/);
+  assert.ok(!/max-aspect-ratio/.test(cs),'no squeezed portrait override');
+  assert.match(cs,/el\.getAttribute\('data-k'\)===key/,'rebuilt when the screen class changes (rotation)');
 });

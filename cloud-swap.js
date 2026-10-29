@@ -39,24 +39,44 @@
     /* ปุยขาวทับเงา เหลือเงาเฉพาะขอบล่างของกลุ่มเมฆ */
     return list.map(function(p){return g(p,core,0,0)}).concat(list.map(function(p){return g(p,shade,.6,dy)})).join(',');
   }
-  var B=bank(11,50,8,9,13),M=bank(14,56,6,8,12),F=bank(6,70,12,4,6);
   var PAL={
     light:{back:['rgba(243,246,251,.97)','rgba(200,212,230,.55)'],mid:['#fff','rgba(196,208,226,.6)'],front:['#fff','rgba(205,215,232,.55)'],mist:'rgba(249,247,243,.9)'},
     dark:{back:['rgba(46,50,62,.97)','rgba(10,11,16,.6)'],mid:['rgba(62,67,82,.98)','rgba(14,15,21,.65)'],front:['rgba(78,84,100,.95)','rgba(18,20,27,.6)'],mist:'rgba(15,16,21,.9)'}
   };
-  var css='.cendon-cloud{position:fixed;inset:0;z-index:2147483600;pointer-events:none;overflow:hidden}'+
-    '.cendon-cloud .pf{position:absolute;left:0;top:-20vh;width:200vw;height:140vh;will-change:transform;transform:translate3d(-200vw,0,0);'+
-    '-webkit-mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent),linear-gradient(180deg,transparent,#000 18%,#000 82%,transparent);-webkit-mask-composite:source-in;'+
-    'mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent),linear-gradient(180deg,transparent,#000 18%,#000 82%,transparent);mask-composite:intersect}'+
-    '.cendon-cloud .front{top:10vh;height:110vh}'+
-    '.cendon-cloud .veil{position:absolute;inset:0;opacity:0;-webkit-backdrop-filter:blur(22px) saturate(1.1);backdrop-filter:blur(22px) saturate(1.1)}'+
-    '@media (max-aspect-ratio:1/1){.cendon-cloud .pf{top:8vh;height:72vh}.cendon-cloud .front{top:30vh;height:60vh}}';
-  ['light','dark'].forEach(function(k){var p=PAL[k];
-    css+='.cendon-cloud.t-'+k+' .back{opacity:.85;background:'+puffs(B,p.back[0],p.back[1],6)+'}'+
-         '.cendon-cloud.t-'+k+' .mid{background:'+puffs(M,p.mid[0],p.mid[1],5)+'}'+
-         '.cendon-cloud.t-'+k+' .front{opacity:.95;background:'+puffs(F,p.front[0],p.front[1],4)+'}';
-  });
-  function style(){if(D.getElementById('cendonCloudCss'))return;var s=D.createElement('style');s.id='cendonCloudCss';s.textContent=css;(D.head||H).appendChild(s)}
+  /* ขนาดเมฆอิงจอคอม: ชุดเมฆวาดเป็น % ของแผ่น 200vw × 140vh — จอแคบ (มือถือ) แผ่นแคบลง เมฆเลยบีบเป็นวงรีสูง
+     จอแคบจึงวาดเมฆขนาด "พิกเซล" เท่าจอคอมอ้างอิง (1280×800 → แผ่น 2560×1120) และใส่จำนวนปุยตามความกว้างแผ่น (ความหนาแน่นเท่าเดิม)
+     จอกว้าง ≥ 1000px ใช้ชุดเดิมทุกประการ */
+  var REF_W=2560,REF_VH=800,NARROW=1000;
+  function banks(narrow,P,VH){
+    seed=7;var s=narrow?P/REF_W:1,hs=narrow?VH/REF_VH:1;
+    function mk(n,yb,yj,w0,w1){
+      var m=narrow?Math.max(3,Math.round(n*s)):n,l=bank(m,yb,yj,w0,w1);
+      return narrow?l.map(function(p){return [(p[0]/s).toFixed(1),(p[1]/hs).toFixed(1),p[2],p[3]]}):l;
+    }
+    return {B:mk(11,50,8,9,13),M:mk(14,56,6,8,12),F:mk(6,70,12,4,6),hs:hs};
+  }
+  function buildCss(narrow,P,VH){
+    var b=banks(narrow,P,VH),e=narrow?'230px':'9%',e2=narrow?'calc(100% - 230px)':'91%';
+    var css='.cendon-cloud{position:fixed;inset:0;z-index:2147483600;pointer-events:none;overflow:hidden}'+
+      '.cendon-cloud .pf{position:absolute;left:0;top:-20vh;width:200vw;height:140vh;will-change:transform;transform:translate3d(-200vw,0,0);'+
+      '-webkit-mask-image:linear-gradient(90deg,transparent,#000 '+e+',#000 '+e2+',transparent),linear-gradient(180deg,transparent,#000 18%,#000 82%,transparent);-webkit-mask-composite:source-in;'+
+      'mask-image:linear-gradient(90deg,transparent,#000 '+e+',#000 '+e2+',transparent),linear-gradient(180deg,transparent,#000 18%,#000 82%,transparent);mask-composite:intersect}'+
+      '.cendon-cloud .front{top:10vh;height:110vh}'+
+      '.cendon-cloud .veil{position:absolute;inset:0;opacity:0;-webkit-backdrop-filter:blur(22px) saturate(1.1);backdrop-filter:blur(22px) saturate(1.1)}';
+    ['light','dark'].forEach(function(k){var p=PAL[k];
+      css+='.cendon-cloud.t-'+k+' .back{opacity:.85;background:'+puffs(b.B,p.back[0],p.back[1],6/b.hs)+'}'+
+           '.cendon-cloud.t-'+k+' .mid{background:'+puffs(b.M,p.mid[0],p.mid[1],5/b.hs)+'}'+
+           '.cendon-cloud.t-'+k+' .front{opacity:.95;background:'+puffs(b.F,p.front[0],p.front[1],4/b.hs)+'}';
+    });
+    return css;
+  }
+  /* สร้างใหม่เมื่อขนาดจอเปลี่ยนกลุ่ม (หมุนจอ) — ไม่งั้นใช้ของเดิม */
+  function style(){
+    var vw=W.innerWidth||1280,vh=W.innerHeight||800,narrow=vw<NARROW,P=2*vw,key=narrow?'n'+P+'x'+vh:'d',el=D.getElementById('cendonCloudCss');
+    if(el&&el.getAttribute('data-k')===key)return;
+    if(!el){el=D.createElement('style');el.id='cendonCloudCss';(D.head||H).appendChild(el)}
+    el.setAttribute('data-k',key);el.textContent=buildCss(narrow,P,vh);
+  }
 
   /* ── เล่นเมฆ แล้วเรียก apply ตอนหมอกบังเต็มจอ ── */
   function run(job,apply,cb){

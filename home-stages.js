@@ -19,7 +19,7 @@ const root=$("vMenu"),ai=$("hmAi"),call=$("hmCall");
 if(!root||!ai||!call)return;
 const H=D.documentElement,KEY="cendon_homeStage";
 const calm=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
-let stage="ai",busy=false,cool=0,sky=null,guard=0;
+let stage="ai",busy=false,cool=0,guard=0,lockEl=null,leaving=null;
 
 /* ── ข้อความ ── */
 function paint(){
@@ -49,28 +49,27 @@ function fit(){
   H.style.setProperty("--hm-h",Math.max(380,Math.floor(innerHeight-top-bottom))+"px");
 }
 
-/* ── เมฆ ── */
-const CLOUD=`<svg viewBox="0 0 420 170" aria-hidden="true"><defs><linearGradient id="hmCg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--hm-ca)"/><stop offset="1" style="stop-color:var(--hm-cb)"/></linearGradient></defs><g fill="url(#hmCg)"><circle cx="86" cy="118" r="48"/><circle cx="156" cy="84" r="62"/><circle cx="244" cy="74" r="70"/><circle cx="324" cy="104" r="56"/><circle cx="378" cy="126" r="36"/><rect x="40" y="116" width="360" height="46" rx="23"/></g></svg>`;
-function layer(){
-  if(sky)return sky;
-  sky=D.createElement("div");sky.className="hm-sky";sky.setAttribute("aria-hidden","true");
-  sky.innerHTML='<div class="hm-veil"></div>'+Array.from({length:11},(_,i)=>`<div class="hm-cl${i%3===0?" fr":""}">${CLOUD.replaceAll("hmCg","hmCg"+i)}</div>`).join("");
-  /* ระหว่างเปลี่ยนช่วง: กันล้อเมาส์/นิ้วเลื่อนหน้าข้างหลัง */
-  for(const ev of ["wheel","touchmove"])sky.addEventListener(ev,e=>{if(e.cancelable)e.preventDefault()},{passive:false});
-  D.body.appendChild(sky);return sky;
+/* ── ล็อกจอระหว่างเปลี่ยนช่วง ──
+   แผ่นใสเต็มจอใต้เมฆ: รับการกด/ล้อ/นิ้วแทนหน้าข้างหลัง (เมฆของ cloud-swap.js ไม่รับการกดเอง) */
+function lock(on){
+  if(!on){if(lockEl)lockEl.remove();lockEl=null;return}
+  if(lockEl)return;
+  lockEl=D.createElement("div");lockEl.className="hm-lock";lockEl.setAttribute("aria-hidden","true");
+  for(const ev of ["wheel","touchmove"])lockEl.addEventListener(ev,e=>{if(e.cancelable)e.preventDefault()},{passive:false});
+  D.body.appendChild(lockEl);
 }
-function fly(dir){
-  const L=layer();L.getAnimations({subtree:true}).forEach(a=>a.cancel());
-  const vw=innerWidth,vh=innerHeight,base=Math.max(vw*.75,440),rows=Math.ceil(vh/(base*.25))+1,list=[...L.querySelectorAll(".hm-cl")],out=[];
-  list.forEach((el,i)=>{
-    const w=Math.round(base*(.8+(i*37%5)*.12)),y=Math.round(-.1*vh+(i%rows)*(vh*1.15/rows)+(i*53%40)-20);
-    el.style.width=w+"px";el.style.top=y+"px";
-    const from=dir>0?-w:vw,to=dir>0?vw:-w;
-    out.push(el.animate([{transform:`translate3d(${from}px,0,0)`},{transform:`translate3d(${to}px,${(i%2?-1:1)*18}px,0)`}],
-      {duration:1000+(i%4)*100,delay:(i%5)*45,easing:"cubic-bezier(.42,.05,.58,.95)",fill:"both"}));
-  });
-  out.push(L.querySelector(".hm-veil").animate([{opacity:0},{opacity:.96,offset:.38},{opacity:.96,offset:.62},{opacity:0}],{duration:1350,easing:"linear",fill:"both"}));
-  return out;
+
+/* ── เลื่อนเข้า-ออกให้สมูท ──
+   ช่วงเก่าลอยขึ้น/ลงจางหายขณะหมอกฟุ้ง · ช่วงใหม่ไล่เลื่อนเข้าทีละชิ้น (stagger) ขณะหมอกจาง — เฉพาะ opacity/transform */
+const EASE_OUT="cubic-bezier(.22,1,.36,1)",EASE_IN="cubic-bezier(.5,0,.9,.5)";
+const shown=el=>[...el.children].filter(c=>!c.hidden&&getComputedStyle(c).display!=="none");
+function leave(el,dir){
+  if(calm()||!el.animate)return;
+  try{leaving=el.animate([{opacity:1,transform:"translate3d(0,0,0)"},{opacity:0,transform:`translate3d(0,${-dir*34}px,0)`}],{duration:520,easing:EASE_IN,fill:"forwards"})}catch(e){leaving=null}
+}
+function enter(el,dir){
+  if(calm()||!el.animate)return;
+  shown(el).forEach((c,i)=>{try{c.animate([{opacity:0,transform:`translate3d(0,${dir*46}px,0)`},{opacity:1,transform:"translate3d(0,0,0)"}],{duration:780,delay:70+Math.min(i,7)*70,easing:EASE_OUT,fill:"backwards"})}catch(e){}});
 }
 
 /* ── สลับช่วง ── */
@@ -90,21 +89,20 @@ function swap(to){
 }
 async function go(to){
   if(busy||to===stage||blocked())return false;
-  busy=true;const dir=to==="call"?1:-1;
-  guard=setTimeout(()=>{busy=false;layer().classList.remove("on")},4200);
+  busy=true;const dir=to==="call"?1:-1,from=stage,cloud=W.CendonCloud,next=to==="ai"?ai:call;
+  lock(true);
+  /* กันค้าง: ไม่ว่าอะไรผิดพลาด จอต้องปลดล็อกและอยู่ช่วงที่ถูกต้องเสมอ */
+  guard=setTimeout(()=>{if(stage!==to)swap(to);finish()},4800);
+  let fin=false;
+  const finish=()=>{if(fin)return;fin=true;clearTimeout(guard);if(leaving){leaving.cancel();leaving=null}lock(false);busy=false;cool=performance.now()+450};
   try{
-    const L=layer();L.classList.add("on");
-    if(calm()){
-      const a=L.querySelector(".hm-veil").animate([{opacity:0},{opacity:1},{opacity:0}],{duration:260,easing:"linear",fill:"both"});
-      setTimeout(()=>swap(to),130);await Promise.race([a.finished,new Promise(done=>setTimeout(done,500))]);a.cancel();
-    }else{
-      /* รอจบด้วยเวลา ไม่ใช่แค่ finished — แท็บที่ถูกซ่อน/หน้าไม่วาดเฟรม animation อาจค้าง แต่ต้องปลดล็อกจอให้ได้เสมอ */
-      const anims=fly(dir);setTimeout(()=>swap(to),640);
-      await Promise.race([Promise.all(anims.map(a=>a.finished)),new Promise(done=>setTimeout(done,1700))]);anims.forEach(a=>a.cancel());
-    }
-    if(stage!==to)swap(to);
-  }catch(e){if(stage!==to)swap(to)}
-  finally{clearTimeout(guard);if(sky)sky.classList.remove("on");busy=false;cool=performance.now()+450}
+    const apply=()=>{swap(to);if(leaving){leaving.cancel();leaving=null}enter(next,dir)};
+    if(cloud&&!cloud.busy()&&D.body.animate){
+      /* เมฆชุดเดียวกับตอนเปลี่ยนธีม/ภาษาในหน้าตั้งค่า (cloud-swap.js): หมอกบังเต็มจอแล้วค่อยสลับ */
+      leave(from==="ai"?ai:call,dir);
+      cloud.run({kind:"stage",dir,from,to},apply,finish);
+    }else{apply();finish()}
+  }catch(e){if(stage!==to)swap(to);finish()}
   return true;
 }
 

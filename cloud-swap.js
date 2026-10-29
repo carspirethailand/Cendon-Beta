@@ -4,6 +4,7 @@
    ทำงานโดยดักการกดปุ่มตั้งค่าไว้ก่อน (ไม่ไปแก้ฟังก์ชันเดิมของแต่ละหน้า):
      กด → เมฆลอยเข้า หมอกบังเต็มจอ → ตอนนั้นค่อยปล่อยให้ปุ่มทำงานจริง (เปลี่ยนภาษา/ธีม + วาดหน้าใหม่)
      → เมฆลอยผ่านไป หมอกจางเผยหน้าใหม่ — ผู้ใช้ไม่เห็นตัวหนังสือหรือสีกระโดด
+   ใช้ซ้ำได้: CendonCloud.run({kind:'stage',dir:1|-1},apply,done) — หน้าหลักสองช่วง (home-stages.js) ใช้เมฆชุดเดียวกันนี้สลับช่วง
    ปุ่มที่ดัก: ภาษา button[data-lang] .lang-opt · ธีม button[data-sitetheme] #v-settings button[data-theme] .th-opt
                สีหลัก button[data-pri]   — เพิ่มปุ่มตั้งค่าแบบใหม่ ให้เพิ่มตัวเลือกใน SEL ข้างล่าง
    ใช้แค่ opacity/transform (การ์ดจอวาดให้ ลื่น) · โหมดลดการเคลื่อนไหว: หมอกจางเข้า-ออกเฉย ๆ
@@ -58,7 +59,7 @@
   function style(){if(D.getElementById('cendonCloudCss'))return;var s=D.createElement('style');s.id='cendonCloudCss';s.textContent=css;(D.head||H).appendChild(s)}
 
   /* ── เล่นเมฆ แล้วเรียก apply ตอนหมอกบังเต็มจอ ── */
-  function run(job,apply){
+  function run(job,apply,cb){
     style();busy=true;
     var from=dark(curTheme())?'dark':'light',to=job.kind==='theme'?(dark(job.to)?'dark':'light'):from;
     var ov=D.createElement('div');ov.className='cendon-cloud t-'+from;ov.setAttribute('aria-hidden','true');
@@ -68,7 +69,7 @@
     var T=reduce?420:1250,pf=ov.querySelectorAll('.pf'),left=pf.length+1,done=false,applied=false,veil=ov.lastChild;
     function end(){if(--left>0||done)return;finish()}
     /* จบแล้ว ถ้าระหว่างเมฆลอยมีการกดปุ่มอื่นค้างไว้ (เช่นเปลี่ยนภาษาแล้วรีบกดธีม) ทำต่อให้เลย */
-    function finish(){done=true;ov.remove();busy=false;var q=pending;pending=null;if(!q)return;
+    function finish(){done=true;ov.remove();busy=false;if(cb){try{cb()}catch(e){}}var q=pending;pending=null;if(!q)return;
       /* หน้าตั้งค่ามักวาดปุ่มใหม่หลังเปลี่ยนภาษา ปุ่มเดิมอาจหายไปแล้ว — หาปุ่มที่ทำสิ่งเดียวกันในหน้าตอนนี้ */
       var el=q.isConnected?q.el:D.querySelector(q.sel);if(el)setTimeout(function(){el.click()},60)}
     function doApply(){if(applied)return;applied=true;try{apply()}catch(e){}
@@ -88,7 +89,7 @@
       vout.onfinish=end;vout.oncancel=end;
     };
     /* ทิศ: ภาษาถัดไปในรายการ / ไปธีมสว่าง = ซ้ายไปขวา · ย้อนกลับ / ไปธีมมืด = ขวาไปซ้าย */
-    var dir=job.kind==='lang'?(ORDER.indexOf(job.to)>=ORDER.indexOf(job.from)?1:-1):job.kind==='theme'?(dark(job.to)?-1:1):1;
+    var dir=job.kind==='stage'?(job.dir<0?-1:1):job.kind==='lang'?(ORDER.indexOf(job.to)>=ORDER.indexOf(job.from)?1:-1):job.kind==='theme'?(dark(job.to)?-1:1):1;
     [].forEach.call(pf,function(p,i){
       var k=[1.12,1,.9][i],a=dir>0?-200:100,b=dir>0?100:-200;
       var an=p.animate([{transform:'translate3d('+a+'vw,0,0)'},{transform:'translate3d('+b+'vw,0,0)'}],

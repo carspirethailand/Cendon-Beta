@@ -53,11 +53,14 @@ test('the search ⇄ AI box still flips; it just opens on AI unless the visitor 
 
 test('switching is locked: one transition at a time, input blocked meanwhile, always unlocks',()=>{
   assert.match(js,/if\(busy\|\|to===stage\|\|blocked\(\)\)return false;/);
-  assert.match(js,/for\(const ev of \["wheel","touchmove"\]\)sky\.addEventListener\(ev,e=>\{if\(e\.cancelable\)e\.preventDefault\(\)\},\{passive:false\}\)/);
+  /* แผ่นใสเต็มจอใต้เมฆรับการกด/ล้อ/นิ้วแทนหน้าข้างหลัง */
+  assert.match(js,/lockEl\.className="hm-lock"/);
+  assert.match(js,/for\(const ev of \["wheel","touchmove"\]\)lockEl\.addEventListener\(ev,e=>\{if\(e\.cancelable\)e\.preventDefault\(\)\},\{passive:false\}\)/);
+  assert.match(css,/\.hm-lock\{position:fixed;inset:0;z-index:2147483590;/);
+  assert.match(css,/\.hm-lock\{[^}]*touch-action:none/);
   assert.match(js,/if\(busy\)\{if\(\/\^\(ArrowUp\|ArrowDown\|PageUp\|PageDown\|Home\|End\| \)\$\/\.test\(e\.key\)&&!typing\(e\.target\)\)e\.preventDefault\(\);return\}/);
-  assert.match(js,/guard=setTimeout\(/,'failsafe unlock');assert.match(js,/finally\{clearTimeout\(guard\);if\(sky\)sky\.classList\.remove\("on"\);busy=false/);
-  assert.match(css,/\.hm-sky\.on\{visibility:visible;pointer-events:auto\}/);
-  assert.match(css,/\.hm-sky\{position:fixed;inset:0;z-index:1250;/);
+  assert.match(js,/guard=setTimeout\(\(\)=>\{if\(stage!==to\)swap\(to\);finish\(\)\},4800\)/,'failsafe unlock keeps the right stage');
+  assert.match(js,/const finish=\(\)=>\{if\(fin\)return;fin=true;clearTimeout\(guard\);[\s\S]*?lock\(false\);busy=false/);
   /* ไม่สลับทับแผ่นล่าง/เมนู/สายโทร */
   assert.match(js,/body\.style\.overflow==="hidden"\|\|H\.classList\.contains\("cv-calling"\)\|\|!!D\.querySelector\("\.bs\.on,\.cx-menu\.on,\.cx-scrim\.on"\)/);
 });
@@ -71,15 +74,32 @@ test('gestures only work at the edge, start there, and cannot be triggered by si
   assert.ok(!/addEventListener\("wheel",[^)]*\{passive:false\}/.test(js.replace(/sky\.addEventListener[^\n]*/,'')),'page wheel scrolling is never hijacked');
 });
 
-test('clouds: transform-only animation, theme colours, reduced motion = short fade with no clouds',()=>{
-  assert.match(js,/\.animate\(\[\{transform:`translate3d\(\$\{from\}px,0,0\)`\}/);
-  assert.match(js,/const dir=to==="call"\?1:-1;/);
-  assert.match(js,/if\(calm\(\)\)\{|if\(calm\(\)\)\{\n/);
-  assert.match(js,/matchMedia\("\(prefers-reduced-motion: reduce\)"\)/);
-  assert.match(css,/html\[data-theme="dark"\]\{--hm-v1:/);
-  assert.match(css,/\.hm-cl\{position:absolute;left:0;top:0;will-change:transform/);
+test('clouds are the settings-page theme clouds (cloud-swap.js), not a private copy',()=>{
+  const cs=r('cloud-swap.js');
+  assert.match(js,/cloud\.run\(\{kind:"stage",dir,from,to\},apply,finish\)/);
+  assert.match(js,/const dir=to==="call"\?1:-1/);
+  assert.ok(!/hm-cl|hm-sky|hm-veil|fly\(/.test(js+css),'no second cloud implementation');
+  assert.match(cs,/function run\(job,apply,cb\)\{/);
+  assert.match(cs,/job\.kind==='stage'\?\(job\.dir<0\?-1:1\)/);
+  assert.match(cs,/function finish\(\)\{done=true;ov\.remove\(\);busy=false;if\(cb\)\{try\{cb\(\)\}catch\(e\)\{\}\}/);
+  /* ยังเป็นของเดิมทุกอย่าง: หมอกทึบแล้วค่อยสลับ · ดักปุ่มธีม/ภาษา/สี */
+  assert.match(cs,/vin\.onfinish=function\(\)\{\s*doApply\(\);\s*var vout=veil\.animate\(/);
+  assert.match(cs,/var THEME_SEL='button\[data-sitetheme\],#v-settings button\[data-theme\],\.th-opt\[data-th\]'/);
+  assert.match(page,/<script src="\/cloud-swap\.js\?v=4" defer><\/script>\n<script src="home-stages\.js\?v=2" defer><\/script>/);
+  for(const f of ['chat.html','garage.html','news.html','profile.html','spares.html'])assert.match(r(f),/<script src="\/cloud-swap\.js\?v=4" defer><\/script>/,f);
+  assert.match(sw,/'\.\/cloud-swap\.js\?v=4'/);
+});
+
+test('smooth slide: old stage lifts away while the mist thickens, new stage staggers in; transform/opacity only; none with reduced motion',()=>{
+  assert.match(js,/function leave\(el,dir\)\{\s*if\(calm\(\)\|\|!el\.animate\)return;/);
+  assert.match(js,/function enter\(el,dir\)\{\s*if\(calm\(\)\|\|!el\.animate\)return;/);
+  assert.match(js,/\{opacity:1,transform:"translate3d\(0,0,0\)"\},\{opacity:0,transform:`translate3d\(0,\$\{-dir\*34\}px,0\)`\}/);
+  assert.match(js,/\{opacity:0,transform:`translate3d\(0,\$\{dir\*46\}px,0\)`\},\{opacity:1,transform:"translate3d\(0,0,0\)"\}/);
+  assert.match(js,/delay:70\+Math\.min\(i,7\)\*70,easing:EASE_OUT,fill:"backwards"/);
+  /* ช่วงเก่าเริ่มลอยก่อนเมฆสลับ; ช่วงใหม่เล่นหลังสลับ (ใต้หมอก) */
+  assert.match(js,/leave\(from==="ai"\?ai:call,dir\);\s*cloud\.run/);
+  assert.match(js,/const apply=\(\)=>\{swap\(to\);if\(leaving\)\{leaving\.cancel\(\);leaving=null\}enter\(next,dir\)\};/);
   assert.match(css,/@media\(prefers-reduced-motion:reduce\)\{\.hm-next \.ti\{animation:none\}/);
-  assert.ok(!/(?:^|[^-])(?:top|left):\s*\$\{/.test(js),'no layout-property animation');
 });
 
 test('home tab while on stage 2 goes back to the AI stage; stage is restored on back/reload only',()=>{
@@ -90,8 +110,8 @@ test('home tab while on stage 2 goes back to the AI stage; stage is restored on 
 
 test('new strings are routed through the shared translator and the files are cached by the service worker',()=>{
   assert.match(js,/const T=\(th,en\)=>W\.spireT\?W\.spireT\(th,en\):th;/);
-  assert.match(sw,/'\.\/home-stages\.css\?v=1'/);assert.match(sw,/'\.\/home-stages\.js\?v=1'/);
-  assert.match(page,/href="home-stages\.css\?v=1"/);assert.match(page,/<script src="home-stages\.js\?v=1" defer><\/script>/);
+  assert.match(sw,/'\.\/home-stages\.css\?v=2'/);assert.match(sw,/'\.\/home-stages\.js\?v=2'/);
+  assert.match(page,/href="home-stages\.css\?v=2"/);assert.match(page,/<script src="home-stages\.js\?v=2" defer><\/script>/);
   assert.match(r('i18n/extract.mjs'),/'home-stages\.js'\]/);
 });
 

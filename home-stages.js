@@ -63,9 +63,11 @@ function lock(on){
    ช่วงเก่าลอยขึ้น/ลงจางหายขณะหมอกฟุ้ง · ช่วงใหม่ไล่เลื่อนเข้าทีละชิ้น (stagger) ขณะหมอกจาง — เฉพาะ opacity/transform */
 const EASE_OUT="cubic-bezier(.22,1,.36,1)",EASE_IN="cubic-bezier(.5,0,.9,.5)";
 const shown=el=>[...el.children].filter(c=>!c.hidden&&getComputedStyle(c).display!=="none");
-function leave(el,dir){
+/* fromPx = ระยะที่หน้าถูกลากตามนิ้วอยู่แล้ว — เลื่อนออกต่อจากตรงนั้นเลย ไม่เด้งกลับที่เดิมก่อน */
+function leave(el,dir,fromPx){
   if(calm()||!el.animate)return;
-  try{leaving=el.animate([{opacity:1,transform:"translate3d(0,0,0)"},{opacity:0,transform:`translate3d(0,${-dir*34}px,0)`}],{duration:520,easing:EASE_IN,fill:"forwards"})}catch(e){leaving=null}
+  const from=fromPx||0,to=-dir*Math.max(34,Math.abs(from)+24);
+  try{leaving=el.animate([{opacity:1,transform:`translate3d(0,${from}px,0)`},{opacity:0,transform:`translate3d(0,${to}px,0)`}],{duration:520,easing:EASE_IN,fill:"forwards"})}catch(e){leaving=null}
 }
 function enter(el,dir){
   if(calm()||!el.animate)return;
@@ -87,7 +89,7 @@ function swap(to){
   const h=$(to==="ai"?"hmAiH":"hmCallH");try{h.focus({preventScroll:true})}catch(e){}
   $("hmLive").textContent=h.textContent;
 }
-async function go(to){
+async function go(to,fromPx){
   if(busy||to===stage||blocked())return false;
   busy=true;const dir=to==="call"?1:-1,from=stage,cloud=W.CendonCloud,next=to==="ai"?ai:call;
   lock(true);
@@ -99,7 +101,7 @@ async function go(to){
     const apply=()=>{swap(to);if(leaving){leaving.cancel();leaving=null}enter(next,dir)};
     if(cloud&&!cloud.busy()&&D.body.animate){
       /* เมฆชุดเดียวกับตอนเปลี่ยนธีม/ภาษาในหน้าตั้งค่า (cloud-swap.js): หมอกบังเต็มจอแล้วค่อยสลับ */
-      leave(from==="ai"?ai:call,dir);
+      leave(from==="ai"?ai:call,dir,fromPx);
       cloud.run({kind:"stage",dir,from,to},apply,finish);
     }else{apply();finish()}
   }catch(e){if(stage!==to)swap(to);finish()}
@@ -129,7 +131,8 @@ addEventListener("wheel",e=>{
    ระหว่างลากหน้าขยับตามนิ้วเล็กน้อยให้รู้ว่ากำลังจะสลับ */
 let ty=0,tx=0,tt=0,tEdge=false,tOn=false,pulled=false;
 const box=$("hmStages"),near=()=>stage==="ai"?atBottom():W.scrollY<=24;
-function pull(px,anim){box.style.transition=anim?"transform .26s cubic-bezier(.22,1,.36,1)":"none";box.style.transform=px?`translate3d(0,${px}px,0)`:"";pulled=!!px;if(anim)setTimeout(()=>{if(!pulled)box.style.transition=""},300)}
+let pullPx=0;
+function pull(px,anim){pullPx=px;box.style.transition=anim?"transform .26s cubic-bezier(.22,1,.36,1)":"none";box.style.transform=px?`translate3d(0,${px}px,0)`:"";pulled=!!px;if(anim)setTimeout(()=>{if(!pulled)box.style.transition=""},300)}
 addEventListener("touchstart",e=>{tOn=e.touches.length===1&&!busy&&!blocked();if(!tOn)return;ty=e.touches[0].clientY;tx=e.touches[0].clientX;tt=performance.now();tEdge=near();if(pulled)pull(0)},{passive:true});
 addEventListener("touchmove",e=>{
   if(!tOn||!tEdge||busy||typing(e.target))return;
@@ -142,7 +145,8 @@ addEventListener("touchend",e=>{
   if(!tOn)return;tOn=false;
   const t=e.changedTouches[0],dy=t.clientY-ty,dx=t.clientX-tx,ms=Math.max(1,performance.now()-tt),fast=Math.abs(dy)/ms>.45;
   const ok=performance.now()>=cool&&tEdge&&!typing(e.target)&&want(-dy)&&Math.abs(dy)>=(fast?24:48)&&Math.abs(dy)>=Math.abs(dx)*1.4;
-  if(ok){pull(0);go(stage==="ai"?"call":"ai")}else if(pulled)pull(0,true);
+  /* ถึงเกณฑ์: ส่งระยะที่ลากอยู่ให้แอนิเมชันเลื่อนออกต่อเนื่อง (ไม่ดีดกลับ) */
+  if(ok){const from=pullPx;pull(0);go(stage==="ai"?"call":"ai",from)}else if(pulled)pull(0,true);
 },{passive:true});
 addEventListener("touchcancel",()=>{tOn=false;if(pulled)pull(0,true)},{passive:true});
 addEventListener("keydown",e=>{

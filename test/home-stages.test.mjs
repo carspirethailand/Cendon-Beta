@@ -87,19 +87,19 @@ test('clouds are the settings-page theme clouds (cloud-swap.js), not a private c
   /* ยังเป็นของเดิมทุกอย่าง: หมอกทึบแล้วค่อยสลับ · ดักปุ่มธีม/ภาษา/สี */
   assert.match(cs,/vin\.onfinish=function\(\)\{\s*doApply\(\);\s*var vout=veil\.animate\(/);
   assert.match(cs,/var THEME_SEL='button\[data-sitetheme\],#v-settings button\[data-theme\],\.th-opt\[data-th\]'/);
-  assert.match(page,/<script src="\/cloud-swap\.js\?v=5" defer><\/script>\n<script src="home-stages\.js\?v=4" defer><\/script>/);
+  assert.match(page,/<script src="\/cloud-swap\.js\?v=5" defer><\/script>\n<script src="home-stages\.js\?v=5" defer><\/script>/);
   for(const f of ['chat.html','garage.html','news.html','profile.html','spares.html'])assert.match(r(f),/<script src="\/cloud-swap\.js\?v=5" defer><\/script>/,f);
   assert.match(sw,/'\.\/cloud-swap\.js\?v=5'/);
 });
 
 test('smooth slide: old stage lifts away while the mist thickens, new stage staggers in; transform/opacity only; none with reduced motion',()=>{
-  assert.match(js,/function leave\(el,dir\)\{\s*if\(calm\(\)\|\|!el\.animate\)return;/);
+  assert.match(js,/function leave\(el,dir,fromPx\)\{\s*if\(calm\(\)\|\|!el\.animate\)return;/);
   assert.match(js,/function enter\(el,dir\)\{\s*if\(calm\(\)\|\|!el\.animate\)return;/);
-  assert.match(js,/\{opacity:1,transform:"translate3d\(0,0,0\)"\},\{opacity:0,transform:`translate3d\(0,\$\{-dir\*34\}px,0\)`\}/);
+  assert.match(js,/\{opacity:1,transform:`translate3d\(0,\$\{from\}px,0\)`\},\{opacity:0,transform:`translate3d\(0,\$\{to\}px,0\)`\}/);
   assert.match(js,/\{opacity:0,transform:`translate3d\(0,\$\{dir\*46\}px,0\)`\},\{opacity:1,transform:"translate3d\(0,0,0\)"\}/);
   assert.match(js,/delay:70\+Math\.min\(i,7\)\*70,easing:EASE_OUT,fill:"backwards"/);
   /* ช่วงเก่าเริ่มลอยก่อนเมฆสลับ; ช่วงใหม่เล่นหลังสลับ (ใต้หมอก) */
-  assert.match(js,/leave\(from==="ai"\?ai:call,dir\);\s*cloud\.run/);
+  assert.match(js,/leave\(from==="ai"\?ai:call,dir,fromPx\);\s*cloud\.run/);
   assert.match(js,/const apply=\(\)=>\{swap\(to\);if\(leaving\)\{leaving\.cancel\(\);leaving=null\}enter\(next,dir\)\};/);
   assert.match(css,/@media\(prefers-reduced-motion:reduce\)\{\.hm-next \.ti\{animation:none\}/);
 });
@@ -112,8 +112,8 @@ test('home tab while on stage 2 goes back to the AI stage; stage is restored on 
 
 test('new strings are routed through the shared translator and the files are cached by the service worker',()=>{
   assert.match(js,/const T=\(th,en\)=>W\.spireT\?W\.spireT\(th,en\):th;/);
-  assert.match(sw,/'\.\/home-stages\.css\?v=4'/);assert.match(sw,/'\.\/home-stages\.js\?v=4'/);
-  assert.match(page,/href="home-stages\.css\?v=4"/);assert.match(page,/<script src="home-stages\.js\?v=4" defer><\/script>/);
+  assert.match(sw,/'\.\/home-stages\.css\?v=5'/);assert.match(sw,/'\.\/home-stages\.js\?v=5'/);
+  assert.match(page,/href="home-stages\.css\?v=5"/);assert.match(page,/<script src="home-stages\.js\?v=5" defer><\/script>/);
   assert.match(r('i18n/extract.mjs'),/'home-stages\.js'\]/);
 });
 
@@ -127,8 +127,13 @@ test('AI stage: logo stays at the top; everything else is centred on the y axis;
   assert.ok(ai.indexOf('class="lx-logo nt"')>0&&ai.indexOf('class="lx-logo nt"')<ai.indexOf('<header class="lx-hero">'),'logo is outside the hero, above it');
   assert.equal((page.match(/class="lx-logo nt"/g)||[]).length,1);
   assert.match(css,/#vMenu \.hm-ai>\.lx-logo\{padding-top:12px;margin:0\}/);
-  assert.match(css,/#vMenu \.hm-ai>\.lx-hero\{[^}]*margin-top:auto\}/);
-  assert.match(css,/\.hm-next\{[^}]*margin-top:0;margin-bottom:auto;/,'equal auto margins above the hero and below the call button centre the group');
+  /* ก้อนกลางจัดกึ่งกลางแกน y ด้วย flex · ปุ่มเรียกช่างลอยท้ายช่วง ไม่กินที่ในก้อน (เดิมดันเนื้อหาขึ้นบน) */
+  assert.match(css,/#vMenu \.hm-core\{flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;padding-bottom:24px\}/);
+  assert.match(css,/\.hm-next\{position:absolute;left:0;right:0;bottom:2px;/);
+  assert.match(css,/\.hm-next \.ti\{margin-top:1px;font-size:17px;/,'smaller arrow');
+  const core=ai.slice(ai.indexOf('<div class="hm-core">'),ai.indexOf('id="hmNext"'));
+  for(const id of ['hFlip','hTools','myCar'])assert.ok(core.includes(`id="${id}"`),id+' is in the centred group');
+  assert.ok(!core.includes('lx-logo')&&!core.includes('id="hmNext"'),'logo and call button are outside the group');
   assert.match(css,/@media\(max-width:760px\)\{[\s\S]*#vMenu \.hm-call\{padding-top:58px\}/);
 });
 
@@ -151,6 +156,31 @@ test('pulling down at the top of stage 2 switches stages instead of refreshing t
   assert.match(js,/Math\.abs\(dy\)<8\|\|Math\.abs\(dy\)<Math\.abs\(dx\)\*1\.4\|\|!want\(-dy\)\|\|!near\(\)\)return;/);
   /* หน้าขยับตามนิ้วเล็กน้อย แล้วคืนตำแหน่งถ้าไม่สลับ */
   assert.match(js,/pull\(Math\.max\(-46,Math\.min\(46,dy\*\.35\)\)\)/);
-  assert.match(js,/if\(ok\)\{pull\(0\);go\(stage==="ai"\?"call":"ai"\)\}else if\(pulled\)pull\(0,true\)/);
+  assert.match(js,/if\(ok\)\{const from=pullPx;pull\(0\);go\(stage==="ai"\?"call":"ai",from\)\}else if\(pulled\)pull\(0,true\)/);
   assert.match(js,/addEventListener\("touchcancel",\(\)=>\{tOn=false;if\(pulled\)pull\(0,true\)\}/);
+});
+
+test('pull gesture is continuous: the page leaves from where the finger left it (no snap-back first)',()=>{
+  assert.match(js,/function leave\(el,dir,fromPx\)\{/);
+  assert.match(js,/const from=fromPx\|\|0,to=-dir\*Math\.max\(34,Math\.abs\(from\)\+24\);/);
+  assert.match(js,/translate3d\(0,\$\{from\}px,0\)/);
+  assert.match(js,/async function go\(to,fromPx\)\{/);
+  assert.match(js,/leave\(from==="ai"\?ai:call,dir,fromPx\);/);
+  assert.match(js,/if\(ok\)\{const from=pullPx;pull\(0\);go\(stage==="ai"\?"call":"ai",from\)\}/);
+  assert.match(js,/let pullPx=0;\s*function pull\(px,anim\)\{pullPx=px;/);
+});
+
+test('large screens: content is wider but never edge to edge; phones and the navbar are untouched',()=>{
+  const wide=r('wide-layout.css');
+  assert.match(wide,/@media\(min-width:1100px\)\{/);
+  assert.match(wide,/:root\{--page-w:min\(1360px,88vw\)\}/);
+  assert.match(wide,/\.view\{max-width:var\(--page-w\)\}/);
+  assert.match(wide,/#vMenu:not\(\[hidden\]\)\{max-width:var\(--page-w\)\}/);
+  assert.match(wide,/#vMenu\{--hw:100%\}/);
+  assert.ok(!/navwrap|\.cx-plus|cb-bell|#top\b/.test(wide.replace(/\/\*[\s\S]*?\*\//g,'')),'navbar, + button and bell are not styled here');
+  assert.ok(wide.replace(/\/\*[\s\S]*?\*\//g,'').trim().startsWith('@media(min-width:1100px){')&&wide.trim().endsWith('}'),'everything lives inside the desktop media query');
+  for(const f of ['garage.html','news.html','spares.html','profile.html','chat.html'])assert.match(r(f),/<link rel="stylesheet" href="\/wide-layout\.css\?v=1">\n<\/head>/,f);
+  assert.match(page,/href="wide-layout\.css\?v=1"/);
+  assert.match(sw,/'\.\/wide-layout\.css\?v=1'/);
+  assert.match(r('tech-marketplace.css'),/@media\(min-width:1100px\)\{\.wrap\{max-width:min\(1360px,88vw\)!important\}\}/);
 });

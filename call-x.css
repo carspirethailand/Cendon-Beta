@@ -196,9 +196,30 @@ html:root:not([data-theme="dark"]) .cx-sweep i{opacity:.45}
 .bs.cxs.cx-busy .cx-sweep i{animation-play-state:running}
 @keyframes cxFlow{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 .cx-err{min-height:0}
+/* แท็บเล็ต/คอม: เต็มจอตามขนาดเครื่อง (เดิมเป็นคอลัมน์กว้าง 480px กลางจอ ดูเป็นหน้ามือถือลอยอยู่) */
 @media(min-width:761px){
-  .bs.cxs .pn{left:50%;right:auto;width:min(480px,100vw);transform:translateX(-50%);border-left:1px solid var(--line);border-right:1px solid var(--line)}
-  .bs.cxs.on .pn{transform:translateX(-50%)}
+  .bs.cxs .pn{left:0;right:0;top:0;bottom:0;width:auto;border-radius:0;transform:translateY(14px);opacity:0}
+  .bs.cxs.on .pn{transform:none;opacity:1}
+  /* แท็บเล็ต: แบบเดียวกับมือถือ แต่เนื้อหากลางจอ ไม่ยืดยาวจนอ่านยาก */
+  .cx-card{padding-inline:max(20px,calc(50% - 320px))}
+  .bs.cxs .ft{padding-inline:max(20px,calc(50% - 320px))}
+  .cx-top,.cx-seg,.cx-to{right:auto;width:min(640px,calc(100% - 32px));left:max(16px,calc(50% - 320px))}
+}
+/* คอม: แผนที่เต็มด้านซ้าย · แผงขั้นตอนด้านขวา (แบบเดียวกับหน้าแผนที่ช่าง) · ปุ่มหลักติดล่างของแผง */
+@media(min-width:1024px){
+  .bs.cxs{--cxw:clamp(420px,34vw,520px)}
+  .bs.cxs .bd{height:100%}
+  .cx{display:grid;grid-template-columns:minmax(0,1fr) var(--cxw);height:100%}
+  .cx-hero,.cx[data-step="2"] .cx-hero{height:auto;min-height:0}
+  .cx-card{margin-top:0;border-radius:0;border-top:0;border-left:1px solid var(--cx-hair);box-shadow:none;padding:24px 28px 170px}
+  .cx-card::before{display:none}
+  .cx-top,.cx-seg,.cx-to{left:24px;width:min(560px,calc(100% - 48px))}
+  .cx-top{top:20px}.cx-seg,.cx-to{top:74px}
+  .cx-chip{left:24px;bottom:24px}
+  .bs.cxs .ft{position:absolute;right:0;bottom:0;z-index:6;width:var(--cxw);box-sizing:border-box;padding:12px 28px 18px;border-left:1px solid var(--cx-hair)}
+  .cx-art{inset:-140% -30% -34%}
+  .bs.cxs #err{position:absolute;right:0;bottom:150px;z-index:6;width:var(--cxw);box-sizing:border-box;padding:0 28px}
+  .cx-quick{margin:10px -28px 0;padding:0 28px 2px}
 }
 @media(prefers-reduced-motion:reduce){
   .cx-me::before,.cx-chip i,.cx-urg .cx-live,.cx-sweep i,.cx-go::after,.cx .fsec.on,.cx-steps li.ln.done::after,.cx-mic.rec{animation:none!important}

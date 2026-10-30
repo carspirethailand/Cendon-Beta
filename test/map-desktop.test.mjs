@@ -22,3 +22,18 @@ test('on wide screens the app bar centres over the map and the panel starts at t
   assert.match(css,/\.atl-chips\{-webkit-mask-image:linear-gradient\(90deg,#000 calc\(100% - 36px\),transparent\)/,'scrollable chips fade instead of looking cut off');
   assert.match(atlas,/CSS_URL='\/map-atlas\.css\?v=3'/);
 });
+
+test('call page fills the screen on tablet and desktop: map left, steps panel right with its button pinned',()=>{
+  const cx=r('call-x.css');
+  assert.doesNotMatch(cx,/width:min\(480px,100vw\)/,'no phone-sized column in the middle of a desktop');
+  assert.match(cx,/@media\(min-width:761px\)\{\n  \.bs\.cxs \.pn\{left:0;right:0;top:0;bottom:0;width:auto;/);
+  assert.match(cx,/\.cx\{display:grid;grid-template-columns:minmax\(0,1fr\) var\(--cxw\);height:100%\}/);
+  assert.match(cx,/\.bs\.cxs \.ft\{position:absolute;right:0;bottom:0;z-index:6;width:var\(--cxw\);/,'Next stays above the scrolling panel');
+});
+
+test('Car Passport cost switch is brand orange when on, never all-white in dark mode',()=>{
+  const g=r('garage-extras.css');
+  assert.doesNotMatch(g,/\.cx-rem input:checked\+\.sw\{background:var\(--ink/);
+  assert.match(g,/\.cx-rem input:checked\+\.sw\{background:linear-gradient\(135deg,#FFB547,#F28C38 45%,#E4572E\)/);
+  assert.match(r('garage.html'),/garage-extras\.css\?v=8/);
+});

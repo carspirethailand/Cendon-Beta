@@ -112,8 +112,8 @@ test('home tab while on stage 2 goes back to the AI stage; stage is restored on 
 
 test('new strings are routed through the shared translator and the files are cached by the service worker',()=>{
   assert.match(js,/const T=\(th,en\)=>W\.spireT\?W\.spireT\(th,en\):th;/);
-  assert.match(sw,/'\.\/home-stages\.css\?v=6'/);assert.match(sw,/'\.\/home-stages\.js\?v=6'/);
-  assert.match(page,/href="home-stages\.css\?v=6"/);assert.match(page,/<script src="home-stages\.js\?v=6" defer><\/script>/);
+  assert.match(sw,/'\.\/home-stages\.css\?v=7'/);assert.match(sw,/'\.\/home-stages\.js\?v=6'/);
+  assert.match(page,/href="home-stages\.css\?v=7"/);assert.match(page,/<script src="home-stages\.js\?v=6" defer><\/script>/);
   assert.match(r('i18n/extract.mjs'),/'home-stages\.js'\]/);
 });
 
@@ -137,7 +137,7 @@ test('AI stage: logo stays at the top; everything else is centred on the y axis;
   assert.match(js,/next\.innerHTML=`<i class="ti ti-chevron-down" aria-hidden="true"><\/i>`/,'only the arrow is visible');
   assert.match(js,/next\.setAttribute\("aria-label",nextLabel\);next\.title=nextLabel;next\.setAttribute\("aria-controls","hmCall"\)/);
   assert.doesNotMatch(css,/\.hm-next (?:b|small)\{/,'no leftover text-block styling');
-  assert.match(css,/body:has\(#liveBar\) #hmNext\{left:0;right:auto;margin:0\}/,'never sit under the live location Stop badge');
+  assert.doesNotMatch(css,/#liveBar|\.live-bar/,'no floating location badge or leftover offset rules');
   const core=ai.slice(ai.indexOf('<div class="hm-core">'),ai.indexOf('id="hmNext"'));
   for(const id of ['hFlip','hTools','myCar'])assert.ok(core.includes(`id="${id}"`),id+' is in the centred group');
   assert.ok(!core.includes('lx-logo')&&!core.includes('id="hmNext"'),'logo and call button are outside the group');

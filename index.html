@@ -1121,13 +1121,9 @@ html[data-theme="dark"] .lv-map .leaflet-tile-pane{filter:invert(1) hue-rotate(1
 .lv-dot .ti{transform:rotate(var(--r,0deg))}
 @keyframes lvRing{from{transform:scale(.6);opacity:1}to{transform:scale(1.5);opacity:0}}
 .lv-home{color:#ef4444;font-size:40px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.35))}
-.live-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom));z-index:9000;display:flex;align-items:center;gap:9px;max-width:calc(100vw - 32px);padding:9px 10px 9px 14px;border-radius:999px;background:#18181b;color:#fff;font-size:12.5px;box-shadow:0 10px 30px rgba(0,0,0,.3)}
-.live-bar .dot{flex:none;width:9px;height:9px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:lvPing 1.6s infinite}
-.live-bar .dot.bad{background:#f59e0b;animation:none}
-.live-bar span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.live-bar b{flex:none;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.14);font-weight:500}
+#jobLiveShare[hidden]{display:none!important}
 @keyframes lvPing{70%{box-shadow:0 0 0 8px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
-@media(prefers-reduced-motion:reduce){.lv-ring,.live-bar .dot,.stu-roam i.dot{animation:none}}
+@media(prefers-reduced-motion:reduce){.lv-ring,.stu-roam i.dot{animation:none}}
 .emg{display:grid;gap:10px;margin-bottom:14px}
 .emg-c{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;padding:14px;border-radius:18px;background:var(--surface);box-shadow:0 0 0 1px var(--line-2);text-align:left;transition:transform .2s var(--spring)}
 .emg-c:active{transform:scale(.98)}
@@ -2871,7 +2867,7 @@ a.mtab{text-decoration:none}
 <link rel="stylesheet" href="stability.css?v=2026-10-27-zoom">
 <link rel="stylesheet" href="/primary-material.css?v=1">
 <link rel="stylesheet" href="home-layout.css?v=3">
-<link rel="stylesheet" href="home-stages.css?v=6">
+<link rel="stylesheet" href="home-stages.css?v=7">
 <link rel="stylesheet" href="wide-layout.css?v=1">
 <link rel="stylesheet" href="call-x.css?v=2">
 <script src="category-pages.js" defer></script>
@@ -6532,17 +6528,16 @@ const LiveShare={id:null,watch:null,last:0,lock:null,fix:null,err:"",
     if(!keep){this.id=null;this.fix=null}
     this.paint();
   },
-  /* แถบเล็กบนจอช่างระหว่างแชร์ — รู้ตลอดว่ากำลังส่งตำแหน่ง และหยุดเองได้ */
+  /* สถานะ/หยุดแชร์อยู่ในใบงานเท่านั้น ไม่สร้างแถบลอยทับหน้าจออื่น */
   paint(){
-    let b=$("liveBar");
-    if(!this.id||this.watch==null){if(b)b.remove();return}
-    if(!b){b=document.createElement("button");b.id="liveBar";b.type="button";b.className="live-bar";document.body.appendChild(b);
-      b.onclick=()=>{if(confirm(T("หยุดแชร์ตำแหน่งให้ลูกค้า?","Stop sharing your location with the customer?"))){ls.set("spire_live_off",this.id);this.stop()}}}
-    const ago=this.sent?Math.max(0,Math.round((Date.now()-this.sent)/1000)):null;
-    b.innerHTML=`<i class="dot${this.err?" bad":""}"></i><span>${this.err?esc(this.err):T("ลูกค้าเห็นคุณบนแผนที่","The customer can see you on the map")+(ago!=null?` · ${ago<5?T("เพิ่งส่ง","just now"):ago+T(" วิที่แล้ว","s ago")}`:"")}</span><b>${T("หยุด","Stop")}</b>`;
+    $("liveBar")?.remove();
+    const b=$("jobLiveShare");if(!b)return;
+    b.hidden=this.id!==b.dataset.job||this.watch==null;if(b.hidden)return;
+    b.querySelector("[data-live-label]").textContent=this.err||T("ลูกค้าเห็นคุณบนแผนที่","The customer can see you on the map");
+    b.querySelector("[data-live-action]").textContent=T("หยุด","Stop");
+    b.onclick=()=>{if(this.id!==b.dataset.job||this.watch==null)return;if(confirm(T("หยุดแชร์ตำแหน่งให้ลูกค้า?","Stop sharing your location with the customer?"))){ls.set("spire_live_off",this.id);this.stop()}};
   }};
 addEventListener("visibilitychange",()=>{if(!document.hidden&&LiveShare.watch!=null&&LiveShare.fix)navigator.geolocation.getCurrentPosition(p=>LiveShare.push(p,true),()=>{},{enableHighAccuracy:true,maximumAge:3000,timeout:8000})});
-setInterval(()=>{if(LiveShare.watch!=null)LiveShare.paint()},5000);
 /* ═══ ช่างเคลื่อนที่: ตำแหน่งตามมือถือช่าง ═══
    เปิดรับงาน + เปิดโหมดช่างเคลื่อนที่ = ส่งจุดล่าสุดทุก ~1 นาที หรือเมื่อขยับเกิน ~200 ม. (เร็วสุดทุก 20 วิ)
    ลูกค้าเห็นแค่จุดที่หลังบ้านปัดแล้ว ~300 ม. · ไม่รับงาน/ไม่แจ้งเตือน/ปิดโหมด = หยุดส่ง และหลังบ้านลบจุดทิ้ง
@@ -6745,6 +6740,7 @@ function drawJob(j,push){
   const vet=cust&&!tech&&j.techVetting?`<span class="jw-badges"><span><i class="ti ti-rosette-discount-check-filled"></i>ยืนยันตัวตนแล้ว</span>${(j.techVetting.cats||[]).length?`<span>ตรวจทักษะ ${esc(j.techVetting.cats.map(c=>CAT[c]?CAT[c].th:c).join(", "))}</span>`:""}</span>`:"";
   sheet({push,job:true,full:true,url:"/jobs/"+encodeURIComponent(j.id),title:(j.test?"ทดสอบ · ":"")+T("ใบงาน","Job"),body:`<div class="jw">
     ${hero}${liveCard}
+    ${liveCard&&tech&&!cust?`<button class="jw-row" type="button" id="jobLiveShare" data-job="${esc(j.id)}" hidden><span class="rt"><b data-live-label></b><small data-live-action></small></span><i class="ti ti-chevron-right" aria-hidden="true"></i></button>`:""}
     ${cust&&j.startCode?`<section class="jw-card jw-code"><div class="jw-ch"><i class="ti ti-key"></i><b>รหัสเริ่มงาน</b><button class="lnk" data-a="newcode">ขอรหัสใหม่</button></div>
       <div class="jw-digits nt" aria-label="${esc(j.startCode.split("").join(" "))}">${j.startCode.split("").map(d=>`<span>${esc(d)}</span>`).join("")}</div>
       <p>บอกรหัสนี้กับช่าง<b>หลังพบกันแล้ว</b> — ตรวจว่าเป็นคนเดียวกับรูปโปรไฟล์ และตรวจรายละเอียดงานกับราคาก่อน · ใช้ได้ครั้งเดียว${j.startCodeExp?` · หมดอายุ ${new Date(j.startCodeExp).toLocaleDateString(LOC,{day:"numeric",month:"short"})}`:""}</p></section>`:""}
@@ -6801,6 +6797,7 @@ function drawJob(j,push){
           LIVE_STOP.job=j.id;
         }
       }
+      if(tech&&!cust)LiveShare.paint();
       b.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z));
       [...b.querySelectorAll("[data-a]"),...f.querySelectorAll("[data-a]")].forEach(x=>x.onclick=()=>act(j,x.dataset.a,x));
       if(prevS&&prevS!==s)jobMoved(b);

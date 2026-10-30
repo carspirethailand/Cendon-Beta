@@ -5,7 +5,7 @@
    ตำแหน่งคุณและจุดจอดรถอยู่ในเครื่องนี้เท่านั้น ไม่ส่งออก
    เครื่องไม่มี WebGL / โหลดไลบรารีไม่ได้ → mount() โยน error ให้ index.html ใช้แผนที่เดิม (Leaflet) */
 
-const ML='/vendor/maplibre-gl-4.7.1',STYLE='https://tiles.openfreemap.org/styles/liberty',CSS_URL='/map-atlas.css?v=2';
+const ML='/vendor/maplibre-gl-4.7.1',STYLE='https://tiles.openfreemap.org/styles/liberty',CSS_URL='/map-atlas.css?v=3';
 /* สีแผนที่สองธีม — ตรงกับบอร์ด "สีแผนที่ใหม่" ในงานออกแบบ */
 const PAL={
   light:{bg:'#F3F1EC',green:'#DDE8D3',water:'#C8DCE7',road:'#FFFFFF',casing:'#E2DCD2',major:'#FDE7D2',majorCase:'#EDC29A',motor:'#F8CFA6',motorCase:'#E3A06A',

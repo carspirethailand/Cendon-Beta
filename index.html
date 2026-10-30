@@ -1280,6 +1280,8 @@ html[data-theme="dark"] .mapw .leaflet-tile-pane{filter:invert(1) hue-rotate(180
 /* แผนที่เต็มจอ — ไม่มีแถบบน มีแค่ปุ่มย้อนลอย */
 body.onmap .top{display:none}
 body.onmap .mapv{top:0}
+/* แผนที่เต็มจอเสมอ — คอมจอกว้าง .view ถูกจำกัดความกว้างเท่าหน้าเนื้อหา (--page-w) แผนที่เลยหยุดกลางจอ เหลือพื้นว่างด้านขวา */
+.view.mapv{max-width:none}
 .mapback{position:absolute;left:16px;top:calc(env(safe-area-inset-top) + 12px);z-index:450;box-shadow:0 8px 22px -10px rgba(0,0,0,.55),0 0 0 1px var(--line-2)}
 body.onmap .mfilt{left:68px;top:calc(env(safe-area-inset-top) + 16px)}
 /* มือถือ: แถบเมนูล่างลอยอยู่ก้นจอ — การ์ดร้านกับปุ่มตำแหน่งของฉันต้องอยู่เหนือแถบ ไม่โดนทับ */
@@ -3859,7 +3861,7 @@ function showMap(){pollLive();
   $("vMap").classList.add("atl-on");$("atlas").hidden=false;
   if(!ATLAS_P)ATLAS_P=(async()=>{
     try{
-      const M=await import("/map-atlas.js?v=3");if(!M.supported())throw Error("webgl");
+      const M=await import("/map-atlas.js?v=4");if(!M.supported())throw Error("webgl");
       ATLAS=await M.mount($("atlas"),atlasApi());
       document.body.classList.toggle("atl-map",VIEW==="map");if(VIEW==="map")ATLAS.show();
     }catch(e){console.warn("atlas",e&&e.message);ATLAS_OFF=true;$("vMap").classList.remove("atl-on");$("atlas").hidden=true;$("atlas").innerHTML="";if(VIEW==="map")oldMap()}
@@ -6058,7 +6060,7 @@ function cxSheet(o){
       };
       const first=paint();
       if($("bLocL"))new MutationObserver(paint).observe($("bLocL").parentNode,{childList:true,characterData:true,subtree:true});
-      import("/call-x-map.js?v=1").then(M=>M.hero($("cxMap"),{center:first.c,shops:first.pins,to:first.d.to||[],radius:first.d.radius,acc})).then(h=>{
+      import("/call-x-map.js?v=2").then(M=>M.hero($("cxMap"),{center:first.c,shops:first.pins,to:first.d.to||[],radius:first.d.radius,acc})).then(h=>{
         if(seq!==CX.seq||!root.isConnected){h.destroy();return}
         CX.hero=h;paint();
         /* โชว์แผนที่จริงเมื่อวาดถนนขึ้นแล้วเท่านั้น — ไทล์ไม่มา = คงภาพแผนที่วาดไว้ */

@@ -87,7 +87,7 @@ test('clouds are the settings-page theme clouds (cloud-swap.js), not a private c
   /* ยังเป็นของเดิมทุกอย่าง: หมอกทึบแล้วค่อยสลับ · ดักปุ่มธีม/ภาษา/สี */
   assert.match(cs,/vin\.onfinish=function\(\)\{\s*doApply\(\);\s*var vout=veil\.animate\(/);
   assert.match(cs,/var THEME_SEL='button\[data-sitetheme\],#v-settings button\[data-theme\],\.th-opt\[data-th\]'/);
-  assert.match(page,/<script src="\/cloud-swap\.js\?v=5" defer><\/script>\n<script src="home-stages\.js\?v=5" defer><\/script>/);
+  assert.match(page,/<script src="\/cloud-swap\.js\?v=5" defer><\/script>\n<script src="home-stages\.js\?v=6" defer><\/script>/);
   for(const f of ['chat.html','garage.html','news.html','profile.html','spares.html'])assert.match(r(f),/<script src="\/cloud-swap\.js\?v=5" defer><\/script>/,f);
   assert.match(sw,/'\.\/cloud-swap\.js\?v=5'/);
 });
@@ -112,8 +112,8 @@ test('home tab while on stage 2 goes back to the AI stage; stage is restored on 
 
 test('new strings are routed through the shared translator and the files are cached by the service worker',()=>{
   assert.match(js,/const T=\(th,en\)=>W\.spireT\?W\.spireT\(th,en\):th;/);
-  assert.match(sw,/'\.\/home-stages\.css\?v=5'/);assert.match(sw,/'\.\/home-stages\.js\?v=5'/);
-  assert.match(page,/href="home-stages\.css\?v=5"/);assert.match(page,/<script src="home-stages\.js\?v=5" defer><\/script>/);
+  assert.match(sw,/'\.\/home-stages\.css\?v=6'/);assert.match(sw,/'\.\/home-stages\.js\?v=6'/);
+  assert.match(page,/href="home-stages\.css\?v=6"/);assert.match(page,/<script src="home-stages\.js\?v=6" defer><\/script>/);
   assert.match(r('i18n/extract.mjs'),/'home-stages\.js'\]/);
 });
 
@@ -127,10 +127,17 @@ test('AI stage: logo stays at the top; everything else is centred on the y axis;
   assert.ok(ai.indexOf('class="lx-logo nt"')>0&&ai.indexOf('class="lx-logo nt"')<ai.indexOf('<header class="lx-hero">'),'logo is outside the hero, above it');
   assert.equal((page.match(/class="lx-logo nt"/g)||[]).length,1);
   assert.match(css,/#vMenu \.hm-ai>\.lx-logo\{padding-top:12px;margin:0\}/);
-  /* ก้อนกลางจัดกึ่งกลางแกน y ด้วย flex · ปุ่มเรียกช่างลอยท้ายช่วง ไม่กินที่ในก้อน (เดิมดันเนื้อหาขึ้นบน) */
-  assert.match(css,/#vMenu \.hm-core\{flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;padding-bottom:24px\}/);
+  /* ก้อนกลางเว้นบน–ล่างเท่ากัน ส่วนลูกศรอยู่ในพื้นที่แตะของตัวเอง ไม่มีข้อความมาดันหรือทับ */
+  assert.match(css,/#vMenu\[data-stage="ai"\]\{padding-bottom:0\}/,'do not reserve the old 40px footer a second time');
+  assert.match(css,/#vMenu \.hm-core\{flex:1 0 auto;display:flex;flex-direction:column;justify-content:center;padding:var\(--hm-cue-space\) 0\}/);
+  assert.match(css,/#vMenu \.hm-core>\.lx-hero\{padding:0!important;margin:0\}/);
   assert.match(css,/\.hm-next\{position:absolute;left:0;right:0;bottom:2px;/);
-  assert.match(css,/\.hm-next \.ti\{margin-top:1px;font-size:17px;/,'smaller arrow');
+  assert.match(css,/\.hm-next\{[^}]*width:44px!important;height:44px/,'small icon keeps an accessible touch target');
+  assert.match(css,/\.hm-next \.ti\{font-size:22px;/);
+  assert.match(js,/next\.innerHTML=`<i class="ti ti-chevron-down" aria-hidden="true"><\/i>`/,'only the arrow is visible');
+  assert.match(js,/next\.setAttribute\("aria-label",nextLabel\);next\.title=nextLabel;next\.setAttribute\("aria-controls","hmCall"\)/);
+  assert.doesNotMatch(css,/\.hm-next (?:b|small)\{/,'no leftover text-block styling');
+  assert.match(css,/body:has\(#liveBar\) #hmNext\{left:0;right:auto;margin:0\}/,'never sit under the live location Stop badge');
   const core=ai.slice(ai.indexOf('<div class="hm-core">'),ai.indexOf('id="hmNext"'));
   for(const id of ['hFlip','hTools','myCar'])assert.ok(core.includes(`id="${id}"`),id+' is in the centred group');
   assert.ok(!core.includes('lx-logo')&&!core.includes('id="hmNext"'),'logo and call button are outside the group');

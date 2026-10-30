@@ -4,13 +4,16 @@
 #vMenu .hm-stage{position:relative}
 
 /* ── ช่วง 1: วิเคราะห์รถ (AI) ── */
-#vMenu .hm-ai{display:flex;flex-direction:column;min-height:var(--hm-h,calc(100svh - 170px))}
+/* แถบล่างมีพื้นที่กันไว้ใน body แล้ว ไม่หัก padding ท้ายหน้าเดิมอีก 40px จนจุดกึ่งกลางสูงเกินจริง */
+#vMenu[data-stage="ai"]{padding-bottom:0}
+#vMenu .hm-ai{--hm-cue-space:48px;display:flex;flex-direction:column;min-height:var(--hm-h,calc(100svh - 170px))}
 #vMenu .hm-ai>*{width:100%;box-sizing:border-box}
-/* ช่วง AI: โลโก้ (ข้างปุ่มบวก/กระดิ่ง) ค้างบนสุด · ที่เหลือทั้งก้อน (หัวข้อ ช่อง AI เครื่องมือ รถ ปุ่มเรียกช่าง) อยู่กึ่งกลางแกน y ของพื้นที่ใต้โลโก้ */
+/* โลโก้ค้างบนสุด · เฉพาะเนื้อหา AI อยู่กลางพื้นที่ที่เหลือ
+   เผื่อพื้นที่ลูกศรบน–ล่างเท่ากัน จึงไม่ดันก้อนกลางขึ้น และจอสั้นเลื่อนได้แทนการทับกัน */
 #vMenu .hm-ai>.lx-logo{padding-top:12px;margin:0}
-#vMenu .hm-core{flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;padding-bottom:24px}
-#vMenu .hm-core>*{width:100%;box-sizing:border-box}
-#vMenu .hm-core>.lx-hero{padding-top:clamp(14px,3.2vh,34px)!important}
+#vMenu .hm-core{flex:1 0 auto;display:flex;flex-direction:column;justify-content:center;padding:var(--hm-cue-space) 0}
+#vMenu .hm-core>*{flex:none;width:100%;box-sizing:border-box}
+#vMenu .hm-core>.lx-hero{padding:0!important;margin:0}
 #vMenu .hm-title{max-width:720px;margin:0 auto 18px;text-align:center}
 .hm-eyebrow{margin:0 0 8px;font:600 11.5px/1 var(--kb);letter-spacing:.18em;color:var(--muted)}
 .hm-title h1{margin:0 0 8px;font:700 clamp(26px,5.4vw,38px)/1.2 var(--kd);letter-spacing:-.01em;color:var(--ink);outline:0;text-wrap:balance}
@@ -23,14 +26,12 @@
 #hTools .lx-urg.press{scale:.97}
 #vMenu .hm-core>.lx-mycar{max-width:720px}
 #vMenu .hm-core>.lx-top{max-width:720px}
-/* ปุ่มไปช่วงเรียกช่าง: ท้ายช่วง 1 */
-.hm-next{position:absolute;left:0;right:0;bottom:2px;width:max-content!important;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:0;padding:6px 18px 0;border:0;background:none;color:var(--ink);font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.hm-next b{font:600 13.5px var(--kb)}
-.hm-next small{font-size:11.5px;color:var(--muted)}
-.hm-next .ti{margin-top:1px;font-size:17px;color:var(--co);animation:hmBob 1.9s ease-in-out infinite}
-.hm-next:hover .ti{color:var(--ink)}
+/* ลูกศรเดียว: ภาพเล็ก แต่พื้นที่แตะ 44px และมีชื่อสำหรับเครื่องอ่านจอ */
+.hm-next{position:absolute;left:0;right:0;bottom:2px;width:44px!important;height:44px;margin:0 auto;display:grid;place-items:center;padding:0;border:0;border-radius:50%;background:none;color:var(--ink);font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.hm-next .ti{font-size:22px;line-height:1;color:currentColor;opacity:.7;animation:hmBob 1.9s ease-in-out infinite}
+.hm-next:hover .ti{opacity:1}
 .hm-next:focus-visible,.hm-back:focus-visible,.hm-dots button:focus-visible{outline:2px solid var(--co);outline-offset:3px;border-radius:14px}
-@keyframes hmBob{0%,100%{transform:translateY(-2px)}50%{transform:translateY(5px)}}
+@keyframes hmBob{0%,100%{transform:translateY(-2px)}50%{transform:translateY(2px)}}
 
 /* ── ช่วง 2: เรียกช่าง ── */
 .hm-callhead{max-width:var(--hw,880px);margin:0 auto;padding:4px 0 2px}
@@ -65,7 +66,6 @@ html:has(#vMenu:not([hidden])),html:has(#vMenu:not([hidden])) body{overscroll-be
 
 /* ── จอแคบ ── */
 @media(max-width:760px){
-  #vMenu .hm-core>.lx-hero{padding-top:4px!important}
   /* ช่วงเรียกช่าง: เว้นบนให้พ้นปุ่มบวก (ซ้ายบน) และกระดิ่ง (ขวาบน) */
   #vMenu .hm-call{padding-top:58px}
   #vMenu .hm-title{margin-bottom:14px}
@@ -74,5 +74,8 @@ html:has(#vMenu:not([hidden])),html:has(#vMenu:not([hidden])) body{overscroll-be
   #vMenu #hTools{margin-top:14px}
   .hm-dots{right:0}
   .hm-dots button{width:16px}
+  /* ระหว่างแชร์ตำแหน่ง แถบหยุดแชร์เดิมยังอยู่และกดได้ — ลูกศรใช้ช่องว่างข้างแถบแทนการซ้อนกลางแถบ */
+  body:has(#liveBar) #hmNext{left:0;right:auto;margin:0}
+  body:has(#vMenu:not([hidden])[data-stage="ai"]) .live-bar{max-width:calc(100vw - 128px)}
 }
 @media(prefers-reduced-motion:reduce){.hm-next .ti{animation:none}.hm-dots button::before{transition:none}}

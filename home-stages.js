@@ -26,8 +26,9 @@ function paint(){
   $("hmAiH").textContent=T("ให้ AI วิเคราะห์รถของคุณ","Let AI check your car");
   $("hmTitle").querySelector(".hm-sub").textContent=T("ถามอาการ ส่งรูป หรืออัดเสียงเครื่อง ให้ AI ช่วยดูก่อน","Describe a symptom, send a photo or record the engine — AI takes a first look");
   const next=$("hmNext"),hint=T("ด่วน ขอราคา หรือค้นช่างใกล้คุณ","Urgent, get quotes or find shops near you");
-  next.innerHTML=`<b></b><small></small><i class="ti ti-chevron-down" aria-hidden="true"></i>`;
-  next.querySelector("b").textContent=T("เรียกช่าง","Call a mechanic");next.querySelector("small").textContent=hint;
+  next.innerHTML=`<i class="ti ti-chevron-down" aria-hidden="true"></i>`;
+  const nextLabel=T("เรียกช่าง","Call a mechanic");
+  next.setAttribute("aria-label",nextLabel);next.title=nextLabel;next.setAttribute("aria-controls","hmCall");
   $("hmCallH").textContent=T("เรียกช่าง","Call a mechanic");
   call.querySelector(".hm-sub").textContent=hint;
   $("hmBack").querySelector("span").textContent=T("กลับไปคุยกับ AI","Back to AI check");

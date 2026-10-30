@@ -39,5 +39,5 @@ test('concurrent directory refreshes share work without preserving a previous-ac
 test('owner visibility notice explains every blocker without implying data loss or automatic approval',()=>{
   const f=fixture();f.api.shop({test:true,suspended:true,verified:false});let notice=f.api.notice();assert.match(notice,/suspended/);assert.match(notice,/trial shop/);assert.match(notice,/saved/);
   f.api.shop({test:false,suspended:false,verified:true});assert.equal(f.api.notice(),'');
-  assert.match(home,/resetOwnGigs\(\);resetPublicDirectory\(\)/);assert.match(home,/const paintKey=JSON.stringify\(\[k,!!p\?\.suspended,!!p\?\.test,mine\]\)/);
+  assert.match(home,/resetOwnGigs\(\);resetPublicDirectory\(\)/);assert.match(home,/const paintKey=JSON.stringify\(\[k,!!p\?\.suspended,!!p\?\.test,mine,waiting\]\)/);
 });

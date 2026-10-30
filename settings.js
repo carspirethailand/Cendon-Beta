@@ -35,8 +35,7 @@ let host={},main=null,manage=null,sheetEl=null,lastFocus=null;
 function partnerHTML(){
   const u=fbUser()||me();let s=u.uid?'checking':'none',phase='checking',paused=false;
   if(W.CendonPartnerState){const p=W.CendonPartnerState.peek(u.uid);s=p.s;phase=p.phase;paused=!!p.suspended}
-  else try{const p=JSON.parse(localStorage.getItem('spire_partner')||'null');if(p&&u.uid&&p.uid===u.uid&&['none','pending','approved','rejected','declined','withdrawn','shop'].includes(p.s))s=p.s}catch(e){}
-  if(s==='none'&&phase==='offline')s='checking';
+  const ready=phase==='ready'&&!!fbUser()?.uid;if(!ready)s='checking';
   if(s==='withdrawn')s='none';
   const C={
     checking:['ti-refresh',t('บัญชีช่างของคุณ','Your mechanic account'),t(phase==='offline'?'ยังเชื่อมต่อไม่ได้ · ไม่ต้องสมัครซ้ำ':'กำลังตรวจสถานะจากระบบ…',phase==='offline'?'Could not connect · do not apply again':'Checking your account…'),t('ตรวจสถานะ','Check status')],
@@ -48,11 +47,12 @@ function partnerHTML(){
     shop:['ti-building-store',t('Studio · ร้านของฉัน','Studio · My shop'),t('งาน ข้อความ บริการ และหน้าร้าน','Jobs, messages, services and your shop page'),t('เปิด Studio','Open Studio')]}[s];
   const href=fbUser()||u.uid?(s==='shop'?'/studio':'/join'):'/login?next=%2Fjoin';
   if(s==='shop'&&paused)C[2]=t('ร้านถูกพักใช้งาน · ดูสถานะใน Studio ไม่ต้องสมัครใหม่','Shop suspended · check Studio, do not apply again');
-  return `<a class="st-partner st-p-${s}" href="${href}" data-partner>
+  const tag=ready?'a':'div',attrs=ready?`href="${href}" data-partner`:`data-partner-status role="status" aria-busy="${phase==='checking'}"`;
+  return `<${tag} class="st-partner st-p-${s}" ${attrs}>
     <span class="st-p-fx" aria-hidden="true"><i class="st-p-glow"></i><i class="st-p-dots"></i><i class="st-p-ring"></i><i class="st-p-spot"></i><i class="st-p-sheen"></i></span>
     <span class="st-p-top"><span class="st-p-ic"><i class="ti ${C[0]}" aria-hidden="true"></i></span>
       <span class="st-p-tx"><b>${C[1]}</b><small>${C[2]}</small></span></span>
-    <span class="st-p-go">${C[3]}<i class="ti ti-arrow-right" aria-hidden="true"></i></span></a>`;
+    ${ready?`<span class="st-p-go">${C[3]}<i class="ti ti-arrow-right" aria-hidden="true"></i></span>`:phase==='offline'?`<button class="st-pill" type="button" data-st="partner-check">${t('ลองอีกครั้ง','Retry')}</button>`:''}</${tag}>`;
 }
 const chev='<i class="ti ti-chevron-right st-ch" aria-hidden="true"></i>',out='<i class="ti ti-arrow-up-right st-ch" aria-hidden="true"></i>';
 function row(o){
@@ -104,6 +104,7 @@ function mainHTML(){
       <div class="st-row nohover"><i class="ti ti-route" aria-hidden="true"></i><span class="st-t"><b>${t('ระยะทาง','Distance')}</b></span>
         ${seg(t('ระยะทาง','Distance'),'data-dist',[['km',t('กม.','km')],['mi',t('ไมล์','mi')]],dist)}</div>
       ${row({ic:'ti-cash',title:t('สกุลเงิน','Currency'),act:'currency',val:esc(cur+' · '+curName(cur))})}
+      ${swRow({ic:'ti-tool',act:'partner-card',on:W.CendonPartnerState?.cardVisible?.(fbUser()?.uid||u.uid)!==false,off:!fbUser()?.uid,title:t('การ์ดช่างบนหน้าหลัก','Mechanic card on Home'),sub:t('ซ่อนหรือแสดงการ์ด Studio / สมัครช่าง · ไม่กระทบบัญชีช่าง','Show or hide the Studio / application card · your mechanic account is unchanged')})}
     </div>
     ${ex}
     <div class="st-lbl" id="stNotifLbl">${t('การแจ้งเตือน','Notifications')}</div>
@@ -180,7 +181,7 @@ function ensure(){
 let lastSig='',watchT=0;
 function sig(){const u=me(),su=setup();let pt='';try{pt=localStorage.getItem('spire_partner')||''}catch(e){}
   const p=W.CendonPartnerState?.peek(fbUser()?.uid||u.uid);
-  return [u.uid,u.name,u.email,u.photo,u.role,su.name,su.distance,su.currency,curLang(),curTheme(),pt,p?.s,p?.phase].join('|')}
+  return [u.uid,u.name,u.email,u.photo,u.role,su.name,su.distance,su.currency,curLang(),curTheme(),pt,p?.s,p?.phase,W.CendonPartnerState?.cardVisible?.(fbUser()?.uid||u.uid)].join('|')}
 function shown(){const v=$('v-settings');return !!(v&&main&&v.contains(main)&&(host.root?v.offsetParent!==null:v.classList.contains('on')))}
 function refresh(){if(!shown()){clearInterval(watchT);watchT=0;return}if(sig()!==lastSig)render()}
 function render(){
@@ -384,6 +385,8 @@ async function onClick(e){
     return}
   if(b.hasAttribute('data-fbk')){b.parentNode.querySelectorAll('[data-fbk]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));return}
   const a=b.dataset.st;
+  if(a==='partner-card'){const p=W.CendonPartnerState;if(!p?.setCardVisible?.(!p.cardVisible(fbUser()?.uid)))toast(t('บันทึกไม่สำเร็จ กรุณาลองใหม่','Could not save. Please retry'),'ti-alert-triangle');if(shown())render();return}
+  if(a==='partner-check'){b.disabled=true;try{await W.CendonPartnerState?.refresh(true)}catch(x){}finally{if(shown())render()}return}
   if(a==='notif-dev'||a==='notif-km'){
     const B=W.CendonBell,want=b.getAttribute('aria-checked')!=='true';if(!B)return;b.disabled=true;
     if(a==='notif-dev'){if(want){const st=await B.enable();toast(st==='granted'?t('เปิดแจ้งเตือนในเครื่องแล้ว','Device notifications are on'):t('เบราว์เซอร์ยังไม่อนุญาตการแจ้งเตือน','The browser didn’t allow notifications'),st==='granted'?'ti-bell-ringing':'ti-bell-off')}
@@ -460,6 +463,7 @@ try{W.spireOnLang&&W.spireOnLang(()=>{const v=$('v-settings');if(v&&main&&v.cont
 
 W.CendonSettings=Object.freeze({open,render,refresh,go,close,openManage,closeManage,sheet,closeSheet,quota});
 W.addEventListener('cendon:partner-state',refresh);
+W.addEventListener('cendon:partner-card',refresh);
 
 /* ── หน้าเว็บหลัก (โปรไฟล์ การาจ นิตยสาร ร้านค้า) — หน้าแชตมีตัวเปิดของตัวเอง ── */
 if(/^\/chat(\/|$)/.test(location.pathname))return;

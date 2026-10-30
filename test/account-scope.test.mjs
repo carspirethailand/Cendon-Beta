@@ -36,6 +36,10 @@ const A_DATA = {
   spire_theme: '"dark"', spire_lang: '"th"', cendon_signed: '1', 'firebase:authUser:k:[DEFAULT]': '{"uid":"A"}',
 };
 
+test('per-UID home-card flags survive account changes, but never preserve account/shop data',()=>{
+ const flags=JSON.stringify({A:false,B:true}),f=fixture({local:{...A_DATA,spire___owner:'A',cendon_partner_home:flags,spire_partner:JSON.stringify({uid:'A',s:'shop'})}});f.S.claim('B');assert.equal(f.localStorage.getItem('cendon_partner_home'),flags);assert.equal(f.localStorage.getItem('spire_partner'),null);assert.equal(f.localStorage.getItem('spire_garage'),null);
+});
+
 test('a different account wipes everything personal but keeps device language/theme and Firebase sign-in', () => {
   const f = fixture({ local: { ...A_DATA, spire___owner: 'A' }, session: { spire_postDraft: '{}', cendon_intro: '1' } });
   assert.equal(f.S.claim('B'), true);

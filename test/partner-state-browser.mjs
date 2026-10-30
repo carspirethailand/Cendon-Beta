@@ -50,7 +50,7 @@ try{
     await page.waitForFunction(()=>document.querySelector('[data-partner]')?.classList.contains('st-p-shop'));
     assert.equal(await page.locator('[data-partner]').getAttribute('href'),'/studio');
     assert.equal(await page.evaluate(()=>cardStates.some(s=>s.includes('st-p-none'))),false,'new-device restoration must not flash Apply');
-    await page.locator('[data-partner]').click();await page.locator('#existingShop').waitFor();assert.equal(await page.locator('#lGo').count(),0);results.push('empty-cache '+origin);
+    await page.locator('[data-partner]').evaluate(a=>{a.href='/join';a.classList.add('st-p-none')});await page.locator('[data-partner]').click();await page.locator('#existingShop').waitFor();assert.equal(await page.locator('#lGo').count(),0);results.push('empty-cache '+origin+' and stale signup link');
   }
   await page.goto(base+'/profile');await page.evaluate(()=>localStorage.setItem('spire_partner',JSON.stringify({uid:'one',s:'none'})));await page.reload();
   await page.waitForFunction(()=>document.querySelector('[data-partner]')?.classList.contains('st-p-shop'));
@@ -69,10 +69,9 @@ try{
   technician={id:'existing-shop',test:true,verified:false};
 
   offline=true;await page.goto(base+'/profile');await page.waitForFunction(()=>CendonPartnerState.peek('one').phase==='offline');
-  assert.equal(await page.locator('[data-partner]').getAttribute('href'),'/studio');await page.locator('[data-partner]').click();
-  await page.locator('#jRetry').waitFor();assert.equal(await page.locator('#lGo').count(),0);results.push('offline existing shop');
+  assert.equal(await page.locator('[data-partner]').count(),0);assert.match(await page.locator('[data-partner-status]').innerText(),/ไม่ต้องสมัครซ้ำ/);assert.equal(await page.locator('#lGo').count(),0);results.push('offline existing shop offers retry, never registration');
   await page.goto(base+'/profile');await page.evaluate(()=>localStorage.clear());await page.reload();await page.waitForFunction(()=>CendonPartnerState.peek('one').phase==='offline');
-  assert.match(await page.locator('[data-partner]').innerText(),/ไม่ต้องสมัครซ้ำ/);await page.locator('[data-partner]').click();await page.locator('#jRetry').waitFor();results.push('offline empty cache');
+  assert.equal(await page.locator('[data-partner]').count(),0);assert.match(await page.locator('[data-partner-status]').innerText(),/ไม่ต้องสมัครซ้ำ/);await page.locator('[data-st="partner-check"]').click();await page.waitForFunction(()=>CendonPartnerState.peek('one').phase==='offline');assert.equal(new URL(page.url()).pathname,'/profile');results.push('offline empty cache retries in place');
 
   offline=false;delay=1500;await page.goto(base+'/profile');await page.evaluate(()=>switchFixture('two'));
   await page.waitForFunction(()=>CendonPartnerState.peek('two').phase==='ready');await page.waitForTimeout(200);

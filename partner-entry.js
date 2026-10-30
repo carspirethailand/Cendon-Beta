@@ -22,11 +22,17 @@
     pane.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();pane?.querySelector('[data-pe-back]').click()}else if(e.key==='Tab'){e.preventDefault();pane?.querySelector('[data-pe-back]').focus()}});
     pane.querySelector('h1').focus({preventScroll:true});
   }
-  D.addEventListener('click',e=>{
+  // The retained-view bridge delegates here before handling account-card links.
+  function handleClick(e){
     if(e.defaultPrevented||e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
     const a=e.target.closest?.('a[href]');if(!a||a.hasAttribute('download')||a.target&&a.target!=='_self')return;
-    // Old in-memory settings markup must not send an Apply-labelled card to Studio.
-    if(a.matches('[data-partner].st-p-none,[data-partner].st-p-pending,[data-partner].st-p-rejected'))a.setAttribute('href','/join');
+    // Stale/cached settings markup must not open registration before the live
+    // account status is known. A confirmed shop always goes to Studio.
+    if(a.matches('[data-partner]')){
+      const state=W.CendonPartnerState?.peek();
+      if(!state||state.phase!=='ready'){e.preventDefault();e.stopImmediatePropagation();W.CendonPartnerState?.refresh?.()?.catch(()=>{});return}
+      a.setAttribute('href',state.s==='shop'?'/studio':'/join');
+    }
     if(!isJoin(a.href))return;
     show();
     e.preventDefault();
@@ -35,8 +41,9 @@
     // suspends it for navigation. No status/network request gates this frame.
     const href=a.href,generation=++navGeneration;
     W.requestAnimationFrame(()=>W.requestAnimationFrame(()=>{if(pane&&navGeneration===generation)W.location.assign(href)}));
-  },true);
+  }
+  W.addEventListener('click',handleClick,true);
   W.addEventListener('pageshow',e=>{if(e.persisted&&!isJoin(W.location.href))hide()});
-  W.CendonPartnerEntry=Object.freeze({show,hide,isJoin});
+  W.CendonPartnerEntry=Object.freeze({show,hide,isJoin,handleClick});
   if(boot){if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',()=>{if(!finished)show()},{once:true});else show()}
 })(window,document);

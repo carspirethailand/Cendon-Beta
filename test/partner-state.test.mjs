@@ -123,12 +123,27 @@ test('returning online rechecks Cloudflare, without request storms or trusting a
 
 test('settings paints server status over stale hints and never calls unknown/offline a new application',()=>{
   const fragment=settings.slice(settings.indexOf('function partnerHTML(){'),settings.indexOf('const chev='));
-  for(const [s,phase,href] of [['shop','ready','studio'],['checking','checking','join'],['none','offline','join'],['none','ready','join']]){
+  for(const [s,phase,href] of [['shop','ready','studio'],['shop','checking',null],['checking','checking',null],['none','offline',null],['shop','offline',null],['none','ready','join']]){
     const c={W:{CendonPartnerState:{peek:()=>({uid:'one',s,phase})}},me:()=>({uid:'one'}),fbUser:()=>({uid:'one'}),t:a=>a};vm.createContext(c);
-    vm.runInContext(fragment+'result=partnerHTML()',c);assert.match(c.result,new RegExp('href="/'+href+'"'));
+    vm.runInContext(fragment+'result=partnerHTML()',c);if(href)assert.match(c.result,new RegExp('href="/'+href+'"'));else{assert.doesNotMatch(c.result,/href=|data-partner>|st-p-go/);assert.match(c.result,/data-partner-status/)}
     if(phase==='offline'||s==='checking')assert.doesNotMatch(c.result,/สมัครเป็นช่าง|เริ่มสมัคร/);
     if(phase==='offline')assert.match(c.result,/ไม่ต้องสมัครซ้ำ/);
   }
+});
+
+test('home card visibility is a presentation-only per-live-account preference, not membership',async()=>{
+ const f=fixture();assert.equal(f.api.cardVisible('one'),true);assert.equal(f.api.setCardVisible(false),true);assert.equal(f.api.cardVisible('one'),false);assert.equal(f.calls.length,0);assert.equal(f.store.has('spire_partner'),false);
+ f.auth.currentUser={uid:'two',getIdToken:async()=> 'fixture-two'};assert.equal(f.api.cardVisible('two'),true);assert.equal(f.api.cardVisible('one'),true,'a foreign account cannot select another preference');assert.equal(f.api.setCardVisible(false),true);
+ f.auth.currentUser={uid:'one',getIdToken:async()=> 'fixture-one'};assert.equal(f.api.cardVisible('one'),false);assert.equal(f.api.setCardVisible(true),true);assert.equal(f.api.cardVisible('one'),true);
+ assert.deepEqual(JSON.parse(f.store.get('cendon_partner_home')),{one:true,two:false});assert.equal(f.events.filter(e=>e.type==='cendon:partner-card').length,3);
+ await f.api.refresh();assert.equal(f.api.peek('one').phase,'ready');assert.equal(f.api.peek('one').s,'none');assert.equal(JSON.parse(f.store.get('spire_partner')).s,'none');
+});
+test('a signed-out, frozen, mismatched-owner or storage-blocked view cannot change card visibility',()=>{
+ const f=fixture();f.auth.currentUser=null;assert.equal(f.api.setCardVisible(false),false);f.auth.currentUser={uid:'one',getIdToken:async()=>''};f.w.CendonScope={owner:()=> 'other',frozen:()=>false};assert.equal(f.api.setCardVisible(false),false);
+ f.w.CendonScope={owner:()=> 'one',frozen:()=>true};assert.equal(f.api.setCardVisible(false),false);f.w.CendonScope={owner:()=> 'one',frozen:()=>false};f.w.localStorage.setItem=()=>{throw Error('blocked')};assert.equal(f.api.setCardVisible(false),false);assert.equal(f.events.length,0);
+});
+test('visibility changes from another view update presentation without another membership request',()=>{
+ const f=fixture();f.store.set('cendon_partner_home',JSON.stringify({one:false}));f.listeners.storage[0]({key:'cendon_partner_home'});assert.equal(f.api.cardVisible('one'),false);assert.equal(f.events.at(-1).type,'cendon:partner-card');assert.equal(f.calls.length,0);
 });
 
 test('opening /join recovers every server shop, not just public verified shops; failures never enable an application',async()=>{

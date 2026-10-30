@@ -74,6 +74,10 @@
   W.addEventListener('click',e=>{
     if(e.defaultPrevented||e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
     const a=e.target.closest?.('a[href]');if(!a||a.download||a.hasAttribute('download')||(a.target&&a.target!=='_self')||a.hasAttribute('data-nav-full'))return;
+    if(a.hasAttribute('data-partner')){
+      if(!W.CendonPartnerEntry?.handleClick){e.preventDefault();e.stopImmediatePropagation();return;}
+      W.CendonPartnerEntry.handleClick(e);if(e.defaultPrevented)return;
+    }
     const u=new URL(a.href,W.location);if(u.origin!==W.location.origin)return;
     if(u.hash&&u.pathname===W.location.pathname&&u.search===W.location.search)return;
     if(W.Nav?.started&&W.Nav.owns(u.href))return;

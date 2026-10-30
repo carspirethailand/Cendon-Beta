@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <script>/* ธีมตั้งแต่เฟรมแรก (ก่อน CSS วาด) — เดิมหน้าเปิดด้วยธีมตั้งต้นแวบหนึ่งแล้วค่อยสลับ (แชตขึ้นจอดำ) ดูเหมือนกระพริบ/กระตุก */(function(){try{var O={warm:"light",pearl:"light",emerald:"light",plant:"light",moss:"light",carbon:"dark",night:"dark",midnight:"dark",cyber:"dark",aurora:"dark",ocean:"dark",sunset:"dark",magma:"dark"},v=null;try{v=JSON.parse(localStorage.getItem("spire_theme"))}catch(e){}if(typeof v!=="string")try{v=JSON.parse(localStorage.getItem("spire_chatTheme"))}catch(e){}v=v==="light"||v==="dark"?v:(O[v]||"light");var e=document.documentElement;e.setAttribute("data-theme",v);e.setAttribute("data-ctheme",v)}catch(x){}})();</script>
-<script src="/app-navigation-bridge.js?v=4"></script>
+<script src="/app-navigation-bridge.js?v=5"></script>
 <script src="/tab-shell.js?v=6"></script>
 <script>/* เปิด /messages (กดแท็บแชตจากหน้าอื่น หรือลิงก์แจ้งเตือน): ซ่อนหน้าแรกไว้จนกล่องข้อความขึ้น — ไม่ให้หน้าแรกโผล่ก่อนแล้วแชตค่อยตามมา
    กันค้าง: ถ้ากล่องข้อความไม่ขึ้นใน 4 วิ เปิดหน้าตามปกติ */
@@ -12,16 +12,16 @@ if(/^\/messages(\/|$)/.test(location.pathname)){document.documentElement.classLi
 html.ib-boot .bs .pn,html.ib-boot .bs .bg{transition:none!important}</style>
 <script src="/launch-gate.js?v=1"></script>
 <script src="/auth-gate.js?v=2"></script>
-<script src="/account-scope.js?v=2"></script>
+<script src="/account-scope.js?v=3"></script>
 <script>(function(){if(window.CendonView?.reuseFirebase?.("cendon-1"))return;["https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js","https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"].forEach(function(u){var s=document.createElement("script");s.src=u;s.async=false;s.fetchPriority="high";document.head.appendChild(s)})})();</script>
 <link rel="stylesheet" href="/partner-entry.css?v=1">
-<script src="/partner-state.js?v=1"></script>
+<script src="/partner-state.js?v=2"></script>
 <script src="/shop-images.js?v=1"></script>
 <script src="/display-prefs.js?v=5" defer></script>
 <script src="/money-fields.js?v=1" defer></script>
 <script src="/i18n/ui-en.js?v=4" defer></script>
 <script src="/ui-language.js?v=15" defer></script>
-<script src="/partner-entry.js?v=1"></script>
+<script src="/partner-entry.js?v=2"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
 <script src="/cendon-tour.js" defer></script>
@@ -41,7 +41,7 @@ html.ib-boot .bs .pn,html.ib-boot .bs .bg{transition:none!important}</style>
 (function(){try{if(/^\/(work|studio)(\/|$)/.test(location.pathname)){var p=JSON.parse(localStorage.getItem("spire_partner")||"null");if(p&&p.s==="shop")document.documentElement.dataset.boot="tech"}}catch(e){}})();</script>
 <script>(function(){try{var A=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt"],l=null;try{l=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
 if(A.indexOf(l)<0){l="en";var n=navigator.languages||[navigator.language||"en"];for(var i=0;i<n.length;i++){var b=String(n[i]).toLowerCase().split("-")[0];if(A.indexOf(b)>=0){l=b;break}}}
-if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=29"><\/script>')}catch(e){}})();</script>
+if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=30"><\/script>')}catch(e){}})();</script>
 <title>Cendon</title>
 <meta name="description" content="ถามอาการรถ ส่งรูปหรือเสียงให้ AI ช่วยดู เช็กใบเสนอราคา และหาช่างที่ผ่านการตรวจใกล้คุณ">
 <!-- การ์ดตอนแชร์ลิงก์ (LINE / Facebook / X) — รูปต้องเป็นที่อยู่เต็ม -->
@@ -1015,6 +1015,12 @@ html[data-theme="dark"] .bs.jx .tl div.ok::before{background:#f6c48d;color:#1617
 .lp-card{position:relative;overflow:hidden;isolation:isolate;display:flex;align-items:center;gap:14px;width:100%;min-height:118px;padding:18px 18px 18px 20px;border:0;border-radius:22px;text-align:left;color:#fff;cursor:pointer;
   background:radial-gradient(90% 120% at 100% 0%,rgba(232,148,60,.32),transparent 60%),linear-gradient(150deg,#1b1c22,#08090c 75%);box-shadow:0 0 0 1px rgba(232,148,60,.22);transition:transform .3s cubic-bezier(.32,.72,0,1)}
 .lp-card:active{transform:scale(.985)}
+#hPartner{position:relative}
+#hPartner[hidden]{display:none!important}
+.lp-card:disabled{cursor:default;transform:none}
+.lp-dismiss{position:absolute;z-index:2;top:2px;right:2px;width:44px;height:44px;display:grid;place-items:center;border:0;border-radius:0 20px 0 18px;background:rgba(255,255,255,.12);color:#fff;cursor:pointer;font:18px/1 var(--kb);-webkit-tap-highlight-color:transparent}
+.lp-dismiss:hover{background:rgba(255,255,255,.24)}
+.lp-dismiss:focus-visible{outline:2px solid var(--co);outline-offset:2px}
 .lp-gl{position:absolute;right:-18px;top:50%;width:170px;height:170px;transform:translateY(-50%);z-index:0;pointer-events:none}
 .lp-mark{position:absolute;right:28px;top:50%;width:54px;height:64px;transform:translateY(-50%);color:#E8943C;opacity:.95;filter:drop-shadow(0 10px 22px rgba(232,148,60,.5));z-index:0}
 .lx-partner.fx-on .lp-mark,.lp-card.fx-on .lp-mark{display:none}
@@ -4504,23 +4510,28 @@ function fx3d(cv,o){
 /* การ์ดพาร์ทเนอร์บนหน้าแรก — สถานะจาก spire_partner (refreshMe เขียนไว้) จึงวาดได้ทันทีไม่ต้องรอหลังบ้าน */
 function drawPartner(){
   const box=$("hPartner");if(!box)return;
+  const prefs=window.CendonPartnerState;
+  if(U&&prefs?.cardVisible?.(U.uid)===false){box.hidden=true;box.replaceChildren();delete box.dataset.k;return}box.hidden=false;
   const p=window.CendonPartnerState?.peek(U?.uid)||ls.get("spire_partner",null),mine=p&&U&&p.uid===U.uid?p.s:U?"checking":"none";
   /* ผลใบสมัครออกแล้วแต่ยังไม่ขูดดู = การ์ดชวนไปขูด (ไม่บอกผลก่อน) */
   const k=p&&U&&p.uid===U.uid&&p.r?"news":mine==="shop"?"shop":mine==="checking"||p?.phase==="offline"&&mine==="none"?"checking":mine&&mine!=="none"&&mine!=="withdrawn"?"app":"join";
-  const paintKey=JSON.stringify([k,!!p?.suspended,!!p?.test,mine]);
+  const waiting=!!U&&p?.phase!=="ready";
+  const paintKey=JSON.stringify([k,!!p?.suspended,!!p?.test,mine,waiting]);
   if(box.dataset.k===paintKey&&box.childNodes.length)return;box.dataset.k=paintKey;
   const st={pending:T("รอทีมงานตรวจ","Waiting for review"),approved:T("อนุมัติแล้ว","Approved"),rejected:T("ทีมงานขอให้แก้ไข","Changes requested"),declined:T("ยังไม่ผ่านการพิจารณา","Not approved")}[mine]||T("ดูความคืบหน้า","See progress");
   const [eye,b,em,cta]=k==="news"?["CENDON PARTNER",T("ผลการพิจารณาใบสมัครมาแล้ว","Your application result is in"),T("ขูดการ์ดเพื่อเปิดดูผล","Scratch the card to see it"),T("เปิดดูผล","See result")]:k==="shop"?["STUDIO",T("หน้าร้านของฉัน","My shop"),p?.suspended?T("ร้านพักใช้งาน · คุณยังเข้า Studio ได้","Shop suspended · you can still open Studio"):p?.test?T("ร้านทดลอง · ยังไม่แสดงต่อลูกค้าทั่วไป","Trial shop · not public yet"):T("งาน แชต บริการ และรีวิว ในที่เดียว","Jobs, chats, services and reviews in one place"),T("เปิด Studio","Open Studio")]
     :k==="checking"?["",T("บัญชีช่างของคุณ","Your mechanic account"),T("กำลังตรวจสถานะร้าน · ไม่ต้องสมัครซ้ำ","Checking your shop · do not apply again"),T("ตรวจสถานะ","Check status")]
     :k==="app"?["",T("ใบสมัครช่างของคุณ","Your mechanic application"),st,T("ดูสถานะ","View status")]
     :["",T("เป็นช่างพาร์ทเนอร์กับ Cendon","Become a Cendon partner mechanic"),T("รับงานใกล้ร้าน · ไม่มีค่าสมัคร · ตั้งราคาเอง","Jobs near you · no sign-up fee · set your own prices"),T("สมัครเลย","Apply now")];
-  box.innerHTML=`<button type="button" class="lp-card" id="hPartnerGo"><canvas class="lp-gl" aria-hidden="true"></canvas><svg class="lp-mark" viewBox="-6.0 -6.0 94.8 112.0" aria-hidden="true"><path fill="currentColor" d="${LOGO}"/></svg>
-    <span class="lp-tx">${eye?`<small>${eye}</small>`:""}<b>${b}</b><em>${em}</em></span><span class="lp-cta">${cta}<i class="ti ti-arrow-right"></i></span></button>`;
+  box.innerHTML=`<button type="button" class="lp-card" id="hPartnerGo"${waiting?' disabled aria-busy="true"':''}><canvas class="lp-gl" aria-hidden="true"></canvas><svg class="lp-mark" viewBox="-6.0 -6.0 94.8 112.0" aria-hidden="true"><path fill="currentColor" d="${LOGO}"/></svg>
+    <span class="lp-tx">${eye?`<small>${eye}</small>`:""}<b>${b}</b><em>${em}</em></span>${waiting?'':`<span class="lp-cta">${cta}<i class="ti ti-arrow-right"></i></span>`}</button>${U?`<button class="lp-dismiss" type="button" id="hPartnerDismiss" aria-label="${T('ซ่อนการ์ดช่างบนหน้าหลัก','Hide the mechanic card on Home')}" title="${T('ซ่อนการ์ด · เปิดกลับได้ในการตั้งค่า','Hide card · restore it in Settings')}"><i class="ti ti-x" aria-hidden="true"></i></button>`:''}`;
   box.classList.toggle("news",k==="news");
-  box.querySelector("#hPartnerGo").onclick=()=>{if(!U)return needLogin();k==="shop"?openStudio():openJoin()};
+  box.querySelector("#hPartnerGo").onclick=()=>{if(waiting)return;if(!U)return needLogin();k==="shop"?openStudio():openJoin()};
+  box.querySelector("#hPartnerDismiss")?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(!prefs?.setCardVisible?.(false))toast(T('บันทึกไม่สำเร็จ กรุณาลองใหม่','Could not save. Please retry'))});
   fx3d(box.querySelector(".lp-gl"),{particles:420,dist:12.5});
 }
 window.addEventListener('cendon:partner-state',()=>{try{drawPartner()}catch(e){}});
+window.addEventListener('cendon:partner-card',()=>{try{drawPartner()}catch(e){}});
 /* การ์ดลัด 4 ช่อง: ไอคอน + ชื่อสั้น ๆ อย่างเดียว (คำอธิบายอยู่ใน title)
    ช่องแรก "เรียกช่างด่วน" (แดง) = โหมดฉุกเฉิน · เรียกช่างแบบอื่นทั้งหมดอยู่ที่ปุ่ม + มุมซ้ายบน (callPlus) */
 function drawQuick(){

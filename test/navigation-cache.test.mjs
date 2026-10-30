@@ -99,7 +99,7 @@ test('hashed CSS survives builds like hashed JavaScript, without a network reval
 });
 
 test('reload does not re-fetch identical build-versioned code; explicit no-store remains a network probe',async()=>{
- for(const p of ['/account.js?v=release-one','/settings.css?v=5','/runtime/'+'c'.repeat(24)+'.js']){const f=fixture();await f.seed(p,{cache:p.startsWith('/runtime/')?'cendon-code-v1':BUILD});for(const cache of ['default','reload','no-cache']){const e=f.dispatch(p,{mode:'cors',destination:'script',cache});assert.equal(await(await e.response).text(),'cached');assert.equal(f.requests.length,0);}const probe=f.dispatch(p,{mode:'cors',destination:'script',cache:'no-store'});assert.equal(await(await probe.response).text(),'fresh');assert.equal(f.requests.length,1);}
+ for(const p of ['/account.js?v=release-one','/settings.css?v=6','/runtime/'+'c'.repeat(24)+'.js']){const f=fixture();await f.seed(p,{cache:p.startsWith('/runtime/')?'cendon-code-v1':BUILD});for(const cache of ['default','reload','no-cache']){const e=f.dispatch(p,{mode:'cors',destination:'script',cache});assert.equal(await(await e.response).text(),'cached');assert.equal(f.requests.length,0);}const probe=f.dispatch(p,{mode:'cors',destination:'script',cache:'no-store'});assert.equal(await(await probe.response).text(),'fresh');assert.equal(f.requests.length,1);}
 });
 
 test('first controlled versioned load reuses HTTP cache without forwarding conditional headers',async()=>{

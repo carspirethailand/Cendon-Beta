@@ -15,6 +15,7 @@ const common=`<meta charset="utf-8"><meta name="viewport" content="width=device-
 const profile=common+`<body><main id="profile"><h1>Profile &amp; Settings</h1><div id="partnerCard"></div></main><script>
   localStorage.setItem('spire_partner',JSON.stringify({uid:'fixture',s:'none'}));
   const W=window,me=()=>({uid:'fixture'}),fbUser=()=>({uid:'fixture'}),t=a=>a;
+  window.CendonPartnerState={peek:()=>({uid:'fixture',s:'none',phase:'ready'})};
   ${card}\ndocument.getElementById('partnerCard').innerHTML=partnerHTML();
   </script>`;
 const application=common+`<body><section class="view" id="vTech" hidden>STUDIO SHOULD NEVER APPEAR</section><div id="bs"><div id="bsB"></div><div id="bsF"></div></div><script>

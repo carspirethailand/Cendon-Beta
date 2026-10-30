@@ -19,7 +19,8 @@
   const OWNER='spire___owner';
   /* ค่าของเครื่อง ไม่ใช่ของบัญชี — คงไว้ข้ามบัญชี (หน้าเข้าสู่ระบบใช้ภาษา/ธีมเดิมของเครื่อง)
      firebase:* = สถานะล็อกอินของ Firebase เอง ห้ามแตะ */
-  const KEEP=new Set(['spire_theme','spire_chatTheme','spire_lang','cendon_signed','cendon_cfg',OWNER]);
+  // Only per-UID home-card visibility flags survive sign-out; no shop data or role.
+  const KEEP=new Set(['spire_theme','spire_chatTheme','spire_lang','cendon_signed','cendon_cfg','cendon_partner_home',OWNER]);
   const KEEP_SESSION=new Set(['cendon_intro','cendon_cloud_in']);
   const kept=k=>KEEP.has(k)||/^firebase[:_]/i.test(k);
   const LOGIN=/^\/login(?:\.html)?\/?$/.test(location.pathname);

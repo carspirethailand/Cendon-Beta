@@ -4,11 +4,21 @@
 (function(W,D){
   'use strict';if(W.CendonPartnerState)return;
   const KEY='spire_partner',STATES=new Set(['none','shop','pending','approved','rejected','declined','withdrawn']);
+  const CARD_KEY='cendon_partner_home'; // Presentation-only flags, never membership.
   const auth=()=>{try{return W.spireAuth||W.auth||(W.firebase?.apps?.length?W.firebase.auth():null)}catch{return null}};
   const user=()=>{try{return auth()?.currentUser||null}catch{return null}};
   const api=()=>String(W.BACKEND_URL||'https://spireonebackend.carspirethailand.workers.dev').replace(/\/+$/,'');
   let owner=null,epoch=0,request=null,record=null,data=null,at=0,lastAttempt=0,failed=false,authKnown=false;
   const bound=new WeakSet();
+  function cardPrefs(){try{const p=JSON.parse(W.localStorage.getItem(CARD_KEY)||'{}');return p&&typeof p==='object'&&!Array.isArray(p)?Object.fromEntries(Object.entries(p).filter(([k,v])=>k.length<=128&&typeof v==='boolean')):{}}catch{return {}}}
+  function cardVisible(uid){const live=user()?.uid;if(live&&uid&&live!==uid)return true;uid=live||uid;
+    if(!uid||W.CendonScope?.frozen?.()||!live&&W.CendonScope?.owner?.()!==uid)return true;
+    return cardPrefs()[uid]!==false;
+  }
+  function emitCard(){try{W.dispatchEvent(new CustomEvent('cendon:partner-card',{detail:{uid:user()?.uid||null}}))}catch{}}
+  function setCardVisible(visible){const u=user();if(!u?.uid||typeof u.getIdToken!=='function'||typeof visible!=='boolean'||W.CendonScope?.frozen?.()||W.CendonScope&&W.CendonScope.owner()!==u.uid)return false;
+    try{W.localStorage.setItem(CARD_KEY,JSON.stringify({...cardPrefs(),[u.uid]:visible}));if(cardVisible(u.uid)!==visible)return false;emitCard();return true}catch{return false}
+  }
   function remembered(uid){try{const p=JSON.parse(W.localStorage.getItem(KEY)||'null');return p&&uid&&p.uid===uid&&STATES.has(p.s)?{uid,s:p.s,r:p.r?1:0}:null}catch{return null}}
   function peek(uid){
     const live=user()?.uid;
@@ -61,9 +71,9 @@
     }
     if(++tries<40)setTimeout(bind,250);
   };bind()}
-  W.CendonPartnerState=Object.freeze({peek,refresh});
+  W.CendonPartnerState=Object.freeze({peek,refresh,cardVisible,setCardVisible});
   W.addEventListener('focus',resume);W.addEventListener('online',resume);
-  W.addEventListener('storage',e=>{if(e.key===KEY){emit();resume()}});
+  W.addEventListener('storage',e=>{if(e.key===KEY){emit();resume()}else if(e.key===CARD_KEY)emitCard()});
   D.addEventListener('visibilitychange',resume);D.addEventListener('cendon:auth-ready',boot);
   setInterval(resume,60000);
   if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',boot,{once:true});else boot();

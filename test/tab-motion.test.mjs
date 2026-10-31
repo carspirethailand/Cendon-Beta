@@ -59,6 +59,6 @@ test('main tabs are prepared in the background after Home, so the first tap is f
 
 test('new code reaches phones: versions bumped together', () => {
   const sw = r('sw.js'), shell = r('lib/app-shell.mjs');
-  assert.ok(shell.includes('/app-navigation.js?v=11') && sw.includes("'./app-navigation.js?v=11'"));
+  assert.ok(shell.includes('/app-navigation.js?v=12') && sw.includes("'./app-navigation.js?v=12'"));
   for (const f of ['index.html', 'garage.html', 'news.html', 'profile.html', 'spares.html', 'chat.html', 'sw.js']) assert.ok(r(f).includes('mobile-ui.js?v=6') && !r(f).includes('mobile-ui.js?v=5'), f);
 });

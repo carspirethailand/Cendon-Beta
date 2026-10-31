@@ -20,7 +20,7 @@ test('status bar follows the page that is open, in light and dark themes', () =>
   assert.match(app, /tintWatch\?\.disconnect\(\);tintWatch=null;/, 'only one view is watched at a time');
   assert.match(app, /if\(ns===active\)\{openingDone\(\);tint\(\);schedulePrewarm\(\);\}/, 'first view ready');
   assert.match(app, /D\.title=r\.el\.contentDocument\?\.title\|\|'Cendon';tint\(\);callUI\(\);evict\(\);/, 'every tab switch');
-  assert.ok(shell.includes('/app-navigation.js?v=11') && sw.includes("'./app-navigation.js?v=11'"), 'shell and offline cache load the same version');
+  assert.ok(shell.includes('/app-navigation.js?v=12') && sw.includes("'./app-navigation.js?v=12'"), 'shell and offline cache load the same version');
 });
 
 test('home sky glows right up to the top edge (fullscreen draws under the camera area)', () => {
@@ -72,7 +72,7 @@ test('no second opening screen: the page only holds Android\'s frame until Home 
   assert.match(app, /opening\.classList\.add\('is-ready','is-out'\);setTimeout\(\(\)=>\{opening\.hidden=true;\},300\);/, 'fades the moment Home is ready, no extra wait');
   assert.match(app, /\nsetTimeout\(openingDone,6000\);\n/, 'a page that never reports ready still shows');
   assert.ok(!/getElementById\('appOpening'\)\.hidden=true/.test(app), 'every exit goes through openingDone');
-  assert.ok(shell.includes('/app-navigation.js?v=11') && sw.includes("'./app-navigation.js?v=11'") && shell.includes('/app-navigation.css?v=5') && sw.includes("'./app-navigation.css?v=5'"));
+  assert.ok(shell.includes('/app-navigation.js?v=12') && sw.includes("'./app-navigation.js?v=12'") && shell.includes('/app-navigation.css?v=5') && sw.includes("'./app-navigation.css?v=5'"));
 });
 
 test('install settings and their icons always come from the server, never the offline cache', () => {

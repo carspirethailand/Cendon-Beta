@@ -153,6 +153,8 @@ function openingDone(){
 }
 // หน้าแรกไม่ส่งสัญญาณพร้อม (หลุดไปหน้าอื่น สคริปต์หน้าเสีย) ก็ไม่ค้างหน้าเปิด: 6 วิแล้วเผยสิ่งที่อยู่ข้างใต้ (CSS มีกันค้างอีกชั้นที่ 10 วิ)
 setTimeout(openingDone,6000);
+// ธีมเปลี่ยนจากหน้าไหนก็ตาม: พื้นของ shell (สีหลังเฟรมตอนหน้ากำลังโหลด) เปลี่ยนตามทันที ไม่งั้นธีมสว่างจะเห็นพื้นมืดแวบตอนเปิดแท็บใหม่
+W.addEventListener('storage',e=>{if(e.key!=='spire_theme')return;try{D.documentElement.dataset.theme=/^(?:light|warm|pearl|emerald|plant|moss)$/.test(JSON.parse(e.newValue||'"light"'))?'light':'dark';}catch{}});
 // สีแถบสถานะของมือถือ: มือถืออ่าน theme-color จากเอกสารชั้นนอกสุดนี้เท่านั้น ส่วนแต่ละหน้าตั้งของตัวเองตามธีม (theme.js)
 // คัดลอกสีของหน้าที่เปิดอยู่ขึ้นมา และตามเมื่อหน้านั้นเปลี่ยนธีม — แถบบนจึงกลืนกับหัวหน้าทั้งธีมสว่างและมืด
 const shellTint=D.querySelector('meta[name="theme-color"]');let tintWatch=null;

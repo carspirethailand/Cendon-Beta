@@ -1,9 +1,10 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
-/* ปุ่ม + หน้าแรก · เมนูเรียกช่างทุกแบบ · หน้าเรียกช่างแบบใหม่ (แผนที่เอียง + แผ่นข้อมูลเป็นขั้น + เส้นแสง ambient แบบแชต) */
+import {readFileSync,existsSync} from 'node:fs';
+/* ปุ่ม + หน้าแรก · เมนูเรียกช่าง · หน้าใบงานแบบทีละคำถาม (แผนที่เต็มจอ + เปลี่ยนข้อแบบ morph + เส้นแสง ambient แบบแชต) */
 const r=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8').replace(/\r\n/g,'\n');
-const home=r('index.html'),css=r('call-x.css'),map=r('call-x-map.js'),sw=r('sw.js');
+const home=r('index.html'),css=r('call-x.css'),sw=r('sw.js');
+const cx=home.slice(home.indexOf('function cxSheet(o){'),home.indexOf('function book(t,sym){'));
 
 test('+ lives only on the mobile home screen, left of the logo, level with the bell',()=>{
   assert.match(home,/<link rel="stylesheet" href="call-x\.css\?v=\d+">/);
@@ -17,61 +18,99 @@ test('+ lives only on the mobile home screen, left of the logo, level with the b
   assert.match(home,/b\.setAttribute\("aria-haspopup","menu"\);b\.setAttribute\("aria-expanded","false"\);/);
 });
 
-test('+ menu offers every way to call a mechanic, and past shops come only from the customer’s own conversations',()=>{
+test('urgent or not is chosen before the job page; a home visit is an option inside it, not a third kind',()=>{
   const menu=home.slice(home.indexOf('function plusOpen(){'),home.indexOf('function plusClose('));
   for(const k of ['urgent','photo','listen'])assert.match(menu,new RegExp(`data-k="${k}"`),k);
-  for(const k of ['post','home','multi'])assert.match(menu,new RegExp(`tile\\("${k}"`),k);
+  for(const k of ['post','multi'])assert.match(menu,new RegExp(`tile\\("${k}"`),k);
+  assert.doesNotMatch(menu,/tile\("home"|openPostForm\("","",\{home:true\}\)/,'no separate come-to-me entry');
+  assert.match(menu,/T\("ไม่ด่วน · ช่างมาหาหรือเอารถเข้าอู่ก็ได้",/);
+  assert.match(css,/\.cx-tile\.cx-wide\{grid-column:1\/-1;/,'the non-urgent choice is a full-width row under the urgent card');
+  const q=home.slice(home.indexOf('function drawQuick'),home.indexOf('function urgTap'));
+  assert.doesNotMatch(q,/\["home","ti-/,'Home quick row: urgent / post / quotes');
+  /* หน้าใบงานไม่มีแถบสลับด่วน/หาช่าง/มาหาที่บ้านแล้ว */
+  assert.doesNotMatch(cx,/cx-seg|urgentCall\(null,\{swap:true/);
+  assert.match(home,/cxSheet\(\{kind:"post",cf,url:home\?"\/post\?at=home":"\/post",title:T\("ประกาศหาช่าง","Post a job"\),/);
+  assert.match(home,/modeDef:home\?"mobile":"shop"/,'old /post?at=home links and AI drafts preselect “come to me”');
+  assert.doesNotMatch(home,/\$\("bMode"\)\.closest\("\.fld"\)\.hidden=true/,'…and it can still be changed');
+});
+
+test('+ menu: past shops come only from the customer’s own conversations',()=>{
   const past=home.slice(home.indexOf('function pastShops(){'),home.indexOf('function plusOpen(){'));
   assert.match(past,/for\(const c of convos\(th,jb\)\)/);
   assert.match(past,/if\(t&&!isMine\(t\)\)out\.push\(t\)/,'never the user’s own shop');
   assert.doesNotMatch(past,/api\(/,'no new request just to open the menu');
 });
 
-test('call page keeps the original submit paths — only the layout is new',()=>{
+test('one question per screen: problem → location → time → review · urgent = problem → location & send',()=>{
+  assert.match(cx,/const symF=fld\(symId\),P=\[\];if\(symF\)P\.push\("sym"\);P\.push\("loc"\);if\(\$\("bWhen"\)\)P\.push\("when"\);if\(!urgent\)P\.push\("send"\);/);
+  assert.match(cx,/if\(urgent\)\{put\(\$\("cxSymX"\),carF\);put\(dock,fld\("bPhone"\),after\)\}/,'urgent: phone and the shops it reaches sit on the map step');
+  /* คำตอบที่ผ่านแล้วเป็นชิปด้านบน แตะเพื่อกลับไปแก้ */
+  assert.match(cx,/d\.querySelectorAll\("\.cx-dc"\)\.forEach\(b=>b\.onclick=\(\)=>go\(P\.indexOf\(b\.dataset\.k\)\)\)/);
+  assert.match(cx,/s\.querySelectorAll\("\.cx-sr"\)\.forEach\(b=>b\.onclick=\(\)=>go\(P\.indexOf\(b\.dataset\.go\)\)\)/,'review rows jump back too');
+});
+
+test('job page keeps the original submit paths and checks — only the layout is new',()=>{
   assert.match(home,/const r=await api\("\/api\/tech\/jobs",\{body:\{id:reqId,techId:t\.id,\.\.\.cf\.read\(\)\}\}\);/,'quote to one shop');
   assert.match(home,/return sendGroup\(list,\{\.\.\.v,symptom:sym\}\)/,'quotes from several shops');
-  assert.match(home,/cxSheet\(\{kind:"urgent",cf,switch:!pre,/);
-  /* ตรวจทีละขั้นด้วยกติกาเดียวกับตอนส่ง — ไม่มีกติกาแยกที่หลวมกว่า */
-  assert.match(home,/try\{cf\.read\(o\.readOpt&&o\.readOpt\(\)\)\}catch\(err\)\{if\(err&&err\.form\)\{const mine=err\.form\.filter\(x=>stepOf\(x\.id\)===cur\);if\(mine\.length\)return formPop\(mine\)\}\}/);
-  assert.match(home,/busy\(e\.currentTarget,o\.go\)\.finally\(\(\)=>bs\.classList\.remove\("cx-busy"\)\)/);
-  assert.match(home,/document\.dispatchEvent\(new CustomEvent\("cendon:formpop",\{detail:list\}\)\)|cendon:formpop/,'an error jumps to the step that holds the field');
+  assert.match(home,/cxSheet\(\{kind:"urgent",cf,push:true,/);
+  /* "ถัดไป" ตรวจด้วยกติกาเดียวกับตอนส่ง — ไม่มีกติกาแยกที่หลวมกว่า */
+  assert.match(cx,/if\(cur<P\.length-1\)\{try\{cf\.read\(o\.readOpt&&o\.readOpt\(\)\)\}catch\(err\)\{if\(err&&err\.form\)\{const mine=err\.form\.filter\(x=>\{const i=paneOf\(x\.id\);return i>=0&&i<=cur\}\);if\(mine\.length\)return formPop\(mine\)\}\}return go\(cur\+1\)\}/);
+  assert.match(cx,/busy\(btn,o\.go\)\.finally\(\(\)=>bs\.classList\.remove\("cx-busy"\)\)/);
+  assert.match(cx,/document\.addEventListener\("cendon:formpop",onPop\);/,'an error jumps to the step that holds the field');
+  /* ช่องย้ายไปไว้ตามข้อก่อน mount — แผนที่จึงเกิดในขนาดเต็มจอ */
+  assert.ok(cx.indexOf('locP.insertBefore($("bMap"),locP.firstChild);')<cx.indexOf('cf.mount();'));
+  assert.match(cx,/deco\("bWhen",\{"วันนี้":\["ti-sun","amber",day\(0\)\],"พรุ่งนี้":\["ti-sunrise","pink",day\(1\)\],"__":/,'cards keep the original data-v values');
 });
 
-test('switching urgent / find / come-to-me keeps what was typed',()=>{
-  assert.match(home,/const s=\(sym&&sym\.value\|\|""\)\.trim\(\);\n        if\(k==="urgent"\)urgentCall\(null,\{swap:true,sym:s\}\);else openPostForm\(s,"",\{home:k==="home",swap:true\}\)/);
+test('location = full-screen map with a warm gradient from the top that melts into the page at the bottom',()=>{
+  assert.match(css,/\.cx \.cx-loc #bMap\{position:absolute;inset:0;z-index:0;height:auto;margin:0;border-radius:0;/);
+  assert.match(css,/\.cx-mapfx\{position:absolute;inset:0;z-index:1;pointer-events:none;\n  background:linear-gradient\(180deg,var\(--cx-card\) 0,/);
+  assert.match(css,/\.cx-mapfx::before\{content:"";position:absolute;left:-10%;right:-10%;top:0;height:56%;mix-blend-mode:screen;/,'the drifting glow never uncovers an edge');
+  assert.match(css,/html\[data-theme="dark"\] \.cx \.leaflet-tile-pane\{filter:invert\(1\) hue-rotate\(180deg\)/);
+  assert.match(css,/\.cx \.cx-loc \.leaflet-tile\{width:256\.5px!important;height:256\.5px!important;mix-blend-mode:normal!important\}/,'no seams between filtered tiles');
+  assert.match(css,/\.cx \.cx-dock \.pk-gps\{right:2px;bottom:auto;top:-56px\}/,'the locate button floats above the bottom panel');
 });
 
-test('hero map: view only, no API calls, and shown only once real roads are drawn',()=>{
-  assert.match(map,/interactive:false/);
-  assert.doesNotMatch(map,/fetch\(|api\(/,'the map module never calls the API');
-  assert.match(map,/const seen=\(\)=>\{try\{return map\.queryRenderedFeatures\(\)\.some\(f=>!\/\^cx\/\.test\(f\.source\)\)\}catch\(e\)\{return false\}\};/);
-  assert.match(home,/h\.live\.then\(\(\)=>\{if\(seq===CX\.seq&&root\.isConnected\)root\.classList\.add\("live"\)\}\)/);
-  assert.match(css,/\.cx-map\{opacity:0;transition:opacity \.7s ease\}\n\.cx\.live \.cx-map\{opacity:1\}/,'until then the drawn map art stays');
-  assert.match(css,/\.cx-hero \.cx-map\{position:absolute;inset:0\}/,'beats MapLibre’s position:relative (otherwise the box is 0px tall)');
-  assert.match(r('map-atlas.js'),/export \{loadLib,styleFor\};/);
-  assert.match(home,/import\("\/call-x-map\.js\?v=\d+"\)/);
+test('steps change with a morph: the problem box shrinks into its chip, the nearby-shops chip grows into the map',()=>{
+  assert.match(cx,/if\(fx&&document\.startViewTransition\)\{nav=true;h\.dataset\.cxDir=dir;h\.dataset\.cxMap=P\[cur\]==="loc"\?"old":P\[to\]==="loc"\?"new":"";/);
+  assert.match(cx,/const still=matchMedia\("\(prefers-reduced-motion: reduce\)"\);/);
+  assert.match(cx,/pb\.classList\.add\("cx-in-"\+dir\)/,'browsers without View Transitions still slide softly');
+  assert.match(css,/\.cx-pane\.on \.cx-say\{view-transition-name:cx-sym\}/);
+  assert.match(css,/\.cx-dc\[data-k="sym"\]\{view-transition-name:cx-sym\}\.cx-dc\[data-k="loc"\]\{view-transition-name:cx-map\}/);
+  assert.match(css,/\.cx-pane\.cx-loc\.on #bMap\{view-transition-name:cx-map\}/);
+  assert.match(css,/\.cx-pane\.on \.cx-near\{view-transition-name:cx-map\}/);
+  /* แผนที่ที่กำลังขยายไม่ทับหัวหน้าและปุ่มหลัก */
+  assert.match(css,/html\[data-cx-dir\]::view-transition-group\(cx-map\)\{z-index:1\}/);
+  assert.match(css,/html\[data-cx-dir\]::view-transition-group\(cx-hd\),html\[data-cx-dir\]::view-transition-group\(cx-go\)\{z-index:6\}/);
+  /* ตัวหนังสือของชิปไม่ถูกขยายเต็มจอระหว่างแปลงร่าง */
+  assert.match(css,/html\[data-cx-map="old"\]::view-transition-new\(cx-map\)\{animation:cxFadeIn \.26s linear \.36s both\}/);
+  assert.doesNotMatch(css,/(^|\})::view-transition-group\(\*\)/,'only this page’s transitions are tuned (html[data-cx-dir])');
 });
 
-test('ambient light: chat console line on the symptom box, ember ring while sending, calm with reduced motion',()=>{
-  assert.match(css,/\.cx-say-box::after\{content:"";position:absolute;left:16%;right:16%;top:-1px;/);
-  assert.match(home,/box\.className="cx-say-box";sym\.before\(box\);box\.appendChild\(sym\);/,'line sits on the box edge, not above the label');
+test('small on-theme art per step, coloured option icons, ambient line, and calm under reduced motion',()=>{
+  for(const k of ['sym','urgent','when','send'])assert.match(home,new RegExp(`${k}:(car\\(|\\\`<svg)`),k);
+  assert.match(css,/\.cx-q em\{font-style:normal;background:var\(--cx-gt\);-webkit-background-clip:text;background-clip:text;color:transparent\}/,'the key word of each question is a Cendon gradient');
+  assert.match(css,/\.cx-tiles>button\.on\{background:rgba\(var\(--h\),\.12\);box-shadow:inset 0 0 0 1\.5px rgba\(var\(--h\),\.75\)/);
+  assert.match(css,/\.cx-say::before\{content:"";position:absolute;left:16%;right:16%;top:0;/);
+  assert.match(css,/\.cx \.cx-say \.inp:focus\{border-color:transparent!important;box-shadow:none!important\}/,'the app-wide focus ring stays out of the problem box');
   assert.match(css,/\.bs\.cxs\.cx-busy \.cx-go::after\{opacity:1;animation:cxRing/);
-  assert.match(css,/@media\(prefers-reduced-motion:reduce\)\{/);
+  assert.match(css,/@media\(prefers-reduced-motion:reduce\)\{\n  \.cx-aur i,\.cx-ill \*,/);
 });
 
-test('privacy: no microphone or speech API on the call page — the round button attaches a photo',()=>{
-  const cx=home.slice(home.indexOf('function cxSheet(o){'),home.indexOf('function book(t,sym){'));
-  assert.doesNotMatch(cx+map,/getUserMedia|SpeechRecognition/);
-  assert.match(cx,/cam\.setAttribute\("aria-label",T\("แนบรูป","Add a photo"\)\);cam\.innerHTML='<i class="ti ti-camera-plus"><\/i>';/);
+test('privacy: no microphone or speech API on the job page — the camera chip attaches a photo',()=>{
+  assert.doesNotMatch(cx,/getUserMedia|SpeechRecognition/);
+  assert.match(cx,/cam\.innerHTML='<i class="ti ti-camera-plus"><\/i>'\+T\("แนบรูป","Add a photo"\);/);
 });
 
-test('call page: sheet class does not collide with the page root, admin orb never covers the steps',()=>{
+test('job page: sheet class does not collide with the page root, admin orb never covers it',()=>{
   assert.match(home,/cls:"cx",kind,full:true/);
   assert.doesNotMatch(css,/(^|[,}\s])\.bs\.cx[\s.{]/,'sheet styles use .bs.cxs, not .bs.cx');
   assert.match(css,/body:has\(#bs\.cxs\.on\) #cxa-fab,body:has\(#cxPlus\[aria-expanded="true"\]\) #cxa-fab\{display:none!important\}/);
 });
 
-test('new call-page files are cached for offline start',()=>{
-  assert.match(sw,/'\.\/call-x\.css\?v=3'/,'render-critical style is precached; the map module loads on demand like the /map page');
-  assert.match(home,/href="call-x\.css\?v=3"/,'same version as the page');
+test('the old tilted hero map is gone; the stylesheet is precached at the same version the page loads',()=>{
+  assert.ok(!existsSync(new URL('../call-x-map.js',import.meta.url)));
+  assert.doesNotMatch(home,/call-x-map\.js|CX_ART|CX\.hero/);
+  const v=home.match(/href="call-x\.css\?v=(\d+)"/)[1];
+  assert.match(sw,new RegExp(`'\\./call-x\\.css\\?v=${v}'`),'render-critical style is precached');
 });

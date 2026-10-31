@@ -23,12 +23,13 @@ test('on wide screens the app bar centres over the map and the panel starts at t
   assert.match(atlas,/CSS_URL='\/map-atlas\.css\?v=3'/);
 });
 
-test('call page fills the screen on tablet and desktop: map left, steps panel right with its button pinned',()=>{
+test('job page fills the screen on tablet and desktop: content in a centred column, the location map edge to edge',()=>{
   const cx=r('call-x.css');
-  assert.doesNotMatch(cx,/width:min\(480px,100vw\)/,'no phone-sized column in the middle of a desktop');
+  assert.doesNotMatch(cx,/width:min\(480px,100vw\)/,'no phone-sized sheet in the middle of a desktop');
   assert.match(cx,/@media\(min-width:761px\)\{\n  \.bs\.cxs \.pn\{left:0;right:0;top:0;bottom:0;width:auto;/);
-  assert.match(cx,/\.cx\{display:grid;grid-template-columns:minmax\(0,1fr\) var\(--cxw\);height:100%\}/);
-  assert.match(cx,/\.bs\.cxs \.ft\{position:absolute;right:0;bottom:0;z-index:6;width:var\(--cxw\);/,'Next stays above the scrolling panel');
+  assert.match(cx,/--cx-padx:max\(20px,calc\(50% - 290px\)\)/,'questions stay readable on wide screens');
+  assert.match(cx,/padding:28px max\(20px,calc\(50% - 290px\)\) calc\(12px \+ env\(safe-area-inset-bottom\)\)/,'the main button lines up with the column');
+  assert.match(cx,/\.cx \.cx-loc #bMap\{position:absolute;inset:0;/,'the map fills the whole screen');
 });
 
 test('Car Passport cost switch is brand orange when on, never all-white in dark mode',()=>{

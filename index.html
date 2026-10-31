@@ -2877,7 +2877,7 @@ a.mtab{text-decoration:none}
 <link rel="stylesheet" href="home-layout.css?v=3">
 <link rel="stylesheet" href="home-stages.css?v=7">
 <link rel="stylesheet" href="wide-layout.css?v=1">
-<link rel="stylesheet" href="call-x.css?v=10">
+<link rel="stylesheet" href="call-x.css?v=11">
 <script src="category-pages.js" defer></script>
 <script src="/sheet-drag.js?v=1" defer></script>
 <script src="car-sync.js"></script>
@@ -6096,17 +6096,14 @@ function cxSheet(o){
         $("cxGoS").textContent=last?(typeof o.send.s==="function"?o.send.s():o.send.s||""):T(`ต่อไป: ${NM[P[cur+1]]}`,`Next: ${NM[P[cur+1]]}`);
         $("cxGo").classList.toggle("last",last);$("cxSafe").hidden=!last;
         $("cxBack").setAttribute("aria-label",cur?T("ย้อนกลับ","Back"):T("ปิด","Close"));
-        done();sum();upd();
-        if(k==="loc"){const m=cf.map&&cf.map();if(m)m.invalidateSize()}};
+        done();sum();upd()};
+      const fit=()=>{if(seq===CX.seq&&root.isConnected&&P[cur]==="loc"){const m=cf.map&&cf.map();if(m)m.invalidateSize()}};
       /* ── เปลี่ยนข้อแบบ morph: เบราว์เซอร์ที่มี View Transitions ได้การแปลงร่างของชิ้นที่ชื่อเดียวกัน (ดู call-x.css) · ไม่มี = เลื่อนนุ่ม ๆ · ลดภาพเคลื่อนไหว = ทันที ── */
-      const still=matchMedia("(prefers-reduced-motion: reduce)"),CV=["tx","ty","s","wt","wl","wr"];
-      /* แผนที่เป็นการ์ดที่ขยายจาก/หดเข้าชิ้นจริง (ชิ้นแรกที่อยู่บนจอ): ย่อทั้งภาพเท่ากันทุกด้าน (ไม่ยืด) ให้แถบกลางแผนที่ (หมุด) พอดีกรอบชิ้นนั้น
-         → --cx-tx/ty เลื่อน · --cx-s ย่อ · --cx-wt/wl กรอบที่เห็น (ก่อนย่อ) · --cx-wr มุมโค้ง */
-      const clip=(...els)=>{const h=document.documentElement,m=$("bMap").getBoundingClientRect(),W=m.width,H=m.height;
-        for(const el of els){if(!el||!el.isConnected||!el.getClientRects().length||!W||!H)continue;const r=el.getBoundingClientRect();if(r.bottom<=m.top||r.top>=m.bottom||r.height<1)continue;
-          const k=r.width/r.height,w0=k>=W/H?W:H*k,h0=w0/k,sc=r.width/w0;
-          const v={tx:r.left+r.width/2-(m.left+W/2)+"px",ty:r.top+r.height/2-(m.top+H/2)+"px",s:String(+sc.toFixed(4)),wt:(H-h0)/2+"px",wl:(W-w0)/2+"px",wr:Math.min(r.height/2,22)/sc+"px"};
-          CV.forEach(n=>h.style.setProperty("--cx-"+n,v[n]));return}
+      const still=matchMedia("(prefers-reduced-motion: reduce)"),CV=["ox","oy"];
+      /* แผนที่บานออกจาก/หดเข้าหาชิ้นจริง (ชิ้นแรกที่อยู่บนจอ): จุดศูนย์กลางของชิ้นนั้นเทียบกับแผนที่ → --cx-ox/--cx-oy */
+      const clip=(...els)=>{const h=document.documentElement,m=$("bMap").getBoundingClientRect();
+        for(const el of els){if(!el||!el.isConnected||!el.getClientRects().length)continue;const r=el.getBoundingClientRect();if(r.bottom<=m.top||r.top>=m.bottom||r.height<1)continue;
+          h.style.setProperty("--cx-ox",Math.round(r.left+r.width/2-m.left)+"px");h.style.setProperty("--cx-oy",Math.round(r.top+r.height/2-m.top)+"px");return}
         CV.forEach(n=>h.style.removeProperty("--cx-"+n))};
       const nearEl=()=>{const n=$("cxNear");return n&&!n.hidden?n:null},locChip=()=>root.querySelector('.cx-dc[data-k="loc"]'),L=P.indexOf("loc");
       const go=(to,opt)=>{if(nav||to===cur||to<0||to>=P.length||seq!==CX.seq||!root.isConnected)return;
@@ -6114,12 +6111,14 @@ function cxSheet(o){
         const swap=()=>{cur=to;render();const q=root.querySelector(".cx-pane.on .cx-q");if(q&&root.contains(document.activeElement))q.focus({preventScroll:true});
           /* ออกจากข้อตำแหน่ง: หน้าต่างแผนที่หดไปที่ชิปตำแหน่ง (ไปต่อ) หรือชิปร้านใกล้คุณ (ย้อน) ในหน้าใหม่ */
           if(fx&&from===L)clip(to>L?locChip():nearEl(),$("cxGo"))};
-        if(fx&&document.startViewTransition){nav=true;h.dataset.cxDir=dir;h.dataset.cxMap=from===L?"old":to===L?"new":"";h.dataset.cxFrom=P[from];h.dataset.cxTo=P[to];
-          /* เข้าข้อตำแหน่ง: เปิดจากชิ้นที่แตะ → ชิปตำแหน่ง (ย้อนจากข้อหลัง) → ชิปร้านใกล้คุณ → ปุ่มหลัก */
+        if(fx&&document.startViewTransition){nav=true;
+          /* เข้าข้อตำแหน่ง: เปิดจากชิ้นที่แตะ → ชิปตำแหน่ง (ย้อนจากข้อหลัง) → ชิปร้านใกล้คุณ → ปุ่มหลัก
+             วัดตำแหน่งก่อนเขียน attribute — อ่านหลังเขียนบังคับคำนวณสไตล์/เลย์เอาต์กลางตัวจัดการแตะ */
           if(to===L)clip(src,to<from?locChip():nearEl(),$("cxGo"));
-          const end=()=>{nav=false;if(h.dataset.cxDir===dir){["cxDir","cxMap","cxFrom","cxTo"].forEach(k=>delete h.dataset[k]);CV.forEach(n=>h.style.removeProperty("--cx-"+n))}};
+          h.dataset.cxDir=dir;h.dataset.cxMap=from===L?"old":to===L?"new":"";h.dataset.cxFrom=P[from];h.dataset.cxTo=P[to];
+          const end=()=>{nav=false;if(h.dataset.cxDir===dir){["cxDir","cxMap","cxFrom","cxTo"].forEach(k=>delete h.dataset[k]);CV.forEach(n=>h.style.removeProperty("--cx-"+n))}requestAnimationFrame(fit)};
           try{document.startViewTransition(swap).finished.finally(end)}catch(e){end();swap()}}
-        else{swap();if(fx){const pb=root.querySelector(".cx-pane.on .cx-pb");pb.classList.remove("cx-in-f","cx-in-b");void pb.offsetWidth;pb.classList.add("cx-in-"+dir)}}};
+        else{swap();fit();if(fx){const pb=root.querySelector(".cx-pane.on .cx-pb");pb.classList.remove("cx-in-f","cx-in-b");void pb.offsetWidth;pb.classList.add("cx-in-"+dir)}}};
       $("cxProg").innerHTML=P.map(()=>"<i><b></b></i>").join("");$("cxProg").setAttribute("aria-valuemax",P.length);
       $("cxBack").onclick=()=>cur?go(cur-1):($("bsBack").hidden?$("bsX"):$("bsBack")).click();
       $("cxNear").onclick=e=>go(P.indexOf("loc"),{from:e.currentTarget});

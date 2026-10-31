@@ -40,6 +40,19 @@ html:root[data-theme="dark"] .cx-scrim{background:rgba(0,0,0,.58)}
   border-radius:26px;background:var(--cx-card);border:1px solid var(--cx-hair);box-shadow:0 30px 70px -26px rgba(0,0,0,.6);
   transform-origin:22px -10px;transform:translateY(-8px) scale(.94);opacity:0;transition:transform .34s cubic-bezier(.2,.9,.25,1),opacity .2s;font-family:var(--kd,Kanit),Kanit,system-ui,sans-serif;color:var(--ink)}
 .cx-menu.on{transform:none;opacity:1}
+/* + → เมนู (View Transitions · html[data-cxp] ระหว่างแปลงร่าง): แผงอยู่ที่ตำแหน่งจริงทันที เบราว์เซอร์ไล่รูปทรงจากปุ่มบนสปริงเดียวกับหน้าใบงาน
+   ปุ่มจางออกเร็ว แผงจาง + โฟกัสเข้า · แถบแท็บปิดชื่อไว้ไม่ให้โผล่ทับ */
+.cxp-src{view-transition-name:cx-plus}
+.cx-menu.cxp-now,.cx-menu.cxp-now>*{transition:none!important}
+html[data-cxp] .mnav{view-transition-name:none!important}
+html[data-cxp]::view-transition-group(cx-plus){animation-duration:.46s;animation-timing-function:var(--cx-spring)}
+html[data-cxp]::view-transition-image-pair(cx-plus){overflow:hidden;border-radius:26px}
+html[data-cxp]::view-transition-old(cx-plus){animation:cxFadeOut .14s ease-out both}
+html[data-cxp]::view-transition-new(cx-plus){animation:cxFadeIn .24s ease-out .04s both,cxFocusIn .3s ease-out .04s both}
+html[data-cxp]::view-transition-old(root){animation:cxpRootOut .24s ease-out both!important}
+html[data-cxp]::view-transition-new(root){animation:cxpRootIn .24s ease-out both!important;mix-blend-mode:normal}
+@keyframes cxpRootOut{from{opacity:1}to{opacity:0}}
+@keyframes cxpRootIn{from{opacity:0}to{opacity:1}}
 .cx-menu::before{content:"";position:absolute;left:15px;top:-7px;width:14px;height:14px;background:var(--cx-card);border-left:1px solid var(--cx-hair);border-top:1px solid var(--cx-hair);transform:rotate(45deg)}
 /* ไฟคอนโซลบาง ๆ ที่ขอบบนของแผง */
 .cx-menu::after{content:"";position:absolute;left:18%;right:18%;top:-1px;height:1px;border-radius:2px;pointer-events:none;

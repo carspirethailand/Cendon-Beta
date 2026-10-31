@@ -2898,7 +2898,7 @@ a.mtab{text-decoration:none}
 <link rel="stylesheet" href="home-layout.css?v=3">
 <link rel="stylesheet" href="home-stages.css?v=8">
 <link rel="stylesheet" href="wide-layout.css?v=1">
-<link rel="stylesheet" href="call-x.css?v=11">
+<link rel="stylesheet" href="call-x.css?v=12">
 <script src="category-pages.js" defer></script>
 <script src="/sheet-drag.js?v=1" defer></script>
 <script src="car-sync.js"></script>
@@ -4648,6 +4648,16 @@ function pastShops(){
   }
   return out;
 }
+/* + กลายร่างเป็นเมนู (View Transitions): ปุ่มกับแผงใช้ชื่อเดียวกันชั่วคราว เบราว์เซอร์ไล่รูปทรงปุ่ม → แผง
+   ไม่รองรับ / ตั้งลดการเคลื่อนไหว = เมนูขยายจากมุมปุ่มแบบเดิม · ชื่อถูกถอดทันทีที่จบ ไม่ค้างไปปนกับการเปลี่ยนหน้าอื่น */
+function plusMorph(a,b,swap){
+  const d=document,h=d.documentElement;
+  if(!d.startViewTransition||matchMedia("(prefers-reduced-motion: reduce)").matches||h.dataset.cxDir){swap();return false}
+  h.dataset.cxp="1";a.classList.add("cxp-src");
+  const end=()=>{delete h.dataset.cxp;d.querySelectorAll(".cxp-src,.cxp-now").forEach(e=>e.classList.remove("cxp-src","cxp-now"))};
+  try{d.startViewTransition(()=>{a.classList.remove("cxp-src");swap();if(b&&b.isConnected)b.classList.add("cxp-src")}).finished.finally(end)}catch(e){end();swap()}
+  return true;
+}
 function plusOpen(){
   const b=$("cxPlus");if(!b||PLUS)return;
   b.setAttribute("aria-expanded","true");
@@ -4666,9 +4676,8 @@ function plusOpen(){
     <div class="cx-again"><h4><span><i class="ti ti-repeat"></i>${T("เรียกช่างคนเดิม","Call a shop again")}</span><small>${T("ร้านที่เคยใช้","Shops you've used")}</small></h4>
       ${shops.length?`<div class="cx-shops">${shops.map(t=>`<button type="button" role="menuitem" data-shop="${esc(t.id)}"><span class="av" style="--c1:${colorOf(t)}${t.avatar?`;background-image:url('${esc(t.avatar)}')`:""}">${t.avatar?"":initial(t.shop||t.name)}</span><small>${esc(t.shop||t.name)}</small></button>`).join("")}</div>`
         :`<p class="cx-none">${T("ยังไม่เคยใช้ร้านไหน — ร้านที่คุยหรือเคยซ่อมด้วยจะขึ้นตรงนี้","No shops yet — shops you chat with or use will appear here")}</p>`}</div>`;
-  document.body.append(sc,m);
   const r=b.getBoundingClientRect();m.style.top=Math.max(8,r.bottom+12)+"px";
-  requestAnimationFrame(()=>{sc.classList.add("on");m.classList.add("on")});
+  if(!plusMorph(b,m,()=>{m.classList.add("cxp-now");document.body.append(sc,m);sc.classList.add("on");m.classList.add("on")})){document.body.append(sc,m);requestAnimationFrame(()=>{sc.classList.add("on");m.classList.add("on")})}
   const onKey=e=>{if(e.key==="Escape"){e.preventDefault();plusClose()}};
   addEventListener("keydown",onKey,true);
   PLUS={sc,m,onKey,L:Nav.push({tag:"plus",close:()=>plusClose(true)})};
@@ -4684,7 +4693,7 @@ function plusClose(fromNav){
   const p=PLUS;if(!p)return;PLUS=null;
   const b=$("cxPlus");if(b)b.setAttribute("aria-expanded","false")
   removeEventListener("keydown",p.onKey,true);
-  p.sc.classList.remove("on");p.m.classList.remove("on");setTimeout(()=>{p.sc.remove();p.m.remove()},320);
+  if(!(b&&!b.hidden&&p.m.isConnected&&plusMorph(p.m,b,()=>{p.sc.remove();p.m.remove()}))){p.sc.classList.remove("on");p.m.classList.remove("on");setTimeout(()=>{p.sc.remove();p.m.remove()},320)}
   if(fromNav!==true&&p.L)Nav.drop(p.L);
 }
 /* ═══ ฟ้าคลื่นดาวตอนโหมด AI (HSKY) ═══

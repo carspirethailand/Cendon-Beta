@@ -59,3 +59,19 @@ test('home answers "what is going on" with one live-job row and the next service
     for (const k of ['"{0} km left":', '"{0} km overdue":', '"Jobs in progress":', '"Needs you":', '"In progress":']) assert.ok(d.includes(k), l + ' ' + k);
   }
 });
+
+test('the + button becomes the call menu (and back) without touching the rest of the page', () => {
+  const cx = r('call-x.css');
+  assert.match(home, /function plusMorph\(a,b,swap\)\{/);
+  assert.match(home, /if\(!d\.startViewTransition\|\|matchMedia\("\(prefers-reduced-motion: reduce\)"\)\.matches\|\|h\.dataset\.cxDir\)\{swap\(\);return false\}/, 'old grow-from-corner menu when unsupported, reduced or mid job-page transition');
+  assert.match(home, /if\(!plusMorph\(b,m,\(\)=>\{m\.classList\.add\("cxp-now"\);document\.body\.append\(sc,m\);/);
+  assert.match(home, /plusMorph\(p\.m,b,\(\)=>\{p\.sc\.remove\(\);p\.m\.remove\(\)\}\)/, 'closing folds back into the button');
+  assert.match(home, /d\.querySelectorAll\("\.cxp-src,\.cxp-now"\)\.forEach\(e=>e\.classList\.remove\("cxp-src","cxp-now"\)\)/, 'the shared name never lingers');
+  assert.match(cx, /\.cxp-src\{view-transition-name:cx-plus\}/);
+  assert.match(cx, /html\[data-cxp\] \.mnav\{view-transition-name:none!important\}/);
+  assert.match(cx, /html\[data-cxp\]::view-transition-group\(cx-plus\)\{animation-duration:\.46s;animation-timing-function:var\(--cx-spring\)\}/);
+  /* ตัวเลือกใต้ html[data-cxp] ห้ามลงท้ายด้วย * หรือแท็ก — ไม่งั้นตั้ง attribute แล้วคำนวณสไตล์ทั้งเอกสาร */
+  for (const m of cx.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/(?:^|\})([^{}@]*html\[data-cxp\][^{]*)\{/g))
+    for (const x of m[1].split(',').map(v => v.trim()).filter(v => v.startsWith('html[data-cxp]') && !v.includes('::view-transition')))
+      assert.match(x, /[.#][\w-]+$/, x);
+});

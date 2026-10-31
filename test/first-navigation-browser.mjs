@@ -13,7 +13,7 @@ import {shellResponse,shouldShell} from '../lib/app-shell.mjs';
 import {namespace} from '../app-routes.js';
 const root=resolve(import.meta.dirname,'..'),dist=await mkdtemp(join(tmpdir(),'cendon-first-navigation-'));
 for(const n of ['index','garage','chat','profile','spares','news'])await copyFile(join(root,n+'.html'),join(dist,n+'.html'));
-for(const n of ['app-navigation-bridge','tab-shell','launch-gate','auth-gate','account-scope','partner-entry','console-entry','account-paint','garage-rules','garage-data'])await copyFile(join(root,n+'.js'),join(dist,n+'.js'));
+for(const n of ['app-navigation-bridge','tab-shell','launch-gate','auth-gate','account-scope','partner-state','shop-images','partner-entry','console-entry','account-paint','nav','media-store','garage-rules','garage-data'])await copyFile(join(root,n+'.js'),join(dist,n+'.js'));
 await buildPageRuntime(dist);
 const garageHtml=await readFile(join(dist,'garage.html'),'utf8'),footer=garageHtml.match(/<script id="odo-js"[^>]*src="([^"]+)"/)[1];
 let base,footerSent=false;const writes=[],errors=[],files=new Map();

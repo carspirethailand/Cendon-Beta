@@ -4,6 +4,14 @@ import {namespace,appUrl,ROOTS} from './app-routes.js';
 const W=window,D=document,frames=new Map(),calls=new Set(),cached=new Set(),authOwners=new Set(),traversals=new Set();
 const origin=location.origin,initial=D.getElementById('appInitial');
 let active=initial.dataset.cendonView,current=location.href,queued=null,busy=false,failed=null,barba=null,incoming=null;
+let workerScheduled=false;
+function scheduleWorker(){
+  if(workerScheduled||!('serviceWorker'in navigator))return;workerScheduled=true;
+  // Installing/updating the worker prefetches public code. Never compete with
+  // the initial view's real controls, authentication or first network requests.
+  const afterLoad=()=>{const register=()=>navigator.serviceWorker.register('/sw.js').catch(()=>{});if('requestIdleCallback'in W)W.requestIdleCallback(register,{timeout:4000});else setTimeout(register,0);};
+  if(D.readyState==='complete')afterLoad();else W.addEventListener('load',afterLoad,{once:true});
+}
 const progress=D.getElementById('appProgress'),notice=D.getElementById('appNotice'),callButton=D.getElementById('appCall');
 const limit=(navigator.deviceMemory&&navigator.deviceMemory<4)?3:6;
 function record(el,url){const r={el,url,ready:false,waiters:new Set(),used:Date.now()};frames.set(el.dataset.cendonView,r);return r;}
@@ -27,7 +35,7 @@ function ready(ns,localHistory){const r=frames.get(ns);if(r&&wrongDocument(r)){r
     if(r.el===initial&&!busy&&barba){barba.history.add(localHistory.root,'barba','replace');for(const u of localHistory.layers)barba.history.add(u,'barba','push');current=localHistory.layers.at(-1);}
     else if(busy)r.el.contentWindow.CendonView?.adoptSingleEntry();
   }
-  r.ready=true;r.el.classList.remove('is-preparing');if(ns===active)D.getElementById('appOpening').hidden=true;for(const wake of [...r.waiters])wake();
+  r.ready=true;r.el.classList.remove('is-preparing');if(ns===active)D.getElementById('appOpening').hidden=true;for(const wake of [...r.waiters])wake();r.el.contentDocument?.dispatchEvent(new Event('cendon:view-ready'));if(r.el===initial)scheduleWorker();
 }}
 function layer(ns,url,action){
   if(!barba||busy||ns!==active||namespace(url,origin)!==ns)return;
@@ -165,7 +173,6 @@ async function start(){
   // No metadata prefetch loop: each allowed host marker is local. Never boot
   // Chat in the background (that could consume a pending user-initiated AI job).
   const connection=navigator.connection;
-  if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
   // One idle static-code warmup on capable devices. Never load an invisible
   // document or execute its scripts; the worker fetches no personal data.
   if(navigator.deviceMemory>=4&&!connection?.saveData&&!/2g/.test(connection?.effectiveType||'')){

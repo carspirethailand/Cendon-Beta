@@ -8,7 +8,7 @@
   const dots=document.createElement('nav');
   dots.className='lx-pages';dots.setAttribute('aria-label',T('หน้าหมวดบริการ','Category pages'));
   rail.after(dots);
-  let starts=[],frame=0;
+  let starts=[],frame=0,updateFrame=0;
   function targets(){
     const buttons=[...rail.children].filter(el=>el.tagName==='BUTTON');
     const left=rail.getBoundingClientRect().left;
@@ -24,6 +24,9 @@
     [...dots.children].forEach((dot,i)=>dot.setAttribute('aria-current',String(i===index)));
   }
   function update(){
+    updateFrame=0;
+    if(!mobile.matches){dots.hidden=true;return}
+    if(rail.closest('[hidden]'))return;
     starts=targets();dots.hidden=starts.length<2;
     if(dots.children.length!==starts.length){
       dots.replaceChildren(...starts.map((_,i)=>{
@@ -36,9 +39,10 @@
     active();
   }
   rail.addEventListener('scroll',()=>{if(!frame)frame=requestAnimationFrame(active);},{passive:true});
-  new MutationObserver(update).observe(rail,{childList:true});
-  if(typeof ResizeObserver!=='undefined')new ResizeObserver(update).observe(rail);
-  else window.addEventListener('resize',update,{passive:true});
-  mobile.addEventListener('change',update);
-  update();
+  const schedule=()=>{if(!updateFrame)updateFrame=requestAnimationFrame(update)};
+  new MutationObserver(schedule).observe(rail,{childList:true});
+  if(typeof ResizeObserver!=='undefined')new ResizeObserver(schedule).observe(rail);
+  else window.addEventListener('resize',schedule,{passive:true});
+  mobile.addEventListener('change',schedule);
+  schedule();
 })();

@@ -76,7 +76,7 @@ test('home navbar selector stays put: no slide on load or when arriving from ano
   const home=r('index.html');
   assert.match(home,/box-shadow:0 8px 20px -8px rgba\(217,94,60,\.6\);transition:none\}/);
   assert.match(home,/::view-transition-group\(navind\)\{animation:none\}/);
-  assert.match(home,/<\/div>\n      <script>\/\* วางตัวชี้แท็บที่แท็บที่เลือกตั้งแต่เฟรมแรก \*\//,'placed on the first frame, before the page scripts');
+  assert.match(home,/<\/div>\n      <script>\/\* Place the desktop tab indicator/,'desktop indicator remains before the page scripts, without measuring hidden mobile nav');
   for(const f of ['garage.html','spares.html','news.html'])assert.match(r(f),/i\.style\.transition="none";i\.style\.width=a\.offsetWidth\+"px"/,f);
 });
 

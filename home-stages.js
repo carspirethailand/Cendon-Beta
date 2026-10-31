@@ -47,7 +47,8 @@ function fit(){
   /* ช่วง 1 พอดีจอ: จอ − ส่วนบน − ช่องว่างท้ายหน้า (padding ของ body เผื่อแถบล่างมือถือไว้แล้ว) → หน้าไม่ต้องเลื่อนเลย */
   const top=ai.getBoundingClientRect().top+W.scrollY;let bottom=0;
   for(let e=ai.parentElement;e&&e!==H;e=e.parentElement){const cs=getComputedStyle(e);bottom+=(parseFloat(cs.paddingBottom)||0)+(parseFloat(cs.marginBottom)||0)}
-  H.style.setProperty("--hm-h",Math.max(380,Math.floor(innerHeight-top-bottom))+"px");
+  const height=Math.max(380,Math.floor(innerHeight-top-bottom))+"px";
+  if(H.style.getPropertyValue("--hm-h")!==height)H.style.setProperty("--hm-h",height);
 }
 
 /* ── ล็อกจอระหว่างเปลี่ยนช่วง ──

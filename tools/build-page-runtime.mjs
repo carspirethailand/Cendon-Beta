@@ -15,7 +15,7 @@ export async function buildPageRuntime(directory){
   const result={pages:[],assets:new Set(),inlineBytes:0,htmlBytesBefore:0,htmlBytesAfter:0,styleAssets:0,headBundles:0};
   // Only known order-independent IIFEs, at their original parser position. Never
   // merge async/defer/module scripts, inline boundaries or currentScript users.
-  const headFiles=new Map([['app-navigation-bridge.js','navigation'],['tab-shell.js','navigation'],['launch-gate.js','gates'],['auth-gate.js','gates'],['account-scope.js','gates'],['garage-rules.js','garage'],['garage-data.js','garage']]);
+  const headFiles=new Map([['app-navigation-bridge.js','navigation'],['tab-shell.js','navigation'],['launch-gate.js','gates'],['auth-gate.js','gates'],['account-scope.js','gates'],['garage-rules.js','garage'],['garage-data.js','garage'],['partner-state.js','owner-ui'],['shop-images.js','owner-ui'],['partner-entry.js','owner-entry'],['account-paint.js','owner-entry'],['nav.js','navigation-ui'],['media-store.js','navigation-ui']]);
   for(const name of names){
     const file=join(dir,name+'.html'),source=sources.get(name),assets=[];let replaced=0,styles=0;
     const checkpoint=source.indexOf('<script src="/page-core.js'),theme=source.indexOf('<script id="themejs"'),primaryEnd=checkpoint>=0?checkpoint:theme>=0?theme:source.length;

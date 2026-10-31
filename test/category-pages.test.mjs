@@ -7,11 +7,12 @@ function setup(count=24,reduced=false){
   let mutation,resize,pending;
   const media={matches:true,addEventListener(){}};
   function el(){return{children:[],attrs:{},events:{},setAttribute(k,v){this.attrs[k]=v;},addEventListener(k,f){this.events[k]=f;},replaceChildren(...nodes){this.children=nodes;}};}
-  const rail=el();Object.assign(rail,{scrollLeft:0,clientWidth:358,scrollWidth:1078,getBoundingClientRect:()=>({left:16}),after(node){this.dots=node;},scrollTo(options){this.lastScroll=options;this.scrollLeft=options.left;this.events.scroll();}});
+  const rail=el();Object.assign(rail,{closest:()=>null,scrollLeft:0,clientWidth:358,scrollWidth:1078,getBoundingClientRect:()=>({left:16}),after(node){this.dots=node;},scrollTo(options){this.lastScroll=options;this.scrollLeft=options.left;this.events.scroll();}});
   function items(n){rail.children=Array.from({length:n},(_,i)=>({tagName:'BUTTON',getBoundingClientRect:()=>({left:20+Math.floor(i/2)*90-rail.scrollLeft})}));}
   items(count);rail.scrollWidth=8+Math.ceil(count/2)*90-10;
   vm.runInNewContext(source,{document:{getElementById:()=>rail,createElement:el},matchMedia:q=>q.includes('reduced')?{matches:reduced}:media,parseFloat,getComputedStyle:()=>({paddingLeft:'4px'}),Math,requestAnimationFrame(fn){pending=fn;return 1;},MutationObserver:class{constructor(fn){mutation=fn;}observe(){}},ResizeObserver:class{constructor(fn){resize=fn;}observe(){}}});
-  return{rail,items,flush:()=>{pending?.();pending=null;},mutation:()=>mutation(),resize:()=>resize()};
+  const flush=()=>{pending?.();pending=null;};flush();
+  return{rail,items,flush,mutation:()=>mutation(),resize:()=>resize()};
 }
 test('page controls open consecutive full groups and correctly select the active page',()=>{
   const {rail,flush}=setup();assert.equal(rail.dots.children.length,3);
@@ -32,5 +33,10 @@ test('last partial group is reachable, and reduced motion avoids animated scroll
 });
 test('category re-render and resized geometry refresh controls without modifying buttons',()=>{
   const fixture=setup();const first=fixture.rail.children[0];fixture.resize();assert.equal(fixture.rail.children[0],first);
-  fixture.items(8);fixture.mutation();assert.equal(fixture.rail.dots.children.length,1);assert.equal(fixture.rail.dots.hidden,true);
+  fixture.items(8);fixture.mutation();fixture.flush();assert.equal(fixture.rail.dots.children.length,1);assert.equal(fixture.rail.dots.hidden,true);
+});
+
+test('hidden category geometry is skipped and becomes current when its section is shown',()=>{
+ const f=setup();f.rail.closest=()=>({hidden:true});const bounds=f.rail.getBoundingClientRect;f.rail.getBoundingClientRect=()=>{throw Error('Hidden rail must not be measured')};f.items(8);f.mutation();f.flush();
+ f.rail.closest=()=>null;f.rail.getBoundingClientRect=bounds;f.resize();f.flush();assert.equal(f.rail.dots.children.length,1);assert.equal(f.rail.dots.hidden,true);
 });

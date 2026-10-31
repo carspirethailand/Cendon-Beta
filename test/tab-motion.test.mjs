@@ -41,7 +41,11 @@ test('switching tabs hands the old highlight position to the page that is openin
 });
 
 test('main tabs are prepared in the background after Home, so the first tap is fast', () => {
-  assert.match(app, /const PREWARM=\['garage','news','profile'\];/, 'Cendon AI chat is never prepared in the background');
+  assert.match(app, /const PREWARM=\['garage','chat','news','profile'\];/, 'Cendon AI chat is prepared too (it was the slowest first open: 1.37 s -> 0.35 s at 4x CPU)');
+  assert.match(app, /if\(ns==='chat'\)\{let job=null;try\{job=sessionStorage\.getItem\('spire_featureJob'\)\|\|sessionStorage\.getItem\('spire_quoteJob'\);\}catch\{\}if\(job\)continue;\}/, 'not while an AI job from Home is waiting to be sent');
+  const chat = readFileSync(new URL('../chat.html', import.meta.url), 'utf8');
+  assert.match(chat, /async function runFeatureJob\(\)\{\n[^\n]*\n[^\n]*\n  if\(window\.frameElement&&window\.frameElement\.inert\)return false;\n  const job=featureJob\(\);/, 'a chat page prepared in the background never sends a queued AI job before it is opened');
+  assert.match(chat, /window\.addEventListener\("cendon:view-active",\(\)=>\{\n  if\(featureJob\(\)\)runFeatureJob\(\)/, 'once opened it picks the job up');
   assert.match(app, /if\(ns===active\)\{openingDone\(\);tint\(\);schedulePrewarm\(\);\}/, 'starts only after the first page is ready');
   assert.match(app, /function schedulePrewarm\(\)\{if\(prewarmPlanned\)return;prewarmPlanned=true;/, 'once per app open');
   assert.match(app, /if\(limit<6\|\|c\?\.saveData\|\|\/2g\/\.test\(c\?\.effectiveType\|\|''\)\)return;/, 'not on low-memory phones, data saver or 2G');
@@ -59,6 +63,6 @@ test('main tabs are prepared in the background after Home, so the first tap is f
 
 test('new code reaches phones: versions bumped together', () => {
   const sw = r('sw.js'), shell = r('lib/app-shell.mjs');
-  assert.ok(shell.includes('/app-navigation.js?v=12') && sw.includes("'./app-navigation.js?v=12'"));
+  assert.ok(shell.includes('/app-navigation.js?v=13') && sw.includes("'./app-navigation.js?v=13'"));
   for (const f of ['index.html', 'garage.html', 'news.html', 'profile.html', 'spares.html', 'chat.html', 'sw.js']) assert.ok(r(f).includes('mobile-ui.js?v=6') && !r(f).includes('mobile-ui.js?v=5'), f);
 });

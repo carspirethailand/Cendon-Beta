@@ -5933,6 +5933,9 @@ function featureJob(){
 function dropFeatureJob(){try{sessionStorage.removeItem("spire_featureJob");sessionStorage.removeItem("spire_quoteJob")}catch(e){}}
 let featureJobRunning=false;
 async function runFeatureJob(){
+  /* หน้านี้ถูกเตรียมไว้เบื้องหลัง (shell ตั้ง inert จนกว่าจะเปิดจริง): ห้ามหยิบงานจากหน้าแรกไปส่ง AI ตอนผู้ใช้ยังไม่เห็น
+     เปิดจริงแล้ว cendon:view-active เรียกฟังก์ชันนี้อีกครั้งเอง */
+  if(window.frameElement&&window.frameElement.inert)return false;
   const job=featureJob();if(!job)return false;
   // Optimistic paint can run before Firebase restores the real user. Unknown
   // is not another account: retain the request until auth is actually ready.

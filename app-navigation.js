@@ -127,10 +127,11 @@ function activate(r,url){
   D.title=r.el.contentDocument?.title||'Cendon';tint();callUI();evict();
 }
 // แท็บหลักเตรียมไว้ล่วงหน้า: แท็บที่ยังไม่เคยเปิดต้องโหลดและรันสคริปต์ทั้งหน้าตอนกด (วัดได้ 0.6–1.3 วิเมื่อ CPU ช้าแบบมือถือ) ส่วนครั้งที่สองแค่ ~0.1 วิ
-// จึงเตรียม การาจ · นิตยสาร · บัญชี ทีละหน้าเบื้องหลัง (ซ่อน กดไม่ได้) หลังหน้าแรกพร้อมและเครื่องว่าง · ข้ามเมื่อ: เครื่องแรมน้อย ประหยัดเน็ต/2G
+// จึงเตรียม การาจ · แชต AI · นิตยสาร · บัญชี ทีละหน้าเบื้องหลัง (ซ่อน กดไม่ได้) หลังหน้าแรกพร้อมและเครื่องว่าง · ข้ามเมื่อ: เครื่องแรมน้อย ประหยัดเน็ต/2G
 // แอปอยู่เบื้องหลัง หรือผู้ใช้กำลังเปลี่ยนหน้า · หน้าที่เตรียมไว้ไม่ขอตำแหน่ง (พยากรณ์อากาศ) จนกว่าจะเปิดจริง — ดู loadWx ในหน้านั้น ป๊อปอัปจึงไม่โผล่บนหน้าแรก
-// แชต AI ไม่เตรียม (อาจไปหยิบงาน AI ที่ค้างอยู่) · เตรียมไม่สำเร็จ = ทิ้งเฟรมนั้น แล้วกดจริงค่อยโหลดแบบเดิม
-const PREWARM=['garage','news','profile'];let prewarmPlanned=false;
+// แชต AI: หน้าที่เตรียมไว้ไม่หยิบงาน AI ที่หน้าแรกฝากไว้จนกว่าจะเปิดจริง (runFeatureJob เช็ก inert) และถ้ามีงานค้างตอนจะเตรียม ก็ข้ามแชตไปเลย
+// เตรียมไม่สำเร็จ = ทิ้งเฟรมนั้น แล้วกดจริงค่อยโหลดแบบเดิม
+const PREWARM=['garage','chat','news','profile'];let prewarmPlanned=false;
 const idle=ms=>new Promise(r=>setTimeout(()=>'requestIdleCallback'in W?requestIdleCallback(r,{timeout:2000}):r(),ms));
 function schedulePrewarm(){if(prewarmPlanned)return;prewarmPlanned=true;prewarm().catch(()=>{});}
 async function prewarm(){
@@ -139,6 +140,8 @@ async function prewarm(){
   for(const ns of PREWARM){
     await idle(800);
     if(frames.has(ns))continue;
+    // งาน AI จากหน้าแรก (รูป/เสียง/ใบเสนอราคา) รอส่งอยู่ = ไม่เตรียมแชตตอนนี้ ให้หน้าแชตเปิดจริงแล้วหยิบเอง
+    if(ns==='chat'){let job=null;try{job=sessionStorage.getItem('spire_featureJob')||sessionStorage.getItem('spire_quoteJob');}catch{}if(job)continue;}
     if(busy||queued||D.hidden||frames.size>=limit)return;
     try{const r=await prepare(new URL(ROOTS[ns],origin).href,true);if(ns!==active)r.el.contentWindow.CendonView?.setHidden(true);}
     catch{const r=frames.get(ns);if(r&&!r.ready&&ns!==active&&!calls.has(ns)&&!authOwners.has(ns)){try{r.el.contentWindow.CendonView?.disposeAuth?.();}catch{}r.el.remove();frames.delete(ns);}return;}

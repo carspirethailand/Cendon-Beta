@@ -2877,7 +2877,7 @@ a.mtab{text-decoration:none}
 <link rel="stylesheet" href="home-layout.css?v=3">
 <link rel="stylesheet" href="home-stages.css?v=7">
 <link rel="stylesheet" href="wide-layout.css?v=1">
-<link rel="stylesheet" href="call-x.css?v=9">
+<link rel="stylesheet" href="call-x.css?v=10">
 <script src="category-pages.js?v=1" defer></script>
 <script src="/sheet-drag.js?v=1" defer></script>
 <script src="car-sync.js"></script>
@@ -6097,11 +6097,11 @@ function cxSheet(o){
       const paneOf=id=>{const el=id&&$(id);if(!el)return -1;const p=el.closest(".cx-pane");return p?P.indexOf(p.dataset.k):P.length-1};
       const done=()=>{const d=$("cxDone"),ks=P.slice(0,cur).filter(k=>HU[k]);root.classList.toggle("cx-hasdone",ks.length>0);
         d.innerHTML=ks.map(k=>`<button type="button" class="cx-dc" data-k="${k}" data-h="${HU[k][1]}"><i class="ck"><i class="ti ti-check"></i></i><span>${esc(cut(val[k]()||NM[k],k==="sym"?24:30))}</span></button>`).join("");
-        d.querySelectorAll(".cx-dc").forEach(b=>b.onclick=()=>go(P.indexOf(b.dataset.k)))};
+        d.querySelectorAll(".cx-dc").forEach(b=>b.onclick=()=>go(P.indexOf(b.dataset.k),{from:b}))};
       const sum=()=>{const s=$("cxSum");if(!s)return;const r=ok();root.dataset.ready=r?"1":"";$("cxGo").classList.toggle("fire",r);
         s.innerHTML=`<p class="cx-sumh"><b>${T("ใบงานของคุณ","Your job")}</b><span>${r?T("พร้อมส่ง","Ready to send"):""}</span></p>`
           +P.filter(k=>HU[k]).map(k=>`<button type="button" class="cx-sr" data-go="${k}" data-h="${HU[k][1]}"><span class="ic"><i class="ti ${HU[k][0]}"></i></span><span class="v">${esc(val[k]()||T("ยังไม่ได้เล่าอาการ","Not described yet"))}</span><i class="ti ti-chevron-right"></i></button>`).join("");
-        s.querySelectorAll(".cx-sr").forEach(b=>b.onclick=()=>go(P.indexOf(b.dataset.go)))};
+        s.querySelectorAll(".cx-sr").forEach(b=>b.onclick=()=>go(P.indexOf(b.dataset.go),{from:b}))};
       const upd=()=>{cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{if(seq!==CX.seq||!root.isConnected)return;if(P[cur]==="send")sum();else{const r=ok();root.dataset.ready=r?"1":"";$("cxGo").classList.toggle("fire",r)}})};
       const render=()=>{const k=P[cur],last=cur===P.length-1;root.dataset.step=k;
         root.querySelectorAll(".cx-pane").forEach(p=>{const on=p.dataset.k===k;p.classList.toggle("on",on);p.inert=!on});
@@ -6113,17 +6113,30 @@ function cxSheet(o){
         done();sum();upd();
         if(k==="loc"){const m=cf.map&&cf.map();if(m)m.invalidateSize()}};
       /* ── เปลี่ยนข้อแบบ morph: เบราว์เซอร์ที่มี View Transitions ได้การแปลงร่างของชิ้นที่ชื่อเดียวกัน (ดู call-x.css) · ไม่มี = เลื่อนนุ่ม ๆ · ลดภาพเคลื่อนไหว = ทันที ── */
-      const still=matchMedia("(prefers-reduced-motion: reduce)");
+      const still=matchMedia("(prefers-reduced-motion: reduce)"),CV=["tx","ty","s","wt","wl","wr"];
+      /* แผนที่เป็นการ์ดที่ขยายจาก/หดเข้าชิ้นจริง (ชิ้นแรกที่อยู่บนจอ): ย่อทั้งภาพเท่ากันทุกด้าน (ไม่ยืด) ให้แถบกลางแผนที่ (หมุด) พอดีกรอบชิ้นนั้น
+         → --cx-tx/ty เลื่อน · --cx-s ย่อ · --cx-wt/wl กรอบที่เห็น (ก่อนย่อ) · --cx-wr มุมโค้ง */
+      const clip=(...els)=>{const h=document.documentElement,m=$("bMap").getBoundingClientRect(),W=m.width,H=m.height;
+        for(const el of els){if(!el||!el.isConnected||!el.getClientRects().length||!W||!H)continue;const r=el.getBoundingClientRect();if(r.bottom<=m.top||r.top>=m.bottom||r.height<1)continue;
+          const k=r.width/r.height,w0=k>=W/H?W:H*k,h0=w0/k,sc=r.width/w0;
+          const v={tx:r.left+r.width/2-(m.left+W/2)+"px",ty:r.top+r.height/2-(m.top+H/2)+"px",s:String(+sc.toFixed(4)),wt:(H-h0)/2+"px",wl:(W-w0)/2+"px",wr:Math.min(r.height/2,22)/sc+"px"};
+          CV.forEach(n=>h.style.setProperty("--cx-"+n,v[n]));return}
+        CV.forEach(n=>h.style.removeProperty("--cx-"+n))};
+      const nearEl=()=>{const n=$("cxNear");return n&&!n.hidden?n:null},locChip=()=>root.querySelector('.cx-dc[data-k="loc"]'),L=P.indexOf("loc");
       const go=(to,opt)=>{if(nav||to===cur||to<0||to>=P.length||seq!==CX.seq||!root.isConnected)return;
-        const dir=to>cur?"f":"b",fx=!(opt&&opt.instant)&&!still.matches,h=document.documentElement;
-        const swap=()=>{cur=to;render();const q=root.querySelector(".cx-pane.on .cx-q");if(q&&root.contains(document.activeElement))q.focus({preventScroll:true})};
-        if(fx&&document.startViewTransition){nav=true;h.dataset.cxDir=dir;h.dataset.cxMap=P[cur]==="loc"?"old":P[to]==="loc"?"new":"";
-          const end=()=>{nav=false;if(h.dataset.cxDir===dir){delete h.dataset.cxDir;delete h.dataset.cxMap}};
+        const dir=to>cur?"f":"b",fx=!(opt&&opt.instant)&&!still.matches,h=document.documentElement,from=cur,src=opt&&opt.from;
+        const swap=()=>{cur=to;render();const q=root.querySelector(".cx-pane.on .cx-q");if(q&&root.contains(document.activeElement))q.focus({preventScroll:true});
+          /* ออกจากข้อตำแหน่ง: หน้าต่างแผนที่หดไปที่ชิปตำแหน่ง (ไปต่อ) หรือชิปร้านใกล้คุณ (ย้อน) ในหน้าใหม่ */
+          if(fx&&from===L)clip(to>L?locChip():nearEl(),$("cxGo"))};
+        if(fx&&document.startViewTransition){nav=true;h.dataset.cxDir=dir;h.dataset.cxMap=from===L?"old":to===L?"new":"";h.dataset.cxFrom=P[from];h.dataset.cxTo=P[to];
+          /* เข้าข้อตำแหน่ง: เปิดจากชิ้นที่แตะ → ชิปตำแหน่ง (ย้อนจากข้อหลัง) → ชิปร้านใกล้คุณ → ปุ่มหลัก */
+          if(to===L)clip(src,to<from?locChip():nearEl(),$("cxGo"));
+          const end=()=>{nav=false;if(h.dataset.cxDir===dir){["cxDir","cxMap","cxFrom","cxTo"].forEach(k=>delete h.dataset[k]);CV.forEach(n=>h.style.removeProperty("--cx-"+n))}};
           try{document.startViewTransition(swap).finished.finally(end)}catch(e){end();swap()}}
         else{swap();if(fx){const pb=root.querySelector(".cx-pane.on .cx-pb");pb.classList.remove("cx-in-f","cx-in-b");void pb.offsetWidth;pb.classList.add("cx-in-"+dir)}}};
       $("cxProg").innerHTML=P.map(()=>"<i><b></b></i>").join("");$("cxProg").setAttribute("aria-valuemax",P.length);
       $("cxBack").onclick=()=>cur?go(cur-1):($("bsBack").hidden?$("bsX"):$("bsBack")).click();
-      $("cxNear").onclick=()=>go(P.indexOf("loc"));
+      $("cxNear").onclick=e=>go(P.indexOf("loc"),{from:e.currentTarget});
       /* ช่องที่ผิดอยู่ข้อไหน → ไปข้อนั้นทันทีก่อนแสดงข้อความ */
       const onPop=e=>{if(!root.isConnected)return document.removeEventListener("cendon:formpop",onPop);
         const at=(e.detail||[]).map(x=>paneOf(x.id)).filter(i=>i>=0);if(at.length&&Math.min(...at)!==cur)go(Math.min(...at),{instant:true})};

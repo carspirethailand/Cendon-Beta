@@ -6,7 +6,7 @@ This release fixes measured first-view work, retained-view route/history races,
 and the deployment configuration that discarded runtime packaging on later Git
 pushes. It does **not** establish that every device, network or application state
 loads in less than one second. No new loading-screen substitute or animation was
-added. Backend code, ownership, moderation and database bindings are unchanged.
+added. Backend runtime, ownership, moderation and database bindings are unchanged.
 
 The team changes through `315fa07` (desktop map/call layouts and Passport switch)
 were merged and tested, not overwritten.
@@ -26,6 +26,10 @@ were merged and tested, not overwritten.
    first-view path (`tintURL`, approximately 167 ms sampled self time in the 4x
    baseline CPU profile). Reuse the SVG colour matrix instead. The car image and
    colour appear together; no white-first conversion or PNG serialization.
+   Visual QA also caught a root `<base>` element resolving the SVG colour filter
+   against Home instead of Garage. The filter now explicitly targets its own
+   document, with escaped query parameters and full-size SVG layout. A browser
+   pixel test checks that the car really paints, rather than just existing in DOM.
 3. **Display preferences:** repeated storage parsing, formatter construction and
    whole-document text traversal after small insertions. Snapshot preferences
    once, reuse bounded formatters and coalesce changed subtrees. Skip generic
@@ -50,9 +54,9 @@ were merged and tested, not overwritten.
 
 ## Verified coverage
 
-- **785 frontend unit/contract tests passed.**
-- **642 backend tests passed** without a backend deployment.
-- **35 assertion-based browser suites passed**, including owner inventory,
+- **786 frontend unit/contract tests passed.**
+- **646 backend tests passed** without a backend deployment, including the team's latest Intelligent UI tests.
+- **36 assertion-based browser suites passed**, including owner inventory,
   account restoration, Studio services/jobs, units, Chat navigation, call
   continuity, audio transport, Valet and settings sheet lifecycle.
 - **85 actual-document routes/panels passed** with synthetic account/API data.
@@ -84,17 +88,17 @@ throttle. CPU 1x and 4x. “First” is actual destination activation; “usable
 waits for that page's primary real control. Warm visits use the same context.
 These are not field Core Web Vitals or physical Android measurements.
 
-Final paired run, CPU 1x:
+Final verified build, CPU 1x:
 
 | Page | First activation | Primary control visible | Warm revisit |
 | --- | ---: | ---: | ---: |
-| Garage | 498 ms | 548 ms | 26 ms |
-| Profile | 355 ms | 393 ms | 19 ms |
-| Shop | 596 ms | 632 ms | 22 ms |
-| Magazine | 281 ms | 303 ms | 14 ms |
-| Chat | 626 ms | 669 ms | 25 ms |
+| Garage | 529 ms | 567 ms | 43 ms |
+| Profile | 366 ms | 415 ms | 29 ms |
+| Shop | 561 ms | 600 ms | 26 ms |
+| Magazine | 272 ms | 305 ms | 16 ms |
+| Chat | 722 ms | 789 ms | 33 ms |
 
-CPU 4x, consecutive before/after runs, primary control visible:
+CPU 4x, earlier consecutive before/after runs, primary control visible:
 
 | Page | Before | After |
 | --- | ---: | ---: |
@@ -107,8 +111,9 @@ CPU 4x, consecutive before/after runs, primary control visible:
 Do not claim a uniform improvement: Shop regressed in that paired run and 4x
 results varied materially across repetitions (the separate final run had Shop
 at 1,692 ms). CPU scheduling/background activity and substantial legacy startup
-work still affect cold entry. Initial Home startup was 1.5–1.7 seconds at 1x and
-2.2–3.0 seconds at 4x. A separate 1.5 Mbps/80 ms/4x fixture was slower still.
+work still affect cold entry. The final SVG-corrected build measured Garage 2,551 ms, Profile 1,407 ms,
+Shop 1,970 ms, Magazine 1,042 ms and Chat 2,314 ms at 4x. Initial Home startup
+was 1.5–2.2 seconds at 1x and 2.2–4.1 seconds at 4x. A separate 1.5 Mbps/80 ms/4x fixture was slower still.
 The universal sub-second target is therefore **not achieved**. Warm retained
 navigation is fast, but hiding cold work behind a new placeholder is not a fix.
 
@@ -156,3 +161,11 @@ Release checks: before/after read-only mechanic-data hashes, unchanged deployed
 D1 binding, no `DEV_AUTH`, paid routing disabled, production asset/document hash
 comparison and synthetic live-browser smoke checks. Guard mismatches must be
 inspected, never automatically restored. A live edit/GPS update is not data loss.
+
+Release-tool privacy correction: Wrangler debug logs also persisted raw D1 JSON
+before the parent process hashed it. The guard now forces `WRANGLER_WRITE_LOGS=false`,
+disables telemetry/error reports and keeps stdout in memory. A real `SELECT 1`
+probe confirmed that the installed CLI still works without creating a debug file.
+Three generated private logs from this audit were removed; no database records,
+user files or hash snapshots were deleted. No backup of those temporary logs is
+retained. Existing private artifacts from other work were not blanket-deleted.

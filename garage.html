@@ -3937,7 +3937,7 @@ a.mtab{text-decoration:none}
    ชั้นสี (.car-tint) "คูณ" ทับรูปรถตัวถังขาว ใช้รูปเดียวกันเป็นหน้ากาก สีจึงลงเฉพาะตัวรถ
    isolation กันไม่ให้สีไปคูณกับพื้นการ์ดด้านหลัง */
 .car-art{position:relative;display:block;aspect-ratio:880/474;isolation:isolate}
-.car-art img{position:absolute;inset:0;width:100%;height:100%;display:block}
+.car-art img,.car-art svg{position:absolute;inset:0;width:100%;height:100%;display:block}
 .car-tint{position:absolute;inset:0;mix-blend-mode:multiply;pointer-events:none;opacity:.9;
   -webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
 .car-art.none{display:none}
@@ -5289,7 +5289,10 @@ function carArt(k,color){
   if(col==="#FFFFFF")return `<span class="car-art" aria-hidden="true"><img src="${src}" alt="" decoding="async" onerror="this.parentNode.classList.add('none')"/></span>`;
   /* Color and image are one paint operation: no white image followed by a late CSS mask. */
   const id='car-paint-'+(++carPaintSeq),rgb=[1,3,5].map(i=>(parseInt(col.slice(i,i+2),16)/255*.9+.1).toFixed(4));
-  return `<span class="car-art" aria-hidden="true"><svg viewBox="0 0 1536 1024" preserveAspectRatio="xMidYMid meet"><defs><filter id="${id}" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="${rgb[0]} 0 0 0 0 0 ${rgb[1]} 0 0 0 0 0 ${rgb[2]} 0 0 0 0 0 1 0"/></filter></defs><image href="${src}" width="1536" height="1024" preserveAspectRatio="xMidYMid meet" filter="url(#${id})"/></svg></span>`}
+  // The document has <base href="/">. A bare #filter then targets Home, not
+  // this Garage iframe, and Chrome can silently paint no image at all.
+  const filterRef=((document.URL||'').split('#')[0]+'#'+id).replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  return `<span class="car-art" aria-hidden="true"><svg viewBox="0 0 1536 1024" preserveAspectRatio="xMidYMid meet"><defs><filter id="${id}" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="${rgb[0]} 0 0 0 0 0 ${rgb[1]} 0 0 0 0 0 ${rgb[2]} 0 0 0 0 0 1 0"/></filter></defs><image href="${src}" width="1536" height="1024" preserveAspectRatio="xMidYMid meet" filter="url(&quot;${filterRef}&quot;)"/></svg></span>`}
 function colorDots(sel){sel=carColor(sel);
   return CAR_COLORS.map(x=>`<button type="button" class="gx-dot${x.c===sel?" on":""}" data-color="${x.c}" role="radio" aria-checked="${x.c===sel}" aria-label="${gxT(x.th,x.en)}" title="${gxT(x.th,x.en)}" style="--dot:${x.c}"></button>`).join("")}
 const gxArt=(k,color)=>carArt(k,color);

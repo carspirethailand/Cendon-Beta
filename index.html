@@ -29,6 +29,7 @@ html.ib-boot .bs .pn,html.ib-boot .bs .bg{transition:none!important}</style>
 <script src="/account.js?v=2026-10-28-r1" defer></script>
 <script src="/garage-rules.js?v=5" defer></script>
 <script src="/garage-data.js?v=2" defer></script>
+<script src="/car-care.js?v=1" defer></script>
 <script src="/input-guard.js?v=7" defer></script>
 <meta charset="UTF-8"/>
 <!-- ที่อยู่แบบลึก (/tech/<ร้าน>/reviews) — ไฟล์ประกอบทุกตัวอ้างจากรากเว็บเสมอ -->
@@ -41,7 +42,7 @@ html.ib-boot .bs .pn,html.ib-boot .bs .bg{transition:none!important}</style>
 (function(){try{if(/^\/(work|studio)(\/|$)/.test(location.pathname)){var p=JSON.parse(localStorage.getItem("spire_partner")||"null");if(p&&p.s==="shop")document.documentElement.dataset.boot="tech"}}catch(e){}})();</script>
 <script>(function(){try{var A=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt"],l=null;try{l=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
 if(A.indexOf(l)<0){l="en";var n=navigator.languages||[navigator.language||"en"];for(var i=0;i<n.length;i++){var b=String(n[i]).toLowerCase().split("-")[0];if(A.indexOf(b)>=0){l=b;break}}}
-if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=31"><\/script>')}catch(e){}})();</script>
+if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=32"><\/script>')}catch(e){}})();</script>
 <title>Cendon</title>
 <meta name="description" content="ถามอาการรถ ส่งรูปหรือเสียงให้ AI ช่วยดู เช็กใบเสนอราคา และหาช่างที่ผ่านการตรวจใกล้คุณ">
 <!-- การ์ดตอนแชร์ลิงก์ (LINE / Facebook / X) — รูปต้องเป็นที่อยู่เต็ม -->
@@ -2057,6 +2058,16 @@ html[data-theme="dark"] .lx-quick .lx-q2 button.u{color:#f87171}
 button.lx-car{width:100%;box-sizing:border-box;font:inherit;text-align:left;cursor:pointer}
 button.lx-car[aria-expanded="true"]{border-color:var(--ink)}
 .lx-cari{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--surface-2);font-size:20px}
+.lx-due{display:flex;align-items:center;gap:6px;margin-top:2px;font-style:normal;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lx-due i{flex:none;width:6px;height:6px;border-radius:50%;background:var(--co,#E9682A)}.lx-due.over{color:var(--danger,#DC2626)}.lx-due.over i{background:var(--danger,#DC2626)}
+.hm-job{max-width:720px;margin:12px auto 0}.ib-jobs{display:grid;gap:8px}.hm-job[hidden]{display:none!important}
+.hj{display:flex;align-items:center;gap:12px;width:100%;box-sizing:border-box;padding:10px 12px 10px 10px;border-radius:16px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;text-align:left;cursor:pointer;transition:border-color .2s}
+.hj:hover{border-color:color-mix(in srgb,var(--co) 50%,var(--line))}
+.hj-ic{position:relative;flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--surface-2);font-size:19px}
+.hj-ic .lv{position:absolute;top:-2px;right:-2px;width:9px;height:9px;border-radius:50%;background:var(--co,#E9682A);box-shadow:0 0 0 2px var(--surface)}
+.hj-t{flex:1;min-width:0;display:flex;flex-direction:column}.hj-t small{font-size:11.5px;color:var(--muted)}
+.hj-t b{font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hj-t em{font-style:normal;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hj-go{flex:none;font-size:12.5px;font-weight:600;color:var(--co,#E9682A)}.hj-ch{flex:none;color:var(--faint)}
 .lx-cart{flex:1;min-width:0;display:flex;flex-direction:column}.lx-cart small{font-size:11.5px;color:var(--muted)}.lx-cart b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lx-carm{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:4px}
 .lx-quick{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:880px;margin:14px auto 0}
@@ -2885,7 +2896,7 @@ a.mtab{text-decoration:none}
 <link rel="stylesheet" href="stability.css?v=2026-10-31-tabs">
 <link rel="stylesheet" href="/primary-material.css?v=1">
 <link rel="stylesheet" href="home-layout.css?v=3">
-<link rel="stylesheet" href="home-stages.css?v=7">
+<link rel="stylesheet" href="home-stages.css?v=8">
 <link rel="stylesheet" href="wide-layout.css?v=1">
 <link rel="stylesheet" href="call-x.css?v=11">
 <script src="category-pages.js" defer></script>
@@ -3022,6 +3033,8 @@ a.mtab{text-decoration:none}
   </header>
   <!-- เครื่องมือเสริมของ AI: ถ่ายรูป · ฟังเสียงเครื่อง · เช็กใบเสนอราคา · เรียกช่างด่วน (ทางลัด) -->
   <div class="hm-tools lx-quick" id="hTools"></div>
+  <!-- กำลังเดิน: งานที่ต้องทำ/กำลังดำเนินเรื่องเดียว (ข้อมูลเดียวกับกระดิ่ง) · ไม่มีงาน = ซ่อน -->
+  <div class="hm-job" id="hJob" hidden></div>
   <div class="lx-mycar" id="myCar" hidden></div>
   </div>
   <button class="hm-next" id="hmNext" type="button"></button>
@@ -4156,9 +4169,30 @@ function drawMyCar(){
   if(!c){el.hidden=false;el.innerHTML=`<a href="/garage?add=1" class="lx-car lx-addcar"><span class="lx-cari"><i class="ti ti-car-garage"></i></span><span class="lx-cart"><b>${T("เพิ่มรถของคุณ","Add your car")}</b><small>${T("ให้ AI และช่างรู้จักรถคุณ","So the AI and mechanics know your car")}</small></span><span class="lx-plus"><i class="ti ti-plus"></i></span></a>`;return}
   el.hidden=false;
   /* แตะการ์ดรถ = เมนูเปลี่ยนรถ (หลายคันสลับได้ทันที) + เปิดสมุดรถ/เพิ่มรถ — AI และช่างใช้คันที่เลือกนี้ */
-  el.innerHTML=`<button type="button" class="lx-car" id="myCarB" aria-haspopup="menu" aria-expanded="false"><span class="lx-cari"><i class="ti ti-car"></i></span><span class="lx-cart"><small>${T("รถของฉัน","My car")}</small><b class="nt">${esc([c.name,c.year].filter(Boolean).join(" "))}</b></span><span class="lx-carm">${c.mileage&&+c.mileage>0?money(c.mileage)+" "+T("กม.","km"):""} <i class="ti ti-chevron-down"></i></span></button>`;
+  el.innerHTML=`<button type="button" class="lx-car" id="myCarB" aria-haspopup="menu" aria-expanded="false"><span class="lx-cari"><i class="ti ti-car"></i></span><span class="lx-cart"><small>${T("รถของฉัน","My car")}</small><b class="nt">${esc([c.name,c.year].filter(Boolean).join(" "))}</b>${carDue(c)}</span><span class="lx-carm">${c.mileage&&+c.mileage>0?money(c.mileage)+" "+T("กม.","km"):""} <i class="ti ti-chevron-down"></i></span></button>`;
   $("myCarB").onclick=e=>carMenu(e.currentTarget,c.id);
 }
+/* ดูแลถัดไป (car-care.js ชุดเดียวกับหน้ารถ) — เฉพาะรายการที่เคยบันทึก ไม่เดา · ยังไม่มีบันทึก = ไม่แสดง */
+function carDue(c){
+  const n=window.CendonCarCare&&CendonCarCare.next(c,{ev:c.type==="ev"});if(!n)return "";
+  const over=n.left<=0,left=money(Math.abs(n.left));
+  return `<em class="lx-due${over?" over":""}"><i aria-hidden="true"></i>${esc(T(n.th,n.en))} · ${over?T(`เลยกำหนด ${left} กม.`,`${left} km overdue`):T(`อีก ${left} กม.`,`${left} km left`)}</em>`;
+}
+document.addEventListener("DOMContentLoaded",()=>{try{drawMyCar()}catch(e){}},{once:true});
+/* กำลังเดิน: เรื่องที่ต้องทำก่อน (ราคาเข้า ตรวจงาน ข้อความใหม่) ไม่งั้นงานที่กำลังดำเนิน — แถวเดียว แตะแล้วเข้างานนั้น */
+function liveJobs(){const H=U&&window.CendonBell&&CendonBell.hub?CendonBell.hub():null;return H?H.act.map(x=>({...x,need:true})).concat(H.live):[]}
+function hjRow(x,more){const go=x.cta||x.chip||"";
+  return `<button type="button" class="hj" data-ju="${esc(x.url)}"><span class="hj-ic"><i class="ti ${esc(x.ic||"ti-clipboard-list")}"></i>${x.live?'<i class="lv"></i>':""}</span><span class="hj-t"><small>${x.need?T("ต้องทำตอนนี้","Needs you"):T("กำลังเดิน","In progress")}${more>0?" · +"+more:""}</small><b class="nt">${esc(x.title||"")}</b>${x.sub?`<em class="nt">${esc(x.sub)}</em>`:""}</span>${go?`<span class="hj-go">${esc(go)}</span>`:""}<i class="ti ti-chevron-right hj-ch" aria-hidden="true"></i></button>`}
+const wireJobs=b=>b.querySelectorAll("[data-ju]").forEach(x=>x.onclick=()=>Nav.go(x.dataset.ju));
+function drawLiveJob(){
+  const box=$("hJob");if(!box)return;
+  const all=liveJobs();
+  if(!all.length){box.hidden=true;box.textContent="";return}
+  box.hidden=false;box.innerHTML=hjRow(all[0],all.length-1);wireJobs(box);
+}
+let jobSub=null;
+function watchJobs(){if(!jobSub&&window.CendonBell&&CendonBell.on)jobSub=CendonBell.on(()=>{try{drawLiveJob()}catch(e){}});drawLiveJob()}
+addEventListener("load",()=>{try{watchJobs()}catch(e){}},{once:true});
 /* เมนูเลือกรถ (car-menu.js ใช้ร่วมกับหน้าร้านค้า) — แถวใหญ่แตะง่าย ไม่โฟกัสบนมือถือ (เดิมหน้าเลื่อน/กระตุกตอนเปิด) */
 addEventListener('cendon:mileage-updated',drawMyCar);
 function carMenu(btn,cur){
@@ -4550,11 +4584,11 @@ window.addEventListener('cendon:partner-card',()=>{try{drawPartner()}catch(e){}}
    ช่องแรก "เรียกช่างด่วน" (แดง) = โหมดฉุกเฉิน · เรียกช่างแบบอื่นทั้งหมดอยู่ที่ปุ่ม + มุมซ้ายบน (callPlus) */
 function drawQuick(){
   /* ช่วงเรียกช่าง (#hQuick): ด่วน · ประกาศหาช่าง (ไม่ด่วน) · ขอราคา 3 ร้าน — เมนู + มุมซ้ายบนบนมือถือยังมีครบเหมือนเดิม
-     ช่วง AI (#hTools): ถ่ายรูป · ฟังเสียงเครื่อง · เช็กใบเสนอราคา · เรียกช่างด่วน (ทางลัด ไม่ต้องสลับช่วงตอนฉุกเฉิน) */
+     ช่วง AI (#hTools): ฟังเสียงเครื่อง · เช็กใบเสนอราคา · เรียกช่างด่วน (ทางลัด ไม่ต้องสลับช่วงตอนฉุกเฉิน) */
   const Q=[["post","ti-speakerphone",T("ประกาศหาช่าง","Post a job"),T("ช่างรอบตัวเสนอราคามา","Nearby shops send quotes")],
     ["multi","ti-arrows-exchange",T("ขอราคา 3 ร้าน","Quotes from 3 shops"),T("เทียบแล้วค่อยเลือก","Compare, then choose")]];
-  const A=[["photo","ti-camera",T("ถ่ายรูป","Photo"),T("ไม่แน่ใจว่าเสียอะไร","Not sure what's wrong")],
-    ["listen","ti-wave-sine",T("ฟังเสียงเครื่อง","Engine sound check"),T("อัดเสียงให้ AI ฟัง","Record it for the AI")],
+  /* ถ่ายรูปอยู่ในช่องถาม AI แล้ว (ปุ่มกล้อง) จึงไม่ซ้ำเป็นช่องที่นี่ — เหลือที่ให้ "กำลังเดิน" */
+  const A=[["listen","ti-wave-sine",T("ฟังเสียงเครื่อง","Engine sound check"),T("อัดเสียงให้ AI ฟัง","Record it for the AI")],
     ["quote","ti-file-invoice",T("เช็กใบเสนอราคา","Check a quote"),T("แพงไปไหม AI บอก","AI tells you if it's too pricey")]];
   const urgent=`<button type="button" class="lx-urg" data-q="urgent" title="${T("รถเสีย / อุบัติเหตุ ตอนนี้","Breakdown or accident, now")}"><i class="ti ti-urgent"></i><b>${T("เรียกช่างด่วน","Urgent mechanic")}</b></button>`;
   const tile=([k,i,t,d])=>`<button type="button" data-q="${k}" title="${d}"><i class="ti ${i}"></i><b>${t}</b></button>`;
@@ -5182,7 +5216,7 @@ function railNav(){
   railNav.upd();
 }
 function drawHome(){
-  drawMyCar();if(!$("hQuick").childNodes.length||!$("hTools").childNodes.length)drawQuick();callPlus();drawPartner();
+  drawMyCar();if(!$("hQuick").childNodes.length||!$("hTools").childNodes.length)drawQuick();callPlus();drawPartner();watchJobs();
   /* งานที่กำลังดำเนินอยู่ ขึ้นบนสุดของหน้าแรก */
   const act=$("active");if(act&&act.parentNode&&!act.parentNode.classList.contains("lx-top")){const w=document.createElement("div");w.className="lx-top";$("myCar").after(w);w.appendChild(act)}
   drawJobsBtn();
@@ -6533,6 +6567,7 @@ function refreshJobs(){
   THREADS=t.status==="fulfilled"?t.value.threads||[]:[];
   /* กระดิ่งรวมงานของฉันไว้แล้ว — ส่งรายการล่าสุดให้ (ต้องทำ/กำลังดำเนินการ + ตัวเลขบนกระดิ่ง) */
   try{if(window.CendonBell&&CendonBell.setJobs)CendonBell.setJobs(JOBS_OK?JOBS:null,p.status==="fulfilled"?POSTS:null)}catch(e){}
+  try{watchJobs()}catch(e){}
   renderActive();renderUsed();syncGarage();queueDot();saveSnap();try{LiveShare.sync()}catch(e){}try{RoamShare.sync()}catch(e){}
   if(ATLAS&&VIEW==="map")ATLAS.refresh();
   try{bellDiff()}catch(e){}
@@ -7312,7 +7347,8 @@ function inboxBody(list,state){
   if(state&&state.wait)return pin+'<div class="skel" style="margin-top:12px"></div><div class="skel" style="margin-top:10px"></div>';
   /* pre = ยังไม่รู้สถานะล็อกอิน แต่มีรายการของบัญชีล่าสุดในเครื่อง — แสดงรายการไปก่อน */
   if(!U&&!(state&&state.pre))return pin+`<div class="ib-empty"><i class="ti ti-lock"></i><b>${T("เข้าสู่ระบบเพื่อดูแชตกับช่าง","Sign in to see your chats with mechanics")}</b><p>${T("ห้องคุยกับช่างทุกร้านเก็บไว้ในบัญชีของคุณ เปิดเครื่องไหนก็เห็น","Chats with every shop are kept in your account, on any device")}</p><button class="lx-cta" type="button" id="ibLogin">${T("เข้าสู่ระบบ","Sign in")}</button></div>`;
-  return pin+err+(studio?`<button class="ib-studio" type="button" id="ibStudio"><i class="ti ti-building-store"></i>${T(`ลูกค้าทักร้านของคุณ ${studio} ข้อความ — เปิดใน Studio`,`${studio} customer message${studio>1?"s":""} for your shop — open Studio`)}<i class="ti ti-chevron-right"></i></button>`:"")
+  const J=liveJobs().slice(0,3),jobs=J.length?`<p class="jw-sec"><span>${T("งานที่กำลังเดิน","Jobs in progress")}</span></p><div class="ib-jobs">${J.map(x=>hjRow(x,0)).join("")}</div>`:"";
+  return pin+err+jobs+(studio?`<button class="ib-studio" type="button" id="ibStudio"><i class="ti ti-building-store"></i>${T(`ลูกค้าทักร้านของคุณ ${studio} ข้อความ — เปิดใน Studio`,`${studio} customer message${studio>1?"s":""} for your shop — open Studio`)}<i class="ti ti-chevron-right"></i></button>`:"")
     +(list===null?'<div class="skel" style="margin-top:12px"></div><div class="skel" style="margin-top:10px"></div>'
     :list.length?`<div class="ib-list">${list.map(ibRow).join("")}</div>`
     :`<div class="ib-empty"><i class="ti ti-message-circle"></i><b>${T("ยังไม่มีแชตกับช่าง","No chats with mechanics yet")}</b><p>${T("กด ทักช่าง ที่หน้าบริการหรือหน้าร้าน แล้วห้องคุยจะเก็บไว้ที่นี่","Tap Message on a service or shop — the chat will be kept here")}</p><button class="lx-cta" type="button" id="ibPost">${T("ประกาศหาช่าง","Post a job")}</button></div>`);
@@ -7324,6 +7360,7 @@ function wireInbox(b){
   if($("ibStudio"))$("ibStudio").onclick=()=>{closeSheet();openStudio();setTimeout(()=>setTab2("messages"),0)};
   if($("ibRetry"))$("ibRetry").onclick=()=>inbox();
   if($("ibPost"))$("ibPost").onclick=()=>openPostForm("","",{});
+  wireJobs(b);
 }
 /* กล่องข้อความที่เปิดมาจากหน้าอื่นของแอป (แท็บแชตในการาจ/นิตยสาร/ร้านค้า/บัญชี) — ปิดแล้วกลับหน้าเดิม ไม่ตกมาหน้าแรก */
 var IB_FROM=(()=>{try{const r=new URL(document.referrer);return r.origin===location.origin&&/^\/(garage|news|spares|profile|chat)(\/|$)/.test(r.pathname)&&/^\/messages(\/|$)/.test(location.pathname)?r.pathname:null}catch(e){return null}})();

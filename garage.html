@@ -22,6 +22,7 @@
 <script src="/account.js?v=2026-10-28-r1" async fetchpriority="high"></script>
 <script src="/garage-rules.js?v=5"></script>
 <script src="/garage-data.js?v=2"></script>
+<script src="/car-care.js?v=1"></script>
 <script src="/mileage-session.js?v=1" defer></script>
 <script src="/mileage-review.js?v=1" defer></script>
 <script src="/valet-core.js?v=8" defer></script>
@@ -3964,6 +3965,10 @@ a.mtab{text-decoration:none}
 .gx-model{display:block;margin-top:3px;font-size:26px;font-weight:800;line-height:1.18;letter-spacing:-.025em;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gx-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:14px;border:1px solid var(--line-2);border-radius:14px;background:var(--surface-2)}
+.gx-due{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13.5px;color:var(--ink)}
+.gx-due .dot{flex:none;width:7px;height:7px;border-radius:50%;background:var(--accent,#E9682A)}
+.gx-due b{margin-left:auto;font-weight:600;color:var(--muted,#71717A)}
+.gx-due.over .dot{background:var(--danger,#DC2626)}.gx-due.over b{color:var(--danger,#DC2626)}
 .gx-stats>span{display:block;min-width:0;padding:10px 12px}
 .gx-stats>span+span{border-left:1px solid var(--line)}
 .gx-stats small{display:block;font-size:11px;color:var(--muted)}
@@ -5313,6 +5318,11 @@ function renderGarage(){if(!document.getElementById("garageList"))return;const g
      ของเดิมเป็นแถวเล็กบาง ๆ จนผู้ใช้นึกว่ายังไม่ได้เพิ่มรถ
      ตอนนี้รถแต่ละคันได้การ์ดเต็มความกว้าง: ภาพรถ 3D ตามประเภทตัวถังในสีที่ผู้ใช้เลือก · ยี่ห้อ · รุ่นตัวใหญ่ · ปี/เลขไมล์/ประเภท
      กดที่ไหนของการ์ดก็เข้าหน้ารถคันนั้น ยกเว้นปุ่มวงสีมุมขวาบนที่เปิดหน้าต่างเปลี่ยนสี */
+  /* ดูแลถัดไปบนการ์ด: เห็นตั้งแต่หน้าการาจ ไม่ต้องเข้าหน้ารถ · ยังไม่เคยบันทึก = ไม่แสดง (ไม่เดา) */
+  const gxDue=(c,body)=>{let k=0;try{k=window.SpireODO?SpireODO.value(c):0}catch(e){}
+    const n=window.CendonCarCare&&CendonCarCare.next(c,{km:k,ev:body==="ev"});if(!n)return "";
+    const over=n.left<=0,left=Math.abs(n.left).toLocaleString("en-US");
+    return `<span class="gx-due${over?" over":""}"><span class="dot" aria-hidden="true"></span><span>${esc(tx(n.th,n.en))}</span><b>${over?tx(`เลยกำหนด ${left} กม.`,`${left} km overdue`):tx(`อีก ${left} กม.`,`${left} km left`)}</b></span>`};
   w.innerHTML=`<div class="gx-grid${g.length===1?" one":""}">`+g.map(c=>{
     window.CendonGarageData?.loadPolicy(c);
     const bodyStyle = carTypeOf(c);
@@ -5338,6 +5348,7 @@ function renderGarage(){if(!document.getElementById("garageList"))return;const g
           <span><small>${tx("เลขไมล์","Mileage")}</small><b>${km}${km!=="-"?` <em>${tx("กม.","km")}</em>`:""}</b></span>
           <span><small>${tx("ประเภท","Body")}</small><b>${esc(tx(lbl.th,lbl.en))}</b></span>
         </span>
+        ${gxDue(c,bodyStyle)}
         <span class="gx-foot">${tx("ดูรายละเอียดและประวัติ","Details & history")}<i class="ti ti-arrow-right"></i></span>
       </span>
     </div><div class="gx-back" aria-hidden="true" inert></div></div></div>`
@@ -6951,21 +6962,8 @@ function specOf(c){
 
 
 /* ═══════════ ตารางบำรุงรักษา ═══════════ */
-const PLAN=[
- {k:"oil",     th:"เปลี่ยนน้ำมันเครื่อง",   en:"Engine oil",       km:10000, mo:6,  sys:"engine", ev:false},
- {k:"airf",    th:"ไส้กรองอากาศ",          en:"Air filter",       km:20000, mo:12, sys:"engine", ev:false},
- {k:"cabin",   th:"กรองแอร์ในห้องโดยสาร",   en:"Cabin filter",     km:20000, mo:12, sys:"comfort",ev:true},
- {k:"plug",    th:"หัวเทียน",              en:"Spark plugs",      km:40000, mo:36, sys:"engine", ev:false},
- {k:"brakepad",th:"ผ้าเบรก",               en:"Brake pads",       km:40000, mo:36, sys:"brake",  ev:true},
- {k:"brakeoil",th:"น้ำมันเบรก",             en:"Brake fluid",      km:40000, mo:24, sys:"brake",  ev:true},
- {k:"tire",    th:"ยาง 4 เส้น",            en:"Tyres",            km:50000, mo:48, sys:"tire",   ev:true},
- {k:"align",   th:"ตั้งศูนย์ถ่วงล้อ",        en:"Wheel alignment",  km:20000, mo:12, sys:"tire",   ev:true},
- {k:"batt",    th:"แบตเตอรี่",              en:"Battery",          km:60000, mo:36, sys:"elec",   ev:true},
- {k:"coolant", th:"น้ำหล่อเย็น",            en:"Coolant",          km:60000, mo:36, sys:"engine", ev:false},
- {k:"gearoil", th:"น้ำมันเกียร์",           en:"Gearbox oil",      km:60000, mo:48, sys:"drive",  ev:false},
- {k:"belt",    th:"สายพานหน้าเครื่อง",      en:"Drive belt",       km:80000, mo:60, sys:"engine", ev:false},
- {k:"shock",   th:"โช้คอัพ",               en:"Shock absorbers",  km:80000, mo:60, sys:"susp",   ev:true}
-];
+/* รอบดูแลมาตรฐานอยู่ใน car-care.js — หน้าแรกใช้ชุดเดียวกันบอก "ดูแลถัดไป" */
+const PLAN=window.CendonCarCare.PLAN;
 const SYS={
  engine:{th:"เครื่องยนต์",en:"Engine",ic:"ti-engine"},
  brake:{th:"ระบบเบรก",en:"Brakes",ic:"ti-disc"},

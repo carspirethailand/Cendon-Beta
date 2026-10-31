@@ -29,3 +29,33 @@ test('light theme: the partner card follows the page instead of a black block', 
   assert.match(home, /html\[data-theme="light"\] \.lp-card,html\[data-theme="plant"\] \.lp-card\{color:#09090B;background:[^}]*#FFFFFF;/);
   assert.match(home, /html\[data-theme="light"\] \.lp-tx em,html\[data-theme="plant"\] \.lp-tx em\{color:#71717A\}/);
 });
+
+test('next service comes from one shared plan and only from what the owner logged', () => {
+  const store = new Map(), W = {};
+  const localStorage = { getItem: k => store.has(k) ? store.get(k) : null };
+  new Function('window', 'localStorage', r('car-care.js'))(W, localStorage);
+  const C = W.CendonCarCare, car = { id: 'c1', mileage: '52000' };
+  assert.equal(C.next(car), null, 'nothing logged = nothing shown (no guessing)');
+  store.set('spire_carlab_log_c1', JSON.stringify({ services: [{ k: 'oil', km: 43200 }, { k: 'oil', km: 33000 }, { k: 'tire', km: 10000 }] }));
+  assert.deepEqual(C.next(car), { k: 'oil', th: 'เปลี่ยนน้ำมันเครื่อง', en: 'Engine oil', left: 1200, every: 10000 }, 'latest log wins; smallest remaining first');
+  store.set('spire_carlab_iv_c1', JSON.stringify({ oil: { km: 5000 } }));
+  assert.equal(C.next(car).left, -3800, 'owner intervals apply; negative = overdue');
+  assert.equal(C.next(car, { ev: true }).k, 'tire', 'EVs skip engine-oil items');
+  const garage = r('garage.html');
+  assert.match(garage, /const PLAN=window\.CendonCarCare\.PLAN;/, 'the car page uses the same plan');
+  assert.ok(garage.indexOf('<script src="/car-care.js?v=1"></script>') < garage.indexOf('const PLAN=window.CendonCarCare.PLAN'));
+  assert.match(garage, /\$\{gxDue\(c,bodyStyle\)\}\n\s*<span class="gx-foot">/, 'the garage card shows the next service');
+});
+
+test('home answers "what is going on" with one live-job row and the next service on my car', () => {
+  assert.match(home, /<div class="hm-job" id="hJob" hidden><\/div>\n  <div class="lx-mycar" id="myCar" hidden><\/div>/, 'live job sits in the centred group above my car');
+  assert.match(home, /function liveJobs\(\)\{const H=U&&window\.CendonBell&&CendonBell\.hub\?CendonBell\.hub\(\):null;return H\?H\.act\.map\(x=>\(\{\.\.\.x,need:true\}\)\)\.concat\(H\.live\):\[\]\}/, 'same data as the bell: needs-you first');
+  assert.match(home, /if\(!all\.length\)\{box\.hidden=true;box\.textContent="";return\}/, 'no jobs = no filler');
+  assert.match(home, /jobSub=CendonBell\.on\(\(\)=>\{try\{drawLiveJob\(\)\}catch\(e\)\{\}\}\)/, 'updates when jobs refresh');
+  assert.match(home, /<b class="nt">\$\{esc\(\[c\.name,c\.year\]\.filter\(Boolean\)\.join\(" "\)\)\}<\/b>\$\{carDue\(c\)\}/);
+  assert.match(home, /const J=liveJobs\(\)\.slice\(0,3\),jobs=J\.length\?`<p class="jw-sec"><span>\$\{T\("งานที่กำลังเดิน","Jobs in progress"\)\}/, 'the chat tab lists live jobs under Cendon AI');
+  for (const l of ['de', 'es', 'fr', 'id', 'ja', 'ko', 'ms', 'pt', 'vi', 'zh']) {
+    const d = r(`i18n/home-${l}.js`);
+    for (const k of ['"{0} km left":', '"{0} km overdue":', '"Jobs in progress":', '"Needs you":', '"In progress":']) assert.ok(d.includes(k), l + ' ' + k);
+  }
+});

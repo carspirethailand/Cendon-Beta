@@ -9,7 +9,9 @@
   --cx-glass:rgba(255,255,255,.74);--cx-glass-line:rgba(255,255,255,.9);--cx-glass-sh:0 10px 28px -16px rgba(0,0,0,.4);
   --cx-card:#FAFAF9;--cx-card2:#FFFFFF;--cx-bgrgb:250,250,249;--cx-raise:#F2F2F0;--cx-field:#F2F2F0;--cx-field2:#FFFFFF;
   --cx-hair:rgba(0,0,0,.08);--cx-hair2:rgba(0,0,0,.16);--cx-hiline:rgba(0,0,0,.5);--cx-focus:rgba(0,0,0,.07);--cx-rim:rgba(0,0,0,.07);--cx-lo:.45;
-  --cx-aur:.3;--cx-mapglow:.5;--cx-gt:linear-gradient(90deg,#E07A1F,#E4572E 45%,#D6336C)}
+  --cx-aur:.3;--cx-mapglow:.5;--cx-gt:linear-gradient(90deg,#E07A1F,#E4572E 45%,#D6336C);
+  /* สปริงหน่วงพอดี (critically damped แบบ SwiftUI .smooth): เร่งเร็ว หยุดนุ่ม ไม่เด้ง */
+  --cx-spring:linear(0,0.013 2%,0.046 4%,0.093 6%,0.149 8%,0.209 10%,0.272 12%,0.364 15%,0.452 18%,0.533 21%,0.627 25%,0.705 29%,0.784 34%,0.853 40%,0.908 47%,0.947 55%,0.974 65%,0.99 78%,1)}
 html:root[data-theme="dark"]{--cx-ac:242,140,56;--cx-act:#F59A52;--cx-hi:linear-gradient(135deg,#FFFFFF 0%,#D6D6D3 100%);--cx-on-hi:#0B0B0C;
   --cx-glass:rgba(24,24,27,.6);--cx-glass-line:rgba(255,255,255,.13);--cx-glass-sh:0 12px 30px -16px rgba(0,0,0,.85);
   --cx-card:#0B0B0C;--cx-card2:#141416;--cx-bgrgb:11,11,12;--cx-raise:#17171A;--cx-field:#151517;--cx-field2:#1D1D20;
@@ -115,7 +117,7 @@ html:root:not([data-theme="dark"]) .cx [data-h="amber"]{--hc:#B45309}html:root:n
 .cx-back:active{transform:scale(.92)}
 .cx-prog{flex:1;display:flex;gap:5px;view-transition-name:cx-prog}
 .cx-prog i{flex:1;height:4px;border-radius:4px;background:var(--cx-hair2);overflow:hidden}
-.cx-prog b{display:block;width:0;height:100%;border-radius:inherit;transition:width .65s cubic-bezier(.2,.85,.2,1),box-shadow .65s}
+.cx-prog b{display:block;width:0;height:100%;border-radius:inherit;transition:width .5s var(--cx-spring),box-shadow .5s}
 .cx-prog i:nth-child(1) b{background:linear-gradient(90deg,#FFB547,#F28C38)}
 .cx-prog i:nth-child(2) b{background:linear-gradient(90deg,#F28C38,#FF6A5C)}
 .cx-prog i:nth-child(3) b{background:linear-gradient(90deg,#FF6A5C,#FF4D7A)}
@@ -130,7 +132,7 @@ html:root:not([data-theme="dark"]) .cx [data-h="amber"]{--hc:#B45309}html:root:n
 .cx-dc{pointer-events:auto;flex:none;display:inline-flex;align-items:center;gap:7px;max-width:220px;height:32px;padding:0 12px 0 7px;border:0;border-radius:999px;background:var(--cx-glass);box-shadow:inset 0 0 0 1px var(--cx-hair);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);color:var(--ink);font:inherit;font-size:12.5px;cursor:pointer}
 .cx-dc span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cx-dc .ck{flex:none;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-style:normal;color:#fff;background:linear-gradient(135deg,var(--hc),rgb(var(--h)))}
-.cx-dc[data-k="sym"]{view-transition-name:cx-sym}.cx-dc[data-k="loc"]{view-transition-name:cx-map}.cx-dc[data-k="when"]{view-transition-name:cx-when}
+.cx-dc[data-k="sym"]{view-transition-name:cx-sym}.cx-dc[data-k="loc"]{view-transition-name:cx-dloc}.cx-dc[data-k="when"]{view-transition-name:cx-when}
 
 /* ข้อ: ซ้อนกันเต็มจอ เห็นทีละข้อ (ข้อที่ไม่แสดงยังวางผังอยู่ แผนที่จึงมีขนาดจริงเสมอ) */
 .cx-stage{position:absolute;inset:0;z-index:1}
@@ -140,9 +142,10 @@ html:root:not([data-theme="dark"]) .cx [data-h="amber"]{--hc:#B45309}html:root:n
 .cx-pane::-webkit-scrollbar{display:none}
 .cx-pane.on{visibility:visible;pointer-events:auto}
 .cx-pb{position:relative;padding-top:14px}
-.cx-pane.on .cx-pb{view-transition-name:cx-pb}
-.cx-pb.cx-in-f{animation:cxPbIn .55s cubic-bezier(.2,.85,.2,1) both}
-.cx-pb.cx-in-b{animation:cxPbInB .55s cubic-bezier(.2,.85,.2,1) both}
+/* แต่ละข้อมีชื่อของตัวเอง → ข้อเก่าอยู่ใต้แผนที่ ข้อใหม่อยู่บน (จัดลำดับได้แยกกัน) */
+.cx-pane.on[data-k="sym"] .cx-pb{view-transition-name:cx-pb-sym}.cx-pane.on[data-k="loc"] .cx-pb{view-transition-name:cx-pb-loc}.cx-pane.on[data-k="when"] .cx-pb{view-transition-name:cx-pb-when}.cx-pane.on[data-k="send"] .cx-pb{view-transition-name:cx-pb-send}
+.cx-pb.cx-in-f{animation:cxXInF .5s var(--cx-spring) both,cxFadeIn .3s ease-out both}
+.cx-pb.cx-in-b{animation:cxXInB .5s var(--cx-spring) both,cxFadeIn .3s ease-out both}
 .cx-head{display:flex;align-items:flex-start;gap:10px}
 .cx-ht{flex:1;min-width:0}
 .cx-kick{display:inline-flex;align-items:center;gap:8px;max-width:100%;box-sizing:border-box;height:28px;padding:0 12px 0 10px;margin:0 0 14px;border-radius:999px;background:var(--cx-glass);box-shadow:inset 0 0 0 1px var(--cx-hair);color:var(--cx-act);font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -151,11 +154,9 @@ html:root:not([data-theme="dark"]) .cx [data-h="amber"]{--hc:#B45309}html:root:n
 @keyframes cxPulse{0%{transform:scale(.5);opacity:.8}100%{transform:scale(1.9);opacity:0}}
 .cx-q{margin:0;font-family:var(--kd,Kanit),Kanit,sans-serif;font-size:32px;line-height:1.16;font-weight:600;letter-spacing:-.5px;color:var(--ink);outline:0}
 .cx-q em{font-style:normal;background:var(--cx-gt);-webkit-background-clip:text;background-clip:text;color:transparent}
-.cx-pane.on .cx-q{view-transition-name:cx-q}
 .cx-sub{margin:7px 0 0;font-size:14.5px;line-height:1.5;color:var(--muted)}
 /* ภาพประกอบเล็กประจำข้อ */
 .cx-art{flex:none;width:84px;height:84px;margin:-8px -6px 0 0}
-.cx-pane.on .cx-art{view-transition-name:cx-art}
 .cx-ill{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 10px 16px rgba(var(--cx-ac),.32))}
 .cx-ill .fl{animation:cxFloat 4.5s ease-in-out infinite}
 .cx-ill .sp,.cx-ill .pu{transform-box:fill-box;transform-origin:center}
@@ -191,7 +192,6 @@ html:root:not([data-theme="dark"]) .cx [data-h="amber"]{--hc:#B45309}html:root:n
 .cx-tiles .ic{flex:none;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-size:18px;background:rgba(var(--h),.16);color:var(--hc)}
 .cx-tiles>button.on{background:rgba(var(--h),.12);box-shadow:inset 0 0 0 1.5px rgba(var(--h),.75),0 12px 26px -14px rgba(var(--h),.7);font-weight:600}
 .cx-near{display:flex;align-items:center;gap:12px;width:100%;margin-top:14px;padding:10px 12px 10px 10px;border:0;border-radius:18px;background:var(--cx-glass);box-shadow:inset 0 0 0 1px var(--cx-hair);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
-.cx-pane.on .cx-near{view-transition-name:cx-map}
 .cx-near .stack{display:flex;flex:none}
 .cx-near .stack:empty{display:none}
 .cx-near .stack i{width:28px;height:28px;margin-left:-8px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:11.5px;font-weight:600;color:#fff;
@@ -334,44 +334,53 @@ html:root:not([data-theme="dark"]) .cx-sweep i{opacity:.4}
 /* ปุ่มลอยของแอดมินไม่ทับหน้าใบงาน */
 body:has(#bs.cxs.on) #cxa-fab,body:has(#cxPlus[aria-expanded="true"]) #cxa-fab{display:none!important}
 
-/* ── เปลี่ยนข้อแบบ morph (View Transitions) ── ใช้เฉพาะตอนหน้านี้สั่ง (html[data-cx-dir]) ไม่กระทบหน้าอื่น
-   เนื้อข้อเลื่อน+เบลอออก/เข้า · หัวข้อแปลงร่าง · ช่องอาการหดเป็นชิป · ชิปร้านใกล้คุณขยายเป็นแผนที่เต็มจอ แล้วหดเป็นชิปตำแหน่ง · ภาพประกอบหมุนสลับ */
-html[data-cx-dir]::view-transition-group(*){animation-duration:.62s;animation-timing-function:cubic-bezier(.2,.85,.2,1)}
-html[data-cx-dir]::view-transition-old(root),html[data-cx-dir]::view-transition-new(root){animation-duration:.42s}
-/* ลำดับชั้นระหว่างแปลงร่าง: แผนที่ล่างสุด → เนื้อข้อ → หัวข้อ/ภาพ → ชิป → หัวหน้า/ปุ่มหลัก (ไม่ให้แผนที่ที่กำลังขยายทับหัวหน้าและปุ่ม) */
-html[data-cx-dir]::view-transition-group(cx-map){z-index:1}
-html[data-cx-dir]::view-transition-group(cx-mapfx){z-index:2}
-html[data-cx-dir]::view-transition-group(cx-pb){z-index:3}
-html[data-cx-dir]::view-transition-group(cx-q),html[data-cx-dir]::view-transition-group(cx-art){z-index:4}
-html[data-cx-dir]::view-transition-group(cx-sym),html[data-cx-dir]::view-transition-group(cx-when){z-index:5}
+/* ── เปลี่ยนข้อแบบ Apple (View Transitions) ── ใช้เฉพาะตอนหน้านี้สั่ง (html[data-cx-dir]) ไม่กระทบหน้าอื่น
+   ทุกอย่างวิ่งบนสปริงเดียวกัน 0.5 วิ · ไม่เบลอ · ข้อเก่าจางหายก่อนข้อใหม่ชัด (ตัวหนังสือไม่ซ้อนกัน) · ไม่มีภาพถูกยืด/บีบ
+   - เนื้อข้อ push: เก่าถอย 8% จางเร็ว · ใหม่เลื่อนเข้า 16% ชัดตามมา · ลำดับชั้น ข้อเก่า < แผนที่ < ข้อใหม่ (data-cx-from / data-cx-to)
+   - แผนที่ = การ์ดที่ขยายจากชิ้นที่แตะ (ชิปร้านใกล้คุณ / ชิปตำแหน่ง / ปุ่มหลัก) จนเต็มจอ และหดกลับเข้าชิปตำแหน่งตอนไปต่อ
+     ย่อ/ขยายทั้งภาพเท่ากันทุกด้าน (ไม่ยืด) เห็นหมุดตรงกลางตลอดทาง · ตำแหน่งวัดจริงใน JS → --cx-tx/ty/s/wt/wl/wr
+   - กล่องอาการ ↔ ชิปอาการ · ตัวเลือกเวลา ↔ ชิปเวลา: กรอบแปลงร่างตามตำแหน่งจริง เนื้อในขนาดเดิม แค่สลับกันจาง */
+html[data-cx-dir]::view-transition-group(*){animation-duration:.5s;animation-timing-function:var(--cx-spring)}
+html[data-cx-dir]::view-transition-old(root),html[data-cx-dir]::view-transition-new(root){animation-duration:.3s;animation-timing-function:ease-out}
+/* ลำดับชั้น: ข้อเก่า → แผนที่ → แสงไล่เฉด → ข้อใหม่ → ชิป → หัวหน้า/ปุ่มหลัก */
+html[data-cx-from="sym"]::view-transition-group(cx-pb-sym),html[data-cx-from="loc"]::view-transition-group(cx-pb-loc),html[data-cx-from="when"]::view-transition-group(cx-pb-when),html[data-cx-from="send"]::view-transition-group(cx-pb-send){z-index:1}
+html[data-cx-dir]::view-transition-group(cx-map){z-index:2}
+html[data-cx-dir]::view-transition-group(cx-mapfx){z-index:3}
+html[data-cx-to="sym"]::view-transition-group(cx-pb-sym),html[data-cx-to="loc"]::view-transition-group(cx-pb-loc),html[data-cx-to="when"]::view-transition-group(cx-pb-when),html[data-cx-to="send"]::view-transition-group(cx-pb-send){z-index:4}
+html[data-cx-dir]::view-transition-group(cx-sym),html[data-cx-dir]::view-transition-group(cx-when),html[data-cx-dir]::view-transition-group(cx-dloc){z-index:5}
 html[data-cx-dir]::view-transition-group(cx-hd),html[data-cx-dir]::view-transition-group(cx-go){z-index:6}
 html[data-cx-dir]::view-transition-group(cx-prog),html[data-cx-dir]::view-transition-group(cx-cnt){z-index:7}
-html[data-cx-dir]::view-transition-group(cx-pb),html[data-cx-dir]::view-transition-group(cx-hd),html[data-cx-dir]::view-transition-group(cx-prog),html[data-cx-dir]::view-transition-group(cx-cnt){animation:none}
-html[data-cx-dir]::view-transition-old(cx-pb){animation:cxPbOut .34s cubic-bezier(.4,0,1,1) both}
-html[data-cx-dir]::view-transition-new(cx-pb){animation:cxPbIn .62s cubic-bezier(.2,.85,.2,1) .08s both}
-html[data-cx-dir="b"]::view-transition-old(cx-pb){animation-name:cxPbOutB}
-html[data-cx-dir="b"]::view-transition-new(cx-pb){animation-name:cxPbInB}
-@keyframes cxPbOut{to{opacity:0;transform:translateX(-32px) scale(.98);filter:blur(6px)}}
-@keyframes cxPbIn{from{opacity:0;transform:translateX(40px) scale(.98);filter:blur(8px)}}
-@keyframes cxPbOutB{to{opacity:0;transform:translateX(32px) scale(.98);filter:blur(6px)}}
-@keyframes cxPbInB{from{opacity:0;transform:translateX(-40px) scale(.98);filter:blur(8px)}}
+/* หัวหน้านิ่ง · ความคืบหน้าและเลขข้อเปลี่ยนสด (แถบวิ่งด้วยสปริงเดียวกัน) · ป้ายปุ่มหลักสลับเร็ว */
+html[data-cx-dir]::view-transition-group(cx-hd),html[data-cx-dir]::view-transition-group(cx-prog),html[data-cx-dir]::view-transition-group(cx-cnt){animation:none}
 html[data-cx-dir]::view-transition-old(cx-prog),html[data-cx-dir]::view-transition-old(cx-cnt){display:none}
 html[data-cx-dir]::view-transition-new(cx-prog),html[data-cx-dir]::view-transition-new(cx-cnt){animation:none}
-html[data-cx-dir]::view-transition-image-pair(cx-sym),html[data-cx-dir]::view-transition-image-pair(cx-when){overflow:hidden;border-radius:18px}
-html[data-cx-dir]::view-transition-image-pair(cx-map){overflow:hidden;border-radius:26px}
-/* แผนที่ ↔ ชิป: ภาพแผนที่เต็มกรอบเสมอ · ขยาย = ชิปหายเร็ว แผนที่ขึ้นเร็ว · หด = แผนที่อยู่จนกรอบเล็กแล้วค่อยส่งต่อให้ชิป (ไม่เห็นตัวหนังสือชิปขยายใหญ่) */
-html[data-cx-map="new"]::view-transition-new(cx-map),html[data-cx-map="old"]::view-transition-old(cx-map){width:100%;height:100%;object-fit:cover}
-html[data-cx-map="new"]::view-transition-old(cx-map){animation:cxFadeOut .16s linear both}
-html[data-cx-map="new"]::view-transition-new(cx-map){animation:cxFadeIn .28s linear both}
-html[data-cx-map="old"]::view-transition-old(cx-map){animation:cxFadeOut .22s linear .32s both}
-html[data-cx-map="old"]::view-transition-new(cx-map){animation:cxFadeIn .26s linear .36s both}
-html[data-cx-dir]::view-transition-old(cx-hd),html[data-cx-dir]::view-transition-new(cx-hd){animation-duration:.3s}
+html[data-cx-dir]::view-transition-old(cx-hd),html[data-cx-dir]::view-transition-new(cx-hd),html[data-cx-dir]::view-transition-old(cx-go),html[data-cx-dir]::view-transition-new(cx-go){animation-duration:.2s;animation-timing-function:ease-out}
+/* เนื้อข้อ: push */
+html[data-cx-dir]::view-transition-old(cx-pb-sym),html[data-cx-dir]::view-transition-old(cx-pb-loc),html[data-cx-dir]::view-transition-old(cx-pb-when),html[data-cx-dir]::view-transition-old(cx-pb-send){animation:cxXOutF .5s var(--cx-spring) both,cxFadeOut .12s ease-out both}
+html[data-cx-dir]::view-transition-new(cx-pb-sym),html[data-cx-dir]::view-transition-new(cx-pb-loc),html[data-cx-dir]::view-transition-new(cx-pb-when),html[data-cx-dir]::view-transition-new(cx-pb-send){animation:cxXInF .5s var(--cx-spring) both,cxFadeIn .26s ease-out .08s both}
+html[data-cx-dir="b"]::view-transition-old(cx-pb-sym),html[data-cx-dir="b"]::view-transition-old(cx-pb-loc),html[data-cx-dir="b"]::view-transition-old(cx-pb-when),html[data-cx-dir="b"]::view-transition-old(cx-pb-send){animation-name:cxXOutB,cxFadeOut}
+html[data-cx-dir="b"]::view-transition-new(cx-pb-sym),html[data-cx-dir="b"]::view-transition-new(cx-pb-loc),html[data-cx-dir="b"]::view-transition-new(cx-pb-when),html[data-cx-dir="b"]::view-transition-new(cx-pb-send){animation-name:cxXInB,cxFadeIn}
+@keyframes cxXOutF{to{transform:translateX(-8%)}}
+@keyframes cxXInF{from{transform:translateX(16%)}}
+@keyframes cxXOutB{to{transform:translateX(8%)}}
+@keyframes cxXInB{from{transform:translateX(-16%)}}
 @keyframes cxFadeOut{to{opacity:0}}
 @keyframes cxFadeIn{from{opacity:0}}
-html[data-cx-dir]::view-transition-old(cx-art){animation:cxArtOut .4s cubic-bezier(.4,0,1,1) both}
-html[data-cx-dir]::view-transition-new(cx-art){animation:cxArtIn .7s cubic-bezier(.3,1.4,.5,1) .12s both}
-@keyframes cxArtOut{to{opacity:0;transform:scale(.6) rotate(-14deg)}}
-@keyframes cxArtIn{from{opacity:0;transform:scale(.5) rotate(16deg)}}
+/* แผนที่เปิด: การ์ดขยายจากชิ้นที่แตะจนเต็มจอ · แผนที่ปิด: หดเข้าชิปตำแหน่ง (หรือชิปร้านใกล้คุณตอนย้อน) แล้วชิปขึ้นแทน */
+html[data-cx-map]::view-transition-old(cx-map),html[data-cx-map]::view-transition-new(cx-map),html[data-cx-map]::view-transition-old(cx-mapfx),html[data-cx-map]::view-transition-new(cx-mapfx){mix-blend-mode:normal;transform-origin:50% 50%}
+html[data-cx-map="new"]::view-transition-new(cx-map),html[data-cx-map="new"]::view-transition-new(cx-mapfx){animation:cxCardIn .52s var(--cx-spring) both,cxFadeIn .1s linear both}
+html[data-cx-map="old"]::view-transition-old(cx-map),html[data-cx-map="old"]::view-transition-old(cx-mapfx){animation:cxCardOut .5s var(--cx-spring) both,cxFadeOut .14s ease-in .3s both}
+@keyframes cxCardIn{from{transform:translate(var(--cx-tx,0px),var(--cx-ty,0px)) scale(var(--cx-s,.6));clip-path:inset(var(--cx-wt,30%) var(--cx-wl,10%) round var(--cx-wr,24px))}to{transform:none;clip-path:inset(0 0 round 0px)}}
+@keyframes cxCardOut{to{transform:translate(var(--cx-tx,0px),var(--cx-ty,0px)) scale(var(--cx-s,.6));clip-path:inset(var(--cx-wt,30%) var(--cx-wl,10%) round var(--cx-wr,24px))}}
+html[data-cx-dir]::view-transition-new(cx-dloc){animation:cxPop .34s var(--cx-spring) .3s both}
+html[data-cx-dir]::view-transition-old(cx-dloc){animation:cxFadeOut .12s ease-out both}
+@keyframes cxPop{from{opacity:0;transform:scale(.92)}}
+/* กล่องอาการ ↔ ชิป · ตัวเลือกเวลา ↔ ชิป: กรอบแปลงร่างตามตำแหน่งจริง ภาพข้างในขนาดเดิม (ไม่บีบ) ชิดซ้ายบน แล้วสลับกันจาง */
+html[data-cx-dir]::view-transition-image-pair(cx-sym),html[data-cx-dir]::view-transition-image-pair(cx-when){overflow:hidden;border-radius:18px}
+html[data-cx-dir]::view-transition-old(cx-sym),html[data-cx-dir]::view-transition-new(cx-sym),html[data-cx-dir]::view-transition-old(cx-when),html[data-cx-dir]::view-transition-new(cx-when){
+  inset:0 auto auto 0;width:auto;height:auto;object-fit:none;mix-blend-mode:normal}
+html[data-cx-dir]::view-transition-old(cx-sym),html[data-cx-dir]::view-transition-old(cx-when){animation:cxFadeOut .2s ease-out both}
+html[data-cx-dir]::view-transition-new(cx-sym),html[data-cx-dir]::view-transition-new(cx-when){animation:cxFadeIn .24s ease-out .1s both}
 
 /* แท็บเล็ต/คอม: เต็มจอตามขนาดเครื่อง · เนื้อหาคอลัมน์กลางกว้างไม่เกิน ~580px · แผนที่ข้อตำแหน่งเต็มจอ */
 @media(min-width:761px){

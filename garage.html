@@ -5290,6 +5290,17 @@ function carArt(k,color){
   // this Garage iframe, and Chrome can silently paint no image at all.
   const filterRef=((document.URL||'').split('#')[0]+'#'+id).replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   return `<span class="car-art" aria-hidden="true"><svg viewBox="0 0 1536 1024" preserveAspectRatio="xMidYMid meet"><defs><filter id="${id}" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="${rgb[0]} 0 0 0 0 0 ${rgb[1]} 0 0 0 0 0 ${rgb[2]} 0 0 0 0 0 1 0"/></filter></defs><image href="${src}" width="1536" height="1024" preserveAspectRatio="xMidYMid meet" filter="url(&quot;${filterRef}&quot;)"/></svg></span>`}
+/* สีรถอ้างฟิลเตอร์ด้วยที่อยู่เต็มของหน้านี้ (กันเรื่อง <base href="/">) — ที่อยู่หน้าเปลี่ยนเมื่อไร (เปิดหน้ารถ / ย้อนกลับ)
+   ต้องชี้ตามทันที ไม่งั้นรูปที่วาดครั้งแรกหลังเปลี่ยนที่อยู่ (เช่นหน้ารถที่โผล่ระหว่าง morph) ถือว่าฟิลเตอร์อยู่อีกหน้า → รถขาวค้าง */
+function repointPaint(){
+  const base=(document.URL||"").split("#")[0];
+  document.querySelectorAll(".car-art image[filter]").forEach(im=>{const f=im.getAttribute("filter"),m=f&&f.match(/#(car-paint-\d+)"\)$/);
+    if(m){const want=`url("${base}#${m[1]}")`;if(f!==want)im.setAttribute("filter",want)}});
+}
+if(window.history&&window.addEventListener){
+  for(const k of ["pushState","replaceState"]){const o=history[k];if(typeof o==="function")history[k]=function(){const r=o.apply(this,arguments);try{repointPaint()}catch(e){}return r}}
+  addEventListener("popstate",()=>{try{repointPaint()}catch(e){}});
+}
 function colorDots(sel){sel=carColor(sel);
   return CAR_COLORS.map(x=>`<button type="button" class="gx-dot${x.c===sel?" on":""}" data-color="${x.c}" role="radio" aria-checked="${x.c===sel}" aria-label="${gxT(x.th,x.en)}" title="${gxT(x.th,x.en)}" style="--dot:${x.c}"></button>`).join("")}
 const gxArt=(k,color)=>carArt(k,color);
@@ -7063,6 +7074,15 @@ function costOf(c){
 (function(){const st=document.createElement("style");st.textContent=`
 .carx-bd{position:fixed;inset:0;z-index:120;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(6,5,3,.55)}
 .carx-bd.show{display:flex}
+/* การ์ดรถ ⇄ หน้ารถ: รถลอยบนสปริงนุ่ม หน้าที่เหลือจาง + เบลอบาง ๆ · แถบแท็บไม่โผล่ทับระหว่างแปลงร่าง
+   ราก (root) ต้อง !important เพราะ stability.css ตั้งแอนิเมชันรากของการเปลี่ยนหน้าข้ามเอกสารไว้แบบ !important */
+.cl-vt{view-transition-name:cl-car}
+html[data-clm] .mnav{view-transition-name:none!important}
+html[data-clm]::view-transition-group(cl-car){animation-duration:.5s;animation-timing-function:linear(0,0.009 2%,0.033 4%,0.067 6%,0.109 8%,0.156 10%,0.206 12%,0.283 15%,0.359 18%,0.432 21%,0.522 25%,0.602 29%,0.687 34%,0.769 40%,0.84 47%,0.897 55%,0.941 65%,0.973 78%,0.987 90%,1)}
+html[data-clm]::view-transition-old(root){animation:clmOut .22s ease-out both!important}
+html[data-clm]::view-transition-new(root){animation:clmIn .34s ease-out .04s both!important;mix-blend-mode:normal}
+@keyframes clmOut{from{opacity:1;filter:blur(0)}to{opacity:0;filter:blur(5px)}}
+@keyframes clmIn{from{opacity:0;filter:blur(6px)}to{opacity:1;filter:blur(0)}}
 .carx{--cx-acc:var(--co,var(--accent));--cx-acc-t:color-mix(in srgb,var(--cx-acc) 70%,var(--ink));--cx-soft:color-mix(in srgb,var(--cx-acc) 11%,transparent);
   position:relative;width:min(1080px,100%);height:min(88dvh,900px);display:flex;flex-direction:column;overflow:hidden;
   background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:28px;box-shadow:0 40px 90px -30px rgba(0,0,0,.55)}
@@ -7289,7 +7309,18 @@ function ensureModal(){
   },true);
   return modal;
 }
-function closeCL(){if(modal){closeSheet(true);modal.classList.remove("show")}}
+/* การ์ดรถ ⇄ หน้ารถ: รถลอยจากการ์ดไปเป็นภาพใหญ่ และกลับเข้าการ์ดตอนปิด (View Transitions · html[data-clm] ระหว่างแปลงร่าง)
+   ภาพทั้งสองเป็น .car-art สัดส่วนเดียวกัน · ไม่รองรับ / ลดการเคลื่อนไหว / หาการ์ดไม่เจอ = เปิดปิดทันทีแบบเดิม */
+function carMorph(id,opening,swap){
+  const h=D.documentElement,card=()=>D.querySelector(`.gx-flip[data-car="${CSS.escape(String(id||""))}"] .gx-hero .car-art`),big=()=>modal&&modal.querySelector(".crm-stage .car-art");
+  const from=opening?card():big();
+  if(!D.startViewTransition||matchMedia("(prefers-reduced-motion: reduce)").matches||!from||!from.getClientRects().length){swap();return}
+  h.dataset.clm="1";from.classList.add("cl-vt");
+  const end=()=>{delete h.dataset.clm;D.querySelectorAll(".cl-vt").forEach(e=>e.classList.remove("cl-vt"))};
+  try{D.startViewTransition(()=>{from.classList.remove("cl-vt");swap();repointPaint();const to=opening?big():card();if(to)to.classList.add("cl-vt")}).finished.finally(end)}catch(e){end();swap()}
+}
+function closeCL(){if(!modal)return;const shown=modal.classList.contains("show");closeSheet(true);
+  if(shown&&curCar)carMorph(curCar.id,false,()=>modal.classList.remove("show"));else modal.classList.remove("show")}
 /* หน้าเดียวเลื่อนอ่านจบ: ต้องดูแล · ประวัติรถ · ข้อมูลรถ — รายละเอียดเต็มเปิดเป็นแผ่น (ไม่มีแท็บให้งง)
    ลิงก์เก่า (/garage/<รถ>/cost ฯลฯ) และปุ่มจากที่อื่น ยังพามาแผ่นที่ของนั้นอยู่ */
 const LISTS=["care","hist","about"];
@@ -7302,7 +7333,7 @@ window.openCarDetail=function(id,go){
   window.clRerender=()=>{try{renderAll()}catch(e){}};
   closeSheet(true);
   renderAll();
-  modal.classList.add("show");
+  if(was)modal.classList.add("show");else carMorph(id,true,()=>{modal.classList.add("show");$("clScroll").scrollTop=0});
   if(!was)$("clScroll").scrollTop=0;
   if(go==="odo")setTimeout(()=>{openSheet("log:odo");setTimeout(()=>{const i=$("crmOdoIn");if(i)try{i.focus({preventScroll:true})}catch(e){}},300)},60);
   else if(go&&LISTS.includes(OLD_TAB[go]||go))setTimeout(()=>openSheet("list:"+(OLD_TAB[go]||go)),60);

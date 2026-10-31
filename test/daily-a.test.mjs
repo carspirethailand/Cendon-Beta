@@ -75,3 +75,41 @@ test('the + button becomes the call menu (and back) without touching the rest of
     for (const x of m[1].split(',').map(v => v.trim()).filter(v => v.startsWith('html[data-cxp]') && !v.includes('::view-transition')))
       assert.match(x, /[.#][\w-]+$/, x);
 });
+
+test('car paint follows the page address, so the car keeps its colour when the address changes', () => {
+  const garage = r('garage.html');
+  const src = garage.slice(garage.indexOf('function repointPaint(){'), garage.indexOf('function colorDots('));
+  assert.match(src, /if\(window\.history&&window\.addEventListener\)\{\n  for\(const k of \["pushState","replaceState"\]\)\{const o=history\[k\];if\(typeof o==="function"\)history\[k\]=function\(\)\{const r=o\.apply\(this,arguments\);try\{repointPaint\(\)\}catch\(e\)\{\}return r\}\}/, 'every in-page address change re-points the paint');
+  assert.match(src, /addEventListener\("popstate",\(\)=>\{try\{repointPaint\(\)\}catch\(e\)\{\}\}\);/, 'back/forward too');
+  const fn = src.slice(0, src.indexOf('\nif(window.history&&window.addEventListener){'));
+  const imgs = [
+    { f: 'url("https://a.test/garage#car-paint-3")' },
+    { f: 'url("https://a.test/garage/abc#car-paint-12")' },
+    { f: 'url(#other)' }
+  ].map(o => ({ ...o, getAttribute() { return this.f; }, setAttribute(_, v) { this.f = v; } }));
+  const document = { URL: 'https://a.test/garage/abc?x=1#hash', querySelectorAll: s => (assert.equal(s, '.car-art image[filter]'), imgs) };
+  new Function('document', fn + '\nrepointPaint();')(document);
+  assert.deepEqual(imgs.map(i => i.f), [
+    'url("https://a.test/garage/abc?x=1#car-paint-3")',
+    'url("https://a.test/garage/abc?x=1#car-paint-12")',
+    'url(#other)'
+  ], 'paint filters point at the current address (no hash); unrelated filters untouched');
+});
+
+test('a garage card becomes the car page (and back) with the car flying between them', () => {
+  const garage = r('garage.html');
+  assert.match(garage, /function carMorph\(id,opening,swap\)\{/);
+  assert.match(garage, /if\(!D\.startViewTransition\|\|matchMedia\("\(prefers-reduced-motion: reduce\)"\)\.matches\|\|!from\|\|!from\.getClientRects\(\)\.length\)\{swap\(\);return\}/, 'opens instantly when unsupported, reduced motion or no visible card');
+  assert.match(garage, /D\.startViewTransition\(\(\)=>\{from\.classList\.remove\("cl-vt"\);swap\(\);repointPaint\(\);const to=opening\?big\(\):card\(\);if\(to\)to\.classList\.add\("cl-vt"\)\}\)\.finished\.finally\(end\)/, 'one shared name at a time; paint re-pointed inside the swap');
+  assert.match(garage, /const end=\(\)=>\{delete h\.dataset\.clm;D\.querySelectorAll\("\.cl-vt"\)\.forEach\(e=>e\.classList\.remove\("cl-vt"\)\)\};/, 'the shared name never lingers');
+  assert.match(garage, /if\(was\)modal\.classList\.add\("show"\);else carMorph\(id,true,\(\)=>\{modal\.classList\.add\("show"\);\$\("clScroll"\)\.scrollTop=0\}\);/, 'only a fresh open morphs; re-renders stay instant');
+  assert.match(garage, /if\(shown&&curCar\)carMorph\(curCar\.id,false,\(\)=>modal\.classList\.remove\("show"\)\);else modal\.classList\.remove\("show"\)/, 'closing flies the car back into its card');
+  assert.match(garage, /\.cl-vt\{view-transition-name:cl-car\}/);
+  assert.match(garage, /html\[data-clm\] \.mnav\{view-transition-name:none!important\}/);
+  assert.match(garage, /html\[data-clm\]::view-transition-old\(root\)\{animation:clmOut [^}]*!important\}/);
+  assert.match(garage, /html\[data-clm\]::view-transition-new\(root\)\{animation:clmIn [^}]*!important;/);
+  /* ตัวเลือกใต้ html[data-clm] ห้ามลงท้ายด้วย * หรือแท็ก — ไม่งั้นตั้ง attribute แล้วคำนวณสไตล์ทั้งเอกสาร */
+  for (const m of garage.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/(?:^|[}\n])([^{}@\n]*html\[data-clm\][^{\n]*)\{/g))
+    for (const x of m[1].split(',').map(v => v.trim()).filter(v => v.startsWith('html[data-clm]') && !v.includes('::view-transition')))
+      assert.match(x, /[.#][\w-]+$/, x);
+});

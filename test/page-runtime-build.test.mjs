@@ -51,6 +51,6 @@ test('tab navigation never uses a timer as proof of readiness, and validates sta
 });
 test('hidden briefs do not build a canvas on startup, and Profile paints its actual first screen before background tools',async()=>{
  for(const file of ['garage','profile','news','spares']){const s=await readFile(new URL('../'+file+'.html',import.meta.url),'utf8');assert.ok(s.includes('if(!wrap||D.body.dataset.briefOpen!=="1")return'));assert.ok(!s.includes('fillWidget(); ensureView(); syncOthers(); garageSummary();'))}
- const p=await readFile(new URL('../profile.html',import.meta.url),'utf8');assert.ok(p.indexOf('<script src="/settings.js?v=10"></script>')<p.indexOf('<script id="brief-js">'));assert.ok(p.includes('window.__SPIRE_PAGE__="profile";'));
+ const p=await readFile(new URL('../profile.html',import.meta.url),'utf8');assert.ok(p.indexOf('<script src="/settings.js?v=11"></script>')<p.indexOf('<script id="brief-js">'));assert.ok(p.includes('window.__SPIRE_PAGE__="profile";'));
  const css=await readFile(new URL('../settings.css',import.meta.url),'utf8');assert.match(css,/html\[data-gate="1"\] #v-settings\.st-float/);
 });

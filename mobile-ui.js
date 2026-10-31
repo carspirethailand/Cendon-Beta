@@ -124,7 +124,9 @@ function go(k){
 function paintAvatar(){
   const slot=D.querySelector('[data-mslot="account"]'); if(!slot)return;
   const a=$("avatarBtn");
-  if(signedIn()&&a&&a.innerHTML.trim()){
+  /* "?" คือป้ายรอชื่อบัญชี (ยังโหลดไม่เสร็จ) — แสดงไอคอนคนแทน ไม่ให้แท็บดูเหมือนรูปเสีย */
+  const ready=a&&a.innerHTML.trim()&&(a.querySelector("img")||a.textContent.trim()!=="?");
+  if(signedIn()&&ready){
     if(slot.dataset.av!==a.innerHTML){slot.dataset.av=a.innerHTML;slot.innerHTML=a.innerHTML}
   }else if(slot.dataset.av!==undefined||!slot.querySelector("i")){
     delete slot.dataset.av;

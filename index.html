@@ -413,6 +413,8 @@ html[data-theme="dark"] .av.sq,html[data-theme="dark"] .thumb.sq{box-shadow:inse
 .price{font-size:12px;color:var(--muted);white-space:nowrap}.price b{color:var(--ink);font-size:16px;font-family:var(--kd)}
 .skel{height:112px;border-radius:var(--r);background:linear-gradient(90deg,var(--surface) 0,var(--surface-2) 50%,var(--surface) 100%);background-size:200% 100%;animation:shimmer 1.2s infinite}
 .empty{text-align:center;padding:34px 20px;color:var(--muted);animation:rise .4s var(--ease) both;border-radius:var(--r);background:var(--surface)}
+/* หน้าว่างบอกทางไปต่อหนึ่งปุ่ม ไม่ปล่อยแค่ไอคอนเทากับข้อความ */
+.empty .lx-cta{display:flex;margin:16px auto 0;height:44px;padding:0 22px}
 .empty>i{font-size:46px;color:var(--faint);display:block;margin-bottom:8px}
 .empty b{display:block;color:var(--ink);font-size:16px;font-weight:600;margin-bottom:4px}
 .empty .btn{margin-top:16px}
@@ -1028,6 +1030,12 @@ html[data-theme="dark"] .bs.jx .tl div.ok::before{background:#f6c48d;color:#1617
 .lp-tx small{display:block;font:600 10.5px var(--kd);letter-spacing:.22em;color:#f6c48d}
 .lp-tx b{display:block;margin-top:4px;font-family:var(--kd);font-size:17.5px;font-weight:600;line-height:1.25}
 .lp-tx em{display:block;margin-top:3px;font-style:normal;font-size:12.5px;color:rgba(255,255,255,.7)}
+/* โหมดสว่าง: การ์ดสีตามธีม ไม่เป็นก้อนดำกลางหน้าขาว */
+html[data-theme="light"] .lp-card,html[data-theme="plant"] .lp-card{color:#09090B;background:radial-gradient(90% 120% at 100% 0%,rgba(233,104,42,.13),transparent 60%),#FFFFFF;box-shadow:0 0 0 1px rgba(9,9,11,.08),0 1px 2px rgba(9,9,11,.04)}
+html[data-theme="light"] .lp-tx small,html[data-theme="plant"] .lp-tx small{color:#C2410C}
+html[data-theme="light"] .lp-tx em,html[data-theme="plant"] .lp-tx em{color:#71717A}
+html[data-theme="light"] .lp-dismiss,html[data-theme="plant"] .lp-dismiss{background:rgba(9,9,11,.05);color:#09090B}
+html[data-theme="light"] .lp-dismiss:hover,html[data-theme="plant"] .lp-dismiss:hover{background:rgba(9,9,11,.1)}
 .lp-cta{position:absolute;left:20px;bottom:14px;z-index:1;display:none}
 @media(min-width:640px){.lp-tx{padding-right:0}.lp-cta{position:relative;left:auto;bottom:auto;display:inline-flex;align-items:center;gap:6px;flex:none;margin-right:150px;padding:10px 16px;border-radius:999px;background:linear-gradient(135deg,#f0a457,#E8943C 45%,#c96d1f);color:#1a0f05;font-weight:600;font-size:13.5px}
   .lp-gl{right:0}.lp-mark{right:52px}}
@@ -1391,6 +1399,8 @@ html[data-theme="dark"] .ib-av.cen{box-shadow:inset 0 0 0 1px rgba(255,255,255,.
 /* มือถือ: แถบล่างยังอยู่เหนือหน้าข้อความ (เหมือนแท็บแชตของแอปแชต) และแท็บแชตสว่าง */
 @media(max-width:760px){
   body:has(.bs.on.inbox) #mnav{z-index:1100}
+  /* แชตเป็นแท็บ: ออกด้วยแถบล่างเหมือนแท็บอื่น ไม่มี ✕ ซ้ำกับปุ่มย้อน (ปุ่มย้อนโผล่เฉพาะตอนเปิดซ้อนจากหน้าอื่น) */
+  .bs.inbox #bsX{display:none}
   .bs.inbox .bd{padding-bottom:calc(var(--m-nav,64px) + var(--m-nav-gap,12px) + 28px + env(safe-area-inset-bottom))}
   /* แชตเป็นแท็บหนึ่งของแถบล่าง: สลับมาแบบแท็บ (จางเข้า ยกขึ้นนิดเดียว) ไม่ใช่แผ่นเลื่อนขึ้นทับพร้อมพื้นมืดเหมือนป๊อปอัป */
   .bs.inbox .bg{display:none}
@@ -2872,7 +2882,7 @@ a.mtab{text-decoration:none}
 </style>
 <!-- ห้ามวาดเฟรมแรกก่อนแถบล่างพร้อม — เดิมหน้าใหม่ขึ้นมาก่อนแล้วแถบตามมาทีหลัง (Chrome 124+, ที่อื่นข้าม) -->
 <link rel="expect" href="/#mnav0" blocking="render">
-<link rel="stylesheet" href="stability.css?v=2026-10-27-zoom">
+<link rel="stylesheet" href="stability.css?v=2026-10-31-tabs">
 <link rel="stylesheet" href="/primary-material.css?v=1">
 <link rel="stylesheet" href="home-layout.css?v=3">
 <link rel="stylesheet" href="home-stages.css?v=7">
@@ -6558,10 +6568,11 @@ async function jobs(all){
       const sec=(t,n,rows)=>rows.length?`<p class="jw-sec"><span>${t}</span>${n?`<em>${n}</em>`:""}</p><div class="jw-list">${rows.join("")}</div>`:"";
       const any=H.act.length||H.live.length||hist.length;
       sheet({title:T("งานทั้งหมด","All jobs"),url,body:msgs+(any?sec(T("ต้องทำตอนนี้","Needs you"),H.act.length,H.act.map(row))+sec(T("กำลังดำเนินการ","In progress"),0,H.live.map(row))+sec(T("จบแล้ว","Finished"),0,hist.map(hRow))
-        :'<div class="empty"><i class="ti ti-clipboard"></i><b>ยังไม่มีงาน</b>เลือกช่างแล้วกดขอราคา</div>'),
+        :`<div class="empty"><i class="ti ti-clipboard"></i><b>ยังไม่มีงาน</b>เลือกช่างแล้วกดขอราคา<button class="lx-cta" type="button" data-newpost>${T("ประกาศหาช่าง","Post a job")}</button></div>`),
         mount(b){b.querySelectorAll("[data-u]").forEach(x=>x.onclick=()=>Nav.go(x.dataset.u));
           b.querySelectorAll("[data-th]").forEach(x=>x.onclick=()=>openThread(x.dataset.th));
-          b.querySelector("[data-inbox]")?.addEventListener("click",()=>inbox())}});
+          b.querySelector("[data-inbox]")?.addEventListener("click",()=>inbox());
+          b.querySelector("[data-newpost]")?.addEventListener("click",()=>openPostForm("","",{}))}});
       return;
     }
     sheet({title:all?"งานทั้งหมด":"งานของฉัน",url,body:msgs+(L.length?L.map((j,i)=>{
@@ -6570,10 +6581,11 @@ async function jobs(all){
       return `<button class="jl" data-j="${j.id}" style="animation-delay:${i*35}ms"><span class="av sq" style="--c1:${PALETTE[i%PALETTE.length]}">${initial(j.techName)}</span>
         <span class="jb"><b>${esc(j.side==="technician"?j.car:j.techName)}</b><small>${role}${esc(j.symptom)}</small><span class="pill ${cls}">${j.test?"ทดสอบ · ":""}${STATUS[j.status]||j.status}${j.needsMe?" · รอคุณ":""}</span></span>
         ${j.unread?`<span class="ub">${j.unread}</span>`:'<i class="ti ti-chevron-right" style="color:var(--faint)"></i>'}</button>`}).join("")
-      :'<div class="empty"><i class="ti ti-clipboard"></i><b>ยังไม่มีงาน</b>เลือกช่างแล้วกดขอราคา</div>'),
+      :`<div class="empty"><i class="ti ti-clipboard"></i><b>ยังไม่มีงาน</b>เลือกช่างแล้วกดขอราคา<button class="lx-cta" type="button" data-newpost>${T("ประกาศหาช่าง","Post a job")}</button></div>`),
       mount(b){b.querySelectorAll("[data-j]").forEach(x=>x.onclick=()=>openJob(x.dataset.j,true));
         b.querySelectorAll("[data-th]").forEach(x=>x.onclick=()=>openThread(x.dataset.th));
-        b.querySelector("[data-inbox]")?.addEventListener("click",()=>inbox())}});
+        b.querySelector("[data-inbox]")?.addEventListener("click",()=>inbox());
+        b.querySelector("[data-newpost]")?.addEventListener("click",()=>openPostForm("","",{}))}});
   }catch(e){$("bsB").innerHTML=`<div class="empty"><i class="ti ti-cloud-off"></i><b>${esc(e.message)}</b></div>`}
 }
 /* งานของฉันอยู่ในกระดิ่งแล้ว — ปุ่มเดิมเปิดแผงกระดิ่ง (ไม่มีกระดิ่งบนจอ = เปิดรายการงานทั้งหมด) */
@@ -7303,7 +7315,7 @@ function inboxBody(list,state){
   return pin+err+(studio?`<button class="ib-studio" type="button" id="ibStudio"><i class="ti ti-building-store"></i>${T(`ลูกค้าทักร้านของคุณ ${studio} ข้อความ — เปิดใน Studio`,`${studio} customer message${studio>1?"s":""} for your shop — open Studio`)}<i class="ti ti-chevron-right"></i></button>`:"")
     +(list===null?'<div class="skel" style="margin-top:12px"></div><div class="skel" style="margin-top:10px"></div>'
     :list.length?`<div class="ib-list">${list.map(ibRow).join("")}</div>`
-    :`<div class="ib-empty"><i class="ti ti-message-circle"></i><b>${T("ยังไม่มีแชตกับช่าง","No chats with mechanics yet")}</b><p>${T("กด ทักช่าง ที่หน้าบริการหรือหน้าร้าน แล้วห้องคุยจะเก็บไว้ที่นี่","Tap Message on a service or shop — the chat will be kept here")}</p></div>`);
+    :`<div class="ib-empty"><i class="ti ti-message-circle"></i><b>${T("ยังไม่มีแชตกับช่าง","No chats with mechanics yet")}</b><p>${T("กด ทักช่าง ที่หน้าบริการหรือหน้าร้าน แล้วห้องคุยจะเก็บไว้ที่นี่","Tap Message on a service or shop — the chat will be kept here")}</p><button class="lx-cta" type="button" id="ibPost">${T("ประกาศหาช่าง","Post a job")}</button></div>`);
 }
 function wireInbox(b){
   b.querySelector("[data-ai]").onclick=e=>{e.preventDefault();if(window.CendonPaint)CendonPaint.prepare("/chat");location.href="/chat"};
@@ -7311,11 +7323,12 @@ function wireInbox(b){
   if($("ibLogin"))$("ibLogin").onclick=()=>needLogin();
   if($("ibStudio"))$("ibStudio").onclick=()=>{closeSheet();openStudio();setTimeout(()=>setTab2("messages"),0)};
   if($("ibRetry"))$("ibRetry").onclick=()=>inbox();
+  if($("ibPost"))$("ibPost").onclick=()=>openPostForm("","",{});
 }
 /* กล่องข้อความที่เปิดมาจากหน้าอื่นของแอป (แท็บแชตในการาจ/นิตยสาร/ร้านค้า/บัญชี) — ปิดแล้วกลับหน้าเดิม ไม่ตกมาหน้าแรก */
 var IB_FROM=(()=>{try{const r=new URL(document.referrer);return r.origin===location.origin&&/^\/(garage|news|spares|profile|chat)(\/|$)/.test(r.pathname)&&/^\/messages(\/|$)/.test(location.pathname)?r.pathname:null}catch(e){return null}})();
 async function inbox(){
-  const paint=(list,state)=>{sheet({title:T("ข้อความ","Messages"),url:"/messages",full:true,inbox:true,body:inboxBody(list,state),mount:wireInbox});
+  const paint=(list,state)=>{sheet({title:T("แชต","Chat"),url:"/messages",full:true,inbox:true,body:inboxBody(list,state),mount:wireInbox});
     /* ให้แผ่นวางเต็มจอก่อน (ตอนยังปิดการเลื่อนอยู่) แล้วค่อยเปิดหน้าข้างหลัง — หน้าแรกจึงไม่โผล่ระหว่างทาง */
     const de=document.documentElement;if(de.classList.contains("ib-boot")){void $("bs").offsetHeight;de.classList.remove("ib-boot")}};
   const read=uid=>{try{return JSON.parse(localStorage.getItem(IBK(uid))||"null")}catch(e){return null}};
@@ -8886,7 +8899,7 @@ async function pullCars(){
   navPaint();
 })();
 </script>
-<script src="mobile-ui.js?v=2" defer></script>
+<script src="mobile-ui.js?v=3" defer></script>
 <script src="/cloud-swap.js?v=5" defer></script>
 <script src="home-stages.js?v=6" defer></script>
 <script type="speculationrules">

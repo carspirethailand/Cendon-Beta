@@ -4,7 +4,7 @@
    หน้าเว็บเป็นไฟล์เดียวที่เปลี่ยนบ่อย จึงถามเน็ตก่อนเสมอ (ไม่งั้นผู้ใช้จะติดอยู่กับเวอร์ชันเก่า)
    แต่รอแค่ครู่เดียว — เน็ตมือถือช้า/ค้าง ต้องไม่ทำให้แอปค้างหน้าจอโหลด
    ══════════════════════════════════════════════════════════════════ */
-const CACHE = 'cendon-v418-splash';
+const CACHE = 'cendon-v419-manifest';
 /* หน้าเว็บที่โหลดสำเร็จล่าสุด แยกตู้ไว้และ "ไม่ลบตอนอัปเดตเวอร์ชัน"
    เดิมทุกครั้งที่ deploy ตู้เก่าถูกล้างหมด เปิดแอปครั้งแรกหลังอัปเดตจึงไม่มีของสำรอง
    ต้องรอเน็ตอย่างเดียว — เน็ตมือถือช้าเมื่อไรก็ค้างหน้าจอโหลดของมือถือ */
@@ -87,6 +87,9 @@ self.addEventListener('fetch', (e) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;   // API และ CDN ปล่อยผ่าน
   if (/^\/api(?:\/|$)/.test(url.pathname) || req.headers.has('Authorization') || /^\/(?:handbookparts\.json|HANDBOOK\.md)\/?$/i.test(url.pathname)) return;
+  /* ไฟล์ตั้งค่าแอป (manifest) กับไอคอนที่มันอ้าง ต้องมาจากเซิร์ฟเวอร์ตรงเสมอ: Chrome อ่านไฟล์พวกนี้ผ่าน service worker ตอนติดตั้งแอปและตอนเช็กอัปเดต
+     ถ้าตอบจากแคชก่อน (stale-while-revalidate) Chrome จะได้รุ่นก่อนหน้า → ติดตั้งใหม่ก็ยังได้หน้าเปิด/ไอคอน/โหมดจอเก่า */
+  if (/^\/(?:manifest\.webmanifest|icon192\.png|icon512\.png|icon-splash\.png|iconmaskable\.png)$/.test(url.pathname)) return;
   const appPart=url.pathname.replace(/\.html$/,'').split('/')[1]||'';
   if(new Set(['','index','garage','news','spares','profile','chat',...DEEP_HOME]).has(appPart)&&appPart!=='trip')return openAppPage(e,url);
   const isPage = shellOf(url.pathname) !== null && (req.mode === 'navigate' || /\.html$/.test(url.pathname) || !req.destination);

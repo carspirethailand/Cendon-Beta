@@ -74,3 +74,13 @@ test('no second opening screen: the page only holds Android\'s frame until Home 
   assert.ok(!/getElementById\('appOpening'\)\.hidden=true/.test(app), 'every exit goes through openingDone');
   assert.ok(shell.includes('/app-navigation.js?v=9') && sw.includes("'./app-navigation.js?v=9'") && shell.includes('/app-navigation.css?v=5') && sw.includes("'./app-navigation.css?v=5'"));
 });
+
+test('install settings and their icons always come from the server, never the offline cache', () => {
+  /* Chrome อ่าน manifest/ไอคอนผ่าน service worker ตอนติดตั้งและตอนเช็กอัปเดต — ถ้าตอบจากแคชก่อน จะได้รุ่นก่อนหน้า (ติดตั้งใหม่ก็ยังสี่เหลี่ยมส้ม/ไม่เต็มจอ) */
+  const sw = r('sw.js'), m = JSON.parse(r('manifest.webmanifest'));
+  const fetchStart = sw.indexOf("self.addEventListener('fetch'");
+  const bypass = sw.indexOf("if (/^\\/(?:manifest\\.webmanifest|icon192\\.png|icon512\\.png|icon-splash\\.png|iconmaskable\\.png)$/.test(url.pathname)) return;");
+  assert.ok(fetchStart > 0 && bypass > fetchStart, 'passed straight to the network');
+  assert.ok(bypass < sw.indexOf('e.respondWith(asset(e, req))'), 'before the cache-first asset handler');
+  for (const i of m.icons) assert.ok(new RegExp('\\|' + i.src.replace('./', '').replace('.', '\\\\.') + '\\||\\(\\?:' + i.src.replace('./', '').replace('.', '\\\\.') + '\\||\\|' + i.src.replace('./', '').replace('.', '\\\\.') + '\\)').test(sw.slice(bypass, bypass + 200)), i.src + ' bypasses the cache');
+});

@@ -27,7 +27,7 @@ function ready(ns,localHistory){const r=frames.get(ns);if(r&&wrongDocument(r)){r
     if(r.el===initial&&!busy&&barba){barba.history.add(localHistory.root,'barba','replace');for(const u of localHistory.layers)barba.history.add(u,'barba','push');current=localHistory.layers.at(-1);}
     else if(busy)r.el.contentWindow.CendonView?.adoptSingleEntry();
   }
-  r.ready=true;r.el.classList.remove('is-preparing');if(ns===active){openingDone();tint();}for(const wake of [...r.waiters])wake();
+  r.ready=true;r.el.classList.remove('is-preparing');if(ns===active){openingDone();tint();schedulePrewarm();}for(const wake of [...r.waiters])wake();
 }}
 function layer(ns,url,action){
   if(!barba||busy||ns!==active||namespace(url,origin)!==ns)return;
@@ -96,9 +96,9 @@ function waitReady(r,url){return new Promise((resolve,reject)=>{const start=Date
   if(!r.el.isConnected||r.failed||Date.now()-start>18000)return done(Error('view-unavailable'));
   timer=setTimeout(check,40);
 }r.waiters.add(check);check();});}
-async function prepare(url){
+async function prepare(url,background=false){
   const ns=namespace(url,origin);let r=frames.get(ns);
-  if(!r){frames.get(active)?.el.contentWindow.CendonPaint?.prepare(url);const el=D.createElement('iframe');el.className='app-view is-preparing';el.dataset.cendonView=ns;el.title='Cendon';el.allow='camera; microphone; geolocation; autoplay; clipboard-write; fullscreen';r=record(el,url);el.addEventListener('load',()=>{if(!el.isConnected)return;let registered=false;try{registered=!!el.contentWindow?.CendonView;}catch{}if(!registered){r.failed=true;for(const wake of [...r.waiters])wake();}});el.src=url;D.getElementById('appViews').append(el);}
+  if(!r){frames.get(active)?.el.contentWindow.CendonPaint?.prepare(url);const el=D.createElement('iframe');el.className='app-view is-preparing';el.inert=background;el.dataset.cendonView=ns;el.title='Cendon';el.allow='camera; microphone; geolocation; autoplay; clipboard-write; fullscreen';r=record(el,url);el.addEventListener('load',()=>{if(!el.isConnected)return;let registered=false;try{registered=!!el.contentWindow?.CendonView;}catch{}if(!registered){r.failed=true;for(const wake of [...r.waiters])wake();}});el.src=url;D.getElementById('appViews').append(el);}
   await waitReady(r,url);
   // Compare the view's real location too: a stale record would reveal it on the wrong layer.
   let at=r.url;try{at=r.el.contentWindow.location.href;}catch{}
@@ -118,10 +118,33 @@ function activate(r,url){
     was.el.classList.add('is-leaving');r.el.classList.remove('is-entering');void r.el.offsetWidth;r.el.classList.add('is-entering');
     clearTimeout(r.fade);r.fade=setTimeout(()=>{r.el.classList.remove('is-entering');for(const f of frames.values())if(f!==frames.get(active))f.el.classList.remove('is-leaving');},240);
   }
+  // ตัวเลือกแท็บล่าง: อ่านตำแหน่งในหน้าที่กำลังจะออก แล้วให้หน้าใหม่เลื่อนต่อจากตรงนั้นระหว่างจางเข้า (ดูเป็นชิ้นเดียวที่ไหลไป)
+  let navFrom=null;if(was&&was!==r)try{navFrom=was.el.contentWindow.CendonNav?.x();}catch{}
   // Never move a live iframe to another node: moving it restarts its document.
   for(const [name,f]of frames){const on=name===ns;f.el.classList.toggle('is-active',on);f.el.classList.remove('is-preparing');f.el.inert=!on;f.el.contentWindow.CendonView?.setHidden(!on);}
+  if(typeof navFrom==='number')try{r.el.contentWindow.CendonNav?.slideFrom(navFrom);}catch{}
   active=ns;current=url;r.used=Date.now();openingDone();
   D.title=r.el.contentDocument?.title||'Cendon';tint();callUI();evict();
+}
+// แท็บหลักเตรียมไว้ล่วงหน้า: แท็บที่ยังไม่เคยเปิดต้องโหลดและรันสคริปต์ทั้งหน้าตอนกด (วัดได้ 0.6–1.3 วิเมื่อ CPU ช้าแบบมือถือ) ส่วนครั้งที่สองแค่ ~0.1 วิ
+// จึงเตรียม การาจ · นิตยสาร · บัญชี ทีละหน้าเบื้องหลัง (ซ่อน กดไม่ได้) หลังหน้าแรกพร้อมและเครื่องว่าง · ข้ามเมื่อ: เครื่องแรมน้อย ประหยัดเน็ต/2G
+// แอปอยู่เบื้องหลัง ผู้ใช้กำลังเปลี่ยนหน้า หรือสิทธิ์ตำแหน่งยังไม่ถูกตัดสิน (หน้าพวกนี้ขอตำแหน่งตอนเปิดเพื่อพยากรณ์อากาศ — ห้ามมีป๊อปอัปโผล่ตอนผู้ใช้อยู่หน้าแรก)
+// แชต AI ไม่เตรียม (อาจไปหยิบงาน AI ที่ค้างอยู่) · เตรียมไม่สำเร็จ = ทิ้งเฟรมนั้น แล้วกดจริงค่อยโหลดแบบเดิม
+const PREWARM=['garage','news','profile'];let prewarmPlanned=false;
+const idle=ms=>new Promise(r=>setTimeout(()=>'requestIdleCallback'in W?requestIdleCallback(r,{timeout:2000}):r(),ms));
+function schedulePrewarm(){if(prewarmPlanned)return;prewarmPlanned=true;prewarm().catch(()=>{});}
+async function prewarm(){
+  const c=navigator.connection;
+  if(limit<6||c?.saveData||/2g/.test(c?.effectiveType||''))return;
+  let geo=null;try{geo=await navigator.permissions?.query({name:'geolocation'});}catch{}
+  if(!geo||geo.state==='prompt')return;
+  for(const ns of PREWARM){
+    await idle(800);
+    if(frames.has(ns))continue;
+    if(busy||queued||D.hidden||frames.size>=limit)return;
+    try{const r=await prepare(new URL(ROOTS[ns],origin).href,true);if(ns!==active)r.el.contentWindow.CendonView?.setHidden(true);}
+    catch{const r=frames.get(ns);if(r&&!r.ready&&ns!==active&&!calls.has(ns)&&!authOwners.has(ns)){try{r.el.contentWindow.CendonView?.disposeAuth?.();}catch{}r.el.remove();frames.delete(ns);}return;}
+  }
 }
 // หน้าเปิดแอป (#appOpening อยู่บนสุด) = ภาพเดียวกับหน้าเปิดของ Android ต่อเนื่องจนหน้าแรกพร้อม แล้วจางออกทันที (ไม่มีจังหวะเล่นของตัวเอง)
 // ปล่อยการกดผ่านตั้งแต่เริ่มจาง · ซ่อนจริงหลังจาง (hidden คือสัญญาณ "เปิดเสร็จ")

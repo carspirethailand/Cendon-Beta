@@ -88,6 +88,7 @@ function mountNav(){
   const h=navHTML();
   if(n.dataset.h!==h){ n.innerHTML=h; n.dataset.h=h; if(n.querySelector('[data-mslot="account"]'))delete n.querySelector('[data-mslot="account"]').dataset.av }
   paintAvatar();
+  placeInd(true);watchInbox();
 }
 
 const FILES={home:"/",garage:"/garage",magazine:"/news",shop:"/spares",profile:"/profile"};
@@ -118,6 +119,36 @@ function go(k){
   if(f){ if(window.CendonPaint)CendonPaint.prepare(f);location.href=f; return }
   try{ if(typeof window.switchView==="function")window.switchView(k) }catch(e){}
 }
+
+/* ตัวเลือกแท็บ = พื้นสีชิ้นเดียว (.mt-ind) ที่เลื่อนไปอยู่ใต้ไอคอนแท็บที่เปิดอยู่ — เปลี่ยนแท็บแล้วไหลไปตำแหน่งใหม่ ไม่กระโดด
+   ในหน้าเดียวกัน (แชตเปิดเป็นแผ่นบนหน้าแรก) เลื่อนเอง · ข้ามหน้า (แต่ละแท็บเป็นเอกสารแยกใน shell) shell ส่งตำแหน่งเดิมมาให้ทาง CendonNav.slideFrom
+   ตอนเปิดหน้านี้ ระหว่างหน้าจางเข้า · เลื่อนแค่ transform (ไม่คำนวณหน้าใหม่) · ลดการเคลื่อนไหว = ย้ายทันที */
+const IND_CSS="#mnav .mt-ind{position:absolute;left:0;top:0;width:38px;height:26px;border-radius:13px;pointer-events:none;"+
+  "background:color-mix(in srgb,var(--accent,#D9733C) 20%,transparent);will-change:transform}"+
+  "@supports not (color:color-mix(in srgb,red 50%,blue)){#mnav .mt-ind{background:rgba(217,115,60,.20)}}"+
+  "#mnav .mt-ind.go{transition:transform .4s cubic-bezier(.22,1,.36,1)}"+
+  "#mnav.has-ind .mtab .mt-i{background:transparent!important}"+
+  "#mnav.has-ind .mtab{transition:color .25s ease}"+
+  "@media (prefers-reduced-motion:reduce){#mnav .mt-ind.go,#mnav.has-ind .mtab{transition:none}}";
+/* แท็บที่ "ดูเหมือนเปิดอยู่": แผ่นแชตเปิดบนหน้าแรก = แชต ไม่งั้นแท็บของหน้านี้ */
+function indTarget(n){return (D.querySelector(".bs.on.inbox")&&n.querySelector('[data-mnav="chat"]'))||n.querySelector(".mtab.on")}
+function indSpot(n){const t=n&&indTarget(n),i=t&&t.querySelector(".mt-i");return i?{x:t.offsetLeft+i.offsetLeft,y:t.offsetTop+i.offsetTop,w:i.offsetWidth,h:i.offsetHeight}:null}
+let indAt=null;
+function placeInd(anim,from){
+  const n=$("mnav");if(!n||!n.offsetWidth)return;
+  if(!$("mtIndCss")){const st=D.createElement("style");st.id="mtIndCss";st.textContent=IND_CSS;D.head.appendChild(st)}
+  let ind=n.querySelector(".mt-ind");
+  if(!ind){ind=D.createElement("i");ind.className="mt-ind";ind.setAttribute("aria-hidden","true");n.prepend(ind);n.classList.add("has-ind");indAt=null}
+  const s=indSpot(n);if(!s){ind.style.opacity="0";indAt=null;return}
+  ind.style.opacity="";ind.style.width=s.w+"px";ind.style.height=s.h+"px";
+  if(typeof from==="number"){ind.classList.remove("go");ind.style.transform=`translate(${from}px,${s.y}px)`;getComputedStyle(ind).transform;indAt=from}
+  ind.classList.toggle("go",!!anim&&indAt!==null&&indAt!==s.x);
+  ind.style.transform=`translate(${s.x}px,${s.y}px)`;indAt=s.x;
+}
+/* แผ่นแชตบนหน้าแรกเปิด/ปิด = ตัวเลือกเลื่อนตาม (ดูแค่คลาสของแผ่นนั้น ไม่ดูทั้งหน้า) */
+let inboxWatch=null;
+function watchInbox(){const bs=$("bs");if(!bs||inboxWatch)return;inboxWatch=new MutationObserver(()=>placeInd(true));inboxWatch.observe(bs,{attributes:true,attributeFilter:["class"]})}
+window.CendonNav={x(){const s=indSpot($("mnav"));return s?s.x:null},slideFrom(x){if(typeof x==="number")placeInd(true,x)}};
 
 /* แท็บบัญชีโชว์รูปโปรไฟล์จริงเมื่อเข้าระบบแล้ว เหมือน Grab กับ Uber
    คนจำหน้าตัวเองได้เร็วกว่าจำไอคอนคนทั่วไป */

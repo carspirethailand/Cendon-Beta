@@ -20,4 +20,5 @@ test('early presentation never overrides account gates or deep-route readiness',
 test('Home decorative work respects logical visibility independently of a background call',()=>{
  const home=readFileSync(new URL('../index.html',import.meta.url),'utf8'),fx=readFileSync(new URL('../fx3d.js',import.meta.url),'utf8');
  assert.ok(home.includes('CendonView.visible'));assert.ok(fx.includes('CendonView.visible'));assert.ok(home.includes('cancelIdleCallback'));
+ const skyStart=home.indexOf('const HSKY='),sky=home.slice(skyStart,home.indexOf('/* ═══ ช่องค้นหา',skyStart));assert.ok(sky.includes('!foreground()'));assert.ok(sky.includes('CendonView.visible'),'the previous Home stops drawing particles while the next view loads');
 });

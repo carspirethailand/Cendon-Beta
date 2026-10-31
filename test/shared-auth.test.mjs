@@ -24,6 +24,13 @@ test('back/forward cache pauses and restores each live subscription exactly once
 test('a missing live donor leaves the normal SDK/auth path intact',()=>{
  const f=fixture();f.parent.CendonApp.shareFirebase=()=>null;assert.equal(f.window.CendonView.reuseFirebase('cendon-1'),false);assert.equal(f.window.CendonView.sharedAuth,false);assert.equal(f.window.firebase,undefined);
 });
+
+test('late history callbacks from a hidden/preparing view cannot rewind the active page',()=>{
+ const f=fixture(),visits=[];f.parent.history.go=n=>visits.push(n);f.parent.CendonApp.traversal=()=>{};f.window.dispatchEvent=()=>{};
+ f.window.CendonView.history.go(-1);assert.equal(visits.length,0);
+ f.window.CendonView.setHidden(false);f.parent.CendonApp.loading=true;f.window.CendonView.history.go(-1);assert.equal(visits.length,0);
+ f.parent.CendonApp.loading=false;f.window.CendonView.history.go(-1);assert.deepEqual(visits,[-1]);
+});
 test('host never shares cached identity, an auth proxy, wrong owner/project, frozen or unready document',()=>{
  const f=fixture(),owners=new Set(),w={firebase:f.sdk,spireAuth:f.auth,CendonScope:{owner:()=> 'live-owner',frozen:()=>false}},r={ready:true,el:{isConnected:true,contentWindow:w}},frames=new Map([['home',r]]),context={frames,authOwners:owners};
  vm.runInNewContext(app.slice(app.indexOf('function shareFirebase('),app.indexOf('function showError('))+';globalThis.share=shareFirebase;',context);

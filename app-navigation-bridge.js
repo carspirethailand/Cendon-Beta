@@ -32,7 +32,12 @@
     replaceState(state,title,url){replace(state,title,url);if(W.Nav?.started)P.CendonApp?.layer(ns,W.location.href,'replace');else initRoot=W.location.href;},
     // Frame-only URL sync before the host traverses its own history.
     local(state,title,url){replace(state,title,url);P.CendonApp?.track?.(ns,W.location.href);},
-    go(n){P.CendonApp?.traversal?.(ns);P.history.go(n);}
+    go(n){
+      // A late sheet-close/repair timer in a hidden or outgoing view must not
+      // rewind the active page's history. Intentional navigation still uses go().
+      if(hidden||P.CendonApp?.loading)return;
+      P.CendonApp?.traversal?.(ns);P.history.go(n);
+    }
   };
   const host=()=>P.CendonApp||P.CendonAppBoot;
   const isApp=u=>P.CendonApp?.namespace(u)||/^\/(?:$|index(?:\.html)?$|garage(?:[/.?]|$)|chat(?:[/.?]|$)|news(?:[/.?]|$)|spares(?:[/.?]|$)|profile(?:[/.?]|$)|studio(?:[/?]|$)|join(?:[/?]|$)|messages(?:[/?]|$)|jobs(?:[/?]|$))/.test(new URL(u,W.location).pathname);
@@ -45,7 +50,9 @@
   async function navigate(raw){
     const u=new URL(raw,W.location),clean=p=>p.replace(/\.html$/,'').replace(/\/$/,'')||'/';
     if(clean(u.pathname)===clean(W.location.pathname)&&u.search===W.location.search&&u.hash===W.location.hash)return;
-    if(W.CendonPageEntry){await W.CendonPageEntry(u.href);return;}
+    // Query intents may be handled by the page. An unhandled path must still
+    // reach Nav; otherwise every deep link into an already-open Chat was ignored.
+    if(W.CendonPageEntry&&await W.CendonPageEntry(u.href)!==false)return;
     // Primary controls may already be usable while Nav's deferred feature
     // registry is still parsing. Keep a requested deep link, not a false error.
     if(W.CendonPageCore?.ready()&&!W.Nav?.started&&D.readyState==='loading'){

@@ -7212,10 +7212,10 @@ function runEntry(){
    Firebase, an existing conversation, or the active voice transport. */
 window.CendonPageEntry=async raw=>{
   const q=new URL(raw,location.href).searchParams;
-  if(!q.size)return;
+  if(!q.size)return false;
   const car=q.get("car");if(car&&garage().some(c=>String(c.id)===car))pickCar(car);
   pendingEntry={attach:q.get("attach"),starter:q.get("starter"),session:q.get("session"),pane:q.get("pane"),q:q.get("q"),send:q.get("send")==="1"};
-  entered=false;runEntry();
+  entered=false;runEntry();return true;
 };
 window.addEventListener("cendon:view-active",()=>{
   if(featureJob())runFeatureJob().catch(e=>toast(e.message,"ti-alert-triangle"));

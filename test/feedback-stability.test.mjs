@@ -14,7 +14,7 @@ test('desktop Chat has no floating bell, popups do not animate and live call vis
 test('cold car images paint color in the same SVG image operation, never a second CSS mask',()=>{
   const page=read('garage.html'),code=page.slice(page.indexOf('function carArt(k,color){'),page.indexOf('function colorDots('));
   assert.match(code,/feColorMatrix/);assert.match(code,/<image href=/);assert.doesNotMatch(code,/mask-image/);
-  assert.match(page,/Math\.min\(1,640\/im\.naturalWidth\)/);
+  assert.doesNotMatch(code,/tintURL|toDataURL/,'the same-operation SVG is also the warm path, not an initial placeholder before synchronous PNG encoding');
 });
 test('GPS sessions are bound to a selected car and user; estimated distance cannot become a confirmed odometer',()=>{
   for(const p of ['chat.html','garage.html']){const s=read(p);assert.match(s,/dv\.carId=selected\.id;dv\.owner=owner/);assert.match(s,/if\(car\(\)\?\.id!==dv\.carId/);assert.doesNotMatch(s,/confirm\(c,Math\.round\(cur\+dv\.saved\.km\),"manual"\)/);assert.match(s,/Enter the actual parked dashboard reading/);}

@@ -64,7 +64,7 @@ Nav.route({path:":tab",parent:"car",test:p=>CLTABS.includes(p.tab)||Object.proto
 
 /* ── ตั้งค่า: หน้าเดียวเลื่อนจบ · /manage = หน้าย่อยรีเซ็ต/ปิดใช้งาน · ลิงก์แท็บเก่า (general acct usage fb learn) ยังเปิดได้ ── */
 const SETS=["general","acct","usage","fb","learn","manage","notif"];
-const setGo=async k=>{await wait(()=>window.CendonSettings&&D.querySelector("#v-settings.on #stMain"));if(window.CendonSettings)window.CendonSettings.go(k)};
+const setGo=async k=>{if(PAGE!=="profile"&&window.CendonTabs?.on&&CendonTabs.go("/profile/"+k))return;await wait(()=>window.CendonSettings&&D.querySelector("#v-settings.on #stMain"));if(window.CendonSettings)window.CendonSettings.go(k)};
 if(PAGE==="profile"){
   Nav.route({path:":tab",test:p=>SETS.includes(p.tab),open:p=>setGo(p.tab)});
 }else{

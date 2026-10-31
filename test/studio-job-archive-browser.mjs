@@ -12,7 +12,7 @@ const html=`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta nam
 let U={uid:'mech',getIdToken:async()=> 'fixture-mech'},ME={technician:{id:'shop-mech'}},MODE='tech',DT='queue',JOBS=[],THREADS=[],POSTS=[],JOBS_OK=false,JOBS_ERR=null,NEAR=null;
 const API=location.origin,$=id=>document.getElementById(id),T=(th,en)=>en,STATUS={},URGENT_MS=3*3600000;
 const myShop=()=>ME.technician,esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),money=n=>String(n),distHTML=n=>n+' km';
-const toast=s=>{$('notice').textContent=s},formPop=()=>{},fieldOf=()=>'',renderActive=()=>{},renderUsed=()=>{},syncGarage=()=>{},saveSnap=()=>{},bellDiff=()=>{},LiveShare={sync(){}},setTab2=()=>{};
+const ATLAS=null,toast=s=>{$('notice').textContent=s},formPop=()=>{},fieldOf=()=>'',renderActive=()=>{},renderUsed=()=>{},syncGarage=()=>{},saveSnap=()=>{},bellDiff=()=>{},LiveShare={sync(){}},setTab2=()=>{};
 window.openedJobs=[];const openJob=id=>openedJobs.push(id),openPost=()=>{};
 ${part('async function api(path,o){','function needLogin(){')}
 ${part('async function busy(btn,fn){','/* ═══ กล่องเตือน')}

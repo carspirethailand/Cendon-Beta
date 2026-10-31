@@ -34,21 +34,19 @@ try{
   await mkdir(join(root,'.qa'),{recursive:true});
   for(const width of [1280,390,320]){
     const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.setViewportSize({width,height:844});await page.goto(origin+'/fixture');
-    await page.evaluate(()=>CendonFeatureAI.select('listen'));await page.locator('#lgVehicleScope').waitFor();
-    assert.equal(await page.locator('#lgVehicleScope').inputValue(),'');
-    await page.locator('#lgVehicleScope').selectOption('other_confirmed');await page.locator('#lgVehicle_make').fill('Honda');await page.locator('#lgVehicle_model').fill('HR-V');
+    await page.evaluate(()=>CendonFeatureAI.select('listen'));await page.locator('#lgVehiclePill').waitFor();assert.match(await page.locator('#lgVehiclePill').innerText(),/Fortuner/);
+    await page.locator('#lgVehiclePill').click();await page.locator('.va-opt[data-k="x"]').click();await page.locator('#lgVehicleOtherIn').fill('Honda HR-V');await page.locator('#lgVehicleGo').click();
     const job=await page.evaluate(()=>CendonFeatureAI.prepare([{mime:'audio/wav',b64:'UklGRg=='}],'Synthetic question'));
     assert.equal(job.context.car.model,'HR-V');assert.equal(job.context.car.year,undefined);assert.equal(await page.evaluate(()=>carValue.name),'Toyota Fortuner');
     await page.screenshot({path:join(root,'.qa','audio-chat-'+width+'.png'),fullPage:true});
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);assert.deepEqual(errors,[]);checks.push({width,otherCarWithoutGarageWrite:true,overflow:false});await page.close();
   }
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.setViewportSize({width:390,height:844});await page.goto(origin+'/fixture?kind=live');
-  await page.evaluate(()=>document.getElementById('openAudio').click());await page.locator('#ctVehicleScope').waitFor();assert.equal(requests.length,0);
-  await page.locator('#ctStartEar').click();assert.match(await page.locator('#ctChooseError').textContent(),/เลือกรถ/);assert.equal(requests.length,0);
-  await page.locator('#ctVehicleScope').selectOption('other_confirmed');await page.locator('#ctVehicle_make').fill('Honda');await page.locator('#ctVehicle_model').fill('Wave 110i');await page.locator('#ctVehicle_year').fill('2023');await page.screenshot({path:join(root,'.qa','audio-call-confirm.png'),fullPage:true});
-  await page.locator('#ctStartEar').click();await page.locator('#ctOut').waitFor({state:'visible',timeout:30000});
+  await page.evaluate(()=>document.getElementById('openAudio').click());await page.locator('#ctVehiclePill').waitFor();assert.match(await page.locator('#ctVehiclePill').innerText(),/Fortuner/);assert.equal(requests.length,0);
+  await page.locator('#ctVehiclePill').click();await page.locator('.va-opt[data-k="x"]').click();await page.locator('#ctVehicleOtherIn').fill('Honda Wave 110i 2023');await page.screenshot({path:join(root,'.qa','audio-call-confirm.png'),fullPage:true});assert.equal(requests.length,0,'vehicle sheet pauses preparation before recording');
+  await page.locator('#ctVehicleGo').click();await page.locator('#ctOut').waitFor({state:'visible',timeout:30000});
   assert.equal(requests.length,1);assert.equal(requests[0].tool,'ear');assert.equal(requests[0].context.audioVehicle.vehicle.model,'Wave 110i');assert.equal(requests[0].context.audioVehicle.vehicle.year,'2023');assert.equal(requests[0].context.recording.source,'dedicated_microphone');assert.equal(requests[0].context.recording.sampleRate,16000);assert.ok(requests[0].context.recording.durationSeconds>5);assert.ok(requests[0].attachments[0].b64.length>10000);assert.equal(Buffer.from(requests[0].attachments[0].b64,'base64').subarray(0,4).toString(),'RIFF');
-  assert.equal(await page.locator('.ct-cause').count(),1);assert.match(await page.locator('.va-research').textContent(),/ยังไม่ได้อ่าน/);assert.equal(await page.evaluate(()=>carValue.name),'Toyota Fortuner');
+  assert.equal(await page.locator('.ct-cause').count(),1);assert.match(await page.locator('.va-research').textContent(),/ยังตรวจเนื้อหาไม่ได้/);assert.equal(await page.evaluate(()=>carValue.name),'Toyota Fortuner');
   await page.screenshot({path:join(root,'.qa','audio-call-result.png'),fullPage:true});
   assert.deepEqual(errors,[]);assert.ok((await page.evaluate(()=>calls)).some(c=>c.clientContent));await page.evaluate(()=>{tools.dispose();voice.callActive=false;voice.callMicStream?.getTracks().forEach(t=>t.stop());voice.callCtx.close()});
   checks.push({liveVehicleConfirmation:true,rawWavFromFakeMic:true,spokenToolResult:true});

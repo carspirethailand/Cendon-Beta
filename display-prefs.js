@@ -3,24 +3,25 @@
    not reinterpreted. No account data or amounts are sent to the rates provider. */
 (function(W,D){
 'use strict';if(W.CendonDisplayPrefs)return;
-const KEY='cendon_fx_thb_v2',DAY=86400000,raw=new WeakMap();let fx=null,pending=null,scheduled=false;
+const KEY='cendon_fx_thb_v2',DAY=86400000,raw=new WeakMap(),dirtyRoots=new Set(),formats=new Map();let fx=null,pending=null,scheduled=false,painting=null,everConverted=false;
 const read=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch{return null}};
 /* Firebase คืนผู้ใช้ช้า (อ่านสถานะล็อกอินจากเครื่อง ~0.3–1.5 วิ) — ระหว่างนั้นเคยวาดเป็น กม./บาท แล้วค่อยสลับเป็นหน่วยของผู้ใช้
    ใช้หน่วยที่บันทึกไว้ของเจ้าของข้อมูลในเครื่องได้เลย (account-scope.js ล้างข้อมูลทั้งหมดก่อนเมื่อเปลี่ยน/ออกจากบัญชี) */
 function owner(){try{return localStorage.getItem('cendon_signed')==='1'?localStorage.getItem('spire___owner'):null}catch{return null}}
-function prefs(){const cu=W.spireAuth?.currentUser||W.auth?.currentUser,own=cu?null:owner(),u=cu||(own?{uid:own}:null),projected=W.spireSetupRead?.(),stored=read('spire_setup');
+function prefs(){if(painting)return painting.prefs;const cu=W.spireAuth?.currentUser||W.auth?.currentUser,own=cu?null:owner(),u=cu||(own?{uid:own}:null),projected=W.spireSetupRead?.(),stored=read('spire_setup');
   if(typeof u?.uid!=='string'||!u.uid)return {distance:'km',currency:'THB'};
   const p=projected?.uid===u?.uid?projected:stored?.uid===u?.uid?stored:{};
   if(!u||p.uid!==u.uid)return {distance:'km',currency:'THB'};
   return {distance:p.distance==='mi'?'mi':'km',currency:/^[A-Z]{3}$/.test(p.currency||'')?p.currency:'THB'};
 }
-const locale=()=>W.spireLang?.()||'en';
-const number=(v,digits=2)=>new Intl.NumberFormat(locale(),{maximumFractionDigits:digits}).format(v);
+const locale=()=>painting?.locale||W.spireLang?.()||'en';
+function format(options){const key=locale()+JSON.stringify(options);if(!formats.has(key)){if(formats.size>=48)formats.clear();formats.set(key,new Intl.NumberFormat(locale(),options))}return formats.get(key)}
+const number=(v,digits=2)=>format({maximumFractionDigits:digits}).format(v);
 function valid(d){return d&&d.result==='success'&&d.base_code==='THB'&&Number(d.rates?.THB)===1&&Number(d.time_last_update_unix)*1000<=Date.now()+DAY&&Date.now()-Number(d.time_last_update_unix)*1000<7*DAY}
 function rate(c){const n=Number(fx?.rates?.[c]);return valid(fx)&&n>0&&n<1e9?n:null}
 function distance(km){return number(Number(km)/(prefs().distance==='mi'?1.609344:1),2)+' '+(prefs().distance==='mi'?'mi':locale()==='th'?'กม.':'km')}
 function money(thb){const c=prefs().currency,r=c==='THB'?1:rate(c);if(!r)return 'THB '+number(thb);
-  return (c==='THB'?'':'≈ ')+new Intl.NumberFormat(locale(),{style:'currency',currency:c,currencyDisplay:'code',maximumFractionDigits:c==='JPY'||c==='KRW'?0:2}).format(Number(thb)*r);
+  return (c==='THB'?'':'≈ ')+format({style:'currency',currency:c,currencyDisplay:'code',maximumFractionDigits:c==='JPY'||c==='KRW'?0:2}).format(Number(thb)*r);
 }
 async function rates(){if(prefs().currency==='THB')return;if(pending)return pending;
   if(!fx){const cached=read(KEY);if(valid(cached))fx=cached}
@@ -36,9 +37,14 @@ function convert(text){let out=text;
   }return out;
 }
 function paint(){scheduled=false;if(!D.body)return;
-  D.querySelectorAll('[data-distance-km]').forEach(el=>{const km=Number(el.dataset.distanceKm);if(!Number.isFinite(km)||km<0)return;const text=distance(km);if(el.textContent!==text)el.textContent=text});
-  const walker=D.createTreeWalker(D.body,NodeFilter.SHOW_TEXT);let node;
-  while(node=walker.nextNode()){
+  // One preference snapshot per paint, not several localStorage parses per text node.
+  const state={prefs:prefs(),locale:locale()},roots=dirtyRoots.size?[...dirtyRoots]:[D.body];dirtyRoots.clear();painting=state;
+  const convertText=everConverted||state.prefs.distance!=='km'||state.prefs.currency!=='THB';if(convertText)everConverted=true;
+  try{for(const root of roots){if(!root?.isConnected)continue;
+  [...(root.matches?.('[data-distance-km]')?[root]:[]),...(root.querySelectorAll?.('[data-distance-km]')||[])].forEach(el=>{const km=Number(el.dataset.distanceKm);if(!Number.isFinite(km)||km<0)return;const text=distance(km);if(el.textContent!==text)el.textContent=text});
+  if(!convertText)continue;
+  const walker=D.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+  for(let node=root.nodeType===3?root:walker.nextNode();node;node=root.nodeType===3?null:walker.nextNode()){
     const el=node.parentElement;if(!el||el.closest(excluded))continue;
     const old=raw.get(node),original=old&&node.nodeValue===old.out?old.original:node.nodeValue;
     let out=old?.paired?(prefs().distance==='mi'?'mi':original):convert(original);
@@ -50,19 +56,23 @@ function paint(){scheduled=false;if(!D.body)return;
       out=number(Number(original.replace(/,/g,''))/1.609344,2)+' ';raw.set(unitNode,{original:unitOriginal,out:'mi',paired:true});if(unitNode.nodeValue!=='mi')unitNode.nodeValue='mi';
     }
     raw.set(node,{original,out,...(old?.paired?{paired:true}:{})});if(node.nodeValue!==out)node.nodeValue=out;
-  }
+  } }
   const c=prefs().currency,host=D.querySelector('#stMain [data-st="currency"]');let note=D.getElementById('displayRatesNote');
   if(c!=='THB'&&host){
     if(!note){note=D.createElement('aside');note.id='displayRatesNote';note.style.cssText='font:12px/1.5 system-ui;padding:8px 16px;color:inherit;opacity:.7';note.dataset.noPrefs='';host.insertAdjacentElement('afterend',note)}
     const text=rate(c)?(locale()==='th'?'ยอดแปลงเป็นประมาณการ · บันทึกเดิมและช่องกรอกยังใช้หน่วยที่ระบุ · ':'Converted totals are estimates · records and inputs keep their explicit units · '):'THB · '+c+' exchange rate unavailable · ';
     if(note.dataset.text!==text){note.dataset.text=text;note.textContent=text+'Frankfurter'+(fx?' · '+new Date(fx.time_last_update_unix*1000).toLocaleDateString(locale()):'')}
   }else note?.remove();
+  }finally{painting=null}
 }
-function schedule(){if(!scheduled){scheduled=true;requestAnimationFrame(paint)}}
+function schedule(root){if(!root){dirtyRoots.clear();if(D.body)dirtyRoots.add(D.body)}else if(!dirtyRoots.has(D.body)){if(![...dirtyRoots].some(x=>x.contains?.(root))){for(const x of dirtyRoots)if(root.contains?.(x))dirtyRoots.delete(x);dirtyRoots.add(root)}}if(dirtyRoots.size>24){dirtyRoots.clear();dirtyRoots.add(D.body)}if(!scheduled){scheduled=true;requestAnimationFrame(paint)}}
 function boot(){new MutationObserver(changes=>{
-  if(changes.some(m=>{if(m.type==='childList'&&[...m.addedNodes].some(n=>n.nodeType===1&&(n.matches?.('[data-distance-km]')||n.querySelector?.('[data-distance-km]'))))return true;const el=m.target.nodeType===3?m.target.parentElement:m.target;if(!el||el.closest?.(excluded))return false;
-    if(m.type==='characterData'){const old=raw.get(m.target);if(old&&m.target.nodeValue===old.out)return false;return /\d|฿/.test(m.target.nodeValue||'')}
-    return [...m.addedNodes].some(n=>!(n.nodeType===1&&n.matches(excluded))&&/\d|฿/.test(n.textContent||''));}))schedule();
+  for(const m of changes){const el=m.target.nodeType===3?m.target.parentElement:m.target;
+    if(m.type==='childList')for(const n of m.addedNodes){if(n.nodeType===1&&(n.matches?.('[data-distance-km]')||n.querySelector?.('[data-distance-km]')))schedule(n);}
+    if(!el||el.closest?.(excluded))continue;
+    if(m.type==='characterData'){const old=raw.get(m.target);if(old&&m.target.nodeValue===old.out)continue;if(/\d|฿/.test(m.target.nodeValue||''))schedule(el)}
+    else for(const n of m.addedNodes)if(!(n.nodeType===1&&n.matches(excluded))&&/\d|฿/.test(n.textContent||''))schedule(n.nodeType===3?el:n);
+  }
 }).observe(D.body,{childList:true,characterData:true,subtree:true});paint();rates()}
 W.CendonDisplayPrefs=Object.freeze({prefs,distance,money,paint,rate:c=>c==='THB'?1:rate(c),transform:convert,sync:()=>{schedule();return rates()}});
 W.addEventListener('cendon:preferences',()=>{schedule();rates()});W.addEventListener('cendon:auth-ready',()=>{schedule();rates()});

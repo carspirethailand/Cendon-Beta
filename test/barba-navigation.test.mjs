@@ -1,11 +1,16 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {namespace} from '../app-routes.js';
+import {namespace,appUrl} from '../app-routes.js';
 import {appShell,shouldShell,shellResponse} from '../lib/app-shell.mjs';
 test('Barba route allowlist excludes auth, admin, APIs and external navigation',()=>{
  for(const [p,n]of [['/','home'],['/studio/edit','home'],['/messages/123','home'],['/garage/car/spec','garage'],['/chat.html','chat'],['/profile/settings','profile']])assert.equal(namespace(p),n);
  for(const p of ['/login','/launch','/admin','/api/me','/trip/secret','/passport/id','https://evil.invalid/chat','javascript:alert(1)'])assert.equal(namespace(p),null);
+});
+
+test('legacy settings links resolve directly to the current Profile view, preserving same-origin and authorization boundaries',()=>{
+ for(const page of ['garage','news','spares'])for(const tab of ['',...['general','acct','usage','fb','learn','manage','notif'].map(t=>'/'+t)])assert.equal(appUrl('/'+page+'/settings'+tab,'https://fixture.test').pathname,'/profile'+tab);
+ assert.equal(appUrl('https://foreign.test/garage/settings','https://fixture.test'),null);assert.equal(appUrl('/garage/fixture-car/info','https://fixture.test').pathname,'/garage/fixture-car/info');
 });
 test('shell and legacy frame responses cannot recursively wrap each other',()=>{
  const req=(p,h={})=>new Request('https://cendon.test'+p,{headers:h});

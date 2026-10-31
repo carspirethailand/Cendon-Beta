@@ -332,20 +332,23 @@ function sheetHTML(kind){
       <div class="st-sh-btns" style="margin-top:14px"><button type="button" class="st-b1" data-st="do-fb">${t('ส่งความเห็น','Send feedback')}</button>${cancelBtn()}</div><p class="st-msg" id="stShMsg" role="status"></p>`;
   return '';
 }
-let sheetKind='';
+let sheetKind='',sheetVersion=0,sheetCloseTimer=0;
 function sheet(kind){
   const r=sheetRoot(),box=r.querySelector('.st-sh');
+  const version=++sheetVersion;clearTimeout(sheetCloseTimer);r.classList.remove('out');r.inert=false;r.setAttribute('aria-hidden','false');
   sheetKind=kind;lastFocus=D.activeElement;
   box.innerHTML=sheetHTML(kind);
-  if(!r.classList.contains('on')){r.classList.add('on');requestAnimationFrame(()=>requestAnimationFrame(()=>r.classList.add('in')))}
+  if(!r.classList.contains('on')){r.classList.add('on');requestAnimationFrame(()=>requestAnimationFrame(()=>{if(sheetVersion===version&&r.classList.contains('on'))r.classList.add('in')}))}
   const f=box.querySelector('input,textarea')||box.querySelector('[aria-pressed="true"]')||box.querySelector('button');
-  setTimeout(()=>{try{f&&f.focus({preventScroll:kind==='lang'||kind==='currency'})}catch(e){}},80);
+  setTimeout(()=>{try{if(sheetVersion===version&&r.classList.contains('on')&&(!W.CendonView||W.CendonView.visible))f&&f.focus({preventScroll:kind==='lang'||kind==='currency'})}catch(e){}},80);
 }
 function closeSheet(){
   const r=sheetEl;if(!r||!r.classList.contains('on'))return;
-  r.classList.remove('in');sheetKind='';
-  setTimeout(()=>{if(!r.classList.contains('in')){r.classList.remove('on');const b=r.querySelector('.st-sh');if(b)b.innerHTML=''}},260);
-  try{lastFocus&&lastFocus.isConnected&&lastFocus.focus({preventScroll:true})}catch(e){}
+  const version=++sheetVersion;clearTimeout(sheetCloseTimer);r.classList.remove('in','on');r.classList.add('out');r.inert=true;r.setAttribute('aria-hidden','true');sheetKind='';
+  // Logical close is immediate. Keeping `on` during the fade registered a new
+  // history layer, whose late removal rewound whichever page was now active.
+  sheetCloseTimer=setTimeout(()=>{if(sheetVersion===version&&!r.classList.contains('on')){r.classList.remove('out');const b=r.querySelector('.st-sh');if(b)b.innerHTML=''}},260);
+  try{if(!W.CendonView||W.CendonView.visible)lastFocus&&lastFocus.isConnected&&lastFocus.focus({preventScroll:true})}catch(e){}
 }
 /* ปิดแผ่นแล้วค่อยทำต่อ (เช่นเปิดอีกแผ่น) — รอให้ประวัติถอยเสร็จก่อน */
 function closeThen(fn){dismiss('stsheet',closeSheet);setTimeout(fn,300)}

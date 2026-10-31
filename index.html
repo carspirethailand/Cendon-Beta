@@ -3608,7 +3608,8 @@ window.addEventListener('cendon:language-ready',event=>{if(event.detail?.lang===
 
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const money=n=>Number(n||0).toLocaleString(LOC);
+let moneyLocale=null,moneyFormat=null;
+const money=n=>{if(moneyLocale!==LOC){moneyLocale=LOC;moneyFormat=new Intl.NumberFormat(LOC)}return moneyFormat.format(Number(n||0))};
 const ls={get(k,d){try{const v=localStorage.getItem(k),p=v==null?d:JSON.parse(v);return k==="spire_garage"&&window.CendonCars?CendonCars.filter(p):p}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(k==="spire_garage"&&window.CendonCars?CendonCars.filter(v):v))}catch(e){}}};
 
 const CATS=[
@@ -3786,6 +3787,7 @@ $("bsX").onclick=()=>closeSheet();
    = เห็นหน้าหลักแต่แถบล่างไฮไลต์ "แชต" และกดหน้าหลักไม่ไปไหน → ตั้งที่อยู่กลับเป็นหน้าหลักเอง
    รอให้การถอยประวัติของการปิดชั้นเสร็จก่อน (nav.js รอ popstate ไม่เกิน 0.8 วิ) */
 function healUrl(){try{
+  if(document.hidden||window.CendonView&&!CendonView.visible)return;
   if(!window.Nav||!Nav.started||Nav.closing||Nav.opening)return;
   const sheetOn=$("bs").classList.contains("on"),chatOn=$("chat").classList.contains("on");
   if(sheetOn||chatOn)return;
@@ -4690,8 +4692,9 @@ const HSKY=(function(){
     }
     cx.globalAlpha=1;
   }
-  const loop=now=>{raf=0;if(lv<=0.01||!vis||document.hidden)return;draw(now);if(!calm)raf=requestAnimationFrame(loop)};
-  const kick=()=>{if(!raf&&lv>0.01&&vis&&!document.hidden)raf=requestAnimationFrame(loop)};
+  const foreground=()=>!document.hidden&&(!window.CendonView||CendonView.visible);
+  const loop=now=>{raf=0;if(lv<=0.01||!vis||!foreground())return;draw(now);if(!calm)raf=requestAnimationFrame(loop)};
+  const kick=()=>{if(!raf&&lv>0.01&&vis&&foreground())raf=requestAnimationFrame(loop)};
   function level(k,anim){
     lv=k;box.style.transition=anim?"opacity .7s ease":"none";box.style.opacity=k.toFixed(3);
     box.classList.toggle("on",k>0.01);

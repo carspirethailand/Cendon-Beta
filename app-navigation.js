@@ -27,7 +27,7 @@ function ready(ns,localHistory){const r=frames.get(ns);if(r&&wrongDocument(r)){r
     if(r.el===initial&&!busy&&barba){barba.history.add(localHistory.root,'barba','replace');for(const u of localHistory.layers)barba.history.add(u,'barba','push');current=localHistory.layers.at(-1);}
     else if(busy)r.el.contentWindow.CendonView?.adoptSingleEntry();
   }
-  r.ready=true;r.el.classList.remove('is-preparing');if(ns===active)D.getElementById('appOpening').hidden=true;for(const wake of [...r.waiters])wake();
+  r.ready=true;r.el.classList.remove('is-preparing');if(ns===active){D.getElementById('appOpening').hidden=true;tint();}for(const wake of [...r.waiters])wake();
 }}
 function layer(ns,url,action){
   if(!barba||busy||ns!==active||namespace(url,origin)!==ns)return;
@@ -121,7 +121,17 @@ function activate(r,url){
   // Never move a live iframe to another node: moving it restarts its document.
   for(const [name,f]of frames){const on=name===ns;f.el.classList.toggle('is-active',on);f.el.classList.remove('is-preparing');f.el.inert=!on;f.el.contentWindow.CendonView?.setHidden(!on);}
   active=ns;current=url;r.used=Date.now();D.getElementById('appOpening').hidden=true;
-  D.title=r.el.contentDocument?.title||'Cendon';callUI();evict();
+  D.title=r.el.contentDocument?.title||'Cendon';tint();callUI();evict();
+}
+// สีแถบสถานะของมือถือ: มือถืออ่าน theme-color จากเอกสารชั้นนอกสุดนี้เท่านั้น ส่วนแต่ละหน้าตั้งของตัวเองตามธีม (theme.js)
+// คัดลอกสีของหน้าที่เปิดอยู่ขึ้นมา และตามเมื่อหน้านั้นเปลี่ยนธีม — แถบบนจึงกลืนกับหัวหน้าทั้งธีมสว่างและมืด
+const shellTint=D.querySelector('meta[name="theme-color"]');let tintWatch=null;
+function tint(){
+  tintWatch?.disconnect();tintWatch=null;let m=null;
+  try{m=frames.get(active)?.el.contentDocument?.querySelector('meta[name="theme-color"]');}catch{}
+  if(!m||!shellTint)return;
+  const copy=()=>{const c=m.getAttribute('content');if(c&&shellTint.getAttribute('content')!==c)shellTint.setAttribute('content',c);};copy();
+  try{tintWatch=new MutationObserver(copy);tintWatch.observe(m,{attributes:true,attributeFilter:['content']});}catch{}
 }
 function evict(){
   for(const [name,r]of [...frames].sort((a,b)=>a[1].used-b[1].used)){

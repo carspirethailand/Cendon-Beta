@@ -1,0 +1,10 @@
+/* Read-only syntax and static local-resource audit. Dynamic URLs still require
+   browser/provider tests; this never executes page scripts or contacts an API. */
+import {readFile,readdir,stat,writeFile} from 'node:fs/promises';import {resolve,join,dirname} from 'node:path';import {spawnSync} from 'node:child_process';import vm from 'node:vm';
+const root=resolve(import.meta.dirname,'..'),names=(await readdir(root)).filter(n=>/\.(html|js)$/.test(n)),issues=[];let classicScripts=0,moduleScripts=0,filesChecked=0,resources=0,dynamicResources=0;
+for(const file of names){const source=await readFile(join(root,file),'utf8');
+ if(file.endsWith('.js')){const r=spawnSync(process.execPath,['--check',join(root,file)],{encoding:'utf8'});filesChecked++;if(r.status!==0)issues.push({file,type:'syntax',error:(r.stderr||'').slice(0,300)});continue;}
+ for(const [i,m]of [...source.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].entries()){const attrs=m[1];if(/\bsrc\s*=/.test(attrs)||/\btype\s*=\s*["'](?:application\/|speculationrules)/.test(attrs))continue;if(/\btype\s*=\s*["']module["']/.test(attrs)){moduleScripts++;continue}try{new vm.Script(m[2],{filename:file+':script-'+i});classicScripts++}catch(e){issues.push({file,type:'inline-syntax',script:i,error:e.message})}}
+ for(const m of source.matchAll(/<(?:script|link|img)\b[^>]*\b(?:src|href)=["']([^"']+)["']/gi)){const url=m[1];if(!url||/^(?:https?:|data:|blob:|#)/.test(url))continue;if(/\$\{|[<>]|\\|\+/.test(url)){dynamicResources++;continue}const path=url.split(/[?#]/)[0];if(!/\.(?:js|css|json|webmanifest|woff2?|ttf|png|webp|jpe?g|avif|ico|svg)$/.test(path))continue;resources++;try{await stat(resolve(root,path.replace(/^\//,'')))}catch{issues.push({file,type:'missing-static-resource',path})}}
+}
+const result={filesChecked,classicScripts,moduleScripts,staticResourceReferences:resources,dynamicResourceReferencesNotStaticallyResolved:dynamicResources,issues};await writeFile(join(root,'.qa/source-audit.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result));if(issues.length)process.exitCode=1;

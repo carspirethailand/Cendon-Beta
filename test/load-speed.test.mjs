@@ -38,7 +38,7 @@ test('units/currency use the device owner\'s saved preferences before Firebase r
   const d=read('display-prefs.js');
   assert.match(d,/function owner\(\)\{try\{return localStorage\.getItem\('cendon_signed'\)==='1'\?localStorage\.getItem\('spire___owner'\):null\}/);
   assert.match(d,/own=cu\?null:owner\(\),u=cu\|\|\(own\?\{uid:own\}:null\)/);
-  for(const f of ['index','chat','garage','news','profile','spares','admin','plan','handbook'])assert.match(read(f+'.html'),/display-prefs\.js\?v=5/,f);
+  for(const f of ['index','chat','garage','news','profile','spares','admin','plan','handbook'])assert.match(read(f+'.html'),/display-prefs\.js\?v=6/,f);
 });
 
 test('chat enters immediately for the signed-in device owner even without a cached chat user',()=>{
@@ -94,7 +94,7 @@ test('tab keep-alive (test mode): off unless the device opted in, every bottom t
   assert.match(j,/function leaveInbox\(then\)/,'leaving chat closes the inbox so Home shows Home');
   assert.match(j,/e\.stopImmediatePropagation\(\);if\(st\.cendonTab!==cur\)reveal/,'tab history entries are not fed to nav.js');
   for(const f of ['index','garage','news','profile']){const h=read(f+'.html'),head=h.slice(0,h.indexOf('</head>'));
-    assert.equal(head.indexOf('<script src='),head.indexOf('<script src="/app-navigation-bridge.js?v=5">'),f+': Barba bridge runs before the old opt-in router')}
+    assert.equal(head.indexOf('<script src='),head.indexOf('<script src="/app-navigation-bridge.js?v=6">'),f+': Barba bridge runs before the old opt-in router')}
   assert.match(read('mobile-ui.js'),/if\(f&&window\.CendonTabs&&CendonTabs\.go\(f\)\)return;/);
   assert.match(read('mobile-ui.js'),/if\(window\.CendonTabs&&CendonTabs\.go\("\/messages"\)\)return;/);
   assert.match(read('sw.js'),/'\.\/tab-shell\.js\?v=6'/);

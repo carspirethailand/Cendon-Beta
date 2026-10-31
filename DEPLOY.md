@@ -5,8 +5,13 @@
 ## 1. หน้าเว็บ (repo `Cendon-Beta`) — Cloudflare Pages
 
 - push ขึ้น `main` แล้ว Cloudflare Pages deploy ให้เองอัตโนมัติ
+- **ขั้นตอน build ที่ใช้ตั้งแต่ 31 ต.ค. 2026**: Build command `node tools/build-public.mjs`, Build output directory `.pages-output`, Root directory ว่าง (ราก repo) · ใช้ Node 20.11 ขึ้นไป ไม่ต้องติดตั้ง dependency เพิ่ม
+  - ต้องใช้ขั้นตอนนี้ทั้ง Git build และ manual release: แยกโค้ดซ้ำเป็นไฟล์ runtime ตามเนื้อหาเพื่อให้เบราว์เซอร์ใช้แคชร่วมกัน โดยไม่เปลี่ยนลำดับรันหรือหน้าตา
+  - ถ้าปล่อย Build command/output ว่าง การ push ครั้งถัดไปจะนำไฟล์ต้นฉบับไปทับแพ็กเกจที่ปรับความเร็วแล้ว ทำให้การแก้ความเร็วไม่คงอยู่
+  - build คัดลอกเฉพาะ public assets ที่ Git ติดตาม ไม่รวม Backyard, tests, tools, docs, research, credentials หรือไฟล์ข้อมูลภายใน · `functions/` และ `lib/` ยังใช้ build Pages Functions จากราก repo ตามเดิม ไม่ใช่ static assets
+  - ทดสอบ local จาก checkout ใหม่ด้วย `node tools/build-public.mjs` · ไม่รันทับ output เดิมและไม่ลบไฟล์ให้อัตโนมัติ · manual deploy ใช้ `.pages-output` ที่สร้างจาก commit ที่ทดสอบแล้วเท่านั้น
 - **ทุกครั้งที่แก้ไฟล์หน้าเว็บ ให้เปลี่ยน `const CACHE` ใน `sw.js`** ไม่งั้นเครื่องผู้ใช้จะค้างไฟล์เก่า
-- หน้า `/about` `/privacy` `/terms` `/help` สร้างจาก `site/` ด้วย `node site/build.mjs` (ผลลัพธ์ `about.html` ฯลฯ อยู่ในรากเว็บ commit ไปพร้อมกัน — Cloudflare ไม่ต้องตั้ง build command)
+- หน้า `/about` `/privacy` `/terms` `/help` สร้างจาก `site/` ด้วย `node site/build.mjs` (ผลลัพธ์ `about.html` ฯลฯ อยู่ในรากเว็บ commit ไปพร้อมกัน — public build จะคัดลอกผลลัพธ์เหล่านี้ไปเผยแพร่)
   - แก้เนื้อหาที่ `site/content/*.mjs` แล้วรัน build — อย่าแก้ไฟล์ html ที่สร้างออกมาโดยตรง (เทสต์ `site` ฟ้องถ้าลืมรัน)
   - เปลี่ยนวิธีเก็บ/ใช้ข้อมูลผู้ใช้ หรือเพิ่มผู้ให้บริการภายนอก → แก้ `site/content/privacy.mjs` ทุกครั้ง (เทสต์สแกนทุกโดเมนภายนอกในแอป เจอโดเมนใหม่ที่ไม่อยู่ในนโยบายจะฟ้อง)
   - เปลี่ยนสาระสำคัญของนโยบาย/ข้อกำหนด → เลื่อน `VERSION` ใน `privacy.mjs` และ `ONBOARDING_VERSIONS` ในหลังบ้านให้ตรงกัน ผู้ใช้จะถูกขอให้ยอมรับฉบับใหม่

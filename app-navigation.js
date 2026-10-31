@@ -27,7 +27,7 @@ function ready(ns,localHistory){const r=frames.get(ns);if(r&&wrongDocument(r)){r
     if(r.el===initial&&!busy&&barba){barba.history.add(localHistory.root,'barba','replace');for(const u of localHistory.layers)barba.history.add(u,'barba','push');current=localHistory.layers.at(-1);}
     else if(busy)r.el.contentWindow.CendonView?.adoptSingleEntry();
   }
-  r.ready=true;r.el.classList.remove('is-preparing');if(ns===active){D.getElementById('appOpening').hidden=true;tint();}for(const wake of [...r.waiters])wake();
+  r.ready=true;r.el.classList.remove('is-preparing');if(ns===active){openingDone();tint();}for(const wake of [...r.waiters])wake();
 }}
 function layer(ns,url,action){
   if(!barba||busy||ns!==active||namespace(url,origin)!==ns)return;
@@ -120,9 +120,20 @@ function activate(r,url){
   }
   // Never move a live iframe to another node: moving it restarts its document.
   for(const [name,f]of frames){const on=name===ns;f.el.classList.toggle('is-active',on);f.el.classList.remove('is-preparing');f.el.inert=!on;f.el.contentWindow.CendonView?.setHidden(!on);}
-  active=ns;current=url;r.used=Date.now();D.getElementById('appOpening').hidden=true;
+  active=ns;current=url;r.used=Date.now();openingDone();
   D.title=r.el.contentDocument?.title||'Cendon';tint();callUI();evict();
 }
+// หน้าเปิดแอป (#appOpening อยู่บนสุด): หน้าแรกพร้อมแล้วปล่อยการกดผ่านทันที แต่ให้จังหวะเปิดเล่นจบก่อน (~0.9 วิ นับจากเปิด)
+// แล้วคลื่นพุ่งขึ้นเผยหน้าแรก · ไม่หน่วงเกินนั้น · ลดการเคลื่อนไหว = จางออกสั้น ๆ · ซ่อนจริงหลังจบ (hidden คือสัญญาณ "เปิดเสร็จ")
+const opening=D.getElementById('appOpening');let openingGone=false;
+function openingDone(){
+  if(openingGone||!opening)return;openingGone=true;opening.classList.add('is-ready');
+  const calm=W.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  const wait=calm?0:Math.max(0,900-performance.now());
+  setTimeout(()=>{opening.classList.add('is-out');setTimeout(()=>{opening.hidden=true;},calm?220:720);},wait);
+}
+// หน้าแรกไม่ส่งสัญญาณพร้อม (หลุดไปหน้าอื่น สคริปต์หน้าเสีย) ก็ไม่ค้างหน้าเปิด: 6 วิแล้วเผยสิ่งที่อยู่ข้างใต้ (CSS มีกันค้างอีกชั้นที่ 10 วิ)
+setTimeout(openingDone,6000);
 // สีแถบสถานะของมือถือ: มือถืออ่าน theme-color จากเอกสารชั้นนอกสุดนี้เท่านั้น ส่วนแต่ละหน้าตั้งของตัวเองตามธีม (theme.js)
 // คัดลอกสีของหน้าที่เปิดอยู่ขึ้นมา และตามเมื่อหน้านั้นเปลี่ยนธีม — แถบบนจึงกลืนกับหัวหน้าทั้งธีมสว่างและมืด
 const shellTint=D.querySelector('meta[name="theme-color"]');let tintWatch=null;

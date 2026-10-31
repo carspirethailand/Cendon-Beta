@@ -61,3 +61,15 @@ test('every garage form checks before saving (no silent clamping)',()=>{
   assert.match(extras,/\+s\.amount<=cap/,'impossible old amounts are left out of the calendar total');
   assert.match(valet,/if\(G\)tooMuch\(G\.money\(amount,c,\{job:key/,'Valet follows the same rules');
 });
+
+test('a field with an error gets a red note under it, never a frame drawn around it',()=>{
+  /* กรอบเหลี่ยม/วงแดงรอบช่องซ้อนการ์ดมนดูไม่สวย — ข้อความใต้ช่อง (role=alert) + aria-invalid พอแล้ว */
+  assert.match(src,/\.bad-f\[aria-invalid="true"\]\{scroll-margin-block:100px\}/);
+  assert.doesNotMatch(src,/\.bad-f[^{]*\{[^}]*(outline|box-shadow|border)/);
+  assert.match(src,/note\.className='cdf-error';[^\n]*note\.setAttribute\('role','alert'\)/);
+  const home=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+  assert.match(home,/\.bad-f\{scroll-margin-block:100px\}/);
+  assert.doesNotMatch(home,/\.bad-f\{[^}]*(box-shadow|outline|border)/);
+  for(const f of ['index','garage','chat','news','profile','spares'])assert.match(readFileSync(new URL(`../${f}.html`,import.meta.url),'utf8'),/\/input-guard\.js\?v=7"/,f);
+  assert.match(readFileSync(new URL('../sw.js',import.meta.url),'utf8'),/'\.\/input-guard\.js\?v=7'/);
+});

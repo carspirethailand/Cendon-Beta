@@ -131,6 +131,7 @@
     if(amt>6000)return {ok:true,ask:th()?'เติมครั้งเดียว ฿'+fmt(amt)+' ถูกต้องไหม?':'฿'+fmt(amt)+' for one fill-up — is that right?'};
     return {ok:true};
   }
+  /* ช่องที่ผิด: ข้อความสีแดงใต้ช่อง (role=alert) + aria-invalid บอกว่าผิดอะไร · ไม่วาดกรอบ/วงรอบช่อง (กรอบเหลี่ยมซ้อนการ์ดมนดูไม่สวย) */
   function showIssues(list,root){
     root=root||D;var first=null;
     list.forEach(function(issue){
@@ -153,7 +154,7 @@
   }
   var invalid=[],queued=false;
   D.addEventListener('invalid',function(e){e.preventDefault();invalid.push({element:e.target,msg:e.target.validationMessage});if(!queued){queued=true;queueMicrotask(function(){showIssues(invalid);invalid=[];queued=false})}},true);
-  var style=D.createElement('style');style.textContent='.cdf-error{display:block;color:var(--bad,#c73737);font:12px/1.6 system-ui;margin-top:5px}.bad-f[aria-invalid="true"]{outline:2px solid var(--bad,#c73737);outline-offset:2px;scroll-margin-block:100px}';(D.head||D.documentElement).appendChild(style);
+  var style=D.createElement('style');style.textContent='.cdf-error{display:block;color:var(--bad,#c73737);font-size:12px;line-height:1.6;margin-top:5px}.bad-f[aria-invalid="true"]{scroll-margin-block:100px}';(D.head||D.documentElement).appendChild(style);
   window.CendonFormIssues=Object.freeze({show:showIssues});
   window.spireGuard={bounds:bounds,fixDate:fixDate,fixNum:fixNum,junk:junk,text:text,tier:tier,money:money,fuel:fuel,JOB:JOB};
 })();

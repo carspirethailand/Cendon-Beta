@@ -103,7 +103,12 @@ ready page means an AI answer, live map tiles or every remote image is loaded.
 - Actual source and built public package: 85 route/panel cases passed, including
   deep Garage, account, Studio, job, attachment and Chat entry points. This is
   broad route coverage, not every possible user state or real-provider workflow.
-- All assertion-based browser suites are rerun before publication. The focused
+- All 37 assertion-based browser suites passed across the final run and focused
+  retest. The full run passed 36; the directory component fixture still stubbed
+  the team's old job-header helper. Adding its new `watchJobs` dependency to the
+  isolated fixture made the remaining suite pass at mobile and desktop widths;
+  this correction did not change production code or skip directory assertions.
+  The focused
   startup test verifies actual local Leaflet markers, a valid nearby-job map,
   old/new map-form isolation, preserved synthetic Garage inventory, no early
   decorative draw, and one service-worker registration after readiness/load.

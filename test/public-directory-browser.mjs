@@ -15,7 +15,7 @@ const $=id=>document.getElementById(id),T=(th,en)=>th,esc=s=>String(s??'').repla
 const API=location.origin;let U=null,ME=null,TECHS=[],LOADED=false,SERVER=null,CATK='all',CATSUB='',CATQ='',CATSORT='best',CATMAP=false,HERE=null;
 const RAIL=[{id:'all',th:'ทั้งหมด'},{id:'air',th:'แอร์'},{id:'eng',th:'เครื่องยนต์'},{id:'oil',th:'น้ำมันเครื่อง',base:'eng'}],OTHER_CAT={id:'other',th:'อื่นๆ'},SYM={},GIG_MAX=2;
 const roamPos=t=>t,km=()=>null,initial=()=> 'F',money=n=>String(n),isMine=()=>false,img=()=>'',topOf=k=>k==='oil'?'eng':k,gigCats=g=>g.cats||[],railIc=()=>'',rankGigs=l=>l,sortShops=l=>l,CAT_SORTS=()=>[['best','แนะนำ']],profCard=t=>'<button class="lx-pc" data-id="'+t.id+'">'+esc(t.shop)+'</button>',shown=o=>TECHS.filter(t=>o.cat==='all'||t.cats.includes(o.cat));
-const drawMyCar=()=>{},drawQuick=()=>{},callPlus=()=>{},drawPartner=()=>{},drawJobsBtn=()=>{},railNav=()=>{},openCat=()=>{},setView=()=>{},renderUsed=()=>{},diag=()=>{},ccDone=()=>{},render=()=>drawHome(),drawCatMap=()=>{},wireCards=()=>{},openRes=()=>{},wireGigRows=()=>{};
+const drawMyCar=()=>{},drawQuick=()=>{},callPlus=()=>{},drawPartner=()=>{},drawJobsBtn=()=>{},watchJobs=()=>{},railNav=()=>{},openCat=()=>{},setView=()=>{},renderUsed=()=>{},diag=()=>{},ccDone=()=>{},render=()=>drawHome(),drawCatMap=()=>{},wireCards=()=>{},openRes=()=>{},wireGigRows=()=>{};
 const READY={gigs:{done(){}},techs:{done(){}}},errBar=(text,id)=>'<p>'+text+'</p><button id="'+id+'">ลองใหม่</button>',busy=async(b,f)=>f();
 ${part('async function api(path,o){','function needLogin(){')}
 ${part('let GIGS=null;','function myCarText(){')}

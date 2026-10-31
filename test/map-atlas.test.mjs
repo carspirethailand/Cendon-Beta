@@ -8,7 +8,7 @@ const home=read('index.html'),atlas=read('map-atlas.js'),css=read('map-atlas.css
 
 test('map page loads the new map first and keeps the old Leaflet map as the fallback',()=>{
   assert.match(home,/<div class="atl-host" id="atlas" hidden><\/div>\n<\/section>/,'host lives inside the map view');
-  assert.match(home,/const M=await import\("\/map-atlas\.js\?v=3"\);if\(!M\.supported\(\)\)throw Error\("webgl"\)/);
+  assert.match(home,/const M=await import\("\/map-atlas\.js\?v=4"\);if\(!M\.supported\(\)\)throw Error\("webgl"\)/);
   assert.match(home,/catch\(e\)\{console\.warn\("atlas",e&&e\.message\);ATLAS_OFF=true;[^\n]*if\(VIEW==="map"\)oldMap\(\)\}/,'failure falls back to the old map');
   assert.match(home,/function oldMap\(\)\{if\(!MAP\)initMap\(\);else\{MAP\.invalidateSize\(\);drawPins\(true\)\}renderCarousel\(\)\}/);
   assert.match(home,/if\(v==="map"\)\{\n    document\.documentElement\.style\.setProperty\("--mtop",\$\("top"\)\.offsetHeight\+"px"\);\n    showMap\(\);/);
@@ -100,10 +100,10 @@ test('honest numbers: travel time is labelled as an estimate and open status com
 });
 
 test('styles: light and dark, phone sheet and desktop panel, reduced motion',()=>{
-  assert.match(atlas,/CSS_URL='\/map-atlas\.css\?v=2'/);
+  assert.match(atlas,/CSS_URL='\/map-atlas\.css\?v=3'/);
   assert.ok(existsSync(new URL('../vendor/maplibre-gl-4.7.1.js',import.meta.url)));
-  assert.match(css,/\.atl-map\{position:absolute;inset:0;z-index:0;/,'map markers stay under the sheet');
-  assert.match(css,/@media\(min-width:1024px\)\{\n  \.atl\{--sv:0px\}\n  \.atl-map\{left:400px\}/);
+  assert.match(css,/\.atl>\.atl-map\{position:absolute;inset:0;z-index:0;/,'map markers stay under the sheet');
+  assert.match(css,/@media\(min-width:1024px\)\{\n  \.atl\{--sv:0px\}\n  \.atl>\.atl-map\{left:400px\}/);
   assert.match(css,/html\[data-theme="dark"\] \.atl-lab\{background:#FAFAF9;color:#09090B/);
   assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
 });

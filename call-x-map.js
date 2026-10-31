@@ -4,7 +4,7 @@
    แสดง: ตำแหน่งคุณ · ร้านรอบตัว (ชื่อ+ระยะของร้านใกล้สุด) · วงรัศมี · โหมดด่วน = เส้นไปร้านที่จะส่งถึงจริง
    ข้อมูลทั้งหมดมาจาก index.html (ไฟล์นี้ไม่เรียก API) · เครื่องไม่มี WebGL / โหลดไม่ได้ → โยน error ให้หน้าใช้ภาพแทน
    live: resolve เมื่อแผนที่วาดถนน/อาคารจริงแล้วเท่านั้น (ไทล์โหลดไม่ขึ้น = ไม่ resolve หน้าจึงคงภาพแทนไว้ ไม่เห็นพื้นเทาเปล่า) */
-import {supported,loadLib,styleFor} from '/map-atlas.js?v=3';
+import {supported,loadLib,styleFor} from '/map-atlas.js?v=4';
 
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function ring(c,km,n=96){

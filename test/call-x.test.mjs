@@ -72,6 +72,6 @@ test('call page: sheet class does not collide with the page root, admin orb neve
 });
 
 test('new call-page files are cached for offline start',()=>{
-  assert.match(sw,/'\.\/call-x\.css\?v=2'/,'render-critical style is precached; the map module loads on demand like the /map page');
-  assert.match(home,/href="call-x\.css\?v=2"/,'same version as the page');
+  assert.match(sw,/'\.\/call-x\.css\?v=3'/,'render-critical style is precached; the map module loads on demand like the /map page');
+  assert.match(home,/href="call-x\.css\?v=3"/,'same version as the page');
 });

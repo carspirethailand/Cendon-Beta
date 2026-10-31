@@ -7,9 +7,10 @@ This is a frontend performance correction, not a redesign or data migration. All
 application, document, message, moderation decision or ownership is deleted,
 reset, recreated or changed by this release. The existing backend Worker and D1
 binding are not redeployed. The team's latest job-form UI changes through
-`aedbd8d` are merged, not replaced by an older performance checkout.
+`5d7105a` (including the shared settings/tab preparation work) are merged, not
+replaced by an older performance checkout.
 
-No replacement loading screen, fabricated account readiness, new paid provider,
+No replacement loading screen added by the optimization, fabricated account readiness, new paid provider,
 blanket local-storage reset or automatic approval is introduced.
 
 ## Measured causes and corrections
@@ -43,29 +44,37 @@ blanket local-storage reset or automatic approval is introduced.
    form with reused element IDs. Nearby-job responses are validated before
    replacing successful inventory; stale responses do not paint another tab.
    Bad coordinates skip only the map marker, not the corresponding job record.
+8. **Deep Garage route versus new car animation:** the parent's car layer must
+   exist before the nested care/history layer opens. The View Transition returns
+   its DOM-swap promise and the router awaits that, not the whole animation.
+   This retains the team's new morph but prevents its delayed swap from losing
+   a nested route. No car record is changed.
 
 ## Before/after cold-start measurements
 
 Chrome, fresh isolated contexts, 393 × 852 viewport, synthetic completed account
 and APIs, 60 ms delay per local static request, service worker blocked for equal
-cold-cache conditions. Baseline is the team's `aedbd8d` production build;
-candidate is the public package from `14098c0`. Both execute real Leaflet,
+cold-cache conditions. Baseline is the team's `5d7105a` production build;
+candidate is the public package from `1be2b4b`. Both execute real Leaflet,
 including the baseline, so blocking the old CDN cannot create a misleading fast
 baseline by skipping the map code. Three paired runs per configuration,
 alternating run order; medians below. No other audit suite ran concurrently.
 
 | Home mode | CPU | Before: real view ready | After | Before: visible main controls | After |
 | --- | --- | ---: | ---: | ---: | ---: |
-| Default | Normal | 1,703 ms | 927 ms | 1,798 ms | 961 ms |
-| Default | 4× slowdown | 5,103 ms | 4,463 ms | 6,402 ms | 4,869 ms |
-| Saved AI mode | Normal | 1,632 ms | 942 ms | 1,667 ms | 997 ms |
-| Saved AI mode | 4× slowdown | 3,864 ms | 3,838 ms | 4,479 ms | 4,186 ms |
+| Default | Normal | 1,138 ms | 1,084 ms | 1,170 ms | 1,106 ms |
+| Default | 4× slowdown | 2,318 ms | 2,375 ms | 2,413 ms | 2,476 ms |
+| Saved AI mode | Normal | 1,119 ms | 1,111 ms | 1,150 ms | 1,142 ms |
+| Saved AI mode | 4× slowdown | 2,105 ms | 2,132 ms | 2,217 ms | 2,253 ms |
 
 These are synthetic laboratory results, not field Core Web Vitals, provider
 latency measurements, real sign-in proof or a universal sub-second guarantee.
-CPU-throttled cold Home remains materially over one second; the AI-mode
-readiness improvement there is small and not evidence of a substantial gain.
-Individual paired runs vary, including occasional candidate regressions. Raw
+Cold Home remains over one second (this measurement also waits for the team's
+300 ms opening fade to be fully hidden). Against the latest, already-improved
+team baseline, this release is **not a substantial overall cold-start speedup**:
+normal CPU gains are small, and throttled results are slightly slower, within
+the run-to-run variation. Earlier comparisons against `aedbd8d` showed larger
+gains; those are not the final combined release comparison. Raw
 results stay in ignored local QA storage; they are not deployed.
 
 ### First navigation from a loaded Home
@@ -77,11 +86,11 @@ route checks, not statistical p95 claims.
 
 | Destination | First use, normal CPU | Revisit, normal CPU | First use, 4× slowdown | Revisit, 4× slowdown |
 | --- | ---: | ---: | ---: | ---: |
-| Garage | 432 ms | 19 ms | 1,533 ms | 111 ms |
-| Account | 325 ms | 13 ms | 941 ms | 102 ms |
-| Shop | 576 ms | 19 ms | 1,101 ms | 90 ms |
-| Magazine | 289 ms | 11 ms | 576 ms | 104 ms |
-| Chat | 704 ms | 20 ms | 1,999 ms | 107 ms |
+| Garage | 456 ms | 25 ms | 1,325 ms | 114 ms |
+| Account | 327 ms | 19 ms | 961 ms | 193 ms |
+| Shop | 556 ms | 17 ms | 1,001 ms | 86 ms |
+| Magazine | 424 ms | 10 ms | 517 ms | 213 ms |
+| Chat | 684 ms | 15 ms | 1,380 ms | 139 ms |
 
 The all-device/all-network one-second goal is **not yet met**. Cold parsing,
 style/layout, optional feature initialization, real identity/network latency and
@@ -90,7 +99,7 @@ ready page means an AI answer, live map tiles or every remote image is loaded.
 
 ## Validation and release procedure
 
-- Frontend unit checks: 796 passed; backend safety suite: 646 passed.
+- Frontend unit checks after integration: 821 passed; backend safety suite: 646 passed.
 - Actual source and built public package: 85 route/panel cases passed, including
   deep Garage, account, Studio, job, attachment and Chat entry points. This is
   broad route coverage, not every possible user state or real-provider workflow.
@@ -98,7 +107,7 @@ ready page means an AI answer, live map tiles or every remote image is loaded.
   startup test verifies actual local Leaflet markers, a valid nearby-job map,
   old/new map-form isolation, preserved synthetic Garage inventory, no early
   decorative draw, and one service-worker registration after readiness/load.
-- Source audit: 82 JS files, 187 inline scripts and 515 local static references,
+- Source audit: 83 JS files, 187 inline scripts and 517 local static references,
   with no syntax/missing-static-resource issues. Dynamic URLs still require
   runtime/provider checks.
 - Pages Functions compile successfully with installed Wrangler 4.152.0. Public

@@ -128,7 +128,7 @@ function activate(r,url){
 }
 // แท็บหลักเตรียมไว้ล่วงหน้า: แท็บที่ยังไม่เคยเปิดต้องโหลดและรันสคริปต์ทั้งหน้าตอนกด (วัดได้ 0.6–1.3 วิเมื่อ CPU ช้าแบบมือถือ) ส่วนครั้งที่สองแค่ ~0.1 วิ
 // จึงเตรียม การาจ · นิตยสาร · บัญชี ทีละหน้าเบื้องหลัง (ซ่อน กดไม่ได้) หลังหน้าแรกพร้อมและเครื่องว่าง · ข้ามเมื่อ: เครื่องแรมน้อย ประหยัดเน็ต/2G
-// แอปอยู่เบื้องหลัง ผู้ใช้กำลังเปลี่ยนหน้า หรือสิทธิ์ตำแหน่งยังไม่ถูกตัดสิน (หน้าพวกนี้ขอตำแหน่งตอนเปิดเพื่อพยากรณ์อากาศ — ห้ามมีป๊อปอัปโผล่ตอนผู้ใช้อยู่หน้าแรก)
+// แอปอยู่เบื้องหลัง หรือผู้ใช้กำลังเปลี่ยนหน้า · หน้าที่เตรียมไว้ไม่ขอตำแหน่ง (พยากรณ์อากาศ) จนกว่าจะเปิดจริง — ดู loadWx ในหน้านั้น ป๊อปอัปจึงไม่โผล่บนหน้าแรก
 // แชต AI ไม่เตรียม (อาจไปหยิบงาน AI ที่ค้างอยู่) · เตรียมไม่สำเร็จ = ทิ้งเฟรมนั้น แล้วกดจริงค่อยโหลดแบบเดิม
 const PREWARM=['garage','news','profile'];let prewarmPlanned=false;
 const idle=ms=>new Promise(r=>setTimeout(()=>'requestIdleCallback'in W?requestIdleCallback(r,{timeout:2000}):r(),ms));
@@ -136,8 +136,6 @@ function schedulePrewarm(){if(prewarmPlanned)return;prewarmPlanned=true;prewarm(
 async function prewarm(){
   const c=navigator.connection;
   if(limit<6||c?.saveData||/2g/.test(c?.effectiveType||''))return;
-  let geo=null;try{geo=await navigator.permissions?.query({name:'geolocation'});}catch{}
-  if(!geo||geo.state==='prompt')return;
   for(const ns of PREWARM){
     await idle(800);
     if(frames.has(ns))continue;

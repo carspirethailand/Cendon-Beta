@@ -3,7 +3,7 @@
 <head>
 <script>window.__SPIRE_PAGE__="profile";</script>
 <script>/* ธีมตั้งแต่เฟรมแรก (ก่อน CSS วาด) — เดิมหน้าเปิดด้วยธีมตั้งต้นแวบหนึ่งแล้วค่อยสลับ (แชตขึ้นจอดำ) ดูเหมือนกระพริบ/กระตุก */(function(){try{var O={warm:"light",pearl:"light",emerald:"light",plant:"light",moss:"light",carbon:"dark",night:"dark",midnight:"dark",cyber:"dark",aurora:"dark",ocean:"dark",sunset:"dark",magma:"dark"},v=null;try{v=JSON.parse(localStorage.getItem("spire_theme"))}catch(e){}if(typeof v!=="string")try{v=JSON.parse(localStorage.getItem("spire_chatTheme"))}catch(e){}v=v==="light"||v==="dark"?v:(O[v]||"light");var e=document.documentElement;e.setAttribute("data-theme",v);e.setAttribute("data-ctheme",v)}catch(x){}})();</script>
-<script src="/app-navigation-bridge.js?v=6"></script>
+<script src="/app-navigation-bridge.js?v=7"></script>
 <script src="/tab-shell.js?v=6"></script>
 <script src="/launch-gate.js?v=1"></script>
 <script src="/auth-gate.js?v=2"></script>
@@ -7640,6 +7640,8 @@ async function fetchWx(lat,lon,place){
   LSt("wxCache",WX); wxState="ok"; return WX;
 }
 function loadWx(force){
+  /* หน้านี้ถูกเตรียมไว้เบื้องหลัง (shell ตั้ง inert ไว้จนกว่าจะเปิดจริง): ห้ามขอตำแหน่งตอนผู้ใช้ยังไม่เห็นหน้านี้ — รอเปิดจริงก่อน แล้วค่อยโหลดอากาศ */
+  if(!force&&window.frameElement&&window.frameElement.inert){addEventListener("cendon:view-active",()=>loadWx(false),{once:true});return Promise.resolve(null)}
   if(!force&&wxFresh()){wxState="ok";return Promise.resolve(WX)}
   if(wxState==="loading")return Promise.resolve(null);
   wxState="loading"; render();
@@ -13101,7 +13103,7 @@ function start(){
 if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",start); else start();
 })();
 </script>
-<script src="mobile-ui.js?v=4" defer></script>
+<script src="mobile-ui.js?v=6" defer></script>
 <script src="nav-pages.js?v=7" defer></script>
 <script>
 window.__SPIRE_PAGE__="profile";

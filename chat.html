@@ -4356,6 +4356,8 @@ window.spireLang=()=>cur;
 window.spireSetLang=set;
 window.spireLocales=()=>LOCALES.slice();
 window.spireOnLang=fn=>{ if(typeof fn==="function")listeners.push(fn) };
+/* ภาษาที่ตั้งจากหน้าอื่น (หน้าบัญชี) เปลี่ยนหน้านี้ทันที — แท็บถูกเก็บไว้/เตรียมไว้ล่วงหน้า ไม่ได้โหลดใหม่ (เดิมค้างภาษาเก่าจนกว่าจะรีเฟรช) */
+addEventListener("storage",e=>{if(e.key!==KEY)return;let v=null;try{v=JSON.parse(e.newValue)}catch(x){}if(typeof v==="string"&&v!==cur&&CODES.indexOf(v)>=0)set(v)});
 window.spireI18nPaint=paintDom;
 window.spireI18nHas=code=>!!DICT[code];
 window.spireI18nCoverage=code=>{
@@ -4451,6 +4453,8 @@ window.spireTheme=read;
 window.spireSetTheme=set;
 window.spireThemes=()=>THEMES.slice();
 window.spireOnTheme=fn=>{ if(typeof fn==="function")listeners.push(fn) };
+/* ตั้งธีมจากหน้าอื่น (หน้าบัญชี/หน้าแรก) ต้องเปลี่ยนหน้านี้ทันที — แท็บถูกเก็บไว้/เตรียมไว้ล่วงหน้า ไม่ได้โหลดใหม่ (เดิมค้างธีมเก่าจนกว่าจะรีเฟรช) */
+addEventListener("storage",e=>{if(e.key!==KEY&&e.key!=="spire_chatTheme")return;const k=read();if(D.documentElement.dataset.theme===k)return;apply(k);listeners.forEach(fn=>{ try{ fn(k) }catch(x){} })});
 window.spireThemeName=k=>{ const t=THEMES.find(x=>x.k===k); return t?T(t.th,t.en):k };
 })();
 </script>
@@ -12678,6 +12682,8 @@ window.spirePrimaryPresets=()=>PRESETS.slice();
 window.spireOnPrimary=fn=>{ if(typeof fn==="function")listeners.push(fn) };
 /* ให้ตัวซิงก์คลาวด์เรียกได้เมื่อค่ามาจากเครื่องอื่น */
 window.spireApplyPrimary=()=>apply(read());
+/* สีหลักที่ตั้งจากหน้าอื่น ทาหน้านี้ใหม่ทันทีด้วย */
+addEventListener("storage",e=>{if(e.key===KEY)apply(read())});
 })();
 
 </script>

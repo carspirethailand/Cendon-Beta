@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { inflateSync } from 'node:zlib';
 
 /* แถบของมือถือ (แถบสถานะบน · แถบปุ่มล่าง) ต้องกลืนกับแอป ไม่ใช่แถบดำ/ส้มคั่น */
-const r = f => readFileSync(new URL('../' + f, import.meta.url), 'utf8');
+const r = f => readFileSync(new URL('../' + f, import.meta.url), 'utf8').replace(/\r\n/g,'\n');
 
 test('installed app bottom bar is the app background, not the old orange', () => {
   const m = JSON.parse(r('manifest.webmanifest'));
@@ -20,7 +20,7 @@ test('status bar follows the page that is open, in light and dark themes', () =>
   assert.match(app, /tintWatch\?\.disconnect\(\);tintWatch=null;/, 'only one view is watched at a time');
   assert.match(app, /if\(ns===active\)\{openingDone\(\);tint\(\);schedulePrewarm\(\);\}/, 'first view ready');
   assert.match(app, /D\.title=r\.el\.contentDocument\?\.title\|\|'Cendon';tint\(\);callUI\(\);evict\(\);/, 'every tab switch');
-  assert.ok(shell.includes('/app-navigation.js?v=11') && sw.includes("'./app-navigation.js?v=11'"), 'shell and offline cache load the same version');
+  assert.ok(shell.includes('/app-navigation.js?v=12') && sw.includes("'./app-navigation.js?v=12'"), 'shell and offline cache load the same version');
 });
 
 test('home sky glows right up to the top edge (fullscreen draws under the camera area)', () => {
@@ -69,10 +69,10 @@ test('no second opening screen: the page only holds Android\'s frame until Home 
   for (const gone of ['op-waves', 'op-load', 'op-tag', 'opFlow', 'opLift', 'kanit-600-latin']) assert.ok(!css.includes(gone) && !shell.includes(gone), gone + ' removed');
   assert.match(css, /#appOpening\{position:fixed;inset:0;z-index:10;pointer-events:auto;animation:opBail \.3s ease-in 10s forwards\}/, 'above the loading page; CSS gives up by itself after 10 s even without scripts');
   assert.match(css, /#appOpening\.is-out\{animation:opOut \.28s ease-out both\}/);
-  assert.match(app, /opening\.classList\.add\('is-ready','is-out'\);setTimeout\(\(\)=>\{opening\.hidden=true;\},300\);/, 'fades the moment Home is ready, no extra wait');
+  assert.match(app, /opening\.classList\.add\('is-ready','is-out'\);setTimeout\(\(\)=>\{opening\.hidden=true;for\(const r of frames\.values\(\)\)if\(r\.ready\)r\.el\.contentDocument\?\.dispatchEvent\(new Event\('cendon:view-ready'\)\);\},300\);/, 'fades as soon as Home is ready; notifies deferred decoration when the fade ends');
   assert.match(app, /\nsetTimeout\(openingDone,6000\);\n/, 'a page that never reports ready still shows');
   assert.ok(!/getElementById\('appOpening'\)\.hidden=true/.test(app), 'every exit goes through openingDone');
-  assert.ok(shell.includes('/app-navigation.js?v=11') && sw.includes("'./app-navigation.js?v=11'") && shell.includes('/app-navigation.css?v=5') && sw.includes("'./app-navigation.css?v=5'"));
+  assert.ok(shell.includes('/app-navigation.js?v=12') && sw.includes("'./app-navigation.js?v=12'") && shell.includes('/app-navigation.css?v=5') && sw.includes("'./app-navigation.css?v=5'"));
 });
 
 test('install settings and their icons always come from the server, never the offline cache', () => {

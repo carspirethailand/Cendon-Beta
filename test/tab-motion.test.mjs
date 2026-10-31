@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 /* แท็บล่างมือถือ: ตัวเลือกเลื่อนไปแท็บใหม่ · แท็บหลักเตรียมไว้ล่วงหน้า ให้เปลี่ยนหน้าครั้งแรกเร็วเท่าครั้งที่สอง */
-const r = f => readFileSync(new URL('../' + f, import.meta.url), 'utf8');
+const r = f => readFileSync(new URL('../' + f, import.meta.url), 'utf8').replace(/\r\n/g,'\n');
 const mui = r('mobile-ui.js'), app = r('app-navigation.js');
 
 test('the tab highlight is one piece that slides, not a background that jumps', () => {
@@ -47,8 +47,8 @@ test('main tabs are prepared in the background after Home, so the first tap is f
   assert.match(app, /if\(limit<6\|\|c\?\.saveData\|\|\/2g\/\.test\(c\?\.effectiveType\|\|''\)\)return;/, 'not on low-memory phones, data saver or 2G');
   assert.ok(!app.includes("permissions?.query({name:'geolocation'})"), 'works for people who never answered the location prompt too');
   for (const f of ['garage.html', 'news.html', 'profile.html'])
-    assert.ok(readFileSync(new URL('../' + f, import.meta.url), 'utf8').includes('function loadWx(force){\n  /* หน้านี้ถูกเตรียมไว้เบื้องหลัง') &&
-      readFileSync(new URL('../' + f, import.meta.url), 'utf8').includes('  if(!force&&window.frameElement&&window.frameElement.inert){addEventListener("cendon:view-active",()=>loadWx(false),{once:true});return Promise.resolve(null)}'),
+    assert.ok(r(f).includes('function loadWx(force){\n  /* หน้านี้ถูกเตรียมไว้เบื้องหลัง') &&
+      r(f).includes('  if(!force&&window.frameElement&&window.frameElement.inert){addEventListener("cendon:view-active",()=>loadWx(false),{once:true});return Promise.resolve(null)}'),
       f + ': a page prepared in the background asks for location (weather) only once it is really opened');
   assert.match(app, /if\(busy\|\|queued\|\|D\.hidden\|\|frames\.size>=limit\)return;/, 'stops when the user is navigating or the app is in the background');
   assert.match(app, /await idle\(800\);/, 'one page at a time, in idle moments');

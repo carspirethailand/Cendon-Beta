@@ -88,18 +88,18 @@ results stay in ignored local QA storage; they are not deployed.
 
 ### First navigation from a loaded Home
 
-Separate sequential lab pass with the same synthetic account and static-request
-latency. Time ends when the target's actual primary controls are visible;
+Separate sequential lab pass on final public code `9587dbd`, with the same
+synthetic account and static-request latency. Time ends when the target's actual primary controls are visible;
 returning to an already-open page uses the retained view. These are single-run
 route checks, not statistical p95 claims.
 
 | Destination | First use, normal CPU | Revisit, normal CPU | First use, 4× slowdown | Revisit, 4× slowdown |
 | --- | ---: | ---: | ---: | ---: |
-| Garage | 456 ms | 25 ms | 1,325 ms | 114 ms |
-| Account | 327 ms | 19 ms | 961 ms | 193 ms |
-| Shop | 556 ms | 17 ms | 1,001 ms | 86 ms |
-| Magazine | 424 ms | 10 ms | 517 ms | 213 ms |
-| Chat | 684 ms | 15 ms | 1,380 ms | 139 ms |
+| Garage | 428 ms | 20 ms | 1,216 ms | 99 ms |
+| Account | 331 ms | 15 ms | 1,056 ms | 99 ms |
+| Shop | 556 ms | 16 ms | 1,085 ms | 95 ms |
+| Magazine | 266 ms | 17 ms | 479 ms | 80 ms |
+| Chat | 684 ms | 18 ms | 1,274 ms | 102 ms |
 
 The all-device/all-network one-second goal is **not yet met**. Cold parsing,
 style/layout, optional feature initialization, real identity/network latency and

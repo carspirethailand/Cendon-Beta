@@ -6236,12 +6236,16 @@ function book(t,sym){
    เขียนอาการครั้งเดียว ส่งถึงหลายร้าน แล้วเทียบราคาในหน้าเดียว
    พอยืนยันร้านหนึ่ง เซิร์ฟเวอร์ยกเลิกร้านอื่นให้เอง */
 async function sendGroup(list,v){
-  const G=crypto.randomUUID();let ok=0,err="";
-  for(const t of list){
-    try{await api("/api/tech/jobs",{body:{...v,id:crypto.randomUUID(),techId:t.id,group:G,mode:v.mode==="mobile"&&t.mobile?"mobile":"shop"}});ok++}
-    catch(e){err=e.message;if(!ok&&/อาการ|รถ|พื้นที่|ที่อยู่|เบอร์|เวลา/.test(err))throw e}
-  }
-  if(!ok)throw new Error(err||"ส่งไม่สำเร็จ");
+  const G=crypto.randomUUID();let ok=0,err=null;
+  const formE=e=>/อาการ|รถ|พื้นที่|ที่อยู่|เบอร์|เวลา/.test(e&&e.message||"");
+  const send=(t,body)=>api("/api/tech/jobs",{body:{...body,id:crypto.randomUUID(),techId:t.id,group:G,mode:body.mode==="mobile"&&t.mobile?"mobile":"shop"}})
+    .then(()=>{ok++},e=>{if(!err||formE(e)&&!formE(err))err=e});
+  /* ส่งทุกร้านพร้อมกัน — งานด่วนถึงทุกร้านในจังหวะเดียวกัน ร้านสุดท้ายไม่ต้องรอร้านแรกเสร็จก่อน
+     มีรูป: หลังบ้านเก็บรูปชุดเดียวต่อชุดคำขอ → ส่งร้านแรกที่รับได้พร้อมรูปก่อน แล้วร้านที่เหลือพร้อมกันโดยไม่อัปโหลดรูปซ้ำ */
+  let rest=list;
+  if(v.photos&&v.photos.length)while(rest.length&&!ok){await send(rest[0],v);rest=rest.slice(1);if(!ok&&formE(err))throw err}
+  await Promise.all(rest.map(t=>send(t,ok?{...v,photos:[]}:v)));
+  if(!ok){if(formE(err))throw err;throw new Error(err&&err.message||"ส่งไม่สำเร็จ")}
   toast(`ส่งถึง ${ok} ร้านแล้ว`);refreshMe();sheetFresh();openGroup(G);
 }
 function openMulti(sym,cat){
@@ -6340,7 +6344,7 @@ async function urgentCall(pre,o2){
         const id=crypto.randomUUID(),cat=pre&&pre.tow?"tow":catsOf(v.symptom)[0]||"";
         const r=await api("/api/tech/posts",{body:{...v,id,cat,mode:"mobile",symptom:v.symptom.length<10?"งานด่วน: "+v.symptom:v.symptom}});
         toast(r&&r.reach?(r.taking?T(`แจ้งเตือนช่างที่รับงานอยู่ตอนนี้ ${r.taking} ร้าน · ช่าง ${r.reach} ร้านในรัศมีเห็นประกาศ`,`Alerted ${r.taking} shops taking jobs now · ${r.reach} nearby can see it`):r.taking===0?T(`ช่าง ${r.reach} ร้านในรัศมีเห็นประกาศแล้ว — ตอนนี้ยังไม่มีร้านเปิดรับงาน รอข้อเสนอสักครู่`,`${r.reach} nearby shops can see it — none is taking jobs right now; wait for offers`):`แจ้งช่าง ${r.reach} ร้านใกล้คุณแล้ว — รอข้อเสนอสักครู่`):r&&r.reach===0?"ยังไม่มีช่างในรัศมีตอนนี้ — ประกาศยังเปิดอยู่ ร้านที่เข้ามาใหม่จะเห็นทันที":"ประกาศงานด่วนแล้ว",r&&r.reach===0?"ti-alert-triangle":"ti-check");
-        await refreshJobs();openPostView(id);
+        refreshJobs().catch(()=>{});openPostView(id);
     }});
 }
 /* ═══ ฉุกเฉิน: จุดเดียวสำหรับ "รถเสีย" และ "อุบัติเหตุ" ═══
@@ -8756,18 +8760,25 @@ function startAlerts(){
       firstUrg=false}catch(e){}
     saveSnap()};
   /* ชีพจร: ถามหลังบ้านสั้น ๆ ทุก 3 วิว่ามีอะไรใหม่ไหม (งานด่วน ข้อความ ประกาศ) — มีเมื่อไรดึงทันที = เห็นงานแทบจะทันที
-     หลังบ้านรุ่นเก่ายังไม่มีชีพจร → ดึงรายการเต็มทุก 15 วิแทน · ซ่อนแท็บ = ทุก 30 วิ */
+     หลังบ้านรุ่นเก่ายังไม่มีชีพจร → ดึงรายการเต็มทุก 15 วิแทน · ซ่อนแท็บ = ทุก 30 วิ
+     ชีพจรปกติตอบในเสี้ยววินาที: ค้างเกิน 4 วิ (เน็ตสะดุด) ตัดทิ้งแล้วถามใหม่ใน 1.5 วิ — ไม่นั่งรอ 20 วิจนงานด่วนขึ้นช้า */
   const tick=async()=>{
     if(MODE!=="tech"||gen!==ALERT_GEN)return;
-    let changed=true;
-    if(PULSE_OK!==false){try{const r=await api("/api/tech/pulse");PULSE_OK=true;changed=r.v!==PULSE;PULSE=r.v}
-      catch(e){if(e.status===404)PULSE_OK=false;else changed=Date.now()-FULL_AT>15000}}
+    let changed=true,miss=false;
+    if(PULSE_OK!==false){const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),4000);
+      try{const r=await api("/api/tech/pulse",{signal:ac.signal});PULSE_OK=true;changed=r.v!==PULSE;PULSE=r.v}
+      catch(e){if(e.status===404)PULSE_OK=false;else{miss=true;changed=Date.now()-FULL_AT>15000}}
+      finally{clearTimeout(tm)}}
     if(changed||Date.now()-FULL_AT>60000)await full();
-    if(MODE==="tech"&&gen===ALERT_GEN)alertT=setTimeout(tick,document.hidden?30000:PULSE_OK?3000:15000)};
+    if(MODE==="tech"&&gen===ALERT_GEN)alertT=setTimeout(tick,document.hidden?30000:miss?1500:PULSE_OK?3000:15000)};
   tick();
 }
 /* กลับมาที่แท็บ/แอป = ดึงงานทันที ไม่ต้องรอรอบถัดไป */
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&MODE==="tech")startAlerts()});
+/* แจ้งเตือนงานมาถึงเครื่อง (service worker ส่งต่อมา) = มีงาน/ข้อความใหม่แน่ ๆ → ดึงทันที ไม่ต้องรอชีพจรรอบถัดไป */
+try{navigator.serviceWorker&&navigator.serviceWorker.addEventListener("message",e=>{const d=e.data;
+  if(!d||d.type!=="cendon:push"||!/^cendon(?:-job-|$)/.test(String(d.tag||"")))return;
+  if(MODE==="tech")startAlerts();else if(U)refreshJobs().catch(()=>{})})}catch(e){}
 function stopAlerts(){clearTimeout(alertT)}
 
 /* ═══ ลูกค้า: ประกาศหาช่าง ═══ */

@@ -4,7 +4,7 @@
    หน้าเว็บเป็นไฟล์เดียวที่เปลี่ยนบ่อย จึงถามเน็ตก่อนเสมอ (ไม่งั้นผู้ใช้จะติดอยู่กับเวอร์ชันเก่า)
    แต่รอแค่ครู่เดียว — เน็ตมือถือช้า/ค้าง ต้องไม่ทำให้แอปค้างหน้าจอโหลด
    ══════════════════════════════════════════════════════════════════ */
-const CACHE = 'cendon-v425-startup-root-causes';
+const CACHE = 'cendon-v426-studio';
 /* หน้าเว็บที่โหลดสำเร็จล่าสุด แยกตู้ไว้และ "ไม่ลบตอนอัปเดตเวอร์ชัน"
    เดิมทุกครั้งที่ deploy ตู้เก่าถูกล้างหมด เปิดแอปครั้งแรกหลังอัปเดตจึงไม่มีของสำรอง
    ต้องรอเน็ตอย่างเดียว — เน็ตมือถือช้าเมื่อไรก็ค้างหน้าจอโหลดของมือถือ */
@@ -218,9 +218,11 @@ self.addEventListener('push', (e) => {
     try { d.body = e.data.text(); } catch (e2) {}
   }
   e.waitUntil((async () => {
+    const all = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    /* หน้าแอปที่เปิดอยู่ (เช่น Studio) รู้ทันทีว่ามีงาน/ข้อความใหม่ แล้วดึงเอง ไม่ต้องรอรอบถามถัดไป · ส่งแค่ป้ายกำกับ ไม่ส่งเนื้อหา */
+    for (const c of all) try { c.postMessage({ type: 'cendon:push', tag: String(d.tag || '') }); } catch (err) {}
     /* "AI ตอบแล้ว" — ผู้ใช้เปิดหน้าแชต AI ดูอยู่ (แท็บที่มองเห็นอยู่) เห็นคำตอบเองแล้ว ไม่ต้องเด้งบนเครื่องซ้ำ */
     if (/^cendon-ai-/.test(d.tag || '')) {
-      const all = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
       if (all.some(c => c.visibilityState === 'visible' && /^\/chat(?:\.html)?\/?$/.test(new URL(c.url).pathname))) return;
     }
     await self.registration.showNotification(d.title, {

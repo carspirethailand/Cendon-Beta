@@ -2516,6 +2516,115 @@ html[data-theme="dark"] .so-vi{box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
 .bs.store.so-up .hd h3{opacity:1}
 
 @media(min-width:760px){.so-cover{margin:0;border-radius:0 0 22px 22px}.so-av{width:96px;height:96px}.has-cover .so-av{margin-top:-48px}}
+/* ═══ หน้าร้านแบบจัดเอง: การ์ด 3 รูปแบบ (เต็มจอ / การ์ด / ไล่สี) — สีอิงสีประจำร้าน --th ═══ */
+.so-pg.top0{padding-top:0}
+.so-pg.top0 .so-pv{position:absolute;z-index:2;top:calc(20px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);margin:0;padding:6px 12px;border-radius:999px;white-space:nowrap;color:#fff;background:rgba(9,9,11,.6);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.sb{position:relative;margin-top:18px}
+.sb[hidden]{display:none}
+.sb .so-sec{margin:0;padding:0;border:0}
+.sb-card{padding:18px;border-radius:22px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line)}
+.sb-gradient{padding:18px;border-radius:22px;background:linear-gradient(155deg,color-mix(in srgb,var(--th) 22%,var(--surface)),color-mix(in srgb,var(--th) 5%,var(--surface)) 70%);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--th) 22%,var(--line))}
+.sb-full{margin-left:-16px;margin-right:-16px;padding:22px 16px;background:color-mix(in srgb,var(--th) 7%,var(--bg))}
+.sb-full.sb-t-scene,.sb-full.sb-t-cover,.sb-full.sb-t-banner{padding:0;background:none}
+.sb-card.sb-t-scene,.sb-card.sb-t-cover,.sb-card.sb-t-banner{padding:0;overflow:hidden;box-shadow:none;background:none}
+.so-pg>.sb:first-child,.so-pg>.so-pv+.sb{margin-top:0}
+.sb-id{margin-top:18px}.so-pg>.sb-id:first-child,.so-pg>.so-pv+.sb-id{margin-top:0}
+.sb-id.has-cover{margin-top:0}
+.sb-h{margin:0 0 12px;font:700 18px/1.3 var(--kd)}
+.sb-txt{margin:0;font-size:15px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere}
+.sb-empty{display:flex;align-items:center;gap:10px;margin:0;padding:14px;border-radius:14px;font-size:13.5px;line-height:1.5;color:var(--muted);box-shadow:inset 0 0 0 1.5px var(--line);background:color-mix(in srgb,var(--surface-2) 60%,transparent)}
+.sb-empty .ti{flex:none;font-size:20px}
+.sb #soWork:not([hidden])~.sb-wh{display:none}
+.sb-cov.so-cover{margin:0;height:clamp(200px,52vw,340px)}
+.sb-card .sb-cov{border-radius:22px}
+/* ฉาก 3 มิติ: ฟ้าไล่สีตามเวลา + ป้ายแบนรอไว้ก่อน → ฉากขึ้นแล้วค่อยจางเข้า */
+.sb-scene{position:relative;height:clamp(300px,86vw,470px);overflow:hidden;background:var(--sky,#2a76d2)}
+.sb-scene.short{height:clamp(220px,60vw,330px)}
+.sb-card .sb-scene{border-radius:22px}
+.sb-scene canvas{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:0;transition:opacity .7s}
+.sb-scene.on canvas{opacity:1}
+.sb-fb{position:absolute;inset:0;display:grid;place-items:center;transition:opacity .6s}
+.sb-fb::after{content:"";position:absolute;left:0;right:0;bottom:0;height:26%;background:linear-gradient(transparent,rgba(0,0,0,.16))}
+.sb-scene.on .sb-fb{opacity:0;pointer-events:none}
+.sb-sign{position:relative;z-index:1;display:inline-flex;align-items:center;gap:9px;max-width:86%;padding:11px 18px;border-radius:12px;font:700 clamp(17px,5vw,22px)/1.2 var(--kd);color:#fff;background:var(--sg,#e8843c);box-shadow:0 10px 26px -10px rgba(0,0,0,.5),inset 0 -3px 0 rgba(0,0,0,.14)}
+.sb-sign svg{flex:none;width:17px;height:21px}.sb-sign .nt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sb-ban{padding:28px 22px;border-radius:22px;color:#fff;background:linear-gradient(135deg,var(--g1),var(--g2));box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
+.sb-full .sb-ban{border-radius:0;padding:36px 20px}
+.so-pg.top0>section.sb:first-of-type .sb-ban{padding-top:calc(84px + env(safe-area-inset-top))}
+.sb-ban b{display:block;font:700 clamp(22px,6.4vw,30px)/1.22 var(--kd);letter-spacing:-.01em;overflow-wrap:anywhere}
+.sb-ban p{margin:8px 0 0;font-size:15px;line-height:1.6;opacity:.92;overflow-wrap:anywhere}
+.sb-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:10px}
+.sb-stat{padding:12px 4px;text-align:center}
+.sb-stat b{display:block;font:700 26px/1.1 var(--kd);color:var(--ink)}
+.sb-stat small{display:block;margin-top:4px;font-size:12.5px;line-height:1.35;color:var(--muted)}
+.sb-ph{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.sb-ph img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;background:var(--surface-2);cursor:zoom-in}
+.sb-ph.row{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.sb-ph.row::-webkit-scrollbar{display:none}
+.sb-ph.row img{flex:0 0 74%;aspect-ratio:4/3;scroll-snap-align:start}
+.sb-wk{display:grid;gap:2px;margin:0;font-size:14px}
+.sb-wk div{display:flex;justify-content:space-between;max-width:320px;padding:4px 0;color:var(--muted)}.sb-wk dd{margin:0}.sb-wk .now{color:var(--ink);font-weight:600}
+.sb-ct{display:flex;flex-wrap:wrap;gap:8px}.sb-ct .lx-gh{height:46px;padding:0 16px;text-decoration:none}
+@media(min-width:760px){.sb-full{margin-left:0;margin-right:0;border-radius:22px}.sb-full .sb-scene,.sb-full .sb-cov{border-radius:0 0 22px 22px}.sb-full .sb-ban{border-radius:22px}.so-pg>.sb-full:not(:first-child) .sb-scene,.so-pg>.sb-full:not(:first-child) .sb-cov{border-radius:22px}}
+/* ═══ ตัวแต่งหน้าร้าน ═══ */
+.sbe .so{padding-top:4px}
+.sbe-tip,.sbe-note{display:flex;align-items:center;gap:8px;margin:0 0 10px;font-size:13px;line-height:1.5;color:var(--muted)}
+.sbe-tip .ti,.sbe-note .ti{flex:none;font-size:18px}
+.sbe-note{padding:10px 12px;border-radius:14px;background:var(--surface-2);color:var(--ink)}.sbe-note span{flex:1}.sbe-note .lx-gh{height:34px;padding:0 12px;font-size:13px}
+.sbe-nudge,.sbe-cta{display:flex;align-items:center;gap:12px;width:100%;margin:0 0 12px;padding:12px 14px;border:0;border-radius:18px;font:inherit;text-align:left;color:var(--ink);background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);cursor:pointer}
+.sbe-nudge>.ti:first-child{display:grid;place-items:center;flex:none;width:44px;height:44px;border-radius:14px;font-size:22px;color:#fff;background:linear-gradient(180deg,#4688cf,#f8d8ad)}
+.sbe-nudge>span,.sbe-cta>span:not(.sbe-ci){flex:1;min-width:0}.sbe-nudge b,.sbe-cta b{display:block;font-weight:600}.sbe-nudge small,.sbe-cta small{display:block;margin-top:2px;font-size:12.5px;line-height:1.45;color:var(--muted)}
+.sbe-nudge>.ti:last-child,.sbe-cta>.ti{flex:none;font-size:20px;color:var(--muted)}
+.sbe-cta{margin-top:12px}
+.sbe-ci{display:grid;place-items:center;flex:none;width:46px;height:46px;border-radius:15px;font-size:23px;color:#fff;background:var(--sky,linear-gradient(180deg,#4688cf,#f8d8ad));box-shadow:inset 0 0 0 1px rgba(255,255,255,.2)}
+.sbe-b{position:relative;margin-top:18px;border-radius:22px;transition:box-shadow .2s}
+.sbe-b>.sb{margin-top:0}
+.sbe-b.drag{z-index:5;transition:none;background:var(--bg);box-shadow:0 0 0 2px var(--accent),0 22px 44px -18px rgba(0,0,0,.45)}
+.sbe-b.drop{box-shadow:0 0 0 2px var(--accent)}
+.sbe-b.flash{animation:sbeFlash 1.1s ease}
+@keyframes sbeFlash{0%,40%{box-shadow:0 0 0 3px var(--accent)}}
+.sbe-bar{display:flex;align-items:center;gap:2px;min-height:44px;margin:0 0 8px;padding:2px 4px;border-radius:15px;font-size:13.5px;background:var(--surface-2)}
+.sbe-bar>b{flex:1;min-width:0;display:flex;align-items:center;gap:6px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-weight:600}.sbe-bar>b .ti{font-size:17px;color:var(--muted)}
+.sbe-h{display:grid;place-items:center;flex:none;width:40px;height:40px;border:0;border-radius:12px;background:none;color:var(--muted);font-size:20px;cursor:grab;touch-action:none}
+.sbe-h:active{cursor:grabbing;background:var(--surface-2)}
+.sbe-tools{display:flex;align-items:center;gap:2px;flex:none}
+.sbe-tools button{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-width:36px;height:36px;padding:0 8px;border:0;border-radius:11px;background:none;color:var(--ink);font:500 12.5px var(--kb);cursor:pointer}
+.sbe-tools button:hover{background:var(--surface-2)}.sbe-tools button:disabled{opacity:.3;cursor:default;background:none}
+.sbe-tools button .ti{font-size:18px}
+.sbe-tools [data-style]{background:var(--bg);box-shadow:inset 0 0 0 1px var(--line)}
+.sbe-tools [data-del]{color:var(--danger,#c0392b)}
+@media(max-width:420px){.sbe-bar>b .ti{display:none}}
+.sbe-lock{position:relative;margin-top:16px;padding:10px 10px 4px;border-radius:24px;background:color-mix(in srgb,var(--surface-2) 70%,transparent)}
+.sbe-lock .so-share,.sbe-lock .so-vet{pointer-events:none}
+.sbe-lk{display:flex;align-items:center;gap:6px;margin:0 0 8px;font-size:12.5px;color:var(--muted)}.sbe-lk .ti{font-size:15px}
+.sbe-lock-b{padding-bottom:10px}.sbe-lock-b .sbe-lk{margin:0}
+.sbe-add{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:54px;margin-top:16px;border:0;border-radius:18px;font:600 15px var(--kb);color:var(--ink);background:none;box-shadow:inset 0 0 0 1.5px var(--line);cursor:pointer}
+.sbe-add .ti{font-size:20px}.sbe-add:hover{background:var(--surface)}
+.sbe-ft{display:flex;align-items:center;gap:8px;width:100%;max-width:720px;margin:0 auto}
+.sbe-ft .lx-gh{height:48px;padding:0 14px}.sbe-ft .lx-cta{flex:1;height:48px}.sbe-ft .lx-cta:disabled{opacity:.55}
+.sbp{display:grid;gap:8px}
+.sbp-i{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border:0;border-radius:16px;font:inherit;text-align:left;color:var(--ink);background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);cursor:pointer}
+.sbp-i:disabled{opacity:.45;cursor:default}
+.sbp-i>span:last-child{flex:1;min-width:0}.sbp-i b{display:block;font-weight:600}.sbp-i small{display:block;margin-top:2px;font-size:12.5px;line-height:1.45;color:var(--muted)}
+.sbp-ic{display:grid;place-items:center;flex:none;width:42px;height:42px;border-radius:13px;font-size:21px;background:var(--surface-2)}
+.sbx-pv{margin:0 0 16px}.sbx-pv .sb-scene{height:240px;border-radius:20px}.sbx-pv .sb-scene.short{height:190px}
+#sbxBan{margin:0 0 16px}
+.sbx-sw,.sbx-gr{display:flex;flex-wrap:wrap;gap:10px}
+.sbx-sw button{width:38px;height:38px;border:0;border-radius:50%;background:var(--c);box-shadow:inset 0 0 0 1px rgba(0,0,0,.14);cursor:pointer;transition:transform .15s}
+.sbx-gr button{width:58px;height:38px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--g1),var(--g2));cursor:pointer;transition:transform .15s}
+.sbx-sw button[aria-pressed="true"],.sbx-gr button[aria-pressed="true"]{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--ink);transform:scale(1.04)}
+/* ═══ Studio: ฉากร้านเป็นแถบไล่สีบาง ๆ ที่ขอบบนจอ (ไม่ดันงานลง ล่างจางเข้าพื้นหน้า) ═══ */
+.stu-main{position:relative}
+.stu-sky{position:absolute;z-index:0;top:0;left:0;right:0;height:calc(86px + env(safe-area-inset-top));overflow:hidden;pointer-events:none;background:var(--sky);opacity:0;transition:opacity .6s;
+  -webkit-mask-image:linear-gradient(#000,#000 calc(46px + env(safe-area-inset-top)),transparent);mask-image:linear-gradient(#000,#000 calc(46px + env(safe-area-inset-top)),transparent)}
+.stu-main.sky .stu-sky{opacity:1}
+.stu-sky canvas{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:0;transition:opacity .9s}
+.stu-sky.on canvas{opacity:1}
+.stu-body{position:relative;z-index:1}
+.stu-main.sky .stu-top:not(.scrolled){background:transparent;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;--ink:#15151b;--muted:rgba(21,21,27,.66);color:var(--ink)}
+#vTech.sky-dark .stu-main.sky .stu-top:not(.scrolled){--ink:#fff;--muted:rgba(255,255,255,.78);text-shadow:0 1px 8px rgba(0,0,0,.25)}
+.stu-main.sky .stu-top:not(.scrolled) .stu-ib:hover{background:rgba(255,255,255,.18)}
+.stu-main.sky .stu-top:not(.scrolled) .stu-me{box-shadow:0 0 0 2px rgba(255,255,255,.7)}
 /* Studio → ตั้งค่า */
 .ss{max-width:640px;margin:0 auto;padding-top:calc(64px + env(safe-area-inset-top))}
 .ss-g{padding:18px 0;border-bottom:1px solid var(--line)}.ss-g:last-of-type{border-bottom:0}
@@ -3122,6 +3231,7 @@ a.mtab{text-decoration:none}
     </div>
   </aside>
   <div class="stu-main">
+    <div class="stu-sky" id="stuSky" aria-hidden="true"><canvas id="stuSkyCv"></canvas></div>
     <header class="stu-top">
       <button type="button" class="stu-ib stu-m" id="stuExitM" aria-label="กลับสู่ Cendon"><i class="ti ti-arrow-left"></i></button>
       <span class="stu-brand stu-m">Cendon<small>Studio</small></span>
@@ -5446,7 +5556,7 @@ Nav.route({path:":id",parent:"messages",test:p=>/^[0-9a-f-]{36}$/i.test(p.id),op
 Nav.route({path:"chat",parent:"job",open:()=>{if(JOB&&SH.cur&&SH.cur.job)openChat(JOB)}});
 Nav.route({path:"studio",name:"studio",open:async()=>{if(await needMe())openStudio();else applyMode()}});
 /* /studio/<หน้า> — เปิด Studio แล้วเปิดหน้าย่อยนั้น (ลิงก์เดิมยังใช้ได้) */
-Nav.route({path:":k",parent:"studio",test:p=>["settings","stats","edit","post","qr","google","name"].includes(p.k),open:p=>{if(!myShop()||MODE!=="tech")return;({settings:studioSettings,stats:studioStats,edit:openShopEdit,post:()=>gigForm(),qr:shopQr,google:googleSheet,name:handleSheet})[p.k]()}});
+Nav.route({path:":k",parent:"studio",test:p=>["settings","stats","edit","post","qr","google","name","design"].includes(p.k),open:p=>{if(!myShop()||MODE!=="tech")return;({settings:studioSettings,stats:studioStats,edit:openShopEdit,post:()=>gigForm(),qr:shopQr,google:googleSheet,name:handleSheet,design:storeEditor})[p.k]()}});
 Nav.route({path:"work",name:"work",open:async()=>{if(await needMe()&&modesAvail().includes("tech"))setMode("tech");else applyMode()}});
 Nav.route({path:":t",parent:"work",test:p=>["find","queue","messages","shop","ai","posts"].includes(p.t),open:p=>{if(MODE==="tech")setTab2(p.t)}});
 /* เส้นทางยาวต้องลงทะเบียนก่อนเส้นทางสั้นที่ขึ้นต้นเหมือนกัน — ตัวจับเส้นทางเลือกอันแรกที่ตรง ถ้า "staff" มาก่อน ลิงก์ /staff/review จะเปิดแค่โหมดทีมงาน */
@@ -5572,7 +5682,7 @@ function vetFacts(t){
   ].filter(Boolean);
 }
 const fmtDay=at=>new Date(at).toLocaleDateString(LOC,{day:"numeric",month:"short",year:"numeric"});
-function storeHTML(t,mine){
+function storeHTML(t,mine,o){
   const d=mine?null:km(HERE,t),av=t.avatar,cover=t.cover||(t.photos||[]).find(p=>p!==t.avatar)||null;
   const pics=(t.photos||[]).filter(p=>p!==t.avatar&&p!==cover);
   const v=t.vacation,on=openNow(t),facts=vetFacts(t);
@@ -5587,10 +5697,11 @@ function storeHTML(t,mine){
     t.warranty&&["ti-shield",T("รับประกันงาน","Work warranty"),T(`${t.warranty} วัน`,`${t.warranty} days`)],(t.brands2||[]).length&&["ti-car",T("ยี่ห้อที่ถนัด","Brands"),esc(t.brands2.join(", "))],
     t.years&&["ti-award",T("ประสบการณ์","Experience"),T(`${t.years} ปี`,`${t.years} years`)],t.line&&["ti-brand-line","LINE",esc(t.line)],
     t.facebook&&["ti-brand-facebook","Facebook",`<a href="${esc(/^https?:/.test(t.facebook)?t.facebook:"https://facebook.com/"+t.facebook)}" target="_blank" rel="noopener">${T("เปิดเพจ","Open page")}</a>`]].filter(Boolean);
-  return `<article class="so${cover?" has-cover":""}" style="--th:${thColor(t)}">
-    ${mine?`<p class="so-pv"><i class="ti ti-eye"></i>${T("ตัวอย่าง — ลูกค้าเห็นหน้าร้านของคุณแบบนี้","Preview — this is what customers see")}</p>`:""}
-    ${cover?`<div class="so-cover" style="background-image:url('${img(cover)}')" data-z="${img(cover)}" role="img" aria-label="${T("รูปหน้าร้าน","Shop photo")}"></div>`:""}
-    <header class="so-id">
+  /* ส่วนต่าง ๆ ของหน้าร้าน — หน้าร้านแบบเดิมเรียงตามลำดับเดิมทุกอย่าง · หน้าร้านแบบจัดเอง (t.page) หยิบไปเรียงเป็นการ์ด */
+  const P={
+    pv:`${mine?`<p class="so-pv"><i class="ti ti-eye"></i>${T("ตัวอย่าง — ลูกค้าเห็นหน้าร้านของคุณแบบนี้","Preview — this is what customers see")}</p>`:""}`,
+    cover:`${cover?`<div class="so-cover" style="background-image:url('${img(cover)}')" data-z="${img(cover)}" role="img" aria-label="${T("รูปหน้าร้าน","Shop photo")}"></div>`:""}`,
+    head:`<header class="so-id">
       ${avHTML}
       <div class="so-nm">
         <h1 class="nt">${esc(t.shop||t.name)}</h1>
@@ -5598,8 +5709,8 @@ function storeHTML(t,mine){
         ${cats.length?`<p class="so-cats">${esc(cats.join(" · "))}</p>`:""}
       </div>
       <button class="so-share" type="button" data-share aria-label="${T("แชร์ร้านนี้","Share this shop")}"><i class="ti ti-share-2"></i></button>
-    </header>
-    ${t.test?(ME&&ME.staff?`<p class="so-note test"><i class="ti ti-flask"></i><span><b>${T("ร้านทดสอบของทีมงาน","Staff test shop")}</b>${T("ไม่ใช่ร้านจริง ใช้ทดลองระบบเท่านั้น","Not a real shop — for testing only")}</span></p>`
+    </header>`,
+    idrest:`${t.test?(ME&&ME.staff?`<p class="so-note test"><i class="ti ti-flask"></i><span><b>${T("ร้านทดสอบของทีมงาน","Staff test shop")}</b>${T("ไม่ใช่ร้านจริง ใช้ทดลองระบบเท่านั้น","Not a real shop — for testing only")}</span></p>`
       :`<p class="so-note test"><i class="ti ti-flask"></i><span><b>${T("ร้านทดลอง","Trial shop")}</b>${T("ลูกค้าทั่วไปยังไม่เห็นร้านนี้ — เปิดให้ลูกค้าเห็นเมื่อผ่านการตรวจจริง","Customers can't see this shop yet — it opens once it passes the full review")}</span></p>`):""}
     ${v?`<p class="so-note"><i class="ti ti-beach"></i><span><b>${T("ร้านพักรับงานชั่วคราว","Shop is taking a break")}${v.until?T(" ถึง "," until ")+new Date(v.until).toLocaleDateString(LOC,{day:"numeric",month:"short"}):""}</b>${v.note?`<span class="nt">${esc(v.note)}</span>`:T("ตอนนี้ยังขอราคาไม่ได้ ทักถามช่างได้","Quotes are paused — you can still message")}</span></p>`:""}
     <dl class="so-facts">
@@ -5616,27 +5727,41 @@ function storeHTML(t,mine){
         <p>${T("การตรวจนี้บอกว่าร้านมีตัวตนจริงและทีมงานดูอะไรไปแล้ว ไม่ได้รับประกันผลงานทุกครั้ง ถ้ามีปัญหา กด \"แจ้งปัญหา\" ในใบงานได้ตลอด ทีมงานจะช่วยดู","This shows the shop is real and what staff checked — it doesn't guarantee every job. If something goes wrong, tap \"Report a problem\" in the job anytime.")}</p></div>`
     :t.verified?`<p class="so-vet static"><i class="ti ti-shield so-vi"></i><span><b>${T("ผ่านการตรวจโดยทีมงาน Cendon","Approved by the Cendon team")}</b></span></p>`
     :!t.test?`<p class="so-vet static"><i class="ti ti-hourglass so-vi"></i><span><b>${T("ยังรอทีมงานตรวจ","Awaiting review")}</b><small>${T("ลูกค้าจะเห็นร้านเมื่อผ่านการตรวจแล้ว","Customers see the shop once approved")}</small></span></p>`:""}
-    ${t.greet||t.about?`<p class="so-about nt">${esc(t.greet||t.about)}</p>`:""}
-    <section class="so-sec" id="soSvc"><h2>${T("บริการ","Services")}</h2>${mine?ownServiceNotice():""}
+    ${t.greet||t.about?`<p class="so-about nt">${esc(t.greet||t.about)}</p>`:""}`,
+    svc:`<section class="so-sec" id="soSvc"><h2>${T("บริการ","Services")}</h2>${mine?ownServiceNotice():""}
       ${svc.length?`<div class="lx-gigs ch-svc so-gigs">${svc.map((g,i)=>mine?ownCard(g,i):gigCard(g,i,{fit:true})).join("")}</div>
         <p class="so-fine">${T("ราคาเริ่มต้น ช่างยืนยันราคาจริงในใบเสนอราคาก่อนเริ่มงาน","Starting prices — the mechanic confirms the real price in a quote before starting")}</p>`
       :`<p class="so-empty">${T("ร้านนี้ยังไม่ได้ลงบริการพร้อมราคา — กดขอราคาเพื่อให้ช่างประเมินให้","No priced services yet — ask for a quote and the mechanic will estimate")}</p>`}
-    </section>
-    <section class="so-sec" id="soRev"><h2>${T("รีวิวจากงานจริง","Reviews from real jobs")}</h2><div id="chRev">${reviewsHTML(t,null)}</div></section>
-    <section class="so-sec" id="soWork" hidden><h2>${T("ผลงานที่มีคลิปหลักฐาน","Work with proof clips")}</h2><div class="so-work" id="soWorkL"></div>
-      <p class="so-fine">${T("คลิปที่ช่างอัดในแอประหว่างซ่อมงานจริง ขึ้นที่นี่เมื่อเจ้าของรถอนุญาตเท่านั้น","Clips recorded in the app during real jobs — shown only with the car owner's permission")}</p></section>
-    <section class="so-sec" id="soAbout"><h2>${T("ข้อมูลร้าน","About the shop")}</h2>
+    </section>`,
+    rev:`<section class="so-sec" id="soRev"><h2>${T("รีวิวจากงานจริง","Reviews from real jobs")}</h2><div id="chRev">${reviewsHTML(t,null)}</div></section>`,
+    work:`<section class="so-sec" id="soWork" hidden><h2>${T("ผลงานที่มีคลิปหลักฐาน","Work with proof clips")}</h2><div class="so-work" id="soWorkL"></div>
+      <p class="so-fine">${T("คลิปที่ช่างอัดในแอประหว่างซ่อมงานจริง ขึ้นที่นี่เมื่อเจ้าของรถอนุญาตเท่านั้น","Clips recorded in the app during real jobs — shown only with the car owner's permission")}</p></section>`,
+    about:`<section class="so-sec" id="soAbout"><h2>${T("ข้อมูลร้าน","About the shop")}</h2>
       ${t.about&&t.greet?`<p class="so-about2 nt">${esc(t.about)}</p>`:""}
       <dl class="so-dl">${info.map(([i,k,x])=>`<div><dt><i class="ti ${i}"></i>${k}</dt><dd class="nt">${x}</dd></div>`).join("")}</dl>
       ${pics.length?`<div class="so-pics">${pics.slice(0,12).map(p=>`<img src="${img(p)}" alt="" loading="lazy" data-z="${img(p)}"/>`).join("")}</div>`:""}
-    </section>
-    <section class="so-sec so-care"><h2>${T("ก่อนจ้าง ควรรู้","Before you hire")}</h2><ul>
+    </section>`,
+    care:`<section class="so-sec so-care"><h2>${T("ก่อนจ้าง ควรรู้","Before you hire")}</h2><ul>
       <li><i class="ti ti-receipt"></i>${T("ขอราคาฟรี ช่างส่งใบเสนอราคาให้ดูก่อน เป็นงานเมื่อคุณกดยืนยันเอง","Quotes are free — it only becomes a job when you accept")}</li>
       <li><i class="ti ti-lock"></i>${T("เบอร์และที่อยู่ของคุณถูกซ่อนไว้จนกว่าคุณยืนยันราคา","Your phone and address stay hidden until you accept a quote")}</li>
       <li><i class="ti ti-cash"></i>${T("จ่ายเงินกับช่างโดยตรงเมื่องานเสร็จ ตามราคาในใบงาน งานเพิ่มต้องให้คุณกดยอมรับก่อน","Pay the mechanic directly when done, at the agreed price — extra work needs your approval first")}</li>
-      <li><i class="ti ti-flag"></i>${T("มีปัญหา กด \"แจ้งปัญหา\" ในใบงานได้ตลอด ทีมงานช่วยดู","Something wrong? Tap \"Report a problem\" in the job anytime")}</li></ul></section>
-    ${!mine&&U?`<button class="so-rep" type="button" data-report>${T("แจ้งร้านนี้ให้ทีมงานตรวจ","Report this shop to the team")}</button>`:""}
-    <p class="so-ser"><span>CENDON</span><span>${T("ร้าน","Shop")} #${esc(String(t.id).slice(0,8).toUpperCase())}</span></p>
+      <li><i class="ti ti-flag"></i>${T("มีปัญหา กด \"แจ้งปัญหา\" ในใบงานได้ตลอด ทีมงานช่วยดู","Something wrong? Tap \"Report a problem\" in the job anytime")}</li></ul></section>`,
+    rep:`${!mine&&U?`<button class="so-rep" type="button" data-report>${T("แจ้งร้านนี้ให้ทีมงานตรวจ","Report this shop to the team")}</button>`:""}`,
+    ser:`<p class="so-ser"><span>CENDON</span><span>${T("ร้าน","Shop")} #${esc(String(t.id).slice(0,8).toUpperCase())}</span></p>`,
+  };
+  if(storePage(t))return storeBlocksHTML(t,mine,P,{cover,pics,svc,info,weekRows,on,facts,cats,rate},o);
+  return `<article class="so${cover?" has-cover":""}" style="--th:${thColor(t)}">
+    ${P.pv}
+    ${P.cover}
+    ${P.head}
+    ${P.idrest}
+    ${P.svc}
+    ${P.rev}
+    ${P.work}
+    ${P.about}
+    ${P.care}
+    ${P.rep}
+    ${P.ser}
   </article>`;
 }
 /* แถบล่างของหน้าร้าน: ทักช่าง (รอง) · โทร (เมื่อร้านเปิดให้โทร) · ขอราคา (หลัก สีหมึก) */
@@ -5649,6 +5774,277 @@ function storeFoot(t,mine){
       :ME&&ME.staff&&!t.test?`<button class="lx-gh lx-ic" id="bSus" type="button" title="${T("ซ่อนร้าน","Hide shop")}" aria-label="${T("ซ่อนร้าน","Hide shop")}"><i class="ti ti-eye-off"></i></button>`:""}
     <button class="lx-cta" id="bBook" type="button"${v?" disabled":""}>${v?T("ปิดรับงานชั่วคราว","Not taking jobs"):T("ขอราคา","Get a quote")}</button></div>`;
 }
+/* ═══ หน้าร้านแบบจัดเอง (Studio → ร้าน → แต่งหน้าร้าน) ═══
+   ช่างเรียงการ์ดเอง เลือกรูปแบบ เต็มจอ / การ์ด / ไล่สี · ไม่มี t.page = หน้าร้านแบบเดิม (ร้านเดิมทุกร้านเหมือนเดิมจนกว่าช่างจะแต่ง)
+   ล็อกไว้เสมอ ช่างซ่อน/ย้ายไม่ได้: ป้ายชื่อร้าน + ผลตรวจของทีมงาน (ถัดจากการ์ดหัวด้านบน) · "ก่อนจ้าง ควรรู้" + แจ้งปัญหา (ท้ายหน้า) · ปุ่มขอราคา (แถบล่าง)
+   ข้อมูลจริง (บริการ รีวิว ผลงาน ตัวเลข เวลา) ดึงจากระบบเสมอ — ช่างพิมพ์เองได้แค่ข้อความในแบนเนอร์/กล่องข้อความ/ป้ายในฉาก */
+const SB_TYPES={
+  scene:{ic:"ti-building-store",n:["ฉากหน้าร้าน 3 มิติ","3D shopfront"],d:["อู่ของคุณแบบการ์ตูน ฟ้าเปลี่ยนตามเวลาจริง ป้ายเป็นชื่อร้าน","Your shop as a living cartoon scene"],hero:1,styles:["full","card"],edit:1},
+  cover:{ic:"ti-photo",n:["รูปปกหน้าร้าน","Cover photo"],d:["รูปหน้าร้านจริงแบบเต็มกว้าง (ตั้งได้ที่แก้ไขข้อมูลร้าน)","Your real shop photo, full width"],hero:1,styles:["full","card"]},
+  banner:{ic:"ti-sparkles",n:["แบนเนอร์ไล่สี","Gradient banner"],d:["หัวข้อใหญ่ เช่น โปรโมชัน ข่าวร้าน","A big headline, e.g. a promotion"],hero:1,multi:1,styles:["full","card"],edit:1},
+  stats:{ic:"ti-chart-bar",n:["ตัวเลขเด่น","Highlights"],d:["งานสำเร็จ คะแนน ประสบการณ์ — จากข้อมูลจริง","Jobs done, rating, experience — real data"],styles:["card","gradient","full"]},
+  services:{ic:"ti-tool",n:["บริการ","Services"],d:["บริการพร้อมราคาของร้าน","Your priced services"],styles:["card","gradient","full"]},
+  reviews:{ic:"ti-star",n:["รีวิว","Reviews"],d:["รีวิวจากงานจริง","Reviews from real jobs"],styles:["card","gradient","full"]},
+  work:{ic:"ti-video",n:["ผลงานมีคลิป","Proof clips"],d:["คลิปจากงานจริงที่เจ้าของรถอนุญาต","Clips from real jobs, with permission"],styles:["card","gradient","full"]},
+  photos:{ic:"ti-layout-grid",n:["แกลเลอรีรูป","Photo gallery"],d:["รูปร้านและผลงาน แบบตาราง หรือเลื่อนข้าง","Shop and work photos — grid or swipe"],styles:["card","full","gradient"],edit:1},
+  hours:{ic:"ti-clock",n:["เวลาทำการ","Opening hours"],d:["ตารางเปิด-ปิดทั้งสัปดาห์","The whole week's schedule"],styles:["card","gradient","full"]},
+  about:{ic:"ti-info-circle",n:["ข้อมูลร้าน","Shop details"],d:["ที่อยู่ รัศมีรับงาน รับประกัน ยี่ห้อที่ถนัด","Address, radius, warranty, brands"],styles:["card","gradient","full"]},
+  text:{ic:"ti-notes",n:["กล่องข้อความ","Text box"],d:["เล่าเรื่องร้าน จุดเด่น หรือประกาศ","Your story, strengths or a notice"],multi:1,styles:["card","gradient","full"],edit:1},
+  contact:{ic:"ti-message-circle",n:["ช่องทางติดต่อ","Contact"],d:["ปุ่มทักช่าง โทร LINE Facebook","Message, call, LINE, Facebook buttons"],styles:["card","gradient","full"]}
+};
+const SB_STYLE={full:["ti-arrows-maximize",["เต็มจอ","Full"]],card:["ti-square",["การ์ด","Card"]],gradient:["ti-palette",["ไล่สี","Gradient"]]};
+const SB_GRAD={sunset:["#ff8a4c","#e2477c"],ocean:["#37a2ff","#1d4ed8"],forest:["#37b779","#16704a"],berry:["#a855f7","#ec4899"],night:["#2b3270","#0f1029"],gold:["#f9b93b","#e2731f"]};
+const SB_SIGN=["#e8843c","#d62f35","#2f6fb5","#1f8a5b","#22252b","#7b3fb5","#f2c230"],SB_WALL=["#f4e7d4","#ffffff","#cfe8de","#d5e4f5","#f6d3d0","#e3dfd8"],SB_ACC=["#e07a38","#c9302c","#2f6fb5","#2f9e6e","#3a3d45"];
+const sbN=k=>T(...SB_TYPES[k].n);
+const storePage=t=>t&&t.page&&Array.isArray(t.page.blocks)&&t.page.blocks.length?t.page:null;
+const SB_LOGO='<svg viewBox="-6 -6 94.8 112" aria-hidden="true"><path fill="currentColor" d="'+LOGO+'"/></svg>';
+/* ป้าย/สีในฉาก: จากการ์ดฉากที่ช่างตั้ง · ยังไม่ตั้ง = ชื่อร้าน + สีประจำร้าน */
+function storeScene(t,b){const q=(b&&b.props)||((storePage(t)||{blocks:[]}).blocks.find(x=>x.type==="scene")||{}).props||{};
+  const c=String(thColor(t)).toLowerCase();
+  return {name:q.sign||t.shop||t.name||"",signColor:q.signColor||c,wallColor:q.wallColor||"#f4e7d4",accentColor:q.accentColor||c}}
+function sbStats(t){return [t.jobs&&[t.jobs,T("งานสำเร็จ","jobs done")],t.reviewCount&&[Number(t.rating).toFixed(1)+"★",T(t.reviewCount+" รีวิว",t.reviewCount+" reviews")],
+  t.proven&&[t.proven,T("งานมีคลิปหลักฐาน","with proof clips")],t.years&&[t.years,T("ปีประสบการณ์","years' experience")],t.warranty&&[t.warranty,T("วันรับประกัน","days warranty")]].filter(Boolean)}
+/* การ์ดหนึ่งใบ — ว่าง (ไม่มีข้อมูลจริงให้แสดง) = ลูกค้าไม่เห็นการ์ดนั้น · เจ้าของร้านเห็นกล่องบอกวิธีเติม */
+function sbHTML(t,mine,b,P,X,hint){
+  const M=SB_TYPES[b.type];if(!M)return "";
+  const st=M.styles.includes(b.style)?b.style:M.styles[0],q=b.props||{};
+  const empty=msg=>hint?`<p class="sb-empty"><i class="ti ${M.ic}"></i>${msg}</p>`:"";
+  let x="";
+  if(b.type==="scene"){const s=storeScene(t,b);
+    x=`<div class="sb-scene ${q.size==="short"?"short":""}" data-scene="${esc(b.id)}" style="--sky:${skyCSS()}"><canvas aria-hidden="true"></canvas>
+      <div class="sb-fb" role="img" aria-label="${esc(T("ฉากหน้าร้าน ","Shopfront scene: ")+s.name)}"><span class="sb-sign" style="--sg:${esc(s.signColor)}">${SB_LOGO}<span class="nt">${esc(s.name)}</span></span></div></div>`}
+  else if(b.type==="cover")x=X.cover?`<div class="so-cover sb-cov" style="background-image:url('${img(X.cover)}')" data-z="${img(X.cover)}" role="img" aria-label="${T("รูปหน้าร้าน","Shop photo")}"></div>`:empty(T("ยังไม่มีรูปปก — ตั้งรูปปกได้ที่ แก้ไขข้อมูลร้าน","No cover photo yet — set one in Edit shop details"));
+  else if(b.type==="banner"){const g=SB_GRAD[q.grad]||SB_GRAD.sunset;
+    x=q.title||q.text?`<div class="sb-ban" style="--g1:${g[0]};--g2:${g[1]}">${q.title?`<b class="nt">${esc(q.title)}</b>`:""}${q.text?`<p class="nt">${esc(q.text)}</p>`:""}</div>`:empty(T("แตะ แก้ เพื่อพิมพ์หัวข้อแบนเนอร์","Tap Edit to write the banner"))}
+  else if(b.type==="stats"){const S=sbStats(t);x=S.length?`<div class="sb-stats">${S.map(([v,k])=>`<div class="sb-stat"><b>${esc(String(v))}</b><small>${k}</small></div>`).join("")}</div>`:empty(T("ตัวเลขจะขึ้นเองเมื่อมีงานสำเร็จหรือรีวิว","Numbers appear once you have jobs or reviews"))}
+  else if(b.type==="services")x=P.svc;
+  else if(b.type==="reviews")x=P.rev;
+  else if(b.type==="work")x=P.work+(hint?`<p class="sb-empty sb-wh"><i class="ti ${M.ic}"></i>${T("ขึ้นเองเมื่อมีคลิปจากงานจริงที่เจ้าของรถอนุญาต","Shows up once you have clips from real jobs that owners allowed")}</p>`:"");
+  else if(b.type==="photos")x=X.pics.length?`<h2 class="sb-h">${T("รูปร้านและผลงาน","Photos")}</h2><div class="sb-ph ${q.layout==="row"?"row":""}">${X.pics.slice(0,12).map(p=>`<img src="${img(p)}" alt="" loading="lazy" data-z="${img(p)}"/>`).join("")}</div>`:empty(T("ยังไม่มีรูปผลงาน — เพิ่มได้ที่ แก้ไขข้อมูลร้าน","No photos yet — add them in Edit shop details"));
+  else if(b.type==="hours"){const W=t.week;x=W&&W.some(w=>w&&w.on)?`<h2 class="sb-h">${T("เวลาทำการ","Opening hours")}</h2><dl class="sb-wk">${W.map((w,i)=>`<div class="${(new Date().getDay()+6)%7===i?"now":""}"><dt>${dnOf(i)}</dt><dd>${w&&w.on?`${w.open}–${w.close}`:T("ปิด","Closed")}</dd></div>`).join("")}</dl>`
+      :t.hours?`<h2 class="sb-h">${T("เวลาทำการ","Opening hours")}</h2><p class="nt">${esc(t.hours)}</p>`:empty(T("ยังไม่ได้ตั้งเวลาทำการ — ตั้งได้ที่ แก้ไขข้อมูลร้าน","No hours yet — set them in Edit shop details"))}
+  else if(b.type==="about")x=`<section class="so-sec" id="soAbout"><h2>${T("ข้อมูลร้าน","About the shop")}</h2>${t.about&&t.greet?`<p class="so-about2 nt">${esc(t.about)}</p>`:""}<dl class="so-dl">${X.info.map(([i,k,v])=>`<div><dt><i class="ti ${i}"></i>${k}</dt><dd class="nt">${v}</dd></div>`).join("")}</dl></section>`;
+  else if(b.type==="text")x=q.title||q.body?`${q.title?`<h2 class="sb-h nt">${esc(q.title)}</h2>`:""}${q.body?`<p class="sb-txt nt">${esc(q.body)}</p>`:""}`:empty(T("แตะ แก้ เพื่อพิมพ์ข้อความ","Tap Edit to write your text"));
+  else if(b.type==="contact"){const L=[`<button type="button" class="lx-gh" data-sbmsg${mine?" disabled":""}><i class="ti ti-message-circle"></i>${T("ทักช่าง","Message")}</button>`,
+      t.phone&&`<a class="lx-gh" href="${mine?"#":"tel:"+esc(t.phone)}" data-sbtel><i class="ti ti-phone"></i>${T("โทร","Call")}</a>`,
+      t.line&&`<a class="lx-gh" href="https://line.me/R/ti/p/~${encodeURIComponent(String(t.line).replace(/^@?/,"@").replace(/^@/,""))}" target="_blank" rel="noopener"><i class="ti ti-brand-line"></i>LINE</a>`,
+      t.facebook&&`<a class="lx-gh" href="${esc(/^https?:/.test(t.facebook)?t.facebook:"https://facebook.com/"+t.facebook)}" target="_blank" rel="noopener"><i class="ti ti-brand-facebook"></i>Facebook</a>`].filter(Boolean);
+    x=`<h2 class="sb-h">${T("ติดต่อร้าน","Contact the shop")}</h2><div class="sb-ct">${L.join("")}</div>`}
+  /* ผลงานมีคลิป: ซ่อนทั้งการ์ดจนกว่าจะโหลดเจอคลิป (loadWork เปิดเอง) */
+  return x?`<section class="sb sb-${st} sb-t-${b.type}" data-b="${esc(b.id)}"${b.type==="work"&&!hint?" hidden":""}>${x}</section>`:"";
+}
+const sbStyle=b=>{const S=SB_TYPES[b.type].styles;return S.includes(b.style)?b.style:S[0]};
+function storeBlocksHTML(t,mine,P,X,o){
+  const edit=!!(o&&o.edit),B=storePage(t).blocks.filter(b=>SB_TYPES[b.type]);
+  const R=B.map((b,i)=>({b,i,st:sbStyle(b),h:sbHTML(t,mine,b,P,X,edit)})).filter(r=>edit||r.h);
+  let k=0;while(k<R.length&&SB_TYPES[R[k].b.type].hero)k++;
+  const one=r=>edit?sbFrame(r.b,r.i,B.length,r.h):r.h,first=R[0],last=k?R[k-1]:null;
+  /* การ์ดเต็มจอบนสุด = ชิดขอบบน (เหมือนรูปปกเดิม) · ฉาก/รูปปกเต็มจอติดป้ายชื่อร้าน = รูปร้านเกยขอบล่างแบบเดิม */
+  const top0=!edit&&k&&first.st==="full",ov=!edit&&last&&last.st==="full"&&(last.b.type==="scene"||last.b.type==="cover");
+  const id=`<div class="sb-id${ov?" has-cover":""}${edit?" sbe-lock":""}">${edit?`<p class="sbe-lk"><i class="ti ti-lock"></i>${T("ป้ายชื่อร้าน + ผลตรวจของทีมงาน — ลูกค้าเห็นเสมอ","Shop name + team check — always shown")}</p>`:""}${P.head}${P.idrest}</div>`;
+  const tail=edit?`<button type="button" class="sbe-add" data-add><i class="ti ti-plus"></i>${T("เพิ่มการ์ด","Add a card")}</button><div class="sbe-lock sbe-lock-b"><p class="sbe-lk"><i class="ti ti-lock"></i>${T("ก่อนจ้าง ควรรู้ + ปุ่มขอราคา — ลูกค้าเห็นเสมอ","Before you hire + quote button — always shown")}</p></div>`:`${P.care}${P.rep}${P.ser}`;
+  return `<article class="so so-pg${top0?" top0":""}${edit?" sbe-on":""}" style="--th:${thColor(t)}">${edit?"":P.pv}${R.slice(0,k).map(one).join("")}${id}${R.slice(k).map(one).join("")}${tail}</article>`;
+}
+/* ── ฉากหน้าร้าน 3 มิติ (shop-scene.js) ──
+   โหลดเมื่อผืนอยู่บนจอ + หน้าโหลดเสร็จ + เครื่องว่าง (แบบเดียวกับ fx3d) · ประหยัดเน็ต/เครื่องสเปกต่ำ/ไม่มี WebGL = ฟ้าไล่สีตามเวลา + ป้ายแบบแบน
+   หนึ่งผืน = หนึ่ง WebGL · ผืนที่หลุดจากหน้า (แผ่นปิด/วาดใหม่) ถูกเก็บกวาดเอง */
+const SCENE_URL="/shop-scene.js?v=1",SCENES=new Set();
+let SCENE_MOD=null,SCENE_OK=null,sceneSweep=0;
+function sceneOk(){try{if(navigator.connection&&navigator.connection.saveData)return false;
+  if((navigator.hardwareConcurrency||8)<=4||(navigator.deviceMemory||8)<=3)return false;
+  const c=document.createElement("canvas");return !!(c.getContext("webgl2")||c.getContext("webgl"))}catch(e){return false}}
+const sceneLoad=()=>SCENE_MOD||(SCENE_MOD=import(SCENE_URL).catch(e=>{SCENE_MOD=null;throw e}));
+const nowH=()=>{const d=new Date();return d.getHours()+d.getMinutes()/60};
+/* ฟ้าไล่สีตามเวลา (ใช้ก่อนฉากขึ้น และแทนฉากในเครื่องที่ไม่แสดง 3 มิติ) — โทนเดียวกับในฉาก */
+function skyCSS(h){h=h==null?nowH():h;return h>=5&&h<6.5?"linear-gradient(180deg,#31508f,#f39c66)":h>=6.5&&h<10?"linear-gradient(180deg,#4688cf,#f8d8ad)":h>=10&&h<16?"linear-gradient(180deg,#2a76d2,#bfe2f9)":h>=16&&h<18?"linear-gradient(180deg,#3a5ca8,#ffbf78)":h>=18&&h<19.2?"linear-gradient(180deg,#2a2354,#ff7843)":"linear-gradient(180deg,#050a1f,#1c2250)"}
+const skyDark=h=>{h=h==null?nowH():h;return !(h>=6.3&&h<17.2)};
+function shopScene(cv,opts){
+  const ctl={h:null,q:[],dead:false,cv,
+    call(fn,...a){if(this.h){try{return this.h[fn]&&this.h[fn](...a)}catch(e){}}else if(!this.dead)this.q.push([fn,a])},
+    dispose(){this.dead=true;SCENES.delete(this);try{this.h&&this.h.dispose()}catch(e){}this.h=null;this.q=[]}};
+  if(SCENE_OK===null)SCENE_OK=sceneOk();
+  if(!cv||!SCENE_OK){ctl.dead=true;return ctl}
+  SCENES.add(ctl);
+  if(!sceneSweep)sceneSweep=setInterval(()=>{SCENES.forEach(c=>{if(!c.cv.isConnected)c.dispose()});if(!SCENES.size){clearInterval(sceneSweep);sceneSweep=0}},3000);
+  const fg=()=>!document.hidden&&(!window.CendonView||CendonView.visible);
+  let started=false;
+  const go=()=>{if(started||ctl.dead||!cv.isConnected)return;if(!fg()){document.addEventListener("visibilitychange",go,{once:true});return}started=true;
+    sceneLoad().then(M=>{if(ctl.dead||!cv.isConnected)return;
+      ctl.h=M.mount(cv,{...opts,onFrame:()=>{cv.parentElement&&cv.parentElement.classList.add("on")}});
+      if(!ctl.h){ctl.dead=true;return}ctl.q.splice(0).forEach(([fn,a])=>ctl.call(fn,...a))}).catch(()=>{ctl.dead=true})};
+  const idle=()=>window.requestIdleCallback?requestIdleCallback(go,{timeout:opts.wait||1500}):setTimeout(go,300);
+  const ready=()=>{if(document.readyState==="complete")idle();else addEventListener("load",idle,{once:true})};
+  if(window.IntersectionObserver){const io=new IntersectionObserver(es=>{if(!cv.isConnected)return io.disconnect();if(!es.some(e=>e.isIntersecting))return;io.disconnect();ready()});io.observe(cv)}else ready();
+  return ctl;
+}
+/* ฉากบนหน้าร้าน: ปิดแผ่น = เลิกวาด คืนหน่วยความจำ */
+function mountStoreScenes(b,t){
+  const list=[...b.querySelectorAll("[data-scene]")].map(el=>{const blk=(storePage(t)||{blocks:[]}).blocks.find(x=>x.id===el.dataset.scene);
+    return shopScene(el.querySelector("canvas"),{view:blk&&blk.props&&blk.props.size==="short"?"store":"tall",shop:storeScene(t,blk)})});
+  if(!list.length)return;const prev=SH.onClose;SH.onClose=()=>{list.forEach(c=>c.dispose());if(prev)prev()};
+}
+/* ═══ Studio: ฉากร้านตัวเองเป็นแถบไล่สีบาง ๆ ที่ขอบบนจอ ═══
+   ไม่ดันงานลง (อยู่ใต้แถบหัว ล่างจางหายเข้าพื้นหน้า) · แถบหัวโปร่งตอนอยู่บนสุด เลื่อนลงแล้วกลับเป็นแถบทึบ
+   ตัวหนังสือบนแถบหัวเป็นสีขาวเมื่อฟ้ามืด (เย็น/ค่ำ) · แผ่นอื่นเปิดทับ = หยุดวาด · เครื่องที่ไม่แสดง 3 มิติ = ฟ้าไล่สีตามเวลา */
+let STU_SKY=null,stuSkyT=0,stuSkyK="";
+function stuSky(){
+  const t=myShop(),box=$("stuSky"),main=box&&box.parentElement;if(!box||!t)return;
+  box.style.setProperty("--sky",skyCSS());main.classList.add("sky");$("vTech").classList.toggle("sky-dark",skyDark());
+  const shop=storeScene(t),k=JSON.stringify(shop);
+  if(STU_SKY&&!STU_SKY.dead){if(k!==stuSkyK)STU_SKY.call("setShop",{...shop,bounce:false})}
+  else if(STU_SKY===null)STU_SKY=shopScene($("stuSkyCv"),{view:"strip",intro:false,shadows:false,dprMax:1.5,fps:15,shop,wait:2500});
+  stuSkyK=k;
+  if(!stuSkyT)stuSkyT=setInterval(()=>{if(MODE==="tech"){box.style.setProperty("--sky",skyCSS());$("vTech").classList.toggle("sky-dark",skyDark())}},300000);
+}
+addEventListener("scroll",()=>{const top=document.querySelector(".stu-top");if(top)top.classList.toggle("scrolled",scrollY>6)},{passive:true});
+new MutationObserver(()=>{if(STU_SKY&&STU_SKY.h)STU_SKY.call("pause",$("bs").classList.contains("on"))}).observe($("bs"),{attributes:true,attributeFilter:["class"]});
+
+/* ═══ ตัวแต่งหน้าร้าน ═══
+   เห็นหน้าร้านจริงทันทีขณะแต่ง · ลากที่จับ (หรือลูกศร) เพื่อย้าย · ปุ่มบนการ์ด: รูปแบบ แก้ ลบ · เพิ่มการ์ดจากคลัง
+   ทุกการแก้เก็บร่างไว้ในเครื่อง (ต่อบัญชี+ร้าน) — บันทึกไม่สำเร็จ ร่างไม่หาย · บันทึกแล้วลบร่าง */
+const sbDraftKey=t=>"spire_store_draft:"+(U&&U.uid||"")+":"+t.id;
+const sbId=k=>k+Math.random().toString(36).slice(2,8);
+function sbDefaults(t,type){
+  if(type==="scene"){const s=storeScene(t,{props:{}});return {sign:s.name.slice(0,28),signColor:s.signColor,wallColor:s.wallColor,accentColor:s.accentColor,size:"tall"}}
+  if(type==="banner")return {title:"",text:"",grad:"sunset"};if(type==="text")return {title:"",body:""};if(type==="photos")return {layout:"grid"};return undefined;
+}
+function sbStart(t){
+  const cover=t.cover||(t.photos||[]).find(p=>p!==t.avatar),pics=(t.photos||[]).filter(p=>p!==t.avatar&&p!==cover);
+  const mk=(type,style)=>({id:sbId(type[0]),type,style,...(sbDefaults(t,type)?{props:sbDefaults(t,type)}:{})});
+  return [mk("scene","full"),...(cover?[mk("cover","card")]:[]),mk("services","card"),mk("reviews","card"),mk("work","card"),mk("about","card"),...(pics.length?[mk("photos","card")]:[])];
+}
+function sbFrame(b,i,n,h){
+  const M=SB_TYPES[b.type],st=M.styles.includes(b.style)?b.style:M.styles[0],S=SB_STYLE[st];
+  return `<div class="sbe-b" data-i="${i}" data-id="${esc(b.id)}">
+    <div class="sbe-bar"><button type="button" class="sbe-h" data-drag aria-label="${T("ลากเพื่อย้าย: ","Drag to move: ")+sbN(b.type)}"><i class="ti ti-menu-2"></i></button>
+      <b><i class="ti ${M.ic}"></i>${sbN(b.type)}</b>
+      <span class="sbe-tools"><button type="button" data-up aria-label="${T("ย้ายขึ้น","Move up")}"${i?"":" disabled"}><i class="ti ti-arrow-up"></i></button>
+        <button type="button" data-down aria-label="${T("ย้ายลง","Move down")}"${i<n-1?"":" disabled"}><i class="ti ti-arrow-down"></i></button>
+        ${M.styles.length>1?`<button type="button" data-style aria-label="${T("รูปแบบ: ","Style: ")+T(...S[1])}"><i class="ti ${S[0]}"></i><span>${T(...S[1])}</span></button>`:""}
+        ${M.edit?`<button type="button" data-edit aria-label="${T("แก้","Edit")}"><i class="ti ti-pencil"></i></button>`:""}
+        <button type="button" data-del aria-label="${T("ลบการ์ดนี้","Remove this card")}"><i class="ti ti-trash"></i></button></span></div>
+    ${h||`<p class="sb-empty"><i class="ti ${M.ic}"></i>${T("การ์ดนี้ยังไม่มีข้อมูลให้แสดง","Nothing to show in this card yet")}</p>`}</div>`;
+}
+async function storeEditor(){
+  const t0=myShop();if(!t0)return;
+  try{await loadOwnGigs()}catch(e){toast(e.message,"ti-alert-triangle");return}
+  const saved=storePage(t0);let draft=null;
+  try{const d=JSON.parse(localStorage.getItem(sbDraftKey(t0))||"null");if(d&&Array.isArray(d.blocks)&&d.blocks.length)draft=d}catch(e){}
+  const ED={blocks:JSON.parse(JSON.stringify((draft||saved||{blocks:sbStart(t0)}).blocks)),fromDraft:!!draft,dirty:!!draft||!saved,scene:null,sceneEl:null,flash:null};
+  const keep=()=>{ED.dirty=true;try{localStorage.setItem(sbDraftKey(t0),JSON.stringify({v:1,blocks:ED.blocks,at:Date.now()}))}catch(e){}paintFoot()};
+  const tNow=()=>({...myShop(),page:{v:1,blocks:ED.blocks}});
+  /* ฉากในตัวแต่งใช้ผืนเดียวตลอด (ย้ายตามการ์ด) — ไม่สร้าง WebGL ใหม่ทุกครั้งที่ขยับ */
+  const sceneSlot=root=>{const slot=root.querySelector("[data-scene]");const blk=ED.blocks.find(b=>b.type==="scene");
+    if(!slot||!blk)return;
+    /* ฉากถูกเก็บกวาดระหว่างเปิดแผ่นอื่นทับ (คลังการ์ด/ดูแบบลูกค้า) → สร้างใหม่ */
+    if(ED.scene&&ED.scene.dead){ED.scene=null;ED.sceneEl=null}
+    if(!ED.sceneEl){ED.sceneEl=slot;ED.scene=shopScene(slot.querySelector("canvas"),{view:"tall",shop:storeScene(tNow(),blk),wait:400})}
+    else if(ED.sceneEl!==slot){slot.replaceWith(ED.sceneEl)}
+    ED.sceneEl.classList.toggle("short",blk.props&&blk.props.size==="short")};
+  const paintFoot=()=>{const s=$("sbeSave");if(s){s.disabled=!ED.dirty;s.innerHTML=ED.dirty?`<i class="ti ti-device-floppy"></i>${T("บันทึกหน้าร้าน","Save storefront")}`:`<i class="ti ti-check"></i>${T("บันทึกแล้ว","Saved")}`}};
+  function render(){
+    const root=$("sbe");if(!root)return;
+    if(ED.sceneEl&&ED.sceneEl.isConnected)ED.sceneEl.remove();
+    root.innerHTML=`${ED.fromDraft?`<p class="sbe-note"><i class="ti ti-history"></i><span>${T("แก้ต่อจากร่างที่ยังไม่บันทึก","Continuing your unsaved draft")}</span><button type="button" class="lx-gh" data-drop>${T("ทิ้งร่าง","Discard draft")}</button></p>`:""}
+      <p class="sbe-tip"><i class="ti ti-hand-move"></i>${T("ลากที่จับ ≡ เพื่อย้าย · แตะปุ่มรูปแบบเพื่อสลับ เต็มจอ / การ์ด / ไล่สี","Drag ≡ to move · tap the style button for Full / Card / Gradient")}</p>
+      ${ED.blocks.some(b=>b.type==="scene")?"":`<button type="button" class="sbe-nudge" data-addscene><i class="ti ti-building-store"></i><span><b>${T("เพิ่มฉากหน้าร้าน 3 มิติ","Add the 3D shopfront")}</b><small>${T("อู่ของคุณแบบการ์ตูน ฟ้าเปลี่ยนตามเวลาจริง","Your shop as a living cartoon scene")}</small></span><i class="ti ti-plus"></i></button>`}
+      ${storeHTML(tNow(),true,{edit:true})}`;
+    sceneSlot(root);
+    if(ED.flash){const el=root.querySelector(`.sbe-b[data-id="${CSS.escape(ED.flash)}"]`);ED.flash=null;if(el){el.scrollIntoView({block:"center",behavior:"smooth"});el.classList.add("flash")}}
+    wireSp(root);loadReviews(root,tNow());loadWork(root,tNow());paintFoot();
+  }
+  const move=(i,j)=>{if(j<0||j>=ED.blocks.length||i===j)return;const [b]=ED.blocks.splice(i,1);ED.blocks.splice(j,0,b);ED.flash=b.id;keep();render()};
+  function onClick(e){
+    const el=e.target.closest("button");if(!el)return;const fr=el.closest(".sbe-b"),i=fr?+fr.dataset.i:-1,b=ED.blocks[i];
+    if(el.hasAttribute("data-drop")){ED.blocks=JSON.parse(JSON.stringify((saved||{blocks:sbStart(t0)}).blocks));ED.fromDraft=false;ED.dirty=!saved;try{localStorage.removeItem(sbDraftKey(t0))}catch(x){}render();return}
+    if(el.hasAttribute("data-add"))return sbPicker(ED,keep,render);
+    if(el.hasAttribute("data-addscene")){const nb={id:sbId("s"),type:"scene",style:"full",props:sbDefaults(t0,"scene")};ED.blocks.unshift(nb);ED.flash=nb.id;keep();render();return}
+    if(!b)return;
+    if(el.hasAttribute("data-up"))return move(i,i-1);
+    if(el.hasAttribute("data-down"))return move(i,i+1);
+    if(el.hasAttribute("data-style")){const S=SB_TYPES[b.type].styles,k=S.indexOf(b.style);b.style=S[(k+1)%S.length];ED.flash=b.id;keep();render();return}
+    if(el.hasAttribute("data-edit"))return sbEditCard(ED,b,keep);
+    if(el.hasAttribute("data-del")){if(!confirm(T(`เอาการ์ด "${sbN(b.type)}" ออกจากหน้าร้าน?`,`Remove "${sbN(b.type)}" from the storefront?`)))return;ED.blocks.splice(i,1);if(b.type==="scene"&&ED.scene){ED.scene.dispose();ED.scene=null;ED.sceneEl=null}keep();render();return}
+  }
+  /* ลากย้าย: จับที่ ⠿ แล้วลาก · ปล่อยตรงไหน การ์ดไปอยู่ตรงนั้น */
+  function onDown(e){
+    const h=e.target.closest("[data-drag]");if(!h)return;e.preventDefault();
+    const fr=h.closest(".sbe-b"),root=$("sbe"),from=+fr.dataset.i,y0=e.clientY,frames=[...root.querySelectorAll(".sbe-b")];
+    const sc=$("bsB");let to=from,lastY=y0;fr.classList.add("drag");h.setPointerCapture&&h.setPointerCapture(e.pointerId);
+    const mv=ev=>{lastY=ev.clientY;fr.style.transform=`translateY(${ev.clientY-y0}px)`;
+      to=from;frames.forEach((f,k)=>{if(f===fr)return;const r=f.getBoundingClientRect(),mid=r.top+r.height/2;if(k<from&&ev.clientY<mid)to=Math.min(to,k);if(k>from&&ev.clientY>mid)to=Math.max(to,k)});
+      frames.forEach((f,k)=>f.classList.toggle("drop",f!==fr&&k===to));
+      const sr=sc.getBoundingClientRect();if(ev.clientY<sr.top+60)sc.scrollTop-=12;else if(ev.clientY>sr.bottom-90)sc.scrollTop+=12};
+    const up=()=>{h.removeEventListener("pointermove",mv);h.removeEventListener("pointerup",up);h.removeEventListener("pointercancel",up);
+      fr.classList.remove("drag");fr.style.transform="";frames.forEach(f=>f.classList.remove("drop"));if(to!==from)move(from,to)};
+    h.addEventListener("pointermove",mv);h.addEventListener("pointerup",up);h.addEventListener("pointercancel",up);
+  }
+  async function save(btn){
+    await busy(btn,async()=>{
+      const r=await api("/api/tech/shop",{body:{page:{v:1,blocks:ED.blocks}}});
+      if(!r||!("page" in r))throw new Error(T("ระบบยังไม่รองรับหน้าร้านแบบใหม่ — ร่างของคุณเก็บไว้ในเครื่องแล้ว ลองบันทึกอีกครั้งภายหลัง","The system doesn't support the new storefront yet — your draft is kept on this device; try saving later"));
+      if(ME&&ME.technician)ME.technician.page=r.page;const tt=TECHS.find(x=>x.id===t0.id);if(tt)tt.page=r.page;
+      ED.blocks=JSON.parse(JSON.stringify(r.page?r.page.blocks:[]));ED.dirty=false;ED.fromDraft=false;
+      try{localStorage.removeItem(sbDraftKey(t0))}catch(e){}
+      toast(T("บันทึกหน้าร้านแล้ว — ลูกค้าเห็นแบบใหม่ทันที","Storefront saved — customers see it now"));render();stuSky();
+    });
+  }
+  async function reset(btn){
+    if(!confirm(T("กลับไปใช้หน้าร้านแบบเดิม? การ์ดที่จัดไว้จะหายไป","Go back to the classic storefront? Your card layout will be removed")))return;
+    await busy(btn,async()=>{const r=await api("/api/tech/shop",{body:{page:null}});
+      if(!r||!("page" in r))throw new Error(T("ระบบยังไม่รองรับหน้าร้านแบบใหม่","The system doesn't support the new storefront yet"));
+      if(ME&&ME.technician)ME.technician.page=null;const tt=TECHS.find(x=>x.id===t0.id);if(tt)tt.page=null;
+      try{localStorage.removeItem(sbDraftKey(t0))}catch(e){}ED.dirty=false;closeSheet();toast(T("กลับเป็นหน้าร้านแบบเดิมแล้ว","Back to the classic storefront"));stuSky()});
+  }
+  sheet({push:true,title:T("แต่งหน้าร้าน","Design storefront"),url:stuUrl("design"),slug:"design",full:true,body:`<div class="sbe" id="sbe"></div>`,
+    foot:`<div class="sbe-ft">${saved?`<button type="button" class="lx-gh" id="sbeReset">${T("กลับแบบเดิม","Classic")}</button>`:""}<button type="button" class="lx-gh" id="sbePv"><i class="ti ti-eye"></i>${T("ดูแบบลูกค้า","Preview")}</button><button type="button" class="lx-cta" id="sbeSave"></button></div>`,
+    mount(b,f){render();const root=$("sbe");root.onclick=onClick;root.addEventListener("pointerdown",onDown);
+      $("sbeSave").onclick=e=>save(e.currentTarget);if($("sbeReset"))$("sbeReset").onclick=e=>reset(e.currentTarget);
+      $("sbePv").onclick=()=>{const t2=tNow();sheet({push:true,title:t2.shop||t2.name||"",full:true,store:true,owner:true,body:storeHTML(t2,true),foot:storeFoot(t2,true),
+        mount(bb){wireSp(bb);bb.querySelectorAll("[data-z]").forEach(x=>x.onclick=()=>zoom(x.dataset.z));loadReviews(bb,t2);loadWork(bb,t2);mountStoreScenes(bb,t2)}})};
+      if(!ED.hooked){ED.hooked=1;const prev=SH.onClose;SH.onClose=()=>{if(ED.scene){ED.scene.dispose();ED.scene=null}if(prev)prev()}}}});
+}
+/* คลังการ์ด: ชนิดที่ใส่ได้ใบเดียวและมีแล้ว กดไม่ได้ */
+function sbPicker(ED,keep,render){
+  const has=k=>ED.blocks.some(b=>b.type===k),full=ED.blocks.length>=24;
+  sheet({push:true,title:T("เพิ่มการ์ด","Add a card"),body:`${full?`<p class="note"><i class="ti ti-info-circle"></i>${T("ใส่ได้สูงสุด 24 การ์ด","Up to 24 cards")}</p>`:""}<div class="sbp">${Object.entries(SB_TYPES).map(([k,M])=>{const off=full||!M.multi&&has(k);
+      return `<button type="button" class="sbp-i" data-k="${k}"${off?" disabled":""}><span class="sbp-ic"><i class="ti ${M.ic}"></i></span><span><b>${T(...M.n)}</b><small>${off&&!full?T("มีในหน้าร้านแล้ว","Already on the page"):T(...M.d)}</small></span></button>`}).join("")}</div>`,
+    mount(b){b.querySelectorAll("[data-k]").forEach(x=>x.onclick=()=>{const k=x.dataset.k,M=SB_TYPES[k],nb={id:sbId(k[0]),type:k,style:M.styles[0],...(sbDefaults(myShop(),k)?{props:sbDefaults(myShop(),k)}:{})};
+      if(M.hero)ED.blocks.unshift(nb);else ED.blocks.push(nb);ED.flash=nb.id;keep();back();if(M.edit&&k!=="photos")setTimeout(()=>sbEditCard(ED,nb,keep),260)})}});
+}
+/* แก้การ์ด: ฉาก (ป้าย สี ขนาด — เห็นฉากจริงขณะแก้) · แบนเนอร์ · กล่องข้อความ · แกลเลอรี */
+function sbEditCard(ED,b,keep){
+  const q=b.props=b.props||sbDefaults(myShop(),b.type)||{};
+  const sw=(key,list)=>`<div class="sbx-sw" data-key="${key}">${list.map(c=>`<button type="button" data-c="${c}" aria-label="${c}" aria-pressed="${String(q[key]).toLowerCase()===c}" style="--c:${c}"></button>`).join("")}</div>`;
+  const seg=(key,opts)=>`<div class="seg sbx-seg" data-key="${key}">${opts.map(([v,l])=>`<button type="button" data-v="${v}" class="${q[key]===v?"on":""}" aria-pressed="${q[key]===v}">${l}</button>`).join("")}</div>`;
+  let body="";
+  if(b.type==="scene")body=`<div class="sbx-pv" id="sbxPv"></div>
+    <label class="fld"><span>${T("ชื่อบนป้าย","Sign text")}</span><input class="inp" id="sbxSign" maxlength="28" value="${esc(q.sign||"")}" placeholder="${esc(myShop().shop||"")}"></label>
+    <div class="fld"><span>${T("สีป้าย","Sign colour")}</span>${sw("signColor",SB_SIGN)}</div><div class="fld"><span>${T("สีผนังร้าน","Wall colour")}</span>${sw("wallColor",SB_WALL)}</div>
+    <div class="fld"><span>${T("สีคาดหลังคา","Roof band colour")}</span>${sw("accentColor",SB_ACC)}</div>
+    <div class="fld"><span>${T("ความสูงของฉาก","Scene height")}</span>${seg("size",[["tall",T("สูง","Tall")],["short",T("เตี้ย","Short")]])}</div>`;
+  if(b.type==="banner")body=`<div id="sbxBan"></div><label class="fld"><span>${T("หัวข้อ","Headline")}</span><input class="inp" id="sbxTitle" maxlength="60" value="${esc(q.title||"")}" placeholder="${T("เช่น ล้างแอร์ ลด 10% ถึงสิ้นเดือน","e.g. 10% off A/C service this month")}"></label>
+    <label class="fld"><span>${T("ข้อความรอง","Subtext")}</span><input class="inp" id="sbxText" maxlength="200" value="${esc(q.text||"")}"></label>
+    <div class="fld"><span>${T("สีไล่","Gradient")}</span><div class="sbx-gr" data-key="grad">${Object.entries(SB_GRAD).map(([k,g])=>`<button type="button" data-g="${k}" aria-label="${k}" aria-pressed="${q.grad===k}" style="--g1:${g[0]};--g2:${g[1]}"></button>`).join("")}</div></div>`;
+  if(b.type==="text")body=`<label class="fld"><span>${T("หัวข้อ","Title")}</span><input class="inp" id="sbxTitle" maxlength="60" value="${esc(q.title||"")}" placeholder="${T("เช่น ทำไมต้องร้านเรา","e.g. Why choose us")}"></label>
+    <label class="fld"><span>${T("ข้อความ","Text")}</span><textarea class="inp" id="sbxBody" maxlength="600" rows="6">${esc(q.body||"")}</textarea></label>
+    <p class="note"><i class="ti ti-info-circle"></i>${T("ลูกค้าเห็นข้อความนี้บนหน้าร้าน — เขียนตามจริง ห้ามอ้างการรับรองที่ไม่มี","Customers see this — keep it true; no claims you can't back up")}</p>`;
+  if(b.type==="photos")body=`<div class="fld"><span>${T("การจัดรูป","Layout")}</span>${seg("layout",[["grid",T("ตาราง","Grid")],["row",T("เลื่อนข้าง","Swipe")]])}</div>`;
+  sheet({push:true,title:sbN(b.type),body,foot:`<button type="button" class="lx-cta" id="sbxDone" style="width:100%;height:48px">${T("เสร็จ","Done")}</button>`,
+    mount(bb){
+      const upd=(o,bounce)=>{Object.assign(q,o);keep();
+        if(b.type==="scene"){const s=storeScene(myShop(),b);if(ED.scene)ED.scene.call("setShop",{...s,bounce});
+          const sg=ED.sceneEl&&ED.sceneEl.querySelector(".sb-sign");if(sg){sg.style.setProperty("--sg",s.signColor);sg.querySelector(".nt").textContent=s.name}}
+        if(b.type==="banner"){const g=SB_GRAD[q.grad]||SB_GRAD.sunset;$("sbxBan").innerHTML=`<div class="sb-ban" style="--g1:${g[0]};--g2:${g[1]}"><b class="nt">${esc(q.title||T("หัวข้อแบนเนอร์","Banner headline"))}</b>${q.text?`<p class="nt">${esc(q.text)}</p>`:""}</div>`}};
+      if(b.type==="scene"&&ED.sceneEl){$("sbxPv").appendChild(ED.sceneEl);ED.sceneEl.classList.toggle("short",q.size==="short")}
+      if(b.type==="banner")upd({},false);
+      bb.querySelectorAll(".sbx-sw button").forEach(x=>x.onclick=()=>{const k=x.parentElement.dataset.key;x.parentElement.querySelectorAll("button").forEach(y=>y.setAttribute("aria-pressed",y===x));upd({[k]:x.dataset.c},true)});
+      bb.querySelectorAll(".sbx-gr button").forEach(x=>x.onclick=()=>{x.parentElement.querySelectorAll("button").forEach(y=>y.setAttribute("aria-pressed",y===x));upd({grad:x.dataset.g})});
+      bb.querySelectorAll(".sbx-seg button").forEach(x=>x.onclick=()=>{const k=x.parentElement.dataset.key;x.parentElement.querySelectorAll("button").forEach(y=>{y.classList.toggle("on",y===x);y.setAttribute("aria-pressed",y===x)});upd({[k]:x.dataset.v});if(k==="size"&&ED.sceneEl)ED.sceneEl.classList.toggle("short",x.dataset.v==="short")});
+      const inp=(id,k)=>{const e=$(id);if(e)e.oninput=()=>upd({[k]:e.value},false)};inp("sbxSign","sign");inp("sbxTitle","title");inp("sbxText","text");inp("sbxBody","body");
+      $("sbxDone").onclick=()=>back();
+    }});
+}
 /* นับยอดเข้าชม (ไม่นับร้านตัวเอง) — ไม่รอผล ไม่แจ้ง error */
 function track(id,kind){try{if(ME&&ME.technician&&ME.technician.id===id)return;fetch(API+"/api/tech/view",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id,kind}),keepalive:true}).catch(()=>{})}catch(e){}}
 /* ที่อยู่ลึกของหน้าร้าน: /tech/<ร้าน>/services · /reviews · /about — หน้าเดียวไม่มีแท็บแล้ว จึงเลื่อนไปที่ส่วนนั้นแทน */
@@ -5660,7 +6056,7 @@ function loadWork(b,t){
   fetch(API+"/api/tech/showcase?tech="+encodeURIComponent(t.id)).then(r=>r.ok?r.json():{items:[]}).then(d=>{
     const l=(d.items||[]).slice(0,9);if(!l.length||!sec.isConnected)return;
     sec.querySelector("#soWorkL").innerHTML=l.map(x=>`<figure><video src="${API}/api/tech/showcase/media/${encodeURIComponent(x.media)}" controls playsinline preload="metadata"></video><figcaption>${esc(window.CendonProof?CendonProof.name(x.shot):"")}${x.car?" · "+esc(x.car):""}</figcaption></figure>`).join("");
-    sec.hidden=false}).catch(()=>{});
+    sec.hidden=false;const w=sec.closest(".sb");if(w)w.hidden=false}).catch(()=>{});
 }
 /* แจ้งร้าน/หลักฐานน่าสงสัย → ทีมงานตัดสิน · ร้านไม่เห็นว่าใครแจ้ง */
 function reportShop(techId,jobId){
@@ -5700,7 +6096,7 @@ async function openTech(id,opt){
       o.setTab=k=>{o.tab=k;const s=b.querySelector("#"+SO_SEC[k]);if(s)setTimeout(()=>s.scrollIntoView({behavior:"smooth",block:"start"}),60)};
       if(o.tab)o.setTab(o.tab);
       /* เลื่อนพ้นหัวร้าน → หัวแผ่นทึบขึ้นและบอกชื่อร้าน (ปุ่มย้อน/ปิดไม่ลอยทับข้อความ) */
-      if(!b.__soScroll){b.__soScroll=1;b.addEventListener("scroll",()=>{const bs=$("bs");bs.classList.toggle("so-up",!!b.querySelector(".so")&&b.scrollTop>(b.querySelector(".so.has-cover")?220:60))},{passive:true})}
+      if(!b.__soScroll){b.__soScroll=1;b.addEventListener("scroll",()=>{const bs=$("bs");bs.classList.toggle("so-up",!!b.querySelector(".so")&&b.scrollTop>(b.querySelector(".so.has-cover,.so-pg.top0")?220:60))},{passive:true})}
       b.querySelectorAll(".so-gigs .lx-gc").forEach(x=>x.onclick=()=>openGig(x.dataset.g));wireSp(b);
       b.querySelectorAll("[data-z]").forEach(i=>i.onclick=()=>zoom(i.dataset.z));
       const hours=b.querySelector("[data-hours]"),wk=b.querySelector(".so-week");
@@ -5709,12 +6105,14 @@ async function openTech(id,opt){
       if(vb&&vd)vb.onclick=()=>{vd.hidden=!vd.hidden;vb.setAttribute("aria-expanded",String(!vd.hidden));vb.classList.toggle("open",!vd.hidden)};
       const sh=b.querySelector("[data-share]");
       if(sh)sh.onclick=()=>{const u=location.origin+shopPath(t);try{navigator.share?navigator.share({title:t.shop||t.name,url:u}).catch(()=>{}):navigator.clipboard.writeText(u).then(()=>toast(T("คัดลอกลิงก์ร้านแล้ว","Shop link copied")))}catch(e){}};
-      loadReviews(b,t);loadWork(b,t);
+      loadReviews(b,t);loadWork(b,t);mountStoreScenes(b,t);
       const rp=b.querySelector("[data-report]");if(rp)rp.onclick=()=>reportShop(t.id);
       if(mine)return;
       if($("bTel"))$("bTel").addEventListener("click",()=>track(id,"call"));
       $("bBook").onclick=()=>book(t);
       $("bMsg").onclick=()=>messageTech(t);
+      b.querySelectorAll("[data-sbmsg]").forEach(x=>x.onclick=()=>messageTech(t));
+      b.querySelectorAll("[data-sbtel]").forEach(x=>x.addEventListener("click",()=>track(id,"call")));
       if($("bBoss"))$("bBoss").onclick=()=>bossMenu(t);
       if($("bSus"))$("bSus").onclick=e=>busy(e.currentTarget,async()=>{if(!confirm("ซ่อนช่างคนนี้จากรายชื่อ?"))return;await api("/api/tech/moderate",{body:{id:t.id,suspend:true}});closeSheet();toast("ซ่อนแล้ว");load()});
     }});
@@ -8225,7 +8623,7 @@ function stuChrome(){
   $("stuCrumb").textContent={jobs:T("งานของฉัน","My jobs"),msgs:T("ข้อความ","Messages"),svc:T("บริการ","Services"),shop:T("ร้านของฉัน","My shop")}[pg];
   const me=$("stuMe");
   if(t){me.style.backgroundImage=t.avatar?`url('${img(t.avatar)}')`:"";me.textContent=t.avatar?"":initial(t.shop||t.name);me.title=t.shop||t.name||""}
-  stuBadges();
+  stuBadges();stuSky();
 }
 /* ป้ายนับแยกตามเมนู ไม่นับซ้ำ: งาน = ใบงานที่รอคุณ · ข้อความ = ข้อความที่ยังไม่อ่าน (ทักถาม + ในใบงาน) */
 function stuBadges(){
@@ -8489,6 +8887,7 @@ function tabShop(){
     </span></button>
     <div class="stu-acts"><button class="lx-cta" type="button" id="sView" style="height:44px;padding:0 18px"><i class="ti ti-eye"></i>${T("ดูหน้าร้าน","View storefront")}</button>
       <button class="lx-gh" type="button" id="sShare" style="height:44px"><i class="ti ti-share-2"></i>${T("แชร์ลิงก์ร้าน","Share link")}</button></div>
+    <button class="sbe-cta" type="button" id="sDesign" style="--sky:${skyCSS()}"><span class="sbe-ci"><i class="ti ti-layout-dashboard"></i></span><span><b>${T("แต่งหน้าร้าน","Design your storefront")}</b><small>${storePage(t)?T(`จัดไว้ ${storePage(t).blocks.length} การ์ด · แตะเพื่อแก้ต่อ`,`${storePage(t).blocks.length} cards · tap to keep editing`):T("เรียงการ์ดเอง เพิ่มฉากร้าน 3 มิติ แบนเนอร์ ไล่สี ได้อิสระ","Arrange cards, add a 3D shopfront, banners and gradients")}</small></span><i class="ti ti-chevron-right"></i></button>
     ${googleLive(t)&&!t.handle?`<button class="hd-cta" type="button" id="sHdCta"><i class="ti ti-at"></i><span><b>${T("จองชื่อลิงก์ร้านก่อนร้านอื่น","Claim your shop link name first")}</b><small>${esc(location.host)}/tech/${T("ชื่อร้านคุณ","your-shop")}</small></span><i class="ti ti-chevron-right"></i></button>`:""}
     ${ownServiceNotice()}<div class="stu-vet" style="margin-top:14px">${vet[0]}<span><b>${vet[1]}</b><small>${vet[2]}</small></span></div>
     <section class="stu-sec stu-list" style="margin-top:6px">
@@ -8512,7 +8911,7 @@ function tabShop(){
     fl.addEventListener("pointerup",()=>{x0=null},{passive:true});}
   $("sView").onclick=()=>openTech(t.id);
   $("sShare").onclick=()=>{try{navigator.share?navigator.share({title:t.shop||t.name,url:link}).catch(()=>{}):navigator.clipboard.writeText(link).then(()=>toast(T("คัดลอกลิงก์ร้านแล้ว","Shop link copied")))}catch(e){}};
-  $("sEdit").onclick=()=>openShopEdit();$("sStats").onclick=()=>studioStats();$("sAi").onclick=()=>setTab2("ai");
+  $("sEdit").onclick=()=>openShopEdit();$("sDesign").onclick=()=>storeEditor();$("sStats").onclick=()=>studioStats();$("sAi").onclick=()=>setTab2("ai");
   $("sQr").onclick=()=>shopQr();$("sGoogle").onclick=()=>googleSheet();$("sName").onclick=()=>handleSheet();if($("sHdCta"))$("sHdCta").onclick=()=>handleSheet();$("sSet").onclick=()=>studioSettings();$("sHelp").onclick=()=>window.open("/help#mechanics","_blank","noopener");
 }
 /* ลิงก์และ QR ของร้าน (QR สร้างในเครื่อง โหลดไลบรารีตอนเปิดครั้งแรก) */

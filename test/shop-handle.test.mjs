@@ -38,7 +38,7 @@ test('Studio row tells the truth for each shop state',()=>{
 test('Studio wiring: claim card for unnamed live shops, row, refreshable route, app resolves names',()=>{
   assert.match(home,/googleLive\(t\)&&!t\.handle\?`<button class="hd-cta" type="button" id="sHdCta">/);
   assert.match(home,/\$\{row\("sName","ti-at"/);assert.match(home,/\$\("sName"\)\.onclick=\(\)=>handleSheet\(\)/);
-  assert.match(home,/\["settings","stats","edit","post","qr","google","name"\]\.includes\(p\.k\)/);
+  assert.match(home,/\["settings","stats","edit","post","qr","google","name","design"\]\.includes\(p\.k\)/);
   assert.match(home,/api\("\/api\/tech\/handle\/"\+encodeURIComponent\(k\.toLowerCase\(\)\)\)/,'old names resolve in the app too');
   assert.match(home,/api\("\/api\/tech\/handle",\{body:\{handle:h\}\}\)/);
   for(const l of ['zh','ja','ko','id','vi','ms','de','fr','es','pt']){

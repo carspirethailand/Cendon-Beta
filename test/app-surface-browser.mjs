@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';import {spawn} from 'node:child_process';import {pathToFileURL} from 'node:url';import {resolve,join} from 'node:path';import {mkdir,writeFile} from 'node:fs/promises';import {namespace} from '../app-routes.js';
 const pkg=process.env.CENDON_NODE_PACKAGES||'C:/Users/Porsche/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules',root=resolve(import.meta.dirname,'..');const {chromium}=await import(pathToFileURL(join(pkg,'playwright/index.mjs')));
 const server=spawn(process.execPath,['test/app-fixture-server.mjs',process.env.CENDON_QA_DIST||'.','0','0'],{cwd:root,stdio:['ignore','pipe','pipe']}),base=await new Promise((ok,fail)=>{server.stdout.once('data',b=>ok(JSON.parse(b.toString()).url));server.once('error',fail);server.once('exit',()=>fail(Error('Fixture server stopped')))}),browser=await chromium.launch({headless:true,channel:'chrome',args:['--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1, EXCLUDE localhost']}),context=await browser.newContext({viewport:{width:393,height:852},serviceWorkers:'block'}),page=await context.newPage(),errors=[],results=[];
-page.on('pageerror',e=>errors.push(e.message));page.setDefaultTimeout(5000);const cases=[];
+const errorStacks=[];page.on('pageerror',e=>{errors.push(e.message);errorStacks.push(e.stack)});page.setDefaultTimeout(5000);const cases=[];
 await context.addInitScript(()=>{window.__qaHistory=[];for(const key of ['pushState','replaceState','go']){const native=history[key].bind(history);history[key]=(...args)=>{__qaHistory.push({key,value:key==='go'?args[0]:args[2],at:Math.round(performance.now()),stack:new Error().stack.split('\n').slice(1,5).join(' ')});if(__qaHistory.length>120)__qaHistory.shift();return native(...args)}}});
 const add=(path,selector,canonical=path)=>cases.push({path,selector,canonical});
 for(const [path,selector]of [['/','#hTools'],['/garage','#garageList'],['/profile','#stMain'],['/news','#v-magazine'],['/spares','#ssForm'],['/chat','#v-welcome']])add(path,selector);
@@ -25,5 +25,5 @@ try{await mkdir(join(root,'.qa/surfaces'),{recursive:true});await page.goto(base
  console.log(JSON.stringify(results.at(-1)));
  await writeFile(join(root,'.qa/surfaces/results.json'),JSON.stringify({synthetic:true,productionWrites:0,results,errors},null,2));
  }
- await writeFile(join(root,'.qa/surfaces/results.json'),JSON.stringify({synthetic:true,productionWrites:0,results,errors},null,2));console.log(JSON.stringify({routes:results.length,passed:results.filter(x=>x.pass).length,failed:results.filter(x=>!x.pass).length,productionWrites:0}));if(results.some(x=>!x.pass)||errors.length)process.exitCode=1;
+ await writeFile(join(root,'.qa/surfaces/results.json'),JSON.stringify({synthetic:true,productionWrites:0,results,errors,errorStacks},null,2));console.log(JSON.stringify({routes:results.length,passed:results.filter(x=>x.pass).length,failed:results.filter(x=>!x.pass).length,productionWrites:0}));if(results.some(x=>!x.pass)||errors.length)process.exitCode=1;
 }finally{await browser.close();server.kill()}

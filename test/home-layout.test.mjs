@@ -50,11 +50,11 @@ test('mobile pages contain eight consecutive icons and stop at each page',()=>{
 });
 test('page indicators are accessible and leave native gesture and category handlers alone',()=>{
   const js=readFileSync(new URL('../category-pages.js',import.meta.url),'utf8');
-  assert.ok(page.includes('src="category-pages.js" defer'));
+  assert.ok(page.includes('src="category-pages.js?v=1" defer'));
   assert.match(js,/aria-current/);assert.match(js,/aria-label/);assert.match(js,/reduced.matches\?'auto':'smooth'/);
   assert.ok(!js.includes('preventDefault')&&!js.includes('innerHTML')&&!js.includes('onclick'));
   assert.match(js,/observe\(rail,\{childList:true\}\)/);
-  assert.ok(readFileSync(new URL('../sw.js',import.meta.url),'utf8').includes("'./category-pages.js'"));
+  assert.ok(readFileSync(new URL('../sw.js',import.meta.url),'utf8').includes("'./category-pages.js?v=1'"));
 });
 test('page indicator is vertically compact with nearby services and usable tap areas',()=>{
   assert.match(css,/width:44px;height:28px/);

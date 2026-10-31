@@ -25,3 +25,12 @@ test('decorative drawing does not race the opening gate, and hidden category geo
  const html=read('index.html'),sky=html.slice(html.indexOf('const HSKY='),html.indexOf('const HERO='));assert.ok(sky.includes('opening.hidden'));assert.ok(sky.includes('animationReady'));assert.ok(sky.includes('document.addEventListener("cendon:view-ready",kick)'));assert.ok(sky.includes('document.readyState==="loading"'));assert.ok(sky.includes('requestIdleCallback(allow'));
  const pages=read('category-pages.js');assert.ok(pages.includes("rail.closest('[hidden]')"));assert.ok(pages.includes('new MutationObserver(schedule)'));assert.ok(read('home-stages.js').includes('getPropertyValue("--hm-h")!==height'));
 });
+test('area responses are validated before replacing successful inventory, and closed maps cannot update new forms',()=>{
+ const html=read('index.html'),context={T:(_th,en)=>en};vm.runInNewContext(html.slice(html.indexOf('function checkedNear('),html.indexOf('async function tabFind('))+';globalThis.check=checkedNear;',context);
+ const valid={center:{lat:13.75,lng:100.5},radius:30,posts:[]};assert.equal(context.check(valid),valid);
+ for(const bad of [null,{}, {posts:[]}, {...valid,center:{lat:NaN,lng:0}}, {...valid,center:{lat:91,lng:0}}, {...valid,center:{lat:0,lng:181}}, {...valid,radius:0}, {...valid,posts:null}])assert.throws(()=>context.check(bad),/Could not update the job list/);
+ assert.ok(html.includes('if(!current())return;NEAR=checkedNear(response)'));
+ assert.ok(html.includes('mapHost.isConnected&&$("bMap")===mapHost'));
+ assert.ok(html.includes('const g=await revgeo(p);if(!alive()||L.pos!==p||why())return'));
+ assert.ok(html.includes('const p=await locate();if(!alive())return'));
+});

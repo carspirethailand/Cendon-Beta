@@ -89,7 +89,7 @@ test('clouds are the settings-page theme clouds (cloud-swap.js), not a private c
   /* ยังเป็นของเดิมทุกอย่าง: หมอกทึบแล้วค่อยสลับ · ดักปุ่มธีม/ภาษา/สี */
   assert.match(cs,/vin\.onfinish=function\(\)\{\s*doApply\(\);\s*var vout=veil\.animate\(/);
   assert.match(cs,/var THEME_SEL='button\[data-sitetheme\],#v-settings button\[data-theme\],\.th-opt\[data-th\]'/);
-  assert.match(page,/<script src="\/cloud-swap\.js\?v=5" defer><\/script>\n<script src="home-stages\.js\?v=6" defer><\/script>/);
+  assert.match(page,/<script src="\/cloud-swap\.js\?v=5" defer><\/script>\n<script src="home-stages\.js\?v=7" defer><\/script>/);
   for(const f of ['chat.html','garage.html','news.html','profile.html','spares.html'])assert.match(r(f),/<script src="\/cloud-swap\.js\?v=5" defer><\/script>/,f);
   assert.match(sw,/'\.\/cloud-swap\.js\?v=5'/);
 });
@@ -114,8 +114,8 @@ test('home tab while on stage 2 goes back to the AI stage; stage is restored on 
 
 test('new strings are routed through the shared translator and the files are cached by the service worker',()=>{
   assert.match(js,/const T=\(th,en\)=>W\.spireT\?W\.spireT\(th,en\):th;/);
-  assert.match(sw,/'\.\/home-stages\.css\?v=7'/);assert.match(sw,/'\.\/home-stages\.js\?v=6'/);
-  assert.match(page,/href="home-stages\.css\?v=7"/);assert.match(page,/<script src="home-stages\.js\?v=6" defer><\/script>/);
+  assert.match(sw,/'\.\/home-stages\.css\?v=7'/);assert.match(sw,/'\.\/home-stages\.js\?v=7'/);
+  assert.match(page,/href="home-stages\.css\?v=7"/);assert.match(page,/<script src="home-stages\.js\?v=7" defer><\/script>/);
   assert.match(r('i18n/extract.mjs'),/'home-stages\.js'\]/);
 });
 

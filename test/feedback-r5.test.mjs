@@ -23,7 +23,7 @@ test('pin must be on land and within reach of the phone (urgent 1.5 km, normal 2
   assert.match(home,/const PIN_KM=\{urgent:1\.5,normal:20\},WET=\{\};/);
   assert.match(home,/https:\/\/tile\.openstreetmap\.org\/\$\{z\}\/\$\{tx\}\/\$\{ty\}\.png/);
   assert.match(home,/Math\.abs\(d\[i\]-170\)<=8&&Math\.abs\(d\[i\+1\]-211\)<=8&&Math\.abs\(d\[i\+2\]-223\)<=8/,'OSM water colour #aad3df');
-  assert.match(home,/const lock=on=>\{if\(on&&why\(\)\)on=false;/,'a bad pin cannot be locked');
+  assert.match(home,/const lock=on=>\{if\(!alive\(\)\)return;if\(on&&why\(\)\)on=false;/,'a closed form or bad pin cannot be locked');
   assert.match(home,/L\.map\.setMaxBounds\(ring\.getBounds\(\)\.pad\(\.02\)\)/,'map cannot be dragged far outside the circle');
   assert.match(home,/if\(o\.needGps&&!L\.gps\)bad\.push\(\{id:"bGps"/);
   assert.match(home,/else if\(L\.water\)bad\.push\(/);

@@ -14,6 +14,7 @@ const mime={'.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','
 const server=createServer(async(req,res)=>{try{
  const url=new URL(req.url,'http://'+req.headers.host),base=url.origin;
  if(url.pathname.startsWith('/api/')){const p=url.pathname,body=p==='/api/config'?{launch:null,features:{},now:Date.now()}:p==='/api/onboarding'?{status:'completed',completed:true,profile:{uid,name:'QA fixture',lang:'th'}}:p==='/api/tech/me'?{uid,technician:{id:'fixture-shop',uid,name:'QA shop',verified:true,test:false},application:null}:p==='/api/cars'?{cars:[car]}:p==='/api/tech/my/gigs'?{gigs:[],total:0,limit:2}:{cars:[car],items:[],techs:[],gigs:[],jobs:[],threads:[],posts:[],saved:[],user:{uid}};
+  if(p==='/api/tech/posts/near')Object.assign(body,{center:{lat:13.7563,lng:100.5018},radius:30,posts:[]});
   res.setHeader('Content-Type','application/json');res.setHeader('Cache-Control','no-store');res.end(JSON.stringify(body));return;}
  if(latency)await new Promise(r=>setTimeout(r,latency));
  if(url.pathname.startsWith('/fixture/firebase/')){res.setHeader('Content-Type','text/javascript');res.end(sdk);return;}

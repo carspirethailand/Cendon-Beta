@@ -2878,7 +2878,7 @@ a.mtab{text-decoration:none}
 <link rel="stylesheet" href="home-stages.css?v=7">
 <link rel="stylesheet" href="wide-layout.css?v=1">
 <link rel="stylesheet" href="call-x.css?v=9">
-<script src="category-pages.js" defer></script>
+<script src="category-pages.js?v=1" defer></script>
 <script src="/sheet-drag.js?v=1" defer></script>
 <script src="car-sync.js"></script>
 <script src="mileage-sync.js?v=1" defer></script>
@@ -4651,7 +4651,7 @@ const HSKY=(function(){
   const box=$("hSky");if(!box)return null;
   const cv=box.querySelector("canvas"),cx=cv.getContext("2d"),hero=box.parentElement;
   const calm=matchMedia("(prefers-reduced-motion: reduce)").matches;
-  let W=0,H=0,dpr=1,lv=0,raf=0,sizeFrame=0,waitingForDOM=false,animationScheduled=false,animationReady=false,vis=true,P=[],shoot=null,nextShoot=0,t0=performance.now();
+  let W=0,H=0,dpr=1,lv=0,raf=0,sizeFrame=0,waitingForDOM=false,animationScheduled=false,animationReady=false,lastDraw=0,vis=true,P=[],shoot=null,nextShoot=0,t0=performance.now();
   const COL=[[242,140,56],[255,77,122],[255,181,71],[139,107,255]];
   const dark=()=>document.documentElement.dataset.theme==="dark";
   /* เส้นคลื่น 3 เส้น: ความสูง ความถี่ ความเร็วต่างกัน — ดาวไหลไปตามเส้นเหล่านี้ */
@@ -4693,17 +4693,17 @@ const HSKY=(function(){
     cx.globalAlpha=1;
   }
   const foreground=()=>{if(document.hidden||document.documentElement.dataset.gate==="1")return false;if(!window.CendonView)return document.readyState!=="loading";const opening=parent.document.getElementById("appOpening");return CendonView.visible&&(!opening||opening.hidden)};
-  const loop=now=>{raf=0;if(lv<=0.01||!vis||!foreground())return;draw(now);if(!calm&&animationReady)raf=requestAnimationFrame(loop)};
+  const loop=now=>{raf=0;if(lv<=0.01||!vis||!foreground())return;if(calm||now-lastDraw>=1000/30){lastDraw=now;draw(now)}if(!calm&&animationReady)raf=requestAnimationFrame(loop)};
   function sizeSoon(){
     if(document.readyState==="loading"){if(!waitingForDOM){waitingForDOM=true;document.addEventListener("DOMContentLoaded",()=>{waitingForDOM=false;sizeSoon()},{once:true})}return}
     if(sizeFrame)return;sizeFrame=requestAnimationFrame(()=>{sizeFrame=0;if(lv<=0.01||!foreground())return;size();kick()});
   }
   function animateAfterLoad(){
-    if(calm||animationScheduled)return;animationScheduled=true;
+    if(animationScheduled)return;animationScheduled=true;
     const idle=()=>{const allow=()=>{animationReady=true;kick()};if("requestIdleCallback" in window)requestIdleCallback(allow,{timeout:2000});else setTimeout(allow,0)};
     if(document.readyState==="complete")idle();else addEventListener("load",idle,{once:true});
   }
-  const kick=()=>{if(lv<=0.01||!vis||!foreground())return;if(!W){sizeSoon();return}animateAfterLoad();if(!raf)raf=requestAnimationFrame(loop)};
+  const kick=()=>{if(lv<=0.01||!vis||!foreground())return;if(!animationReady){animateAfterLoad();return}if(!W){sizeSoon();return}if(!raf)raf=requestAnimationFrame(loop)};
   function level(k,anim){
     lv=k;box.style.transition=anim?"opacity .7s ease":"none";box.style.opacity=k.toFixed(3);
     box.classList.toggle("on",k>0.01);
@@ -5896,9 +5896,11 @@ function contactForm(o){
          กติกาหมุด (กันคนกวน): ต้องอยู่บนบก และห่างตำแหน่งเครื่องไม่เกินรัศมี (ด่วน 1.5 กม. · ปกติ 20 กม.)
          แผนที่ลากเลยวงไม่ได้ · หมุดในน้ำหรือนอกวง = ล็อกไม่ได้ ส่งไม่ได้ (หลังบ้านตรวจซ้ำอีกชั้น) */
       const R=o.urgent?PIN_KM.urgent:PIN_KM.normal,slack=()=>Math.min(L.gps&&L.gps.acc||0,3000)/1000;
+      const mapHost=$("bMap");let mapDisposed=false;
+      const alive=()=>{if(mapDisposed)return false;if(mapHost.isConnected&&$("bMap")===mapHost)return true;mapDisposed=true;const old=L.map;L.map=null;try{old?.off();old?.remove()}catch(e){}return false};
       const why=()=>!L.pos?"":L.water?"water":L.gps&&km(L.gps,L.pos)>R+slack()?"far":"";
       const show=async()=>{
-        const p=L.pos;if(!p)return;
+        const p=L.pos;if(!p||!alive())return;
         const w=why();$("bLocBar").classList.toggle("bad",!!w);$("bMap").classList.toggle("bad",!!w);
         $("bLockI").innerHTML=`<i class="ti ${w?"ti-alert-triangle":L.locked?"ti-lock":"ti-lock-open"}"></i>`;$("bLockI").style.setProperty("--c1",w?"#dc2626":L.locked?"#16a34a":"#f59e0b");
         $("bMap").classList.toggle("locked",L.locked);
@@ -5907,27 +5909,27 @@ function contactForm(o){
           $("bLocS").textContent=w==="water"?T("เลื่อนแผนที่ให้หมุดอยู่บนถนนหรือที่จอดรถ","Drag the map so the pin sits on a road or parking spot"):T("เลื่อนหมุดให้ตรงที่รถจอด หรือกดปุ่มตำแหน่งในแผนที่","Move the pin to where the car is, or tap the location button");return}
         $("bLocS").textContent=(L.locked?T("ล็อกตำแหน่งจริงแล้ว · ","Exact location locked · "):T("เลื่อนแผนที่ให้หมุดตรงรถ · ","Drag the map under the pin · "))+p.lat.toFixed(5)+", "+p.lng.toFixed(5);
         if(!L.line){$("bLocL").textContent=T("ตำแหน่งที่ปักไว้","Pinned location")}
-        const g=await revgeo(p);if(L.pos!==p||why())return;L.line=g.line;L.area=g.area;
+        const g=await revgeo(p);if(!alive()||L.pos!==p||why())return;L.line=g.line;L.area=g.area;
         $("bLocL").textContent=g.line||g.area||T("ตำแหน่งที่ปักไว้","Pinned location");
       };
-      const lock=on=>{if(on&&why())on=false;L.locked=on;const m=L.map;if(m){["dragging","touchZoom","doubleClickZoom","scrollWheelZoom"].forEach(h=>m[h]&&(on?m[h].disable():m[h].enable()))}show()};
+      const lock=on=>{if(!alive())return;if(on&&why())on=false;L.locked=on;const m=L.map;if(m){["dragging","touchZoom","doubleClickZoom","scrollWheelZoom"].forEach(h=>m[h]&&(on?m[h].disable():m[h].enable()))}show()};
       /* น้ำ: อ่านสีแผนที่ใต้หมุดหลังหยุดลาก — ตรวจไม่ได้ (เน็ต/แผนที่ล่ม) = ไม่บล็อก */
-      const wet=async()=>{const p=L.pos;if(!p)return;const w=await waterAt(p);if(L.pos!==p)return;L.water=w===true;if(L.water&&L.locked)lock(false);else show()};
-      const setPos=(p,lk)=>{L.pos={lat:+p.lat.toFixed(6),lng:+p.lng.toFixed(6)};L.line="";L.water=false;if(L.map)L.map.setView([p.lat,p.lng],17);lock(!!lk);wet()};
+      const wet=async()=>{const p=L.pos;if(!p||!alive())return;const w=await waterAt(p);if(!alive()||L.pos!==p)return;L.water=w===true;if(L.water&&L.locked)lock(false);else show()};
+      const setPos=(p,lk)=>{if(!alive())return;L.pos={lat:+p.lat.toFixed(6),lng:+p.lng.toFixed(6)};L.line="";L.water=false;if(L.map)L.map.setView([p.lat,p.lng],17);lock(!!lk);wet()};
       /* วงรัศมีรอบตำแหน่งเครื่อง: เห็นขอบเขตชัด และแผนที่ลากออกนอกวงไม่ได้ */
       let ring=null;
-      const fence=()=>{if(!L.map||!L.gps)return;if(ring)ring.remove();
+      const fence=()=>{if(!alive()||!L.map||!L.gps)return;if(ring)ring.remove();
         ring=window.L.circle([L.gps.lat,L.gps.lng],{radius:(R+slack())*1000,color:"#E8590C",weight:1.5,opacity:.75,dashArray:"5 7",fillColor:"#E8590C",fillOpacity:.04,interactive:false}).addTo(L.map);
         L.map.setMaxBounds(ring.getBounds().pad(.02))};
       if(window.L){
         const c=HERE||{lat:13.7563,lng:100.5018};
         L.map=oneWorld(window.L.map($("bMap").querySelector(".lm"),{zoomControl:false,attributionControl:false})).setView([c.lat,c.lng],HERE?16:11);
         window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,noWrap:true,bounds:[[-85,-180],[85,180]]}).addTo(L.map);
-        L.map.on("moveend",()=>{if(L.locked)return;const q=L.map.getCenter();L.pos={lat:+q.lat.toFixed(6),lng:+q.lng.toFixed(6)};L.line="";L.water=false;show();wet()});
-        setTimeout(()=>L.map.invalidateSize(),420);
+        L.map.on("moveend",()=>{if(!alive()||L.locked)return;const q=L.map.getCenter();L.pos={lat:+q.lat.toFixed(6),lng:+q.lng.toFixed(6)};L.line="";L.water=false;show();wet()});
+        setTimeout(()=>{if(alive())L.map?.invalidateSize()},420);
       }else $("bMap").querySelector(".lm").innerHTML=`<div class="noleaf">${T("กดปุ่มตำแหน่งที่มุมแผนที่","Tap the location button")}</div>`;
       $("bLockB").onclick=()=>lock(!L.locked);
-      const gps=async()=>{const p=await locate();
+      const gps=async()=>{const p=await locate();if(!alive())return;
         if(p){L.gps={lat:p.lat,lng:p.lng,acc:p.acc||0};fence();setPos(p,true)}
         else if(!L.pos){$("bLocL").textContent=o.needGps?T("เปิดตำแหน่งของเครื่องก่อน แล้วกดปุ่มตำแหน่งในแผนที่","Turn on location, then tap the location button"):T("ไม่ได้ตำแหน่ง — เลื่อนแผนที่แล้วกดล็อก","No GPS — drag the map and lock");
           if(L.map&&!o.needGps){const q=L.map.getCenter();L.pos={lat:q.lat,lng:q.lng};lock(false);wet()}}};
@@ -8243,11 +8245,16 @@ function drawTab(){
 const stuUrl=k=>MODE==="tech"&&!$("bs").classList.contains("on")?"/studio/"+k:undefined;
 
 /* ── หางาน: รถเสียรอบตัว บนแผนที่ + รายการ ── */
+let findMapGeneration=0;
+function checkedNear(d){
+  const c=d?.center;if(!d||!Array.isArray(d.posts)||!c||typeof c.lat!=="number"||!Number.isFinite(c.lat)||Math.abs(c.lat)>90||typeof c.lng!=="number"||!Number.isFinite(c.lng)||Math.abs(c.lng)>180||!Number.isFinite(Number(d.radius))||Number(d.radius)<=0)throw Error(T("อัปเดตรายการงานไม่ได้ กรุณาลองใหม่","Could not update the job list. Please retry."));return d;
+}
 async function tabFind(){
   const B=$("dBody");
   B.innerHTML=`<div class="fmap e3" id="fMap"></div><div id="fList"><div class="skel"></div></div>`;
+  const generation=++findMapGeneration,list=$("fList"),mapBox=$("fMap"),current=()=>generation===findMapGeneration&&MODE==="tech"&&DT==="find"&&list.isConnected&&$("fList")===list;
   FIND_NEW=false;stuBadges();
-  try{NEAR=await api("/api/tech/posts/near")}catch(e){$("fList").innerHTML=`<div class="empty"><i class="ti ti-map-pin-off"></i><b>${esc(e.message)}</b></div>`;return}
+  try{const response=await api("/api/tech/posts/near");if(!current())return;NEAR=checkedNear(response)}catch(e){if(current())list.innerHTML=`<div class="empty"><i class="ti ti-map-pin-off"></i><b>${esc(e.message)}</b></div>`;return}
   NEAR.posts.forEach(p=>SEEN.add(p.id));ls.set("spire_seen_posts",[...SEEN].slice(-300));
   const t0=Date.now(),LP=NEAR.posts.filter(p=>p.urgent?t0-(p.createdAt||0)<URGENT_MS:!p.expiresAt||p.expiresAt>t0).sort((a,b)=>(!!b.urgent-!!a.urgent)||((b.createdAt||0)-(a.createdAt||0)));
   $("fList").innerHTML=LP.length?`<div class="sec" style="margin-top:4px"><h2><i class="ti ti-radar-2" style="color:var(--accent)"></i>${T("รถเสียรอบตัวคุณ","Breakdowns near you")}</h2><span>${LP.length}${NEAR.radius||(myShop()||{}).radius?` · ${distHTML(NEAR.radius||myShop().radius)}`:""}</span></div>`+LP.map((p,i)=>`<button class="pc e3${p.urgent?" urg":""}" data-p="${p.id}" style="animation-delay:${i*40}ms">
@@ -8263,11 +8270,11 @@ async function tabFind(){
   L.circle([NEAR.center.lat,NEAR.center.lng],{radius:NEAR.radius*1000,color:getComputedStyle(document.documentElement).getPropertyValue("--accent").trim()||"#E8943C",weight:1.5,fillOpacity:.05}).addTo(FMAP);
   L.marker([NEAR.center.lat,NEAR.center.lng],{icon:L.divIcon({className:"",iconSize:[18,18],html:'<div class="me-dot" style="background:var(--accent)"></div>'})}).addTo(FMAP);
   const pts=[[NEAR.center.lat,NEAR.center.lng]];
-  LP.forEach((p,i)=>{pts.push([p.lat,p.lng]);
+  LP.forEach((p,i)=>{if(typeof p.lat!=="number"||!Number.isFinite(p.lat)||Math.abs(p.lat)>90||typeof p.lng!=="number"||!Number.isFinite(p.lng)||Math.abs(p.lng)>180)return;pts.push([p.lat,p.lng]);
     /* ช่างเห็นแค่พื้นที่โดยประมาณ (วงกลม) — หมุดจริงเปิดในใบงานหลังลูกค้าเลือกและยืนยันราคาแล้ว */
     if(p.approxKm)L.circle([p.lat,p.lng],{radius:p.approxKm*1000,color:"#64748b",weight:1,fillOpacity:.08,dashArray:"4 4"}).addTo(FMAP);
     L.marker([p.lat,p.lng],{icon:L.divIcon({className:"",iconSize:[30,30],iconAnchor:[15,30],html:`<div class="ppin ${p.urgent?"u":""} ${p.mine?"done":""}" style="animation-delay:${i*50}ms"><b><i class="ti ${p.urgent?"ti-urgent":"ti-car"}"></i></b></div>`})}).on("click",()=>openPost(p)).addTo(FMAP)});
-  setTimeout(()=>{FMAP.invalidateSize();if(pts.length>1)FMAP.fitBounds(pts,{padding:[30,30],maxZoom:14})},80);
+  const map=FMAP;setTimeout(()=>{if(!current()||FMAP!==map||!mapBox.isConnected){if(FMAP===map){map.off();map.remove();FMAP=null}return}map.invalidateSize();if(pts.length>1)map.fitBounds(pts,{padding:[30,30],maxZoom:14})},80);
 }
 function openPost(p){
   if(!p)return;
@@ -8888,7 +8895,7 @@ async function pullCars(){
 </script>
 <script src="mobile-ui.js?v=2" defer></script>
 <script src="/cloud-swap.js?v=5" defer></script>
-<script src="home-stages.js?v=6" defer></script>
+<script src="home-stages.js?v=7" defer></script>
 <script type="speculationrules">
 {"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"conservative"}]}
 </script>

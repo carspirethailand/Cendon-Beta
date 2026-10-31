@@ -8,7 +8,10 @@ import {fileURLToPath} from 'node:url';
 export async function buildPageRuntime(directory){
   const dir=resolve(directory),runtime=join(dir,'runtime');await mkdir(runtime,{recursive:true});
   const names=['index','garage','profile','news','spares','chat'],sources=new Map();
-  for(const name of names)sources.set(name,await readFile(join(dir,name+'.html'),'utf8'));
+  // Git-connected Pages builds use LF; Windows checkouts often use CRLF.
+  // Canonical source newlines keep identical code at one content address across
+  // both release paths, instead of evicting all shared browser code caches.
+  for(const name of names)sources.set(name,(await readFile(join(dir,name+'.html'),'utf8')).replace(/\r\n/g,'\n'));
   const result={pages:[],assets:new Set(),inlineBytes:0,htmlBytesBefore:0,htmlBytesAfter:0,styleAssets:0,headBundles:0};
   // Only known order-independent IIFEs, at their original parser position. Never
   // merge async/defer/module scripts, inline boundaries or currentScript users.
@@ -27,7 +30,7 @@ export async function buildPageRuntime(directory){
     for(const match of head.matchAll(/<script\b([^>]*)>[\s\S]*?<\/script>/gi)){
       const attrs=match[1],src=attrs.match(/^\s*src=["']\/?([\w.-]+\.js)(?:\?[^"']*)?["']\s*$/i);
       if(!src||!headFiles.has(src[1])){flush();continue;}
-      const body=await readFile(join(dir,src[1]),'utf8');
+      const body=(await readFile(join(dir,src[1]),'utf8')).replace(/\r\n/g,'\n');
       if(/\bcurrentScript\b|\bimport\.meta\b/.test(body)){flush();continue;}
       const group=headFiles.get(src[1]);
       if(run.length&&(run.at(-1).group!==group||!/^\s*(?:<!--[\s\S]*?-->\s*)*$/.test(head.slice(run.at(-1).end,match.index))))flush();

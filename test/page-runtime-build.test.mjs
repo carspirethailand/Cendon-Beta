@@ -1,9 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtemp,readFile,writeFile,readdir,rm} from 'node:fs/promises';
+import {mkdtemp,mkdir,readFile,writeFile,readdir,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve,relative} from 'node:path';
 import {buildPageRuntime} from '../tools/build-page-runtime.mjs';
+
+test('Windows and CI line endings produce identical runtime addresses and page documents',async()=>{
+ const root=await mkdtemp(join(tmpdir(),'cendon-runtime-test-'));try{
+  const lf=join(root,'lf'),crlf=join(root,'crlf');await Promise.all([mkdir(lf),mkdir(crlf)]);
+  const html='<html>\n<head>\n<script src="/app-navigation-bridge.js"></script>\n<script src="/tab-shell.js"></script>\n</head>\n<body><script id="entry">\nwindow.fixture=true;\n/*'+'same code\n'.repeat(1000)+'*/</script></body></html>';
+  for(const dir of [lf,crlf]){const eol=s=>dir===crlf?s.replace(/\n/g,'\r\n'):s;for(const n of ['index','garage','profile','news','spares','chat'])await writeFile(join(dir,n+'.html'),eol(html));for(const n of ['app-navigation-bridge','tab-shell'])await writeFile(join(dir,n+'.js'),eol('window.fixture=true;\n'));await buildPageRuntime(dir)}
+  const names=(await readdir(join(lf,'runtime'))).sort();assert.deepEqual(names,(await readdir(join(crlf,'runtime'))).sort());
+  for(const name of names)assert.equal(await readFile(join(lf,'runtime',name),'utf8'),await readFile(join(crlf,'runtime',name),'utf8'));
+  assert.equal(await readFile(join(lf,'garage.html'),'utf8'),await readFile(join(crlf,'garage.html'),'utf8'));
+ }finally{const rel=relative(resolve(tmpdir()),resolve(root));assert.ok(rel.startsWith('cendon-runtime-test-')&&!rel.includes('..'));await rm(root,{recursive:true})}
+});
 test('critical head bundles preserve order and never cross inline/deferred/style boundaries',async()=>{
  const dir=await mkdtemp(join(tmpdir(),'cendon-runtime-test-'));try{
   for(const n of ['app-navigation-bridge','tab-shell','launch-gate','auth-gate','account-scope','garage-rules','garage-data'])await writeFile(join(dir,n+'.js'),'window.order.push("'+n+'");');

@@ -22,6 +22,10 @@ were merged and tested, not overwritten.
    root. This uses only Node built-ins and the existing runtime packager. Public
    assets only: no Backyard, test fixtures, research, credentials or internal
    handbook data. Pages Functions still compile from root `functions/` and `lib/`.
+   Production verification also found Windows CRLF versus CI LF generating
+   different runtime addresses for identical code. Canonical LF in the runtime
+   packager now makes Git and manual builds share the same hashes; a cross-platform
+   regression test checks both generated documents and every runtime asset.
 2. **Garage car paint:** synchronous canvas tinting plus PNG encoding was on the
    first-view path (`tintURL`, approximately 167 ms sampled self time in the 4x
    baseline CPU profile). Reuse the SVG colour matrix instead. The car image and
@@ -54,7 +58,7 @@ were merged and tested, not overwritten.
 
 ## Verified coverage
 
-- **786 frontend unit/contract tests passed.**
+- **787 frontend unit/contract tests passed.**
 - **646 backend tests passed** without a backend deployment, including the team's latest Intelligent UI tests.
 - **36 assertion-based browser suites passed**, including owner inventory,
   account restoration, Studio services/jobs, units, Chat navigation, call
@@ -117,8 +121,8 @@ was 1.5–2.2 seconds at 1x and 2.2–4.1 seconds at 4x. A separate 1.5 Mbps/80 
 The universal sub-second target is therefore **not achieved**. Warm retained
 navigation is fast, but hiding cold work behind a new placeholder is not a fix.
 
-Runtime packaging moves about 4.53 MB of inline code out of six HTML documents:
-combined HTML 6.74 MB to 2.22 MB uncompressed, with 42 content-addressed JS assets
+Runtime packaging moves about 4.5 MB of inline code out of six HTML documents:
+combined HTML 6.7 MB to 2.2 MB uncompressed, with 42 content-addressed JS assets
 and 11 order-preserving head bundles. These are packaging sizes, **not** a claim
 of equivalent first-load network savings; code still has to load on a cold cache.
 
@@ -169,3 +173,8 @@ probe confirmed that the installed CLI still works without creating a debug file
 Three generated private logs from this audit were removed; no database records,
 user files or hash snapshots were deleted. No backup of those temporary logs is
 retained. Existing private artifacts from other work were not blanket-deleted.
+
+The release-guard tool correction is committed and pushed on backend branch
+`codex/performance-release-guard-2026-10-31`; it has not been merged into backend
+`main` or deployed as a Worker. This audit used the corrected guard. Future
+operators should use that branch or merge the tool-only correction first.

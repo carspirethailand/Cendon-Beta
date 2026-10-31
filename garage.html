@@ -7321,7 +7321,7 @@ function carMorph(id,opening,swap){
   if(!D.startViewTransition||matchMedia("(prefers-reduced-motion: reduce)").matches||!from||!from.getClientRects().length){swap();return}
   h.dataset.clm="1";from.classList.add("cl-vt");
   const end=()=>{delete h.dataset.clm;D.querySelectorAll(".cl-vt").forEach(e=>e.classList.remove("cl-vt"))};
-  try{D.startViewTransition(()=>{from.classList.remove("cl-vt");swap();repointPaint();const to=opening?big():card();if(to)to.classList.add("cl-vt")}).finished.finally(end)}catch(e){end();swap()}
+  try{const transition=D.startViewTransition(()=>{from.classList.remove("cl-vt");swap();repointPaint();const to=opening?big():card();if(to)to.classList.add("cl-vt")});transition.finished.then(end,end);return transition.updateCallbackDone}catch(e){end();swap()}
 }
 function closeCL(){if(!modal)return;const shown=modal.classList.contains("show");closeSheet(true);
   if(shown&&curCar)carMorph(curCar.id,false,()=>modal.classList.remove("show"));else modal.classList.remove("show")}
@@ -7329,7 +7329,7 @@ function closeCL(){if(!modal)return;const shown=modal.classList.contains("show")
    ลิงก์เก่า (/garage/<รถ>/cost ฯลฯ) และปุ่มจากที่อื่น ยังพามาแผ่นที่ของนั้นอยู่ */
 const LISTS=["care","hist","about"];
 const OLD_TAB={info:"about",odo:"about",spec:"about",equip:"about",parts:"about",health:"care",plan:"care",cal:"care",cost:"hist",trip:"hist",pass:"hist"};
-window.openCarDetail=function(id,go){
+window.openCarDetail=async function(id,go){
   const c=cars().find(x=>x.id===id); if(!c)return;
   curCar=c; ensureModal();
   const was=modal.classList.contains("show");
@@ -7337,7 +7337,8 @@ window.openCarDetail=function(id,go){
   window.clRerender=()=>{try{renderAll()}catch(e){}};
   closeSheet(true);
   renderAll();
-  if(was)modal.classList.add("show");else carMorph(id,true,()=>{modal.classList.add("show");$("clScroll").scrollTop=0});
+  if(was)modal.classList.add("show");else await carMorph(id,true,()=>{modal.classList.add("show");$("clScroll").scrollTop=0});
+  if(curCar!==c||!modal.classList.contains("show"))return;
   if(!was)$("clScroll").scrollTop=0;
   if(go==="odo")setTimeout(()=>{openSheet("log:odo");setTimeout(()=>{const i=$("crmOdoIn");if(i)try{i.focus({preventScroll:true})}catch(e){}},300)},60);
   else if(go&&LISTS.includes(OLD_TAB[go]||go))setTimeout(()=>openSheet("list:"+(OLD_TAB[go]||go)),60);

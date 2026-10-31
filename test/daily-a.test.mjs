@@ -100,9 +100,9 @@ test('a garage card becomes the car page (and back) with the car flying between 
   const garage = r('garage.html');
   assert.match(garage, /function carMorph\(id,opening,swap\)\{/);
   assert.match(garage, /if\(!D\.startViewTransition\|\|matchMedia\("\(prefers-reduced-motion: reduce\)"\)\.matches\|\|!from\|\|!from\.getClientRects\(\)\.length\)\{swap\(\);return\}/, 'opens instantly when unsupported, reduced motion or no visible card');
-  assert.match(garage, /D\.startViewTransition\(\(\)=>\{from\.classList\.remove\("cl-vt"\);swap\(\);repointPaint\(\);const to=opening\?big\(\):card\(\);if\(to\)to\.classList\.add\("cl-vt"\)\}\)\.finished\.finally\(end\)/, 'one shared name at a time; paint re-pointed inside the swap');
+  assert.match(garage, /const transition=D\.startViewTransition\(\(\)=>\{from\.classList\.remove\("cl-vt"\);swap\(\);repointPaint\(\);const to=opening\?big\(\):card\(\);if\(to\)to\.classList\.add\("cl-vt"\)\}\);transition\.finished\.then\(end,end\);return transition\.updateCallbackDone/, 'preserves the shared morph and lets routing await the actual swap, not the whole animation');
   assert.match(garage, /const end=\(\)=>\{delete h\.dataset\.clm;D\.querySelectorAll\("\.cl-vt"\)\.forEach\(e=>e\.classList\.remove\("cl-vt"\)\)\};/, 'the shared name never lingers');
-  assert.match(garage, /if\(was\)modal\.classList\.add\("show"\);else carMorph\(id,true,\(\)=>\{modal\.classList\.add\("show"\);\$\("clScroll"\)\.scrollTop=0\}\);/, 'only a fresh open morphs; re-renders stay instant');
+  assert.match(garage, /if\(was\)modal\.classList\.add\("show"\);else await carMorph\(id,true,\(\)=>\{modal\.classList\.add\("show"\);\$\("clScroll"\)\.scrollTop=0\}\);/, 'a deep child route cannot race ahead of its car layer; only a fresh open morphs');
   assert.match(garage, /if\(shown&&curCar\)carMorph\(curCar\.id,false,\(\)=>modal\.classList\.remove\("show"\)\);else modal\.classList\.remove\("show"\)/, 'closing flies the car back into its card');
   assert.match(garage, /\.cl-vt\{view-transition-name:cl-car\}/);
   assert.match(garage, /html\[data-clm\] \.mnav\{view-transition-name:none!important\}/);

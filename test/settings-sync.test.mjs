@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 /* ตั้งค่าที่หน้าไหนก็ตาม แท็บอื่นที่เปิดค้าง/เตรียมไว้ล่วงหน้าต้องเปลี่ยนตามทันที (เดิม การาจ/นิตยสาร ค้างธีมเก่าจนกว่าจะรีเฟรช) */
-const r = f => readFileSync(new URL('../' + f, import.meta.url), 'utf8');
+const r = f => readFileSync(new URL('../' + f, import.meta.url), 'utf8').replace(/\r\n/g,'\n');
 const PAGES = ['garage.html', 'news.html', 'profile.html', 'spares.html', 'chat.html'];
 
 test('theme set on one tab repaints every other tab at once', () => {

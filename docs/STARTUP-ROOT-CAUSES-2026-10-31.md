@@ -7,7 +7,7 @@ This is a frontend performance correction, not a redesign or data migration. All
 application, document, message, moderation decision or ownership is deleted,
 reset, recreated or changed by this release. The existing backend Worker and D1
 binding are not redeployed. The team's latest job-form UI changes through
-`5d7105a` (including the shared settings/tab preparation work) are merged, not
+`def1ab0` (including shared settings and background Chat preparation) are merged, not
 replaced by an older performance checkout.
 
 No replacement loading screen added by the optimization, fabricated account readiness, new paid provider,
@@ -49,8 +49,14 @@ blanket local-storage reset or automatic approval is introduced.
    its DOM-swap promise and the router awaits that, not the whole animation.
    This retains the team's new morph but prevents its delayed swap from losing
    a nested route. No car record is changed.
+9. **Speculative loading racing a real tap:** a foreground navigation cancels
+   only unrelated, unfinished, never-shown speculative documents. It never
+   removes loaded views, foreground forms, auth owners, calls or Chat. Failed
+   preparation cleanup cannot remove a replacement foreground document. A real
+   browser test holds the background Garage request, switches to Chat, and
+   verifies both cancellation and the unsent Home AI draft after returning.
 
-## Before/after cold-start measurements
+## Recorded controlled cold-start comparison
 
 Chrome, fresh isolated contexts, 393 × 852 viewport, synthetic completed account
 and APIs, 60 ms delay per local static request, service worker blocked for equal
@@ -59,6 +65,9 @@ candidate is the public package from `1be2b4b`. Both execute real Leaflet,
 including the baseline, so blocking the old CDN cannot create a misleading fast
 baseline by skipping the map code. Three paired runs per configuration,
 alternating run order; medians below. No other audit suite ran concurrently.
+This comparison predates the final `def1ab0` Chat-preparation merge and the
+speculation-cancellation correction; it is retained as the recorded controlled
+comparison, not relabelled as a new final-build benchmark.
 
 | Home mode | CPU | Before: real view ready | After | Before: visible main controls | After |
 | --- | --- | ---: | ---: | ---: | ---: |
@@ -99,7 +108,7 @@ ready page means an AI answer, live map tiles or every remote image is loaded.
 
 ## Validation and release procedure
 
-- Frontend unit checks after integration: 821 passed; backend safety suite: 646 passed.
+- Frontend unit checks after integration: 822 passed; backend safety suite: 646 passed.
 - Actual source and built public package: 85 route/panel cases passed, including
   deep Garage, account, Studio, job, attachment and Chat entry points. This is
   broad route coverage, not every possible user state or real-provider workflow.
@@ -108,6 +117,8 @@ ready page means an AI answer, live map tiles or every remote image is loaded.
   the team's old job-header helper. Adding its new `watchJobs` dependency to the
   isolated fixture made the remaining suite pass at mobile and desktop widths;
   this correction did not change production code or skip directory assertions.
+  After the final Chat-preparation merge, the 85-route package check and relevant
+  navigation, Chat-background, media handoff and startup fixtures are repeated.
   The focused
   startup test verifies actual local Leaflet markers, a valid nearby-job map,
   old/new map-form isolation, preserved synthetic Garage inventory, no early

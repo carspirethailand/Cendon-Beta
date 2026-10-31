@@ -34,3 +34,11 @@ test('area responses are validated before replacing successful inventory, and cl
  assert.ok(html.includes('const g=await revgeo(p);if(!alive()||L.pos!==p||why())return'));
  assert.ok(html.includes('const p=await locate();if(!alive())return'));
 });
+test('a real navigation cancels only unfinished speculative non-Chat documents, never loaded pages, forms, auth owners or calls',()=>{
+ const removed=[],disposed=[],woken=[],frames=new Map();
+ const add=(ns,extra={},dirty=false)=>frames.set(ns,{background:true,ready:false,waiters:new Set([()=>woken.push(ns)]),el:{remove:()=>removed.push(ns),contentWindow:{CendonView:{dirty,disposeAuth:()=>disposed.push(ns)}}},...extra});
+ for(const ns of ['home','wanted','chat','cold','loaded','form','auth','calling','foreground'])add(ns,ns==='loaded'?{ready:true}:ns==='foreground'?{background:false}:{},ns==='form');
+ const context={frames,active:'home',calls:new Set(['calling']),authOwners:new Set(['auth'])};vm.runInNewContext(app.slice(app.indexOf('function cancelPrewarm('),app.indexOf('function go('))+';globalThis.cancel=cancelPrewarm;',context);context.cancel('wanted');
+ assert.deepEqual(removed,['cold']);assert.deepEqual(disposed,['cold']);assert.deepEqual(woken,['cold']);assert.equal(frames.has('cold'),false);assert.equal(frames.size,8);
+ assert.ok(app.indexOf('cancelPrewarm(namespace(u.href,origin))')<app.indexOf("incoming=!frames.get(namespace(u.href,origin))"));
+});

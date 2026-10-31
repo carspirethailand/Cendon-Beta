@@ -2,6 +2,8 @@
 import assert from 'node:assert/strict';import {spawn} from 'node:child_process';import {pathToFileURL} from 'node:url';import {resolve,join} from 'node:path';
 const root=resolve(import.meta.dirname,'..'),pkg=process.env.CENDON_NODE_PACKAGES||'C:/Users/Porsche/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules',{chromium}=await import(pathToFileURL(join(pkg,'playwright/index.mjs')));
 const server=spawn(process.execPath,['test/app-fixture-server.mjs',process.env.CENDON_QA_DIST||'.','0','0'],{cwd:root,stdio:['ignore','pipe','pipe']}),base=await new Promise((ok,fail)=>{server.stdout.once('data',b=>ok(JSON.parse(b.toString()).url));server.once('error',fail)}),browser=await chromium.launch({headless:true,channel:'chrome'}),page=await browser.newPage({viewport:{width:393,height:852},serviceWorkers:'block'}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+let garageHeld=false,releaseGarage;const garageHold=new Promise(r=>releaseGarage=r);
+await page.route(base+'/garage',async route=>{garageHeld=true;await garageHold;await route.continue().catch(()=>{})});
 try{
  await page.addInitScript(()=>{
   window.__startupChecks={worker:[],earlySkyDraws:0,skyDraws:0};
@@ -14,6 +16,9 @@ try{
  await page.waitForFunction(()=>__startupChecks.worker.length>0);const registration=await page.evaluate(()=>__startupChecks.worker);assert.equal(registration.length,1);assert.deepEqual(registration[0],{path:'/sw.js',ready:true,loaded:true});
  await f.waitForFunction(()=>__startupChecks.skyDraws>0);assert.equal(await f.evaluate(()=>__startupChecks.earlySkyDraws),0,'decoration cannot compete with initial readiness');
  assert.equal(await f.evaluate(()=>localStorage.getItem('spire___owner')),'performance-fixture');assert.ok(await f.evaluate(()=>JSON.parse(localStorage.getItem('spire_garage')).some(c=>c.id==='fixture-car')));
+ await f.locator('#hq').fill('QA unsent car question');await page.waitForFunction(()=>!!document.querySelector('iframe[data-cendon-view="garage"].is-preparing'),undefined,{timeout:10000});assert.equal(garageHeld,true);
+ await page.evaluate(()=>CendonApp.go('/chat'));assert.equal(await page.locator('iframe[data-cendon-view="garage"]').count(),0,'the real tap must stop unrelated unfinished speculative loading');releaseGarage();
+ await page.waitForFunction(()=>CendonApp.current().namespace==='chat'&&!CendonApp.loading&&!barba.transitions.isRunning);await page.evaluate(()=>CendonApp.go('/'));await page.waitForFunction(()=>CendonApp.current().namespace==='home'&&!CendonApp.loading&&!barba.transitions.isRunning);assert.equal(await f.locator('#hq').inputValue(),'QA unsent car question','foreground form survives speculative cancellation');await f.locator('#hq').fill('');
  await f.waitForFunction(()=>window.L?.version==='1.9.4');await f.evaluate(()=>{const host=document.createElement('div');host.id='qaMap';host.style.cssText='position:fixed;inset:100px 20px auto;height:200px;z-index:100000';document.body.append(host);window.__qaMap=L.map(host).setView([13.75,100.5],12);L.marker([13.75,100.5]).addTo(__qaMap)});
  await f.waitForFunction(()=>{const img=document.querySelector('#qaMap .leaflet-marker-icon');return img?.complete&&img.naturalWidth>0});assert.ok((await f.locator('#qaMap .leaflet-marker-icon').getAttribute('src')).includes('/vendor/leaflet-1.9.4/images/'));await f.evaluate(()=>{__qaMap.remove();document.getElementById('qaMap').remove()});
  await f.evaluate(()=>{window.__pickerMaps=[];window.__nativeMap=L.map;L.map=function(...args){const map=__nativeMap.apply(this,args);if(map.getContainer().closest('#bMap'))__pickerMaps.push(map);return map}});
@@ -26,5 +31,5 @@ try{
  await page.evaluate(()=>CendonApp.go('/work/find'));await f.locator('#fMap.leaflet-container').waitFor({state:'visible'});await f.locator('#fMap .leaflet-pane').first().waitFor({state:'attached'});assert.equal(await f.evaluate(()=>FMAP.getContainer().isConnected),true);assert.ok((await f.locator('#fList').innerText()).length>0);await page.evaluate(()=>CendonApp.go('/'));
  await f.evaluate(()=>{window.__savedL=window.L;window.__savedShow=showMap;window.L=undefined;window.showMap=()=>window.__mapRouteOpened=true});
  await page.evaluate(()=>CendonApp.go('/map'));await f.waitForFunction(()=>window.__mapRouteOpened,undefined,{timeout:1500});await f.evaluate(()=>{window.L=__savedL;window.showMap=__savedShow});await page.evaluate(()=>CendonApp.go('/'));
- assert.deepEqual(errors,[]);console.log(JSON.stringify({pass:true,workerAfterReadyAndLoad:true,noEarlyDecorativeDraw:true,localLeafletAndMarkers:true,closedMapCallbacksIsolated:true,validNearbyMap:true,mapRouteDoesNotWaitForFallback:true,garagePreserved:true,productionWrites:0}));
-}finally{await browser.close();server.kill()}
+ assert.deepEqual(errors,[]);console.log(JSON.stringify({pass:true,workerAfterReadyAndLoad:true,noEarlyDecorativeDraw:true,localLeafletAndMarkers:true,closedMapCallbacksIsolated:true,validNearbyMap:true,mapRouteDoesNotWaitForFallback:true,unfinishedSpeculationCancelled:true,foregroundDraftPreserved:true,garagePreserved:true,productionWrites:0}));
+}finally{releaseGarage();await browser.close();server.kill()}

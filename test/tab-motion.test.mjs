@@ -58,7 +58,7 @@ test('main tabs are prepared in the background after Home, so the first tap is f
   assert.match(app, /await idle\(800\);/, 'one page at a time, in idle moments');
   assert.match(app, /const r=await prepare\(new URL\(ROOTS\[ns\],origin\)\.href,true\);if\(ns!==active\)r\.el\.contentWindow\.CendonView\?\.setHidden\(true\);/, 'prepared pages are told they are hidden');
   assert.match(app, /el\.className='app-view is-preparing';el\.inert=background;/, 'cannot be tapped or focused until really opened (activate clears inert)');
-  assert.match(app, /catch\{const r=frames\.get\(ns\);if\(r&&!r\.ready&&ns!==active&&!calls\.has\(ns\)&&!authOwners\.has\(ns\)\)\{try\{r\.el\.contentWindow\.CendonView\?\.disposeAuth\?\.\(\);\}catch\{\}r\.el\.remove\(\);frames\.delete\(ns\);\}return;\}/, 'a failed preparation is dropped; a real tap then loads as before');
+  assert.match(app, /catch\{const r=frames\.get\(ns\);if\(r\?\.background&&!r\.ready&&ns!==active&&!calls\.has\(ns\)&&!authOwners\.has\(ns\)&&!r\.el\.contentWindow\.CendonView\?\.dirty\)\{try\{r\.el\.contentWindow\.CendonView\?\.disposeAuth\?\.\(\);\}catch\{\}r\.el\.remove\(\);frames\.delete\(ns\);\}return;\}/, 'failed speculative preparation never removes a replacement foreground view or form');
 });
 
 test('new code reaches phones: versions bumped together', () => {

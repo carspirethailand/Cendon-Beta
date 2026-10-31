@@ -14,7 +14,7 @@ function scheduleWorker(){
 }
 const progress=D.getElementById('appProgress'),notice=D.getElementById('appNotice'),callButton=D.getElementById('appCall');
 const limit=(navigator.deviceMemory&&navigator.deviceMemory<4)?3:6;
-function record(el,url){const r={el,url,ready:false,waiters:new Set(),used:Date.now()};frames.set(el.dataset.cendonView,r);return r;}
+function record(el,url,background=false){const r={el,url,background,ready:false,waiters:new Set(),used:Date.now()};frames.set(el.dataset.cendonView,r);return r;}
 record(initial,current);
 function native(url){location.assign(url);}
 function callOwner(){return [...calls].find(n=>frames.has(n));}
@@ -67,12 +67,21 @@ function cacheRoute(u){
   wrap.dataset.barba='wrapper';view.dataset.barba='container';view.dataset.barbaNamespace=namespace(u.href,origin);view.dataset.route=u.pathname+u.search+u.hash;wrap.append(view);doc.body.append(wrap);
   barba.cache.set(u.href,Promise.resolve({html:doc.documentElement.outerHTML,url:{href:u.href,...barba.url.parse(u.href)}}),'prefetch','fulfilled');cached.add(u.href);
 }
+function cancelPrewarm(wanted){
+  // Stop only never-shown, unfinished speculative documents. Loaded views,
+  // forms, auth owners, Chat and live calls retain their state and keep running.
+  for(const [ns,r]of frames){
+    if(ns===wanted||ns===active||ns==='chat'||!r.background||r.ready||calls.has(ns)||authOwners.has(ns)||r.el.contentWindow.CendonView?.dirty)continue;
+    try{r.el.contentWindow.CendonView?.disposeAuth?.();}catch{}
+    r.failed=true;r.el.remove();frames.delete(ns);for(const wake of [...r.waiters])wake();
+  }
+}
 function go(raw,trigger='barba',event){
   const u=appUrl(raw,origin);if(!u){native(raw);return false;}
   notice.hidden=true;
   if(busy||!barba||barba.transitions.isRunning){queued={url:u.href,trigger,event};drain();return true;}
   if(u.href===current){frames.get(active)?.el.contentWindow.CendonView?.navigate(u.href);return true;}
-  busy=true;progress.hidden=false;
+  cancelPrewarm(namespace(u.href,origin));busy=true;progress.hidden=false;
   // Start the real requested document alongside Barba's metadata request.
   // Previously they were serial: one full network round trip was wasted.
   incoming=!frames.get(namespace(u.href,origin))?.ready?{url:u.href,result:prepare(u.href).then(value=>({value}),error=>({error}))}:null;
@@ -106,7 +115,7 @@ function waitReady(r,url){return new Promise((resolve,reject)=>{const start=Date
 }r.waiters.add(check);check();});}
 async function prepare(url,background=false){
   const ns=namespace(url,origin);let r=frames.get(ns);
-  if(!r){frames.get(active)?.el.contentWindow.CendonPaint?.prepare(url);const el=D.createElement('iframe');el.className='app-view is-preparing';el.inert=background;el.dataset.cendonView=ns;el.title='Cendon';el.allow='camera; microphone; geolocation; autoplay; clipboard-write; fullscreen';r=record(el,url);el.addEventListener('load',()=>{if(!el.isConnected)return;let registered=false;try{registered=!!el.contentWindow?.CendonView;}catch{}if(!registered){r.failed=true;for(const wake of [...r.waiters])wake();}});el.src=url;D.getElementById('appViews').append(el);}
+  if(!r){frames.get(active)?.el.contentWindow.CendonPaint?.prepare(url);const el=D.createElement('iframe');el.className='app-view is-preparing';el.inert=background;el.dataset.cendonView=ns;el.title='Cendon';el.allow='camera; microphone; geolocation; autoplay; clipboard-write; fullscreen';r=record(el,url,background);el.addEventListener('load',()=>{if(!el.isConnected)return;let registered=false;try{registered=!!el.contentWindow?.CendonView;}catch{}if(!registered){r.failed=true;for(const wake of [...r.waiters])wake();}});el.src=url;D.getElementById('appViews').append(el);}
   await waitReady(r,url);
   // Compare the view's real location too: a stale record would reveal it on the wrong layer.
   let at=r.url;try{at=r.el.contentWindow.location.href;}catch{}
@@ -131,7 +140,7 @@ function activate(r,url){
   // Never move a live iframe to another node: moving it restarts its document.
   for(const [name,f]of frames){const on=name===ns;f.el.classList.toggle('is-active',on);f.el.classList.remove('is-preparing');f.el.inert=!on;f.el.contentWindow.CendonView?.setHidden(!on);}
   if(typeof navFrom==='number')try{r.el.contentWindow.CendonNav?.slideFrom(navFrom);}catch{}
-  active=ns;current=url;r.used=Date.now();openingDone();
+  active=ns;current=url;r.background=false;r.used=Date.now();openingDone();
   D.title=r.el.contentDocument?.title||'Cendon';tint();callUI();evict();
 }
 // แท็บหลักเตรียมไว้ล่วงหน้า: แท็บที่ยังไม่เคยเปิดต้องโหลดและรันสคริปต์ทั้งหน้าตอนกด (วัดได้ 0.6–1.3 วิเมื่อ CPU ช้าแบบมือถือ) ส่วนครั้งที่สองแค่ ~0.1 วิ
@@ -152,7 +161,7 @@ async function prewarm(){
     if(ns==='chat'){let job=null;try{job=sessionStorage.getItem('spire_featureJob')||sessionStorage.getItem('spire_quoteJob');}catch{}if(job)continue;}
     if(busy||queued||D.hidden||frames.size>=limit)return;
     try{const r=await prepare(new URL(ROOTS[ns],origin).href,true);if(ns!==active)r.el.contentWindow.CendonView?.setHidden(true);}
-    catch{const r=frames.get(ns);if(r&&!r.ready&&ns!==active&&!calls.has(ns)&&!authOwners.has(ns)){try{r.el.contentWindow.CendonView?.disposeAuth?.();}catch{}r.el.remove();frames.delete(ns);}return;}
+    catch{const r=frames.get(ns);if(r?.background&&!r.ready&&ns!==active&&!calls.has(ns)&&!authOwners.has(ns)&&!r.el.contentWindow.CendonView?.dirty){try{r.el.contentWindow.CendonView?.disposeAuth?.();}catch{}r.el.remove();frames.delete(ns);}return;}
   }
 }
 // หน้าเปิดแอป (#appOpening อยู่บนสุด) = ภาพเดียวกับหน้าเปิดของ Android ต่อเนื่องจนหน้าแรกพร้อม แล้วจางออกทันที (ไม่มีจังหวะเล่นของตัวเอง)

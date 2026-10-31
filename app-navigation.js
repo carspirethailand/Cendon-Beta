@@ -123,14 +123,12 @@ function activate(r,url){
   active=ns;current=url;r.used=Date.now();openingDone();
   D.title=r.el.contentDocument?.title||'Cendon';tint();callUI();evict();
 }
-// หน้าเปิดแอป (#appOpening อยู่บนสุด): หน้าแรกพร้อมแล้วปล่อยการกดผ่านทันที แต่ให้จังหวะเปิดเล่นจบก่อน (~0.9 วิ นับจากเปิด)
-// แล้วคลื่นพุ่งขึ้นเผยหน้าแรก · ไม่หน่วงเกินนั้น · ลดการเคลื่อนไหว = จางออกสั้น ๆ · ซ่อนจริงหลังจบ (hidden คือสัญญาณ "เปิดเสร็จ")
+// หน้าเปิดแอป (#appOpening อยู่บนสุด) = ภาพเดียวกับหน้าเปิดของ Android ต่อเนื่องจนหน้าแรกพร้อม แล้วจางออกทันที (ไม่มีจังหวะเล่นของตัวเอง)
+// ปล่อยการกดผ่านตั้งแต่เริ่มจาง · ซ่อนจริงหลังจาง (hidden คือสัญญาณ "เปิดเสร็จ")
 const opening=D.getElementById('appOpening');let openingGone=false;
 function openingDone(){
-  if(openingGone||!opening)return;openingGone=true;opening.classList.add('is-ready');
-  const calm=W.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-  const wait=calm?0:Math.max(0,900-performance.now());
-  setTimeout(()=>{opening.classList.add('is-out');setTimeout(()=>{opening.hidden=true;},calm?220:720);},wait);
+  if(openingGone||!opening)return;openingGone=true;
+  opening.classList.add('is-ready','is-out');setTimeout(()=>{opening.hidden=true;},300);
 }
 // หน้าแรกไม่ส่งสัญญาณพร้อม (หลุดไปหน้าอื่น สคริปต์หน้าเสีย) ก็ไม่ค้างหน้าเปิด: 6 วิแล้วเผยสิ่งที่อยู่ข้างใต้ (CSS มีกันค้างอีกชั้นที่ 10 วิ)
 setTimeout(openingDone,6000);

@@ -31,11 +31,13 @@ test('stage 1 holds the AI box, tools and my car; stage 2 holds search, actions,
   const pos=['hForm','myCar','hQuick','hRail','sugList'].map(id=>at(page,id));assert.deepEqual([...pos].sort((a,b)=>a-b),pos);
 });
 
-test('quick actions keep every handler: urgent / post / home / quotes (stage 2) and photo / sound / quote / urgent (stage 1)',()=>{
+test('quick actions keep every handler: urgent / post / quotes (stage 2) and photo / sound / quote / urgent (stage 1)',()=>{
   const q=page.slice(page.indexOf('function drawQuick'),page.indexOf('function urgTap'));
-  for(const k of ['post','home','multi','photo','listen','quote'])assert.match(q,new RegExp(`\\["${k}","ti-`),k);
+  for(const k of ['post','multi','photo','listen','quote'])assert.match(q,new RegExp(`\\["${k}","ti-`),k);
+  /* ด่วน / ไม่ด่วน เลือกก่อนเข้าหน้าใบงาน · ช่างมาหาที่บ้านเป็นตัวเลือกในหน้าใบงาน ไม่ใช่ปุ่มแยก */
+  assert.doesNotMatch(q,/\["home","ti-/);
   assert.match(q,/if\(k==="urgent"\)return emergency\(\);if\(k==="multi"\)return openMulti\("",""\);/);
-  assert.match(q,/if\(k==="post"\)return openPostForm\("",""\);if\(k==="home"\)return openPostForm\("","",\{home:true\}\);/);
+  assert.match(q,/if\(k==="post"\)return openPostForm\("",""\);\n/);
   assert.match(q,/if\(k==="photo"\)return photoPage\(\);/);assert.match(q,/return quotePage\(\)/);assert.match(q,/return listenPage\(\)/);
   assert.match(q,/urgTap\(\$\("hQuick"\)\.querySelector\("\.lx-urg"\),\(\)=>go\("urgent"\)\);/);
   assert.match(q,/urgTap\(\$\("hTools"\)\.querySelector\("\.lx-urg"\),\(\)=>go\("urgent"\)\);/,'the emergency shortcut keeps the first-tap behaviour in stage 1 too');

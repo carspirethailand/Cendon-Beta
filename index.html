@@ -29,7 +29,7 @@ html.ib-boot .bs .pn,html.ib-boot .bs .bg{transition:none!important}</style>
 <script src="/account.js?v=2026-10-28-r1" defer></script>
 <script src="/garage-rules.js?v=5" defer></script>
 <script src="/garage-data.js?v=2" defer></script>
-<script src="/input-guard.js?v=6" defer></script>
+<script src="/input-guard.js?v=7" defer></script>
 <meta charset="UTF-8"/>
 <!-- ที่อยู่แบบลึก (/tech/<ร้าน>/reviews) — ไฟล์ประกอบทุกตัวอ้างจากรากเว็บเสมอ -->
 <base href="/">
@@ -41,7 +41,7 @@ html.ib-boot .bs .pn,html.ib-boot .bs .bg{transition:none!important}</style>
 (function(){try{if(/^\/(work|studio)(\/|$)/.test(location.pathname)){var p=JSON.parse(localStorage.getItem("spire_partner")||"null");if(p&&p.s==="shop")document.documentElement.dataset.boot="tech"}}catch(e){}})();</script>
 <script>(function(){try{var A=["th","en","zh","ja","ko","id","vi","ms","de","fr","es","pt"],l=null;try{l=JSON.parse(localStorage.getItem("spire_lang"))}catch(e){}
 if(A.indexOf(l)<0){l="en";var n=navigator.languages||[navigator.language||"en"];for(var i=0;i<n.length;i++){var b=String(n[i]).toLowerCase().split("-")[0];if(A.indexOf(b)>=0){l=b;break}}}
-if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=30"><\/script>')}catch(e){}})();</script>
+if(l!=="th"&&l!=="en")document.write('<script src="/i18n/home-'+l+'.js?v=31"><\/script>')}catch(e){}})();</script>
 <title>Cendon</title>
 <meta name="description" content="ถามอาการรถ ส่งรูปหรือเสียงให้ AI ช่วยดู เช็กใบเสนอราคา และหาช่างที่ผ่านการตรวจใกล้คุณ">
 <!-- การ์ดตอนแชร์ลิงก์ (LINE / Facebook / X) — รูปต้องเป็นที่อยู่เต็ม -->
@@ -517,7 +517,7 @@ textarea.inp{min-height:92px;resize:vertical}
 .fpop ul{margin:0 0 18px;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
 .fpop li{position:relative;padding-left:16px;font-size:14px;line-height:1.55}
 .fpop li::before{content:"";position:absolute;left:2px;top:.66em;width:6px;height:6px;border-radius:50%;background:var(--danger)}
-.bad-f{box-shadow:0 0 0 2px var(--danger)!important;border-radius:12px}
+.bad-f{scroll-margin-block:100px}
 @keyframes fpIn{from{opacity:0}}
 @keyframes fpUp{from{opacity:0;transform:translateY(6px)}}
 @media(prefers-reduced-motion:reduce){.fpop,.fpop-c{animation:none}}
@@ -2877,7 +2877,7 @@ a.mtab{text-decoration:none}
 <link rel="stylesheet" href="home-layout.css?v=3">
 <link rel="stylesheet" href="home-stages.css?v=7">
 <link rel="stylesheet" href="wide-layout.css?v=1">
-<link rel="stylesheet" href="call-x.css?v=3">
+<link rel="stylesheet" href="call-x.css?v=9">
 <script src="category-pages.js" defer></script>
 <script src="/sheet-drag.js?v=1" defer></script>
 <script src="car-sync.js"></script>
@@ -4539,10 +4539,9 @@ window.addEventListener('cendon:partner-card',()=>{try{drawPartner()}catch(e){}}
 /* การ์ดลัด 4 ช่อง: ไอคอน + ชื่อสั้น ๆ อย่างเดียว (คำอธิบายอยู่ใน title)
    ช่องแรก "เรียกช่างด่วน" (แดง) = โหมดฉุกเฉิน · เรียกช่างแบบอื่นทั้งหมดอยู่ที่ปุ่ม + มุมซ้ายบน (callPlus) */
 function drawQuick(){
-  /* ช่วงเรียกช่าง (#hQuick): ด่วน · ประกาศหาช่าง · ช่างมาหาที่บ้าน · ขอราคา 3 ร้าน — เมนู + มุมซ้ายบนบนมือถือยังมีครบเหมือนเดิม
+  /* ช่วงเรียกช่าง (#hQuick): ด่วน · ประกาศหาช่าง (ไม่ด่วน) · ขอราคา 3 ร้าน — เมนู + มุมซ้ายบนบนมือถือยังมีครบเหมือนเดิม
      ช่วง AI (#hTools): ถ่ายรูป · ฟังเสียงเครื่อง · เช็กใบเสนอราคา · เรียกช่างด่วน (ทางลัด ไม่ต้องสลับช่วงตอนฉุกเฉิน) */
   const Q=[["post","ti-speakerphone",T("ประกาศหาช่าง","Post a job"),T("ช่างรอบตัวเสนอราคามา","Nearby shops send quotes")],
-    ["home","ti-home",T("ช่างมาหาที่บ้าน","Mechanic comes to you"),T("หรือที่ทำงาน · เลือกวันเวลา","Home or work · pick a time")],
     ["multi","ti-arrows-exchange",T("ขอราคา 3 ร้าน","Quotes from 3 shops"),T("เทียบแล้วค่อยเลือก","Compare, then choose")]];
   const A=[["photo","ti-camera",T("ถ่ายรูป","Photo"),T("ไม่แน่ใจว่าเสียอะไร","Not sure what's wrong")],
     ["listen","ti-wave-sine",T("ฟังเสียงเครื่อง","Engine sound check"),T("อัดเสียงให้ AI ฟัง","Record it for the AI")],
@@ -4553,7 +4552,7 @@ function drawQuick(){
   $("hTools").innerHTML=A.map(tile).join("")+urgent;
   const go=k=>{
     if(k==="urgent")return emergency();if(k==="multi")return openMulti("","");
-    if(k==="post")return openPostForm("","");if(k==="home")return openPostForm("","",{home:true});
+    if(k==="post")return openPostForm("","");
     if(k==="photo")return photoPage();
     if(k==="quote")return quotePage();
     if(k==="listen")return listenPage()};
@@ -4611,11 +4610,10 @@ function plusOpen(){
   const shops=pastShops();
   const sc=document.createElement("div");sc.className="cx-scrim";
   const m=document.createElement("div");m.className="cx-menu";m.setAttribute("role","menu");m.setAttribute("aria-label",T("เรียกช่าง","Call a mechanic"));
-  const tile=(k,ic,c1,c2,b1,s1)=>`<button type="button" class="cx-mi cx-tile" role="menuitem" data-k="${k}"><span class="cx-ic" style="background:${c1};color:${c2}"><i class="ti ${ic}"></i></span><span><b>${b1}</b><small>${s1}</small></span></button>`;
+  const tile=(k,ic,c1,c2,b1,s1,x)=>`<button type="button" class="cx-mi cx-tile${x?" "+x:""}" role="menuitem" data-k="${k}"><span class="cx-ic" style="background:${c1};color:${c2}"><i class="ti ${ic}"></i></span><span><b>${b1}</b><small>${s1}</small></span></button>`;
   m.innerHTML=`<button type="button" class="cx-mi cx-urg" role="menuitem" data-k="urgent"><span class="cx-ic"><i class="ti ti-urgent"></i></span><span><b>${T("เรียกช่างด่วน","Urgent mechanic")}</b><small>${T("รถเสีย อุบัติเหตุ · ร้านใกล้สุดเห็นทันที","Breakdown or accident · nearest shops see it now")}</small></span><i class="cx-live" aria-hidden="true"></i></button>
     <div class="cx-grid">
-      ${tile("post","ti-speakerphone","var(--co-soft,rgba(233,104,42,.12))","var(--co,#E9682A)",T("ประกาศหาช่าง","Post a job"),T("ช่างรอบตัวเสนอราคามา","Nearby shops send quotes"))}
-      ${tile("home","ti-home","rgba(37,99,235,.12)","#2563EB",T("ช่างมาหาที่บ้าน","Mechanic comes to you"),T("หรือที่ทำงาน · เลือกวันเวลา","Home or work · pick a time"))}
+      ${tile("post","ti-speakerphone","var(--co-soft,rgba(233,104,42,.12))","var(--co,#E9682A)",T("ประกาศหาช่าง","Post a job"),T("ไม่ด่วน · ช่างมาหาหรือเอารถเข้าอู่ก็ได้","Not urgent · a mechanic comes to you, or take it to a shop"),"cx-wide")}
       ${tile("multi","ti-arrows-exchange","rgba(5,150,105,.13)","#059669",T("ขอราคา 3 ร้าน","Quotes from 3 shops"),T("เทียบก่อนตัดสินใจ","Compare before you choose"))}
       <div class="cx-tile" role="group" aria-label="${T("ให้ AI ดูก่อน","Let AI look first")}"><span class="cx-ic" style="background:rgba(124,58,237,.13);color:#7C3AED"><i class="ti ti-sparkles"></i></span>
         <span><b>${T("ให้ AI ดูก่อน","Let AI look first")}</b><small>${T("ไม่แน่ใจว่าเสียอะไร","Not sure what's wrong")}</small></span>
@@ -4631,7 +4629,7 @@ function plusOpen(){
   addEventListener("keydown",onKey,true);
   PLUS={sc,m,onKey,L:Nav.push({tag:"plus",close:()=>plusClose(true)})};
   sc.onclick=()=>plusClose();
-  const act={urgent:()=>emergency(),post:()=>openPostForm("",""),home:()=>openPostForm("","",{home:true}),multi:()=>openMulti("",""),photo:()=>photoPage(),listen:()=>listenPage()};
+  const act={urgent:()=>emergency(),post:()=>openPostForm("",""),multi:()=>openMulti("",""),photo:()=>photoPage(),listen:()=>listenPage()};
   m.querySelectorAll("[data-k]").forEach(x=>x.onclick=()=>{const f=act[x.dataset.k];plusClose();if(f)setTimeout(f,60)});
   m.querySelectorAll("[data-shop]").forEach(x=>x.onclick=()=>{const t=TECHS.find(y=>y.id===x.dataset.shop);plusClose();
     /* เปิดหน้าร้านแล้วฟอร์มขอราคาซ้อนบน — ที่อยู่เป็น /tech/<ร้าน>/quote รีเฟรชแล้วกลับมาที่เดิม */
@@ -5418,7 +5416,7 @@ Nav.route({path:"diagnose",open:(p,q)=>aiDiag(q.get("q")||"")});
 Nav.route({path:"post",name:"post",open:async(p,q)=>{if(!await needU())return;
   /* มาจาก Cendon Valet ในห้องแชต: ร่างประกาศรอไว้ใน sessionStorage (ใช้ครั้งเดียว) */
   let d=null;try{d=JSON.parse(sessionStorage.getItem("spire_postDraft")||"null");sessionStorage.removeItem("spire_postDraft")}catch(e){}
-  /* /post?at=home = ช่างมาหาที่บ้าน (จากปุ่ม + หรือสลับในหน้าเรียกช่าง) */
+  /* /post?at=home (ลิงก์เดิม · AI "ช่างมาหา") = ประกาศหาช่างที่เลือก "ให้ช่างมาหา" ไว้ให้ */
   if(d&&Date.now()-(d.at||0)<30*60e3)openPostForm(d.sym||"",d.cat||"",d);else openPostForm("","",{home:!!(q&&q.get("at")==="home")})}});
 Nav.route({path:"post/:id",open:async p=>{if(await needUser())return openPostView(p.id)}});
 Nav.route({path:"trip/:token",open:p=>openTrip(p.token)});
@@ -5969,130 +5967,194 @@ function contactForm(o){
     }};
   return api2;
 }
-/* ═══ หน้าเรียกช่าง (แนว A · แผนที่มีชีวิต) ═══
+/* ═══ หน้าใบงาน (ทีละคำถาม) ═══
    ใช้กับ: ประกาศหาช่าง · ช่างมาหาที่บ้าน · เรียกช่างด่วน · ขอราคาร้านเดียว/หลายร้าน
-   บน = แผนที่เอียง (call-x-map.js) เห็นตำแหน่งคุณ ร้านรอบตัว และร้านที่จะส่งถึงจริง · ล่าง = แผ่นข้อมูลทีละขั้น
-   ข้อมูล การตรวจ และการส่ง ใช้ contactForm เดิมทั้งหมด (หมุดบนบก รัศมี ล็อกตำแหน่ง เบอร์) — หน้านี้จัดเป็นขั้นและแต่งหน้าตาเท่านั้น
-   "ต่อไป" ตรวจเฉพาะช่องในขั้นนั้น · ปุ่มส่งตรวจทั้งหมด เจอช่องผิดพาไปขั้นนั้นเอง (ฟัง cendon:formpop)
-   o: {kind, cf, steps:[{n,h,sub}], send:{b,s}, url|slug, push, swap, switch, to, sym (id ช่องอาการ), lead, after, readOpt, near(c), onMount, go} */
-const CX={hero:null,seq:0};
-function cxStop(){CX.seq++;if(CX.hero){try{CX.hero.destroy()}catch(e){}CX.hero=null}}
+   ถามทีละข้อ ตัวใหญ่ โล่ง: อาการ → ตำแหน่ง (แผนที่เต็มจอ) → เวลา → ตรวจแล้วส่ง · ด่วน = อาการ → ตำแหน่งและส่ง (2 ข้อ)
+   ข้อที่ผ่านแล้วย่อเป็นชิปด้านบน แตะเพื่อกลับไปแก้ · เปลี่ยนข้อแบบ morph (View Transitions): ช่องอาการหดเป็นชิป ชิปร้านใกล้คุณขยายเป็นแผนที่
+   ข้อมูล การตรวจ และการส่ง ใช้ contactForm เดิมทั้งหมด (หมุดบนบก รัศมี ล็อกตำแหน่ง เบอร์) — หน้านี้ย้ายช่องไปไว้ตามข้อและแต่งหน้าตาเท่านั้น
+   "ถัดไป" ตรวจเฉพาะช่องถึงข้อนั้น · ปุ่มส่งตรวจทั้งหมด เจอช่องผิดพาไปข้อนั้นเอง (ฟัง cendon:formpop)
+   ด่วน / ไม่ด่วน เลือกก่อนเข้าหน้านี้ (ปุ่ม + และช่วงเรียกช่างหน้าแรก) · ช่างมาหาที่บ้าน = ตัวเลือก "ให้ช่างมาหา" ในข้อตำแหน่ง ไม่ใช่อีกแบบ
+   o: {kind, cf, send:{b,s}, url|slug, push, to, title, sym (id ช่องอาการ), symH, symSub, lead, after, readOpt, near(c), onMount, go} */
+const CX={seq:0};
+function cxStop(){CX.seq++}
 function cxNear(c,km1){
   return TECHS.filter(t=>!isMine(t)&&t.lat!=null).map(t=>({...t,dist:km(c,t)})).filter(t=>t.dist!=null&&t.dist<=km1).sort((a,b)=>a.dist-b.dist);
 }
-/* ภาพแผนที่วาดเอง (ระหว่างโหลด / ไม่มี WebGL / ไทล์ไม่มา) — บล็อกตึก สวน แม่น้ำ ถนนสายหลัก สีตามธีมจาก call-x.css */
-const CX_ART=(()=>{let b="";const R=[[18,20,70,46],[100,16,54,52],[168,24,80,40],[262,14,60,56],[336,22,52,44],[14,92,58,62],[86,96,72,40],[206,88,48,64],[268,98,70,48],[350,92,40,58],
-  [24,178,66,40],[104,170,50,58],[166,180,74,46],[256,172,56,40],[324,166,66,52],[10,248,80,38],[118,254,62,36],[196,244,48,48],[262,256,70,34],[344,250,48,40]];
-  R.forEach(([x,y,w,h],i)=>b+=`<rect class="${i%7===3?"pk":"bk"}" x="${x}" y="${y}" width="${w}" height="${h}" rx="4"/>`);
-  return `<svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-    <rect class="ld" width="400" height="300"/>${b}
-    <path class="wt" d="M-10 214C60 196 98 238 168 226S270 170 330 196 400 230 420 222V246C380 252 350 224 318 220S240 252 170 250 70 226-10 238Z"/>
-    <path class="rd" d="M0 82H400M0 160H400M0 240H400M92 0V300M190 0V300M300 0V300"/>
-    <path class="rd rm" d="M-10 300L150 130 250 60 410 10M60 0C120 90 240 120 410 132"/>
-    <path class="hw" d="M-10 300L150 130 250 60 410 10"/></svg>`})();
+/* ภาพประกอบเล็กประจำข้อ — ไล่สีโทน Cendon (อำพัน ส้ม ชมพู ม่วง) ลอยเบา ๆ ประกายกะพริบ · ตั้งลดภาพเคลื่อนไหว = นิ่ง */
+const CX_ILL=(()=>{
+  const st=(x,y,r,f,d)=>{const k=r*.24,P=[[x,y-r],[x+k,y-k],[x+r,y],[x+k,y+k],[x,y+r],[x-k,y+k],[x-r,y],[x-k,y-k]];
+    return `<path class="sp" style="animation-delay:${d}s" fill="${f}" d="M${P.map(p=>p.map(v=>+v.toFixed(1)).join(" ")).join("L")}z"/>`};
+  const car=(a,b,c,id)=>`<svg viewBox="0 0 96 96" class="cx-ill"><defs><linearGradient id="${id}b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/><stop offset=".5" stop-color="${b}"/><stop offset="1" stop-color="${c}"/></linearGradient><linearGradient id="${id}g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".92"/><stop offset="1" stop-color="#fff" stop-opacity=".38"/></linearGradient><radialGradient id="${id}h"><stop offset="0" stop-color="${b}" stop-opacity=".6"/><stop offset="1" stop-color="${b}" stop-opacity="0"/></radialGradient></defs>`
+    +`<ellipse cx="48" cy="73" rx="36" ry="8" fill="url(#${id}h)"/><g class="fl"><path fill="url(#${id}b)" d="M14 62v-9c0-3 2-5 5-5.5l10-1.5 9-9c2-2 5-3 8-3h16c3 0 6 1 8 3.5l7 8c4 .5 6 3 6 6.5v10z"/>`
+    +`<path fill="url(#${id}g)" d="M40 38.5l-6.5 7h17v-8h-7c-1.4 0-2.6.3-3.5 1zM54 37.5v8h15l-5.3-6.2c-.9-1.1-2.2-1.8-3.7-1.8z"/><path d="M19 52.5h59" stroke="#fff" stroke-opacity=".38" stroke-width="1.6" stroke-linecap="round"/>`
+    +`<circle cx="29" cy="63" r="7.5" fill="#17171A"/><circle cx="29" cy="63" r="3" fill="#FFE2B0"/><circle cx="67" cy="63" r="7.5" fill="#17171A"/><circle cx="67" cy="63" r="3" fill="#FFE2B0"/><path d="M80.5 54h3.5" stroke="#FFF3C4" stroke-width="3" stroke-linecap="round"/></g>`;
+  return {
+    sym:car("#FFC46B","#F28C38","#FF4D7A","cxis")+st(80,17,7,"#FFD08A",0)+st(17,24,4.5,"#FF8FB0",1.1)+`<circle class="sp" style="animation-delay:.6s" cx="88" cy="40" r="2" fill="#C4B5FD"/></svg>`,
+    urgent:car("#FF9A8E","#E5484D","#9E1B22","cxiu")+`<g class="hz"><path d="M48 8l11 19H37z" fill="#FFB547"/><path d="M48 15v5.5M48 23.5v.5" stroke="#3A1A00" stroke-width="2.4" stroke-linecap="round"/></g>`+st(84,30,4.5,"#FFD08A",.4)+`</svg>`,
+    when:`<svg viewBox="0 0 96 96" class="cx-ill"><defs><radialGradient id="cxiws" cx=".35" cy=".35"><stop offset="0" stop-color="#FFE7A8"/><stop offset=".55" stop-color="#FFB547"/><stop offset="1" stop-color="#F28C38"/></radialGradient><linearGradient id="cxiwm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#D6CCFF"/><stop offset="1" stop-color="#8B6BFF"/></linearGradient><radialGradient id="cxiwh"><stop offset="0" stop-color="#FFB547" stop-opacity=".55"/><stop offset="1" stop-color="#FFB547" stop-opacity="0"/></radialGradient></defs>`
+      +`<path d="M8 80a40 40 0 0 1 80 0" fill="none" stroke="url(#cxiwm)" stroke-opacity=".6" stroke-width="1.6" stroke-dasharray="2 5" stroke-linecap="round"/><circle class="pu" cx="36" cy="48" r="26" fill="url(#cxiwh)"/>`
+      +`<g class="ry" stroke="#FFC46B" stroke-width="2.2" stroke-linecap="round"><path d="M36 27v-4M36 73v-4M15 48h-4M61 48h-4M21 33l-3-3M51 63l3 3M21 63l-3 3M51 33l3-3"/></g><circle cx="36" cy="48" r="13" fill="url(#cxiws)"/>`
+      +`<g class="fl"><path fill="url(#cxiwm)" d="M71 22a13 13 0 1 0 13 17.5a10 10 0 1 1-13-17.5z"/></g>`+st(84,64,5,"#fff",.3)+st(58,14,3.5,"#FFD08A",1.2)+`</svg>`,
+    send:`<svg viewBox="0 0 96 96" class="cx-ill"><defs><linearGradient id="cxitb" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFB547"/><stop offset=".5" stop-color="#F28C38"/><stop offset="1" stop-color="#FF4D7A"/></linearGradient><linearGradient id="cxitp" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#ECE8F4"/></linearGradient><linearGradient id="cxitk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6EE7B7"/><stop offset="1" stop-color="#059669"/></linearGradient></defs>`
+      +`<g class="fl"><g transform="rotate(-8 46 47)"><path fill="url(#cxitp)" d="M22 20h48a6 6 0 0 1 6 6v10a6 6 0 0 0 0 12v20a6 6 0 0 1-6 6H22a6 6 0 0 1-6-6V48a6 6 0 0 0 0-12V26a6 6 0 0 1 6-6z"/><path fill="url(#cxitb)" d="M22 20h48a6 6 0 0 1 6 6v5H16v-5a6 6 0 0 1 6-6z"/>`
+      +`<path d="M23 42h46" stroke="#C9C3D8" stroke-width="1.4" stroke-dasharray="3 3"/><path d="M25 54h28M25 62h18" stroke="#D3CEDF" stroke-width="4" stroke-linecap="round"/></g>`
+      +`<circle cx="71" cy="67" r="13" fill="url(#cxitk)"/><path d="M65 67l4.2 4.2L77.5 63" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>`
+      +`<rect class="sp" x="9" y="13" width="6" height="6" rx="1.5" fill="#FFB547"/><circle class="sp" style="animation-delay:.7s" cx="87" cy="17" r="3" fill="#FF5C8A"/><rect class="sp" style="animation-delay:1.3s" x="85" y="42" width="4" height="8" rx="1.5" fill="#60A5FA"/><circle class="sp" style="animation-delay:.4s" cx="11" cy="76" r="2.5" fill="#A78BFA"/></svg>`
+  };
+})();
 function cxSheet(o){
   cxStop();
-  const cf=o.cf,steps=o.steps,kind=o.kind,urgent=kind==="urgent",acc=urgent?"#DC2626":"#E9682A";
-  const seg=o.switch?`<div class="cx-seg cx-g" role="tablist" aria-label="${T("แบบการเรียกช่าง","How to call")}">${[["urgent","ti-urgent",T("ด่วน","Urgent")],["post","ti-speakerphone",T("หาช่าง","Find")],["home","ti-home",T("มาหาที่บ้าน","Come to me")]].map(([k,i,n])=>`<button type="button" role="tab" data-k="${k}" aria-selected="${k===kind}"><i class="ti ${i}"></i>${n}</button>`).join("")}</div>`
-    :o.to?`<div class="cx-to cx-g"><i class="ti ti-send"></i><span>${T("ส่งถึง","To")} <b>${esc(o.to)}</b></span></div>`:"";
-  const lis=steps.map((x,i)=>(i?`<li class="ln" aria-hidden="true"></li>`:"")+`<li data-i="${i}"><button type="button" disabled><span class="n">${i+1}</span><span>${x.n}</span></button></li>`).join("");
-  const where=kind==="shop"&&!o.mobile?T("รถของคุณอยู่ที่","Your car is at"):T("ช่างไปหาคุณที่","Mechanic comes to");
-  sheet({title:o.title,cls:"cx",kind,full:true,url:o.url,slug:o.slug,push:o.swap?false:o.push,body:`
-    <div class="cx" data-kind="${kind}" data-step="1" style="--cx-acc:${acc};--cx-btn:${urgent?"var(--cx-red)":"var(--cx-ember)"}">
-      <div class="cx-hero"><div class="cx-art" aria-hidden="true">${CX_ART}</div><div class="cx-art-me cx-me" aria-hidden="true"><i class="ti ti-car"></i></div><div class="cx-map" id="cxMap"></div>
-        <div class="cx-top"><button type="button" class="cx-g cx-back" id="cxBack" aria-label="${T("ย้อนกลับ","Back")}"><i class="ti ti-chevron-left"></i></button>
-          <button type="button" class="cx-g cx-loc" id="cxLoc"><i class="ti ti-map-pin"></i><span><small>${where}</small><b id="cxLocT">${T("กำลังหาตำแหน่ง…","Finding your location…")}</b></span><i class="ti ti-chevron-down"></i></button></div>
-        ${seg}
-        <div class="cx-chip cx-g" id="cxChip" hidden><i></i><span></span></div>
+  const cf=o.cf,kind=o.kind,urgent=kind==="urgent";
+  const NM={sym:T("อาการ","Problem"),loc:T("ตำแหน่ง","Location"),when:T("เวลา","Time"),send:T("ตรวจแล้วส่ง","Review & send")};
+  const head=(h,sub,ill,kick)=>`<div class="cx-head"><div class="cx-ht">${kick||""}<h1 class="cx-q" tabindex="-1">${h}</h1><p class="cx-sub">${sub}</p></div>${ill?`<div class="cx-art" aria-hidden="true">${ill}</div>`:""}</div>`;
+  sheet({title:o.title,cls:"cx",kind,full:true,url:o.url,slug:o.slug,push:o.push,body:`
+    <div class="cx" data-kind="${kind}">
+      <div class="cx-aur" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <header class="cx-hd"><button type="button" class="cx-back" id="cxBack" aria-label="${T("ย้อนกลับ","Back")}"><i class="ti ti-chevron-left"></i></button><div class="cx-prog" id="cxProg" role="progressbar" aria-label="${T("ความคืบหน้า","Progress")}" aria-valuemin="1"></div><span class="cx-cnt" id="cxCnt"></span></header>
+      <div class="cx-done" id="cxDone"></div>
+      <div class="cx-stage">
+        <section class="cx-pane" data-k="sym" inert><div class="cx-pb">
+          ${head(o.symH||(urgent?T("เกิด<em>อะไร</em>ขึ้น?","What <em>happened</em>?"):T("รถเป็น<em>อะไร</em>ครับ?","What's <em>wrong</em> with the car?")),
+            o.symSub||(urgent?T("ร้านใกล้สุดเห็นทันที ร้านไหนตอบก่อน เลือกได้เลย","The nearest shops see it at once — pick whoever answers first"):T("ยิ่งละเอียด ช่างยิ่งเสนอราคาได้ตรง","More detail, more accurate quotes")),
+            urgent?CX_ILL.urgent:CX_ILL.sym,`<span class="cx-kick"><i class="d"></i>${esc(o.title||"")}</span>`)}
+          <div class="cx-say" id="cxSay"></div>
+          <p class="cx-lbl">${T("หรือแตะอาการที่ใกล้เคียง","Or tap the closest match")}</p><div class="cx-tiles" id="cxTiles"></div>
+          <button type="button" class="cx-near" id="cxNear" hidden></button>
+          <div class="cx-slot" id="cxSymX"></div>
+        </div></section>
+        <section class="cx-pane cx-loc" data-k="loc" inert><div class="cx-mapfx" aria-hidden="true"></div><div class="cx-pb">
+          ${head(T("รถอยู่<em>ตรงไหน</em>?","Where's the <em>car</em>?"),
+            urgent?T("ใช้ตำแหน่งตอนนี้ล็อกให้แล้ว เลื่อนหมุดได้ถ้าไม่ตรง","Your current location is locked in — move the pin if it's off"):T("ปักหมุดตรงที่รถจอด แล้วกดล็อก","Pin where the car is, then lock it"))}
+          <div class="cx-dock" id="cxDock"></div>
+        </div></section>
+        <section class="cx-pane" data-k="when" inert><div class="cx-pb">
+          ${head(T("อยากซ่อม<em>เมื่อไร</em>?","<em>When</em> would you like it fixed?"),T("เลือกเวลาที่สะดวก ช่างเสนอราคาตามเวลานี้","Pick a time that suits you — shops quote for it"),CX_ILL.when)}
+          <div class="cx-slot" id="cxWhenX"></div>
+        </div></section>
+        <section class="cx-pane" data-k="send" inert><div class="cx-pb">
+          ${head(T("<em>เกือบเสร็จ</em>แล้ว","<em>Almost</em> done"),T("ใส่เบอร์ไว้ ช่างเห็นหลังคุณยืนยันราคาเท่านั้น","Add your number — shops only see it after you accept a quote"),CX_ILL.send)}
+          <div class="cx-slot" id="cxSendA"></div>
+          <div class="cx-sumw"><div class="cx-sum" id="cxSum"></div></div>
+          <div class="cx-slot" id="cxSendB"></div>
+        </div></section>
       </div>
-      <div class="cx-card" id="cxCard">
-        <ol class="cx-steps" id="cxSteps" aria-label="${T("ขั้นตอน","Steps")}">${lis}</ol>
-        <h1 class="cx-h" id="cxH"></h1><p class="cx-sub" id="cxSub"></p>
-        ${o.lead||""}${cf.html}
-      </div>
+      <div class="cx-park" hidden>${o.lead||""}${cf.html}${o.after?`<div class="cx-after">${o.after}</div>`:""}</div>
     </div>`,
     foot:`<div class="cx-sweep" aria-hidden="true"><i></i></div><button type="button" class="cx-go" id="cxGo"><span><b id="cxGoT"></b><small id="cxGoS"></small></span><span class="k"><i class="ti ti-arrow-right"></i></span></button>
-      <p class="cx-safe"><i class="ti ti-shield-check"></i>${T("เบอร์ของคุณปลอดภัย · ช่างเห็นหลังคุณยืนยันราคา","Your number stays private until you accept a quote")}</p>`,
+      <p class="cx-safe" id="cxSafe" hidden><i class="ti ti-shield-check"></i>${T("เบอร์ของคุณปลอดภัย · ช่างเห็นหลังคุณยืนยันราคา","Your number stays private until you accept a quote")}</p>`,
     mount(){
-      const seq=CX.seq,root=$("bsB").querySelector(".cx"),secs=[...root.querySelectorAll(".fsec")];
-      cf.mount();
-      /* ส่วนนำ (เช่น ชิปอาการด่วน) อยู่บนสุดของขั้นแรก · หมวดที่เกินจำนวนขั้นของหน้านี้รวมเข้าขั้นสุดท้าย */
-      const lead=root.querySelector(".cx-lead");if(lead&&secs[0])secs[0].prepend(lead);
-      while(secs.length>steps.length){const x=secs.pop(),last=secs[secs.length-1];[...x.children].forEach(c=>{if(!c.classList.contains("fsec-h"))last.appendChild(c)});x.remove()}
-      if(o.after){const w=document.createElement("div");w.innerHTML=o.after;secs[secs.length-1].append(...w.childNodes)}
-      /* ช่องเล่าอาการ: ไฟคอนโซลขอบบน + ปุ่มแนบรูป (เข้าชุดรูปเดิมของฟอร์ม สูงสุด 3) */
-      const sym=$(o.sym||"bSym");
-      if(sym){const f=sym.closest(".fld"),box=document.createElement("div");f.classList.add("cx-say");box.className="cx-say-box";sym.before(box);box.appendChild(sym);
-        const cam=document.createElement("button");cam.type="button";cam.className="cx-mic";cam.setAttribute("aria-label",T("แนบรูป","Add a photo"));cam.innerHTML='<i class="ti ti-camera-plus"></i>';
+      const seq=CX.seq,root=$("bsB").querySelector(".cx"),symId=o.sym||"bSym";
+      const fld=id=>{const e=$(id);return e?e.closest(".fld")||e:null};
+      const put=(slot,...els)=>els.forEach(e=>{if(e&&slot)slot.appendChild(e)});
+      /* ── ย้ายช่องของฟอร์มไปไว้ตามข้อ — ก่อน mount แผนที่จึงเกิดในขนาดเต็มจอ ── */
+      const symF=fld(symId),P=[];if(symF)P.push("sym");P.push("loc");if($("bWhen"))P.push("when");if(!urgent)P.push("send");
+      root.querySelectorAll(".cx-pane").forEach(p=>{if(!P.includes(p.dataset.k))p.remove()});
+      const locP=root.querySelector(".cx-loc"),dock=$("cxDock"),carF=fld("bCarC")||fld("bCarX"),after=root.querySelector(".cx-after");
+      if(symF){put($("cxSay"),symF);
+        const cam=document.createElement("button");cam.type="button";cam.className="cx-cam";cam.innerHTML='<i class="ti ti-camera-plus"></i>'+T("แนบรูป","Add a photo");
         cam.onclick=()=>{if($("bMore")&&$("bMore").hidden)$("bMoreB").click();if(!$("bAddPh"))return toast(T("แนบรูปได้สูงสุด 3 รูป","Up to 3 photos"),"ti-photo");$("bFile").value="";$("bFile").click()};
-        box.appendChild(cam)}
+        $("cxSay").appendChild(cam);
+        put($("cxSymX"),$("bMoreB"),$("bMore"))}
+      locP.insertBefore($("bMap"),locP.firstChild);
+      const rad=document.createElement("span");rad.className="cx-radar";rad.setAttribute("aria-hidden","true");$("bMap").insertBefore(rad,$("bMap").querySelector(".cross"));
+      put(dock,$("bGps"),$("bLocBar"),fld("bMode"));
+      put($("cxWhenX"),fld("bWhen"));
+      if(urgent){put($("cxSymX"),carF);put(dock,fld("bPhone"),after)}
+      else put($("cxSendA"),fld("bPhone")),put($("cxSendB"),carF,fld("pCat"),fld("pBud"),$("pUsedRow"),$("pBudAi"),after);
+      cf.mount();
+      /* ── ชิปอาการเร็ว: ไอคอนสีประจำอาการ แตะแล้วเติมลงช่องอาการ (แตะซ้ำเอาออก) ── */
+      const tiles=$("cxTiles"),uq=$("uQk");
+      if(uq){const UQ={"สตาร์ทไม่ติด":["ti-key","orange"],"แบตหมด":["ti-battery-charging","green"],"ยางแตก":["ti-wheel","violet"],"เครื่องร้อนจัด":["ti-temperature","red"],"รถดับกลางทาง":["ti-car-crash","pink"],"กุญแจติดในรถ":["ti-key","amber"],"ต้องการรถยก":["ti-truck","blue"],"รถขับต่อได้ ขอช่างมาดู":["ti-tool","cyan"]};
+        uq.className="cx-tiles";uq.querySelectorAll("button").forEach(b=>{const t=b.textContent.trim(),m=UQ[t]||["ti-sparkles","orange"];b.dataset.h=m[1];b.innerHTML=`<span class="ic"><i class="ti ${m[0]}"></i></span>${esc(t)}`});
+        tiles.replaceWith(uq);root.querySelector(".cx-lead")?.remove()}
+      else if(symF){const Q=[[T("แอร์ไม่เย็น","A/C not cold"),"air","ti-snowflake","cyan"],[T("เครื่องสั่น","Engine shaking"),"eng","ti-activity","orange"],[T("ช่วงล่างมีเสียงดัง","Suspension noise"),"tyre","ti-volume","violet"],[T("เบรกมีเสียง","Brake noise"),"","ti-disc","pink"],[T("เปลี่ยนน้ำมันเครื่อง","Oil change"),"eng","ti-droplet","amber"],[T("แบตเตอรี่ / ไฟฟ้า","Battery / electrics"),"ev","ti-battery-charging","green"]];
+        const parts=()=>$(symId).value.split(/\s*·\s*/).map(s=>s.trim()).filter(Boolean);
+        tiles.innerHTML=Q.map(([t,c,ic,h],i)=>`<button type="button" data-i="${i}" data-h="${h}" aria-pressed="${parts().includes(t)}" class="${parts().includes(t)?"on":""}"><span class="ic"><i class="ti ${ic}"></i></span>${esc(t)}</button>`).join("");
+        tiles.onclick=e=>{const b=e.target.closest("button");if(!b)return;const [t,c]=Q[+b.dataset.i],sym=$(symId),on=!b.classList.contains("on"),p=parts(),i=p.indexOf(t);
+          b.classList.toggle("on",on);b.setAttribute("aria-pressed",on);if(on&&i<0)p.push(t);if(!on&&i>=0)p.splice(i,1);
+          sym.value=p.join(" · ");sym.dispatchEvent(new Event("input",{bubbles:true}));
+          const cb=on&&c&&$("pCat")&&$("pCat").querySelector(`[data-v="${c}"]`);if(cb&&!cb.classList.contains("on"))cb.click()}}
       if(o.onMount)o.onMount(root);
-      let cur=0;
-      const stepOf=id=>{const el=id&&$(id);return el?secs.findIndex(x=>x.contains(el)):-1};
-      const show=(i,back)=>{
-        cur=i;root.dataset.step=String(i+1);root.dataset.back=back?"1":"";
-        secs.forEach((x,j)=>x.classList.toggle("on",j===i));
-        $("cxSteps").querySelectorAll("li[data-i]").forEach(li=>{const j=+li.dataset.i;li.classList.toggle("on",j===i);li.classList.toggle("ok",j<i);const b=li.querySelector("button");b.disabled=j>=i;
-          const ln=li.previousElementSibling;if(ln&&ln.classList.contains("ln"))ln.classList.toggle("done",j<=i)});
-        $("cxH").textContent=steps[i].h;$("cxSub").textContent=steps[i].sub||"";
-        const last=i===steps.length-1,go=$("cxGo");
-        if(go&&$("cxGoT")){$("cxGoT").textContent=last?o.send.b:T("ต่อไป","Next");$("cxGoS").textContent=last?(typeof o.send.s==="function"?o.send.s():o.send.s||""):steps[i+1].n;go.classList.toggle("fire",last)}
-        $("cxCard").scrollTop=0;
-        setTimeout(()=>{if(seq!==CX.seq)return;const m=cf.map&&cf.map();if(m&&secs[i].contains($("bMap")))m.invalidateSize();if(CX.hero)CX.hero.resize()},540);
-      };
-      $("cxSteps").querySelectorAll("li[data-i] button").forEach(b=>b.onclick=()=>{const j=+b.closest("li").dataset.i;if(j<cur)show(j,true)});
-      $("cxBack").onclick=()=>{if(cur>0)return show(cur-1,true);($("bsBack").hidden?$("bsX"):$("bsBack")).click()};
-      $("cxLoc").onclick=()=>{const j=stepOf("bMap");if(j>=0&&j!==cur)show(j,j<cur)};
+      /* ── ตัวเลือกเวลา/ที่ซ่อม เป็นการ์ดมีไอคอนสี (ค่าที่ส่งยังเป็น data-v เดิม) ── */
+      const deco=(id,M)=>{const s=$(id);if(!s)return;s.classList.add("cx-opts");s.querySelectorAll("button").forEach(b=>{const m=M[b.dataset.v];if(!m)return;const t=b.textContent.trim();b.dataset.h=m[1];
+        b.innerHTML=`<span class="ic"><i class="ti ${m[0]}"></i></span><span class="tx"><b>${esc(t)}</b><small>${esc(m[2])}</small></span>`})};
+      const day=n=>{const d=new Date();d.setDate(d.getDate()+n);return d.toLocaleDateString(LOC,{weekday:"short",day:"numeric",month:"short"})};
+      deco("bWhen",{"วันนี้":["ti-sun","amber",day(0)],"พรุ่งนี้":["ti-sunrise","pink",day(1)],"__":["ti-calendar-event","blue",T("ระบุวันเวลาที่สะดวก","Pick a day and time")]});
+      deco("bMode",{mobile:["ti-truck","blue",T("ช่างเคลื่อนที่มาหา","A mobile mechanic comes to you")],shop:["ti-building-warehouse","orange",T("ร้านใกล้ตำแหน่งนี้","Shops near this spot")]});
+      /* ── สรุปคำตอบ: ชิปด้านบน + การ์ดใบงานข้อสุดท้าย ── */
+      const lab=b=>b?(b.querySelector(".tx b")||b).textContent.trim():"";
+      const cut=(s,n)=>s.length>n?s.slice(0,n-1)+"…":s;
+      const val={
+        sym:()=>($(symId)&&$(symId).value||"").trim(),
+        loc:()=>{const l=$("bLocL")?$("bLocL").textContent.trim():"",m=$("bMode")&&!fld("bMode").hidden?lab($("bMode").querySelector(".on")):"";
+          return [$("bMap").classList.contains("locked")?l:T("ยังไม่ได้ล็อกตำแหน่ง","Location not locked yet"),m].filter(Boolean).join(" · ")},
+        when:()=>{const b=$("bWhen")&&$("bWhen").querySelector(".on");return b&&b.dataset.v==="__"?($("bWhenX").value.trim()||lab(b)):lab(b)}};
+      const HU={sym:["ti-tool","orange"],loc:["ti-map-pin","pink"],when:["ti-calendar-event","violet"]};
+      const ok=()=>(!symF||val.sym().length>=3)&&$("bMap").classList.contains("locked")&&String($("bPhone").value).replace(/\D/g,"").length>=9;
+      let cur=0,nav=false,raf=0;
+      const paneOf=id=>{const el=id&&$(id);if(!el)return -1;const p=el.closest(".cx-pane");return p?P.indexOf(p.dataset.k):P.length-1};
+      const done=()=>{const d=$("cxDone"),ks=P.slice(0,cur).filter(k=>HU[k]);root.classList.toggle("cx-hasdone",ks.length>0);
+        d.innerHTML=ks.map(k=>`<button type="button" class="cx-dc" data-k="${k}" data-h="${HU[k][1]}"><i class="ck"><i class="ti ti-check"></i></i><span>${esc(cut(val[k]()||NM[k],k==="sym"?24:30))}</span></button>`).join("");
+        d.querySelectorAll(".cx-dc").forEach(b=>b.onclick=()=>go(P.indexOf(b.dataset.k)))};
+      const sum=()=>{const s=$("cxSum");if(!s)return;const r=ok();root.dataset.ready=r?"1":"";$("cxGo").classList.toggle("fire",r);
+        s.innerHTML=`<p class="cx-sumh"><b>${T("ใบงานของคุณ","Your job")}</b><span>${r?T("พร้อมส่ง","Ready to send"):""}</span></p>`
+          +P.filter(k=>HU[k]).map(k=>`<button type="button" class="cx-sr" data-go="${k}" data-h="${HU[k][1]}"><span class="ic"><i class="ti ${HU[k][0]}"></i></span><span class="v">${esc(val[k]()||T("ยังไม่ได้เล่าอาการ","Not described yet"))}</span><i class="ti ti-chevron-right"></i></button>`).join("");
+        s.querySelectorAll(".cx-sr").forEach(b=>b.onclick=()=>go(P.indexOf(b.dataset.go)))};
+      const upd=()=>{cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{if(seq!==CX.seq||!root.isConnected)return;if(P[cur]==="send")sum();else{const r=ok();root.dataset.ready=r?"1":"";$("cxGo").classList.toggle("fire",r)}})};
+      const render=()=>{const k=P[cur],last=cur===P.length-1;root.dataset.step=k;
+        root.querySelectorAll(".cx-pane").forEach(p=>{const on=p.dataset.k===k;p.classList.toggle("on",on);p.inert=!on});
+        [...$("cxProg").children].forEach((x,i)=>x.classList.toggle("ok",i<=cur));$("cxProg").setAttribute("aria-valuenow",cur+1);$("cxCnt").textContent=(cur+1)+"/"+P.length;
+        $("cxGoT").textContent=last?o.send.b:T("ถัดไป","Next");
+        $("cxGoS").textContent=last?(typeof o.send.s==="function"?o.send.s():o.send.s||""):T(`ต่อไป: ${NM[P[cur+1]]}`,`Next: ${NM[P[cur+1]]}`);
+        $("cxGo").classList.toggle("last",last);$("cxSafe").hidden=!last;
+        $("cxBack").setAttribute("aria-label",cur?T("ย้อนกลับ","Back"):T("ปิด","Close"));
+        done();sum();upd();
+        if(k==="loc"){const m=cf.map&&cf.map();if(m)m.invalidateSize()}};
+      /* ── เปลี่ยนข้อแบบ morph: เบราว์เซอร์ที่มี View Transitions ได้การแปลงร่างของชิ้นที่ชื่อเดียวกัน (ดู call-x.css) · ไม่มี = เลื่อนนุ่ม ๆ · ลดภาพเคลื่อนไหว = ทันที ── */
+      const still=matchMedia("(prefers-reduced-motion: reduce)");
+      const go=(to,opt)=>{if(nav||to===cur||to<0||to>=P.length||seq!==CX.seq||!root.isConnected)return;
+        const dir=to>cur?"f":"b",fx=!(opt&&opt.instant)&&!still.matches,h=document.documentElement;
+        const swap=()=>{cur=to;render();const q=root.querySelector(".cx-pane.on .cx-q");if(q&&root.contains(document.activeElement))q.focus({preventScroll:true})};
+        if(fx&&document.startViewTransition){nav=true;h.dataset.cxDir=dir;h.dataset.cxMap=P[cur]==="loc"?"old":P[to]==="loc"?"new":"";
+          const end=()=>{nav=false;if(h.dataset.cxDir===dir){delete h.dataset.cxDir;delete h.dataset.cxMap}};
+          try{document.startViewTransition(swap).finished.finally(end)}catch(e){end();swap()}}
+        else{swap();if(fx){const pb=root.querySelector(".cx-pane.on .cx-pb");pb.classList.remove("cx-in-f","cx-in-b");void pb.offsetWidth;pb.classList.add("cx-in-"+dir)}}};
+      $("cxProg").innerHTML=P.map(()=>"<i><b></b></i>").join("");$("cxProg").setAttribute("aria-valuemax",P.length);
+      $("cxBack").onclick=()=>cur?go(cur-1):($("bsBack").hidden?$("bsX"):$("bsBack")).click();
+      $("cxNear").onclick=()=>go(P.indexOf("loc"));
+      /* ช่องที่ผิดอยู่ข้อไหน → ไปข้อนั้นทันทีก่อนแสดงข้อความ */
       const onPop=e=>{if(!root.isConnected)return document.removeEventListener("cendon:formpop",onPop);
-        const at=(e.detail||[]).map(x=>stepOf(x.id)).filter(j=>j>=0);if(at.length){const j=Math.min(...at);if(j!==cur)show(j,j<cur)}};
+        const at=(e.detail||[]).map(x=>paneOf(x.id)).filter(i=>i>=0);if(at.length&&Math.min(...at)!==cur)go(Math.min(...at),{instant:true})};
       document.addEventListener("cendon:formpop",onPop);
-      $("cxGo").onclick=e=>{
-        if(cur<steps.length-1){
-          /* ตรวจเฉพาะช่องของขั้นนี้ (ใช้กติกาเดียวกับตอนส่ง) — ช่องของขั้นถัดไปยังไม่ต้องครบ */
-          try{cf.read(o.readOpt&&o.readOpt())}catch(err){if(err&&err.form){const mine=err.form.filter(x=>stepOf(x.id)===cur);if(mine.length)return formPop(mine)}}
-          return show(cur+1);
-        }
-        const bs=$("bs");bs.classList.add("cx-busy");
-        busy(e.currentTarget,o.go).finally(()=>bs.classList.remove("cx-busy"));
-      };
-      /* แบบการเรียกช่าง: สลับในหน้าเดิม เก็บอาการที่พิมพ์ไว้ */
-      root.querySelectorAll(".cx-seg [data-k]").forEach(b=>b.onclick=()=>{const k=b.dataset.k;if(k===kind)return;
-        const s=(sym&&sym.value||"").trim();
-        if(k==="urgent")urgentCall(null,{swap:true,sym:s});else openPostForm(s,"",{home:k==="home",swap:true})});
-      /* ที่อยู่ของชั้นนี้ตามแบบที่สลับมา (รีเฟรชแล้วเปิดแบบเดียวกัน) */
-      if(o.swap&&o.url){const L=SH.layers[SH.layers.length-1];if(L){L.url=o.url;try{history.replaceState(history.state,"",o.url)}catch(e){}}}
-      /* ตำแหน่ง: ป้ายบนสุดตามแถบตำแหน่งของฟอร์ม · แผนที่บน + ป้ายร้านรอบตัวคิดใหม่ทุกครั้งที่หมุดขยับ */
+      /* "ถัดไป" ตรวจด้วยกติกาเดียวกับตอนส่ง แต่บอกเฉพาะช่องถึงข้อนี้ · ข้อสุดท้าย = ส่งจริง */
+      $("cxGo").onclick=e=>{const btn=e.currentTarget;
+        if(cur<P.length-1){try{cf.read(o.readOpt&&o.readOpt())}catch(err){if(err&&err.form){const mine=err.form.filter(x=>{const i=paneOf(x.id);return i>=0&&i<=cur});if(mine.length)return formPop(mine)}}return go(cur+1)}
+        const bs=$("bs");bs.classList.add("cx-busy");busy(btn,o.go).finally(()=>bs.classList.remove("cx-busy"))};
+      /* ── ร้านใกล้คุณ (รูปร้านจริง) — แตะแล้วไปข้อตำแหน่ง ── */
       const center=()=>cf.pos()||cf.gps()||HERE||{lat:13.7563,lng:100.5018};
-      const near=o.near||(c=>{const l=cxNear(c,10);return {shops:l.slice(0,10),to:[],radius:10,
+      const near=o.near||(c=>{const l=cxNear(c,10);return {shops:l.slice(0,10),to:[],
         chip:l.length?T(`ช่างใกล้คุณ ${l.length} ร้าน (ใน 10 กม.)`,`${l.length} shops within 10 km`):T("ประกาศได้เลย ช่างรอบตัวจะเห็น","Post now — nearby shops will see it")}});
-      const paint=()=>{if(seq!==CX.seq)return;
-        const lt=$("bLocL");if(lt&&$("cxLocT"))$("cxLocT").textContent=lt.textContent;
-        const c=center(),d=near(c),lab=new Set(d.shops.slice(0,2).map(t=>t.id).concat((d.to||[]).map(t=>t.id)));
-        const pins=d.shops.concat((d.to||[]).filter(t=>!d.shops.some(x=>x.id===t.id))).map(t=>({lat:t.lat,lng:t.lng,hot:(d.to||[]).some(x=>x.id===t.id),label:lab.has(t.id)?(t.shop||t.name)+(t.dist!=null?" · "+distTxt(t.dist):""):""}));
-        const ch=$("cxChip");if(ch){ch.hidden=!d.chip;ch.querySelector("span").textContent=d.chip||""}
-        if(CX.hero)CX.hero.set({center:c,shops:pins,to:d.to||[],radius:d.radius,acc});
-        return {c,pins,d};
-      };
-      const first=paint();
+      let nsig="";
+      const paint=()=>{if(seq!==CX.seq)return;const d=near(center()),nr=$("cxNear"),list=((d.to&&d.to.length?d.to:d.shops)||[]).slice(0,5),sig=list.map(t=>t.id).join(",")+"|"+(d.chip||"");
+        if(nr&&sig!==nsig){nsig=sig;nr.hidden=!d.chip;
+          nr.innerHTML=`<span class="stack">${list.map((t,i)=>`<i style="--c1:${colorOf(t)};--i:${i}">${initial(t.shop||t.name)}</i>`).join("")}</span><span class="tx"><i class="d"></i>${esc(d.chip||"")}</span><i class="ti ti-chevron-right go"></i>`}
+        upd()};
+      paint();render();
+      for(const ev of ["input","change"])root.addEventListener(ev,upd,true);root.addEventListener("click",()=>setTimeout(upd,0),true);
       if($("bLocL"))new MutationObserver(paint).observe($("bLocL").parentNode,{childList:true,characterData:true,subtree:true});
-      import("/call-x-map.js?v=2").then(M=>M.hero($("cxMap"),{center:first.c,shops:first.pins,to:first.d.to||[],radius:first.d.radius,acc})).then(h=>{
-        if(seq!==CX.seq||!root.isConnected){h.destroy();return}
-        CX.hero=h;paint();
-        /* โชว์แผนที่จริงเมื่อวาดถนนขึ้นแล้วเท่านั้น — ไทล์ไม่มา = คงภาพแผนที่วาดไว้ */
-        h.live.then(()=>{if(seq===CX.seq&&root.isConnected)root.classList.add("live")});
-      }).catch(()=>{/* ไม่มี WebGL / โหลดไม่ได้: ใช้ภาพถนนแทน (มีอยู่แล้ว) */});
-      show(0);
+      new MutationObserver(upd).observe($("bMap"),{attributes:true,attributeFilter:["class"]});
+      /* ความสูงแผงล่างบนแผนที่ → จุดกึ่งกลางที่มองเห็น */
+      if(window.ResizeObserver)new ResizeObserver(()=>root.style.setProperty("--cx-dock",dock.offsetHeight+"px")).observe(dock);
     }});
 }
+
 function book(t,sym){
   if(!U)return needLogin();
   if(isMine(t))return toast("นี่คือร้านของคุณ — ขอราคาร้านตัวเองไม่ได้");
   const reqId=crypto.randomUUID(),name=t.shop||t.name;
   const cf=contactForm({sym:sym??F.q,mobile:t.mobile,sections:true});
   cxSheet({kind:"shop",cf,push:true,slug:"quote",title:"ขอราคา · "+name,to:name,mobile:t.mobile,
-    steps:[{n:T("รถและอาการ","Car & problem"),h:T("เล่าอาการ","Describe the problem"),sub:T("ร้านจะประเมินราคาจากที่คุณเล่า","The shop quotes from what you describe")},
-      {n:T("ที่ไหน เมื่อไร","Where & when"),h:T("ที่ไหน เมื่อไร","Where and when"),sub:T("ปักหมุดตรงที่รถจอด แล้วกดล็อก","Pin where the car is, then lock it")},
-      {n:T("เบอร์ติดต่อ","Phone"),h:T("เบอร์ติดต่อ","Your phone"),sub:T("ร้านเห็นเบอร์หลังคุณยืนยันราคาเท่านั้น","The shop only sees it after you accept a quote")}],
+    symSub:T("ร้านจะประเมินราคาจากที่คุณเล่า","The shop quotes from what you describe"),
     send:{b:"ส่งขอราคา",s:name},
     near:c=>{const x={...t,dist:km(c,t)};return {shops:cxNear(c,10).filter(y=>y.id!==t.id).slice(0,6),to:t.lat!=null?[x]:[],radius:Math.max(3,(x.dist||0)+1),chip:x.dist!=null?T(`${name} · ห่าง ${distTxt(x.dist)}`,`${name} · ${distTxt(x.dist)} away`):name}},
     go:async()=>{
@@ -6140,9 +6202,7 @@ function openMulti(sym,cat){
         const ask=s.length<10;
         const cf=contactForm({sym:s,noSym:!ask,mobile:list.some(t=>t.mobile),sections:true});
         cxSheet({kind:"multi",cf,push:true,slug:"send",title:`ขอราคา ${list.length} ร้าน`,to:list.map(t=>t.shop||t.name).join(", "),mobile:list.some(t=>t.mobile),
-          steps:[{n:T("รถและอาการ","Car & problem"),h:ask?T("เล่าอาการ","Describe the problem"):T("รถคันไหน","Which car"),sub:T(`เล่าครั้งเดียว ส่งถึงทั้ง ${list.length} ร้าน`,`Write once, sent to all ${list.length} shops`)},
-            {n:T("ที่ไหน เมื่อไร","Where & when"),h:T("ที่ไหน เมื่อไร","Where and when"),sub:T("ปักหมุดตรงที่รถจอด แล้วกดล็อก","Pin where the car is, then lock it")},
-            {n:T("เบอร์ติดต่อ","Phone"),h:T("เบอร์ติดต่อ","Your phone"),sub:T("ร้านเห็นเบอร์หลังคุณยืนยันราคาเท่านั้น","Shops only see it after you accept a quote")}],
+          symSub:T(`เล่าครั้งเดียว ส่งถึงทั้ง ${list.length} ร้าน`,`Write once, sent to all ${list.length} shops`),
           send:{b:"ส่งขอราคาทุกร้าน",s:T(`${list.length} ร้านเสนอราคา แล้วเทียบในหน้าเดียว`,`${list.length} shops quote — compare on one screen`)},
           near:c=>{const to=list.filter(t=>t.lat!=null).map(t=>({...t,dist:km(c,t)}));return {shops:[],to,radius:Math.max(3,...to.map(t=>(t.dist||0)+1)),chip:T(`ส่งถึง ${list.length} ร้าน`,`To ${list.length} shops`)}},
           go:()=>{const v=cf.read(),sym=ask?v.symptom:s;
@@ -6186,12 +6246,11 @@ async function urgentCall(pre,o2){
   };
   /* หน้าเรียกช่างแบบด่วน: 2 ขั้น (เกิดอะไรขึ้น → ตำแหน่งและส่ง) · เส้นบนแผนที่ = ร้านที่จะส่งถึงจริง (pickList) */
   const sym0=pre?pre.symptom:(o2.sym||"");
-  cxSheet({kind:"urgent",cf,switch:!pre,swap:o2.swap,push:true,slug:pre?"help":"breakdown",url:o2.swap?"/urgent/breakdown":undefined,title:pre?"เรียกรถยก / ช่างด่วน":"เรียกช่างด่วน",sym:"uSym",
+  cxSheet({kind:"urgent",cf,push:true,slug:pre?"help":"breakdown",title:pre?"เรียกรถยก / ช่างด่วน":"เรียกช่างด่วน",sym:"uSym",
     lead:`<div class="cx-lead"><label class="fld"><span class="cx-vh">${T("เกิดอะไรขึ้น","What happened")}</span><textarea class="inp" id="uSym" placeholder="${T("เล่าสั้น ๆ เช่น รถดับกลางทาง สตาร์ทไม่ติด","Briefly, e.g. stalled, won't start")}">${esc(sym0)}</textarea></label>
       <div class="cx-quick" id="uQk">${QK.map(q=>`<button type="button">${q}</button>`).join("")}</div></div>`,
     after:`<div id="uTo"></div>`,
-    steps:[{n:T("เกิดอะไรขึ้น","What happened"),h:pre?T("เรียกรถยก / ช่างด่วน","Tow truck / urgent help"):T("เกิดอะไรขึ้น","What happened"),sub:T("ร้านใกล้สุดเห็นทันที ร้านไหนตอบก่อน เลือกได้เลย","The nearest shops see it at once — pick whoever answers first")},
-      {n:T("ตำแหน่งและส่ง","Location & send"),h:T("รถอยู่ตรงไหน","Where's the car"),sub:T("ใช้ตำแหน่งตอนนี้ล็อกให้แล้ว เลื่อนหมุดได้ถ้าไม่ตรง","Your current location is locked in — move the pin if it's off")}],
+    symH:pre?T("เรียกรถยก / ช่างด่วน","Tow truck / urgent help"):"",
     send:{b:T("ส่งขอความช่วยเหลือ","Send for help"),s:()=>{const n=pickList().length;return n?T(`ร้านใกล้สุด ${n} ร้านเห็นพร้อมกัน`,`The nearest ${n} shops see it at once`):T("ประกาศงานด่วนให้ช่างรอบตัว","Urgent post to nearby shops")}},
     readOpt:()=>{const us=$("uSym").value.trim();return {extra:us.length<3?[{id:"uSym",msg:T("บอกสั้น ๆ ว่าเกิดอะไรขึ้น หรือกดเลือกอาการด้านบน","Say briefly what happened, or tap a problem above")}]:[]}},
     near:c=>{const to=pickList(),others=cxNear(c,8).filter(t=>!to.some(x=>x.id===t.id)).slice(0,6);
@@ -8635,7 +8694,7 @@ function stopAlerts(){clearTimeout(alertT)}
 function openPostForm(sym,cat,d){
   if(!U)return needLogin();
   d=d||{};cat=cat||catsOf(sym||"")[0]||"";
-  /* home = ช่างมาหาที่บ้าน/ที่ทำงาน: ประกาศแบบเดียวกัน แต่ล็อก "ให้ช่างมาหา" · หาช่าง = เริ่มที่ "เอารถเข้าอู่" (เปลี่ยนได้) */
+  /* home (ลิงก์ /post?at=home · ร่างจาก Valet ที่ให้ช่างมาหา) = ประกาศแบบเดียวกัน แค่เลือก "ให้ช่างมาหา" ไว้ให้ — เปลี่ยนเป็นเข้าอู่ได้ */
   const home=!!d.home||d.mode==="mobile";
   /* 3 หมวด: รถและอาการ → ที่ไหน เมื่อไร → งบและเบอร์ · ช่อง "รับอะไหล่มือสอง" โผล่เมื่อใส่งบเป็นตัวเลขแล้วเท่านั้น */
   const cf=contactForm({sym:sym??$("q").value.trim(),mobile:true,modeDef:home?"mobile":"shop",carId:d.carId,photos:d.photos,sections:true,needGps:true,
@@ -8643,14 +8702,9 @@ function openPostForm(sym,cat,d){
     tail:`<label class="fld"><span>${T("งบที่ตั้งไว้","Your budget")} <small>(${T("ไม่บังคับ","optional")})</small></span><div class="pb-in"><b>฿</b><input class="inp" id="pBud" type="number" inputmode="numeric" min="100" max="1000000" placeholder="${T("เช่น 1500","e.g. 1500")}"/></div></label>
       <label class="chk pb-used" id="pUsedRow" hidden><input type="checkbox" id="pUsed"/><span><b>${T("รับอะไหล่มือสองได้","Used parts are OK")}</b><small>${T("ช่วยให้อยู่ในงบได้ง่ายขึ้น ช่างต้องบอกในใบเสนอราคา","Helps fit the budget — the mechanic must say so in the quote")}</small></span></label>
       <p class="note pb-ai" id="pBudAi" hidden></p>`});
-  cxSheet({kind:home?"home":"post",cf,switch:true,swap:d.swap,url:home?"/post?at=home":"/post",title:home?T("ช่างมาหาที่บ้าน","Mechanic comes to you"):T("ประกาศหาช่าง","Post a job"),
-    steps:[{n:T("รถและอาการ","Car & problem"),h:T("เล่าอาการ","Describe the problem"),sub:T("ยิ่งละเอียด ช่างยิ่งเสนอราคาได้ตรง","More detail, more accurate quotes")},
-      {n:T("ที่ไหน เมื่อไร","Where & when"),h:home?T("ให้ช่างไปหาที่ไหน เมื่อไร","Where and when should they come"):T("ที่ไหน เมื่อไร","Where and when"),sub:T("ปักหมุดตรงที่รถจอด แล้วกดล็อก","Pin where the car is, then lock it")},
-      {n:T("งบและเบอร์","Budget & phone"),h:T("งบและเบอร์ติดต่อ","Budget & phone"),sub:T("งบไม่บังคับ — ใส่แล้ว AI ช่วยดูว่าสมจริงไหม","Budget is optional — AI checks if it's realistic")}],
+  cxSheet({kind:"post",cf,url:home?"/post?at=home":"/post",title:T("ประกาศหาช่าง","Post a job"),
     send:{b:T("ประกาศเลย","Post now"),s:T("ช่างรอบตัวเสนอราคาแข่งกัน คุณเลือกเอง","Nearby shops quote — you choose")},
     onMount(){wireSeg("pCat");budgetCheck();
-      /* ช่างมาหาที่บ้าน: ล็อก "ให้ช่างมาหา" ไว้ ไม่ต้องถาม */
-      if(home&&$("bMode"))$("bMode").closest(".fld").hidden=true;
       /* ร่างจาก Cendon Valet: เติมช่องที่รู้แล้ว เหลือให้ผู้ใช้ยืนยันตำแหน่งกับเบอร์ */
       const pick=(id,v)=>{const b=$(id)&&$(id).querySelector(`[data-v="${CSS.escape(v)}"]`);if(b)b.click();return !!b};
       if(d.car&&!d.carId&&$("bCarX")){if($("bCarChg")){$("bCarChg").click();pick("bCar","__")}$("bCarX").value=d.car}

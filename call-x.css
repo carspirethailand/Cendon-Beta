@@ -1,14 +1,20 @@
-/* ═══ เรียกช่าง: ปุ่ม + หน้าแรก · เมนูเรียกช่าง · หน้าเรียกช่าง (แนว A แผนที่มีชีวิต) ═══
+/* ═══ เรียกช่าง: ปุ่ม + หน้าแรก · เมนูเรียกช่าง · หน้าใบงาน (ทีละคำถาม) ═══
    ภาษาภาพเดียวกับห้องแชต: "ไฟถ่านอุ่น" อำพัน → ส้ม → ชมพู → ม่วง เป็นลายเซ็น Cendon
-   ใช้เฉพาะจังหวะสำคัญ: เปิดเมนู · ช่องเล่าอาการ (ไฟคอนโซลขอบบน) · ปุ่มหลัก · ตอนกำลังส่ง (เส้นแสงวิ่ง + แสงฟุ้ง)
+   หน้าใบงาน: แสงออโรรา Cendon ด้านบน · คำสำคัญในหัวข้อไล่สี · ไอคอนสีประจำตัวเลือก · ปุ่มหลักขาวนวล/ดำ · แดงเฉพาะโหมดด่วน
    สีพื้น/ตัวอักษร/เส้นใช้ตัวแปรของ lux.css ทั้งหมด — สว่าง/มืดตามธีมแอป */
 :root{--cx-c:#FFB547;--cx-a:#F28C38;--cx-b:#FF4D7A;--cx-d:#8B6BFF;
-  --cx-ember:linear-gradient(135deg,#FFB547 0%,#F28C38 45%,#E4572E 100%);
-  --cx-red:linear-gradient(135deg,#FF7A6B 0%,#EF4444 45%,#B91C1C 100%);
-  --cx-glass:rgba(255,255,255,.76);--cx-glass-line:rgba(255,255,255,.9);--cx-glass-sh:0 10px 28px -16px rgba(12,10,9,.45);
-  --cx-card:#FFFFFF;--cx-raise:#FAFAF9;--cx-hair:#E7E5E4;--cx-hair2:#D6D3D1}
-html:root[data-theme="dark"]{--cx-glass:rgba(18,19,24,.66);--cx-glass-line:rgba(255,255,255,.09);--cx-glass-sh:0 12px 30px -16px rgba(0,0,0,.8);
-  --cx-card:#101114;--cx-raise:#16171B;--cx-hair:#2A2B30;--cx-hair2:#3A3B41}
+  --cx-ac:226,98,34;--cx-act:#B5461A;--cx-ember:linear-gradient(135deg,#FFB547 0%,#F28C38 48%,#E4572E 100%);
+  --cx-hi:linear-gradient(135deg,#2E2E31 0%,#0B0B0C 100%);--cx-on-hi:#FFFFFF;
+  --cx-red:linear-gradient(135deg,#F0646A 0%,#D8353C 48%,#9E1B22 100%);
+  --cx-glass:rgba(255,255,255,.74);--cx-glass-line:rgba(255,255,255,.9);--cx-glass-sh:0 10px 28px -16px rgba(0,0,0,.4);
+  --cx-card:#FAFAF9;--cx-card2:#FFFFFF;--cx-bgrgb:250,250,249;--cx-raise:#F2F2F0;--cx-field:#F2F2F0;--cx-field2:#FFFFFF;
+  --cx-hair:rgba(0,0,0,.08);--cx-hair2:rgba(0,0,0,.16);--cx-hiline:rgba(0,0,0,.5);--cx-focus:rgba(0,0,0,.07);--cx-rim:rgba(0,0,0,.07);--cx-lo:.45;
+  --cx-aur:.3;--cx-mapglow:.5;--cx-gt:linear-gradient(90deg,#E07A1F,#E4572E 45%,#D6336C)}
+html:root[data-theme="dark"]{--cx-ac:242,140,56;--cx-act:#F59A52;--cx-hi:linear-gradient(135deg,#FFFFFF 0%,#D6D6D3 100%);--cx-on-hi:#0B0B0C;
+  --cx-glass:rgba(24,24,27,.6);--cx-glass-line:rgba(255,255,255,.13);--cx-glass-sh:0 12px 30px -16px rgba(0,0,0,.85);
+  --cx-card:#0B0B0C;--cx-card2:#141416;--cx-bgrgb:11,11,12;--cx-raise:#17171A;--cx-field:#151517;--cx-field2:#1D1D20;
+  --cx-hair:rgba(255,255,255,.09);--cx-hair2:rgba(255,255,255,.17);--cx-hiline:rgba(255,255,255,.55);--cx-focus:rgba(255,255,255,.1);--cx-rim:rgba(255,255,255,.2);--cx-lo:.9;
+  --cx-aur:.5;--cx-mapglow:.9;--cx-gt:linear-gradient(90deg,#FFC46B,#F28C38 45%,#FF5C8A)}
 
 /* ── ปุ่ม + (มือถือ หน้าแรกเท่านั้น) — หน้าตาเดียวกับกระดิ่ง (bell.js .cb-m): โปร่ง ไม่มีกรอบ สีเดียวกัน
    ขนาด 36px ขอบบน 23px · กระดิ่งห่างขอบขวา 16px ปุ่มนี้ห่างขอบซ้าย 16px (ศูนย์กลางแนวเดียวกันพอดี) ── */
@@ -51,6 +57,7 @@ html:root[data-theme="dark"] .cx-scrim{background:rgba(0,0,0,.58)}
 .cx-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px}
 .cx-tile{flex-direction:column;align-items:flex-start;gap:8px;padding:12px;border-radius:18px;background:var(--cx-raise);border:1px solid transparent;min-height:104px;box-sizing:border-box;transition:border-color .2s,transform .2s}
 .cx-tile:active{transform:scale(.97)}
+.cx-tile.cx-wide{grid-column:1/-1;flex-direction:row;align-items:center;min-height:0;gap:12px}
 .cx-tile .cx-ic{width:36px;height:36px;border-radius:12px;font-size:19px}
 .cx-tile b{display:block;font-size:14.5px;font-weight:600;line-height:1.25}.cx-tile small{display:block;font-size:11.5px;color:var(--muted);line-height:1.35}
 .cx-ai{display:flex;gap:6px;margin-top:2px}
@@ -65,123 +72,250 @@ html:root[data-theme="dark"] .cx-scrim{background:rgba(0,0,0,.58)}
 .cx-shops small{font-size:11px;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cx-none{font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.45}
 
-/* ── หน้าเรียกช่าง ── */
-.bs.cxs .pn{top:0;max-height:none;border-radius:0;background:var(--bg)}
+/* ── หน้าใบงาน (ทีละคำถาม) ──
+   ถามทีละข้อ ตัวใหญ่ โล่ง · แสงออโรราลอยไหวด้านบน · ภาพประกอบเล็กประจำข้อ · ไอคอนสีประจำตัวเลือก (แอร์=ฟ้า เบรก=ชมพู แบต=เขียว …)
+   ตำแหน่ง = แผนที่เต็มจอ ไล่เฉดจากบน (แสงอุ่น) ลงล่าง (กลืนกับพื้น) · คำตอบที่ผ่านแล้วเป็นชิปด้านบน
+   เปลี่ยนข้อแบบ morph ด้วย View Transitions (ชื่อ cx-*) · เบราว์เซอร์ไม่รองรับ = เลื่อนนุ่ม ๆ · ตั้งลดภาพเคลื่อนไหว = ทันที/นิ่ง */
+.bs.cxs .pn{top:0;max-height:none;border-radius:0;background:var(--cx-card);overflow:hidden}
 .bs.cxs .pn::before,.bs.cxs .hd{display:none}
 .bs.cxs .bd{padding:0;display:flex;flex-direction:column;overflow:hidden}
 .bs.cxs .bd>*{animation:none}
-.bs.cxs .ft{flex-direction:column;align-items:stretch;gap:8px;background:var(--cx-card);box-shadow:none;padding:10px 20px calc(14px + env(safe-area-inset-bottom));position:relative;overflow:hidden}
-.cx{position:relative;display:flex;flex-direction:column;flex:1;min-height:0}
-.cx-hero{position:relative;flex:none;height:clamp(250px,42vh,400px);overflow:hidden;background:var(--surface-2);transition:height .5s cubic-bezier(.2,.9,.25,1)}
-.cx[data-step="2"] .cx-hero{height:clamp(150px,22vh,210px)}
-/* MapLibre ใส่ .maplibregl-map{position:relative} ทับ — ระบุให้แรงกว่า ไม่งั้นกล่องสูง 0 */
-.cx-hero .cx-map{position:absolute;inset:0}
-.cx-map .maplibregl-ctrl-bottom-left,.cx-map .maplibregl-ctrl-bottom-right{bottom:34px}
-.cx-map .maplibregl-ctrl-attrib{font-size:9.5px;background:var(--cx-glass)!important}
-/* ภาพแทนแผนที่ระหว่างโหลด / เครื่องไม่มี WebGL — ถนนเรียบ ๆ เอียงแบบเดียวกัน */
-.cx-art{position:absolute;inset:-70% -30% -34%;transform:perspective(700px) rotateX(48deg);transform-origin:50% 70%;
-  --ld:#ECE7DF;--bk:#E2DCD2;--pk:#D3E5C6;--wt:#BCD6EA;--rd:#FFFFFF;--hw:#FFD9A8}
-html:root[data-theme="dark"] .cx-art{--ld:#14161B;--bk:#1A1D24;--pk:#15251B;--wt:#13243A;--rd:#262A33;--hw:#4A3420}
-.cx-art svg{display:block;width:100%;height:100%}
-.cx-art .ld{fill:var(--ld)}.cx-art .bk{fill:var(--bk)}.cx-art .pk{fill:var(--pk)}.cx-art .wt{fill:var(--wt)}
-.cx-art .rd{fill:none;stroke:var(--rd);stroke-width:5}.cx-art .rm{stroke-width:9}
-.cx-art .hw{fill:none;stroke:var(--hw);stroke-width:4;stroke-linecap:round}
-/* แผนที่จริงค่อย ๆ ปรากฏทับภาพวาดเมื่อถนนวาดขึ้นแล้ว */
-.cx-map{opacity:0;transition:opacity .7s ease}
-.cx.live .cx-map{opacity:1}
-.cx-hero::after{content:"";position:absolute;inset:0 0 auto 0;height:120px;pointer-events:none;background:linear-gradient(var(--bg),transparent);opacity:.85}
-.cx-top{position:absolute;left:16px;right:16px;top:calc(12px + env(safe-area-inset-top));z-index:3;display:flex;align-items:center;gap:10px}
-.cx-g{border:1px solid var(--cx-glass-line);background:var(--cx-glass);backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);color:var(--ink);box-shadow:var(--cx-glass-sh)}
-.cx-back{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;flex:none;padding:0;font-size:20px;cursor:pointer}
-.cx-loc{flex:1;min-width:0;height:44px;border-radius:14px;display:flex;align-items:center;gap:8px;padding:0 12px;font:inherit;text-align:left;cursor:pointer}
-.cx-loc>i:first-child{color:var(--cx-acc,var(--co));font-size:18px}
-.cx-loc span{flex:1;min-width:0;line-height:1.15}.cx-loc small{display:block;font-size:10.5px;color:var(--muted)}
-.cx-loc b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cx-seg{position:absolute;left:16px;right:16px;top:calc(66px + env(safe-area-inset-top));z-index:3;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:4px;border-radius:16px}
-.cx-seg button{height:40px;border:0;border-radius:12px;background:transparent;color:var(--ink);font:inherit;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:background .25s,color .25s}
-.cx-seg button i{font-size:16px}
-.cx-seg button[data-k="urgent"]{color:#B91C1C}
-html:root[data-theme="dark"] .cx-seg button[data-k="urgent"]{color:#FCA5A5}
-.cx-seg button[aria-selected="true"]{background:var(--ink);color:var(--bg);box-shadow:0 6px 14px -8px rgba(0,0,0,.6)}
-.cx-seg button[data-k="urgent"][aria-selected="true"]{background:#DC2626;color:#fff;box-shadow:0 6px 14px -6px rgba(220,38,38,.9)}
-.cx-to{position:absolute;left:16px;right:16px;top:calc(66px + env(safe-area-inset-top));z-index:3;border-radius:14px;padding:9px 12px;font-size:13px;display:flex;gap:8px;align-items:center}
-.cx-to b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cx-chip{position:absolute;left:16px;bottom:44px;z-index:3;display:flex;align-items:center;gap:8px;height:34px;padding:0 12px;border-radius:999px;font-size:12.5px;font-weight:500;max-width:calc(100% - 92px)}
-.cx-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cx-chip i{width:8px;height:8px;border-radius:50%;background:#22C55E;box-shadow:0 0 0 4px rgba(34,197,94,.2);flex:none;animation:cxDot 2s ease-in-out infinite}
-.cx[data-kind="urgent"] .cx-chip i{background:#EF4444;box-shadow:0 0 0 4px rgba(239,68,68,.22)}
-@keyframes cxDot{50%{opacity:.45}}
-.cx[data-step="2"] .cx-chip{opacity:0;pointer-events:none}
-/* หมุดบนแผนที่ */
-.cx-me{position:relative;width:44px;height:44px;border-radius:50%;background:var(--cx-acc,#E9682A);border:3px solid #fff;box-sizing:border-box;display:grid;place-items:center;color:#fff;font-size:20px;
-  box-shadow:0 0 0 8px color-mix(in srgb,var(--cx-acc,#E9682A) 22%,transparent),0 14px 28px -8px color-mix(in srgb,var(--cx-acc,#E9682A) 80%,transparent)}
-.cx-me::before{content:"";position:absolute;inset:-10px;border-radius:50%;border:2px solid var(--cx-acc,#E9682A);opacity:0;animation:cxPing 2.6s cubic-bezier(.2,.6,.3,1) infinite}
-@keyframes cxPing{0%{transform:scale(.6);opacity:.55}100%{transform:scale(2.4);opacity:0}}
-.cx-pin{display:flex;align-items:center;gap:6px;pointer-events:none}
-.cx-pin>span{width:28px;height:28px;border-radius:10px;display:grid;place-items:center;font-size:15px;background:var(--cx-card);color:var(--ink);box-shadow:0 6px 14px -4px rgba(0,0,0,.35),0 0 0 2px var(--cx-card)}
+.cx{position:relative;flex:1;min-height:0;overflow:hidden;--cx-rgb:255,255,255;--cx-padx:max(20px,calc(50% - 290px));
+  --cx-top:calc(64px + env(safe-area-inset-top));--cx-foot:calc(118px + env(safe-area-inset-bottom));--cx-dock:0px}
+.cx.cx-hasdone{--cx-top:calc(106px + env(safe-area-inset-top))}
+html:root:not([data-theme="dark"]) .cx{--cx-rgb:17,17,19}
+.cx[data-kind="urgent"]{--cx-ac:229,72,77;--cx-act:#FF7A7E;--cx-ember:var(--cx-red);--cx-gt:linear-gradient(90deg,#FF9A8E,#E5484D)}
+html:root:not([data-theme="dark"]) .cx[data-kind="urgent"]{--cx-ac:214,40,48;--cx-act:#B4232A;--cx-gt:linear-gradient(90deg,#E5484D,#A7202A)}
+.cx [hidden],.bs.cxs [hidden]{display:none!important}
+.cx-vh,.cx .cx-say .fld>span{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* สีประจำตัวเลือก: --h = สีวงเลือก/พื้นไอคอน · --hc = สีไอคอน (สว่างเข้มขึ้นให้อ่านชัด) */
+.cx [data-h]{--h:242,140,56;--hc:#F59A52}
+.cx [data-h="cyan"]{--h:56,189,248;--hc:#38BDF8}.cx [data-h="violet"]{--h:139,107,255;--hc:#A78BFA}.cx [data-h="pink"]{--h:255,77,122;--hc:#FF6F98}
+.cx [data-h="amber"]{--h:255,181,71;--hc:#FFC46B}.cx [data-h="green"]{--h:52,211,153;--hc:#34D399}.cx [data-h="blue"]{--h:96,165,250;--hc:#7AB6FF}.cx [data-h="red"]{--h:229,72,77;--hc:#FF7A7E}
+html:root:not([data-theme="dark"]) .cx [data-h]{--hc:#C2410C}
+html:root:not([data-theme="dark"]) .cx [data-h="cyan"]{--hc:#0284C7}html:root:not([data-theme="dark"]) .cx [data-h="violet"]{--hc:#6D4AFF}html:root:not([data-theme="dark"]) .cx [data-h="pink"]{--hc:#DB2777}
+html:root:not([data-theme="dark"]) .cx [data-h="amber"]{--hc:#B45309}html:root:not([data-theme="dark"]) .cx [data-h="green"]{--hc:#059669}html:root:not([data-theme="dark"]) .cx [data-h="blue"]{--hc:#2563EB}html:root:not([data-theme="dark"]) .cx [data-h="red"]{--hc:#C0262D}
 
-.cx-pin em{font-style:normal;font-size:11px;font-weight:500;padding:3px 8px;border-radius:8px;background:var(--cx-glass);border:1px solid var(--cx-glass-line);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);white-space:nowrap;color:var(--ink);max-width:150px;overflow:hidden;text-overflow:ellipsis}
-.cx-art-me{position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);z-index:2}
+/* แสงออโรรา Cendon ลอยไหวด้านบน */
+.cx-aur{position:absolute;left:0;right:0;top:0;height:min(480px,62%);z-index:0;overflow:hidden;pointer-events:none;
+  -webkit-mask-image:linear-gradient(180deg,#000 30%,transparent);mask-image:linear-gradient(180deg,#000 30%,transparent)}
+.cx-aur i{position:absolute;border-radius:50%;filter:blur(64px);opacity:var(--cx-aur);will-change:transform}
+.cx-aur i:nth-child(1){left:-90px;top:-130px;width:300px;height:300px;background:#FFB547;animation:cxA1 16s ease-in-out infinite}
+.cx-aur i:nth-child(2){right:-70px;top:-70px;width:260px;height:260px;background:#FF4D7A;opacity:calc(var(--cx-aur) * .65);animation:cxA2 18s ease-in-out infinite}
+.cx-aur i:nth-child(3){left:36%;top:-170px;width:240px;height:240px;background:#8B6BFF;opacity:calc(var(--cx-aur) * .6);animation:cxA3 20s ease-in-out infinite}
+.cx-aur i:nth-child(4){left:8%;top:10px;width:170px;height:170px;background:#F28C38;opacity:calc(var(--cx-aur) * .7);animation:cxA2 14s ease-in-out infinite reverse}
+.cx[data-kind="urgent"] .cx-aur i:nth-child(1){background:#FF6B5E}.cx[data-kind="urgent"] .cx-aur i:nth-child(4){background:#E5484D}
+@keyframes cxA1{50%{transform:translate(60px,40px)}}
+@keyframes cxA2{50%{transform:translate(-50px,34px)}}
+@keyframes cxA3{50%{transform:translate(30px,50px) scale(1.15)}}
 
-/* แผ่นข้อมูล */
-.cx-card{position:relative;z-index:4;flex:1;min-height:0;margin-top:-30px;background:var(--cx-card);border-radius:30px 30px 0 0;border-top:1px solid var(--line-2,rgba(0,0,0,.04));
-  box-shadow:0 -24px 48px -28px rgba(0,0,0,.55);overflow-y:auto;overscroll-behavior:contain;padding:8px 20px 22px}
-.cx-card::before{content:"";display:block;width:36px;height:5px;border-radius:9px;background:var(--cx-hair);margin:0 auto 12px}
-.cx-steps{list-style:none;margin:0;padding:0;display:flex;align-items:center;gap:8px;font-size:11.5px}
-.cx-steps li{display:flex;align-items:center;gap:6px;color:var(--muted);white-space:nowrap}
-.cx-steps li.ln{flex:1;min-width:10px;height:2px;border-radius:2px;background:var(--cx-hair);position:relative;overflow:hidden}
-/* เดินหน้าขั้น: เส้นเชื่อมมีแสงถ่านวิ่งผ่าน */
-.cx-steps li.ln.done::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--cx-c),var(--cx-a),var(--cx-b));animation:cxFill .7s cubic-bezier(.2,.9,.25,1) both}
-@keyframes cxFill{from{transform:translateX(-100%)}to{transform:none}}
-.cx-steps button{display:flex;align-items:center;gap:6px;border:0;background:none;color:inherit;font:inherit;padding:0;cursor:pointer}
-.cx-steps button:disabled{cursor:default}
-.cx-steps .n{width:22px;height:22px;border-radius:50%;border:1px solid var(--cx-hair2);display:grid;place-items:center;font-size:11px;flex:none}
-.cx-steps li.on{color:var(--ink);font-weight:600}
-.cx-steps li.on .n,.cx-steps li.ok .n{border-color:transparent;background:var(--cx-acc,var(--co));color:#fff}
-.cx-steps li.ok .n{background:var(--ink);color:var(--bg)}
-.cx-h{margin:14px 0 0;font-family:var(--kd,Kanit),Kanit,sans-serif;font-size:22px;font-weight:600;letter-spacing:-.2px;color:var(--ink)}
-.cx-sub{margin:2px 0 12px;font-size:12.5px;color:var(--muted)}
-.cx .fsec{display:none;margin:0;padding:0;border:0;background:none}
-.cx .fsec.on{display:block;animation:cxIn .45s cubic-bezier(.2,.9,.25,1) both}
-@keyframes cxIn{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
-.cx[data-back="1"] .fsec.on{animation-name:cxInB}
-@keyframes cxInB{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}
+/* หัวหน้า: ย้อน/ปิด · ความคืบหน้าไล่สีตามข้อ · ข้อที่เท่าไร */
+.cx-hd{position:absolute;left:0;right:0;top:0;z-index:6;box-sizing:border-box;display:flex;align-items:center;gap:14px;height:calc(62px + env(safe-area-inset-top));padding:env(safe-area-inset-top) var(--cx-padx) 0;view-transition-name:cx-hd}
+.cx-back{flex:none;width:40px;height:40px;border-radius:50%;border:0;padding:0;display:grid;place-items:center;font-size:20px;color:var(--ink);background:var(--cx-glass);box-shadow:inset 0 0 0 1px var(--cx-hair);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);cursor:pointer;transition:transform .15s}
+.cx-back:active{transform:scale(.92)}
+.cx-prog{flex:1;display:flex;gap:5px;view-transition-name:cx-prog}
+.cx-prog i{flex:1;height:4px;border-radius:4px;background:var(--cx-hair2);overflow:hidden}
+.cx-prog b{display:block;width:0;height:100%;border-radius:inherit;transition:width .65s cubic-bezier(.2,.85,.2,1),box-shadow .65s}
+.cx-prog i:nth-child(1) b{background:linear-gradient(90deg,#FFB547,#F28C38)}
+.cx-prog i:nth-child(2) b{background:linear-gradient(90deg,#F28C38,#FF6A5C)}
+.cx-prog i:nth-child(3) b{background:linear-gradient(90deg,#FF6A5C,#FF4D7A)}
+.cx-prog i:nth-child(4) b{background:linear-gradient(90deg,#FF4D7A,#8B6BFF)}
+.cx[data-kind="urgent"] .cx-prog i b{background:linear-gradient(90deg,#FF8A7A,#E5484D)}
+.cx-prog i.ok b{width:100%}
+.cx-prog i.ok:not(:has(+ i.ok)) b{box-shadow:0 0 10px rgba(255,110,80,.75)}
+.cx-cnt{flex:none;min-width:28px;view-transition-name:cx-cnt;text-align:right;font-size:12.5px;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums}
+/* คำตอบที่ผ่านแล้ว: ชิปด้านบน แตะเพื่อกลับไปแก้ */
+.cx-done{position:absolute;left:0;right:0;top:calc(62px + env(safe-area-inset-top));z-index:6;display:flex;gap:6px;padding:2px var(--cx-padx);overflow-x:auto;scrollbar-width:none;pointer-events:none}
+.cx-done::-webkit-scrollbar{display:none}
+.cx-dc{pointer-events:auto;flex:none;display:inline-flex;align-items:center;gap:7px;max-width:220px;height:32px;padding:0 12px 0 7px;border:0;border-radius:999px;background:var(--cx-glass);box-shadow:inset 0 0 0 1px var(--cx-hair);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);color:var(--ink);font:inherit;font-size:12.5px;cursor:pointer}
+.cx-dc span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cx-dc .ck{flex:none;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-style:normal;color:#fff;background:linear-gradient(135deg,var(--hc),rgb(var(--h)))}
+.cx-dc[data-k="sym"]{view-transition-name:cx-sym}.cx-dc[data-k="loc"]{view-transition-name:cx-map}.cx-dc[data-k="when"]{view-transition-name:cx-when}
+
+/* ข้อ: ซ้อนกันเต็มจอ เห็นทีละข้อ (ข้อที่ไม่แสดงยังวางผังอยู่ แผนที่จึงมีขนาดจริงเสมอ) */
+.cx-stage{position:absolute;inset:0;z-index:1}
+.cx-pane{position:absolute;inset:0;box-sizing:border-box;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+  padding:var(--cx-top) var(--cx-padx) calc(var(--cx-foot) + 36px);visibility:hidden;pointer-events:none;
+  -webkit-mask-image:linear-gradient(180deg,transparent calc(var(--cx-top) - 16px),#000 calc(var(--cx-top) + 8px));mask-image:linear-gradient(180deg,transparent calc(var(--cx-top) - 16px),#000 calc(var(--cx-top) + 8px))}
+.cx-pane::-webkit-scrollbar{display:none}
+.cx-pane.on{visibility:visible;pointer-events:auto}
+.cx-pb{position:relative;padding-top:14px}
+.cx-pane.on .cx-pb{view-transition-name:cx-pb}
+.cx-pb.cx-in-f{animation:cxPbIn .55s cubic-bezier(.2,.85,.2,1) both}
+.cx-pb.cx-in-b{animation:cxPbInB .55s cubic-bezier(.2,.85,.2,1) both}
+.cx-head{display:flex;align-items:flex-start;gap:10px}
+.cx-ht{flex:1;min-width:0}
+.cx-kick{display:inline-flex;align-items:center;gap:8px;max-width:100%;box-sizing:border-box;height:28px;padding:0 12px 0 10px;margin:0 0 14px;border-radius:999px;background:var(--cx-glass);box-shadow:inset 0 0 0 1px var(--cx-hair);color:var(--cx-act);font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cx-kick .d,.cx-near .d{position:relative;flex:none;width:7px;height:7px;border-radius:50%;background:rgb(var(--cx-ac))}
+.cx-kick .d::after,.cx-near .d::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:1.5px solid rgb(var(--cx-ac));animation:cxPulse 2.4s cubic-bezier(.2,.6,.3,1) infinite}
+@keyframes cxPulse{0%{transform:scale(.5);opacity:.8}100%{transform:scale(1.9);opacity:0}}
+.cx-q{margin:0;font-family:var(--kd,Kanit),Kanit,sans-serif;font-size:32px;line-height:1.16;font-weight:600;letter-spacing:-.5px;color:var(--ink);outline:0}
+.cx-q em{font-style:normal;background:var(--cx-gt);-webkit-background-clip:text;background-clip:text;color:transparent}
+.cx-pane.on .cx-q{view-transition-name:cx-q}
+.cx-sub{margin:7px 0 0;font-size:14.5px;line-height:1.5;color:var(--muted)}
+/* ภาพประกอบเล็กประจำข้อ */
+.cx-art{flex:none;width:84px;height:84px;margin:-8px -6px 0 0}
+.cx-pane.on .cx-art{view-transition-name:cx-art}
+.cx-ill{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 10px 16px rgba(var(--cx-ac),.32))}
+.cx-ill .fl{animation:cxFloat 4.5s ease-in-out infinite}
+.cx-ill .sp,.cx-ill .pu{transform-box:fill-box;transform-origin:center}
+.cx-ill .sp{animation:cxTw 3.2s ease-in-out infinite}
+.cx-ill .pu{animation:cxHalo 3.4s ease-in-out infinite}
+.cx-ill .ry{transform-origin:36px 48px;animation:cxSpin 26s linear infinite}
+.cx-ill .hz{animation:cxBlink 1.2s ease-in-out infinite}
+@keyframes cxFloat{50%{transform:translateY(-4px)}}
+@keyframes cxTw{0%,100%{opacity:.25;transform:scale(.55)}50%{opacity:1;transform:scale(1)}}
+@keyframes cxHalo{50%{transform:scale(1.14);opacity:.7}}
+@keyframes cxSpin{to{transform:rotate(360deg)}}
+@keyframes cxBlink{50%{opacity:.3}}
+
+/* ข้อ 1 อาการ: กล่องกระจก + ไฟคอนโซลขอบบน · ชิปอาการเป็นการ์ดไอคอนสี · ร้านใกล้คุณ */
+.cx-say{position:relative;margin-top:20px;padding:14px 16px 10px;border-radius:22px;background:var(--cx-glass);box-shadow:inset 0 0 0 1px var(--cx-hair),0 20px 40px -28px rgba(0,0,0,.55);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+.cx-pane.on .cx-say{view-transition-name:cx-sym}
+.cx-say::before{content:"";position:absolute;left:16%;right:16%;top:0;height:1.5px;border-radius:2px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,var(--cx-c) 24%,var(--cx-a) 50%,var(--cx-b) 76%,transparent);box-shadow:0 0 14px 1px rgba(242,140,56,.45);opacity:calc(var(--cx-lo) * .8);transition:left .5s,right .5s,opacity .4s}
+.cx-say:focus-within::before{left:5%;right:5%;opacity:var(--cx-lo)}
+.cx .cx-say .fld{margin:0}
+.cx .cx-say .inp,.cx .cx-say .inp:focus{display:block;width:100%;min-height:86px;height:auto;padding:0;border:0;border-radius:0;background:none;box-shadow:none;resize:none;outline:0;
+  font-family:var(--kd,Kanit),Kanit,sans-serif;font-size:19px;line-height:1.45;font-weight:400;color:var(--ink)}
+/* วงโฟกัสของแอป (textarea:focus … !important) ไม่ขึ้นในกล่องนี้ — กล่องเองมีไฟคอนโซลบอกว่ากำลังพิมพ์ */
+.cx .cx-say .inp:focus{border-color:transparent!important;box-shadow:none!important}
+.cx .cx-say .inp::placeholder{font-weight:300;color:color-mix(in srgb,var(--muted) 78%,transparent)}
+.cx-cam{display:flex;align-items:center;gap:6px;margin:4px 0 0 auto;height:32px;padding:0 12px;border:0;border-radius:999px;background:rgba(var(--cx-rgb),.07);color:var(--ink);font:inherit;font-size:12.5px;font-weight:500;cursor:pointer}
+.cx-cam i{font-size:15px;color:var(--cx-act)}
+.cx-lbl{margin:20px 0 10px;font-size:12.5px;font-weight:500;color:var(--muted)}
+.cx-tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.cx-tiles>button{display:flex;align-items:center;gap:10px;min-height:56px;padding:8px 12px 8px 10px;border:0;border-radius:18px;background:var(--cx-glass);box-shadow:inset 0 0 0 1px var(--cx-hair);
+  color:var(--ink);font:inherit;font-size:14px;font-weight:500;line-height:1.25;text-align:left;cursor:pointer;transition:background .3s,box-shadow .3s,transform .15s}
+.cx-tiles>button:active{transform:scale(.97)}
+.cx-tiles .ic{flex:none;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-size:18px;background:rgba(var(--h),.16);color:var(--hc)}
+.cx-tiles>button.on{background:rgba(var(--h),.12);box-shadow:inset 0 0 0 1.5px rgba(var(--h),.75),0 12px 26px -14px rgba(var(--h),.7);font-weight:600}
+.cx-near{display:flex;align-items:center;gap:12px;width:100%;margin-top:14px;padding:10px 12px 10px 10px;border:0;border-radius:18px;background:var(--cx-glass);box-shadow:inset 0 0 0 1px var(--cx-hair);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.cx-pane.on .cx-near{view-transition-name:cx-map}
+.cx-near .stack{display:flex;flex:none}
+.cx-near .stack:empty{display:none}
+.cx-near .stack i{width:28px;height:28px;margin-left:-8px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:11.5px;font-weight:600;color:#fff;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--c1) 72%,#fff),var(--c1));box-shadow:0 0 0 2px var(--cx-card),0 6px 12px -6px rgba(0,0,0,.6);animation:cxAv .55s cubic-bezier(.3,1.5,.5,1) backwards;animation-delay:calc(var(--i) * 70ms + .3s)}
+.cx-near .stack i:first-child{margin-left:0}
+@keyframes cxAv{from{opacity:0;transform:translateY(8px) scale(.6)}}
+.cx-near .tx{flex:1;min-width:0;display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:500;line-height:1.35}
+.cx-near .tx .d{margin-left:3px}
+.cx-near .go{flex:none;font-size:18px;color:var(--muted)}
+
+/* ช่องฟอร์มทั่วไป (รถ · เบอร์ · งบ · หมวดงาน · เพิ่มรายละเอียด) */
+.cx-slot{margin-top:18px}
+.cx-slot:empty{display:none}
+.cx .fsec{display:block;margin:0;padding:0;border:0;background:none}
 .cx .fsec-h{display:none}
-.cx .fld>span{font-size:12.5px;font-weight:500;color:var(--muted)}
-.cx .carc{border-radius:16px;border:1px solid var(--cx-hair);background:var(--cx-raise)}
-/* ช่องเล่าอาการ: ไฟคอนโซลขอบบน (ลายเซ็นเดียวกับช่องพิมพ์ในแชต) — โฟกัสแล้วแสงแผ่กว้าง */
-.cx-say-box{position:relative}
-.cx-say-box::after{content:"";position:absolute;left:16%;right:16%;top:-1px;height:1.5px;border-radius:2px;pointer-events:none;z-index:2;
-  background:linear-gradient(90deg,transparent,var(--cx-c) 25%,var(--cx-a) 50%,var(--cx-b) 75%,transparent);
-  box-shadow:0 0 12px 1px rgba(242,140,56,.55),0 0 34px 3px rgba(255,77,122,.18);opacity:.85;transition:left .5s,right .5s,opacity .4s}
-.cx-say-box:focus-within::after{left:4%;right:4%;opacity:1}
-.cx-say textarea.inp{border-radius:18px;min-height:96px;padding-right:58px;font-size:15px}
-.cx-say textarea.inp:focus{border-color:var(--cx-acc,var(--co));box-shadow:0 0 0 4px color-mix(in srgb,var(--cx-acc,#E9682A) 14%,transparent)}
-.cx-mic{position:absolute;right:10px;bottom:10px;z-index:2;width:42px;height:42px;border-radius:13px;border:0;display:grid;place-items:center;font-size:19px;color:#fff;cursor:pointer;
-  background:var(--cx-btn,var(--cx-ember));box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 8px 18px -8px rgba(242,110,40,.8)}
-.cx-mic.rec{animation:cxRec 1.2s ease-in-out infinite}
-@keyframes cxRec{50%{box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 0 0 8px rgba(242,110,40,.18)}}
-.cx-quick{display:flex;gap:6px;margin:10px -20px 0;padding:0 20px 2px;overflow-x:auto;scrollbar-width:none}
-.cx-quick::-webkit-scrollbar{display:none}
-.cx-quick button{flex:none;height:34px;padding:0 12px;border-radius:999px;border:1px dashed var(--cx-hair2);background:transparent;color:var(--ink);font:inherit;font-size:12.5px;cursor:pointer;transition:all .2s}
-.cx-quick button.on{border-style:solid;border-color:var(--cx-acc,var(--co));background:color-mix(in srgb,var(--cx-acc,#E9682A) 12%,transparent);color:var(--ink);font-weight:600}
-/* ปุ่มหลัก: ไฟถ่านอุ่น · ด่วน = แดง */
-.bs.cxs .ft .cx-go{width:100%;height:58px;border:0;border-radius:18px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 8px 0 20px;cursor:pointer;
-  background:var(--ink);color:var(--bg);font:inherit;position:relative;box-shadow:0 16px 30px -16px rgba(12,10,9,.75);transition:transform .15s}
-html:root[data-theme="dark"] .bs.cxs .ft .cx-go{box-shadow:none}
+.cx .fld{display:block;margin:0 0 18px}
+.cx .fld>span{display:block;margin:0 0 9px;font-size:12.5px;font-weight:500;letter-spacing:.2px;color:var(--muted)}
+.cx .fld>span small{font-size:11.5px;font-weight:400;opacity:.85}
+.cx .inp{display:block;width:100%;box-sizing:border-box;height:54px;padding:0 18px;border-radius:16px;border:1px solid transparent;background:var(--cx-glass);box-shadow:inset 0 0 0 1px var(--cx-hair);color:var(--ink);font:inherit;font-size:15.5px;transition:border-color .25s,box-shadow .25s,background .25s}
+.cx textarea.inp{height:auto;min-height:100px;padding:15px 18px;line-height:1.55;resize:none}
+.cx .inp::placeholder{color:color-mix(in srgb,var(--muted) 78%,transparent)}
+.cx .inp:focus{outline:0;border-color:rgba(var(--cx-ac),.65);background:var(--cx-field2);box-shadow:0 0 0 4px rgba(var(--cx-ac),.13)}
+.cx .carc{display:flex;align-items:center;gap:14px;padding:12px 14px 12px 12px;border-radius:20px;border:0;background:var(--cx-glass);box-shadow:inset 0 0 0 1px var(--cx-hair)}
+.cx .carc>div{flex:1;min-width:0}.cx .carc b{display:block;font-size:15px;font-weight:600}.cx .carc small{display:block;margin-top:1px;font-size:12.5px;color:var(--muted)}
+.cx .carc .sq{flex:none;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-size:21px;background:rgba(96,165,250,.16);color:#7AB6FF;box-shadow:none}
+html:root:not([data-theme="dark"]) .cx .carc .sq{color:#2563EB}
+.cx .lnk{flex:none;border:0;background:rgba(var(--cx-rgb),.07);color:var(--ink);height:34px;padding:0 14px;border-radius:999px;font:inherit;font-size:13px;font-weight:600;text-decoration:none;cursor:pointer}
+.cx .seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:8px;background:none;padding:0;border:0;border-radius:0;box-shadow:none}
+.cx .seg#pCat{display:flex;overflow-x:auto;scrollbar-width:none;margin:0 calc(var(--cx-padx) * -1);padding:2px var(--cx-padx);
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 18px,#000 calc(100% - 18px),transparent);mask-image:linear-gradient(90deg,transparent,#000 18px,#000 calc(100% - 18px),transparent)}
+.cx .seg#pCat::-webkit-scrollbar{display:none}
+.cx .seg>button{box-shadow:inset 0 0 0 1px var(--cx-hair2);flex:none;height:44px;padding:0 16px;border-radius:15px;border:0;background:none;color:var(--ink);font:inherit;font-size:14px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap;cursor:pointer;transition:background .25s,box-shadow .25s}
+.cx .seg>button.on{background:rgba(var(--cx-ac),.11);box-shadow:inset 0 0 0 1.5px rgba(var(--cx-ac),.7);font-weight:600}
+.cx .morebtn{display:inline-flex;align-items:center;gap:8px;margin:0;border:0;background:none;padding:6px 0;color:var(--ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.cx .morebtn i{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:15px;background:rgba(var(--cx-ac),.13);color:var(--cx-act)}
+.cx .morebtn small{font-weight:400;color:var(--muted)}
+.cx #bMore{margin-top:14px}
+.cx .chk{border-radius:18px}
+/* ตัวเลือกเวลา/ที่ซ่อม: การ์ดใหญ่มีไอคอนสี · เลือกแล้ววงสีประจำตัวเลือก */
+.cx .seg.cx-opts{grid-auto-flow:row;grid-template-columns:1fr;gap:10px}
+.cx .seg.cx-opts>button{height:auto;min-height:70px;justify-content:flex-start;gap:14px;padding:12px 16px 12px 12px;border-radius:20px;background:var(--cx-glass);box-shadow:inset 0 0 0 1px var(--cx-hair);text-align:left;white-space:normal;transition:background .3s,box-shadow .3s,transform .15s}
+.cx .seg.cx-opts>button:active{transform:scale(.98)}
+.cx .seg.cx-opts .ic{flex:none;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-size:22px;background:rgba(var(--h),.16);color:var(--hc)}
+.cx .seg.cx-opts .tx{flex:1;min-width:0}
+.cx .seg.cx-opts .tx b{display:block;font-size:16px;font-weight:600;line-height:1.3}
+.cx .seg.cx-opts .tx small{display:block;margin-top:1px;font-size:12.5px;font-weight:400;color:var(--muted)}
+.cx .seg.cx-opts>button.on{background:rgba(var(--h),.12);box-shadow:inset 0 0 0 1.5px rgba(var(--h),.75),0 12px 26px -14px rgba(var(--h),.7)}
+.cx #bWhen.cx-opts>button::after{content:"";flex:none;width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--cx-hair2);transition:background .3s,box-shadow .3s}
+.cx #bWhen.cx-opts>button.on::after{background:radial-gradient(circle,#fff 0 4px,transparent 4.5px),linear-gradient(135deg,var(--hc),rgb(var(--h)));box-shadow:0 0 0 3px rgba(var(--h),.18)}
+.cx-pane.on #bWhen>button.on{view-transition-name:cx-when}
+.cx #bWhenX{margin-top:10px}
+.cx #bMode.cx-opts{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.cx #bMode.cx-opts>button{flex-direction:column;align-items:flex-start;gap:8px;min-height:0;padding:10px 12px}
+.cx #bMode.cx-opts .ic{width:34px;height:34px;border-radius:11px;font-size:18px}
+.cx #bMode.cx-opts .tx b{font-size:14.5px}.cx #bMode.cx-opts .tx small{font-size:11.5px}
+
+/* ข้อ 2 ตำแหน่ง: แผนที่เต็มจอ · ไล่เฉดจากบน (แสงอุ่นออโรรา) ลงล่าง (กลืนกับพื้นใต้แผงล่าง) · เรดาร์รอบหมุด */
+.cx-loc{overflow:hidden;padding:0;-webkit-mask-image:none;mask-image:none}
+.cx .cx-loc #bMap{position:absolute;inset:0;z-index:0;height:auto;margin:0;border-radius:0;box-shadow:none;background:var(--cx-card)}
+.cx-pane.cx-loc.on #bMap{view-transition-name:cx-map}
+.cx .cx-loc #bMap::after{display:none}
+.cx .cx-loc .cross{font-size:46px;color:rgb(var(--cx-ac));filter:drop-shadow(0 6px 8px rgba(0,0,0,.45))}
+.cx .cx-loc .pk2.locked .cross{color:#22C55E}
+html[data-theme="dark"] .cx .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.82) contrast(.9) saturate(.6)}
+html:root:not([data-theme="dark"]) .cx .leaflet-tile-pane{filter:saturate(.72) brightness(1.03)}
+/* ไทล์ซ้อนกันครึ่งพิกเซล + ผสมแบบปกติ (Leaflet ใช้ plus-lighter ซึ่งทำให้รอยซ้อนสว่างเป็นเส้น): ไม่เห็นเส้นรอยต่อตอนแผนที่ใส่ฟิลเตอร์บนจอความละเอียดสูง */
+.cx .cx-loc .leaflet-tile{width:256.5px!important;height:256.5px!important;mix-blend-mode:normal!important}
+.cx-radar{position:absolute;left:50%;top:50%;z-index:450;width:300px;height:300px;margin:-150px 0 0 -150px;border-radius:50%;pointer-events:none;
+  background:conic-gradient(from 0deg,transparent 0deg 250deg,rgba(242,140,56,.2) 320deg,rgba(255,77,122,.34) 356deg,transparent 360deg);
+  -webkit-mask:radial-gradient(circle,transparent 20px,#000 21px,#000 58%,transparent 71%);mask:radial-gradient(circle,transparent 20px,#000 21px,#000 58%,transparent 71%);animation:cxSpin 5s linear infinite}
+.cx[data-kind="urgent"] .cx-radar{background:conic-gradient(from 0deg,transparent 0deg 250deg,rgba(229,72,77,.2) 320deg,rgba(255,110,110,.38) 356deg,transparent 360deg)}
+.cx-mapfx{position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(180deg,var(--cx-card) 0,rgba(var(--cx-bgrgb),.9) calc(var(--cx-top) + 30px),rgba(var(--cx-bgrgb),.45) calc(var(--cx-top) + 120px),rgba(var(--cx-bgrgb),0) 46%,rgba(var(--cx-bgrgb),0) 54%,rgba(var(--cx-bgrgb),.6) 72%,var(--cx-card) 90%)}
+.cx-mapfx::before{content:"";position:absolute;left:-10%;right:-10%;top:0;height:56%;mix-blend-mode:screen;opacity:var(--cx-mapglow);
+  background:radial-gradient(80% 60% at 8% 0,rgba(255,181,71,.42),transparent 70%),radial-gradient(70% 60% at 96% 6%,rgba(255,77,122,.32),transparent 70%),radial-gradient(60% 50% at 55% 0,rgba(139,107,255,.24),transparent 70%);
+  animation:cxGlow 14s ease-in-out infinite alternate}
+html:root:not([data-theme="dark"]) .cx-mapfx::before{mix-blend-mode:normal}
+@keyframes cxGlow{to{transform:translateX(4%) scale(1.06)}}
+.cx-pane.cx-loc.on .cx-mapfx{view-transition-name:cx-mapfx}
+.cx-loc .cx-pb{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;box-sizing:border-box;padding:var(--cx-top) var(--cx-padx) calc(var(--cx-foot) + 2px);pointer-events:none}
+.cx-dock{position:relative;margin-top:auto;padding:10px 12px 12px;border-radius:24px;background:rgba(var(--cx-bgrgb),.84);box-shadow:inset 0 0 0 1px var(--cx-hair),0 24px 48px -26px rgba(0,0,0,.7);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);pointer-events:auto}
+.cx .cx-dock .locbar{padding:4px 2px;border-radius:0;background:none;box-shadow:none}
+.cx .cx-dock .locbar .sq{border-radius:12px}
+.cx .cx-dock .locbar small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cx .cx-dock>.fld{margin:10px 0 0}
+.cx .cx-dock>.fld>span{margin-bottom:7px}
+.cx .cx-dock .pk-gps{right:2px;bottom:auto;top:-56px}
+.cx .cx-dock .kv,.cx .cx-dock .note{margin:10px 0 0;font-size:12.5px}
+
+/* ข้อสุดท้าย: การ์ดใบงานขอบรุ้งหมุน (ครบแล้วสว่างเต็ม) แตะแถวเพื่อกลับไปแก้ */
+.cx-sumw{position:relative;margin:0 0 18px;padding:1.5px;border-radius:24px;overflow:hidden;isolation:isolate}
+.cx-sumw::before{content:"";position:absolute;left:50%;top:50%;z-index:-1;width:200%;aspect-ratio:1;translate:-50% -50%;opacity:.35;transition:opacity .6s;
+  background:conic-gradient(#FFB547,#F28C38,#FF4D7A,#8B6BFF,#38BDF8,#FFB547);animation:cxSpin 6s linear infinite}
+.cx[data-ready="1"] .cx-sumw::before{opacity:1}
+.cx-sum{padding:12px 14px 4px;border-radius:22.5px;background:var(--cx-card2)}
+.cx-sumh{display:flex;align-items:center;justify-content:space-between;margin:0 0 2px;font-size:12.5px}
+.cx-sumh b{font-weight:600;color:var(--cx-act)}.cx-sumh span{color:#22C55E;font-weight:500}
+.cx-sr{display:flex;align-items:center;gap:12px;width:100%;min-height:46px;padding:0;border:0;border-bottom:1px solid var(--cx-hair);background:none;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.cx-sr:last-child{border-bottom:0}
+.cx-sr .ic{flex:none;width:28px;height:28px;border-radius:9px;display:grid;place-items:center;font-size:15px;background:rgba(var(--h),.16);color:var(--hc)}
+.cx-sr .v{flex:1;min-width:0;font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cx-sr>.ti{flex:none;font-size:16px;color:var(--muted)}
+
+/* ── ปุ่มหลัก ── ลอยบนฉากไล่เฉดจากหน้า · มืด = ขาวนวล · สว่าง = ดำ · ลูกศรไล่สี Cendon · ด่วน = แดงเข้ม */
+.bs.cxs .ft{position:absolute;left:0;right:0;bottom:0;z-index:6;flex-direction:column;align-items:stretch;gap:9px;border:0;box-shadow:none;overflow:visible;pointer-events:none;
+  background:linear-gradient(180deg,rgba(var(--cx-bgrgb),0),var(--cx-card) 42%);padding:28px max(20px,calc(50% - 290px)) calc(12px + env(safe-area-inset-bottom))}
+.bs.cxs .ft>*{pointer-events:auto}
+.bs.cxs .ft .cx-go{width:100%;height:58px;border:0;border-radius:20px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 8px 0 22px;cursor:pointer;view-transition-name:cx-go;
+  background:var(--cx-hi);color:var(--cx-on-hi);font:inherit;position:relative;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 16px 32px -16px rgba(255,255,255,.22);transition:transform .15s}
+html:root:not([data-theme="dark"]) .bs.cxs .ft .cx-go{box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 16px 30px -14px rgba(0,0,0,.65)}
 .bs.cxs .ft .cx-go:active{transform:scale(.985)}
-.cx-go>span{text-align:left;line-height:1.15;min-width:0}.cx-go b{display:block;font-size:16px;font-weight:600}.cx-go small{display:block;font-size:11.5px;opacity:.72}
-.cx-go .k{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;flex:none;color:#fff;font-size:19px;
-  background:var(--cx-ember);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 8px 18px -8px rgba(242,110,40,.85)}
-.bs.cxs .ft .cx-go.fire{background:var(--cx-ember);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 16px 30px -12px rgba(242,110,40,.8)}
-.cx-go.fire .k{background:rgba(255,255,255,.18);box-shadow:none}
-.bs.cxs.cxu .ft .cx-go.fire{background:var(--cx-red);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 16px 30px -12px rgba(220,38,38,.85)}
-.bs.cxs.cxu .ft .cx-go:not(.fire) .k{background:var(--cx-red);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 8px 18px -8px rgba(220,38,38,.8)}
+.cx-go>span{text-align:left;line-height:1.2;min-width:0}.cx-go b{display:block;font-size:16.5px;font-weight:600}.cx-go small{display:block;font-size:12px;opacity:.7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cx-go .k{width:42px;height:42px;border-radius:15px;display:grid;place-items:center;flex:none;font-size:19px;background:linear-gradient(135deg,#FFB547,#F28C38 45%,#FF4D7A);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 8px 18px -8px rgba(255,77,122,.7)}
+.bs.cxs.cxu .ft .cx-go,.bs.cxs.cxu .ft .cx-go.fire{background:var(--cx-red);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 16px 32px -14px rgba(229,72,77,.8)}
+.bs.cxs.cxu .cx-go .k{background:rgba(0,0,0,.28);color:#fff;box-shadow:none}
 .bs.cxs .ft .cx-go .spin{margin:auto}
-.cx-safe{display:flex;align-items:center;justify-content:center;gap:6px;font-size:11.5px;color:var(--muted);text-align:center}
-.cx-safe i{font-size:14px}
+/* ใบงานพร้อมส่ง: แสงวาบพาดผ่านปุ่มเป็นครั้งคราว */
+.cx-go.last.fire::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;clip-path:inset(0 round 20px);
+  background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.45) 50%,transparent 60%);transform:translateX(-120%);animation:cxGlint 5.5s ease-in-out infinite 1.2s}
+@keyframes cxGlint{0%,55%{transform:translateX(-120%)}85%,100%{transform:translateX(120%)}}
+.cx-safe{display:flex;align-items:center;justify-content:center;gap:6px;margin:0;font-size:12px;color:var(--muted);text-align:center}
+.cx-safe i{font-size:14px;color:var(--cx-act)}
 /* กำลังส่ง: เส้นแสงวิ่งรอบปุ่ม + แสงฟุ้งไหลที่ขอบล่าง (จังหวะเดียวกับตอน AI ทำงานในแชต) */
-.cx-go::after{content:"";position:absolute;inset:-2px;border-radius:20px;padding:2px;pointer-events:none;opacity:0;
+.cx-go::after{content:"";position:absolute;inset:-2px;border-radius:22px;padding:2px;pointer-events:none;opacity:0;
   background:linear-gradient(90deg,transparent 20%,var(--cx-c) 34%,var(--cx-a) 44%,var(--cx-b) 55%,var(--cx-d) 64%,transparent 78%);background-size:220% 100%;
   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);
   transition:opacity .4s}
@@ -189,48 +323,67 @@ html:root[data-theme="dark"] .bs.cxs .ft .cx-go{box-shadow:none}
 @keyframes cxRing{from{background-position:90% 0}to{background-position:10% 0}}
 .cx-sweep{position:absolute;left:0;right:0;bottom:0;height:150px;pointer-events:none;opacity:0;transition:opacity .9s;overflow:hidden;
   -webkit-mask-image:linear-gradient(0deg,#000,transparent);mask-image:linear-gradient(0deg,#000,transparent)}
-.cx-sweep i{position:absolute;left:-20%;bottom:-40%;width:260%;height:100%;filter:blur(34px);opacity:.75;
+.cx-sweep i{position:absolute;left:-20%;bottom:-40%;width:260%;height:100%;filter:blur(34px);opacity:.62;
   background:linear-gradient(90deg,var(--cx-c),var(--cx-a) 18%,var(--cx-b) 36%,var(--cx-d) 50%,var(--cx-b) 64%,var(--cx-a) 82%,var(--cx-c));animation:cxFlow 6s cubic-bezier(.45,0,.55,1) infinite alternate;animation-play-state:paused}
-html:root:not([data-theme="dark"]) .cx-sweep i{opacity:.45}
+html:root:not([data-theme="dark"]) .cx-sweep i{opacity:.4}
 .bs.cxs.cx-busy .cx-sweep{opacity:1}
 .bs.cxs.cx-busy .cx-sweep i{animation-play-state:running}
 @keyframes cxFlow{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-.cx-err{min-height:0}
-/* แท็บเล็ต/คอม: เต็มจอตามขนาดเครื่อง (เดิมเป็นคอลัมน์กว้าง 480px กลางจอ ดูเป็นหน้ามือถือลอยอยู่) */
+.bs.cxs #err{position:absolute;left:0;right:0;bottom:calc(118px + env(safe-area-inset-bottom));z-index:7;margin:0;padding:0 22px;font-size:12.5px;text-align:center}
+.bs.cxs #err:empty{display:none}
+/* ปุ่มลอยของแอดมินไม่ทับหน้าใบงาน */
+body:has(#bs.cxs.on) #cxa-fab,body:has(#cxPlus[aria-expanded="true"]) #cxa-fab{display:none!important}
+
+/* ── เปลี่ยนข้อแบบ morph (View Transitions) ── ใช้เฉพาะตอนหน้านี้สั่ง (html[data-cx-dir]) ไม่กระทบหน้าอื่น
+   เนื้อข้อเลื่อน+เบลอออก/เข้า · หัวข้อแปลงร่าง · ช่องอาการหดเป็นชิป · ชิปร้านใกล้คุณขยายเป็นแผนที่เต็มจอ แล้วหดเป็นชิปตำแหน่ง · ภาพประกอบหมุนสลับ */
+html[data-cx-dir]::view-transition-group(*){animation-duration:.62s;animation-timing-function:cubic-bezier(.2,.85,.2,1)}
+html[data-cx-dir]::view-transition-old(root),html[data-cx-dir]::view-transition-new(root){animation-duration:.42s}
+/* ลำดับชั้นระหว่างแปลงร่าง: แผนที่ล่างสุด → เนื้อข้อ → หัวข้อ/ภาพ → ชิป → หัวหน้า/ปุ่มหลัก (ไม่ให้แผนที่ที่กำลังขยายทับหัวหน้าและปุ่ม) */
+html[data-cx-dir]::view-transition-group(cx-map){z-index:1}
+html[data-cx-dir]::view-transition-group(cx-mapfx){z-index:2}
+html[data-cx-dir]::view-transition-group(cx-pb){z-index:3}
+html[data-cx-dir]::view-transition-group(cx-q),html[data-cx-dir]::view-transition-group(cx-art){z-index:4}
+html[data-cx-dir]::view-transition-group(cx-sym),html[data-cx-dir]::view-transition-group(cx-when){z-index:5}
+html[data-cx-dir]::view-transition-group(cx-hd),html[data-cx-dir]::view-transition-group(cx-go){z-index:6}
+html[data-cx-dir]::view-transition-group(cx-prog),html[data-cx-dir]::view-transition-group(cx-cnt){z-index:7}
+html[data-cx-dir]::view-transition-group(cx-pb),html[data-cx-dir]::view-transition-group(cx-hd),html[data-cx-dir]::view-transition-group(cx-prog),html[data-cx-dir]::view-transition-group(cx-cnt){animation:none}
+html[data-cx-dir]::view-transition-old(cx-pb){animation:cxPbOut .34s cubic-bezier(.4,0,1,1) both}
+html[data-cx-dir]::view-transition-new(cx-pb){animation:cxPbIn .62s cubic-bezier(.2,.85,.2,1) .08s both}
+html[data-cx-dir="b"]::view-transition-old(cx-pb){animation-name:cxPbOutB}
+html[data-cx-dir="b"]::view-transition-new(cx-pb){animation-name:cxPbInB}
+@keyframes cxPbOut{to{opacity:0;transform:translateX(-32px) scale(.98);filter:blur(6px)}}
+@keyframes cxPbIn{from{opacity:0;transform:translateX(40px) scale(.98);filter:blur(8px)}}
+@keyframes cxPbOutB{to{opacity:0;transform:translateX(32px) scale(.98);filter:blur(6px)}}
+@keyframes cxPbInB{from{opacity:0;transform:translateX(-40px) scale(.98);filter:blur(8px)}}
+html[data-cx-dir]::view-transition-old(cx-prog),html[data-cx-dir]::view-transition-old(cx-cnt){display:none}
+html[data-cx-dir]::view-transition-new(cx-prog),html[data-cx-dir]::view-transition-new(cx-cnt){animation:none}
+html[data-cx-dir]::view-transition-image-pair(cx-sym),html[data-cx-dir]::view-transition-image-pair(cx-when){overflow:hidden;border-radius:18px}
+html[data-cx-dir]::view-transition-image-pair(cx-map){overflow:hidden;border-radius:26px}
+/* แผนที่ ↔ ชิป: ภาพแผนที่เต็มกรอบเสมอ · ขยาย = ชิปหายเร็ว แผนที่ขึ้นเร็ว · หด = แผนที่อยู่จนกรอบเล็กแล้วค่อยส่งต่อให้ชิป (ไม่เห็นตัวหนังสือชิปขยายใหญ่) */
+html[data-cx-map="new"]::view-transition-new(cx-map),html[data-cx-map="old"]::view-transition-old(cx-map){width:100%;height:100%;object-fit:cover}
+html[data-cx-map="new"]::view-transition-old(cx-map){animation:cxFadeOut .16s linear both}
+html[data-cx-map="new"]::view-transition-new(cx-map){animation:cxFadeIn .28s linear both}
+html[data-cx-map="old"]::view-transition-old(cx-map){animation:cxFadeOut .22s linear .32s both}
+html[data-cx-map="old"]::view-transition-new(cx-map){animation:cxFadeIn .26s linear .36s both}
+html[data-cx-dir]::view-transition-old(cx-hd),html[data-cx-dir]::view-transition-new(cx-hd){animation-duration:.3s}
+@keyframes cxFadeOut{to{opacity:0}}
+@keyframes cxFadeIn{from{opacity:0}}
+html[data-cx-dir]::view-transition-old(cx-art){animation:cxArtOut .4s cubic-bezier(.4,0,1,1) both}
+html[data-cx-dir]::view-transition-new(cx-art){animation:cxArtIn .7s cubic-bezier(.3,1.4,.5,1) .12s both}
+@keyframes cxArtOut{to{opacity:0;transform:scale(.6) rotate(-14deg)}}
+@keyframes cxArtIn{from{opacity:0;transform:scale(.5) rotate(16deg)}}
+
+/* แท็บเล็ต/คอม: เต็มจอตามขนาดเครื่อง · เนื้อหาคอลัมน์กลางกว้างไม่เกิน ~580px · แผนที่ข้อตำแหน่งเต็มจอ */
 @media(min-width:761px){
   .bs.cxs .pn{left:0;right:0;top:0;bottom:0;width:auto;border-radius:0;transform:translateY(14px);opacity:0}
   .bs.cxs.on .pn{transform:none;opacity:1}
-  /* แท็บเล็ต: แบบเดียวกับมือถือ แต่เนื้อหากลางจอ ไม่ยืดยาวจนอ่านยาก */
-  .cx-card{padding-inline:max(20px,calc(50% - 320px))}
-  .bs.cxs .ft{padding-inline:max(20px,calc(50% - 320px))}
-  .cx-top,.cx-seg,.cx-to{right:auto;width:min(640px,calc(100% - 32px));left:max(16px,calc(50% - 320px))}
-}
-/* คอม: แผนที่เต็มด้านซ้าย · แผงขั้นตอนด้านขวา (แบบเดียวกับหน้าแผนที่ช่าง) · ปุ่มหลักติดล่างของแผง */
-@media(min-width:1024px){
-  .bs.cxs{--cxw:clamp(420px,34vw,520px)}
-  .bs.cxs .bd{height:100%}
-  .cx{display:grid;grid-template-columns:minmax(0,1fr) var(--cxw);height:100%}
-  .cx-hero,.cx[data-step="2"] .cx-hero{height:auto;min-height:0}
-  .cx-card{margin-top:0;border-radius:0;border-top:0;border-left:1px solid var(--cx-hair);box-shadow:none;padding:24px 28px 170px}
-  .cx-card::before{display:none}
-  .cx-top,.cx-seg,.cx-to{left:24px;width:min(560px,calc(100% - 48px))}
-  .cx-top{top:20px}.cx-seg,.cx-to{top:74px}
-  .cx-chip{left:24px;bottom:24px}
-  .bs.cxs .ft{position:absolute;right:0;bottom:0;z-index:6;width:var(--cxw);box-sizing:border-box;padding:12px 28px 18px;border-left:1px solid var(--cx-hair)}
-  .cx-art{inset:-140% -30% -34%}
-  .bs.cxs #err{position:absolute;right:0;bottom:150px;z-index:6;width:var(--cxw);box-sizing:border-box;padding:0 28px}
-  .cx-quick{margin:10px -28px 0;padding:0 28px 2px}
+  .cx-aur{height:min(560px,62%)}
+  .cx-aur i{filter:blur(80px)}
+  .cx-aur i:nth-child(1){width:440px;height:440px;left:8%}
+  .cx-aur i:nth-child(2){width:380px;height:380px;right:10%}
+  .cx-aur i:nth-child(3){width:360px;height:360px}
 }
 @media(prefers-reduced-motion:reduce){
-  .cx-me::before,.cx-chip i,.cx-urg .cx-live,.cx-sweep i,.cx-go::after,.cx .fsec.on,.cx-steps li.ln.done::after,.cx-mic.rec{animation:none!important}
-  .cx-hero,.cx-menu,.cx-menu>*{transition:none!important}
+  .cx-aur i,.cx-ill *,.cx-kick .d::after,.cx-near .d::after,.cx-near .stack i,.cx-radar,.cx-mapfx::before,.cx-sumw::before,.cx-pb,.cx-urg .cx-live,.cx-sweep i,.cx-go::after,.cx-go::before{animation:none!important}
+  .cx-menu,.cx-menu>*,.cx-prog b,.cx-say::before{transition:none!important}
 }
-/* แผนที่จริงพร้อมแล้ว: ซ่อนภาพแทน · หมุดร้านที่จะส่งถึงใช้สีของโหมด (ส้ม / ด่วน = แดง) */
-.cx-art-me{transition:opacity .5s}
-.cx.live .cx-art-me{opacity:0}
-.cx-vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-/* ปุ่มลอยของแอดมินไม่ทับขั้นตอนบนหน้าเรียกช่าง */
-body:has(#bs.cxs.on) #cxa-fab,body:has(#cxPlus[aria-expanded="true"]) #cxa-fab{display:none!important}
-.cx-pin.hot>span{background:var(--cx-acc,#E9682A);color:#fff}
-.bs.cxs #err{margin:0;padding:0 20px;font-size:12.5px}
-.bs.cxs #err:empty{display:none}

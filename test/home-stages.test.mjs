@@ -91,9 +91,9 @@ test('clouds are the settings-page theme clouds (cloud-swap.js), not a private c
   /* ยังเป็นของเดิมทุกอย่าง: หมอกทึบแล้วค่อยสลับ · ดักปุ่มธีม/ภาษา/สี */
   assert.match(cs,/vin\.onfinish=function\(\)\{\s*doApply\(\);\s*var vout=veil\.animate\(/);
   assert.match(cs,/var THEME_SEL='button\[data-sitetheme\],#v-settings button\[data-theme\],\.th-opt\[data-th\]'/);
-  assert.match(page,/<script src="\/cloud-swap\.js\?v=5" defer><\/script>\n<script src="home-stages\.js\?v=6" defer><\/script>/);
-  for(const f of ['chat.html','garage.html','news.html','profile.html','spares.html'])assert.match(r(f),/<script src="\/cloud-swap\.js\?v=5" defer><\/script>/,f);
-  assert.match(sw,/'\.\/cloud-swap\.js\?v=5'/);
+  assert.match(page,/<script src="\/cloud-swap\.js\?v=6" defer><\/script>\n<script src="home-stages\.js\?v=6" defer><\/script>/);
+  for(const f of ['chat.html','garage.html','news.html','profile.html','spares.html'])assert.match(r(f),/<script src="\/cloud-swap\.js\?v=6" defer><\/script>/,f);
+  assert.match(sw,/'\.\/cloud-swap\.js\?v=6'/);
 });
 
 test('smooth slide: old stage lifts away while the mist thickens, new stage staggers in; transform/opacity only; none with reduced motion',()=>{

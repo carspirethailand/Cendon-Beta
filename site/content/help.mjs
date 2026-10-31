@@ -27,8 +27,8 @@ const sections=[
       P('แตะปุ่ม × แตะพื้นมืดด้านหลัง หรือจับขีดเล็กด้านบนของแผ่นแล้วลากลง แผ่นจะเลื่อนตามนิ้ว ลากลงพอหรือปัดลงเร็ว ๆ แผ่นจะปิด ถ้าลากไม่ถึงแผ่นจะเด้งกลับที่เดิม · ถ้าเนื้อหาในแผ่นเลื่อนลงไปแล้ว ให้เลื่อนขึ้นจนสุดก่อน แล้วลากลงต่อได้เลยโดยไม่ต้องยกนิ้ว',
         'Tap ×, tap the dark area behind it, or hold the small bar at the top and drag down. The panel follows your finger; drag far enough or flick down quickly and it closes, otherwise it springs back. · If you’ve scrolled inside the panel, scroll back to the top and keep pulling down without lifting your finger.'))+
     Q('เปลี่ยนภาษาได้ไหม','Can I change the language?',
-      P('ได้ 12 ภาษา: ไทย อังกฤษ จีน ญี่ปุ่น เกาหลี อินโดนีเซีย เวียดนาม มลายู เยอรมัน ฝรั่งเศส สเปน และโปรตุเกส (ส่วนที่ยังแปลไม่ครบจะแสดงเป็นภาษาอังกฤษ) เปลี่ยนได้ที่การตั้งค่าในแอป หัวข้อ <b>ภาษา</b> · เว็บไซต์นี้มีไทยและอังกฤษ (ปุ่ม TH/EN ด้านบน)',
-        '12 languages: Thai, English, Chinese, Japanese, Korean, Indonesian, Vietnamese, Malay, German, French, Spanish and Portuguese (anything not yet translated shows in English). Change it under <b>Language</b> in the app’s settings. · This website comes in Thai and English (the TH/EN switch at the top).'))},
+      P('ได้ 3 ภาษา: ไทย อังกฤษ และจีน (ส่วนที่ยังแปลไม่ครบจะแสดงเป็นภาษาอังกฤษ) เปลี่ยนได้ที่การตั้งค่าในแอป หัวข้อ <b>ภาษา</b> · เว็บไซต์นี้มีไทยและอังกฤษ (ปุ่ม TH/EN ด้านบน)',
+        '3 languages: Thai, English and Chinese (anything not yet translated shows in English). Change it under <b>Language</b> in the app’s settings. · This website comes in Thai and English (the TH/EN switch at the top).'))},
 
   {id:'cars',title:['รถและการดูแลรถ','Cars and upkeep'],body:
     Q('เรียกช่างจากหน้าแรก (ด่วน / ไม่ด่วน)','Calling a mechanic from Home (urgent / not urgent)',

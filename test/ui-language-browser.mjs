@@ -5,7 +5,7 @@ import {readFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import vm from 'node:vm';
-const root=resolve(import.meta.dirname,'..'),codes=['th','en','zh','ja','ko','id','vi','ms','de','fr','es','pt'],packs={};
+const root=resolve(import.meta.dirname,'..'),codes=['th','en','zh'],packs={};
 for(const code of codes.filter(c=>!['th','en'].includes(c))){const ctx={window:{}};vm.runInNewContext(await readFile(resolve(root,'i18n/home-'+code+'.js'),'utf8'),ctx);packs[code]=ctx.window.CENDON_L10N.t}
 const html=`<!doctype html><meta charset="utf-8"><script>let current='en';window.spireLang=()=>current;window.spireOnLang=()=>{};window.setLanguage=code=>{current=code;localStorage.setItem('spire_lang',JSON.stringify(code));dispatchEvent(new CustomEvent('cendon:preferences',{detail:{lang:code}}))};</script>
 <h1 id="heading">ร้านของฉัน</h1><button id="edit">แก้ไขร้าน</button><div id="dynamic"></div><input id="field" value="แก้ไขร้าน" placeholder="ชื่อร้าน"><div class="nt" id="name">แก้ไขร้าน</div><div class="msg" id="message">ร้านของฉัน</div><div class="about" id="description">ตั้งค่า</div><script src="/i18n/ui-en.js"></script><script src="/ui-language.js"></script>`;
@@ -30,5 +30,5 @@ try{
   await page.evaluate(()=>{document.getElementById('later').textContent='ร้านของฉัน'});await page.waitForFunction(()=>document.getElementById('later')?.textContent==='My shop');
   await page.evaluate(()=>setLanguage('th'));await page.waitForFunction(()=>document.getElementById('later')?.textContent==='ร้านของฉัน');
   let changes=await page.evaluate(()=>{window.changes=0;new MutationObserver(m=>changes+=m.length).observe(document.body,{subtree:true,childList:true,characterData:true});return changes});await page.waitForTimeout(300);changes=await page.evaluate(()=>changes);assert.ok(changes<10,'localization does not loop over its own writes');
-  assert.deepEqual(errors,[]);console.log('PASS: 12 UI languages + live switching + late panels + changed labels + Thai restoration + user names/messages/descriptions/input preserved + no repaint loop');
+  assert.deepEqual(errors,[]);console.log('PASS: 3 launch UI languages (th · en · zh) + live switching + late panels + changed labels + Thai restoration + user names/messages/descriptions/input preserved + no repaint loop');
 }finally{await browser.close();server.closeAllConnections();await new Promise(r=>server.close(r))}

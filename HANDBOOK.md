@@ -186,7 +186,7 @@ about/help/terms/privacy.html   สร้างจาก site/ ด้วย node
 404.html          หน้าไม่พบ (สร้างจาก site/content/notfound.mjs)
 tech.html techs.html   ลิงก์เก่า → ส่งต่อไปหน้าแรก / ตลาดช่าง
 *.js (73 ไฟล์) *.css (21 ไฟล์)   สคริปต์และสไตล์ที่ใช้ร่วมกัน (ภาค 10.3)
-i18n/             คำแปล: ui-en.js (ไทย→อังกฤษ) + home-<ภาษา>.js อีก 10 ภาษา
+i18n/             คำแปล: ui-en.js (ไทย→อังกฤษ) + home-zh.js (จีน) · อีก 9 ภาษาเก็บไว้เปิดทีหลัง
 functions/        Cloudflare Pages Functions: tech/ service/ category/ sitemaps/
 site/             ตัวสร้างหน้าคงที่ (content/*.mjs → *.html)
 sw.js             service worker — เลขแคชอยู่ที่นี่
@@ -1310,6 +1310,9 @@ const SHELL_ROUTES = new Set(['/', '/index', '/garage', '/news', '/spares', '/pr
 
 - ภาษาที่รองรับ: ไทย · อังกฤษ · 中文 · 日本語 · 한국어 · Indonesia · Tiếng Việt · Melayu · Deutsch · Français · Español · Português (ตัดอาหรับออกเพราะบั๊ก RTL)
 - `ui-language.js` แปล DOM: ข้อความไทย → พจนานุกรม `i18n/ui-en.js` → ชุดภาษา `i18n/home-<lang>.js`
+- **เปิดตัวในไทย: ไทย · อังกฤษ · จีน เท่านั้น** — รายการเดียวกันทุกที่ (`index.html` ตัวโหลดก่อนวาด + `LANGS` · `LOCALES` ในหน้า การาจ/นิตยสาร/บัญชี/แชต/อะไหล่ · `ui-language.js` · `cloud-swap.js` · `call-session.js` · `valet.js`/`valet-core.js` · เว็บ about/help) — เทสต์ `i18n-home` คุมให้ตรงกัน
+  - คนที่เคยเลือกภาษาอื่นไว้: เดาจากภาษาเครื่อง (ไทย/อังกฤษ/จีน) ไม่ตรงเลย = อังกฤษ · ไฟล์ `i18n/home-<lang>.js` อีก 9 ภาษายังอยู่ ต้องโหลดได้และถูกต้อง แต่ข้อความใหม่บังคับแปลแค่จีน · จะเปิดภาษาไหนเพิ่ม: ใส่รหัสกลับทุกจุดข้างบน แล้วเติมคำแปลให้ครบตามที่เทสต์บอก
+  - ตัวโหลดชุดคำแปลของ `ui-language.js` ใช้เวอร์ชันเดียวกับหน้าแรก (`?v=32`) และใช้ชุดที่หน้าแรกโหลดไว้แล้ว ไม่โหลดซ้ำ
 - ในโค้ดใช้ `T("ไทย","English")` / `window.spireT(th, en)` — **ข้อความใหม่ต้องเพิ่มคำแปลในทุกชุดภาษา**
 - ข้อความไทยที่อยู่ใน HTML ตรง ๆ ต้องมีใน `i18n/ui-en.js` ไม่งั้นโหมดอังกฤษจะเห็นไทยหลุด
 - AI ตอบตามภาษาที่ผู้ใช้เลือก (`languageRule(body.lang)` ฝั่ง Worker)

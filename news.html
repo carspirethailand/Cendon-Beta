@@ -12,7 +12,7 @@
 <script src="/partner-state.js?v=2"></script>
 <script src="/display-prefs.js?v=6" defer></script>
 <script src="/i18n/ui-en.js?v=4" defer></script>
-<script src="/ui-language.js?v=15" defer></script>
+<script src="/ui-language.js?v=16" defer></script>
 <script src="/partner-entry.js?v=2"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
 <link rel="stylesheet" href="/account.css?v=2026-10-16-login5">
@@ -22,7 +22,7 @@
 <script src="/garage-rules.js?v=5" defer></script>
 <script src="/garage-data.js?v=2" defer></script>
 <script src="/input-guard.js?v=7" defer></script>
-<script src="/cloud-swap.js?v=5" defer></script>
+<script src="/cloud-swap.js?v=6" defer></script>
 <meta charset="UTF-8"/>
 <!-- ที่อยู่แบบลึก (/news/…) — ไฟล์ประกอบทุกตัวอ้างจากรากเว็บเสมอ -->
 <base href="/">
@@ -4075,19 +4075,11 @@ const D=document;
 
 /* ภาษาที่เปิดให้เลือก — ชื่อเขียนด้วยภาษาของตัวเองเสมอ
    คนเลือกภาษาตัวเองได้โดยไม่ต้องอ่านภาษาที่ตัวเองไม่รู้จักก่อน */
+/* เปิดตัวในไทย: ไทย · อังกฤษ · จีน (คนที่เคยเลือกภาษาอื่น → เดาจากเครื่อง ไม่ตรง = อังกฤษ) */
 const LOCALES=[
   {c:"th", name:"ไทย",          flag:"🇹🇭"},
   {c:"en", name:"English",      flag:"🇬🇧"},
-  {c:"zh", name:"中文",          flag:"🇨🇳"},
-  {c:"ja", name:"日本語",        flag:"🇯🇵"},
-  {c:"ko", name:"한국어",        flag:"🇰🇷"},
-  {c:"id", name:"Indonesia",    flag:"🇮🇩"},
-  {c:"vi", name:"Tiếng Việt",   flag:"🇻🇳"},
-  {c:"ms", name:"Melayu",       flag:"🇲🇾"},
-  {c:"de", name:"Deutsch",      flag:"🇩🇪"},
-  {c:"fr", name:"Français",     flag:"🇫🇷"},
-  {c:"es", name:"Español",      flag:"🇪🇸"},
-  {c:"pt", name:"Português",    flag:"🇵🇹"}
+  {c:"zh", name:"中文",          flag:"🇨🇳"}
 ];
 /* เลิกมีภาษาอาหรับ (อ่านขวาไปซ้าย ทำให้หน้าเพี้ยนหลายจุด) — คนที่เคยเลือกไว้จะกลับไปใช้ภาษาตามเครื่อง */
 const CODES=LOCALES.map(x=>x.c);
@@ -4366,7 +4358,7 @@ let auth=null,useFb=false;
 })();
 /* ค่าตั้งต้นต้องมาจากตัวเลือกภาษาชุดกลาง ไม่ใช่ "th" ตายตัว
    ไม่งั้น applyLang() ตอนบูตจะเขียน "th" ทับสิ่งที่ชุดกลางเลือกไว้ */
-let currentUser=LS.get("cachedUser",null),lang=LS.get("lang",(["th","en","ja","zh","de","es"].indexOf((window.spireLang&&window.spireLang())||"")>=0?window.spireLang():"th"));
+let currentUser=LS.get("cachedUser",null),lang=LS.get("lang",(["th","en","zh"].indexOf((window.spireLang&&window.spireLang())||"")>=0?window.spireLang():"th"));if(!["th","en","zh"].includes(lang))lang=(window.spireLang&&window.spireLang())||"en";
 try{window.BACKEND_URL=BACKEND_URL;Object.defineProperty(window,"spireAuth",{configurable:true,get:function(){return auth}});Object.defineProperty(window,"lang",{configurable:true,get:function(){return lang},set:function(v){lang=v}});Object.defineProperty(window,"currentUser",{configurable:true,get:function(){return currentUser},set:function(v){currentUser=v}});window.spireAwaitUser=function(ms){return new Promise(function(res){try{if(!auth)return res(null);if(auth.currentUser)return res(auth.currentUser);var done=false;var t=setTimeout(function(){if(done)return;done=true;res(auth.currentUser||null)},ms||8000);var un=auth.onAuthStateChanged(function(u){if(done)return;done=true;clearTimeout(t);try{un&&un()}catch(e){}res(u||null)});}catch(e){res(null)}})};}catch(e){}
 let currentTheme = LS.get("theme", "warm");
 let wireframeOpacity = LS.get("opacity", 0.15);

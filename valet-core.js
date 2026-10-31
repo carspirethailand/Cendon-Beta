@@ -240,7 +240,7 @@ function setTheme(v){
 
 /* Private, reversible settings only. No arbitrary storage key, URL, script,
    account role, billing option or notification/location permission is accepted. */
-const SETTING_VALUES=Object.freeze({theme:['light','dark'],lang:['th','en','ja','zh','ko','id','vi','ms','de','fr','es','pt'],depth:['0','1','2'],distance:['km','mi'],
+const SETTING_VALUES=Object.freeze({theme:['light','dark'],lang:['th','en','zh'],depth:['0','1','2'],distance:['km','mi'],
   currency:['THB','USD','EUR','GBP','JPY','CNY','SGD','AUD','CAD','CHF','NZD','HKD','MYR','IDR','KRW','VND','INR','TWD','AED']});
 function settingValue(key,value){
   const v=String(value??'');

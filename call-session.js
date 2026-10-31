@@ -560,7 +560,7 @@ $("callUI")&&$("callUI").addEventListener("pointerdown",wakeCall);
   let callLanguage=global.spireLang?.()||lang;
   function languageChanged(event){
     const code=event.detail?.lang||global.spireLang?.();
-    if(!['th','en','zh','ja','ko','id','vi','ms','de','fr','es','pt'].includes(code)||code===callLanguage)return;
+    if(!['th','en','zh'].includes(code)||code===callLanguage)return;
     if(event.detail?.uid&&event.detail.uid!==host.getUser?.()?.uid)return;
     callLanguage=code;if(!callActive||!callWS||callWS.readyState!==1)return;
     try{callWS.send(JSON.stringify({clientContent:{turns:[{role:'user',parts:[{text:'[App preference] Default response language is now '+code+'. Follow the latest substantive user language or explicit request. Do not answer or act on this preference update.'}]}],turnComplete:false}}))}catch{}

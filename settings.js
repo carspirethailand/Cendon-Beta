@@ -90,12 +90,14 @@ function mainHTML(){
   const ex=host.extra&&host.extra.html?`<div class="st-lbl">${host.extra.title}</div><div class="st-card st-x">${host.extra.html()}</div>`:'';
   const staff=ADMIN.includes(u.role)?row({ic:'ti-shield-check',title:t('แผงควบคุมแอดมิน','Admin panel'),href:'/admin'}):'';
   const lineH=(()=>{try{return localStorage.getItem('cendon_line_card')==='0'?' hidden':''}catch(e){return ''}})();
+  /* ลูกค้าที่ยังไม่สมัคร: ชวนเป็นช่างเป็นแถวเรียบ ๆ ท้ายหน้า ไม่ใช่โฆษณาใหญ่บนสุด · เจ้าของร้าน/ผู้สมัครยังเห็นการ์ดบนสุดเหมือนเดิม */
+  const pc=partnerHTML(),pLate=pc.includes('st-p-none');
   return `<div class="st-head"><button type="button" class="st-back" data-st="back" aria-label="${t('กลับ','Back')}"><i class="ti ti-arrow-left" aria-hidden="true"></i></button>
-      <h1>${t('ตั้งค่า','Settings')}</h1></div>
+      <h1>${t('บัญชี','Account')}</h1></div>
     <div class="st-me"><span class="st-av">${av}</span>
       <span class="st-me-tx"><b>${esc(name||t('บัญชีของคุณ','Your account'))}</b><small>${esc(email)}</small></span>
       <button type="button" class="st-pill" data-st="name">${t('แก้ไข','Edit')}</button></div>
-    ${partnerHTML()}
+    ${pLate?'':pc}
     <div class="st-lbl">${t('การตั้งค่าแอป','App settings')}</div>
     <div class="st-card">
       ${row({ic:'ti-world',title:t('ภาษา','Language'),act:'lang',val:esc(loc?loc.name:curLang().toUpperCase())})}
@@ -119,6 +121,7 @@ function mainHTML(){
       ${row({ic:'ti-file-text',title:t('ข้อกำหนดการใช้งาน','Terms of use'),href:'/terms'})}
       ${row({ic:'ti-shield-lock',title:t('นโยบายความเป็นส่วนตัว','Privacy policy'),href:'/privacy'})}
     </div>
+    ${pLate?pc:''}
     <div class="st-lbl">${t('บัญชีของฉัน','My account')}</div>
     <div class="st-card">
       ${staff}

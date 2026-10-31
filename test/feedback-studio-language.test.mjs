@@ -16,7 +16,7 @@ test('cancellation notifications use the recorded actor, never infer who cancell
   }
 });
 test('all main pages use the shared UI dictionary while authored user content is excluded',()=>{
-  for(const file of ['index','garage','chat','news','profile','spares']){const s=read(file+'.html');assert.match(s,/i18n\/ui-en\.js\?v=4/);assert.match(s,/ui-language\.js\?v=15/)}
+  for(const file of ['index','garage','chat','news','profile','spares']){const s=read(file+'.html');assert.match(s,/i18n\/ui-en\.js\?v=4/);assert.match(s,/ui-language\.js\?v=16/)}
   /* นิตยสาร: ภาษาอื่นนอกจากไทย/อังกฤษใช้ตัวแปลกลาง (เดิมตกเป็นไทยทั้งหน้า) และวันที่ตามภาษาที่เลือก */
   const news=read('news.html');assert.match(news,/const MZT=\(th,en\)=>\(window\.spireT\?window\.spireT\(th,en\)/);assert.match(news,/toLocaleDateString\(lang==="th"\?"th-TH":lang==="en"\?"en-GB":lang,/);
   const module=read('ui-language.js');assert.match(module,/\.msg,\.bubble,\.nt,\.nm,\.about/);assert.doesNotMatch(module,/fetch\(/);
@@ -32,9 +32,10 @@ test('an active call accepts a saved language change without reconnecting or gen
   const s=read('call-session.js'),a=s.indexOf('  let callLanguage='),b=s.indexOf('  /* ข้อความจากระบบเข้าสาย',a),sent=[],listeners={};
   const context={global:{spireLang:()=> 'en',addEventListener:(n,f)=>listeners[n]=f},lang:'en',host:{getUser:()=>({uid:'one'})},callActive:true,callWS:{readyState:1,send:x=>sent.push(JSON.parse(x))}};
   vm.createContext(context);vm.runInContext(s.slice(a,b),context);
-  listeners['cendon:preferences']({detail:{uid:'one',lang:'ja'}});assert.equal(sent.length,1);assert.equal(sent[0].clientContent.turnComplete,false);assert.match(sent[0].clientContent.turns[0].parts[0].text,/now ja/);
-  listeners['cendon:preferences']({detail:{uid:'one',lang:'ja'}});assert.equal(sent.length,1);
-  listeners['cendon:preferences']({detail:{uid:'other',lang:'de'}});assert.equal(sent.length,1);
+  listeners['cendon:preferences']({detail:{uid:'one',lang:'ja'}});assert.equal(sent.length,0,'launch languages only: th · en · zh');
+  listeners['cendon:preferences']({detail:{uid:'one',lang:'zh'}});assert.equal(sent.length,1);assert.equal(sent[0].clientContent.turnComplete,false);assert.match(sent[0].clientContent.turns[0].parts[0].text,/now zh/);
+  listeners['cendon:preferences']({detail:{uid:'one',lang:'zh'}});assert.equal(sent.length,1);
+  listeners['cendon:preferences']({detail:{uid:'other',lang:'th'}});assert.equal(sent.length,1);
 });
 test('Home and Studio expose a live language setter without reloading or discarding an open form',()=>{
   const s=read('index.html'),a=s.indexOf('window.spireLang=()=>LANG;'),b=s.indexOf('\nconst $=',a),calls=[];

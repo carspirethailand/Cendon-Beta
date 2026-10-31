@@ -88,6 +88,8 @@
     const u=new URL(a.href,W.location);if(u.origin!==W.location.origin)return;
     if(u.hash&&u.pathname===W.location.pathname&&u.search===W.location.search)return;
     if(W.Nav?.started&&W.Nav.owns(u.href))return;
+    // แท็บล่าง: ตัวเลือกเริ่มไหลไปแท็บที่แตะทันที (ตัวจัดการของแถบเองไม่ได้รับคลิกนี้ เพราะตรงนี้หยุดคลิกไว้ก่อน)
+    if(a.matches('#mnav [data-mnav]'))try{W.CendonNav?.press?.(a.dataset.mnav);}catch{}
     if(go(u.href)){e.preventDefault();e.stopImmediatePropagation();}
     else{e.preventDefault();P.location.assign(u.href);}
   },true);

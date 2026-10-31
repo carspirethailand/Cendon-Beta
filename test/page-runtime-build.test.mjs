@@ -19,7 +19,7 @@ test('critical head bundles preserve order and never cross inline/deferred/style
  const dir=await mkdtemp(join(tmpdir(),'cendon-runtime-test-'));try{
   for(const n of ['app-navigation-bridge','tab-shell','launch-gate','auth-gate','account-scope','garage-rules','garage-data'])await writeFile(join(dir,n+'.js'),'window.order.push("'+n+'");');
   await writeFile(join(dir,'account-scope.js'),'window.script=document.currentScript;');
-  const html='<html><head><script src="/app-navigation-bridge.js?v=6"></script>\n<script src="/tab-shell.js?v=6"></script><script>window.boundary=1;</script><script src="/launch-gate.js"></script><style>body{color:red}</style><script src="/auth-gate.js"></script><script src="/account-scope.js"></script><script src="/garage-rules.js" defer></script><script id="keep-id" src="/garage-data.js"></script></head><body></body></html>';
+  const html='<html><head><script src="/app-navigation-bridge.js?v=7"></script>\n<script src="/tab-shell.js?v=6"></script><script>window.boundary=1;</script><script src="/launch-gate.js"></script><style>body{color:red}</style><script src="/auth-gate.js"></script><script src="/account-scope.js"></script><script src="/garage-rules.js" defer></script><script id="keep-id" src="/garage-data.js"></script></head><body></body></html>';
   for(const name of ['index','garage','profile','news','spares','chat'])await writeFile(join(dir,name+'.html'),html);
   const result=await buildPageRuntime(dir),out=await readFile(join(dir,'garage.html'),'utf8');assert.equal(result.headBundles,6);assert.equal(result.assets,1);assert.equal(result.inlineBytes,0);
   const url=out.match(/<script fetchpriority="high" src="(\/runtime\/[^"']+)"/)[1],body=await readFile(join(dir,url),'utf8');assert.ok(body.indexOf('window.order.push("app-navigation-bridge")')<body.indexOf('window.order.push("tab-shell")'));assert.ok(out.indexOf('src="'+url+'"')<out.indexOf('window.boundary=1'));
@@ -51,6 +51,6 @@ test('tab navigation never uses a timer as proof of readiness, and validates sta
 });
 test('hidden briefs do not build a canvas on startup, and Profile paints its actual first screen before background tools',async()=>{
  for(const file of ['garage','profile','news','spares']){const s=await readFile(new URL('../'+file+'.html',import.meta.url),'utf8');assert.ok(s.includes('if(!wrap||D.body.dataset.briefOpen!=="1")return'));assert.ok(!s.includes('fillWidget(); ensureView(); syncOthers(); garageSummary();'))}
- const p=await readFile(new URL('../profile.html',import.meta.url),'utf8');assert.ok(p.indexOf('<script src="/settings.js?v=10"></script>')<p.indexOf('<script id="brief-js">'));assert.ok(p.includes('window.__SPIRE_PAGE__="profile";'));
+ const p=await readFile(new URL('../profile.html',import.meta.url),'utf8');assert.ok(p.indexOf('<script src="/settings.js?v=11"></script>')<p.indexOf('<script id="brief-js">'));assert.ok(p.includes('window.__SPIRE_PAGE__="profile";'));
  const css=await readFile(new URL('../settings.css',import.meta.url),'utf8');assert.match(css,/html\[data-gate="1"\] #v-settings\.st-float/);
 });

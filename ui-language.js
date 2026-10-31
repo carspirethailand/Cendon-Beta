@@ -1,7 +1,7 @@
 /* Shared UI-only localization. User messages, shop/car names and form values are never translated. */
 (function(W,D){
 'use strict';if(W.CendonLocale)return;
-const CODES=['th','en','zh','ja','ko','id','vi','ms','de','fr','es','pt'],EN=W.CENDON_UI_EN||{},REV=Object.fromEntries(Object.entries(EN).map(([th,en])=>[en,th])),packs=new Map(),loading=new Set(),raw=new WeakMap(),attrs=new WeakMap();
+const CODES=['th','en','zh'],EN=W.CENDON_UI_EN||{},REV=Object.fromEntries(Object.entries(EN).map(([th,en])=>[en,th])),packs=new Map(),loading=new Set(),raw=new WeakMap(),attrs=new WeakMap();
 let queued=false,paintLanguage=null;const dirtyRoots=new Set();
 const excluded='script,style,noscript,input,textarea,option,[contenteditable],[data-no-i18n],[data-user-name],.msg,.bubble,.nt,.nm,.about,.markdown,.chat-message,.st-me,.who,.av,.shop-name,.tech-name,.car-name,#msgs';
 function lang(){if(paintLanguage)return paintLanguage;let code=W.spireLang?.();if(!CODES.includes(code))try{code=JSON.parse(localStorage.getItem('spire_lang'))}catch{}return CODES.includes(code)?code:'th'}
@@ -47,8 +47,10 @@ function paint(){
 }
 function schedule(root){if(!root){dirtyRoots.clear();if(D.body)dirtyRoots.add(D.body)}else if(!dirtyRoots.has(D.body))dirtyRoots.add(root);if(dirtyRoots.size>24){dirtyRoots.clear();dirtyRoots.add(D.body)}if(!queued){queued=true;requestAnimationFrame(paint)}}
 function load(){
-  const code=lang();if(!['th','en'].includes(code)&&!packs.has(code)&&!loading.has(code)){
-    loading.add(code);const script=D.createElement('script');script.src='/i18n/home-'+code+'.js?v=29';script.dataset.noI18n='';
+  /* หน้าที่โหลดคำแปลไว้ก่อนวาดแล้ว (หน้าแรก) ใช้ชุดนั้นเลย ไม่โหลดซ้ำ · เวอร์ชันตรงกับตัวโหลดของหน้าแรก ไม่งั้นได้ชุดเก่าจากแคช */
+  const code=lang();if(W.CENDON_L10N?.lang===code)pack(code);
+  if(!['th','en'].includes(code)&&!packs.has(code)&&!loading.has(code)){
+    loading.add(code);const script=D.createElement('script');script.src='/i18n/home-'+code+'.js?v=32';script.dataset.noI18n='';
     script.onload=()=>{pack(code);loading.delete(code);W.dispatchEvent(new CustomEvent('cendon:language-ready',{detail:{lang:code}}));schedule()};script.onerror=()=>{loading.delete(code)};D.head.append(script);
   }schedule();
 }

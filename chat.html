@@ -2,7 +2,7 @@
 <html lang="th" data-ctheme="midnight">
 <head>
 <script>/* ธีมตั้งแต่เฟรมแรก (ก่อน CSS วาด) — เดิมหน้าเปิดด้วยธีมตั้งต้นแวบหนึ่งแล้วค่อยสลับ (แชตขึ้นจอดำ) ดูเหมือนกระพริบ/กระตุก */(function(){try{var O={warm:"light",pearl:"light",emerald:"light",plant:"light",moss:"light",carbon:"dark",night:"dark",midnight:"dark",cyber:"dark",aurora:"dark",ocean:"dark",sunset:"dark",magma:"dark"},v=null;try{v=JSON.parse(localStorage.getItem("spire_theme"))}catch(e){}if(typeof v!=="string")try{v=JSON.parse(localStorage.getItem("spire_chatTheme"))}catch(e){}v=v==="light"||v==="dark"?v:(O[v]||"light");var e=document.documentElement;e.setAttribute("data-theme",v);e.setAttribute("data-ctheme",v)}catch(x){}})();</script>
-<script src="/app-navigation-bridge.js?v=6"></script>
+<script src="/app-navigation-bridge.js?v=7"></script>
 <script src="/launch-gate.js?v=1"></script>
 <script src="/auth-gate.js?v=2"></script>
 <script src="/account-scope.js?v=3"></script>
@@ -11,7 +11,7 @@
 <script src="/partner-state.js?v=2"></script>
 <script src="/display-prefs.js?v=6" defer></script>
 <script src="/i18n/ui-en.js?v=4" defer></script>
-<script src="/ui-language.js?v=15" defer></script>
+<script src="/ui-language.js?v=16" defer></script>
 <script src="/partner-entry.js?v=2"></script>
 <script src="/console-entry.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
@@ -19,15 +19,15 @@
 <script src="/cendon-tour.js" defer></script>
 <script src="/account-actions.js?v=3" defer></script>
 <script src="/account.js?v=2026-10-28-r1" defer></script>
-<link rel="stylesheet" href="/settings.css?v=7">
-<script src="/settings.js?v=10" defer></script>
+<link rel="stylesheet" href="/settings.css?v=8">
+<script src="/settings.js?v=11" defer></script>
 <script src="/sheet-drag.js?v=1" defer></script>
 <script src="/garage-rules.js?v=5" defer></script>
 <script src="/garage-data.js?v=2" defer></script>
 <script src="/mileage-session.js?v=1" defer></script>
 <script src="/mileage-review.js?v=1" defer></script>
 <script src="/input-guard.js?v=7" defer></script>
-<script src="/cloud-swap.js?v=5" defer></script>
+<script src="/cloud-swap.js?v=6" defer></script>
 <meta charset="UTF-8"/>
 <!-- ที่อยู่แบบลึก (/chat/…) — ไฟล์ประกอบทุกตัวอ้างจากรากเว็บเสมอ -->
 <base href="/">
@@ -3057,14 +3057,14 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 <script src="call-surface.js?v=2026-10-21-r1" defer></script>
 <script src="call-shell.js?v=1" defer></script>
 <script src="garage-care.js?v=1" defer></script>
-<script src="call-session.js?v=2026-10-23-language1" defer></script>
+<script src="call-session.js?v=2026-10-31-lang3" defer></script>
 <link rel="stylesheet" href="valet.css?v=4">
 <link rel="stylesheet" href="ai-ui.css?v=1">
-<script src="valet-core.js?v=8" defer></script>
+<script src="valet-core.js?v=9" defer></script>
 <script src="chat-garage.js?v=1" defer></script>
 <script src="chat-render.js?v=3" defer></script>
 <script src="chat-jobs.js?v=4" defer></script>
-<script src="valet.js?v=9" defer></script>
+<script src="valet.js?v=10" defer></script>
 <script src="ai-ui.js?v=1" defer></script>
 <script src="bell.js?v=19" defer></script>
 <script src="drop.js?v=5" defer></script>
@@ -3077,7 +3077,7 @@ html[data-idle="1"] *{animation-play-state:paused!important}
 ::view-transition-new(root){animation-duration:.26s}
 @media(prefers-reduced-motion:reduce){@view-transition{navigation:none}}
 </style>
-<link rel="stylesheet" href="stability.css?v=2026-10-27-zoom">
+<link rel="stylesheet" href="stability.css?v=2026-10-31-tabs">
 <link rel="stylesheet" href="/primary-material.css?v=1">
 <link rel="stylesheet" href="call-ui.css?v=2026-10-19-inst1">
 <script src="car-sync.js"></script>
@@ -4211,19 +4211,11 @@ const D=document;
 
 /* ภาษาที่เปิดให้เลือก — ชื่อเขียนด้วยภาษาของตัวเองเสมอ
    คนเลือกภาษาตัวเองได้โดยไม่ต้องอ่านภาษาที่ตัวเองไม่รู้จักก่อน */
+/* เปิดตัวในไทย: ไทย · อังกฤษ · จีน (คนที่เคยเลือกภาษาอื่น → เดาจากเครื่อง ไม่ตรง = อังกฤษ) */
 const LOCALES=[
   {c:"th", name:"ไทย",          flag:"🇹🇭"},
   {c:"en", name:"English",      flag:"🇬🇧"},
-  {c:"zh", name:"中文",          flag:"🇨🇳"},
-  {c:"ja", name:"日本語",        flag:"🇯🇵"},
-  {c:"ko", name:"한국어",        flag:"🇰🇷"},
-  {c:"id", name:"Indonesia",    flag:"🇮🇩"},
-  {c:"vi", name:"Tiếng Việt",   flag:"🇻🇳"},
-  {c:"ms", name:"Melayu",       flag:"🇲🇾"},
-  {c:"de", name:"Deutsch",      flag:"🇩🇪"},
-  {c:"fr", name:"Français",     flag:"🇫🇷"},
-  {c:"es", name:"Español",      flag:"🇪🇸"},
-  {c:"pt", name:"Português",    flag:"🇵🇹"}
+  {c:"zh", name:"中文",          flag:"🇨🇳"}
 ];
 /* เลิกมีภาษาอาหรับ (อ่านขวาไปซ้าย ทำให้หน้าเพี้ยนหลายจุด) — คนที่เคยเลือกไว้จะกลับไปใช้ภาษาตามเครื่อง */
 const CODES=LOCALES.map(x=>x.c);
@@ -4794,10 +4786,7 @@ window.spireApplySetup=()=>{ const k=level();
     <div class="lang-row">
       <button class="lang-opt" data-l="th" onclick="setLang('th')">ไทย</button>
       <button class="lang-opt" data-l="en" onclick="setLang('en')">English</button>
-      <button class="lang-opt" data-l="ja" onclick="setLang('ja')">日本語</button>
       <button class="lang-opt" data-l="zh" onclick="setLang('zh')">中文</button>
-      <button class="lang-opt" data-l="de" onclick="setLang('de')">Deutsch</button>
-      <button class="lang-opt" data-l="es" onclick="setLang('es')">Español</button>
     </div>
     <div class="sheet-label" data-t="s.theme">ธีม</div>
     <div class="theme-row">
@@ -5015,7 +5004,7 @@ let auth=null,useFb=false,currentUser=LS.get("cachedUser",null),myRole="user",is
 })();
 /* ค่าตั้งต้นต้องมาจากตัวเลือกภาษาชุดกลาง ไม่ใช่ "th" ตายตัว
    ไม่งั้น applyLang() ตอนบูตจะเขียน "th" ทับสิ่งที่ชุดกลางเลือกไว้ */
-let lang=LS.get("lang",(["th","en","ja","zh","de","es"].indexOf((window.spireLang&&window.spireLang())||"")>=0?window.spireLang():"th"));
+let lang=LS.get("lang",(["th","en","zh"].indexOf((window.spireLang&&window.spireLang())||"")>=0?window.spireLang():"th"));if(!["th","en","zh"].includes(lang))lang=(window.spireLang&&window.spireLang())||"en";
 /* auth · currentUser · lang · BACKEND_URL ประกาศด้วย let/const ที่ระดับบนสุด
    ของสคริปต์ ซึ่งภาษาไม่เอาขึ้นไปไว้บน window เลเยอร์อื่น (หน้าเข้าสู่ระบบ
    และตัวช่วยตั้งค่า) จึงมองไม่เห็น แล้วขึ้นว่า "ระบบล็อกอินยังไม่พร้อม"
@@ -10761,7 +10750,7 @@ setInterval(()=>{
    เว็บเปล่าเตือนอะไรไม่ได้เลย ผู้ใช้ต้องนึกถึงเองถึงจะเปิด
    ฟีเจอร์ดีแค่ไหนก็ไร้ค่าถ้าไม่มีใครเปิดมาเจอ ตรงนี้จึงสำคัญที่สุด */
 const PUSHOK=()=>("serviceWorker" in navigator)&&("PushManager" in window)&&("Notification" in window);
-const isStandalone=()=>window.matchMedia("(display-mode: standalone)").matches||
+const isStandalone=()=>window.matchMedia("(display-mode: standalone),(display-mode: fullscreen)").matches||
   window.navigator.standalone===true;
 let installEvt=null;
 window.addEventListener("beforeinstallprompt",e=>{ e.preventDefault(); installEvt=e; renderNotifCard() });
@@ -11842,7 +11831,7 @@ setInterval(flush,60000);
 setInterval(pull,15*60000);
 })();
 </script>
-<script src="mobile-ui.js?v=2" defer></script>
+<script src="mobile-ui.js?v=6" defer></script>
 <script src="nav-chat.js" defer></script>
 <script id="perfjs">
 /* ══════════════════════════════════════════════════════════════════

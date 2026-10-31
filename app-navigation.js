@@ -9,7 +9,7 @@ function scheduleWorker(){
   if(workerScheduled||!('serviceWorker'in navigator))return;workerScheduled=true;
   // Installing/updating the worker prefetches public code. Never compete with
   // the initial view's real controls, authentication or first network requests.
-  const afterLoad=()=>{const register=()=>navigator.serviceWorker.register('/sw.js').catch(()=>{});if('requestIdleCallback'in W)W.requestIdleCallback(register,{timeout:4000});else setTimeout(register,0);};
+  const afterLoad=()=>{const gate=D.getElementById('appOpening');if(gate&&!gate.hidden){setTimeout(afterLoad,50);return;}const register=()=>navigator.serviceWorker.register('/sw.js').catch(()=>{});if('requestIdleCallback'in W)W.requestIdleCallback(register,{timeout:4000});else setTimeout(register,0);};
   if(D.readyState==='complete')afterLoad();else W.addEventListener('load',afterLoad,{once:true});
 }
 const progress=D.getElementById('appProgress'),notice=D.getElementById('appNotice'),callButton=D.getElementById('appCall');
@@ -35,7 +35,7 @@ function ready(ns,localHistory){const r=frames.get(ns);if(r&&wrongDocument(r)){r
     if(r.el===initial&&!busy&&barba){barba.history.add(localHistory.root,'barba','replace');for(const u of localHistory.layers)barba.history.add(u,'barba','push');current=localHistory.layers.at(-1);}
     else if(busy)r.el.contentWindow.CendonView?.adoptSingleEntry();
   }
-  r.ready=true;r.el.classList.remove('is-preparing');if(ns===active)D.getElementById('appOpening').hidden=true;for(const wake of [...r.waiters])wake();r.el.contentDocument?.dispatchEvent(new Event('cendon:view-ready'));if(r.el===initial)scheduleWorker();
+  r.ready=true;r.el.classList.remove('is-preparing');if(ns===active){openingDone();tint();schedulePrewarm();}for(const wake of [...r.waiters])wake();r.el.contentDocument?.dispatchEvent(new Event('cendon:view-ready'));if(r.el===initial)scheduleWorker();
 }}
 function layer(ns,url,action){
   if(!barba||busy||ns!==active||namespace(url,origin)!==ns)return;
@@ -104,9 +104,9 @@ function waitReady(r,url){return new Promise((resolve,reject)=>{const start=Date
   if(!r.el.isConnected||r.failed||Date.now()-start>18000)return done(Error('view-unavailable'));
   timer=setTimeout(check,40);
 }r.waiters.add(check);check();});}
-async function prepare(url){
+async function prepare(url,background=false){
   const ns=namespace(url,origin);let r=frames.get(ns);
-  if(!r){frames.get(active)?.el.contentWindow.CendonPaint?.prepare(url);const el=D.createElement('iframe');el.className='app-view is-preparing';el.dataset.cendonView=ns;el.title='Cendon';el.allow='camera; microphone; geolocation; autoplay; clipboard-write; fullscreen';r=record(el,url);el.addEventListener('load',()=>{if(!el.isConnected)return;let registered=false;try{registered=!!el.contentWindow?.CendonView;}catch{}if(!registered){r.failed=true;for(const wake of [...r.waiters])wake();}});el.src=url;D.getElementById('appViews').append(el);}
+  if(!r){frames.get(active)?.el.contentWindow.CendonPaint?.prepare(url);const el=D.createElement('iframe');el.className='app-view is-preparing';el.inert=background;el.dataset.cendonView=ns;el.title='Cendon';el.allow='camera; microphone; geolocation; autoplay; clipboard-write; fullscreen';r=record(el,url);el.addEventListener('load',()=>{if(!el.isConnected)return;let registered=false;try{registered=!!el.contentWindow?.CendonView;}catch{}if(!registered){r.failed=true;for(const wake of [...r.waiters])wake();}});el.src=url;D.getElementById('appViews').append(el);}
   await waitReady(r,url);
   // Compare the view's real location too: a stale record would reveal it on the wrong layer.
   let at=r.url;try{at=r.el.contentWindow.location.href;}catch{}
@@ -126,10 +126,50 @@ function activate(r,url){
     was.el.classList.add('is-leaving');r.el.classList.remove('is-entering');void r.el.offsetWidth;r.el.classList.add('is-entering');
     clearTimeout(r.fade);r.fade=setTimeout(()=>{r.el.classList.remove('is-entering');for(const f of frames.values())if(f!==frames.get(active))f.el.classList.remove('is-leaving');},240);
   }
+  // ตัวเลือกแท็บล่าง: อ่านตำแหน่งในหน้าที่กำลังจะออก แล้วให้หน้าใหม่เลื่อนต่อจากตรงนั้นระหว่างจางเข้า (ดูเป็นชิ้นเดียวที่ไหลไป)
+  let navFrom=null;if(was&&was!==r)try{navFrom=was.el.contentWindow.CendonNav?.x();}catch{}
   // Never move a live iframe to another node: moving it restarts its document.
   for(const [name,f]of frames){const on=name===ns;f.el.classList.toggle('is-active',on);f.el.classList.remove('is-preparing');f.el.inert=!on;f.el.contentWindow.CendonView?.setHidden(!on);}
-  active=ns;current=url;r.used=Date.now();D.getElementById('appOpening').hidden=true;
-  D.title=r.el.contentDocument?.title||'Cendon';callUI();evict();
+  if(typeof navFrom==='number')try{r.el.contentWindow.CendonNav?.slideFrom(navFrom);}catch{}
+  active=ns;current=url;r.used=Date.now();openingDone();
+  D.title=r.el.contentDocument?.title||'Cendon';tint();callUI();evict();
+}
+// แท็บหลักเตรียมไว้ล่วงหน้า: แท็บที่ยังไม่เคยเปิดต้องโหลดและรันสคริปต์ทั้งหน้าตอนกด (วัดได้ 0.6–1.3 วิเมื่อ CPU ช้าแบบมือถือ) ส่วนครั้งที่สองแค่ ~0.1 วิ
+// จึงเตรียม การาจ · นิตยสาร · บัญชี ทีละหน้าเบื้องหลัง (ซ่อน กดไม่ได้) หลังหน้าแรกพร้อมและเครื่องว่าง · ข้ามเมื่อ: เครื่องแรมน้อย ประหยัดเน็ต/2G
+// แอปอยู่เบื้องหลัง หรือผู้ใช้กำลังเปลี่ยนหน้า · หน้าที่เตรียมไว้ไม่ขอตำแหน่ง (พยากรณ์อากาศ) จนกว่าจะเปิดจริง — ดู loadWx ในหน้านั้น ป๊อปอัปจึงไม่โผล่บนหน้าแรก
+// แชต AI ไม่เตรียม (อาจไปหยิบงาน AI ที่ค้างอยู่) · เตรียมไม่สำเร็จ = ทิ้งเฟรมนั้น แล้วกดจริงค่อยโหลดแบบเดิม
+const PREWARM=['garage','news','profile'];let prewarmPlanned=false;
+const idle=ms=>new Promise(r=>setTimeout(()=>'requestIdleCallback'in W?requestIdleCallback(r,{timeout:2000}):r(),ms));
+function schedulePrewarm(){if(prewarmPlanned)return;prewarmPlanned=true;prewarm().catch(()=>{});}
+async function prewarm(){
+  const c=navigator.connection;
+  if(limit<6||c?.saveData||/2g/.test(c?.effectiveType||''))return;
+  for(const ns of PREWARM){
+    await idle(800);
+    if(frames.has(ns))continue;
+    if(busy||queued||D.hidden||frames.size>=limit)return;
+    try{const r=await prepare(new URL(ROOTS[ns],origin).href,true);if(ns!==active)r.el.contentWindow.CendonView?.setHidden(true);}
+    catch{const r=frames.get(ns);if(r&&!r.ready&&ns!==active&&!calls.has(ns)&&!authOwners.has(ns)){try{r.el.contentWindow.CendonView?.disposeAuth?.();}catch{}r.el.remove();frames.delete(ns);}return;}
+  }
+}
+// หน้าเปิดแอป (#appOpening อยู่บนสุด) = ภาพเดียวกับหน้าเปิดของ Android ต่อเนื่องจนหน้าแรกพร้อม แล้วจางออกทันที (ไม่มีจังหวะเล่นของตัวเอง)
+// ปล่อยการกดผ่านตั้งแต่เริ่มจาง · ซ่อนจริงหลังจาง (hidden คือสัญญาณ "เปิดเสร็จ")
+const opening=D.getElementById('appOpening');let openingGone=false;
+function openingDone(){
+  if(openingGone||!opening)return;openingGone=true;
+  opening.classList.add('is-ready','is-out');setTimeout(()=>{opening.hidden=true;for(const r of frames.values())if(r.ready)r.el.contentDocument?.dispatchEvent(new Event('cendon:view-ready'));},300);
+}
+// หน้าแรกไม่ส่งสัญญาณพร้อม (หลุดไปหน้าอื่น สคริปต์หน้าเสีย) ก็ไม่ค้างหน้าเปิด: 6 วิแล้วเผยสิ่งที่อยู่ข้างใต้ (CSS มีกันค้างอีกชั้นที่ 10 วิ)
+setTimeout(openingDone,6000);
+// สีแถบสถานะของมือถือ: มือถืออ่าน theme-color จากเอกสารชั้นนอกสุดนี้เท่านั้น ส่วนแต่ละหน้าตั้งของตัวเองตามธีม (theme.js)
+// คัดลอกสีของหน้าที่เปิดอยู่ขึ้นมา และตามเมื่อหน้านั้นเปลี่ยนธีม — แถบบนจึงกลืนกับหัวหน้าทั้งธีมสว่างและมืด
+const shellTint=D.querySelector('meta[name="theme-color"]');let tintWatch=null;
+function tint(){
+  tintWatch?.disconnect();tintWatch=null;let m=null;
+  try{m=frames.get(active)?.el.contentDocument?.querySelector('meta[name="theme-color"]');}catch{}
+  if(!m||!shellTint)return;
+  const copy=()=>{const c=m.getAttribute('content');if(c&&shellTint.getAttribute('content')!==c)shellTint.setAttribute('content',c);};copy();
+  try{tintWatch=new MutationObserver(copy);tintWatch.observe(m,{attributes:true,attributeFilter:['content']});}catch{}
 }
 function evict(){
   for(const [name,r]of [...frames].sort((a,b)=>a[1].used-b[1].used)){

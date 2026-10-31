@@ -88,6 +88,7 @@ function mountNav(){
   const h=navHTML();
   if(n.dataset.h!==h){ n.innerHTML=h; n.dataset.h=h; if(n.querySelector('[data-mslot="account"]'))delete n.querySelector('[data-mslot="account"]').dataset.av }
   paintAvatar();
+  placeInd(true);watchInbox();
 }
 
 const FILES={home:"/",garage:"/garage",magazine:"/news",shop:"/spares",profile:"/profile"};
@@ -98,6 +99,7 @@ function tabHref(k){
   return FILES[k]||"/";
 }
 function go(k){
+  if(k!=="account"||signedIn())pressInd(k);
   if(k==="chat"){ if(typeof window.openInbox==="function"){window.openInbox();return} if(window.CendonTabs&&CendonTabs.go("/messages"))return; if(window.CendonPaint)CendonPaint.prepare('/messages');location.href="/messages"; return }
   if(k==="account"){
     /* ยังไม่ได้เข้าระบบ → กดปุ่มเดิมของหน้า ซึ่งผูกกับ Firebase ไว้แล้ว */
@@ -119,12 +121,65 @@ function go(k){
   try{ if(typeof window.switchView==="function")window.switchView(k) }catch(e){}
 }
 
+/* ตัวเลือกแท็บ = พื้นสีชิ้นเดียว (.mt-ind) ที่เลื่อนไปอยู่ใต้ไอคอนแท็บที่เปิดอยู่ — เปลี่ยนแท็บแล้วไหลไปตำแหน่งใหม่ ไม่กระโดด
+   ในหน้าเดียวกัน (แชตเปิดเป็นแผ่นบนหน้าแรก) เลื่อนเอง · ข้ามหน้า (แต่ละแท็บเป็นเอกสารแยกใน shell) shell ส่งตำแหน่งเดิมมาให้ทาง CendonNav.slideFrom
+   ตอนเปิดหน้านี้ ระหว่างหน้าจางเข้า · เลื่อนแค่ transform (ไม่คำนวณหน้าใหม่) · ลดการเคลื่อนไหว = ย้ายทันที */
+const IND_CSS="#mnav .mt-ind{position:absolute;left:0;top:0;width:38px;height:26px;border-radius:13px;pointer-events:none;"+
+  "background:color-mix(in srgb,var(--accent,#D9733C) 20%,transparent);will-change:transform}"+
+  "@supports not (color:color-mix(in srgb,red 50%,blue)){#mnav .mt-ind{background:rgba(217,115,60,.20)}}"+
+  "#mnav .mt-ind{transition:transform .4s cubic-bezier(.22,1,.36,1)}"+
+  "#mnav.has-ind .mtab .mt-i{background:transparent!important}"+
+  "#mnav.has-ind .mtab{transition:color .25s ease}"+
+  "@media (prefers-reduced-motion:reduce){#mnav .mt-ind,#mnav.has-ind .mtab{transition:none}}";
+/* แท็บที่ "ดูเหมือนเปิดอยู่": แท็บที่เพิ่งแตะ (ระหว่างหน้าใหม่กำลังเปิด) → แผ่นแชตเปิดบนหน้าแรก = แชต → แท็บของหน้านี้ */
+let pressed=null;
+function indTarget(n){return (pressed&&n.querySelector(`[data-mnav="${pressed}"]`))||(D.querySelector(".bs.on.inbox")&&n.querySelector('[data-mnav="chat"]'))||n.querySelector(".mtab.on")}
+function indSpot(n){const t=n&&indTarget(n),i=t&&t.querySelector(".mt-i");return i?{x:t.offsetLeft+i.offsetLeft,y:t.offsetTop+i.offsetTop,w:i.offsetWidth,h:i.offsetHeight}:null}
+let indAt=null;
+/* วางทันที (ไม่ไหล): ปิด transition ชั่วคราวแล้วบังคับคำนวณ — ห้ามถอดคลาส/transition ระหว่างกำลังไหล ไม่งั้นการไหลถูกยกเลิกแล้วกระโดดไปปลายทาง
+   (หน้าที่เพิ่งเปิดครั้งแรกวาดแถบซ้ำหลายรอบระหว่างบูต — การวาดซ้ำที่ตำแหน่งเดิมต้องไม่แตะการไหลที่กำลังเล่น) */
+function jumpInd(ind,x,y){ind.style.transition="none";ind.style.transform=`translate(${x}px,${y}px)`;getComputedStyle(ind).transform;ind.style.transition="";indAt=x}
+function placeInd(anim,from){
+  const n=$("mnav");if(!n||!n.offsetWidth)return;
+  if(!$("mtIndCss")){const st=D.createElement("style");st.id="mtIndCss";st.textContent=IND_CSS;D.head.appendChild(st)}
+  let ind=n.querySelector(".mt-ind");
+  if(!ind){ind=D.createElement("i");ind.className="mt-ind";ind.setAttribute("aria-hidden","true");n.prepend(ind);n.classList.add("has-ind");indAt=null}
+  const s=indSpot(n);if(!s){ind.style.opacity="0";indAt=null;return}
+  ind.style.opacity="";ind.style.width=s.w+"px";ind.style.height=s.h+"px";
+  if(typeof from==="number")jumpInd(ind,from,s.y);
+  else if(indAt===null||(!anim&&indAt!==s.x))jumpInd(ind,s.x,s.y);
+  if(indAt!==s.x){ind.style.transform=`translate(${s.x}px,${s.y}px)`;indAt=s.x}
+}
+/* แผ่นแชตบนหน้าแรกเปิด/ปิด = ตัวเลือกเลื่อนตาม (ดูแค่คลาสของแผ่นนั้น ไม่ดูทั้งหน้า) */
+let inboxWatch=null;
+function watchInbox(){const bs=$("bs");if(!bs||inboxWatch)return;inboxWatch=new MutationObserver(()=>placeInd(true));inboxWatch.observe(bs,{attributes:true,attributeFilter:["class"]})}
+/* แตะแท็บ = ตัวเลือกเริ่มไหลไปแท็บนั้นทันที (เหมือนแอป native) ระหว่างหน้าใหม่กำลังเปิด · หน้าใหม่เลื่อนต่อจากตำแหน่งที่ไหลถึงจริง (x() อ่านจากภาพปัจจุบัน)
+   ถ้าไม่ได้ออกจากหน้านี้จริง (ยกเลิก/เปิดไม่สำเร็จ) และหน้านี้ยังเห็นอยู่ ตัวเลือกไหลกลับแท็บเดิมเอง */
+let pressFix=0;
+function pressInd(k){
+  const n=$("mnav"),t=n&&n.querySelector(`[data-mnav="${k}"]`);if(!t)return;
+  pressed=null;if(t===indTarget(n))return;
+  pressed=k;placeInd(true);
+  clearTimeout(pressFix);pressFix=setTimeout(unpress,4000);
+}
+/* ยังอยู่หน้านี้ (เปิดหน้าใหม่ไม่สำเร็จ/ยกเลิก) = ไหลกลับแท็บเดิม · ออกไปแล้วก็ค้างไว้ จนกลับมาเห็นอีกครั้ง */
+function unpress(){const v=window.CendonView;if(v&&!v.visible)return;if(pressed){pressed=null;placeInd(true)}}
+addEventListener("cendon:view-active",()=>{clearTimeout(pressFix);if(pressed){pressed=null;placeInd(true)}});
+window.CendonNav={
+  x(){const n=$("mnav"),ind=n&&n.querySelector(".mt-ind");
+    if(ind){try{const m=getComputedStyle(ind).transform;if(m&&m!=="none")return new DOMMatrixReadOnly(m).m41}catch(e){}}
+    const s=indSpot(n);return s?s.x:null},
+  slideFrom(x){if(typeof x==="number")placeInd(true,x)},
+  press(k){if(k!=="account"||signedIn())pressInd(k)}};
+
 /* แท็บบัญชีโชว์รูปโปรไฟล์จริงเมื่อเข้าระบบแล้ว เหมือน Grab กับ Uber
    คนจำหน้าตัวเองได้เร็วกว่าจำไอคอนคนทั่วไป */
 function paintAvatar(){
   const slot=D.querySelector('[data-mslot="account"]'); if(!slot)return;
   const a=$("avatarBtn");
-  if(signedIn()&&a&&a.innerHTML.trim()){
+  /* "?" คือป้ายรอชื่อบัญชี (ยังโหลดไม่เสร็จ) — แสดงไอคอนคนแทน ไม่ให้แท็บดูเหมือนรูปเสีย */
+  const ready=a&&a.innerHTML.trim()&&(a.querySelector("img")||a.textContent.trim()!=="?");
+  if(signedIn()&&ready){
     if(slot.dataset.av!==a.innerHTML){slot.dataset.av=a.innerHTML;slot.innerHTML=a.innerHTML}
   }else if(slot.dataset.av!==undefined||!slot.querySelector("i")){
     delete slot.dataset.av;

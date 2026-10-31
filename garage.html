@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <script>/* ธีมตั้งแต่เฟรมแรก (ก่อน CSS วาด) — เดิมหน้าเปิดด้วยธีมตั้งต้นแวบหนึ่งแล้วค่อยสลับ (แชตขึ้นจอดำ) ดูเหมือนกระพริบ/กระตุก */(function(){try{var O={warm:"light",pearl:"light",emerald:"light",plant:"light",moss:"light",carbon:"dark",night:"dark",midnight:"dark",cyber:"dark",aurora:"dark",ocean:"dark",sunset:"dark",magma:"dark"},v=null;try{v=JSON.parse(localStorage.getItem("spire_theme"))}catch(e){}if(typeof v!=="string")try{v=JSON.parse(localStorage.getItem("spire_chatTheme"))}catch(e){}v=v==="light"||v==="dark"?v:(O[v]||"light");var e=document.documentElement;e.setAttribute("data-theme",v);e.setAttribute("data-ctheme",v)}catch(x){}})();</script>
-<script src="/app-navigation-bridge.js?v=6"></script>
+<script src="/app-navigation-bridge.js?v=7"></script>
 <script src="/tab-shell.js?v=6"></script>
 <script src="/launch-gate.js?v=1"></script>
 <script src="/auth-gate.js?v=2"></script>
@@ -12,7 +12,7 @@
 <script src="/partner-state.js?v=2"></script>
 <script src="/display-prefs.js?v=6" defer></script>
 <script src="/i18n/ui-en.js?v=4" defer></script>
-<script src="/ui-language.js?v=15" defer></script>
+<script src="/ui-language.js?v=16" defer></script>
 <script src="/partner-entry.js?v=2"></script>
 <script src="/console-entry.js?v=1"></script>
 <script src="/account-paint.js?v=2026-10-16-r2"></script>
@@ -22,11 +22,12 @@
 <script src="/account.js?v=2026-10-28-r1" async fetchpriority="high"></script>
 <script src="/garage-rules.js?v=5"></script>
 <script src="/garage-data.js?v=2"></script>
+<script src="/car-care.js?v=1"></script>
 <script src="/mileage-session.js?v=1" defer></script>
 <script src="/mileage-review.js?v=1" defer></script>
-<script src="/valet-core.js?v=8" defer></script>
+<script src="/valet-core.js?v=9" defer></script>
 <script src="/input-guard.js?v=7"></script>
-<script src="/cloud-swap.js?v=5" defer></script>
+<script src="/cloud-swap.js?v=6" defer></script>
 <meta charset="UTF-8"/>
 <!-- ที่อยู่แบบลึก (/garage/…) — ไฟล์ประกอบทุกตัวอ้างจากรากเว็บเสมอ -->
 <base href="/">
@@ -2763,7 +2764,7 @@ html[data-level="basic"] .hfree{
   .hf-w{font-size:10.5px}
 }
 </style>
-<link rel="stylesheet" href="/settings.css?v=7">
+<link rel="stylesheet" href="/settings.css?v=8">
 <style id="skillscss">
 /* ══════════════════════════════════════════════════════════════════
    SKILLS — คำสั่งสำเร็จรูปที่ผู้ใช้เขียนเอง แล้วเรียกด้วย /ชื่อ
@@ -3893,7 +3894,7 @@ a.mtab{text-decoration:none}
 </style>
 <!-- ห้ามวาดเฟรมแรกก่อนแถบล่างพร้อม — เดิมหน้าใหม่ขึ้นมาก่อนแล้วแถบตามมาทีหลัง (Chrome 124+, ที่อื่นข้าม) -->
 <link rel="expect" href="/garage#mnav0" blocking="render">
-<link rel="stylesheet" href="stability.css?v=2026-10-27-zoom">
+<link rel="stylesheet" href="stability.css?v=2026-10-31-tabs">
 <link rel="stylesheet" href="/primary-material.css?v=1">
 <link rel="stylesheet" href="car-detail-tabs.css?v=2026-10-12-r1">
 <script src="car-detail-tabs.js?v=2026-10-12-r2" defer></script>
@@ -3964,6 +3965,10 @@ a.mtab{text-decoration:none}
 .gx-model{display:block;margin-top:3px;font-size:26px;font-weight:800;line-height:1.18;letter-spacing:-.025em;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gx-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:14px;border:1px solid var(--line-2);border-radius:14px;background:var(--surface-2)}
+.gx-due{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13.5px;color:var(--ink)}
+.gx-due .dot{flex:none;width:7px;height:7px;border-radius:50%;background:var(--accent,#E9682A)}
+.gx-due b{margin-left:auto;font-weight:600;color:var(--muted,#71717A)}
+.gx-due.over .dot{background:var(--danger,#DC2626)}.gx-due.over b{color:var(--danger,#DC2626)}
 .gx-stats>span{display:block;min-width:0;padding:10px 12px}
 .gx-stats>span+span{border-left:1px solid var(--line)}
 .gx-stats small{display:block;font-size:11px;color:var(--muted)}
@@ -4128,19 +4133,11 @@ const D=document;
 
 /* ภาษาที่เปิดให้เลือก — ชื่อเขียนด้วยภาษาของตัวเองเสมอ
    คนเลือกภาษาตัวเองได้โดยไม่ต้องอ่านภาษาที่ตัวเองไม่รู้จักก่อน */
+/* เปิดตัวในไทย: ไทย · อังกฤษ · จีน (คนที่เคยเลือกภาษาอื่น → เดาจากเครื่อง ไม่ตรง = อังกฤษ) */
 const LOCALES=[
   {c:"th", name:"ไทย",          flag:"🇹🇭"},
   {c:"en", name:"English",      flag:"🇬🇧"},
-  {c:"zh", name:"中文",          flag:"🇨🇳"},
-  {c:"ja", name:"日本語",        flag:"🇯🇵"},
-  {c:"ko", name:"한국어",        flag:"🇰🇷"},
-  {c:"id", name:"Indonesia",    flag:"🇮🇩"},
-  {c:"vi", name:"Tiếng Việt",   flag:"🇻🇳"},
-  {c:"ms", name:"Melayu",       flag:"🇲🇾"},
-  {c:"de", name:"Deutsch",      flag:"🇩🇪"},
-  {c:"fr", name:"Français",     flag:"🇫🇷"},
-  {c:"es", name:"Español",      flag:"🇪🇸"},
-  {c:"pt", name:"Português",    flag:"🇵🇹"}
+  {c:"zh", name:"中文",          flag:"🇨🇳"}
 ];
 /* เลิกมีภาษาอาหรับ (อ่านขวาไปซ้าย ทำให้หน้าเพี้ยนหลายจุด) — คนที่เคยเลือกไว้จะกลับไปใช้ภาษาตามเครื่อง */
 const CODES=LOCALES.map(x=>x.c);
@@ -4544,7 +4541,7 @@ let auth=null,useFb=false;
 })();
 /* ค่าตั้งต้นต้องมาจากตัวเลือกภาษาชุดกลาง ไม่ใช่ "th" ตายตัว
    ไม่งั้น applyLang() ตอนบูตจะเขียน "th" ทับสิ่งที่ชุดกลางเลือกไว้ */
-let currentUser=LS.get("cachedUser",null),lang=LS.get("lang",(["th","en","ja","zh","de","es"].indexOf((window.spireLang&&window.spireLang())||"")>=0?window.spireLang():"th"));
+let currentUser=LS.get("cachedUser",null),lang=LS.get("lang",(["th","en","zh"].indexOf((window.spireLang&&window.spireLang())||"")>=0?window.spireLang():"th"));if(!["th","en","zh"].includes(lang))lang=(window.spireLang&&window.spireLang())||"en";
 try{window.BACKEND_URL=BACKEND_URL;Object.defineProperty(window,"spireAuth",{configurable:true,get:function(){return auth}});Object.defineProperty(window,"auth",{configurable:true,get:function(){return auth}});Object.defineProperty(window,"lang",{configurable:true,get:function(){return lang},set:function(v){lang=v}});Object.defineProperty(window,"currentUser",{configurable:true,get:function(){return currentUser},set:function(v){currentUser=v}});window.spireAwaitUser=function(ms){return new Promise(function(res){try{if(!auth)return res(null);if(auth.currentUser)return res(auth.currentUser);var done=false;var t=setTimeout(function(){if(done)return;done=true;res(auth.currentUser||null)},ms||8000);var un=auth.onAuthStateChanged(function(u){if(done)return;done=true;clearTimeout(t);try{un&&un()}catch(e){}res(u||null)});}catch(e){res(null)}})};}catch(e){}
 let currentTheme = LS.get("theme", "warm");
 let wireframeOpacity = LS.get("opacity", 0.15);
@@ -5293,6 +5290,17 @@ function carArt(k,color){
   // this Garage iframe, and Chrome can silently paint no image at all.
   const filterRef=((document.URL||'').split('#')[0]+'#'+id).replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   return `<span class="car-art" aria-hidden="true"><svg viewBox="0 0 1536 1024" preserveAspectRatio="xMidYMid meet"><defs><filter id="${id}" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="${rgb[0]} 0 0 0 0 0 ${rgb[1]} 0 0 0 0 0 ${rgb[2]} 0 0 0 0 0 1 0"/></filter></defs><image href="${src}" width="1536" height="1024" preserveAspectRatio="xMidYMid meet" filter="url(&quot;${filterRef}&quot;)"/></svg></span>`}
+/* สีรถอ้างฟิลเตอร์ด้วยที่อยู่เต็มของหน้านี้ (กันเรื่อง <base href="/">) — ที่อยู่หน้าเปลี่ยนเมื่อไร (เปิดหน้ารถ / ย้อนกลับ)
+   ต้องชี้ตามทันที ไม่งั้นรูปที่วาดครั้งแรกหลังเปลี่ยนที่อยู่ (เช่นหน้ารถที่โผล่ระหว่าง morph) ถือว่าฟิลเตอร์อยู่อีกหน้า → รถขาวค้าง */
+function repointPaint(){
+  const base=(document.URL||"").split("#")[0];
+  document.querySelectorAll(".car-art image[filter]").forEach(im=>{const f=im.getAttribute("filter"),m=f&&f.match(/#(car-paint-\d+)"\)$/);
+    if(m){const want=`url("${base}#${m[1]}")`;if(f!==want)im.setAttribute("filter",want)}});
+}
+if(window.history&&window.addEventListener){
+  for(const k of ["pushState","replaceState"]){const o=history[k];if(typeof o==="function")history[k]=function(){const r=o.apply(this,arguments);try{repointPaint()}catch(e){}return r}}
+  addEventListener("popstate",()=>{try{repointPaint()}catch(e){}});
+}
 function colorDots(sel){sel=carColor(sel);
   return CAR_COLORS.map(x=>`<button type="button" class="gx-dot${x.c===sel?" on":""}" data-color="${x.c}" role="radio" aria-checked="${x.c===sel}" aria-label="${gxT(x.th,x.en)}" title="${gxT(x.th,x.en)}" style="--dot:${x.c}"></button>`).join("")}
 const gxArt=(k,color)=>carArt(k,color);
@@ -5313,6 +5321,11 @@ function renderGarage(){if(!document.getElementById("garageList"))return;const g
      ของเดิมเป็นแถวเล็กบาง ๆ จนผู้ใช้นึกว่ายังไม่ได้เพิ่มรถ
      ตอนนี้รถแต่ละคันได้การ์ดเต็มความกว้าง: ภาพรถ 3D ตามประเภทตัวถังในสีที่ผู้ใช้เลือก · ยี่ห้อ · รุ่นตัวใหญ่ · ปี/เลขไมล์/ประเภท
      กดที่ไหนของการ์ดก็เข้าหน้ารถคันนั้น ยกเว้นปุ่มวงสีมุมขวาบนที่เปิดหน้าต่างเปลี่ยนสี */
+  /* ดูแลถัดไปบนการ์ด: เห็นตั้งแต่หน้าการาจ ไม่ต้องเข้าหน้ารถ · ยังไม่เคยบันทึก = ไม่แสดง (ไม่เดา) */
+  const gxDue=(c,body)=>{let k=0;try{k=window.SpireODO?SpireODO.value(c):0}catch(e){}
+    const n=window.CendonCarCare&&CendonCarCare.next(c,{km:k,ev:body==="ev"});if(!n)return "";
+    const over=n.left<=0,left=Math.abs(n.left).toLocaleString("en-US");
+    return `<span class="gx-due${over?" over":""}"><span class="dot" aria-hidden="true"></span><span>${esc(tx(n.th,n.en))}</span><b>${over?tx(`เลยกำหนด ${left} กม.`,`${left} km overdue`):tx(`อีก ${left} กม.`,`${left} km left`)}</b></span>`};
   w.innerHTML=`<div class="gx-grid${g.length===1?" one":""}">`+g.map(c=>{
     window.CendonGarageData?.loadPolicy(c);
     const bodyStyle = carTypeOf(c);
@@ -5338,6 +5351,7 @@ function renderGarage(){if(!document.getElementById("garageList"))return;const g
           <span><small>${tx("เลขไมล์","Mileage")}</small><b>${km}${km!=="-"?` <em>${tx("กม.","km")}</em>`:""}</b></span>
           <span><small>${tx("ประเภท","Body")}</small><b>${esc(tx(lbl.th,lbl.en))}</b></span>
         </span>
+        ${gxDue(c,bodyStyle)}
         <span class="gx-foot">${tx("ดูรายละเอียดและประวัติ","Details & history")}<i class="ti ti-arrow-right"></i></span>
       </span>
     </div><div class="gx-back" aria-hidden="true" inert></div></div></div>`
@@ -6046,7 +6060,7 @@ window.spireApplySetup=()=>{ const k=level();
   try{ mountProfilePicker() }catch(e){} };
 })();
 </script>
-<script src="/settings.js?v=10" defer></script>
+<script src="/settings.js?v=11" defer></script>
 <script src="/sheet-drag.js?v=1" defer></script>
 <script id="skillsjs">
 /* ══════════════════════════════════════════════════════════════════
@@ -6951,21 +6965,8 @@ function specOf(c){
 
 
 /* ═══════════ ตารางบำรุงรักษา ═══════════ */
-const PLAN=[
- {k:"oil",     th:"เปลี่ยนน้ำมันเครื่อง",   en:"Engine oil",       km:10000, mo:6,  sys:"engine", ev:false},
- {k:"airf",    th:"ไส้กรองอากาศ",          en:"Air filter",       km:20000, mo:12, sys:"engine", ev:false},
- {k:"cabin",   th:"กรองแอร์ในห้องโดยสาร",   en:"Cabin filter",     km:20000, mo:12, sys:"comfort",ev:true},
- {k:"plug",    th:"หัวเทียน",              en:"Spark plugs",      km:40000, mo:36, sys:"engine", ev:false},
- {k:"brakepad",th:"ผ้าเบรก",               en:"Brake pads",       km:40000, mo:36, sys:"brake",  ev:true},
- {k:"brakeoil",th:"น้ำมันเบรก",             en:"Brake fluid",      km:40000, mo:24, sys:"brake",  ev:true},
- {k:"tire",    th:"ยาง 4 เส้น",            en:"Tyres",            km:50000, mo:48, sys:"tire",   ev:true},
- {k:"align",   th:"ตั้งศูนย์ถ่วงล้อ",        en:"Wheel alignment",  km:20000, mo:12, sys:"tire",   ev:true},
- {k:"batt",    th:"แบตเตอรี่",              en:"Battery",          km:60000, mo:36, sys:"elec",   ev:true},
- {k:"coolant", th:"น้ำหล่อเย็น",            en:"Coolant",          km:60000, mo:36, sys:"engine", ev:false},
- {k:"gearoil", th:"น้ำมันเกียร์",           en:"Gearbox oil",      km:60000, mo:48, sys:"drive",  ev:false},
- {k:"belt",    th:"สายพานหน้าเครื่อง",      en:"Drive belt",       km:80000, mo:60, sys:"engine", ev:false},
- {k:"shock",   th:"โช้คอัพ",               en:"Shock absorbers",  km:80000, mo:60, sys:"susp",   ev:true}
-];
+/* รอบดูแลมาตรฐานอยู่ใน car-care.js — หน้าแรกใช้ชุดเดียวกันบอก "ดูแลถัดไป" */
+const PLAN=window.CendonCarCare.PLAN;
 const SYS={
  engine:{th:"เครื่องยนต์",en:"Engine",ic:"ti-engine"},
  brake:{th:"ระบบเบรก",en:"Brakes",ic:"ti-disc"},
@@ -7073,6 +7074,15 @@ function costOf(c){
 (function(){const st=document.createElement("style");st.textContent=`
 .carx-bd{position:fixed;inset:0;z-index:120;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(6,5,3,.55)}
 .carx-bd.show{display:flex}
+/* การ์ดรถ ⇄ หน้ารถ: รถลอยบนสปริงนุ่ม หน้าที่เหลือจาง + เบลอบาง ๆ · แถบแท็บไม่โผล่ทับระหว่างแปลงร่าง
+   ราก (root) ต้อง !important เพราะ stability.css ตั้งแอนิเมชันรากของการเปลี่ยนหน้าข้ามเอกสารไว้แบบ !important */
+.cl-vt{view-transition-name:cl-car}
+html[data-clm] .mnav{view-transition-name:none!important}
+html[data-clm]::view-transition-group(cl-car){animation-duration:.5s;animation-timing-function:linear(0,0.009 2%,0.033 4%,0.067 6%,0.109 8%,0.156 10%,0.206 12%,0.283 15%,0.359 18%,0.432 21%,0.522 25%,0.602 29%,0.687 34%,0.769 40%,0.84 47%,0.897 55%,0.941 65%,0.973 78%,0.987 90%,1)}
+html[data-clm]::view-transition-old(root){animation:clmOut .22s ease-out both!important}
+html[data-clm]::view-transition-new(root){animation:clmIn .34s ease-out .04s both!important;mix-blend-mode:normal}
+@keyframes clmOut{from{opacity:1;filter:blur(0)}to{opacity:0;filter:blur(5px)}}
+@keyframes clmIn{from{opacity:0;filter:blur(6px)}to{opacity:1;filter:blur(0)}}
 .carx{--cx-acc:var(--co,var(--accent));--cx-acc-t:color-mix(in srgb,var(--cx-acc) 70%,var(--ink));--cx-soft:color-mix(in srgb,var(--cx-acc) 11%,transparent);
   position:relative;width:min(1080px,100%);height:min(88dvh,900px);display:flex;flex-direction:column;overflow:hidden;
   background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:28px;box-shadow:0 40px 90px -30px rgba(0,0,0,.55)}
@@ -7299,7 +7309,18 @@ function ensureModal(){
   },true);
   return modal;
 }
-function closeCL(){if(modal){closeSheet(true);modal.classList.remove("show")}}
+/* การ์ดรถ ⇄ หน้ารถ: รถลอยจากการ์ดไปเป็นภาพใหญ่ และกลับเข้าการ์ดตอนปิด (View Transitions · html[data-clm] ระหว่างแปลงร่าง)
+   ภาพทั้งสองเป็น .car-art สัดส่วนเดียวกัน · ไม่รองรับ / ลดการเคลื่อนไหว / หาการ์ดไม่เจอ = เปิดปิดทันทีแบบเดิม */
+function carMorph(id,opening,swap){
+  const h=D.documentElement,card=()=>D.querySelector(`.gx-flip[data-car="${CSS.escape(String(id||""))}"] .gx-hero .car-art`),big=()=>modal&&modal.querySelector(".crm-stage .car-art");
+  const from=opening?card():big();
+  if(!D.startViewTransition||matchMedia("(prefers-reduced-motion: reduce)").matches||!from||!from.getClientRects().length){swap();return}
+  h.dataset.clm="1";from.classList.add("cl-vt");
+  const end=()=>{delete h.dataset.clm;D.querySelectorAll(".cl-vt").forEach(e=>e.classList.remove("cl-vt"))};
+  try{D.startViewTransition(()=>{from.classList.remove("cl-vt");swap();repointPaint();const to=opening?big():card();if(to)to.classList.add("cl-vt")}).finished.finally(end)}catch(e){end();swap()}
+}
+function closeCL(){if(!modal)return;const shown=modal.classList.contains("show");closeSheet(true);
+  if(shown&&curCar)carMorph(curCar.id,false,()=>modal.classList.remove("show"));else modal.classList.remove("show")}
 /* หน้าเดียวเลื่อนอ่านจบ: ต้องดูแล · ประวัติรถ · ข้อมูลรถ — รายละเอียดเต็มเปิดเป็นแผ่น (ไม่มีแท็บให้งง)
    ลิงก์เก่า (/garage/<รถ>/cost ฯลฯ) และปุ่มจากที่อื่น ยังพามาแผ่นที่ของนั้นอยู่ */
 const LISTS=["care","hist","about"];
@@ -7312,7 +7333,7 @@ window.openCarDetail=function(id,go){
   window.clRerender=()=>{try{renderAll()}catch(e){}};
   closeSheet(true);
   renderAll();
-  modal.classList.add("show");
+  if(was)modal.classList.add("show");else carMorph(id,true,()=>{modal.classList.add("show");$("clScroll").scrollTop=0});
   if(!was)$("clScroll").scrollTop=0;
   if(go==="odo")setTimeout(()=>{openSheet("log:odo");setTimeout(()=>{const i=$("crmOdoIn");if(i)try{i.focus({preventScroll:true})}catch(e){}},300)},60);
   else if(go&&LISTS.includes(OLD_TAB[go]||go))setTimeout(()=>openSheet("list:"+(OLD_TAB[go]||go)),60);
@@ -8723,6 +8744,8 @@ async function fetchWx(lat,lon,place){
   LSt("wxCache",WX); wxState="ok"; return WX;
 }
 function loadWx(force){
+  /* หน้านี้ถูกเตรียมไว้เบื้องหลัง (shell ตั้ง inert ไว้จนกว่าจะเปิดจริง): ห้ามขอตำแหน่งตอนผู้ใช้ยังไม่เห็นหน้านี้ — รอเปิดจริงก่อน แล้วค่อยโหลดอากาศ */
+  if(!force&&window.frameElement&&window.frameElement.inert){addEventListener("cendon:view-active",()=>loadWx(false),{once:true});return Promise.resolve(null)}
   if(!force&&wxFresh()){wxState="ok";return Promise.resolve(WX)}
   if(wxState==="loading")return Promise.resolve(null);
   wxState="loading"; render();
@@ -13176,7 +13199,7 @@ setInterval(()=>{
    เว็บเปล่าเตือนอะไรไม่ได้เลย ผู้ใช้ต้องนึกถึงเองถึงจะเปิด
    ฟีเจอร์ดีแค่ไหนก็ไร้ค่าถ้าไม่มีใครเปิดมาเจอ ตรงนี้จึงสำคัญที่สุด */
 const PUSHOK=()=>("serviceWorker" in navigator)&&("PushManager" in window)&&("Notification" in window);
-const isStandalone=()=>window.matchMedia("(display-mode: standalone)").matches||
+const isStandalone=()=>window.matchMedia("(display-mode: standalone),(display-mode: fullscreen)").matches||
   window.navigator.standalone===true;
 let installEvt=null;
 window.addEventListener("beforeinstallprompt",e=>{ e.preventDefault(); installEvt=e; renderNotifCard() });
@@ -14225,7 +14248,7 @@ function start(){
 if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",start); else start();
 })();
 </script>
-<script src="mobile-ui.js?v=2" defer></script>
+<script src="mobile-ui.js?v=6" defer></script>
 <script>
 window.__SPIRE_PAGE__="garage";
 window.__SPIRE_FILES__={"home": "/", "garage": "/garage", "magazine": "/news", "shop": "/spares", "profile": "/profile"};

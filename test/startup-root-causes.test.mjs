@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';import vm from 'node:vm';import {readFileSync,readdirSync} from 'node:fs';import {createHash} from 'node:crypto';
 const read=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8'),app=read('app-navigation.js');
 test('public-code installation waits for real initial readiness, page load and idle, and is scheduled only once',async()=>{
- const events={},idle=[],calls=[],W={addEventListener:(name,fn)=>(events[name]??=[]).push(fn),requestIdleCallback:fn=>idle.push(fn)},D={readyState:'loading'},context={W,D,navigator:{serviceWorker:{register:async path=>calls.push(path)}}};
+ const events={},idle=[],calls=[],W={addEventListener:(name,fn)=>(events[name]??=[]).push(fn),requestIdleCallback:fn=>idle.push(fn)},D={readyState:'loading',getElementById:()=>({hidden:true})},context={W,D,navigator:{serviceWorker:{register:async path=>calls.push(path)}}};
  vm.runInNewContext(app.slice(app.indexOf('let workerScheduled='),app.indexOf('const progress='))+';globalThis.schedule=scheduleWorker;',context);
  assert.deepEqual(calls,[]);assert.ok(app.includes('if(r.el===initial)scheduleWorker()'));assert.ok(app.indexOf('r.ready=true')<app.indexOf('if(r.el===initial)scheduleWorker()'));
  context.schedule();context.schedule();assert.equal(events.load.length,1);assert.deepEqual(calls,[]);events.load[0]();assert.equal(idle.length,1);assert.deepEqual(calls,[]);idle[0]();assert.deepEqual(calls,['/sw.js']);

@@ -78,7 +78,7 @@ function localIntent(text){
     ||t.match(/^(?:(?:enable|turn on|switch to)\s+)?(dark|light)\s+mode$/i);
   if(m)return {do:'setting',key:'theme',value:/^(?:มืด|ดำ|เข้ม|dark)$/.test(m[1])?'dark':'light'};
   m=t.match(/^(?:เปลี่ยน|ตั้ง|ปรับ)\s*ภาษา\s*(?:ให้เป็น|เป็น)?\s*(.+)$/i)||t.match(/^(?:change|set|switch)\s+(?:the\s+)?language\s+(?:to\s+)?(.+)$/i);
-  if(m){const names={ไทย:'th',thai:'th',อังกฤษ:'en',english:'en',ญี่ปุ่น:'ja',japanese:'ja',จีน:'zh',chinese:'zh',เกาหลี:'ko',korean:'ko',indonesian:'id',vietnamese:'vi',malay:'ms',german:'de',french:'fr',spanish:'es',portuguese:'pt'};
+  if(m){const names={ไทย:'th',thai:'th',อังกฤษ:'en',english:'en',จีน:'zh',chinese:'zh'};
     const value=LANGS[m[1]]?m[1]:names[m[1]];if(value)return {do:'setting',key:'lang',value};}
   m=t.match(/^(?:เปลี่ยน|ตั้ง|ปรับ)\s*(?:หน่วยระยะทาง|หน่วย)\s*(?:เป็น)?\s*(กิโลเมตร|กม\.?|ไมล์|km|mi)$/i)||t.match(/^(?:change|set)\s+(?:distance\s+)?units?\s+(?:to\s+)?(kilometers|kilometres|miles|km|mi)$/i);
   if(m)return {do:'setting',key:'distance',value:/^(?:ไมล์|miles|mi)$/.test(m[1])?'mi':'km'};
@@ -153,7 +153,8 @@ function dest(a){
 function go(url){try{W.CendonPaint&&W.CendonPaint.prepare(url)}catch(e){}location.href=url}
 
 /* ═══ การตั้งค่าที่เปลี่ยนได้ ═══ */
-const LANGS={th:"ไทย",en:"English",ja:"日本語",zh:"中文",ko:"한국어",id:"Indonesia",vi:"Tiếng Việt",ms:"Melayu",de:"Deutsch",fr:"Français",es:"Español",pt:"Português"};
+/* เปิดตัวในไทย: ไทย · อังกฤษ · จีน (ตรงกับตัวเลือกภาษาในหน้าตั้งค่า) */
+const LANGS={th:"ไทย",en:"English",zh:"中文"};
 const DEPTH=[["Sprint (ตอบสั้น)","Sprint (short)"],["Grand Tour (ปกติ)","Grand Tour (balanced)"],["Atelier (ละเอียด)","Atelier (in depth)"]];
 function setting(a){
   const V=W.CendonValetCore;if(!V)return null;

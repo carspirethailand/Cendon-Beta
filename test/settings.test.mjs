@@ -16,10 +16,14 @@ test('settings: one shared page on every app page — the old per-page copies ar
   assert.match(r('sw.js'), /'\.\/settings\.js\?v=\d+', '\.\/settings\.css\?v=\d+'/);
 });
 
-test('settings: become-a-mechanic card sits right under the profile, with the right state', () => {
+test('settings: owners and applicants see their mechanic card right under the profile; customers get a quiet invite at the bottom', () => {
   const html = st.slice(st.indexOf('function mainHTML'), st.indexOf('function manageHTML'));
-  assert.ok(html.indexOf('class="st-me"') < html.indexOf('${partnerHTML()}'), 'profile first');
-  assert.ok(html.indexOf('${partnerHTML()}') < html.indexOf("t('การตั้งค่าแอป','App settings')"), 'partner card before the settings groups');
+  assert.match(html, /const pc=partnerHTML\(\),pLate=pc\.includes\('st-p-none'\);/);
+  assert.match(html, /<h1>\$\{t\('บัญชี','Account'\)\}<\/h1>/, 'the page is titled like its tab');
+  assert.ok(html.indexOf('class="st-me"') < html.indexOf("${pLate?'':pc}"), 'profile first');
+  assert.ok(html.indexOf("${pLate?'':pc}") < html.indexOf("t('การตั้งค่าแอป','App settings')"), 'Studio / application status before the settings groups');
+  assert.ok(html.indexOf("${pLate?pc:''}") > html.indexOf("href:'/privacy'"), 'not-yet-applied invite sits after Help, not as a big ad on top');
+  assert.match(css, /\.st-partner\.st-p-none\{margin-top:10px;flex-direction:row;[^}]*background:var\(--st-surf\);color:var\(--st-ink\)!important/, 'the invite follows the theme (no black card in light mode)');
   for (const s of ['none', 'pending', 'rejected', 'shop']) assert.match(st, new RegExp(`${s}:\\['ti-`), s);
   assert.match(st, /const href=fbUser\(\)\|\|u\.uid\?\(s==='shop'\?'\/studio':'\/join'\):'\/login\?next=%2Fjoin';/);
   assert.doesNotMatch(st.slice(st.indexOf('function partnerHTML'),st.indexOf('const chev=')),/data-nav-full/,'same-page partner routes must not force a full reload');
